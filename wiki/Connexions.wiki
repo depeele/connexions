@@ -8,9 +8,9 @@ Connexions is a tagging/folksonomy system similar to del.icio.us, simpy, furl, o
 = Requirements/Dependencies =
 A web server that supports [http://php.net/ PHP] (4 or higher), local .htaccess files, and the mod_rewrite URL rewriting engine.
 
-A modern browser that supports JavaScript (1.5 or higher) and asynchronous HTTP requests.  This would include Microsoft Internet Explorer 6.0 or higher, Mozilla Firefox 1.0/Mozilla 1.7 or higher, and Apple Safari 1.2 or higher.
+A modern browser that supports javascript (1.5 or higher) and asynchronous HTTP requests.  This would include Microsoft Internet Explorer 6.0 or higher, Mozilla Firefox 1.0/Mozilla 1.7 or higher, and Apple Safari 1.2 or higher.
 
-Connexions makes heavy use of the [http://www.prototypejs.org/ Prototype] JavaScript framework (version 1.5.0_rc0 or higher) and the [http://script.aculo.us/ Script.aculo.us] library built upon it (version 1.6.1 or higher) -- js/{prototype.js,scriptaculous}
+Connexions makes heavy use of the [http://www.prototypejs.org/ Prototype] javascript framework (version 1.5.0_rc0 or higher) and the [http://script.aculo.us/ Script.aculo.us] library built upon it (version 1.6.1 or higher) -- js/{prototype.js,scriptaculous}
 
 In addition, the following are used:
   * js/autosuggest.js
