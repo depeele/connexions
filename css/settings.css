@@ -1,0 +1,90 @@
+/****************************
+ * Navigation
+ */
+#settings_nav
+{
+    margin:0 1.5em;
+    padding:0;
+}
+
+#settings_nav h3
+{
+    font-size:1em;
+    margin:0;
+    padding:0 0 0.25em 0;
+}
+#settings_nav li
+{   font-size:0.9em;    }
+
+#settings_nav ul
+{   list-style:none;    }
+
+#settings_nav li.settings_heading
+{
+    width:16%;
+    float:left;
+    display:inline;
+}
+
+#settings_nav li ul li
+{
+    margin:0 0 0.25em 0;
+    padding:0;
+    clear:both;
+    display:block;
+}
+
+#settings_nav li ul li span
+{   float:left; }
+
+#settings_nav li ul li a
+{
+    float:left;
+    margin-left:0.25em;
+}
+
+#settings_nav li ul li em.current
+{
+    float:left;
+    margin-left:0.25em;
+    font-style:normal;
+}
+
+.settings_nav_line
+{
+    margin:5em 1.5em 1em 1.5em;
+    padding:0;
+    clear:both;
+    border-top: 1px solid #ccc;
+}
+
+/****************************
+ * Presentation
+ */
+#settings_intro
+{
+    float:          left;
+    font-size:      0.85em;
+    width:          40ex;
+    margin:         0.25em 2.5em;
+}
+
+#settings_show
+{
+    font-size:      0.85em;
+    margin-left:    42ex;
+    padding-left:   2ex;
+    border-left:    1px solid #ccc;
+}
+
+#settings_show dt, #settings_show dd
+{
+    font-size:      0.85em;
+    padding:        0 0 0.35em 0;
+}
+
+#settings_show dt
+{
+    float:          left;
+    width:          21ex;
+}
