@@ -1,0 +1,1444 @@
+/*******************************
+ * General styling
+ */
+body
+{
+    font-family:    Arial, Helvetica, Verdana, Tahoma, sans-serif;
+    /*min-width:      750px;*/
+    min-height:     400px;
+    padding:        0px;
+    margin:         0px;
+}
+
+a
+{   color:#069;
+    text-decoration:none;
+}
+
+a:hover,a:focus
+{   text-decoration:underline;
+}
+
+p
+{   font-family:    Arial, Helvetica, Verdana, Tahoma, sans-serif;
+    font-size:      11px;
+}
+
+ul, table, tr, td, form, p, div
+{   margin-top: 0pt;
+    margin-right: 0pt;
+    margin-bottom: 0pt;
+    margin-left: 0pt;
+    padding-top: 0pt;
+    padding-right: 0pt;
+    padding-bottom: 0pt;
+    padding-left: 0pt;
+}
+
+input, textarea
+{   font-family:    Arial, Helvetica, Verdana, Tahoma, sans-serif;
+    color:          #009;
+    letter-spacing: 0.5px;
+    /*font-size:      1em;*/
+}
+
+.textinput, .textinputHovered
+{
+    border:1px solid #CCC;
+    margin:0px 3px;
+    padding:1px;
+}
+
+.textarea, .textareaHovered
+{
+    border:1px solid #CCC;
+    margin:0 3px;
+    padding:1px;
+}
+
+/*******************************
+ * General layout components
+ */
+#header
+{
+    /*position: relative;*/
+    /*position: absolute;
+    top: 4px;
+    left: 4px;*/
+    height: 3.5em;
+    margin:  0px;
+    padding: 2px;
+    /*width: 99%;*/
+    /*border: 1px solid #f00;*/
+    border-bottom: 2px solid #ccc;
+    width:  99.8%;
+}
+
+#content
+{
+    position:   relative;
+	margin:     0px;
+    padding:    4px;
+    /*border:     1px solid #f00;*/
+}
+
+#footer
+{
+    clear: both;
+    position: relative;
+    font-size: .75em;
+    text-align: center;
+    background-color: #eee;
+    margin:  0px;
+    padding: .5em 0px;
+    border-top: 1px solid #888;
+    /*border: 1px solid #000;*/
+}
+
+/*******************************
+ * Header components
+ */
+#header #logo
+{
+    border: 0px;
+    width: 33px;
+    height: 25px;
+    margin: 0px -5px 0px -6px;
+    padding: 0px;
+}
+
+#header #pageLoc
+{
+    float:      left;
+    font-size: 1.25em;
+    line-height: 1.25em;
+    font-weight: bold;
+    padding: .1em 0px 0px .25em;
+    margin: 0px;
+    vertical-align: middle;
+    background-color: #fff; /*#ccf; 1f669b, rgb(31,102,155);*/
+    width: 50%;
+    height: 1.5em;
+    /*min-width: 465px;*/
+    /*border: 1px solid #0f0;*/
+}
+
+#header #pageLoc #root
+{   color: #36c; }
+
+#header #pageLoc #path
+{   color: #000000; }
+
+#header #pageLoc .value
+{   background-color:   #ffe; }
+
+.crumb
+{   font-weight:        bold;
+    font-size:          1.0em;
+    background-color:   #fff;
+    border:             1px solid #bbb;
+    color:              #000;
+    vertical-align:     middle;
+    text-indent:        0.2em;
+}
+
+.crumb-focus
+{   background-color:   #fff;
+    border:             1px solid #666;
+}
+
+#header #pageLoc #accountCtl
+{
+    position:       relative;
+    font-size:      .65em;
+    line-height:    1.25em;
+    font-weight:    normal;
+    color:          #000;
+    margin:         0.45em 0px 2px 0.75em;
+    padding:        0px;
+}
+
+#header #pageCtl
+{
+    float:          right;
+    /*font-size:      1em;*/
+    /*line-height:    1em;*/
+    width:          49%;
+    margin:         0.5em 0px 0px 0px;
+    padding:        0px;
+    text-align:     right;
+    /*border: 1px solid #00f;*/
+}
+
+#header #pageCtl #accountCtl
+{
+    font-size:      .75em;
+    line-height:    1.25em;
+    margin:         0px;
+    padding:        0.60em 5px 0px 0px;
+    /*text-align:     right;*/
+}
+
+#header #pageCtl input, #header #pageCtl textarea, #header #pageCtl select
+{   font-family:    Arial, Helvetica, Verdana, Tahoma, sans-serif;
+    color:          #009;
+    letter-spacing: 0.5px;
+    font-size:      .75em;
+    line-height:    .75em;
+    margin:         0px;
+    padding:        0px;
+}
+
+/*******************************
+ * Content components
+ */
+#content #left
+{
+    position:       relative;
+    float:          left;
+    width:          58%;
+    margin:         0px;
+    padding:        0px;
+    /*border:         1px solid #f0f;*/
+}
+
+#content #right
+{
+    position:       relative;
+    float:          right;
+    width:          40%;
+    margin:         0px;
+    padding:        0px;
+    /*border:         1px solid #0f0;*/
+}
+
+/*
+ * The global loading indicator starts out displayed and is then
+ * hidden when the page footer is output.
+ *
+ * It is generally used when potentially long (asynchronous) operations
+ * are in progress.
+ */
+#global_loading
+{
+    <? if ($gUseGlobalLoading === false)    echo "visibility: hidden;"; ?>
+    display:            block;
+    position:           absolute;
+    top:                0px;
+    right:              0px;
+    text-align:         right;
+    /*text-decoration:    blink;*/
+    margin:             0px;
+    padding:            4px;
+    background-color:   #f77;
+    color:              #fff;
+    border:             1px solid #fdd;
+    z-index:            500;
+}
+
+/*******************************
+ * Item Lists
+ */
+.ItemList
+{
+    position:   relative;
+    margin:     0px;
+    padding:    0 5px;
+}
+
+.ItemList .title
+{
+    position:           relative;
+    background-color:   #eee;
+    border-top:         1px solid #ccc;
+    border-bottom:      1px solid #ccc;
+    padding:            .25em  .5em .5em;
+    margin:             0px;
+    height:             1.75em;
+}
+
+.ItemList .title h3
+{
+    position:   relative;
+    margin:     0px 20em 0px 0px;
+    font-size:  1em;
+}
+
+.ItemList ol
+{
+    position:           relative;
+    margin:             0px;
+    padding:            0 2px 2px 2px;
+    list-style-type:    none;
+    border-top:         1px solid #eee;
+    border-left:        1px solid #eee;
+    border-right:       1px solid #eee;
+}
+
+.ItemList ol li
+{
+    position:       relative;
+    padding:        5px 5px 5px <?echo ($gUseThumbnails ? "92px" : "0px");?>;
+    margin:         0px;
+    min-height:     4ex;
+    <?php
+    // IE is broken!  If we don't specify SOME height, we get randomly
+    // disappearing items...
+    if ($ua['name'] == 'Internet Explorer')
+        echo "
+    height:         1%;";
+
+    ?>
+    border-bottom:  1px solid #eee;
+    /*border:         1px solid #00f;*/
+}
+
+.ItemList .private
+{
+    background-color:   #ffe;
+}
+
+.ItemList .public
+{
+}
+
+.ItemList h4
+{
+    position:       relative;
+    font-size:      1.0em;
+    font-weight:    bold;
+    line-height:    1.0em;
+    margin:         0px 75px .25em 0px;
+}
+
+.ItemList h4 img
+{
+    position:       absolute;
+    top:            .25em;
+    left:           2px;
+    border:         1px solid #ccc;
+    padding:        1px;
+    width:          80px;   /*90px;*/
+    height:         58px;   /*65px;*/
+}
+
+.ItemList .meta
+{
+    position:       absolute;
+    top:            0.1em;
+    right:          0px;
+    margin:         0px;
+    padding:        0px;
+    /*width:          10em;*/
+    width:          70px;
+    min-height:     52px;
+    line-height:    1.3em;
+    /*border: 1px solid #f00;*/
+}
+
+div.TagActionOther,div.TagAction
+{
+    width:          40px;
+    display:        block;
+    float:          right;
+    margin:         0px;
+    padding:        0px;
+    line-height:    1ex;
+    /*border: 1px solid #0f0;*/
+}
+
+.ItemList .meta .control
+{
+    display:        block;
+    float:          left;
+    width:          16px;
+    /*border: 1px solid #00f;*/
+}
+
+.ItemList .details
+{
+    position:       relative;
+    /*margin:         0px 75px 4px 0px;*/
+    margin:         0px;
+    padding:        0px 75px 4px 0px;
+    font-size:      .8em;
+    line-height:    1.0em;
+    color:          #999;
+    /*border:         1px solid #f00;*/
+}
+
+.ItemList .details .description
+{
+    display:    inline;
+    margin:     0 0 0 1em;
+}
+
+.ItemList .details .whowhenwhere
+{
+    margin:     0 0 0 5px;
+}
+
+.ItemList .details .tags
+{
+    margin:     4px 0 0 10px;
+}
+
+.ItemList .details .tags a
+{
+    color:  #3f9fd2;
+}
+
+.ItemList .details .popularity
+{
+    display:        block;
+    position:       relative;
+    float:          right;
+    /*width:          12em;*/
+    line-height:    1em;
+    /*height:         1.1em;*/
+    text-align:     right;
+    margin:         0px 8px 0px 0px;
+    /*border: 1px solid #f00;*/
+}
+
+.ItemList .details .popularity .rating
+{
+    float:      left;
+    position:   relative;
+    margin: 0px 1em 0px 0px;
+    width:  75px;
+    height: 17px;
+    /*border: 1px solid #f00;*/
+}
+
+.ItemList .details .popularity .votes
+{
+    float:  left;
+    margin: 0px 2px 0px 0px;
+}
+
+.ItemList .details .url
+{
+    color:       #bdb;
+    margin-left: 1em;
+    text-align:  right;
+}
+
+.ItemList .timestamp
+{
+    margin:         1em 0px 0px 0px;
+    border-bottom:  1px dashed #999;
+    text-align:     right;
+    font-size:      0.75em;
+    color:          #999;
+}
+
+.ItemList .taggerInfo
+{
+    margin: 0px 0px 0px 1em;
+}
+
+.ItemList .taggerInfo .description
+{
+    margin: 0px;
+}
+
+.ItemList .taggerInfo .tagger
+{
+    margin:     0px 0px 1em 0.5em;
+}
+
+.ItemList .taggerInfo-self
+{
+    margin: 0px;
+    padding:0.25em 0px 0.5em 1em;
+    background-color:   #ffe;
+}
+
+.ItemList .taggerInfo-self .description
+{
+    margin: 0px;
+}
+
+.ItemList .taggerInfo-self .tagger
+{
+    margin:     0px 0px 0px 0.5em;
+}
+
+
+/*******************************
+ * Tag List Area
+ */
+.TagList
+{
+    position:   relative;
+    margin:     0px;
+    padding:    0px 5px;
+    clear:      both;
+}
+
+.TagList .title
+{
+    background-color:   #eee;
+    border-top:         1px solid #ccc;
+    border-bottom:      1px solid #ccc;
+    padding:            .25em  .5em .5em;
+    margin:             0px;
+    height:             1.75em;
+}
+
+.TagList .title h3
+{
+    margin:     0px 20em 0px 0px;
+    font-size:  1em;
+}
+
+.TagList .timestamp
+{
+    margin:         1em 0px 0px 0px;
+    border-bottom:  1px dashed #999;
+    text-align:     right;
+    font-size:      0.75em;
+    color:          #999;
+}
+
+.TagList .taggerInfo
+{
+    margin: 0px 0px 0px 2.5em;
+}
+
+.TagList .taggers
+{
+    margin: 0px 0.5em;
+}
+
+.TagList .taggers .tagger
+{
+    display:    inline;
+}
+
+.TagList .taggers .tagger-self
+{
+    display:            inline;
+    background-color:   #ff9;
+}
+
+.TagList .taggerInfo .tagger
+{
+    margin: 0 0 0.25em -0.75em;
+}
+
+.TagList .taggerInfo .tag, .TagList .taggerInfo-self .tag
+{
+    font-size: 0.8em;
+}
+
+.TagList .taggerInfo-self
+{
+    margin: 0px 0px 0px 1.75em;
+    padding:0.25em 0.25em 1em 0.25em;
+    background-color:   #ffe;
+}
+
+.TagList .taggerInfo-self .tagger
+{
+    margin: 0px 0px 0px -0.75em;
+}
+
+/*******************************
+ * Pagination components
+ */
+.Selector
+{
+    float:        right;
+    text-align:   right;
+    line-height:  1.0em;
+    height:       3em;
+    margin:       0px 0px 0px 0px;
+    font-size:    .7em;
+    font-weight:  normal;
+    color:        #999;
+    /*border: 1px solid #f00;*/
+}
+
+.Pager
+{
+    position:     relative;
+    top:          0px;
+    left:         0px;
+    height:       1.75em;
+    line-height:  1.75em;
+    font-size:    1.5em;
+    margin:       2px 0px 2px 0px;
+    text-align:   right;
+}
+
+.Pager .PagerCtl
+{
+    cursor:         pointer;
+    border:         none;
+    margin:         0px;
+    padding:        0px;
+}
+
+.Pager .PageNum
+{
+    font-size:      0.8em;
+    background-color:transparent;
+    text-align:     right;
+    margin:         0px;
+    padding:        2px;
+}
+
+.Pager input.PageNum
+{
+    border:         1px solid #eee;
+    width:          3em;
+}
+
+
+/* Space out the progress indicator to consume the space taken by PageNum */
+.Pager .Progress
+{
+    padding:    0px 0px 0px 1.75em;
+}
+
+/*******************************
+ * Image components
+ */
+a img
+{
+    border:medium none -moz-use-text-color;
+}
+
+img .favorite
+{
+    cursor: pointer;
+}
+
+img .sharing
+{
+    cursor: pointer;
+}
+
+/*******************************
+ * Tag/Item/Cloud components
+ */
+ul.bundle
+{   }
+
+ul.bundle, .cloud ul, .list ul
+{   list-style-type:    none; }
+
+.tag
+{
+    background-color:   transparent;
+    padding:            1px;
+    text-decoration:    none;
+}
+.tag.selected
+{
+    /*background-color:   #c4d4ff !important;*/
+    background-color:   #ff9 !important;
+    padding:            1px;
+    text-decoration:    none;
+}
+
+.tag:hover
+{
+    background-color:   #23598c !important;
+    color:              #fff !important;
+    padding:            1px;
+    text-decoration:    none;
+}
+
+/* list bundle */
+.bundle .list ul
+{   display:            inline; }
+
+.bundle .list li
+{   line-height:    1.2; }
+
+.bundle .list li .count
+{   line-height:    1.2;
+    float:          left;
+    width:          25px;
+    margin-right:   8px;
+    text-align:     right;
+    clear:          left;
+}
+
+/* clouded bundle */
+.cloud ul, .cloud li
+{   display:            inline; }
+
+li.cloud
+{   text-align:     justify;
+    font-size:      1em;
+    padding-right:  0.2em;
+}
+
+/* Cloud item sizes */
+.cloud0
+{   font-size:      9px;
+    line-height:    9px;
+    font-weight:    400;
+    margin:         1px;
+}
+
+.cloud1
+{   font-size:      10px;
+    line-height:    10px;
+    color:          #23598c;
+    font-weight:    400;
+    margin:         1px;
+}
+
+.cloud2
+{   font-size:      11px;
+    line-height:    11px;
+    color:          #23598d;
+    font-weight:    400;
+    margin:         2px;
+}
+
+.cloud3
+{   font-size:      14px;
+    line-height:    14px;
+    color:          #235992;
+    font-weight:    400;
+    margin:         2px;
+}
+
+.cloud4
+{   font-size:      16px;
+    line-height:    16px;
+    color:          #235994;
+    font-weight:    400;
+    margin:         3px;
+}
+
+.cloud5
+{   font-size:      20px;
+    line-height:    20px;
+    font-weight:    400;
+    color:          #2359aa;
+    margin:         3px;
+}
+
+.cloud6
+{   font-size:      24px;
+    line-height:    24px;
+    font-weight:    400;
+    color:          #2359ff;
+    margin:         4px;
+}
+
+/*******************************
+ * Star/rating components
+ */
+.star-rating, .star-rating-active
+{   list-style:none;
+    width:70px;
+    height:12px;
+    position:relative;
+    background:url(<?echo $gBaseUrl; ?>/images/star_rating.gif) top left repeat-x;
+    margin:0px;
+    padding:0px;
+}
+
+.star-rating li, .star-rating-active li
+{   float:left !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+
+.star-rating li a, .star-rating-active li a
+{   display:block;
+    width:14px;
+    height:12px;
+    float:left;
+    text-decoration:none;
+    text-indent:-9000px;
+    z-index:2;
+    position:absolute;
+    font-size:6px;
+    padding:0px;
+}
+
+.star-rating a.one-stars-focus, .star-rating-active a.one-stars-focus
+{   background:url(<?echo $gBaseUrl;?>/images/star_rating.gif) left bottom;
+    width:14px;
+}
+
+.star-rating a.two-stars, .star-rating-active a.two-stars
+{   left:14px; }
+
+.star-rating a.two-stars-focus, .star-rating-active a.two-stars-focus
+{   background:url(<?echo $gBaseUrl;?>/images/star_rating.gif) left bottom;
+    width:28px;
+}
+
+.star-rating a.three-stars, .star-rating-active a.three-stars
+{   left:28px; }
+
+.star-rating a.three-stars-focus, .star-rating-active a.three-stars-focus
+{   background:url(<?echo $gBaseUrl;?>/images/star_rating.gif) left bottom;
+    width:42px;
+}
+
+.star-rating a.four-stars, .star-rating-active a.four-stars
+{   left:42px; }
+
+.star-rating a.four-stars-focus, .star-rating-active a.four-stars-focus
+{   background:url(<?echo $gBaseUrl;?>/images/star_rating.gif) left bottom;
+    width:56px;
+}
+
+.star-rating a.five-stars, .star-rating-active a.five-stars
+{   left:56px; }
+
+.star-rating a.five-stars-focus, .star-rating-active a.five-stars-focus
+{   background:url(<?echo $gBaseUrl;?>/images/star_rating.gif) left bottom;
+    width:70px;
+}
+
+.star-rating-active li a:hover
+{   background:url(<?echo $gBaseUrl;?>/images/star_rating.gif) left bottom;
+    z-index:1;
+    left:0px;
+}
+
+.star-rating-active a.one-stars:hover
+{   width:14px; }
+
+.star-rating-active a.two-stars:hover
+{   width:28px; }
+
+.star-rating-active a.three-stars:hover
+{   width:42px; }
+
+.star-rating-active a.four-stars:hover
+{   width:56px; }
+
+.star-rating-active a.five-stars:hover
+{   width:70px; }
+
+/*************************************************************************
+ * Tag action "buttons"
+ *
+ * TagAction      - used if the current user is authenticated AND
+ *                  owns the tagged item.
+ * TagActionOther - used if the current user is either not authenticated OR
+ *                  does not own the tagged item.
+ *
+ *   Tops   - the large button over which the tagger count is displayed
+ *   Bleft  - the smaller button displayed beneath Top on the left
+ *   Bright - the smaller button displayed beneath Top on the right
+ */
+
+/******* Authenticated user and item owner *******/
+.TagAction a.Top, .TagAction a.Tops
+{   text-align:center;
+    font-size:1.25em;
+    line-height: 1.2em;
+    display:block;
+    height:36px;
+    width:40px;
+    background:transparent url("<?echo $gBaseUrl;?>/images/Buttons-user.png") 0 0 no-repeat;
+    float:right;
+}
+
+.TagAction a.Top:hover, .TagAction a.Tops:hover
+{   text-decoration:none;
+    color:#FFF;
+    height:36px;
+    width:40px;
+    background:transparent url("<?echo $gBaseUrl;?>/images/Buttons-user.png") -41px 0 no-repeat;
+    float:right;
+}
+
+/* Left button: Edit */
+.TagAction a.Bleft
+{
+    display:block;
+    float:right;
+    width:20px;
+    left:0px;
+    height:15px;
+    background:transparent url("<?echo $gBaseUrl;?>/images/Buttons-user.png") 0 -37px no-repeat;
+}
+
+/* Right button: Delete */
+.TagAction a.Bright
+{   clear:right;
+    display:block;
+    float:right;
+    width:20px;
+    left:0px;
+    height:15px;
+    background:transparent url("<?echo $gBaseUrl;?>/images/Buttons-user.png") -20px -37px no-repeat;
+}
+
+.TagAction span.Bright
+{   clear:right;
+    display:block;
+}
+
+/* Left button: Edit (hover) */
+.TagAction a.Bleft:hover
+{   background:transparent url("<?echo $gBaseUrl;?>/images/Buttons-user.png") -41px -37px no-repeat; }
+
+/* Right button: Delete (hover) */
+.TagAction a.Bright:hover
+{   background:transparent url("<?echo $gBaseUrl;?>/images/Buttons-user.png") -61px -37px no-repeat; }
+
+/******* Unauthenticated user and/or not item owner *******/
+.TagActionOthers a.Top, .TagActionOthers a.Tops
+{   text-align:center;
+    font-size:1.25em;
+    display:block;
+    height:36px;
+    width:40px;
+    background:transparent url("<?echo $gBaseUrl;?>/images/Buttons-others.png") 0 0 no-repeat;
+    float:right;
+}
+
+.TagActionOthers a.Top:hover, .TagActionOthers a.Tops:hover
+{   text-decoration:none;
+    color:#FFF;
+    height:36px;
+    width:40px;
+    background:transparent url("<?echo $gBaseUrl;?>/images/Buttons-others.png") -41px 0 no-repeat;
+    float:right;
+}
+
+/* Left button: TagIt */
+.TagActionOthers a.Bleft
+{
+    display:block;
+    float:right;
+    width:20px;
+    left:0px;
+    height:15px;
+    background:transparent url("<?echo $gBaseUrl;?>/images/Buttons-others.png") 0 -37px no-repeat;
+}
+
+/* Right button: QuickTag */
+.TagActionOthers a.Bright
+{   clear:right;
+    display:block;
+    float:right;
+    width:20px;
+    left:0px;
+    height:15px;
+    background:transparent url("<?echo $gBaseUrl;?>/images/Buttons-others.png") -20px -37px no-repeat;
+}
+
+.TagActionOthers span.Bright
+{   clear:right;
+    display:block;
+}
+
+/* Left button: TagIt (hover) */
+.TagActionOthers a.Bleft:hover
+{   background:transparent url("<?echo $gBaseUrl;?>/images/Buttons-others.png") -41px -37px no-repeat; }
+
+/* Right button: QuickTag (hover) */
+.TagActionOthers a.Bright:hover
+{   background:transparent url("<?echo $gBaseUrl;?>/images/Buttons-others.png") -61px -37px no-repeat; }
+
+/*******************************
+ * Folding section
+ */
+.fold
+{
+    margin:     1em 0px 0px 0px;
+    padding:    0px;
+}
+
+.fold .ctl-open
+{
+    color:      #000;
+    display:    block;
+    cursor:     pointer;
+    background: transparent url("<?echo $gBaseUrl;?>/images/arrow.d.gif") 0 3px no-repeat;
+    font-size:   1em;
+    font-weight: bold;
+    text-indent: 10px;
+}
+
+.fold .ctl-close
+{
+    color:      #999;
+    display:    block;
+    cursor:     pointer;
+    background: transparent url("<?echo $gBaseUrl;?>/images/arrow.r.gif") 0 3px no-repeat;
+    font-weight: bold;
+    text-indent: 10px;
+}
+
+.fold .body
+{
+    margin:     0px 0px 0px 1em;
+    padding:    0px;
+    font-size:  .9em;
+}
+
+/*******************************
+ * Auto suggestion classes
+ */
+.suggestion_list
+{
+    background: white;
+    border: 1px solid;
+    padding: 4px;
+}
+    
+.suggestion_list ul
+{
+    padding: 0px;
+    margin: 0px;
+    list-style-type: none;
+}
+    
+.suggestion_list a
+{
+    text-decoration: none;
+    color: navy;
+}
+    
+.suggestion_list .selected
+{
+    background: navy;
+    color: white;
+}
+    
+.suggestion_list .selected a
+{
+    color: white;
+}
+
+.autosuggest
+{
+    display: none;
+}
+
+/*******************************
+ * FAQ/Help
+ */
+.helpQuestion
+{
+    font-size:      1.1em;
+    font-weight:    bold;
+    color:          #090;
+    margin:         0.2em 1.5em;
+}
+
+.helpAnswer
+{
+    font-size:      0.85em;
+    margin:         0.25em 2.5em 2em 2.5em;
+}
+
+.helpAnswer ul
+{
+    margin-left:        1em;
+}
+
+.helpAnswer li
+{
+    margin-left:        1.5em;
+}
+
+.helpAnswer pre
+{
+    margin-top:     1em;
+    margin-bottom:  0em;
+    padding:        0em;
+}
+
+a.empty
+{
+    color:  #aaa;
+}
+
+.infobar
+{
+    clear:              both;
+    width:              98%;
+    font-size:          .75em;
+    text-align:         left;
+    background-color:   #eee;
+    margin:             2em 0px 1em 1em;
+    padding:            .5em 0px .5em .25em;
+    border-top:         1px solid #aaa;
+    border-bottom:      1px solid #aaa;
+}
+
+.infobar h2
+{
+    font-size:      0.9em;
+    line-height:    1em;
+    margin:         0px 1em;
+}
+
+/*******************************
+ * User information
+ */
+.UserList .users
+{
+    position:           relative;
+    margin:             0px 8px 0px 8px;
+    padding:            0px 0px 8px 0px;
+    text-align:         center;
+    background-color:   #f7f7ff;
+    border-top:         solid 2px #eef;
+    border-right:       solid 2px #eef;
+    border-left:        solid 2px #eef;
+}
+
+.UserList .user
+{
+    position:   relative;
+    margin:     0px 0px 8px 0px;
+    padding:    16px;
+    text-align: center;
+    height:     60px;
+}
+
+.UserList .user .userImg
+{
+    float:              left;
+    margin:             0px 4px 0px 0px ;
+    padding:            2px;
+    background-color:   #fff;
+}
+
+.UserList .user .userImg img
+{
+    width:      50px;
+    height:     50px;
+    margin:     0px;
+    padding:    2px;
+    border:     1px solid #ddd;
+}
+
+.UserList .user .userImg a
+{
+    display:    block;
+    padding:    0px;
+    margin:     0px;
+    font-size:  .7em;
+    white-space:nowrap;
+}
+
+.UserList .user .userInfo
+{
+    float:  left;
+}
+
+.UserList .user .userInfo .fullName
+{
+    font-size:      1.15em;
+    font-weight:    bold;
+    margin:         4px 0px 0px 0px;
+    padding:        0px;
+    text-align:     center;
+}
+
+.UserList .user .userInfo .userName
+{
+    font-size:          0.7em;
+    overflow:           hidden;
+    margin:             0px;
+    padding:            0px;
+    text-align:         center;
+}
+
+.UserList .user .userInfo .contactInfo
+{
+    display:        inline;
+    font-size:      .65em;
+    margin:         0px;
+    padding:        0px;
+    text-align:     center;
+}
+
+.UserList .user .userInfo .watchlistLink
+{
+    display:        inline;
+    font-size:      .65em;
+    margin:         0px;
+    padding:        0px;
+    text-align:     center;
+}
+
+.UserList .user .userInfo .relation
+{
+    font-size:      .65em;
+    margin:         0px;
+    padding:        0px;
+    text-align:     left;
+}
+
+/*******************************
+ * People information
+ */
+table.peopleContainer
+{
+    border-collapse:    collapse;
+    margin:             0.5em 0px 2em 2em;
+}
+table.peopleContainer td
+{
+    margin:             0px;
+    padding:            0px;
+}
+
+table.people
+{
+    width:              500px !important;
+    border-collapse:    collapse;
+    border:             1px solid #c1dad7;
+    background-color:   #fff;
+    margin:             0px;
+}
+table.people th
+{
+    background-color: #d6eef0;
+    border: 1px solid #c1dad7;
+    padding: 4px;
+    text-align: center;
+}
+table.people tr.roweven, table.people tr.roweven input
+{
+    background-color: #f5fafa;
+}
+table.people tr.rowodd, table.people tr.rowodd input
+{
+    background-color: #fff;
+}
+table.people td
+{
+    background-color:   transparent;
+    border:             1px solid #c1dad7;
+    text-align:         center;
+    white-space:        nowrap;
+}
+table.people td img.person
+{
+    width:      50px;
+    height:     50px;
+    margin:     0px;
+    padding:    0px;
+}
+
+/* Sortables */
+table.people th.sortcol
+{
+    cursor:             pointer;
+    padding-right:      20px;
+    background-repeat:  no-repeat;
+    background-position:right center;
+}
+
+table.people th.sortdesc
+{
+    background-color:   #ddffac;
+    background-image:   url(../images/up.gif);
+}
+
+table.people th.sortasc
+{
+    background-color:   #b9ddff;
+    background-image:   url(../images/down.gif);
+}
+
+table.people th.nosort
+{
+    cursor: default;
+}
+
+/* Statistics */
+table.stats
+{
+    font-size:          0.85em;
+    border-collapse:    collapse;
+    background-color:   #d6eef0;
+    border:             1px solid #c1dad7;
+    margin:             2em;
+    padding:            8px;
+}
+table.stats td
+{
+    background-color:   transparent;
+    font-weight:        bold;
+    text-align:         right;
+    padding:            4px;
+    /*border: 1px solid #c1dad7;
+    text-align: center;*/
+}
+table.stats th
+{
+    background-color:   transparent;
+    font-weight:        normal;
+    text-align:         left;
+    padding:            4px;
+    /*border: 1px solid #c1dad7;
+    text-align: center;*/
+}
+
+/*******************************
+ * WatchList
+ */
+.WatchList
+{
+    position:           relative;
+    margin:             0px 8px 0px 8px;
+    padding:            4px;
+    background-color:   #f7f7ff;
+    border-top:         solid 2px #eef;
+    border-right:       solid 2px #eef;
+    border-left:        solid 2px #eef;
+}
+
+.WatchList h3
+{
+    font-size:      1.0em;
+    font-weight:    bold;
+    color:          #39c;
+    margin:         0px 4px 4px;
+    padding:        0px;
+}
+
+.WatchList input.smallInput
+{
+    width:          8em;
+    font-size:      .8em;
+    margin-left:    10px;
+}
+
+.WatchList .users
+{
+    position:           relative;
+    margin:             0px 10px;
+    padding:            0px;
+    background-color:   transparent;
+}
+
+.WatchList .user
+{
+    position:       relative;
+    float:          left;
+    margin:         0px 15px 10px 0px;
+    padding:        0px;
+    height:         45px;
+    /*width:          100px;*/
+    overflow:       hidden;
+}
+
+.WatchList .user .userImg
+{
+    float:              left;
+    margin:             0px;
+    padding:            2px;
+    background-color:   #fff;
+}
+
+.WatchList .user .userImg img
+{
+    width:      30px;
+    height:     30px;
+    margin:     0px;
+    padding:    2px;
+    border:     1px solid #ddd;
+}
+
+.WatchList .user .userImg a
+{
+    display:    block;
+    padding:    0px;
+    margin:     0px;
+    font-size:  0.7em;
+    white-space:nowrap;
+}
+
+.WatchList .user .userInfo
+{
+    float:      left;
+}
+
+.WatchList .user .userInfo .fullName
+{
+    font-size:      1.15em;
+    font-weight:    bold;
+    margin:         4px 0px 0px 0px;
+    padding:        0px;
+    text-align:     left;
+}
+
+.WatchList .user .userInfo .userName
+{
+    font-size:      0.75em;
+    margin:         1px 0px;
+    padding:        0px;
+    text-align:     left;
+}
+
+.WatchList .user .userInfo .contactInfo
+{
+    font-size:      0.65em;
+    margin:         1px 0px;
+    padding:        0px;
+    text-align:     left;
+}
+
+.WatchList .user .userInfo .rating
+{
+    font-size:      0.65em;
+    margin:         1px 0px;
+    padding:        0px;
+    text-align:     left;
+}
+
+.WatchList .user .userInfo .relation
+{
+    font-size:      0.65em;
+    margin:         2px 0px 0px;
+    padding:        0px;
+    text-align:     left;
+}
+
+/*******************************
+ * Status information
+ */
+div.error, span.error
+{
+    font-size:          0.75em;
+    font-weight:        bold;
+    color:              #933;
+}
+
+div.error
+{
+    background-color:   #eee;
+    border:             2px solid #ccc;
+    margin:             1em;
+    padding:            0.5em;
+}
+
+div.success,span.success
+{
+    font-size:          1em;
+    font-weight:        bold;
+    color:              #393;
+}
+
+div.success
+{
+    background-color:   #eee;
+    border:             2px solid #ccc;
+    margin:             1em;
+    padding:            0.5em;
+}
