@@ -2,21 +2,19 @@
 #labels Featured
 
 = Introduction =
-
 Connexions is a tagging/folksonomy system similar to del.icio.us, simpy, furl, or BlinkList.
 
 
 = Requirements/Dependencies =
-
-A web server that supports PHP (4 or higher), local .htaccess files, and the mod_rewrite URL rewriting engine.
+A web server that supports [http://php.net/ PHP] (4 or higher), local .htaccess files, and the mod_rewrite URL rewriting engine.
 
 A modern browser that supports JavaScript (1.5 or higher) and asynchronous HTTP requests.  This would include Microsoft Internet Explorer 6.0 or higher, Mozilla Firefox 1.0/Mozilla 1.7 or higher, and Apple Safari 1.2 or higher.
 
-Connexions makes heavy use of the Prototype JavaScript framework (version 1.5.0_rc0 or higher) and the Script.aculo.us library built upon it (version 1.6.1 or higher) -- js/{prototype.js,scriptaculous}
+Connexions makes heavy use of the [http://www.prototypejs.org/ Prototype] JavaScript framework (version 1.5.0_rc0 or higher) and the [http://script.aculo.us/ Script.aculo.us] library built upon it (version 1.6.1 or higher) -- js/{prototype.js,scriptaculous}
 
 In addition, the following are used:
   * js/autosuggest.js
-  * js/jslog.js
-  * lib/adodb
-  * lib/freetag
-  * lib/Services_JSON.php
+  * js/[http://earthcode.com/blog/2005/12/jslog.html jslog.js]
+  * lib/[http://adodb.sourceforge.net/ adodb]
+  * lib/[http://code.google.com/p/freetag/ freetag]
+  * lib/[http://pear.php.net/pepr/pepr-proposal-show.php?id=198 Services_JSON.php]
