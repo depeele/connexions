@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+ <nav>
+  <!-- Global Navigation bar ***************************** -->
+  <nav_bar>
+   <label>nav_bar</label>
+   <controller>index</controller>
+   <action>index</action>
+
+   <pages>
+    <!-- Guests -->
+    <register>
+     <label>Join Now</label>
+     <controller>auth</controller>
+     <action>register</action>
+     <resource>guest</resource>
+    </register>
+    <new>
+     <label>What's New?</label>
+     <controller>help</controller>
+     <action>new</action>
+     <resource>guest</resource>
+    </new>
+    <learn>
+     <label>Learn More</label>
+     <controller>help</controller>
+     <action>learn</action>
+     <resource>guest</resource>
+    </learn>
+  
+    <!-- Everyone -->
+    <help>
+     <label>Help</label>
+     <controller>help</controller>
+     <action>index</action>
+    </help>
+  
+    <!-- Authenticated Users -->
+    <signOut>
+     <label>Sign Out</label>
+     <controller>auth</controller>
+     <action>signOut</action>
+     <resource>member</resource>
+    </signOut>
+  
+    <!-- Guests -->
+    <signIn>
+     <label>Sign In</label>
+     <controller>auth</controller>
+     <action>signIn</action>
+     <resource>guest</resource>
+    </signIn>
+   </pages>
+  </nav_bar>
+
+  <!-- Navigation menu ***************************** -->
+  <nav_menu>
+   <label>nav_menu</label>
+   <controller>index</controller>
+   <action>index</action>
+
+   <pages>
+    <bookmarks>
+     <label>bookmarks</label>
+     <controller>bookmarks</controller>
+     <action>index</action>
+     <pages>
+      <mine>
+       <label>mine</label>
+       <controller>bookmarks</controller>
+       <action>mine</action>
+       <class>local</class>
+       <resource>member</resource>
+      </mine>
+      <explore>
+       <label>explore</label>
+       <controller>bookmarks</controller>
+       <action>index</action>
+       <class>global</class>
+      </explore>
+     </pages>
+    </bookmarks>
+  
+    <people>
+     <label>people</label>
+     <controller>people</controller>
+     <action>index</action>
+     <pages>
+      <mine>
+       <label>my network</label>
+       <controller>network</controller>
+       <action>mine</action>
+       <class>local</class>
+       <resource>member</resource>
+      </mine>
+      <explore>
+       <label>explore</label>
+       <controller>people</controller>
+       <action>index</action>
+       <class>global</class>
+      </explore>
+     </pages>
+    </people>
+  
+    <tags>
+     <label>tags</label>
+     <controller>tags</controller>
+     <action>index</action>
+     <pages>
+      <mine>
+       <label>mine</label>
+       <controller>tags</controller>
+       <action>mine</action>
+       <class>local</class>
+       <resource>member</resource>
+      </mine>
+      <explore>
+       <label>explore</label>
+       <controller>tags</controller>
+       <action>index</action>
+       <class>global</class>
+      </explore>
+     </pages>
+    </tags>
+   </pages>
+  </nav_menu>
+
+ </nav>
+
+</config>

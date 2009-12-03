@@ -1,0 +1,27 @@
+<div id="auth">
+    <h1>Register</h1>
+
+    <p>Create an account to begin taking advantage of social bookmarking!</p>
+
+    <form method='post'>
+     <div class='field'>
+      <label for='user'>username</label>
+      <input type='text' name='user' value='<?= $this->user ?>' />
+     </div>
+     <div class='field'>
+      <label for='password'>password</label>
+      <input type='password' name='password' value='<?= $this->pass ?>' />
+     </div>
+     <div class='field'>
+      <label for='password2'>verify password</label>
+      <input type='password' name='password2' />
+     </div>
+     <div class='field'>
+      <input type='submit' value='Register' />
+     </div>
+    </form>
+
+    <div class='error'>
+     <?= (@isset($this->error) ? $this->error : '') ?>
+    </div>
+</div>

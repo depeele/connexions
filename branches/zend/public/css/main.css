@@ -1,0 +1,292 @@
+@import 'libraries.css';
+@import 'template.css';
+@import 'grids.css';
+@import 'content.css';
+@import 'sprites.css';
+
+a, a:link, a:visited, a:focus, a:hover {
+  color:      #06c;
+}
+
+/* Page Header */
+#pageHeader {
+  height:         5em;
+  border-bottom:  1px solid #ddd;
+}
+#pageHeader h1#siteName {
+  float:        left;
+  color:        #000;
+  font-weight:  bold;
+  font-size:    26px;
+  padding-top:  5px;
+}
+#pageHeader h1#siteName span {
+  display:      block;
+  float:        left;
+}
+#pageHeader h1#siteName img {
+  float:        left;
+  position:     relative;
+  height:       34px;
+  top:          1px;
+  left:         -4px;
+  margin-right: -10px;
+}
+
+/* Navigation */
+#pageHeader .tabs {
+  float:      left;
+}
+#pageHeader .tabs a {
+  display:          block;
+  height:           16px;
+  width:            80px;
+  padding:          2px;
+  text-decoration:  none;
+}
+#pageHeader .tabs a:hover {
+  background-color: #fff;
+  color:            #565656;
+}
+#pageHeader .nav {
+  float:      left;
+}
+#pageHeader .nav li {
+  float:      left;
+  padding:    4px;
+}
+#pageHeader .nav li a {
+  font-weight:  normal;
+}
+#pageHeader .nav li .toggle {
+  display:    block;
+  position:   absolute;
+  top:        4px;
+  right:      4px;
+  height:     16px;
+  padding:    2px;
+  width:      12px;
+
+  cursor:     pointer;
+
+  /* .arrow_down6 */
+  background: url('sprites/arrows.gif') no-repeat scroll 2px -396px transparent;
+}
+#pageHeader .nav li .toggle:hover {
+  /* .arrow_down5 */
+  background: url('sprites/arrows.gif') no-repeat scroll 2px -316px #fff;
+}
+
+#pageHeader .tabs li {
+  width:            100px;
+  background-color: #565656;
+  margin-right:     4px;
+}
+#pageHeader .tabs li a {
+  color:        #fff;
+  font-weight:  bold;
+}
+
+/* Global Navigation */
+#pageHeader .global {
+  float:      right;
+  font-size:  0.92em;
+}
+#pageHeader .global .nav {
+  padding-left:   0;
+  padding-bottom: 0.5em;
+}
+#pageHeader .global .nav li {
+  display:      inline;
+  margin-left:  0.5em;
+  padding-right:0.7em;
+  border-right: 1px solid #d4d4d4;
+}
+#pageHeader .global .nav li:last-child {
+  border-right: 0px;
+}
+
+/* Sub-menu */
+#pageHeader .nav ul,
+#pageHeader ul.sub {
+  display:          none;
+  position:         absolute;
+  top:              28px;
+  right:            0px;
+  width:            90px;         /* Match #pageHeader .tabs li */
+
+  border:           1px solid #999;
+  background-color: #999;
+  color:            #fff;
+  padding:          0;
+  margin:           0;
+
+  z-index:          100;
+}
+
+/* When the div.tabs/ul.nav/.toggle is clicked, 'open' will be
+ * added to the ul sibling of .toggle to present the list.
+ */
+#pageHeader .nav .open ul,
+#pageHeader .open ul.sub {
+  display:          block;
+}
+
+#pageHeader .nav ul li,
+#pageHeader ul.sub  li {
+  background-color: #999;
+  margin-right:     0;
+  padding:          0;
+  cursor:           pointer;
+  width:            90px;
+}
+
+#pageHeader .nav ul li a,
+#pageHeader ul.sub  li a {
+  width:            auto;
+  padding:          0.1em 0.5em;
+}
+#pageHeader .nav ul li:first-child a,
+#pageHeader ul.sub li:first-child a {
+  padding-top:      0.5em;
+}
+#pageHeader .nav ul li:last-child a,
+#pageHeader ul.sub li:last-child a {
+  padding-bottom:   0.5em;
+}
+
+/* Search */
+#search {
+  clear:      left;
+}
+#search .searchBox {
+  float:          right;
+  padding-right:  10px;
+}
+
+#search .choices {
+  position:   absolute;
+  left:       0;
+  height:     18px;
+  width:      14.1em;
+
+  /* .smallIcon_magnify */
+  background: url('sprites/smallIcons.gif') no-repeat scroll 3px -1956px transparent;
+}
+#search .choices label {
+  position:   absolute;
+  left:       1px;
+  top;        1px;
+  height:     18px;
+  width:      2.6em;
+}
+#search .choices .toggle {
+  cursor:     pointer;
+
+  /* .arrow_down7 */
+  background: url('sprites/arrows.gif') no-repeat scroll 15px -474px transparent;
+}
+#search .choices .toggle:hover {
+  /* .arrow_down8 */
+  background: url('sprites/arrows.gif') no-repeat scroll 15px -514px transparent;
+}
+#search .choices label em {
+  display:    none;
+}
+#search .choices .list {
+  display:          none;
+  position:         absolute;
+  top:              22px;
+  width:            14.1em;       /* Match #search .searchInput */
+
+  border:           1px solid #444;
+  background-color: #444;
+  color:            #fff;
+  padding:          0;
+
+  z-index:          100;
+}
+#search .choices .list li {
+  border:           1px solid #444;
+  background-color: #444;
+  color:            #fff;
+  padding:          0.1em 0.5em 0.1em 1.4em;
+  cursor:           pointer;
+}
+#search .choices .list li.on {
+  /* .smallIcon_dotWhite */
+  background: url('sprites/smallIcons.gif') no-repeat scroll 5px -1213px transparent;
+}
+#search .choices .list li:hover {
+  border:           1px solid #fff;
+  background-color: #fff;
+  color:            #444;
+}
+#search .choices .list li.on:hover {
+  /* .smallIcon_dotGrey  */
+  background-position:  5px -1193px;
+}
+
+#search .choices .list li:first-child {
+  padding-top:      0.5em;
+}
+#search .choices .list li:last-child {
+  padding-bottom:   0.5em;
+}
+
+/* When the div.searchInput/div.choices/label is clicked, 'open' will be
+ * added to div.choices to present the list.
+ */
+#search .open .list {
+  display:          block;
+}
+
+#search .searchInput {
+  border-color: #787878 #333 #333 #888;
+  border-style: solid;
+  border-width: 1px;
+  color:        #999;
+  float:        left;
+  font-size:    110%;
+  height:       18px;
+  padding:      0;
+  width:        14.1em;
+}
+#search .input {
+  border:     medium none;
+  border-left:1px solid #aaa;
+  color:      #aaa;
+  height:     15px;
+  margin:     1px 0 0 2.6em;
+  padding:    0 0 0 2px;
+  width:      11.2em;
+  z-index:    100;
+}
+#search input.focus {
+  color:      #000;
+}
+#search .submit {
+  border:           1px solid #444;
+  color:            #fff;
+  background-color: #06c;
+  display:          inline;
+  font-weight:      bold;
+  height:           20px;
+  margin:           0 0 0 4px;
+  padding:          0 4px;
+  width:            5em;
+
+  cursor:           pointer;
+}
+
+/* Page Content */
+#pageContent {
+  padding:          1em;
+}
+
+/* Page Footer */
+#pageFooter {
+  margin-top:       1em;
+  border-top:       1px solid #ddd;
+  padding:          0.5em;
+}
