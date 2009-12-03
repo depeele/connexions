@@ -1,0 +1,11 @@
+/* smallIcons.gif 15x44 */
+.smallIcon_bookmark { background: url('sprites/smallIcons.gif') no-repeat scroll 3px 0px transparent; }
+.smallIcon_magnify { background: url('sprites/smallIcons.gif') no-repeat scroll 3px -1956px transparent; }
+
+/* arrows.gif     12x36 */
+.arrow_down1 { background: url('sprites/arrows.gif') no-repeat scroll 15px 0px transparent; }
+.arrow_left1 { background: url('sprites/arrows.gif') no-repeat scroll 15px 0px transparent; }
+.arrow_down5 { background: url('sprites/arrows.gif') no-repeat scroll 15px -313px transparent; }
+.arrow_down6 { background: url('sprites/arrows.gif') no-repeat scroll 15px -390px transparent; }
+.arrow_down7 { background: url('sprites/arrows.gif') no-repeat scroll 15px -474px transparent; }
+.arrow_down8 { background: url('sprites/arrows.gif') no-repeat scroll 15px -514px transparent; }

@@ -1,0 +1,111 @@
+<?php
+
+renderMenu($this->navigation()->menu(), $this->container);
+
+/** @brief  Given a previous depth and current depth, close all open li/ul tags
+ *  @param  indent      The indent for the current depth.
+ *  @param  prevDepth   The previous depth.
+ *  @param  depth       The current depth
+ */
+function closeTags($indent, $prevDepth, $depth)
+{
+    // Close li/ul tags until we're at current depth
+    for ($idex = $prevDepth; $idex > $depth; $idex--)
+    {
+        $ind = $index . str_repeat(' ', $idex);
+        echo $ind, " </li>\n",
+             $ind, "</ul>\n";
+    }
+}
+
+/** @brief  Render a menu for the given container
+ *  @param  helper      The navigation menu view helper.
+ *  @param  container   The container to render.
+ *  @param  ulClass     The CSS class for the top-level ul
+ */
+function renderMenu($helper, $container, $ulClass = 'nav')
+{
+    $iterator = new RecursiveIteratorIterator($container,
+                        RecursiveIteratorIterator::SELF_FIRST);
+
+    $prevDepth = -1;
+    foreach ($iterator as $page)
+    {
+        if (! $helper->accept($page))
+        {
+            // NOT accepted by ACL or visibility
+            continue;
+        }
+
+        $depth  = $iterator->getDepth();
+        $indent = str_repeat(' ', $depth);
+
+        if ($depth > $prevDepth)
+        {
+            // Start a new <ul>
+            $ulClasses = array();
+            if ( ($depth == 0) && (! @empty($ulClass)))
+                array_push($ulClasses, $ulClass);
+            if ($page->isActive(true))
+                array_push($ulClasses, 'active');
+
+            echo $indent, '<ul',
+                        (! @empty($ulClasses)
+                            ? " class='". implode(' ', $ulClasses) ."'"
+                            : ""),
+                          ">\n";
+        }
+        else if ($depth < $prevDepth)
+        {
+            // Close li/ul tags until we're at current depth
+            for ($idex = $prevDepth; $idex > $depth; $idex--)
+            {
+                $ind = $indent . str_repeat(' ', $idex);
+                echo $ind, " </li>\n",
+                     $ind, "</ul>\n";
+            }
+        }
+
+        if ($depth <= $prevDepth)
+        {
+            // Close the previous <li>
+            echo $indent, " </li>\n";
+        }
+
+        // Render the <li> for this page
+        $liClasses = array();
+        if ($page->isActive(true))
+            array_push($liClasses, 'active');
+        if ( ($pageClass = $page->getClass()) !== null)
+            array_push($liClasses, $pageClass);
+    
+        $href   = $page->getHref();
+    
+        printf ("%s <li%s><a href='%s'>%s</a>",
+                $indent,
+                (! @empty($liClasses)
+                    ? " class='". implode(' ', $liClasses) ."'"
+                    : ""),
+                $href,
+                $page->getLabel());
+
+        if ($depth == 0)
+        {
+            // The top-level items include a toggle
+            echo "<span class='toggle'></span>";
+
+            /*
+            $parent = $page->getParent();
+            printf ("<a href='%s' class='toggle'></a>",
+                    ($parent === null ? dirname($href) : $parent->getHref()) );
+            */
+        }
+        echo "\n";
+
+        $prevDepth = $depth;
+    }
+
+    // Finished iterating -- close all open li/ul tags
+
+    return;
+}
