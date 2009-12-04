@@ -8,6 +8,14 @@
    <action>index</action>
 
    <pages>
+    <!-- Authenticated Users -->
+    <userInfo>
+     <label>Signed in as: %name%</label>
+     <controller>index</controller>
+     <action>index</action>
+     <resource>member</resource>
+    </userInfo>
+
     <!-- Guests -->
     <register>
      <label>Join Now</label>

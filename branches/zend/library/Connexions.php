@@ -6,26 +6,64 @@
 
 class Connexions
 {
-    public static   $curUser    = null;
+    protected static    $_user  = null;
+    protected static    $_db    = null;
 
-    public static function curUser()
+    /** @brief  Return the current Database Adapter.
+     *
+     *  Note: The database adapter is established on boot via:
+     *              application/Bootstrap.php
+     *                  Bootstrap::_initDb()
+     *
+     *          using data from:
+     *              application/configs/application.ini
+     *                  resources.db.*
+     *
+     *  @return The current Database Adapter (Zend_Db_Adapter_Abstract).
+     */
+    public static function getDb()
     {
-        if (self::$curUser === null)
+        if (self::$_db === null)
         {
             try
             {
-                self::$curUser = Zend_Registry::get('user');
+                self::$_db = Zend_Registry::get('db');
             }
             catch (Zend_Exception $e)
             {
-                self::$curUser = false;
+                self::$_db = null;
             }
         }
 
-        return self::$curUser;
+        return self::$_db;
     }
 
-    public static function curRequest()
+    /** @brief  Return the currently authenticated user.
+     *
+     *  @return The currently authenticated user (false if none).
+     */
+    public static function getUser()
+    {
+        if (self::$_user === null)
+        {
+            try
+            {
+                self::$_user = Zend_Registry::get('user');
+            }
+            catch (Zend_Exception $e)
+            {
+                self::$_user = false;
+            }
+        }
+
+        return self::$_user;
+    }
+
+    /** @brief  Retrieve the current request object.
+     *
+     *  @return A Zend_Controller_Request_* object.
+     */
+    public static function getRequest()
     {
         return Zend_Controller_Front::getInstance()->getRequest();
     }

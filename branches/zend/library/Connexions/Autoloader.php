@@ -6,6 +6,13 @@
  */
 require_once('Zend/Loader/Autoloader/Interface.php');
 
+defined('APPLICATION_LIBRARY_PATH')
+    || define('APPLICATION_LIBRARY_PATH',
+              realpath(APPLICATION_PATH . '/../library'));
+defined('APPLICATION_MODEL_PATH')
+    || define('APPLICATION_MODEL_PATH',
+              realpath(APPLICATION_PATH . '/models'));
+
 /** @brief  This is the primary autoloader for Connexions.  It is capable of
  *          handling the 'Zend_' and 'Connexions_' namespaces.
  *
@@ -16,8 +23,12 @@ require_once('Zend/Loader/Autoloader/Interface.php');
 class Connexions_Autoloader implements Zend_Loader_Autoloader_Interface
 {
     // "Namespaces" that we can handle
-    private static  $_namespaces    = array('Zend_',
-                                            'Connexions_');
+    private static  $_loaderMap     = array(
+                'Zend_'         => array('path' => APPLICATION_LIBRARY_PATH),
+                'Connexions_'   => array('path' => APPLICATION_LIBRARY_PATH),
+                'Model_'        => array('path' => APPLICATION_MODEL_PATH,
+                                         'shift'=> 1)
+    );
 
     /** @brief  Constructor
      *  @param  options     array | Zend_Config.
@@ -34,7 +45,7 @@ class Connexions_Autoloader implements Zend_Loader_Autoloader_Interface
      */
     public static function getNamespaces()
     {
-        return self::$_namespaces;
+        return array_keys(self::$_loaderMap);
     }
 
     /** @brief  Attempt to autoload a class
@@ -44,11 +55,30 @@ class Connexions_Autoloader implements Zend_Loader_Autoloader_Interface
      */
     public function autoload($class)
     {
-        $misses = 0;
-        $path   = APPLICATION_PATH . DIRECTORY_SEPARATOR
-                . 'library'        . DIRECTORY_SEPARATOR
-                . str_replace('_', DIRECTORY_SEPARATOR, $class) . '.php';
+        $ds         = DIRECTORY_SEPARATOR;
+        $classParts = explode('_', $class);
+        $mapInfo    = self::$_loaderMap[$classParts[0] .'_'];
 
-        return include $path;
+        if (! $mapInfo)
+        {
+            // Default to APPLICATION_LIBRARY_PATH
+            $filePath = APPLICATION_LIBRARY_PATH;
+        }
+        else
+        {
+            $filePath = $mapInfo['path'];
+            if ($mapInfo['shift'])
+            {
+                // Shift off the first mapInfo['shift'] parts of classParts
+                for ($idex = 0; $idex < $mapInfo['shift']; $idex++)
+                {
+                    array_shift($classParts);
+                }
+            }
+        }
+
+        $filePath .= $ds . implode($ds, $classParts) .'.php';
+
+        return include $filePath;
     }
 }

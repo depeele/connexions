@@ -5,16 +5,17 @@ require_once('Connexions/Autoloader.php');
 
 class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 {
+    protected function _initSession()
+    {
+        Zend_Session::start();
+    }
+
     protected function _initAutoload()
     {
-        $autoLoader = new Connexions_Autoloader();
-        return $autoLoader;
-
-
         $autoLoader = Zend_Loader_Autoloader::getInstance();
 
         $connexionsLoader = new Connexions_Autoloader();
-        $autoloader->unshiftAutoloader($connexionsLoader);
+        $autoLoader->unshiftAutoloader($connexionsLoader);
 
         // Load ANY namespace
         $autoLoader->setFallbackAutoloader(true);
@@ -40,59 +41,14 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         return $db;
     }
 
-    protected function _initUser()
+    protected function _initPlugins()
     {
-        $auth = Zend_Auth::getInstance();
-        $auth->setStorage(new Zend_Auth_Storage_Session('connexions', 'user'));
-        $id   = $auth->getIdentity();
-        if ($id !== null)
-        {
-            printf ("Initially Authenticated as [ %s ]<br />\n",
-                    print_r($id,true));
-            Zend_Registry::set('user', $id);
-            return $id;
-        }
+        $front = Zend_Controller_Front::getInstance();
 
-        // Do we have identity information?
-        $id      = false;
-        $request = new Zend_Controller_Request_Http();
-        $user    = $request->getParam('user');
-        $pass    = $request->getParam('password');
-
-        //printf ("_initUser: user[ %s ], pass[ %s ]<br />\n", $user, $pass);
-
-        if ( (! @empty($user)) && (! @empty($pass)) )
-        {
-            // Is the identity information valid?
-            $authAdapter = new Zend_Auth_Adapter_DbTable(
-                                    Zend_Registry::get('db'),
-                                    'user',
-                                    'name', 'password', 'MD5(?)');
-
-            $authAdapter->setIdentity($user);
-            $authAdapter->setCredential($pass);
-
-            $res = $authAdapter->authenticate();
-            if ($res->isValid())
-            {
-                // Valid Identity -- authenticated
-                echo "Authenticated<br />\n";
-                $id = $res->getIdentity();
-            }
-            else
-            {
-                // INVALID Identity -- NOT authenticated
-                echo "<pre>NOT authenticated\n";
-                foreach ($res->getMessages() as $msg)
-                {
-                    echo $msg ,"\n";
-                }
-                echo "</pre>\n";
-            }
-        }
-
-        Zend_Registry::set('user', $id);
-        return $id;
+        /* Register our authentication plugin (performs
+         * identification/authentication during dispatchLoopStartup.
+         */
+        $front->registerPlugin(new Connexions_Controller_Plugin_Auth());
     }
 
     protected function _initAcl()
@@ -115,10 +71,9 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         Zend_View_Helper_Navigation_HelperAbstract::setDefaultAcl($acl);
         Zend_View_Helper_Navigation_HelperAbstract::setDefaultRole('guest');
 
-        if (Zend_Registry::get('user') !== false)
-        {
-            Zend_View_Helper_Navigation_HelperAbstract::setRole('member');
-        }
+        /* Note: The proper role will be set in
+         *       Connexions_Controller_Plugin_Auth during dispatchLoopStartup().
+         */
     }
 
     /**************************************************************************
@@ -126,7 +81,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
      * skipped via:
      *      $_GLOBALS['gNoView'] = true;
      */
-    protected function _initDoctype()
+    protected function _initViewGlobal()
     {
         if ($_GLOBALS['gNoView'] === true)
             return;
@@ -134,6 +89,17 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $this->bootstrap('view');
 
         $view = $this->getResource('view');
+        Zend_Registry::set('view', $view);
+
+        return $view;
+    }
+
+    protected function _initDoctype()
+    {
+        if ($_GLOBALS['gNoView'] === true)
+            return;
+
+        $view = Zend_Registry::get('view');
         $view->doctype('XHTML1_STRICT');
     }
 
@@ -148,7 +114,31 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
         $nav    = new Zend_Navigation($config);
 
-        Zend_Registry::set('Zend_Navigation', $nav);
+        /* Set the default navigation container:
+         *  $view   = $this->getResource('view');
+         *
+         *  $view->getHelper('navigation')->setContainer($nav)
+         *      OR
+         *  $view->navigation($nav);
+         *      OR
+         *  Zend_Registry::set('Zend_Navigation', $nav);
+         *
+         *  We've placed the view in the registry for easier access.
+         */
+        $view = Zend_Registry::get('view');
+        $view->navigation($nav);
+
+        if (Zend_Registry::isRegistered('user'))
+        {
+            $user = Zend_Registry::get('user');
+            if ($user->isAuthenticated())
+            {
+                $view->navigation()->setRole('member');
+            }
+
+            printf ("Bootstrap: user[ %s ], role[ %s ]<br />\n",
+                    $user, $view->navigation()->getRole());
+        }
     }
 }
 

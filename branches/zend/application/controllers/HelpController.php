@@ -1,6 +1,7 @@
 <?php
 
 class HelpController extends Zend_Controller_Action
+//class HelpController extends Connexions_Controller_Action
 {
 
     public function init()
