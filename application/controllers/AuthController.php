@@ -1,6 +1,7 @@
 <?php
 
 class AuthController extends Zend_Controller_Action
+//class AuthController extends Connexions_Controller_Action
 {
 
     public function init()
@@ -10,20 +11,25 @@ class AuthController extends Zend_Controller_Action
 
     public function signinAction()
     {
-        $id = Zend_Registry::get('user');
-        if ($id !== false)
+        $user = Zend_Registry::get('user');
+        if ( ($user instanceof Model_User) && ($user->isAuthenticated()) )
         {
             // Redirect
+            die("Authenticated!  Redirect...");
         }
 
-        // action body
-        $request = $this->getRequest();
-
-        $this->view->user = $request->getParam('user', '');
+        // NOT authenticated
+        $this->view->user  = $user;
     }
 
     public function signoutAction()
     {
+        //$user = Zend_Registry::get('user');
+        $auth = Zend_Auth::getInstance();
+        $auth->clearIdentity();
+
+        // :TODO: redirect
+
         // action body
     }
 

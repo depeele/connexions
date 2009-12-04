@@ -1,12 +1,11 @@
 <?php
-$request = Connexions::curRequest();
-$userId  = Connexions::curUser();
+$request = Connexions::getRequest();
 
-/*
+// /*
 echo "<pre>Request Params:\n";
 print_r($request->getParams());
 echo "</pre>\n";
-*/
+// */
 
 $searchTerm     = $request->getParam('q', null);
 $searchContext  = $request->getParam('searchContext', 'all');
@@ -133,19 +132,22 @@ echo $this->doctype();
    <div class='tabs'><!-- tabs { -->
     <?php
         /* Present the Navigation Menu */
-        $nav   = Zend_Registry::get('Zend_Navigation');
+        $nav   = $this->navigation();
+
+        /*
+        $acl  = $nav->getAcl();
+        $role = $nav->getRole();
+        printf("role[ %s ]<br />\n", $role);
+echo "<pre>acl:\n";
+print_r($acl);
+echo "</pre>\n";
+        */
+
         $items = $nav->findOneByLabel('nav_menu');
 
         echo $this->navigation()
                   ->menu()
                   ->renderPartial($items, 'nav_menu.phtml');
-
-        /*
-        echo $this->navigation()
-                  ->menu()
-                  ->renderMenu($items,
-                               array('ulClass'  => 'nav'));
-        */
 
     ?>
    </div><!-- tabs } -->
@@ -153,7 +155,7 @@ echo $this->doctype();
    <div class='global'><!-- global { -->
     <?php
         /* Present the Navigation Bar */
-        $nav   = Zend_Registry::get('Zend_Navigation');
+        $nav   = $this->navigation();
         $items = $nav->findOneByLabel('nav_bar');
 
         echo $this->navigation()
@@ -163,45 +165,6 @@ echo $this->doctype();
 
     ?>
 
-    <!-- ul class='nav'><! - - global.nav { - - >
-     <?php
-          if ($userId !== false)
-          {
-              ?>
-     <li class='user first' >Signed in as <strong><?= $userId ?></strong></li>
-     <li class='inbox'><?= Connexions::anchor('/inbox/'.$userId, 'Inbox') ?></li>
-     <li              ><?= Connexions::anchor('/settings',       'Settings') ?></li>
-              <?php
-          }
-          else
-          {
-              ?>
-     <li class='first'><?= Connexions::anchor('/auth/register/','Join Now') ?></li>
-     <li ><?= Connexions::anchor('/help/new',   "What's New?") ?></li>
-     <li ><?= Connexions::anchor('/help/learn', 'Learn More') ?></li>
-              <?php
-          }
-  
-          ?>
-     <li ><?= Connexions::anchor('/help', 'Help') ?></li>
-       <?php
-  
-          if ($userId !== false)
-          {
-              ?>
-     <li class='last' ><?= Connexions::anchor('/auth/signOut/', 'Sign Out') ?></li>
-              <?php
-          }
-          else
-          {
-              ?>
-     <li class='last' ><?= Connexions::anchor('/auth/signIn/', 'Sign In') ?></li>
-              <?php
-          }
-  
-          ?>
-    </ul><! - - global.nav }  - -> -->
-  
     <form id='search' action='<?= Connexions::url('/search') ?>' method='post'>
      <div class='searchBox'><!-- searchBox { -->
       <div class='searchInput'><!-- searchInput { -->
