@@ -1,7 +1,7 @@
 <?php
 $request = Connexions::getRequest();
 
-// /*
+/*
 echo "<pre>Request Params:\n";
 print_r($request->getParams());
 echo "</pre>\n";
@@ -27,46 +27,48 @@ echo $this->doctype();
   <title>connexions</title>
   <?= $this->headLink()->appendStylesheet(Connexions::url('/css/main.css')) ?>
 
-  <script type='text/javascript'>
-    function activateToggles()
+  <?php
+    if (false)
     {
-        /* General document click listener to close any open item on an
-         * unhandled click.
-         */
-        $(document).click(function() {
-                $('.open').removeClass('open');
-            });
+        ?>
+  <!-- Use the google CDN -->
+  <script type='text/javascript' src='http://www.google.com/jsapi'></script>
+  <script type='text/javascript'>
+    google.load('jquery', '1');
 
-        /* Activate all toggles in our page header
-         *  (e.g. navigation menus, search choices).
-         */
-        //$('#pageHeader .tabs .toggle,#search .choices label')
-        $('#pageHeader .toggle').click(
-            function(event) {
-                event.preventDefault();
-                event.stopPropagation();
-
-                var $el     = $(this).parent();
-                var isOpen  = $el.hasClass('open');
-
-                // Close any toerh currently opened sub-menus
-                $('.open').removeClass('open');
-
-                // Toggle the current item
-                if (! isOpen)
-                    $el.addClass('open');
-            });
+    google.setOnLoadCallback(function() {
+        activateSearch();
+    });
+  </script>
+        <?php
     }
-
+    else
+    {
+        ?>
+  <!-- Use the local jQuery -->
+  <script type='text/javascript' src='js/jquery.js'></script>
+  <script type='text/javascript'>
+    (function($) {
+        $(document).ready(function() {
+            activateSearch();
+        });
+     })(jQuery);
+  </script>
+        <?php
+    }
+        ?>
+  <script type='text/javascript'>
     function activateSearch()
     {
         var $form           = $('#search');
         var $input          = $form.find('input[name=q]');
         var $context        = $form.find('input[name=searchContext]');
-        var contextLabel    = '';
+        var $choices        = $form.find('.choices .list');
+        var contextLabel    = $choices.find('li.on').text();
 
         // Activate our search choice selections
-        $('#search .choices .list li').click(
+        //$('#search .choices .list li').click(
+        $choices.find('li').click(
             function(event) {
                 var $li         = $(this);
                 var $choices    = $li.parent().parent();
@@ -85,6 +87,7 @@ echo $this->doctype();
 
                 // And last, add the 'on' class to this li
                 $li.addClass('on');
+                $input.focus();
         });
 
         /* When the input box receives focus, if the current value is the label
@@ -105,16 +108,6 @@ echo $this->doctype();
             $input.removeClass('focus');
         });
     }
-  </script>
-  <!-- Use the google CDN -->
-  <script type='text/javascript' src='http://www.google.com/jsapi'></script>
-  <script type='text/javascript'>
-    google.load('jquery', '1');
-
-    google.setOnLoadCallback(function() {
-        activateToggles();
-        activateSearch();
-    });
   </script>
 
 </head>
@@ -152,62 +145,6 @@ echo "</pre>\n";
     ?>
    </div><!-- tabs } -->
  
-   <div class='global'><!-- global { -->
-    <?php
-        /* Present the Navigation Bar */
-        $nav   = $this->navigation();
-        $items = $nav->findOneByLabel('nav_bar');
-
-        echo $this->navigation()
-                  ->menu()
-                  ->renderMenu($items,
-                               array('ulClass'  => 'nav'));
-
-    ?>
-
-    <form id='search' action='<?= Connexions::url('/search') ?>' method='post'>
-     <div class='searchBox'><!-- searchBox { -->
-      <div class='searchInput'><!-- searchInput { -->
-       <div class='choices'>
-        <label class='toggle' for='q'><em>search type</em></label>
-        <input name='searchContext' type='hidden'
-              value='<?= $searchContext ?>' />
-        <ul class='list'>
-         <?php
-            /* Render the list of available search contexts.
-             *
-             * This is defined in 'application/configs/application.ini' via
-             *     'searchContext.<name> = <label>
-             */
-            $contextText = 'Search connexions';
-            foreach($searchContexts as $name => $label)
-            {
-                $id       = 'search-choice-'. $name;
-                $cssClass = '';
-             
-                if ($searchContext == $name)
-                {
-                    $cssClass    = " class='on'";
-                    $contextText = $label;
-                }
-
-                printf ("         <li id='%s'%s>%s</li>\n",
-                        $id, $cssClass, $label);
-            }
-         ?>
-        </ul>
-       </div>
-       <input name='q'       type='text' class='input'
-             value="<?= (@empty($searchTerm) ? $contextText : $searchTerm) ?>"
-              autocomplete='off' maxlength='255' size='30' />
-       <script type='text/javascript'>
-        // When we click on the search input box, if the text
-       </script>
-      </div><!-- searchInput } -->
-      <input type='submit' class='submit' value='search' />
-     </div><!-- searchBox } -->
-    </form>
-   </div><!-- global } -->
    <br class='clear' />
   </div><!-- head } -->
 

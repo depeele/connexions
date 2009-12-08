@@ -1,3 +1,35 @@
+/* connexions.gif */
+.connexions_sprites   {background:url('sprites/connexions.gif')
+                                        no-repeat scroll 0px 0px transparent;}
+.corner_inner_left    {width:12px;height:10px;background-position:0     0;}
+.corner_inner_right   {width:12px;height:10px;background-position:-12px 0px;}
+
+.corner_outter_left   {width:16px;height:18px;background-position:0     -10px;}
+.corner_outter_right  {width:16px;height:18px;background-position:-16px -10px;}
+.corner_outter_middle {height:18px;}
+
+.corner_green_left    {width:16px;height:18px;background-position:-32px -10px;}
+.corner_green_right   {width:16px;height:18px;background-position:-48px -10px;}
+.corner_green_middle  {height:18px;}
+
+.lock_empty           {width:13px;height:16px;background-position:0     -28px;}
+.lock_fill            {width:13px;height:16px;background-position:-13px -28px;}
+
+.star_empty           {width:15px;height:15px;background-position:0     -44px;}
+.star_fill            {width:15px;height:15px;background-position:-15px -44px;}
+
+.star_small_empty     {width:13px;height:12px;background-position:0     -59px;}
+.star_small_fill      {width:13px;height:12px;background-position:-13px -59px;}
+
+.magnifier            {width:17px;height:16px;background-position:0     -71px;}
+.magnifier_small      {width:11px;height:14px;background-position:-17px -71px;}
+
+.search_bg            {width:173px;height:23px;background-position:0    -87px;}
+
+.welcome_bg           {width:100px;height:64px;background-position:0   -110px;}
+
+.join_bg              {width:100px;height:64px;background-position:0   -174px;}
+
 /* smallIcons.gif 15x44 */
 .smallIcon_bookmark { background: url('sprites/smallIcons.gif') no-repeat scroll 3px 0px transparent; }
 .smallIcon_magnify { background: url('sprites/smallIcons.gif') no-repeat scroll 3px -1956px transparent; }

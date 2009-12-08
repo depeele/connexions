@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config>
  <nav>
-  <!-- Global Navigation bar ***************************** -->
-  <nav_bar>
-   <label>nav_bar</label>
+  <!-- Navigation menu ***************************** -->
+  <nav_menu>
+   <label>nav_menu</label>
    <controller>index</controller>
    <action>index</action>
 
    <pages>
     <!-- Authenticated Users -->
     <userInfo>
-     <label>Signed in as: %name%</label>
+     <label>Welcome%html.br%%user.name%</label>
      <controller>index</controller>
      <action>index</action>
      <resource>member</resource>
+     <class>welcome connexions_sprites welcome_bg</class>
     </userInfo>
 
     <!-- Guests -->
@@ -22,26 +23,8 @@
      <controller>auth</controller>
      <action>register</action>
      <resource>guest</resource>
+     <class>join connexions_sprites join_bg</class>
     </register>
-    <new>
-     <label>What's New?</label>
-     <controller>help</controller>
-     <action>new</action>
-     <resource>guest</resource>
-    </new>
-    <learn>
-     <label>Learn More</label>
-     <controller>help</controller>
-     <action>learn</action>
-     <resource>guest</resource>
-    </learn>
-  
-    <!-- Everyone -->
-    <help>
-     <label>Help</label>
-     <controller>help</controller>
-     <action>index</action>
-    </help>
   
     <!-- Authenticated Users -->
     <signOut>
@@ -58,78 +41,103 @@
      <action>signIn</action>
      <resource>guest</resource>
     </signIn>
-   </pages>
-  </nav_bar>
 
-  <!-- Navigation menu ***************************** -->
-  <nav_menu>
-   <label>nav_menu</label>
-   <controller>index</controller>
-   <action>index</action>
-
-   <pages>
     <bookmarks>
-     <label>bookmarks</label>
+     <label>Bookmarks</label>
      <controller>bookmarks</controller>
      <action>index</action>
      <pages>
       <mine>
-       <label>mine</label>
+       <label>Mine</label>
        <controller>bookmarks</controller>
        <action>mine</action>
        <class>local</class>
        <resource>member</resource>
       </mine>
       <explore>
-       <label>explore</label>
+       <label>Explore</label>
        <controller>bookmarks</controller>
        <action>index</action>
-       <class>global</class>
+       <class>global last</class>
       </explore>
      </pages>
     </bookmarks>
   
     <people>
-     <label>people</label>
+     <label>People</label>
      <controller>people</controller>
      <action>index</action>
      <pages>
       <mine>
-       <label>my network</label>
+       <label>My network</label>
        <controller>network</controller>
        <action>mine</action>
        <class>local</class>
        <resource>member</resource>
       </mine>
       <explore>
-       <label>explore</label>
+       <label>Explore</label>
        <controller>people</controller>
        <action>index</action>
-       <class>global</class>
+       <class>global last</class>
       </explore>
      </pages>
     </people>
   
     <tags>
-     <label>tags</label>
+     <label>Tags</label>
      <controller>tags</controller>
      <action>index</action>
      <pages>
       <mine>
-       <label>mine</label>
+       <label>Mine</label>
        <controller>tags</controller>
        <action>mine</action>
        <class>local</class>
        <resource>member</resource>
       </mine>
       <explore>
-       <label>explore</label>
+       <label>Explore</label>
        <controller>tags</controller>
        <action>index</action>
-       <class>global</class>
+       <class>global last</class>
       </explore>
      </pages>
     </tags>
+
+    <!-- Everyone -->
+    <help>
+     <label>Help</label>
+     <controller>help</controller>
+     <action>index</action>
+     <pages>
+      <center>
+       <label>Help Center</label>
+       <controller>help</controller>
+       <action>index</action>
+       <class>global</class>
+      </center>
+      <basics>
+       <label>Basics</label>
+       <controller>help</controller>
+       <action>basics</action>
+       <class>global</class>
+      </basics>
+      <developer>
+       <label>Developers</label>
+       <controller>help</controller>
+       <action>developer</action>
+       <class>global</class>
+      </developer>
+      <about>
+       <label>About</label>
+       <controller>help</controller>
+       <action>about</action>
+       <class>global last</class>
+      </about>
+     </pages>
+    </help>
+  
    </pages>
   </nav_menu>
 

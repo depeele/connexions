@@ -11,7 +11,6 @@ a, a:link, a:visited, a:focus, a:hover {
 /* Page Header */
 #pageHeader {
   height:         5em;
-  border-bottom:  1px solid #ddd;
 }
 #pageHeader h1#siteName {
   float:        left;
@@ -33,90 +32,60 @@ a, a:link, a:visited, a:focus, a:hover {
   margin-right: -10px;
 }
 
-/* Navigation */
+/* Tabs / Navigation */
 #pageHeader .tabs {
-  float:      left;
+  float:      right;
 }
 #pageHeader .tabs a {
-  display:          block;
-  height:           16px;
-  width:            80px;
   padding:          2px;
+  color:            #fff;
+  font-weight:      normal;
   text-decoration:  none;
 }
 #pageHeader .tabs a:hover {
-  background-color: #fff;
-  color:            #565656;
+  color:            #b0d730;
 }
+#pageHeader .tabs {
+  background-color: #172322;
+  padding:      0;
+}
+
 #pageHeader .nav {
-  float:      left;
+  float:        left;
+  padding:      0;
 }
 #pageHeader .nav li {
-  float:      left;
-  padding:    4px;
+  float:        left;
+  width:        60px;
+  text-align:   center;
+  padding:      24px 18px;
 }
-#pageHeader .nav li a {
-  font-weight:  normal;
-}
-#pageHeader .nav li .toggle {
-  display:    block;
-  position:   absolute;
-  top:        4px;
-  right:      4px;
-  height:     16px;
-  padding:    2px;
-  width:      12px;
+#pageHeader .tabs li.welcome {
+  width:        100px;
+  height:       auto;
+  padding:      16px 8px;
 
-  cursor:     pointer;
-
-  /* .arrow_down6 */
-  background: url('sprites/arrows.gif') no-repeat scroll 2px -396px transparent;
+  border-right: 1px dotted #666;
 }
-#pageHeader .nav li .toggle:hover {
-  /* .arrow_down5 */
-  background: url('sprites/arrows.gif') no-repeat scroll 2px -316px #fff;
-}
-
-#pageHeader .tabs li {
+#pageHeader .tabs li.join {
   width:            100px;
-  background-color: #565656;
-  margin-right:     4px;
-}
-#pageHeader .tabs li a {
-  color:        #fff;
-  font-weight:  bold;
-}
+  height:           auto;
+  padding:      	24px 8px;
 
-/* Global Navigation */
-#pageHeader .global {
-  float:      right;
-  font-size:  0.92em;
+  border-right:     1px dotted #666;
+  background-color: #9FC54E;
 }
-#pageHeader .global .nav {
-  padding-left:   0;
-  padding-bottom: 0.5em;
-}
-#pageHeader .global .nav li {
-  display:      inline;
-  margin-left:  0.5em;
-  padding-right:0.7em;
-  border-right: 1px solid #d4d4d4;
-}
-#pageHeader .global .nav li:last-child {
-  border-right: 0px;
+#pageHeader .tabs li.join a:hover {
+  color:            #2786C2;
 }
 
 /* Sub-menu */
-#pageHeader .nav ul,
 #pageHeader ul.sub {
   display:          none;
   position:         absolute;
-  top:              28px;
-  right:            0px;
-  width:            90px;         /* Match #pageHeader .tabs li */
+  top:              64px;
+  left:             2px;
 
-  border:           1px solid #999;
-  background-color: #999;
   color:            #fff;
   padding:          0;
   margin:           0;
@@ -124,159 +93,166 @@ a, a:link, a:visited, a:focus, a:hover {
   z-index:          100;
 }
 
-/* When the div.tabs/ul.nav/.toggle is clicked, 'open' will be
- * added to the ul sibling of .toggle to present the list.
- */
-#pageHeader .nav .open ul,
-#pageHeader .open ul.sub {
+#pageHeader li:hover ul.sub {
   display:          block;
 }
 
-#pageHeader .nav ul li,
-#pageHeader ul.sub  li {
-  background-color: #999;
-  margin-right:     0;
-  padding:          0;
-  cursor:           pointer;
+#pageHeader ul.sub li,
+#search ul.sub li {
+  background-color: #172322;      /* Match #pageHeader .tabs */
   width:            90px;
+  padding:          0 16px;
+}
+/*
+#pageHeader ul.sub li.first,
+#search ul.sub li.first {
+  height:             auto;
+  padding:            0 16px;
+  border-right:       0;
+}
+*/
+#pageHeader ul.sub li.last a,
+#search ul.sub li.last span {
+  padding-bottom:   0;
+}
+#pageHeader ul.sub li a:hover,
+#search ul.sub li:hover span {
+  color:            #7fcdfe;
 }
 
-#pageHeader .nav ul li a,
-#pageHeader ul.sub  li a {
-  width:            auto;
-  padding:          0.1em 0.5em;
+#pageHeader ul.sub li.outter,
+#search ul.sub li.outter {
+  background: none repeat scroll 0 0 transparent;
 }
-#pageHeader .nav ul li:first-child a,
-#pageHeader ul.sub li:first-child a {
-  padding-top:      0.5em;
+
+
+#pageHeader ul.sub .corner_inner_left,
+#search ul.sub .corner_inner_left {
+  position:         absolute;
+  top:              0;
+  left:             -12px;
 }
-#pageHeader .nav ul li:last-child a,
-#pageHeader ul.sub li:last-child a {
-  padding-bottom:   0.5em;
+#pageHeader ul.sub .corner_inner_right,
+#search ul.sub .corner_inner_right {
+  position:         absolute;
+  top:              0;
+  right:            -12px;
+}
+
+#pageHeader ul.sub .corner_outter_left,
+#search ul.sub .corner_outter_left {
+  position:         absolute;
+  top:              0;
+  left:             0;
+}
+#pageHeader ul.sub .corner_outter_middle,
+#search ul.sub .corner_outter_middle {
+  background-color: #172322;      /* Match #pageHeader .tabs */
+}
+#pageHeader ul.sub .corner_outter_right,
+#search ul.sub .corner_outter_right {
+  position:         absolute;
+  top:              0;
+  right:            0;
+}
+
+#pageHeader ul.sub li {
+  float:            none;
+  margin:           0;
+  cursor:           pointer;
+
+  text-align:       left;
+}
+
+#pageHeader ul.sub li a,
+#search ul.sub li span {
+  display:          block;
+  padding:          0.5em 0;
+  color:            #2786C2;
+  font-weight:      normal;
+
+  border-top:       1px dotted #666;
+}
+#pageHeader ul.sub li.first a,
+#search ul.sub li.first span {
+  padding-top:      8px;
+  border-top:       0;
+}
+#pageHeader ul.sub li.last a,
+#search ul.sub li.last span {
+  padding-bottom:   0;
 }
 
 /* Search */
 #search {
-  clear:      left;
+  float:      right;
+  padding:    22px 18px 19px;
 }
 #search .searchBox {
-  float:          right;
-  padding-right:  10px;
+  float:            right;
+  background-color: #fff;
 }
 
+/* Search Context choices */
 #search .choices {
-  position:   absolute;
-  left:       0;
-  height:     18px;
-  width:      14.1em;
-
-  /* .smallIcon_magnify */
-  background: url('sprites/smallIcons.gif') no-repeat scroll 3px -1956px transparent;
-}
-#search .choices label {
-  position:   absolute;
-  left:       1px;
-  top;        1px;
-  height:     18px;
-  width:      2.6em;
-}
-#search .choices .toggle {
-  cursor:     pointer;
-
-  /* .arrow_down7 */
-  background: url('sprites/arrows.gif') no-repeat scroll 15px -474px transparent;
-}
-#search .choices .toggle:hover {
-  /* .arrow_down8 */
-  background: url('sprites/arrows.gif') no-repeat scroll 15px -514px transparent;
-}
-#search .choices label em {
-  display:    none;
 }
 #search .choices .list {
-  display:          none;
-  position:         absolute;
-  top:              22px;
-  width:            14.1em;       /* Match #search .searchInput */
-
-  border:           1px solid #444;
-  background-color: #444;
-  color:            #fff;
-  padding:          0;
-
-  z-index:          100;
+  top:              40px;
+  left:             -30px;
 }
 #search .choices .list li {
-  border:           1px solid #444;
-  background-color: #444;
-  color:            #fff;
-  padding:          0.1em 0.5em 0.1em 1.4em;
-  cursor:           pointer;
+  width:            11.5em;       /* Match #search .searchInput */
 }
-#search .choices .list li.on {
-  /* .smallIcon_dotWhite */
-  background: url('sprites/smallIcons.gif') no-repeat scroll 5px -1213px transparent;
+#search ul.sub li.on span {
+  /* .smallIcon_dotWhite
+  background-image:     url('sprites/smallIcons.gif');
+  background-position:  5px -1213px;
+  background-repeat:    no-repeat;
+  */
+  color:                #E53D2C;
 }
-#search .choices .list li:hover {
-  border:           1px solid #fff;
-  background-color: #fff;
-  color:            #444;
-}
-#search .choices .list li.on:hover {
-  /* .smallIcon_dotGrey  */
+#search .choices .list li.on:hover span {
+  /* .smallIcon_dotGrey
   background-position:  5px -1193px;
+  */
+  color:                #E53D2C;
 }
 
-#search .choices .list li:first-child {
-  padding-top:      0.5em;
-}
-#search .choices .list li:last-child {
-  padding-bottom:   0.5em;
-}
-
-/* When the div.searchInput/div.choices/label is clicked, 'open' will be
- * added to div.choices to present the list.
- */
-#search .open .list {
+#search:hover .list {
   display:          block;
 }
 
 #search .searchInput {
-  border-color: #787878 #333 #333 #888;
-  border-style: solid;
-  border-width: 1px;
+  border:       0;
   color:        #999;
   float:        left;
-  font-size:    110%;
-  height:       18px;
-  padding:      0;
-  width:        14.1em;
+  padding:      2px;
 }
 #search .input {
-  border:     medium none;
-  border-left:1px solid #aaa;
-  color:      #aaa;
-  height:     15px;
-  margin:     1px 0 0 2.6em;
-  padding:    0 0 0 2px;
-  width:      11.2em;
-  z-index:    100;
+  border:       none;
+  color:        #aaa;
+  height:       15px;
+  margin:       1px 0;
+  padding:      0 2px;
+  width:        11.2em;
+  z-index:      100;
 }
 #search input.focus {
   color:      #000;
 }
 #search .submit {
-  border:           1px solid #444;
-  color:            #fff;
-  background-color: #06c;
-  display:          inline;
-  font-weight:      bold;
-  height:           20px;
-  margin:           0 0 0 4px;
-  padding:          0 4px;
-  width:            5em;
+  float:            right;
+  display:          block;
+  padding:          0;
+
+  height:           23px;
+  width:            23px;
+
+  border:           0;
 
   cursor:           pointer;
+
+  background-color: transparent;
 }
 
 /* Page Content */
