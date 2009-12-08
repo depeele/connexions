@@ -116,4 +116,51 @@ class Connexions
                             : ''),
                         $name);
     }
+
+    /** @brief  Perform variable replacement.
+     *  @param  str     The string to operate on.
+     *
+     *  This will replace variables of the form '%namespace.selector%'
+     *
+     *  Recognized 'namespace's are:
+     *      user    - can accept a selector identifying any field.
+     *
+     *  @return A string with replacements.
+     */
+    public static function replaceables($str)
+    {
+        if (preg_match_all('/%([^%\.]+)\.([^%]+)%/', $str, $names))
+        {
+            $nNames = count($names[0]);
+
+            for ($idex = 0; $idex < $nNames; $idex++)
+            {
+                $nameSpace = $names[1][$idex];
+                if (empty($nameSpace))
+                    continue;
+
+                $selector  = $names[2][$idex];
+
+                switch (strtolower($nameSpace))
+                {
+                case 'user':
+                    $user        = self::getUser();
+                    $replacement = $user->{$selector};
+                    break;
+                case 'html':
+                    $replacement = '<'. $selector .'/>';
+                    break;
+
+                default:
+                    $replacement = '!'. $nameSpace .'.'. $selector .'!';
+                    break;
+                }
+
+                $str = preg_replace('/%'. $nameSpace .'.'. $selector .'%/i',
+                                    $replacement, $str);
+            }
+        }
+
+        return $str;
+    }
 }

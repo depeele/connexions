@@ -133,7 +133,7 @@ class Connexions_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
                 $view->navigation()->setRole('member');
             }
 
-            // /*
+            /*
             printf ("Connexions_Controller_Plugin_Auth: ".
                         "user '%s', role '%s'<br />\n",
                     $user, $view->navigation()->getRole());
