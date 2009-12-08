@@ -1,21 +1,36 @@
 <?php
+/** @file
+ *
+ *  Authentication controller.  This handles sign-in, sign-out, and
+ *  regsitration actions.
+ */
 
 class AuthController extends Zend_Controller_Action
-//class AuthController extends Connexions_Controller_Action
 {
+    protected $_redirector  = null;
 
     public function init()
     {
         /* Initialize action controller here */
+        $this->_redirector = $this->_helper->getHelper('Redirector');
     }
 
     public function signinAction()
     {
         $user = Zend_Registry::get('user');
-        if ( ($user instanceof Model_User) && ($user->isAuthenticated()) )
+        if ($user instanceof Model_User)
         {
-            // Redirect
-            die("Authenticated!  Redirect...");
+            if ($user->isAuthenticated())
+            {
+                // Authenticated!  Redirect
+                return $this->_redirector->setGotoSimple('index', 'index');
+            }
+
+            // Set a 401 (unauthorized) HTTP response code
+            $response = $this->getResponse();
+            $response->setHttpResponseCode(401);
+
+            $this->view->error = $user->getError();
         }
 
         // NOT authenticated
@@ -28,7 +43,8 @@ class AuthController extends Zend_Controller_Action
         $auth = Zend_Auth::getInstance();
         $auth->clearIdentity();
 
-        // :TODO: redirect
+        // Redirect
+        return $this->_redirector->setGotoSimple('index', 'index');
 
         // action body
     }
@@ -45,8 +61,11 @@ class AuthController extends Zend_Controller_Action
         $this->view->user = $user;
         $this->view->pass = $pass;
 
-        if ((! @empty($pass)) && (! @empty($pass2)) &&
-            ($pass != $pass2))
+        if (@empty($user) || @empty($pass) || @empty($pass2))
+        {
+            // Present the registration form
+        }
+        else if ($pass != $pass2)
         {
             $this->view->error = "Passwords do not match";
         }
@@ -55,6 +74,7 @@ class AuthController extends Zend_Controller_Action
             // Add this new user to the database
 
             // Redirect to the 'welcome' view
+            return $this->_redirector->setGotoSimple('welcome', 'index');
         }
     }
 }

@@ -93,8 +93,10 @@ class Connexions_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
                 {
                     // Invalid password.
                     printf ("Connexions_Controller_Plugin_Auth: ".
-                                "User [ %s ] NOT authenticated: [ %s ]<br />",
-                            $userId, implode(', ', $res->getMessages()) );
+                                "User [ %s ] NOT authenticated: [ %s ], ".
+                                "user error[ %s ]<br />",
+                            $userId, implode(', ', $res->getMessages()),
+                            $user->getError());
                 }
                 // */
             }

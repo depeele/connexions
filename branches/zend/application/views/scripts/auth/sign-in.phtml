@@ -1,21 +1,40 @@
+<?php
+//$this->headLink()->appendStylesheet(Connexions::url('/css/auth.css'));
+$this->headLink()->appendStylesheet($this->baseUrl('css/auth.css'));
+
+?>
 <div id="auth">
-    <h1>Sign in</h1>
+ <h1>Sign in</h1>
 
-    <p>You need an account in order to start saving bookmarks.</p>
-    <p>Don't have an account? <?= Connexions::anchor('/auth/register/',
-                                                     'Create one now!') ?></p>
+ <div class='liquid line'>
+  <div class='unit size2of3'>
+   <p>You need an account in order to start saving bookmarks.</p>
+   <p>Don't have an account? <?= Connexions::anchor('/auth/register',
+                                                    'Create one now!') ?></p>
 
-    <form method='post'>
-     <div class='field'>
-      <label for='user'>username</label>
-      <input type='text' name='user' value='<?= $this->user ?>' />
-     </div>
-     <div class='field'>
-      <label for='password'>password</label>
-      <input type='password' name='password' />
-     </div>
-     <div class='field'>
-      <input type='submit' value='Sign in' />
-     </div>
-    </form>
+  </div>
+
+  <div class='unit size1of3 lastUnit'>
+   <form method='post'>
+    <div class='field line'>
+     <label for='user'  class='unit size1of4'>username</label>
+     <input type='text' class='unit size3of4 lastUnit'
+            name='user' value='<?= $this->user ?>' />
+    </div>
+    <div class='field'>
+     <label for='password'  class='unit size1of4'>password</label>
+     <input type='password' class='unit size3of4 lastUnit'
+            name='password' />
+    </div>
+    <div class='field buttons'>
+     <input type='submit' value='Sign in' />
+    </div>
+   </form>
+
+   <div class='error'>
+    <?= (@isset($this->error) ? $this->error : '') ?>
+   </div>
+  </div>
+
+ </div>
 </div>

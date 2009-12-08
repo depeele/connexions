@@ -31,6 +31,25 @@ class Model_User extends Connexions_Model
 
     protected       $_isAuthenticated   = false;
 
+    /** @brief  Set the id for this model/record.  This will cause an overall
+     *          reset of this instance, (re)retrieving the data.
+     *  @param  id      The record identifier.
+     *  @param  db      An optional database instance (Zend_Db_Abstract).
+     *
+     * @return  Connexions_Model to provide a fluent interface.
+     */
+    public function setId($id, $db = null)
+    {
+        parent::setId($id, $db);
+        if ( (! @empty($id)) && (! $this->isValid()) )
+        {
+            // Override the generic 'No matching record' error
+            $this->_error = 'Unknown user "'. $id .'"';
+        }
+
+        return $this;
+    }
+
     /** @brief  Return a string representation of this instance.
      *
      *  @return The string-based representation.
