@@ -1,27 +1,41 @@
 <?php
 
 class HelpController extends Zend_Controller_Action
-//class HelpController extends Connexions_Controller_Action
 {
-
-    public function init()
-    {
-        /* Initialize action controller here */
-    }
-
     public function indexAction()
     {
         // action body
     }
 
-    public function newAction()
+    public function basicsAction()
     {
         // action body
     }
 
-    public function learnAction()
+    public function developerAction()
     {
         // action body
+    }
+
+    public function aboutAction()
+    {
+        // action body
+    }
+
+    /** @brief Redirect all other actions to 'index'
+     *  @param  method      The target method.
+     *  @param  args        Incoming arguments.
+     *
+     */
+    public function __call($method, $args)
+    {
+        if (substr($method, -6) == 'Action')
+        {
+            // Redirect
+            return $this->_forward('index');
+        }
+
+        throw new Exception('Invalid method "'. $method .'" called', 500);
     }
 }
 

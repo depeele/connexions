@@ -1,0 +1,21 @@
+#auth {
+  padding:          1em 5em 3em;
+  background-color: #F4F4EE;
+
+  -moz-border-radius:     10px;
+  -webkit-border-radius:  10px;
+  border-radius:          10px;
+}
+
+#auth .error {
+  padding:          1em;
+  color:            #f00;
+  font-weight:      bold;
+}
+
+form .field {
+  padding-top:  0.5em;
+}
+form .buttons {
+  text-align:   right;
+}

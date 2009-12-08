@@ -46,7 +46,7 @@ echo $this->doctype();
     {
         ?>
   <!-- Use the local jQuery -->
-  <script type='text/javascript' src='js/jquery.js'></script>
+  <script type='text/javascript' src='<?= Connexions::url('/js/jquery.js') ?>'></script>
   <script type='text/javascript'>
     (function($) {
         $(document).ready(function() {
