@@ -51,6 +51,17 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $front->registerPlugin(new Connexions_Controller_Plugin_Auth());
     }
 
+    protected function _initActionHelpers()
+    {
+        /* Register our Controller Action Helpers Prefix.
+         *
+         * This will make available all helpers in:
+         *  library/Connexions/Controller/Action/Helper
+         */
+        Zend_Controller_Action_HelperBroker::addPrefix(
+                                        'Connexions_Controller_Action_Helper');
+    }
+
     protected function _initAcl()
     {
         // Setup ACL

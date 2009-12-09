@@ -8,9 +8,8 @@
 class Model_User extends Connexions_Model
 {
     protected static    $table  = 'user';
-    protected static    $keys   = array('userId'    => 'numeric',
-                                        'name'      => 'string');
-    protected static    $model  = array('userId'        => 'integer',
+    protected static    $keys   = array('userId', 'name');
+    protected static    $model  = array('userId'        => 'auto',
                                         'name'          => 'string',
                                         'password'      => 'string',
 
@@ -48,6 +47,22 @@ class Model_User extends Connexions_Model
         }
 
         return $this;
+    }
+
+    /** @brief  Set a value in this record and mark it dirty.
+     *  @param  name    The field name.
+     *  @param  value   The new value.
+     *
+     *  Override to properly encode 'password' when set.
+     *
+     *  @return true | false
+     */
+    public function __set($name, $value)
+    {
+        if ($name === 'password')
+            $value = md5($value);
+
+        return parent::__set($name, $value);
     }
 
     /** @brief  Return a string representation of this instance.

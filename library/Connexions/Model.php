@@ -8,11 +8,11 @@ abstract class Connexions_Model
 {
     /* The following MUST be made available via the following, abstract static
      * methods:
-     *  table       The name of the database table
-     *  keys        An array of key/type pairs defining available selection
-     *              keys and their generic types
-     *              ('numeric', 'string', 'integer');
-     *  model       An array of key/type pairs defining the table model.
+     *  table       The name of the database table;
+     *  keys        An array of key names (each MUST be represented in 'model');
+     *  model       An array of key/type pairs defining the table model where
+     *              type may be:
+     *                  ('numeric', 'string', 'integer', 'auto')
      */
     abstract public static function getTable();
     abstract public static function getKeys();
@@ -53,13 +53,10 @@ abstract class Connexions_Model
         $this->_isValid   = false;
         $this->_isDirty   = false;
         $this->_error     = null;
-
-        $this->_db        = ($db === null
-                                ? ($this->_db === null
-                                    ? Connexions::getDb()
-                                    : $this->_db)
-                                : $db);
         $this->_record    = null;
+
+        if ($db !== null)
+            $this->_db    = $db;
 
         if ($id === null)
             return $this;
@@ -76,17 +73,25 @@ abstract class Connexions_Model
         else
         {
             // Does the incoming 'id' match any of the table keys?
-            $rec    = null;
-            $select = 'SELECT * FROM '. $this->getTable() .' WHERE ';
-            foreach ($this->getKeys() as $key => $type)
+            $rec      =  null;
+            $firstKey =  null;
+            $select   =  'SELECT * FROM '. $this->getTable() .' WHERE ';
+
+            $model    =& $this->getModel();
+            foreach ($this->getKeys() as $key)
             {
+                $type  = $model[$key];
                 $where = null;
                 switch ($type)
                 {
+                case 'auto':
                 case 'integer':
                 case 'numeric':
                     if (! @is_numeric($id))
                         continue;
+
+                    if ($firstKey === null)
+                        $firstKey = $key;
 
                     $where = $key .'=?';
                     break;
@@ -95,6 +100,9 @@ abstract class Connexions_Model
                 default:
                     if (! @is_string($id))
                         continue;
+
+                    if ($firstKey === null)
+                        $firstKey = $key;
 
                     $where = $key .'=?';
                     break;
@@ -106,7 +114,7 @@ abstract class Connexions_Model
                 // Attempt to retrieve a matching record.
                 try
                 {
-                    $rec = $this->_db->fetchRow($select . $where, array($id));
+                    $rec = $this->db()->fetchRow($select . $where, array($id));
 
                     // We have a matching record!
                     $this->_id = $id;
@@ -159,7 +167,8 @@ abstract class Connexions_Model
      */
     public function __set($name, $value)
     {
-        if (! @in_array($name, $this->model))
+        $model =& $this->getModel();
+        if (! @isset($model[$name]))
         {
             // Invalid field
             return false;
@@ -185,7 +194,7 @@ abstract class Connexions_Model
     public function __get($name)
     {
         if ( (! @is_array($this->_record)) ||
-             (! @in_array($name, $this->_record)) )
+             (! @isset($this->_record[$name])) )
         {
             // Invalid or unset field
             return null;
@@ -212,7 +221,98 @@ abstract class Connexions_Model
         if ($this->_isDirty !== true)
             return true;
 
-        // :TODO: store the new data for this record
+        // store the new data for this record
+       $res = false;
+        if ($this->_isValid === true)
+        {
+            // This is an existing record that we need to update
+
+            /* Generate a where clause comprised of the primary/first key
+             * included in this record
+             *
+             * Note: We only use the primary/first key to allow any other key
+             *       to be updates.
+             */
+            $where  =  array();
+            foreach ($this->getKeys() as $field)
+            {
+                if (@isset($this->_record[$field]))
+                {
+                    array_push($where, $field.'='.$this->_record[$field]);
+                    break;
+                }
+            }
+
+            if ($this->db()->update($this->getTable(),
+                                    $this->_record,
+                                    $where) === 1)
+            {
+                $res = true;
+            }
+        }
+        else
+        {
+            // This is a new record that we need to insert
+
+            /* Ensure that we have at least one key in our current record data.
+             *
+             * If we hit an unset key in the process, and have '_id', and the
+             * type of the key matches the type of '_id', use _id's value for
+             * that key.
+             */
+            $included = false;
+            $keysSet  = 0;
+            $model    =& $this->getModel();
+            foreach ($this->getKeys() as $key)
+            {
+                if (@isset($this->_record[$key]))
+                {
+                    $keysSet++;
+                    continue;
+                }
+
+                switch ($model[$key])
+                {
+                case 'auto':
+                case 'integer':
+                case 'numeric':
+                    if (! @is_numeric($this->_id))
+                        continue;
+
+                    $this->_record[$key] = $this->_id;
+                    $included = true;
+                    $keysSet++;
+                    break;
+
+                case 'string':
+                default:
+                    if (! @is_string($this->_id))
+                        continue;
+
+                    $this->_record[$key] = $this->_id;
+                    $included = true;
+                    $keysSet++;
+                    break;
+                }
+
+                if ($included)
+                    break;
+            }
+
+            if ( ($keysSet > 0) &&
+                 ($this->db()->insert($this->getTable(),
+                                      $this->_record) === 1) )
+            {
+                $res = true;
+
+                // Now, retrieve the full record that we've just inserted.
+                $id = $this->db()->lastInsertId($this->getTable());
+
+                $this->setId($id);
+            }
+        }
+
+        return $res;
     }
 
     /** @brief  Invalidate the current instance.
@@ -227,6 +327,28 @@ abstract class Connexions_Model
 
         $this->_isValid = false;
     }
+
+    /*************************************************************************
+     * Protected helpers
+     *
+     */
+
+    /** @brief  Retrieve a valid database handle.
+     *
+     *  @return The database handle.
+     */
+    protected function db()
+    {
+        if ($this->_db === null)
+            $this->_db = Connexions::getDb();
+
+        return $this->_db;
+    }
+
+    /*************************************************************************
+     * Static methods
+     *
+     */
 
     /** @brief  Locate the record for the identified user and return a new User
      *          instance.
@@ -262,4 +384,6 @@ abstract class Connexions_Model
 
         return $set;
     }
+
+
 }

@@ -4,37 +4,34 @@ $this->headLink()->appendStylesheet($this->baseUrl('css/auth.css'));
 
 ?>
 <div id="auth">
- <h1>Sign in</h1>
-
- <div class='liquid line'>
-  <div class='unit size2of3'>
-   <p>You need an account in order to start saving bookmarks.</p>
-   <p>Don't have an account? <?= Connexions::anchor('/auth/register',
-                                                    'Create one now!') ?></p>
-
-  </div>
-
-  <div class='unit size1of3 lastUnit'>
+ <div class="line"><!-- { -->
+  <div class="legend unit"><!-- { -->
+   <h1>Sign in</h1>
+   <p>
+    or <?= Connexions::anchor('/auth/register', 'Join now') ?>
+   </p>
+  </div><!-- legend } -->
+  <div class="userInput unit"><!-- { -->
    <form method='post'>
-    <div class='field line'>
-     <label for='user'  class='unit size1of4'>username</label>
-     <input type='text' class='unit size3of4 lastUnit'
+    <div class='field'>
+     <label for='user'>Username</label>
+     <input type='text' class='text'
             name='user' value='<?= $this->user ?>' />
     </div>
     <div class='field'>
-     <label for='password'  class='unit size1of4'>password</label>
-     <input type='password' class='unit size3of4 lastUnit'
+     <label for='password' >Password</label>
+     <input type='password' class='text'
             name='password' />
     </div>
     <div class='field buttons'>
-     <input type='submit' value='Sign in' />
+     <input type='submit' class='button' value='Sign in' />
     </div>
    </form>
-
+ 
+   <? if ($this->welcome)   echo "Welcome!!<br />"; ?>
    <div class='error'>
     <?= (@isset($this->error) ? $this->error : '') ?>
    </div>
-  </div>
-
- </div>
+  </div><!-- userInput } -->
+ </div><!-- line } -->
 </div>

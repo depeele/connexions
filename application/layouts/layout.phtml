@@ -109,6 +109,12 @@ echo $this->doctype();
         });
     }
   </script>
+  <?php
+
+  // Include any additional script
+  echo $this->headScript();
+
+  ?>
 
 </head>
 
@@ -145,15 +151,15 @@ echo "</pre>\n";
     ?>
    </div><!-- tabs } -->
  
-   <br class='clear' />
+   <!-- br class='clear' / -->
   </div><!-- head } -->
 
   <div id="pageContent" class="body"><!-- { body -->
+   <div class="rightCol" role="complementary"><!-- { right -->
+   </div><!-- right } -->
    <div class="main" role="main"><!-- { main -->
     <?= $this->layout()->content ?>
    </div><!-- main } -->
-   <div class="rightCol" role="complementary"><!-- { right -->
-   </div><!-- right } -->
   </div><!-- body } -->
 
   <div id="pageFooter" class="foot" role="banner">
