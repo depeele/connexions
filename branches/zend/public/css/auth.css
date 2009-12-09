@@ -1,21 +1,55 @@
 #auth {
-  padding:          1em 5em 3em;
+  padding:          2em 3em;
   background-color: #F4F4EE;
+  background-color: #86c9ef;
 
   -moz-border-radius:     10px;
   -webkit-border-radius:  10px;
   border-radius:          10px;
 }
 
-#auth .error {
-  padding:          1em;
-  color:            #f00;
-  font-weight:      bold;
+#auth .legend {
+  text-align:     right;
+  padding-right:  2em;
+  width:          7em;
+}
+#auth .legend h1 {
+  padding:  0;
+}
+#auth .legend p {
+  padding:  0;
+}
+
+#auth .userInput {
+  width:  16.6em;
 }
 
 form .field {
-  padding-top:  0.5em;
+  padding-bottom: 1em;
 }
+form .field input.text {
+  width:        16em;
+}
+form .field .validationStatus {
+  position: absolute;
+  left:     17em;
+  top:      1.2em;
+  width:    16em;
+}
+
 form .buttons {
   text-align:   right;
 }
+form input.button {
+  background-color: #59A5D1;
+  border-color:     #408BB6;
+  color:            #fff;
+  cursor:           pointer;
+}
+
+#auth .formError {
+  padding:      1em 0;
+  font-weight:  bold;
+  text-align:   center;
+}
+

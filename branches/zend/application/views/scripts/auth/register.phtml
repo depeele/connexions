@@ -2,31 +2,244 @@
 //$this->headLink()->appendStylesheet(Connexions::url('/css/auth.css'));
 $this->headLink()->appendStylesheet($this->baseUrl('css/auth.css'));
 
+$script = $this->headScript();
+$script->captureStart();
+?>
+// <script type='text/javascript'>
+(function($) {
+    var $userName   = null;
+    var $pass1      = null;
+    var $pass2      = null;
+    var $submit     = null;
+    var $error      = null;
+    var keyTimer    = null;
+
+    /************************************************
+     * Validation presentation
+     *
+     */
+    function validation_failure($src, errorMsg)
+    {
+        $submit.attr('disabled', 'true');
+        $submit.addClass('disabled');
+
+        if ($src !== undefined)
+        {
+            var $status = $src.parent().find('.validationStatus');
+
+            $src.removeClass('ok')
+                .addClass('error');
+            $status.removeClass('ok error');
+
+            if (errorMsg !== undefined)
+            {
+                $status.addClass('error')
+                       .text(errorMsg);
+                errorMsg = undefined;
+            }
+
+            if ($src == $pass2)
+            {
+                $pass1.removeClass('ok');
+                $pass1.parent().find('.validationStatus')
+                                .removeClass('ok')
+                                .text('');
+            }
+        }
+
+        if (errorMsg !== undefined)
+        {
+            $error.text(errorMsg);
+        }
+    }
+
+    function validation_success($src)
+    {
+        var $status = $src.parent().find('.validationStatus');
+
+        $src.removeClass('error')
+            .addClass('ok');
+        $status.removeClass('error')
+               .addClass('ok')
+               .text('');
+
+        if ($src == $pass2)
+        {
+            $pass1.removeClass('error')
+                  .addClass('ok');
+            $pass1.parent().find('.validationStatus')
+                            .removeClass('error')
+                            .addClass('ok')
+                            .text('');
+        }
+
+        if ($userName.hasClass('ok') &&
+            $pass1.hasClass('ok')    &&
+            $pass2.hasClass('ok'))
+        {
+            $submit.removeAttr('disabled');
+            $submit.removeClass('disabled');
+        }
+
+        if ( (! $userName.hasClass('error')) &&
+             (! $pass1.hasClass('error'))    &&
+             (! $pass2.hasClass('error')) )
+        {
+            $error.text('');
+        }
+    }
+
+    /************************************************
+     * Validation routines
+     *
+     */
+    function userName_validate()
+    {
+        var name    = $userName.val();
+        if (name.length < 2)
+            return;
+
+        $.getJSON('<?= Connexions::url('/auth/checkuser') ?>?jsonp=?',
+                  {format:   'json',
+                   userName: name},
+                  function(data)
+                  {
+                    if (data.error !== undefined)
+                    {
+                        validation_failure($userName, data.error.message);
+                    }
+                    else
+                    {
+                        validation_success($userName);
+                    }
+                  });
+    }
+
+    function pass_validate()
+    {
+        var pass1   = $pass1.val();
+        var pass2   = $pass2.val();
+
+        if ((pass1.length < 1) || (pass2.length < 1))
+            return;
+
+        if (pass1 !== pass2)
+        {
+            validation_failure($pass2, 'Passwords do not match.');
+        }
+        else
+        {
+            validation_success($pass2);
+        }
+    }
+
+    /************************************************
+     * Input handlers
+     *
+     */
+    function userName_keyup()
+    {
+        $userName.removeClass('error ok');
+        validation_failure();
+        if (keyTimer !== null)
+            clearTimeout(keyTimer);
+
+        keyTimer = setTimeout(function() { userName_validate(); }, 1000);
+    }
+
+    function userName_blur()
+    {
+        if ($userName.hasClass('ok'))
+            return;
+
+        userName_validate();
+    }
+
+    function pass_keyup()
+    {
+        $pass1.removeClass('error ok');
+        $pass2.removeClass('error ok');
+        validation_failure();
+        if (keyTimer !== null)
+            clearTimeout(keyTimer);
+
+        keyTimer = setTimeout(function() { pass_validate(); }, 1000);
+    }
+
+    function pass_blur()
+    {
+        if ($pass1.hasClass('ok'))
+            return;
+
+        pass_validate();
+    }
+
+    /************************************************
+     * Validation Initialization
+     *
+     */
+    $(document).ready(function() {
+        $userName = $('input[name=user]');
+        $pass1    = $('input[name=password]');
+        $pass2    = $('input[name=password2]');
+        $submit   = $('input[type=submit]');
+        $error    = $('.formError');
+
+        validation_failure();
+
+        // Handle validation of the userName
+        $userName.keyup(function() { userName_keyup(); })
+                 .blur(function() {  userName_blur(); });
+
+        // Handle validation of the password
+        $pass1.keyup(function() { pass_keyup(); })
+              .blur(function() {  pass_blur(); });
+
+        $pass2.keyup(function() { pass_keyup(); })
+              .blur(function() {  pass_blur(); });
+    });
+ })(jQuery);
+<?php
+$script->captureEnd();
+
+
 ?>
 <div id="auth">
-    <h1>Register</h1>
-
-    <p>Create an account to begin taking advantage of social bookmarking!</p>
-
-    <form method='post'>
-     <div class='field'>
-      <label for='user'>username</label>
-      <input type='text' name='user' value='<?= $this->user ?>' />
-     </div>
-     <div class='field'>
-      <label for='password'>password</label>
-      <input type='password' name='password' value='<?= $this->pass ?>' />
-     </div>
-     <div class='field'>
-      <label for='password2'>verify password</label>
-      <input type='password' name='password2' />
-     </div>
-     <div class='field'>
-      <input type='submit' value='Register' />
-     </div>
-    </form>
-
-    <div class='error'>
-     <?= (@isset($this->error) ? $this->error : '') ?>
+ <div class="line"><!-- { -->
+  <div class="legend unit"><!-- { -->
+   <h1>Join</h1>
+   <p>
+    or <?= Connexions::anchor('/auth/signIn', 'Sign In') ?>
+   </p>
+  </div><!-- legend } -->
+  <div class="userInput unit"><!-- { -->
+   <form method='post'>
+    <div class='field required'>
+     <div class='validationStatus'></div>
+     <label for='user'>User Name / ID</label>
+     <input type='text' class='text' autocomplete='off'
+            name='user' value='<?= $this->user ?>' />
     </div>
+    <div class='field required'>
+     <div class='validationStatus'></div>
+     <label for='password'>Password</label>
+     <input type='password' class='text' autocomplete='off'
+           name='password' value='<?= $this->pass ?>' />
+    </div>
+    <div class='field required'>
+     <div class='validationStatus'></div>
+     <label for='password2'>Re-type Password for verfication</label>
+     <input type='password' class='text' autocomplete='off'
+            name='password2' />
+    </div>
+    <div class='field buttons'>
+     <input type='submit' class='button' value='Join Connexions' />
+    </div>
+   </form>
+ 
+   <div class='formError'>
+    <?= (@isset($this->error) ? $this->error : '') ?>
+   </div>
+  </div><!-- userInput } -->
+ </div><!-- line } -->
 </div>

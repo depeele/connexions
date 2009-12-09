@@ -42,6 +42,7 @@ a, a:link, a:visited, a:focus, a:hover {
   font-weight:      normal;
   text-decoration:  none;
 }
+#pageHeader .tabs li.active a,
 #pageHeader .tabs a:hover {
   color:            #b0d730;
 }
@@ -70,10 +71,13 @@ a, a:link, a:visited, a:focus, a:hover {
 #pageHeader .tabs li.join {
   width:            100px;
   height:           auto;
-  padding:      	24px 8px;
+  padding:      	  24px 8px;
 
   border-right:     1px dotted #666;
   background-color: #9FC54E;
+}
+#pageHeader .tabs li.join a {
+  color:            #fff;
 }
 #pageHeader .tabs li.join a:hover {
   color:            #2786C2;
@@ -103,14 +107,6 @@ a, a:link, a:visited, a:focus, a:hover {
   width:            90px;
   padding:          0 16px;
 }
-/*
-#pageHeader ul.sub li.first,
-#search ul.sub li.first {
-  height:             auto;
-  padding:            0 16px;
-  border-right:       0;
-}
-*/
 #pageHeader ul.sub li.last a,
 #search ul.sub li.last span {
   padding-bottom:   0;
@@ -262,6 +258,7 @@ a, a:link, a:visited, a:focus, a:hover {
 
 /* Page Footer */
 #pageFooter {
+  clear:            both;
   margin-top:       1em;
   border-top:       1px solid #ddd;
   padding:          0.5em;

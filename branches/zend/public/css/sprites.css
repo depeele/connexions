@@ -15,6 +15,10 @@
 .lock_empty           {width:13px;height:16px;background-position:0     -28px;}
 .lock_fill            {width:13px;height:16px;background-position:-13px -28px;}
 
+.status_ok            {width:15px;height:15px;background-position:-72px  -28px;}
+.status_error         {width:15px;height:15px;background-position:-87px  -28px;}
+.status_empty         {width:15px;height:15px;background-position:-104px -28px;}
+
 .star_empty           {width:15px;height:15px;background-position:0     -44px;}
 .star_fill            {width:15px;height:15px;background-position:-15px -44px;}
 
