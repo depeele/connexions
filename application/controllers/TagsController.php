@@ -1,7 +1,6 @@
 <?php
 
-class IndexController extends Zend_Controller_Action
-//class IndexController extends Connexions_Controller_Action
+class TagsController extends Zend_Controller_Action
 {
 
     public function init()
@@ -59,7 +58,7 @@ class IndexController extends Zend_Controller_Action
         {
             $user = substr($method, 0, -6);
 
-            return $this->_forward('index', 'index', null,
+            return $this->_forward('index', 'tags', null,
                                    array('user' => $user));
         }
 

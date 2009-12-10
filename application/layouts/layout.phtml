@@ -64,7 +64,7 @@ echo $this->doctype();
         var $input          = $form.find('input[name=q]');
         var $context        = $form.find('input[name=searchContext]');
         var $choices        = $form.find('.choices .list');
-        var contextLabel    = $choices.find('li.on').text();
+        var contextLabel    = $choices.find('li.active').text();
 
         // Activate our search choice selections
         //$('#search .choices .list li').click(
@@ -82,11 +82,11 @@ echo $this->doctype();
                 contextLabel = $li.text();
                 $input.val(contextLabel);
 
-                // Remove the 'on' class from all sibling lis
-                $li.siblings('.on').removeClass('on');
+                // Remove the 'active' class from all sibling lis
+                $li.siblings('.active').removeClass('active');
 
-                // And last, add the 'on' class to this li
-                $li.addClass('on');
+                // And last, add the 'active' class to this li
+                $li.addClass('active');
                 $input.focus();
         });
 

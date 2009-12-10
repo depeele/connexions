@@ -32,6 +32,59 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         */
     }
 
+    protected function _initRoute()
+    {
+        /*
+        $config = Zend_Registry::get('config');
+        $front  = Zend_Controller_Front::getInstance();
+        $router = $front->getRouter();
+
+        if (false)
+        {
+        $router->addConfig($config, 'routes');
+
+        }
+        else if (false)
+        {
+        $configRouter = new Zend_Controller_Router_Rewrite();
+        $configRouter->addConfig($config, 'routes');
+
+        $router->addRoute('default', $configRouter);
+        }
+        else
+        {
+        $route2 = new Zend_Controller_Router_Route(
+                        ':owner/*',
+                        array('module'      => 'default',
+                              'controller'  => 'index',
+                              'action'      => 'index',
+                              'owner'       => '')
+                     );
+        $route0 = new Zend_Controller_Router_Route(
+                        ':controller/:action/:owner/*',
+                        array('module'      => 'default',
+                              'controller'  => 'index',
+                              'action'      => 'index',
+                              'owner'       => '')
+                     );
+        $route1 = new Zend_Controller_Router_Route_Regex(
+                        '(auth|people|network|tags|subscriptions|help|inbox)/'.
+                                    ':owner/*',
+                        array('module'      => 'default',
+                              'controller'  => 1,
+                              'action'      => 'index',
+                              'owner'       => ''),
+                        array(1             => 'index'),
+                        'bookmarks'
+                     );
+
+        //$route1->chain($route2);
+
+        $router->addRoute('default', $route1);
+        }
+        */
+    }
+
     protected function _initDb()
     {
         $config = $this->getPluginResource('db');
