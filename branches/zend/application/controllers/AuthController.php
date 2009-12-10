@@ -7,13 +7,12 @@
 
 class AuthController extends Zend_Controller_Action
 {
-    protected $_redirector  = null;
-    protected $_isWelcome   = false;
+    //protected $_redirector  = null;
 
     public function init()
     {
         /* Initialize action controller here */
-        $this->_redirector = $this->_helper->getHelper('Redirector');
+        //$this->_redirector = $this->_helper->getHelper('Redirector');
     }
 
     public function signinAction()
@@ -24,7 +23,8 @@ class AuthController extends Zend_Controller_Action
             if ($user->isAuthenticated())
             {
                 // Authenticated!  Redirect
-                return $this->_redirector->setGotoSimple('index', 'index');
+                return $this->_helper->redirector('index','index');
+                //return $this->_redirector->setGotoSimple('index', 'index');
             }
 
             // Set a 401 (unauthorized) HTTP response code
@@ -34,9 +34,10 @@ class AuthController extends Zend_Controller_Action
             $this->view->error = $user->getError();
         }
 
+        $request   = $this->getRequest();
+
         // NOT authenticated
         $this->view->user    = $user;
-        $this->view->welcome = $this->_isWelcome;
     }
 
     public function signoutAction()
@@ -46,7 +47,8 @@ class AuthController extends Zend_Controller_Action
         $auth->clearIdentity();
 
         // Redirect
-        return $this->_redirector->setGotoSimple('index', 'index');
+        return $this->_helper->redirector('index','index');
+        //return $this->_redirector->setGotoSimple('index', 'index');
 
         // action body
     }
@@ -75,7 +77,7 @@ class AuthController extends Zend_Controller_Action
         {
             // Add this new user to the database
             $userModel = new Model_User($user);
-            if ($userModel->isValid())
+            if ($userModel->isBacked())
             {
                 $this->view->error = "User Name is already taken.";
             }
@@ -89,18 +91,14 @@ class AuthController extends Zend_Controller_Action
                 {
                     /* We've successfully registered this new user
                      *
-                     * Redirect to the 'welcome' view where the user
-                     * can sign-in with some additional welcome information.
+                     * Mark this user as 'authenticated' by performing a
+                     * write() of the user's name to the authentication store.
                      */
-                    $this->_isWelcome = true;
+                    $auth = Zend_Auth::getInstance();
+                    $auth->getStorage()->write($user);
 
-                    Zend_Registry::set('user', $user);
-
-                    //return $this->_forward('signIn');
-                    return $this->_helper->redirector('signIn');
-
-                    return $this->_redirector->setGotoSimple('welcome',
-                                                             'index');
+                    // Redirect to a new user welcome.
+                    return $this->_helper->redirector('index', 'welcome');
                 }
 
                 $this->view->error = "Database error";
@@ -119,7 +117,6 @@ class AuthController extends Zend_Controller_Action
             ($request->isPost()) )
         {
             return $this->_helper->redirector('signIn');
-            //return $this->_redirector->setGotoSimple('index', 'index');
         }
 
         // Grab the JsonRpc helper
@@ -137,7 +134,7 @@ class AuthController extends Zend_Controller_Action
         {
             // Does a user exist with the given name?
             $user = new Model_User($userName);
-            if ($user->isValid())
+            if ($user->isBacked())
             {
                 // This user name is taken.
                 $jsonRpc->setError("User name is already taken.");

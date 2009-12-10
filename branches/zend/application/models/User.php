@@ -8,7 +8,8 @@
 class Model_User extends Connexions_Model
 {
     protected static    $table  = 'user';
-    protected static    $keys   = array('userId', 'name');
+                                  // order 'keys' by most used
+    protected static    $keys   = array('name', 'userId');
     protected static    $model  = array('userId'        => 'auto',
                                         'name'          => 'string',
                                         'password'      => 'string',
@@ -43,7 +44,7 @@ class Model_User extends Connexions_Model
         if ( (! @empty($id)) && (! $this->isValid()) )
         {
             // Override the generic 'No matching record' error
-            $this->_error = 'Unknown user "'. $id .'"';
+            $this->_error = 'Unknown user.';
         }
 
         return $this;
@@ -71,7 +72,7 @@ class Model_User extends Connexions_Model
      */
     public function __toString()
     {
-        if ($this->isValid())
+        if ($this->isValid() && (! @empty($this->_record['name'])))
             return $this->_record['name'];
 
         return parent::__toString();
@@ -116,7 +117,7 @@ class Model_User extends Connexions_Model
                 return true;
             }
 
-            $this->_error = 'Invalid password';
+            $this->_error = 'Invalid password.';
         }
 
         return false;

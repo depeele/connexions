@@ -109,11 +109,6 @@ function renderMenu($helper, $container, $ulClass = 'nav')
         if ( ($pageClass = $page->getClass()) !== null)
             array_push($liClasses, $pageClass);
     
-        $href   = $page->getHref();
-    
-        printf ("<!-- Count: %d, key: %s -->\n",
-                $page->count(), $page->key());
-
         printf ("%s <li%s>",
                 $indent,
                 (! @empty($liClasses)
@@ -126,6 +121,7 @@ function renderMenu($helper, $container, $ulClass = 'nav')
                  "</div>";
         }
 
+        $href  = Connexions::replaceables($page->getHref());
         $label = Connexions::replaceables($page->getLabel());
         printf ("<a href='%s'>%s</a>",
                 $href, $label);
@@ -196,7 +192,8 @@ function renderSearch($request, array $searchContexts)
                     array_push($liClasses, 'last');
                 if ($searchContext == $name)
                 {
-                    array_push($liClasses, 'on');
+                    //array_push($liClasses, 'on');
+                    array_push($liClasses, 'active');
                     $contextText = $label;
                 }
 
@@ -212,6 +209,7 @@ function renderSearch($request, array $searchContexts)
                          "</div>";
                 }
 
+                $label = Connexions::replaceables($label);
                 printf ("<span>%s</span></li>\n",
                         $label);
 

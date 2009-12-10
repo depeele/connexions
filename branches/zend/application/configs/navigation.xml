@@ -44,22 +44,24 @@
 
     <bookmarks>
      <label>Bookmarks</label>
-     <controller>bookmarks</controller>
      <action>index</action>
      <pages>
       <mine>
        <label>Mine</label>
-       <controller>bookmarks</controller>
-       <action>mine</action>
+       <action>%user.name%</action>
        <class>local</class>
        <resource>member</resource>
       </mine>
       <explore>
        <label>Explore</label>
-       <controller>bookmarks</controller>
        <action>index</action>
-       <class>global last</class>
+       <class>global</class>
       </explore>
+      <lookup>
+       <label>Lookup URL</label>
+       <action>url</action>
+       <class>global last</class>
+      </lookup>
      </pages>
     </bookmarks>
   
@@ -71,7 +73,7 @@
       <mine>
        <label>My network</label>
        <controller>network</controller>
-       <action>mine</action>
+       <action>%user.name%</action>
        <class>local</class>
        <resource>member</resource>
       </mine>
@@ -92,7 +94,7 @@
       <mine>
        <label>Mine</label>
        <controller>tags</controller>
-       <action>mine</action>
+       <action>%user.name%</action>
        <class>local</class>
        <resource>member</resource>
       </mine>

@@ -1,9 +1,7 @@
 <?php
 
-class IndexController extends Zend_Controller_Action
-//class IndexController extends Connexions_Controller_Action
+class NetworkController extends Zend_Controller_Action
 {
-
     public function init()
     {
         /* Initialize action controller here */
@@ -59,7 +57,7 @@ class IndexController extends Zend_Controller_Action
         {
             $user = substr($method, 0, -6);
 
-            return $this->_forward('index', 'index', null,
+            return $this->_forward('index', 'network', null,
                                    array('user' => $user));
         }
 
