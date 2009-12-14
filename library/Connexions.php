@@ -120,7 +120,10 @@ class Connexions
     /** @brief  Perform variable replacement.
      *  @param  str     The string to operate on.
      *
-     *  This will replace variables of the form '%namespace.selector%'
+     *  This will replace variables of the form
+     *      '%namespace.selector%'
+     *          OR
+     *      '%25namespace.selector%25'  (to handle URL encoding of %)
      *
      *  Recognized 'namespace's are:
      *      user    - can accept a selector identifying any field.
@@ -129,7 +132,8 @@ class Connexions
      */
     public static function replaceables($str)
     {
-        if (preg_match_all('/%([^%\.]+)\.([^%]+)%/', $str, $names))
+        if (preg_match_all('/%(?:25)?([^%\.]+)\.([^%]+)%(?:25)?/',
+                           $str, $names))
         {
             $nNames = count($names[0]);
 
@@ -156,7 +160,8 @@ class Connexions
                     break;
                 }
 
-                $str = preg_replace('/%'. $nameSpace .'.'. $selector .'%/i',
+                $str = preg_replace('/%(25)?'. $nameSpace .'.'
+                                             . $selector  .'%(25)?/i',
                                     $replacement, $str);
             }
         }
