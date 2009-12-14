@@ -57,21 +57,21 @@ a, a:link, a:visited, a:focus, a:hover {
 }
 #pageHeader .nav li {
   float:        left;
-  width:        60px;
+  width:        7em;
   text-align:   center;
-  padding:      24px 18px;
+  padding:      24px 1em;
 }
 #pageHeader .tabs li.welcome {
-  width:        100px;
+  width:        8em;
   height:       auto;
-  padding:      16px 8px;
+  padding:      16px 0.5em;
 
   border-right: 1px dotted #666;
 }
 #pageHeader .tabs li.join {
-  width:            100px;
+  width:            8em;
   height:           auto;
-  padding:      	  24px 8px;
+  padding:      	  24px 0.5em;
 
   border-right:     1px dotted #666;
   background-color: #9FC54E;
@@ -104,7 +104,7 @@ a, a:link, a:visited, a:focus, a:hover {
 #pageHeader ul.sub li,
 #search ul.sub li {
   background-color: #172322;      /* Match #pageHeader .tabs */
-  width:            90px;
+  width:            9em;
   padding:          0 16px;
 }
 #pageHeader ul.sub li.last a,
@@ -160,8 +160,8 @@ a, a:link, a:visited, a:focus, a:hover {
   text-align:       left;
 }
 
-#pageHeader ul.sub li a,
-#search ul.sub li span {
+#pageHeader .nav ul.sub li a,
+#search .choices ul.sub li span {
   display:          block;
   padding:          0.5em 0;
   color:            #2786C2;
@@ -169,6 +169,24 @@ a, a:link, a:visited, a:focus, a:hover {
 
   border-top:       1px dotted #666;
 }
+/* If only IE6 suppported the child selector, we could
+ * change
+ *    '#pageHeader .tabs li.active a'
+ *    '#pageHeader .tabs li.active>a'
+ *
+ * and completely omit these next rules {
+ */
+#pageHeader .nav ul.sub li.active a,
+#search .choices ul.sub li.active span {
+  color:            #b0d730;
+}
+#pageHeader .nav ul.sub li a:hover,
+#search .choices ul.sub li:hover span {
+  color:            #7fcdfe;
+}
+/* } **************************************************/
+
+
 #pageHeader ul.sub li.first a,
 #search ul.sub li.first span {
   padding-top:      8px;
@@ -197,21 +215,7 @@ a, a:link, a:visited, a:focus, a:hover {
   left:             -30px;
 }
 #search .choices .list li {
-  width:            11.5em;       /* Match #search .searchInput */
-}
-#search ul.sub li.on span {
-  /* .smallIcon_dotWhite
-  background-image:     url('sprites/smallIcons.gif');
-  background-position:  5px -1213px;
-  background-repeat:    no-repeat;
-  */
-  color:                #E53D2C;
-}
-#search .choices .list li.on:hover span {
-  /* .smallIcon_dotGrey
-  background-position:  5px -1193px;
-  */
-  color:                #E53D2C;
+  width:            14em;         /* Match #search .searchInput */
 }
 
 #search:hover .list {
@@ -237,18 +241,25 @@ a, a:link, a:visited, a:focus, a:hover {
   color:      #000;
 }
 #search .submit {
-  float:            right;
+  /* The submit "button" is actually a transparent button overlayed onto the
+   * search_bg background of searchBox.  Make sure it's in the right location
+   * AND above the input area so it will receive hover and click events.
+   */
   display:          block;
-  padding:          0;
-
+  position:         absolute;
+  top:              0;
+  left:             150px;    /* search_bg == 173px, the magnifier is 23px */
   height:           23px;
   width:            23px;
 
+  padding:          0;
+
   border:           0;
+  background-color: transparent;
 
   cursor:           pointer;
 
-  background-color: transparent;
+  z-index:          101;
 }
 
 /* Page Content */

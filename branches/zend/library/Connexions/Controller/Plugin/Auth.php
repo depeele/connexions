@@ -46,7 +46,7 @@ class Connexions_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
              *      valid user?
              */
             $user = new Model_User($userId);
-            if ($user->isValid())
+            if ($user->isBacked())
             {
                 // 1.a.i) We have a valid user -- consider them authenticated.
                 /*
@@ -58,7 +58,7 @@ class Connexions_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
             }
         }
 
-        if ( ($user === null) || (! $user->isValid()) )
+        if ( ($user === null) || (! $user->isBacked()) )
         {
             // 2) Do we have identity and authentication information?
             $userId  = $req->getParam('user', null);
@@ -76,7 +76,7 @@ class Connexions_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
             if (($user === null) || ($userId !== null))
                 $user = new Model_User($userId);
 
-            if ( $user->isValid() && (! @empty($pass)) )
+            if ( $user->isBacked() && (! @empty($pass)) )
             {
                 /* Perform authentication verification.
                  *
@@ -89,7 +89,7 @@ class Connexions_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
                 $adapter = new Connexions_Auth($user, $pass);
                 $res     = $auth->authenticate($adapter);
                 /*
-                if (! $res->isValid())
+                if (! $res->isBacked())
                 {
                     // Invalid password.
                     printf ("Connexions_Controller_Plugin_Auth: ".
@@ -106,9 +106,11 @@ class Connexions_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
                 // Invalid user or missing password.
                 printf ("Connexions_Controller_Plugin_Auth: ".
                             "User [ %s ] NOT authenticated: ".
-                                "User is%s valid, password[ %s ]<br />\n",
+                                "User is%s valid, is%s bakced, ".
+                                "password[ %s ]<br />\n",
                         $userId,
-                        ($user->isValid() ? "" : " NOT"),
+                        ($user->isValid()  ? "" : " NOT"),
+                        ($user->isBacked() ? "" : " NOT"),
                         $pass);
             }
             // */
