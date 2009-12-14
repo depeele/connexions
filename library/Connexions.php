@@ -68,6 +68,17 @@ class Connexions
         return Zend_Controller_Front::getInstance()->getRequest();
     }
 
+    /** @brief  Retrieve the URL of the current request.
+     *
+     *  @return A URI string.
+     */
+    public static function getRequestUri()
+    {
+        return Zend_Controller_Front::getInstance()
+                                ->getRequest()
+                                ->getRequestUri();
+    }
+
     /** @brief  Given a site URL, apply any 'base' url prefix and return.
      *  @param  url     The site URL.
      *

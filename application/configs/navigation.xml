@@ -12,9 +12,16 @@
     <userInfo>
      <label>Welcome%html.br%%user.name%</label>
      <controller>index</controller>
-     <action>index</action>
+     <action>%user.name%</action>
      <resource>member</resource>
      <class>welcome connexions_sprites welcome_bg</class>
+     <pages>
+      <settings>
+       <label>Settings</label>
+       <controller>settings</controller>
+       <class>local</class>
+      </settings>
+     </pages>
     </userInfo>
 
     <!-- Guests -->
@@ -48,18 +55,21 @@
      <pages>
       <mine>
        <label>Mine</label>
+       <controller>index</controller>
        <action>%user.name%</action>
        <class>local</class>
        <resource>member</resource>
       </mine>
       <explore>
        <label>Explore</label>
+       <controller>index</controller>
        <action>index</action>
        <class>global</class>
       </explore>
       <lookup>
        <label>Lookup URL</label>
-       <action>url</action>
+       <controller>url</controller>
+       <action>index</action>
        <class>global last</class>
       </lookup>
      </pages>

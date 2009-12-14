@@ -68,6 +68,16 @@ a, a:link, a:visited, a:focus, a:hover {
 
   border-right: 1px dotted #666;
 }
+#pageHeader .tabs li.welcome:hover {
+  /* Shift right 18 pixels to hide the corner */
+  background-position:-18px -110px;
+}
+#pageHeader .tabs li.welcome ul.sub {
+  left:             0px;
+}
+#pageHeader .tabs li.welcome ul.sub li {
+  width:            94px;
+}
 #pageHeader .tabs li.join {
   width:            8em;
   height:           auto;
@@ -96,7 +106,6 @@ a, a:link, a:visited, a:focus, a:hover {
 
   z-index:          100;
 }
-
 #pageHeader li:hover ul.sub {
   display:          block;
 }

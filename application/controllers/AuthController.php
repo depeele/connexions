@@ -17,10 +17,10 @@ class AuthController extends Zend_Controller_Action
 
     public function signinAction()
     {
-        $user = Zend_Registry::get('user');
-        if ($user instanceof Model_User)
+        $viewer = Zend_Registry::get('user');
+        if ($viewer instanceof Model_User)
         {
-            if ($user->isAuthenticated())
+            if ($viewer->isAuthenticated())
             {
                 // Authenticated!  Redirect
                 return $this->_helper->redirector('index','index');
@@ -31,18 +31,18 @@ class AuthController extends Zend_Controller_Action
             $response = $this->getResponse();
             $response->setHttpResponseCode(401);
 
-            $this->view->error = $user->getError();
+            $this->view->error = $viewer->getError();
         }
 
         $request   = $this->getRequest();
 
         // NOT authenticated
-        $this->view->user    = $user;
+        $this->view->user    = $viewer;
     }
 
     public function signoutAction()
     {
-        //$user = Zend_Registry::get('user');
+        //$viewer = Zend_Registry::get('user');
         $auth = Zend_Auth::getInstance();
         $auth->clearIdentity();
 

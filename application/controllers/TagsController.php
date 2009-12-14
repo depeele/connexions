@@ -13,7 +13,8 @@ class TagsController extends Zend_Controller_Action
         $viewer =& Zend_Registry::get('user');
 
         $request = $this->getRequest();
-        $owner   = $request->getParam('user', null);
+        $owner   = $request->getParam('owner', null);
+        $tags    = $request->getParam('tags',  null);
 
         if ($owner === 'mine')
         {
@@ -45,6 +46,7 @@ class TagsController extends Zend_Controller_Action
 
         $this->view->owner  = $owner;
         $this->view->viewer = $viewer;
+        $this->view->tags   = $tags;
     }
 
     /** @brief Redirect all other actions to 'index'
@@ -56,10 +58,10 @@ class TagsController extends Zend_Controller_Action
     {
         if (substr($method, -6) == 'Action')
         {
-            $user = substr($method, 0, -6);
+            $owner = substr($method, 0, -6);
 
             return $this->_forward('index', 'tags', null,
-                                   array('user' => $user));
+                                   array('owner' => $owner));
         }
 
         throw new Exception('Invalid method "'. $method .'" called', 500);

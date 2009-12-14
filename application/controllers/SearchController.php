@@ -1,6 +1,6 @@
 <?php
 
-class IndexController extends Zend_Controller_Action
+class SearchController extends Zend_Controller_Action
 {
 
     public function init()
@@ -13,8 +13,10 @@ class IndexController extends Zend_Controller_Action
         $viewer =& Zend_Registry::get('user');
 
         $request = $this->getRequest();
-        $owner   = $request->getParam('owner', null);
-        $tags    = $request->getParam('tags',  null);
+        $owner   = $request->getParam('owner',         null);
+        $tags    = $request->getParam('tags',          null);
+        $context = $request->getParam('searchContext', null);
+        $terms   = $request->getParam('q',             null);
 
         if ($owner === 'mine')
         {
@@ -44,26 +46,11 @@ class IndexController extends Zend_Controller_Action
             }
         }
 
-        $this->view->owner  = $owner;
-        $this->view->viewer = $viewer;
-        $this->view->tags   = $tags;
-    }
-
-    /** @brief Redirect all other actions to 'index'
-     *  @param  method      The target method.
-     *  @param  args        Incoming arguments.
-     *
-     */
-    public function __call($method, $args)
-    {
-        if (substr($method, -6) == 'Action')
-        {
-            $owner = substr($method, 0, -6);
-
-            return $this->_forward('index', 'index', null,
-                                   array('owner' => $owner));
-        }
-
-        throw new Exception('Invalid method "'. $method .'" called', 500);
+        $this->view->owner   = $owner;
+        $this->view->viewer  = $viewer;
+        $this->view->tags    = $tags;
+        $this->view->context = $context;
+        $this->view->terms   = $terms;
     }
 }
+
