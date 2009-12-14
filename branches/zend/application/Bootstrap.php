@@ -34,12 +34,17 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
     protected function _initRoute()
     {
-        /*
+        // /*
         $config = Zend_Registry::get('config');
         $front  = Zend_Controller_Front::getInstance();
         $router = $front->getRouter();
 
-        if (false)
+        if (true)
+        {
+        $route = new Connexions_Controller_Route();
+        $router->addRoute('default', $route);
+        }
+        else if (false)
         {
         $router->addConfig($config, 'routes');
 
@@ -51,7 +56,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
         $router->addRoute('default', $configRouter);
         }
-        else
+        else if (false)
         {
         $route2 = new Zend_Controller_Router_Route(
                         ':owner/*',
@@ -60,29 +65,109 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
                               'action'      => 'index',
                               'owner'       => '')
                      );
-        $route0 = new Zend_Controller_Router_Route(
+        $route1 = new Zend_Controller_Router_Route(
                         ':controller/:action/:owner/*',
                         array('module'      => 'default',
                               'controller'  => 'index',
                               'action'      => 'index',
                               'owner'       => '')
                      );
-        $route1 = new Zend_Controller_Router_Route_Regex(
-                        '(auth|people|network|tags|subscriptions|help|inbox)/'.
-                                    ':owner/*',
-                        array('module'      => 'default',
-                              'controller'  => 1,
-                              'action'      => 'index',
-                              'owner'       => ''),
-                        array(1             => 'index'),
-                        'bookmarks'
-                     );
 
-        //$route1->chain($route2);
+        $route1->chain($route2);
 
         $router->addRoute('default', $route1);
         }
-        */
+        else if (false)
+        {
+        $route = new Zend_Controller_Router_Route_Regex(
+                    '(?:!(auth|people|network|tags|subscriptions|help|inbox))'.
+                                '/*',
+                        array('controller'  => 'index',
+                              'action'      => 'index',
+                              'owner'       => 'mine'),
+                        array('owner'       => 1),
+                        '%s'
+                     );
+
+        $router->addRoute('bookmarks', $route);
+        }
+        else if (false)
+        {
+        $route1 = new Zend_Controller_Router_Route_Static(
+                    'people',
+                        array('controller'  => 'people',
+                              'action'      => 'index')
+                     );
+        $route2 = new Zend_Controller_Router_Route(
+                    ':owner/:controller/*',
+                        array('controller'  => 'index',
+                              'action'      => 'index',
+                              'owner'       => 'mine')
+                     );
+
+        $router->addRoute('people',  $route1)
+               ->addRoute('route2',  $route2);
+        }
+        else if (false)
+        {
+        $route1 = new Zend_Controller_Router_Route(
+                        'auth/:action/*',
+                        array('controller'  => 'auth',
+                              'action'      => 'index',
+                              'owner'       => '')
+                     );
+        $route2 = new Zend_Controller_Router_Route(
+                        'people/:action/*',
+                        array('controller'  => 'people',
+                              'action'      => 'index',
+                              'owner'       => '')
+                     );
+        $route3 = new Zend_Controller_Router_Route(
+                        'network/:owner/*',
+                        array('controller'  => 'network',
+                              'action'      => 'index',
+                              'owner'       => 'mine')
+                     );
+        $route4 = new Zend_Controller_Router_Route(
+                        'tags/:owner/*',
+                        array('controller'  => 'tags',
+                              'action'      => 'index',
+                              'owner'       => 'mine')
+                     );
+        $route5 = new Zend_Controller_Router_Route(
+                        'subscriptions/:owner/*',
+                        array('controller'  => 'subscriptions',
+                              'action'      => 'index',
+                              'owner'       => 'mine')
+                     );
+        $route6 = new Zend_Controller_Router_Route(
+                        'inbox/:owner/*',
+                        array('controller'  => 'inbox',
+                              'action'      => 'index',
+                              'owner'       => 'mine')
+                     );
+
+        $route7 = new Zend_Controller_Router_Route(
+                        'help/:action/*',
+                        array('controller'  => 'help',
+                              'action'      => 'index')
+                     );
+        $route8 = new Zend_Controller_Router_Route(
+                        ':owner/*',
+                        array('controller'  => 'index',
+                              'action'      => 'index',
+                              'owner'       => 'mine')
+                     );
+
+        $router->addRoute('auth',           $route1)
+               ->addRoute('people',         $route2)
+               ->addRoute('network',        $route3)
+               ->addRoute('tags',           $route4)
+               ->addRoute('subscriptions',  $route5)
+               ->addRoute('inbox',          $route6)
+               ->addRoute('help',           $route7);
+        }
+        // */
     }
 
     protected function _initDb()
@@ -191,18 +276,5 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
          */
         $view = Zend_Registry::get('view');
         $view->navigation($nav);
-
-        if (Zend_Registry::isRegistered('user'))
-        {
-            $user = Zend_Registry::get('user');
-            if ($user->isAuthenticated())
-            {
-                $view->navigation()->setRole('member');
-            }
-
-            printf ("Bootstrap: user[ %s ], role[ %s ]<br />\n",
-                    $user, $view->navigation()->getRole());
-        }
     }
 }
-

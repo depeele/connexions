@@ -54,11 +54,13 @@ function closeTags($indent, $prevDepth, $depth, $includeCorners = true)
  */
 function renderMenu($helper, $container, $ulClass = 'nav')
 {
+    $uri      = Connexions::getRequestUri();
     $iterator = new RecursiveIteratorIterator($container,
                         RecursiveIteratorIterator::SELF_FIRST);
 
-    $prevDepth = -1;
-    $liFirst   = false;
+    /* First, iterate through and determine the lowest page that matches the
+     * current URI.
+     */
     foreach ($iterator as $page)
     {
         if (! $helper->accept($page))
@@ -67,8 +69,33 @@ function renderMenu($helper, $container, $ulClass = 'nav')
             continue;
         }
 
-        $depth  = $iterator->getDepth();
-        $indent = str_repeat(' ', $depth);
+        $href   = $page->getHref();
+        $isActive = preg_match('#^'.$href.'$#', $uri);
+        if ($isActive)
+        {
+printf("\n<!-- Active href[ %s ], with uri[ %s ] -->\n", $href, $uri);
+            $page->setActive(true);
+        }
+    }
+    $iterator->rewind();
+
+    $prevDepth = -1;
+    $liFirst   = false;
+    $ulBegin   = true;
+    foreach ($iterator as $page)
+    {
+        if (! $helper->accept($page))
+        {
+            // NOT accepted by ACL or visibility
+            continue;
+        }
+
+        $depth    = $iterator->getDepth();
+        $indent   = str_repeat(' ', $depth);
+        $href     = $page->getHref();
+        $isActive = ($depth > 0
+                        ? preg_match('#^'.$href.'$#', $uri)
+                        : $page->isActive(true));
 
         if ($depth > $prevDepth)
         {
@@ -78,7 +105,7 @@ function renderMenu($helper, $container, $ulClass = 'nav')
                 array_push($ulClasses, $ulClass);
             else if ($depth > 0)
                 array_push($ulClasses, 'sub');
-            if ($page->isActive(true))
+            if ($isActive)  //$page->isActive(true))
                 array_push($ulClasses, 'active');
 
             echo $indent, '<ul',
@@ -104,7 +131,7 @@ function renderMenu($helper, $container, $ulClass = 'nav')
         $liClasses = array();
         if ( $liFirst )
             array_push($liClasses, 'first');
-        if ($page->isActive(true))
+        if ($isActive)  // $page->isActive(true))
             array_push($liClasses, 'active');
         if ( ($pageClass = $page->getClass()) !== null)
             array_push($liClasses, $pageClass);
@@ -116,12 +143,17 @@ function renderMenu($helper, $container, $ulClass = 'nav')
                     : ""));
         if (($depth > 0) && $liFirst)
         {
-            // Include the left inner corner
-            echo "<div class='connexions_sprites corner_inner_left'>",
-                 "</div>";
+            if ($ulBegin)
+                $ulBegin = false;
+            else
+            {
+                // Include the left inner corner
+                echo "<div class='connexions_sprites corner_inner_left'>",
+                     "</div>";
+            }
         }
 
-        $href  = Connexions::replaceables($page->getHref());
+        //$href  = $page->getHref();
         $label = Connexions::replaceables($page->getLabel());
         printf ("<a href='%s'>%s</a>",
                 $href, $label);
