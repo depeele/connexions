@@ -38,7 +38,8 @@ form label {
   font-size:    0.8em;
   font-weight:  normal;
 }
-form input {
+form input,
+form textarea {
   border:                 1px solid #aaa;
   padding:                0.3em;
   -moz-border-radius:     7px;

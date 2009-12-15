@@ -34,7 +34,8 @@ class AuthController extends Zend_Controller_Action
             $this->view->error = $viewer->getError();
         }
 
-        $request   = $this->getRequest();
+        //$request   = $this->getRequest();
+        $this->_helper->layout->setLayout('auth');
 
         // NOT authenticated
         $this->view->user    = $viewer;
@@ -104,6 +105,8 @@ class AuthController extends Zend_Controller_Action
                 $this->view->error = "Database error";
             }
         }
+
+        $this->_helper->layout->setLayout('auth');
     }
 
     /** @brief  An AJAJ auto-complete-like callback used to check whether or

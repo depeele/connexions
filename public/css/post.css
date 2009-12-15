@@ -1,0 +1,68 @@
+#post {
+  padding:          2em 3em;
+  background-color: #fff;
+
+  -moz-border-radius:     10px;
+  -webkit-border-radius:  10px;
+  border-radius:          10px;
+}
+
+#post .legend {
+  text-align:     right;
+  padding-right:  2em;
+  width:          10em;
+}
+#post .legend h1 {
+  padding:  0;
+}
+#post .legend p {
+  padding:  0;
+}
+
+#post .userInput {
+}
+
+#post .field {
+  padding-bottom: 1em;
+}
+#post .field .text {
+  width:        25em;
+}
+#post .field .validationStatus {
+  position: absolute;
+  left:     13em;
+  top:      1.2em;
+  width:    16em;
+}
+
+#post .buttons {
+  clear:        both;
+  position:     relative;
+  text-align:   right;
+}
+#post .buttons input,
+#post .buttons label,
+#post .buttons .checkbox {
+  position: relative;
+  display:  inline;
+}
+#post .checkbox {
+  cursor:   pointer;
+}
+#post .checkbox img {
+  display:  inline;
+}
+
+#post .button {
+  background-color: #59A5D1;
+  border-color:     #408BB6;
+  color:            #fff;
+  cursor:           pointer;
+}
+
+#post .formError {
+  padding:      1em 0;
+  font-weight:  bold;
+  text-align:   center;
+}
+
