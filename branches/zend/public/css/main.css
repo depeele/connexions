@@ -274,6 +274,7 @@ a, a:link, a:visited, a:focus, a:hover {
 /* Page Content */
 #pageContent {
   padding:          1em;
+  clear:            both;
 }
 
 /* Page Footer */

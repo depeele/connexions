@@ -16,9 +16,16 @@
      <resource>member</resource>
      <class>welcome connexions_sprites welcome_bg</class>
      <pages>
+      <post>
+       <label>Post</label>
+       <controller>post</controller>
+       <resource>member</resource>
+       <class>local</class>
+      </post>
       <settings>
        <label>Settings</label>
        <controller>settings</controller>
+       <resource>member</resource>
        <class>local</class>
       </settings>
      </pages>

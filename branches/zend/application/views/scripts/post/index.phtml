@@ -1,0 +1,235 @@
+<?php
+$this->headLink()->appendStylesheet($this->baseUrl('css/post.css'));
+
+if (! @is_array($this->postInfo))
+    $this->postInfo = array();
+
+$script = $this->headScript();
+$script->appendFile($this->baseUrl('js/jquery.class.js'));
+$script->appendFile($this->baseUrl('js/jquery.checkbox.js'));
+
+$script->captureStart();
+?>
+// <script type='text/javascript'>
+(function($) {
+    var $submit     = null;
+    var $error      = null;
+    var $tags       = null;
+    var keyTimer    = null;
+
+    /************************************************
+     * Validation presentation
+     *
+     */
+    function validation_failure($src, errorMsg)
+    {
+        $submit.attr('disabled', 'true')
+               .addClass('disabled');
+
+        if ($src !== undefined)
+        {
+            var $status = $src.parent().find('.validationStatus');
+
+            $src.removeClass('ok')
+                .addClass('error');
+            $status.removeClass('ok error');
+
+            if (errorMsg !== undefined)
+            {
+                $status.addClass('error')
+                       .text(errorMsg);
+                errorMsg = undefined;
+            }
+        }
+
+        if (errorMsg !== undefined)
+        {
+            $error.text(errorMsg);
+        }
+    }
+
+    function validation_success($src)
+    {
+        var $status     = $src.parent().find('.validationStatus');
+        var $required   = $('.required');
+
+        $src.removeClass('error')
+            .addClass('ok');
+        $status.removeClass('error')
+               .addClass('ok')
+               .text('');
+
+        if ($required.hasClass('ok'))
+        {
+            $submit.removeAttr('disabled')
+                   .removeClass('disabled');
+            $error.text('');
+        }
+
+        if ($required.hasClass('error'))
+        {
+            $submit.attr('disabled', 'true')
+                   .addClass('disabled');
+        }
+    }
+
+    /************************************************
+     * Validation routines
+     *
+     */
+    function nonEmpty_validate()
+    {
+        $('.nonEmpty').each(function() {
+            var $el = $(this);
+            if ($el.val().length > 0)
+            {
+                validation_success($el);
+            }
+            else
+            {
+                validation_failure($el);
+            }
+        });
+    }
+
+    /************************************************
+     * Input handlers
+     *
+     */
+    function tags_keyup()
+    {
+        $tags.removeClass('error ok');
+        validation_failure();
+        if (keyTimer !== null)
+            clearTimeout(keyTimer);
+
+        keyTimer = setTimeout(function() { tags_validate(); }, 1000);
+    }
+
+    function tags_blur()
+    {
+        if ($tags.hasClass('ok'))
+            return;
+
+        tags_validate();
+    }
+
+    function toggle_image_button(event, el, base)
+    {
+        var $el = $(el);
+        event.preventDefault();
+        event.stopPropagation();
+
+        if ($el.hasClass(base +'_fill'))
+        {
+            $el.removeAttr('checked')
+               .removeClass(base +'_fill')
+               .addClass(base +'_empty');
+        }
+        else
+        {
+            $el.attr('checked', true)
+               .removeClass(base +'_empty')
+               .addClass(base +'_fill');
+        }
+    }
+
+    /************************************************
+     * Validation Initialization
+     *
+     */
+    $(document).ready(function() {
+        $tags     = $('input[name=tags]');
+        $submit   = $('input[type=submit]');
+        $error    = $('.formError');
+
+        validation_failure();
+
+        // Handle autocomplete / validation of the tags
+        $tags.keyup(function() { userName_keyup(); })
+             .blur(function() {  userName_blur(); });
+
+        // Favorite
+        $('input[name=isFavorite]').Checkbox({
+                css:    'connexions_sprites',
+                empty:  '<?= $this->baseUrl('css/sprites/empty.gif') ?>',
+                cssOn:  'star_fill',
+                cssOff: 'star_empty'
+        });
+
+        // Privacy
+        $('input[name=isPrivate]').Checkbox({
+                css:    'connexions_sprites',
+                empty:  '<?= $this->baseUrl('css/sprites/empty.gif') ?>',
+                cssOn:  'lock_fill',
+                cssOff: 'lock_empty'
+        });
+    });
+ })(jQuery);
+<?php
+$script->captureEnd();
+
+
+?>
+<div id="post">
+ <div class="line"><!-- { -->
+  <div class="legend unit"><!-- { -->
+   <h1>Post</h1>
+   <p>
+    a new bookmark:
+   </p>
+  </div><!-- legend } -->
+  <div class="userInput unit"><!-- { -->
+   <form method='post'>
+    <div class='field required'>
+     <div class='validationStatus'></div>
+     <label for='name'>Name</label>
+     <input type='text' class='text nonEmpty' autocomplete='off'
+            name='name' value='<?= $this->postInfo['name'] ?>' />
+    </div>
+    <div class='field required'>
+     <div class='validationStatus'></div>
+     <label for='url'>URL</label>
+     <input type='text' class='text nonEmpty' autocomplete='off'
+           name='url' value='<?= $this->postInfo['url'] ?>' />
+    </div>
+    <div class='field'>
+     <label for='description'>Description</label>
+     <textarea class='text'
+            name='description'><?= $this->postInfo['description'] ?></textarea>
+    </div>
+    <div class='field required'>
+     <div class='validationStatus'></div>
+     <label for='tags'>Tags</label>
+     <input type='text' class='text nonEmpty' autocomplete='off'
+            name='tags' value='<?= $this->postInfo['tags'] ?>' />
+    </div>
+    <div class='field buttons'>
+     <label for='rating'>rating</label>
+     <input type='text' autocomplete='off'
+            name='rating' value='<?= $this->postInfo['rating'] ?>' />
+
+     <label for='isFavorite'>favorite?</label>
+     <input type='checkbox'
+            name='isFavorite' value='true'
+            title='Click to change favorite status'
+            <?= ($this->postInfo['isFavorite'] ? ' checked' : '') ?> />
+
+     <label for='isPrivate'>private?</label>
+     <input type='checkbox'
+            name='isPrivate' value='true'
+            title='Click to change privacy'
+            <?= ($this->postInfo['isPrivate'] ? ' checked' : '') ?> />
+    </div>
+    <div class='field buttons'>
+     <input type='submit' class='button' value='Save' />
+     <input type='submit' class='button' value='Cancel' />
+    </div>
+   </form>
+ 
+   <div class='formError'>
+    <?= (@isset($this->error) ? $this->error : '') ?>
+   </div>
+  </div><!-- userInput } -->
+ </div><!-- line } -->
+</div>

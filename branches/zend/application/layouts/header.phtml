@@ -1,0 +1,169 @@
+<?php
+$request = Connexions::getRequest();
+$baseUrl = Connexions::url('/');
+
+/*
+echo "<pre>Request Params:\n";
+print_r($request->getParams());
+echo "</pre>\n";
+// */
+
+$searchTerm     = $request->getParam('q', null);
+$searchContext  = $request->getParam('searchContext', 'all');
+$searchContexts = Zend_Registry::get('config')->searchContext;
+if ($searchContexts instanceof Zend_Config)
+{
+    $searchContexts = $searchContexts->toArray();
+}
+else
+{
+    $searchContexts = array();
+}
+
+echo $this->doctype();
+?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>connexions</title>
+  <link type="text/css" href="<?= $baseUrl ?>css/main.css"
+       media="screen, projection" rel="stylesheet" />
+  <!-- link type="text/css" href="<?= $baseUrl ?>css/screen.css"
+       media="screen,projection" rel="stylesheet" />
+  <link type="text/css" href="<?= $baseUrl ?>css/print.css"
+       media="print" rel="stylesheet" />
+  <link type="text/css" href="<?= $baseUrl ?>css/sprites.css"
+       media="screen,projection" rel="stylesheet" />
+  <! - - [if lt IE 8]>
+  <link type="text/css" href="<?= $baseUrl ?>css/ie.css"
+       media="screen, projection" rel="stylesheet" />
+  <![endif] - - >
+  -->
+  <?= $this->headlink() ?>
+
+  <?php
+    if (false)
+    {
+        ?>
+  <!-- Use the google CDN -->
+  <script type='text/javascript' src='http://www.google.com/jsapi'></script>
+  <script type='text/javascript'>
+    google.load('jquery', '1');
+
+    google.setOnLoadCallback(function() {
+        activateSearch();
+    });
+  </script>
+        <?php
+    }
+    else
+    {
+        ?>
+  <!-- Use the local jQuery -->
+  <script type='text/javascript' src='<?= $baseUrl ?>js/jquery.js'></script>
+  <script type='text/javascript'>
+    (function($) {
+        $(document).ready(function() {
+            activateSearch();
+        });
+     })(jQuery);
+  </script>
+        <?php
+    }
+        ?>
+  <script type='text/javascript'>
+    function activateSearch()
+    {
+        var $form           = $('#search');
+        var $input          = $form.find('input[name=q]');
+        var $context        = $form.find('input[name=searchContext]');
+        var $choices        = $form.find('.choices .list');
+        var contextLabel    = $choices.find('li.active').text();
+
+        // Activate our search choice selections
+        //$('#search .choices .list li').click(
+        $choices.find('li').click(
+            function(event) {
+                var $li         = $(this);
+                var $choices    = $li.parent().parent();
+
+
+                // Grab the new choice value from the li.id
+                var choice  = $li.attr('id').replace(/search-choice-/, '');
+                $context.val(choice);
+
+                // Now, set the current value in the query input box
+                contextLabel = $li.text();
+                $input.val(contextLabel);
+
+                // Remove the 'active' class from all sibling lis
+                $li.siblings('.active').removeClass('active');
+
+                // And last, add the 'active' class to this li
+                $li.addClass('active');
+                $input.focus();
+        });
+
+        /* When the input box receives focus, if the current value is the label
+         * of the current context, empty it.
+         */
+        $input.focus(function() {
+            if ($input.val() == contextLabel)
+                $input.val('');
+            $input.addClass('focus');
+        });
+
+        /* When the input box looses focus, if the current value is empty,
+         * set it to the current label.
+         */
+        $input.blur(function() {
+            if ($input.val().length < 1)
+                $input.val(contextLabel);
+            $input.removeClass('focus');
+        });
+    }
+  </script>
+  <?php
+
+  // Include any additional script
+  echo $this->headScript();
+
+  ?>
+
+</head>
+
+<body>
+ <div class="page liquid"><!-- { page -->
+  <div id="pageHeader" class="head" role="banner"><!-- { head -->
+   <h1 id='siteName'>
+    <a href="<?= $baseUrl ?>">
+     <span>conne</span>
+     <img src="<?= $baseUrl ?>images/logo.gif" alt="x" />
+     <span>ions</span>
+    </a>
+   </h1>
+   <div class='tabs'><!-- tabs { -->
+    <?php
+        /* Present the Navigation Menu */
+        $nav   = $this->navigation();
+
+        /*
+        $acl  = $nav->getAcl();
+        $role = $nav->getRole();
+        printf("role[ %s ]<br />\n", $role);
+echo "<pre>acl:\n";
+print_r($acl);
+echo "</pre>\n";
+        */
+
+        $items = $nav->findOneByLabel('nav_menu');
+
+        echo $this->navigation()
+                  ->menu()
+                  ->renderPartial($items, 'nav_menu.phtml');
+
+    ?>
+   </div><!-- tabs } -->
+ 
+   <!-- br class='clear' / -->
+  </div><!-- head } -->

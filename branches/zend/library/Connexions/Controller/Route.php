@@ -69,8 +69,8 @@ class Connexions_Controller_Route
         'search'        => array(':context' => array(
                                     ':terms'   => false)
                            ),
-        'auth'          => array('signin'   => false,
-                                 'signout'  => false,
+        'auth'          => array('signIn'   => false,
+                                 'signOut'  => false,
                                  'register' => false)
     );
 
@@ -101,8 +101,12 @@ class Connexions_Controller_Route
 
         $parts = explode('/', strtolower(trim($path, '/')) );
 
-echo "<!-- Connexions_Controller_Route::match:\n";
-printf (" path[ %s ], parts[ %s ]\n", $path, implode(':', $parts));
+        /*
+        echo   "<!-- Connexions_Controller_Route::match:\n";
+        printf("        path[ %s ], parts[ %s ] -->\n",
+                $path, implode(':', $parts));
+        // */
+
         $root = $parts[0];
         if ($root[0] == '%')
         {
@@ -122,8 +126,12 @@ printf (" path[ %s ], parts[ %s ]\n", $path, implode(':', $parts));
             $action     = $root;
         }
 
-printf (" Root[ %s ], routeKey[ %s ], controller[ %s ], action[ %s ]\n",
-        $root, $routeKey, $controller, $action);
+        /*
+        echo   "<!-- Connexions_Controller_Route::match:\n";
+        printf("        Root[ %s ], routeKey[ %s ], controller[ %s ], ".
+                                                       "action[ %s ] -->\n",
+                $root, $routeKey, $controller, $action);
+        // */
 
         if ($partial)
             $this->setMatchedPath($root);
@@ -140,40 +148,55 @@ printf (" Root[ %s ], routeKey[ %s ], controller[ %s ], action[ %s ]\n",
 
             foreach ($route as $key => $val)
             {
-printf (" Route: key[ %s ], part#%d[ %s ]\n", $key, $idex, $parts[$idex]);
+                /*
+                echo   "<!-- Connexions_Controller_Route::match:\n";
+                printf("        Route: key[ %s ], part#%d[ %s ] -->\n",
+                        $key, $idex, $parts[$idex]);
+                // */
 
                 if ($key[0] == ':')
                 {
+                    $name = substr($key, 1);
                     if ($name == ':owner')
                     {
                         $parts[$idex] = Connexions::replaceables('%user.name');
                     }
 
-                    $name          = substr($key, 1);
                     $params[$name] = $parts[$idex];
                     $idex++;
 
                     $route =& $val;
                     break;
                 }
-                else if ($key == $parts[$idex])
+                else if (strcasecmp($key, $parts[$idex]) === 0)
                 {
-                    $params[$name] = $parts[$idex];
+                    // This is a non-parametric node that defines the action
+                    $params['action'] = $key;
                     $idex++;
 
                     $route =& $val;
                     break;
                 }
-
-                // ERROR -- mismatch
-                echo "\n ERROR -->\n";
-                return false;
             }
         }
 
-echo " Params:\n";
-print_r($params);
-echo "\n -->\n";
+        if (($idex < $nParts) && (! $partial))
+        {
+            /*
+            echo "<!-- Connexions_Controller_Route::match:\n";
+            echo "      ERROR -->\n";
+            // */
+
+            // ERROR -- mismatch
+            return false;
+        }
+
+        /*
+        echo "<!-- Connexions_Controller_Route::match:\n";
+        echo "      Params:\n";
+        print_r($params);
+        echo "\n -->\n";
+        // */
 
         // Remember this current route
         $this->_currentRoute = array(
@@ -197,9 +220,11 @@ echo "\n -->\n";
                              $reset     = false,
                              $encode    = false)
     {
-echo "\n<!-- Connexions_Controller_Route:: assemble:\n";
-echo " data: "; print_r($data);
-echo " currentRoute: "; print_r($this->_currentRoute);
+        /*
+        echo "\n<!-- Connexions_Controller_Route:: assemble:\n";
+        echo " data: "; print_r($data);
+        echo " currentRoute: "; print_r($this->_currentRoute);
+        // */
 
         $url = '';
 
@@ -225,9 +250,13 @@ echo " currentRoute: "; print_r($this->_currentRoute);
                 $url .= $val .'/';
             }
         }
+        $url = rtrim($url, '/');
 
-printf (" url[ %s ]\n", $url);
-echo "\n -->\n";
+        /*
+        printf (" url[ %s ]\n", $url);
+        echo "\n -->\n";
+        // */
+
         return $url;
     }
 
