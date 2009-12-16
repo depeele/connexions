@@ -70,10 +70,10 @@ a, a:link, a:visited, a:focus, a:hover {
 }
 #pageHeader .tabs li.welcome:hover {
   /* Shift right 18 pixels to hide the corner */
-  background-position:-18px -110px;
+  /*background-position:-18px -110px;*/
 }
 #pageHeader .tabs li.welcome ul.sub {
-  left:             0px;
+  left:             24px;
 }
 #pageHeader .tabs li.welcome ul.sub li {
   width:            94px;

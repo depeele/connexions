@@ -81,7 +81,6 @@ printf("\n<!-- Active href[ %s ], with uri[ %s ] -->\n", $href, $uri);
 
     $prevDepth = -1;
     $liFirst   = false;
-    $ulBegin   = true;
     foreach ($iterator as $page)
     {
         if (! $helper->accept($page))
@@ -143,14 +142,9 @@ printf("\n<!-- Active href[ %s ], with uri[ %s ] -->\n", $href, $uri);
                     : ""));
         if (($depth > 0) && $liFirst)
         {
-            if ($ulBegin)
-                $ulBegin = false;
-            else
-            {
-                // Include the left inner corner
-                echo "<div class='connexions_sprites corner_inner_left'>",
-                     "</div>";
-            }
+            // Include the left inner corner
+            echo "<div class='connexions_sprites corner_inner_left'>",
+                 "</div>";
         }
 
         //$href  = $page->getHref();
