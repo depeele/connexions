@@ -23,6 +23,11 @@
  *      /post           [/:params]              Post a new bookmark
  *
  *      /search         [/:context  [/:terms]]  Search
+ *
+ *      /auth           /signIn
+ *                      /signOut
+ *                      /register
+ *                      /checkUser
  */
 
 class Connexions_Controller_Route
@@ -71,7 +76,8 @@ class Connexions_Controller_Route
                            ),
         'auth'          => array('signIn'   => false,
                                  'signOut'  => false,
-                                 'register' => false)
+                                 'register' => false,
+                                 'checkuser'=> false)
     );
 
     /** @brief  Retrieve an instance based upon configuration.

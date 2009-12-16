@@ -26,12 +26,12 @@
   padding-bottom: 1em;
 }
 #post .field .text {
-  width:        25em;
+  width:        30em;
 }
 #post .field .validationStatus {
   position: absolute;
-  left:     13em;
   top:      1.2em;
+  right:    -18em;
   width:    16em;
 }
 
@@ -41,15 +41,36 @@
   text-align:   right;
 }
 #post .buttons input,
-#post .buttons label,
-#post .buttons .checkbox {
+#post .buttons label {
   position: relative;
   display:  inline;
 }
-#post .checkbox {
-  cursor:   pointer;
+
+#post .personalize {
+  width:    100%;
 }
-#post .checkbox img {
+#post .personalize .field {
+  display:  block;
+  float:    left;
+  padding:  0 0.5em 0 0;
+}
+#post .personalize .field label {
+  display:  block;
+  float:    left;
+}
+#post .personalize .userRating {
+  display:  block;
+  float:    left;
+  padding:  0 2.5em 0 0;
+}
+#post .personalize .userRating label {
+  display:  block;
+  float:    right;
+  padding:  2px 0 0 0.25em;
+}
+
+#post .personalize .checkbox {
+  position: relative;
   display:  inline;
 }
 
@@ -64,5 +85,35 @@
   padding:      1em 0;
   font-weight:  bold;
   text-align:   center;
+}
+
+/* checkbox styling */
+#post .checkbox {
+  cursor:   pointer;
+}
+#post .checkbox img {
+  display:  inline;
+}
+/* star rating styling */
+.star-rating-control {
+  display:    inline;
+  height:     18px;
+  width:      96px;
+}
+.star-rating-control div {
+  display:    block;
+  float:      left;
+  cursor:     pointer;
+  overflow:   hidden;   /* So we can hide the <a> text */
+}
+.star-rating-control a {
+  display:    block;
+  width:      200%;
+  height:     100%;
+  text-align: right;
+}
+.star-rating-control div.star-rating-readonly {
+  cursor:     default;
+  
 }
 

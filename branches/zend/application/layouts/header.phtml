@@ -39,89 +39,73 @@ echo $this->doctype();
        media="screen, projection" rel="stylesheet" />
   <![endif] - - >
   -->
-  <?= $this->headlink() ?>
+  <?= $this->headLink() ?>
 
-  <?php
-    if (false)
-    {
-        ?>
-  <!-- Use the google CDN -->
-  <script type='text/javascript' src='http://www.google.com/jsapi'></script>
-  <script type='text/javascript'>
-    google.load('jquery', '1');
-
-    google.setOnLoadCallback(function() {
-        activateSearch();
-    });
-  </script>
-        <?php
-    }
-    else
-    {
-        ?>
   <!-- Use the local jQuery -->
   <script type='text/javascript' src='<?= $baseUrl ?>js/jquery.js'></script>
+  <script type='text/javascript' src='<?= $baseUrl ?>js/jquery.class.js'></script>
+  <script type='text/javascript' src='<?= $baseUrl ?>js/connexions.js'></script>
   <script type='text/javascript'>
     (function($) {
+        // Make the baseUrl avaialble to Javascript
+        $.baseUrl = '<?= $baseurl ?>';
+
         $(document).ready(function() {
             activateSearch();
         });
+
+        function activateSearch()
+        {
+            var $form           = $('#search');
+            var $input          = $form.find('input[name=q]');
+            var $context        = $form.find('input[name=searchContext]');
+            var $choices        = $form.find('.choices .list');
+            var contextLabel    = $choices.find('li.active').text();
+
+            // Activate our search choice selections
+            //$('#search .choices .list li').click
+            $choices.find('li').click(
+                function(event) {
+                    var $li         = $(this);
+                    var $choices    = $li.parent().parent();
+
+
+                    // Grab the new choice value from the li.id
+                    var choice  = $li.attr('id').replace(/search-choice-/, '');
+                    $context.val(choice);
+
+                    // Now, set the current value in the query input box
+                    contextLabel = $li.text();
+                    $input.val(contextLabel);
+
+                    // Remove the 'active' class from all sibling lis
+                    $li.siblings('.active').removeClass('active');
+
+                    // And last, add the 'active' class to this li
+                    $li.addClass('active');
+                    $input.focus();
+            });
+
+            /* When the input box receives focus, if the current value is the
+             * label of the current context, empty it.
+             */
+            $input.focus(function() {
+                if ($input.val() == contextLabel)
+                    $input.val('');
+                $input.addClass('focus');
+            });
+
+            /* When the input box looses focus, if the current value is empty,
+             * set it to the current label.
+             */
+            $input.blur(function() {
+                if ($input.val().length < 1)
+                    $input.val(contextLabel);
+                $input.removeClass('focus');
+            });
+        }
+
      })(jQuery);
-  </script>
-        <?php
-    }
-        ?>
-  <script type='text/javascript'>
-    function activateSearch()
-    {
-        var $form           = $('#search');
-        var $input          = $form.find('input[name=q]');
-        var $context        = $form.find('input[name=searchContext]');
-        var $choices        = $form.find('.choices .list');
-        var contextLabel    = $choices.find('li.active').text();
-
-        // Activate our search choice selections
-        //$('#search .choices .list li').click(
-        $choices.find('li').click(
-            function(event) {
-                var $li         = $(this);
-                var $choices    = $li.parent().parent();
-
-
-                // Grab the new choice value from the li.id
-                var choice  = $li.attr('id').replace(/search-choice-/, '');
-                $context.val(choice);
-
-                // Now, set the current value in the query input box
-                contextLabel = $li.text();
-                $input.val(contextLabel);
-
-                // Remove the 'active' class from all sibling lis
-                $li.siblings('.active').removeClass('active');
-
-                // And last, add the 'active' class to this li
-                $li.addClass('active');
-                $input.focus();
-        });
-
-        /* When the input box receives focus, if the current value is the label
-         * of the current context, empty it.
-         */
-        $input.focus(function() {
-            if ($input.val() == contextLabel)
-                $input.val('');
-            $input.addClass('focus');
-        });
-
-        /* When the input box looses focus, if the current value is empty,
-         * set it to the current label.
-         */
-        $input.blur(function() {
-            if ($input.val().length < 1)
-                $input.val(contextLabel);
-            $input.removeClass('focus');
-        });
-    }
   </script>
   <?php
 

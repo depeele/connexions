@@ -31,8 +31,8 @@ form .field input.text {
 }
 form .field .validationStatus {
   position: absolute;
-  left:     13em;
   top:      1.2em;
+  right:    -18em;
   width:    16em;
 }
 

@@ -34,13 +34,30 @@
         /** @brief  Initialize a new instance.
          *  @param  el      The jQuery/DOM element
          *  @param  config  A configuration object:
-         *                      css         General CSS classes for the
-         *                                  checkbox.
-         *                      classOn     CSS class to use when the state is
-         *                                  on/checked.
+         *                      css         General space-separated CSS
+         *                                  class(es) for the checkbox
+         *                                  [ 'checkbox' ];
+         *                      cssOn       Space-separated CSS class(es)
+         *                                  when checked
+         *                                  [ 'on' ];
+         *                      cssOff      Space-separated CSS class(es)
+         *                                  when un-checked
+         *                                  [ 'off' ];
+         *                      titleOn     Title when checked
+         *                                  [ 'click to turn off' ];
+         *                      titleOff    Title when un-checked
+         *                                  [ 'click to turn on' ];
          *
-         *                      classOff    CSS class to use when the state is
-         *                                  off/unchecked.
+         *                      useElTitle  Include the title of the source
+         *                                  element (or it's associated label)
+         *                                  in the title of this checkbox (as a
+         *                                  prefix to 'titleOn' or 'titleOff')
+         *                                  [ true ];
+         *
+         *                      hideLabel   Hide the associated label?  If not,
+         *                                  clicking on the title will be the
+         *                                  same as clicking on the checkbox
+         *                                  [ false ].
          */
         init: function(el, config)
         {
@@ -51,11 +68,33 @@
             scope.config  = config;
             scope.enabled = el.attr('disabled') ? false : true;
             scope.checked = el.attr('checked')  ? true  : false;
+            scope.title   = '';
 
-            var title   = el.attr('title');
+            // Try to locate the associated label
+            var id      = el.attr('id');
+            var name    = el.attr('name');
+            var $label  = false;
+
+            if (id)                 $label = $('label[for='+ id +']');
+            if ((! $label) && name) $label = $('label[for='+ name +']');
+
+            if (config.useElTitle === true)
+            {
+                scope.title += ': ';
+
+                title = el.attr('title');
+                if ( ((! scope.title) || (scope.title.length < 1)) &&
+                     ($label.length > 0) )
+                {
+                    scope.title = $label.text();
+                }
+            }
+
+            var title   = scope.title
+                        + (scope.checked ? config.titleOn : config.titleOff);
 
             scope.el      = $( '<span class="checkbox">'
-                              + '<img src="'+ config.empty +'" '
+                              + '<div '
                               +    'class="'+ config.css
                               +      (scope.enabled ? ' '   : ' diabled ')
                               +      (scope.checked
@@ -64,9 +103,9 @@
                               +     (title && title.length > 0
                                         ? ' title="'+ title +'"'
                                         : '')
-                              +   ' />'
+                              +   '>&nbsp;</div>'
                               +'</div>');
-            scope.img      = scope.el.find('img');
+            scope.img      = scope.el.find('div');
 
             scope.el.hover(function(e) { // Hover in
                             scope.el.addClass(   'hover');
@@ -85,19 +124,18 @@
             el.hide().after(scope.el);
 
             // Handle any label associated with this field
-            var id      = el.attr('id');
-            var name    = el.attr('name');
-            var $label  = false;
-
-            if (id)                 $label = $('label[for='+ id +']');
-            if ((! $label) && name) $label = $('label[for='+ name +']');
-            if ($label)
+            if ($label && ($label.length > 0))
             {
-                // Treat a click on the label as a click on the item.
-                $label.click(function(e) {
-                                scope.el.trigger('click',[e]);
-                                return stopEvent(e);
-                });
+                if (config.hideLabel === true)
+                    $label.hide();
+                else
+                {
+                    // Treat a click on the label as a click on the item.
+                    $label.click(function(e) {
+                                    scope.el.trigger('click',[e]);
+                                    return stopEvent(e);
+                    });
+                }
             }
         },
 
@@ -137,7 +175,8 @@
                 this.checked = true;
                 this.origEl.attr('checked', true);
                 this.img.removeClass(this.config.cssOff)
-                        .addClass(this.config.cssOn);
+                        .addClass(this.config.cssOn)
+                        .attr('title', this.title + this.config.titleOn);
 
                 this.el.trigger('check');
             }
@@ -150,7 +189,8 @@
                 this.checked = false;
                 this.origEl.removeAttr('checked');
                 this.img.removeClass(this.config.cssOn)
-                        .addClass(this.config.cssOff);
+                        .addClass(this.config.cssOff)
+                        .attr('title', this.title + this.config.titleOff);
 
                 this.el.trigger('uncheck');
             }
@@ -158,10 +198,21 @@
     });
 
     $.Checkbox.defaults = {
-        empty:  '/images/empty.gif',
-        css:    'checkbox',
-        cssOn:  'on',
-        cssOff: 'off'
+        css:        'checkbox',             // General CSS class
+        cssOn:      'on',                   // CSS class when    checked
+        cssOff:     'off',                  // CSS class when un-checked
+        titleOn:    'click to turn off',    // Title when    checked
+        titleOff:   'click to turn on',     // Title when un-checked
+
+        useElTitle: true,                   // Include the title of the source
+                                            // element (or it's associated
+                                            // label) in the title of this
+                                            // checkbox.
+
+        hideLabel:  false                   // Hide the associated label?  If
+                                            // not, clicking on the title will
+                                            // be the same as clicking on the
+                                            // checkbox.
     };
 
  })(jQuery);
