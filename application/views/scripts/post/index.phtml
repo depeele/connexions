@@ -5,13 +5,17 @@ if (! @is_array($this->postInfo))
     $this->postInfo = array();
 
 $script = $this->headScript();
-$script->appendFile($this->baseUrl('js/jquery.class.js'));
-$script->appendFile($this->baseUrl('js/jquery.checkbox.js'));
+$script->appendFile($this->baseurl('js/jquery.checkbox.js'));
+$script->appendFile($this->baseurl('js/jquery.rating.js'));
 
 $script->captureStart();
 ?>
 // <script type='text/javascript'>
 (function($) {
+    // We require jquery.checkbox.js and jquery.rating.js
+    //$.include($.baseUrl +'js/jquery.checkbox.js');
+    //$.include($.baseUrl +'js/jquery.rating.js');
+
     var $submit     = null;
     var $error      = null;
     var $tags       = null;
@@ -77,6 +81,11 @@ $script->captureStart();
      * Validation routines
      *
      */
+    function tags_validate()
+    {
+        validation_success($tags);
+    }
+
     function nonEmpty_validate()
     {
         $('.nonEmpty').each(function() {
@@ -146,23 +155,40 @@ $script->captureStart();
         validation_failure();
 
         // Handle autocomplete / validation of the tags
-        $tags.keyup(function() { userName_keyup(); })
-             .blur(function() {  userName_blur(); });
+        $tags.keyup(function() { tags_keyup(); })
+             .blur(function() {  tags_blur(); });
+
+        // Rating
+        $('input[name=rating]').rating({
+            css_cancel:     'connexions_sprites star_0_off',
+            css_cancelHover:'star_0_hover',
+
+            css_star:       'connexions_sprites star_1_off',
+            css_starOn:     'star_1_on',
+            css_starHover:  'star_1_hover',
+            css_starOff:    'star_1_off'
+        });
 
         // Favorite
         $('input[name=isFavorite]').Checkbox({
-                css:    'connexions_sprites',
-                empty:  '<?= $this->baseUrl('css/sprites/empty.gif') ?>',
-                cssOn:  'star_fill',
-                cssOff: 'star_empty'
+                css:        'connexions_sprites',
+                cssOn:      'star_fill',
+                cssOff:     'star_empty',
+                titleOn:    'Favorite: click to remove from Favorites',
+                titleOff:   'Click to add to Favorites',
+                useElTitle: false,
+                hideLabel:  true
         });
 
         // Privacy
         $('input[name=isPrivate]').Checkbox({
-                css:    'connexions_sprites',
-                empty:  '<?= $this->baseUrl('css/sprites/empty.gif') ?>',
-                cssOn:  'lock_fill',
-                cssOff: 'lock_empty'
+                css:        'connexions_sprites',
+                cssOn:      'lock_fill',
+                cssOff:     'lock_empty',
+                titleOn:    'Private: click to share',
+                titleOff:   'Public: click to mark as private',
+                useElTitle: false,
+                hideLabel:  true
         });
     });
  })(jQuery);
@@ -204,28 +230,46 @@ $script->captureEnd();
      <input type='text' class='text nonEmpty' autocomplete='off'
             name='tags' value='<?= $this->postInfo['tags'] ?>' />
     </div>
-    <div class='field buttons'>
-     <label for='rating'>rating</label>
-     <input type='text' autocomplete='off'
-            name='rating' value='<?= $this->postInfo['rating'] ?>' />
+    <div class='personalize buttons clearfix'>
+     <div class='field userRating'>
+      <label for='rating'>rating</label>
+      <input name='rating' type='radio' class='rating' value='1'
+            <?= ($this->postInfo['rating'] == '1'
+                    ? " checked='true'" : '') ?> />
+      <input name='rating' type='radio' class='rating' value='2'
+            <?= ($this->postInfo['rating'] == '2'
+                    ? " checked='true'" : '') ?> />
+      <input name='rating' type='radio' class='rating' value='3'
+            <?= ($this->postInfo['rating'] == '3'
+                    ? " checked='true'" : '') ?> />
+      <input name='rating' type='radio' class='rating' value='4'
+            <?= ($this->postInfo['rating'] == '4'
+                    ? " checked='true'" : '') ?> />
+      <input name='rating' type='radio' class='rating' value='5'
+            <?= ($this->postInfo['rating'] == '5'
+                    ? " checked='true'" : '') ?> />
+     </div>
 
-     <label for='isFavorite'>favorite?</label>
-     <input type='checkbox'
-            name='isFavorite' value='true'
-            title='Click to change favorite status'
+     <div class='field favorite'>
+      <label for='isFavorite'>Favorite</label>
+      <input name='isFavorite'
+            type='checkbox' value='true'
             <?= ($this->postInfo['isFavorite'] ? ' checked' : '') ?> />
+     </div>
 
-     <label for='isPrivate'>private?</label>
-     <input type='checkbox'
-            name='isPrivate' value='true'
-            title='Click to change privacy'
+     <div class='field private'>
+      <label for='isPrivate'>Privacy</label>
+      <input name='isPrivate'
+            type='checkbox' value='true'
             <?= ($this->postInfo['isPrivate'] ? ' checked' : '') ?> />
-    </div>
-    <div class='field buttons'>
-     <input type='submit' class='button' value='Save' />
-     <input type='submit' class='button' value='Cancel' />
+     </div>
+     <input name='submit' type='submit' class='button' value='Save' />
+     <input name='cancel' type='submit' class='button' value='Cancel' />
     </div>
    </form>
+   <div id='tags'>
+     Tag selection area.
+   </div>
  
    <div class='formError'>
     <?= (@isset($this->error) ? $this->error : '') ?>
