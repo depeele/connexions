@@ -19,9 +19,11 @@
 .status_error         {width:15px;height:15px;background-position:-87px  -28px;}
 .status_empty         {width:15px;height:15px;background-position:-104px -28px;}
 
+.star_0               {width:14px;height:14px;background-position:-72px  -44px;}
 .star_0_off           {width:14px;height:14px;background-position:-72px  -44px;}
 .star_0_hover         {width:14px;height:14px;background-position:-86px  -44px;}
 
+.star_1               {width:16px;height:16px;background-position:-72px  -58px;}
 .star_1_off           {width:16px;height:16px;background-position:-72px  -58px;}
 .star_1_hover         {width:16px;height:16px;background-position:-88px  -58px;}
 .star_1_on            {width:16px;height:16px;background-position:-104px -58px;}
