@@ -14,7 +14,8 @@ defined('APPLICATION_MODEL_PATH')
               realpath(APPLICATION_PATH . '/models'));
 
 /** @brief  This is the primary autoloader for Connexions.  It is capable of
- *          handling the 'Zend_' and 'Connexions_' namespaces.
+ *          handling the 'Zend_', 'ZendX_', 'Connexions_', and 'Model_'
+ *          namespaces.
  *
  *
  *  This Autoloader is currently installed via:
@@ -25,6 +26,7 @@ class Connexions_Autoloader implements Zend_Loader_Autoloader_Interface
     // "Namespaces" that we can handle
     private static  $_loaderMap     = array(
                 'Zend_'         => array('path' => APPLICATION_LIBRARY_PATH),
+                'ZendX_'        => array('path' => APPLICATION_LIBRARY_PATH),
                 'Connexions_'   => array('path' => APPLICATION_LIBRARY_PATH),
                 'Model_'        => array('path' => APPLICATION_MODEL_PATH,
                                          'shift'=> 1)

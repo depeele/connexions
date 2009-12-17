@@ -1,6 +1,9 @@
 <?php
 //$this->headLink()->appendStylesheet(Connexions::url('/css/auth.css'));
-$this->headLink()->appendStylesheet($this->baseUrl('css/auth.css'));
+//$this->headLink()->appendStylesheet($this->baseUrl('css/auth.css'));
+
+$jQuery = $this->jQuery();
+$jQuery->addStylesheet($this->baseUrl('css/auth.css'));
 
 ?>
 <div id="auth">
