@@ -1,3 +1,9 @@
+<?php
+
+if ($this->owner !== '*')
+    $this->headTitle($this->owner ."'s Network");
+
+?>
 <p>Present the Network for <?= $this->owner ?>
                        to  <?= $this->viewer ?>
 <?php   if (@empty($this->tags))

@@ -2,6 +2,9 @@
 if (! @is_array($this->postInfo))
     $this->postInfo = array();
 
+$this->headTitle('Save a Bookmark');
+
+
 //$this->headLink()->appendStylesheet($this->baseUrl('css/post.css'));
 $jQuery = $this->jQuery();
 $jQuery->addStylesheet($this->baseUrl('css/post.css'));

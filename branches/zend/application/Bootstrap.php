@@ -108,9 +108,13 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         if ($_GLOBALS['gNoView'] === true)
             return;
 
+        // Make sure we have an initialized view.
         $this->bootstrap('view');
 
         $view = $this->getResource('view');
+
+        // Establish the base title and separator
+        $view->headTitle('connexions')->setSeparator(' > ');
 
         /* Put the 'view' in the registry so it will be accessible to
          *      Connexions_Controller_Plugin_Auth
