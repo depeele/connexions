@@ -62,11 +62,14 @@
   display:  block;
   float:    left;
   padding:  0 2.5em 0 0;
+  height:   32px;         /* Accomadate a wrapped label */
 }
 #post .personalize .userRating label {
   display:  block;
   float:    right;
   padding:  2px 0 0 0.25em;
+  width:    2em;
+  color:    #33f;
 }
 
 #post .personalize .checkbox {
@@ -95,25 +98,24 @@
   display:  inline;
 }
 /* star rating styling */
-.star-rating-control {
+.stars-wrapper {
   display:    inline;
   height:     18px;
   width:      96px;
 }
-.star-rating-control div {
+.stars-wrapper div {
   display:    block;
   float:      left;
   cursor:     pointer;
   overflow:   hidden;   /* So we can hide the <a> text */
 }
-.star-rating-control a {
+.stars-wrapper a {
   display:    block;
   width:      200%;
   height:     100%;
   text-align: right;
 }
-.star-rating-control div.star-rating-readonly {
+.stars-wrapper div.star-rating-readonly {
   cursor:     default;
-  
 }
 

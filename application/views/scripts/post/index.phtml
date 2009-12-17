@@ -5,8 +5,8 @@ if (! @is_array($this->postInfo))
     $this->postInfo = array();
 
 $script = $this->headScript();
-$script->appendFile($this->baseurl('js/jquery.checkbox.js'));
-$script->appendFile($this->baseurl('js/jquery.rating.js'));
+//$script->appendFile($this->baseurl('js/jquery.checkbox.js'));
+$script->appendFile($this->baseurl('js/ui.stars.js'));
 
 $script->captureStart();
 ?>
@@ -159,6 +159,20 @@ $script->captureStart();
              .blur(function() {  tags_blur(); });
 
         // Rating
+        $('.stars-wrapper').stars({
+            captionEl:          $('label[for=rating]'),
+            baseClass:          'connexions_sprites',
+
+            cancelClass:        'star_0',
+            cancelHoverClass:   'star_0_hover',
+            cancelDisabledClass:'star_0_off',
+
+            starClass:          'star_1',
+            starOnClass:        'star_1_on',
+            starHoverClass:     'star_1_hover',
+            starDisabledClass:  'star_1_off'
+        });
+        /*
         $('input[name=rating]').rating({
             css_cancel:     'connexions_sprites star_0_off',
             css_cancelHover:'star_0_hover',
@@ -168,7 +182,9 @@ $script->captureStart();
             css_starHover:  'star_1_hover',
             css_starOff:    'star_1_off'
         });
+        // */
 
+        /*
         // Favorite
         $('input[name=isFavorite]').Checkbox({
                 css:        'connexions_sprites',
@@ -190,6 +206,7 @@ $script->captureStart();
                 useElTitle: false,
                 hideLabel:  true
         });
+        // */
     });
  })(jQuery);
 <?php
@@ -233,21 +250,23 @@ $script->captureEnd();
     <div class='personalize buttons clearfix'>
      <div class='field userRating'>
       <label for='rating'>rating</label>
-      <input name='rating' type='radio' class='rating' value='1'
-            <?= ($this->postInfo['rating'] == '1'
-                    ? " checked='true'" : '') ?> />
-      <input name='rating' type='radio' class='rating' value='2'
-            <?= ($this->postInfo['rating'] == '2'
-                    ? " checked='true'" : '') ?> />
-      <input name='rating' type='radio' class='rating' value='3'
-            <?= ($this->postInfo['rating'] == '3'
-                    ? " checked='true'" : '') ?> />
-      <input name='rating' type='radio' class='rating' value='4'
-            <?= ($this->postInfo['rating'] == '4'
-                    ? " checked='true'" : '') ?> />
-      <input name='rating' type='radio' class='rating' value='5'
-            <?= ($this->postInfo['rating'] == '5'
-                    ? " checked='true'" : '') ?> />
+      <div class='stars-wrapper'>
+       <input name='rating' type='radio' value='1' title='Terrible'
+             <?= ($this->postInfo['rating'] == '1'
+                     ? " checked='true'" : '') ?> />
+       <input name='rating' type='radio' value='2' title='Fair'
+             <?= ($this->postInfo['rating'] == '2'
+                     ? " checked='true'" : '') ?> />
+       <input name='rating' type='radio' value='3' title='Average'
+             <?= ($this->postInfo['rating'] == '3'
+                     ? " checked='true'" : '') ?> />
+       <input name='rating' type='radio' value='4' title='Good'
+             <?= ($this->postInfo['rating'] == '4'
+                     ? " checked='true'" : '') ?> />
+       <input name='rating' type='radio' value='5' title='Excellent'
+             <?= ($this->postInfo['rating'] == '5'
+                     ? " checked='true'" : '') ?> />
+      </div>
      </div>
 
      <div class='field favorite'>
@@ -258,7 +277,7 @@ $script->captureEnd();
      </div>
 
      <div class='field private'>
-      <label for='isPrivate'>Privacy</label>
+      <label for='isPrivate'>Private</label>
       <input name='isPrivate'
             type='checkbox' value='true'
             <?= ($this->postInfo['isPrivate'] ? ' checked' : '') ?> />
