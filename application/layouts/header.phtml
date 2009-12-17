@@ -2,6 +2,8 @@
 $request = Connexions::getRequest();
 $baseUrl = Connexions::url('/');
 
+$this->headMeta()->appendHttpEquiv('Content-Type', 'text/html; charset=utf8');
+
 /*
 echo "<pre>Request Params:\n";
 print_r($request->getParams());
@@ -20,51 +22,45 @@ else
     $searchContexts = array();
 }
 
-echo $this->doctype();
-?>
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>connexions</title>
-  <link type="text/css" href="<?= $baseUrl ?>css/main.css"
-       media="screen, projection" rel="stylesheet" />
-  <!-- link type="text/css" href="<?= $baseUrl ?>css/screen.css"
-       media="screen,projection" rel="stylesheet" />
-  <link type="text/css" href="<?= $baseUrl ?>css/print.css"
-       media="print" rel="stylesheet" />
-  <link type="text/css" href="<?= $baseUrl ?>css/sprites.css"
-       media="screen,projection" rel="stylesheet" />
-  <! - - [if lt IE 8]>
-  <link type="text/css" href="<?= $baseUrl ?>css/ie.css"
-       media="screen, projection" rel="stylesheet" />
-  <![endif] - - >
-  -->
-  <?= $this->headLink() ?>
 
-  <?php
-    //ZendX_JQuery_View_Helper_JQuery::enableNoConflictMode();
+//ZendX_JQuery_View_Helper_JQuery::enableNoConflictMode();
 
-    $jQuery = $this->jQuery();
-    if (true)
-    {
-        /* Use the google CDN.  By default, we will load directly from google.
-         * If we want to use the new Google AJAX API Loader, call:
-         *      $jQuery->setAjaxApiLoader(true);
-         */
-    }
-    else
-    {
-        // Use our local jQuery / jQuery.ui
-        $jQuery->setLocalPath($baseUrl .'js')
-               ->setUiLocalPath($baseUrl .'js');
-    }
+$jQuery = $this->jQuery();
 
-    $jQuery->setVersion('1.3.2')
-           ->setUiVersion('1.7.2')
-           ->enable()
-           ->uiEnable()
-           ->prependOnLoad('search_initHandlers();')
-           ->javascriptCaptureStart();
+$links = $this->headLink();
+$links->prependStylesheet($this->baseUrl('css/main.css'));
+
+/*
+
+$links->appendStylesheet($this->baseUrl('css/screen.css'), 'screen,projection');
+$links->appendStylesheet($this->baseUrl('css/sprites.css'),'screen,projection');
+$links->appendStylesheet($this->baseUrl('css/screen.css'), 'print');
+
+$links->appendStylesheet($this->baseUrl('css/ie.css'),     'screen,projection',
+                         true, array('conditional'  => 'lt IE 8'));
+*/
+
+
+if (true)
+{
+    /* Use the google CDN.  By default, we will load directly from google.
+     * If we want to use the new Google AJAX API Loader, call:
+     *      $jQuery->setAjaxApiLoader(true);
+     */
+}
+else
+{
+    // Use our local jQuery / jQuery.ui
+    $jQuery->setLocalPath($baseUrl .'js')
+           ->setUiLocalPath($baseUrl .'js');
+}
+
+$jQuery->setVersion('1.3.2')
+       ->setUiVersion('1.7.2')
+       ->enable()
+       ->uiEnable()
+       ->prependOnLoad('search_initHandlers();')
+       ->javascriptCaptureStart();
   ?>
 
 /************************************************
@@ -73,60 +69,78 @@ echo $this->doctype();
  */
 function search_initHandlers()
 {
-    var $form           = $('#search');
-    var $input          = $form.find('input[name=q]');
-    var $context        = $form.find('input[name=searchContext]');
-    var $choices        = $form.find('.choices .list');
-    var contextLabel    = $choices.find('li.active').text();
+var $form           = $('#search');
+var $input          = $form.find('input[name=q]');
+var $context        = $form.find('input[name=searchContext]');
+var $choices        = $form.find('.choices .list');
+var contextLabel    = $choices.find('li.active').text();
 
-    // Activate our search choice selections
-    //$('#search .choices .list li').click
-    $choices.find('li').click(
-        function(event) {
-            var $li         = $(this);
-            var $choices    = $li.parent().parent();
+// Activate our search choice selections
+//$('#search .choices .list li').click
+$choices.find('li').click(
+    function(event) {
+        var $li         = $(this);
+        var $choices    = $li.parent().parent();
 
-            // Grab the new choice value from the li.id
-            var choice  = $li.attr('id').replace(/search-choice-/, '');
-            $context.val(choice);
+        // Grab the new choice value from the li.id
+        var choice  = $li.attr('id').replace(/search-choice-/, '');
+        $context.val(choice);
 
-            // Now, set the current value in the query input box
-            contextLabel = $li.text();
-            $input.val(contextLabel);
+        // Now, set the current value in the query input box
+        contextLabel = $li.text();
+        $input.val(contextLabel);
 
-            // Remove the 'active' class from all sibling lis
-            $li.siblings('.active').removeClass('active');
+        // Remove the 'active' class from all sibling lis
+        $li.siblings('.active').removeClass('active');
 
-            // And last, add the 'active' class to this li
-            $li.addClass('active');
-            $input.focus();
-    });
+        // And last, add the 'active' class to this li
+        $li.addClass('active');
+        $input.focus();
+});
 
-    /* When the input box receives focus, if the current value is the
-     * label of the current context, empty it.
-     */
-    $input.focus(function() {
-        if ($input.val() == contextLabel)
-            $input.val('');
-        $input.addClass('focus');
-    });
+/* When the input box receives focus, if the current value is the
+ * label of the current context, empty it.
+ */
+$input.focus(function() {
+    if ($input.val() == contextLabel)
+        $input.val('');
+    $input.addClass('focus');
+});
 
-    /* When the input box looses focus, if the current value is empty,
-     * set it to the current label.
-     */
-    $input.blur(function() {
-        if ($input.val().length < 1)
-            $input.val(contextLabel);
-        $input.removeClass('focus');
-    });
+/* When the input box looses focus, if the current value is empty,
+ * set it to the current label.
+ */
+$input.blur(function() {
+    if ($input.val().length < 1)
+        $input.val(contextLabel);
+    $input.removeClass('focus');
+});
 }
   <?php
-    $jQuery->javascriptCaptureEnd();
+$jQuery->javascriptCaptureEnd();
 
-  // Include any additional script
-  echo $this->jQuery();
 
-  ?>
+
+/***************************************************************************
+ * Begin Page Generation
+ *
+ */
+
+?>
+<?= $this->doctype() ?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <?= $this->headMeta() ?>
+
+  <?= $this->headTitle() ?>
+
+  <?= $this->headLink() ?>
+
+  <?= $this->headStyle() ?>
+
+  <?= $this->headScript() ?>
+
+  <?= $this->jQuery() ?>
 
 </head>
 

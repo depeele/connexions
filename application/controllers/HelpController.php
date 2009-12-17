@@ -4,38 +4,22 @@ class HelpController extends Zend_Controller_Action
 {
     public function indexAction()
     {
-        // action body
-    }
-
-    public function basicsAction()
-    {
-        // action body
-    }
-
-    public function developerAction()
-    {
-        // action body
-    }
-
-    public function aboutAction()
-    {
-        // action body
-    }
-
-    /** @brief Redirect all other actions to 'index'
-     *  @param  method      The target method.
-     *  @param  args        Incoming arguments.
-     *
-     */
-    public function __call($method, $args)
-    {
-        if (substr($method, -6) == 'Action')
+        // The specific view requested will be contained in 'topic'
+        $request = $this->getRequest();
+        $topic   = $request->getParam('topic', null);
+        if (! @empty($topic))
         {
-            // Redirect
-            return $this->_forward('index');
+            // Render the Topic view (if it exists)
+            try
+            {
+                $this->render($topic);
+            }
+            catch (Zend_Exception $e)
+            {
+                // Just show the top-level help
+                $this->render('index');
+            }
         }
-
-        throw new Exception('Invalid method "'. $method .'" called', 500);
     }
 }
 
