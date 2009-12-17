@@ -64,7 +64,7 @@ $.widget("ui.stars",
         o.title = el.title;
       }
 
-      var $s = $("<div/>").addClass(o.starClass);
+      var $s = $("<div/>").addClass(o.baseClass +' '+ o.starClass);
       var $a = $('<a/>').attr("title", o.showTitles ? el.title : "").text(el.value);
 
       /*
@@ -94,7 +94,7 @@ $.widget("ui.stars",
     /*
      * Append Stars interface
      */
-    this.$cancel = $("<div/>").addClass(o.cancelClass).append( $("<a/>").attr("title", o.showTitles ? o.cancelTitle : "").text(o.cancelValue) );
+    this.$cancel = $("<div/>").addClass(o.baseClass +' '+ o.cancelClass).append( $("<a/>").attr("title", o.showTitles ? o.cancelTitle : "").text(o.cancelValue) );
     o.cancelShow &= !o.disabled && !o.oneVoteOnly;
     o.cancelShow && this.element.append(this.$cancel);
     this.element.append(this.$stars);
@@ -296,6 +296,7 @@ $.extend($.ui.stars, {
      * CSS classes
      */
     starWidth: 16,
+    baseClass:   'ui-stars',            // Included for all star/cancel items
     cancelClass: 'ui-stars-cancel',
     starClass: 'ui-stars-star',
     starOnClass: 'ui-stars-star-on',
