@@ -135,6 +135,15 @@ class ZendX_JQuery_View_Helper_JQuery_Container
      */
     protected $_loadSslCdnPath = false;
 
+	/**
+	 * Path to AJAX API loader
+     *
+     * If set, we will use this AJAX API Loader and not a direct CDN Path.
+	 *
+	 * @var String
+	 */
+    protected $_ajaxApiLoaderUrl = false;
+
     /**
      * View Instance
      *
@@ -253,6 +262,44 @@ class ZendX_JQuery_View_Helper_JQuery_Container
     public function useCdn()
     {
         return !$this->useLocalPath();
+    }
+
+    /**
+     * Set the URL to the AJAX API loader
+     *
+     * @param  string $url
+     *
+     * If 'url' is false, null, empty, thisi will force us NOT to use the AJAX
+     * API Loader.
+     *
+     * If 'url' is true, use the default google AJAX API Loader:
+     *      ZendX_JQuery::CDN_AJAX_API_LOADER
+     *
+     * If 'url' is a non-empty string, it defines an alternate,
+     * google-complient AJAX API Loader to use.
+     *
+     *
+     * @return ZendX_JQuery_View_Helper_JQuery_Container
+     */
+    public function setAjaxApiLoader($url)
+    {
+        if ($url === true)
+            $url = ZendX_JQuery::CDN_AJAX_API_LOADER;
+        else if ( (! @is_string($url)) || @empty($url) )
+            $url = false;
+
+        $_ajaxApiLoaderUrl = $url;
+        return $this;
+    }
+
+    /**
+     * Are we using the AJAX API loader?
+     *
+     * @return boolean
+     */
+    public function useAjaxApiLoader()
+    {
+        return !(@empty($this->_ajaxApiLoaderUrl));
     }
 
     /**
@@ -593,7 +640,21 @@ class ZendX_JQuery_View_Helper_JQuery_Container
     public function addOnLoad($callback)
     {
         if (!in_array($callback, $this->_onLoadActions, true)) {
-            $this->_onLoadActions[] = $callback;
+            array_push($this->_onLoadActions, $callback);
+        }
+        return $this;
+    }
+
+    /**
+     * Prepend a script to execute onLoad
+     *
+     * @param  string $callback Lambda
+	 * @return ZendX_JQuery_View_Helper_JQuery_Container
+     */
+    public function prependOnLoad($callback)
+    {
+        if (!in_array($callback, $this->_onLoadActions, true)) {
+            array_unshift($this->_onLoadActions, $callback);
         }
         return $this;
     }
@@ -715,18 +776,41 @@ class ZendX_JQuery_View_Helper_JQuery_Container
     {
     	$scriptTags = '';
     	if( ($this->getRenderMode() & ZendX_JQuery::RENDER_LIBRARY) > 0) {
-	        $source = $this->_getJQueryLibraryPath();
 
-	        $scriptTags .= '<script type="text/javascript" src="' . $source . '"></script>'.PHP_EOL;
+            if ($this->useAjaxApiLoader())
+            {
+                /* Use google's AJAX API loader.
+                 *
+                 * This modifies how we invoke autoload script as well.
+                 */
+                $scriptTags .= '<script type="text/javascript" src="'
+                            .       $this->_ajaxApiLoaderUrl .'">'
+                            .  '</script>'.PHP_EOL
+                            .  '<script type="text/javascript">'.PHP_EOL
+                            .  ' '. $this->_getJQueryLoad()     .PHP_EOL;
 
-	        if($this->uiIsEnabled()) {
-                $uiPath = $this->_getJQueryUiLibraryPath();
-	        	$scriptTags .= '<script type="text/javascript" src="'.$uiPath.'"></script>'.PHP_EOL;
-	        }
 
-	        if(ZendX_JQuery_View_Helper_JQuery::getNoConflictMode() == true) {
-	        	$scriptTags .= '<script type="text/javascript">var $j = jQuery.noConflict();</script>'.PHP_EOL;
-	        }
+	            if($this->uiIsEnabled()) {
+                    $scriptTags .= ' '. $this->_getJQueryUiLoad() .PHP_EOL;
+                }
+
+                $scriptTags .= '</script>'.PHP_EOL;
+            }
+            else
+            {
+	            $source = $this->_getJQueryLibraryPath();
+
+	            $scriptTags .= '<script type="text/javascript" src="' . $source . '"></script>'.PHP_EOL;
+
+	            if($this->uiIsEnabled()) {
+                    $uiPath = $this->_getJQueryUiLibraryPath();
+	        	    $scriptTags .= '<script type="text/javascript" src="'.$uiPath.'"></script>'.PHP_EOL;
+	            }
+
+	            if(ZendX_JQuery_View_Helper_JQuery::getNoConflictMode() == true) {
+	        	    $scriptTags .= '<script type="text/javascript">var $j = jQuery.noConflict();</script>'.PHP_EOL;
+	            }
+            }
     	}
 
 		if( ($this->getRenderMode() & ZendX_JQuery::RENDER_SOURCES) > 0) {
@@ -760,6 +844,15 @@ class ZendX_JQuery_View_Helper_JQuery_Container
         $content = '';
 
         if (!empty($onLoadActions)) {
+            if ($this->useAjaxApiLoader())
+            {
+                /* We're using google's AJAX API loader.  This modifies how we
+                 * invoke autoload callbacks since we must use google's
+                 * onLoadCallback() and THEN jQuery's ready().
+                 */
+                $content .= 'google.setOnLoadCallback(function() {'."\n";
+            }
+
             if(ZendX_JQuery_View_Helper_JQuery::getNoConflictMode() == true) {
                 $content .= '$j(document).ready(function() {'."\n    ";
             } else {
@@ -767,6 +860,12 @@ class ZendX_JQuery_View_Helper_JQuery_Container
             }
             $content .= implode("\n    ", $onLoadActions) . "\n";
             $content .= '});'."\n";
+
+            if ($this->useAjaxApiLoader())
+            {
+                $content .= '});'."\n";
+            }
+
         }
 
         if (!empty($javascript)) {
@@ -846,5 +945,31 @@ class ZendX_JQuery_View_Helper_JQuery_Container
             $uiPath = $this->getUiPath();
         }
         return $uiPath;
+    }
+
+	/**
+	 * Internal function that constructs the google.load() call for jQuery.
+	 *
+	 * @return string
+	 */
+    protected function _getJQueryLoad()
+    {
+        $load = 'google.load("'. ZendX_JQuery::CDN_LOADER_JQUERY .'", '
+              .             '"'. $this->getVersion()             .'");';
+
+        return $load;
+    }
+
+    /**
+	 * Internal function that constructs the google.load() call for jQuery.ui.
+     *
+     * @return string
+     */
+    protected function _getJQueryUiLoad()
+    {
+        $load = 'google.load("'. ZendX_JQuery::CDN_LOADER_JQUERYUI .'", '
+              .             '"'. $this->getUiVersion()             .'");';
+
+        return $load;
     }
 }
