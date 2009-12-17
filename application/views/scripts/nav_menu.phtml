@@ -236,7 +236,7 @@ function renderSearch($request, array $searchContexts)
                 }
 
                 $label = Connexions::replaceables($label);
-                printf ("<span>%s</span></li>\n",
+                printf ("<span>%s</span>",
                         $label);
 
                 if ($idex == 0)
@@ -245,6 +245,7 @@ function renderSearch($request, array $searchContexts)
                     echo "<div class='connexions_sprites corner_inner_right'>",
                          "</div>";
                 }
+                echo "</li>\n";
                 $idex++;
             }
 
@@ -264,7 +265,7 @@ function renderSearch($request, array $searchContexts)
              value="<?= (@empty($searchTerm) ? $contextText : $searchTerm) ?>"
               autocomplete='off' maxlength='255' size='30' />
       </div><!-- searchInput } -->
-      <button class='submit' />
+      <button class='submit'>&nbsp;</button>
      </div><!-- searchBox } -->
     </form>
 
