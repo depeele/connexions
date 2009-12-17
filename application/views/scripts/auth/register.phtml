@@ -1,206 +1,208 @@
 <?php
-//$this->headLink()->appendStylesheet(Connexions::url('/css/auth.css'));
-$this->headLink()->appendStylesheet($this->baseUrl('css/auth.css'));
+//$this->headLink()->appendStylesheet($this->baseUrl('css/auth.css'));
 
-$script = $this->headScript();
-$script->captureStart();
+$jQuery = $this->jQuery();
+$jQuery->addStylesheet($this->baseUrl('css/auth.css'));
+//$jQuery->addJavascriptFile($this->baseurl('js/ui.stars.js'));
+
+$jQuery->addOnLoad('register_initHandlers();');
+
+$jQuery->javascriptCaptureStart();
 ?>
-// <script type='text/javascript'>
-(function($) {
-    var $userName   = null;
-    var $pass1      = null;
-    var $pass2      = null;
-    var $submit     = null;
-    var $error      = null;
-    var keyTimer    = null;
+var $userName   = null;
+var $pass1      = null;
+var $pass2      = null;
+var $submit     = null;
+var $error      = null;
+var keyTimer    = null;
 
-    /************************************************
-     * Validation presentation
-     *
-     */
-    function validation_failure($src, errorMsg)
-    {
-        $submit.attr('disabled', 'true');
-        $submit.addClass('disabled');
+/************************************************
+ * Validation presentation
+ *
+ */
+function validation_failure($src, errorMsg)
+{
+    $submit.attr('disabled', 'true');
+    $submit.addClass('disabled');
 
-        if ($src !== undefined)
-        {
-            var $status = $src.parent().find('.validationStatus');
-
-            $src.removeClass('ok')
-                .addClass('error');
-            $status.removeClass('ok error');
-
-            if (errorMsg !== undefined)
-            {
-                $status.addClass('error')
-                       .text(errorMsg);
-                errorMsg = undefined;
-            }
-
-            if ($src == $pass2)
-            {
-                $pass1.removeClass('ok');
-                $pass1.parent().find('.validationStatus')
-                                .removeClass('ok')
-                                .text('');
-            }
-        }
-
-        if (errorMsg !== undefined)
-        {
-            $error.text(errorMsg);
-        }
-    }
-
-    function validation_success($src)
+    if ($src !== undefined)
     {
         var $status = $src.parent().find('.validationStatus');
 
-        $src.removeClass('error')
-            .addClass('ok');
-        $status.removeClass('error')
-               .addClass('ok')
-               .text('');
+        $src.removeClass('ok')
+            .addClass('error');
+        $status.removeClass('ok error');
+
+        if (errorMsg !== undefined)
+        {
+            $status.addClass('error')
+                   .text(errorMsg);
+            errorMsg = undefined;
+        }
 
         if ($src == $pass2)
         {
-            $pass1.removeClass('error')
-                  .addClass('ok');
+            $pass1.removeClass('ok');
             $pass1.parent().find('.validationStatus')
-                            .removeClass('error')
-                            .addClass('ok')
+                            .removeClass('ok')
                             .text('');
         }
-
-        if ($userName.hasClass('ok') &&
-            $pass1.hasClass('ok')    &&
-            $pass2.hasClass('ok'))
-        {
-            $submit.removeAttr('disabled');
-            $submit.removeClass('disabled');
-        }
-
-        if ( (! $userName.hasClass('error')) &&
-             (! $pass1.hasClass('error'))    &&
-             (! $pass2.hasClass('error')) )
-        {
-            $error.text('');
-        }
     }
 
-    /************************************************
-     * Validation routines
-     *
-     */
-    function userName_validate()
+    if (errorMsg !== undefined)
     {
-        var name    = $userName.val();
-        if (name.length < 2)
-            return;
-
-        $.getJSON('<?= Connexions::url('/auth/checkuser') ?>?jsonp=?',
-                  {format:   'json',
-                   userName: name},
-                  function(data)
-                  {
-                    if (data.error !== undefined)
-                    {
-                        validation_failure($userName, data.error.message);
-                    }
-                    else
-                    {
-                        validation_success($userName);
-                    }
-                  });
+        $error.text(errorMsg);
     }
+}
 
-    function pass_validate()
+function validation_success($src)
+{
+    var $status = $src.parent().find('.validationStatus');
+
+    $src.removeClass('error')
+        .addClass('ok');
+    $status.removeClass('error')
+           .addClass('ok')
+           .text('');
+
+    if ($src == $pass2)
     {
-        var pass1   = $pass1.val();
-        var pass2   = $pass2.val();
-
-        if ((pass1.length < 1) || (pass2.length < 1))
-            return;
-
-        if (pass1 !== pass2)
-        {
-            validation_failure($pass2, 'Passwords do not match.');
-        }
-        else
-        {
-            validation_success($pass2);
-        }
+        $pass1.removeClass('error')
+              .addClass('ok');
+        $pass1.parent().find('.validationStatus')
+                        .removeClass('error')
+                        .addClass('ok')
+                        .text('');
     }
 
-    /************************************************
-     * Input handlers
-     *
-     */
-    function userName_keyup()
+    if ($userName.hasClass('ok') &&
+        $pass1.hasClass('ok')    &&
+        $pass2.hasClass('ok'))
     {
-        $userName.removeClass('error ok');
-        validation_failure();
-        if (keyTimer !== null)
-            clearTimeout(keyTimer);
-
-        keyTimer = setTimeout(function() { userName_validate(); }, 1000);
+        $submit.removeAttr('disabled');
+        $submit.removeClass('disabled');
     }
 
-    function userName_blur()
+    if ( (! $userName.hasClass('error')) &&
+         (! $pass1.hasClass('error'))    &&
+         (! $pass2.hasClass('error')) )
     {
-        if ($userName.hasClass('ok'))
-            return;
-
-        userName_validate();
+        $error.text('');
     }
+}
 
-    function pass_keyup()
+/************************************************
+ * Validation routines
+ *
+ */
+function userName_validate()
+{
+    var name    = $userName.val();
+    if (name.length < 2)
+        return;
+
+    $.getJSON('<?= Connexions::url('/auth/checkuser') ?>?jsonp=?',
+              {format:   'json',
+               userName: name},
+              function(data)
+              {
+                if (data.error !== undefined)
+                {
+                    validation_failure($userName, data.error.message);
+                }
+                else
+                {
+                    validation_success($userName);
+                }
+              });
+}
+
+function pass_validate()
+{
+    var pass1   = $pass1.val();
+    var pass2   = $pass2.val();
+
+    if ((pass1.length < 1) || (pass2.length < 1))
+        return;
+
+    if (pass1 !== pass2)
     {
-        $pass1.removeClass('error ok');
-        $pass2.removeClass('error ok');
-        validation_failure();
-        if (keyTimer !== null)
-            clearTimeout(keyTimer);
-
-        keyTimer = setTimeout(function() { pass_validate(); }, 1000);
+        validation_failure($pass2, 'Passwords do not match.');
     }
-
-    function pass_blur()
+    else
     {
-        if ($pass1.hasClass('ok'))
-            return;
-
-        pass_validate();
+        validation_success($pass2);
     }
+}
 
-    /************************************************
-     * Validation Initialization
-     *
-     */
-    $(document).ready(function() {
-        $userName = $('input[name=user]');
-        $pass1    = $('input[name=password]');
-        $pass2    = $('input[name=password2]');
-        $submit   = $('input[type=submit]');
-        $error    = $('.formError');
+/************************************************
+ * Input handlers
+ *
+ */
+function userName_keyup()
+{
+    $userName.removeClass('error ok');
+    validation_failure();
+    if (keyTimer !== null)
+        clearTimeout(keyTimer);
 
-        validation_failure();
+    keyTimer = setTimeout(function() { userName_validate(); }, 1000);
+}
 
-        // Handle validation of the userName
-        $userName.keyup(function() { userName_keyup(); })
-                 .blur(function() {  userName_blur(); });
+function userName_blur()
+{
+    if ($userName.hasClass('ok'))
+        return;
 
-        // Handle validation of the password
-        $pass1.keyup(function() { pass_keyup(); })
-              .blur(function() {  pass_blur(); });
+    userName_validate();
+}
 
-        $pass2.keyup(function() { pass_keyup(); })
-              .blur(function() {  pass_blur(); });
-    });
- })(jQuery);
+function pass_keyup()
+{
+    $pass1.removeClass('error ok');
+    $pass2.removeClass('error ok');
+    validation_failure();
+    if (keyTimer !== null)
+        clearTimeout(keyTimer);
+
+    keyTimer = setTimeout(function() { pass_validate(); }, 1000);
+}
+
+function pass_blur()
+{
+    if ($pass1.hasClass('ok'))
+        return;
+
+    pass_validate();
+}
+
+/************************************************
+ * Validation Initialization
+ *
+ */
+function register_initHandlers()
+{
+    $userName = $('input[name=user]');
+    $pass1    = $('input[name=password]');
+    $pass2    = $('input[name=password2]');
+    $submit   = $('input[type=submit]');
+    $error    = $('.formError');
+
+    validation_failure();
+
+    // Handle validation of the userName
+    $userName.keyup(function() { userName_keyup(); })
+             .blur(function() {  userName_blur(); });
+
+    // Handle validation of the password
+    $pass1.keyup(function() { pass_keyup(); })
+          .blur(function() {  pass_blur(); });
+
+    $pass2.keyup(function() { pass_keyup(); })
+          .blur(function() {  pass_blur(); });
+}
 <?php
-$script->captureEnd();
+$jQuery->javascriptCaptureEnd();
 
 
 ?>

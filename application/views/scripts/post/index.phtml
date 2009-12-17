@@ -1,216 +1,215 @@
 <?php
-$this->headLink()->appendStylesheet($this->baseUrl('css/post.css'));
-
 if (! @is_array($this->postInfo))
     $this->postInfo = array();
 
-$script = $this->headScript();
-//$script->appendFile($this->baseurl('js/jquery.checkbox.js'));
-$script->appendFile($this->baseurl('js/ui.stars.js'));
+//$this->headLink()->appendStylesheet($this->baseUrl('css/post.css'));
+$jQuery = $this->jQuery();
+$jQuery->addStylesheet($this->baseUrl('css/post.css'));
+$jQuery->addJavascriptFile($this->baseurl('js/ui.stars.js'));
 
-$script->captureStart();
+//$noConflict = Zend_JQuery_View_Helper_JQuery::getJQueryHandler();
+
+$jQuery->addOnLoad('post_initHandlers();');
+
+$jQuery->javascriptCaptureStart();
 ?>
-// <script type='text/javascript'>
-(function($) {
-    // We require jquery.checkbox.js and jquery.rating.js
-    //$.include($.baseUrl +'js/jquery.checkbox.js');
-    //$.include($.baseUrl +'js/jquery.rating.js');
 
-    var $submit     = null;
-    var $error      = null;
-    var $tags       = null;
-    var keyTimer    = null;
+/************************************************
+ * Initialize the post form handlers
+ *
+ */
+var $submit     = null;
+var $error      = null;
+var $tags       = null;
+var keyTimer    = null;
 
-    /************************************************
-     * Validation presentation
-     *
-     */
-    function validation_failure($src, errorMsg)
+function post_initHandlers()
+{
+    $tags     = $('input[name=tags]');
+    $submit   = $('input[type=submit]');
+    $error    = $('.formError');
+
+    validation_failure();
+
+    // Handle autocomplete / validation of the tags
+    $tags.keyup(function() { tags_keyup(); })
+         .blur(function() {  tags_blur(); });
+
+    // Rating
+    $('.stars-wrapper').stars({
+        captionEl:          $('label[for=rating]'),
+        baseClass:          'connexions_sprites',
+
+        cancelClass:        'star_0',
+        cancelHoverClass:   'star_0_hover',
+        cancelDisabledClass:'star_0_off',
+
+        starClass:          'star_1',
+        starOnClass:        'star_1_on',
+        starHoverClass:     'star_1_hover',
+        starDisabledClass:  'star_1_off'
+    });
+    /*
+    $('input[name=rating]').rating({
+        css_cancel:     'connexions_sprites star_0_off',
+        css_cancelHover:'star_0_hover',
+
+        css_star:       'connexions_sprites star_1_off',
+        css_starOn:     'star_1_on',
+        css_starHover:  'star_1_hover',
+        css_starOff:    'star_1_off'
+    });
+    // */
+
+    /*
+    // Favorite
+    $('input[name=isFavorite]').Checkbox({
+            css:        'connexions_sprites',
+            cssOn:      'star_fill',
+            cssOff:     'star_empty',
+            titleOn:    'Favorite: click to remove from Favorites',
+            titleOff:   'Click to add to Favorites',
+            useElTitle: false,
+            hideLabel:  true
+    });
+
+    // Privacy
+    $('input[name=isPrivate]').Checkbox({
+            css:        'connexions_sprites',
+            cssOn:      'lock_fill',
+            cssOff:     'lock_empty',
+            titleOn:    'Private: click to share',
+            titleOff:   'Public: click to mark as private',
+            useElTitle: false,
+            hideLabel:  true
+    });
+    // */
+}
+
+/************************************************
+ * Validation presentation
+ *
+ */
+function validation_failure($src, errorMsg)
+{
+    $submit.attr('disabled', 'true')
+           .addClass('disabled');
+
+    if ($src !== undefined)
     {
-        $submit.attr('disabled', 'true')
-               .addClass('disabled');
+        var $status = $src.parent().find('.validationStatus');
 
-        if ($src !== undefined)
-        {
-            var $status = $src.parent().find('.validationStatus');
-
-            $src.removeClass('ok')
-                .addClass('error');
-            $status.removeClass('ok error');
-
-            if (errorMsg !== undefined)
-            {
-                $status.addClass('error')
-                       .text(errorMsg);
-                errorMsg = undefined;
-            }
-        }
+        $src.removeClass('ok')
+            .addClass('error');
+        $status.removeClass('ok error');
 
         if (errorMsg !== undefined)
         {
-            $error.text(errorMsg);
+            $status.addClass('error')
+                   .text(errorMsg);
+            errorMsg = undefined;
         }
     }
 
-    function validation_success($src)
+    if (errorMsg !== undefined)
     {
-        var $status     = $src.parent().find('.validationStatus');
-        var $required   = $('.required');
+        $error.text(errorMsg);
+    }
+}
 
-        $src.removeClass('error')
-            .addClass('ok');
-        $status.removeClass('error')
-               .addClass('ok')
-               .text('');
+function validation_success($src)
+{
+    var $status     = $src.parent().find('.validationStatus');
+    var $required   = $('.required');
 
-        if ($required.hasClass('ok'))
+    $src.removeClass('error')
+        .addClass('ok');
+    $status.removeClass('error')
+           .addClass('ok')
+           .text('');
+
+    if ($required.hasClass('ok'))
+    {
+        $submit.removeAttr('disabled')
+               .removeClass('disabled');
+        $error.text('');
+    }
+
+    if ($required.hasClass('error'))
+    {
+        $submit.attr('disabled', 'true')
+               .addClass('disabled');
+    }
+}
+
+/************************************************
+ * Validation routines
+ *
+ */
+function tags_validate()
+{
+    validation_success($tags);
+}
+
+function nonEmpty_validate()
+{
+    $('.nonEmpty').each(function() {
+        var $el = $(this);
+        if ($el.val().length > 0)
         {
-            $submit.removeAttr('disabled')
-                   .removeClass('disabled');
-            $error.text('');
-        }
-
-        if ($required.hasClass('error'))
-        {
-            $submit.attr('disabled', 'true')
-                   .addClass('disabled');
-        }
-    }
-
-    /************************************************
-     * Validation routines
-     *
-     */
-    function tags_validate()
-    {
-        validation_success($tags);
-    }
-
-    function nonEmpty_validate()
-    {
-        $('.nonEmpty').each(function() {
-            var $el = $(this);
-            if ($el.val().length > 0)
-            {
-                validation_success($el);
-            }
-            else
-            {
-                validation_failure($el);
-            }
-        });
-    }
-
-    /************************************************
-     * Input handlers
-     *
-     */
-    function tags_keyup()
-    {
-        $tags.removeClass('error ok');
-        validation_failure();
-        if (keyTimer !== null)
-            clearTimeout(keyTimer);
-
-        keyTimer = setTimeout(function() { tags_validate(); }, 1000);
-    }
-
-    function tags_blur()
-    {
-        if ($tags.hasClass('ok'))
-            return;
-
-        tags_validate();
-    }
-
-    function toggle_image_button(event, el, base)
-    {
-        var $el = $(el);
-        event.preventDefault();
-        event.stopPropagation();
-
-        if ($el.hasClass(base +'_fill'))
-        {
-            $el.removeAttr('checked')
-               .removeClass(base +'_fill')
-               .addClass(base +'_empty');
+            validation_success($el);
         }
         else
         {
-            $el.attr('checked', true)
-               .removeClass(base +'_empty')
-               .addClass(base +'_fill');
+            validation_failure($el);
         }
-    }
-
-    /************************************************
-     * Validation Initialization
-     *
-     */
-    $(document).ready(function() {
-        $tags     = $('input[name=tags]');
-        $submit   = $('input[type=submit]');
-        $error    = $('.formError');
-
-        validation_failure();
-
-        // Handle autocomplete / validation of the tags
-        $tags.keyup(function() { tags_keyup(); })
-             .blur(function() {  tags_blur(); });
-
-        // Rating
-        $('.stars-wrapper').stars({
-            captionEl:          $('label[for=rating]'),
-            baseClass:          'connexions_sprites',
-
-            cancelClass:        'star_0',
-            cancelHoverClass:   'star_0_hover',
-            cancelDisabledClass:'star_0_off',
-
-            starClass:          'star_1',
-            starOnClass:        'star_1_on',
-            starHoverClass:     'star_1_hover',
-            starDisabledClass:  'star_1_off'
-        });
-        /*
-        $('input[name=rating]').rating({
-            css_cancel:     'connexions_sprites star_0_off',
-            css_cancelHover:'star_0_hover',
-
-            css_star:       'connexions_sprites star_1_off',
-            css_starOn:     'star_1_on',
-            css_starHover:  'star_1_hover',
-            css_starOff:    'star_1_off'
-        });
-        // */
-
-        /*
-        // Favorite
-        $('input[name=isFavorite]').Checkbox({
-                css:        'connexions_sprites',
-                cssOn:      'star_fill',
-                cssOff:     'star_empty',
-                titleOn:    'Favorite: click to remove from Favorites',
-                titleOff:   'Click to add to Favorites',
-                useElTitle: false,
-                hideLabel:  true
-        });
-
-        // Privacy
-        $('input[name=isPrivate]').Checkbox({
-                css:        'connexions_sprites',
-                cssOn:      'lock_fill',
-                cssOff:     'lock_empty',
-                titleOn:    'Private: click to share',
-                titleOff:   'Public: click to mark as private',
-                useElTitle: false,
-                hideLabel:  true
-        });
-        // */
     });
- })(jQuery);
+}
+
+/************************************************
+ * Input handlers
+ *
+ */
+function tags_keyup()
+{
+    $tags.removeClass('error ok');
+    validation_failure();
+    if (keyTimer !== null)
+        clearTimeout(keyTimer);
+
+    keyTimer = setTimeout(function() { tags_validate(); }, 1000);
+}
+
+function tags_blur()
+{
+    if ($tags.hasClass('ok'))
+        return;
+
+    tags_validate();
+}
+
+function toggle_image_button(event, el, base)
+{
+    var $el = $(el);
+    event.preventDefault();
+    event.stopPropagation();
+
+    if ($el.hasClass(base +'_fill'))
+    {
+        $el.removeAttr('checked')
+           .removeClass(base +'_fill')
+           .addClass(base +'_empty');
+    }
+    else
+    {
+        $el.attr('checked', true)
+           .removeClass(base +'_empty')
+           .addClass(base +'_fill');
+    }
+}
+
 <?php
-$script->captureEnd();
+$jQuery->javascriptCaptureEnd();
 
 
 ?>

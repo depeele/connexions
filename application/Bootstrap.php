@@ -131,6 +131,21 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $view->doctype('XHTML1_STRICT');
     }
 
+    protected function _initJQueryViewHelpers()
+    {
+        if ($_GLOBALS['gNoView'] === true)
+            return;
+
+        /*
+        Zend_Controller_Action_HelperBroker::addPrefix(
+                                        'ZendX_JQuery_View_Helper');
+        */
+
+        $view = $this->getResource('view'); //Zend_Registry::get('view');
+        $view->addHelperPath("ZendX/JQuery/View/Helper",
+                             "ZendX_JQuery_View_Helper");
+    }
+
     protected function _initNavigation()
     {
         if ($_GLOBALS['gNoView'] === true)
