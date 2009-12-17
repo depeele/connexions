@@ -288,7 +288,7 @@ class ZendX_JQuery_View_Helper_JQuery_Container
         else if ( (! @is_string($url)) || @empty($url) )
             $url = false;
 
-        $_ajaxApiLoaderUrl = $url;
+        $this->_ajaxApiLoaderUrl = $url;
         return $this;
     }
 
