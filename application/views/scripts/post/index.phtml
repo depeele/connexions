@@ -4,11 +4,10 @@ if (! @is_array($this->postInfo))
 
 $this->headTitle('Save a Bookmark');
 
-
-//$this->headLink()->appendStylesheet($this->baseUrl('css/post.css'));
 $jQuery = $this->jQuery();
 $jQuery->addStylesheet($this->baseUrl('css/post.css'));
 $jQuery->addJavascriptFile($this->baseurl('js/ui.stars.js'));
+$jQuery->addJavascriptFile($this->baseurl('js/ui.checkbox.js'));
 
 //$noConflict = Zend_JQuery_View_Helper_JQuery::getJQueryHandler();
 
@@ -52,21 +51,9 @@ function post_initHandlers()
         starHoverClass:     'star_1_hover',
         starDisabledClass:  'star_1_off'
     });
-    /*
-    $('input[name=rating]').rating({
-        css_cancel:     'connexions_sprites star_0_off',
-        css_cancelHover:'star_0_hover',
 
-        css_star:       'connexions_sprites star_1_off',
-        css_starOn:     'star_1_on',
-        css_starHover:  'star_1_hover',
-        css_starOff:    'star_1_off'
-    });
-    // */
-
-    /*
     // Favorite
-    $('input[name=isFavorite]').Checkbox({
+    $('input[name=isFavorite]').checkbox({
             css:        'connexions_sprites',
             cssOn:      'star_fill',
             cssOff:     'star_empty',
@@ -77,7 +64,7 @@ function post_initHandlers()
     });
 
     // Privacy
-    $('input[name=isPrivate]').Checkbox({
+    $('input[name=isPrivate]').checkbox({
             css:        'connexions_sprites',
             cssOn:      'lock_fill',
             cssOff:     'lock_empty',
@@ -86,7 +73,6 @@ function post_initHandlers()
             useElTitle: false,
             hideLabel:  true
     });
-    // */
 }
 
 /************************************************
