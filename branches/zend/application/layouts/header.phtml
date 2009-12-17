@@ -1,6 +1,6 @@
 <?php
 $request = Connexions::getRequest();
-$baseUrl = Connexions::url('/');
+$baseUrl = $this->baseUrl('/'); //Connexions::url('/');
 
 $this->headMeta()->appendHttpEquiv('Content-Type', 'text/html; charset=utf8');
 
@@ -10,9 +10,11 @@ print_r($request->getParams());
 echo "</pre>\n";
 // */
 
+$config         = Zend_Registry::get('config');
+
 $searchTerm     = $request->getParam('q', null);
 $searchContext  = $request->getParam('searchContext', 'all');
-$searchContexts = Zend_Registry::get('config')->searchContext;
+$searchContexts = $config->searchContext;
 if ($searchContexts instanceof Zend_Config)
 {
     $searchContexts = $searchContexts->toArray();
@@ -28,31 +30,34 @@ else
 $jQuery = $this->jQuery();
 
 $links = $this->headLink();
-$links->prependStylesheet($this->baseUrl('css/main.css'));
+$links->prependStylesheet($baseUrl .'css/main.css');
 
 /*
 
-$links->appendStylesheet($this->baseUrl('css/screen.css'), 'screen,projection');
-$links->appendStylesheet($this->baseUrl('css/sprites.css'),'screen,projection');
-$links->appendStylesheet($this->baseUrl('css/screen.css'), 'print');
+$links->appendStylesheet($baseUrl .'css/screen.css', 'screen,projection');
+$links->appendStylesheet($baseUrl .'css/sprites.css','screen,projection');
+$links->appendStylesheet($baseUrl .'css/screen.css', 'print');
 
-$links->appendStylesheet($this->baseUrl('css/ie.css'),     'screen,projection',
+$links->appendStylesheet($baseUrl .'css/ie.css',     'screen,projection',
                          true, array('conditional'  => 'lt IE 8'));
 */
 
 
-if (true)
+if ( $config->cdn->use )
 {
     /* Use the google CDN.  By default, we will load directly from google.
      * If we want to use the new Google AJAX API Loader, call:
-     *      $jQuery->setAjaxApiLoader(true);
      */
+    if ( $config->cdn->use->loader )
+    {
+        $jQuery->setAjaxApiLoader(true);
+    }
 }
 else
 {
     // Use our local jQuery / jQuery.ui
-    $jQuery->setLocalPath($baseUrl .'js')
-           ->setUiLocalPath($baseUrl .'js');
+    $jQuery->setLocalPath($baseUrl   .'js/jquery.js')
+           ->setUiLocalPath($baseUrl .'js/jquery-ui.js');
 }
 
 $jQuery->setVersion('1.3.2')
@@ -62,6 +67,28 @@ $jQuery->setVersion('1.3.2')
        ->prependOnLoad('search_initHandlers();')
        ->javascriptCaptureStart();
   ?>
+
+/** @brief  Given an argument list of image urls, load them all but don't
+ *          display.
+ *  @param  arguments   A list of image urls.
+ *
+ *  Images are store globally in '_imageCache' but are not rendered.
+ */
+var _imageCache  = [];
+function preloadImages()
+{
+    var args_len    = arguments.length;
+    for (var idex = args_len; idex--;)
+    {
+        var img = document.createElement('img');
+        img.src = arguments[idex];
+        _imageCache.push(img);
+    }
+}
+
+// Preload images that we use everywhere.
+preloadImages('<?= $baseUrl ?>images/logo.gif',
+              '<?= $baseUrl ?>css/sprites/connexions.gif');
 
 /************************************************
  * Initialize the search form handlers
