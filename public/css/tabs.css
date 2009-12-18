@@ -1,0 +1,104 @@
+/* Alternative Tab styling using no background image but rather border-radius.
+ *  Requires a change to application/configs/navigation.xml
+ *  to remove 'connexions_sprites welcome_bg' from the 'class' of <userInfo>
+ *        and 'connexions_sprites join_bg'    from the 'class' of <register>
+ *
+ * This will show square tabs in browsers that don't support border-radius
+ * and likely won't work at all in IE6.
+ */
+
+/* Tabs / Navigation */
+#pageHeader .tabs {
+  position: absolute;
+  top:      0;
+  right:    0;
+  padding:  0;
+  width:    750px;
+  height:   64px;
+}
+#pageHeader .tabs a {
+  padding:          2px;
+  color:            #fff;
+  font-weight:      normal;
+  text-decoration:  none;
+}
+#pageHeader .tabs li.active a,
+#pageHeader .tabs a:hover {
+  color:            #b0d730;
+}
+#pageHeader .tabs {
+  padding:      0;
+  background-color: transparent;
+}
+
+#pageHeader .nav {
+  position:     absolute;
+  top:          0;
+  left:         0;
+  padding:      0;
+  width:        560px;    /* Of the 750px for .tabs (see #search) */
+}
+#pageHeader .nav li {
+  float:            left;
+  width:            90px;           /* Of the 560px for .tab .nav */
+  text-align:       center;
+  padding:          24px 0;
+
+  background-color: #172322;
+}
+
+/* Welcome / Join -- first tab item */
+#pageHeader .tabs li.welcome,
+#pageHeader .tabs li.join {
+  width:                  110px;    /* Of the 560px for .tab .nav */
+
+  border-right:           1px dotted #666;
+
+  -moz-border-radius:     0 0 0 20px;
+  -webkit-border-radius:  0 0 0 20px;
+  border-radius:          0 0 0 20px;
+}
+#pageHeader .tabs li.welcome {
+  padding:                16px 0;
+}
+
+#pageHeader .tabs li.welcome:hover {
+  -moz-border-radius:     0;
+  -webkit-border-radius:  0;
+  border-radius:          0;
+}
+#pageHeader .tabs li.welcome ul.sub {
+  left:             0;
+}
+#pageHeader .tabs li.welcome ul.sub li {
+  width:            100px;
+}
+#pageHeader .tabs li.welcome ul.sub .corner_inner_left {
+  /* Hide the upper left corner  of theh sub-menu */
+  display:  none;
+}
+
+
+#pageHeader .tabs li.join {
+  background-color: #9FC54E;
+}
+#pageHeader .tabs li.join a {
+  color:            #fff;
+}
+#pageHeader .tabs li.join a:hover {
+  color:            #2786C2;
+}
+
+/* Search */
+#search {
+  position:         absolute;
+  top:              0;
+  right:            0;
+  padding:          18px 0;
+  width:            190px;    /* Of the 750px for .tabs (see .nav) */
+  background-color: #172322;  /* Match #pageHeader .nav li */
+}
+#search .searchBox {
+  float:          right;
+  padding-right:  9px;
+}

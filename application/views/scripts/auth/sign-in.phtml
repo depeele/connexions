@@ -6,6 +6,70 @@ $this->headTitle('Sign In');
 $jQuery = $this->jQuery();
 $jQuery->addStylesheet($this->baseUrl('css/auth.css'));
 
+$jQuery->addJavascriptFile($this->baseurl('js/ui.button.js'));
+$jQuery->addJavascriptFile($this->baseurl('js/ui.input.js'));
+
+$jQuery->addOnLoad('authSignin_onLoad();');
+
+$jQuery->javascriptCaptureStart();
+?>
+/************************************************
+ * UI Initialization
+ *
+ */
+var $form       = null;
+var $submit     = null;
+var $error      = null;
+
+function authSignin_onLoad()
+{
+    $form   = $('#auth form');
+    $form.hide();   // hide while we prepare....
+
+    $form.addClass('ui-form');
+
+    $error      = $('.formError');
+    $submit     = $('button[name=submit]');
+
+    $submit.button({ priority:'primary', enabled:false});
+
+    // Style all remaining input[type=text] / textarea controls with ui.input
+    $('input[type=text],input[type=password],textarea')
+            .input()
+            .bind('validated.uiinput', function() {
+                    validate_form();
+                  });
+
+    $form.show();
+}
+
+function validate_form()
+{
+    var $required   = $('.required');
+    var isValid     = true;
+
+    $required.each(function() {
+        if (! $(this).hasClass('ui-state-valid'))
+        {
+            isValid = false;
+            return false;
+        }
+    });
+
+    if (isValid)
+    {
+        $submit.button('enable');
+        $error.text('');
+    }
+    else
+    {
+        $submit.button('disable');
+    }
+}
+
+<?php
+$jQuery->javascriptCaptureEnd();
+
 ?>
 <div id="auth">
  <div class="line"><!-- { -->
@@ -19,16 +83,16 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.css'));
    <form method='post'>
     <div class='field'>
      <label for='user'>Username</label>
-     <input type='text' class='text'
+     <input type='text' class='text required'
             name='user' value='<?= $this->user ?>' />
     </div>
     <div class='field'>
      <label for='password' >Password</label>
-     <input type='password' class='text'
+     <input type='password' class='text required'
             name='password' />
     </div>
     <div class='field buttons'>
-     <input type='submit' class='button' value='Sign in' />
+     <button name='submit'>Sign in</button>
     </div>
    </form>
  

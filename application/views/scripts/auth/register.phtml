@@ -6,203 +6,158 @@ $this->headTitle('Join');
 $jQuery = $this->jQuery();
 $jQuery->addStylesheet($this->baseUrl('css/auth.css'));
 //$jQuery->addJavascriptFile($this->baseurl('js/ui.stars.js'));
+$jQuery->addJavascriptFile($this->baseurl('js/ui.input.js'));
+$jQuery->addJavascriptFile($this->baseurl('js/ui.button.js'));
 
-$jQuery->addOnLoad('register_initHandlers();');
+$jQuery->addOnLoad('authRegister_onLoad();');
 
 $jQuery->javascriptCaptureStart();
 ?>
-var $userName   = null;
-var $pass1      = null;
-var $pass2      = null;
+/************************************************
+ * Initialize the form handlers
+ *
+ */
+var $form       = null;
 var $submit     = null;
 var $error      = null;
-var keyTimer    = null;
 
-/************************************************
- * Validation presentation
- *
- */
-function validation_failure($src, errorMsg)
+function authRegister_onLoad()
 {
-    $submit.attr('disabled', 'true');
-    $submit.addClass('disabled');
+    $form   = $('#auth form');
+    $form.hide();   // hide while we prepare....
 
-    if ($src !== undefined)
-    {
-        var $status = $src.parent().find('.validationStatus');
+    $form.addClass('ui-form');
 
-        $src.removeClass('ok')
-            .addClass('error');
-        $status.removeClass('ok error');
+    $error  = $('.formError');
+    $submit = $('button[name=submit]');
 
-        if (errorMsg !== undefined)
-        {
-            $status.addClass('error')
-                   .text(errorMsg);
-            errorMsg = undefined;
-        }
+    $submit.button({ priority:'primary', enabled:false});
+    $('button[name=cancel]').button({ priority:'secondary'});
 
-        if ($src == $pass2)
-        {
-            $pass1.removeClass('ok');
-            $pass1.parent().find('.validationStatus')
-                            .removeClass('ok')
-                            .text('');
-        }
-    }
 
-    if (errorMsg !== undefined)
-    {
-        $error.text(errorMsg);
-    }
-}
+    // Passwords have custom synchronous validator
+    var pass1Name   = 'password';
+    var pass2Name   = 'password2';
+    var $pass1      = $('input[name='+ pass1Name +']');
+    var $pass2      = $('input[name='+ pass2Name +']');
 
-function validation_success($src)
-{
-    var $status = $src.parent().find('.validationStatus');
+    $('input[name='+ pass1Name +'],input[name='+ pass2Name +']').input({
+        validation: function(val) {
+            var $el     = $(this);
+            var elName  = $el.attr('name');
+            var pass1   = $pass1.val();
+            var pass2   = $pass2.val();
+            var res     = true;
 
-    $src.removeClass('error')
-        .addClass('ok');
-    $status.removeClass('error')
-           .addClass('ok')
-           .text('');
+            if ((pass1.length < 1) || (pass2.length < 1))
+            {
+                // Neither valid nor ivnalid
+                res = undefined;
 
-    if ($src == $pass2)
-    {
-        $pass1.removeClass('error')
-              .addClass('ok');
-        $pass1.parent().find('.validationStatus')
-                        .removeClass('error')
-                        .addClass('ok')
-                        .text('');
-    }
+                // Aldo clear the validation status for the other field
+                if (elName === pass1Name)
+                    $pass2.input('clearValidationStatus');
+                else
+                    $pass1.input('clearValidationStatus');
+            }
+            else if (pass1 !== pass2)
+            {
+                // Invalid -- with message
+                res = 'Passwords do not match.';
 
-    if ($userName.hasClass('ok') &&
-        $pass1.hasClass('ok')    &&
-        $pass2.hasClass('ok'))
-    {
-        $submit.removeAttr('disabled');
-        $submit.removeClass('disabled');
-    }
-
-    if ( (! $userName.hasClass('error')) &&
-         (! $pass1.hasClass('error'))    &&
-         (! $pass2.hasClass('error')) )
-    {
-        $error.text('');
-    }
-}
-
-/************************************************
- * Validation routines
- *
- */
-function userName_validate()
-{
-    var name    = $userName.val();
-    if (name.length < 2)
-        return;
-
-    $.getJSON('<?= Connexions::url('/auth/checkuser') ?>?jsonp=?',
-              {format:   'json',
-               userName: name},
-              function(data)
-              {
-                if (data.error !== undefined)
+                // Only report errors on 'password2'
+                if (elName === pass1Name)
                 {
-                    validation_failure($userName, data.error.message);
+                    $pass2.input('invalidate', res);
+                    res = undefined;
                 }
                 else
                 {
-                    validation_success($userName);
+                    /* But we still  want to clear the validation status for
+                     * password1
+                     */
+                    $pass1.input('clearValidationStatus');
                 }
-              });
+            }
+            else
+            {
+                // Also report success for the other field.
+                if (elName === pass1Name)
+                    $pass2.input('validate', true);
+                else
+                    $pass1.input('validate', true);
+            }
+
+            return res;
+        }
+    });
+
+    // User name has a custom, asynchrounous validlator.
+    var $user   = $('input[name=user]');
+    $user.input({
+        validation: function(name) {
+            if (name.length > 2)
+            {
+                // Perform a JSONP call to see if this user name is in use
+                $.getJSON('<?= Connexions::url('/auth/checkuser') ?>?jsonp=?',
+                    {format:   'json',
+                     userName: name},
+                     function(data) {
+                        if (data.error !== undefined)
+                            $user.input('invalidate', data.error.message);
+                        else
+                            $user.input('validate', true);
+
+                        validate_form();
+                     });
+            }
+
+            // Regardless, validation is undefined for now.
+            return undefined;
+        }
+    });
+
+    // Bind to the 'validated.uiinput' event for all inputs.
+    $('input[type=text],input[type=password],textarea')
+            .input()
+            .bind('validated.uiinput', function() {
+                    validate_form();
+                  });
+
+    /* Additional validaation for user -- we do this separately since this is
+     * an asynchrounous call
+     */
+    $('input[name=user]')
+            .bind('validated.uiinput', function() {
+             });
+
+    $form.show();
 }
 
-function pass_validate()
+function validate_form()
 {
-    var pass1   = $pass1.val();
-    var pass2   = $pass2.val();
+    var $required   = $('.required');
+    var isValid     = true;
 
-    if ((pass1.length < 1) || (pass2.length < 1))
-        return;
+    $required.each(function() {
+        if (! $(this).hasClass('ui-state-valid'))
+        {
+            isValid = false;
+            return false;
+        }
+    });
 
-    if (pass1 !== pass2)
+    if (isValid)
     {
-        validation_failure($pass2, 'Passwords do not match.');
+        $submit.button('enable');
+        $error.text('');
     }
     else
     {
-        validation_success($pass2);
+        $submit.button('disable');
     }
 }
 
-/************************************************
- * Input handlers
- *
- */
-function userName_keyup()
-{
-    $userName.removeClass('error ok');
-    validation_failure();
-    if (keyTimer !== null)
-        clearTimeout(keyTimer);
-
-    keyTimer = setTimeout(function() { userName_validate(); }, 1000);
-}
-
-function userName_blur()
-{
-    if ($userName.hasClass('ok'))
-        return;
-
-    userName_validate();
-}
-
-function pass_keyup()
-{
-    $pass1.removeClass('error ok');
-    $pass2.removeClass('error ok');
-    validation_failure();
-    if (keyTimer !== null)
-        clearTimeout(keyTimer);
-
-    keyTimer = setTimeout(function() { pass_validate(); }, 1000);
-}
-
-function pass_blur()
-{
-    if ($pass1.hasClass('ok'))
-        return;
-
-    pass_validate();
-}
-
-/************************************************
- * Validation Initialization
- *
- */
-function register_initHandlers()
-{
-    $userName = $('input[name=user]');
-    $pass1    = $('input[name=password]');
-    $pass2    = $('input[name=password2]');
-    $submit   = $('input[type=submit]');
-    $error    = $('.formError');
-
-    validation_failure();
-
-    // Handle validation of the userName
-    $userName.keyup(function() { userName_keyup(); })
-             .blur(function() {  userName_blur(); });
-
-    // Handle validation of the password
-    $pass1.keyup(function() { pass_keyup(); })
-          .blur(function() {  pass_blur(); });
-
-    $pass2.keyup(function() { pass_keyup(); })
-          .blur(function() {  pass_blur(); });
-}
 <?php
 $jQuery->javascriptCaptureEnd();
 
@@ -218,26 +173,26 @@ $jQuery->javascriptCaptureEnd();
   </div><!-- legend } -->
   <div class="userInput unit"><!-- { -->
    <form method='post'>
-    <div class='field required'>
-     <div class='validationStatus'></div>
+    <div class='field'>
+     <div class='ui-field-status'></div>
      <label for='user'>User Name / ID</label>
-     <input type='text' class='text' autocomplete='off'
+     <input type='text' class='text required' autocomplete='off'
             name='user' value='<?= $this->user ?>' />
     </div>
-    <div class='field required'>
-     <div class='validationStatus'></div>
+    <div class='field'>
+     <div class='ui-field-status'></div>
      <label for='password'>Password</label>
-     <input type='password' class='text' autocomplete='off'
+     <input type='password' class='text required' autocomplete='off'
            name='password' value='<?= $this->pass ?>' />
     </div>
-    <div class='field required'>
-     <div class='validationStatus'></div>
+    <div class='field'>
+     <div class='ui-field-status'></div>
      <label for='password2'>Re-type Password for verfication</label>
-     <input type='password' class='text' autocomplete='off'
+     <input type='password' class='text required' autocomplete='off'
             name='password2' />
     </div>
     <div class='field buttons'>
-     <input type='submit' class='button' value='Join Connexions' />
+     <button name='submit'>Join Connexions</button>
     </div>
    </form>
  

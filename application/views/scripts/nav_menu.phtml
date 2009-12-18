@@ -192,7 +192,7 @@ function renderSearch($request, array $searchContexts)
 
     ?>
     <form id='search' action='<?= Connexions::url('/search') ?>' method='post'>
-     <div class='searchBox connexions_sprites search_bg'><!-- searchBox { -->
+     <div class='searchBox'><!-- searchBox { -->
       <div class='searchInput'><!-- searchInput { -->
        <div class='choices'>
         <input name='searchContext' type='hidden'
@@ -261,11 +261,11 @@ function renderSearch($request, array $searchContexts)
          ?>
         </ul>
        </div>
-       <input name='q'       type='text' class='input'
+       <input name='q'       type='text' class='input ui-corner-all'
              value="<?= (@empty($searchTerm) ? $contextText : $searchTerm) ?>"
               autocomplete='off' maxlength='255' size='30' />
       </div><!-- searchInput } -->
-      <button class='submit'>&nbsp;</button>
+      <button class='submit connexions_sprites magnifier_small'>&nbsp;</button>
      </div><!-- searchBox } -->
     </form>
 

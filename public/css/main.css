@@ -3,6 +3,8 @@
 @import 'grids.css';
 @import 'content.css';
 @import 'sprites.css';
+@import 'themes/default/jquery-ui.css';
+@import 'ui-form.css';
 
 a, a:link, a:visited, a:focus, a:hover {
   color:      #06c;
@@ -46,6 +48,7 @@ a, a:link, a:visited, a:focus, a:hover {
   right:    0;
   padding:  0;
   width:    750px;
+  height:   64px;
 }
 #pageHeader .tabs a {
   padding:          2px;
@@ -226,26 +229,60 @@ a, a:link, a:visited, a:focus, a:hover {
 /* Search */
 #search {
   float:      right;
-  padding:    22px 18px 19px 0;
+  padding:    18px 18px 18px 0;
   width:      190px;
 
   /* IE Fix */
   *width:     175px;
 }
 #search .searchBox {
-  float:            right;
-  background-color: #fff;
+}
+
+/* Search Input / Choices */
+#search .searchInput {
+  border:       0;
+  color:        #999;
+  padding:      2px;
+}
+#search .input {
+  border:       none;
+  color:        #aaa;
+  height:       22px;
+  margin:       1px 0;
+  padding:      0 22px 0 2px;
+  width:        145px;
+}
+#search input.focus {
+  color:      #000;
+}
+#search .submit {
+  display:          block;
+  position:         absolute;
+  top:              7px;
+  left:             150px;    /* search_bg == 173px, the magnifier is 23px */
+
+  width:            23px;     /* Increase to push border to the left */
+
+  padding:          0;
+
+  border:           0;
+  border-left:      1px dotted #999;
+  background-color: transparent;
+
+  cursor:           pointer;
+
+  z-index:          101;
 }
 
 /* Search Context choices */
 #search .choices {
 }
 #search .choices .list {
-  top:              40px;
+  top:              44px;
   left:             -30px;
 
   /* IE Fix */
-  *top:             42px;
+  *top:             46px;
 }
 #search .choices .list li {
   width:            180px;
@@ -258,44 +295,6 @@ a, a:link, a:visited, a:focus, a:hover {
   display:          block;
 }
 
-#search .searchInput {
-  border:       0;
-  color:        #999;
-  float:        left;
-  padding:      2px;
-}
-#search .input {
-  border:       none;
-  color:        #aaa;
-  height:       15px;
-  margin:       1px 0;
-  padding:      0 0 0 2px;
-  width:        145px;
-}
-#search input.focus {
-  color:      #000;
-}
-#search .submit {
-  /* The submit "button" is actually a transparent button overlayed onto the
-   * search_bg background of searchBox.  Make sure it's in the right location
-   * AND above the input area so it will receive hover and click events.
-   */
-  display:          block;
-  position:         absolute;
-  top:              0;
-  left:             150px;    /* search_bg == 173px, the magnifier is 23px */
-  height:           23px;
-  width:            23px;
-
-  padding:          0;
-
-  border:           0;
-  background-color: transparent;
-
-  cursor:           pointer;
-
-  z-index:          101;
-}
 
 /* Page Content */
 #pageContent {
