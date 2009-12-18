@@ -28,15 +28,26 @@
 #post .field .text {
   width:        30em;
 }
-#post .field .validationStatus {
+#post .field .ui-field-status {
   position: absolute;
   top:      1.2em;
   right:    -18em;
   width:    16em;
 }
 
+#post .click-to-edit label {
+  display:  none;
+}
+#post .click-to-edit input {
+  border-color: transparent;
+  color:        #aaa;
+}
+#post .click-to-edit input:focus {
+  border-color: #aaa;
+  color:        #000;
+}
+
 #post .buttons {
-  clear:        both;
   position:     relative;
   text-align:   right;
 }
@@ -75,13 +86,6 @@
 #post .personalize .checkbox {
   position: relative;
   display:  inline;
-}
-
-#post .button {
-  background-color: #59A5D1;
-  border-color:     #408BB6;
-  color:            #fff;
-  cursor:           pointer;
 }
 
 #post .formError {

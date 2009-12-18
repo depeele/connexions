@@ -32,40 +32,6 @@ a:visited { color:#005a9c; }
 ol.simpleList li{list-style-type: decimal; margin-left:40px;}
 /* standard list */
 ul.simpleList li{list-style-type:disc; margin-left:40px;}
-/* ====== Forms ====== */
-form label {
-  display:      block;
-  font-size:    0.8em;
-  font-weight:  normal;
-}
-form input,
-form textarea {
-  border:                 1px solid #aaa;
-  padding:                0.3em;
-  -moz-border-radius:     7px;
-  -webkit-border-radius:  7px;
-  border-radius:          7px;
-}
-form input.button {
-  cursor:           pointer;
-}
-form input.disabled {
-  border-color:     #eee    !important;
-  background-color: #eee    !important;
-  color:            #999    !important;
-
-  cursor:           default !important;
-}
-form input.ok {
-  color:            #00882D;
-  color:            #667E32;
-}
-form input.error {
-  border-color:     #CB000F;
-}
-.error {
-  color:            #CB000F;
-}
 /* ====== Tables ====== */
 .data{padding: 20px; position:relative; zoom:1;vertical-align: top;border-right:solid 1px transparent;/* border fixes a FF2 bug which causes the data table to overlay its borders*/}
 .data table {width:100%;border:1px solid #AE0345;}

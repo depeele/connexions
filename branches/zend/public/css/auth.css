@@ -29,7 +29,7 @@ form .field {
 form .field input.text {
   width:        12em;
 }
-form .field .validationStatus {
+form .field .ui-field-status {
   position: absolute;
   top:      1.2em;
   right:    -18em;

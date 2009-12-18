@@ -52,12 +52,11 @@ $.widget("ui.checkbox", {
 
         if (opts.useElTitle === true)
         {
-            opts.title += ': ';
-
-            title = self.element.attr('title');
+            opts.title = self.element.attr('title');
             if ( ((! opts.title) || (opts.title.length < 1)) &&
                  (self.$label.length > 0) )
             {
+                // The element has no 'title', use the text of the label.
                 opts.title = self.$label.text();
             }
         }
@@ -155,6 +154,7 @@ $.widget("ui.checkbox", {
         if (! this.options.enabled)
         {
             this.options.enabled = true;
+            this.element.removeClass('ui-state-disabled');
             this.element.trigger('enable');
         }
     },
@@ -164,6 +164,7 @@ $.widget("ui.checkbox", {
         if (this.options.enabled)
         {
             this.options.enabled = false;
+            this.element.addClass('ui-state-disabled');
             this.element.trigger('disable');
         }
     },

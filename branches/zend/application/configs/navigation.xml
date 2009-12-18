@@ -14,7 +14,7 @@
      <controller>index</controller>
      <action>%user.name%</action>
      <resource>member</resource>
-     <class>welcome connexions_sprites welcome_bg</class>
+     <class>welcome</class>
      <pages>
       <post>
        <label>Post</label>
@@ -37,7 +37,7 @@
      <controller>auth</controller>
      <action>register</action>
      <resource>guest</resource>
-     <class>join connexions_sprites join_bg</class>
+     <class>join</class>
     </register>
   
     <!-- Authenticated Users -->

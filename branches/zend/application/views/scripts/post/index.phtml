@@ -1,6 +1,7 @@
 <?php
 if (! @is_array($this->postInfo))
     $this->postInfo = array();
+//$this->postInfo['url'] = 'url://to-edit/';
 
 $this->headTitle('Save a Bookmark');
 
@@ -8,10 +9,12 @@ $jQuery = $this->jQuery();
 $jQuery->addStylesheet($this->baseUrl('css/post.css'));
 $jQuery->addJavascriptFile($this->baseurl('js/ui.stars.js'));
 $jQuery->addJavascriptFile($this->baseurl('js/ui.checkbox.js'));
+$jQuery->addJavascriptFile($this->baseurl('js/ui.button.js'));
+$jQuery->addJavascriptFile($this->baseurl('js/ui.input.js'));
 
 //$noConflict = Zend_JQuery_View_Helper_JQuery::getJQueryHandler();
 
-$jQuery->addOnLoad('post_initHandlers();');
+$jQuery->addOnLoad('post_onLoad();');
 
 $jQuery->javascriptCaptureStart();
 ?>
@@ -20,22 +23,22 @@ $jQuery->javascriptCaptureStart();
  * Initialize the post form handlers
  *
  */
+var $form       = null;
 var $submit     = null;
 var $error      = null;
-var $tags       = null;
-var keyTimer    = null;
 
-function post_initHandlers()
+function post_onLoad()
 {
-    $tags     = $('input[name=tags]');
-    $submit   = $('input[type=submit]');
-    $error    = $('.formError');
+    $form   = $('#post form');
+    $form.hide();   // hide while we prepare....
 
-    validation_failure();
+    $form.addClass('ui-form');
 
-    // Handle autocomplete / validation of the tags
-    $tags.keyup(function() { tags_keyup(); })
-         .blur(function() {  tags_blur(); });
+    $error  = $('.formError');
+    $submit = $('button[name=submit]');
+
+    $submit.button({ priority:'primary', enabled:false});
+    $('button[name=cancel]').button({ priority:'secondary'});
 
     // Rating
     $('.stars-wrapper').stars({
@@ -73,127 +76,38 @@ function post_initHandlers()
             useElTitle: false,
             hideLabel:  true
     });
+
+    // Style all remaining input[type=text] / textarea controls with ui.input
+    $('input[type=text],input[type=password],textarea')
+            .input()
+            .bind('validated.uiinput', function() {
+                    validate_form();
+                  });
+
+    $form.show();
 }
 
-/************************************************
- * Validation presentation
- *
- */
-function validation_failure($src, errorMsg)
+function validate_form()
 {
-    $submit.attr('disabled', 'true')
-           .addClass('disabled');
-
-    if ($src !== undefined)
-    {
-        var $status = $src.parent().find('.validationStatus');
-
-        $src.removeClass('ok')
-            .addClass('error');
-        $status.removeClass('ok error');
-
-        if (errorMsg !== undefined)
-        {
-            $status.addClass('error')
-                   .text(errorMsg);
-            errorMsg = undefined;
-        }
-    }
-
-    if (errorMsg !== undefined)
-    {
-        $error.text(errorMsg);
-    }
-}
-
-function validation_success($src)
-{
-    var $status     = $src.parent().find('.validationStatus');
     var $required   = $('.required');
+    var isValid     = true;
 
-    $src.removeClass('error')
-        .addClass('ok');
-    $status.removeClass('error')
-           .addClass('ok')
-           .text('');
-
-    if ($required.hasClass('ok'))
-    {
-        $submit.removeAttr('disabled')
-               .removeClass('disabled');
-        $error.text('');
-    }
-
-    if ($required.hasClass('error'))
-    {
-        $submit.attr('disabled', 'true')
-               .addClass('disabled');
-    }
-}
-
-/************************************************
- * Validation routines
- *
- */
-function tags_validate()
-{
-    validation_success($tags);
-}
-
-function nonEmpty_validate()
-{
-    $('.nonEmpty').each(function() {
-        var $el = $(this);
-        if ($el.val().length > 0)
+    $required.each(function() {
+        if (! $(this).hasClass('ui-state-valid'))
         {
-            validation_success($el);
-        }
-        else
-        {
-            validation_failure($el);
+            isValid = false;
+            return false;
         }
     });
-}
 
-/************************************************
- * Input handlers
- *
- */
-function tags_keyup()
-{
-    $tags.removeClass('error ok');
-    validation_failure();
-    if (keyTimer !== null)
-        clearTimeout(keyTimer);
-
-    keyTimer = setTimeout(function() { tags_validate(); }, 1000);
-}
-
-function tags_blur()
-{
-    if ($tags.hasClass('ok'))
-        return;
-
-    tags_validate();
-}
-
-function toggle_image_button(event, el, base)
-{
-    var $el = $(el);
-    event.preventDefault();
-    event.stopPropagation();
-
-    if ($el.hasClass(base +'_fill'))
+    if (isValid)
     {
-        $el.removeAttr('checked')
-           .removeClass(base +'_fill')
-           .addClass(base +'_empty');
+        $submit.button('enable');
+        $error.text('');
     }
     else
     {
-        $el.attr('checked', true)
-           .removeClass(base +'_empty')
-           .addClass(base +'_fill');
+        $submit.button('disable');
     }
 }
 
@@ -212,30 +126,32 @@ $jQuery->javascriptCaptureEnd();
   </div><!-- legend } -->
   <div class="userInput unit"><!-- { -->
    <form method='post'>
-    <div class='field required'>
-     <div class='validationStatus'></div>
-     <label for='name'>Name</label>
-     <input type='text' class='text nonEmpty' autocomplete='off'
-            name='name' value='<?= $this->postInfo['name'] ?>' />
-    </div>
-    <div class='field required'>
-     <div class='validationStatus'></div>
+    <div class='field<?= (! @empty($this->postInfo['url'])
+                                        ? ' click-to-edit'
+                                        : '') ?>'>
+     <div class='ui-field-status'></div>
      <label for='url'>URL</label>
-     <input type='text' class='text nonEmpty' autocomplete='off'
+     <input type='text' class='text required' autocomplete='off'
            name='url' value='<?= $this->postInfo['url'] ?>' />
+    </div>
+    <div class='field'>
+     <div class='ui-field-status'></div>
+     <label for='name'>Name</label>
+     <input type='text' class='text required' autocomplete='off'
+            name='name' value='<?= $this->postInfo['name'] ?>' />
     </div>
     <div class='field'>
      <label for='description'>Description</label>
      <textarea class='text'
             name='description'><?= $this->postInfo['description'] ?></textarea>
     </div>
-    <div class='field required'>
-     <div class='validationStatus'></div>
+    <div class='field'>
+     <div class='ui-field-status'></div>
      <label for='tags'>Tags</label>
-     <input type='text' class='text nonEmpty' autocomplete='off'
+     <input type='text' class='text required' autocomplete='off'
             name='tags' value='<?= $this->postInfo['tags'] ?>' />
     </div>
-    <div class='personalize buttons clearfix'>
+    <div class='personalize buttons ui-helper-clearfix'>
      <div class='field userRating'>
       <label for='rating'>rating</label>
       <div class='stars-wrapper'>
@@ -270,8 +186,8 @@ $jQuery->javascriptCaptureEnd();
             type='checkbox' value='true'
             <?= ($this->postInfo['isPrivate'] ? ' checked' : '') ?> />
      </div>
-     <input name='submit' type='submit' class='button' value='Save' />
-     <input name='cancel' type='submit' class='button' value='Cancel' />
+     <button name='submit'>Save</button>
+     <button name='cancel'>Cancel</button>
     </div>
    </form>
    <div id='tags'>
