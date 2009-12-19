@@ -6,8 +6,8 @@ $this->headTitle('Sign In');
 $jQuery = $this->jQuery();
 $jQuery->addStylesheet($this->baseUrl('css/auth.css'));
 
-$jQuery->addJavascriptFile($this->baseurl('js/ui.button.js'));
-$jQuery->addJavascriptFile($this->baseurl('js/ui.input.js'));
+$jQuery->addJavascriptFile($this->baseUrl('js/ui.button.js'));
+$jQuery->addJavascriptFile($this->baseUrl('js/ui.input.js'));
 
 $jQuery->addOnLoad('authSignin_onLoad();');
 
@@ -29,12 +29,12 @@ function authSignin_onLoad()
     $form.addClass('ui-form');
 
     $error      = $('.formError');
-    $submit     = $('button[name=submit]');
+    $submit     = $('#auth button[name=submit]');
 
     $submit.button({ priority:'primary', enabled:false});
 
     // Style all remaining input[type=text] / textarea controls with ui.input
-    $('input[type=text],input[type=password],textarea')
+    $('#auth input[type=text],#auth input[type=password],textarea')
             .input()
             .bind('validated.uiinput', function() {
                     validate_form();

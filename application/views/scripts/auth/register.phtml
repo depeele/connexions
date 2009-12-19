@@ -29,19 +29,20 @@ function authRegister_onLoad()
     $form.addClass('ui-form');
 
     $error  = $('.formError');
-    $submit = $('button[name=submit]');
+    $submit = $('#auth button[name=submit]');
 
     $submit.button({ priority:'primary', enabled:false});
-    $('button[name=cancel]').button({ priority:'secondary'});
+    $('#auth button[name=cancel]').button({ priority:'secondary'});
 
 
     // Passwords have custom synchronous validator
     var pass1Name   = 'password';
     var pass2Name   = 'password2';
-    var $pass1      = $('input[name='+ pass1Name +']');
-    var $pass2      = $('input[name='+ pass2Name +']');
+    var $pass1      = $('#auth input[name='+ pass1Name +']');
+    var $pass2      = $('#auth input[name='+ pass2Name +']');
 
-    $('input[name='+ pass1Name +'],input[name='+ pass2Name +']').input({
+    $('#auth input[name='+ pass1Name +'],'+
+      '#auth input[name='+ pass2Name +']').input({
         validation: function(val) {
             var $el     = $(this);
             var elName  = $el.attr('name');
@@ -93,7 +94,7 @@ function authRegister_onLoad()
     });
 
     // User name has a custom, asynchrounous validlator.
-    var $user   = $('input[name=user]');
+    var $user   = $('#auth input[name=user]');
     $user.input({
         validation: function(name) {
             if (name.length > 2)
@@ -118,7 +119,7 @@ function authRegister_onLoad()
     });
 
     // Bind to the 'validated.uiinput' event for all inputs.
-    $('input[type=text],input[type=password],textarea')
+    $('#auth input[type=text],#auth input[type=password],textarea')
             .input()
             .bind('validated.uiinput', function() {
                     validate_form();
@@ -127,7 +128,7 @@ function authRegister_onLoad()
     /* Additional validaation for user -- we do this separately since this is
      * an asynchrounous call
      */
-    $('input[name=user]')
+    $('#auth input[name=user]')
             .bind('validated.uiinput', function() {
              });
 

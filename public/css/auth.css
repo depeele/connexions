@@ -23,23 +23,23 @@
 #auth .userInput {
 }
 
-form .field {
+#auth form .field {
   padding-bottom: 1em;
 }
-form .field input.text {
+#auth form .field input.text {
   width:        12em;
 }
-form .field .ui-field-status {
+#auth form .field .ui-field-status {
   position: absolute;
   top:      1.2em;
   right:    -18em;
   width:    16em;
 }
 
-form .buttons {
+#auth form .buttons {
   text-align:   right;
 }
-form input.button {
+#auth form input.button {
   background-color: #59A5D1;
   border-color:     #408BB6;
   color:            #fff;
