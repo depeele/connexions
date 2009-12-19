@@ -35,13 +35,13 @@ function post_onLoad()
     $form.addClass('ui-form');
 
     $error  = $('.formError');
-    $submit = $('button[name=submit]');
+    $submit = $('#post button[name=submit]');
 
     $submit.button({ priority:'primary', enabled:false});
-    $('button[name=cancel]').button({ priority:'secondary'});
+    $('#post button[name=cancel]').button({ priority:'secondary'});
 
     // Rating
-    $('.stars-wrapper').stars({
+    $('#post .stars-wrapper').stars({
         captionEl:          $('label[for=rating]'),
         baseClass:          'connexions_sprites',
 
@@ -56,7 +56,7 @@ function post_onLoad()
     });
 
     // Favorite
-    $('input[name=isFavorite]').checkbox({
+    $('#post input[name=isFavorite]').checkbox({
             css:        'connexions_sprites',
             cssOn:      'star_fill',
             cssOff:     'star_empty',
@@ -67,7 +67,7 @@ function post_onLoad()
     });
 
     // Privacy
-    $('input[name=isPrivate]').checkbox({
+    $('#post input[name=isPrivate]').checkbox({
             css:        'connexions_sprites',
             cssOn:      'lock_fill',
             cssOff:     'lock_empty',
@@ -78,7 +78,7 @@ function post_onLoad()
     });
 
     // Style all remaining input[type=text] / textarea controls with ui.input
-    $('input[type=text],input[type=password],textarea')
+    $('#post input[type=text],#post input[type=password],textarea')
             .input()
             .bind('validated.uiinput', function() {
                     validate_form();

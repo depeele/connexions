@@ -102,8 +102,9 @@
   background-color: #172322;  /* Match #pageHeader .nav li */
 
   /* IE fix */
-  *padding-top:     16px;
-  *padding-bottom:  14px;
+  *height:          46px;
+  *padding-top:     18px;
+  *padding-bottom:  0;
 }
 #search .searchBox {
   float:          right;
