@@ -1,0 +1,80 @@
+/* Tabs / Navigation */
+#pageHeader .tabs {
+  position: absolute;
+  top:      0;
+  right:    0;
+  padding:  0;
+  width:    750px;
+  height:   64px;
+}
+#pageHeader .tabs a {
+  padding:          2px;
+  color:            #fff;
+  font-weight:      normal;
+  text-decoration:  none;
+}
+#pageHeader .tabs li.active a,
+#pageHeader .tabs a:hover {
+  color:            #b0d730;
+}
+#pageHeader .tabs {
+  background-color: #172322;
+  padding:      0;
+}
+
+#pageHeader .nav {
+  position:     absolute;
+  top:          0;
+  left:         0;
+  padding:      0;
+}
+#pageHeader .nav li {
+  float:        left;
+  width:        90px;
+  text-align:   center;
+  padding:      24px 0;
+}
+#pageHeader .tabs li.welcome {
+  width:        8em;
+  height:       auto;
+  padding:      16px 0.5em;
+
+  border-right: 1px dotted #666;
+}
+#pageHeader .tabs li.welcome:hover {
+  /* Shift right 18 pixels to hide the corner */
+  /*background-position:-18px -110px;*/
+}
+#pageHeader .tabs li.welcome ul.sub {
+  left:             24px;
+}
+#pageHeader .tabs li.welcome ul.sub li {
+  width:            94px;
+}
+#pageHeader .tabs li.join {
+  width:            8em;
+  height:           auto;
+  padding:      	  24px 0.5em;
+
+  border-right:     1px dotted #666;
+  background-color: #9FC54E;
+}
+#pageHeader .tabs li.join a {
+  color:            #fff;
+}
+#pageHeader .tabs li.join a:hover {
+  color:            #2786C2;
+}
+
+/* Search */
+#search {
+  float:      right;
+  padding:    18px 18px 18px 0;
+  width:      190px;
+
+  /* IE Fix */
+  *width:     175px;
+}
+#search .searchBox {
+}
+
