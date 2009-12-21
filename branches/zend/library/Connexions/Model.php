@@ -328,6 +328,48 @@ abstract class Connexions_Model
         return $res;
     }
 
+    /** @brief  If this record is backed, delete it from the database.
+     *
+     *  @return true | false
+     */
+    public function delete()
+    {
+       $res = false;
+        if ($this->_isBacked === true)
+        {
+            /* Generate a where clause comprised of ALL the keys of this
+             * record.
+             *
+             * Note: We COULD just pass the entire record as the where clause,
+             *       but then this would negate any advantage gained by having
+             *       indexed keys.
+             */
+            $where  =  array();
+            foreach ($this->getKeys() as $field)
+            {
+                if (! @isset($this->_record[$field]))
+                {
+                    throw(new Exception("*** Cannot delete record: ".
+                                            "Missing key [ ". $field ." ]"));
+                }
+
+                $where[$field] = $this->_record[$field];
+            }
+
+            if (empty($where))
+            {
+                throw(new Exception("*** Don't delete all records!!"));
+            }
+
+            if ($this->_db()->delete($this->getTable(), $where) )
+            {
+                $res = true;
+            }
+        }
+
+        return $res;
+    }
+
     /** @brief  Invalidate the current instance.
      *  @param  error   If provided, set an error message.
      *
@@ -339,6 +381,11 @@ abstract class Connexions_Model
             $this->_error = $error;
 
         $this->_isValid = false;
+    }
+
+    public function toArray()
+    {
+        return $this->_record;
     }
 
     /*************************************************************************
@@ -456,44 +503,67 @@ abstract class Connexions_Model
     }
 
     /*************************************************************************
-     * Static methods
+     * Abstract Static methods
      *
      */
 
     /** @brief  Locate the record for the identified user and return a new User
      *          instance.
-     *  @param  id      The user identifier (integrer userId or string name).
+     *  @param  className   The name of the concrete sub-class.
+     *  @param  id          The user identifier
+     *                      (integrer userId or string name).
      *
      *  @return A new instance (false if no matching user).
      */
-    public static function find($id)
+    public static function find($className, $id)
     {
-        $user = new self($id);
-        if ($user->isValid())
+        $user = new $className($id);
+        if ($user->isBacked())
             return $user;
 
         return false;
     }
 
     /** @brief  Retrieve all records an return an array of instances.
+     *  @param  className   The name of the concrete sub-class.
+     *  @param  where       A string or associative array of restrictions.
      *
      *  @return An array of instances.
      */
-    public static function fetchAll()
+    public static function fetchAll($className, $where = null)
     {
+        // Figure out the table of the given class
+        $ev    = "\$table = $className::\$table;";
+        eval($ev);
+
         $db   = Connexions::getDb();
 
-        $sql  = 'SELECT * FROM '. self::getTable();
-        $recs = $db->fetchAll($sql);
+        $sql  = 'SELECT * FROM '. $table;
+        $bind = array();
+        if (@is_array($where))
+        {
+            $parts = array();
+            foreach ($where as $key => $val)
+            {
+                array_push($bind,  $val);
+                array_push($parts, '('.$key.'=?)');
+            }
+
+            $sql .= ' WHERE '. implode('AND ', $parts);
+        }
+        else if (@is_string($where))
+        {
+            $sql .= ' WHERE '. $where;
+        }
+
+        $recs = $db->fetchAll($sql, $bind);
 
         $set = array();
         foreach ($recs as $row)
         {
-            array_push($set, new self($row, $db));
+            array_push($set, new $className($row, $db));
         }
 
         return $set;
     }
-
-
 }

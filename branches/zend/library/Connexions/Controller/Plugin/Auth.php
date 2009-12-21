@@ -39,6 +39,12 @@ class Connexions_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
 
         $user   = null;
         $userId = $auth->getIdentity();
+        /*
+        printf ("Connexions_Controller_Plugin_Auth: ".
+                    "UserId from session [ %s ]<br />\n",
+                print_r($userId, true));
+        // */
+
         if ($userId !== null)
         {
             /* 1.a) There appears to be identity information in our
@@ -64,6 +70,12 @@ class Connexions_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
             $userId  = $req->getParam('user', null);
             $pass    = $req->getParam('password');
 
+            /*
+            printf ("Connexions_Controller_Plugin_Auth: ".
+                        "User [ %s ], pass [ %s ]<br />\n",
+                    $userId, $pass);
+            // */
+
             /* Generate a Model_User instance based upon the incoming userId.
              *
              * Note: If $userId is null, this will generate a Model_User
@@ -75,6 +87,13 @@ class Connexions_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
              */
             if (($user === null) || ($userId !== null))
                 $user = new Model_User($userId);
+
+            /*
+            printf ("Connexions_Controller_Plugin_Auth: ".
+                        "User is%s backed, password is%s empty<br />\n",
+                    ($user->isBacked() ? "" : " NOT"),
+                    (@empty($pass)     ? "" : " NOT"));
+            // */
 
             if ( $user->isBacked() && (! @empty($pass)) )
             {
@@ -88,8 +107,17 @@ class Connexions_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
                  */
                 $adapter = new Connexions_Auth($user, $pass);
                 $res     = $auth->authenticate($adapter);
+
                 /*
-                if (! $res->isBacked())
+                printf ("Connexions_Controller_Plugin_Auth: ".
+                            "User authentication is%s valid, ".
+                            "results:<pre>%s</pre>\n",
+                        ($res->isValid() ? "" : " NOT"),
+                        print_r($res, true));
+                // */
+
+                /*
+                if (! $res->isValid())
                 {
                     // Invalid password.
                     printf ("Connexions_Controller_Plugin_Auth: ".
@@ -106,7 +134,7 @@ class Connexions_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
                 // Invalid user or missing password.
                 printf ("Connexions_Controller_Plugin_Auth: ".
                             "User [ %s ] NOT authenticated: ".
-                                "User is%s valid, is%s bakced, ".
+                                "User is%s valid, is%s backed, ".
                                 "password[ %s ]<br />\n",
                         $userId,
                         ($user->isValid()  ? "" : " NOT"),

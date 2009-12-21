@@ -48,6 +48,28 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $config = $this->getPluginResource('db');
         $db     = $config->getDbAdapter();
 
+        try
+        {
+            $db->getConnection();
+        }
+        catch (Zend_Db_Adapter_Exception $e)
+        {
+            /* perhaps a failed login credential, or perhaps the RDBMS is not
+             * running
+             */
+            die("*** Database error: Failed to login or DB not accessible");
+        }
+        catch (Zend_Exception $e)
+        {
+            // perhaps factory() failed to load the specified Adapter class
+            die("*** Database error: Cannot load specified adapter class");
+        }
+
+        if (! $db->isConnected())
+        {
+            die("*** Cannot connect to database");
+        }
+
         Zend_Registry::set('db', $db);
         return $db;
     }
