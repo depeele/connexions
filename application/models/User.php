@@ -122,4 +122,25 @@ class Model_User extends Connexions_Model
 
         return false;
     }
+
+    /** @brief  Retrieve all records an return an array of instances.
+     *  @param  id          The user identifier
+     *                      (integrer userId or string name).
+     *
+     *  @return A new instance (false if no matching user).
+     */
+    public static function find($id)
+    {
+        return parent::find(__CLASS__, $id);
+    }
+
+    /** @brief  Retrieve all records an return an array of instances.
+     *  @param  where   A string or associative array of restrictions.
+     *
+     *  @return An array of instances.
+     */
+    public static function fetchAll($where = null)
+    {
+        return parent::fetchAll(__CLASS__, $where);
+    }
 }

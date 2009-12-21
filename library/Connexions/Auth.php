@@ -88,8 +88,9 @@ class Connexions_Auth extends    Zend_Auth_Result
         */
         if ($this->_user->authenticate($this->_credential))
         {
-            $this->_code     = self::SUCCESS;
-            $this->_messages = array();
+            $this->_code            = self::SUCCESS;
+            $this->_messages        = array();
+            $this->_isAuthenticated = true;
         }
         else
         {

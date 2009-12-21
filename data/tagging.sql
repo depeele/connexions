@@ -44,12 +44,12 @@ CREATE TABLE tag (
 
 CREATE TABLE network (
   userId        int(10)     unsigned    NOT NULL default 0,
-  networkId     int(10)     unsigned    NOT NULL default 0,
+  memberId      int(10)     unsigned    NOT NULL default 0,
   rating        tinyint(1)  unsigned    NOT NULL default 0,
 
-  PRIMARY KEY           (`userId`, `networkId`),
+  PRIMARY KEY           (`userId`, `memberId`),
   KEY `n_userId`        (`userId`),
-  KEY `n_networkId`     (`networkId`)
+  KEY `n_memberId`      (`memberId`)
 );
 
 --
