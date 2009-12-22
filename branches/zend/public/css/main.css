@@ -167,11 +167,12 @@ a, a:link, a:visited, a:focus, a:hover {
 }
 #search .input {
   border:       none;
-  color:        #aaa;
+  /*color:        #aaa;*/
   height:       22px;
   margin:       1px 0;
   padding:      0 22px 0 2px;
   width:        145px;
+  font-weight:  normal;
 }
 #search input.focus {
   color:      #000;
