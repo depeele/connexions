@@ -8,6 +8,16 @@
 (function($) {
 
 $.widget("ui.button", {
+    /** @brief  Initialize a new instance.
+     *
+     *  Valid options:
+     *      priority        The priority of this field
+     *                      ( ['normal'], 'primary', 'secondary');
+     *
+     *  @triggers:
+     *      'enabled.uibutton'  when element is enabled;
+     *      'disabled.uibutton' when element is disabled.
+     */
     _init: function() {
         var self    = this;
         var opts    = this.options;
@@ -103,7 +113,7 @@ $.widget("ui.button", {
 
         if (! wasEnabled)
         {
-            this.element.trigger('enable.uibutton');
+            this.element.trigger('enabled.uibutton');
         }
 
         this.options.enabled = true;
@@ -120,7 +130,7 @@ $.widget("ui.button", {
 
         if (wasEnabled)
         {
-            this.element.trigger('disable.uibutton');
+            this.element.trigger('disabled.uibutton');
         }
     },
 

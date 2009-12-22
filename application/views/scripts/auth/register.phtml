@@ -44,95 +44,98 @@ function authRegister_onLoad()
     $('#auth input[name='+ pass1Name +'],'+
       '#auth input[name='+ pass2Name +']').input({
         validation: function(val) {
-            var $el     = $(this);
-            var elName  = $el.attr('name');
-            var pass1   = $pass1.val();
-            var pass2   = $pass2.val();
-            var res     = true;
-
-            if ((pass1.length < 1) || (pass2.length < 1))
-            {
-                // Neither valid nor ivnalid
-                res = undefined;
-
-                // Aldo clear the validation status for the other field
-                if (elName === pass1Name)
-                    $pass2.input('clearValidationStatus');
-                else
-                    $pass1.input('clearValidationStatus');
-            }
-            else if (pass1 !== pass2)
-            {
-                // Invalid -- with message
-                res = 'Passwords do not match.';
-
-                // Only report errors on 'password2'
-                if (elName === pass1Name)
-                {
-                    $pass2.input('invalidate', res);
-                    res = undefined;
-                }
-                else
-                {
-                    /* But we still  want to clear the validation status for
-                     * password1
-                     */
-                    $pass1.input('clearValidationStatus');
-                }
-            }
-            else
-            {
-                // Also report success for the other field.
-                if (elName === pass1Name)
-                    $pass2.input('validate', true);
-                else
-                    $pass1.input('validate', true);
-            }
-
-            return res;
+            return validate_passwords($(this), $pass1, $pass2);
         }
     });
 
-    // User name has a custom, asynchrounous validlator.
-    var $user   = $('#auth input[name=user]');
-    $user.input({
-        validation: function(name) {
-            if (name.length > 2)
-            {
-                // Perform a JSONP call to see if this user name is in use
-                $.getJSON('<?= Connexions::url('/auth/checkuser') ?>?jsonp=?',
-                    {format:   'json',
-                     userName: name},
-                     function(data) {
-                        if (data.error !== undefined)
-                            $user.input('invalidate', data.error.message);
-                        else
-                            $user.input('validate', true);
-
-                        validate_form();
-                     });
-            }
-
-            // Regardless, validation is undefined for now.
-            return undefined;
-        }
-    });
-
-    // Bind to the 'validated.uiinput' event for all inputs.
-    $('#auth input[type=text],#auth input[type=password],textarea')
-            .input()
-            .bind('validated.uiinput', function() {
-                    validate_form();
-                  });
-
-    /* Additional validaation for user -- we do this separately since this is
-     * an asynchrounous call
+    /* User name has a custom, asynchrounous validator -- we do this separately
+     * since this is an asynchrounous call
      */
+    $('#auth input[name=user]').input({ validation: validate_user });
+
+    // Bind to the 'validationChanged.uiinput' event for all inputs.
+    $('#auth input[type=text],#auth input[type=password],textarea')
+         .input()
+         .bind('validationChanged.uiinput', function() { validate_form(); });
+
     $('#auth input[name=user]')
-            .bind('validated.uiinput', function() {
+            .bind('validationChanged.uiinput', function() {
              });
 
     $form.show();
+}
+
+function validate_user(name)
+{
+    var $user   = $(this);
+    if (name.length > 2)
+    {
+        // Perform a JSONP call to see if this user name is in use
+        $.getJSON('<?= Connexions::url('/auth/checkuser') ?>?jsonp=?',
+            {format:   'json',
+             userName: name},
+             function(data) {
+                if (data.error !== undefined)
+                    $user.input('setValidationState', data.error.message);
+                else
+                    $user.input('setValidationState', true);
+
+                validate_form();
+             });
+    }
+
+    // Regardless, don't change the current validation.
+    return $user.input('getValidationState');
+}
+
+function validate_passwords($el, $pass1, $pass2)
+{
+    var pass1       = $pass1.val();
+    var pass2       = $pass2.val();
+    var res         = true;
+
+    if ((pass1.length < 1) || (pass2.length < 1))
+    {
+        // Neither valid nor ivnalid
+        res = undefined;
+
+        // Also clear the validation status for the other field
+        if ($el[0] === $pass1[0])
+            $pass2.input('setValidationState', undefined);
+        else
+            $pass1.input('setValidationState', undefined);
+    }
+    else if (pass1 !== pass2)
+    {
+        // Invalid -- with message
+        res = 'Passwords do not match.';
+
+        // Only report errors on 'password2'
+        if ($el[0] === $pass1[0])
+        {
+            $pass2.input('setValidationState', res);
+            res = undefined;
+        }
+        else
+        {
+            /* But we still  want to clear the validation status for
+             * password1
+             */
+            $pass1.input('setValidationState', undefined);
+        }
+    }
+    else
+    {
+        // Also report success for the other field.
+        if ($el[0] === $pass1[0])
+            $pass2.input('setValidationState', true);
+        else
+            $pass1.input('setValidationState', true);
+
+        //validate_form();
+    }
+
+    return res;
 }
 
 function validate_form()

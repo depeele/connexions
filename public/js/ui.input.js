@@ -1,6 +1,6 @@
 /** @file
  *
- *  Provide a ui-styled input / text input area.
+ *  Provide a ui-styled input / text input area that supports validation.
  *
  *  Requires:
  *      ui.core.js
@@ -8,6 +8,26 @@
 (function($) {
 
 $.widget("ui.input", {
+    /** @brief  Initialize a new instance.
+     *
+     *  Valid options:
+     *      priority        The priority of this field
+     *                      ( ['normal'], 'primary', 'secondary');
+     *      validationEl:   The element to present validation information in
+     *                      [ parent().find('.ui-field-status:first) ]
+     *      validation:     The validation criteria:
+     *                          '!empty'
+     *                          function(value) that returns:
+     *                              undefined   undetermined
+     *                              true        valid
+     *                              false       invalid
+     *                              string      invalid, error message
+     *
+     *  @triggers:
+     *      'validationChanged.uiinput' when the validaton state has changed;
+     *      'enabled.uiinput'           when element is enabled;
+     *      'disabled.uiinput'          when element is disabled.
+     */
     _init: function() {
         var self    = this;
         var opts    = this.options;
@@ -91,8 +111,12 @@ $.widget("ui.input", {
             if (self.keyTimer !== null)
                 clearTimeout(self.keyTimer);
 
+            if (e.keyCode === 9)    // tab
+                // let '_blur' handle leaving this field.
+                return;
+
             // Clear the current validation information
-            self.clearValidationState();
+            self.setValidationState(undefined);
 
             /* Set a timer that needs to expire BEFORE we fire the validation
              * check
@@ -145,7 +169,7 @@ $.widget("ui.input", {
                         .addClass(   'ui-state-default')
                         .removeAttr('disabled');
 
-            this.element.trigger('enable');
+            this.element.trigger('enabled.uiinput');
         }
     },
 
@@ -158,12 +182,27 @@ $.widget("ui.input", {
                         .removeClass('ui-state-default')
                         .addClass(   'ui-state-disabled');
 
-            this.element.trigger('disable');
+            this.element.trigger('disabled.uiinput');
         }
     },
 
-    clearValidationState: function()
+    getValidationState: function()
     {
+        return this.options.valid;
+    },
+
+    /** @brief  Set the current validation state.
+     *  @param  state   The new state:
+     *                      undefined   undetermined
+     *                      true        valid
+     *                      false       invalid
+     *                      string      invalid, error message
+     */
+    setValidationState: function(state)
+    {
+        if (state === this.options.valid)
+            return;
+
         // Clear out validation information
         this.element
                 .removeClass('ui-state-error ui-state-valid');
@@ -172,67 +211,68 @@ $.widget("ui.input", {
                 .empty()
                 .removeClass('ui-state-invalid ui-state-valid');
 
-    },
-
-    invalidate: function(message)
-    {
-        this.element
-                .addClass(   'ui-state-error');
-
-        this.options.validationEl
-                .addClass(   'ui-state-invalid')
-                .html(message);
-    },
-
-    validate: function(force)
-    {
-        var msg = [];
-
-        this.clearValidationState();
-
-        if (force === true)
+        if (state === true)
         {
-            this.options.valid = true;
+            // Valid
+            this.element.addClass(   'ui-state-valid');
+
+            this.options.validationEl
+                        .addClass(   'ui-state-valid');
         }
-        else if ($.isFunction(this.options.validation))
+        else if (state !== undefined)
+        {
+            // Invalid, possibly with an error message
+            this.element.addClass(   'ui-state-error');
+
+            this.options.validationEl
+                        .addClass(   'ui-state-invalid');
+
+            if (typeof state === 'string')
+            {
+                this.options.validationEl
+                            .html(state);
+            }
+        }
+
+        this.options.valid = state;
+
+        // Let everyone know that the validation state has changed.
+        this.element.trigger('validationChanged.uiinput');
+    },
+
+    validate: function()
+    {
+        var msg         = [];
+        var newState    = undefined;
+
+        if ($.isFunction(this.options.validation))
         {
             var ret = this.options.validation.apply(this.element,
                                                     [this.element.val()]);
             if (typeof ret === 'string')
             {
                 // Invalid with a message
-                this.options.valid = false;
+                newState = false;
                 msg.push(ret);
             }
             else
             {
                 // true | false | undefined
-                this.options.valid = ret;
+                newState = ret;
             }
         }
         else if (this.options.validation === '!empty')
         {
-            this.options.valid = ((this.element.val().length > 0)
+            newState = ((this.element.val().length > 0)
                                     ? true
                                     : false);
             msg.push('Cannot be empty');
         }
 
         // Set the new state
-        if (this.options.valid === true)
-        {
-            this.element
-                    .addClass(   'ui-state-valid');
-
-            this.options.validationEl
-                    .addClass(   'ui-state-valid');
-        }
-        else if (this.options.valid === false)
-        {
-            this.invalidate(msg.join('<br />'));
-        }
-
-        this.element.trigger('validated.uiinput');
+        this.setValidationState( ((newState === false) && (msg.length > 0)
+                                    ? msg.join('<br />')
+                                    : newState) );
     },
 
     destroy: function() {
@@ -255,7 +295,7 @@ $.widget("ui.input", {
 
 $.extend($.ui.input, {
     version:    '0.1.1',
-    getter:     'isEnabled isValid',
+    getter:     'isEnabled isValid getValidationState',
     defaults: {
         priority:       'normal',
         validationEl:   null,       // The element to present validation

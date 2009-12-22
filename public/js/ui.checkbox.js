@@ -30,6 +30,12 @@ $.widget("ui.checkbox", {
      *      hideLabel   Hide the associated label?  If not, clicking on the
      *                  title will be the same as clicking on the checkbox
      *                  [ false ].
+     *
+     *  @triggers:
+     *      'enabled.uicheckbox'    when element is enabled;
+     *      'disabled.uicheckbox'   when element is disabled;
+     *      'checked.uicheckbox'    when element is checked;
+     *      'unchecked.uicheckbox'  when element is unchecked.
      */
     _init: function() {
         var self    = this;
@@ -119,24 +125,45 @@ $.widget("ui.checkbox", {
         }
 
         // Interaction events
-        self.element.hover(function(e) { // Hover in
-                        self.element.addClass(   'hover');
-                        //return stopEvent(e)
-                      },
-                      function(e) { // Hover out
-                        self.element.removeClass('hover');
-                        //return stopEvent(e)}
-                      })
-               .click(function(e) {
-                        self.toggle();
-                        //return stopEvent(e);
-               });
+        self._bindEvents();
     },
 
     /************************
      * Private methods
      *
      */
+    _bindEvents: function() {
+        var self    = this;
+
+        var _mouseenter = function(e) {
+            if (self.options.enabled === true);
+                self.element.addClass('ui-state-hover');
+        };
+
+        var _mouseleave = function(e) {
+            self.element.removeClass('ui-state-hover');
+        };
+
+        var _focus      = function(e) {
+            if (self.options.enabled === true)
+                self.element.addClass('ui-state-focus');
+        };
+
+        var _blur       = function(e) {
+            self.element.removeClass('ui-state-focus');
+        };
+
+        var _click      = function(e) {
+            self.toggle();
+        };
+
+        self.element
+                .bind('mouseenter.uicheckbox', _mouseenter)
+                .bind('mouseleave.uicheckbox', _mouseleave)
+                .bind('focus.uicheckbox',      _focus)
+                .bind('blur.uicheckbox',       _blur)
+                .bind('click.uicheckbox',      _click);
+    },
 
     /************************
      * Public methods
@@ -155,7 +182,7 @@ $.widget("ui.checkbox", {
         {
             this.options.enabled = true;
             this.element.removeClass('ui-state-disabled');
-            this.element.trigger('enable');
+            this.element.trigger('enabled.uicheckbox');
         }
     },
 
@@ -165,7 +192,7 @@ $.widget("ui.checkbox", {
         {
             this.options.enabled = false;
             this.element.addClass('ui-state-disabled');
-            this.element.trigger('disable');
+            this.element.trigger('disabled.uicheckbox');
         }
     },
 
@@ -192,7 +219,7 @@ $.widget("ui.checkbox", {
                     .addClass(this.options.cssOn)
                     .attr('title', this.options.title + this.options.titleOn);
 
-            this.element.trigger('check');
+            this.element.trigger('checked.uicheckbox');
         }
     },
 
@@ -208,7 +235,7 @@ $.widget("ui.checkbox", {
                     .addClass(this.options.cssOff)
                     .attr('title', this.options.title + this.options.titleOff);
 
-            this.element.trigger('uncheck');
+            this.element.trigger('unchecked.uicheckbox');
         }
     },
 
@@ -225,6 +252,8 @@ $.widget("ui.checkbox", {
             this.$label.show();
 
         this.$value.remove();
+
+        this.element.unbind('.uicheckbox');
     }
 });
 

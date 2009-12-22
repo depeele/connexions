@@ -80,7 +80,7 @@ function post_onLoad()
     // Style all remaining input[type=text] / textarea controls with ui.input
     $('#post input[type=text],#post input[type=password],textarea')
             .input()
-            .bind('validated.uiinput', function() {
+            .bind('validationChanged.uiinput', function() {
                     validate_form();
                   });
 
