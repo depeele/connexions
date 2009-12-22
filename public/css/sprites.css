@@ -1,6 +1,8 @@
 /* connexions.gif */
 .connexions_sprites   {background:url('sprites/connexions.gif')
-                                        no-repeat scroll 0px 0px transparent;}
+                                        no-repeat scroll 0px 0px transparent;
+                       background-image:url('sprites/connexions.gif')
+                                        !important;}
 .corner_inner_left    {width:12px;height:10px;background-position:0     0;}
 .corner_inner_right   {width:12px;height:10px;background-position:-12px 0px;}
 

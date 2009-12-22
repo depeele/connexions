@@ -13,6 +13,7 @@ $.widget("ui.input", {
      *  Valid options:
      *      priority        The priority of this field
      *                      ( ['normal'], 'primary', 'secondary');
+     *      emptyText       Text to present when the field is empty;
      *      validationEl:   The element to present validation information in
      *                      [ parent().find('.ui-field-status:first) ]
      *      validation:     The validation criteria:
@@ -72,6 +73,8 @@ $.widget("ui.input", {
         else
             self.element.addClass('ui-state-disabled');
 
+        self.setEmptyText(opts.emptyText, true);
+
         // Interaction events
         self._bindEvents();
     },
@@ -125,19 +128,35 @@ $.widget("ui.input", {
         };
 
         var _focus      = function(e) {
-            /*
-            var el  = $(this);
-            if (el.input('option', 'enabled') === true)
-                el.addClass('ui-state-focus');
-            // */
             if (self.options.enabled === true)
-                self.element.addClass('ui-state-focus');
+            {
+                if ((self.options.emptyText !== null) &&
+                    (self.element.val() == self.options.emptyText))
+                {
+                    self.element.val('');
+                }
+
+                self.element.removeClass('ui-state-empty')
+                            .addClass('ui-state-focus ui-state-active');
+            }
         };
 
         var _blur       = function(e) {
-            self.element.removeClass('ui-state-focus');
+            self.element.removeClass('ui-state-focus ui-state-active');
             if (! self.element.hasClass('ui-state-valid'))
+            {
                 self.validate();
+            }
+
+            if (self.element.val().length < 1)
+            {
+                self.element.addClass('ui-state-empty');
+
+                if (self.options.emptyText !== null)
+                {
+                    self.element.val(self.options.emptyText);
+                }
+            }
         };
 
         self.element
@@ -240,6 +259,31 @@ $.widget("ui.input", {
         this.element.trigger('validationChanged.uiinput');
     },
 
+    getEmptyText: function()
+    {
+        return this.options.emptyText;
+    },
+
+    setEmptyText: function(str, force)
+    {
+        if ((this.options.emptyText !== null) &&
+            (this.element.val() == this.options.emptyText))
+        {
+            this.element.val('');
+        }
+
+        this.options.emptyText = str;
+
+        if (this.options.emptyText !== null)
+        {
+            if ( ((force === true) || (! this.element.is(':focus')) ) &&
+                (this.element.val().length < 1) )
+            {
+                this.element.val(this.options.emptyText);
+            }
+        }
+    },
+
     validate: function()
     {
         var msg         = [];
@@ -287,6 +331,7 @@ $.widget("ui.input", {
                              +'ui-state-valid '
                              +'ui-state-error '
                              +'ui-state-focus '
+                             +'ui-state-active '
                              +'ui-priority-primary '
                              +'ui-priority-secondary ')
                 .unbind('.uiinput');
@@ -295,9 +340,10 @@ $.widget("ui.input", {
 
 $.extend($.ui.input, {
     version:    '0.1.1',
-    getter:     'isEnabled isValid getValidationState',
+    getter:     'isEnabled isValid getValidationState getEmptyText',
     defaults: {
         priority:       'normal',
+        emptyText:      null,
         validationEl:   null,       // The element to present validation
                                     // information in [:sibling
                                     // .ui-field-status]
