@@ -36,7 +36,7 @@ function authSignin_onLoad()
     // Style all remaining input[type=text] / textarea controls with ui.input
     $('#auth input[type=text],#auth input[type=password],textarea')
             .input()
-            .bind('validated.uiinput', function() {
+            .bind('validationChanged.uiinput', function() {
                     validate_form();
                   });
 
