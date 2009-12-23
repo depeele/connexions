@@ -32,6 +32,8 @@ $jQuery = $this->jQuery();
 $links = $this->headLink();
 $links->prependStylesheet($baseUrl .'css/main.css');
 
+$jQuery->addJavascriptFile($this->baseurl('js/ui.input.js'));
+
 /*
 
 $links->appendStylesheet($baseUrl .'css/screen.css', 'screen,projection');

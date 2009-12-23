@@ -9,7 +9,7 @@ class Model_User extends Connexions_Model
 {
     protected static    $table  = 'user';
                                   // order 'keys' by most used
-    protected static    $keys   = array('name', 'userId');
+    protected static    $keys   = array('userId', 'name');
     protected static    $model  = array('userId'        => 'auto',
                                         'name'          => 'string',
                                         'password'      => 'string',
@@ -20,8 +20,8 @@ class Model_User extends Connexions_Model
                                         'pictureUrl'    => 'string',
                                         'profile'       => 'string',
                                         'networkShared' => 'boolean',
-                                        'lastVisit'     => 'date',
-                                        'lastVisitFor'  => 'date',
+                                        'lastVisit'     => 'datetime',
+                                        'lastVisitFor'  => 'datetime',
                                         'totalTags'     => 'integer',
                                         'totalItems'    => 'integer'
     );
@@ -30,25 +30,6 @@ class Model_User extends Connexions_Model
     public static function getModel()  { return self::$model; }
 
     protected       $_isAuthenticated   = false;
-
-    /** @brief  Set the id for this model/record.  This will cause an overall
-     *          reset of this instance, (re)retrieving the data.
-     *  @param  id      The record identifier.
-     *  @param  db      An optional database instance (Zend_Db_Abstract).
-     *
-     * @return  Connexions_Model to provide a fluent interface.
-     */
-    public function setId($id, $db = null)
-    {
-        parent::setId($id, $db);
-        if ( (! @empty($id)) && (! $this->isValid()) )
-        {
-            // Override the generic 'No matching record' error
-            $this->_error = 'Unknown user.';
-        }
-
-        return $this;
-    }
 
     /** @brief  Set a value in this record and mark it dirty.
      *  @param  name    The field name.
@@ -143,4 +124,9 @@ class Model_User extends Connexions_Model
     {
         return parent::fetchAll(__CLASS__, $where);
     }
+
+    /*************************************************************************
+     * Protected helpers
+     *
+     */
 }

@@ -5,6 +5,17 @@ require_once('Connexions/Autoloader.php');
 
 class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 {
+    protected function _initTimezone()
+    {
+        $zone = ($this->hasOption('timezone')
+                    ? $this->getOption('timezone')
+                    : 'PST');
+
+        date_default_timezone_set($zone);
+
+        return $zone;
+    }
+
     protected function _initSession()
     {
         Zend_Session::start();

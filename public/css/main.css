@@ -9,6 +9,12 @@
 
 a, a:link, a:visited, a:focus, a:hover {
   color:      #06c;
+  outline:    0 none;
+}
+a:active {
+  outline:    0 none;
+  position:   relative;
+  top:        1px;
 }
 
 /* Page Header */
@@ -75,10 +81,12 @@ a, a:link, a:visited, a:focus, a:hover {
   *width:           90px;
 }
 #pageHeader ul.sub li.last a,
+#search ul.sub li.last a,
 #search ul.sub li.last span {
   padding-bottom:   0;
 }
 #pageHeader ul.sub li a:hover,
+#search ul.sub li a:hover,
 #search ul.sub li:hover span {
   color:            #7fcdfe;
 }
@@ -123,6 +131,7 @@ a, a:link, a:visited, a:focus, a:hover {
 }
 
 #pageHeader .nav ul.sub li a,
+#search .choices ul.sub li a,
 #search .choices ul.sub li span {
   display:          block;
   padding:          0.5em 0;
@@ -139,10 +148,12 @@ a, a:link, a:visited, a:focus, a:hover {
  * and completely omit these next rules {
  */
 #pageHeader .nav ul.sub li.active a,
+#search .choices ul.sub li.active a,
 #search .choices ul.sub li.active span {
   color:            #b0d730;
 }
 #pageHeader .nav ul.sub li a:hover,
+#search .choices ul.sub li a:hover,
 #search .choices ul.sub li:hover span {
   color:            #7fcdfe;
 }
@@ -150,11 +161,13 @@ a, a:link, a:visited, a:focus, a:hover {
 
 
 #pageHeader ul.sub li.first a,
+#search ul.sub li.first a,
 #search ul.sub li.first span {
   padding-top:      8px;
   border-top:       0;
 }
 #pageHeader ul.sub li.last a,
+#search ul.sub li.last a,
 #search ul.sub li.last span {
   padding-bottom:   0;
 }

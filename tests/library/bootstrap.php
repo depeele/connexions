@@ -28,6 +28,14 @@ $config = new Zend_Config_Ini(APPLICATION_PATH . '/configs/application.ini',
 Zend_Registry::set('config', $config);
 
 /***************************************************************************
+ * Setup the Timezone.
+ *
+ */
+$zone = $config->get('timezone', 'PST');
+
+date_default_timezone_set($zone);
+
+/***************************************************************************
  * Setup the Autoloader.
  *
  */
