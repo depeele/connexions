@@ -236,8 +236,11 @@ function renderSearch($request, array $searchContexts)
                 }
 
                 $label = Connexions::replaceables($label);
+                printf ("<a>%s</a>", $label);
+                /*
                 printf ("<span>%s</span>",
                         $label);
+                */
 
                 if ($idex == 0)
                 {

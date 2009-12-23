@@ -1,7 +1,7 @@
 CREATE TABLE user (
   userId        int(10)     unsigned    NOT NULL auto_increment,
   name          varchar(30)             NOT NULL default '',
-  password		varchar(64)				NOT NULL default '',
+  password      varchar(64)             NOT NULL default '',
 
   fullName      varchar(255)            NOT NULL default '',
   email         varchar(63)             NOT NULL default '',

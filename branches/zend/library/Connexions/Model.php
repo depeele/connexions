@@ -3,7 +3,6 @@
  *
  *  The base class for Connexions Database Table Models.
  */
-
 abstract class Connexions_Model
 {
     /* The following MUST be made available via the following, abstract static
@@ -13,7 +12,8 @@ abstract class Connexions_Model
      *  model       An array of key/type pairs defining the table model where
      *              type MUST be lower-case and may be and of the following
      *              values:
-     *                  ('numeric', 'string', 'integer', 'auto')
+     *                  ('auto', 'integer', 'float', 'boolean', 'datetime',
+     *                   'string')
      */
     abstract public static function getTable();
     abstract public static function getKeys();
@@ -26,11 +26,6 @@ abstract class Connexions_Model
                                          * was it pulled from the database or
                                          * constructed without a matching
                                          * record)
-                                         */
-    protected   $_isDirty   = false;    /* Have any field values been changed
-                                         * since retrieval?  Not, if _isBacked
-                                         * is false, this should ALWAYS be
-                                         * true.
                                          */
 
     protected   $_isValid   = false;    // Are all fields valid?
@@ -45,132 +40,26 @@ abstract class Connexions_Model
                                          * _isBacked is true, this will be a
                                          * copy of the database record.
                                          */
+    protected   $_validated = null;     /* An array of booleans that parallels
+                                         * _record to track which fields have
+                                         * been validated.
+                                         */
+    protected   $_dirty     = null;     /* An array of booleans that parallels
+                                         * _record to track which fields have
+                                         * been modified since
+                                         * retrieval/creation.
+                                         */
 
 
     /** @brief  Create a new instance.
      *  @param  id      The record identifier.
      *  @param  db      An optional database instance (Zend_Db_Abstract).
      *
+     *
      */
     public function __construct($id, $db = null)
     {
-        /* Normalize the field types to lower-case
-        $model =& $this->getModel();
-        foreach ($model as $name => &$type)
-        {
-            $type = strtolower($type);
-        }
-         */
-        $this->setId($id, $db);
-    }
-
-    /** @brief  Set the id for this model/record.  This will cause an overall
-     *          reset of this instance, (re)retrieving the data.
-     *  @param  id      The record identifier.
-     *  @param  db      An optional database instance (Zend_Db_Abstract).
-     *
-     * @return  Connexions_Model to provide a fluent interface.
-     */
-    public function setId($id, $db = null)
-    {
-        // (Re)set our state
-        $this->_id        = null;
-
-        $this->_isBacked  = false;
-        $this->_isDirty   = false;
-        $this->_isValid   = false;
-        $this->_error     = null;
-        $this->_record    = null;
-
-        if ($db !== null)
-            $this->_db    = $db;
-
-        if ($id === null)
-            return $this;
-
-        // (Re)retrieve our data
-        if (@is_array($id))
-        {
-            // An incoming record
-            $this->_record  = $id;
-
-            /* Validate this incoming data.
-             *
-             * We consider this record valid iff all keys (except for those
-             * marked as 'auto') have values consistent with their field type.
-             */
-            $this->_isValid = $this->_validate();
-        }
-        else
-        {
-            // Does the incoming 'id' match any of the table keys?
-            $this->_id = $id;
-            $rec       =  null;
-            $firstKey  =  null;
-            $select    =  'SELECT * FROM '. $this->getTable() .' WHERE ';
-
-            $model    =& $this->getModel();
-            foreach ($this->getKeys() as $key)
-            {
-                $type  = $model[$key];
-                $where = null;
-                switch ($type)
-                {
-                case 'auto':
-                case 'integer':
-                case 'numeric':
-                    if (! @is_numeric($id))
-                        continue;
-
-                    if ($firstKey === null)
-                        $firstKey = $key;
-
-                    $where = $key .'=?';
-                    break;
-
-                case 'string':
-                default:
-                    if (! @is_string($id))
-                        continue;
-
-                    if ($firstKey === null)
-                        $firstKey = $key;
-
-                    $where = $key .'=?';
-                    break;
-                }
-
-                if (@empty($where))
-                    continue;
-
-                // Attempt to retrieve a matching record.
-                try
-                {
-                    $rec = $this->_db()->fetchRow($select . $where, array($id));
-                }
-                catch (Exception $e)
-                {
-                    $rec = null;
-                }
-
-                if (! @empty($rec))
-                    break;
-            }
-
-            if (@is_array($rec))
-            {
-                // We have successfully (re)retrieved the record data.
-                $this->_record   = $rec;
-                $this->_isBacked = true;
-                $this->_isValid  = true;
-            }
-            else
-            {
-                $this->_error   = 'No record matching "'. $id .'"';
-            }
-        }
-
-        return $this;
+        $this->_init($id, $db);
     }
 
     /** @brief  Is this instance backed by an existing, matching database
@@ -190,7 +79,7 @@ abstract class Connexions_Model
      */
     public function isDirty()
     {
-        return ($this->_isBacked ? $this->_isDirty : true);
+        return ($this->_isBacked ? (! @empty($this->_dirty)) : true);
     }
 
     /** @brief  Are all fields of this instance valid?
@@ -207,6 +96,11 @@ abstract class Connexions_Model
         return $this->_error;
     }
 
+    public function hasError()
+    {
+        return ($this->_error !== null);;
+    }
+
     /** @brief  Set a value in this record and mark it dirty.
      *  @param  name    The field name.
      *  @param  value   The new value.
@@ -219,26 +113,34 @@ abstract class Connexions_Model
         if (! @isset($model[$name]))
         {
             // Invalid field
+            $this->_error = 'Invalid field "'.  $name .'"';
             return false;
         }
 
         if ($model[$name] === 'auto')
         {
             // Modification of an 'auto' generated key field is NOT permitted
+            $this->_error = 'Cannot modify auto field "'.  $name .'"';
             return false;
         }
 
-        if (! @is_array($this->_record))
-            $this->_record = array();
+        $keys    =& $this->getKeys();
+        $tmpRec  = array($name => $value);
 
-        if ( (! @isset($this->_record[$name])) ||
-             ($this->_record[$name] != $value) )
+        $isValid = $this->_validateField($tmpRec, $name, $keys, $model);
+        if ($isValid)
         {
-            $this->_isDirty       = true;
-            $this->_record[$name] = $value;
+            if (! @is_array($this->_record))
+                $this->_record = array();
+
+            $this->_record[$name]    = $tmpRec[$name];
+            $this->_validated[$name] = true;
+            $this->_dirty[$name]     = true;
+            $this->_isValid          = true;
+            $this->_error            = null;
         }
 
-        return true;
+        return $isValid;
     }
 
     /** @brief  Get a value of the given field.
@@ -254,6 +156,9 @@ abstract class Connexions_Model
             // Invalid or unset field
             return null;
         }
+
+        if ($this->_validated[$name] !== true)
+            $this->_validate($name);
 
         return $this->_record[$name];
     }
@@ -273,7 +178,7 @@ abstract class Connexions_Model
      */
     public function save()
     {
-        if ($this->_isDirty !== true)
+        if ($this->isDirty() !== true)
             return true;
 
         // Before we actually save, do a final validation
@@ -285,43 +190,58 @@ abstract class Connexions_Model
        $res = false;
         if ($this->_isBacked === true)
         {
-            // This is an existing record that we need to update
-
-            /* Generate a where clause comprised of the primary/first key
-             * included in this record
+            /* This is an existing record that we need to update
              *
-             * Note: We only use the primary/first key to allow any other key
-             *       to be updates.
+             * Generate a where clause comprised of all non-dirty keys.
              */
-            $where  =  array();
-            foreach ($this->getKeys() as $field)
-            {
-                if (@isset($this->_record[$field]))
-                {
-                    array_push($where, $field.'='.$this->_record[$field]);
-                    break;
-                }
-            }
+            $where = $this->_record2where(false);
 
-            if ($this->_db()->update($this->getTable(),
-                                     $this->_record,
-                                     $where) === 1)
+            // Only update fields that have been modified.
+            $dirty = array_intersect_key($this->_record, $this->_dirty);
+
+            /*
+            printf ("Connexions_Model: Update table '%s'; ".
+                        "fields[%s], values[%s], ".
+                        "where( clause[%s], binding[%s] )\n",
+                     $this->getTable(),
+                     implode(', ', array_keys($dirty)),
+                     implode(', ', array_values($dirty)),
+                     implode(' AND ', array_keys($where)),
+                     implode(', ', array_values($where)) );
+            // */
+
+            if ( (count($dirty) < 1) ||
+                 ($this->_db->update($this->getTable(),
+                                     $dirty,
+                                     $where) === 1) )
             {
-                $res = true;
+                $res          = true;
+                $this->_dirty = array();
             }
         }
         else
         {
             // This is a new record that we need to insert
-            if ( $this->_db()->insert($this->getTable(),
-                                      $this->_record) === 1)
+            /*
+            printf ("Connexions_Model: Insert table '%s'; ".
+                        "fields[%s], values[%s]\n",
+                     $this->getTable(),
+                     implode(', ', array_keys($this->_record)),
+                     implode(', ', array_values($this->_record)) );
+            // */
+
+            if ( $this->_db->insert($this->getTable(),
+                                    $this->_record) === 1)
             {
                 $res = true;
 
-                // Now, retrieve the full record that we've just inserted.
-                $id = $this->_db()->lastInsertId($this->getTable());
+                /* Now, retrieve the full record that we've just inserted,
+                 * including any fields that were not included in the insert.
+                 */
+                $id = $this->_db->lastInsertId($this->getTable());
+                $this->_init($id, $this->_db);
 
-                $this->setId($id);
+                //$this->_init($this->_record, $this->_db);
             }
         }
 
@@ -353,7 +273,7 @@ abstract class Connexions_Model
                                             "Missing key [ ". $field ." ]"));
                 }
 
-                $where[$field] = $this->_record[$field];
+                $where['('. $field .'=?)'] = $this->_record[$field];
             }
 
             if (empty($where))
@@ -361,7 +281,14 @@ abstract class Connexions_Model
                 throw(new Exception("*** Don't delete all records!!"));
             }
 
-            if ($this->_db()->delete($this->getTable(), $where) )
+            /*
+            printf ("Connexions_Model: Delete from '%s'; ".
+                            "where( clause[%s], binding[%s] )\n",
+                     $this->getTable(),
+                     implode(' AND ', array_keys($where)),
+                     implode(', ', array_values($where)) );
+            // */
+            if ($this->_db->delete($this->getTable(), $where) )
             {
                 $res = true;
             }
@@ -388,21 +315,358 @@ abstract class Connexions_Model
         return $this->_record;
     }
 
+    public function debugDump()
+    {
+        $str = sprintf("[%svalid, %sbacked, %sdirty, error[ %s ]:\n",
+                        ($this->isValid()  ? "" : "NOT "),
+                        ($this->isBacked() ? "" : "NOT "),
+                        ($this->isDirty()  ? "" : "NOT "),
+                        $this->_error);
+
+        if (@is_array($this->_record))
+        {
+            $keys =& $this->getKeys();
+            foreach ($this->_record as $key => $val)
+            {
+                // Use the getter to force validation if not done already
+                $val     = $this->{$key};   
+                $isKey   = in_array($key, $keys);
+                $isValid = $this->_validated[$key];
+                $isDirty = $this->_dirty[$key];
+
+                $type = gettype($val);
+                if ($type === 'object')
+                    $type = get_class($val);
+                else if ($type === 'boolean')
+                    $val = ($val ? 'true' : 'false');
+
+                $str .= sprintf (" %s%-15s == %-15s%s%s[ %s ]\n",
+                                 ($isKey   ? "@" : " "),
+                                 $key, $type,
+                                 ($isValid ? ' ' : '!'),
+                                 ($isDirty ? '*' : ' '),
+                                 $val);
+            }
+        }
+        else
+        {
+            $str .= " *** EMPTY ***";
+        }
+
+        $str .= "\n];";
+
+        return $str;
+    }
+
     /*************************************************************************
      * Protected helpers
      *
      */
 
-    /** @brief  Retrieve a valid database handle.
+    /** @brief  Generate an array of SQL where clauses comprised of all
+     *          (possibly non-dirty) keys of this instance.
+     *  @param  useDirty    Should we include keys marked dirty?
      *
-     *  @return The database handle.
+     *  @return An associative array with keys like 'field=?' that reference
+     *          the desired value.
      */
-    protected function _db()
+    protected function _record2where($includeDirty = true)
     {
-        if ($this->_db === null)
+        $keys  =& $this->getKeys();
+        $where =  array();
+        foreach ($this->getKeys() as $key)
+        {
+            if ( (($includeDirty === true) ||
+                  (! @isset($this->_dirty[$key]))) &&
+                 (@isset($this->_record[$key])) )
+            {
+                $where['('.$key.'=?)'] = $this->_record[$key];
+                //array_push($where, $key.'='.$this->_record[$key]);
+            }
+        }
+
+        return $where;
+    }
+
+    /** @brief  Given a potential database key or array of key/value pairs, do
+     *          they match a key or keys for this model?
+     *  @param  data    The array of key/value pairs.
+     *
+     *  @return An associative array with keys like 'field=?' that reference
+     *          the desired value; false if not a valid key.
+     */
+    protected function _data2where(&$data)
+    {
+        $keys    =& $this->getKeys();
+        $model   =& $this->getModel();
+        if (@is_scalar($data))
+            $data = array($data);
+
+        $isKey       = true;
+        $keysMatched = array();
+        $where       = array();
+        foreach ($data as $key => &$val)
+        {
+            /* If 'key' is a string, see if it matches a database key field
+             * name.
+             */
+            $dbKey = false;
+            if (@is_string($key))
+            {
+                /* See if this 'key' matches a database key field
+                 * that we haven't already seen...
+                 */
+                if (@in_array($key, $keys) && (! @isset($keysMatched[$key])) )
+                {
+                    // See if the value matches the type of this key.
+                    try
+                    {
+                        $val   = $this->_coherse($val, $model[$key]);
+                        $dbKey = $key;
+
+                        // We have a match by field name and value.
+                    }
+                    catch(Exception $e)
+                    {
+                        // No match on value, therefore no match on key field
+                    }
+                }
+            }
+            else
+            {
+                /* This 'key' seems to be the index of an array.  See if the
+                 * provided value matches any of the keys from our database.
+                 */
+                foreach ($keys as $checkKey)
+                {
+                    if (@isset($keysMatched[$checkKey]))
+                    {
+                        // We've already matched this 'key', skip it....
+                        continue;
+                    }
+
+                    try
+                    {
+                        $val   = $this->_coherse($val, $model[$checkKey]);
+                        $dbKey = $checkKey;
+
+                        // Match!
+                        break;
+                    }
+                    catch(Exception $e)
+                    {
+                        // Ignore and continue
+                    }
+                }
+            }
+
+            if ($dbKey === false)
+            {
+                /* The 'key' from this key/value pair doesn't match a
+                 * database key field name or value/type.
+                 */
+                $isKey = false;
+                break;
+            }
+
+            $where['('.$dbKey.'=?)'] = $val;
+        }
+
+        return ($isKey && (! empty($where))
+                    ? $where
+                    : false);
+    }
+
+    /** @brief  Initialize this model/record.  This will cause an overall
+     *          reset of this instance, possibly (re)retrieving the data.
+     *  @param  id          The record identifier.
+     *  @param  db          An optional database instance (Zend_Db_Abstract).
+     *  @param  isRecord    Is 'id' to be treated as a raw record?
+     *  @param  isBacked    Is this a pre-fetched, backed database record?
+     *
+     *  @return Connexions_Model to provide a fluent interface.
+     */
+    protected function _init($id,
+                             $db        = null,
+                             $isRecord  = false,
+                             $isBacked  = false)
+    {
+        // (Re)set our state
+        $this->_id        = null;
+        $this->_isBacked  = false;
+        $this->_isValid   = false;
+        $this->_error     = null;
+        $this->_record    = null;
+        $this->_validated = array();
+        $this->_dirty     = array();
+
+        if ($db !== null)
+            $this->_db = $db;
+
+        // Make sure we have a database conneciont in $this->_db
+        if ( ! $this->_db instanceof Zend_Db_Adapter_Abstract)
             $this->_db = Connexions::getDb();
 
-        return $this->_db;
+        if ($id === null)
+            return $this;
+
+        $keys  =& $this->getKeys();
+        $model =& $this->getModel();
+
+        /* Attempt to figure out what 'id' represents:
+         *  - a scaler value representing a database key;
+         *  - an array of key/value pair(s) representing a set of database
+         *    field/value pairs to locate;
+         *  - an array of key/value pairs representing record data
+         *    (iff isBacked is true).
+         */
+        if ( ($isRecord !== true) && ($isBacked !== true) &&
+             (($where = $this->_data2where($id)) !== false) )
+        {
+            /***************************************************************
+             * 'id' was NOT marked as a backed record AND we have
+             * successfully generated an SQL where clause using it.
+             *
+             * Attempt to retrieve a matching record.
+             *
+             */
+            $select =  'SELECT * FROM '. $this->getTable()
+                    .  ' WHERE '. implode(' AND ', array_keys($where));
+
+            try
+            {
+                /*
+                printf ("Connexions_Model: _init table '%s'; ".
+                            "where( clause[%s], binding[%s] )\n",
+                         $this->getTable(),
+                         implode(' AND ', array_keys($where)),
+                         implode(', ', array_values($where)) );
+                // */
+
+                $rec       = $this->_db->fetchRow($select,
+                                                  array_values($where));
+                $this->_id = $id;
+            }
+            catch (Exception $e)
+            {
+                $rec = null;
+            }
+
+            if (! @empty($rec))
+            {
+                /* We have successfully (re)retrieved the record data.
+                 *
+                 * Invoke this method again noting that the data is a backed
+                 * record.
+                 */
+                $this->_init($rec, $this->_db,
+                             true,  // isRecord
+                             true); // isBacked
+            }
+            else
+            {
+                // No matching record
+                $idParts = array();
+                if (@is_array($id))
+                {
+                    /* The incoming 'id' is an array, perhaps it is the data
+                     * for a new record.
+                     */
+                    $idKeys = array_keys($id);
+                    if (is_string($idKeys[0]))
+                    {
+                        /* 'id' is an associative array.  Remove anything field
+                         * that is an 'auto' key and, if there are fields
+                         * remaining, call it a non-backed record.
+                         */
+                        foreach ($keys as $dbKey)
+                        {
+                            if (@isset($id[$dbKey]) &&
+                                ($model[$dbKey] === 'auto') )
+                            {
+                                /* Remember the fields that we remove in case
+                                 * we end up removing them all.
+                                 */
+                                array_push($idParts, $dbKey.'=='.$id[$dbKey]);
+
+                                unset($id[$dbKey]);
+                            }
+                        }
+
+                        if (! @empty($id))
+                        {
+                            /* We have data for a new record that includes one
+                             * or more non-auto fields.
+                             *
+                             * Invoke this method again noting that the data
+                             * represents a non-backed record.
+                             */
+                            return $this->_init($id,
+                                                 $this->_db,
+                                                 true,      // isRecord
+                                                 false);    // isBacked
+                        }
+
+                        // Oops.  The only fields were all 'auto' keys
+                    }
+
+                    // Assemble an error message
+                    foreach ($id as $key => $val)
+                    {
+                        if (@is_string($key))
+                        {
+                            array_push($idParts, $key.'=='.$val);
+                        }
+                        else
+                            array_push($idParts, $val);
+                    }
+                }
+                else
+                {
+                    array_push($idParts, $id);
+                }
+
+                $this->_error = 'No record matching "'
+                              .         implode(', ', $idParts) . '"';
+            }
+        }
+        else if (@is_array($id))
+        {
+            /***************************************************************
+             * $id is incoming record data, possibly backed.
+             *
+             */
+            $this->_record = $id;
+
+            if ($isBacked === true)
+            {
+                $this->_isValid  = true;
+                $this->_isBacked = true;
+            }
+            else
+            {
+                // Validate this incoming data.
+                $this->_isValid = $this->_validate();
+                if ($this->_isValid !== true)
+                {
+                    $invalid = array_diff(array_keys($this->_record),
+                                          array_keys($this->_validated));
+
+                    $this->_error = 'Invalid fields and/or values ['
+                                  .     implode(', ', $invalid) .']';
+
+                    $this->_record    = null;
+                    $this->_validated = array();
+                    $this->_dirty     = array();
+                }
+            }
+        }
+        else
+        {
+            // Not a key nor valid record data...
+        }
+
+        return $this;
     }
 
     /** @brief  Ensure that all keys, save those marked as 'auto', have a value
@@ -421,19 +685,24 @@ abstract class Connexions_Model
         if ($field !== null)
         {
             // Validate the given field
-            $isValid = $this->_validateField($field, $keys, $model);
+            $this->_validated[$field] =
+                    ($this->_validated[$field] ||
+                     $this->_validateField($this->_record, $field,
+                                           $keys, $model));
         }
         else
         {
             // Validate all fields -- assume it will be valid
             $isValid = true;
-            foreach ($model as $name => $type)
+            foreach ($model as $field => $type)
             {
-                if (! $this->_validateField($name, $keys, $model))
-                {
+                $this->_validated[$field] =
+                    ($this->_validated[$field] ||
+                     $this->_validateField($this->_record, $field,
+                                           $keys, $model));
+
+                if ($this->_validated[$field] !== true)
                     $isValid = false;
-                    break;
-                }
             }
         }
 
@@ -441,17 +710,18 @@ abstract class Connexions_Model
     }
 
     /** @brief  Validate the given field using the provided keys and model.
+     *  @param  record  The record to validate within.
      *  @param  field   The field to validate.
      *  @param  keys    The keys  of the underlying database.
      *  @param  model   The model of the underlying database.
      *
      *  @return true | false
      */
-    protected function _validateField($field, &$keys, &$model)
+    protected function _validateField(&$record, $field, &$keys, &$model)
     {
         $isValid = true;
 
-        if (! @isset($this->_record[$field]))
+        if (! @isset($record[$field]))
         {
             /* This field has no value.  If it is key field that is NOT 'auto',
              * consider it invalid.  Otherwise, allow it.
@@ -470,36 +740,108 @@ abstract class Connexions_Model
          * This field has a value.  Is it consistent with the field type?
          *
          */
-        switch ($model[$field])
+
+        $value =& $record[$field];
+
+        try
+        {
+            $record[$field] =
+                    $this->_coherse($record[$field], $model[$field]);
+        }
+        catch (Exception $e)
+        {
+            $this->_error = sprintf ("Invalid Cohersion: ".
+                                        "field[%s], type[%s], value[%s]: ".
+                                        "%s<br />\n",
+                                     $field, $model[$field], $record[$field],
+                                     $e->getMessage());
+            $isValid = false;
+        }
+
+        return $isValid;
+    }
+
+    /** @brief  Validate the given field using the provided keys and model.
+     *  @param  field   The field to validate.
+     *  @param  keys    The keys  of the underlying database.
+     *  @param  model   The model of the underlying database.
+     *
+     *  @throw  Exception if cohersion is not possible.
+     *
+     *  @return The cohersed value
+     */
+    protected function _coherse(&$value, $type)
+    {
+        switch ($type)
         {
         case 'auto':
-            /* ALWAYS call 'auto' key fields valid since we don't allow them to
-             * be changed (see __set()).
-             */
+        case 'integer':
+            if ( ! @is_int($value))
+            {
+                if (! @is_numeric($value))
+                    throw(new Exception('Not numeric'));
+
+                //if (@is_scalar($value))
+                {
+                    // Force this field to an integer
+                    $value = intval($value);
+                }
+            }
             break;
 
-        case 'integer':
-        case 'numeric':
-            if ( ! @is_numeric($this->_record[$field]) )
+        case 'float':
+            if ( ! @is_float($value))
             {
-                // NOT valid
-                $isValid = false;
-                break;
+                if (! @is_numeric($value))
+                    throw(new Exception('Not numeric'));
+
+                //if (! @is_scalar($value))
+                {
+                    // Force this field to a float
+                    $value = floatval($value);
+                }
             }
+            break;
+
+        case 'boolean':
+            if (! @is_bool($value))
+            {
+                // Force this field to a boolean
+                switch (@strtolower($value))
+                {
+                case 'false':
+                case 'no':
+                case 'off':
+                    // A few "special" boolean values
+                    $value = false;
+                    break;
+
+                default:
+                    // Otherwise, rely on PHP's casting
+                    $value = (boolean)$value;
+                    break;
+                }
+            }
+            break;
+
+        case 'datetime':
+            $date = date_parse($value);
+            if (! @empty($date['errors']))
+                throw (new Exception(implode('\n', $date['errors'])));
+
+            // Format the date/time for MySQL 'YYYY-MM-DD HH:mm:ss'
+            $value = sprintf("%04d-%02d-%02d %02d:%02d:%02d",
+                             $date['year'], $date['month'],  $date['day'],
+                             $date['hour'], $date['minute'], $date['second']);
             break;
 
         case 'string':
         default:
-            if (! @is_string($this->_record[$field]))
-            {
-                // NOT valid
-                $isValid = false;
-                break;
-            }
+            $value = strval($value);
             break;
         }
 
-        return $isValid;
+        return $value;
     }
 
     /*************************************************************************
@@ -513,24 +855,21 @@ abstract class Connexions_Model
      *  @param  id          The user identifier
      *                      (integrer userId or string name).
      *
-     *  @return A new instance (false if no matching user).
+     *  @return A new instance (check isBacked(), isValid(), getError()).
      */
     public static function find($className, $id)
     {
-        $user = new $className($id);
-        if ($user->isBacked())
-            return $user;
-
-        return false;
+        return new $className($id);
     }
 
     /** @brief  Retrieve all records an return an array of instances.
      *  @param  className   The name of the concrete sub-class.
      *  @param  where       A string or associative array of restrictions.
+     *  @param  asArray     Return as array records instead of instances?
      *
-     *  @return An array of instances.
+     *  @return An array of instances (or record arrays if 'asArray' == true).
      */
-    public static function fetchAll($className, $where = null)
+    public static function fetchAll($className, $where = null, $asArray = false)
     {
         // Figure out the table of the given class
         $ev    = "\$table = $className::\$table;";
@@ -558,10 +897,28 @@ abstract class Connexions_Model
 
         $recs = $db->fetchAll($sql, $bind);
 
-        $set = array();
-        foreach ($recs as $row)
+        if ($asArray === true)
         {
-            array_push($set, new $className($row, $db));
+            $set =& $recs;
+        }
+        else
+        {
+            // Create instances for each retrieved record
+            $set = array();
+            foreach ($recs as $row)
+            {
+                // Create an empty instance
+                $inst = new $className(null, $db);
+
+                /* Invoke _init() with notice that this is a backed, databse
+                 * record.
+                 */
+                $inst->_init($row, $db,
+                             true,  // isRecord
+                             true); // isBacked
+
+                array_push($set, $inst);
+            }
         }
 
         return $set;

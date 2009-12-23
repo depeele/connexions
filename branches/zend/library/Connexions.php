@@ -2,6 +2,7 @@
 /** @file
  *
  *  The Connexions singleton.  Provided general functionality.
+ *
  */
 
 class Connexions
