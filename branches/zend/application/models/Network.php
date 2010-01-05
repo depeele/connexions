@@ -32,7 +32,7 @@ class Model_Network extends Connexions_Model
         return parent::__toString();
     }
 
-    /** @brief  Retrieve all records an return an array of instances.
+    /** @brief  Retrieve all records and return an array of instances.
      *  @param  id          The user identifier
      *                      (integrer userId or string name).
      *
@@ -43,7 +43,7 @@ class Model_Network extends Connexions_Model
         return parent::find(__CLASS__, $id);
     }
 
-    /** @brief  Retrieve all records an return an array of instances.
+    /** @brief  Retrieve all records and return an array of instances.
      *  @param  where   A string or associative array of restrictions.
      *
      *  @return An array of instances.

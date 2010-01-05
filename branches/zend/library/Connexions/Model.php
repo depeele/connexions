@@ -484,6 +484,10 @@ abstract class Connexions_Model
      *  @param  isRecord    Is 'id' to be treated as a raw record?
      *  @param  isBacked    Is this a pre-fetched, backed database record?
      *
+     *  Note: 'id' may include the following special fields:
+     *      '@isRecord' => true/false
+     *      '@isBacked' => true/false
+     *
      *  @return Connexions_Model to provide a fluent interface.
      */
     protected function _init($id,
@@ -499,6 +503,17 @@ abstract class Connexions_Model
         $this->_record    = null;
         $this->_validated = array();
         $this->_dirty     = array();
+
+        if (@isset($id['@isRecord']))
+        {
+            $isRecord = ($id['@isRecord'] ? true : false);
+            unset($id['@isRecord']);
+        }
+        if (@isset($id['@isBacked']))
+        {
+            $isBacked = ($id['@isBacked'] ? true : false);
+            unset($id['@isBacked']);
+        }
 
         if ($db !== null)
             $this->_db = $db;
@@ -862,7 +877,7 @@ abstract class Connexions_Model
         return new $className($id);
     }
 
-    /** @brief  Retrieve all records an return an array of instances.
+    /** @brief  Retrieve all records and return an array of instances.
      *  @param  className   The name of the concrete sub-class.
      *  @param  where       A string or associative array of restrictions.
      *  @param  asArray     Return as array records instead of instances?
@@ -910,7 +925,7 @@ abstract class Connexions_Model
                 // Create an empty instance
                 $inst = new $className(null, $db);
 
-                /* Invoke _init() with notice that this is a backed, databse
+                /* Invoke _init() with notice that this is a backed, database
                  * record.
                  */
                 $inst->_init($row, $db,
