@@ -27,6 +27,34 @@ printf ("item_url:    %s\n", $rec->item_url);
 
 echo "</pre><hr />";
 
+$tagIds  = array(5);    //array(1,2,5);
+$userIds = array(1,2,441);
+$recs    = Model_UserItem::fetch($tagIds,          // tagIds
+                                 $userIds,         // userIds
+                                 null,             // itemIds
+                                 false);           // asArray
+printf ("<pre>%d Record(s) from users (%s) with tags (%s):\n",
+            count($recs),
+            implode(', ', $userIds),
+            implode(', ', $tagIds));
+foreach ($recs as $idex => $rec)
+{
+    printf ("Record %d, ", $idex);
+    if ($rec instanceof Connexions_Model)
+    {
+        echo " Instance: ", $rec->debugDump();
+    }
+    else
+    {
+        echo " Array: ";
+        print_r($rec);
+    }
+    echo "\n------------------------------------\n";
+}
+echo "</pre><hr />";
+
+
+/*
 $recs = Model_UserItem::fetchAll(); //array('userId' => 1));
 printf ("<pre>All %d Records:\n", count($recs));
 foreach ($recs as $idex => $rec)
@@ -34,3 +62,4 @@ foreach ($recs as $idex => $rec)
     printf ("%d: %s\n", $idex, $rec->debugDump());
 }
 echo "</pre><hr />";
+*/

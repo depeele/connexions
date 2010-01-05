@@ -105,7 +105,11 @@ CREATE TABLE userTagItem (
   tagId         int(10)     unsigned    NOT NULL default 0,
   itemId        int(10)     unsigned    NOT NULL default 0,
 
-  PRIMARY KEY   (`userId`, `tagId`, `itemId`),
-  KEY `uti_ut`  (`userId`,`tagId`),
-  KEY `uti_ui`  (`userId`,`itemId`)
+  PRIMARY KEY       (`userId`, `tagId`, `itemId`),
+  KEY `uti_ut`      (`userId`,`tagId`),
+  KEY `uti_ui`      (`userId`,`itemId`),
+  KEY `uti_it`      (`itemId`,`tagId`),
+  KEY `uti_userId`  (`userId`),
+  KEY `uti_tagId`   (`tagId`),
+  KEY `uti_itemId`  (`itemId`)
 );
