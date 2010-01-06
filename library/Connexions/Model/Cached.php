@@ -1,0 +1,68 @@
+<?php
+/** @file
+ *
+ *  The base class for Connexions Database Table Model that supports instance
+ *  caching.
+ */
+abstract class Connexions_Model_Cached extends Connexions_Model
+{
+    // Model Instance cache
+    protected static $_cache    = array();
+
+    /*************************************************************************
+     * Abstract static methods
+     *
+     */
+
+    /** @brief  Given a record identifier, generate an unique instance
+     *          identifier.
+     *  @param  id      The record identifier.
+     *
+     *  @return A unique instance identifier string.
+     */
+    abstract protected static function _instanceId($id);
+    /*************************************************************************/
+
+
+    /*************************************************************************
+     * Static methods
+     *
+     */
+
+    /** @brief  Locate the record for the identified user and return a new User
+     *          instance.
+     *  @param  className   The name of the concrete sub-class.
+     *  @param  id          The record identifier.
+     *  @param  db          An optional database instance (Zend_Db_Abstract).
+     *
+     *  @return An instance, possibly from our instance cache.
+     */
+    public static function find($className, $id, $db = null)
+    {
+        $instanceId = $className::_instanceId($id);
+
+        if (@isset(self::$_cache[$instanceId]))
+        {
+            // Return the cached instance
+            return self::$_cache[$instanceId];
+        }
+
+        // Find/Create a new instance.
+        $instance = parent::find($className, $id, $db);
+        if ($instance instanceof $className)
+        {
+            // Cache this new instance
+            self::$_cache[$instanceId] =& $instance;
+
+            $newInstId = $className::_instanceId($instance->_record);
+
+            if ($newInstId !== $instanceId)
+            {
+                // Cache it according to the "new" instance id as well
+                self::$_cache[$newInstId] =& $instance;
+            }
+        }
+
+        return $instance;
+    }
+}

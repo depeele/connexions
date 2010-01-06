@@ -1,42 +1,67 @@
 <?php
 require_once('./bootstrap.php');
 
-$rec = Model_UserItem::find(array('userId'  => 1,
-                                  'itemId'  => 1));
-echo "<pre>Record for userId==1, itemId==1:\n";
+$time_start = microtime(true);
+$mem_start  = memory_get_usage();
+$mem_first  = $mem_start;
+$rec        = Model_UserItem::find(array('userId'  => 1,
+                                         'itemId'  => 1));
+number_format($mem_end    = memory_get_usage());
+$time_end   = microtime(true);
+printf ("<pre>Record for userId==1, itemId==1, %f seconds, %s bytes:\n",
+        $time_end - $time_start,
+        number_format($mem_end  - $mem_start));
 echo ($rec instanceof Connexions_Model ? $rec->debugDump() : " *** ERROR\n");
 echo "\n\n";
 
 $rec->taggedOn  = date('Y-m-d H:i:s');
 $rec->isPrivate = (! $rec->isPrivate);
-echo "Save (should be an update with new 'taggedOn' and toggled 'isPrivate'):\n";
-$res = $rec->save();
+echo 'Save (should be an update with new "taggedOn" and toggled "isPrivate"):',
+     "\n";
+$time_start = microtime(true);
+$res        = $rec->save();
+$mem_end    = memory_get_usage();
+$time_end   = microtime(true);
 if ($res === true)
 {
-    echo "-- success\n";
+    printf ("-- success, %f seconds, %s bytes\n",
+            $time_end - $time_start,
+            number_format($mem_end  - $mem_start));
     echo ($rec instanceof Connexions_Model ? $rec->debugDump() : " *** ERROR\n");
 }
 else
     echo "** FAILURE\n";
 echo "\n\n";
 
-printf ("userId:      %d\n", $rec->userId);
-printf ("user_userId: %d\n", $rec->user_userId);
-printf ("user_name:   %s\n", $rec->user_name);
-printf ("item_url:    %s\n", $rec->item_url);
+printf ("taggedOn:     %s\n", $rec->taggedOn);
+printf ("isPrivate:    %s\n", ($rec->isPrivate ? 'true' : 'false'));
+printf ("userId:       %d\n", $rec->userId);
+printf ("user->userId: %d\n", $rec->user->userId);
+printf ("user->name:   %s\n", $rec->user->name);
+printf ("item->url:    %s\n", $rec->item->url);
+printf ("tags[0]->tag: %s\n", $rec->tags[0]->tag);
 
+unset($rec);
 echo "</pre><hr />";
 
 $tagIds  = array(5);    //array(1,2,5);
 $userIds = array(1,2,441);
-$recs    = Model_UserItem::fetch($tagIds,          // tagIds
-                                 $userIds,         // userIds
-                                 null,             // itemIds
-                                 false);           // asArray
-printf ("<pre>%d Record(s) from users (%s) with tags (%s):\n",
+
+$time_start = microtime(true);
+$mem_start  = memory_get_usage();
+$recs       = Model_UserItem::fetch($tagIds,          // tagIds
+                                    $userIds,         // userIds
+                                    null,             // itemIds
+                                    false);           // asArray
+$mem_end    = memory_get_usage();
+$time_end   = microtime(true);
+
+printf ("<pre>%d Record(s) from users (%s) with tags (%s), %f seconds, %s bytes:\n",
             count($recs),
             implode(', ', $userIds),
-            implode(', ', $tagIds));
+            implode(', ', $tagIds),
+            $time_end - $time_start,
+            number_format($mem_end  - $mem_start));
 foreach ($recs as $idex => $rec)
 {
     printf ("Record %d, ", $idex);
@@ -51,15 +76,27 @@ foreach ($recs as $idex => $rec)
     }
     echo "\n------------------------------------\n";
 }
+unset($recs);
 echo "</pre><hr />";
 
 
-/*
-$recs = Model_UserItem::fetchAll(); //array('userId' => 1));
-printf ("<pre>All %d Records:\n", count($recs));
+$time_start = microtime(true);
+$mem_start  = memory_get_usage();
+$recs       = Model_UserItem::fetchAll(); //array('userId' => 1));
+$mem_end    = memory_get_usage();
+$time_end   = microtime(true);
+
+printf ("<pre>All %d Records retrieved, %f seconds, %s bytes:\n",
+        count($recs),
+        $time_end - $time_start,
+        number_format($mem_end  - $mem_start));
 foreach ($recs as $idex => $rec)
 {
-    printf ("%d: %s\n", $idex, $rec->debugDump());
+    printf ("%d: %s\n", $idex, $rec->debugDump(true));
 }
 echo "</pre><hr />";
-*/
+
+$mem_last = $mem_end;
+
+printf ("Total memory: %s bytes<br />\n",
+        number_format($mem_last - $mem_first));

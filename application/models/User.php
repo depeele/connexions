@@ -5,29 +5,31 @@
  *
  */
 
-class Model_User extends Connexions_Model
+class Model_User extends Connexions_Model_Cached
 {
-    protected static    $table  = 'user';
-                                  // order 'keys' by most used
-    protected static    $keys   = array('userId', 'name');
-    protected static    $model  = array('userId'        => 'auto',
-                                        'name'          => 'string',
-                                        'password'      => 'string',
+    /*************************************************************************
+     * Connexions_Model - static, identity members
+     *
+     */
+    public static   $table  = 'user';
+                              // order 'keys' by most used
+    public static   $keys   = array('userId', 'name');
+    public static   $model  = array('userId'        => 'auto',
+                                    'name'          => 'string',
+                                    'password'      => 'string',
 
-                                        'fullName'      => 'string',
-                                        'email'         => 'string',
-                                        'apiKey'        => 'string',
-                                        'pictureUrl'    => 'string',
-                                        'profile'       => 'string',
-                                        'networkShared' => 'boolean',
-                                        'lastVisit'     => 'datetime',
-                                        'lastVisitFor'  => 'datetime',
-                                        'totalTags'     => 'integer',
-                                        'totalItems'    => 'integer'
+                                    'fullName'      => 'string',
+                                    'email'         => 'string',
+                                    'apiKey'        => 'string',
+                                    'pictureUrl'    => 'string',
+                                    'profile'       => 'string',
+                                    'networkShared' => 'boolean',
+                                    'lastVisit'     => 'datetime',
+                                    'lastVisitFor'  => 'datetime',
+                                    'totalTags'     => 'integer',
+                                    'totalItems'    => 'integer'
     );
-    public static function getTable()  { return self::$table; }
-    public static function getKeys()   { return self::$keys; }
-    public static function getModel()  { return self::$model; }
+    /*************************************************************************/
 
     protected       $_isAuthenticated   = false;
 
@@ -105,8 +107,7 @@ class Model_User extends Connexions_Model
     }
 
     /** @brief  Retrieve all records and return an array of instances.
-     *  @param  id          The user identifier
-     *                      (integrer userId or string name).
+     *  @param  id      The record identifier.
      *
      *  @return A new instance (false if no matching user).
      */
@@ -126,7 +127,26 @@ class Model_User extends Connexions_Model
     }
 
     /*************************************************************************
+     * Connexions_Model_Cached - abstract static method implementations
+     *
+     */
+
+    /** @brief  Given a record identifier, generate an unique instance
+     *          identifier.
+     *  @param  id      The record identifier.
+     *
+     *  @return A unique instance identifier string.
+     */
+    protected static function _instanceId($id)
+    {
+        return __CLASS__ .'_'.  (! @empty($id['userId'])
+                                    ?  $id['userId']
+                                    : 'generic');
+    }
+
+    /*************************************************************************
      * Protected helpers
      *
      */
+
 }
