@@ -5,21 +5,16 @@
  */
 abstract class Connexions_Model
 {
-    /* The following MUST be made available via the following, abstract static
-     * methods:
-     *  table       The name of the database table;
-     *  keys        An array of key names (each MUST be represented in 'model');
-     *  model       An array of key/type pairs defining the table model where
-     *              type MUST be lower-case and may be and of the following
-     *              values:
-     *                  ('auto', 'integer', 'float', 'boolean', 'datetime',
-     *                   'string')
+    /*************************************************************************
+     * The following static, identity members MUST be overridden by concrete
+     * classes.
+     *
      */
-    abstract public static function getTable();
-    abstract public static function getKeys();
-    abstract public static function getModel();
-
+    public static   $table  = null;
+    public static   $keys   = null;
+    public static   $model  = null;
     /*************************************************************************/
+
     protected   $_id        = null;     // The record id
 
     protected   $_isBacked  = false;    /* Is there a record backing this (i.e.
@@ -54,7 +49,6 @@ abstract class Connexions_Model
     /** @brief  Create a new instance.
      *  @param  id      The record identifier.
      *  @param  db      An optional database instance (Zend_Db_Abstract).
-     *
      *
      */
     public function __construct($id, $db = null)
@@ -109,7 +103,9 @@ abstract class Connexions_Model
      */
     public function __set($name, $value)
     {
-        $model =& $this->getModel();
+        $class =  get_class($this);
+
+        $model =& $class::$model;   //$this->getModel();
         if (! @isset($model[$name]))
         {
             // Invalid field
@@ -124,7 +120,7 @@ abstract class Connexions_Model
             return false;
         }
 
-        $keys    =& $this->getKeys();
+        $keys    =& $class::$keys;  //$this->getKeys();
         $tmpRec  = array($name => $value);
 
         $isValid = $this->_validateField($tmpRec, $name, $keys, $model);
@@ -157,6 +153,7 @@ abstract class Connexions_Model
             return null;
         }
 
+        // If this field has not yet been validated, validate it now.
         if ($this->_validated[$name] !== true)
             $this->_validate($name);
 
@@ -187,7 +184,8 @@ abstract class Connexions_Model
             return false;
 
         // store the new data for this record
-       $res = false;
+        $class = get_class($this);
+        $res   = false;
         if ($this->_isBacked === true)
         {
             /* This is an existing record that we need to update
@@ -203,7 +201,7 @@ abstract class Connexions_Model
             printf ("Connexions_Model: Update table '%s'; ".
                         "fields[%s], values[%s], ".
                         "where( clause[%s], binding[%s] )\n",
-                     $this->getTable(),
+                     $class::$table,    //$this->getTable(),
                      implode(', ', array_keys($dirty)),
                      implode(', ', array_values($dirty)),
                      implode(' AND ', array_keys($where)),
@@ -211,7 +209,7 @@ abstract class Connexions_Model
             // */
 
             if ( (count($dirty) < 1) ||
-                 ($this->_db->update($this->getTable(),
+                 ($this->_db->update($class::$table,    //$this->getTable(),
                                      $dirty,
                                      $where) === 1) )
             {
@@ -225,12 +223,12 @@ abstract class Connexions_Model
             /*
             printf ("Connexions_Model: Insert table '%s'; ".
                         "fields[%s], values[%s]\n",
-                     $this->getTable(),
+                     $class::$table,    //$this->getTable(),
                      implode(', ', array_keys($this->_record)),
                      implode(', ', array_values($this->_record)) );
             // */
 
-            if ( $this->_db->insert($this->getTable(),
+            if ( $this->_db->insert($class::$table, //$this->getTable(),
                                     $this->_record) === 1)
             {
                 $res = true;
@@ -238,10 +236,9 @@ abstract class Connexions_Model
                 /* Now, retrieve the full record that we've just inserted,
                  * including any fields that were not included in the insert.
                  */
-                $id = $this->_db->lastInsertId($this->getTable());
+                //$id = $this->_db->lastInsertId($this->getTable());
+                $id = $this->_db->lastInsertId($class::$table);
                 $this->_init($id, $this->_db);
-
-                //$this->_init($this->_record, $this->_db);
             }
         }
 
@@ -264,8 +261,10 @@ abstract class Connexions_Model
              *       but then this would negate any advantage gained by having
              *       indexed keys.
              */
-            $where  =  array();
-            foreach ($this->getKeys() as $field)
+            $class  = get_class($this);
+            $where  = array();
+            //foreach ($this->getKeys() as $field)
+            foreach ($class::$keys as $field)
             {
                 if (! @isset($this->_record[$field]))
                 {
@@ -284,11 +283,12 @@ abstract class Connexions_Model
             /*
             printf ("Connexions_Model: Delete from '%s'; ".
                             "where( clause[%s], binding[%s] )\n",
-                     $this->getTable(),
+                     $class::$table,    //$this->getTable(),
                      implode(' AND ', array_keys($where)),
                      implode(', ', array_values($where)) );
             // */
-            if ($this->_db->delete($this->getTable(), $where) )
+            //if ($this->_db->delete($this->getTable(), $where) )
+            if ($this->_db->delete($class::$table, $where) )
             {
                 $res = true;
             }
@@ -315,7 +315,12 @@ abstract class Connexions_Model
         return $this->_record;
     }
 
-    public function debugDump()
+    /** @brief  Generate a string representation of this record.
+     *  @param  skipValidation  Skip validation of each field [false]?
+     *
+     *  @return A string.
+     */
+    public function debugDump($skipValidation = false)
     {
         $str = sprintf("[%svalid, %sbacked, %sdirty, error[ %s ]:\n",
                         ($this->isValid()  ? "" : "NOT "),
@@ -325,11 +330,16 @@ abstract class Connexions_Model
 
         if (@is_array($this->_record))
         {
-            $keys =& $this->getKeys();
+            $class =  get_class($this);
+            $keys  =& $class::$keys;    //$this->getKeys();
             foreach ($this->_record as $key => $val)
             {
-                // Use the getter to force validation if not done already
-                $val     = $this->{$key};   
+                if ($skipValidation !== true)
+                {
+                    // Use the getter to force validation if not done already
+                    $val     = $this->{$key};   
+                }
+
                 $isKey   = in_array($key, $keys);
                 $isValid = $this->_validated[$key];
                 $isDirty = $this->_dirty[$key];
@@ -372,9 +382,10 @@ abstract class Connexions_Model
      */
     protected function _record2where($includeDirty = true)
     {
-        $keys  =& $this->getKeys();
-        $where =  array();
-        foreach ($this->getKeys() as $key)
+        $class = get_class($this);
+        $where = array();
+        //foreach ($this->getKeys() as $key)
+        foreach ($class::$keys as $key)
         {
             if ( (($includeDirty === true) ||
                   (! @isset($this->_dirty[$key]))) &&
@@ -397,8 +408,9 @@ abstract class Connexions_Model
      */
     protected function _data2where(&$data)
     {
-        $keys    =& $this->getKeys();
-        $model   =& $this->getModel();
+        $class =  get_class($this);
+        $keys  =& $class::$keys;    //$this->getKeys();
+        $model =& $class::$model;   //$this->getModel();
         if (@is_scalar($data))
             $data = array($data);
 
@@ -479,22 +491,23 @@ abstract class Connexions_Model
 
     /** @brief  Initialize this model/record.  This will cause an overall
      *          reset of this instance, possibly (re)retrieving the data.
-     *  @param  id          The record identifier.
-     *  @param  db          An optional database instance (Zend_Db_Abstract).
-     *  @param  isRecord    Is 'id' to be treated as a raw record?
-     *  @param  isBacked    Is this a pre-fetched, backed database record?
+     *  @param  id      The record identifier.
+     *  @param  db      An optional database instance (Zend_Db_Abstract).
      *
      *  Note: 'id' may include the following special fields:
-     *      '@isRecord' => true/false
-     *      '@isBacked' => true/false
+     *      '@isRecord' => true/false - Treat 'id' data as a raw record?
+     *      '@isBacked' => true/false - Is this a pre-fetched, database-backed
+     *                                  record? true implies
+     *                                              '@isRecord == true'.
      *
      *  @return Connexions_Model to provide a fluent interface.
      */
-    protected function _init($id,
-                             $db        = null,
-                             $isRecord  = false,
-                             $isBacked  = false)
+    protected function _init($id, $db = null)
     {
+        $class    = get_class($this);
+        $isBacked = false;
+        $isRecord = false;
+
         // (Re)set our state
         $this->_id        = null;
         $this->_isBacked  = false;
@@ -504,15 +517,22 @@ abstract class Connexions_Model
         $this->_validated = array();
         $this->_dirty     = array();
 
-        if (@isset($id['@isRecord']))
-        {
-            $isRecord = ($id['@isRecord'] ? true : false);
-            unset($id['@isRecord']);
-        }
         if (@isset($id['@isBacked']))
         {
             $isBacked = ($id['@isBacked'] ? true : false);
             unset($id['@isBacked']);
+
+            if ($isBacked)
+            {
+                $isRecord = true;
+                unset($id['@isRecord']);
+            }
+        }
+
+        if ((! $isBacked) && @isset($id['@isRecord']))
+        {
+            $isRecord = ($id['@isRecord'] ? true : false);
+            unset($id['@isRecord']);
         }
 
         if ($db !== null)
@@ -525,8 +545,8 @@ abstract class Connexions_Model
         if ($id === null)
             return $this;
 
-        $keys  =& $this->getKeys();
-        $model =& $this->getModel();
+        $keys  =& $class::$keys;    //$this->getKeys();
+        $model =& $class::$model;   //$this->getModel();
 
         /* Attempt to figure out what 'id' represents:
          *  - a scaler value representing a database key;
@@ -545,7 +565,7 @@ abstract class Connexions_Model
              * Attempt to retrieve a matching record.
              *
              */
-            $select =  'SELECT * FROM '. $this->getTable()
+            $select =  'SELECT * FROM '. $class::$table //$this->getTable()
                     .  ' WHERE '. implode(' AND ', array_keys($where));
 
             try
@@ -553,7 +573,7 @@ abstract class Connexions_Model
                 /*
                 printf ("Connexions_Model: _init table '%s'; ".
                             "where( clause[%s], binding[%s] )\n",
-                         $this->getTable(),
+                         $class::$table,    //$this->getTable(),
                          implode(' AND ', array_keys($where)),
                          implode(', ', array_values($where)) );
                 // */
@@ -574,9 +594,8 @@ abstract class Connexions_Model
                  * Invoke this method again noting that the data is a backed
                  * record.
                  */
-                $this->_init($rec, $this->_db,
-                             true,  // isRecord
-                             true); // isBacked
+                $rec['@isBacked'] = true;
+                $this->_init($rec, $this->_db);
             }
             else
             {
@@ -590,9 +609,9 @@ abstract class Connexions_Model
                     $idKeys = array_keys($id);
                     if (is_string($idKeys[0]))
                     {
-                        /* 'id' is an associative array.  Remove anything field
-                         * that is an 'auto' key and, if there are fields
-                         * remaining, call it a non-backed record.
+                        /* 'id' is an associative array.  Remove any field that
+                         * is an 'auto' key and, if there are fields remaining,
+                         * call it a non-backed record.
                          */
                         foreach ($keys as $dbKey)
                         {
@@ -616,10 +635,8 @@ abstract class Connexions_Model
                              * Invoke this method again noting that the data
                              * represents a non-backed record.
                              */
-                            return $this->_init($id,
-                                                 $this->_db,
-                                                 true,      // isRecord
-                                                 false);    // isBacked
+                            $id['@isRecord'] = true;
+                            return $this->_init($id, $this->_db);
                         }
 
                         // Oops.  The only fields were all 'auto' keys
@@ -694,8 +711,9 @@ abstract class Connexions_Model
      */
     protected function _validate($field = null)
     {
-        $keys  =& $this->getKeys();
-        $model =& $this->getModel();
+        $class =  get_class($this);
+        $keys  =& $class::$keys;    //$this->getKeys();
+        $model =& $class::$model;   //$this->getModel();
 
         if ($field !== null)
         {
@@ -860,21 +878,49 @@ abstract class Connexions_Model
     }
 
     /*************************************************************************
-     * Abstract Static methods
+     * Static methods
      *
      */
 
-    /** @brief  Locate the record for the identified user and return a new User
-     *          instance.
+    /** @brief  Locate the identified record.
      *  @param  className   The name of the concrete sub-class.
-     *  @param  id          The user identifier
-     *                      (integrer userId or string name).
+     *  @param  id          The record identifier.
+     *  @param  db          An optional database instance (Zend_Db_Abstract).
      *
      *  @return A new instance (check isBacked(), isValid(), getError()).
      */
-    public static function find($className, $id)
+    public static function find($className, $id, $db = null)
     {
-        return new $className($id);
+        /* For php >= 5.3, we could do away with the incoming $className along
+         * with the need for a find() in the concrete classes and simply use:
+         *      $className = get_called_class();
+         */
+        return new $className($id, $db);
+    }
+
+    /** @brief  Return a Zend_Db_Select instance for all records matching the
+     *          given 'where' clause.
+     *  @param  className   The name of the concrete sub-class.
+     *  @param  where       A string or associative array of restrictions.
+     *
+     *  @return A Zend_Db_Select instance that can retrieve the desired
+     *          records.
+     */
+    public static function select($className, $where = null)
+    {
+        /* For php >= 5.3, we could do away with the incoming $className along
+         * with the need for a fetchAll() in the concrete classes and simply
+         * use:
+         *  $className = get_called_class();
+         */
+        $table  = $className::$table;
+        $db     = Connexions::getDb();
+        $select = $db->select()
+                     ->from($table);
+        if (! @empty($where))
+            $select->where($where);
+
+        return $select;
     }
 
     /** @brief  Retrieve all records and return an array of instances.
@@ -886,31 +932,9 @@ abstract class Connexions_Model
      */
     public static function fetchAll($className, $where = null, $asArray = false)
     {
-        // Figure out the table of the given class
-        $ev    = "\$table = $className::\$table;";
-        eval($ev);
-
-        $db   = Connexions::getDb();
-
-        $sql  = 'SELECT * FROM '. $table;
-        $bind = array();
-        if (@is_array($where))
-        {
-            $parts = array();
-            foreach ($where as $key => $val)
-            {
-                array_push($bind,  $val);
-                array_push($parts, '('.$key.'=?)');
-            }
-
-            $sql .= ' WHERE '. implode('AND ', $parts);
-        }
-        else if (@is_string($where))
-        {
-            $sql .= ' WHERE '. $where;
-        }
-
-        $recs = $db->fetchAll($sql, $bind);
+        $select = self::select($className, $where);
+        $stmt   = $select->query();   //$db->query($select);
+        $recs   = $stmt->fetchAll();
 
         if ($asArray === true)
         {
@@ -922,15 +946,9 @@ abstract class Connexions_Model
             $set = array();
             foreach ($recs as $row)
             {
-                // Create an empty instance
-                $inst = new $className(null, $db);
-
-                /* Invoke _init() with notice that this is a backed, database
-                 * record.
-                 */
-                $inst->_init($row, $db,
-                             true,  // isRecord
-                             true); // isBacked
+                // Create an instance using this backed database record
+                $row['@isBacked'] = true;
+                $inst = $className::find($row, $db);
 
                 array_push($set, $inst);
             }

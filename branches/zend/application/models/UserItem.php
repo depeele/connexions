@@ -10,68 +10,73 @@
 
 class Model_UserItem extends Connexions_Model
 {
-    protected static    $table  = 'userItem';
-                                  // order 'keys' by most used
-    protected static    $keys   = array('userId',   'itemId',  'rating',
-                                        'isPrivate','taggedOn');
-    protected static    $model  = array('userId'        => 'integer',
-                                        'itemId'        => 'integer',
-                                        'name'          => 'string',
-                                        'description'   => 'string',
+    /*************************************************************************
+     * Connexions_Model - static, identity members
+     *
+     */
+    public static   $table  = 'userItem';
+                              // order 'keys' by most used
+    public static   $keys   = array('userId', 'itemId',
+                                    'rating', 'isPrivate','taggedOn');
+    public static   $model  = array('userId'        => 'integer',
+                                    'itemId'        => 'integer',
+                                    'name'          => 'string',
+                                    'description'   => 'string',
 
-                                        'rating'        => 'integer',
-                                        'isFavorite'    => 'boolean',
-                                        'isPrivate'     => 'boolean',
-                                        'taggedOn'      => 'datetime'
+                                    'rating'        => 'integer',
+                                    'isFavorite'    => 'boolean',
+                                    'isPrivate'     => 'boolean',
+                                    'taggedOn'      => 'datetime'
     );
-    public static function getTable()  { return self::$table; }
-    public static function getKeys()   { return self::$keys; }
-    public static function getModel()  { return self::$model; }
+    /*************************************************************************/
 
     protected static    $_foreignFields = null;
 
-    protected   $_user  = null;
-    protected   $_item  = null;
-    protected   $_tags  = null;
+    protected           $_user          = null;
+    protected           $_item          = null;
+    protected           $_tags          = null;
+
 
     /** @brief  Create a new instance.
      *  @param  id      The record identifier.
      *  @param  db      An optional database instance (Zend_Db_Abstract).
      *
      *  Note: 'id' may include the following special fields:
-     *      '@lazy' => array containing 'user', 'item', and/or 'tags' to
+     *      '@fetch' => array containing 'user', 'item', and/or 'tags' to
      *                 indicate which sub-items should NOT be filled
      *                 immediately.
      */
     public function __construct($id, $db = null)
     {
-        if (@isset($id['@lazy']))
+        if (@isset($id['@fetch']))
         {
-            $lazy = $id['@lazy'];
-            unset($id['@lazy']);
+            $fetch = $id['@fetch'];
+            unset($id['@fetch']);
         }
         else
         {
-            $lazy = array();
+            $fetch = array();
         }
 
         parent::__construct($id, $db);
 
-        if ((! @in_array('user', $lazy)) && @isset($this->_record['userId']))
+        if (@in_array('user', $fetch) && @isset($this->_record['userId']))
         {
             // Include the matching user.
             $this->_user =
-                new Model_User(array('userId' => $this->_record['userId']));
+                Model_User::find(array('userId' => $this->_record['userId']),
+                                 $db);
         }
 
-        if ((! @in_array('item', $lazy)) && @isset($this->_record['itemId']))
+        if (@in_array('item', $fetch) && @isset($this->_record['itemId']))
         {
             // Locate the matching item.
             $this->_item =
-                new Model_Item(array('itemId' => $this->_record['itemId']));
+                Model_Item::find(array('itemId' => $this->_record['itemId']),
+                                 $db);
         }
 
-        if (! @in_array('tags', $lazy))
+        if (@in_array('tags', $fetch))
         {
             if (@isset($this->_record['userId']) &&
                 @isset($this->_record['itemId']))
@@ -104,23 +109,73 @@ class Model_UserItem extends Connexions_Model
     /** @brief  Get a value of the given field.
      *  @param  name    The field name.
      *
+     *  Note: Sub-instances or their fields are addressed by pre-pending the
+     *        sub-instance name:
+     *          user[_<field>]
+     *          item[_<field>]
+     *          tags[_<indexNum>[_<field>]]
+     *
      *  @return The field value (or null if invalid field).
      */
     public function __get($name)
     {
-        $res = null;
-        if (preg_match('/^(user|item)\_(.*?)$/', $name, $matches))
+        switch ($name)
         {
-            switch ($matches[1])
+        case 'user':    $res =& $this->_user();         break;
+        case 'item':    $res =& $this->_item();         break;
+        case 'tags':    $res =& $this->_tags();         break;
+        default:        $res =  parent::__get($name);   break;
+        }
+
+        /*
+        $res = null;
+        if (preg_match('/^(user|item|tags)(?:_(.*?))?$/', $name, $matches))
+        {
+            $type  = $matches[1];
+            $field = $matches[2];
+
+            switch ($type)
             {
             case 'user':
-                if ($this->_user instanceof Connexions_Model)
-                    $res = $this->_user->__get($matches[2]);
+                // Just 'user' with no field name returns the user instance
+                $res =& $this->_user();
+                if ( (! @empty($field)) && ($res instanceof Connexions_Model))
+                    $res = $res->__get($field);
                 break;
 
             case 'item':
-                if ($this->_item instanceof Connexions_Model)
-                    $res = $this->_item->__get($matches[2]);
+                // Just 'item' with no field name returns the item instance
+                $res =& $this->_item();
+                if ( (! @empty($field)) && ($res instanceof Connexions_Model))
+                    $res = $res->__get($field);
+                break;
+
+            case 'tags':
+                // Just 'tags' with no field name returns the tags array.
+                $res =& $this->_tags();
+
+                // The 'tags' "field" is an index followed by an optional
+                // field name.
+                if ( @is_array($res) &&
+                     preg_match('/^([0-9]+)(?:_(.*?))?$/', $field, $subMatches))
+                {
+                    $index = $subMatches[1];
+                    $field = $subMatches[2];
+
+                    if (@isset($res[$index]))
+                    {
+                        // Just an index will return the tag instance.
+                        $res = $res[$index];
+
+                        if ( ($res instanceof Connexions_Model) &&
+                             (! @empty($field)) )
+                        {
+                            // Index with a field name will return the field
+                            // value for the indexed tag
+                            $res = $res->__get($field);
+                        }
+                    }
+                }
                 break;
             }
         }
@@ -128,6 +183,7 @@ class Model_UserItem extends Connexions_Model
         {
             $res = parent::__get($name);
         }
+        */
 
         return $res;
     }
@@ -140,23 +196,75 @@ class Model_UserItem extends Connexions_Model
      */
     public function __set($name, $value)
     {
-        $res = parent::__set($name, $value);
-        if (($res === null) && ($this->_user instanceof Connexions_Model))
-            $res = $this->_user->__set($name, $value);
-        if (($res === null) && ($this->_item instanceof Connexions_Model))
-            $res = $this->_item->__set($name, $value);
+        $res = false;
+        switch ($name)
+        {
+        case 'user':
+        case 'item':
+        case 'tags':
+            // Do NOT allow external replacement of sub-instances.
+            break;
+
+        default:
+            $res =  parent::__set($name, $value);
+            break;
+        }
+
+        /*
+        if (preg_match('/^(user|item|tags)(?:_(.*?))?$/', $name, $matches))
+        {
+            $type  = $matches[1];
+            $field = $matches[2];
+
+            switch ($type)
+            {
+            case 'user':
+                $user =& $this->_user();
+                if ( (! @empty($field)) && ($user instanceof Connexions_Model))
+                    $res = $user->__set($field, $value);
+                break;
+
+            case 'item':
+                $item =& $this->_item();
+                if ( (! @empty($field)) && ($item instanceof Connexions_Model))
+                    $res = $item->__set($field, $value);
+                break;
+
+            case 'tags':
+                // Just 'tags' with no field name returns the tags array.
+                $tags =& $this->_tags();
+
+                // The 'tags' "field" is an index followed by an optional
+                // field name.
+                if ( @is_array($tags) &&
+                     preg_match('/^([0-9]+)(?:_(.*?))?$/', $field, $subMatches))
+                {
+                    $index = $subMatches[1];
+                    $field = $subMatches[2];
+
+                    if (@isset($tags[$index]))
+                    {
+                        $tag = $tags[$index];
+
+                        if ( ($tag instanceof Connexions_Model) &&
+                             (! @empty($field)) )
+                        {
+                            // Index with a field name will return the field
+                            // value for the indexed tag
+                            $res = $tag->__set($field, $value);
+                        }
+                    }
+                }
+                break;
+            }
+        }
+        else
+        {
+            $res = parent::__set($name, $value);
+        }
+        */
 
         return $res;
-    }
-
-    public function user()
-    {
-        return $this->_user;
-    }
-
-    public function item()
-    {
-        return $this->_item;
     }
 
     public function toArray($deep = false)
@@ -164,44 +272,63 @@ class Model_UserItem extends Connexions_Model
         $ret = $this->_record;
         if ($deep)
         {
-            $ret['user'] = ($this->_user instanceof Connexions_Model
-                                ? $this->_user->toArray()
+            $user =& $this->_user();
+            $item =& $this->_item();
+            $tags =& $this->_tags();
+
+            $ret['user'] = ($user instanceof Connexions_Model
+                                ? $user->toArray()
                                 : array());
-            $ret['item'] = ($this->_item instanceof Connexions_Model
-                                ? $this->_item->toArray()
+            $ret['item'] = ($item instanceof Connexions_Model
+                                ? $item->toArray()
                                 : array());
+            $ret['tags'] = array();
+            foreach ($tags as $tag)
+            {
+                if ($tag instanceof Connexions_Model)
+                    array_push($ret['tags'], $tag->toArray());
+            }
         }
 
         return $ret;
     }
 
-    public function debugDump()
+    /** @brief  Generate a string representation of this record.
+     *  @param  skipValidation  Skip validation of each field [false]?
+     *
+     *  @return A string.
+     */
+    public function debugDump($skipValidation = false)
     {
-        $str = substr(parent::debugDump(), 0, -3);
+        $str = substr(parent::debugDump($skipValidation), 0, -3);
 
-        $userStr = ($this->_user instanceof Connexions_Model
-                        ? $this->_user->debugDump()
+        $user =& $this->_user();
+        $item =& $this->_item();
+        $tags =& $this->_tags();
+
+        $userStr = ($user instanceof Connexions_Model
+                        ? $user->debugDump($skipValidation)
                         : '[];');
         $userStr = preg_replace('/^/ms', '   ', substr($userStr, 0, -1));
 
-        $itemStr = ($this->_item instanceof Connexions_Model
-                        ? $this->_item->debugDump()
+        $itemStr = ($item instanceof Connexions_Model
+                        ? $item->debugDump($skipValidation)
                         : '[];');
         $itemStr = preg_replace('/^/ms', '   ', substr($itemStr, 0, -1));
 
         $tagStr  = "[\n    ";
-        if (@is_array($this->_tags))
+        if (@is_array($tags))
         {
-            $tags = array();
-            foreach ($this->_tags as $tag)
+            $tagStrs = array();
+            foreach ($tags as $tag)
             {
                 if ($tag instanceof Connexions_Model)
                 {
-                    array_push($tags,
+                    array_push($tagStrs,
                                sprintf("%6d: %s", $tag->tagId, $tag->tag));
                 }
             }
-            $tagStr .= implode(",\n    ", $tags);
+            $tagStr .= implode(",\n    ", $tagStrs);
         }
         $tagStr .= "\n  ]";
 
@@ -217,8 +344,7 @@ class Model_UserItem extends Connexions_Model
     }
 
     /** @brief  Retrieve all records and return an array of instances.
-     *  @param  id          The user identifier
-     *                      (integrer userId or string name).
+     *  @param  id      The record identifier.
      *
      *  @return A new instance (false if no matching user).
      */
@@ -263,12 +389,12 @@ class Model_UserItem extends Connexions_Model
         if (! @is_array(self::$_foreignFields))
         {
             self::$_foreignFields = array();
-            foreach (Model_Item::getModel() as $field => $type)
+            foreach (Model_Item::$model as $field => $type)
             {
                 array_push(self::$_foreignFields,
                             'i.'. $field .' AS item_'. $field);
             }
-            foreach (Model_User::getModel() as $field => $type)
+            foreach (Model_User::$model as $field => $type)
             {
                 array_push(self::$_foreignFields,
                             'u.'. $field .' AS user_'. $field);
@@ -336,8 +462,8 @@ class Model_UserItem extends Connexions_Model
                  *
                  * for initialization of the sub-instances.
                  */
-                $item = array('@isRecord'=>true,'@isBacked'=>true);
-                $user = array('@isRecord'=>true,'@isBacked'=>true);
+                $item = array('@isBacked'=>true);
+                $user = array('@isBacked'=>true);
                 foreach ($row as $key => $val)
                 {
                     $id = explode('_', $key);
@@ -355,37 +481,13 @@ class Model_UserItem extends Connexions_Model
                 }
 
                 // Create an new instance using backed record data.
-                $row['@isRecord'] = true;
                 $row['@isBacked'] = true;
-                $row['@lazy']     = array('user','item');   //,'tags');
-                $inst = new self($row, $db);
+                //$row['@fetch']    = array('user','item','tags');
+                $inst = self::find($row, $db);  //new self($row, $db);
 
-                // Locate / Create a Model_User instance
-                if (@isset($userMap[$user['userId']]))
-                {
-                    $inst->_user =& $userMap[$user['userId']];
-                }
-                else
-                {
-                    $inst->_user = new Model_User($user, $db);
-                    $userMap[$user['userId']] = $inst->_user;
-                }
-
-                // Locate / Create a Model_Item instance
-                if (@isset($itemMap[$item['itemId']]))
-                {
-                    $inst->_item =& $itemMap[$item['itemId']];
-                }
-                else
-                {
-                    $inst->_item = new Model_Item($item, $db);
-                    $itemMap[$item['itemId']] = $inst->_item;
-                }
-
-                /*
-                $inst->_tags = Model_Tag::fetch(array($inst->_user->userId),
-                                                array($inst->_item->itemId));
-                */
+                // Remember the item and user information we retrieved.
+                $inst->_item = $item;
+                $inst->_user = $user;
 
                 array_push($set, $inst);
             }
@@ -393,4 +495,86 @@ class Model_UserItem extends Connexions_Model
 
         return $set;
     }
+
+    /*************************************************************************
+     * Protected helpers
+     *
+     */
+
+    protected function _user()
+    {
+        if (! $this->_user instanceof Model_User)
+        {
+            // _user is NOT a Model_User
+            if (@is_array($this->_user))
+            {
+                /* _user IS an array -- attempt to create a Model_User instance
+                 * with the data.
+                 */
+                $this->_user =
+                    Model_User::find($this->_user, $this->_db);
+            }
+
+            if ((! $this->_user instanceof Model_User) &&
+                (@isset($this->_record['userId'])) )
+            {
+                /* Attempt to retrieve a Model_User instance using the 'userId'
+                 * from our record.
+                 */
+                $this->_user =
+                    Model_User::find(
+                                    array('userId' => $this->_record['userId']),
+                                    $this->_db);
+            }
+        }
+
+        return $this->_user;
+    }
+
+    protected function _item()
+    {
+        if (! $this->_item instanceof Model_Item)
+        {
+            // _item is NOT a Model_Item
+            if (@is_array($this->_item))
+            {
+                /* _item IS an array -- attempt to create a Model_Item instance
+                 * with the data.
+                 */
+                $this->_item =
+                    Model_Item::find($this->_item, $this->_db);
+            }
+
+            if ((! $this->_item instanceof Model_Item) &&
+                (@isset($this->_record['itemId'])) )
+            {
+                /* Attempt to retrieve a Model_Item instance using the 'itemId'
+                 * from our record.
+                 */
+                $this->_item =
+                    Model_Item::find(
+                                    array('itemId' => $this->_record['itemId']),
+                                    $this->_db);
+            }
+        }
+
+        return $this->_item;
+    }
+
+    protected function _tags()
+    {
+        if ($this->_tags === null)
+        {
+            if (@isset($this->_record['userId']) &&
+                @isset($this->_record['itemId']))
+            {
+                $this->_tags =
+                    Model_Tag::fetch(array($this->_record['userId']),
+                                     array($this->_record['itemId']));
+            }
+        }
+
+        return $this->_tags;
+    }
+
 }

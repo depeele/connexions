@@ -7,16 +7,18 @@
 
 class Model_Network extends Connexions_Model
 {
-    protected static    $table  = 'network';
-                                  // order 'keys' by most used
-    protected static    $keys   = array('userId', 'memberId');
-    protected static    $model  = array('userId'            => 'integer',
-                                        'memberId'          => 'integer'
-                                        'rating'            => 'integer'
+    /*************************************************************************
+     * Connexions_Model - static, identity members
+     *
+     */
+    public static   $table  = 'network';
+                              // order 'keys' by most used
+    public static   $keys   = array('userId', 'memberId');
+    public static   $model  = array('userId'    => 'integer',
+                                    'memberId'  => 'integer'
+                                    'rating'    => 'integer'
     );
-    public static function getTable()  { return self::$table; }
-    public static function getKeys()   { return self::$keys; }
-    public static function getModel()  { return self::$model; }
+    /*************************************************************************/
 
     /** @brief  Return a string representation of this instance.
      *
@@ -33,8 +35,7 @@ class Model_Network extends Connexions_Model
     }
 
     /** @brief  Retrieve all records and return an array of instances.
-     *  @param  id          The user identifier
-     *                      (integrer userId or string name).
+     *  @param  id      The record identifier.
      *
      *  @return A new instance (false if no matching user).
      */

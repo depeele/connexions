@@ -5,17 +5,19 @@
  *
  */
 
-class Model_Tag extends Connexions_Model
+class Model_Tag extends Connexions_Model_Cached
 {
-    protected static    $table  = 'tag';
-                                  // order 'keys' by most used
-    protected static    $keys   = array('tagId', 'tag');
-    protected static    $model  = array('tagId'         => 'auto',
-                                        'tag'           => 'string'
+    /*************************************************************************
+     * Connexions_Model - static, identity members
+     *
+     */
+    public static   $table  = 'tag';
+                              // order 'keys' by most used
+    public static   $keys   = array('tagId', 'tag');
+    public static   $model  = array('tagId' => 'auto',
+                                    'tag'   => 'string'
     );
-    public static function getTable()  { return self::$table; }
-    public static function getKeys()   { return self::$keys; }
-    public static function getModel()  { return self::$model; }
+    /*************************************************************************/
 
     /** @brief  Set a value in this record and mark it dirty.
      *  @param  name    The field name.
@@ -46,8 +48,7 @@ class Model_Tag extends Connexions_Model
     }
 
     /** @brief  Retrieve all records and return an array of instances.
-     *  @param  id          The user identifier
-     *                      (integrer userId or string name).
+     *  @param  id      The record identifier.
      *
      *  @return A new instance (false if no matching user).
      */
@@ -123,22 +124,34 @@ class Model_Tag extends Connexions_Model
         {
             // Create instances for each retrieved record
             $set     = array();
-            foreach ($recs as $row)
+            foreach ($recs as $idex => $row)
             {
-                // Create an empty instance
-                $inst = new self(null, $db);
-
-                /* Invoke _init() with notice that this is a backed, database
-                 * record.
-                 */
-                $inst->_init($row, $db,
-                             true,  // isRecord
-                             true); // isBacked
+                // Create an instance with this backed record.
+                $row['@isBacked'] = true;
+                $inst = self::find($row, $db);  //new self($row, $db);
 
                 array_push($set, $inst);
             }
         }
 
         return $set;
+    }
+
+    /*************************************************************************
+     * Connexions_Model_Cached - abstract static method implementations
+     *
+     */
+
+    /** @brief  Given a record identifier, generate an unique instance
+     *          identifier.
+     *  @param  id      The record identifier.
+     *
+     *  @return A unique instance identifier string.
+     */
+    protected static function _instanceId($id)
+    {
+        return __CLASS__ .'_'.  (! @empty($id['tagId'])
+                                    ?  $id['tagId']
+                                    : 'generic');
     }
 }

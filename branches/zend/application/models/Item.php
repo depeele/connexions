@@ -5,22 +5,24 @@
  *
  */
 
-class Model_Item extends Connexions_Model
+class Model_Item extends Connexions_Model_Cached
 {
-    protected static    $table  = 'item';
-                                  // order 'keys' by most used
-    protected static    $keys   = array('itemId', 'urlHash');
-    protected static    $model  = array('itemId'        => 'auto',
-                                        'url'           => 'string',
-                                        'urlHash'       => 'string',
+    /*************************************************************************
+     * Connexions_Model - static, identity members
+     *
+     */
+    public static   $table  = 'item';
+                              // order 'keys' by most used
+    public static   $keys   = array('itemId', 'urlHash');
+    public static   $model  = array('itemId'        => 'auto',
+                                    'url'           => 'string',
+                                    'urlHash'       => 'string',
 
-                                        'userCount'     => 'integer',
-                                        'ratingCount'   => 'integer',
-                                        'ratingSum'     => 'integer'
+                                    'userCount'     => 'integer',
+                                    'ratingCount'   => 'integer',
+                                    'ratingSum'     => 'integer'
     );
-    public static function getTable()  { return self::$table; }
-    public static function getKeys()   { return self::$keys; }
-    public static function getModel()  { return self::$model; }
+    /*************************************************************************/
 
     /** @brief  Return a string representation of this instance.
      *
@@ -35,8 +37,7 @@ class Model_Item extends Connexions_Model
     }
 
     /** @brief  Retrieve all records and return an array of instances.
-     *  @param  id          The user identifier
-     *                      (integrer userId or string name).
+     *  @param  id      The record identifier.
      *
      *  @return A new instance (false if no matching user).
      */
@@ -53,5 +54,23 @@ class Model_Item extends Connexions_Model
     public static function fetchAll($where = null)
     {
         return parent::fetchAll(__CLASS__, $where);
+    }
+
+    /*************************************************************************
+     * Connexions_Model_Cached - abstract static method implementations
+     *
+     */
+
+    /** @brief  Given a record identifier, generate an unique instance
+     *          identifier.
+     *  @param  id      The record identifier.
+     *
+     *  @return A unique instance identifier string.
+     */
+    protected static function _instanceId($id)
+    {
+        return __CLASS__ .'_'.  (! @empty($id['itemId'])
+                                    ?  $id['itemId']
+                                    : 'generic');
     }
 }
