@@ -15,4 +15,59 @@ else
 ?>
 </p>
 
+<?php
+if ( false &&
+     (! @isset($this->tagWisdom)) &&
+        @isset($this->select) )
+{
+    /* Make use of the userItem select instance to retrieve the tags for these
+     * userItems (specifically, for the unique items and unique users
+     *            represented by these userItems).
+     */
+    $itemIds = Model_UserItem::itemIds( $this->select );
+    $tags    = Model_Tag::fetch( $this->select->_userIds, $itemIds );
+
+    /* Render the tag cloud in the right column -- This should probably be via
+     * a view partial like:
+     *      view/scripts/tagCloud.phtml
+     */
+    $html  = '';
+    foreach ($tags as $tag)
+    {
+        $html .= sprintf("%6d: %15s: %4d / %4d / %4d<br />\n",
+                        $tag->tagId, $tag->tag,
+                        $tag->userItemCount,
+                        $tag->itemCount,
+                        $tag->userCount);
+    }
+
+    $this->layout()->right = $html;
+}
+
+/* Present the pagination control, established by
+ * Bootstrap.php::_initViewGlobal() to be rendered via:
+ *      views/scripts/paginationControl.phtml
+ */
+echo "Paginator: ", $this->paginator;
+
+if (count($this->paginator))
+{
+    // Present the items of the current page
+    echo "<div style='width:50%;overflow:hidden;'>\n";
+    foreach ($this->paginator as $idex => $item)
+    {
+        /* Present the current item -- This should probably be via a view
+         * partial like:
+         *      view/scripts/userItem.phtml
+         */
+        $userItem = new Model_UserItem($item);
+        printf ("Item %d: <pre style='padding:0 3em;'> %s </pre>\n",
+                $idex, $userItem->debugDump());
+    }
+    echo "</div>\n";
+}
+
+?>
+
+
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

@@ -149,6 +149,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         // Establish the base title and separator
         $view->headTitle('connexions')->setSeparator(' > ');
 
+        // Set our default pagination
+        Zend_Paginator::setDefaultScrollingStyle(   'Sliding');
+        Zend_View_Helper_PaginationControl::setDefaultViewPartial(
+                                        'paginationControl.phtml');
+
         /* Put the 'view' in the registry so it will be accessible to
          *      Connexions_Controller_Plugin_Auth
          *

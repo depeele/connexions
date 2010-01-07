@@ -519,20 +519,23 @@ abstract class Connexions_Model
 
         if (@isset($id['@isBacked']))
         {
+            /* Note: Use '(unset) var;' vs 'unset(var);' to eliminate
+             *          'Fatal error: Cannot unset string offsets'
+             */
             $isBacked = ($id['@isBacked'] ? true : false);
-            unset($id['@isBacked']);
+            (unset) $id['@isBacked'];
 
             if ($isBacked)
             {
                 $isRecord = true;
-                unset($id['@isRecord']);
+                (unset) $id['@isRecord'];
             }
         }
 
         if ((! $isBacked) && @isset($id['@isRecord']))
         {
             $isRecord = ($id['@isRecord'] ? true : false);
-            unset($id['@isRecord']);
+            (unset) $id['@isRecord'];
         }
 
         if ($db !== null)
@@ -623,7 +626,7 @@ abstract class Connexions_Model
                                  */
                                 array_push($idParts, $dbKey.'=='.$id[$dbKey]);
 
-                                unset($id[$dbKey]);
+                                (unset) $id[$dbKey];
                             }
                         }
 
@@ -902,21 +905,23 @@ abstract class Connexions_Model
      *          given 'where' clause.
      *  @param  className   The name of the concrete sub-class.
      *  @param  where       A string or associative array of restrictions.
+     *  @param  db          An optional database instance (Zend_Db_Abstract).
      *
      *  @return A Zend_Db_Select instance that can retrieve the desired
      *          records.
      */
-    public static function select($className, $where = null)
+    public static function select($className, $where = null, $db = null)
     {
         /* For php >= 5.3, we could do away with the incoming $className along
          * with the need for a fetchAll() in the concrete classes and simply
          * use:
          *  $className = get_called_class();
          */
-        $table  = $className::$table;
-        $db     = Connexions::getDb();
+        if ($db === null)
+            $db = Connexions::getDb();
+
         $select = $db->select()
-                     ->from($table);
+                     ->from($className::$table);
         if (! @empty($where))
             $select->where($where);
 
@@ -933,7 +938,7 @@ abstract class Connexions_Model
     public static function fetchAll($className, $where = null, $asArray = false)
     {
         $select = self::select($className, $where);
-        $stmt   = $select->query();   //$db->query($select);
+        $stmt   = $select->query();
         $recs   = $stmt->fetchAll();
 
         if ($asArray === true)

@@ -43,54 +43,85 @@ class Model_UserItem extends Connexions_Model
      *
      *  Note: 'id' may include the following special fields:
      *      '@fetch' => array containing 'user', 'item', and/or 'tags' to
-     *                 indicate which sub-items should NOT be filled
-     *                 immediately.
+     *                  indicate which sub-items should be filled immediately;
+     *      'item_*' => item sub-instance initialization fields;
+     *      'user_*' => user sub-instance initialization fields.
      */
     public function __construct($id, $db = null)
     {
-        if (@isset($id['@fetch']))
+        $fetch = null;
+        if (@is_array($id))
         {
-            $fetch = $id['@fetch'];
-            unset($id['@fetch']);
-        }
-        else
-        {
-            $fetch = array();
+            /* Note: Use '(unset) var;' vs 'unset(var);' to eliminate
+             *          'Fatal error: Cannot unset string offsets'
+             */
+            if (@isset($id['@fetch']))
+            {
+                $fetch = $id['@fetch'];
+                (unset) $id['@fetch'];
+            }
+
+            /* Pull out item-related fields ('item_')
+             *      and user-related fields ('user_')
+             *
+             * for initialization of the sub-instances.
+             */
+            $item = array();
+            $user = array();
+            foreach ($id as $key => $val)
+            {
+                $info  = explode('_', $key);
+                $unset = true;
+                switch ($info[0])
+                {
+                case 'item':    $item[$info[1]] = $val;   break;
+                case 'user':    $user[$info[1]] = $val;   break;
+                default:
+                    // Skip this field.
+                    $unset = false;
+                    break;
+                }
+
+                if ($unset)
+                    (unset) $id[$key];
+            }
+
+            if (! empty($item))
+            {
+                if (@isset($id['@isBacked']))
+                    $item['@isBacked'] = true;
+                $this->_item = $item;
+            }
+
+            if (! empty($user))
+            {
+                if (@isset($id['@isBacked']))
+                    $user['@isBacked'] = true;
+                $this->_user = $user;
+            }
+
+            /*
+            echo "<pre>UserItem::__construct: initialization data:\n";
+            echo "-- id: "; print_r($id); echo "\n";
+            echo "-- item: "; print_r($this->_item); echo "\n";
+            echo "-- user: "; print_r($this->_user); echo "\n";
+            echo "</pre>\n";
+            */
         }
 
         parent::__construct($id, $db);
 
-        if (@in_array('user', $fetch) && @isset($this->_record['userId']))
+        if (@is_array($fetch))
         {
-            // Include the matching user.
-            $this->_user =
-                Model_User::find(array('userId' => $this->_record['userId']),
-                                 $db);
-        }
+            // Force an immediate fetch of the specified items.
+            if (@in_array('item', $fetch))
+                $this->_item();
 
-        if (@in_array('item', $fetch) && @isset($this->_record['itemId']))
-        {
-            // Locate the matching item.
-            $this->_item =
-                Model_Item::find(array('itemId' => $this->_record['itemId']),
-                                 $db);
-        }
+            if (@in_array('user', $fetch))
+                $this->_user();
 
-        if (@in_array('tags', $fetch))
-        {
-            if (@isset($this->_record['userId']) &&
-                @isset($this->_record['itemId']))
-            {
-                $this->_tags =
-                    Model_Tag::fetch(array($this->_record['userId']),
-                                     array($this->_record['itemId']));
-            }
-            else if (($this->_user !== null) && ($this->_item !== null))
-            {
-                $this->_tags =
-                    Model_Tag::fetch(array($this->_user->userId),
-                                     array($this->_item->itemId));
-            }
+            if (@in_array('tags', $fetch))
+                $this->_tags();
         }
     }
 
@@ -343,159 +374,6 @@ class Model_UserItem extends Connexions_Model
         return $str;
     }
 
-    /** @brief  Retrieve all records and return an array of instances.
-     *  @param  id      The record identifier.
-     *
-     *  @return A new instance (false if no matching user).
-     */
-    public static function find($id)
-    {
-        return parent::find(__CLASS__, $id);
-    }
-
-    /** @brief  Retrieve all records and return an array of instances.
-     *  @param  where   A string or associative array of restrictions.
-     *
-     *  @return An array of instances.
-     */
-    public static function fetchAll($where = null)
-    {
-        return parent::fetchAll(__CLASS__, $where);
-    }
-
-    /** @brief  Retrieve a set of userItems that match the given set of tag,
-     *          user, and/or item identifiers.
-     *  @param  tagIds      An array of tag identifiers.
-     *  @param  userIds     An array of user identifiers.
-     *  @param  itemIds     An array of item identifiers.
-     *  @param  asArray     Return as array records instead of instances?
-     *
-     *  @return An array of instances (or record arrays if 'asArray' == true).
-     */
-    public static function fetch($tagIds,
-                                 $userIds = null,
-                                 $itemIds = null,
-                                 $asArray = false)
-    {
-        $db   = Connexions::getDb();
-
-        /* :TODO: Determine the current, authenticated user
-         *        and the proper order.
-         */
-        $curUserId = 1;
-        $sortOrder = 'ui.taggedOn ASC';
-
-        // Include all fields from Item and User
-        if (! @is_array(self::$_foreignFields))
-        {
-            self::$_foreignFields = array();
-            foreach (Model_Item::$model as $field => $type)
-            {
-                array_push(self::$_foreignFields,
-                            'i.'. $field .' AS item_'. $field);
-            }
-            foreach (Model_User::$model as $field => $type)
-            {
-                array_push(self::$_foreignFields,
-                            'u.'. $field .' AS user_'. $field);
-            }
-        }
-
-
-        // Generate the SQL
-        $sql = 'SELECT ui.*,'
-             .          implode(',', self::$_foreignFields)
-             .  ' FROM item i,user u,userItem ui'
-             .          (! @empty($tagIds) ? ',userTagItem uti' : '')
-             .  ' WHERE (i.itemId=ui.itemId)'
-             .    ' AND (u.userId=ui.userId)'
-
-                        // Tag restrictions
-             .          (! @empty($tagIds)
-                            ?  ' AND (i.itemId=uti.itemId)'
-                              .' AND (u.userId=uti.userId)'
-                              .' AND (uti.tagId IN ('.
-                                                implode(',',$tagIds).'))'
-                             : '')
-
-                        // User restrictions
-             .          (! @empty($userIds)
-                             ? ' AND (u.userId IN ('.
-                                                implode(',',$userIds).'))'
-                             : '')
-
-                        // Item restrictions
-             .          (! @empty($itemIds)
-                             ? ' AND (i.itemId IN ('.
-                                                implode(',',$itemIds).'))'
-                             : '')
-
-                        // Public item OR owned by the current user
-             .   ' AND ((ui.isPrivate=false) OR (ui.userId='. $curUserId .'))'
-
-                        // Require ALL tags for an item to be selected
-             .          (! @empty($tagIds)
-                            ? ' GROUP BY uti.userId,uti.itemId'.
-                              ' HAVING (COUNT(DISTINCT uti.tagId)='.
-                                                        count($tagIds) .')'
-                             : '')
-
-             .  ' ORDER BY '. $sortOrder ;
-
-        // Retrieve all records
-        $recs = $db->fetchAll($sql);
-
-        if ($asArray === true)
-        {
-            $set =& $recs;
-        }
-        else
-        {
-            // Create instances for each retrieved record
-            $set     = array();
-            $itemMap = array();
-            $userMap = array();
-            foreach ($recs as $row)
-            {
-                /* Pull out item-related fields ('item_')
-                 *      and user-related fields ('user_')
-                 *
-                 * for initialization of the sub-instances.
-                 */
-                $item = array('@isBacked'=>true);
-                $user = array('@isBacked'=>true);
-                foreach ($row as $key => $val)
-                {
-                    $id = explode('_', $key);
-                    if (count($id) < 2)
-                        continue;
-
-                    switch ($id[0])
-                    {
-                    case 'item':    $item[$id[1]] = $val;   break;
-                    case 'user':    $user[$id[1]] = $val;   break;
-                    default:
-                        throw (new Exception('Invalid sub-field ['. $key .']'));
-                    }
-                    unset($row[$key]);
-                }
-
-                // Create an new instance using backed record data.
-                $row['@isBacked'] = true;
-                //$row['@fetch']    = array('user','item','tags');
-                $inst = self::find($row, $db);  //new self($row, $db);
-
-                // Remember the item and user information we retrieved.
-                $inst->_item = $item;
-                $inst->_user = $user;
-
-                array_push($set, $inst);
-            }
-        }
-
-        return $set;
-    }
-
     /*************************************************************************
      * Protected helpers
      *
@@ -577,4 +455,276 @@ class Model_UserItem extends Connexions_Model
         return $this->_tags;
     }
 
+    /*************************************************************************
+     * Static methods
+     *
+     */
+
+    /** @brief  Locate the identified record.
+     *  @param  id          The record identifier.
+     *  @param  db          An optional database instance (Zend_Db_Abstract).
+     *
+     *  @return A new instance (check isBacked(), isValid(), getError()).
+     */
+    public static function find($id, $db = null)
+    {
+        return parent::find(__CLASS__, $id, $db);
+    }
+
+    /** @brief  Retrieve all records and return an array of instances.
+     *  @param  where   A string or associative array of restrictions.
+     *
+     *  @return An array of instances.
+     */
+    public static function fetchAll($where = null)
+    {
+        return parent::fetchAll(__CLASS__, $where);
+    }
+
+    /** @brief  Construct a Zend_Db_Select instance representing all userItems
+     *          that match the given set of tag, user, and/or item identifiers.
+     *  @param  tagIds      An array of tag identifiers.
+     *  @param  userIds     An array of user identifiers.
+     *  @param  itemIds     An array of item identifiers.
+     *
+     *  @return A Zend_Db_Select instance representing all userItems
+     *          that match the given set of tag, user, and/or item identifiers.
+     */
+    public static function select($tagIds   = null,
+                                  $userIds  = null,
+                                  $itemIds  = null)
+    {
+        /* :TODO: Determine the current, authenticated user
+         *        and the proper order.
+         */
+        try {
+            $curUserId = Zend_Registry::get('user')->userId;
+
+        } catch (Exception $e) {
+            // Treat the current user as Unauthenticated.
+            $curUserId = null;
+        }
+
+        try {
+            $order = Zend_Registry::get('orderBy').
+                     Zend_Registry::get('orderDir');
+
+        } catch (Exception $e) {
+            // Treat the current user as Unauthenticated.
+            $order = 'ui.taggedOn ASC';
+        }
+
+        if ( (! @empty($tagIds)) && (! @is_array($tagIds)) )
+            $tagIds = array($tagIds);
+        if ( (! @empty($userIds)) && (! @is_array($userIds)) )
+            $userIds = array($userIds);
+        if ( (! @empty($itemIds)) && (! @is_array($itemIds)) )
+            $itemIds = array($itemIds);
+
+        // Include all columns/fields from Item and User, prefixed.
+        $itemColumns = array();
+        foreach (Model_Item::$model as $field => $type)
+        {
+            $itemColumns['item_'.$field] = 'i.'.$field;
+        }
+        $userColumns = array();
+        foreach (Model_User::$model as $field => $type)
+        {
+            $userColumns['user_'.$field] = 'u.'.$field;
+        }
+
+        $db      = Connexions::getDb();
+
+        $select = $db->select()
+                     ->from(array('ui' => self::$table))
+                     ->join(array('i'  => 'item'),      // table / as
+                            '(i.itemId=ui.itemId)',     // condition
+                            $itemColumns)               // columns
+                     ->join(array('u'  => 'user'),      // table / as
+                            '(u.userId=ui.userId)',     // condition
+                            $userColumns)               // columns
+                     ->where('((ui.isPrivate=false) '.
+                                 ($curUserId !== null
+                                    ? 'OR (ui.userId='.$curUserId.')'
+                                    : '') . ')')
+                     ->order($order);
+
+        /* Include a special custom property in the Zend_Db_Select instance
+         * to help later determine whether or not getItemSelect() will return
+         * anything other than ALL items.
+         */
+        $select->_nonTrivial = false;
+        $select->_tagIds     =& $tagIds;
+        $select->_userIds    =& $userIds;
+        $select->_itemIds    =& $itemIds;
+
+        if (! @empty($tagIds))
+        {
+            // Tag Restrictions -- required 'userTagItem'
+            $select->join(array('uti'   => 'userTagItem'),  // table / as
+                          '(i.itemId=uti.itemId) AND '.
+                          '(u.userId=uti.userId)',          // condition
+                          '')                               // columns (none)
+                   ->where('uti.tagId IN (?)', $tagIds)
+                   ->group(array('uti.userId', 'uti.itemId'))
+                   ->having('COUNT(DISTINCT uti.tagId)='.count($tagIds));
+            $select->_nonTrivial = true;
+        }
+
+        if (! @empty($userIds))
+        {
+            // User Restrictions
+            $select->where('u.userId IN (?)', $userIds);
+            $select->_nonTrivial = true;
+        }
+
+        if (! @empty($itemIds))
+        {
+            // Item Restrictions
+            $select->where('i.itemId IN (?)', $itemIds);
+            $select->_nonTrivial = true;
+        }
+
+        /*
+        printf ("Model_UserItem::select: [ %s ], _nonTrivial %s<br />\n",
+                $select->assemble(),
+                ($select->_nonTrivial ? 'true' : 'false'));
+        // */
+
+        return $select;
+    }
+
+    /** @brief  Given a Zend_Db_Select instance from User_Item::select() (or an
+     *          array of tagIds and/or array of userIds) to retrieve a desired
+     *          set of userItems, generate a new Zend_Db_Select instance to
+     *          retrieve the item identifiers of the matched userItems.
+     *  @param  tagIds      A Zend_Db_Select instance OR array of tag
+     *                      identifiers.
+     *  @param  userIds     Iff 'tagIds' is an array, this may be an array of
+     *                      user identifiers.
+     *  @param  itemIds     Iff 'tagIds' is an array, this may be an array of
+     *                      item identifiers (i.e. limits what MAY be selected).
+     *
+     *  @return A Zend_Db_Select instance capable of retrieving the item
+     *          identifiers of all matched userItems.
+     */
+    public static function getItemSelect($tagIds   = null,
+                                         $userIds  = null,
+                                         $itemIds  = null)
+    {
+        if ($tagIds instanceof Zend_Db_Select)
+        {
+            $select = clone $tagIds;
+        }
+        else
+        {
+            $select = self::select($tagIds, $userIds, $itemIds);
+        }
+
+        $select->reset(Zend_Db_Select::COLUMNS)
+               ->reset(Zend_Db_Select::ORDER)
+               ->columns('ui.itemId')
+               ->distinct();
+
+        /*
+        printf ("Model_UserItem::getItemSelect: [ %s ], _nonTrivial %s<br />\n",
+                $select->assemble(),
+                ($select->_nonTrivial ? 'true' : 'false'));
+        // */
+
+        return $select;
+    }
+
+    /** @brief  Given a Zend_Db_Select instance from User_Item::select() (or an
+     *          array of tagIds and/or array of userIds) to retrieve a desired
+     *          set of userItems, retrieve the item identifiers.
+     *  @param  tagIds      A Zend_Db_Select instance OR array of tag
+     *                      identifiers.
+     *  @param  userIds     Iff 'tagIds' is an array, this may be an array of
+     *                      user identifiers.
+     *  @param  itemIds     Iff 'tagIds' is an array, this may be an array of
+     *                      item identifiers (i.e. limits what MAY be selected).
+     *
+     *  @return An array of item identifiers.
+     */
+    public static function itemIds($tagIds   = null,
+                                   $userIds  = null,
+                                   $itemIds  = null)
+    {
+        $select = self::getItemSelect($tagIds, $userIds, $itemIds);
+        if ($select->_nonTrivial !== true)
+            return array();
+
+        $stmt   = $select->query(); //Zend_Db::FETCH_NUM);
+        $recs   = $stmt->fetchAll();
+
+        // Convert the returned array of records to a simple array of ids
+        $ids    = array();
+        foreach ($recs as $idex => $row)
+        {
+            $ids[] = $row['itemId']; // $row[0];
+        }
+
+        return $ids;
+    }
+
+    /** @brief  Construct a Zend_Paginator for all userItems that match the
+     *          given set of tag, user, and/or item identifiers.
+     *  @param  tagIds      An array of tag identifiers.
+     *  @param  userIds     An array of user identifiers.
+     *  @param  itemIds     An array of item identifiers.
+     *
+     *  @return A Zend_Paginator
+     */
+    public static function paginator($tagIds    = null,
+                                     $userIds   = null,
+                                     $itemIds   = null)
+    {
+        $select  = self::select($tagIds, $userIds, $itemIds);
+        $adapter = new Zend_Paginator_Adapter_DbSelect( $select );
+
+        return new Zend_Paginator($adapter);
+    }
+
+    /** @brief  Retrieve a set of userItems that match the given set of tag,
+     *          user, and/or item identifiers.
+     *  @param  tagIds      An array of tag identifiers.
+     *  @param  userIds     An array of user identifiers.
+     *  @param  itemIds     An array of item identifiers.
+     *  @param  asArray     Return as array records instead of instances?
+     *
+     *  @return An array of instances (or record arrays if 'asArray' == true).
+     */
+    public static function fetch($tagIds,
+                                 $userIds = null,
+                                 $itemIds = null,
+                                 $asArray = false)
+    {
+        $select = self::select($tagIds, $userIds, $itemIds);
+        $stmt   = $select->query();
+        $recs   = $stmt->fetchAll();
+
+        if ($asArray === true)
+        {
+            $set =& $recs;
+        }
+        else
+        {
+            // Create instances for each retrieved record
+            $set     = array();
+            foreach ($recs as $row)
+            {
+                /* Create an new instance using backed record data.
+                 *  Note: Use self::find() instead of new self() to
+                 *        allow for instance caching.
+                 */
+                $row['@isBacked'] = true;
+                $inst             = self::find($row, $db);
+
+                array_push($set, $inst);
+            }
+        }
+
+        return $set;
+    }
 }
