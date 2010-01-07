@@ -13,8 +13,10 @@ class IndexController extends Zend_Controller_Action
         $viewer =& Zend_Registry::get('user');
 
         $request = $this->getRequest();
-        $owner   = $request->getParam('owner', null);
-        $tags    = $request->getParam('tags',  null);
+        $owner   = $request->getParam('owner',   null);
+        $tags    = $request->getParam('tags',    null);
+        $page    = $request->getParam('page',    null);
+        $perPage = $request->getParam('perPage', null);
 
         if ($owner === 'mine')
         {
@@ -28,6 +30,7 @@ class IndexController extends Zend_Controller_Action
             }
         }
 
+        $userIds = null;
         if (! $owner instanceof Model_User)
         {
             if (@empty($owner))
@@ -35,18 +38,46 @@ class IndexController extends Zend_Controller_Action
             else
             {
                 // Is this a valid user?
-                $owner = new Model_User($owner);
+                $owner = Model_User::find(array('name' => $owner));
 
-                if (! $owner->isBacked())
+                if ($owner->isBacked())
+                {
+                    $userIds = array($owner->userId);
+                }
+                else
                 {
                     $this->view->error = 'Unknown user.';
                 }
             }
         }
 
-        $this->view->owner  = $owner;
-        $this->view->viewer = $viewer;
-        $this->view->tags   = $tags;
+        $tagIds    = (! @empty($tags)
+                        ? Model_Tag::ids($tags)
+                        : array());
+        $select    = Model_UserItem::select($tagIds, $userIds);
+
+        $paginator = new Zend_Paginator(
+                            new Zend_Paginator_Adapter_DbSelect( $select ));
+
+        /*
+        $itemIds   = Model_UserItem::itemIds( $select );
+        $tagWisdom = Model_Tag::fetch( $userIds, $itemIds );
+        */
+
+        if ($page > 0)
+            $paginator->setCurrentPageNumber($page);
+        if ($perPage > 0)
+            $paginator->setItemCountPerPage($perPage);
+
+        $this->view->tagIds    = $tagIds;
+        $this->view->userIds   = $userIds;
+        $this->view->select    = $select;
+
+        $this->view->paginator = $paginator;
+
+        $this->view->owner     = $owner;
+        $this->view->viewer    = $viewer;
+        $this->view->tags      = $tags;
     }
 
     /** @brief Redirect all other actions to 'index'

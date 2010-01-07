@@ -1,6 +1,12 @@
 <?php
 require_once('./bootstrap.php');
 
+$select = Model_UserItem::select(null,  // tagIds
+                                 1,     // userIds
+                                 1);    // itemIds
+printf ("Select sql (userId=1, itemId=1):<blockquote>%s</blockquote>",
+        $select->assemble());
+
 $time_start = microtime(true);
 $mem_start  = memory_get_usage();
 $mem_first  = $mem_start;
@@ -46,6 +52,12 @@ echo "</pre><hr />";
 
 $tagIds  = array(5);    //array(1,2,5);
 $userIds = array(1,2,441);
+
+$select = Model_UserItem::select($tagIds, $userIds);
+printf ("Select sql tags(%s), users(%s):<blockquote>%s</blockquote>",
+        (@is_array($tagIds)  ? implode(', ', $tagIds)  : $tagIds),
+        (@is_array($userIds) ? implode(', ', $userIds) : $userIds),
+        $select->assemble());
 
 $time_start = microtime(true);
 $mem_start  = memory_get_usage();

@@ -1,0 +1,60 @@
+<?php
+/** @file
+ *
+ *  Render this user item page with pagination controls.
+ *
+ *  $this == special View Object with:
+ *      pageCount
+ *      itemCountPerPage
+ *      first
+ *      current
+ *      last
+ *      next
+ *      pagesInRange [ 1:1, 2:2, 3:3 ]
+ *      firstPageInRange
+ *      lastPageInRange
+ *      currentItemCount
+ *      totalItemCount
+ *      firstItemNumber
+ *      lastItemNumber
+ */
+
+if ($this->pageCount < 1)
+    return;
+
+echo "<div class='pagination'>\n";
+printf ("%d items per page, %d items, %d pages, page %d, items %d-%d<br />\n",
+        $this->itemCountPerPage,
+        $this->totalItemCount,
+        $this->pageCount,
+        $this->current,
+        $this->firstItemNumber,
+        $this->lastItemNumber);
+
+
+if (@isset($this->previous))
+    printf ("<a href='?page=%s'>&lt; Previous</a> ", $page);
+            //$this->url(array('page' => $this->previous)) );
+
+foreach ($this->pagesInRange as $page)
+{
+    if ($page == $this->current)
+        printf ("%s ", $page);
+    else
+        printf ("<a href='?page=%s'>%s</a> ", $page, $page);
+                //$this->url(array('page' => $page)), $page);
+}
+
+if (@isset($this->next))
+    printf ("<a href='?page=%s'>Next &gt;</a>", $page);
+            //$this->url(array('page' => $this->next)) );
+
+echo "</div>";
+
+/*
+echo "<pre>this:\n";
+print_r($this);
+echo "</pre>\n";
+// */
+
+?>
