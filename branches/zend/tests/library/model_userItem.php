@@ -1,12 +1,6 @@
 <?php
 require_once('./bootstrap.php');
 
-$select = Model_UserItem::select(null,  // tagIds
-                                 1,     // userIds
-                                 1);    // itemIds
-printf ("Select sql (userId=1, itemId=1):<blockquote>%s</blockquote>",
-        $select->assemble());
-
 $time_start = microtime(true);
 $mem_start  = memory_get_usage();
 $mem_first  = $mem_start;
@@ -47,18 +41,55 @@ printf ("user->name:   %s\n", $rec->user->name);
 printf ("item->url:    %s\n", $rec->item->url);
 printf ("tags[0]->tag: %s\n", $rec->tags[0]->tag);
 
+$mem_end    = memory_get_usage();
+$time_end   = microtime(true);
+printf ("-- Retrieval + Access: %f seconds, %s bytes:\n",
+            $time_end - $time_start,
+            number_format($mem_end  - $mem_start));
+
 unset($rec);
 echo "</pre><hr />";
 
 $tagIds  = array(5);    //array(1,2,5);
 $userIds = array(1,2,441);
+$itemIds = array();
 
-$select = Model_UserItem::select($tagIds, $userIds);
-printf ("Select sql tags(%s), users(%s):<blockquote>%s</blockquote>",
-        (@is_array($tagIds)  ? implode(', ', $tagIds)  : $tagIds),
-        (@is_array($userIds) ? implode(', ', $userIds) : $userIds),
-        $select->assemble());
+$time_start = microtime(true);
+$mem_start  = memory_get_usage();
+$recs       = new Model_UserItemSet($tagIds, $userIds, $itemIds);
+$mem_end    = memory_get_usage();
+$time_end   = microtime(true);
 
+printf ("<pre>%d Set Record(s) from users (%s) with tags (%s), %f seconds, %s bytes:\n",
+            $recs->count(),
+            implode(', ', $userIds),
+            implode(', ', $tagIds),
+            $time_end - $time_start,
+            number_format($mem_end  - $mem_start));
+foreach ($recs as $idex => $rec)
+{
+    printf ("Record %d, ", $idex);
+    if ($rec instanceof Connexions_Model)
+    {
+        echo " Instance: ", $rec->debugDump();
+    }
+    else
+    {
+        echo " Array: ";
+        print_r($rec);
+    }
+    unset($rec);
+    echo "\n------------------------------------\n";
+}
+$mem_end    = memory_get_usage();
+$time_end   = microtime(true);
+printf ("-- Retrieval + Iteration: %f seconds, %s bytes:\n",
+            $time_end - $time_start,
+            number_format($mem_end  - $mem_start));
+unset($recs);
+echo "</pre><hr />";
+
+/*
 $time_start = microtime(true);
 $mem_start  = memory_get_usage();
 $recs       = Model_UserItem::fetch($tagIds,          // tagIds
@@ -86,12 +117,59 @@ foreach ($recs as $idex => $rec)
         echo " Array: ";
         print_r($rec);
     }
+    unset($rec);
     echo "\n------------------------------------\n";
 }
+
+$mem_end    = memory_get_usage();
+$time_end   = microtime(true);
+printf ("-- Retrieval + Iteration: %f seconds, %s bytes:\n",
+            $time_end - $time_start,
+            number_format($mem_end  - $mem_start));
+
 unset($recs);
+// */
+
 echo "</pre><hr />";
 
 
+/*
+$select = Model_UserItem::select();
+printf ("Select sql:<blockquote>%s</blockquote>",
+        $select->assemble());
+
+$time_start = microtime(true);
+$mem_start  = memory_get_usage();
+$recs       = new Connexions_Set($select);
+$mem_end    = memory_get_usage();
+$time_end   = microtime(true);
+
+printf ("<pre>All %d Records retrieved, %f seconds, %s bytes:\n",
+        $recs->count(),
+        $time_end - $time_start,
+        number_format($mem_end  - $mem_start));
+
+set_time_limit(0);
+foreach ($recs as $idex => $rec)
+{
+    printf ("%d: %s\n", $idex, $rec->debugDump(true));
+    unset($rec);
+
+    $mem_end    = memory_get_usage();
+    printf ("-- %s bytes:\n", number_format($mem_end  - $mem_start));
+}
+
+$mem_end    = memory_get_usage();
+$time_end   = microtime(true);
+printf ("-- Retrieval + Iteration: %f seconds, %s bytes:\n",
+            $time_end - $time_start,
+            number_format($mem_end  - $mem_start));
+
+unset($recs);
+echo "</pre><hr />";
+// */
+
+/*
 $time_start = microtime(true);
 $mem_start  = memory_get_usage();
 $recs       = Model_UserItem::fetchAll(); //array('userId' => 1));
@@ -105,8 +183,18 @@ printf ("<pre>All %d Records retrieved, %f seconds, %s bytes:\n",
 foreach ($recs as $idex => $rec)
 {
     printf ("%d: %s\n", $idex, $rec->debugDump(true));
+    unset($rec);
 }
+
+$mem_end    = memory_get_usage();
+$time_end   = microtime(true);
+printf ("-- Retrieval + Iteration: %f seconds, %s bytes:\n",
+            $time_end - $time_start,
+            number_format($mem_end  - $mem_start));
+
+unset($recs);
 echo "</pre><hr />";
+// */
 
 $mem_last = $mem_end;
 

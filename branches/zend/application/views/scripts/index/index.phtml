@@ -16,23 +16,22 @@ else
 </p>
 
 <?php
-if ( false &&
-     (! @isset($this->tagWisdom)) &&
-        @isset($this->select) )
+if ( false && @isset($this->userItems) )
 {
     /* Make use of the userItem select instance to retrieve the tags for these
      * userItems (specifically, for the unique items and unique users
      *            represented by these userItems).
      */
-    $itemIds = Model_UserItem::itemIds( $this->select );
-    $tags    = Model_Tag::fetch( $this->select->_userIds, $itemIds );
+    $tagWisdom = new Model_TagSet( $this->userItems->userIds(),
+                                   $this->userItems->itemIds() );
 
     /* Render the tag cloud in the right column -- This should probably be via
      * a view partial like:
      *      view/scripts/tagCloud.phtml
      */
-    $html  = '';
-    foreach ($tags as $tag)
+    $html  = sprintf ("%d tags in the tag wisdom set<br />\n",
+                       $tagWisdom->count());
+    foreach ($tagWisdom as $tag)
     {
         $html .= sprintf("%6d: %15s: %4d / %4d / %4d<br />\n",
                         $tag->tagId, $tag->tag,
@@ -54,13 +53,13 @@ if (count($this->paginator))
 {
     // Present the items of the current page
     echo "<div style='width:50%;overflow:hidden;'>\n";
-    foreach ($this->paginator as $idex => $item)
+    foreach ($this->paginator as $idex => $userItem)
     {
         /* Present the current item -- This should probably be via a view
          * partial like:
          *      view/scripts/userItem.phtml
          */
-        $userItem = new Model_UserItem($item);
+        //$userItem = new Model_UserItem($item);
         printf ("Item %d: <pre style='padding:0 3em;'> %s </pre>\n",
                 $idex, $userItem->debugDump());
     }

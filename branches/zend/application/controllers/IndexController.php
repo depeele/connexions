@@ -54,24 +54,16 @@ class IndexController extends Zend_Controller_Action
         $tagIds    = (! @empty($tags)
                         ? Model_Tag::ids($tags)
                         : array());
-        $select    = Model_UserItem::select($tagIds, $userIds);
+        $userItems = new Model_UserItemSet($tagIds, $userIds);
 
-        $paginator = new Zend_Paginator(
-                            new Zend_Paginator_Adapter_DbSelect( $select ));
-
-        /*
-        $itemIds   = Model_UserItem::itemIds( $select );
-        $tagWisdom = Model_Tag::fetch( $userIds, $itemIds );
-        */
+        $paginator = new Zend_Paginator( $userItems );
 
         if ($page > 0)
             $paginator->setCurrentPageNumber($page);
         if ($perPage > 0)
             $paginator->setItemCountPerPage($perPage);
 
-        $this->view->tagIds    = $tagIds;
-        $this->view->userIds   = $userIds;
-        $this->view->select    = $select;
+        $this->view->userItems = $userItems;
 
         $this->view->paginator = $paginator;
 
