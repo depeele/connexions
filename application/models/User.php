@@ -106,6 +106,11 @@ class Model_User extends Connexions_Model_Cached
         return false;
     }
 
+    /*************************************************************************
+     * Connexions_Model - abstract static method implementations
+     *
+     */
+
     /** @brief  Retrieve all records and return an array of instances.
      *  @param  id      The record identifier.
      *
@@ -114,16 +119,6 @@ class Model_User extends Connexions_Model_Cached
     public static function find($id)
     {
         return parent::find(__CLASS__, $id);
-    }
-
-    /** @brief  Retrieve all records and return an array of instances.
-     *  @param  where   A string or associative array of restrictions.
-     *
-     *  @return An array of instances.
-     */
-    public static function fetchAll($where = null)
-    {
-        return parent::fetchAll(__CLASS__, $where);
     }
 
     /*************************************************************************
@@ -143,10 +138,4 @@ class Model_User extends Connexions_Model_Cached
                                     ?  $id['userId']
                                     : 'generic');
     }
-
-    /*************************************************************************
-     * Protected helpers
-     *
-     */
-
 }

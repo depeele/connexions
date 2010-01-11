@@ -927,38 +927,4 @@ abstract class Connexions_Model
 
         return $select;
     }
-
-    /** @brief  Retrieve all records and return an array of instances.
-     *  @param  className   The name of the concrete sub-class.
-     *  @param  where       A string or associative array of restrictions.
-     *  @param  asArray     Return as array records instead of instances?
-     *
-     *  @return An array of instances (or record arrays if 'asArray' == true).
-     */
-    public static function fetchAll($className, $where = null, $asArray = false)
-    {
-        $select = self::select($className, $where);
-        $stmt   = $select->query();
-        $recs   = $stmt->fetchAll();
-
-        if ($asArray === true)
-        {
-            $set =& $recs;
-        }
-        else
-        {
-            // Create instances for each retrieved record
-            $set = array();
-            foreach ($recs as $row)
-            {
-                // Create an instance using this backed database record
-                $row['@isBacked'] = true;
-                $inst = $className::find($row, $db);
-
-                array_push($set, $inst);
-            }
-        }
-
-        return $set;
-    }
 }

@@ -58,7 +58,11 @@ class Model_UserItem extends Connexions_Model
             if (@isset($id['@fetch']))
             {
                 $fetch = $id['@fetch'];
-                (unset) $id['@fetch'];
+
+                try{
+                    (unset) $id['@fetch'];
+                    unset($id['@fetch']);
+                } catch(Exception $e) {}
             }
 
             /* Pull out item-related fields ('item_')
@@ -83,7 +87,12 @@ class Model_UserItem extends Connexions_Model
                 }
 
                 if ($unset)
-                    (unset) $id[$key];
+                {
+                    try{
+                        (unset) $id[$key];
+                        unset($id[$key]);
+                    } catch(Exception $e) {}
+                }
             }
 
             if (! empty($item))
@@ -106,7 +115,7 @@ class Model_UserItem extends Connexions_Model
             echo "-- item: "; print_r($this->_item); echo "\n";
             echo "-- user: "; print_r($this->_user); echo "\n";
             echo "</pre>\n";
-            */
+            // */
         }
 
         parent::__construct($id, $db);
@@ -158,64 +167,6 @@ class Model_UserItem extends Connexions_Model
         default:        $res =  parent::__get($name);   break;
         }
 
-        /*
-        $res = null;
-        if (preg_match('/^(user|item|tags)(?:_(.*?))?$/', $name, $matches))
-        {
-            $type  = $matches[1];
-            $field = $matches[2];
-
-            switch ($type)
-            {
-            case 'user':
-                // Just 'user' with no field name returns the user instance
-                $res =& $this->_user();
-                if ( (! @empty($field)) && ($res instanceof Connexions_Model))
-                    $res = $res->__get($field);
-                break;
-
-            case 'item':
-                // Just 'item' with no field name returns the item instance
-                $res =& $this->_item();
-                if ( (! @empty($field)) && ($res instanceof Connexions_Model))
-                    $res = $res->__get($field);
-                break;
-
-            case 'tags':
-                // Just 'tags' with no field name returns the tags array.
-                $res =& $this->_tags();
-
-                // The 'tags' "field" is an index followed by an optional
-                // field name.
-                if ( @is_array($res) &&
-                     preg_match('/^([0-9]+)(?:_(.*?))?$/', $field, $subMatches))
-                {
-                    $index = $subMatches[1];
-                    $field = $subMatches[2];
-
-                    if (@isset($res[$index]))
-                    {
-                        // Just an index will return the tag instance.
-                        $res = $res[$index];
-
-                        if ( ($res instanceof Connexions_Model) &&
-                             (! @empty($field)) )
-                        {
-                            // Index with a field name will return the field
-                            // value for the indexed tag
-                            $res = $res->__get($field);
-                        }
-                    }
-                }
-                break;
-            }
-        }
-        else
-        {
-            $res = parent::__get($name);
-        }
-        */
-
         return $res;
     }
 
@@ -240,60 +191,6 @@ class Model_UserItem extends Connexions_Model
             $res =  parent::__set($name, $value);
             break;
         }
-
-        /*
-        if (preg_match('/^(user|item|tags)(?:_(.*?))?$/', $name, $matches))
-        {
-            $type  = $matches[1];
-            $field = $matches[2];
-
-            switch ($type)
-            {
-            case 'user':
-                $user =& $this->_user();
-                if ( (! @empty($field)) && ($user instanceof Connexions_Model))
-                    $res = $user->__set($field, $value);
-                break;
-
-            case 'item':
-                $item =& $this->_item();
-                if ( (! @empty($field)) && ($item instanceof Connexions_Model))
-                    $res = $item->__set($field, $value);
-                break;
-
-            case 'tags':
-                // Just 'tags' with no field name returns the tags array.
-                $tags =& $this->_tags();
-
-                // The 'tags' "field" is an index followed by an optional
-                // field name.
-                if ( @is_array($tags) &&
-                     preg_match('/^([0-9]+)(?:_(.*?))?$/', $field, $subMatches))
-                {
-                    $index = $subMatches[1];
-                    $field = $subMatches[2];
-
-                    if (@isset($tags[$index]))
-                    {
-                        $tag = $tags[$index];
-
-                        if ( ($tag instanceof Connexions_Model) &&
-                             (! @empty($field)) )
-                        {
-                            // Index with a field name will return the field
-                            // value for the indexed tag
-                            $res = $tag->__set($field, $value);
-                        }
-                    }
-                }
-                break;
-            }
-        }
-        else
-        {
-            $res = parent::__set($name, $value);
-        }
-        */
 
         return $res;
     }
@@ -348,7 +245,7 @@ class Model_UserItem extends Connexions_Model
         $itemStr = preg_replace('/^/ms', '   ', substr($itemStr, 0, -1));
 
         $tagStr  = "[\n    ";
-        if (@is_array($tags))
+        if ($tags->count() > 0)
         {
             $tagStrs = array();
             foreach ($tags as $tag)
@@ -356,7 +253,11 @@ class Model_UserItem extends Connexions_Model
                 if ($tag instanceof Connexions_Model)
                 {
                     array_push($tagStrs,
-                               sprintf("%6d: %s", $tag->tagId, $tag->tag));
+                               sprintf("%6d: %15s", //: %4d / %4d / %4d",
+                                       $tag->tagId, $tag->tag   /*,
+                                       $tag->userItemCount,
+                                       $tag->itemCount,
+                                       $tag->userCount*/));
                 }
             }
             $tagStr .= implode(",\n    ", $tagStrs);
@@ -447,7 +348,7 @@ class Model_UserItem extends Connexions_Model
                 @isset($this->_record['itemId']))
             {
                 $this->_tags =
-                    Model_Tag::fetch(array($this->_record['userId']),
+                    new Model_TagSet(array($this->_record['userId']),
                                      array($this->_record['itemId']));
             }
         }
@@ -456,7 +357,7 @@ class Model_UserItem extends Connexions_Model
     }
 
     /*************************************************************************
-     * Static methods
+     * Connexions_Model - abstract static method implementations
      *
      */
 
@@ -469,262 +370,5 @@ class Model_UserItem extends Connexions_Model
     public static function find($id, $db = null)
     {
         return parent::find(__CLASS__, $id, $db);
-    }
-
-    /** @brief  Retrieve all records and return an array of instances.
-     *  @param  where   A string or associative array of restrictions.
-     *
-     *  @return An array of instances.
-     */
-    public static function fetchAll($where = null)
-    {
-        return parent::fetchAll(__CLASS__, $where);
-    }
-
-    /** @brief  Construct a Zend_Db_Select instance representing all userItems
-     *          that match the given set of tag, user, and/or item identifiers.
-     *  @param  tagIds      An array of tag identifiers.
-     *  @param  userIds     An array of user identifiers.
-     *  @param  itemIds     An array of item identifiers.
-     *
-     *  @return A Zend_Db_Select instance representing all userItems
-     *          that match the given set of tag, user, and/or item identifiers.
-     */
-    public static function select($tagIds   = null,
-                                  $userIds  = null,
-                                  $itemIds  = null)
-    {
-        /* :TODO: Determine the current, authenticated user
-         *        and the proper order.
-         */
-        try {
-            $curUserId = Zend_Registry::get('user')->userId;
-
-        } catch (Exception $e) {
-            // Treat the current user as Unauthenticated.
-            $curUserId = null;
-        }
-
-        try {
-            $order = Zend_Registry::get('orderBy').
-                     Zend_Registry::get('orderDir');
-
-        } catch (Exception $e) {
-            // Treat the current user as Unauthenticated.
-            $order = 'ui.taggedOn ASC';
-        }
-
-        if ( (! @empty($tagIds)) && (! @is_array($tagIds)) )
-            $tagIds = array($tagIds);
-        if ( (! @empty($userIds)) && (! @is_array($userIds)) )
-            $userIds = array($userIds);
-        if ( (! @empty($itemIds)) && (! @is_array($itemIds)) )
-            $itemIds = array($itemIds);
-
-        // Include all columns/fields from Item and User, prefixed.
-        $itemColumns = array();
-        foreach (Model_Item::$model as $field => $type)
-        {
-            $itemColumns['item_'.$field] = 'i.'.$field;
-        }
-        $userColumns = array();
-        foreach (Model_User::$model as $field => $type)
-        {
-            $userColumns['user_'.$field] = 'u.'.$field;
-        }
-
-        $db      = Connexions::getDb();
-
-        $select = $db->select()
-                     ->from(array('ui' => self::$table))
-                     ->join(array('i'  => 'item'),      // table / as
-                            '(i.itemId=ui.itemId)',     // condition
-                            $itemColumns)               // columns
-                     ->join(array('u'  => 'user'),      // table / as
-                            '(u.userId=ui.userId)',     // condition
-                            $userColumns)               // columns
-                     ->where('((ui.isPrivate=false) '.
-                                 ($curUserId !== null
-                                    ? 'OR (ui.userId='.$curUserId.')'
-                                    : '') . ')')
-                     ->order($order);
-
-        /* Include a special custom property in the Zend_Db_Select instance
-         * to help later determine whether or not getItemSelect() will return
-         * anything other than ALL items.
-         */
-        $select->_nonTrivial = false;
-        $select->_tagIds     =& $tagIds;
-        $select->_userIds    =& $userIds;
-        $select->_itemIds    =& $itemIds;
-
-        if (! @empty($tagIds))
-        {
-            // Tag Restrictions -- required 'userTagItem'
-            $select->join(array('uti'   => 'userTagItem'),  // table / as
-                          '(i.itemId=uti.itemId) AND '.
-                          '(u.userId=uti.userId)',          // condition
-                          '')                               // columns (none)
-                   ->where('uti.tagId IN (?)', $tagIds)
-                   ->group(array('uti.userId', 'uti.itemId'))
-                   ->having('COUNT(DISTINCT uti.tagId)='.count($tagIds));
-            $select->_nonTrivial = true;
-        }
-
-        if (! @empty($userIds))
-        {
-            // User Restrictions
-            $select->where('u.userId IN (?)', $userIds);
-            $select->_nonTrivial = true;
-        }
-
-        if (! @empty($itemIds))
-        {
-            // Item Restrictions
-            $select->where('i.itemId IN (?)', $itemIds);
-            $select->_nonTrivial = true;
-        }
-
-        /*
-        printf ("Model_UserItem::select: [ %s ], _nonTrivial %s<br />\n",
-                $select->assemble(),
-                ($select->_nonTrivial ? 'true' : 'false'));
-        // */
-
-        return $select;
-    }
-
-    /** @brief  Given a Zend_Db_Select instance from User_Item::select() (or an
-     *          array of tagIds and/or array of userIds) to retrieve a desired
-     *          set of userItems, generate a new Zend_Db_Select instance to
-     *          retrieve the item identifiers of the matched userItems.
-     *  @param  tagIds      A Zend_Db_Select instance OR array of tag
-     *                      identifiers.
-     *  @param  userIds     Iff 'tagIds' is an array, this may be an array of
-     *                      user identifiers.
-     *  @param  itemIds     Iff 'tagIds' is an array, this may be an array of
-     *                      item identifiers (i.e. limits what MAY be selected).
-     *
-     *  @return A Zend_Db_Select instance capable of retrieving the item
-     *          identifiers of all matched userItems.
-     */
-    public static function getItemSelect($tagIds   = null,
-                                         $userIds  = null,
-                                         $itemIds  = null)
-    {
-        if ($tagIds instanceof Zend_Db_Select)
-        {
-            $select = clone $tagIds;
-        }
-        else
-        {
-            $select = self::select($tagIds, $userIds, $itemIds);
-        }
-
-        $select->reset(Zend_Db_Select::COLUMNS)
-               ->reset(Zend_Db_Select::ORDER)
-               ->columns('ui.itemId')
-               ->distinct();
-
-        /*
-        printf ("Model_UserItem::getItemSelect: [ %s ], _nonTrivial %s<br />\n",
-                $select->assemble(),
-                ($select->_nonTrivial ? 'true' : 'false'));
-        // */
-
-        return $select;
-    }
-
-    /** @brief  Given a Zend_Db_Select instance from User_Item::select() (or an
-     *          array of tagIds and/or array of userIds) to retrieve a desired
-     *          set of userItems, retrieve the item identifiers.
-     *  @param  tagIds      A Zend_Db_Select instance OR array of tag
-     *                      identifiers.
-     *  @param  userIds     Iff 'tagIds' is an array, this may be an array of
-     *                      user identifiers.
-     *  @param  itemIds     Iff 'tagIds' is an array, this may be an array of
-     *                      item identifiers (i.e. limits what MAY be selected).
-     *
-     *  @return An array of item identifiers.
-     */
-    public static function itemIds($tagIds   = null,
-                                   $userIds  = null,
-                                   $itemIds  = null)
-    {
-        $select = self::getItemSelect($tagIds, $userIds, $itemIds);
-        if ($select->_nonTrivial !== true)
-            return array();
-
-        $stmt   = $select->query(); //Zend_Db::FETCH_NUM);
-        $recs   = $stmt->fetchAll();
-
-        // Convert the returned array of records to a simple array of ids
-        $ids    = array();
-        foreach ($recs as $idex => $row)
-        {
-            $ids[] = $row['itemId']; // $row[0];
-        }
-
-        return $ids;
-    }
-
-    /** @brief  Construct a Zend_Paginator for all userItems that match the
-     *          given set of tag, user, and/or item identifiers.
-     *  @param  tagIds      An array of tag identifiers.
-     *  @param  userIds     An array of user identifiers.
-     *  @param  itemIds     An array of item identifiers.
-     *
-     *  @return A Zend_Paginator
-     */
-    public static function paginator($tagIds    = null,
-                                     $userIds   = null,
-                                     $itemIds   = null)
-    {
-        $select  = self::select($tagIds, $userIds, $itemIds);
-        $adapter = new Zend_Paginator_Adapter_DbSelect( $select );
-
-        return new Zend_Paginator($adapter);
-    }
-
-    /** @brief  Retrieve a set of userItems that match the given set of tag,
-     *          user, and/or item identifiers.
-     *  @param  tagIds      An array of tag identifiers.
-     *  @param  userIds     An array of user identifiers.
-     *  @param  itemIds     An array of item identifiers.
-     *  @param  asArray     Return as array records instead of instances?
-     *
-     *  @return An array of instances (or record arrays if 'asArray' == true).
-     */
-    public static function fetch($tagIds,
-                                 $userIds = null,
-                                 $itemIds = null,
-                                 $asArray = false)
-    {
-        $select = self::select($tagIds, $userIds, $itemIds);
-        $stmt   = $select->query();
-        $recs   = $stmt->fetchAll();
-
-        if ($asArray === true)
-        {
-            $set =& $recs;
-        }
-        else
-        {
-            // Create instances for each retrieved record
-            $set     = array();
-            foreach ($recs as $row)
-            {
-                /* Create an new instance using backed record data.
-                 *  Note: Use self::find() instead of new self() to
-                 *        allow for instance caching.
-                 */
-                $row['@isBacked'] = true;
-                $inst             = self::find($row, $db);
-
-                array_push($set, $inst);
-            }
-        }
-
-        return $set;
     }
 }
