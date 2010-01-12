@@ -6,6 +6,7 @@
  */
 
 class Model_Tag extends Connexions_Model_Cached
+                implements  Zend_Tag_Taggable
 {
     /*************************************************************************
      * Connexions_Model - static, identity members
@@ -17,6 +18,9 @@ class Model_Tag extends Connexions_Model_Cached
     public static   $model  = array('tagId' => 'auto',
                                     'tag'   => 'string'
     );
+
+    protected       $_params    = array();
+
     /*************************************************************************/
 
     /** @brief  Set a value in this record and mark it dirty.
@@ -45,6 +49,42 @@ class Model_Tag extends Connexions_Model_Cached
             return $this->_record['tag'];
 
         return parent::__toString();
+    }
+
+    /*************************************************************************
+     * Zend_Tag_Taggable Interface
+     *
+     */
+    public function getParam($name)
+    {
+        // weightValue, url
+        $val = (@isset($this->_params[$name])
+                    ? $this->_params[$name]
+                    : null);
+        if (($val === null) && ($name === 'url'))
+            $val = (String)($this->tag);
+
+        return $val;
+    }
+
+    public function getTitle()
+    {
+        $title = (String)($this->tag);
+
+        return $title;
+    }
+
+    public function getWeight()
+    {
+        $weight = (Float)($this->userItemCount);
+
+        return $weight;
+    }
+
+    public function setParam($name, $value)
+    {
+        // weightValue, url
+        $this->_params[$name] = $value;
     }
 
     /*************************************************************************

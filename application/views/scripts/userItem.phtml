@@ -1,0 +1,15 @@
+<?php
+/** @file
+ *
+ *  Render a single userItem.
+ *
+ */
+if ((! @isset($this->userItem)) ||
+    (! $this->userItem instanceof Model_UserItem))
+{
+    return;
+}
+
+printf ("<li class='item'>Item %s: %s </li>\n",
+        (@isset($this->index) ? $this->index : ''),
+        $this->userItem->debugDump());

@@ -1,0 +1,60 @@
+ul.Tag_Cloud {
+  list-style: none;
+  text-align: justify;
+  padding:    0;
+}
+
+.Tag_Cloud .tag {
+  display:      inline;
+  line-height:  1.25em;
+  font-size:    100%;
+}
+
+.tag .size0 {
+  font-size:    9px;
+  font-weight:  normal;
+  margin:       1px;
+  color:        #000;
+}
+
+.tag .size1 {
+  font-size:    10px;
+  font-weight:  normal;
+  margin:       1px;
+  color:        #23598c;
+}
+
+.tag .size2 {
+  font-size:    11px;
+  font-weight:  normal;
+  margin:       2px;
+  color:        #23598d;
+}
+
+.tag .size3 {
+  font-size:    14px;
+  font-weight:  normal;
+  margin:       2px;
+  color:        #235992;
+}
+
+.tag .size4 {
+  font-size:    16px;
+  font-weight:  normal;
+  margin:       3px;
+  color:        #235994;
+}
+
+.tag .size5 {
+  font-size:    20px;
+  font-weight:  normal;
+  margin:       3px;
+  color:        #2359aa;
+}
+
+.tag .size6 {
+  font-size:    24px;
+  font-weight:  normal;
+  margin:       4px;
+  color:        #2359ff;
+}

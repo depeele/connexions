@@ -16,43 +16,56 @@ else
 </p>
 
 <?php
-if ( false && @isset($this->userItems) )
+if ( @isset($this->userItems) )
 {
-    /* Make use of the userItem select instance to retrieve the tags for these
-     * userItems (specifically, for the unique items and unique users
-     *            represented by these userItems).
+    /* If $this->tags is NOT set, make use of the 'userItem' Model_UserItemSet
+     * instance to retrieve the tags for these userItems (specifically, for the
+     * unique items and unique users represented by these userItems).
      */
-    $tagWisdom = new Model_TagSet( $this->userItems->userIds(),
-                                   $this->userItems->itemIds() );
+    if (! @isset($this->tags))
+        $this->tags = new Model_TagSet( $this->userItems->userIds(),
+                                        $this->userItems->itemIds() );
+}
 
-    /* Render the tag cloud in the right column -- This should probably be via
-     * a view partial like:
-     *      view/scripts/tagCloud.phtml
-     */
-    $html  = sprintf ("%d tags in the tag wisdom set<br />\n",
-                       $tagWisdom->count());
-    foreach ($tagWisdom as $tag)
+if ( @isset($this->tags))
+{
+    // The partial is faster than the  View Helper by about 0.01 seconds
+    $time_start = microtime(true);
+    if (false)
     {
-        $html .= sprintf("%6d: %15s: %4d / %4d / %4d<br />\n",
-                        $tag->tagId, $tag->tag,
-                        $tag->userItemCount,
-                        $tag->itemCount,
-                        $tag->userCount);
+    /* Use the Connexions_View_Helper_HtmlTagCloud class to render the tag
+     * cloud for $this->tags.
+     */
+    $this->layout()->right = $this->htmlTagCloud();
+
+    }
+    else
+    {
+    /* Use the tagCloud.phtml partial to render the tag cloud associated with
+     * the incoming userItems.
+     */
+    $this->layout()->right = $this->partial('tagCloud.phtml',
+                                            array(
+                                                'tags'      => &$this->tags,
+                                                'maxTags'   => 50
+                                            ));
     }
 
-    $this->layout()->right = $html;
+    $time_end   = microtime(true);
+    $this->layout()->right .= sprintf ("%f seconds to render tag cloud<br />\n",
+                                       $time_end - $time_start);
 }
 
 /* Present the pagination control, established by
  * Bootstrap.php::_initViewGlobal() to be rendered via:
  *      views/scripts/paginationControl.phtml
  */
-echo "Paginator: ", $this->paginator;
+echo $this->paginator;
 
 if (count($this->paginator))
 {
     // Present the items of the current page
-    echo "<div style='width:50%;overflow:hidden;'>\n";
+    echo "<ul class='items'>\n";
     foreach ($this->paginator as $idex => $userItem)
     {
         /* Present the current item -- This should probably be via a view
@@ -60,11 +73,16 @@ if (count($this->paginator))
          *      view/scripts/userItem.phtml
          */
         //$userItem = new Model_UserItem($item);
-        printf ("Item %d: <pre style='padding:0 3em;'> %s </pre>\n",
-                $idex, $userItem->debugDump());
+        echo $this->partial('userItem.phtml',
+                            array(
+                                'index'    => $idex,
+                                'userItem' => &$userItem
+                            ));
     }
-    echo "</div>\n";
+    echo "</ul>\n";
 }
+
+echo $this->paginator;
 
 ?>
 

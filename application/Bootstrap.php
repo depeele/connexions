@@ -154,6 +154,15 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         Zend_View_Helper_PaginationControl::setDefaultViewPartial(
                                         'paginationControl.phtml');
 
+        /* Register our View Helper Path and Prefix.
+         *
+         * This will make available all helpers in:
+         *  library/Connexions/View/Helper
+         */
+        $view->addHelperPath(APPLICATION_PATH .
+                                    '/../library/Connexions/View/Helper',
+                             'Connexions_View_Helper');
+
         /* Put the 'view' in the registry so it will be accessible to
          *      Connexions_Controller_Plugin_Auth
          *
