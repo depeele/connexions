@@ -14,6 +14,9 @@ class Connexions_Set implements Countable,
     /** @brief  The name to use as the row count column. */
     const       ROW_COUNT_COLUMN    = 'connexions_set_row_count';
 
+    /** @brief  The name of the Iterator class to use for this set. */
+    protected   $_iterClass     = 'Connexions_Set_Iterator';
+
     /** @brief  The name of the Model class for members of this set. */
     protected   $_memberClass   = null;
 
@@ -29,23 +32,23 @@ class Connexions_Set implements Countable,
      *                      items.
      *  @param  memberClass The name of the Model class for members of this
      *                      set.
-     *
-     *  Note: 'memberClass' may be excluded IF 'select' identifies the member
-     *        class (i.e. has a '_memberClass' member set as is the case for
-     *                    the Zend_Db_Select returned from Model_*::select()).
+     *  @param  iterClass   The name of the class to create for a set iterator
+     *                      [ 'Connexions_Set_Iterator' ].
      */
-    public function __construct(Zend_Db_Select $select, $memberClass = null)
+    public function __construct(Zend_Db_Select $select,
+                                $memberClass    = null,
+                                $iterClass      = null)
     {
-        if ($memberClass === null)
-            $memberClass = $select->_memberClass;
-
         if (! @is_string($memberClass))
             throw new Exception("Connexions_Set requires 'memberClass' ".
                                     "either directly specified or as ".
                                     "a member of the provided 'select'");
 
-        $this->_memberClass = $memberClass;
         $this->_select      = $select;
+        $this->_memberClass = $memberClass;
+
+        if (! @empty($iterClass))
+            $this->_iterClass = $iterClass;
     }
 
     /** @brief  Return the memberClass for this instance.
@@ -79,10 +82,10 @@ class Connexions_Set implements Countable,
                                                ->fetch();
 
             /*
-printf ("<pre>Connexions_Set::count: count(res): %d, count: %s:\n",
-        count($res), $res[self::ROW_COUNT_COLUMN]);
-print_r($res, true);
-echo "</pre>\n";
+            printf ("<pre>Connexions_Set::count: count(res): %d, count: %s:\n",
+                    count($res), $res[self::ROW_COUNT_COLUMN]);
+            print_r($res, true);
+            echo "</pre>\n";
             // */
 
             $this->_count = (@isset($res[self::ROW_COUNT_COLUMN])
@@ -112,7 +115,7 @@ echo "</pre>\n";
      *
      */
 
-    /** @brief  Returns an array of items for a page.
+    /** @brief  Returns an iterator for the items of a page.
      *  @param  offset              The page offset.
      *  @param  itemCountPerPage    The number of items per page.
      *
@@ -121,13 +124,16 @@ echo "</pre>\n";
     public function getItems($offset, $itemCountPerPage)
     {
         if ($itemCountPerPage <= 0)
+        {
+            $this->_select->reset(Zend_Db_Select::LIMIT_COUNT);
             $this->_select->reset(Zend_Db_Select::LIMIT_OFFSET);
+        }
         else
             $this->_select->limit($itemCountPerPage, $offset);
 
         $rows = $this->_select->query()->fetchAll();
 
-        return new Connexions_Set_Iterator($this, $rows);
+        return new $this->_iterClass($this, $rows);
     }
 
     /*************************************************************************
@@ -234,6 +240,9 @@ echo "</pre>\n";
 
 /** @brief  A lazy iterator.  Allows us to postpone the actual instantiation of
  *          a Model instance until it is actually retrieved.
+ *
+ *  Note: ArrayIterator (and thus Connexions_Set_Iterator) implements
+ *          Iterator, Traversable, ArrayAccess, SeekableIterator, Countable
  */
 class Connexions_Set_Iterator extends ArrayIterator
 {

@@ -6,6 +6,7 @@
 @import 'tabs.css';
 @import 'themes/default/jquery-ui.css';
 @import 'ui-form.css';
+@import 'tagCloud.css';
 
 a, a:link, a:visited, a:focus, a:hover {
   color:      #06c;
