@@ -55,7 +55,7 @@ class Connexions_Controller_Route
         'tag'           => array(':tags'    => false),
 
         'url'           => array(':url'     => false),
-        'people'        => array(),
+        'people'        => array(':tags'    => false),
   
         'settings'      => array(':type'    => array(
                                     ':cmd'     => false)

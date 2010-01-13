@@ -1,4 +1,10 @@
 <?php
+/** @file
+ *
+ *  This controller controls access to UserItems / Bookmarks and is accessed
+ *  via the url/routes:
+ *      /[<user>[/<tag list>]]
+ */
 
 class IndexController extends Zend_Controller_Action
 {
@@ -13,10 +19,10 @@ class IndexController extends Zend_Controller_Action
         $viewer =& Zend_Registry::get('user');
 
         $request = $this->getRequest();
-        $owner   = $request->getParam('owner',   null);
-        $tags    = $request->getParam('tags',    null);
-        $page    = $request->getParam('page',    null);
-        $perPage = $request->getParam('perPage', null);
+        $owner   =           $request->getParam('owner',   null);
+        $tags    = urldecode($request->getParam('tags',    null));
+        $page    =           $request->getParam('page',    null);
+        $perPage =           $request->getParam('perPage', null);
 
         if ($owner === 'mine')
         {
@@ -51,11 +57,43 @@ class IndexController extends Zend_Controller_Action
             }
         }
 
-        $tagIds    = (! @empty($tags)
-                        ? Model_Tag::ids($tags)
-                        : array());
-        $userItems = new Model_UserItemSet($tagIds, $userIds);
+        $tagIds = null;
+        if (! @empty($tags))
+        {
+            /* Retrieve the tag identifiers for all valid tags and idientify
+             * which are invalid.
+             */
+            $tagIds = Model_Tag::ids($tags);
 
+            if (! @empty($tagIds['invalid']))
+            {
+                // Remove all invalid tags from our original tag string
+                foreach ($tagIds['invalid'] as $tag)
+                {
+                    // Remove this invalid tag from the tag string
+                    $reTag = preg_replace("#[/']#", '\\.', $tag);
+                    $re    = "/(^{$reTag}\\s*(,\\s*|$)|\\s*,\\s*{$reTag})/";
+                    $tags = preg_replace($re, '', $tags);
+                }
+
+                $this->view->error = 'Invalid tag(s) [ '
+                                   .    implode(', ',$tagIds['invalid']) .' ]';
+            }
+
+            if (@empty($tagIds['valid']))
+            {
+                /* NONE of the provided tags are valid.  Use a tagIds array
+                 * with a single, invalid tag identifier to ensure that
+                 * we don't match ANY user items.
+                 */
+                $tagIds['valid'] = array(-1);
+            }
+
+            $tagIds = array_values($tagIds['valid']);
+        }
+
+        $userItems = new Model_UserItemSet($tagIds['valid'],
+                                           $userIds);
         $paginator = new Zend_Paginator( $userItems );
 
         if ($page > 0)

@@ -57,14 +57,17 @@ class Model_Tag extends Connexions_Model_Cached
      */
     public function getParam($name)
     {
-        // weightValue, url
+        // weightValue, url, selected
         $val = (@isset($this->_params[$name])
                     ? $this->_params[$name]
                     : null);
-        if (($val === null) && ($name === 'url'))
-            $val = (String)($this->tag);
-
         return $val;
+    }
+
+    public function setParam($name, $value)
+    {
+        // weightValue, url, selected
+        $this->_params[$name] = $value;
     }
 
     public function getTitle()
@@ -81,12 +84,6 @@ class Model_Tag extends Connexions_Model_Cached
         return $weight;
     }
 
-    public function setParam($name, $value)
-    {
-        // weightValue, url
-        $this->_params[$name] = $value;
-    }
-
     /*************************************************************************
      * Static methods
      *
@@ -95,29 +92,48 @@ class Model_Tag extends Connexions_Model_Cached
     /** @brief  Given a set of tags, retrieve the tag identifier for each.
      *  @param  tags    The set of tags as a comma-separated string or array.
      *
-     *  @return An array of tag identifiers.
+     *  @return An array
+     *              { valid:   { <tagName>: <tag id>, ... },
+     *                invalid: [invalid tag names, ...]
+     *              }
      */
     public static function ids($tags)
     {
+        if (@empty($tags))
+            return null;
+
         if (! @is_array($tags))
             $tags = preg_split('/\s*,\s*/', $tags);
 
         $db     = Connexions::getDb();
         $select = $db->select()
-                     ->from(self::$table,
-                            'tagId')
+                     ->from(self::$table)
                      ->where('tag IN (?)', $tags);
-        $stmt   = $select->query(); //Zend_Db::FETCH_NUM);
-        $recs   = $stmt->fetchAll();
+        $recs   = $select->query()->fetchAll();
 
-        // Convert the returned array of records to a simple array of ids
-        $ids    = array();
+        /* Convert the returned array of records to a simple array of
+         *   tagName => tagId
+         *
+         * This will be used for the list of valid tags.
+         */
+        $valid  = array();
         foreach ($recs as $idex => $row)
         {
-            $ids[] = $row['tagId']; // $row[0];
+            $valid[$row['tag']] = $row['tagId'];
         }
 
-        return $ids;
+        $invalid = array();
+        if (count($valid) < count($tags))
+        {
+            // Include invalid entries for those tags that are invalid
+            foreach ($tags as $tag)
+            {
+                if (! @isset($valid[$tag]))
+                    $invalid[] = $tag;
+            }
+        }
+
+        return array('valid' => $valid, 'invalid' => $invalid);
     }
 
     /*************************************************************************

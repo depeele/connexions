@@ -3,15 +3,22 @@
 require_once('Connexions.php');
 require_once('Connexions/Autoloader.php');
 
+date_default_timezone_set('UTC');
+
 class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 {
     protected function _initTimezone()
     {
-        $zone = ($this->hasOption('timezone')
-                    ? $this->getOption('timezone')
-                    : 'PST');
+        if ($this->hasOption('timezone'))
+        {
+            $zone = $this->getOption('timezone');
 
-        date_default_timezone_set($zone);
+            date_default_timezone_set($zone);
+        }
+        else
+        {
+            $zone = date_default_timezone_get();
+        }
 
         return $zone;
     }
@@ -30,6 +37,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
         // Load ANY namespace
         $autoLoader->setFallbackAutoloader(true);
+
+        Connexions::log('Bootstrap::Autoloader initialized');
 
         return $autoLoader;
 
@@ -90,7 +99,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $front = Zend_Controller_Front::getInstance();
 
         /* Register our authentication plugin (performs
-         * identification/authentication during dispatchLoopStartup.
+         * identification/authentication during dispatchLoopStartup().
          */
         $front->registerPlugin(new Connexions_Controller_Plugin_Auth());
     }
@@ -154,14 +163,15 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         Zend_View_Helper_PaginationControl::setDefaultViewPartial(
                                         'paginationControl.phtml');
 
-        /* Register our View Helper Path and Prefix.
+        /* Add our view helpers to the helper plugin loader.
          *
          * This will make available all helpers in:
-         *  library/Connexions/View/Helper
+         *  application/views/helpers
          */
-        $view->addHelperPath(APPLICATION_PATH .
-                                    '/../library/Connexions/View/Helper',
-                             'Connexions_View_Helper');
+        $loader = $view->getPluginLoader('helper');
+        $loader->addPrefixPath('Connexions_View_Helper',
+                               APPLICATION_PATH .'/views/helpers');
+
 
         /* Put the 'view' in the registry so it will be accessible to
          *      Connexions_Controller_Plugin_Auth

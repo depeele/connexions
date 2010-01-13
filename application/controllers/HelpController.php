@@ -1,4 +1,10 @@
 <?php
+/** @file
+ *
+ *  This controller controls access to Help and is accessed via the url/routes:
+ *      /help[<topic>]
+ */
+
 
 class HelpController extends Zend_Controller_Action
 {

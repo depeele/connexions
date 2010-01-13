@@ -1,4 +1,11 @@
 <?php
+/** @file
+ *
+ *  This controller controls access to the creation of new userItems /
+ *  Bookmarks and is accessed by an authenticated user via url/routes:
+ *      /post
+ */
+
 
 class PostController extends Zend_Controller_Action
 {

@@ -1,12 +1,14 @@
 <?php
+/** @file
+ *
+ *  This controller controls access to a Users Network and is accessed via the
+ *  url/routes:
+ *      /network[/<user>]
+ */
+
 
 class NetworkController extends Zend_Controller_Action
 {
-    public function init()
-    {
-        /* Initialize action controller here */
-    }
-
     public function indexAction()
     {
         $viewer =& Zend_Registry::get('user');
@@ -46,23 +48,5 @@ class NetworkController extends Zend_Controller_Action
         $this->view->owner  = $owner;
         $this->view->viewer = $viewer;
         $this->view->tags   = $tags;
-    }
-
-    /** @brief Redirect all other actions to 'index'
-     *  @param  method      The target method.
-     *  @param  args        Incoming arguments.
-     *
-     */
-    public function __call($method, $args)
-    {
-        if (substr($method, -6) == 'Action')
-        {
-            $owner = substr($method, 0, -6);
-
-            return $this->_forward('index', 'network', null,
-                                   array('owner' => $owner));
-        }
-
-        throw new Exception('Invalid method "'. $method .'" called', 500);
     }
 }

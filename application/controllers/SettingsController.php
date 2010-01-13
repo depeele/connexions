@@ -1,4 +1,11 @@
 <?php
+/** @file
+ *
+ *  This controller controls access to an authenticated Users settings and is
+ *  accessed via the url/routes:
+ *      /settings       [/:type     [/:cmd]]    Viewer settings
+ */
+
 
 class SettingsController extends Zend_Controller_Action
 {
@@ -12,41 +19,21 @@ class SettingsController extends Zend_Controller_Action
     {
         $viewer =& Zend_Registry::get('user');
 
+        // Use the currently authenticated user
+        if ( ( ! $viewer instanceof Model_User) ||
+             (! $viewer->isAuthenticated()) )
+        {
+            // Unauthenticated user -- Redirect to signIn
+            return $this->_helper->redirector('signIn','auth');
+        }
+
         $request = $this->getRequest();
-        $owner   = $request->getParam('owner', null);
-        $tags    = $request->getParam('tags',  null);
+        $type    = $request->getParam('type', null);
+        $cmd     = $request->getParam('cmd',  null);
 
-        if ($owner === 'mine')
-        {
-            // No user specified -- use the currently authenticated user
-            $owner =& $viewer;
-            if ( ( ! $owner instanceof Model_User) ||
-                 (! $owner->isAuthenticated()) )
-            {
-                // Unauthenticated user -- Redirect to signIn
-                return $this->_helper->redirector('signIn','auth');
-            }
-        }
-
-        if (! $owner instanceof Model_User)
-        {
-            if (@empty($owner))
-                $owner = '*';
-            else
-            {
-                // Is this a valid user?
-                $owner = new Model_User($owner);
-
-                if (! $owner->isBacked())
-                {
-                    $this->view->error = 'Unknown user.';
-                }
-            }
-        }
-
-        $this->view->owner  = $owner;
         $this->view->viewer = $viewer;
-        $this->view->tags   = $tags;
+        $this->view->type   = $type;
+        $this->view->cmd    = $cmd;
     }
 
     /** @brief Redirect all other actions to 'index'
@@ -58,10 +45,8 @@ class SettingsController extends Zend_Controller_Action
     {
         if (substr($method, -6) == 'Action')
         {
-            $owner = substr($method, 0, -6);
-
-            return $this->_forward('index', 'index', null,
-                                   array('owner' => $owner));
+            // Redirect
+            return $this->_forward('index');
         }
 
         throw new Exception('Invalid method "'. $method .'" called', 500);

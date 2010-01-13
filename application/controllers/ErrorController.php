@@ -1,4 +1,9 @@
 <?php
+/** @file
+ *
+ *  This controller kicks in for errors.
+ */
+
 
 class ErrorController extends Zend_Controller_Action
 //class ErrorController extends Connexions_Controller_Action

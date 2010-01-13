@@ -1,0 +1,16 @@
+<?php
+/** @file
+ *
+ *  Render a single user within a user list.
+ *
+ */
+if ((! @isset($this->user)) ||
+    (! $this->user instanceof Model_User))
+{
+    return;
+}
+
+printf ("<li class='item'>User %s: %s </li>\n",
+        (@isset($this->index) ? $this->index : ''),
+        $this->user->debugDump());
+

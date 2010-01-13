@@ -12,6 +12,9 @@ defined('APPLICATION_LIBRARY_PATH')
 defined('APPLICATION_MODEL_PATH')
     || define('APPLICATION_MODEL_PATH',
               realpath(APPLICATION_PATH . '/models'));
+defined('APPLICATION_VIEW_HELPER_PATH')
+    || define('APPLICATION_VIEW_HELPER_PATH',
+              realpath(APPLICATION_PATH . '/views/helpers'));
 
 /** @brief  This is the primary autoloader for Connexions.  It is capable of
  *          handling the 'Zend_', 'ZendX_', 'Connexions_', and 'Model_'
