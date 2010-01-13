@@ -1,7 +1,7 @@
 <?php
 /** @file
  *
- *  A set of Tag Model instances.
+ *  A set of Model_Tag instances.
  *
  */
 
@@ -28,12 +28,12 @@ class Model_TagSet extends Connexions_Set
     {
         $memberClass  = self::MEMBER_CLASS;
 
+        // :TODO: Determine the proper order.
         try {
             $order = Zend_Registry::get('orderBy').
                      Zend_Registry::get('orderDir');
 
         } catch (Exception $e) {
-            // Treat the current user as Unauthenticated.
             $order = 'userItemCount DESC';
         }
 
@@ -163,6 +163,10 @@ class Model_TagSet extends Connexions_Set
 
     /** @brief  Create a Zend_Tag_ItemList adapter for the top 'limit' tags.
      *  @param  limit   The maximum number of tags [100].
+     *  @param  curTags The current set of selected tags (either a
+     *                  comma-separated list or an associative array keyed by
+     *                  tag name).
+     *
      *
      *  Note: Since the default order is by 'userItemCount DESC', the top tags
      *        will be the tags with the highest count.
@@ -171,12 +175,12 @@ class Model_TagSet extends Connexions_Set
      *              (subclass of Zend_Tag_ItemList)
      *
      */
-    public function get_Tag_ItemList($limit = null)
+    public function get_Tag_ItemList($limit = null, $curTags = null)
     {
         if ($limit === null)
             $limit = 100;
 
-        return new Model_TagSet_ItemList($this->getItems(0, $limit));
+        return new Model_TagSet_ItemList($this->getItems(0, $limit), $curTags);
     }
 
     /*************************************************************************
@@ -251,16 +255,64 @@ class Model_TagSet extends Connexions_Set
 /** @brief  An adapter to translate between Connexions_Set and
  *          Zend_Tag_ItemList
  *
+ *  Note: This ASSUMES that the current set of tags are held within a 'tags'
+ *        parameter within the current request.
+ *
  *  Zend_Tag_ItemList implements
  *      Countable, SeekableIterator, ArrayAccess
  */
 class Model_TagSet_ItemList extends Zend_Tag_ItemList
 {
-    protected   $_iterator  = null;
+    protected   $_iterator      = null;
+    protected   $_reqUrl        = null;
+    protected   $_selectedTags  = array();
 
-    public function __construct(Connexions_Set_Iterator $iterator)
+    /** @brief  Constructor
+     *  @param  iterator    The Connexions_Set_Iterator instance that we will
+     *                      adapt.
+     *  @param  tags        The current set of selected tags
+     *                      (either a comma-separated list or an associative
+     *                       array keyed by tag name).
+     */
+    public function __construct(Connexions_Set_Iterator $iterator,
+                                $tags = null)
     {
         $this->_iterator =& $iterator;
+
+        /* Cache the request URL, urldecoding, collapsing spaces, and trimming
+         * the right '/'
+         */
+        $this->_reqUrl = rtrim(preg_replace('/\s\s+/', ' ',
+                                            urldecode(
+                                                Connexions::getRequest()->
+                                                            getRequestUri())
+                                            ),
+                               ' \t/');
+
+        if (@is_string($tags))
+        {
+            // Collapse spaces, also removing any space around ','
+            $tags = preg_replace('/\s*,\s*/', ',',
+                                 preg_replace('/\s+/', ' ', urldecode($tags)));
+
+            if (! @empty($tags))
+            {
+                $tags = explode(',', $tags);
+            }
+        }
+
+        if (@is_array($tags))
+        {
+            /* Do a dirty check to see if 'tags' appears to be an associative
+             * array with string keys.
+             */
+            $keys = array_keys($tags);
+            if (! @is_string($keys[0]))
+                // Appears to be a normal array with non-string / integer keys
+                $tags = array_flip($tags);
+
+            $this->_selectedTags = $tags;
+        }
     }
 
     /** @brief  Spread values in the items relative to their weight.
@@ -352,7 +404,51 @@ class Model_TagSet_ItemList extends Zend_Tag_ItemList
 
     // SeekableIterator::Iterator
     public function current()
-                        { return $this->_iterator->current(); }
+    {
+        $tag = $this->_iterator->current();
+
+        /* Include additional parameters for this tag item:
+         *      selected    boolean indicating whether this tag is in the
+         *                  tag list for the current request / view;
+         *      url         The url to visit if this tag is clicked.
+         */
+        $tagStr  = $tag->tag;
+        $tagList = array_keys($this->_selectedTags);
+
+        // Remove the tag list from the current URL
+        $url = str_replace('/'.implode(',', $tagList), '', $this->_reqUrl);
+
+
+        if (@isset($this->_selectedTags[$tagStr]))
+        {
+            // Remove this tag from the new tag list.
+            $tag->setParam('selected', true);
+
+            $tagList = array_diff($tagList, array($tagStr));
+        }
+        else
+        {
+            // Include this tag in the tag list.
+            $tag->setParam('selected', false);
+
+            $tagList[] = $tagStr;
+        }
+
+        $tag->setParam('url', $url .'/'. implode(',', $tagList) );
+
+        /*
+        Connexions::log(
+                sprintf("Model_TagSet_ItemList::current: tag[ %s ], ".
+                            "selected[ %s ]: is %sselected, url[ %s ]",
+                        $tagStr,
+                        implode(', ', array_keys($this->_selectedTags)),
+                        ($tag->getParam('selected') ? '' : 'NOT '),
+                        $tag->getParam('url') ));
+        // */
+
+        return $tag;
+    }
+
     public function key()
                         { return $this->_iterator->key(); }
     public function next()

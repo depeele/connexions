@@ -1,4 +1,9 @@
 <?php
+/** @file
+ *
+ *  This controller controls access to Tags and is accessed via the url/routes:
+ *      /tags[/<user>]
+ */
 
 class TagsController extends Zend_Controller_Action
 {

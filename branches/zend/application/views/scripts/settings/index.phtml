@@ -3,6 +3,8 @@
 $this->headTitle('Settings');
 
 ?>
-<p>Present the Settings for <?= $this->viewer ?>.</p>
+<p>Present the Settings for <?= $this->viewer ?>:<br />
+      type[ <?= $this->type ?>], cmd[ <?= $this->cmd ?> ]
+</p>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

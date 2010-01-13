@@ -3,4 +3,85 @@
 $this->headTitle('People');
 
 ?>
-People
+<p>Present People to  <?= $this->viewer ?>
+<?php   if (@empty($this->tags))
+            printf (", NO tags.");
+        else
+            printf (" with tags '%s'", $this->tags);
+?>
+</p>
+
+<?php
+if ( @isset($this->users) )
+{
+    /* If $this->tagSet is NOT set and we have 1 or more user, make use of the
+     * 'users' Model_UserSet instance to retrieve the tags for these users.
+     */
+    if ((! @isset($this->tagSet)) && (count($this->users) > 0))
+    {
+        $this->tagSet = new Model_TagSet( $this->users->userIds() );
+                                          //$this->users->itemIds() );
+    }
+}
+
+if ( @isset($this->tagSet))
+{
+    // The partial is faster than the  View Helper by about 0.01 seconds
+    $time_start = microtime(true);
+    if (false)
+    {
+    /* Use the Connexions_View_Helper_HtmlTagCloud class to render the tag
+     * cloud for $this->tagSet.
+     */
+    $this->layout()->right = $this->htmlTagCloud();
+
+    }
+    else
+    {
+    /* Use the tagCloud.phtml partial to render the tag cloud associated with
+     * the incoming users.
+     */
+    $this->layout()->right = $this->partial('tagCloud.phtml',
+                                            array(
+                                                'tags'      => &$this->tagSet,
+                                                'curTags'   => $this->tags,
+                                                'maxTags'   => 50
+                                            ));
+    }
+
+    $time_end   = microtime(true);
+    $this->layout()->right .= sprintf ("%f seconds to render tag cloud<br />\n",
+                                       $time_end - $time_start);
+}
+
+/* Present the pagination control, established by
+ * Bootstrap.php::_initViewGlobal() to be rendered via:
+ *      views/scripts/paginationControl.phtml
+ */
+echo $this->paginator;
+
+if (count($this->paginator))
+{
+    // Present the items of the current page
+    echo "<ul class='items'>\n";
+    foreach ($this->paginator as $idex => $user)
+    {
+        /* Present the current item -- This should probably be via a view
+         * partial like:
+         *      view/scripts/user_listItem.phtml
+         */
+        echo $this->partial('user_listItem.phtml',
+                            array(
+                                'index' => $idex,
+                                'user'  => $user
+                            ));
+    }
+    echo "</ul>\n";
+}
+
+echo $this->paginator;
+
+?>
+
+
+<div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

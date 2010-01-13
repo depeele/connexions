@@ -51,7 +51,15 @@ class Connexions_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
              *      authentication store (session/cookie).  Does it identify a
              *      valid user?
              */
-            $user = new Model_User($userId);
+            $user = Model_User::find($userId);
+
+            /*
+            echo "<pre>Connexions_Controller_Plugin_Auth: userId[",
+                    $userId, "], User Model:\n",
+                 $user->debugDump(),
+                 "</pre>\n";
+            // */
+
             if ($user->isBacked())
             {
                 // 1.a.i) We have a valid user -- consider them authenticated.
@@ -86,14 +94,15 @@ class Connexions_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
              * need to create a new Model_User instance with the given $userId.
              */
             if (($user === null) || ($userId !== null))
-                $user = new Model_User($userId);
+                $user = Model_User::find($userId);
 
             /*
-            printf ("Connexions_Controller_Plugin_Auth: ".
-                        "User is%s backed, password is%s empty<br />\n",
-                    ($user->isBacked() ? "" : " NOT"),
-                    (@empty($pass)     ? "" : " NOT"));
+            echo "<pre>Connexions_Controller_Plugin_Auth: ",
+                    "userId[{$userId}], pass[{$pass}], User Model:\n",
+                 $user->debugDump(),
+                 "</pre>\n";
             // */
+
 
             if ( $user->isBacked() && (! @empty($pass)) )
             {

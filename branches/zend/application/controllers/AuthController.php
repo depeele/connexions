@@ -1,8 +1,12 @@
 <?php
 /** @file
  *
- *  Authentication controller.  This handles sign-in, sign-out, and
- *  regsitration actions.
+ *  This controller handles sigin-in, sign-out and registration and is accessed
+ *  via the url/routes:
+ *      /auth/signIn
+ *      /auth/signOut
+ *      /auth/register
+ *      /auth/checkuser?format=json&userName=<name>
  */
 
 class AuthController extends Zend_Controller_Action

@@ -9,6 +9,29 @@ class Connexions
 {
     protected static    $_user  = null;
     protected static    $_db    = null;
+    protected static    $_log   = null;
+
+    /** @brief  Provide a general logging mechanism.
+     *  @param  message     The message to present
+     *  @param  priority    The Zend_Log priority [Zend_Log::INFO].
+     */
+    public static function log($message, $priority = null)
+    {
+        if (APPLICATION_ENV !== 'development')
+            return;
+
+        if ($priority === null)
+            $priority = Zend_Log::INFO;
+
+        if (self::$_log === null)
+        {
+            //$writer = new Zend_Log_Writer_Firebug();
+            $writer = new Zend_Log_Writer_Stream('/tmp/connexions-log.txt');
+            self::$_log = new Zend_Log($writer);
+        }
+
+        self::$_log->log($message, $priority);
+    }
 
     /** @brief  Return the current Database Adapter.
      *

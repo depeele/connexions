@@ -1,104 +1,70 @@
 <?php
 /** @file
  *
- *  A set of Model_UserItem instances.
+ *  A set of Model_User instances.
  *
  */
 
-class Model_UserItemSet extends Connexions_Set
+class Model_UserSet extends Connexions_Set
 {
-    const       MEMBER_CLASS    = 'Model_UserItem';
+    const       MEMBER_CLASS    = 'Model_User';
 
     protected   $_tagIds        = null;
-    protected   $_userIds       = null;
     protected   $_itemIds       = null;
+    protected   $_userIds       = null;
 
     protected   $_nonTrivial    = false;
 
-    protected   $_select_items  = null;
-    protected   $_select_users  = null;
-
     /** @brief  Create a new instance.
      *  @param  tagIds      An array of tag identifiers.
-     *  @param  userIds     An array of user identifiers.
      *  @param  itemIds     An array of item identifiers.
+     *  @param  userIds     An array of user identifiers.
      *
      */
     public function __construct($tagIds   = null,
-                                $userIds  = null,
-                                $itemIds  = null)
+                                $itemIds  = null,
+                                $userIds  = null)
     {
         $memberClass  = self::MEMBER_CLASS;
 
-        /* :TODO: Determine the current, authenticated user
-         *        and the proper order.
-         */
-        try {
-            $curUserId = Zend_Registry::get('user')->userId;
-
-        } catch (Exception $e) {
-            // Treat the current user as Unauthenticated.
-            $curUserId = null;
-        }
-
+        // :TODO: Determine the proper order.
         try {
             $order = Zend_Registry::get('orderBy').
                      Zend_Registry::get('orderDir');
 
         } catch (Exception $e) {
-            // Treat the current user as Unauthenticated.
-            $order = 'ui.taggedOn ASC';
+            $order = 'u.name ASC';
         }
 
         if ( (! @empty($tagIds)) && (! @is_array($tagIds)) )
             $tagIds = array($tagIds);
-        if ( (! @empty($userIds)) && (! @is_array($userIds)) )
-            $userIds = array($userIds);
         if ( (! @empty($itemIds)) && (! @is_array($itemIds)) )
             $itemIds = array($itemIds);
-
-
-        /* Include all columns/fields from Item and User, prefixed.
-         * Note: These will be used by Model_UserItem (self::MEMBER_CLASS) to
-         *       provide access to the referenced User and Item.
-         */
-        $itemColumns = array();
-        foreach (Model_Item::$model as $field => $type)
-        {
-            $itemColumns['item_'.$field] = 'i.'.$field;
-        }
-        $userColumns = array();
-        foreach (Model_User::$model as $field => $type)
-        {
-            $userColumns['user_'.$field] = 'u.'.$field;
-        }
+        if ( (! @empty($userIds)) && (! @is_array($userIds)) )
+            $userIds = array($userIds);
 
         // Generate a Zend_Db_Select instance
         $db     = Connexions::getDb();
         $select = $db->select()
-                     ->from(array('ui' => $memberClass::$table))
-                     ->join(array('i'  => 'item'),      // table / as
-                            '(i.itemId=ui.itemId)',     // condition
-                            $itemColumns)               // columns
-                     ->join(array('u'  => 'user'),      // table / as
-                            '(u.userId=ui.userId)',     // condition
-                            $userColumns)               // columns
-                     ->where('((ui.isPrivate=false) '.
-                                 ($curUserId !== null
-                                    ? 'OR (ui.userId='.$curUserId.')'
-                                    : '') . ')')
+                     ->from(array('u' => $memberClass::$table))
+                     ->join(array('uti'   => 'userTagItem'),  // table / as
+                                  '(u.userId=uti.userId)',    // condition
+                                  '')                         // columns (none)
+                     ->group('u.userId')
                      ->order($order);
 
         if (! @empty($tagIds))
         {
             // Tag Restrictions -- required 'userTagItem'
-            $select->join(array('uti'   => 'userTagItem'),  // table / as
-                          '(i.itemId=uti.itemId) AND '.
-                          '(u.userId=uti.userId)',          // condition
-                          '')                               // columns (none)
-                   ->where('uti.tagId IN (?)', $tagIds)
-                   ->group(array('uti.userId', 'uti.itemId'))
+            $select->where('uti.tagId IN (?)', $tagIds)
                    ->having('COUNT(DISTINCT uti.tagId)='.count($tagIds));
+            $this->_nonTrivial = true;
+        }
+
+        if (! @empty($itemIds))
+        {
+            // Item Restrictions
+            $select->where('uti.itemId IN (?)', $itemIds);
             $this->_nonTrivial = true;
         }
 
@@ -109,12 +75,6 @@ class Model_UserItemSet extends Connexions_Set
             $this->_nonTrivial = true;
         }
 
-        if (! @empty($itemIds))
-        {
-            // Item Restrictions
-            $select->where('i.itemId IN (?)', $itemIds);
-            $this->_nonTrivial = true;
-        }
 
         // Include '_memberClass' in $select so we can use 'Connexions_Set'
         $select->_memberClass = $memberClass;   //self::MEMBER_CLASS;
@@ -123,7 +83,34 @@ class Model_UserItemSet extends Connexions_Set
         $this->_userIds = $userIds;
         $this->_itemIds = $itemIds;
 
+        /*
+        printf ("Model_UserSet: select[ %s ]<br />\n", $select->assemble());
+        // */
+
         return parent::__construct($select, $memberClass);
+    }
+
+    /** @brief  Retrieve the array of all tag identifiers used by this set of
+     *          users.
+     *
+     *  @return An array of tag identifiers.
+     */
+    public function tagIds()
+    {
+        if ($this->_nonTrivial !== true)
+            return $this->_tagIds;
+
+        $select = $this->_select_tags();
+        $recs   = $select->query()->fetchAll();
+
+        // Convert the returned array of records to a simple array of ids
+        $ids    = array();
+        foreach ($recs as $idex => $row)
+        {
+            $ids[] = $row['tagId'];
+        }
+
+        return $ids;
     }
 
     /** @brief  Retrieve the array of item identifiers for all items in this
@@ -177,6 +164,27 @@ class Model_UserItemSet extends Connexions_Set
      *
      */
 
+    /** @brief  Return a Zend_Db_Select instance capable of retrieving the tag
+     *          identifiers of all userItems included in this set.
+     *
+     *  @return A Zend_Db_Select instance capable of retrieving the tag
+     *          identifiers of all userItems included in this set.
+     *
+     *          Note: This MAY be different than $this->_tagIds
+     */
+    protected function _select_tags()
+    {
+        $select = clone $this->_select;
+
+        $select->reset(Zend_Db_Select::COLUMNS)
+               ->reset(Zend_Db_Select::ORDER)
+               ->reset(Zend_Db_Select::GROUP)
+               ->columns('uti.tagId')
+               ->distinct();
+
+        return $select;
+    }
+
     /** @brief  Return a Zend_Db_Select instance capable of retrieving the item
      *          identifiers of the userItems represented by this set.
      *
@@ -192,7 +200,7 @@ class Model_UserItemSet extends Connexions_Set
         $select->reset(Zend_Db_Select::COLUMNS)
                ->reset(Zend_Db_Select::ORDER)
                ->reset(Zend_Db_Select::GROUP)
-               ->columns('ui.itemId')
+               ->columns('uti.itemId')
                ->distinct();
 
         return $select;
@@ -213,10 +221,9 @@ class Model_UserItemSet extends Connexions_Set
         $select->reset(Zend_Db_Select::COLUMNS)
                ->reset(Zend_Db_Select::ORDER)
                ->reset(Zend_Db_Select::GROUP)
-               ->columns('ui.userId')
+               ->columns('u.userId')
                ->distinct();
 
         return $select;
     }
-
 }

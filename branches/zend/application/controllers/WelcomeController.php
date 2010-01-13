@@ -1,4 +1,11 @@
 <?php
+/** @file
+ *
+ *  This controller controls access to the Welcome area and is accessed via the
+ *  url/routes:
+ *      /welcome
+ */
+
 
 class WelcomeController extends Zend_Controller_Action
 {

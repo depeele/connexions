@@ -1,4 +1,16 @@
 <?php
+/** @file
+ *
+ *  This controller controls access to Search and is accessed via POST to the
+ *  url/routes:
+ *      /search
+ *          POST parameters:
+ *              owner           The owner user name;
+ *              tags            Tags to limit the search;
+ *              searchContext   The search context;
+ *              q               The search query.
+ */
+
 
 class SearchController extends Zend_Controller_Action
 {

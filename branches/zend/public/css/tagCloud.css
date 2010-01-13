@@ -9,6 +9,9 @@ ul.Tag_Cloud {
   line-height:  1.25em;
   font-size:    100%;
 }
+.Tag_Cloud .tag .selected {
+  background-color: #ddd;
+}
 
 .tag .size0 {
   font-size:    9px;

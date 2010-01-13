@@ -23,13 +23,13 @@ if ($this->pageCount < 1)
     return;
 
 echo "<div class='pagination'>\n";
-printf ("%d items per page, %d items, %d pages, page %d, items %d-%d<br />\n",
-        $this->itemCountPerPage,
-        $this->totalItemCount,
-        $this->pageCount,
-        $this->current,
-        $this->firstItemNumber,
-        $this->lastItemNumber);
+printf ("%s items per page, %s items, %s pages, page %s, items %s-%s<br />\n",
+        number_format($this->itemCountPerPage),
+        number_format($this->totalItemCount),
+        number_format($this->pageCount),
+        number_format($this->current),
+        number_format($this->firstItemNumber),
+        number_format($this->lastItemNumber));
 
 
 if (@isset($this->previous))

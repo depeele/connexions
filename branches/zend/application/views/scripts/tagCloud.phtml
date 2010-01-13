@@ -7,6 +7,9 @@
  *  Incoming parameters:
  *      tags        A Model_TagSet instance representing the tags to be
  *                  presented;
+ *      curTags     The tags that are currently specified in the request
+ *                  (either a comma-separated string or an associative array
+ *                   with the tags as keys);
  *      maxTags     The maximum number of tags to present [100];
  *      sortBy      The tag field to sort by ['tag'];
  *      sortOrder   Sort order ( ['ASC'] | 'DESC').
@@ -14,15 +17,18 @@
 if ( (! @isset($this->tags)) || (! $this->tags instanceof Model_TagSet) )
     return;
 
+if (! @isset($this->curTags))   $this->curTags   = '';
 if (! @isset($this->maxTags))   $this->maxTags   = null;
 if (! @isset($this->sortBy))    $this->sortBy    = 'tag';
 if (! @isset($this->sortOrder)) $this->sortOrder = 'ASC';
 
+/*
 printf ("maxTags[ %d ], sortBy[ %s ], sortOrder[ %s ]<br />\n",
         $this->maxTags, $this->sortBy, $this->sortOrder);
+// */
 
 // Grab the Zend_Tag_ItemList adapter for our tag set.
-$tagItemList = $this->tags->get_Tag_ItemList($this->maxTags);
+$tagItemList = $this->tags->get_Tag_ItemList($this->maxTags, $this->curTags);
 
 // Create a sort function
 $refA    = '$a["'. $this->sortBy .'"]';
@@ -50,9 +56,19 @@ $sortFn  = create_function('$a,$b', $funcDef);
 // Sort the tagItemList
 $tagItemList->uasort($sortFn);
 
+/*
+$loader = $this->getPluginLoader('helper');
+$loader->addPrefixPath('Zend_Tag_Cloud_Decorator_',
+                        APPLICATION_PATH .'/../librry/Zend/Tag/Cloud/Decorator/');
+*/
+
 // Create a Zend_Tag_Cloud renderer and render the tag cloud
 $cloud = new Zend_Tag_Cloud(
                 array(
+                    'prefixPath'            => array(
+                        'prefix'    => 'Connexions_View_Helper',
+                        'path'      => APPLICATION_PATH .'/views/helpers/'
+                     ),
                     'ItemList'              => $tagItemList,
                     'CloudDecorator'        => array(
                         'decorator'         => 'htmlCloud',
@@ -65,7 +81,7 @@ $cloud = new Zend_Tag_Cloud(
                         )
                     ),
                     'TagDecorator'          => array(
-                        'decorator'         => 'htmlTag',
+                        'decorator'         => 'htmlTagItem',   //'htmlTag',
                         'options'           => array(
                             'HtmlTags'      => array(
                                 'li'        => array(

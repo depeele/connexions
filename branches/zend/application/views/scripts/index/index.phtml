@@ -18,23 +18,24 @@ else
 <?php
 if ( @isset($this->userItems) )
 {
-    /* If $this->tags is NOT set, make use of the 'userItem' Model_UserItemSet
-     * instance to retrieve the tags for these userItems (specifically, for the
-     * unique items and unique users represented by these userItems).
+    /* If $this->tagSet is NOT set and we have 1 or more userItems, make use of
+     * the 'userItems' Model_UserItemSet instance to retrieve the tags for
+     * these userItems (specifically, for the unique items and unique users
+     * represented by these userItems).
      */
-    if (! @isset($this->tags))
-        $this->tags = new Model_TagSet( $this->userItems->userIds(),
-                                        $this->userItems->itemIds() );
+    if ((! @isset($this->tagSet)) && (count($this->userItems) > 0))
+        $this->tagSet = new Model_TagSet( $this->userItems->userIds(),
+                                          $this->userItems->itemIds() );
 }
 
-if ( @isset($this->tags))
+if ( @isset($this->tagSet))
 {
     // The partial is faster than the  View Helper by about 0.01 seconds
     $time_start = microtime(true);
     if (false)
     {
     /* Use the Connexions_View_Helper_HtmlTagCloud class to render the tag
-     * cloud for $this->tags.
+     * cloud for $this->tagSet.
      */
     $this->layout()->right = $this->htmlTagCloud();
 
@@ -46,7 +47,8 @@ if ( @isset($this->tags))
      */
     $this->layout()->right = $this->partial('tagCloud.phtml',
                                             array(
-                                                'tags'      => &$this->tags,
+                                                'tags'      => &$this->tagSet,
+                                                'curTags'   => $this->tags,
                                                 'maxTags'   => 50
                                             ));
     }

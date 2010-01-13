@@ -408,16 +408,18 @@ abstract class Connexions_Model
      */
     protected function _data2where(&$data)
     {
-        $class =  get_class($this);
-        $keys  =& $class::$keys;    //$this->getKeys();
-        $model =& $class::$model;   //$this->getModel();
+        $class  =  get_class($this);
+        $keys   =& $class::$keys;    //$this->getKeys();
+        $model  =& $class::$model;   //$this->getModel();
         if (@is_scalar($data))
-            $data = array($data);
+            $inData = array($data);
+        else
+            $inData =& $data;
 
         $isKey       = true;
         $keysMatched = array();
         $where       = array();
-        foreach ($data as $key => &$val)
+        foreach ($inData as $key => &$val)
         {
             /* If 'key' is a string, see if it matches a database key field
              * name.
@@ -482,6 +484,7 @@ abstract class Connexions_Model
             }
 
             $where['('.$dbKey.'=?)'] = $val;
+
         }
 
         return ($isKey && (! empty($where))
@@ -508,6 +511,12 @@ abstract class Connexions_Model
         $isBacked = false;
         $isRecord = false;
 
+        /*
+        echo "<pre>Connexions_Model::_init: class[{$class}], id:\n",
+             print_r($id, true),
+             "</pre>\n";
+        // */
+
         // (Re)set our state
         $this->_id        = null;
         $this->_isBacked  = false;
@@ -517,7 +526,7 @@ abstract class Connexions_Model
         $this->_validated = array();
         $this->_dirty     = array();
 
-        if (@isset($id['@isBacked']))
+        if (@is_array($id) && @isset($id['@isBacked']))
         {
             /* Note: Use '(unset) var;' vs 'unset(var);' to eliminate
              *          'Fatal error: Cannot unset string offsets'
@@ -532,7 +541,7 @@ abstract class Connexions_Model
             }
         }
 
-        if ((! $isBacked) && @isset($id['@isRecord']))
+        if ((! $isBacked) && @is_array($id) && @isset($id['@isRecord']))
         {
             $isRecord = ($id['@isRecord'] ? true : false);
             (unset) $id['@isRecord'];
