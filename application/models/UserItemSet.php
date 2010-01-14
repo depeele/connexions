@@ -116,6 +116,9 @@ class Model_UserItemSet extends Connexions_Set
             $this->_nonTrivial = true;
         }
 
+        Connexions::log("Model_UserItemSet: "
+                            . "select[ ". $select->assemble() ." ]");
+
         // Include '_memberClass' in $select so we can use 'Connexions_Set'
         $select->_memberClass = $memberClass;   //self::MEMBER_CLASS;
 

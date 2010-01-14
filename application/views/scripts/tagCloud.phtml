@@ -4,12 +4,19 @@
  *  Given a Model_UserItemSet instance 'userItems', render a tag cloud for all
  *  tags of the userItems.
  *
- *  Incoming parameters:
+ *  $this implements the Zend_View_Interface and has at least the following
+ *  members/methods:
  *      tags        A Model_TagSet instance representing the tags to be
- *                  presented;
- *      curTags     The tags that are currently specified in the request
- *                  (either a comma-separated string or an associative array
- *                   with the tags as keys);
+ *                  presented.  Note that this set MAY NOT match the list of
+ *                  tags in reqTagInfo['valid'] NOR directly correlate to
+ *                  'reqTags'
+ *                  (e.g. when the tag cloud representes all the tags for a set
+ *                        of userItems);
+ *      reqTags     A comma-separated string representing the tags that are
+ *                  currently specified in the request;
+ *      reqTagInfo  An array of tag information (from Model_Tag::ids()) that
+ *                  identifies both valid and invalid tags from 'reqTags';
+ *
  *      maxTags     The maximum number of tags to present [100];
  *      sortBy      The tag field to sort by ['tag'];
  *      sortOrder   Sort order ( ['ASC'] | 'DESC').
@@ -17,18 +24,21 @@
 if ( (! @isset($this->tags)) || (! $this->tags instanceof Model_TagSet) )
     return;
 
-if (! @isset($this->curTags))   $this->curTags   = '';
-if (! @isset($this->maxTags))   $this->maxTags   = null;
-if (! @isset($this->sortBy))    $this->sortBy    = 'tag';
-if (! @isset($this->sortOrder)) $this->sortOrder = 'ASC';
+if (! @isset($this->reqTags))       $this->reqTags   = '';
+if (! @isset($this->reqTagInfo))    $this->reqTagInfo    = null;
+if (! @isset($this->maxTags))       $this->maxTags   = null;
+if (! @isset($this->sortBy))        $this->sortBy    = 'tag';
+if (! @isset($this->sortOrder))     $this->sortOrder = 'ASC';
 
-/*
-printf ("maxTags[ %d ], sortBy[ %s ], sortOrder[ %s ]<br />\n",
-        $this->maxTags, $this->sortBy, $this->sortOrder);
+// /*
+printf ("reqTags[ %s ], maxTags[ %d ], sortBy[ %s ], sortOrder[ %s ]<br />\n",
+        $this->reqTags, $this->maxTags, $this->sortBy, $this->sortOrder);
 // */
 
 // Grab the Zend_Tag_ItemList adapter for our tag set.
-$tagItemList = $this->tags->get_Tag_ItemList($this->maxTags, $this->curTags);
+$tagItemList = $this->tags->get_Tag_ItemList($this->maxTags,
+                                             $this->reqTags,
+                                             $this->reqTagInfo);
 
 // Create a sort function
 $refA    = '$a["'. $this->sortBy .'"]';

@@ -41,7 +41,14 @@ abstract class Connexions_Model_Cached extends Connexions_Model
     {
         $instanceId = $className::_instanceId($id);
 
-        if (@isset(self::$_cache[$instanceId]))
+        /*
+        Connexions::log("Connexions_Model_Cached::find: "
+                          . "className[ {$className} ], "
+                          . "id[ ". print_r($id, true) ." ], "
+                          . "instanceId[ {$instanceId} ]");
+        // */
+
+        if ( ($instanceId !== null) && @isset(self::$_cache[$instanceId]))
         {
             // Return the cached instance
             return self::$_cache[$instanceId];
@@ -51,14 +58,21 @@ abstract class Connexions_Model_Cached extends Connexions_Model
         $instance = parent::find($className, $id, $db);
         if ($instance instanceof $className)
         {
-            // Cache this new instance
-            self::$_cache[$instanceId] =& $instance;
+            if ($instanceId !== null)
+            {
+                /* Cache this new instance using the instanceId generated using
+                 * the incoming 'id'
+                 */
+                self::$_cache[$instanceId] =& $instance;
+            }
 
             $newInstId = $className::_instanceId($instance->_record);
 
             if ($newInstId !== $instanceId)
             {
-                // Cache it according to the "new" instance id as well
+                /* Cache this instance using the instanceId generated using the
+                 * actual record data.
+                 */
                 self::$_cache[$newInstId] =& $instance;
             }
         }

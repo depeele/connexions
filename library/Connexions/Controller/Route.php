@@ -2,7 +2,12 @@
 /** @file
  *
  *  A connexions router to handle the strange routing rules:
- *      /:owner         [/:tags]                Owner bookmarks
+ *      /                                       All bookmarks
+ *      /:owner          [/:tags]               Bookmarks of the given owner,
+ *                                              possibly limited by a set of
+ *                                              tags
+ *      /:tags                                  All bookmarks that have the
+ *                                              given tags
  *
  *      /network         /:owner    [/:tags]    Owner network
  *      /tags            /:owner    [/:tags]    Owner tags
@@ -11,7 +16,7 @@
  *
  *      /tag             /:tags                 Item tags
  *      /url             /:url                  Lookup url
- *      /people                                 People list
+ *      /people          [/:tags]               People list
  *
  *      /settings       [/:type     [/:cmd]]    Viewer settings
  *
@@ -33,11 +38,15 @@
 class Connexions_Controller_Route
                 extends Zend_Controller_Router_Route_Abstract
 {
-    protected $_default         = ':owner'; // The default '_routes' entry
+    protected $_default         = '/';      // The default '_routes' entry
     protected $_currentRoute    = null;
     protected $_routes          = array(
         // top/controller         sub-levels/named parameters
-        ':owner'        => array(':tags'    => false),
+        '/'             => array(':owner'   => array(
+                                    ':tags'    => false),
+                                 ':tags'    => false
+                           ),
+        ':tags'         => array(),
         'network'       => array(':owner'   => array(
                                     ':tags'    => false)
                            ),
@@ -107,10 +116,10 @@ class Connexions_Controller_Route
 
         $parts = explode('/', strtolower(trim($path, '/')) );
 
-        /*
-        echo   "<!-- Connexions_Controller_Route::match:\n";
-        printf("        path[ %s ], parts[ %s ] -->\n",
-                $path, implode(':', $parts));
+        // /*
+        Connexions::log("Connexions_Controller_Route::match: "
+                            . "path[ {$path} ], "
+                            . "parts[ ". implode(':',$parts) ." ]");
         // */
 
         $root = $parts[0];
@@ -124,29 +133,36 @@ class Connexions_Controller_Route
             $routeKey   = $root;
             $controller = $routeKey;
             $action     = 'index';
+            $idex       = 1;    // Skip the first part since we've already
+                                // matchedd it.
+
         }
         else
         {
             $routeKey   = $this->_default;
             $controller = 'index';
-            $action     = $root;
+            $action     = 'index';
+            $idex       = 0;    // Still need to match this first part
         }
-
-        /*
-        echo   "<!-- Connexions_Controller_Route::match:\n";
-        printf("        Root[ %s ], routeKey[ %s ], controller[ %s ], ".
-                                                       "action[ %s ] -->\n",
-                $root, $routeKey, $controller, $action);
-        // */
 
         if ($partial)
             $this->setMatchedPath($root);
 
         $route  =& $this->_routes[$routeKey];
-        $idex   =  1;
         $nParts =  count($parts);
         $params =  array('controller' => $controller,
                          'action'     => $action);
+
+        // /*
+        Connexions::log("Connexions_Controller_Route::match: "
+                            . "root[ {$root} ], "
+                            . "routeKey[ {$routeKey} ], "
+                            . "controller[ {$controller} ], "
+                            . "action[ {$action} ], "
+                            . "idex[ {$idex} ], "
+                            . "nParts[ {$nParts} ]");
+        // */
+
         while ($route && ($idex < $nParts))
         {
             if (! @is_array($route))
@@ -154,10 +170,10 @@ class Connexions_Controller_Route
 
             foreach ($route as $key => $val)
             {
-                /*
-                echo   "<!-- Connexions_Controller_Route::match:\n";
-                printf("        Route: key[ %s ], part#%d[ %s ] -->\n",
-                        $key, $idex, $parts[$idex]);
+                // /*
+                Connexions::log("Connexions_Controller_Route::match: Route: "
+                                    . "key[ {$key} ], "
+                                    . "part#{$idex}[ {$parts[$idex]} ]");
                 // */
 
                 if ($key[0] == ':')
@@ -188,20 +204,17 @@ class Connexions_Controller_Route
 
         if (($idex < $nParts) && (! $partial))
         {
-            /*
-            echo "<!-- Connexions_Controller_Route::match:\n";
-            echo "      ERROR -->\n";
+            // /*
+            Connexions::log("Connexions_Controller_Route::match: ERROR");
             // */
 
             // ERROR -- mismatch
             return false;
         }
 
-        /*
-        echo "<!-- Connexions_Controller_Route::match:\n";
-        echo "      Params:\n";
-        print_r($params);
-        echo "\n -->\n";
+        // /*
+        Connexions::log("Connexions_Controller_Route::match: Params [ "
+                            . print_r($params, true) ." ]");
         // */
 
         // Remember this current route
