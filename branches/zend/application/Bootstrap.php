@@ -38,7 +38,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         // Load ANY namespace
         $autoLoader->setFallbackAutoloader(true);
 
-        Connexions::log('Bootstrap::Autoloader initialized');
+        //Connexions::log('Bootstrap::Autoloader initialized');
 
         return $autoLoader;
 

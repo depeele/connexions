@@ -3,6 +3,9 @@
  *
  *  Render a single userItem.
  *
+ *  $this implements the Zend_View_Interface and has at least the following
+ *  members/methods:
+ *      userItem        The Model_UserItem instance to present.
  */
 if ((! @isset($this->userItem)) ||
     (! $this->userItem instanceof Model_UserItem))

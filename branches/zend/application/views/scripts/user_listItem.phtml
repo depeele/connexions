@@ -3,6 +3,10 @@
  *
  *  Render a single user within a user list.
  *
+ *  $this implements the Zend_View_Interface and has at least the following
+ *  members/methods:
+ *      user    The Model_User instance to present.
+ *      index   The (optional) index within the list.
  */
 if ((! @isset($this->user)) ||
     (! $this->user instanceof Model_User))

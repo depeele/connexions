@@ -118,6 +118,7 @@ class Model_User extends Connexions_Model_Cached
      */
     public static function find($id)
     {
+        //Connexions::log("Model::User::find: id[ ". print_r($id, true) ." ]");
         return parent::find(__CLASS__, $id);
     }
 
@@ -130,12 +131,37 @@ class Model_User extends Connexions_Model_Cached
      *          identifier.
      *  @param  id      The record identifier.
      *
-     *  @return A unique instance identifier string.
+     *  @return A unique instance identifier string (null if invalid).
      */
     protected static function _instanceId($id)
     {
-        return __CLASS__ .'_'.  (! @empty($id['userId'])
-                                    ?  $id['userId']
-                                    : 'generic');
+        $instanceId = __CLASS__ .'_';
+        if (@is_array($id))
+        {
+            if (! @empty($id['userId']))
+                $instanceId .= $id['userId'];
+            else if (! @empty($id['name']))
+                $instanceId .= $id['name'];
+            else
+            {
+                // INVALID
+                $instanceId = null;
+            }
+        }
+        else if (@is_string($id))
+            $instanceId .= $id;
+        else
+        {
+            // INVALID
+            $instanceId = null;
+        }
+
+        /*
+        Connexions::log("Model_User::_instanceId: "
+                            . "id[ ". print_r($id, true) ." ], "
+                            . "instanceId[ {$instanceId} ]");
+        // */
+
+        return $instanceId;
     }
 }

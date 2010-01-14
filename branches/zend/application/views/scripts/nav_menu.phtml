@@ -1,4 +1,19 @@
 <?php
+/** @file
+ *
+ *  A view partial to render the top-level navigation menu.
+ *
+ *  $this implements the Zend_View_Interface and has at least the following
+ *  members/methods:
+ *      navigation()    Returns the Zend_View_Helper_Navigtion instance to be
+ *                      used to retrieve the Zend_View_Helper_Navigation_Menu
+ *                      instance to aid in rendering.
+ *      container       The Zend_Navigation_Page representing the container,
+ *                      established via
+ *                          $view->navigation()
+ *                               ->menu()
+ *                               ->renderPartial($container, ...)
+ */
 $request        = Connexions::getRequest();
 $searchContexts = Zend_Registry::get('config')->searchContext;
 if ($searchContexts instanceof Zend_Config)
@@ -58,6 +73,11 @@ function renderMenu($helper, $container, $ulClass = 'nav')
     $iterator = new RecursiveIteratorIterator($container,
                         RecursiveIteratorIterator::SELF_FIRST);
 
+    /* Attempt to simplify the current request uri by stripping off any query
+     * and/or fragment.
+     */
+    $uri =  preg_replace('/[\?#].*$/', '', $uri);
+
     /* First, iterate through and determine the lowest page that matches the
      * current URI.
      */
@@ -69,11 +89,12 @@ function renderMenu($helper, $container, $ulClass = 'nav')
             continue;
         }
 
-        $href   = $page->getHref();
-        $isActive = preg_match('#^'.$href.'$#', $uri);
+        $href = $page->getHref();
+
+        //$isActive = preg_match('#^'.$href.'$#', $uri);
+        $isActive = preg_match('#^'.$href.'#', $uri);
         if ($isActive)
         {
-printf("\n<!-- Active href[ %s ], with uri[ %s ] -->\n", $href, $uri);
             $page->setActive(true);
         }
     }
@@ -93,7 +114,8 @@ printf("\n<!-- Active href[ %s ], with uri[ %s ] -->\n", $href, $uri);
         $indent   = str_repeat(' ', $depth);
         $href     = $page->getHref();
         $isActive = ($depth > 0
-                        ? preg_match('#^'.$href.'$#', $uri)
+                        //? preg_match('#^'.$href.'$#', $uri)
+                        ? preg_match('#^'.$href.'#', $uri)
                         : $page->isActive(true));
 
         if ($depth > $prevDepth)
