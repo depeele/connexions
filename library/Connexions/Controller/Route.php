@@ -10,7 +10,10 @@
  *                                              given tags
  *
  *      /network         /:owner    [/:tags]    Owner network
- *      /tags            /:owner    [/:tags]    Owner tags
+ *
+ *      /tags            [/:owners]             All tags, possibly limited by a
+ *                                              set of owner(s).
+ *
  *      /subscriptions   /:owner    [/:tags]    Owner subscriptions
  *      /inbox           /:owner    [/:tags]    Owner inbox
  *
@@ -50,9 +53,7 @@ class Connexions_Controller_Route
         'network'       => array(':owner'   => array(
                                     ':tags'    => false)
                            ),
-        'tags'          => array(':owner'   => array(
-                                    ':tags'    => false)
-                           ),
+        'tags'          => array(':owners'  => false),
         'subscriptions' => array(':owner'   => array(
                                     ':tags'    => false)
                            ),

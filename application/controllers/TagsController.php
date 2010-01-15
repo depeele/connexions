@@ -17,41 +17,63 @@ class TagsController extends Zend_Controller_Action
     {
         $viewer =& Zend_Registry::get('user');
 
-        $request = $this->getRequest();
-        $owner   = $request->getParam('owner', null);
-        $tags    = $request->getParam('tags',  null);
+        $request   = $this->getRequest();
+        $owners    = $request->getParam('owners',    null);
 
-        if ($owner === 'mine')
-        {
-            // No user specified -- use the currently authenticated user
-            $owner =& $viewer;
-            if ( ( ! $owner instanceof Model_User) ||
-                 (! $owner->isAuthenticated()) )
-            {
-                // Unauthenticated user -- Redirect to signIn
-                return $this->_helper->redirector('signIn','auth');
-            }
-        }
+        // Pagination parameters
+        $page      = $request->getParam('page',      null);
+        $perPage   = $request->getParam('perPage',   null);
 
-        if (! $owner instanceof Model_User)
-        {
-            if (@empty($owner))
-                $owner = '*';
-            else
-            {
-                // Is this a valid user?
-                $owner = new Model_User($owner);
+        // Tag-cloud parameters
+        $maxTags   = -1;    // ALL  $request->getParam('maxTags',   null);
+        $sortBy    = $request->getParam('sortBy',    null);
+        $sortOrder = $request->getParam('sortOrder', null);
 
-                if (! $owner->isBacked())
-                {
-                    $this->view->error = 'Unknown user.';
-                }
-            }
-        }
+        // /*
+        Connexions::log("TagController:: "
+                            . "owners[ {$owners} ], "
+                            . "page[ {$page} ], "
+                            . "perPage[ {$perPage} ], "
+                            . "maxTags[ {$maxTags} ], "
+                            . "sortBy[ {$sortBy} ], "
+                            . "sortOrder[ {$sortOrder} ]");
+        // */
 
-        $this->view->owner  = $owner;
-        $this->view->viewer = $viewer;
-        $this->view->tags   = $tags;
+
+        $userInfo = (Object)(array( 'validIds' => null ));
+        /*
+        $userInfo = new Connexions_UserInfo($owners);
+        if ($userInfo->hasInvalidUsers())
+            $this->view->error =
+                    "Invalid user(s) [ {$userInfo->invalidUsers} ]";
+        */
+
+        // Retrieve the set of tags
+        $tagSet    = new Model_TagSet( $userInfo->validIds );
+
+        $paginator = null;
+        /*
+        $paginator = new Zend_Paginator( $tagSet );
+
+        // Apply the pagination parameters
+        if ($page > 0)
+            $paginator->setCurrentPageNumber($page);
+        if ($perPage > 0)
+            $paginator->setItemCountPerPage($perPage);
+        */
+
+
+        // Set the required view variables
+        $this->view->tagSet     = $tagSet;
+        $this->view->paginator  = $paginator;
+
+        $this->view->viewer     = $viewer;
+        $this->view->userInfo   = $userInfo;
+
+        // Tag-cloud parameters
+        $this->view->maxTags    = $maxTags;
+        $this->view->sortBy     = $sortBy;
+        $this->view->sortOrder  = $sortOrder;
     }
 
     /** @brief Redirect all other actions to 'index'

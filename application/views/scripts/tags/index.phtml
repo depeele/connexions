@@ -1,18 +1,99 @@
 <?php
+/** @file
+ *
+ *  View script for TagsController::index with incoming members:
+ *      viewer      The Model_User instance representing the current viewer;
+ *      userInfo    A Connexions_UserInfo instance containing information about
+ *                  the requested users.
+ *      tagSet      The ModelTagSet representing the tags to present.
+ *      paginator   The paginator to use in presenting 'tagSet'.
+ *
+ *      maxTags
+ *      sortBy
+ *      sortOrder
+ */
 
-if ($this->owner !==  '*')
-    $this->headTitle($this->owner ."'s Tags");
-else
-    $this->headTitle("Tags");
+$this->headTitle('Tags');
 
 ?>
-<p>Present the Tags for <?= $this->owner ?>
-                    to  <?= $this->viewer ?>
-<?php   if (@empty($this->tags))
-            printf (", NO tags.");
+<p>Present Tags to  <?= $this->viewer ?>
+<?php   if ( false )    //$this->userInfo->hasValidUsers())
+            printf (" of users '%s'", $this->userInfo->validUsers);
         else
-            printf (" with tags '%s'", $this->tags);
+            printf (", NO users.");
 ?>
 </p>
+
+<?php
+if ( @isset($this->tagSet))
+{
+    $this->tagInfo = new Connexions_TagInfo('');
+    $html          = '';
+
+    // The partial is faster than the  View Helper by about 0.01 seconds
+    $time_start = microtime(true);
+    if (true)
+    {
+    /* Use the Connexions_View_Helper_HtmlTagCloud class to render the tag
+     * cloud for $this->tagSet.
+     *
+     * This view helper uses:
+     *  $view->tagSet, tagInfo, maxTags, sortBy, and sortOrder
+     */
+    $html .= $this->htmlTagCloud();
+
+    }
+    else
+    {
+    /* Use the tagCloud.phtml partial to render the tag cloud associated with
+     * the incoming users.
+     *
+     * :TODO: Pull the 'maxTags' setting from some user-controller area.
+     */
+    $html .= $this->partial('tagCloud.phtml',
+                                            array(
+                                                'tagSet'    => &$this->tagSet,
+                                                'tagInfo'   => &$this->tagInfo
+                                            ));
+    }
+
+    $time_end   = microtime(true);
+
+    $html .= sprintf ("%f seconds to render tag cloud<br />\n",
+                      $time_end - $time_start);
+
+    //$this->layout()->right = $html;
+    echo $html;
+}
+
+/* Present the pagination control, established by
+ * Bootstrap.php::_initViewGlobal() to be rendered via:
+ *      views/scripts/paginationControl.phtml
+ *
+echo $this->paginator;
+
+if (count($this->paginator))
+{
+    // Present the items of the current page
+    echo "<ul class='items'>\n";
+    foreach ($this->paginator as $idex => $user)
+    {
+        // Present the current item -- This should probably be via a view
+        // partial like:
+        //      view/scripts/user_listItem.phtml
+        echo $this->partial('user_listItem.phtml',
+                            array(
+                                'index' => $idex,
+                                'user'  => $user
+                            ));
+    }
+    echo "</ul>\n";
+}
+
+echo $this->paginator;
+// */
+
+?>
+
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

@@ -20,11 +20,11 @@ class PeopleController extends Zend_Controller_Action
         $viewer    =& Zend_Registry::get('user');
 
         $request   = $this->getRequest();
-        $reqTags   = $request->getParam('tags',    null);
+        $reqTags   = $request->getParam('tags',      null);
 
         // Pagination parameters
-        $page      = $request->getParam('page',    null);
-        $perPage   = $request->getParam('perPage', null);
+        $page      = $request->getParam('page',      null);
+        $perPage   = $request->getParam('perPage',   null);
 
         // Tag-cloud parameters
         $maxTags   = $request->getParam('maxTags',   null);
@@ -41,6 +41,8 @@ class PeopleController extends Zend_Controller_Action
         if ($tagInfo->hasInvalidTags())
             $this->view->error = "Invalid tag(s) [ {$tagInfo->invalidTags} ]";
 
+
+        // Retrieve the set of users
         $users     = new Model_UserSet( $tagInfo->validIds );
         $paginator = new Zend_Paginator( $users );
 
