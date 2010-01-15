@@ -47,8 +47,10 @@ class Model_TagSet extends Connexions_Set
 
         // Generate a Zend_Db_Select instance
         $db     = Connexions::getDb();
+        $table  = Connexions_Model::__sget($memberClass, 'table');
+
         $select = $db->select()
-                     ->from(array('t' => $memberClass::$table))
+                     ->from(array('t' => $table))
                      ->join(array('uti'   => 'userTagItem'),  // table / as
                             ' t.tagId=uti.tagId',             // condition
                             '')                               // columns (none)
@@ -88,9 +90,7 @@ class Model_TagSet extends Connexions_Set
         $this->_itemIds = $itemIds;
         $this->_tagIds  = $tagIds;
 
-        //return parent::__construct($select, self::MEMBER_CLASS);
-        return parent::__construct($select,
-                                   $memberClass);
+        return parent::__construct($select, $memberClass);
     }
 
     /** @brief  Retrieve the array of item identifiers of all userItems that

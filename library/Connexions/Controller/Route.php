@@ -116,7 +116,7 @@ class Connexions_Controller_Route
 
         $parts = explode('/', strtolower(trim($path, '/')) );
 
-        // /*
+        /*
         Connexions::log("Connexions_Controller_Route::match: "
                             . "path[ {$path} ], "
                             . "parts[ ". implode(':',$parts) ." ]");
@@ -153,7 +153,7 @@ class Connexions_Controller_Route
         $params =  array('controller' => $controller,
                          'action'     => $action);
 
-        // /*
+        /*
         Connexions::log("Connexions_Controller_Route::match: "
                             . "root[ {$root} ], "
                             . "routeKey[ {$routeKey} ], "
@@ -170,7 +170,7 @@ class Connexions_Controller_Route
 
             foreach ($route as $key => $val)
             {
-                // /*
+                /*
                 Connexions::log("Connexions_Controller_Route::match: Route: "
                                     . "key[ {$key} ], "
                                     . "part#{$idex}[ {$parts[$idex]} ]");
@@ -204,7 +204,7 @@ class Connexions_Controller_Route
 
         if (($idex < $nParts) && (! $partial))
         {
-            // /*
+            /*
             Connexions::log("Connexions_Controller_Route::match: ERROR");
             // */
 
@@ -212,7 +212,7 @@ class Connexions_Controller_Route
             return false;
         }
 
-        // /*
+        /*
         Connexions::log("Connexions_Controller_Route::match: Params [ "
                             . print_r($params, true) ." ]");
         // */

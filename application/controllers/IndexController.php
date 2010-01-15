@@ -24,7 +24,7 @@ class IndexController extends Zend_Controller_Action
         $page    =           $request->getParam('page',    null);
         $perPage =           $request->getParam('perPage', null);
 
-        // /*
+        /*
         Connexions::log("IndexController:: "
                             . "owner[ {$owner} ], "
                             . "tags[ ". $request->getParam('tags','') ." ], "
@@ -121,12 +121,14 @@ class IndexController extends Zend_Controller_Action
             }
         }
 
+        /*
         Connexions::log("IndexController:: "
                             . "owner[ {$owner} ], "
                             . "tags[ {$reqTags} ], "
                             . "validTags[ {$validTags} ], "
                             . "validTagIds[ ".print_r($validTagIds,true)." ], "
-                            . "reqTagInfo[ ".     print_r($reqTagInfo, true) ." ]");
+                            . "reqTagInfo[ ". print_r($reqTagInfo, true) ." ]");
+        // */
 
         $userItems = new Model_UserItemSet($validTagIds, $userIds);
         $paginator = new Zend_Paginator( $userItems );
@@ -156,7 +158,7 @@ class IndexController extends Zend_Controller_Action
         {
             $owner = substr($method, 0, -6);
 
-            // /*
+            /*
             $request = $this->getRequest();
 
             Connexions::log("IndexController::__call({$method}): "

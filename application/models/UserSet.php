@@ -45,8 +45,13 @@ class Model_UserSet extends Connexions_Set
 
         // Generate a Zend_Db_Select instance
         $db     = Connexions::getDb();
+        $table  = Connexions_Model::__sget($memberClass, 'table');
+
+        Connexions::log("UserSet: memberClass[ {$memberClass} ], "
+                            . "table[ {$table} ]");
+
         $select = $db->select()
-                     ->from(array('u' => $memberClass::$table))
+                     ->from(array('u' => $table))
                      ->join(array('uti'   => 'userTagItem'),  // table / as
                                   '(u.userId=uti.userId)',    // condition
                                   '')                         // columns (none)
@@ -77,7 +82,7 @@ class Model_UserSet extends Connexions_Set
 
 
         // Include '_memberClass' in $select so we can use 'Connexions_Set'
-        $select->_memberClass = $memberClass;   //self::MEMBER_CLASS;
+        $select->_memberClass = $memberClass;
 
         $this->_tagIds  = $tagIds;
         $this->_userIds = $userIds;
