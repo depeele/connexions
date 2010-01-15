@@ -19,12 +19,12 @@ class IndexController extends Zend_Controller_Action
         $viewer   =& Zend_Registry::get('user');
 
         $request   = $this->getRequest();
-        $owner     = $request->getParam('owner',   null);
-        $reqTags   = $request->getParam('tags',    null);
+        $owner     = $request->getParam('owner',     null);
+        $reqTags   = $request->getParam('tags',      null);
 
         // Pagination parameters
-        $page      = $request->getParam('page',    null);
-        $perPage   = $request->getParam('perPage', null);
+        $page      = $request->getParam('page',      null);
+        $perPage   = $request->getParam('perPage',   null);
 
         // Tag-cloud parameters
         $maxTags   = $request->getParam('maxTags',   null);
