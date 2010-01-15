@@ -62,7 +62,7 @@ else
            ->setUiLocalPath($baseUrl .'js/jquery-ui.js');
 }
 
-$jQuery->setVersion('1.3.2')
+$jQuery->setVersion('1.4')
        ->setUiVersion('1.7.2')
        ->enable()
        ->uiEnable()
@@ -206,7 +206,11 @@ $jQuery->javascriptCaptureEnd();
    </h1>
    <div class='tabs'><!-- tabs { -->
     <?php
-        /* Present the Navigation Menu */
+        /* Present the Navigation Menu
+         *
+         * Note: $this/view->navigation() is initialized in
+         *       Bootstrap::_initNavigation
+         */
         $nav   = $this->navigation();
 
         /*
