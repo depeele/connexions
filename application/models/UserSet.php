@@ -47,9 +47,6 @@ class Model_UserSet extends Connexions_Set
         $db     = Connexions::getDb();
         $table  = Connexions_Model::__sget($memberClass, 'table');
 
-        Connexions::log("UserSet: memberClass[ {$memberClass} ], "
-                            . "table[ {$table} ]");
-
         $select = $db->select()
                      ->from(array('u' => $table))
                      ->join(array('uti'   => 'userTagItem'),  // table / as

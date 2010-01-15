@@ -163,11 +163,9 @@ class Model_TagSet extends Connexions_Set
 
     /** @brief  Create a Zend_Tag_ItemList adapter for the top 'limit' tags.
      *  @param  limit       The maximum number of tags [100].
-     *  @param  reqTags     A comma-separated string representing the tags that
-     *                      are currently specified in the request;
-     *  @param  reqTagInfo  Null or an array of tag information (from
-     *                      Model_Tag::ids()) that identifies both valid and
-     *                      invalid tags from 'reqTags';
+     *  @param  tagInfo     A Connexions_TagInfo instance containing
+     *                      information about any tags specified in the
+     *                      request.
      *
      *  Note: Since the default order is by 'userItemCount DESC', the top tags
      *        will be the tags with the highest count.
@@ -177,15 +175,13 @@ class Model_TagSet extends Connexions_Set
      *
      */
     public function get_Tag_ItemList($limit         = null,
-                                     $reqTags       = null,
-                                     $reqTagInfo    = null)
+                                     $tagInfo       = null)
     {
         if ($limit === null)
             $limit = 100;
 
         return new Model_TagSet_ItemList($this->getItems(0, $limit),
-                                         $reqTags,
-                                         $reqTagInfo);
+                                         $tagInfo);
     }
 
     /*************************************************************************
@@ -272,29 +268,25 @@ class Model_TagSet_ItemList extends Zend_Tag_ItemList
 {
     protected   $_iterator      = null;
     protected   $_reqUrl        = null;
-    protected   $_reqTags       = null;
     protected   $_reqTagInfo    = null;
+    protected   $_reqTags       = null; // Simplified version of the original
+                                        // comma-separated string of tags.
 
     /** @brief  Constructor
      *  @param  iterator    The Connexions_Set_Iterator instance that we will
      *                      adapt.
-     *  @param  reqTags     A comma-separated string representing the tags that
-     *                      are currently specified in the request;
-     *  @param  reqTagInfo  Null or an array of tag information (from
-     *                      Model_Tag::ids()) that identifies both valid and
-     *                      invalid tags from 'reqTags';
+     *  @param  reqTagInfo  A Connexions_TagInfo instance containing
+     *                      information about any tags specified in the
+     *                      request.
      */
     public function __construct(Connexions_Set_Iterator $iterator,
-                                $reqTags    = null,
-                                $reqTagInfo = null)
+                                Connexions_TagInfo      $reqTagInfo = null)
     {
-        $this->_iterator =& $iterator;
+        if ($reqTagInfo === null)
+            $reqTagInfo = new Connexions_TagInfo('');
 
-        if ( (! @empty($reqTags)) && (! @is_array($reqTagInfo)) )
-        {
-            // Generate the 'reqTagInfo' information from the provided 'reqTags'
-            $reqTagInfo = Model_Tag::ids($reqTags);
-        }
+        $this->_iterator   =& $iterator;
+        $this->_reqTagInfo =& $reqTagInfo;
 
         /* Retrieve the current request URL.  Simplify it by removing any
          * query/fragment, urldecoding, collapsing spaces, trimming any
@@ -306,15 +298,15 @@ class Model_TagSet_ItemList extends Zend_Tag_ItemList
         $uri = preg_replace('/\s\s+/',    ' ', $uri);   // white-space collapse
         $uri = rtrim($uri, " \t\n\r\0\x0B/");
 
-        $this->_reqUrl     =  $uri;
-        $this->_reqTagInfo =& $reqTagInfo;
+        $this->_reqUrl  = $uri;
+        $this->_reqTags = $reqTagInfo->reqTags;
 
-        if (@is_string($reqTags))
+        if (is_string($this->_reqTags))
         {
             /* decode, collapse spaces, and removing any space around ',' from
              * the incoming 'reqUrl'
              */
-            $tags = urldecode($reqTags);
+            $tags = urldecode($this->_reqTags);
             $tags = preg_replace('/\s+/',     ' ', $tags);
             $tags = preg_replace('/\s*,\s*/', ',', $tags);
 
@@ -324,11 +316,9 @@ class Model_TagSet_ItemList extends Zend_Tag_ItemList
         /*
         Connexions::log(sprintf("Model_TagSet_ItemList:: ".
                                     "reqUrl[ %s ], ".
-                                    "reqTags[ %s ], ".
-                                    "reqTagInfo[ %s ]",
+                                    "reqTags[ %s ]",
                                 $this->_reqUrl,
-                                $this->_reqTags,
-                                print_r($this->_reqTagInfo, true)) );
+                                $this->_reqTags));
         // */
     }
 
@@ -440,17 +430,15 @@ class Model_TagSet_ItemList extends Zend_Tag_ItemList
          *      url         The url to visit if this tag is clicked.
          */
         $tagStr  = $tag->tag;
-        $tagList = (@is_array($this->_reqTagInfo)
-                        ? array_keys($this->_reqTagInfo['valid'])
-                        : null);
+        $tagList = $this->_reqTagInfo->validList;
 
         $url = $this->_reqUrl;
         if (! @empty($this->_reqTags))
             // Remove the requested tags from the request URL
             $url = str_replace('/'. $this->_reqTags, '', $url);
 
-        if (@is_array($this->_reqTagInfo['valid']) &&
-            @isset($this->_reqTagInfo['valid'][$tagStr]))
+        //if ($this->_reqTagInfo->isValidTag($tagStr))
+        if (@in_array($tagStr, $tagList))
         {
             // Remove this tag from the new tag list.
             $tag->setParam('selected', true);

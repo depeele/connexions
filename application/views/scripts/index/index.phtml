@@ -5,10 +5,8 @@
  *      viewer      The Model_User instance representing the current viewer;
  *      owner       The owner of the current item set -- either a string or a
  *                  Model_User instance;
- *      reqTags     The set of tags originally specified in the URL.
- *      reqTagInfo  Null if no tags or an array tagId information
- *                  (from Model_Tag::ids()) that identifies both valid and
- *                  invalid tags;
+ *      tagInfo     A Connexions_TagInfo instance containing information about
+ *                  the requested tags.
  *      userItems   The Model_UserItemSet representing the items to present.
  *      paginator   The paginator to use in presenting 'userItems'.
  */
@@ -21,12 +19,10 @@ else
 ?>
 <p>Present the Bookmarks for <?= $this->owner ?>
                          to  <?= $this->viewer ?>
-<?php   if ( (! @is_array($this->reqTagInfo)) ||
-              @empty($this->reqTagInfo['valid']) )
-            printf (", NO tags.");
+<?php   if ( $this->tagInfo->hasValidTags())
+            printf (" with tags '%s'", $this->tagInfo->validTags);
         else
-            printf (" with tags '%s'",
-                    implode(', ', array_keys($this->reqTagInfo['valid'])) );
+            printf (", NO tags.");
 ?>
 </p>
 
@@ -40,12 +36,6 @@ if ( @isset($this->userItems) )
      */
     if ((! @isset($this->tagSet)) && (count($this->userItems) > 0))
     {
-        /* Note: We COULD modify Model_TagSet to hold the 'reqTags', and
-         *       'reqTagInfo' and then allow the tagCloud.phtml partial to just
-         *       deal with an incoming Model_TagSet, relying on
-         *       Model_TagSet::get_Tag_ItemList() to reference the held
-         *       context.
-         */
         $this->tagSet = new Model_TagSet( $this->userItems->userIds(),
                                           $this->userItems->itemIds() );
     }
@@ -55,10 +45,13 @@ if ( @isset($this->tagSet))
 {
     // The partial is faster than the  View Helper by about 0.01 seconds
     $time_start = microtime(true);
-    if (false)
+    if (true)
     {
     /* Use the Connexions_View_Helper_HtmlTagCloud class to render the tag
      * cloud for $this->tagSet.
+     *
+     * This view helper uses:
+     *  $view->tagSet, tagInfo, maxTags, sortBy, and sortOrder
      */
     $this->layout()->right = $this->htmlTagCloud();
 
@@ -70,11 +63,8 @@ if ( @isset($this->tagSet))
      */
     $this->layout()->right = $this->partial('tagCloud.phtml',
                                             array(
-                                                'tags'      => &$this->tagSet,
-                                                'reqTagInfo'=>
-                                                        $this->reqTagInfo,
-                                                'reqTags'   => $this->reqTags,
-                                                'maxTags'   => 50
+                                                'tagSet'    => &$this->tagSet,
+                                                'tagInfo'   => &$this->tagInfo
                                             ));
     }
 

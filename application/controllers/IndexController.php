@@ -16,13 +16,20 @@ class IndexController extends Zend_Controller_Action
 
     public function indexAction()
     {
-        $viewer =& Zend_Registry::get('user');
+        $viewer   =& Zend_Registry::get('user');
 
-        $request = $this->getRequest();
-        $owner   =           $request->getParam('owner',   null);
-        $reqTags = urldecode($request->getParam('tags',    null));
-        $page    =           $request->getParam('page',    null);
-        $perPage =           $request->getParam('perPage', null);
+        $request   = $this->getRequest();
+        $owner     = $request->getParam('owner',   null);
+        $reqTags   = $request->getParam('tags',    null);
+
+        // Pagination parameters
+        $page      = $request->getParam('page',    null);
+        $perPage   = $request->getParam('perPage', null);
+
+        // Tag-cloud parameters
+        $maxTags   = $request->getParam('maxTags',   null);
+        $sortBy    = $request->getParam('sortBy',    null);
+        $sortOrder = $request->getParam('sortOrder', null);
 
         /*
         Connexions::log("IndexController:: "
@@ -66,10 +73,16 @@ class IndexController extends Zend_Controller_Action
                 {
                     /* NOT a valid user.
                      *
-                     * If 'reqTags' wasn't spepcified, use 'owner' as 'reqTags'
+                     * If 'tags' wasn't spepcified, use 'owner' as 'tags'
                      */
                     if (empty($reqTags))
                     {
+                        /*
+                        Connexions::log("IndexController:: "
+                                            . "Unknown User and no tags; "
+                                            . "use owner as tags [ {$owner} ] "
+                                            . "and set owner to '*'");
+                        // */
                         $reqTags  = $owner;
                         $owner    = '*';
                     }
@@ -77,8 +90,9 @@ class IndexController extends Zend_Controller_Action
                     {
                         // Invalid user!
                         /*
-                        Connexions::log("IndexController:: Unknown User, ".
-                                            "user owner as tags [ {$owner} ]");
+                        Connexions::log("IndexController:: "
+                                            . "Unknown User with tags; "
+                                            . "set owner to '*'");
                         // */
 
                         $this->view->error = "Unknown user [ {$owner} ].";
@@ -88,63 +102,32 @@ class IndexController extends Zend_Controller_Action
             }
         }
 
-        $reqTagInfo  = null;
-        $validTagIds = null;
-        $validTags   = '';
-        if (! @empty($reqTags))
-        {
-            /* Retrieve the tag identifiers for all valid tags and idientify
-             * which are invalid.
-             */
-            $reqTagInfo = Model_Tag::ids($reqTags);
-            $validTags  = @implode(',', $reqTagInfo['valid']);
+        $tagInfo = new Connexions_TagInfo($reqTags);
+        if ($tagInfo->hasInvalidTags())
+            $this->view->error = "Invalid tag(s) [ {$tagInfo->invalidTags} ]";
 
-            if (! @empty($reqTagInfo['invalid']))
-            {
-                $this->view->error = 'Invalid tag(s) [ '
-                                   .    implode(', ',
-                                                $reqTagInfo['invalid']) .' ]';
-            }
-
-
-            if (@empty($reqTagInfo['valid']))
-            {
-                /* NONE of the provided tags are valid.  Use a reqTagInfo array
-                 * with a single, invalid tag identifier to ensure that
-                 * we don't match ANY user items.
-                 */
-                $validTagIds = array(-1);
-            }
-            else
-            {
-                $validTagIds = array_values($reqTagInfo['valid']);
-            }
-        }
-
-        /*
-        Connexions::log("IndexController:: "
-                            . "owner[ {$owner} ], "
-                            . "tags[ {$reqTags} ], "
-                            . "validTags[ {$validTags} ], "
-                            . "validTagIds[ ".print_r($validTagIds,true)." ], "
-                            . "reqTagInfo[ ". print_r($reqTagInfo, true) ." ]");
-        // */
-
-        $userItems = new Model_UserItemSet($validTagIds, $userIds);
+        $userItems = new Model_UserItemSet($tagInfo->validIds, $userIds);
         $paginator = new Zend_Paginator( $userItems );
 
+        // Apply the pagination parameters
         if ($page > 0)
             $paginator->setCurrentPageNumber($page);
         if ($perPage > 0)
             $paginator->setItemCountPerPage($perPage);
 
+
+        // Set the required view variables
         $this->view->userItems  = $userItems;
         $this->view->paginator  = $paginator;
 
         $this->view->owner      = $owner;
         $this->view->viewer     = $viewer;
-        $this->view->reqTags    = $reqTags;
-        $this->view->reqTagInfo = $reqTagInfo;
+        $this->view->tagInfo    = $tagInfo;
+
+        // Tag-cloud parameters
+        $this->view->maxTags    = $maxTags;
+        $this->view->sortBy     = $sortBy;
+        $this->view->sortOrder  = $sortOrder;
     }
 
     /** @brief Redirect all other actions to 'index'
