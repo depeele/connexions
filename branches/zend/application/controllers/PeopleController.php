@@ -17,60 +17,50 @@ class PeopleController extends Zend_Controller_Action
     public function indexAction()
     {
         // action body -- present all people
-        $viewer  =& Zend_Registry::get('user');
+        $viewer    =& Zend_Registry::get('user');
 
-        $request = $this->getRequest();
-        $tags    = urldecode($request->getParam('tags',    null));
-        $page    =           $request->getParam('page',    null);
-        $perPage =           $request->getParam('perPage', null);
+        $request   = $this->getRequest();
+        $reqTags   = $request->getParam('tags',    null);
 
-        $tagIds = null;
-        if (! @empty($tags))
-        {
-            /* Retrieve the tag identifiers for all valid tags and idientify
-             * which are invalid.
-             */
-            $tagIds = Model_Tag::ids($tags);
+        // Pagination parameters
+        $page      = $request->getParam('page',    null);
+        $perPage   = $request->getParam('perPage', null);
 
-            if (! @empty($tagIds['invalid']))
-            {
-                // Remove all invalid tags from our original tag string
-                foreach ($tagIds['invalid'] as $tag)
-                {
-                    // Remove this invalid tag from the tag string
-                    $reTag = preg_replace("#[/']#", '\\.', $tag);
-                    $re    = "/(^{$reTag}\\s*(,\\s*|$)|\\s*,\\s*{$reTag})/";
-                    $tags = preg_replace($re, '', $tags);
-                }
+        // Tag-cloud parameters
+        $maxTags   = $request->getParam('maxTags',   null);
+        $sortBy    = $request->getParam('sortBy',    null);
+        $sortOrder = $request->getParam('sortOrder', null);
 
-                $this->view->error = 'Invalid tag(s) [ '
-                                   .    implode(', ',$tagIds['invalid']) .' ]';
-            }
+        /*
+        Connexions::log("PeopleController:: "
+                            . "tags[ ". $request->getParam('tags','') ." ], "
+                            . "reqTags[ {$reqTags} ]");
+        // */
 
-            if (@empty($tagIds['valid']))
-            {
-                /* NONE of the provided tags are valid.  Use a tagIds array
-                 * with a single, invalid tag identifier to ensure that
-                 * we don't match ANY user items.
-                 */
-                $tagIds['valid'] = array(-1);
-            }
+        $tagInfo = new Connexions_TagInfo($reqTags);
+        if ($tagInfo->hasInvalidTags())
+            $this->view->error = "Invalid tag(s) [ {$tagInfo->invalidTags} ]";
 
-            $tagIds = array_values($tagIds['valid']);
-        }
-
-        $users     = new Model_UserSet( $tagIds );
+        $users     = new Model_UserSet( $tagInfo->validIds );
         $paginator = new Zend_Paginator( $users );
 
+        // Apply the pagination parameters
         if ($page > 0)
             $paginator->setCurrentPageNumber($page);
         if ($perPage > 0)
             $paginator->setItemCountPerPage($perPage);
 
-        $this->view->paginator = $paginator;
 
-        $this->view->viewer    = $viewer;
-        $this->view->users     = $users;
-        $this->view->tags      = $tags;
+        // Set the required view variables
+        $this->view->users      = $users;
+        $this->view->paginator  = $paginator;
+
+        $this->view->viewer     = $viewer;
+        $this->view->tagInfo    = $tagInfo;
+
+        // Tag-cloud parameters
+        $this->view->maxTags    = $maxTags;
+        $this->view->sortBy     = $sortBy;
+        $this->view->sortOrder  = $sortOrder;
     }
 }

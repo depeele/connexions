@@ -1,13 +1,24 @@
 <?php
+/** @file
+ *
+ *  View script for PeopleController::index with incoming members:
+ *      viewer      The Model_User instance representing the current viewer;
+ *      owner       The owner of the current item set -- either a string or a
+ *                  Model_User instance;
+ *      tagInfo     A Connexions_TagInfo instance containing information about
+ *                  the requested tags.
+ *      userItems   The Model_UserItemSet representing the items to present.
+ *      paginator   The paginator to use in presenting 'userItems'.
+ */
 
 $this->headTitle('People');
 
 ?>
 <p>Present People to  <?= $this->viewer ?>
-<?php   if (@empty($this->tags))
-            printf (", NO tags.");
+<?php   if ( $this->tagInfo->hasValidTags())
+            printf (" with tags '%s'", $this->tagInfo->validTags);
         else
-            printf (" with tags '%s'", $this->tags);
+            printf (", NO tags.");
 ?>
 </p>
 
@@ -20,7 +31,6 @@ if ( @isset($this->users) )
     if ((! @isset($this->tagSet)) && (count($this->users) > 0))
     {
         $this->tagSet = new Model_TagSet( $this->users->userIds() );
-                                          //$this->users->itemIds() );
     }
 }
 
@@ -28,10 +38,13 @@ if ( @isset($this->tagSet))
 {
     // The partial is faster than the  View Helper by about 0.01 seconds
     $time_start = microtime(true);
-    if (false)
+    if (true)
     {
     /* Use the Connexions_View_Helper_HtmlTagCloud class to render the tag
      * cloud for $this->tagSet.
+     *
+     * This view helper uses:
+     *  $view->tagSet, tagInfo, maxTags, sortBy, and sortOrder
      */
     $this->layout()->right = $this->htmlTagCloud();
 
@@ -40,12 +53,13 @@ if ( @isset($this->tagSet))
     {
     /* Use the tagCloud.phtml partial to render the tag cloud associated with
      * the incoming users.
+     *
+     * :TODO: Pull the 'maxTags' setting from some user-controller area.
      */
     $this->layout()->right = $this->partial('tagCloud.phtml',
                                             array(
-                                                'tags'      => &$this->tagSet,
-                                                'curTags'   => $this->tags,
-                                                'maxTags'   => 50
+                                                'tagSet'    => &$this->tagSet,
+                                                'tagInfo'   => &$this->tagInfo
                                             ));
     }
 
