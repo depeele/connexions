@@ -5,6 +5,18 @@
  *
  */
 
+/** @brief  Is Late Static Binding supported by this version of PHP.
+ *
+ *  Late static binding allows things like:
+ *      $class::$table      Access the static 'table' member of the class
+ *                          identified by the value of $class.
+ */
+defined('LATE_STATIC_BINDING')
+    || define('LATE_STATIC_BINDING',
+              ((version_compare(PHP_VERSION, "5.3.0") >= 0)
+                    ? true
+                    : false) );
+
 class Connexions
 {
     protected static    $_user  = null;
@@ -17,7 +29,7 @@ class Connexions
      */
     public static function log($message, $priority = null)
     {
-        if (APPLICATION_ENV !== 'development')
+        if (defined('APPLICATION_ENV') && (APPLICATION_ENV !== 'development'))
             return;
 
         if ($priority === null)
@@ -25,8 +37,8 @@ class Connexions
 
         if (self::$_log === null)
         {
-            //$writer = new Zend_Log_Writer_Firebug();
-            $writer = new Zend_Log_Writer_Stream('/tmp/connexions-log.txt');
+            $writer = new Zend_Log_Writer_Firebug();
+            //$writer = new Zend_Log_Writer_Stream('/tmp/connexions-log.txt');
             self::$_log = new Zend_Log($writer);
         }
 

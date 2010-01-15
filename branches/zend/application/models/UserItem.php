@@ -3,8 +3,8 @@
  *
  *  Model for the UserItem table.
  *
- *  This is also provided aggregate access to the references Model_User and
- *  Model_Item.
+ *  This also provides aggregate access to the referenced Model_User and
+ *  Model_Item instances.
  *
  */
 

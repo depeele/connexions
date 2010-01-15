@@ -91,13 +91,14 @@ class Model_Tag extends Connexions_Model_Cached
 
     /** @brief  Given a set of tags, retrieve the tag identifier for each.
      *  @param  tags    The set of tags as a comma-separated string or array.
+     *  @param  db      An optional database instance (Zend_Db_Abstract).
      *
      *  @return An array
      *              { valid:   { <tagName>: <tag id>, ... },
      *                invalid: [invalid tag names, ...]
      *              }
      */
-    public static function ids($tags)
+    public static function ids($tags, $db = null)
     {
         if (@empty($tags))
             return null;
@@ -105,7 +106,8 @@ class Model_Tag extends Connexions_Model_Cached
         if (! @is_array($tags))
             $tags = preg_split('/\s*,\s*/', $tags);
 
-        $db     = Connexions::getDb();
+        if ($db === null)
+            $db = Connexions::getDb();
         $select = $db->select()
                      ->from(self::$table)
                      ->where('tag IN (?)', $tags);

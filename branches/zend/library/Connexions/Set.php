@@ -6,6 +6,9 @@
  *  This can be directly used as a Zend_Paginator adapter:
  *      $set       = new Connexions_Set('Model_UserItem', $select);
  *      $paginator = new Zend_Paginator($set);
+ *
+ *  Requires:
+ *      LATE_STATIC_BINDING     to be defined (Connexions.php)
  */
 class Connexions_Set implements Countable,
                                 IteratorAggregate,
@@ -78,8 +81,9 @@ class Connexions_Set implements Countable,
     {
         if ($this->_count === null)
         {
-            $res = $this->_select_forCount()->query(Zend_Db::FETCH_ASSOC)
-                                               ->fetch();
+            $res = $this->_select_forCount()
+                        ->query(Zend_Db::FETCH_ASSOC)
+                        ->fetch();
 
             /*
             printf ("<pre>Connexions_Set::count: count(res): %d, count: %s:\n",
@@ -258,28 +262,18 @@ class Connexions_Set_Iterator extends ArrayIterator
 
     public function current()
     {
-        $class  = $this->_parentSet->memberClass();
+        $memberClass  = $this->_parentSet->memberClass();
         $offset = $this->key();
         $row    = parent::current();
-        if ($row instanceof $class)
+        if ($row instanceof $memberClass)
             return $row;
 
         // Create Model instance for each retrieved record
         $db    = $this->_parentSet->select()->getAdapter();
         $row['@isBacked'] = true;
-        return $class::find($row, $db);
 
-
-        $inst             = $class::find($row, $db);
-
-        // Replace the current offset with this new instance
-        $this->offsetSet($offset, $inst);
-
-        /*
-        printf ("<pre>Connexions_Set::getItems: %d items:\n", count($items));
-        print_r($items);
-        echo "</pre>\n";
-        // */
-        return $inst;
+        return (LATE_STATIC_BINDING
+                    ? $memberClass::find($row, $db)
+                    : call_user_func(array($memberClass, 'find'), $row, $db));
     }
 }

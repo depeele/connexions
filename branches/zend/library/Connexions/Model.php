@@ -2,6 +2,9 @@
 /** @file
  *
  *  The base class for Connexions Database Table Models.
+ *
+ *  Requires:
+ *      LATE_STATIC_BINDING     to be defined (Connexions.php)
  */
 abstract class Connexions_Model
 {
@@ -13,7 +16,17 @@ abstract class Connexions_Model
     public static   $table  = null;
     public static   $keys   = null;
     public static   $model  = null;
+
+    /* Primarily for PHP < 5.3, these are established during instantiation via
+     * _bind() and should be references to the static, identity members of
+     * the concrete sub-class.
+     */
+    protected   $_table     = null;
+    protected   $_keys      = null;
+    protected   $_model     = null;
     /*************************************************************************/
+
+
 
     protected   $_id        = null;     // The record id
 
@@ -45,7 +58,6 @@ abstract class Connexions_Model
                                          * retrieval/creation.
                                          */
 
-
     /** @brief  Create a new instance.
      *  @param  id      The record identifier.
      *  @param  db      An optional database instance (Zend_Db_Abstract).
@@ -53,6 +65,7 @@ abstract class Connexions_Model
      */
     public function __construct($id, $db = null)
     {
+        $this->_bind();
         $this->_init($id, $db);
     }
 
@@ -103,27 +116,23 @@ abstract class Connexions_Model
      */
     public function __set($name, $value)
     {
-        $class =  get_class($this);
-
-        $model =& $class::$model;   //$this->getModel();
-        if (! @isset($model[$name]))
+        if (! @isset($this->_model[$name]))
         {
             // Invalid field
             $this->_error = 'Invalid field "'.  $name .'"';
             return false;
         }
 
-        if ($model[$name] === 'auto')
+        if ($this->_model[$name] === 'auto')
         {
             // Modification of an 'auto' generated key field is NOT permitted
             $this->_error = 'Cannot modify auto field "'.  $name .'"';
             return false;
         }
 
-        $keys    =& $class::$keys;  //$this->getKeys();
         $tmpRec  = array($name => $value);
 
-        $isValid = $this->_validateField($tmpRec, $name, $keys, $model);
+        $isValid = $this->_validateField($tmpRec, $name);
         if ($isValid)
         {
             if (! @is_array($this->_record))
@@ -184,7 +193,6 @@ abstract class Connexions_Model
             return false;
 
         // store the new data for this record
-        $class = get_class($this);
         $res   = false;
         if ($this->_isBacked === true)
         {
@@ -201,7 +209,7 @@ abstract class Connexions_Model
             printf ("Connexions_Model: Update table '%s'; ".
                         "fields[%s], values[%s], ".
                         "where( clause[%s], binding[%s] )\n",
-                     $class::$table,    //$this->getTable(),
+                     $this->_table,
                      implode(', ', array_keys($dirty)),
                      implode(', ', array_values($dirty)),
                      implode(' AND ', array_keys($where)),
@@ -209,7 +217,7 @@ abstract class Connexions_Model
             // */
 
             if ( (count($dirty) < 1) ||
-                 ($this->_db->update($class::$table,    //$this->getTable(),
+                 ($this->_db->update($this->_table,
                                      $dirty,
                                      $where) === 1) )
             {
@@ -223,21 +231,19 @@ abstract class Connexions_Model
             /*
             printf ("Connexions_Model: Insert table '%s'; ".
                         "fields[%s], values[%s]\n",
-                     $class::$table,    //$this->getTable(),
+                     $this->_table,
                      implode(', ', array_keys($this->_record)),
                      implode(', ', array_values($this->_record)) );
             // */
 
-            if ( $this->_db->insert($class::$table, //$this->getTable(),
-                                    $this->_record) === 1)
+            if ( $this->_db->insert($this->_table, $this->_record) === 1)
             {
                 $res = true;
 
                 /* Now, retrieve the full record that we've just inserted,
                  * including any fields that were not included in the insert.
                  */
-                //$id = $this->_db->lastInsertId($this->getTable());
-                $id = $this->_db->lastInsertId($class::$table);
+                $id = $this->_db->lastInsertId($this->_table);
                 $this->_init($id, $this->_db);
             }
         }
@@ -261,10 +267,8 @@ abstract class Connexions_Model
              *       but then this would negate any advantage gained by having
              *       indexed keys.
              */
-            $class  = get_class($this);
             $where  = array();
-            //foreach ($this->getKeys() as $field)
-            foreach ($class::$keys as $field)
+            foreach ($this->_keys as $field)
             {
                 if (! @isset($this->_record[$field]))
                 {
@@ -283,12 +287,11 @@ abstract class Connexions_Model
             /*
             printf ("Connexions_Model: Delete from '%s'; ".
                             "where( clause[%s], binding[%s] )\n",
-                     $class::$table,    //$this->getTable(),
+                     $this->_table,
                      implode(' AND ', array_keys($where)),
                      implode(', ', array_values($where)) );
             // */
-            //if ($this->_db->delete($this->getTable(), $where) )
-            if ($this->_db->delete($class::$table, $where) )
+            if ($this->_db->delete($this-_table, $where) )
             {
                 $res = true;
             }
@@ -330,8 +333,6 @@ abstract class Connexions_Model
 
         if (@is_array($this->_record))
         {
-            $class =  get_class($this);
-            $keys  =& $class::$keys;    //$this->getKeys();
             foreach ($this->_record as $key => $val)
             {
                 if ($skipValidation !== true)
@@ -340,7 +341,7 @@ abstract class Connexions_Model
                     $val     = $this->{$key};   
                 }
 
-                $isKey   = in_array($key, $keys);
+                $isKey   = in_array($key, $this->_keys);
                 $isValid = $this->_validated[$key];
                 $isDirty = $this->_dirty[$key];
 
@@ -382,10 +383,8 @@ abstract class Connexions_Model
      */
     protected function _record2where($includeDirty = true)
     {
-        $class = get_class($this);
         $where = array();
-        //foreach ($this->getKeys() as $key)
-        foreach ($class::$keys as $key)
+        foreach ($this->_keys as $key)
         {
             if ( (($includeDirty === true) ||
                   (! @isset($this->_dirty[$key]))) &&
@@ -408,9 +407,6 @@ abstract class Connexions_Model
      */
     protected function _data2where(&$data)
     {
-        $class  =  get_class($this);
-        $keys   =& $class::$keys;    //$this->getKeys();
-        $model  =& $class::$model;   //$this->getModel();
         if (@is_scalar($data))
             $inData = array($data);
         else
@@ -430,12 +426,13 @@ abstract class Connexions_Model
                 /* See if this 'key' matches a database key field
                  * that we haven't already seen...
                  */
-                if (@in_array($key, $keys) && (! @isset($keysMatched[$key])) )
+                if (@in_array($key, $this->_keys) &&
+                    (! @isset($keysMatched[$key])) )
                 {
                     // See if the value matches the type of this key.
                     try
                     {
-                        $val   = $this->_coherse($val, $model[$key]);
+                        $val   = $this->_coherse($val, $this->_model[$key]);
                         $dbKey = $key;
 
                         // We have a match by field name and value.
@@ -451,7 +448,7 @@ abstract class Connexions_Model
                 /* This 'key' seems to be the index of an array.  See if the
                  * provided value matches any of the keys from our database.
                  */
-                foreach ($keys as $checkKey)
+                foreach ($this->_keys as $checkKey)
                 {
                     if (@isset($keysMatched[$checkKey]))
                     {
@@ -461,7 +458,8 @@ abstract class Connexions_Model
 
                     try
                     {
-                        $val   = $this->_coherse($val, $model[$checkKey]);
+                        $val   = $this->_coherse($val,
+                                                 $this->_model[$checkKey]);
                         $dbKey = $checkKey;
 
                         // Match!
@@ -507,11 +505,11 @@ abstract class Connexions_Model
      */
     protected function _init($id, $db = null)
     {
-        $class    = get_class($this);
         $isBacked = false;
         $isRecord = false;
 
         /*
+        $class    = get_class($this);
         echo "<pre>Connexions_Model::_init: class[{$class}], id:\n",
              print_r($id, true),
              "</pre>\n";
@@ -557,9 +555,6 @@ abstract class Connexions_Model
         if ($id === null)
             return $this;
 
-        $keys  =& $class::$keys;    //$this->getKeys();
-        $model =& $class::$model;   //$this->getModel();
-
         /* Attempt to figure out what 'id' represents:
          *  - a scaler value representing a database key;
          *  - an array of key/value pair(s) representing a set of database
@@ -577,7 +572,7 @@ abstract class Connexions_Model
              * Attempt to retrieve a matching record.
              *
              */
-            $select =  'SELECT * FROM '. $class::$table //$this->getTable()
+            $select =  'SELECT * FROM '. $this->_table
                     .  ' WHERE '. implode(' AND ', array_keys($where));
 
             try
@@ -585,7 +580,7 @@ abstract class Connexions_Model
                 /*
                 printf ("Connexions_Model: _init table '%s'; ".
                             "where( clause[%s], binding[%s] )\n",
-                         $class::$table,    //$this->getTable(),
+                         $this->_table,
                          implode(' AND ', array_keys($where)),
                          implode(', ', array_values($where)) );
                 // */
@@ -625,10 +620,10 @@ abstract class Connexions_Model
                          * is an 'auto' key and, if there are fields remaining,
                          * call it a non-backed record.
                          */
-                        foreach ($keys as $dbKey)
+                        foreach ($this->_keys as $dbKey)
                         {
                             if (@isset($id[$dbKey]) &&
-                                ($model[$dbKey] === 'auto') )
+                                ($this->_model[$dbKey] === 'auto') )
                             {
                                 /* Remember the fields that we remove in case
                                  * we end up removing them all.
@@ -723,28 +718,22 @@ abstract class Connexions_Model
      */
     protected function _validate($field = null)
     {
-        $class =  get_class($this);
-        $keys  =& $class::$keys;    //$this->getKeys();
-        $model =& $class::$model;   //$this->getModel();
-
         if ($field !== null)
         {
             // Validate the given field
             $this->_validated[$field] =
                     ($this->_validated[$field] ||
-                     $this->_validateField($this->_record, $field,
-                                           $keys, $model));
+                     $this->_validateField($this->_record, $field));
         }
         else
         {
             // Validate all fields -- assume it will be valid
             $isValid = true;
-            foreach ($model as $field => $type)
+            foreach ($this->_model as $field => $type)
             {
                 $this->_validated[$field] =
                     ($this->_validated[$field] ||
-                     $this->_validateField($this->_record, $field,
-                                           $keys, $model));
+                     $this->_validateField($this->_record, $field));
 
                 if ($this->_validated[$field] !== true)
                     $isValid = false;
@@ -754,15 +743,13 @@ abstract class Connexions_Model
         return $isValid;
     }
 
-    /** @brief  Validate the given field using the provided keys and model.
+    /** @brief  Validate the given field.
      *  @param  record  The record to validate within.
      *  @param  field   The field to validate.
-     *  @param  keys    The keys  of the underlying database.
-     *  @param  model   The model of the underlying database.
      *
      *  @return true | false
      */
-    protected function _validateField(&$record, $field, &$keys, &$model)
+    protected function _validateField(&$record, $field)
     {
         $isValid = true;
 
@@ -771,8 +758,8 @@ abstract class Connexions_Model
             /* This field has no value.  If it is key field that is NOT 'auto',
              * consider it invalid.  Otherwise, allow it.
              */
-            if ( (in_array($field, $keys)) &&
-                 ($model[$field] !== 'auto') )
+            if ( (in_array($field, $this->_keys)) &&
+                 ($this->_model[$field] !== 'auto') )
             {
                 // Key field that is NOT 'auto' -- INVALID
                 $isValid = false;
@@ -791,14 +778,16 @@ abstract class Connexions_Model
         try
         {
             $record[$field] =
-                    $this->_coherse($record[$field], $model[$field]);
+                    $this->_coherse($record[$field], $this->_model[$field]);
         }
         catch (Exception $e)
         {
             $this->_error = sprintf ("Invalid Cohersion: ".
                                         "field[%s], type[%s], value[%s]: ".
                                         "%s<br />\n",
-                                     $field, $model[$field], $record[$field],
+                                     $field,
+                                     $this->_model[$field],
+                                     $record[$field],
                                      $e->getMessage());
             $isValid = false;
         }
@@ -806,10 +795,8 @@ abstract class Connexions_Model
         return $isValid;
     }
 
-    /** @brief  Validate the given field using the provided keys and model.
+    /** @brief  Coherse the given value to the specified type.
      *  @param  field   The field to validate.
-     *  @param  keys    The keys  of the underlying database.
-     *  @param  model   The model of the underlying database.
      *
      *  @throw  Exception if cohersion is not possible.
      *
@@ -889,6 +876,19 @@ abstract class Connexions_Model
         return $value;
     }
 
+    /** @brief  Connect this instance with the concrete sub-class */
+    protected function _bind()
+    {
+        if ($this->_table === null)
+        {
+            $className = get_class($this);
+
+            $this->_table =& self::__sget($className, 'table');
+            $this->_keys  =& self::__sget($className, 'keys');
+            $this->_model =& self::__sget($className, 'model');
+        }
+    }
+
     /*************************************************************************
      * Static methods
      *
@@ -904,8 +904,9 @@ abstract class Connexions_Model
     public static function find($className, $id, $db = null)
     {
         /* For php >= 5.3, we could do away with the incoming $className along
-         * with the need for a find() in the concrete classes and simply use:
-         *      $className = get_called_class();
+         * with the need for a fetchAll() in the concrete classes and simply
+         * use:
+         *  $className = get_called_class();
          */
         return new $className($id, $db);
     }
@@ -930,10 +931,25 @@ abstract class Connexions_Model
             $db = Connexions::getDb();
 
         $select = $db->select()
-                     ->from($className::$table);
+                     ->from(self::__sget($className, 'table'));
         if (! @empty($where))
             $select->where($where);
 
         return $select;
+    }
+
+    /*************************************************************************
+     * Static methods supporting late static binding
+     *
+     */
+    public static function __sget($className, $member)
+    {
+        if (LATE_STATIC_BINDING)
+            // PHP >= 5.3 -- simply access the late static bound member
+            return $className::$$member;
+
+        // PHP < 5.3 -- requires reflection to access late static bindings
+        $reflect = new ReflectionClass($className);
+        return $reflect->getStaticPropertyValue($member);
     }
 }

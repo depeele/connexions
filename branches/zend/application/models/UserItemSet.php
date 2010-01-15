@@ -28,7 +28,7 @@ class Model_UserItemSet extends Connexions_Set
                                 $userIds  = null,
                                 $itemIds  = null)
     {
-        $memberClass  = self::MEMBER_CLASS;
+        $memberClass = self::MEMBER_CLASS;
 
         /* :TODO: Determine the current, authenticated user
          *        and the proper order.
@@ -75,8 +75,10 @@ class Model_UserItemSet extends Connexions_Set
 
         // Generate a Zend_Db_Select instance
         $db     = Connexions::getDb();
+        $table  = Connexions_Model::__sget($memberClass, 'table');
+
         $select = $db->select()
-                     ->from(array('ui' => $memberClass::$table))
+                     ->from(array('ui' => $table))
                      ->join(array('i'  => 'item'),      // table / as
                             '(i.itemId=ui.itemId)',     // condition
                             $itemColumns)               // columns
@@ -116,11 +118,13 @@ class Model_UserItemSet extends Connexions_Set
             $this->_nonTrivial = true;
         }
 
+        /*
         Connexions::log("Model_UserItemSet: "
                             . "select[ ". $select->assemble() ." ]");
+        // */
 
         // Include '_memberClass' in $select so we can use 'Connexions_Set'
-        $select->_memberClass = $memberClass;   //self::MEMBER_CLASS;
+        $select->_memberClass = $memberClass;
 
         $this->_tagIds  = $tagIds;
         $this->_userIds = $userIds;
