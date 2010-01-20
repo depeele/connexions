@@ -67,7 +67,8 @@ class Model_TagSet extends Connexions_Set
         if (! @empty($userIds))
         {
             // User Restrictions
-            $select->where('uti.userId IN (?)', $userIds);
+            $select->where('uti.userId IN (?)', $userIds)
+                   ->having('userCount='.count($userIds));
             $this->_nonTrivial = true;
         }
 
@@ -90,7 +91,61 @@ class Model_TagSet extends Connexions_Set
         $this->_itemIds = $itemIds;
         $this->_tagIds  = $tagIds;
 
+        /*
+        Connexions::log(
+                sprintf("Model_TagSet: select[ %s ]\n",
+                        $select->assemble()) );
+        // */
+
         return parent::__construct($select, $memberClass);
+    }
+
+    /** @brief  Modify the tag restrictions to allow a match if ANY user has
+     *          used any of the specified tags (vs all).
+     *
+     *  @return $this
+     */
+    public function withAnyUser()
+    {
+        $this->_select->reset(Zend_Db_Select::HAVING);
+
+        return $this;
+    }
+
+    /** @brief  Set the weighting.
+     *  @param  by      Weight by ('user', 'item', 'userItem').
+     *
+     *  @return $this
+     */
+    public function weightBy($by)
+    {
+        $cols = array();
+
+        switch (strtolower($by))
+        {
+        case 'user':
+            $cols['weight'] = 'COUNT(DISTINCT uti.userId)';
+            break;
+
+        case 'item':
+            $cols['weight'] = 'COUNT(DISTINCT uti.itemId)';
+            break;
+
+        case 'useritem':
+        default:            // Default to 'userItem'
+            $cols['weight'] = 'COUNT(DISTINCT uti.userId,uti.itemId)';
+            break;
+        }
+
+        $this->_select->columns($cols)
+                      ->order('weight DESC');
+
+        /*
+        Connexions::log("Model_TagSet::weightBy({$by}): "
+                            . "sql[ ". $this->_select->assemble() ." ]");
+        // */
+
+        return $this;
     }
 
     /** @brief  Retrieve the array of item identifiers of all userItems that
@@ -161,29 +216,6 @@ class Model_TagSet extends Connexions_Set
         return $ids;
     }
 
-    /** @brief  Create a Zend_Tag_ItemList adapter for the top 'limit' tags.
-     *  @param  limit       The maximum number of tags [100].
-     *  @param  tagInfo     A Connexions_TagInfo instance containing
-     *                      information about any tags specified in the
-     *                      request.
-     *
-     *  Note: Since the default order is by 'userItemCount DESC', the top tags
-     *        will be the tags with the highest count.
-     *
-     *  @return A Model_TagSet_ItemList instance
-     *              (subclass of Zend_Tag_ItemList)
-     *
-     */
-    public function get_Tag_ItemList($limit         = null,
-                                     $tagInfo       = null)
-    {
-        if ($limit === null)
-            $limit = 100;
-
-        return new Model_TagSet_ItemList($this->getItems(0, $limit),
-                                         $tagInfo);
-    }
-
     /*************************************************************************
      * Protected helpers methods
      *
@@ -201,9 +233,9 @@ class Model_TagSet extends Connexions_Set
     {
         $select = clone $this->_select;
 
-        $select->reset(Zend_Db_Select::COLUMNS)
-               ->reset(Zend_Db_Select::ORDER)
-               ->reset(Zend_Db_Select::GROUP)
+        $select//->reset(Zend_Db_Select::COLUMNS)
+               //->reset(Zend_Db_Select::ORDER)
+               //->reset(Zend_Db_Select::GROUP)
                ->columns('uti.itemId')
                ->distinct();
 
@@ -222,9 +254,9 @@ class Model_TagSet extends Connexions_Set
     {
         $select = clone $this->_select;
 
-        $select->reset(Zend_Db_Select::COLUMNS)
-               ->reset(Zend_Db_Select::ORDER)
-               ->reset(Zend_Db_Select::GROUP)
+        $select//->reset(Zend_Db_Select::COLUMNS)
+               //->reset(Zend_Db_Select::ORDER)
+               //->reset(Zend_Db_Select::GROUP)
                ->columns('uti.userId')
                ->distinct();
 
@@ -243,260 +275,12 @@ class Model_TagSet extends Connexions_Set
     {
         $select = clone $this->_select;
 
-        $select->reset(Zend_Db_Select::COLUMNS)
-               ->reset(Zend_Db_Select::ORDER)
-               ->reset(Zend_Db_Select::GROUP)
+        $select//->reset(Zend_Db_Select::COLUMNS)
+               //->reset(Zend_Db_Select::ORDER)
+               //->reset(Zend_Db_Select::GROUP)
                ->columns('uti.tagId')
                ->distinct();
 
         return $select;
     }
-}
-
-/** @brief  An adapter to translate between Connexions_Set and
- *          Zend_Tag_ItemList
- *
- *  This class provides lazy evaluation of the list items, returning a
- *  Model_Tag instance during iteration that contains additional contextual
- *  information (i.e. whether or not the tag is currently selected and the URL
- *                    to use when presenting the tag).
- *
- *  Zend_Tag_ItemList implements
- *      Countable, SeekableIterator, ArrayAccess
- */
-class Model_TagSet_ItemList extends Zend_Tag_ItemList
-{
-    protected   $_iterator      = null;
-    protected   $_reqUrl        = null;
-    protected   $_reqTagInfo    = null;
-    protected   $_reqTags       = null; // Simplified version of the original
-                                        // comma-separated string of tags.
-
-    /** @brief  Constructor
-     *  @param  iterator    The Connexions_Set_Iterator instance that we will
-     *                      adapt.
-     *  @param  reqTagInfo  A Connexions_TagInfo instance containing
-     *                      information about any tags specified in the
-     *                      request.
-     */
-    public function __construct(Connexions_Set_Iterator $iterator,
-                                Connexions_TagInfo      $reqTagInfo = null)
-    {
-        if ($reqTagInfo === null)
-            $reqTagInfo = new Connexions_TagInfo('');
-
-        $this->_iterator   =& $iterator;
-        $this->_reqTagInfo =& $reqTagInfo;
-
-        /* Retrieve the current request URL.  Simplify it by removing any
-         * query/fragment, urldecoding, collapsing spaces, trimming any
-         * right-most white-space and ending '/'
-         */
-        $uri = Connexions::getRequestUri();
-        $uri = preg_replace('/[\?#].*$/', '',  $uri);   // query/fragment
-        $uri = urldecode($uri);
-        $uri = preg_replace('/\s\s+/',    ' ', $uri);   // white-space collapse
-        $uri = rtrim($uri, " \t\n\r\0\x0B/");
-
-        $this->_reqUrl  = $uri;
-        $this->_reqTags = $reqTagInfo->reqTags;
-
-        if (is_string($this->_reqTags))
-        {
-            /* decode, collapse spaces, and removing any space around ',' from
-             * the incoming 'reqUrl'
-             */
-            $tags = urldecode($this->_reqTags);
-            $tags = preg_replace('/\s+/',     ' ', $tags);
-            $tags = preg_replace('/\s*,\s*/', ',', $tags);
-
-            $this->_reqTags = $tags;
-        }
-
-        /*
-        Connexions::log(sprintf("Model_TagSet_ItemList:: ".
-                                    "reqUrl[ %s ], ".
-                                    "reqTags[ %s ]",
-                                $this->_reqUrl,
-                                $this->_reqTags));
-        // */
-    }
-
-    /** @brief  Spread values in the items relative to their weight.
-     *  @param  values  An array of values to spread into.
-     *
-     *  @throws Zend_Tag_Exception  When value list is empty.
-     *  @return void
-     */
-    public function spreadWeightValues(array $values)
-    {
-        // Modeled after Zend_Tag_ItemList::spreadWeightValues()
-        $numValues = @count($values);
-
-        if ($numValues < 1)
-            throw new Zend_Tag_Exception('Value list may not be empty');
-
-        // Re-index the array
-        $values = array_values($values);
-
-        // If just a single value is supplied, simply assign it to all tags
-        if ($numValues === 1)
-        {
-            foreach ($this->_iterator as $item)
-            {
-                $item->setParam('weightValue', $values[0]);
-            }
-        }
-        else
-        {
-            // Calculate min and max weights
-            $minWeight = null;
-            $maxWeight = null;
-
-            foreach ($this->_iterator as $item)
-            {
-                if (($minWeight === null) && ($maxWeight === null))
-                {
-                    $minWeight = $item->getWeight();
-                    $maxWeight = $item->getWeight();
-                }
-                else
-                {
-                    $minWeight = min($minWeight, $item->getWeight());
-                    $maxWeight = max($maxWeight, $item->getWeight());
-                }
-            }
-
-            // Calculate the thresholds
-            $steps      = count($values);
-            $delta      = ($maxWeight - $minWeight) / ($steps - 1);
-            $thresholds = array();
-
-            for ($idex = 0; $idex < $steps; $idex++)
-            {
-                $thresholds[$idex] =
-                    floor(100 * log(($minWeight + ($idex * $delta)) + 2));
-            }
-
-            // Assign the weight values
-            foreach ($this->_iterator as $item)
-            {
-                $threshold = floor(100 * log($item->getWeight() + 2));
-
-                for ($idex = 0; $idex < $steps; $idex++)
-                {
-                    if ($threshold <= $thresholds[$idex])
-                    {
-                        $item->setParam('weightValue', $values[$idex]);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    /*************************************************************************
-     * Proxy methods for _iterator.
-     *
-     * These should cover Interfaces
-     *  Countable, SeekableIterator, ArrayAccess, and portions of ArrayIterator
-     */
-    // Countable
-    public function count()
-                        { return $this->_iterator->count(); }
-
-    // SeekableIterator
-    public function seek($index)
-                        { return $this->_iterator->seek($index); }
-
-    // SeekableIterator::Iterator
-    /** @brief  Retrieve an instance of the current item.
-     *
-     *  @return A Model_Tag instance.
-     */
-    public function current()
-    {
-        $tag = $this->_iterator->current();
-        if (($tag instanceof Model_Tag) &&
-            (@is_bool($tag->getParam('selected', true))) )
-        {
-            // We've already processed this item.
-            return $tag;
-        }
-
-        /* Include additional parameters for this tag item:
-         *      selected    boolean indicating whether this tag is in the
-         *                  tag list for the current request / view;
-         *      url         The url to visit if this tag is clicked.
-         */
-        $tagStr  = $tag->tag;
-        $tagList = $this->_reqTagInfo->validList;
-
-        $url = $this->_reqUrl;
-        if (! @empty($this->_reqTags))
-            // Remove the requested tags from the request URL
-            $url = str_replace('/'. $this->_reqTags, '', $url);
-
-        //if ($this->_reqTagInfo->isValidTag($tagStr))
-        if (@in_array($tagStr, $tagList))
-        {
-            // Remove this tag from the new tag list.
-            $tag->setParam('selected', true);
-
-            $tagList = array_diff($tagList, array($tagStr));
-        }
-        else
-        {
-            // Include this tag in the tag list.
-            $tag->setParam('selected', false);
-
-            $tagList[] = $tagStr;
-        }
-        $url .= '/'. implode(',', $tagList);
-
-        $tag->setParam('url', $url);
-
-        /*
-        Connexions::log(
-                sprintf("Model_TagSet_ItemList::current: reqUrl[ %s ], ".
-                            "tag[ %s ], selected[ %s ]: ".
-                            "is %sselected, url[ %s ]",
-                        $this->_reqUrl,
-                        $tagStr,
-                        $this->_reqTags,
-                        ($tag->getParam('selected') ? '' : 'NOT '),
-                        $tag->getParam('url') ));
-        // */
-
-        return $tag;
-    }
-
-    public function key()
-                        { return $this->_iterator->key(); }
-    public function next()
-                        { return $this->_iterator->next(); }
-    public function rewind()
-                        { return $this->_iterator->rewind(); }
-    public function valid()
-                        { return $this->_iterator->valid(); }
-
-    // ArrayAccess
-    public function offsetExists($offset)
-                        { return $this->_iterator->offsetExists($offset); }
-    public function offsetGet($offset)
-                        { return $this->_iterator->offsetGet($offset); }
-    public function offsetSet($offset, $value)
-                        { return $this->_iterator->offsetSet($offset, $value); }
-    public function offsetUnset($offset)
-                        { return $this->_iterator->offsetUnset($offset); }
-
-    // ArrayIterator
-    public function asort()
-                        { return $this->_iterator->asort(); }
-    public function ksort()
-                        { return $this->_iterator->ksort(); }
-    public function uasort($cmp_func)
-                        { return $this->_iterator->uasort($cmp_func); }
-    public function uksort($cmp_func)
-                        { return $this->_iterator->uksort($cmp_func); }
 }

@@ -19,6 +19,8 @@ class Connexions_View_Helper_HtmlTagItem
      */
     public function render(Zend_Tag_ItemList $tags)
     {
+        //Connexions::log("Connexions_View_Helper_HtmlTagItem::render...");
+
         if (($weightValues = $this->getClassList()) === null)
         {
             $weightValues = range($this->getMinFontSize(),
@@ -33,6 +35,7 @@ class Connexions_View_Helper_HtmlTagItem
         {
             $isSelected = ($tag->getParam('selected') === true);
             $cssClass   = ($isSelected ? 'selected ' : '');
+            $weightVal  = $tag->getParam('weightValue');
 
             /*
             Connexions::log(sprintf('Connexions_View_Helper_HtmlTagItem: '.
@@ -44,22 +47,32 @@ class Connexions_View_Helper_HtmlTagItem
             if (($classList = $this->getClassList()) === null)
             {
                 $attribute = sprintf('style="font-size: %d%s;"',
-                                        $tag->getParam('weightValue'),
+                                        $weightVal,
                                         $this->getFontSizeUnit());
             }
             else
             {
-                $cssClass .= htmlspecialchars($tag->getParam('weightValue'));
+                $cssClass .= htmlspecialchars($weightVal);
             }
 
             if (! empty($cssClass))
                 $cssClass = ' class="'. $cssClass .'"';
 
-            $tagHtml = sprintf('<a href="%s" %s%s>%s</a>',
-                                htmlSpecialChars($tag->getParam('url')),
-                                $cssClass,
-                                $attribute,
-                                $tag->getTitle());
+            $url    = $tag->getParam('url');
+            $weight = number_format($tag->getWeight());
+            if (empty($url))
+                $tagHtml = sprintf('<span title="%s" %s%s>%s</span>',
+                                    $weight,
+                                    $cssClass,
+                                    $attribute,
+                                    htmlSpecialChars($tag->getTitle()));
+            else
+                $tagHtml = sprintf('<a href="%s" title="%s" %s%s>%s</a>',
+                                    htmlSpecialChars($url),
+                                    $weight,
+                                    $cssClass,
+                                    $attribute,
+                                    htmlSpecialChars($tag->getTitle()));
 
             foreach ($this->getHtmlTags() as $key => $data)
             {

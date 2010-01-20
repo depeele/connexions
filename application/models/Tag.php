@@ -19,8 +19,6 @@ class Model_Tag extends Connexions_Model_Cached
                                     'tag'   => 'string'
     );
 
-    protected       $_params    = array();
-
     /*************************************************************************/
 
     /** @brief  Set a value in this record and mark it dirty.
@@ -55,6 +53,8 @@ class Model_Tag extends Connexions_Model_Cached
      * Zend_Tag_Taggable Interface
      *
      */
+    protected       $_params    = array();
+
     public function getParam($name)
     {
         // weightValue, url, selected
@@ -79,7 +79,20 @@ class Model_Tag extends Connexions_Model_Cached
 
     public function getWeight()
     {
-        $weight = (Float)($this->userItemCount);
+        if (@isset($this->weight))
+            $weight = (Float)($this->weight);
+        else
+            $weight = (Float)($this->userItemCount);
+
+        /*
+        Connexions::log(
+                sprintf("Model_Tag::getWeight: "
+                            . "weight[ %s ], "
+                            . "userItemCount[ %s ] == [ %s ]",
+                                $this->weight,
+                                $this->userItemCount,
+                                $weight));
+        // */
 
         return $weight;
     }

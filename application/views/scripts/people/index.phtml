@@ -5,22 +5,22 @@
  *      viewer      The Model_User instance representing the current viewer;
  *      owner       The owner of the current item set -- either a string or a
  *                  Model_User instance;
- *      tagInfo     A Connexions_TagInfo instance containing information about
+ *      tagInfo     A Connexions_Set_Info instance containing information about
  *                  the requested tags.
  *      userItems   The Model_UserItemSet representing the items to present.
  *      paginator   The paginator to use in presenting 'userItems'.
  *
- *      maxTags
- *      sortBy
- *      sortOrder
+ *      maxTags     Maximum number of tags to present;
+ *      sortBy      Sort tags by (valid field of Model_Tag);
+ *      sortOrder   Tag sort order.
  */
 
 $this->headTitle('People');
 
 ?>
 <p>Present People to  <?= $this->viewer ?>
-<?php   if ( $this->tagInfo->hasValidTags())
-            printf (" with tags '%s'", $this->tagInfo->validTags);
+<?php   if ( $this->tagInfo->hasValidItems())
+            printf (" with tags '%s'", $this->tagInfo->validItems);
         else
             printf (", NO tags.");
 ?>
@@ -29,43 +29,31 @@ $this->headTitle('People');
 <?php
 if ( @isset($this->users) )
 {
-    /* If $this->tagSet is NOT set and we have 1 or more user, make use of the
+    /* If $this->tagList is NOT set and we have 1 or more user, make use of the
      * 'users' Model_UserSet instance to retrieve the tags for these users.
      */
-    if ((! @isset($this->tagSet)) && (count($this->users) > 0))
+    if ((! @isset($this->tagList)) && (count($this->users) > 0))
     {
-        $this->tagSet = new Model_TagSet( $this->users->userIds() );
+        // Create a tag set and then retrieve its Tag_ItemList adapter
+        $tagSet        = new Model_TagSet( $this->users->userIds() );
+        $tagSet->weightBy('user');
+
+        $this->tagList = $tagSet->get_Tag_ItemList(0, $this->maxTags,
+                                                   $this->tagInfo);
     }
 }
 
-if ( @isset($this->tagSet))
+if ( @isset($this->tagList))
 {
-    // The partial is faster than the  View Helper by about 0.01 seconds
     $time_start = microtime(true);
-    if (true)
-    {
-    /* Use the Connexions_View_Helper_HtmlTagCloud class to render the tag
-     * cloud for $this->tagSet.
-     *
-     * This view helper uses:
-     *  $view->tagSet, tagInfo, maxTags, sortBy, and sortOrder
-     */
-    $this->layout()->right = $this->htmlTagCloud();
 
-    }
-    else
-    {
-    /* Use the tagCloud.phtml partial to render the tag cloud associated with
-     * the incoming users.
-     *
-     * :TODO: Pull the 'maxTags' setting from some user-controller area.
+    /* Use the Connexions_View_Helper_HtmlTagCloud class to render the tag
+     * cloud for $this->tagList.
      */
-    $this->layout()->right = $this->partial('tagCloud.phtml',
-                                            array(
-                                                'tagSet'    => &$this->tagSet,
-                                                'tagInfo'   => &$this->tagInfo
-                                            ));
-    }
+    $this->layout()->right = $this->htmlTagCloud($this->tagList,
+                                                 $this->sortBy,
+                                                 $this->sortOrder);
+
 
     $time_end   = microtime(true);
     $this->layout()->right .= sprintf ("%f seconds to render tag cloud<br />\n",

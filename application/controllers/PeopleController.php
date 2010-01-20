@@ -27,8 +27,8 @@ class PeopleController extends Zend_Controller_Action
         $perPage   = $request->getParam('perPage',   null);
 
         // Tag-cloud parameters
-        $maxTags   = $request->getParam('maxTags',   null);
-        $sortBy    = $request->getParam('sortBy',    null);
+        $maxTags   = $request->getParam('maxTags',   250);
+        $sortBy    = $request->getParam('sortBy',    'tag');
         $sortOrder = $request->getParam('sortOrder', null);
 
         /*
@@ -37,9 +37,9 @@ class PeopleController extends Zend_Controller_Action
                             . "reqTags[ {$reqTags} ]");
         // */
 
-        $tagInfo = new Connexions_TagInfo($reqTags);
-        if ($tagInfo->hasInvalidTags())
-            $this->view->error = "Invalid tag(s) [ {$tagInfo->invalidTags} ]";
+        $tagInfo = new Connexions_Set_Info($reqTags, 'Model_Tag');
+        if ($tagInfo->hasInvalidItems())
+            $this->view->error = "Invalid tag(s) [ {$tagInfo->invalidItems} ]";
 
 
         // Retrieve the set of users

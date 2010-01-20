@@ -141,9 +141,23 @@ class Model_UserItemSet extends Connexions_Set
     public function itemIds()
     {
         if ($this->_nonTrivial !== true)
+        {
+            /*
+            Connexions::log("UserItemSet::itemIds: "
+                                . "trivial [ "
+                                .       implode(', ', $this->_itemIds) ." ]");
+            // */
+
             return $this->_itemIds;
+        }
 
         $select = $this->_select_items();
+
+        /*
+        Connexions::log("UserItemSet::itemIds: "
+                            . "non-trivial, sql [ ". $select->assemble() ." ]");
+        // */
+
         $recs   = $select->query()->fetchAll();
 
         // Convert the returned array of records to a simple array of ids
@@ -199,6 +213,7 @@ class Model_UserItemSet extends Connexions_Set
         $select->reset(Zend_Db_Select::COLUMNS)
                ->reset(Zend_Db_Select::ORDER)
                ->reset(Zend_Db_Select::GROUP)
+               ->group('ui.itemId')
                ->columns('ui.itemId')
                ->distinct();
 
@@ -220,6 +235,7 @@ class Model_UserItemSet extends Connexions_Set
         $select->reset(Zend_Db_Select::COLUMNS)
                ->reset(Zend_Db_Select::ORDER)
                ->reset(Zend_Db_Select::GROUP)
+               ->group('ui.userId')
                ->columns('ui.userId')
                ->distinct();
 

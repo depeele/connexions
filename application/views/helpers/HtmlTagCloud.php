@@ -17,58 +17,46 @@
 class Connexions_View_Helper_HtmlTagCloud extends Zend_View_Helper_Abstract
 {
     /** @brief  Render an HTML version of a tag cloud.
-     *
-     *  Note: This helper makes use of several 'view' variables:
-     *          tagSet      A Model_TagSet instance representing the tags to be
-     *                      presented;
-     *          tagInfo     A Connexions_TagInfo instance containing
-     *                      information about the requested tags;
-     *
-     *          maxTags     The maximum number of tags to present
-     *                      [100 via $tagSet->get_Tag_ItemList()];
-     *          sortBy      The tag field to sort by ['tag'];
-     *          sortOrder   Sort order ( ['ASC'] | 'DESC').
+     *  @param  itemList    A Connexions_Set_ItemList instance representing the
+     *                      items to be presented;
+     *  @param  sortBy      The tag field to sort by ( ['title'] | 'count' );
+     *  @param  sortOrder   Sort order ( ['ASC'] | 'DESC').
      *
      *  @return The HTML representation of a tag cloud.
      */
-    public function htmlTagCloud()
+    public function htmlTagCloud(Connexions_Set_ItemList    $itemList,
+                                 $sortBy       = 'title',
+                                 $sortOrder    = 'ASC')
     {
         $html = '';
 
-        if ( (! @isset($this->view->tagSet)) ||
-             (! $this->view->tagSet instanceof Model_TagSet) )
-            throw new Exception("The view MUST have a Model_TagSet ".
-                                    "instance in 'tagSet'");
+        if ($sortBy    === null)    $sortBy    = 'title';
+        if ($sortOrder === null)    $sortOrder = 'ASC';
 
-        if ( (! @isset($this->view->tagInfo)) ||
-             (! $this->view->tagInfo instanceof Connexions_TagInfo) )
-            throw new Exception("The view MUST have a Connexions_TagInfo ".
-                                    "instance in 'tagInfo'");
+        /*
+        $itemListParts = array();
+        foreach ($itemList as $idex => $item)
+        {
+            array_push($itemListParts,
+                       sprintf("%s[%d, %d]",
+                               $item->tag, $item->tagId,
+                               $item->userItemCount) );
+        }
+        $itemListStr = implode(', ', $itemListParts);
 
-
-        $maxTags   = (@isset($this->view->maxTags)
-                                ? $this->view->maxTags   : null);
-        $sortBy    = (@is_string($this->view->sortBy)
-                                ? $this->view->sortBy    : 'tag');
-        $sortOrder = (@is_string($this->view->sortOrder)
-                                ? $this->view->sortOrder : 'ASC');
-
-        // /*
         Connexions::log("Connexions_View_Helper_HtmlTagCloud:: "
-                          . "tagInfo[ ".print_r($this->view->tagInfo,true)." ],"
-                          . "maxTags[ {$maxTags} ], "
                           . "sortBy[ {$sortBy} ], "
-                          . "sortOrder[ {$sortOrder} ]");
+                          . "sortOrder[ {$sortOrder} ], "
+                          . count($itemList) . " items "
+                          . "in list[ {$itemListStr} ]");
         // */
 
-        // Retrieve the Zend_Tag_ItemList adapter for our set.
-        $itemList = $this->view->tagSet->get_Tag_ItemList($maxTags,
-                                                          $this->view->tagInfo);
 
         // Create a sort function
         $sortFn = create_function('$a,$b',
-                      '$cmp = strcasecmp($a["'. $sortBy .'"],'
-                    .                   '$b["'. $sortBy .'"]);'
+                      '$aStr = $a->'. $sortBy .';'
+                    . '$bStr = $b->'. $sortBy .';'
+                    . '$cmp = strcasecmp($aStr, $bStr);'
                     .  ( (($sortOrder === 'ASC') || ($sortOrder === 'asc'))
                             ? ''
                               // Reverse the comparison to reverse the ASC sort
@@ -77,6 +65,17 @@ class Connexions_View_Helper_HtmlTagCloud extends Zend_View_Helper_Abstract
                               .         ': ($cmp > 0 '
                               .             '? -1 '
                               .             ': 0));')
+                    /*
+                    . 'Connexions::log("HtmlTagCloud:cmp: '
+                    .                   'a[{$aStr}], '
+                    .                   'b[{$bStr}]: "'
+                    .                   '.($cmp < 0'
+                    .                       '? "&lt;"'
+                    .                       ': ($cmp > 0'
+                    .                           '? "&gt;"'
+                    .                           ':"="))'
+                    .                 ');'
+                    */
                     . 'return  $cmp;');
 
         // Sort the item list

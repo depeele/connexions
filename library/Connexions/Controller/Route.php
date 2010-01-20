@@ -6,18 +6,18 @@
  *      /:owner          [/:tags]               Bookmarks of the given owner,
  *                                              possibly limited by a set of
  *                                              tags
- *      /:tags                                  All bookmarks that have the
- *                                              given tags
+ *      /tagged          [/:tags]               Bookmarks of any owner,
+ *                                              possibly limited by a set of
+ *                                              tags
+ *
+ *      /tags            [/:owners]             Tags, possibly limited by a set
+ *                                              of owner(s).
  *
  *      /network         /:owner    [/:tags]    Owner network
- *
- *      /tags            [/:owners]             All tags, possibly limited by a
- *                                              set of owner(s).
  *
  *      /subscriptions   /:owner    [/:tags]    Owner subscriptions
  *      /inbox           /:owner    [/:tags]    Owner inbox
  *
- *      /tag             /:tags                 Item tags
  *      /url             /:url                  Lookup url
  *      /people          [/:tags]               People list
  *
@@ -45,15 +45,21 @@ class Connexions_Controller_Route
     protected $_currentRoute    = null;
     protected $_routes          = array(
         // top/controller         sub-levels/named parameters
-        '/'             => array(':owner'   => array(
-                                    ':tags'    => false),
-                                 ':tags'    => false
+        '/'             => array(':controller'  => 'index',
+                                 ':action'      => 'index',
+                                 ':owner'       => array(
+                                    ':tags'    => false)
                            ),
-        ':tags'         => array(),
+        'tagged'        => array(':controller'  => 'index',
+                                 ':action'      => 'index',
+                                 ':owner'       => '*',
+                                 ':tags'        => false
+                           ),
+        'tags'          => array(':owners'  => false),
+
         'network'       => array(':owner'   => array(
                                     ':tags'    => false)
                            ),
-        'tags'          => array(':owners'  => false),
         'subscriptions' => array(':owner'   => array(
                                     ':tags'    => false)
                            ),
@@ -62,8 +68,6 @@ class Connexions_Controller_Route
                                     ':tags'    => false)
                            ),
   
-        'tag'           => array(':tags'    => false),
-
         'url'           => array(':url'     => false),
         'people'        => array(':tags'    => false),
   
@@ -136,7 +140,6 @@ class Connexions_Controller_Route
             $action     = 'index';
             $idex       = 1;    // Skip the first part since we've already
                                 // matchedd it.
-
         }
         else
         {
@@ -180,16 +183,20 @@ class Connexions_Controller_Route
                 if ($key[0] == ':')
                 {
                     $name = substr($key, 1);
-                    if ($name == ':owner')
+                    if (is_string($val))
                     {
-                        $parts[$idex] = Connexions::replaceables('%user.name');
+                        // Pre-defined value
+                        $params[$name] = $val;
                     }
+                    else
+                    {
+                        // Pull the value from the URL
+                        $params[$name] = $parts[$idex];
+                        $idex++;
 
-                    $params[$name] = $parts[$idex];
-                    $idex++;
-
-                    $route =& $val;
-                    break;
+                        $route =& $val;
+                        break;
+                    }
                 }
                 else if (strcasecmp($key, $parts[$idex]) === 0)
                 {
@@ -214,8 +221,10 @@ class Connexions_Controller_Route
         }
 
         /*
-        Connexions::log("Connexions_Controller_Route::match: Params [ "
-                            . print_r($params, true) ." ]");
+        Connexions::log(
+                sprintf("Connexions_Controller_Route::match: "
+                            . "Params [ %s ]",
+                         print_r($params, true)) );
         // */
 
         // Remember this current route
