@@ -118,10 +118,9 @@ echo "</pre><hr />";
 unset($rec);
 
 /*****************************************************************************/
-$recs = Model_User::fetchAll(); //array('userId' => 1));
-printf ("<pre>All %d Records:\n", count($recs));
-foreach ($recs as $idex => $rec)
-{
-    printf ("%d: %s\n", $idex, $rec->debugDump());
-}
+$users = 'dep,sab,cag';
+$data  = Model_User::ids('dep,sab,cag');
+echo "<pre>ID information for '{$users}':\n";
+print_r($data);
 echo "</pre><hr />";
+unset($data);

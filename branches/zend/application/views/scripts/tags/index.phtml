@@ -2,96 +2,102 @@
 /** @file
  *
  *  View script for TagsController::index with incoming members:
- *      viewer      The Model_User instance representing the current viewer;
- *      userInfo    A Connexions_UserInfo instance containing information about
- *                  the requested users.
- *      tagSet      The ModelTagSet representing the tags to present.
- *      paginator   The paginator to use in presenting 'tagSet'.
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      userInfo        A Connexions_Set_Info instance containing information
+ *                      about the requested users;
+ *      tagSet          The Model_TagSet representing the tags to present;
+ *      paginator       The paginator to use in presenting 'tagSet';
  *
- *      maxTags
- *      sortBy
- *      sortOrder
+ *      maxTags         Tags per page;
+ *      sortBy          Sort tags by (valid field of Model_Tag);
+ *      sortOrder       Tag sort order;
+ *
+ *      maxUsers        Maximum number of users to present in the sidebar;
+ *      userSortBy      Sort users by (valid field of Model_User);
+ *      userSortOrder   User sort order.
  */
 
 $this->headTitle('Tags');
 
 ?>
-<p>Present Tags to  <?= $this->viewer ?>
-<?php   if ( false )    //$this->userInfo->hasValidUsers())
-            printf (" of users '%s'", $this->userInfo->validUsers);
+<p>Present to <?= $this->viewer ?>
+<?php   if ( $this->userInfo && $this->userInfo->hasValidItems())
+        {
+            if (count($this->userInfo->validIds) == 1)
+                echo " all tags used by user ";
+            else
+                echo " those tags in common to users ";
+
+            echo "'{$this->userInfo->validItems}'.";
+        }
         else
-            printf (", NO users.");
+            printf (" all tags.");
 ?>
 </p>
 
 <?php
-if ( @isset($this->tagSet))
-{
-    $this->tagInfo = new Connexions_TagInfo('');
-    $html          = '';
-
-    // The partial is faster than the  View Helper by about 0.01 seconds
-    $time_start = microtime(true);
-    if (true)
-    {
-    /* Use the Connexions_View_Helper_HtmlTagCloud class to render the tag
-     * cloud for $this->tagSet.
-     *
-     * This view helper uses:
-     *  $view->tagSet, tagInfo, maxTags, sortBy, and sortOrder
-     */
-    $html .= $this->htmlTagCloud();
-
-    }
-    else
-    {
-    /* Use the tagCloud.phtml partial to render the tag cloud associated with
-     * the incoming users.
-     *
-     * :TODO: Pull the 'maxTags' setting from some user-controller area.
-     */
-    $html .= $this->partial('tagCloud.phtml',
-                                            array(
-                                                'tagSet'    => &$this->tagSet,
-                                                'tagInfo'   => &$this->tagInfo
-                                            ));
-    }
-
-    $time_end   = microtime(true);
-
-    $html .= sprintf ("%f seconds to render tag cloud<br />\n",
-                      $time_end - $time_start);
-
-    //$this->layout()->right = $html;
-    echo $html;
-}
 
 /* Present the pagination control, established by
  * Bootstrap.php::_initViewGlobal() to be rendered via:
  *      views/scripts/paginationControl.phtml
- *
+ */
 echo $this->paginator;
 
 if (count($this->paginator))
 {
-    // Present the items of the current page
-    echo "<ul class='items'>\n";
-    foreach ($this->paginator as $idex => $user)
+    $tagList = new Connexions_Set_ItemList($this->paginator,
+                                           new Connexions_Set_Info(''),
+                                           '/tagged');
+
+    $tagIds = array();
+    foreach ($tagList as $tag)
     {
-        // Present the current item -- This should probably be via a view
-        // partial like:
-        //      view/scripts/user_listItem.phtml
-        echo $this->partial('user_listItem.phtml',
-                            array(
-                                'index' => $idex,
-                                'user'  => $user
-                            ));
+        array_push($tagIds, $tag->tagId);
     }
-    echo "</ul>\n";
+
+    // Create a user set for all users that have this set of tags
+    $userSet        = new Model_UserSet( $tagIds );
+    $userSet->withAnyTag()
+            ->weightBy('tag');
+    
+    // :TODO: Since we're caching objects, we MUST modify the $viewer object...
+    $this->viewer->weightBy('tag', $tagIds);
+
+    $this->userList = $userSet->get_Tag_ItemList(0, $this->maxUsers,
+                                                 $this->userInfo);
+
+    $time_start = microtime(true);
+
+    /* Use the Connexions_View_Helper_HtmlTagCloud class to render the set of
+     * users as a tag cloud.
+     */
+    $this->layout()->right = $this->htmlTagCloud($this->userList,
+                                                 $this->userSortBy,
+                                                 $this->userSortOrder);
+
+    $time_end   = microtime(true);
+
+    $this->layout()->right .= sprintf ("%f seconds to render tag cloud<br />\n",
+                                       $time_end - $time_start);
+
+
+    /*
+    // Present the tag cloud for the tags of the current page.
+    $offset  = $this->paginator->getCurrentPageNumber();
+    $perPage = $this->paginator->getItemCountPerPage();
+
+    printf ("page[ %d ], perPage[ %d ]<br />\n", $offset, $perPage);
+
+    $tagList = $this->tagSet->get_Tag_ItemList($offset, $perPage);
+    */
+
+    echo $this->htmlTagCloud($tagList,
+                             $this->sortBy,
+                             $this->sortOrder);
 }
 
 echo $this->paginator;
-// */
 
 ?>
 

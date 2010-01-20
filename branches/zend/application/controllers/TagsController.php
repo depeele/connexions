@@ -22,12 +22,18 @@ class TagsController extends Zend_Controller_Action
 
         // Pagination parameters
         $page      = $request->getParam('page',      null);
-        $perPage   = $request->getParam('perPage',   null);
+        $perPage   = $request->getParam('perPage',   250);
 
         // Tag-cloud parameters
         $maxTags   = -1;    // ALL  $request->getParam('maxTags',   null);
-        $sortBy    = $request->getParam('sortBy',    null);
+        $sortBy    = $request->getParam('sortBy',    'tag');
         $sortOrder = $request->getParam('sortOrder', null);
+
+        // User-cloud parameters
+        $maxUsers      = $request->getParam('maxUsers',         500);
+        $userSortBy    = $request->getParam('userSortBy',       'name');
+        $userSortOrder = $request->getParam('userSortOrder',    null);
+
 
         // /*
         Connexions::log("TagController:: "
@@ -36,23 +42,20 @@ class TagsController extends Zend_Controller_Action
                             . "perPage[ {$perPage} ], "
                             . "maxTags[ {$maxTags} ], "
                             . "sortBy[ {$sortBy} ], "
-                            . "sortOrder[ {$sortOrder} ]");
+                            . "sortOrder[ {$sortOrder} ], "
+                            . "maxUsers[ {$maxUsers} ], "
+                            . "userSortBy[ {$userSortBy} ], "
+                            . "userSortOrder[ {$userSortOrder} ]");
         // */
 
 
-        $userInfo = (Object)(array( 'validIds' => null ));
-        /*
-        $userInfo = new Connexions_UserInfo($owners);
-        if ($userInfo->hasInvalidUsers())
+        $userInfo = new Connexions_Set_Info($owners, 'Model_User');
+        if ($userInfo->hasInvalidItems())
             $this->view->error =
-                    "Invalid user(s) [ {$userInfo->invalidUsers} ]";
-        */
+                    "Invalid user(s) [ {$userInfo->invalidItems} ]";
 
         // Retrieve the set of tags
         $tagSet    = new Model_TagSet( $userInfo->validIds );
-
-        $paginator = null;
-        /*
         $paginator = new Zend_Paginator( $tagSet );
 
         // Apply the pagination parameters
@@ -60,6 +63,16 @@ class TagsController extends Zend_Controller_Action
             $paginator->setCurrentPageNumber($page);
         if ($perPage > 0)
             $paginator->setItemCountPerPage($perPage);
+
+        /*
+        $items = array();
+        foreach ($paginator as $idex => $tag)
+        {
+            array_push($items, sprintf ("%s[%d, %d]",
+                                        $tag->tag, $tag->tagId,
+                                        $tag->userItemCount));
+        }
+        Connexions::log("TagsController: tags[ ". implode(', ', $items) ." ]");
         */
 
 
@@ -74,6 +87,11 @@ class TagsController extends Zend_Controller_Action
         $this->view->maxTags    = $maxTags;
         $this->view->sortBy     = $sortBy;
         $this->view->sortOrder  = $sortOrder;
+
+        // User-cloud parameters
+        $this->view->maxUsers       = $maxUsers;
+        $this->view->userSortBy     = $userSortBy;
+        $this->view->userSortOrder  = $userSortOrder;
     }
 
     /** @brief Redirect all other actions to 'index'

@@ -14,6 +14,7 @@ printf ("<pre>Record for userId==1, itemId==1, %f seconds, %s bytes:\n",
 echo ($rec instanceof Connexions_Model ? $rec->debugDump() : " *** ERROR\n");
 echo "\n\n";
 
+/*****************************************************************************/
 $rec->taggedOn  = date('Y-m-d H:i:s');
 $rec->isPrivate = (! $rec->isPrivate);
 echo 'Save (should be an update with new "taggedOn" and toggled "isPrivate"):',
@@ -50,6 +51,7 @@ printf ("-- Retrieval + Access: %f seconds, %s bytes:\n",
 unset($rec);
 echo "</pre><hr />";
 
+/*****************************************************************************/
 $tagIds  = array(5);    //array(1,2,5);
 $userIds = array(1,2,441);
 $itemIds = array();
@@ -89,6 +91,7 @@ printf ("-- Retrieval + Iteration: %f seconds, %s bytes:\n",
 unset($recs);
 echo "</pre><hr />";
 
+/*****************************************************************************/
 /*
 $time_start = microtime(true);
 $mem_start  = memory_get_usage();
@@ -128,11 +131,10 @@ printf ("-- Retrieval + Iteration: %f seconds, %s bytes:\n",
             number_format($mem_end  - $mem_start));
 
 unset($recs);
+echo "</pre><hr />";
 // */
 
-echo "</pre><hr />";
-
-
+/*****************************************************************************/
 /*
 $select = Model_UserItem::select();
 printf ("Select sql:<blockquote>%s</blockquote>",
@@ -169,6 +171,7 @@ unset($recs);
 echo "</pre><hr />";
 // */
 
+/*****************************************************************************/
 /*
 $time_start = microtime(true);
 $mem_start  = memory_get_usage();
@@ -196,6 +199,7 @@ unset($recs);
 echo "</pre><hr />";
 // */
 
+/*****************************************************************************/
 $mem_last = $mem_end;
 
 printf ("Total memory: %s bytes<br />\n",

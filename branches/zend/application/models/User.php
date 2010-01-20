@@ -6,6 +6,7 @@
  */
 
 class Model_User extends Connexions_Model_Cached
+                implements  Zend_Tag_Taggable
 {
     /*************************************************************************
      * Connexions_Model - static, identity members
@@ -104,6 +105,163 @@ class Model_User extends Connexions_Model_Cached
         }
 
         return false;
+    }
+
+    /** @brief  Set the weighting.
+     *  @param  by      Weight by ('tag', 'item', 'userItem').
+     *  @param  tagIds  If provided, an array of tagIds to limit the query.
+     *
+     *  @return $this
+     */
+    public function weightBy($by, $tagIds = null)
+    {
+        $cols = array();
+
+        switch (strtolower($by))
+        {
+        case 'tag':
+            $cols['weight'] = 'COUNT(DISTINCT uti.tagId)';
+            break;
+
+        case 'item':
+            $cols['weight'] = 'COUNT(DISTINCT uti.itemId)';
+            break;
+
+        case 'useritem':
+        default:            // Default to 'userItem'
+            $cols['weight'] = 'COUNT(DISTINCT uti.userId,uti.itemId)';
+            break;
+        }
+
+        $select = $this->_db->select()
+                            ->from(array('u'  => $this->_table))
+                            ->join(array('uti'=> 'userTagItem'),
+                                         '(u.userId=uti.userId)',
+                                         '')
+                            ->group('u.userId')
+                            ->where('u.userId=?', $this->userId)
+                            ->columns($cols);
+
+        if (! @empty($tagIds))
+        {
+            // Tag Restrictions -- required 'userTagItem'
+            $select->where('uti.tagId IN (?)', $tagIds)
+                   ->having('COUNT(DISTINCT uti.tagId)='.count($tagIds));
+        }
+        /*
+        Connexions::log("Model_User::weightBy({$by}): "
+                            . "sql[ ". $select->assemble() ." ]");
+        // */
+
+        $recs   = $select->query()->fetchAll();
+
+        if (@count($recs) == 1)
+        {
+            /*
+            Connexions::log(
+                    sprintf("Model_User::weightBy: %d record [ %s ]",
+                            count($recs), print_r($recs[0], true)) );
+            // */
+
+            // Include this 'weight' in our record data
+            $this->_record['weight'] = $recs[0]['weight'];
+        }
+
+        return $this;
+    }
+
+    /*************************************************************************
+     * Zend_Tag_Taggable Interface
+     *
+     */
+    protected       $_params    = array();
+
+    public function getParam($name)
+    {
+        // weightValue, url, selected
+        $val = (@isset($this->_params[$name])
+                    ? $this->_params[$name]
+                    : null);
+        return $val;
+    }
+
+    public function setParam($name, $value)
+    {
+        // weightValue, url, selected
+        $this->_params[$name] = $value;
+    }
+
+    public function getTitle()
+    {
+        $title = (String)($this->name);
+
+        return $title;
+    }
+
+    public function getWeight()
+    {
+        if (@isset($this->weight))
+            $weight = (Float)($this->weight);
+        else if (@isset($this->tagCount))
+            $weight = (Float)($this->tagCount);
+        else
+            $weight = (Float)($this->totalItems);
+
+        return $weight;
+    }
+
+    /*************************************************************************
+     * Static methods
+     *
+     */
+
+    /** @brief  Given a set of user names, retrieve the identifier for each.
+     *  @param  names   The set of names as a comma-separated string or array.
+     *  @param  db      An optional database instance (Zend_Db_Abstract).
+     *
+     *  @return An array
+     *              { valid:   { <userName>: <user id>, ... },
+     *                invalid: [invalid user names, ...]
+     *              }
+     */
+    public static function ids($names, $db = null)
+    {
+        if (@empty($names))
+            return null;
+
+        if (! @is_array($names))
+            $names = preg_split('/\s*,\s*/', $names);
+
+        if ($db === null)
+            $db = Connexions::getDb();
+        $select = $db->select()
+                     ->from(self::$table)
+                     ->where('name IN (?)', $names);
+        $recs   = $select->query()->fetchAll();
+
+        /* Convert the returned array of records to a simple array of
+         *   userName => userId
+         *
+         * This will be used for the list of valid names.
+         */
+        $valid  = array();
+        foreach ($recs as $idex => $row)
+        {
+            $valid[$row['name']] = $row['userId'];
+        }
+
+        $invalid = array();
+        if (count($valid) < count($names))
+        {
+            // Include invalid entries for those names that are invalid
+            foreach ($names as $name)
+            {
+                if (! @isset($valid[$name]))
+                    $invalid[] = $name;
+            }
+        }
+
+        return array('valid' => $valid, 'invalid' => $invalid);
     }
 
     /*************************************************************************

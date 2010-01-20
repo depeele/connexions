@@ -27,8 +27,8 @@ class IndexController extends Zend_Controller_Action
         $perPage   = $request->getParam('perPage',   null);
 
         // Tag-cloud parameters
-        $maxTags   = $request->getParam('maxTags',   null);
-        $sortBy    = $request->getParam('sortBy',    null);
+        $maxTags   = $request->getParam('maxTags',   250);
+        $sortBy    = $request->getParam('sortBy',    'tag');
         $sortOrder = $request->getParam('sortOrder', null);
 
         /*
@@ -55,7 +55,7 @@ class IndexController extends Zend_Controller_Action
         {
             if (@empty($owner))
                 $owner = '*';
-            else
+            else if ($owner !== '*')
             {
                 // Is this a valid user?
                 $ownerInst = Model_User::find(array('name' => $owner));
@@ -102,9 +102,9 @@ class IndexController extends Zend_Controller_Action
             }
         }
 
-        $tagInfo = new Connexions_TagInfo($reqTags);
-        if ($tagInfo->hasInvalidTags())
-            $this->view->error = "Invalid tag(s) [ {$tagInfo->invalidTags} ]";
+        $tagInfo = new Connexions_Set_Info($reqTags, 'Model_Tag');
+        if ($tagInfo->hasInvalidItems())
+            $this->view->error = "Invalid tag(s) [ {$tagInfo->invalidItems} ]";
 
         $userItems = new Model_UserItemSet($tagInfo->validIds, $userIds);
         $paginator = new Zend_Paginator( $userItems );
@@ -141,7 +141,7 @@ class IndexController extends Zend_Controller_Action
         {
             $owner = substr($method, 0, -6);
 
-            /*
+            // /*
             $request = $this->getRequest();
 
             Connexions::log("IndexController::__call({$method}): "

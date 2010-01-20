@@ -37,8 +37,8 @@ class Connexions
 
         if (self::$_log === null)
         {
-            $writer = new Zend_Log_Writer_Firebug();
-            //$writer = new Zend_Log_Writer_Stream('/tmp/connexions-log.txt');
+            //$writer = new Zend_Log_Writer_Firebug();
+            $writer = new Zend_Log_Writer_Stream('/tmp/connexions-log.txt');
             self::$_log = new Zend_Log($writer);
         }
 
@@ -129,7 +129,10 @@ class Connexions
             if ($url[0] == '/')
             {
                 // Convert to a site-absolute URL
-                $url = $front->getBaseUrl() . $url;
+                $baseUrl = $front->getBaseUrl();
+
+                if (strpos($url, $baseUrl) !== 0)
+                    $url = $baseUrl . $url;
             }
 
         }

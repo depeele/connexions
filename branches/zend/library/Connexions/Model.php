@@ -169,6 +169,25 @@ abstract class Connexions_Model
         return $this->_record[$name];
     }
 
+    /** @brief  Is the given field set?
+     *  @param  name    The field name.
+     *
+     *  @return The field value (or null if invalid field).
+     */
+    public function __isset($name)
+    {
+        if ( (! @is_array($this->_record)) ||
+             (! @isset($this->_record[$name])) )
+        {
+            // Invalid or unset field
+            //Connexions::log("Connexions_Model::__isset({$name}): FALSE");
+            return false;
+        }
+
+        //Connexions::log("Connexions_Model::__isset({$name}): true");
+        return true;
+    }
+
     /** @brief  Return a string representation of this instance.
      *
      *  @return The string-based representation.
@@ -291,7 +310,7 @@ abstract class Connexions_Model
                      implode(' AND ', array_keys($where)),
                      implode(', ', array_values($where)) );
             // */
-            if ($this->_db->delete($this-_table, $where) )
+            if ($this->_db->delete($this->_table, $where) )
             {
                 $res = true;
             }
@@ -526,23 +545,20 @@ abstract class Connexions_Model
 
         if (@is_array($id) && @isset($id['@isBacked']))
         {
-            /* Note: Use '(unset) var;' vs 'unset(var);' to eliminate
-             *          'Fatal error: Cannot unset string offsets'
-             */
             $isBacked = ($id['@isBacked'] ? true : false);
-            (unset) $id['@isBacked'];
+            unset($id['@isBacked']);
 
             if ($isBacked)
             {
                 $isRecord = true;
-                (unset) $id['@isRecord'];
+                unset($id['@isRecord']);
             }
         }
 
         if ((! $isBacked) && @is_array($id) && @isset($id['@isRecord']))
         {
             $isRecord = ($id['@isRecord'] ? true : false);
-            (unset) $id['@isRecord'];
+            unset($id['@isRecord']);
         }
 
         if ($db !== null)
@@ -630,7 +646,7 @@ abstract class Connexions_Model
                                  */
                                 array_push($idParts, $dbKey.'=='.$id[$dbKey]);
 
-                                (unset) $id[$dbKey];
+                                unset($id[$dbKey]);
                             }
                         }
 

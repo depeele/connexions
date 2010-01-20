@@ -86,11 +86,64 @@ class Model_UserSet extends Connexions_Set
         $this->_itemIds = $itemIds;
 
         /*
-        printf ("Model_UserSet: select[ %s ]<br />\n", $select->assemble());
+        Connexions::log(
+                sprintf("Model_UserSet: select[ %s ]<br />\n",
+                        $select->assemble()) );
         // */
 
         return parent::__construct($select, $memberClass);
     }
+
+    /** @brief  Modify the tag restrictions to allow a match if a user has used
+     *          ANY of the specified tags (vs all).
+     *
+     *  @return $this
+     */
+    public function withAnyTag()
+    {
+        $this->_select->reset(Zend_Db_Select::HAVING)
+                      ->columns(array('tagCount' =>
+                                            'COUNT(DISTINCT uti.tagId)'));
+
+        return $this;
+    }
+
+    /** @brief  Set the weighting.
+     *  @param  by      Weight by ('tag', 'item', 'userItem').
+     *
+     *  @return $this
+     */
+    public function weightBy($by)
+    {
+        $cols = array();
+
+        switch (strtolower($by))
+        {
+        case 'tag':
+            $cols['weight'] = 'COUNT(DISTINCT uti.tagId)';
+            break;
+
+        case 'item':
+            $cols['weight'] = 'COUNT(DISTINCT uti.itemId)';
+            break;
+
+        case 'useritem':
+        default:            // Default to 'userItem'
+            $cols['weight'] = 'COUNT(DISTINCT uti.userId,uti.itemId)';
+            break;
+        }
+
+        $this->_select->columns($cols)
+                      ->order('weight DESC');
+
+        /*
+        Connexions::log("Model_UserSet::weightBy({$by}): "
+                            . "sql[ ". $this->_select->assemble() ." ]");
+        // */
+
+        return $this;
+    }
+
 
     /** @brief  Retrieve the array of all tag identifiers used by this set of
      *          users.
@@ -145,10 +198,22 @@ class Model_UserSet extends Connexions_Set
      */
     public function userIds()
     {
+        /*
+        Connexions::log("Model_UserSet::userIds:  ".
+                            ($this->_nonTrivial ? "Non-":"") ."trivial");
+        // */
+
         if ($this->_nonTrivial !== true)
             return $this->_userIds;
 
         $select = $this->_select_users();
+
+        /*
+        Connexions::log("Model_UserSet::userIds: ".
+                            "select[ ".  $this->_select->assemble() ."], ".
+                            "user-select[ ". $select->assemble() ." ]");
+        // */
+
         $recs   = $select->query()->fetchAll();
 
         // Convert the returned array of records to a simple array of ids
@@ -157,6 +222,11 @@ class Model_UserSet extends Connexions_Set
         {
             $ids[] = $row['userId']; // $row[0];
         }
+
+        /*
+        Connexions::log("Model_UserSet::userIds:  [ ".
+                            implode(', ', $ids) ." ]");
+        // */
 
         return $ids;
     }
@@ -180,7 +250,7 @@ class Model_UserSet extends Connexions_Set
 
         $select->reset(Zend_Db_Select::COLUMNS)
                ->reset(Zend_Db_Select::ORDER)
-               ->reset(Zend_Db_Select::GROUP)
+               //->reset(Zend_Db_Select::GROUP)
                ->columns('uti.tagId')
                ->distinct();
 
@@ -201,7 +271,7 @@ class Model_UserSet extends Connexions_Set
 
         $select->reset(Zend_Db_Select::COLUMNS)
                ->reset(Zend_Db_Select::ORDER)
-               ->reset(Zend_Db_Select::GROUP)
+               //->reset(Zend_Db_Select::GROUP)
                ->columns('uti.itemId')
                ->distinct();
 
@@ -209,7 +279,7 @@ class Model_UserSet extends Connexions_Set
     }
 
     /** @brief  Return a Zend_Db_Select instance capable of retrieving the user
-     *          identifiers of the userItems represented by this set.
+     *          identifiers of the users represented by this set.
      *
      *  @return A Zend_Db_Select instance capable of retrieving the item
      *          identifiers of the userItems represented by this set.
@@ -222,7 +292,7 @@ class Model_UserSet extends Connexions_Set
 
         $select->reset(Zend_Db_Select::COLUMNS)
                ->reset(Zend_Db_Select::ORDER)
-               ->reset(Zend_Db_Select::GROUP)
+               //->reset(Zend_Db_Select::GROUP)
                ->columns('u.userId')
                ->distinct();
 

@@ -12,6 +12,7 @@
  */
 class Connexions_Set implements Countable,
                                 IteratorAggregate,
+                                ArrayAccess,
                                 Zend_Paginator_Adapter_Interface
 {
     /** @brief  The name to use as the row count column. */
@@ -73,6 +74,31 @@ class Connexions_Set implements Countable,
         return $this->_select;
     }
 
+    /** @brief  Create a Zend_Tag_ItemList adapter for the top 'limit' items.
+     *  @param  offset      The page offset [0];
+     *  @param  limit       The number of items per page [100];
+     *  @param  setInfo     A Connexions_Set_Info instance containing
+     *                      information about any items specified in the
+     *                      request.
+     *  @param  url         The base url for items
+     *                      (defaults to the request URL).
+     *
+     *  @return A Connexions_Set_ItemList instance
+     *              (subclass of Zend_Tag_ItemList)
+     *
+     */
+    public function get_Tag_ItemList(                    $offset    = null,
+                                                         $perPage   = null,
+                                     Connexions_Set_info $setInfo   = null,
+                                                    $url            = null)
+    {
+        if ($offset  === null)  $offset  = 0;
+        if ($perPage === null)  $perPage = 100;
+
+        return new Connexions_Set_ItemList($this->getItems($offset, $perPage),
+                                           $setInfo, $url);
+    }
+
     /*************************************************************************
      * Countable Interface
      *
@@ -98,6 +124,45 @@ class Connexions_Set implements Countable,
         }
 
         return $this->_count;
+    }
+
+    /*************************************************************************
+     * ArrayAccess Interface
+     *
+     */
+    public function offsetExists($offset)
+    {
+        if ( (! @is_numeric($offset)) ||
+             ($offset < 0)            ||
+             ($offset >= $this->count()))
+            return false;
+
+        return true;
+    }
+
+    public function offsetGet($offset)
+    {
+        // Retrieve a single row
+        $this->_select->limit(1, $offset);
+        $rows = $this->_select->query()->fetchAll();
+
+        // Create a new instance of the member class using the retrieved data
+        $inst = new $this->_memberClass($rows[0]);
+
+        // Return the new instance
+        return $inst;
+    }
+
+    public function offsetSet($offset, $value)
+    {
+        // Disallow...
+        return;
+    }
+
+    public function offsetUnset($offset)
+    {
+        // Disallow...
+        return;
     }
 
     /*************************************************************************
@@ -239,41 +304,5 @@ class Connexions_Set implements Countable,
         $this->_select_count = $count;
 
         return $this->_select_count;
-    }
-}
-
-/** @brief  A lazy iterator.  Allows us to postpone the actual instantiation of
- *          a Model instance until it is actually retrieved.
- *
- *  Note: ArrayIterator (and thus Connexions_Set_Iterator) implements
- *          Iterator, Traversable, ArrayAccess, SeekableIterator, Countable
- */
-class Connexions_Set_Iterator extends ArrayIterator
-{
-    /** @brief  The Connexions_Set that is the source of these items. */
-    protected   $_parentSet     = null;
-
-    public function __construct(Connexions_Set $parentSet, $array)
-    {
-        $this->_parentSet =  $parentSet;
-
-        parent::__construct($array);
-    }
-
-    public function current()
-    {
-        $memberClass  = $this->_parentSet->memberClass();
-        $offset = $this->key();
-        $row    = parent::current();
-        if ($row instanceof $memberClass)
-            return $row;
-
-        // Create Model instance for each retrieved record
-        $db    = $this->_parentSet->select()->getAdapter();
-        $row['@isBacked'] = true;
-
-        return (LATE_STATIC_BINDING
-                    ? $memberClass::find($row, $db)
-                    : call_user_func(array($memberClass, 'find'), $row, $db));
     }
 }
