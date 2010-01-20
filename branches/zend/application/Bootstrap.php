@@ -158,8 +158,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         // Establish the base title and separator
         $view->headTitle('connexions')->setSeparator(' > ');
 
-        // Set our default pagination
-        Zend_Paginator::setDefaultScrollingStyle(   'Sliding');
+        // Set our default pagination -- 'Elastic', 'Jumping', 'Sliding'
+        Zend_Paginator::setDefaultScrollingStyle(   'Elastic');
         Zend_View_Helper_PaginationControl::setDefaultViewPartial(
                                         'paginationControl.phtml');
 

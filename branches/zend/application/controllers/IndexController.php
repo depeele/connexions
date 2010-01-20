@@ -24,7 +24,7 @@ class IndexController extends Zend_Controller_Action
 
         // Pagination parameters
         $page      = $request->getParam('page',      null);
-        $perPage   = $request->getParam('perPage',   null);
+        $perPage   = $request->getParam('perPage',   50);
 
         // Tag-cloud parameters
         $maxTags   = $request->getParam('maxTags',   250);
@@ -108,6 +108,7 @@ class IndexController extends Zend_Controller_Action
 
         $userItems = new Model_UserItemSet($tagInfo->validIds, $userIds);
         $paginator = new Zend_Paginator( $userItems );
+        $paginator->setPageRange(5);
 
         // Apply the pagination parameters
         if ($page > 0)

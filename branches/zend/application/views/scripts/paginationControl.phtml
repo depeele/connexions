@@ -20,37 +20,59 @@
  *      lastItemNumber
  */
 
-if ($this->pageCount < 1)
+if ($this->pageCount < 2)
     return;
 
 echo "<div class='pagination'>\n";
-printf ("%s items per page, %s items, %s pages, page %s, items %s-%s<br />\n",
+printf (  "<div class='info'>"
+        .     "Items %s-%s of %s (%s pages)"
+        . "</div>\n",
+        number_format($this->firstItemNumber),
+        number_format($this->lastItemNumber),
+        number_format($this->totalItemCount),
+        number_format($this->pageCount));
+
+/*
+printf (  "<div class='info'>"
+        .     "%s items per page, "
+        .     "%s items, "
+        .     "%s pages, "
+        .    "page %s, "
+        .    "items %s-%s"
+        . "</div>\n",
         number_format($this->itemCountPerPage),
         number_format($this->totalItemCount),
         number_format($this->pageCount),
         number_format($this->current),
         number_format($this->firstItemNumber),
         number_format($this->lastItemNumber));
+ */
 
+echo "<div class='pager'>\n";
 
 if (@isset($this->previous))
-    printf ("<a href='?page=%s'>&lt; Previous</a> ", $page);
+    printf ("<a href='?page=%s'>&lt; Prev</a>", $this->previous);
             //$this->url(array('page' => $this->previous)) );
+else
+    printf ("<span class='disabled'>&lt; Prev</span>");
 
 foreach ($this->pagesInRange as $page)
 {
     if ($page == $this->current)
-        printf ("%s ", $page);
+        printf ("<span class='current'>%s</span>", $page);
     else
         printf ("<a href='?page=%s'>%s</a> ", $page, $page);
                 //$this->url(array('page' => $page)), $page);
 }
 
 if (@isset($this->next))
-    printf ("<a href='?page=%s'>Next &gt;</a>", $page);
+    printf ("<a href='?page=%s'>Next &gt;</a>", $this->next);
             //$this->url(array('page' => $this->next)) );
+else
+    printf ("<span class='disabled'>Next &gt;</span>");
 
-echo "</div>";
+echo  "</div>\n",
+     "</div>\n";
 
 /*
 echo "<pre>this:\n";
