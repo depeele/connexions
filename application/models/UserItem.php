@@ -52,15 +52,12 @@ class Model_UserItem extends Connexions_Model
         $fetch = null;
         if (@is_array($id))
         {
-            /* Note: Use '(unset) var;' vs 'unset(var);' to eliminate
-             *          'Fatal error: Cannot unset string offsets'
-             */
             if (@isset($id['@fetch']))
             {
                 $fetch = $id['@fetch'];
 
                 try{
-                    (unset) $id['@fetch'];
+                    unset($id['@fetch']);
                     unset($id['@fetch']);
                 } catch(Exception $e) {}
             }
@@ -89,7 +86,7 @@ class Model_UserItem extends Connexions_Model
                 if ($unset)
                 {
                     try{
-                        (unset) $id[$key];
+                        unset($id[$key]);
                         unset($id[$key]);
                     } catch(Exception $e) {}
                 }
