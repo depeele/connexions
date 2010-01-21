@@ -13,6 +13,49 @@ if ((! @isset($this->userItem)) ||
     return;
 }
 
+/*
 printf ("<li class='item'>Item %s: %s </li>\n",
         (@isset($this->index) ? $this->index : ''),
         $this->userItem->debugDump());
+*/
+
+$item =& $this->userItem;
+?>
+<li class='item'>
+ <div class='meta'>
+  <?php
+    printf ("%d taggers<br />\n", $item->item->userCount);
+    printf ("rating: %d : %f, %d:%d<br />\n",
+            $item->rating,
+            ($item->item->ratingCount > 0
+                ? $item->item->ratingSum / $item->item->ratingCount
+                : 0.0),
+            $item->item->ratingSum, $item->item->ratingCount);
+
+    printf ("is %sfavorite, %sprivate<br />\n",
+            ($item->isFavorite ? "" : "NOT "),
+            ($item->isPrivate  ? "" : "NOT "));
+
+    printf ("tagged on: %s<br />\n", $item->taggedOn);
+  ?>
+ </div>
+ <div class='itemName'>
+  <?php
+    printf ("<a href='%s' title='%s'>%s</a>",
+            $item->item->url, $item->item->urlHash, $item->name);
+  ?>
+ </div>
+ <div class='userName'><?= $item->user->name ?></div>
+ <div class='description'><?= $item->description ?></div>
+ <div class='tags'>
+  <?php
+    foreach ($item->tags as $tag)
+    {
+        printf ("<a class='tag' href='%s/%s'>%s</a>",
+                'connexions', $tag->tag, $tag->tag);
+    }
+  ?>
+ </div>
+ <div class='control'>
+ </div>
+</li>
