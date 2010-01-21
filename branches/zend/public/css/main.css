@@ -52,7 +52,7 @@ a:active {
 
 /* Page Content */
 #pageContent {
-  padding:          1em;
+  padding:          0 1em;
   z-index:          10;
 }
 
@@ -64,3 +64,5 @@ a:active {
   padding:          0.5em;
   z-index:          1;
 }
+
+.rightCol{padding-left:1em;}

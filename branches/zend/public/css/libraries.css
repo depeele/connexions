@@ -28,5 +28,5 @@ html,body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,p,block
   /* IE general -- trigger hasLayout */
   _zoom:1;
   /* IE/Win */
-  _display:block;
+  display:block;
 }

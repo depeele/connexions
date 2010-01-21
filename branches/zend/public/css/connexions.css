@@ -1,0 +1,421 @@
+@import url(themes/default/jquery-ui.css);
+/* ****** libraries.sass ****** */
+/* Copyright (c) 2008, Yahoo! Inc. All rights reserved. Code licensed under the BSD License: http://developer.yahoo.net/yui/license.txt version: 3.0.0pr2 */
+/* reset */
+html { color: #000; background: #FFF; }
+
+body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form, fieldset, legend, input, textarea, p, blockquote, th, td { position: relative; margin: 0; padding: 0; }
+
+table { border-collapse: collapse; border-spacing: 0; }
+
+fieldset, img { border: 0; }
+
+address, caption, cite, code, dfn, em, strong, th, var { font-style: normal; font-weight: normal; }
+
+li { list-style: none; }
+
+caption, th { text-align: left; }
+
+h1, h2, h3, h4, h5, h6 { font-size: 100%; font-weight: normal; }
+
+q:before, q:after { content: ''; }
+
+abbr, acronym { border: 0; font-variant: normal; }
+
+sup { vertical-align: text-top; }
+
+sub { vertical-align: text-bottom; }
+
+input, textarea, select { font-family: inherit; font-size: inherit; font-weight: inherit; }
+
+input, textarea, select { *font-size: 100%; }
+
+legend { color: #000; }
+
+/* fonts */
+body { font: 13px/1.231 arial,helvetica,clean,sans-serif; *font-size: small; *font: x-small; }
+
+select, input, button, textarea { font: 99% arial,helvetica,clean,sans-serif; }
+
+table { font-size: inherit; font: 100%; }
+
+pre, code, kbd, samp, tt { font-family: monospace; *font-size: 108%; line-height: 100%; }
+
+/* box model normalization */
+html, body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form, fieldset, p, blockquote, table, thead, tbody, tfoot, tr, th, td { /* Make the box models nearly match across browsers */ -moz-box-sizing: border-box; box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; }
+
+/* float clear */
+.clear { display: block; height: 0; clear: both; visibility: hidden; }
+
+/* float clearfix */
+.clearfix:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
+
+/* IE fixes */
+.clearfix { display: inline-block     /* IE/Mac */; _zoom: 1                  /* IE general -- trigger hasLayout */; _display: block           /* IE/Win */; }
+
+/* ****** template.sass ****** */
+/* ====== Page Head, Body, and Foot ====== */
+body { /* IE5.5 */ /* _text-align: center */ }
+
+.body, .main { display: table-cell; *display: block; _position: relative; _left: -3px; _margin-right: -3px; width: auto; _zoom: 1; }
+
+.body:after, .main:after { content: " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . "; visibility: hidden; clear: both; height: 0 !important; display: block; line-height: 0; font-size: 36px; }
+
+.page { margin: 0 auto; width: 950px; /* _text-align: left */ }
+
+/* wraps other template elems to set width */ /* text-align IE5.5 */
+/* "old school" and "liquid" extend page to allow for different page widths */
+.oldSchool { width: 750px; }
+
+.gs960 { width: 960px; }
+
+.liquid { width: auto; margin: 0; }
+
+/* ====== Columns ====== */
+
+.leftCol { float: left; width: 250px; _margin-right: -3px; }
+
+.rightCol { float: right; width: 300px; _margin-right: -3px; }
+
+/* extend columns to allow for common column widths */
+.gMail { width: 160px; }
+
+.gCal { width: 180px; }
+
+.yahoo { width: 240px; }
+
+.myYahoo { width: 300px; }
+
+/* ****** grids.sass ****** */
+.line:after, .lastUnit:after { content: " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . "; visibility: hidden; clear: both; height: 0 !important; display: block; line-height: 0; font-size: xx-large; overflow: hidden; }
+
+.line { *zoom: 1; }
+
+.unit { float: left; }
+
+.size1of1 { float: none; }
+
+.size1of2 { width: 50%; }
+
+.size1of3 { width: 33.33333%; }
+
+.size2of3 { width: 66.66666%; }
+
+.size1of4 { width: 25%; }
+
+.size3of4 { width: 75%; }
+
+.size1of5 { width: 20%; }
+
+.size2of5 { width: 40%; }
+
+.size3of5 { width: 60%; }
+
+.size4of5 { width: 80%; }
+
+.lastUnit { display: table-cell; *display: block; *zoom: 1; float: none; _position: relative; _left: -3px; _margin-right: -3px; width: auto; }
+
+/* ****** content.sass ****** */
+body { font-family: "Myriad Pro","Segoe UI",Helvetica, Arial, sans-serif; }
+
+/* **************** CONTENT OBJECTS ***************** */
+/* ====== Default spacing ====== */
+h1, h2, h3, h4, h5, h6, ul, ol, dl, p, blockquote { padding: 10px; }
+
+h1, h2, h3, h4, h5, h6, img { padding-bottom: 0px; }
+
+pre { margin: 10px; }
+
+table h1, table h2, table h3, table h4, table h5, table h6, table p, table ul, table ol, table dl { padding: 0; }
+
+/* ====== Elements ====== */
+img { display: block; }
+
+em { font-style: italic; }
+
+strong { font-weight: bold; }
+
+hr { border: 5px solid #e2e2e2; border-width: 0 0 5px 0; margin: 20px 10px 10px 10px; }
+
+code { color: #0B8C8F; }
+
+/* ====== Headings ====== */
+/* .h1-.h6 classes should be used to maintain the semantically appropriate heading levels - NOT for use on non-headings */
+h1, .h1 { font-size: 196%; font-weight: bold; font-style: normal; color: #2E3540; }
+
+h2, .h2 { font-size: 167%; font-weight: bold; font-style: normal; color: #2E3540; }
+
+h3, .h3 { font-size: 146.5%; font-weight: bold; font-style: normal; color: #2E3540; }
+
+h4, .h4 { font-size: 123.1%; font-weight: bold; font-style: normal; color: #2E3540; }
+
+h5, .h5 { font-size: 108%; font-weight: bold; font-style: normal; color: #2E3540; }
+
+h6, .h6 { font-size: 108%; font-weight: normal; font-style: italic; color: #2E3540; }
+
+/* if additional headings are needed they should be created via additional classes, never via location dependant styling */
+.category { font-size: 108%; font-weight: normal; font-style: normal; text-transform: uppercase; color: #333; }
+.category a { color: #333; }
+
+.important a { font-weight: bold; }
+
+/* links */
+a { color: #06c; font-weight: bold; text-decoration: none; }
+a:focus, a:hover { text-decoration: underline; }
+a:visited { color: #005a9c; }
+
+/* ====== Lists ====== */
+/* numbered list */
+ol.simpleList li { list-style-type: decimal; margin-left: 40px; }
+
+/* standard list */
+ul.simpleList li { list-style-type: disc; margin-left: 40px; }
+
+/* ====== Tables ====== */
+.data { padding: 20px; position: relative; zoom: 1; vertical-align: top; border-right: solid 1px transparent   /* border fixes a FF2 bug which causes the data table to overlay its borders*/; }
+.data table { width: 100%; border: 1px solid #AE0345; }
+.data th, .data td { padding: 3px 20px; }
+.data thead tr { background-color: #fff0f8; }
+.data th { color: #000; font-weight: bold; }
+
+th, td { vertical-align: top; border: 1px solid #AE0345; }
+
+.txtC, .data .txtC td, .data .txtC th { text-align: center; }
+
+.txtL, .data .txtL td, .data .txtL th { text-align: left; }
+
+.txtR, .data .txtR td, .data .txtR th { text-align: right; }
+
+.txtT, .data .txtT td, .data .txtT th { vertical-align: top; }
+
+.txtB, .data .txtB td, .data .txtB th { vertical-align: bottom; }
+
+.txtM, .data .txtM td, .data .txtM th { vertical-align: middle; }
+
+/* specification table - extends data table */
+.spec { padding: 10px; }
+.spec table { border-top: 1px solid #e2e2e2; border-bottom-color: #fff; border-left: none; border-right: none; }
+.spec th, .spec td { border: 1px solid #e2e2e2; border-width: 1px 0; padding-left: 0; }
+.spec .odd, .spec .even { background-color: #fff; }
+
+/* ====== blockquote ====== */
+cite { display: block; text-align: right; padding-top: 10px; }
+
+/* ====== callout ====== */
+.callout { font-size: 189%; color: #999999; font-style: italic; }
+.callout cite { display: block; text-align: right; padding-top: 30px; font-size: 69.25%; }
+.callout span.quot { font-size: 500%; vertical-align: sub; color: #e2e2e2; line-height: 25px; font-weight: bold; }
+.callout span.quotLast { vertical-align: middle; }
+
+/* ====== image treatments (get more from jason santa maria) ====== */
+.caption { font-size: 13px; color: #666666; font-style: italic; padding-top: 0; }
+
+/* ====== media ====== */
+.media { overflow: hidden; overflow: visible; zoom: 1; margin: 10px; }
+.media .img { float: left; margin-right: 10px; _display: inline    /* IE fix -- margin doubling bug */; }
+.media .img img { display: block; }
+.media .imgExt { float: right; margin-left: 10px; _display: inline    /* IE fix -- margin doubling bug */; }
+
+/* ====== special formatting classes ====== */
+.detail { color: #777; font-size: 11px; display: block; }
+
+/* ****** sprites.sass ****** */
+.connexions_sprites { background: url('sprites/connexions.gif') no-repeat scroll 0px 0px transparent; background-image: url('sprites/connexions.gif') !important; }
+
+.corner_inner_left { width: 12px; height: 10px; background-position: 0     0; }
+
+.corner_inner_right { width: 12px; height: 10px; background-position: -12px 0px; }
+
+.corner_outter_left { width: 16px; height: 18px; background-position: 0     -10px; }
+
+.corner_outter_right { width: 16px; height: 18px; background-position: -16px -10px; }
+
+.corner_outter_middle { height: 18px; }
+
+.corner_green_left { width: 16px; height: 18px; background-position: -32px -10px; }
+
+.corner_green_right { width: 16px; height: 18px; background-position: -48px -10px; }
+
+.corner_green_middle { height: 18px; }
+
+.lock_empty { width: 13px; height: 16px; background-position: 0     -28px; }
+
+.lock_fill { width: 13px; height: 16px; background-position: -13px -28px; }
+
+.status_ok { width: 15px; height: 15px; background-position: -72px  -28px; }
+
+.status_error { width: 15px; height: 15px; background-position: -87px  -28px; }
+
+.status_empty { width: 15px; height: 15px; background-position: -104px -28px; }
+
+.star_0 { width: 14px; height: 14px; background-position: -72px  -44px; }
+
+.star_0_off { width: 14px; height: 14px; background-position: -72px  -44px; }
+
+.star_0_hover { width: 14px; height: 14px; background-position: -86px  -44px; }
+
+.star_1 { width: 16px; height: 16px; background-position: -72px  -58px; }
+
+.star_1_off { width: 16px; height: 16px; background-position: -72px  -58px; }
+
+.star_1_hover { width: 16px; height: 16px; background-position: -88px  -58px; }
+
+.star_1_on { width: 16px; height: 16px; background-position: -104px -58px; }
+
+.star_empty { width: 15px; height: 15px; background-position: 0     -44px; }
+
+.star_fill { width: 15px; height: 15px; background-position: -15px -44px; }
+
+.star_small_empty { width: 13px; height: 12px; background-position: 0     -59px; }
+
+.star_small_fill { width: 13px; height: 12px; background-position: -13px -59px; }
+
+.magnifier { width: 17px; height: 16px; background-position: 0     -71px; }
+
+.magnifier_small { width: 15px; height: 15px; background-position: -45px -59px; }
+
+.search_bg { width: 173px; height: 23px; background-position: 0    -87px; }
+
+.welcome_bg { width: 100px; height: 64px; background-position: 0   -110px; }
+
+.join_bg { width: 100px; height: 64px; background-position: 0   -174px; }
+
+/* smallIcons.gif 15x44 */
+.smallIcon_bookmark { background: url('sprites/smallIcons.gif') no-repeat scroll 3px 0px transparent; }
+
+.smallIcon_magnify { background: url('sprites/smallIcons.gif') no-repeat scroll 3px -1956px transparent; }
+
+/* arrows.gif     12x36 */
+.arrow_down1 { background: url('sprites/arrows.gif') no-repeat scroll 15px 0px transparent; }
+
+.arrow_left1 { background: url('sprites/arrows.gif') no-repeat scroll 15px 0px transparent; }
+
+.arrow_down5 { background: url('sprites/arrows.gif') no-repeat scroll 15px -313px transparent; }
+
+.arrow_down6 { background: url('sprites/arrows.gif') no-repeat scroll 15px -390px transparent; }
+
+.arrow_down7 { background: url('sprites/arrows.gif') no-repeat scroll 15px -474px transparent; }
+
+.arrow_down8 { background: url('sprites/arrows.gif') no-repeat scroll 15px -514px transparent; }
+
+/* ****** tabs.sass ****** */
+/* Alternative Tab styling using no background image but rather border-radius. Requires a change to application/configs/navigation.xml to remove 'connexions_sprites welcome_bg' from the 'class' of <userInfo>       and 'connexions_sprites join_bg'    from the 'class' of <register> This will show square tabs in browsers that don't support border-radius and likely won't work at all in IE6. */
+/* Tabs / Navigation */
+#pageHeader { /* Sub-menu */ }
+#pageHeader .tabs { position: absolute; top: 0; right: 0; padding: 0; width: 750px; height: 64px; padding: 0; background-color: transparent; }
+#pageHeader .tabs a { padding: 2px; color: white; font-weight: normal; text-decoration: none; }
+#pageHeader .tabs li.active a, #pageHeader .tabs a:hover { color: #b0d730; }
+#pageHeader .nav { position: absolute; top: 0; left: 0; padding: 0; width: 560px; *width: 561px; }
+#pageHeader .nav li { float: left; width: 90px; text-align: center; padding: 16px 0; background-color: #172322; }
+#pageHeader ul.sub { display: none; position: absolute; top: 48px; left: 2px; color: white; padding: 0; margin: 0; }
+#pageHeader li:hover ul.sub { display: block; }
+
+#pageHeader ul.sub li, #search ul.sub li { background-color: #172322; width: 120px; padding: 0 16px; float: left    /* IE requires this to render without white-space between items */; margin: 0; cursor: pointer; text-align: left; /* IE Fix */ *width: 90px; }
+
+#pageHeader ul.sub li.last a, #search ul.sub li.last a, #search ul.sub li.last span { padding-bottom: 0; }
+
+#pageHeader ul.sub li a:hover, #search ul.sub li a:hover, #search ul.sub li:hover span { color: #7fcdfe; }
+
+#pageHeader ul.sub li.outter, #search ul.sub li.outter { background: none repeat scroll 0 0 transparent; }
+
+#pageHeader ul.sub .corner_inner_left, #search ul.sub .corner_inner_left { position: absolute; top: 0; left: -12px; }
+
+#pageHeader ul.sub .corner_inner_right, #search ul.sub .corner_inner_right { position: absolute; top: 0; right: -12px; }
+
+#pageHeader ul.sub .corner_outter_left, #search ul.sub .corner_outter_left { position: absolute; top: 0; left: 0; }
+
+#pageHeader ul.sub .corner_outter_middle, #search ul.sub .corner_outter_middle { background-color: #172322; }
+
+#pageHeader ul.sub .corner_outter_right, #search ul.sub .corner_outter_right { position: absolute; top: 0; right: 0; }
+
+
+#pageHeader .nav ul.sub li a, #search .choices ul.sub li a, #search .choices ul.sub li span { display: block; padding: 0.5em 0; color: #2786c2; font-weight: normal; border-top: 1px dotted #666666; }
+
+/* If only IE6 suppported the child selector, we could change   '#pageHeader .tabs li.active a'   '#pageHeader .tabs li.active>a' and completely omit these next rules */
+#pageHeader .nav ul.sub li.active a, #search .choices ul.sub li.active a, #search .choices ul.sub li.active span { color: #b0d730; }
+
+#pageHeader .nav ul.sub li a:hover, #search .choices ul.sub li a:hover, #search .choices ul.sub li:hover span { color: #7fcdfe; }
+
+/* ************************************************* */
+#pageHeader ul.sub li.first a, #search ul.sub li.first a, #search ul.sub li.first span { padding-top: 8px; border-top: 0; }
+
+#pageHeader ul.sub li.last a, #search ul.sub li.last a, #search ul.sub li.last span { padding-bottom: 0; }
+
+/* Welcome / Join -- first tab item */
+#pageHeader .tabs li.welcome, #pageHeader .tabs li.join { width: 110px; border-right: 1px dotted #666666; -moz-border-radius: 0 0 0 20px; -webkit-border-radius: 0 0 0 20px; border-radius: 0 0 0 20px; }
+
+#pageHeader .tabs li.welcome { padding: 8px 0; }
+#pageHeader .tabs li.welcome ul.sub { left: 0; }
+#pageHeader .tabs li.welcome ul.sub li { width: 100px; }
+#pageHeader .tabs li.welcome ul.sub .corner_inner_left { display: none  /* Hide the upper left corner  of the sub-menu */; }
+#pageHeader .tabs li.welcome:hover { -moz-border-radius: 0 0 0 0; -webkit-border-radius: 0 0 0 0; border-radius: 0 0 0 0; }
+#pageHeader .tabs li.join { background-color: #9fc54e; }
+#pageHeader .tabs li.join a { color: white; }
+#pageHeader .tabs li.join a:hover { color: #2786c2; }
+
+/* Search */
+#search { position: absolute; top: 0; right: 0; padding: 10px 0; width: 190px; background-color: #172322; *height: 46px  /* IE fix */; *padding-top: 18px  /* IE fix */; *padding-bottom: 0     /* IE fix */; /* Search Input / Choices */ /* Search Context choices */ }
+#search .searchBox { float: right; padding-right: 9px; }
+#search .searchInput { border: 0; color: #999; padding: 2px; }
+#search .input { border: none; height: 22px; margin: 1px 0; padding: 0 23px 0 2px; width: 145px; font-weight: normal; }
+#search .focus { color: #000; }
+#search .submit { display: block; position: absolute; top: 7px; left: 150px; width: 23px; padding: 0; border: 0; border-left: 1px dotted #999; background-color: transparent; cursor: pointer; z-index: 101; *background-color: #fff   /* IE fix -- IE doesn't like 'transparent' as a color it uses a dark grey */; }
+#search .choices .list { top: 36px; left: -30px; }
+#search .choices .list li { width: 180px; /* IE Fix */ *width: 145px; }
+#search:hover .list { display: block; }
+
+/* ****** ui-form.sass ****** */
+/* ====== Forms ====== */
+.ui-form label { display: block; font-size: 0.8em; font-weight: normal; }
+.ui-form input, .ui-form textarea, .ui-form .ui-button { /* Also requires ui-state-* to provide the border */ padding: 0.3em; }
+.ui-form .ui-button { cursor: pointer; }
+.ui-form .ui-state-valid { color: #667E32; }
+.ui-form .ui-state-invalid { color: #CD0A0A; }
+
+/* ****** tagCloud.sass ****** */
+.Tag_Cloud { list-style: none; text-align: justify; padding: 0; }
+.Tag_Cloud .tag { display: inline; line-height: 1.25em; font-size: 100%; }
+.Tag_Cloud .tag .selected { background-color: #ddd; }
+.Tag_Cloud .tag .size0 { font-size: 9px; font-weight: normal; margin: 1px; color: #000; }
+.Tag_Cloud .tag .size1 { font-size: 10px; font-weight: normal; margin: 1px; color: #23598c; }
+.Tag_Cloud .tag .size2 { font-size: 11px; font-weight: normal; margin: 2px; color: #23598d; }
+.Tag_Cloud .tag .size3 { font-size: 14px; font-weight: normal; margin: 2px; color: #235992; }
+.Tag_Cloud .tag .size4 { font-size: 16px; font-weight: normal; margin: 3px; color: #235994; }
+.Tag_Cloud .tag .size5 { font-size: 20px; font-weight: normal; margin: 3px; color: #2359aa; }
+.Tag_Cloud .tag .size6 { font-size: 24px; font-weight: normal; margin: 4px; color: #2359ff; }
+
+/* ****** papgination.sass ****** */
+div.pagination .pager { float: left; }
+div.pagination .pager a, div.pagination .pager .current, div.pagination .pager .disabled, div.pagination .pager .skip { position: relative; padding: 0.1em 0.2em; margin: 0 0.1em; border: 1px solid #4a5154; text-decoration: none; }
+div.pagination .pager a:hover, div.pagination .pager a:active { border-color: #0066cc; color: black; }
+div.pagination .pager .current { background-color: #4a5154; color: white; font-weight: bold; }
+div.pagination .pager .disabled { border-color: #eeeeee; color: #dddddd; }
+div.pagination .pager .skip, div.pagination .pager .ends, div.pagination .pager a.ends:hover, div.pagination .pager a.ends:active { border-color: white; }
+div.pagination .pager .skip { top: -0.25em; }
+div.pagination .info { float: right; font-size: 0.8em; text-align: right; width: 11.5em; }
+div.pagination .info div { clear: both; }
+div.pagination .info .label, div.pagination .info .count { display: block; }
+div.pagination .info .itemRange { font-size: 0.8em; padding: 0.2em 0; }
+div.pagination .info .itemRange .label { float: left; }
+div.pagination .info .itemRange .count { float: right; }
+div.pagination .info .perPage .label { padding-top: 0.3em; float: right; }
+div.pagination .info .perPage .count { float: left; width: 4.75em; }
+
+/* ****** main.sass ****** */
+a, a:link, a:visited, a:focus, a:hover { color: #06c; outline: 0 none; }
+
+a:active { outline: 0 none; position: relative; top: 1px; }
+
+/* Page Header */
+#pageHeader { height: 5em; z-index: 100; }
+#pageHeader h1#siteName { position: absolute; top: 0; left: 0; color: #000; font-weight: bold; font-size: 26px; padding-top: 5px; height: 45px; width: 200px; }
+#pageHeader h1#siteName span { display: block; float: left; }
+#pageHeader h1#siteName img { position: relative; float: left; height: 34px; top: 5px; left: -4px; margin-right: -10px; }
+
+/* Page Content */
+#pageContent { padding: 0 1em; z-index: 10; }
+
+/* Page Footer */
+#pageFooter { clear: both; margin-top: 1em; border-top: 1px solid #ddd; padding: 0.5em; z-index: 1; }
+
+.rightCol { padding-left: 1em; }

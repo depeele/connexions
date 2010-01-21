@@ -1,0 +1,80 @@
+=corners(!tl, !tr, !br, !bl)
+  -moz-border-radius =    !tl !tr !br !bl
+  -webkit-border-radius = !tl !tr !br !bl
+  border-radius =         !tl !tr !br !bl
+
+!pageColorBackground    = #fff
+
+!navColorBackground     = #172322
+!navColorJoinBackground = #9FC54E
+!navColor               = #fff
+!navColorHover          = #b0d730
+!navColorSelected       = #b0d730
+!navColorSub            = #2786C2
+!navColorSubHover       = #7fcdfe
+!navColorBorder         = #666
+
+// Raw CSS imports seem to be required to appear first.
+@import themes/default/jquery-ui.css
+
+@import libraries
+@import template
+@import grids
+@import content
+@import sprites
+@import tabs
+@import ui-form
+@import tagCloud
+@import pagination
+
+/******* main.sass *******/
+a, a:link, a:visited, a:focus, a:hover
+  color:      #06c
+  outline:    0 none
+
+a:active
+  outline:    0 none
+  position:   relative
+  top:        1px
+
+/* Page Header */
+#pageHeader
+  height:       5em
+  z-index:      100
+  h1#siteName
+    position:     absolute
+    top:          0
+    left:         0
+    color:        #000
+    font-weight:  bold
+    font-size:    26px
+    padding-top:  5px
+    height:       45px
+    width:        200px
+    span
+      display:      block
+      float:        left
+
+    img
+      position:     relative
+      float:        left
+      height:       34px
+      top:          5px
+      left:         -4px
+      margin-right: -10px
+
+/* Page Content */
+#pageContent
+  padding:          0 1em
+  z-index:          10
+
+/* Page Footer */
+#pageFooter
+  clear:            both
+  margin-top:       1em
+  border-top:       1px solid #ddd
+  padding:          0.5em
+  z-index:          1
+
+.rightCol
+  padding-left:     1em

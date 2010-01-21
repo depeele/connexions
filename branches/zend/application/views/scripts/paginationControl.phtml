@@ -23,14 +23,49 @@
 if ($this->pageCount < 2)
     return;
 
-echo "<div class='pagination'>\n";
-printf (  "<div class='info'>"
-        .     "Items %s-%s of %s (%s pages)"
-        . "</div>\n",
-        number_format($this->firstItemNumber),
-        number_format($this->lastItemNumber),
-        number_format($this->totalItemCount),
-        number_format($this->pageCount));
+$marker         = array('first' => '&laquo;',   //'&#x00ab',    //'&laquo;',
+                        'prev' => '&lsaquo;',  //'&#x2039',    //'&lsaquo;',
+                        'next' => '&rsaquo;',  //'&#x203a',    //'&rsaquo;',
+                        'last' => '&raquo;'    //'&#x00bb',    //'&raquo;',
+                );
+$cssClass       = 'ui-corner-all';
+$perPageChoices = array(10, 25, 50, 100, 250, 500);
+
+
+echo "<div class='pagination'>\n",  // { pagination
+          "<div class='info'>\n";   // { info
+/*
+printf (      "<div class='itemCount'>"
+        .       "<span class='label'>Items:</span>"
+        .       "<span class='count %s'>%s</span>"
+        .     "</div>",
+        $cssClass, number_format($this->totalItemCount));
+ */
+
+printf (      "<div class='perPage'>"
+        .       "<span class='label'>items per page</span>"
+        .       "<select class='count %s' name='perPage'>",
+        $cssClass);
+
+foreach ($perPageChoices as $perPage)
+{
+    printf (     "<option value='%s'%s>%s</option>",
+                 $perPage,
+                 ($perPage == $this->itemCountPerPage
+                    ? ' selected'
+                    : ''),
+                 $perPage);
+}
+
+printf (        "</select name='perPage'>"
+        .     "</div>"
+        .     "<div class='itemRange'>"
+        .       "<span class='label'>Items</span>"
+        .       "<span class='count %s'>%s - %s</span>"
+        .     "</div>"
+        . "</div>\n",   // info }
+        $cssClass, number_format($this->firstItemNumber),
+                   number_format($this->lastItemNumber));
 
 /*
 printf (  "<div class='info'>"
@@ -48,31 +83,82 @@ printf (  "<div class='info'>"
         number_format($this->lastItemNumber));
  */
 
-echo "<div class='pager'>\n";
+echo "<div class='pager'>\n";   // { pager
 
-if (@isset($this->previous))
-    printf ("<a href='?page=%s'>&lt; Prev</a>", $this->previous);
-            //$this->url(array('page' => $this->previous)) );
+// Present the pages BEFORE the current range
+if ($this->firstPageInRange > $this->first)
+{
+    printf (    "<a class='ends left %s' href='?page=%s' "
+              .                     "title='Previous Page'>%s</a>"
+              . "<a class='%s' href='?page=%s'>%s</a>",
+            $cssClass, $this->previous, $marker['prev'],
+            $cssClass, $this->first,    ($this->first));
+
+    if ($this->firstPageInRange > ($this->first + 1))
+        printf ("<a class='%s' href='?page=%s'>%s</a>",
+                $cssClass, $this->first + 1, ($this->first + 1));
+
+    if ($this->firstPageInRange > ($this->first + 2))
+        printf("<span class='skip %s'>...</span>",
+               $cssClass);
+}
 else
-    printf ("<span class='disabled'>&lt; Prev</span>");
+{
+    if (@isset($this->previous))
+        printf ("<a class='ends left %s' href='?page=%s' "
+                .                   "title='Previous Page'>%s</a>",
+                $cssClass, $this->previous, $marker['prev']);
+    else
+        printf ("<span class='ends left disabled %s' "
+                .               "title='Previous Page'>%s</span>",
+                $cssClass, $marker['prev']);
+}
 
+// Present the pages within the current range
 foreach ($this->pagesInRange as $page)
 {
     if ($page == $this->current)
-        printf ("<span class='current'>%s</span>", $page);
+        printf ("<span class='current %s'>%s</span>",
+                $cssClass, ($page));
     else
-        printf ("<a href='?page=%s'>%s</a> ", $page, $page);
+        printf ("<a class='%s' href='?page=%s'>%s</a>",
+                $cssClass, $page, ($page));
                 //$this->url(array('page' => $page)), $page);
 }
 
-if (@isset($this->next))
-    printf ("<a href='?page=%s'>Next &gt;</a>", $this->next);
-            //$this->url(array('page' => $this->next)) );
-else
-    printf ("<span class='disabled'>Next &gt;</span>");
 
-echo  "</div>\n",
-     "</div>\n";
+// Present the pages AFTER the current range
+if ($this->lastPageInRange < $this->last)
+{
+    if ($this->lastPageInRange < ($this->last - 2))
+        printf ("<span class='skip %s'>...</span>",
+                $cssClass);
+
+    if ($this->lastPageInRange < ($this->last - 1))
+        printf ("<a class='%s' href='?page=%s'>%s</a>",
+                $cssClass, $this->last - 1, ($this->last - 1));
+
+    printf (    "<a class='%s' href='?page=%s'>%s</a>"
+              . "<a class='ends right %s' href='?page=%s' "
+              .                         "title='Next Page'>%s</a>",
+            $cssClass, $this->last, ($this->last),
+            $cssClass, $this->next, $marker['next']);
+}
+else
+{
+    if (@isset($this->next))
+        printf ("<a class='ends right %s' href='?page=%s' "
+                .                      "title='Next Page'>%s</a>",
+                $cssClass, $this->next, $marker['next']);
+    else
+        printf ("<span class='ends right disabled %s' "
+                .                   "title='Next Page'>%s</span>",
+                $cssClass, $marker['next']);
+}
+
+echo  "</div>\n",                   // pager }
+      "<br class='clear' />\n",
+     "</div>\n";                    // pagination }
 
 /*
 echo "<pre>this:\n";
