@@ -44,6 +44,9 @@ class PeopleController extends Zend_Controller_Action
 
         // Retrieve the set of users
         $users     = new Model_UserSet( $tagInfo->validIds );
+        $paginator = $this->_helper->Pager($users, $page, $perPage);
+
+        /*
         $paginator = new Zend_Paginator( $users );
 
         // Apply the pagination parameters
@@ -51,6 +54,7 @@ class PeopleController extends Zend_Controller_Action
             $paginator->setCurrentPageNumber($page);
         if ($perPage > 0)
             $paginator->setItemCountPerPage($perPage);
+        */
 
 
         // Set the required view variables

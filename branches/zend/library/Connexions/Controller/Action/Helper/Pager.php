@@ -33,6 +33,9 @@ class Connexions_Controller_Action_Helper_Pager
 
         foreach ($config as $key => $val)
         {
+            if ($val === null)
+                continue;
+
             $method = 'setDefault'. ucfirst($key);
 
             if (method_exists($class, $method))
