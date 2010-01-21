@@ -99,7 +99,8 @@ if (count($this->paginator))
         echo $this->partial('userItem.phtml',
                             array(
                                 'index'    => $idex,
-                                'userItem' => &$userItem
+                                'userItem' => &$userItem,
+                                'viewer'   => &$this->viewer
                             ));
     }
     echo "</ul>\n";

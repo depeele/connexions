@@ -6,6 +6,7 @@
  *  $this implements the Zend_View_Interface and has at least the following
  *  members/methods:
  *      userItem        The Model_UserItem instance to present.
+ *      viewer          The Model_User     instance of the current viewer
  */
 if ((! @isset($this->userItem)) ||
     (! $this->userItem instanceof Model_UserItem))
@@ -22,6 +23,20 @@ printf ("<li class='item'>Item %s: %s </li>\n",
 $item =& $this->userItem;
 ?>
 <li class='item'>
+ <div class='control'>
+  <?php
+    printf ("%sfav<br />\n".
+            "%spri<br />\n",
+            ($item->isFavorite ? "&nbsp;" : "! "),
+            ($item->isPrivate  ? "&nbsp;" : "! "));
+
+    if ( $this->viewer && ($item->user->name === $this->viewer->name))
+    {
+        printf ("edt<br />\n".
+                "del<br />\n");
+    }
+  ?>
+ </div>
  <div class='meta'>
   <?php
     printf ("%d taggers<br />\n", $item->item->userCount);
@@ -31,10 +46,6 @@ $item =& $this->userItem;
                 ? $item->item->ratingSum / $item->item->ratingCount
                 : 0.0),
             $item->item->ratingSum, $item->item->ratingCount);
-
-    printf ("is %sfavorite, %sprivate<br />\n",
-            ($item->isFavorite ? "" : "NOT "),
-            ($item->isPrivate  ? "" : "NOT "));
 
     printf ("tagged on: %s<br />\n", $item->taggedOn);
   ?>
@@ -55,7 +66,5 @@ $item =& $this->userItem;
                 'connexions', $tag->tag, $tag->tag);
     }
   ?>
- </div>
- <div class='control'>
  </div>
 </li>
