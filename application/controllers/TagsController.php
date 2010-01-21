@@ -56,6 +56,9 @@ class TagsController extends Zend_Controller_Action
 
         // Retrieve the set of tags
         $tagSet    = new Model_TagSet( $userInfo->validIds );
+        $paginator = $this->_helper->Pager($tagSet, $page, $perPage);
+
+        /*
         $paginator = new Zend_Paginator( $tagSet );
 
         // Apply the pagination parameters
@@ -63,6 +66,7 @@ class TagsController extends Zend_Controller_Action
             $paginator->setCurrentPageNumber($page);
         if ($perPage > 0)
             $paginator->setItemCountPerPage($perPage);
+        */
 
         /*
         $items = array();
