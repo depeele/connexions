@@ -24,7 +24,7 @@ class IndexController extends Zend_Controller_Action
 
         // Pagination parameters
         $page      = $request->getParam('page',      null);
-        $perPage   = $request->getParam('perPage',   50);
+        $perPage   = $request->getParam('perPage',   25);
 
         // Tag-cloud parameters
         $maxTags   = $request->getParam('maxTags',   250);
@@ -107,14 +107,18 @@ class IndexController extends Zend_Controller_Action
             $this->view->error = "Invalid tag(s) [ {$tagInfo->invalidItems} ]";
 
         $userItems = new Model_UserItemSet($tagInfo->validIds, $userIds);
+        $paginator = $this->_helper->Pager($userItems, $page);
+
+        /*
         $paginator = new Zend_Paginator( $userItems );
-        $paginator->setPageRange(5);
+        $paginator->setPageRange(8);
 
         // Apply the pagination parameters
         if ($page > 0)
             $paginator->setCurrentPageNumber($page);
         if ($perPage > 0)
             $paginator->setItemCountPerPage($perPage);
+        */
 
 
         // Set the required view variables
