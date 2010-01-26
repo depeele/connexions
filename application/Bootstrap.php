@@ -77,7 +77,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             /* perhaps a failed login credential, or perhaps the RDBMS is not
              * running
              */
-            die("*** Database error: Failed to login or DB not accessible");
+            echo "<pre>*** Database error: Failed to login or "
+                    . "DB not accessible\n",
+                    print_r($e, true),
+                 "</pre>\n";
+            die;
+
         }
         catch (Zend_Exception $e)
         {
@@ -147,7 +152,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
      */
     protected function _initViewGlobal()
     {
-        if ($_GLOBALS['gNoView'] === true)
+        if (@isset($_GLOBALS['gNoView']) && ($_GLOBALS['gNoView'] === true))
             return;
 
         // Make sure we have an initialized view.
@@ -189,7 +194,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
     protected function _initDoctype()
     {
-        if ($_GLOBALS['gNoView'] === true)
+        if (@isset($_GLOBALS['gNoView']) && ($_GLOBALS['gNoView'] === true))
             return;
 
         $view = $this->getResource('view'); //Zend_Registry::get('view');
@@ -198,7 +203,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
     protected function _initJQueryViewHelpers()
     {
-        if ($_GLOBALS['gNoView'] === true)
+        if (@isset($_GLOBALS['gNoView']) && ($_GLOBALS['gNoView'] === true))
             return;
 
         /*
@@ -213,7 +218,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
     protected function _initNavigation()
     {
-        if ($_GLOBALS['gNoView'] === true)
+        if (@isset($_GLOBALS['gNoView']) && ($_GLOBALS['gNoView'] === true))
             return;
 
         /* Use our router as the navigation provider

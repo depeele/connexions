@@ -36,6 +36,7 @@ class Connexions_View_Helper_HtmlTagItem
             $isSelected = ($tag->getParam('selected') === true);
             $cssClass   = ($isSelected ? 'selected ' : '');
             $weightVal  = $tag->getParam('weightValue');
+            $attribute  = '';
 
             /*
             Connexions::log(sprintf('Connexions_View_Helper_HtmlTagItem: '.

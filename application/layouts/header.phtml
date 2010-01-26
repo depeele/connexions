@@ -45,7 +45,7 @@ $links->appendStylesheet($baseUrl .'css/ie.css',     'screen,projection',
 */
 
 
-if ( $config->cdn->use )
+if ( @isset($config->cdn) && $config->cdn->use )
 {
     /* Use the google CDN.  By default, we will load directly from google.
      * If we want to use the new Google AJAX API Loader, call:

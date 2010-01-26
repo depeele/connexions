@@ -72,7 +72,7 @@ class Connexions_Autoloader implements Zend_Loader_Autoloader_Interface
         else
         {
             $filePath = $mapInfo['path'];
-            if ($mapInfo['shift'])
+            if ((@isset($mapInfo['shift'])) && $mapInfo['shift'])
             {
                 // Shift off the first mapInfo['shift'] parts of classParts
                 for ($idex = 0; $idex < $mapInfo['shift']; $idex++)

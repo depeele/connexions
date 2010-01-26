@@ -163,7 +163,8 @@ abstract class Connexions_Model
         }
 
         // If this field has not yet been validated, validate it now.
-        if ($this->_validated[$name] !== true)
+        if ( (! @isset($this->_validated[$name])) ||
+            ($this->_validated[$name] !== true) )
             $this->_validate($name);
 
         return $this->_record[$name];
@@ -734,11 +735,13 @@ abstract class Connexions_Model
      */
     protected function _validate($field = null)
     {
+        $isValid = false;
         if ($field !== null)
         {
             // Validate the given field
             $this->_validated[$field] =
-                    ($this->_validated[$field] ||
+                    ( (@isset($this->_validated[$field]) &&
+                       $this->_validated[$field]) ||
                      $this->_validateField($this->_record, $field));
         }
         else
@@ -748,7 +751,8 @@ abstract class Connexions_Model
             foreach ($this->_model as $field => $type)
             {
                 $this->_validated[$field] =
-                    ($this->_validated[$field] ||
+                    ( (@isset($this->_validated[$field]) &&
+                       $this->_validated[$field]) ||
                      $this->_validateField($this->_record, $field));
 
                 if ($this->_validated[$field] !== true)
@@ -791,21 +795,24 @@ abstract class Connexions_Model
 
         $value =& $record[$field];
 
-        try
+        if (@isset($this->_model[$field]))
         {
-            $record[$field] =
-                    $this->_coherse($record[$field], $this->_model[$field]);
-        }
-        catch (Exception $e)
-        {
-            $this->_error = sprintf ("Invalid Cohersion: ".
-                                        "field[%s], type[%s], value[%s]: ".
-                                        "%s<br />\n",
-                                     $field,
-                                     $this->_model[$field],
-                                     $record[$field],
-                                     $e->getMessage());
-            $isValid = false;
+            try
+            {
+                $record[$field] =
+                        $this->_coherse($record[$field], $this->_model[$field]);
+            }
+            catch (Exception $e)
+            {
+                $this->_error = sprintf ("Invalid Cohersion: ".
+                                            "field[%s], type[%s], value[%s]: ".
+                                            "%s<br />\n",
+                                         $field,
+                                         $this->_model[$field],
+                                         $record[$field],
+                                         $e->getMessage());
+                $isValid = false;
+            }
         }
 
         return $isValid;
