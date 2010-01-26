@@ -73,7 +73,7 @@ div.pagination .pager .right {
 
 div.pagination .info {
   float:            right;
-  font-size:        0.8em;
+  font-size:        0.85em;
   text-align:       center;
   width:            8em;
 }
@@ -82,7 +82,6 @@ div.pagination .info div {
 }
 
 div.pagination .info .itemRange {
-  font-size:        0.8em;
 }
 
 div.pagination .info .label,
@@ -94,5 +93,4 @@ div.pagination .info .label{
 }
 div.pagination .info .count {
   float:            right;
-  font-size:        1em;
 }
