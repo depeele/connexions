@@ -42,7 +42,7 @@ function closeTags($indent, $prevDepth, $depth, $includeCorners = true)
         printf("<!-- closeTags: prevDepth[ %d ], depth[ %d ], idex[ %d ] -->\n",
                 $prevDepth, $depth, $idex);
 
-        $ind = $index . str_repeat(' ', $idex);
+        $ind = $indent . str_repeat(' ', $idex);
         echo $ind, " </li>\n";
 
         if ( ($idex > ($depth + 1)) || $includeCorners)

@@ -121,14 +121,14 @@ class Connexions_Controller_Route
 
         $parts = explode('/', strtolower(trim($path, '/')) );
 
-        /*
+        // /*
         Connexions::log("Connexions_Controller_Route::match: "
                             . "path[ {$path} ], "
                             . "parts[ ". implode(':',$parts) ." ]");
         // */
 
         $root = $parts[0];
-        if ($root[0] == '%')
+        if (substr($root,0,1) == '%')
         {
             $root = Connexions::replaceables($root);
         }
