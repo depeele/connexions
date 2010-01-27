@@ -1,0 +1,110 @@
+@import colors
+
+/******* userItems.sass *******/
+// Styling for userItems / Bookmarks
+
+#displayOptions
+  clear:        both
+  height:       1.5em
+  h3
+    display:        inline
+    color =         !controlColor
+    font-size:      1em
+    font-weight:    normal
+  a
+    font-weight:    normal
+  #displayStyle
+    //display:    block
+    //width:      75px
+    h3
+      display:  none
+    a:hover
+      background-color =  !linkColor
+    a
+      display:            block
+      width:              15px
+      height:             14px
+      background:         url('sprites/connexions.gif') no-repeat scroll 0px 0px transparent
+      background-image:   url('sprites/connexions.gif') !important
+      border-right =      "1px solid" !borderColor
+      b
+        display:      none
+    ul
+      padding:        0
+      li
+        display:      block
+        float:        left
+        .title
+          background-position:    -126px -0px
+          &:hover
+            background-position:  -186px -0px
+        .regular
+          background-position:    -126px -20px
+          &:hover
+            background-position:  -186px -20px
+        .full
+          background-position:    -126px -40px
+          border:                 none
+          &:hover
+            background-position:  -186px -40px
+
+      li.on
+        a
+          cursor:     default
+        a:hover
+          background-color:       transparent
+        .title
+          background-position:    -156px -0px
+        .regular
+          background-position:    -156px -20px
+        .full
+          background-position:    -156px -40px
+
+  #displaySort
+    display:    block
+    float:      right
+    text-align: right
+    width:      50%
+    //ul
+    //  display:        none
+    //  li
+    //    display:      block
+    .ui-dropDown
+      display:        inline
+      li
+        white-space:  pre
+
+.items
+  clear:          both
+  .item
+    // Favorite / Private
+    .control
+      display:    block
+
+    // Tagger count, rating, tag date/time
+    .meta
+      display:    block
+
+    // Item Name / title
+    .itemName
+      display:    block
+      a
+        display:  inline
+
+    // User Name
+    .userName
+      display:    block
+
+    // Item Description
+    .description
+      display:    block
+
+    // List of tags for this item
+    .tags
+      display:    block
+
+      // Individual tag
+      .tag
+        display:    block
+        a
+          display:  inline

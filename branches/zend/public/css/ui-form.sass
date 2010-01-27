@@ -6,6 +6,7 @@
     font-size:    0.8em
     font-weight:  normal
   input,
+  select,
   textarea,
   .ui-button 
     /* Also requires ui-state-* to provide the border */
@@ -16,3 +17,19 @@
     color:            #667E32
   .ui-state-invalid 
     color:            #CD0A0A
+  .ui-dropDown
+    position:         relative
+    padding-right:    16px
+    ul
+      display:        none
+      position:       absolute
+      top:            1.5em
+      right:          0
+      padding:        2px
+      z-index:        10
+      li
+        padding:      2px
+        display:      block
+    &:hover
+      ul
+        display:      block

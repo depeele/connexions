@@ -367,32 +367,33 @@ cite { display: block; text-align: right; padding-top: 10px; }
 /* ****** ui-form.sass ****** */
 /* ====== Forms ====== */
 .ui-form label { display: block; font-size: 0.8em; font-weight: normal; }
-.ui-form input, .ui-form textarea, .ui-form .ui-button { /* Also requires ui-state-* to provide the border */ padding: 0.3em; }
+.ui-form input, .ui-form select, .ui-form textarea, .ui-form .ui-button { /* Also requires ui-state-* to provide the border */ padding: 0.3em; }
 .ui-form .ui-button { cursor: pointer; }
 .ui-form .ui-state-valid { color: #667E32; }
 .ui-form .ui-state-invalid { color: #CD0A0A; }
+.ui-form .ui-dropDown { position: relative; padding-right: 16px; }
+.ui-form .ui-dropDown ul { display: none; position: absolute; top: 1.25em; right: 0; padding: 2px; z-index: 10; }
+.ui-form .ui-dropDown ul li { padding: 2px; display: block; }
+.ui-form .ui-dropDown:hover ul { display: block; }
 
 /* ****** tagCloud.sass ****** */
 .Tag_Cloud { list-style: none; text-align: justify; padding: 0; }
-.Tag_Cloud .tag { display: inline; line-height: 1.25em; font-size: 100%; margin: 0.25em;}
+.Tag_Cloud .tag { display: inline; line-height: 1.25em; font-size: 100%; margin: 0.25em; }
 .Tag_Cloud .tag .selected { background-color: #ddd; }
-.Tag_Cloud .tag .size0 { font-size: 0.8em; font-weight: normal; margin: 1px; color: #000; }
-.Tag_Cloud .tag .size1 { font-size: 0.9em; font-weight: normal; margin: 1px; color: #23598c; }
-.Tag_Cloud .tag .size2 { font-size: 1em; font-weight: normal; margin: 2px; color: #23598d; }
-.Tag_Cloud .tag .size3 { font-size: 1.25em; font-weight: normal; margin: 2px; color: #235992; }
-.Tag_Cloud .tag .size4 { font-size: 1.5em; font-weight: normal; margin: 3px; color: #235994; }
-.Tag_Cloud .tag .size5 { font-size: 2em; font-weight: normal; margin: 3px; color: #2359aa; }
-.Tag_Cloud .tag .size6 { font-size: 2.5em; font-weight: normal; margin: 4px; color: #2359ff; }
+.Tag_Cloud .tag .size0 { font-size: 0.8em; font-weight: normal; color: #000; }
+.Tag_Cloud .tag .size1 { font-size: 0.9em; font-weight: normal; color: #23598c; }
+.Tag_Cloud .tag .size2 { font-size: 1em; font-weight: normal; color: #23598d; }
+.Tag_Cloud .tag .size3 { font-size: 1.25em; font-weight: normal; color: #235992; }
+.Tag_Cloud .tag .size4 { font-size: 1.5em; font-weight: normal; color: #235994; }
+.Tag_Cloud .tag .size5 { font-size: 2em; font-weight: normal; color: #2359aa; }
+.Tag_Cloud .tag .size6 { font-size: 2.5em; font-weight: normal; color: #2359ff; }
 
 /* ****** papgination.sass ****** */
+div.pagination { clear: both; padding: 1em; }
 div.pagination .pager { float: left; }
-div.pagination .pager a, div.pagination .pager .current, div.pagination .pager .disabled, div.pagination .pager .skip { position: relative; padding: 0.1em 0.2em; margin: 0 0.1em; border: 1px solid #4a5154; text-decoration: none; }
-div.pagination .pager a:hover, div.pagination .pager a:active { border-color: #0066cc; color: black; }
-div.pagination .pager .current { background-color: #4a5154; color: white; font-weight: bold; }
-div.pagination .pager .disabled { border-color: #eeeeee; color: #dddddd; }
-div.pagination .pager .skip, div.pagination .pager .ends, div.pagination .pager a.ends:hover, div.pagination .pager a.ends:active { border-color: white; }
+div.pagination .pager a, div.pagination .pager .current, div.pagination .pager .disabled, div.pagination .pager .skip { position: relative; padding: 0.1em 0.2em; margin: 0 0.1em; text-decoration: none; }
 div.pagination .pager .skip { top: -0.25em; }
-div.pagination .info { float: right; font-size: 0.85em; text-align: right; width: 11.5em; }
+div.pagination .info { float: right; font-size: 0.85em; text-align: right; width: 11.5em; color: #999999; }
 div.pagination .info div { clear: both; }
 div.pagination .info .label, div.pagination .info .count { display: block; }
 div.pagination .info .itemRange { padding: 0.2em 0; }
@@ -402,7 +403,7 @@ div.pagination .info .perPage .label { padding-top: 0.3em; float: right; }
 div.pagination .info .perPage .count { float: left; width: 4.75em; }
 
 /* ****** main.sass ****** */
-a, a:link, a:visited, a:focus, a:hover { color: #06c; outline: 0 none; }
+a, a:link, a:visited, a:focus, a:hover { color: #0066cc; outline: 0 none; }
 
 a:active { outline: 0 none; position: relative; top: 1px; }
 
