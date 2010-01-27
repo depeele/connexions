@@ -151,8 +151,8 @@ class Connexions
      *  @param  name        The anchor name/title.
      *  @param  cssClass    A CSS class string (or array of class strings).
      *
-     *  @return The HTML of an anchor with a full site URL including any 'base'
-     *          prefix.
+     *  @return The HTML of an anchor with a full site URL including any
+     *          'base' prefix.
      */
     public static function anchor($url, $name, $cssClass = null)
     {

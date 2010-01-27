@@ -57,11 +57,73 @@ class Connexions_Set implements Countable,
 
     /** @brief  Return the memberClass for this instance.
      *
-     *  @return The stringn representing the member class.
+     *  @return The string representing the member class.
      */
     public function memberClass()
     {
         return $this->_memberClass;
+    }
+
+    /** @brief  Establish sorting for this set.
+     *  @param  by      Any field of the memberClass.
+     *  @param  order   Sort order (Zend_Db_Select::SQL_ASC | SQL_DESC).
+     *
+     *  @return $this
+     */
+    public function setOrder($by, $order)
+    {
+        // Validate 'by'
+        $memberClass = $this->_memberClass;
+        $model       = Connexions_Model::__sget($memberClass, 'model');
+        if (! @isset($model[$by]))
+        {
+            // Invalid 'by' -- use the first key
+            $keys = array_keys(Connexions_Model::__sget($memberClass, 'keys'));
+
+            /*
+            Connexions::log("Connexions_Set::setOrder: "
+                                . "Invalid 'by' [{$by}]: using [{$keys[0]}]");
+            // */
+
+            $by   = $keys[0];
+        }
+
+        // Validate 'order'
+        switch ($order)
+        {
+        case Zend_Db_Select::SQL_ASC:
+        case Zend_Db_Select::SQL_DESC:
+            break;
+
+        default:
+            $order = Zend_Db_Select::SQL_ASC;
+            break;
+        }
+
+        /*
+        Connexions::log("Connexions_Set::setOrder: "
+                            . "by[{$by}], order[{$order}]");
+        // */
+
+        $this->_select->reset(Zend_Db_Select::ORDER)
+                      ->order($by .' '. $order);
+
+        return $this;
+    }
+
+    /** @brief  Retrieve the sort information for this set.
+     *
+     *  @return array('by'      => field to sort by,
+     *                'order'   =>  sort order (Zend_Db::SQL_ASC | DESC))
+     */
+    public function getOrder()
+    {
+        $order = $this->_select->getPart(Zend_Db_Select::ORDER);
+
+        $parts = preg_split('/\s+/', $order[0]);
+
+        return array('by'       => $parts[0],
+                     'order'    => $parts[1]);
     }
 
     /** @brief  Return the current Zend_Db_Select instance representing the
