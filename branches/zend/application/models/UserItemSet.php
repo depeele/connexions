@@ -193,6 +193,37 @@ class Model_UserItemSet extends Connexions_Set
         return $ids;
     }
 
+    /** @brief  Establish sorting for this set.
+     *  @param  by      Any field of the memberClass.
+     *  @param  order   Sort order (Zend_Db_Select::SQL_ASC | SQL_DESC).
+     *
+     *  Override in order to support an order-by of 'date' as an alias for
+     *  'taggedOn'.
+     *
+     *  @return $this
+     */
+    public function setOrder($by, $order)
+    {
+        if ($by === 'date')
+        {
+            /*
+            Connexions::log("Model_UserItem::setOrder: "
+                                . "Alias by 'date' to 'taggedOn'");
+            // */
+
+            $by = 'taggedOn';
+        }
+        /*
+        else
+        {
+            Connexions::log("Model_UserItem::setOrder: "
+                                . "Pass on 'by' [{$by}]");
+        }
+        // */
+
+        return parent::setOrder($by, $order);
+    }
+
     /*************************************************************************
      * Protected helpers methods
      *

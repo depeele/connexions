@@ -2,18 +2,32 @@
 /** @file
  *
  *  View script for IndexController::index with incoming members:
- *      viewer      The Model_User instance representing the current viewer;
- *      owner       The owner of the current item set -- either a string or a
- *                  Model_User instance;
- *      tagInfo     A Connexions_Set_Info instance containing information about
- *                  the requested tags;
- *      userItems   The Model_UserItemSet representing the items to present;
- *      paginator   The paginator to use in presenting 'userItems';
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      owner           The owner of the current item set -- either a string
+ *                      or a Model_User instance;
+ *      tagInfo         A Connexions_Set_Info instance containing
+ *                      information about the requested tags;
+ *      userItems       The Model_UserItemSet representing the items to
+ *                      present;
+ *      paginator       The paginator to use in presenting 'userItems';
  *
- *      maxTags     Maximum number of tags to present;
- *      sortBy      Sort tags by (valid field of Model_Tag);
- *      sortOrder   Tag sort order.
+ *      itemsStyle      Presentation style for user items
+ *                      (Connexions_View_Helpers_HtmlUserItems::STYLE_*);
+ *      itemsSortBy     Sort User Items by
+ *                      (a field from Model_UserItem::$model);
+ *      itemsSortOrder  User Items sort order
+ *                      (Connexions_View_Helpers_HtmlUserItems::
+ *                                                          SORT_ORDER_*);
+ *
+ *      tagsMax         Maximum number of tags to present;
+ *      tagsSortBy       Sort tags by (valid field of Model_Tag);
+ *      tagsSortOrder    Tag sort order.
  */
+$baseUrl = $this->baseUrl('/'); //Connexions::url('/');
+
+$links = $this->headLink();
+$links->appendStylesheet($baseUrl .'css/userItems.css');
 
 if ($this->owner !== '*')
     $this->headTitle($this->owner ."'s Bookmarks");
@@ -55,7 +69,7 @@ if ( @isset($this->userItems) )
                             $tagSet->select()->assemble()));
         // */
 
-        $this->tagList = $tagSet->get_Tag_ItemList(0, $this->maxTags,
+        $this->tagList = $tagSet->get_Tag_ItemList(0, $this->tagsMax,
                                                    $this->tagInfo,
                                                    ($this->owner !== '*'
                                                         ? null
@@ -71,8 +85,8 @@ if ( @isset($this->tagList))
      * cloud for $this->tagList.
      */
     $this->layout()->right = $this->htmlTagCloud($this->tagList,
-                                                 $this->sortBy,
-                                                 $this->sortOrder);
+                                                 $this->tagsSortBy,
+                                                 $this->tagsSortOrder);
 
     $time_end   = microtime(true);
     $this->layout()->right .= sprintf ("%f seconds to render tag cloud<br />\n",
@@ -83,6 +97,16 @@ if ( @isset($this->tagList))
  * Bootstrap.php::_initViewGlobal() to be rendered via:
  *      views/scripts/paginationControl.phtml
  */
+if (@isset($this->paginator))
+{
+    echo $this->htmlUserItems($this->paginator,
+                              $this->viewer,
+                              $this->itemsStyle,
+                              $this->itemsSortBy,
+                              $this->itemsSortOrder);
+}
+
+/*
 echo $this->paginator;
 
 if (count($this->paginator))
@@ -91,10 +115,9 @@ if (count($this->paginator))
     echo "<ul class='items'>\n";
     foreach ($this->paginator as $idex => $userItem)
     {
-        /* Present the current item -- This should probably be via a view
-         * partial like:
-         *      view/scripts/userItem.phtml
-         */
+        // Present the current item -- This should probably be via a view
+        // partial like:
+        //      view/scripts/userItem.phtml
         //$userItem = new Model_UserItem($item);
         echo $this->partial('userItem.phtml',
                             array(
@@ -107,6 +130,7 @@ if (count($this->paginator))
 }
 
 echo $this->paginator;
+*/
 
 ?>
 

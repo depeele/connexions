@@ -121,7 +121,7 @@ class Connexions_Controller_Route
 
         $parts = explode('/', strtolower(trim($path, '/')) );
 
-        // /*
+        /*
         Connexions::log("Connexions_Controller_Route::match: "
                             . "path[ {$path} ], "
                             . "parts[ ". implode(':',$parts) ." ]");

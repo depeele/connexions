@@ -26,10 +26,15 @@ class IndexController extends Zend_Controller_Action
         $page      = $request->getParam('page',      null);
         $perPage   = $request->getParam('perPage',   null);
 
+        // User-Item parameters
+        $itemsStyle     = $request->getParam('itemsStyle',     null);
+        $itemsSortBy    = $request->getParam('itemsSortBy',    null);
+        $itemsSortOrder = $request->getParam('itemsSortOrder', null);
+
         // Tag-cloud parameters
-        $maxTags   = $request->getParam('maxTags',   250);
-        $sortBy    = $request->getParam('sortBy',    'tag');
-        $sortOrder = $request->getParam('sortOrder', null);
+        $tagsMax       = $request->getParam('tagsMax',       250);
+        $tagsSortBy    = $request->getParam('tagsSortBy',    'tag');
+        $tagsSortOrder = $request->getParam('tagsSortOrder', null);
 
         /*
         Connexions::log("IndexController:: "
@@ -80,7 +85,8 @@ class IndexController extends Zend_Controller_Action
                         /*
                         Connexions::log("IndexController:: "
                                             . "Unknown User and no tags; "
-                                            . "use owner as tags [ {$owner} ] "
+                                            . "use owner as tags "
+                                            . "[ {$owner} ] "
                                             . "and set owner to '*'");
                         // */
                         $reqTags  = $owner;
@@ -104,9 +110,13 @@ class IndexController extends Zend_Controller_Action
 
         $tagInfo = new Connexions_Set_Info($reqTags, 'Model_Tag');
         if ($tagInfo->hasInvalidItems())
-            $this->view->error = "Invalid tag(s) [ {$tagInfo->invalidItems} ]";
+            $this->view->error =
+                        "Invalid tag(s) [ {$tagInfo->invalidItems} ]";
 
         $userItems = new Model_UserItemSet($tagInfo->validIds, $userIds);
+        if (($itemsSortBy !== null) || ($itemsSortOrder !== null))
+            $userItems->setOrder($itemsSortBy, $itemsSortOrder);
+
         $paginator = $this->_helper->Pager($userItems, $page, $perPage);
 
         /*
@@ -120,19 +130,23 @@ class IndexController extends Zend_Controller_Action
             $paginator->setItemCountPerPage($perPage);
         */
 
-
         // Set the required view variables
-        $this->view->userItems  = $userItems;
-        $this->view->paginator  = $paginator;
+        $this->view->userItems      = $userItems;
+        $this->view->paginator      = $paginator;
 
-        $this->view->owner      = $owner;
-        $this->view->viewer     = $viewer;
-        $this->view->tagInfo    = $tagInfo;
+        $this->view->owner          = $owner;
+        $this->view->viewer         = $viewer;
+        $this->view->tagInfo        = $tagInfo;
+
+        // User-Item parameters
+        $this->view->itemsStyle     = $itemsStyle;
+        $this->view->itemsSortBy    = $itemsSortBy;
+        $this->view->itemsSortOrder = $itemsSortOrder;
 
         // Tag-cloud parameters
-        $this->view->maxTags    = $maxTags;
-        $this->view->sortBy     = $sortBy;
-        $this->view->sortOrder  = $sortOrder;
+        $this->view->tagsMax        = $tagsMax;
+        $this->view->tagsSortBy     = $tagsSortBy;
+        $this->view->tagsSortOrder  = $tagsSortOrder;
     }
 
     /** @brief Redirect all other actions to 'index'

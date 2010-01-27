@@ -44,7 +44,8 @@ printf (      "<div class='itemCount'>"
 
 printf (      "<div class='perPage'>"
         .       "<span class='label'>items per page</span>"
-        .       "<select class='count %s' name='perPage'>",
+        .       "<select class='ui-input ui-state-default "
+        .                      "count %s' name='perPage'>",
         $cssClass);
 
 foreach ($perPageChoices as $perPage)
@@ -90,16 +91,16 @@ if ($this->firstPageInRange > $this->first)
 {
     printf (    "<a class='ends left %s' href='?page=%s' "
               .                     "title='Previous Page'>%s</a>"
-              . "<a class='%s' href='?page=%s'>%s</a>",
+              . "<a class='ui-state-default %s' href='?page=%s'>%s</a>",
             $cssClass, $this->previous, $marker['prev'],
             $cssClass, $this->first,    ($this->first));
 
     if ($this->firstPageInRange > ($this->first + 1))
-        printf ("<a class='%s' href='?page=%s'>%s</a>",
+        printf ("<a class='ui-state-default %s' href='?page=%s'>%s</a>",
                 $cssClass, $this->first + 1, ($this->first + 1));
 
     if ($this->firstPageInRange > ($this->first + 2))
-        printf("<span class='skip %s'>...</span>",
+        printf("<span class='ui-state-disabled skip %s'>...</span>",
                $cssClass);
 }
 else
@@ -109,7 +110,7 @@ else
                 .                   "title='Previous Page'>%s</a>",
                 $cssClass, $this->previous, $marker['prev']);
     else
-        printf ("<span class='ends left disabled %s' "
+        printf ("<span class='ends left disabled ui-state-disabled %s' "
                 .               "title='Previous Page'>%s</span>",
                 $cssClass, $marker['prev']);
 }
@@ -118,10 +119,10 @@ else
 foreach ($this->pagesInRange as $page)
 {
     if ($page == $this->current)
-        printf ("<span class='current %s'>%s</span>",
+        printf ("<span class='ui-state-active current %s'>%s</span>",
                 $cssClass, ($page));
     else
-        printf ("<a class='%s' href='?page=%s'>%s</a>",
+        printf ("<a class='ui-state-default %s' href='?page=%s'>%s</a>",
                 $cssClass, $page, ($page));
                 //$this->url(array('page' => $page)), $page);
 }
@@ -131,14 +132,14 @@ foreach ($this->pagesInRange as $page)
 if ($this->lastPageInRange < $this->last)
 {
     if ($this->lastPageInRange < ($this->last - 2))
-        printf ("<span class='skip %s'>...</span>",
+        printf ("<span class='ui-state-disabled skip %s'>...</span>",
                 $cssClass);
 
     if ($this->lastPageInRange < ($this->last - 1))
-        printf ("<a class='%s' href='?page=%s'>%s</a>",
+        printf ("<a class='ui-state-default %s' href='?page=%s'>%s</a>",
                 $cssClass, $this->last - 1, ($this->last - 1));
 
-    printf (    "<a class='%s' href='?page=%s'>%s</a>"
+    printf (    "<a class='ui-state-default %s' href='?page=%s'>%s</a>"
               . "<a class='ends right %s' href='?page=%s' "
               .                         "title='Next Page'>%s</a>",
             $cssClass, $this->last, ($this->last),
@@ -151,7 +152,7 @@ else
                 .                      "title='Next Page'>%s</a>",
                 $cssClass, $this->next, $marker['next']);
     else
-        printf ("<span class='ends right disabled %s' "
+        printf ("<span class='ends right disabled ui-state-disabled %s' "
                 .                   "title='Next Page'>%s</span>",
                 $cssClass, $marker['next']);
 }
