@@ -3,20 +3,10 @@
   -webkit-border-radius = !tl !tr !br !bl
   border-radius =         !tl !tr !br !bl
 
-!pageColorBackground    = #fff
-
-!navColorBackground     = #172322
-!navColorJoinBackground = #9FC54E
-!navColor               = #fff
-!navColorHover          = #b0d730
-!navColorSelected       = #b0d730
-!navColorSub            = #2786C2
-!navColorSubHover       = #7fcdfe
-!navColorBorder         = #666
-
 // Raw CSS imports seem to be required to appear first.
 @import themes/default/jquery-ui.css
 
+@import colors
 @import libraries
 @import template
 @import grids
@@ -29,7 +19,7 @@
 
 /******* main.sass *******/
 a, a:link, a:visited, a:focus, a:hover
-  color:      #06c
+  color =     !linkColor
   outline:    0 none
 
 a:active

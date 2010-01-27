@@ -1,0 +1,35 @@
+/* ****** userItems.sass ****** */
+#displayOptions { clear: both; height: 1.5em; }
+#displayOptions h3 { display: inline; color: #999999; font-size: 1em; font-weight: normal; }
+#displayOptions a { font-weight: normal; }
+#displayOptions #displayStyle h3 { display: none; }
+#displayOptions #displayStyle a:hover { background-color: #0066cc; }
+#displayOptions #displayStyle a { display: block; width: 15px; height: 14px; background: url('sprites/connexions.gif') no-repeat scroll 0px 0px transparent; background-image: url('sprites/connexions.gif') !important; border-right: 1px solid #cccccc; }
+#displayOptions #displayStyle a b { display: none; }
+#displayOptions #displayStyle ul { padding: 0; }
+#displayOptions #displayStyle ul li { display: block; float: left; }
+#displayOptions #displayStyle ul li .title { background-position: -126px -0px; }
+#displayOptions #displayStyle ul li .title:hover { background-position: -186px -0px; }
+#displayOptions #displayStyle ul li .regular { background-position: -126px -20px; }
+#displayOptions #displayStyle ul li .regular:hover { background-position: -186px -20px; }
+#displayOptions #displayStyle ul li .full { background-position: -126px -40px; border: none; }
+#displayOptions #displayStyle ul li .full:hover { background-position: -186px -40px; }
+#displayOptions #displayStyle ul li.on a { cursor: default; }
+#displayOptions #displayStyle ul li.on a:hover { background-color: transparent; }
+#displayOptions #displayStyle ul li.on .title { background-position: -156px -0px; }
+#displayOptions #displayStyle ul li.on .regular { background-position: -156px -20px; }
+#displayOptions #displayStyle ul li.on .full { background-position: -156px -40px; }
+#displayOptions #displaySort { display: block; float: right; text-align: right; width: 50%; }
+#displayOptions #displaySort .ui-dropDown { display: inline; }
+#displayOptions #displaySort .ui-dropDown li { white-space: pre; }
+
+.items { clear: both; }
+.items .item .control { display: block; }
+.items .item .meta { display: block; }
+.items .item .itemName { display: block; }
+.items .item .itemName a { display: inline; }
+.items .item .userName { display: block; }
+.items .item .description { display: block; }
+.items .item .tags { display: block; }
+.items .item .tags .tag { display: block; }
+.items .item .tags .tag a { display: inline; }
