@@ -1,17 +1,25 @@
 /******* papgination.sass *******/
-
 div.pagination 
   clear:      both
   padding:    1em
   .pager 
-    float:              left
-    a, .current, .disabled, .skip 
+    display:  inline
+    //float:              left
+    .ui-state-default
+      font-weight:  normal
+    button
+      cursor:           pointer
+    //button, .current, .disabled, .skip 
+    button, .skip 
       position:         relative
       padding:          0.1em 0.2em
       margin:           0 0.1em
       text-decoration:  none
     .skip 
       top:              -0.25em
+    .ends-left, .ends-right
+      border:         none
+      background:     transparent
   .info 
     float:            right
     font-size:        0.85em

@@ -167,7 +167,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         Connexions_Controller_Action_Helper_Pager::setDefaults(
                 array('ScrollingStyle'      => 'Sliding',
                       'ItemCountPerPage'    => 25,
-                      'PageRange'           =>  7) );
+                      'PageRange'           =>  5) );
 
         Zend_View_Helper_PaginationControl::setDefaultViewPartial(
                                         'paginationControl.phtml');

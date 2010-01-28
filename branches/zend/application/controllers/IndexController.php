@@ -117,18 +117,10 @@ class IndexController extends Zend_Controller_Action
         if (($itemsSortBy !== null) || ($itemsSortOrder !== null))
             $userItems->setOrder($itemsSortBy, $itemsSortOrder);
 
+        /* Use the Connexions_Controller_Action_Helper_Pager to create a
+         * paginator
+         */
         $paginator = $this->_helper->Pager($userItems, $page, $perPage);
-
-        /*
-        $paginator = new Zend_Paginator( $userItems );
-        $paginator->setPageRange(8);
-
-        // Apply the pagination parameters
-        if ($page > 0)
-            $paginator->setCurrentPageNumber($page);
-        if ($perPage > 0)
-            $paginator->setItemCountPerPage($perPage);
-        */
 
         // Set the required view variables
         $this->view->userItems      = $userItems;

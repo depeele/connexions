@@ -372,7 +372,7 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .ui-form .ui-state-valid { color: #667E32; }
 .ui-form .ui-state-invalid { color: #CD0A0A; }
 .ui-form .ui-dropDown { position: relative; padding-right: 16px; }
-.ui-form .ui-dropDown ul { display: none; position: absolute; top: 1.25em; right: 0; padding: 2px; z-index: 10; }
+.ui-form .ui-dropDown ul { display: none; position: absolute; top: 1.5em; right: 0; padding: 2px; z-index: 10; }
 .ui-form .ui-dropDown ul li { padding: 2px; display: block; }
 .ui-form .ui-dropDown:hover ul { display: block; }
 
@@ -390,9 +390,12 @@ cite { display: block; text-align: right; padding-top: 10px; }
 
 /* ****** papgination.sass ****** */
 div.pagination { clear: both; padding: 1em; }
-div.pagination .pager { float: left; }
-div.pagination .pager a, div.pagination .pager .current, div.pagination .pager .disabled, div.pagination .pager .skip { position: relative; padding: 0.1em 0.2em; margin: 0 0.1em; text-decoration: none; }
+div.pagination .pager { display: inline; }
+div.pagination .pager .ui-state-default { font-weight: normal; }
+div.pagination .pager button { cursor: pointer; }
+div.pagination .pager button, div.pagination .pager .skip { position: relative; padding: 0.1em 0.2em; margin: 0 0.1em; text-decoration: none; }
 div.pagination .pager .skip { top: -0.25em; }
+div.pagination .pager .ends-left, div.pagination .pager .ends-right { border: none; background: transparent; }
 div.pagination .info { float: right; font-size: 0.85em; text-align: right; width: 11.5em; color: #999999; }
 div.pagination .info div { clear: both; }
 div.pagination .info .label, div.pagination .info .count { display: block; }

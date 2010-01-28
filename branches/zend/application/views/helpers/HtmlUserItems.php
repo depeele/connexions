@@ -9,21 +9,29 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
     const STYLE_REGULAR             = 'regular';
     const STYLE_FULL                = 'full';
 
-    const SORT_BY_DATE              = 'date';
-    const SORT_BY_TITLE             = 'title';
+    static public $styleTitles      = array(
+                    self::STYLE_TITLE   => 'Title',
+                    self::STYLE_REGULAR => 'Regular',
+                    self::STYLE_FULL    => 'Full'
+                );
+
+    const SORT_BY_DATE_TAGGED       = 'taggedOn';
+    const SORT_BY_DATE_UPDATED      = 'dateUpdated';
+    const SORT_BY_TITLE             = 'name';
+    const SORT_BY_RATING            = 'rating';
+    const SORT_BY_USER_COUNT        = 'userCount';
 
     static public $sortTitles       = array(
-                    // self::SORT_BY_DATE .'_'. Zend_Db_Select::SQL_ASC
-                    "date_asc"      => 'Most Ancient',
+                    self::SORT_BY_DATE_TAGGED   => 'Tag Date',
+                    self::SORT_BY_DATE_UPDATED  => 'Update Date',
+                    self::SORT_BY_TITLE         => 'Title',
+                    self::SORT_BY_RATING        => 'Rating',
+                    self::SORT_BY_USER_COUNT    => 'User Count'
+                );
 
-                    // self::SORT_BY_DATE .'_'. Zend_Db_Select::SQL_DESC
-                    "date_desc"     => 'Most Recent',
-
-                    // self::SORT_BY_TITLE .'_'. Zend_Db_Select::SQL_ASC
-                    "title_asc"     => 'Title',
-
-                    // self::SORT_BY_TITLE .'_'. Zend_Db_Select::SQL_DESC
-                    "title_desc"    => 'Title (reverse)'
+    static public $orderTitles      = array(
+                    Zend_Db_Select::SQL_ASC     => 'Ascending',
+                    Zend_Db_Select::SQL_DESC    => 'Descending'
                 );
 
     /** @brief  Render an HTML version of a paginated set of User Items.
@@ -69,12 +77,15 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
 
         switch ($sortBy)
         {
+        case self::SORT_BY_DATE_TAGGED:
+        case self::SORT_BY_DATE_UPDATED:
         case self::SORT_BY_TITLE:
-        case self::SORT_BY_DATE:
+        case self::SORT_BY_RATING:
+        case self::SORT_BY_USER_COUNT:
             break;
 
         default:
-            $sortBy = self::SORT_BY_DATE;
+            $sortBy = self::SORT_BY_DATE_TAGGED;
             break;
         }
 
@@ -90,66 +101,74 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
         }
 
 
-        $sort      = strtolower($sortBy) .'_'. strtolower($sortOrder);
-        $sortTitle = self::$sortTitles[$sort];
-
         /*
         Connexions::log("Connexions_View_Helper_HtmlUserItems: "
                             . "validated to: "
                             . "style[ {$style} ], "
+                            . "styleTitle[ ".self::$styleTitles[$style]." ], "
                             . "sortBy[ {$sortBy} ], "
+                            . "sortByTitle[ ".self::$sortTitles[$sortBy]." ], "
                             . "sortOrder[ {$sortOrder} ], "
-                            . "sort[ {$sort} ], "
-                            . "sortTitle[ {$sortTitle} ]");
+                            . "sortOrderTitle[ ".
+                                        self::$sortTitles[$sortBy]." ]");
         // */
 
-        $html = "<div id='displayOptions'>"
-              .  "<div id='displayStyle' class='{$style}'>"
-              .   "<h3>Display:</h3>"
-              .   "<ul>"
-              .    $this->htmlDisplayLi(self::STYLE_TITLE,
-                                              $sortBy,
-                                              $sortOrder,
-                                              self::STYLE_TITLE,
-                                              $style == self::STYLE_TITLE,
-                                              self::STYLE_TITLE)
-              .    $this->htmlDisplayLi(self::STYLE_REGULAR,
-                                              $sortBy,
-                                              $sortOrder,
-                                              self::STYLE_REGULAR,
-                                              $style == self::STYLE_REGULAR,
-                                              self::STYLE_REGULAR)
-              .    $this->htmlDisplayLi(self::STYLE_FULL,
-                                              $sortBy,
-                                              $sortOrder,
-                                              self::STYLE_FULL,
-                                              $style == self::STYLE_FULL,
-                                              self::STYLE_FULL)
-              .   "</ul>"
-              .  "</div>"
-              .  "<div id='displaySort' class='{$sort} ui-form'>"
-              .   "<h3>Sorted by "
-              .    "<div class='ui-dropDown ui-button ui-corner-all'>"
-              .     "<a id='sort_userItems'>{$sortTitle}</a>"
-              .     "<ul class='ui-state-default'>";
+        $html = sprintf("<input type='hidden' name='page' value='%s' />",
+                            $paginator->getCurrentPageNumber())
+              . "<div id='displayOptions'>"     // displayOptions {
+              .  "<div class='displayStyle'>";  // displayStyle {
+
+        foreach (self::$styleTitles as $key => $title)
+        {
+            $html .= $this->renderOption('itemsStyle',
+                                         $key,
+                                         $title,
+                                         $key == $style,
+                                         'radio',
+                                         $key);
+        }
+
+        $html .= "</div>"                       // displayStyle }
+              .  $this->view->paginationControl($paginator,
+                                                null,        // style
+                                                'paginationControl.phtml',
+                                                array('excludeInfo' => true))
+              .  "<div class='displaySort'>"    // displaySort {
+              .   "<label   for='itemsSortBy'>Sorted by</label>"
+              .   "<select name='itemsSortBy' "
+              .          "class='sort-by sort-by-{$sortBy} "
+              .                  "ui-input ui-state-default ui-corner-all'>";
 
         foreach (self::$sortTitles as $key => $title)
         {
-            $parts = explode('_', $key);
-
-            $html .= $this->htmlDisplayLi($style,
-                                          $parts[0],    // $sortBy
-                                          $parts[1],    // $sortOrder
-                                          $title,
-                                          $key == $sort);
+            $html .= $this->renderOption('sortBy',
+                                         $key,
+                                         $title,
+                                         $key == $sortBy);
         }
 
-        $html .=    "</ul>"
-              .    "</div>"
-              .   "</h3>"
-              .  "</div>"
-              . "</div>"
-              . $paginator;
+        $html .=  "</select>"
+              .   "<div class='sort-order sort-order-{$sortOrder}'>";
+
+        foreach (self::$orderTitles as $key => $title)
+        {
+            $html .= $this->renderOption('itemsSortOrder',
+                                         $key,
+                                         $title,
+                                         $key == $sortOrder,
+                                         'radio',
+                                         'ui-icon ui-icon-arrowthick-1-'
+                                          . ($key === Zend_Db_Select::SQL_ASC
+                                                ? 'n ui-corner-top'
+                                                : 's ui-corner-bottom')
+                                          . ($key == $sortOrder
+                                                ? ' ui-state-highlight'
+                                                : ' ui-state-default'));
+        }
+
+        $html .=  "</div>"  // sort-order
+              .  "</div>"   // displaySort }
+              . "</div>";   // displayOptions }
 
         if (count($paginator))
         {
@@ -168,33 +187,82 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
         }
 
 
-        $html .= sprintf("%s", $paginator);
+        $html .= $paginator
+              .  "<br class='clear' />\n";
 
         // Return the rendered HTML
         return $html;
     }
 
-    protected function htmlDisplayLi($style,
-                                     $sortBy,
-                                     $sortOrder,
-                                     $title,
-                                     $isOn    = false,
-                                     $aClass  = '')
+    protected function renderOption($name,
+                                    $value,
+                                    $title,
+                                    $isOn       = false,
+                                    $type       = 'option',
+                                    $css        = '')
     {
-        return sprintf(  "<li class='%s'>"
-                       .  "<a class='%s' "
-                       .     "href='%s/?itemsStyle=%s"
-                       .              "&itemsSortBy=%s"
-                       .              "&itemsSortOrder=%s'>"
-                       .   "<b>%s</b>"
-                       .  "</a>"
-                       . "</li>",
-                       ($isOn ? "on" : ""),
-                       $aClass,
-                       $this->view->baseUrl(),
-                       $style,
-                       $sortBy,
-                       $sortOrder,
-                       $title);
+        $html = '';
+
+        switch ($type)
+        {
+        case 'toggle-button':
+            $html = sprintf(  "<button type='submit' "
+                            .         "name='%s' "
+                            .        "class='ui-state-%s "
+                            .               "ui-toggle-button%s' "
+                            .        "title='%s' value='%s'>"
+                            .  "<span>%s</span>"
+                            . "</button>",
+                            $name,
+                            ( $isOn
+                                ? "highlight"
+                                : "default"),
+                            ( !@empty($css)
+                                ? " ". $css
+                                : ""),
+                            $title,
+                            $value,
+                            $title);
+            break;
+
+        case 'radio':
+            $html = sprintf(  "<div class='ui-radio%s'>"
+                            .  "<div class='ui-radio-button%s' "
+                            .          "title='%s'>"
+                            .   "<input type='radio' name='%s' "
+                            .          "title='%s' value='%s'%s />"
+                            .   "<label for='%s'>%s</label>"
+                            .  "</div>"
+                            . "</div>",
+                            ($isOn ? " ui-radio-on" : ""),
+                            ( !@empty($css)
+                                ? " ". $css
+                                : ""),
+                            $title,
+                            $name,
+                            $title,
+                            $value,
+                            ($isOn ? " checked" : ""),
+                            $name,
+                            $title);
+            break;
+
+        case 'option':
+        default:
+            if ($isOn)  $css .= ' option-on';
+
+            $html = sprintf(  "<option%s title='%s' value='%s'%s>"
+                            .  "<span>%s</span>"
+                            . "</option>",
+                            ( !@empty($css)
+                                ? " class='". $css ."'"
+                                : ""),
+                            $title,
+                            $value,
+                            ($isOn ? " selected" : ""),
+                            $title);
+        }
+
+        return $html;
     }
 }
