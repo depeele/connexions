@@ -6,73 +6,101 @@
 #displayOptions
   clear:        both
   height:       1.5em
-  h3
-    display:        inline
-    color =         !controlColor
-    font-size:      1em
-    font-weight:    normal
-  a
-    font-weight:    normal
-  #displayStyle
-    //display:    block
-    //width:      75px
-    h3
-      display:  none
-    a:hover
-      background-color =  !linkColor
-    a
-      display:            block
-      width:              15px
-      height:             14px
-      background:         url('sprites/connexions.gif') no-repeat scroll 0px 0px transparent
-      background-image:   url('sprites/connexions.gif') !important
-      border-right =      "1px solid" !borderColor
-      b
-        display:      none
-    ul
-      padding:        0
-      li
-        display:      block
-        float:        left
-        .title
-          background-position:    -126px -0px
-          &:hover
-            background-position:  -186px -0px
-        .regular
-          background-position:    -126px -20px
-          &:hover
-            background-position:  -186px -20px
-        .full
-          background-position:    -126px -40px
-          border:                 none
-          &:hover
-            background-position:  -186px -40px
+  text-align:   center
 
-      li.on
-        a
-          cursor:     default
-        a:hover
-          background-color:       transparent
-        .title
-          background-position:    -156px -0px
-        .regular
-          background-position:    -156px -20px
-        .full
-          background-position:    -156px -40px
+  .ui-radio
+    display:            block
+    float:              left
+    input
+      margin-top:   14px
 
-  #displaySort
+    .ui-radio-on
+      cursor:     default
+
+  .displayStyle
+    display:    block
+    float:      left
+    text-align: left
+    label
+      display:      none
+    .ui-radio
+      .ui-radio-button
+        cursor:             pointer
+        width:              15px
+        height:             14px
+        background:         url('sprites/connexions.gif') no-repeat scroll 0px 0px transparent
+        background-image:   url('sprites/connexions.gif') !important
+        border-right =      "1px solid" !borderColor
+        &:hover
+          background-color =  !linkColor
+
+      .title
+        background-position:    -126px -0px
+        &:hover
+          background-position:  -186px -0px
+      .regular
+        background-position:    -126px -20px
+        &:hover
+          background-position:  -186px -20px
+      .full
+        background-position:    -126px -40px
+        border:                 none
+        &:hover
+          background-position:  -186px -40px
+
+    .ui-radio-on
+      .ui-radio-button:hover
+        background-color:       transparent
+      .title, .title:hover
+        background-position:    -156px -0px
+      .regular, .regular:hover
+        background-position:    -156px -20px
+      .full, .full:hover
+        background-position:    -156px -40px
+
+  .pagination
+    display:    inline
+    //.pager
+    //  display:  inline
+    //  float:    none
+    //  .ui-state-default
+    //    font-weight:  normal
+
+  .displaySort
     display:    block
     float:      right
     text-align: right
-    width:      50%
-    //ul
-    //  display:        none
-    //  li
-    //    display:      block
-    .ui-dropDown
-      display:        inline
-      li
-        white-space:  pre
+    label
+      display:  block
+      float:    left
+      padding:  0.1em 0.25em
+      color =   !controlColor
+    .sort-by
+      float:        left
+      font-weight:  normal
+    .sort-order
+      float:    right
+      top:      -8px
+      padding:  0 0.1em
+      .ui-radio
+        display:          block
+        float:            none
+        //border:           none
+        //background-color: transparent
+        cursor:           pointer
+        //margin-top:       0.1em
+        .ui-radio-button
+          width:            32px
+          label
+            display:  none
+          input
+            position: relative
+            top:      -13px
+            right:    2px
+      .ui-corner-top
+        border-bottom:  none
+      .ui-corner-bottom
+        border-top:     none
 
 .items
   clear:          both

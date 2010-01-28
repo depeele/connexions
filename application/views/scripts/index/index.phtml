@@ -44,6 +44,7 @@ else
 ?>
 </p>
 
+<form id='userItems'>
 <?php
 if ( @isset($this->userItems) )
 {
@@ -106,33 +107,8 @@ if (@isset($this->paginator))
                               $this->itemsSortOrder);
 }
 
-/*
-echo $this->paginator;
-
-if (count($this->paginator))
-{
-    // Present the items of the current page
-    echo "<ul class='items'>\n";
-    foreach ($this->paginator as $idex => $userItem)
-    {
-        // Present the current item -- This should probably be via a view
-        // partial like:
-        //      view/scripts/userItem.phtml
-        //$userItem = new Model_UserItem($item);
-        echo $this->partial('userItem.phtml',
-                            array(
-                                'index'    => $idex,
-                                'userItem' => &$userItem,
-                                'viewer'   => &$this->viewer
-                            ));
-    }
-    echo "</ul>\n";
-}
-
-echo $this->paginator;
-*/
-
 ?>
+</form>
 
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
