@@ -21,8 +21,8 @@
  *                                                          SORT_ORDER_*);
  *
  *      tagsMax         Maximum number of tags to present;
- *      tagsSortBy       Sort tags by (valid field of Model_Tag);
- *      tagsSortOrder    Tag sort order.
+ *      tagsSortBy      Sort tags by (valid field of Model_Tag);
+ *      tagsSortOrder   Tag sort order.
  */
 $baseUrl = $this->baseUrl('/'); //Connexions::url('/');
 
@@ -35,14 +35,17 @@ else
     $this->headTitle('Bookmarks')
 
 ?>
-<p>Present the Bookmarks for <?= $this->owner ?>
-                         to  <?= $this->viewer ?>
-<?php   if ( $this->tagInfo->hasValidItems())
-            printf (" with tags '%s'", $this->tagInfo->validItems);
-        else
-            printf (", NO tags.");
-?>
-</p>
+<div class='columnHeader'>
+ <p>Present the Bookmarks for <?= $this->owner ?>
+                          to  <?= $this->viewer ?>
+  <?php
+    if ( $this->tagInfo->hasValidItems())
+        printf (" with tags '%s'", $this->tagInfo->validItems);
+    else
+        printf (", NO tags.");
+  ?>
+ </p>
+</div>
 
 <form id='userItems'>
 <?php
@@ -82,16 +85,22 @@ if ( @isset($this->tagList))
 {
     $time_start = microtime(true);
 
+    $html = "<div class='columnHeader'>"
+          .  "<p>Tag's shared by all the currently presented items.</p>"
+          . "</div>";
+
     /* Use the Connexions_View_Helper_HtmlTagCloud class to render the tag
      * cloud for $this->tagList.
      */
-    $this->layout()->right = $this->htmlTagCloud($this->tagList,
-                                                 $this->tagsSortBy,
-                                                 $this->tagsSortOrder);
+    $html .= $this->htmlTagCloud($this->tagList,
+                                 $this->tagsSortBy,
+                                 $this->tagsSortOrder);
 
     $time_end   = microtime(true);
-    $this->layout()->right .= sprintf ("%f seconds to render tag cloud<br />\n",
-                                       $time_end - $time_start);
+    $html .= sprintf ("%f seconds to render tag cloud<br />\n",
+                      $time_end - $time_start);
+
+    $this->layout()->right = $html;
 }
 
 /* Present the pagination control, established by
@@ -101,7 +110,9 @@ if ( @isset($this->tagList))
 if (@isset($this->paginator))
 {
     echo $this->htmlUserItems($this->paginator,
+                              $this->owner,
                               $this->viewer,
+                              $this->tagInfo,
                               $this->itemsStyle,
                               $this->itemsSortBy,
                               $this->itemsSortOrder);

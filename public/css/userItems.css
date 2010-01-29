@@ -1,33 +1,34 @@
 /* ****** userItems.sass ****** */
-#displayOptions { clear: both; height: 1.5em; text-align: center; }
-#displayOptions .ui-radio { display: block; float: left; }
-#displayOptions .ui-radio input { margin-top: 14px; }
-#displayOptions .ui-radio .ui-radio-on { cursor: default; }
-#displayOptions .displayStyle { display: block; float: left; text-align: left; }
-#displayOptions .displayStyle label { display: none; }
-#displayOptions .displayStyle .ui-radio .ui-radio-button { cursor: pointer; width: 15px; height: 14px; background: url('sprites/connexions.gif') no-repeat scroll 0px 0px transparent; background-image: url('sprites/connexions.gif') !important; border-right: 1px solid #cccccc; }
-#displayOptions .displayStyle .ui-radio .ui-radio-button:hover { background-color: #0066cc; }
-#displayOptions .displayStyle .ui-radio .title { background-position: -126px -0px; }
-#displayOptions .displayStyle .ui-radio .title:hover { background-position: -186px -0px; }
-#displayOptions .displayStyle .ui-radio .regular { background-position: -126px -20px; }
-#displayOptions .displayStyle .ui-radio .regular:hover { background-position: -186px -20px; }
-#displayOptions .displayStyle .ui-radio .full { background-position: -126px -40px; border: none; }
-#displayOptions .displayStyle .ui-radio .full:hover { background-position: -186px -40px; }
-#displayOptions .displayStyle .ui-radio-on .ui-radio-button:hover { background-color: transparent; }
-#displayOptions .displayStyle .ui-radio-on .title, #displayOptions .displayStyle .ui-radio-on .title:hover { background-position: -156px -0px; }
-#displayOptions .displayStyle .ui-radio-on .regular, #displayOptions .displayStyle .ui-radio-on .regular:hover { background-position: -156px -20px; }
-#displayOptions .displayStyle .ui-radio-on .full, #displayOptions .displayStyle .ui-radio-on .full:hover { background-position: -156px -40px; }
-#displayOptions .pagination { display: inline; }
-#displayOptions .displaySort { display: block; float: right; text-align: right; }
-#displayOptions .displaySort label { display: block; float: left; padding: 0.1em 0.25em; color: #999999; }
-#displayOptions .displaySort .sort-by { float: left; font-weight: normal; }
-#displayOptions .displaySort .sort-order { float: right; top: -8px; padding: 0 0.1em; }
-#displayOptions .displaySort .sort-order .ui-radio { display: block; float: none; cursor: pointer; }
-#displayOptions .displaySort .sort-order .ui-radio .ui-radio-button { width: 32px; }
-#displayOptions .displaySort .sort-order .ui-radio .ui-radio-button label { display: none; }
-#displayOptions .displaySort .sort-order .ui-radio .ui-radio-button input { position: relative; top: -13px; right: 2px; }
-#displayOptions .displaySort .sort-order .ui-corner-top { border-bottom: none; }
-#displayOptions .displaySort .sort-order .ui-corner-bottom { border-top: none; }
+.displayOptions { clear: both; height: 1.5em; text-align: center; margin-top: 10px; }
+.displayOptions .ui-radio { display: block; float: left; }
+.displayOptions .ui-radio input { margin-top: 14px; }
+.displayOptions .ui-radio .ui-radio-on { cursor: default; }
+.displayOptions .displayStyle { display: block; float: left; text-align: left; }
+.displayOptions .displayStyle label { display: none; }
+.displayOptions .displayStyle .ui-radio .ui-radio-button { cursor: pointer; width: 15px; height: 14px; background: url('sprites/connexions.gif') no-repeat scroll 0px 0px transparent; background-image: url('sprites/connexions.gif') !important; }
+.displayOptions .displayStyle .ui-radio .ui-radio-button:hover { background-color: #0066cc; }
+.displayOptions .displayStyle .ui-radio .title { background-position: -126px -0px; }
+.displayOptions .displayStyle .ui-radio .title:hover { background-position: -186px -0px; }
+.displayOptions .displayStyle .ui-radio .regular { background-position: -126px -20px; }
+.displayOptions .displayStyle .ui-radio .regular:hover { background-position: -186px -20px; }
+.displayOptions .displayStyle .ui-radio .full { background-position: -126px -40px; }
+.displayOptions .displayStyle .ui-radio .full:hover { background-position: -186px -40px; }
+.displayOptions .displayStyle .ui-radio-on .ui-radio-button:hover { background-color: transparent; }
+.displayOptions .displayStyle .ui-radio-on .title, .displayOptions .displayStyle .ui-radio-on .title:hover { background-position: -156px -0px; }
+.displayOptions .displayStyle .ui-radio-on .regular, .displayOptions .displayStyle .ui-radio-on .regular:hover { background-position: -156px -20px; }
+.displayOptions .displayStyle .ui-radio-on .full, .displayOptions .displayStyle .ui-radio-on .full:hover { background-position: -156px -40px; }
+.displayOptions .pagination { display: inline; padding: 0.5em 0; }
+.displayOptions .pagination .pager { display: inline; }
+.displayOptions .displaySort { display: block; float: right; text-align: right; }
+.displayOptions .displaySort label { display: block; float: left; padding: 0.1em 0.25em; color: #999999; }
+.displayOptions .displaySort .sort-by { float: left; font-weight: normal; }
+.displayOptions .displaySort .sort-order { float: right; top: -5px; padding: 0 0.1em; }
+.displayOptions .displaySort .sort-order .ui-radio { display: block; float: none; cursor: pointer; }
+.displayOptions .displaySort .sort-order .ui-radio .ui-radio-button { width: 32px; }
+.displayOptions .displaySort .sort-order .ui-radio .ui-radio-button label { display: none; }
+.displayOptions .displaySort .sort-order .ui-radio .ui-radio-button input { position: relative; top: -13px; right: 2px; }
+.displayOptions .displaySort .sort-order .ui-corner-top { border-bottom: none; }
+.displayOptions .displaySort .sort-order .ui-corner-bottom { border-top: none; }
 
 .items { clear: both; }
 .items .item .control { display: block; }

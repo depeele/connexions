@@ -6,6 +6,7 @@ connexions.css: main.sass		\
 		grids.sass		\
 		libraries.sass		\
 		pagination.sass		\
+		itemScope.sass		\
 		sprites.sass		\
 		tabs.sass		\
 		tagCloud.sass		\

@@ -31,9 +31,6 @@ hr
   border-width: 0 0 5px 0
   margin: 20px 10px 10px 10px
 
-code
-  color: #0B8C8F
-
 /* ====== Headings ====== */
 /* .h1-.h6 classes should be used to maintain the semantically appropriate heading levels - NOT for use on non-headings */
 h1, .h1
@@ -87,13 +84,13 @@ h6, .h6
 
 /* links */
 a 
-  color: #06c
+  color = !linkColor
   font-weight: bold
   text-decoration: none 
   &:focus, &:hover 
     text-decoration: underline 
   &:visited 
-    color: #005a9c
+    color = !linkColorVisited
  
 /* ====== Lists ======*/
 /* numbered list */

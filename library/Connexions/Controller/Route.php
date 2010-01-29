@@ -121,7 +121,7 @@ class Connexions_Controller_Route
 
         $parts = explode('/', strtolower(trim($path, '/')) );
 
-        /*
+        // /*
         Connexions::log("Connexions_Controller_Route::match: "
                             . "path[ {$path} ], "
                             . "parts[ ". implode(':',$parts) ." ]");
@@ -139,7 +139,7 @@ class Connexions_Controller_Route
             $controller = $routeKey;
             $action     = 'index';
             $idex       = 1;    // Skip the first part since we've already
-                                // matchedd it.
+                                // matched it.
         }
         else
         {
@@ -157,7 +157,7 @@ class Connexions_Controller_Route
         $params =  array('controller' => $controller,
                          'action'     => $action);
 
-        /*
+        // /*
         Connexions::log("Connexions_Controller_Route::match: "
                             . "root[ {$root} ], "
                             . "routeKey[ {$routeKey} ], "
@@ -167,14 +167,14 @@ class Connexions_Controller_Route
                             . "nParts[ {$nParts} ]");
         // */
 
-        while ($route && ($idex < $nParts))
+        while ($route && ($idex <= $nParts))
         {
             if (! @is_array($route))
                 break;
 
             foreach ($route as $key => $val)
             {
-                /*
+                // /*
                 Connexions::log("Connexions_Controller_Route::match: Route: "
                                     . "key[ {$key} ], "
                                     . "part#{$idex}[ {$parts[$idex]} ]");
@@ -212,7 +212,7 @@ class Connexions_Controller_Route
 
         if (($idex < $nParts) && (! $partial))
         {
-            /*
+            // /*
             Connexions::log("Connexions_Controller_Route::match: ERROR");
             // */
 
@@ -220,7 +220,7 @@ class Connexions_Controller_Route
             return false;
         }
 
-        /*
+        // /*
         Connexions::log(
                 sprintf("Connexions_Controller_Route::match: "
                             . "Params [ %s ]",

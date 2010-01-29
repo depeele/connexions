@@ -1,0 +1,91 @@
+<?php
+/** @file
+ *
+ *  Render the item scope -- root (e.g. user-name, main section name),
+ *  sub-section name, scope items (e.g. tags), scope entry, item count.
+ *
+ *  $this implements the Zend_View_Interface and has at least the following
+ *  members/methods:
+ *      path            A simple array containing the names and urls of the
+ *                      path items to the current scope:
+ *                          array(root-name => root-url,
+ *                                item-name => item-url,
+ *                                ...)
+ *      scopeInfo       A Connexions_Set_Info instance containing information
+ *                      about the requested scope items (e.g. tags, users);
+ *      paginator       The paginator that will be used to present the items;
+ */
+
+echo   "<div class='itemScope'>"    // itemScope {
+     .  "<ul>";
+
+$url = '';
+if ( @is_array($this->path))
+{
+    $cssClass = 'root';
+    foreach ($this->path as $pathName => $pathUrl)
+    {
+        printf (  "<li class='%s'>"
+                .  "<a href='%s'>%s</a>"
+                . "</li>",
+                $cssClass,
+                $pathUrl, $pathName);
+
+        if ($cssClass === 'root')
+            $cssClass = 'section';
+
+        $url = $pathUrl;
+    }
+}
+
+if ( $this->scopeInfo->hasValidItems())
+{
+    echo     "<li class='scopeItems'>"
+         .    "<ul>";
+
+    // Grab the original request URL and remove the request string
+    $reqUrl = Connexions::getRequestUri();
+    $reqUrl = preg_replace('/[\?#].*$/', '',  $reqUrl); // query/fragment
+    $reqUrl = urldecode($reqUrl);
+    $reqUrl = preg_replace('/\s\s+/',    ' ', $reqUrl); // white-space collapse
+    $reqUrl = rtrim($reqUrl, " \t\n\r\0\x0B/");
+    $reqUrl = str_replace('/'. $this->scopeInfo->reqStr, '', $reqUrl);
+
+    //Connexions::log("ItemScope: reqUrl[ {$reqUrl} ]");
+
+    foreach ($this->scopeInfo->valid as $name => $id)
+    {
+        /* Get the set of all OTHER scope items (i.e. everything EXCEPT the
+         * current) and use it to construct the URL to use for removing this
+         * item from the scope.
+         */
+        $others = array_diff($this->scopeInfo->validList, array($name));
+        $remUrl = $reqUrl .'/'. implode(',', $others);
+
+        Connexions::log("ItemScope: reqUrl[ {$reqUrl} ], name[ {$name} ], "
+                                 . "remUrl[ {$remUrl} ]");
+
+        printf (  "<li class='deletable'>"
+                .  "<a href='%s/%s'>%s</a>"
+                .  "<a href='%s'>x</a>"
+                . "</li>",
+                $url, $name, $name,
+                $remUrl);
+    }
+
+    echo      "</ul>"
+         .   "</li>";
+}
+
+echo     "<li class='scopeEntry'>"
+     .    "<input name='newScope' "
+     .          "emptyText='User names' "
+     .          "class='input ui-corner-all ui-input "
+     .                 "ui-state-default ui-state-empty' />"
+     .   "</li>"
+     .   "<li class='itemCount'>"
+     .    number_format($this->paginator->getTotalItemCount())
+     .   "</li>"
+     .  "</ul>"
+     .  "<br class='clear' />"
+     . "</div>";    // itemScope }

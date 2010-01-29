@@ -45,10 +45,18 @@
 
 !navWidthSub            = 120px
 
-!navBorder          = "1px dotted" !navColorBorder
+!navBorder              = "1px dotted" !navColorBorder
 
 /* Tabs / Navigation */
 #pageHeader
+  border-top =  "0.25em solid" !navColorBackground
+
+  // Outer curve connecting the tabs with the top border
+  .tabs_outer_curve
+    position: absolute
+    right =   !tabWidth
+
+  // Top navigation tabs
   .tabs 
     position: absolute
     top:      0
@@ -145,7 +153,7 @@
   top:              0
   right:            0
 
-#pageHeader ul.sub li 
+//#pageHeader ul.sub li 
 
 #pageHeader .nav ul.sub li a,
 #search .choices ul.sub li a,

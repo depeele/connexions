@@ -58,6 +58,7 @@
 
     <bookmarks>
      <label>Bookmarks</label>
+     <controller>tagged</controller>
      <action>index</action>
      <pages>
       <mine>
@@ -69,7 +70,7 @@
       </mine>
       <explore>
        <label>Explore</label>
-       <controller>index</controller>
+       <controller>tagged</controller>
        <action>index</action>
        <class>global</class>
       </explore>

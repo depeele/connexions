@@ -73,6 +73,13 @@ $.widget("ui.input", {
         else
             self.element.addClass('ui-state-disabled');
 
+        if (opts.emptyText === null)
+        {
+            var empty   = self.element.attr('emptyText');
+            if ((empty !== undefined) && (empty.length > 0))
+                opts.emptyText = empty;
+        }
+
         self.setEmptyText(opts.emptyText, true);
 
         // Interaction events
