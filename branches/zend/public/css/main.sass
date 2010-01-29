@@ -3,9 +3,6 @@
   -webkit-border-radius = !tl !tr !br !bl
   border-radius =         !tl !tr !br !bl
 
-// Raw CSS imports seem to be required to appear first.
-@import themes/default/jquery-ui.css
-
 @import colors
 @import libraries
 @import template
@@ -15,17 +12,18 @@
 @import tabs
 @import ui-form
 @import tagCloud
+@import itemScope
 @import pagination
 
 /******* main.sass *******/
-a, a:link, a:visited, a:focus, a:hover
-  color =     !linkColor
-  outline:    0 none
-
-a:active
-  outline:    0 none
-  position:   relative
-  top:        1px
+//a, a:link, a:visited, a:focus, a:hover
+//  color =     !linkColor
+//  outline:    0 none
+//
+//a:active
+//  outline:    0 none
+//  position:   relative
+//  top:        1px
 
 /* Page Header */
 #pageHeader
@@ -68,3 +66,7 @@ a:active
 
 .rightCol
   padding-left:     1em
+
+.columnHeader
+  height:           3em
+

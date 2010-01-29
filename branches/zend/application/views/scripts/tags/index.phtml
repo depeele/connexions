@@ -21,28 +21,46 @@
 $this->headTitle('Tags');
 
 ?>
-<p>Present to <?= $this->viewer ?>
-<?php   if ( $this->userInfo && $this->userInfo->hasValidItems())
-        {
+<div class='columnHeader'>
+ <p>Present to <?= $this->viewer ?>
+  <?php
+    if ( $this->userInfo && $this->userInfo->hasValidItems())
+    {
             if (count($this->userInfo->validIds) == 1)
                 echo " all tags used by user ";
             else
                 echo " those tags in common to users ";
 
             echo "'{$this->userInfo->validItems}'.";
-        }
-        else
-            printf (" all tags.");
-?>
-</p>
+    }
+    else
+    printf (" all tags.");
+  ?>
+ </p>
+</div>
 
 <?php
+
+// Present the current scope information
+echo $this->partial('itemScope.phtml',
+                    array('path'        => array(
+                            'Tags'      => $this->baseUrl('/tags')
+                          ),
+                          'scopeInfo'   => &$this->userInfo,
+                          'paginator'   => $this->paginator));
+
+echo "<div class='displayOptions'>";    // displayOptions {
 
 /* Present the pagination control, established by
  * Bootstrap.php::_initViewGlobal() to be rendered via:
  *      views/scripts/paginationControl.phtml
  */
-echo $this->paginator;
+echo $this->paginationControl($this->paginator,
+                              null,        // style
+                              'paginationControl.phtml',
+                              array('excludeInfo' => true));
+
+echo "</div>";  // displayOptions }
 
 if (count($this->paginator))
 {
@@ -61,7 +79,7 @@ if (count($this->paginator))
     $userSet->withAnyTag()
             ->weightBy('tag');
     
-    // :TODO: Since we're caching objects, we MUST modify the $viewer object...
+    // Since we're caching objects, we MUST modify the $viewer object...
     $this->viewer->weightBy('tag', $tagIds);
 
     $this->userList = $userSet->get_Tag_ItemList(0, $this->maxUsers,
@@ -69,17 +87,24 @@ if (count($this->paginator))
 
     $time_start = microtime(true);
 
+    $html = "<div class='columnHeader'>"
+          .  "<p>"
+          .   "All people that have at least one of "
+          .   "the currently presented tags."
+          .  "</p>"
+          . "</div>";
+
     /* Use the Connexions_View_Helper_HtmlTagCloud class to render the set of
      * users as a tag cloud.
      */
-    $this->layout()->right = $this->htmlTagCloud($this->userList,
-                                                 $this->userSortBy,
-                                                 $this->userSortOrder);
+    $html .= $this->htmlTagCloud($this->userList,
+                                 $this->userSortBy,
+                                 $this->userSortOrder);
 
     $time_end   = microtime(true);
 
-    $this->layout()->right .= sprintf ("%f seconds to render tag cloud<br />\n",
-                                       $time_end - $time_start);
+    $html .= sprintf ("%f seconds to render tag cloud<br />\n",
+                      $time_end - $time_start);
 
 
     /*
@@ -92,9 +117,14 @@ if (count($this->paginator))
     $tagList = $this->tagSet->get_Tag_ItemList($offset, $perPage);
     */
 
+    $this->layout()->right = $html;
+
     echo $this->htmlTagCloud($tagList,
                              $this->sortBy,
-                             $this->sortOrder);
+                             $this->sortOrder,
+                             true); // exclude displayOptions since we handled
+                                    // that earlier
+
 }
 
 echo $this->paginator;

@@ -1,12 +1,17 @@
 @import colors
 
+!displaySortOffset  = 5px
+
 /******* userItems.sass *******/
 // Styling for userItems / Bookmarks
 
-#displayOptions
+.displayOptions
   clear:        both
   height:       1.5em
   text-align:   center
+
+  // Cover the -5px and add a bit more top of .displaySort
+  margin-top =  (!displaySortOffset * 2)
 
   .ui-radio
     display:            block
@@ -30,7 +35,6 @@
         height:             14px
         background:         url('sprites/connexions.gif') no-repeat scroll 0px 0px transparent
         background-image:   url('sprites/connexions.gif') !important
-        border-right =      "1px solid" !borderColor
         &:hover
           background-color =  !linkColor
 
@@ -44,7 +48,6 @@
           background-position:  -186px -20px
       .full
         background-position:    -126px -40px
-        border:                 none
         &:hover
           background-position:  -186px -40px
 
@@ -60,8 +63,9 @@
 
   .pagination
     display:    inline
-    //.pager
-    //  display:  inline
+    padding:    0.5em 0
+    .pager
+      display:  inline
     //  float:    none
     //  .ui-state-default
     //    font-weight:  normal
@@ -80,7 +84,8 @@
       font-weight:  normal
     .sort-order
       float:    right
-      top:      -8px
+      // -5px accounted for in the margin of .displayOptions
+      top =     -!displaySortOffset
       padding:  0 0.1em
       .ui-radio
         display:          block

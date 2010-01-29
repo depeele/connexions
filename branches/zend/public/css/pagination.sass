@@ -1,15 +1,15 @@
 /******* papgination.sass *******/
-div.pagination 
+.pagination 
   clear:      both
   padding:    1em
+  text-align: center
   .pager 
-    display:  inline
-    //float:              left
+    display:    block
+    text-align: center
     .ui-state-default
       font-weight:  normal
     button
       cursor:           pointer
-    //button, .current, .disabled, .skip 
     button, .skip 
       position:         relative
       padding:          0.1em 0.2em
@@ -21,25 +21,24 @@ div.pagination
       border:         none
       background:     transparent
   .info 
-    float:            right
+    display:          block
+    text-align:       center
     font-size:        0.85em
-    text-align:       right
-    width:            11.5em
     color =           !controlColor
-    div 
-      clear:            both
-    .label, .count 
-      display:          block
-    .itemRange 
-      padding:          0.2em 0
-      .label
-        float:            left
-      .count 
-        float:            right
-    .perPage
-      .label
-        padding-top:    0.3em
-        float:            right
-      .count 
-        float:            left
-        width:            4.75em
+    padding-top:      1em
+    .count 
+      display:          inline
+    .perPage, .itemRange
+      padding-top:      0.3em
+      .itemCount, .pageCount, .count, .itemRange
+        display:        inline
+        margin:         0 0.5em
+        font-size:      1em
+      .itemCount
+        font-size:      1.2em
+        font-weight:    bold
+      .pageCount
+        font-size:      1.1em
+    .itemRange
+      .count
+        margin-right:   0

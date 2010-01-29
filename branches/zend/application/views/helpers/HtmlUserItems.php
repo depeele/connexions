@@ -30,15 +30,20 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
                 );
 
     static public $orderTitles      = array(
-                    Zend_Db_Select::SQL_ASC     => 'Ascending',
-                    Zend_Db_Select::SQL_DESC    => 'Descending'
+                    Model_UserItemSet::SORT_ORDER_ASC   => 'Ascending',
+                    Model_UserItemSet::SORT_ORDER_DESC  => 'Descending'
                 );
 
     /** @brief  Render an HTML version of a paginated set of User Items.
      *  @param  paginator       The Zend_Paginator representing the items to
      *                          be presented.
+     *  @param  owner           A Model_User instance representing the
+     *                          owner of the current area OR
+     *                          a String '*' indicating ALL users;
      *  @param  viewer          A Model_User instance representing the
      *                          current viewer;
+     *  @param  tagInfo         A Connexions_Set_Info instance containing
+     *                          information about the requested tags;
      *  @param  style           The style to use for each item
      *                          (Connexions_View_Helper_HtmlUserItems::
      *                                                          STYLE_*);
@@ -46,12 +51,15 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
      *                          (Connexions_View_Helper_HtmlUserItems::
      *                                                      SORT_BY_*);
      *  @param  sortOrder       The sort order
-     *                          (Zend_Db_Select::SQL_ASC | SQL_DESC).
+     *                          (Model_UserItemSet::SORT_ORDER_ASC |
+     *                           Model_UserItemSet::SORT_ORDER_DESC)
      *
      *  @return The HTML representation of the user items.
      */
-    public function htmlUserItems(Zend_Paginator $paginator,
-                                  Model_User     $viewer,
+    public function htmlUserItems(Zend_Paginator            $paginator,
+                                  /* Model_User | String */ $owner,
+                                  Model_User                $viewer,
+                                  Connexions_Set_info       $tagInfo,
                                   $style        = null,
                                   $sortBy       = null,
                                   $sortOrder    = null)
@@ -91,12 +99,12 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
 
         switch (strtoupper($sortOrder))
         {
-        case Zend_Db_Select::SQL_ASC:
-        case Zend_Db_Select::SQL_DESC:
+        case Model_UserItemSet::SORT_ORDER_ASC:
+        case Model_UserItemSet::SORT_ORDER_DESC:
             break;
 
         default:
-            $sortOrder = Zend_Db_Select::SQL_DESC;
+            $sortOrder = Model_UserItemSet::SORT_ORDER_DESC;
             break;
         }
 
@@ -113,11 +121,34 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
                                         self::$sortTitles[$sortBy]." ]");
         // */
 
+        // Include the current page number
         $html = sprintf("<input type='hidden' name='page' value='%s' />",
-                            $paginator->getCurrentPageNumber())
-              . "<div id='displayOptions'>"     // displayOptions {
+                            $paginator->getCurrentPageNumber());
+
+        $ownerStr = (String)$owner;
+        if ($ownerStr === '*')
+        {
+            $ownerStr = 'Bookmarks';
+            $ownerUrl = $this->view->baseUrl('/tagged');
+        }
+        else
+        {
+            $ownerUrl = $this->view->baseUrl($ownerStr);
+        }
+
+        $html .= $this->view->partial('itemScope.phtml',
+                                      array(
+                                          'path'        => array(
+                                              $ownerStr => $ownerUrl
+                                          ),
+                                          'scopeInfo'   => &$tagInfo,
+                                          'paginator'   => $paginator));
+
+        $html .="<div class='displayOptions'>"  // displayOptions {
               .  "<div class='displayStyle'>";  // displayStyle {
 
+        $titleIdex  = 0;
+        $titleCount = count(self::$styleTitles);
         foreach (self::$styleTitles as $key => $title)
         {
             $html .= $this->renderOption('itemsStyle',
@@ -125,7 +156,14 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
                                          $title,
                                          $key == $style,
                                          'radio',
-                                         $key);
+                                         $key,
+                                         ($titleIdex === 0
+                                            ? 'ui-corner-left'
+                                            : ($titleIdex < ($titleCount - 1)
+                                                    ? ''
+                                                    : 'ui-corner-right')));
+
+            $titleIdex++;
         }
 
         $html .= "</div>"                       // displayStyle }
@@ -157,13 +195,15 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
                                          $title,
                                          $key == $sortOrder,
                                          'radio',
-                                         'ui-icon ui-icon-arrowthick-1-'
-                                          . ($key === Zend_Db_Select::SQL_ASC
-                                                ? 'n ui-corner-top'
-                                                : 's ui-corner-bottom')
-                                          . ($key == $sortOrder
-                                                ? ' ui-state-highlight'
-                                                : ' ui-state-default'));
+                                         'ui-icon ui-icon-triangle-1-'
+                                          . ($key ===
+                                              Model_UserItemSet::SORT_ORDER_ASC
+                                                ? 'n'
+                                                : 's'),
+                                          ($key ===
+                                              Model_UserItemSet::SORT_ORDER_ASC
+                                                ? 'ui-corner-top'
+                                                : 'ui-corner-bottom'));
         }
 
         $html .=  "</div>"  // sort-order
@@ -199,7 +239,8 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
                                     $title,
                                     $isOn       = false,
                                     $type       = 'option',
-                                    $css        = '')
+                                    $css        = '',
+                                    $corner     = 'ui-corner-all')
     {
         $html = '';
 
@@ -209,7 +250,7 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
             $html = sprintf(  "<button type='submit' "
                             .         "name='%s' "
                             .        "class='ui-state-%s "
-                            .               "ui-toggle-button%s' "
+                            .               "ui-toggle-button%s%s' "
                             .        "title='%s' value='%s'>"
                             .  "<span>%s</span>"
                             . "</button>",
@@ -220,13 +261,16 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
                             ( !@empty($css)
                                 ? " ". $css
                                 : ""),
+                            ( !@empty($corner)
+                                ? " ". $corner
+                                : ""),
                             $title,
                             $value,
                             $title);
             break;
 
         case 'radio':
-            $html = sprintf(  "<div class='ui-radio%s'>"
+            $html = sprintf(  "<div class='ui-radio%s ui-state-%s%s'>"
                             .  "<div class='ui-radio-button%s' "
                             .          "title='%s'>"
                             .   "<input type='radio' name='%s' "
@@ -235,6 +279,10 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
                             .  "</div>"
                             . "</div>",
                             ($isOn ? " ui-radio-on" : ""),
+                            ($isOn ? "highlight"    : "default"),
+                            ( !@empty($corner)
+                                ? " ". $corner
+                                : ""),
                             ( !@empty($css)
                                 ? " ". $css
                                 : ""),
@@ -249,7 +297,8 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
 
         case 'option':
         default:
-            if ($isOn)  $css .= ' option-on';
+            if ($isOn)              $css .= ' option-on';
+            if (! empty($corner))   $css .= ' '. $corner;
 
             $html = sprintf(  "<option%s title='%s' value='%s'%s>"
                             .  "<span>%s</span>"

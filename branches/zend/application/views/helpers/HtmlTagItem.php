@@ -34,7 +34,9 @@ class Connexions_View_Helper_HtmlTagItem
         foreach ($tags as $tag)
         {
             $isSelected = ($tag->getParam('selected') === true);
-            $cssClass   = ($isSelected ? 'selected ' : '');
+            $cssClass   = ($isSelected
+                                ? 'selected ui-corner-all ui-state-highlight '
+                                : '');
             $weightVal  = $tag->getParam('weightValue');
             $attribute  = '';
 

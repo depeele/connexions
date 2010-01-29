@@ -18,13 +18,16 @@
 $this->headTitle('People');
 
 ?>
-<p>Present People to  <?= $this->viewer ?>
-<?php   if ( $this->tagInfo->hasValidItems())
-            printf (" with tags '%s'", $this->tagInfo->validItems);
-        else
-            printf (", NO tags.");
-?>
-</p>
+<div class='columnHeader'>
+ <p>Present People to  <?= $this->viewer ?>
+  <?php
+    if ( $this->tagInfo->hasValidItems())
+        printf (" with tags '%s'", $this->tagInfo->validItems);
+    else
+        printf (", NO tags.");
+  ?>
+ </p>
+</div>
 
 <?php
 if ( @isset($this->users) )
@@ -47,24 +50,47 @@ if ( @isset($this->tagList))
 {
     $time_start = microtime(true);
 
+    $html = "<div class='columnHeader'>"
+          .  "<p>Tag's shared by all the currently presented people.</p>"
+          . "</div>";
+
     /* Use the Connexions_View_Helper_HtmlTagCloud class to render the tag
      * cloud for $this->tagList.
      */
-    $this->layout()->right = $this->htmlTagCloud($this->tagList,
-                                                 $this->sortBy,
-                                                 $this->sortOrder);
+    $html .= $this->htmlTagCloud($this->tagList,
+                                 $this->sortBy,
+                                 $this->sortOrder);
 
 
     $time_end   = microtime(true);
-    $this->layout()->right .= sprintf ("%f seconds to render tag cloud<br />\n",
-                                       $time_end - $time_start);
+    $html .= sprintf ("%f seconds to render tag cloud<br />\n",
+                      $time_end - $time_start);
+
+
+    $this->layout()->right = $html;
 }
+
+// Present the current scope information
+echo $this->partial('itemScope.phtml',
+                    array('path'        => array(
+                            'People'    => $this->baseUrl('/people')
+                          ),
+                          'scopeInfo'   => &$this->tagInfo,
+                          'paginator'   => $this->paginator));
+
+echo "<div class='displayOptions'>";    // displayOptions {
 
 /* Present the pagination control, established by
  * Bootstrap.php::_initViewGlobal() to be rendered via:
  *      views/scripts/paginationControl.phtml
  */
-echo $this->paginator;
+echo $this->paginationControl($this->paginator,
+                              null,        // style
+                              'paginationControl.phtml',
+                              array('excludeInfo' => true));
+
+echo "</div>";  // displayOptions }
+
 
 if (count($this->paginator))
 {

@@ -21,14 +21,22 @@ class Connexions_View_Helper_HtmlTagCloud extends Zend_View_Helper_Abstract
      *                      items to be presented;
      *  @param  sortBy      The tag field to sort by ( ['title'] | 'count' );
      *  @param  sortOrder   Sort order ( ['ASC'] | 'DESC').
+     *  @param  hideOptions Should display options be hidden?
      *
      *  @return The HTML representation of a tag cloud.
      */
     public function htmlTagCloud(Connexions_Set_ItemList    $itemList,
-                                 $sortBy       = 'title',
-                                 $sortOrder    = 'ASC')
+                                 $sortBy        = 'title',
+                                 $sortOrder     = 'ASC',
+                                 $hideOptions   = false)
     {
         $html = '';
+        if ($hideOptions !== true)
+        {
+            $html .= "<div class='displayOptions'>"
+                  .   "&nbsp;"
+                  .  "</div>";
+        }
 
         if ($sortBy    === null)    $sortBy    = 'title';
         if ($sortOrder === null)    $sortOrder = 'ASC';
