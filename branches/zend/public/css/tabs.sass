@@ -8,7 +8,7 @@
   and likely won't work at all in IE6.
 
 !tabWidth               = 750px
-!tabHeight              = 64px
+!tabHeight              = 3em
 
 !navWidth               = 560px
 
@@ -23,11 +23,11 @@
 // 190px                = 750px     - 560px
 !navWidthSearch         = !tabWidth - !navWidth
 
-!navPadItem             = 8px
-!navPadSubItem          = 16px
+!navPadItem             = 0.1em
+!navPadSubItem          = 0.8em
 
 //  48px                = 64px       - (8px         * 2)    *2 for top and bottom
-!navTopSub              = !tabHeight - (!navPadItem * 2)
+!navTopSub              = !tabHeight
 
 !searchBgWidth          = 173px
 !searchMagWidth         =  23px
@@ -63,7 +63,7 @@
     right:    0
     padding:  0
     width =   !tabWidth
-    height =  !tabHeight
+    //height =  !tabHeight
     padding:      0
     background-color: transparent
     a 
@@ -81,11 +81,12 @@
     width  =      !navWidth
     *width =      !navWidth + 1
     li 
-      float:            left
-      width =           !navWidthItem
-      text-align:       center
-      padding =         !navPadSubItem "0"
-      background-color = !navColorBackground
+      float:              left
+      width =             !navWidthItem
+      text-align:         center
+      padding =           !navPadSubItem "0"
+      background-color =  !navColorBackground
+      height =            !tabHeight
   /* Sub-menu */
   ul.sub 
     display:          none
@@ -102,6 +103,7 @@
 #search ul.sub li 
   background-color = !navColorBackground
   width =           !navWidthSub
+  height:           auto
   padding =         "0" !navPadSubItem
   float:            left    /* IE requires this to render without white-space between items */
   margin:           0
@@ -124,6 +126,7 @@
 #pageHeader ul.sub li.outter,
 #search ul.sub li.outter 
   background: none repeat scroll 0 0 transparent
+  padding:          0 16px
 
 #pageHeader ul.sub .corner_inner_left,
 #search ul.sub .corner_inner_left 
@@ -222,8 +225,9 @@
   position:         absolute
   top:              0
   right:            0
-  padding:          10px 0
+  padding:          0.5em
   width =           !navWidthSearch
+  height =          !tabHeight
   background-color = !navColorBackground
 
   *height:          46px  /* IE fix */
@@ -231,18 +235,16 @@
   *padding-bottom:  0     /* IE fix */
   .searchBox 
     float:          right
-    padding-right:  9px
   /* Search Input / Choices */
   .searchInput 
     border:       0
     color:        #999
-    padding =     !searchInputPad
   .input 
     border:       none
     //color:        #aaa
-    height =      (!searchMagWidth - 1)
-    margin:       1px 0
-    padding =     "0" !searchInputInputPadRght "0" !searchInputInputPadLeft
+    height:       1.5em
+    margin:       0
+    padding =     "0.1em" !searchInputInputPadRght "0" !searchInputInputPadLeft
     width =       !searchInputInputWidth
     font-weight:  normal
   .focus 
@@ -250,7 +252,7 @@
   .submit 
     display:          block
     position:         absolute
-    top:              7px
+    top:              0.25em
     left =            !searchMagLeft
     width =           !searchMagWidth
     padding:          0
@@ -264,7 +266,7 @@
   /* Search Context choices */
   .choices 
     .list 
-      top:              36px
+      top =             !tabHeight - 0.5em
       left:             -30px
       li 
         width:            180px
