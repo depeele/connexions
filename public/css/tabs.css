@@ -245,9 +245,9 @@
 #search .input {
   border:       none;
   /*color:        #aaa;*/
-  height:       22px;
-  margin:       1px 0;
-  padding:      0 22px 0 2px;
+  height:       20px;
+  margin:       0;
+  padding:      4px 22px 0 2px;
   width:        145px;
   font-weight:  normal;
 }
