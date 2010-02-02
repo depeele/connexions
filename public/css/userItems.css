@@ -21,7 +21,7 @@
 .displayOptions .pagination .pager { display: inline; }
 .displayOptions .displaySort { display: block; float: right; text-align: right; }
 .displayOptions .displaySort label { display: block; float: left; padding: 0.1em 0.25em; color: #999999; }
-.displayOptions .displaySort .sort-by { float: left; font-weight: normal; }
+.displayOptions .displaySort .sort-by { float: left; font-weight: normal; padding: 0; }
 .displayOptions .displaySort .sort-order { float: right; top: -5px; padding: 0 0.1em; }
 .displayOptions .displaySort .sort-order .ui-radio { display: block; float: none; cursor: pointer; }
 .displayOptions .displaySort .sort-order .ui-radio .ui-radio-button { width: 32px; }
@@ -40,12 +40,21 @@
 .items .item .control a { display: inline; font-weight: normal; }
 .items .item .meta { position: relative; float: right; width: 100px; padding: 0 0 0 4px; text-align: right; z-index: 2; }
 .items .item .meta .countTaggers { display: block; background-color: #999999; color: white; padding: 0.25em; font-weight: bold; text-align: center; }
-.items .item .meta .rating { display: block; }
-.items .item .meta .rating .stars { display: block; height: 18px; width: 96px; }
-.items .item .meta .rating .stars div { display: block; float: left; cursor: pointer; overflow: hidden; }
-.items .item .meta .rating .stars div a { display: block; width: 200%; height: 100%; text-align: right; }
-.items .item .meta .rating .stars .star_0_off { background-image: none !important; }
-.items .item .meta .rating .read-only div { cursor: default; }
+.items .item .meta .rating { display: block; position: relative; }
+.items .item .meta .rating .stars { display: block; height: 18px; }
+.items .item .meta .rating .stars .owner, .items .item .meta .rating .stars .average { display: block; width: 96px; overflow: hidden; }
+.items .item .meta .rating .stars .owner .ui-stars, .items .item .meta .rating .stars .average .ui-stars { display: block; float: left; cursor: pointer; overflow: hidden; text-indent: 999em; }
+.items .item .meta .rating .stars .owner .ui-stars a, .items .item .meta .rating .stars .average .ui-stars a { background: url('sprites/connexions.gif') no-repeat scroll 0 0; display: block; width: 16px; height: 16px; }
+.items .item .meta .rating .stars .owner .ui-stars-star-off a, .items .item .meta .rating .stars .owner .ui-stars-star a, .items .item .meta .rating .stars .owner .ui-stars-star-disabled a, .items .item .meta .rating .stars .average .ui-stars-star-off a, .items .item .meta .rating .stars .average .ui-stars-star a, .items .item .meta .rating .stars .average .ui-stars-star-disabled a { background-position: -72px -58px; }
+.items .item .meta .rating .stars .owner .ui-stars-star-on a, .items .item .meta .rating .stars .average .ui-stars-star-on a { background-position: -104px -58px; }
+.items .item .meta .rating .stars .owner .ui-stars-star-hover a, .items .item .meta .rating .stars .average .ui-stars-star-hover a { background-position: -88px -58px; }
+.items .item .meta .rating .stars .owner .ui-stars-cancel, .items .item .meta .rating .stars .average .ui-stars-cancel { padding: 1px; }
+.items .item .meta .rating .stars .owner .ui-stars-cancel a, .items .item .meta .rating .stars .average .ui-stars-cancel a { width: 14px; height: 14px; background-position: -72px -44px; }
+.items .item .meta .rating .stars .owner .ui-stars-cancel-hover a, .items .item .meta .rating .stars .average .ui-stars-cancel-hover a { background-position: -86px -44px; }
+.items .item .meta .rating .stars .owner .ui-stars-cancel-disabled a, .items .item .meta .rating .stars .average .ui-stars-cancel-disabled a { background-image: none; }
+.items .item .meta .rating .stars .owner .ui-stars-star-disabled, .items .item .meta .rating .stars .owner .ui-stars-cancel-disabled, .items .item .meta .rating .stars .average .ui-stars-star-disabled, .items .item .meta .rating .stars .average .ui-stars-cancel-disabled { cursor: default; }
+.items .item .meta .rating .stars .average-owner { position: absolute; top: 2px; left: 1px; }
+.items .item .meta .rating .stars .average-owner .ui-stars-star-on a { background-position: -88px -58px; }
 .items .item .meta .rating .meta { clear: left; color: #999999; font-size: 0.75em; }
 .items .item .data { position: relative; padding: 0.25em 0 0; z-index: 1; }
 .items .item .data .itemName { padding: 0; }

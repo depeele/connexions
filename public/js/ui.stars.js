@@ -16,9 +16,36 @@
  */
 (function($) {
 
-$.widget("ui.stars",
-{
-  _init: function() {
+$.widget("ui.stars", {
+  version: "2.1.1",
+  options: {
+    // Defaults
+    inputType: "radio", // radio|select
+    split: 0,
+    disabled: false,
+    cancelTitle: "Cancel Rating",
+    cancelValue: 0,
+    cancelShow: true,
+    oneVoteOnly: false,
+    showTitles: false,
+    captionEl: null,
+    callback: null, // function(ui, type, value, event)
+
+    /*
+     * CSS classes
+     */
+    starWidth: 16,
+    baseClass:   'ui-stars',            // Included for all star/cancel items
+    cancelClass: 'ui-stars-cancel',
+    starClass: 'ui-stars-star',
+    starOnClass: 'ui-stars-star-on',
+    starHoverClass: 'ui-stars-star-hover',
+    starDisabledClass: 'ui-stars-star-disabled',
+    cancelHoverClass: 'ui-stars-cancel-hover',
+    cancelDisabledClass: 'ui-stars-cancel-disabled'
+  },
+
+  _create: function() {
     var self = this, o = this.options, id = 0;
 
     o.isSelect = o.inputType == "select";
@@ -64,15 +91,7 @@ $.widget("ui.stars",
         o.title = el.title;
       }
 
-      // Include any CSS class on the original
-      var css   = '';
-      if (o.mirrorCss) {
-          var oCss = $(this).attr('class');
-          if ((oCss !== undefined) && (oCss.length > 0))
-            css += oCss +' ';
-      }
-
-      var $s = $("<div/>").addClass(css + o.baseClass +' '+ o.starClass);
+      var $s = $("<div/>").addClass(o.baseClass +' '+ o.starClass);
       var $a = $('<a/>').attr("title", o.showTitles ? el.title : "").text(el.value);
 
 
@@ -104,6 +123,10 @@ $.widget("ui.stars",
      * Append Stars interface
      */
     this.$cancel = $("<div/>").addClass(o.baseClass +' '+ o.cancelClass).append( $("<a/>").attr("title", o.showTitles ? o.cancelTitle : "").text(o.cancelValue) );
+
+    if (o.disabled)
+        this.$cancel.addClass(o.cancelDisabledClass);
+
     //o.cancelShow &= !o.disabled && !o.oneVoteOnly;
     o.cancelShow &= !o.oneVoteOnly;
     o.cancelShow && this.element.append(this.$cancel);
@@ -284,38 +307,6 @@ $.widget("ui.stars",
     var o = this.options;
     o.callback && o.callback(this, type, o.value, e);
     o.oneVoteOnly && !o.disabled && this.disable();
-  }
-});
-
-$.extend($.ui.stars, {
-  version: "2.1.1",
-  getter: "value",
-  defaults: {
-    inputType: "radio", // radio|select
-    split: 0,
-    disabled: false,
-    cancelTitle: "Cancel Rating",
-    cancelValue: 0,
-    cancelShow: true,
-    oneVoteOnly: false,
-    showTitles: false,
-    captionEl: null,
-    callback: null, // function(ui, type, value, event)
-
-    mirrorCss: true,
-
-    /*
-     * CSS classes
-     */
-    starWidth: 16,
-    baseClass:   'ui-stars',            // Included for all star/cancel items
-    cancelClass: 'ui-stars-cancel',
-    starClass: 'ui-stars-star',
-    starOnClass: 'ui-stars-star-on',
-    starHoverClass: 'ui-stars-star-hover',
-    starDisabledClass: 'ui-stars-star-disabled',
-    cancelHoverClass: 'ui-stars-cancel-hover',
-    cancelDisabledClass: 'ui-stars-cancel-disabled'
   }
 });
 

@@ -44,14 +44,123 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
         $view   =& $this->view;
         $jQuery = $view->jQuery();
 
-        $jQuery->addJavascriptFile($view->baseUrl('js/ui.stars.js'))
+        $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.js'))
+               ->addJavascriptFile($view->baseUrl('js/ui.stars.js'))
                ->addJavascriptFile($view->baseUrl('js/ui.checkbox.js'))
                ->addJavascriptFile($view->baseUrl('js/ui.button.js'))
                ->addJavascriptFile($view->baseUrl('js/ui.input.js'))
+               ->addOnLoad('init_displayOptions();')
                ->addOnLoad('init_userItems();')
                ->javascriptCaptureStart();
 
         ?>
+
+/************************************************
+ * Initialize display options.
+ *
+ */
+function init_displayOptions()
+{
+    var $displayOptions = $('.displayOptions,'+
+                            ':not(.displayOptions) .pagination');
+    var $pForm          = $displayOptions.parent('form');
+    if ($pForm.length < 1)
+    {
+        // Wrap our displayOptions in a form
+        $pForm = $displayOptions.wrap('<form />');
+    }
+
+    /* Attach ui.input to the input field with defined 'emptyText' and a
+     * validation callback to enable/disable the submit button based upon
+     * whether or not there is text in the search box.
+    $displayOptions.find('input[emptyText]').input();
+     */
+
+    $displayOptions.fadeTo(100, 0.5)
+                   .hover(  // In
+                            function(event) {
+                                $(this).fadeTo(100, 1.0);
+                            },
+                            // Out
+                            function(event) {
+                                $(this).fadeTo(100, 0.5);
+                            }
+                   )
+                   // Resize the sort-order button widths
+                   .find('.sort-order .ui-radio-button')
+                                .width('16px');
+
+    /* Add logic to mirror the state of the underlying radio button to the
+     * container.  Also, when the container is clicked, toggle the underlying
+     * radio button.
+     */
+    $displayOptions.find('.ui-radio-button').each(function() {
+        var $item   = $(this);
+        var $radio  = $item.find('input:radio');
+
+        /* For the underlysing radio button, add a change handler to mirror
+         * state, and hide the button.
+         */
+        $radio.change(function() {
+                        if ($radio.is(':checked'))
+                            $item.parent().removeClass('ui-state-default')
+                                          .addClass('ui-radio-on '+
+                                                    'ui-state-highlight');
+                        else
+                            $item.parent().addClass('ui-state-default')
+                                          .removeClass('ui-radio-on '+
+                                                       'ui-state-highlight');
+                      })
+              .hide();
+
+        /* Proxy clicks on the container through to the underlying radio button
+         * (this should cause a 'change' event that we handle above.
+         */
+        $item.click(function(e) {
+            if (! $radio.is(':checked'))
+            {
+                $item.parent().parent().find('input:radio')
+                        .removeAttr('checked')
+                        .trigger('change');
+
+                $radio.attr('checked', true)
+                      .trigger('change');
+            }
+        });
+    });
+
+    // All form items will set a cookie
+    $pForm.find('input,select').change(function() {
+        var name    = $(this).attr('name');
+        if (name.length < 0)
+            return;
+
+        $.cookie(name, $(this).val());
+
+        // Force a 'submit'
+        $pForm.submit();
+    });
+
+    $pForm.find(':submit').click(function() {
+        var page    = $(this).val();
+
+        $.cookie('page', page);
+    });
+
+    $pForm.submit(function(e) {
+        /* Disable all displayOption form elements -- this removes these items
+         * from form serialization.
+         *
+         * We've already set any settings as cookies and don't want these
+         * showing up in the URL as well.
+         */
+        $pForm.find('input,button,select').attr('disabled', true);
+
+        var ser = $pForm.serialize();
+        var a   = 1;
+    });
+}
+
 /************************************************
  * Initialize ui elements.
  *
@@ -96,19 +205,9 @@ function init_userItems()
         hideLabel:  true
     });
 
-    // Rating
-    $form.find('.rating .stars').stars({
-        baseClass:              'connexions_sprites',
-
-        cancelClass:            'star_0',
-        cancelHoverClass:       'star_0_hover',
-        cancelDisabledClass:    'star_0_off',
-
-        starClass:              'star_1',
-        starOnClass:            'star_1_on',
-        starHoverClass:         'star_1_hover',
-        starDisabledClass:      'star_1_off'
-    });
+    // Rating - average and user
+    $form.find('.rating .stars .average').stars({split:2});
+    $form.find('.rating .stars .owner').stars();
 
     $form.show();
 }
@@ -223,18 +322,16 @@ function init_userItems()
             $ownerUrl = $this->view->baseUrl($ownerStr);
         }
 
-        $html .= $this->view->partial('itemScope.phtml',
-                                      array(
-                                          'path'        => array(
-                                              $ownerStr => $ownerUrl
-                                          ),
-                                          'scopeInfo'   => &$tagInfo,
-                                          'paginator'   => $paginator));
+        $html .= $this->view->htmlItemScope($paginator,
+                                            $tagInfo,
+                                            'Tags',
+                                            'tags',
+                                            array($ownerStr => $ownerUrl));
 
         $html .="<div class='displayOptions'>"  // displayOptions {
               .  "<div class='displayStyle'>";  // displayStyle {
 
-        $titleIdex  = 0;
+        $idex       = 0;
         $titleCount = count(self::$styleTitles);
         foreach (self::$styleTitles as $key => $title)
         {
@@ -243,14 +340,15 @@ function init_userItems()
                                          $title,
                                          $key == $style,
                                          'radio',
+                                         'itemsStyle-'. $idex,
                                          $key,
-                                         ($titleIdex === 0
+                                         ($idex === 0
                                             ? 'ui-corner-left'
-                                            : ($titleIdex < ($titleCount - 1)
+                                            : ($idex < ($titleCount - 1)
                                                     ? ''
                                                     : 'ui-corner-right')));
 
-            $titleIdex++;
+            $idex++;
         }
 
         $html .= "</div>"                       // displayStyle }
@@ -261,6 +359,7 @@ function init_userItems()
               .  "<div class='displaySort'>"    // displaySort {
               .   "<label   for='itemsSortBy'>Sorted by</label>"
               .   "<select name='itemsSortBy' "
+              .             "id='itemsSortBy' "
               .          "class='sort-by sort-by-{$sortBy} "
               .                  "ui-input ui-state-default ui-corner-all'>";
 
@@ -275,6 +374,7 @@ function init_userItems()
         $html .=  "</select>"
               .   "<div class='sort-order sort-order-{$sortOrder}'>";
 
+        $idex = 0;
         foreach (self::$orderTitles as $key => $title)
         {
             $html .= $this->renderOption('itemsSortOrder',
@@ -282,6 +382,7 @@ function init_userItems()
                                          $title,
                                          $key == $sortOrder,
                                          'radio',
+                                         'itemsSortOrder-'. $idex,
                                          'ui-icon ui-icon-triangle-1-'
                                           . ($key ===
                                               Model_UserItemSet::SORT_ORDER_ASC
@@ -291,6 +392,8 @@ function init_userItems()
                                               Model_UserItemSet::SORT_ORDER_ASC
                                                 ? 'ui-corner-top'
                                                 : 'ui-corner-bottom'));
+
+            $idex++;
         }
 
         $html .=  "</div>"  // sort-order
@@ -326,6 +429,7 @@ function init_userItems()
                                     $title,
                                     $isOn       = false,
                                     $type       = 'option',
+                                    $id         = null,
                                     $css        = '',
                                     $corner     = 'ui-corner-all')
     {
@@ -336,12 +440,16 @@ function init_userItems()
         case 'toggle-button':
             $html = sprintf(  "<button type='submit' "
                             .         "name='%s' "
+                            .           "%s"
                             .        "class='ui-state-%s "
                             .               "ui-toggle-button%s%s' "
                             .        "title='%s' value='%s'>"
                             .  "<span>%s</span>"
                             . "</button>",
                             $name,
+                            ($id !== null
+                                ? "id='". $id ."' "
+                                : ""),
                             ( $isOn
                                 ? "highlight"
                                 : "default"),
@@ -360,7 +468,9 @@ function init_userItems()
             $html = sprintf(  "<div class='ui-radio%s ui-state-%s%s'>"
                             .  "<div class='ui-radio-button%s' "
                             .          "title='%s'>"
-                            .   "<input type='radio' name='%s' "
+                            .   "<input type='radio' "
+                            .          "name='%s' "
+                            .            "id='%s' "
                             .          "title='%s' value='%s'%s />"
                             .   "<label for='%s'>%s</label>"
                             .  "</div>"
@@ -370,15 +480,23 @@ function init_userItems()
                             ( !@empty($corner)
                                 ? " ". $corner
                                 : ""),
+
                             ( !@empty($css)
                                 ? " ". $css
                                 : ""),
                             $title,
+
                             $name,
+                            ($id === null
+                                ? $name
+                                : $id),
                             $title,
                             $value,
                             ($isOn ? " checked" : ""),
-                            $name,
+
+                            ($id === null
+                                ? $name
+                                : $id),
                             $title);
             break;
 

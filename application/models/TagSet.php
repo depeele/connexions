@@ -216,6 +216,27 @@ class Model_TagSet extends Connexions_Set
         return $ids;
     }
 
+    /** @brief  Construct the comma-separated string representing this set of
+     *          tags.
+     *
+     *  @return An comma-separated string.
+     */
+    public function __toString()
+    {
+        $recs = $this->_select->query()->fetchAll();
+
+        /* Convert the returned array of records to a simple, comma-separated
+         * string
+         */
+        $tags = array();
+        foreach ($recs as $idex => $row)
+        {
+            $tags[] = $row['tag'];
+        }
+
+        return implode(',', $tags);
+    }
+
     /*************************************************************************
      * Protected helpers methods
      *

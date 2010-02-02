@@ -8,6 +8,22 @@
 (function($) {
 
 $.widget("ui.input", {
+    version: "0.1.1",
+    options: {
+        // Defaults
+        priority:       'normal',
+        emptyText:      null,
+        validationEl:   null,       // The element to present validation
+                                    // information in [:sibling
+                                    // .ui-field-status]
+        validation:     null        /* The validation criteria
+                                     *      '!empty'
+                                     *      function(value)
+                                     *          returns {isValid:  true|false,
+                                     *                   message: string};
+                                     */
+    },
+
     /** @brief  Initialize a new instance.
      *
      *  Valid options:
@@ -29,7 +45,7 @@ $.widget("ui.input", {
      *      'enabled.uiinput'           when element is enabled;
      *      'disabled.uiinput'          when element is disabled.
      */
-    _init: function() {
+    _create: function() {
         var self    = this;
         var opts    = this.options;
 
@@ -126,7 +142,7 @@ $.widget("ui.input", {
                 return;
 
             // Clear the current validation information
-            self.setValidationState(undefined);
+            self.valid(undefined);
 
             /* Set a timer that needs to expire BEFORE we fire the validation
              * check
@@ -172,6 +188,12 @@ $.widget("ui.input", {
                 .bind('keydown.uiinput',    _keydown)
                 .bind('focus.uiinput',      _focus)
                 .bind('blur.uiinput',       _blur);
+
+        if (self.element.val().length > 0)
+        {
+            // Perform an initial validation
+            self.validate();
+        }
     },
 
     /************************
@@ -212,11 +234,6 @@ $.widget("ui.input", {
         }
     },
 
-    getValidationState: function()
-    {
-        return this.options.valid;
-    },
-
     /** @brief  Set the current validation state.
      *  @param  state   The new state:
      *                      undefined   undetermined
@@ -224,7 +241,7 @@ $.widget("ui.input", {
      *                      false       invalid
      *                      string      invalid, error message
      */
-    setValidationState: function(state)
+    valid: function(state)
     {
         if (state === this.options.valid)
             return;
@@ -291,6 +308,33 @@ $.widget("ui.input", {
         }
     },
 
+    val: function(newVal)
+    {
+        var self    = this;
+        var ret     = null;
+
+        if (newVal === undefined)
+        {
+            // Value retrieval
+            if ((self.options.emptyText !== null) &&
+                (self.element.val() == self.options.emptyText))
+            {
+                ret = '';
+            }
+            else
+            {
+                ret = self.element.val();
+            }
+        }
+        else
+        {
+            ret = self.element.val(newVal);
+            self.validate();
+        }
+
+        return ret;
+    },
+
     validate: function()
     {
         var msg         = [];
@@ -321,7 +365,7 @@ $.widget("ui.input", {
         }
 
         // Set the new state
-        this.setValidationState( ((newState === false) && (msg.length > 0)
+        this.valid( ((newState === false) && (msg.length > 0)
                                     ? msg.join('<br />')
                                     : newState) );
     },
@@ -342,24 +386,6 @@ $.widget("ui.input", {
                              +'ui-priority-primary '
                              +'ui-priority-secondary ')
                 .unbind('.uiinput');
-    }
-});
-
-$.extend($.ui.input, {
-    version:    '0.1.1',
-    getter:     'isEnabled isValid getValidationState getEmptyText',
-    defaults: {
-        priority:       'normal',
-        emptyText:      null,
-        validationEl:   null,       // The element to present validation
-                                    // information in [:sibling
-                                    // .ui-field-status]
-        validation:     null        /* The validation criteria
-                                     *      '!empty'
-                                     *      function(value)
-                                     *          returns {isValid:  true|false,
-                                     *                   message: string};
-                                     */
     }
 });
 

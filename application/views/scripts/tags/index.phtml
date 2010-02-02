@@ -42,12 +42,11 @@ $this->headTitle('Tags');
 <?php
 
 // Present the current scope information
-echo $this->partial('itemScope.phtml',
-                    array('path'        => array(
-                            'Tags'      => $this->baseUrl('/tags')
-                          ),
-                          'scopeInfo'   => &$this->userInfo,
-                          'paginator'   => $this->paginator));
+echo $this->htmlItemScope($this->paginator,
+                          $this->userInfo,
+                          'Users',
+                          'owners',
+                          array('Tags'  => $this->baseUrl('/tags')));
 
 echo "<div class='displayOptions'>";    // displayOptions {
 

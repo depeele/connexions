@@ -8,6 +8,12 @@
 (function($) {
 
 $.widget("ui.button", {
+    version: "0.1.1",
+    options: {
+        // Defaults
+        priority:   'normal'
+    },
+
     /** @brief  Initialize a new instance.
      *
      *  Valid options:
@@ -18,7 +24,7 @@ $.widget("ui.button", {
      *      'enabled.uibutton'  when element is enabled;
      *      'disabled.uibutton' when element is disabled.
      */
-    _init: function() {
+    _create: function() {
         var self    = this;
         var opts    = this.options;
 
@@ -146,15 +152,6 @@ $.widget("ui.button", {
                 .unbind('.uibutton');
     }
 });
-
-$.extend($.ui.button, {
-    version:    '0.1.1',
-    getter:     'isEnabled',
-    defaults: {
-        priority:   'normal'
-    }
-});
-
 
 })(jQuery);
 

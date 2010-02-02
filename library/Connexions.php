@@ -115,6 +115,35 @@ class Connexions
                                 ->getRequestUri();
     }
 
+    /** @brief  Given a parameter name, default, and possibly a request,
+     *          retrieve the given parameter from $_GET, $_POST, or cookies.
+     *  @param  name        The name of the desired parameter;
+     *  @param  default     Any default [null];
+     *  @param  request     If provided, a Zend_Controller_Request instance.
+     *
+     *  @return The parameter value.
+     */
+    public static function getParam($name,
+                                    $default    = null,
+                                    $request    = null)
+    {
+        if ( ($request === null) ||
+             ! ($request instanceof Zend_Conroller_Request_Abstract))
+            $request = self::getRequest();
+
+        $val = $request->getParam($name, $default);
+        if ($val == $default)
+        {
+            // See if there is a cookie
+            if ($request instanceof Zend_Controller_Request_Http)
+            {
+                $val = $request->getCookie($name, $default);
+            }
+        }
+
+        return $val;
+    }
+
     /** @brief  Given a site URL, apply any 'base' url prefix and return.
      *  @param  url     The site URL.
      *

@@ -82,6 +82,7 @@
     .sort-by
       float:        left
       font-weight:  normal
+      padding:      0
     .sort-order
       float:    right
       // -5px accounted for in the margin of .displayOptions
@@ -170,33 +171,75 @@
         text-align:         center
       .rating
         display:    block
+        position:   relative
         .stars
           display:  block
           height:   18px
-          width:    96px
-          div
-            display:        block
-            float:          left
-            cursor:         pointer
-            //border-bottom:  1px solid transparent
-            // Hide the <a> text
-            overflow: hidden
-            a
-              display:    block
-              width:      200%
-              height:     100%
-              text-align: right
-          //.inAverage
-          //  border-bottom-color:  #f00
+          .owner, .average
+            display:      block
+            width:        96px
+            overflow:     hidden
+            .ui-stars
+              display:        block
+              float:          left
+              cursor:         pointer
+              //border-bottom:  1px solid transparent
+              // Hide the <a> text
+              overflow:       hidden
+              text-indent:    999em
+              a
+                background: url('sprites/connexions.gif') no-repeat scroll 0 0
+                display:    block
+                width:      16px
+                height:     16px
 
-          .star_0_off
-            //opacity:          0 !important
-            //filter:           Alpha(Opacity=0) !important
-            background-image: none !important
+            .ui-stars-star-off, .ui-stars-star, .ui-stars-star-disabled
+              a
+                // sprites.sass::.star_1_off
+                background-position:  -72px -58px
 
-        .read-only
-          div
-            cursor:   default
+            .ui-stars-star-on
+              a
+                // sprites.sass::.star_1_on
+                background-position:  -104px -58px
+
+            .ui-stars-star-hover
+              a
+                // sprites.sass::.star_1_hover
+                background-position:  -88px -58px
+
+            .ui-stars-cancel
+              padding:  1px
+              a
+                // sprites.sass::.star_0
+                width:                14px
+                height:               14px
+                //margin:               1px
+                background-position:  -72px -44px
+
+            .ui-stars-cancel-hover
+              a
+                // sprites.sass::.star_0_hover
+                background-position:  -86px -44px
+
+            .ui-stars-cancel-disabled
+              a
+                // sprites.sass::.star_0
+                background-image:     none
+
+            .ui-stars-star-disabled, .ui-stars-cancel-disabled
+              cursor:   default
+
+        .stars
+          .average-owner
+            position: absolute
+            top:      2px
+            left:     1px
+
+            .ui-stars-star-on
+              a
+                // sprites.sass::.star_1_hover
+                background-position:  -88px -58px
 
         .meta
           clear:      left

@@ -47,7 +47,7 @@ else
  </p>
 </div>
 
-<form id='userItems'>
+<form id='userItems' action='<?php echo $this->url(array('controller' => 'tagged')); ?>'>
 <?php
 if ( @isset($this->userItems) )
 {

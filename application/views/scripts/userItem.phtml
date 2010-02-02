@@ -54,47 +54,66 @@ if ($item->isPrivate)   array_push($itemClasses, 'private');
  <div class='meta'>
   <?php
     printf (  "<a class='countTaggers' href='%s'>%d</a>"
-            . "<div class='rating'>",   // rating {
+            . "<div class='rating'>"        // rating {
+            .  "<div class='stars'>",       // stars {
             $this->url(array('action'   => 'url',
                              'urlHash'  => $item->item->urlHash)),
             $item->item->userCount);
 
-    if ($item->item->ratingCount > 0)
+    if ( $item->item->ratingCount > 0 )
     {
-        printf ("<div class='stars%s'>",
-                ($isOwner ? "" : " read-only"));
+        printf("<div class='average%s'>",   // stars .average {
+               ($isOwner ? " average-owner"
+                         : ""));
 
-        $ctlAttr   = ($isOwner ? ""
-                               : " disabled='true'");
         $avgRating = $item->item->ratingSum / $item->item->ratingCount;
-        $rating    = ($isOwner ? $item->item->rating
-                               : ceil($avgRating));
+        $rating    = ceil( ($avgRating * 2.0) );
 
-        for ($rdex = 0; $rdex < 6; $rdex++)
+        for ($rdex = 0; $rdex < 11; $rdex++)
         {
-            printf ("<input type='radio' name='rating' class='%s' "
-                    .                                 "value='%s' %s%s/>",
-                    ($rdex <= $avgRating
-                        ? 'inAverage'
-                        : ''),
+            printf ("<input type='radio' name='rating' value='%s' "
+                    .                              "disabled='true'%s/>",
                     $rdex,
                     ($rating == $rdex
                         ? "checked='true' "
-                        : ""),
-                    $ctlAttr);
+                        : ""));
         }
 
-        printf (   "</div>"
-                .  "<div class='meta'>"
-                .   "<span class='count'>%d</span> raters, "
-                .   "<span class='average'>%3.2f</span> avg."
-                .  "</div>",
-                $item->item->ratingCount,
-                $item->item->ratingSum / $item->item->ratingCount);
+        echo "</div>";                      // stars .average }
+    }
+
+    if ( $isOwner )
+    {
+        $rating = $item->item->rating;
+
+        echo "<div class='owner'>";         // stars .owner {
+
+        for ($rdex = 0; $rdex < 6; $rdex++)
+        {
+            printf ("<input type='radio' name='rating' value='%s' %s/>",
+                    $rdex,
+                    ($rating == $rdex
+                        ? "checked='true' "
+                        : ""));
+        }
+
+        echo "</div>";                      // stars .owner }
+    }
+
+    echo       "</div>";    // stars }
+
+    if ( $item->item->ratingCount > 0 )
+    {
+        printf(   "<div class='meta'>"
+               .   "<span class='count'>%d</span> raters, "
+               .   "<span class='average'>%3.2f</span> avg."
+               .  "</div>",
+               $item->item->ratingCount,
+               $item->item->ratingSum / $item->item->ratingCount);
     }
 
 
-    printf (  "</div>");    // rating }
+    echo  "</div>";     // rating }
   ?>
  </div>
  <div class='data'>
@@ -117,9 +136,14 @@ if ($item->isPrivate)   array_push($itemClasses, 'private');
     }
     else
     {
+        $saveUrl = $this->url(array('action'       => 'post'))
+                 .      '?name='.        urlencode($item->name)
+                 .      '&url='.         urlencode($item->item->url)
+                 .      '&description='. urlencode($item->description)
+                 .      '&tags='.        urlencode($item->tags->__toString());
+
         printf (   "<a class='item-save'   href='%s'>save</a>",
-                $this->url(array('action' => 'save',
-                                 'item'   => $item->itemId)) );
+                $saveUrl);
     }
     ?>
    </div>
