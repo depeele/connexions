@@ -19,52 +19,152 @@ printf ("<li class='item'>Item %s: %s </li>\n",
         (@isset($this->index) ? $this->index : ''),
         $this->userItem->debugDump());
 */
+$item    =& $this->userItem;
 
-$item =& $this->userItem;
+$isOwner = ( ($this->viewer && ($item->user->userId === $this->viewer->userId))
+                ? true
+                : false );
+
+$itemClasses = array();
+if ($isOwner)           array_push($itemClasses, 'mine');
+else                    array_push($itemClasses, 'other');
+
+if ($item->isFavorite)  array_push($itemClasses, 'favorite');
+
+if ($item->isPrivate)   array_push($itemClasses, 'private');
+
 ?>
-<li class='item'>
- <div class='control'>
+<li class='item <?php echo implode(' ', $itemClasses) ?>'>
+ <div class='status'>
   <?php
-    printf ("%sfav<br />\n".
-            "%spri<br />\n",
-            ($item->isFavorite ? "&nbsp;" : "! "),
-            ($item->isPrivate  ? "&nbsp;" : "! "));
-
-    if ( $this->viewer && ($item->user->name === $this->viewer->name))
+    if ($isOwner)
     {
-        printf ("edt<br />\n".
-                "del<br />\n");
+        printf (  "<div class='favorite'>"
+                .  "<input type='checkbox' name='isFavorite' value='true' %s/>"
+                . "</div>"
+                . "<div class='private'>"
+                .  "<input type='checkbox' name='isPrivate' value='true' %s/>"
+                . "</div>",
+                ($item->isFavorite ? " checked='true'" : ""),
+                ($item->isPrivate  ? " checked='true'" : "") );
     }
+
   ?>
  </div>
  <div class='meta'>
   <?php
-    printf ("%d taggers<br />\n", $item->item->userCount);
-    printf ("rating: %d : %f, %d:%d<br />\n",
-            $item->rating,
-            ($item->item->ratingCount > 0
-                ? $item->item->ratingSum / $item->item->ratingCount
-                : 0.0),
-            $item->item->ratingSum, $item->item->ratingCount);
+    printf (  "<a class='countTaggers' href='%s'>%d</a>"
+            . "<div class='rating'>",   // rating {
+            $this->url(array('action'   => 'url',
+                             'urlHash'  => $item->item->urlHash)),
+            $item->item->userCount);
 
-    printf ("tagged on: %s<br />\n", $item->taggedOn);
+    if ($item->item->ratingCount > 0)
+    {
+        printf ("<div class='stars%s'>",
+                ($isOwner ? "" : " read-only"));
+
+        $ctlAttr   = ($isOwner ? ""
+                               : " disabled='true'");
+        $avgRating = $item->item->ratingSum / $item->item->ratingCount;
+        $rating    = ($isOwner ? $item->item->rating
+                               : ceil($avgRating));
+
+        for ($rdex = 0; $rdex < 6; $rdex++)
+        {
+            printf ("<input type='radio' name='rating' class='%s' "
+                    .                                 "value='%s' %s%s/>",
+                    ($rdex <= $avgRating
+                        ? 'inAverage'
+                        : ''),
+                    $rdex,
+                    ($rating == $rdex
+                        ? "checked='true' "
+                        : ""),
+                    $ctlAttr);
+        }
+
+        printf (   "</div>"
+                .  "<div class='meta'>"
+                .   "<span class='count'>%d</span> raters, "
+                .   "<span class='average'>%3.2f</span> avg."
+                .  "</div>",
+                $item->item->ratingCount,
+                $item->item->ratingSum / $item->item->ratingCount);
+    }
+
+
+    printf (  "</div>");    // rating }
   ?>
  </div>
- <div class='itemName'>
+ <div class='data'>
+  <h4 class='itemName'>
+   <?php
+    printf ("<a href='%s' title='%s'>%s</a>",
+            $item->item->url, $item->item->urlHash,
+            htmlspecialchars($item->name));
+   ?>
+   <div class='control'>
+    <?php
+    if ($isOwner)
+    {
+        printf (   "<a class='item-edit'   href='%s'>edit</a> | "
+                .  "<a class='item-delete' href='%s'>delete</a>",
+                $this->url(array('action' => 'itemEdit',
+                                 'item'   => $item->itemId)),
+                $this->url(array('action' => 'itemDelete',
+                                 'item'   => $item->itemId)) );
+    }
+    else
+    {
+        printf (   "<a class='item-save'   href='%s'>save</a>",
+                $this->url(array('action' => 'save',
+                                 'item'   => $item->itemId)) );
+    }
+    ?>
+   </div>
+  </h4>
+  <div class='url'>
   <?php
     printf ("<a href='%s' title='%s'>%s</a>",
-            $item->item->url, $item->item->urlHash, $item->name);
+            $item->item->url, $item->item->urlHash, $item->item->url);
   ?>
- </div>
- <div class='userName'><?= $item->user->name ?></div>
- <div class='description'><?= $item->description ?></div>
- <div class='tags'>
+  </div>
+  <br class='clear' />
   <?php
-    foreach ($item->tags as $tag)
+    if (! @empty($item->description) )
     {
-        printf ("<a class='tag' href='%s/%s'>%s</a>",
-                'connexions', $tag->tag, $tag->tag);
+        printf ("<div class='description'>%s</div>",
+                htmlspecialchars($item->description));
     }
   ?>
+  <div class='userName'>
+   <?php
+    printf ("<a href='%s' title='%s'>%s</a>",
+            $this->url(array('action'   => $item->user->name)),
+            $item->user->fullName, $item->user->name);
+  
+   ?>
+  </div>
+  <ul class='tags'>
+   <?php
+    foreach ($item->tags as $tag)
+    {
+        printf ("<li class='tag ui-state-default'><a href='%s'>%s</a></li>",
+                $this->url(array('action'   => 'tagged',
+                                 'tag'      => $tag->tag)), $tag->tag);
+    }
+   ?>
+  </ul>
+  <br class='clear' />
+  <div class='dates'>
+   <?php
+    printf (  "<div class='tagged'>%s</div>"
+            . "<div class='updated'>%s</div>",
+            $item->taggedOn,
+            $item->updatedOn);
+   ?>
+  </div>
+  <br class='clear' />
  </div>
 </li>

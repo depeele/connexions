@@ -26,7 +26,8 @@ class Model_UserItem extends Connexions_Model
                                     'rating'        => 'integer',
                                     'isFavorite'    => 'boolean',
                                     'isPrivate'     => 'boolean',
-                                    'taggedOn'      => 'datetime'
+                                    'taggedOn'      => 'datetime',
+                                    'updatedOn'     => 'datetime'
     );
     /*************************************************************************/
 
