@@ -32,6 +32,7 @@ $jQuery = $this->jQuery();
 $links = $this->headLink();
 $links->prependStylesheet($baseUrl .'css/connexions.css');
 $links->prependStylesheet($baseUrl .'css/themes/default/jquery-ui.css');
+$links->prependStylesheet($baseUrl .'css/themes/base/ui.all.css');
 
 $jQuery->addJavascriptFile($this->baseurl('js/ui.input.js'));
 
@@ -67,8 +68,6 @@ $jQuery->setVersion('1.4')
        ->setUiVersion('1.7.2')
        ->enable()
        ->uiEnable()
-       ->prependOnLoad('init_displayOptions();')
-       ->prependOnLoad('input_initEmpty();')
        ->prependOnLoad('search_initHandlers();')
        ->javascriptCaptureStart();
   ?>
@@ -94,82 +93,6 @@ function preloadImages()
 // Preload images that we use everywhere.
 preloadImages('<?= $baseUrl ?>images/logo.gif',
               '<?= $baseUrl ?>css/sprites/connexions.gif');
-
-/************************************************
- * Initialize hover opacity changes for all
- * '.displayOptions' elements.
- *
- */
-function init_displayOptions()
-{
-    $('.displayOptions').fadeTo(100, 0.5)
-                        .hover(  // In
-                                function(event) {
-                                    $(this).fadeTo(100, 1.0);
-                                },
-                                // Out
-                                function(event) {
-                                    $(this).fadeTo(100, 0.5);
-                                }
-                         )
-                        // Resize the sort-order button widths
-                        .find('.sort-order .ui-radio-button')
-                                    .width('16px');
-
-    /* Add logic to mirror the state of the underlying radio button to the
-     * container.  Also, when the container is clicked, toggle the underlying
-     * radio button.
-     */
-    $('.displayOptions .ui-radio-button').each(function() {
-        var $item   = $(this);
-        var $radio  = $item.find('input:radio');
-
-        /* For the underlysing radio button, add a change handler to mirror
-         * state, and hide the button.
-         */
-        $radio.change(function() {
-                        if ($radio.is(':checked'))
-                            $item.parent().removeClass('ui-state-default')
-                                          .addClass('ui-radio-on '+
-                                                    'ui-state-highlight');
-                        else
-                            $item.parent().addClass('ui-state-default')
-                                          .removeClass('ui-radio-on '+
-                                                       'ui-state-highlight');
-                      })
-              .hide();
-
-        /* Proxy clicks on the container through to the underlying radio button
-         * (this should cause a 'change' event that we handle above.
-         */
-        $item.click(function(e) {
-            if (! $radio.is(':checked'))
-            {
-                $item.parent().parent().find('input:radio')
-                        .removeAttr('checked')
-                        .trigger('change');
-
-                $radio.attr('checked', true)
-                      .trigger('change');
-            }
-        });
-    });
-}
-
-/************************************************
- * Initialize input boxes that have an 'empty'
- * attributes.
- *
- */
-function input_initEmpty()
-{
-
-    /* Attach ui.input to the input field with defined 'emptyText' and a
-     * validation callback to enable/disable the submit button based upon
-     * whether or not there is text in the search box.
-     */
-    $('input[emptyText]').input();
-}
 
 /************************************************
  * Initialize the search form handlers

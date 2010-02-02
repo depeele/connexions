@@ -71,12 +71,11 @@ if ( @isset($this->tagList))
 }
 
 // Present the current scope information
-echo $this->partial('itemScope.phtml',
-                    array('path'        => array(
-                            'People'    => $this->baseUrl('/people')
-                          ),
-                          'scopeInfo'   => &$this->tagInfo,
-                          'paginator'   => $this->paginator));
+echo $this->htmlItemScope($this->paginator,
+                          $this->tagInfo,
+                          'Tags',
+                          'tags',
+                          array('People'    => $this->baseUrl('/people')));
 
 echo "<div class='displayOptions'>";    // displayOptions {
 

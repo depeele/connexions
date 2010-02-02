@@ -114,10 +114,16 @@ class Connexions_Controller_Route
      */
     public function match($path, $partial = false)
     {
+        $params = array();
         if ($path instanceof Zend_Controller_Request_Http)
-            $path  = $path->getPathInfo();
+        {
+            $params = $path->getCookie();
+            $path   = $path->getPathInfo();
+        }
         else
-            $path   = urldecode($path);
+        {
+            $path = urldecode($path);
+        }
 
         $parts = explode('/', strtolower(trim($path, '/')) );
 
@@ -154,8 +160,11 @@ class Connexions_Controller_Route
 
         $route  =& $this->_routes[$routeKey];
         $nParts =  count($parts);
-        $params =  array('controller' => $controller,
-                         'action'     => $action);
+
+        //$params =  array('controller' => $controller,
+        //                 'action'     => $action);
+        $params['controller'] = $controller;
+        $params['action']     = $action;
 
         // /*
         Connexions::log("Connexions_Controller_Route::match: "

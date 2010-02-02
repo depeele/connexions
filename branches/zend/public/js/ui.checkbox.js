@@ -8,6 +8,26 @@
 (function($) {
 
 $.widget("ui.checkbox", {
+    version: "0.1.1",
+    options: {
+        // Defaults
+        css:        'checkbox',             // General CSS class
+        cssOn:      'on',                   // CSS class when    checked
+        cssOff:     'off',                  // CSS class when un-checked
+        titleOn:    'click to turn off',    // Title when    checked
+        titleOff:   'click to turn on',     // Title when un-checked
+
+        useElTitle: true,                   // Include the title of the source
+                                            // element (or it's associated
+                                            // label) in the title of this
+                                            // checkbox.
+
+        hideLabel:  false                   // Hide the associated label?  If
+                                            // not, clicking on the title will
+                                            // be the same as clicking on the
+                                            // checkbox.
+    },
+
     /** @brief  Initialize a new instance.
      *
      *  Valid options are:
@@ -37,7 +57,7 @@ $.widget("ui.checkbox", {
      *      'checked.uicheckbox'    when element is checked;
      *      'unchecked.uicheckbox'  when element is unchecked.
      */
-    _init: function() {
+    _create: function() {
         var self    = this;
         var opts    = this.options;
 
@@ -254,28 +274,6 @@ $.widget("ui.checkbox", {
         this.$value.remove();
 
         this.element.unbind('.uicheckbox');
-    }
-});
-
-$.extend($.ui.checkbox, {
-    version:    '0.1.1',
-    getter:     'isChecked isEnabled',
-    defaults: {
-        css:        'checkbox',             // General CSS class
-        cssOn:      'on',                   // CSS class when    checked
-        cssOff:     'off',                  // CSS class when un-checked
-        titleOn:    'click to turn off',    // Title when    checked
-        titleOff:   'click to turn on',     // Title when un-checked
-
-        useElTitle: true,                   // Include the title of the source
-                                            // element (or it's associated
-                                            // label) in the title of this
-                                            // checkbox.
-
-        hideLabel:  false                   // Hide the associated label?  If
-                                            // not, clicking on the title will
-                                            // be the same as clicking on the
-                                            // checkbox.
     }
 });
 
