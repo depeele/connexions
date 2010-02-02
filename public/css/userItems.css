@@ -31,12 +31,35 @@
 .displayOptions .displaySort .sort-order .ui-corner-bottom { border-top: none; }
 
 .items { clear: both; }
-.items .item .control { display: block; }
-.items .item .meta { display: block; }
-.items .item .itemName { display: block; }
-.items .item .itemName a { display: inline; }
-.items .item .userName { display: block; }
-.items .item .description { display: block; }
-.items .item .tags { display: block; }
-.items .item .tags .tag { display: block; }
-.items .item .tags .tag a { display: inline; }
+.items .item { position: relative; z-index: 1; margin-bottom: 0.25em; border-top: 1px solid #cccccc; }
+.items .item .status { position: absolute; top: 0; left: 0; width: 20px; height: 100%; z-index: 3; }
+.items .item .status .checkbox { border: 0; }
+.items .item .status .favorite { position: absolute; top: 4px; left: 4px; }
+.items .item .status .private { position: absolute; top: 24px; left: 4px; }
+.items .item .control { display: inline; font-size: 0.75em; border: 0; padding: 0 0 0 2em; margin: 0; font-weight: normal; z-index: 3; }
+.items .item .control a { display: inline; font-weight: normal; }
+.items .item .meta { position: relative; float: right; width: 100px; padding: 0 0 0 4px; text-align: right; z-index: 2; }
+.items .item .meta .countTaggers { display: block; background-color: #999999; color: white; padding: 0.25em; font-weight: bold; text-align: center; }
+.items .item .meta .rating { display: block; }
+.items .item .meta .rating .stars { display: block; height: 18px; width: 96px; }
+.items .item .meta .rating .stars div { display: block; float: left; cursor: pointer; overflow: hidden; }
+.items .item .meta .rating .stars div a { display: block; width: 200%; height: 100%; text-align: right; }
+.items .item .meta .rating .stars .star_0_off { background-image: none !important; }
+.items .item .meta .rating .read-only div { cursor: default; }
+.items .item .meta .rating .meta { clear: left; color: #999999; font-size: 0.75em; }
+.items .item .data { position: relative; padding: 0.25em 0 0; z-index: 1; }
+.items .item .data .itemName { padding: 0; }
+.items .item .data .itemName a { display: inline; font-weight: normal; }
+.items .item .data .url { padding: 0 0 0 1em; margin: 0 175px 0 0; }
+.items .item .data .url a { display: inline; font-weight: normal; }
+.items .item .data .description { display: block; padding: 0 0 0 1em; margin: 0 175px 0 0; }
+.items .item .data .userName { display: block; float: left; font-size: 0.9em; padding: 0.5em 0; margin: 0; }
+.items .item .data .tags { display: block; float: right; font-size: 0.9em; padding: 0.5em 0; margin: 0; text-align: right; }
+.items .item .data .tags .tag { display: block; float: right; padding: 0.1em; margin: 0.2em; }
+.items .item .data .tags .tag a { display: inline; font-weight: normal; }
+.items .item .data .dates { display: block; font-size: 0.8em; height: 1em; color: #999999; }
+.items .item .data .dates .tagged { float: left; }
+.items .item .data .dates .updated { float: right; }
+.items .mine .data { padding: 0.25em 0 0 32px; }
+.items .mine .data .userName { display: none; }
+.items .private .status { background-color: #cccccc; }

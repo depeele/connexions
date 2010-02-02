@@ -68,6 +68,7 @@ CREATE TABLE userItem (
   isPrivate     tinyint(1)  unsigned    NOT NULL default 0,
 
   taggedOn      datetime                NOT NULL default '0000-00-00 00:00:00',
+  updatedOn     datetime                NOT NULL default '0000-00-00 00:00:00',
 
   PRIMARY KEY               (`userId`, `itemId`),
   KEY       `ui_userId`     (`userId`),
@@ -75,6 +76,7 @@ CREATE TABLE userItem (
   KEY       `ui_rating`     (`rating`),
   KEY       `ui_isPrivate`  (`isPrivate`),
   KEY       `ui_taggedOn`   (`taggedOn`),
+  KEY       `ui_updatedOn`  (`updatedOn`),
   FULLTEXT  `ui_fullText`   (`name`, `description`)
 );
 

@@ -5,6 +5,8 @@
  */
 class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
 {
+    static protected    $_initialized   = false;
+
     const STYLE_TITLE               = 'title';
     const STYLE_REGULAR             = 'regular';
     const STYLE_FULL                = 'full';
@@ -33,6 +35,89 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
                     Model_UserItemSet::SORT_ORDER_ASC   => 'Ascending',
                     Model_UserItemSet::SORT_ORDER_DESC  => 'Descending'
                 );
+
+    protected function _initialize()
+    {
+        if (self::$_initialized)
+            return;
+
+        $view   =& $this->view;
+        $jQuery = $view->jQuery();
+
+        $jQuery->addJavascriptFile($view->baseUrl('js/ui.stars.js'))
+               ->addJavascriptFile($view->baseUrl('js/ui.checkbox.js'))
+               ->addJavascriptFile($view->baseUrl('js/ui.button.js'))
+               ->addJavascriptFile($view->baseUrl('js/ui.input.js'))
+               ->addOnLoad('init_userItems();')
+               ->javascriptCaptureStart();
+
+        ?>
+/************************************************
+ * Initialize ui elements.
+ *
+ */
+function init_userItems()
+{
+    var $form   = $('#userItems');
+
+    $form.hide();   // hide while we prepare...
+
+    $form.addClass('ui-form');
+
+    $form.find('.status,.control')
+            .fadeTo(100, 0.5)
+            .hover( // In
+                    function() {
+                        $(this).fadeTo(100, 1.0);
+                    },
+                    // Out
+                    function() {
+                        $(this).fadeTo(100, 0.5);
+                    });
+    // Favorite
+    $form.find('input[name=isFavorite]').checkbox({
+        css:        'connexions_sprites',
+        cssOn:      'star_fill',
+        cssOff:     'star_empty',
+        titleOn:    'Favorite: click to remove from Favorites',
+        titleOff:   'Click to add to Favorites',
+        useElTitle: false,
+        hideLabel:  true
+    });
+
+    // Privacy
+    $form.find('input[name=isPrivate]').checkbox({
+        css:        'connexions_sprites',
+        cssOn:      'lock_fill',
+        cssOff:     'lock_empty',
+        titleOn:    'Private: click to share',
+        titleOff:   'Public: click to mark as private',
+        useElTitle: false,
+        hideLabel:  true
+    });
+
+    // Rating
+    $form.find('.rating .stars').stars({
+        baseClass:              'connexions_sprites',
+
+        cancelClass:            'star_0',
+        cancelHoverClass:       'star_0_hover',
+        cancelDisabledClass:    'star_0_off',
+
+        starClass:              'star_1',
+        starOnClass:            'star_1_on',
+        starHoverClass:         'star_1_hover',
+        starDisabledClass:      'star_1_off'
+    });
+
+    $form.show();
+}
+
+        <?php
+        $jQuery->javascriptCaptureEnd();
+
+        self::$_initialized = true;
+    }
 
     /** @brief  Render an HTML version of a paginated set of User Items.
      *  @param  paginator       The Zend_Paginator representing the items to
@@ -64,6 +149,8 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
                                   $sortBy       = null,
                                   $sortOrder    = null)
     {
+        $this->_initialize();
+
         /*
         Connexions::log("Connexions_View_Helper_HtmlUserItems: "
                             . "style[ {$style} ], "

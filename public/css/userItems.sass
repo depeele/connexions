@@ -110,34 +110,172 @@
 .items
   clear:          both
   .item
-    // Favorite / Private
+    position:       relative
+    z-index:        1
+    margin-bottom:  0.25em
+    border-top =    "1px solid" !borderColor
+
+    // Item status: Favorite, Private
+    .status
+      position:   absolute
+      top:        0
+      left:       0
+      width:      20px
+      height:     100%
+      z-index:    3
+      .checkbox
+        border:   0
+
+      .favorite
+        position: absolute
+        top:      4px
+        left:     4px
+
+      .private
+        position: absolute
+        top:      24px
+        left:     4px
+
+    // Item controls: edit, delete, save
     .control
-      display:    block
+      display:      inline
+      //position:     absolute
+      //top:          0.25em
+      //right:        100px
+      font-size:    0.75em
+      border:       0
+      padding:      0 0 0 2em
+      margin:       0
+      font-weight:  normal
+      z-index:      3
+
+      a
+        display:      inline
+        font-weight:  normal
 
     // Tagger count, rating, tag date/time
     .meta
-      display:    block
-
-    // Item Name / title
-    .itemName
-      display:    block
-      a
-        display:  inline
-
-    // User Name
-    .userName
-      display:    block
-
-    // Item Description
-    .description
-      display:    block
-
-    // List of tags for this item
-    .tags
-      display:    block
-
-      // Individual tag
-      .tag
+      position:   relative
+      float:      right
+      width:      100px
+      padding:    0 0 0 4px
+      text-align: right
+      z-index:    2
+      .countTaggers
+        display:            block
+        background-color =  !controlColor
+        color =             !pageColorBackground
+        padding:            0.25em
+        font-weight:        bold
+        text-align:         center
+      .rating
         display:    block
+        .stars
+          display:  block
+          height:   18px
+          width:    96px
+          div
+            display:        block
+            float:          left
+            cursor:         pointer
+            //border-bottom:  1px solid transparent
+            // Hide the <a> text
+            overflow: hidden
+            a
+              display:    block
+              width:      200%
+              height:     100%
+              text-align: right
+          //.inAverage
+          //  border-bottom-color:  #f00
+
+          .star_0_off
+            //opacity:          0 !important
+            //filter:           Alpha(Opacity=0) !important
+            background-image: none !important
+
+        .read-only
+          div
+            cursor:   default
+
+        .meta
+          clear:      left
+          color =     !controlColor
+          font-size:  0.75em
+
+    .data
+      position: relative
+      padding:  0.25em 0 0
+      z-index:  1
+
+      // Item Name / title
+      .itemName
+        padding:      0
+
         a
-          display:  inline
+          display:      inline
+          font-weight:  normal
+
+      // Item Url
+      .url
+        padding:    0 0 0 1em
+        margin:     0 175px 0 0
+        a
+          display:      inline
+          font-weight:  normal
+
+      // Item Description
+      .description
+        display:    block
+        padding:    0 0 0 1em
+        margin:     0 175px 0 0
+
+      // User Name
+      .userName
+        display:    block
+        float:      left
+        font-size:  0.9em
+        padding:    0.5em 0
+        margin:     0
+
+      // List of tags for this item
+      .tags
+        display:    block
+        float:      right
+        font-size:  0.9em
+        padding:    0.5em 0
+        margin:     0
+        text-align: right
+
+        // Individual tag
+        .tag
+          display:    block
+          float:      right
+          padding:    0.1em
+          margin:     0.2em
+          a
+            display:      inline
+            font-weight:  normal
+
+      // Dates (tagged, updated)
+      .dates
+        display:    block
+        font-size:  0.8em
+        height:     1em
+        color =     !controlColor
+        .tagged
+          float:    left
+        .updated
+          float:    right
+        
+  .mine
+    .data
+      padding:    0.25em 0 0 32px
+
+      .userName
+        display:  none
+
+  // Item (private)
+  .private
+    .status
+      background-color =  !borderColor

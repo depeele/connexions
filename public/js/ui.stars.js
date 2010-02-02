@@ -64,8 +64,17 @@ $.widget("ui.stars",
         o.title = el.title;
       }
 
-      var $s = $("<div/>").addClass(o.baseClass +' '+ o.starClass);
+      // Include any CSS class on the original
+      var css   = '';
+      if (o.mirrorCss) {
+          var oCss = $(this).attr('class');
+          if ((oCss !== undefined) && (oCss.length > 0))
+            css += oCss +' ';
+      }
+
+      var $s = $("<div/>").addClass(css + o.baseClass +' '+ o.starClass);
       var $a = $('<a/>').attr("title", o.showTitles ? el.title : "").text(el.value);
+
 
       /*
        * Prepare division settings
@@ -95,7 +104,8 @@ $.widget("ui.stars",
      * Append Stars interface
      */
     this.$cancel = $("<div/>").addClass(o.baseClass +' '+ o.cancelClass).append( $("<a/>").attr("title", o.showTitles ? o.cancelTitle : "").text(o.cancelValue) );
-    o.cancelShow &= !o.disabled && !o.oneVoteOnly;
+    //o.cancelShow &= !o.disabled && !o.oneVoteOnly;
+    o.cancelShow &= !o.oneVoteOnly;
     o.cancelShow && this.element.append(this.$cancel);
     this.element.append(this.$stars);
 
@@ -291,6 +301,8 @@ $.extend($.ui.stars, {
     showTitles: false,
     captionEl: null,
     callback: null, // function(ui, type, value, event)
+
+    mirrorCss: true,
 
     /*
      * CSS classes
