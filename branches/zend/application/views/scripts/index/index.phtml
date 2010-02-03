@@ -19,6 +19,7 @@
  *      itemsSortOrder  User Items sort order
  *                      (Connexions_View_Helpers_HtmlUserItems::
  *                                                          SORT_ORDER_*);
+        itemsStyleCustom    An array of custom style settings
  *
  *      tagsMax         Maximum number of tags to present;
  *      tagsSortBy      Sort tags by (valid field of Model_Tag);
@@ -32,7 +33,18 @@ $links->appendStylesheet($baseUrl .'css/userItems.css');
 if ($this->owner !== '*')
     $this->headTitle($this->owner ."'s Bookmarks");
 else
-    $this->headTitle('Bookmarks')
+    $this->headTitle('Bookmarks');
+
+if (@is_array($this->itemsStyleCustom))
+{
+    echo "<!-- itemsStyleCustom: ";
+    print_r($this->itemsStyleCustom);
+    echo " -->\n";
+
+    Connexions_View_Helper_HtmlUserItems::$styleParts[
+        Connexions_View_Helper_HtmlUserItems::STYLE_CUSTOM] =
+            $this->itemsStyleCustom;
+}
 
 ?>
 <div class='columnHeader'>
@@ -47,7 +59,7 @@ else
  </p>
 </div>
 
-<form id='userItems' action='<?php echo $this->url(array('controller' => 'tagged')); ?>'>
+<div id='userItems'>
 <?php
 if ( @isset($this->userItems) )
 {
@@ -119,7 +131,7 @@ if (@isset($this->paginator))
 }
 
 ?>
-</form>
+</div>
 
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

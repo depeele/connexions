@@ -401,7 +401,7 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .itemScope .triangle-r { float: right; width: 0; height: 0; border-right: 0; border-top: 1em solid transparent; border-bottom: 1em solid transparent; border-left: 1em solid #fff; }
 
 /* ****** papgination.sass ****** */
-.pagination { clear: both; padding: 1em; text-align: center; }
+.pagination { clear: both; padding: 1em; float: left; text-align: center; }
 .pagination .pager { display: block; text-align: center; }
 .pagination .pager .ui-state-default { font-weight: normal; }
 .pagination .pager button { cursor: pointer; }

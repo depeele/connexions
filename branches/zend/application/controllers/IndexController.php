@@ -27,9 +27,10 @@ class IndexController extends Zend_Controller_Action
         $perPage   = $request->getParam('perPage',   null);
 
         // User-Item parameters
-        $itemsStyle     = $request->getParam('itemsStyle',     null);
-        $itemsSortBy    = $request->getParam('itemsSortBy',    null);
-        $itemsSortOrder = $request->getParam('itemsSortOrder', null);
+        $itemsStyle       = $request->getParam('itemsStyle',       null);
+        $itemsSortBy      = $request->getParam('itemsSortBy',      null);
+        $itemsSortOrder   = $request->getParam('itemsSortOrder',   null);
+        //$itemsStyleCustom = $request->getParam('itemsStyleCustom', null);
 
         // Tag-cloud parameters
         $tagsMax       = $request->getParam('tagsMax',       250);
@@ -131,9 +132,10 @@ class IndexController extends Zend_Controller_Action
         $this->view->tagInfo        = $tagInfo;
 
         // User-Item parameters
-        $this->view->itemsStyle     = $itemsStyle;
-        $this->view->itemsSortBy    = $itemsSortBy;
-        $this->view->itemsSortOrder = $itemsSortOrder;
+        $this->view->itemsStyle       = $itemsStyle;
+        $this->view->itemsSortBy      = $itemsSortBy;
+        $this->view->itemsSortOrder   = $itemsSortOrder;
+        //$this->view->itemsStyleCustom = $itemsStyleCustom;
 
         // Tag-cloud parameters
         $this->view->tagsMax        = $tagsMax;

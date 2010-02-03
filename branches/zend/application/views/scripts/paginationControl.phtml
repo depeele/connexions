@@ -18,6 +18,9 @@
  *      totalItemCount
  *      firstItemNumber
  *      lastItemNumber
+ *
+ *      excludeInfo   - true to exclude paging information
+ *      cssClass      - css class for the form
  */
 
 $marker         = array('first' => '&laquo;',   //'&#x00ab',    //'&laquo;',
@@ -34,8 +37,11 @@ Connexions::log('paginationControl.phtml: vars[ '.
 // */
 
 
-echo "<div class='pagination'>\n"   // { pagination
-     . "<div class='pager'>\n";     // { pager
+printf (  "<form class='pagination%s'>" // { pagination
+        .  "<div class='pager'>",       // { pager
+        (@isset($this->cssClass)
+          ? " ". $this->cssClass
+          : ""));
 
 
 if ($this->pageCount > 1)
@@ -175,11 +181,11 @@ else
     echo "&nbsp;";
 }
 
-echo  "</div>\n";                   // pager }
+echo  "</div>";                     // pager }
 
 if ( (! @isset($this->excludeInfo)) || (! $this->excludeInfo) )
 {
-    echo    "<div class='info'>\n"; // { info
+    echo    "<div class='info'>";   // { info
 
     /*
     printf (      "<div class='itemCount'>"
@@ -230,11 +236,11 @@ if ( (! @isset($this->excludeInfo)) || (! $this->excludeInfo) )
             .   " items"
             .   "<div class='count %s'>%s - %s</div>."
             . "</div>"
-            ."</div>\n",    // info }
+            ."</div>",      // info }
             ($itemCountPerPage === 1 ? "" : "s"),
             //number_format($this->current),
             $cssClass, number_format($this->firstItemNumber),
                        number_format($this->lastItemNumber));
 }
 
-echo "</div>\n";                    // pagination }
+echo "</form>";                     // pagination }
