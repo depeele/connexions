@@ -6,107 +6,117 @@
 // Styling for userItems / Bookmarks
 
 .displayOptions
-  clear:        both
-  height:       1.5em
-  text-align:   center
+  float:        right
+  padding-top:  0.5em
 
-  // Cover the -5px and add a bit more top of .displaySort
-  margin-top =  (!displaySortOffset * 2)
-
-  .ui-radio
-    display:            block
-    float:              left
-    input
-      margin-top:   14px
-
-    .ui-radio-on
-      cursor:     default
-
-  .displayStyle
-    display:    block
-    float:      left
-    text-align: left
-    label
-      display:      none
-    .ui-radio
-      .ui-radio-button
-        cursor:             pointer
-        width:              15px
-        height:             14px
-        background:         url('sprites/connexions.gif') no-repeat scroll 0px 0px transparent
-        background-image:   url('sprites/connexions.gif') !important
-        &:hover
-          background-color =  !linkColor
-
-      .title
-        background-position:    -126px -0px
-        &:hover
-          background-position:  -186px -0px
-      .regular
-        background-position:    -126px -20px
-        &:hover
-          background-position:  -186px -20px
-      .full
-        background-position:    -126px -40px
-        &:hover
-          background-position:  -186px -40px
-
-    .ui-radio-on
-      .ui-radio-button:hover
-        background-color:       transparent
-      .title, .title:hover
-        background-position:    -156px -0px
-      .regular, .regular:hover
-        background-position:    -156px -20px
-      .full, .full:hover
-        background-position:    -156px -40px
-
-  .pagination
-    display:    inline
-    padding:    0.5em 0
-    .pager
-      display:  inline
-    //  float:    none
-    //  .ui-state-default
-    //    font-weight:  normal
-
-  .displaySort
-    display:    block
-    float:      right
-    text-align: right
-    label
-      display:  block
-      float:    left
-      padding:  0.1em 0.25em
-      color =   !controlColor
-    .sort-by
-      float:        left
+  .control
+    z-index:        1
+    cursor:         pointer
+    padding:        0 0 0.1em 0.2em
+    a
       font-weight:  normal
-      padding:      0
-    .sort-order
-      float:    right
-      // -5px accounted for in the margin of .displayOptions
-      top =     -!displaySortOffset
-      padding:  0 0.1em
-      .ui-radio
-        display:          block
-        float:            none
-        //border:           none
-        //background-color: transparent
-        cursor:           pointer
-        //margin-top:       0.1em
-        .ui-radio-button
-          width:            32px
+    .ui-icon
+      margin-top:   2px
+      float:        right
+    
+  .field
+    display:        block
+    padding-bottom: 0.25em
+    label
+      clear:  left
+      width:  6em
+      float:  left
+
+  form
+    position:           absolute
+    top:                2em
+    right:              0
+    width:              22em
+    padding:            0.5em
+    z-index:            2
+    background-color =  !pageColorBackground
+    border =            "1px solid" !borderColor
+
+    //.sortBy
+
+    .sortOrder
+      .field
+        float:          left
+        padding-bottom: 0
+        label
+          display:  inline
+          float:    none
+          width:    auto
+          padding:  0 0.1em
+
+    .displayStyle
+      display:    block
+      width:      auto
+      text-align: left
+      a
+        font-weight:  normal
+      .option, .comma
+        display:        block
+        float:          left
+      .comma
+        padding-right:  0.5em
+      .custom
+        padding-top:    1em
+        margin-top:     0.75em
+        border-top =    "1px dotted" !borderColor
+        .label
+          text-align:   right
+          font-style:   italic
+        .item
+          border =      "1px solid" !borderColor
+          padding:      0 0.1em 0.1em 0.2em
+
           label
-            display:  none
-          input
-            position: relative
-            top:      -13px
-            right:    2px
-      .ui-corner-top
-        border-bottom:  none
-      .ui-corner-bottom
-        border-top:     none
+            display:      inline
+            float:        none
+            width:        auto
+            padding-left: 0.25em
+
+          .itemName
+            padding-bottom: 0.5em
+
+          .url, .description
+            margin:         0
+
+          .rating
+            padding:        0.25em 0 0.25em 0.5em
+            text-align:     left
+
+            .meta
+              text-align:   left
+              float:        none
+              padding:      0
+
+          .tags
+            width:        auto
+            text-align:   left
+            .tag
+              display:  inline
+              float:    none
+
+          .dates
+            .updated
+              width:      auto
+
+        .buttons
+          text-align: right
+          button
+            display:  inline
+          
+
+.pagination-top
+  float:      left
+  padding:    0.5em 0
+  .pager
+    display:  inline
+  //  float:    none
+  //  .ui-state-default
+  //    font-weight:  normal
 
 .items
   clear:          both
@@ -175,7 +185,7 @@
         .stars
           display:  block
           height:   18px
-          .owner, .average
+          .owner, .average, .average-owner
             display:      block
             width:        96px
             overflow:     hidden
@@ -231,10 +241,12 @@
               cursor:   default
 
         .stars
+          .average,.average-owner
+            padding-left: 16px
           .average-owner
-            position: absolute
-            top:      2px
-            left:     1px
+            position:     absolute
+            top:          2px
+            left:         1px
 
             .ui-stars-star-on
               a
@@ -257,7 +269,7 @@
 
         a
           display:      inline
-          font-weight:  normal
+          font-weight:  bold
 
       // Item Url
       .url
@@ -278,7 +290,7 @@
         display:    block
         float:      left
         font-size:  0.9em
-        padding:    0.5em 0
+        padding:    0.5em 0 0.5em 1em
         margin:     0
 
       // List of tags for this item
@@ -302,14 +314,15 @@
 
       // Dates (tagged, updated)
       .dates
-        display:    block
-        font-size:  0.8em
-        height:     1em
-        color =     !controlColor
+        display:      block
+        font-size:    0.8em
+        height:       1em
+        padding-left: 1em
+        color =       !controlColor
         .tagged
-          float:    left
+          float:      left
         .updated
-          float:    right
+          float:      right
         
   .mine
     .data

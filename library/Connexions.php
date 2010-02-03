@@ -38,7 +38,8 @@ class Connexions
         if (self::$_log === null)
         {
             //$writer = new Zend_Log_Writer_Firebug();
-            $writer = new Zend_Log_Writer_Stream('/tmp/connexions-log.txt');
+            #$writer = new Zend_Log_Writer_Stream('/tmp/connexions-log.txt');
+            $writer = new Zend_Log_Writer_Stream('c:/wamp/logs/connexions-log.txt');
             self::$_log = new Zend_Log($writer);
         }
 

@@ -10,12 +10,69 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
     const STYLE_TITLE               = 'title';
     const STYLE_REGULAR             = 'regular';
     const STYLE_FULL                = 'full';
+    const STYLE_CUSTOM              = 'custom';
 
     static public $styleTitles      = array(
-                    self::STYLE_TITLE   => 'Title',
-                    self::STYLE_REGULAR => 'Regular',
-                    self::STYLE_FULL    => 'Full'
-                );
+        self::STYLE_TITLE   => 'Title',
+        self::STYLE_REGULAR => 'Regular',
+        self::STYLE_FULL    => 'Full',
+        self::STYLE_CUSTOM  => 'Custom'
+    );
+
+    static public $styleParts       = array(
+        self::STYLE_TITLE   => array(
+            'meta:countTaggers'         => true,
+            'meta:rating:stars:average' => false,
+            'meta:rating:stars:owner'   => false,
+            'meta:rating:meta'          => false,
+            'itemName'                  => true,
+            'url'                       => false,
+            'description'               => false,
+            'userName'                  => false,
+            'tags'                      => false,
+            'dates:tagged'              => false,
+            'dates:updated'             => false
+        ),
+        self::STYLE_REGULAR => array(
+            'meta:countTaggers'         => true,
+            'meta:rating:stars:average' => true,
+            'meta:rating:stars:owner'   => true,
+            'meta:rating:meta'          => false,
+            'itemName'                  => true,
+            'url'                       => false,
+            'description'               => true,
+            'userName'                  => true,
+            'tags'                      => true,
+            'dates:tagged'              => false,
+            'dates:updated'             => false
+        ),
+        self::STYLE_FULL    => array(
+            'meta:countTaggers'         => true,
+            'meta:rating:stars:average' => true,
+            'meta:rating:stars:owner'   => true,
+            'meta:rating:meta'          => true,
+            'itemName'                  => true,
+            'url'                       => true,
+            'description'               => true,
+            'userName'                  => true,
+            'tags'                      => true,
+            'dates:tagged'              => true,
+            'dates:updated'             => true
+        ),
+        self::STYLE_CUSTOM  => array(
+            'meta:countTaggers'         => true,
+            'meta:rating:stars:average' => true,
+            'meta:rating:stars:owner'   => true,
+            'meta:rating:meta'          => true,
+            'itemName'                  => true,
+            'url'                       => true,
+            'description'               => true,
+            'userName'                  => true,
+            'tags'                      => true,
+            'dates:tagged'              => true,
+            'dates:updated'             => true
+        )
+    );
 
     const SORT_BY_DATE_TAGGED       = 'taggedOn';
     const SORT_BY_DATE_UPDATED      = 'dateUpdated';
@@ -49,8 +106,8 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
                ->addJavascriptFile($view->baseUrl('js/ui.checkbox.js'))
                ->addJavascriptFile($view->baseUrl('js/ui.button.js'))
                ->addJavascriptFile($view->baseUrl('js/ui.input.js'))
-               ->addOnLoad('init_displayOptions();')
                ->addOnLoad('init_userItems();')
+               ->addOnLoad('init_displayOptions();')
                ->javascriptCaptureStart();
 
         ?>
@@ -61,14 +118,52 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
  */
 function init_displayOptions()
 {
-    var $displayOptions = $('.displayOptions,'+
-                            ':not(.displayOptions) .pagination');
-    var $pForm          = $displayOptions.parent('form');
-    if ($pForm.length < 1)
-    {
-        // Wrap our displayOptions in a form
-        $pForm = $displayOptions.wrap('<form />');
-    }
+    var $displayOptions = $('.displayOptions');
+    var $control        = $displayOptions.find('.control:first');
+
+    $control.hover( // in
+                    function(e) {
+                        $control.addClass('ui-state-hover');
+                    },
+                    // out
+                    function(e) {
+                        $control.removeClass('ui-state-hover');
+                    })
+            .click(function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                $displayOptions.find('form:first').toggle();
+                $control.toggleClass('ui-state-active');
+            });
+
+    $control.find('a:first, .ui-icon:first')
+                                         // Let it bubble up
+                    .click(function(e) {e.preventDefault(); });
+
+    var $displayStyle   = $displayOptions.find('.displayStyle');
+    var $cControl       = $displayStyle.find('.control:first');
+
+    $cControl.hover(// in
+                    function(e) {
+                        $cControl.addClass('ui-state-hover');
+                    },
+                    // out
+                    function(e) {
+                        $cControl.removeClass('ui-state-hover');
+                    })
+            .click(function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                $displayStyle.find('.custom.items').toggle();
+                $cControl.toggleClass('ui-state-active');
+            });
+    $cControl.find('a:first,b:first,.ui-icon:first')
+                                         // Let it bubble up
+                    .click(function(e) { e.preventDefault(); });
+
+    return;
 
     /* Attach ui.input to the input field with defined 'emptyText' and a
      * validation callback to enable/disable the submit button based upon
@@ -129,8 +224,10 @@ function init_displayOptions()
         });
     });
 
+
+    /*
     // All form items will set a cookie
-    $pForm.find('input,select').change(function() {
+    $displayOptions.find('input,select').change(function() {
         var name    = $(this).attr('name');
         if (name.length < 0)
             return;
@@ -138,27 +235,27 @@ function init_displayOptions()
         $.cookie(name, $(this).val());
 
         // Force a 'submit'
-        $pForm.submit();
+        $displayOptions.submit();
     });
 
-    $pForm.find(':submit').click(function() {
+    $displayOptions.find(':submit').click(function() {
         var page    = $(this).val();
-
-        $.cookie('page', page);
+        //$.cookie('page', page);
     });
 
-    $pForm.submit(function(e) {
-        /* Disable all displayOption form elements -- this removes these items
-         * from form serialization.
-         *
-         * We've already set any settings as cookies and don't want these
-         * showing up in the URL as well.
-         */
-        $pForm.find('input,button,select').attr('disabled', true);
+    $displayOptions.submit(function(e) {
+        // Disable all displayOption form elements -- this removes these items
+        // from form serialization.
+        //
+        // We've already set any settings as cookies and don't want these
+        // showing up in the URL as well.
+        $displayOptions.find('input,:not(input:submit),button,select')
+                .attr('disabled', true);
 
-        var ser = $pForm.serialize();
+        var ser = $displayOptions.serialize();
         var a   = 1;
     });
+    */
 }
 
 /************************************************
@@ -167,13 +264,9 @@ function init_displayOptions()
  */
 function init_userItems()
 {
-    var $form   = $('#userItems');
+    var $userItems  = $('form.userItem');
 
-    $form.hide();   // hide while we prepare...
-
-    $form.addClass('ui-form');
-
-    $form.find('.status,.control')
+    $userItems.find('.status,.control')
             .fadeTo(100, 0.5)
             .hover( // In
                     function() {
@@ -184,7 +277,7 @@ function init_userItems()
                         $(this).fadeTo(100, 0.5);
                     });
     // Favorite
-    $form.find('input[name=isFavorite]').checkbox({
+    $userItems.find('input[name=isFavorite]').checkbox({
         css:        'connexions_sprites',
         cssOn:      'star_fill',
         cssOff:     'star_empty',
@@ -195,7 +288,7 @@ function init_userItems()
     });
 
     // Privacy
-    $form.find('input[name=isPrivate]').checkbox({
+    $userItems.find('input[name=isPrivate]').checkbox({
         css:        'connexions_sprites',
         cssOn:      'lock_fill',
         cssOff:     'lock_empty',
@@ -206,10 +299,8 @@ function init_userItems()
     });
 
     // Rating - average and user
-    $form.find('.rating .stars .average').stars({split:2});
-    $form.find('.rating .stars .owner').stars();
-
-    $form.show();
+    //$userItems.find('.rating .stars .average').stars({split:2});
+    $userItems.find('.rating .stars .owner').stars();
 }
 
         <?php
@@ -262,6 +353,7 @@ function init_userItems()
         case self::STYLE_TITLE:
         case self::STYLE_FULL:
         case self::STYLE_REGULAR:
+        case self::STYLE_CUSTOM:
             break;
 
         default:
@@ -307,9 +399,7 @@ function init_userItems()
                                         self::$sortTitles[$sortBy]." ]");
         // */
 
-        // Include the current page number
-        $html = sprintf("<input type='hidden' name='page' value='%s' />",
-                            $paginator->getCurrentPageNumber());
+        $html = '';
 
         $ownerStr = (String)$owner;
         if ($ownerStr === '*')
@@ -326,91 +416,28 @@ function init_userItems()
                                             $tagInfo,
                                             'Tags',
                                             'tags',
-                                            array($ownerStr => $ownerUrl));
-
-        $html .="<div class='displayOptions'>"  // displayOptions {
-              .  "<div class='displayStyle'>";  // displayStyle {
-
-        $idex       = 0;
-        $titleCount = count(self::$styleTitles);
-        foreach (self::$styleTitles as $key => $title)
-        {
-            $html .= $this->renderOption('itemsStyle',
-                                         $key,
-                                         $title,
-                                         $key == $style,
-                                         'radio',
-                                         'itemsStyle-'. $idex,
-                                         $key,
-                                         ($idex === 0
-                                            ? 'ui-corner-left'
-                                            : ($idex < ($titleCount - 1)
-                                                    ? ''
-                                                    : 'ui-corner-right')));
-
-            $idex++;
-        }
-
-        $html .= "</div>"                       // displayStyle }
+                                            array($ownerStr => $ownerUrl))
               .  $this->view->paginationControl($paginator,
                                                 null,        // style
                                                 'paginationControl.phtml',
-                                                array('excludeInfo' => true))
-              .  "<div class='displaySort'>"    // displaySort {
-              .   "<label   for='itemsSortBy'>Sorted by</label>"
-              .   "<select name='itemsSortBy' "
-              .             "id='itemsSortBy' "
-              .          "class='sort-by sort-by-{$sortBy} "
-              .                  "ui-input ui-state-default ui-corner-all'>";
-
-        foreach (self::$sortTitles as $key => $title)
-        {
-            $html .= $this->renderOption('sortBy',
-                                         $key,
-                                         $title,
-                                         $key == $sortBy);
-        }
-
-        $html .=  "</select>"
-              .   "<div class='sort-order sort-order-{$sortOrder}'>";
-
-        $idex = 0;
-        foreach (self::$orderTitles as $key => $title)
-        {
-            $html .= $this->renderOption('itemsSortOrder',
-                                         $key,
-                                         $title,
-                                         $key == $sortOrder,
-                                         'radio',
-                                         'itemsSortOrder-'. $idex,
-                                         'ui-icon ui-icon-triangle-1-'
-                                          . ($key ===
-                                              Model_UserItemSet::SORT_ORDER_ASC
-                                                ? 'n'
-                                                : 's'),
-                                          ($key ===
-                                              Model_UserItemSet::SORT_ORDER_ASC
-                                                ? 'ui-corner-top'
-                                                : 'ui-corner-bottom'));
-
-            $idex++;
-        }
-
-        $html .=  "</div>"  // sort-order
-              .  "</div>"   // displaySort }
-              . "</div>";   // displayOptions }
+                                                array('excludeInfo' => true,
+                                                      'cssClass'    =>
+                                                            'pagination-top'))
+              .  $this->_renderDisplayOptions($style, $sortBy, $sortOrder);
 
         if (count($paginator))
         {
             $html .= "<ul class='items'>";
 
+            $show = self::$styleParts[$style];
             foreach ($paginator as $idex => $userItem)
             {
                 $html .= $this->view->partial('userItem.phtml',
                                               array(
                                                   'index'    =>  $idex,
                                                   'userItem' => &$userItem,
-                                                  'viewer'   => &$viewer));
+                                                  'viewer'   => &$viewer,
+                                                  'showParts'=> &$show));
             }
 
             $html .= "</ul>";
@@ -424,14 +451,260 @@ function init_userItems()
         return $html;
     }
 
-    protected function renderOption($name,
-                                    $value,
-                                    $title,
-                                    $isOn       = false,
-                                    $type       = 'option',
-                                    $id         = null,
-                                    $css        = '',
-                                    $corner     = 'ui-corner-all')
+    protected function _renderDisplayOptions($style, $sortBy, $sortOrder)
+    {
+        $html = "<div class='displayOptions'>"      // displayOptions {
+              .  "<div class='control ui-state-default'>"
+              .   "<a >Display Options</a>"
+              .   "<div class='ui-icon ui-icon-triangle-1-s'>"
+              .    "&nbsp;"
+              .   "</div>"
+              .  "</div>"
+              .  "<form style='display:none;'>";   // form {
+
+        $html .=  "<div class='field sortBy'>"  // itemsSortBy {
+              .    "<label   for='itemsSortBy'>Sorted by</label>"
+              .    "<select name='itemsSortBy' "
+              .              "id='itemsSortBy' "
+              .           "class='sort-by sort-by-{$sortBy} "
+              .                   "ui-input ui-state-default ui-corner-all'>";
+
+        foreach (self::$sortTitles as $key => $title)
+        {
+            $html .= $this->_renderOption('sortBy',
+                                          $key,
+                                          $title,
+                                          $key == $sortBy);
+        }
+
+        $html .=   "</select>"
+              .   "</div>";                             // itemsSortBy }
+
+
+        $html .=  "<div class='field sortOrder'>"       // itemsSortOrder {
+              .    "<label for='itemSortOrder'>Sort order</label>";
+
+        foreach (self::$orderTitles as $key => $title)
+        {
+            $html .= "<div class='field'>"
+                  .   "<input type='radio' name='itemsSortOrder' "
+                  .                         "id='itemsSortOrder-{$key}' "
+                  .                      "value='{$key}'"
+                  .          ($key == $sortOrder
+                                 ? " checked='true'" : "" ). " />"
+                  .   "<label for='itemsSortOrder-{$key}'>{$title}</label>"
+                  .  "</div>";
+        }
+
+        $html .=   "<br class='clear' />"
+              .   "</div>";                             // itemsSortOrder }
+
+        $html .=  "<div class='field displayStyle'>"    // itemsStyle {
+              .    "<label for='itemsStyle'>Display</label>";
+
+        $idex       = 0;
+        $titleCount = count(self::$styleTitles);
+        $parts      = array();
+        foreach (self::$styleTitles as $key => $title)
+        {
+            $itemHtml = '';
+            $cssClass = 'option';
+
+            if ($key === self::STYLE_CUSTOM)
+            {
+                $itemHtml .= "<div class='{$cssClass} control ui-state-default'>";
+                $cssClass  = '';
+            }
+
+            if ($key == $style)
+                $itemHtml .= "<b class='{$cssClass}'>{$title}</b>";
+            else
+                $itemHtml .= "<a class='{$cssClass}' "
+                          .      "href='?itemsStyle={$key}'>{$title}</a>";
+
+            if ($key === self::STYLE_CUSTOM)
+            {
+                $itemHtml .=  "<div class='ui-icon ui-icon-triangle-1-s'>"
+                          .    "&nbsp;"
+                          .   "</div>"
+                          .  "</div>";
+            }
+
+            array_push($parts, $itemHtml);
+
+            /*
+            $html .= $this->_renderOption('itemsStyle',
+                                          $key,
+                                          $title,
+                                          $key == $style,
+                                          'radio',
+                                          'itemsStyle-'. $idex,
+                                          $key,
+                                          ($idex === 0
+                                            ? 'ui-corner-left'
+                                            : ($idex < ($titleCount - 1)
+                                                    ? ''
+                                                    : 'ui-corner-right')));
+
+            $idex++;
+             */
+        }
+        $html .= implode("<span class='comma'>, </span>", $parts);
+
+
+        if ($style == self::STYLE_CUSTOM)
+        {
+            /* The custom style selections should have already been assigned to
+             *  Connexions_View_Helper_HtmlUserItems::$styleParts[
+             *      Connexions_View_Helper_HtmlUserItems::STYLE_CUSTOM]
+             *
+             */
+            $show = self::$styleParts[$style];
+        }
+        else
+            $show = self::$styleParts[$style];
+
+        $html .=   sprintf("<fieldset class='custom items'%s>",
+                            ($style !== self::STYLE_CUSTOM
+                                ? " style='display:none;'"
+                                : ""),
+                            ($style !== self::STYLE_CUSTOM
+                                ? " disabled='true'"
+                                : ""));
+                        
+        $html .=    "<div class='label'>Custom display</div>"
+              .     "<div class='item'>"
+              .      "<div class='meta'>"
+              .       "<div class='field countTaggers'>"
+              .        "<input type='checkbox' "
+              .               "name='itemsStyleCustom[countTaggers]' "
+              .                 "id='display-countTaggers'"
+              .              ( $show['meta:countTaggers']
+                                ? " checked='true'"
+                                : ''). " />"
+              .        "<label for='display-countTaggers'>user count</label>"
+              .       "</div>"
+              .       "<div class='field rating'>"
+              .        "<input type='checkbox' "
+              .               "name='itemsStyleCustom[rating]' "
+              .                 "id='display-rating'"
+              .              ( $show['meta:rating:stars:average'] ||
+                               $show['meta:rating:stars:owner']
+                                ? " checked='true'"
+                                : ''). " />"
+              .        "<label for='display-rating'>Rating stars</label>"
+              .        "<div class='meta'>"
+              .         "<input type='checkbox' "
+              .                "name='itemsStyleCustom[ratingMeta]' "
+              .                  "id='display-ratingMeta'"
+              .               ( $show['meta:rating:meta']
+                                 ? " checked='true'"
+                                 : ''). " />"
+              .         "<label for='display-ratingMeta'>Rating info</label>"
+              .        "</div>"
+              .       "</div>"
+              .      "</div>"
+              .      "<div class='data'>"
+              .       "<h4 class='field itemName'>"
+              .        "<input type='checkbox' "
+              .               "name='itemsStyleCustom[itemName]' "
+              .                 "id='display-itemName'"
+              .              ( $show['itemName']
+                                ? " checked='true'"
+                                : ''). " />"
+              .        "<label for='display-itemName'>Title</label>"
+              .       "</h4>"
+              .       "<div class='field url'>"
+              .        "<input type='checkbox' "
+              .               "name='itemsStyleCustom[url]' "
+              .                 "id='display-url'"
+              .              ( $show['url']
+                                ? " checked='true'"
+                                : ''). " />"
+              .        "<label for='display-url'>url</label>"
+              .       "</div>"
+              .       "<div class='field description'>"
+              .        "<input type='checkbox' "
+              .               "name='itemsStyleCustom[description]' "
+              .                 "id='display-description'"
+              .              ( $show['description']
+                                ? " checked='true'"
+                                : ''). " />"
+              .        "<label for='display-description'>description</label>"
+              .       "</div>"
+              .       "<br class='clear' />"
+              .       "<div class='field userName'>"
+              .        "<input type='checkbox' "
+              .               "name='itemsStyleCustom[userName]' "
+              .                 "id='display-userName'"
+              .              ( $show['userName']
+                                ? " checked='true'"
+                                : ''). " />"
+              .        "<label for='display-userName'>User Name</label>"
+              .       "</div>"
+              .       "<div class='field tags'>"
+              .        "<input type='checkbox' "
+              .               "name='itemsStyleCustom[tags]' "
+              .                 "id='display-tags' "
+              .                              "class='tag' "
+              .              ( $show['tags']
+                                ? " checked='true'"
+                                : ''). " />"
+              .        "<label for='display-tags' class='tag ui-state-default'>"
+              .         "tags"
+              .        "</label>"
+              .        "<label class='tag ui-state-default'> ... </label>"
+              .        "<label class='tag ui-state-default'> ... </label>"
+              .        "<label class='tag ui-state-default'> ... </label>"
+              .        "<label class='tag ui-state-default'> ... </label>"
+              .       "</div>"
+              .       "<br class='clear' />"
+              .       "<div class='dates'>"
+              .        "<div class='field tagged'>"
+              .         "<input type='checkbox' "
+              .               "name='itemsStyleCustom[dateTagged]' "
+              .                 "id='display-dateTagged'"
+              .              ( $show['dates:tagged']
+                                ? " checked='true'"
+                                : ''). " />"
+              .         "<label for='display-dateTagged'>date:Tagged</label>"
+              .        "</div>"
+              .        "<div class='field updated'>"
+              .         "<input type='checkbox' "
+              .               "name='itemsStyleCustom[dateUpdated]' "
+              .                 "id='display-dateUpdated'"
+              .              ( $show['dates:updated']
+                                ? " checked='true'"
+                                : ''). " />"
+              .         "<label for='display-dateUpdated'>date:Updated</label>"
+              .        "</div>"
+              .       "</div>"
+              .       "<br class='clear' />"
+              .      "</div>"
+              .     "</div>"
+              .     "<div class='buttons'>"
+              .      "<button type='submit' class='ui-button ui-state-default' "
+              .              "name='itemsStyle' "
+              .             "value='custom'>save</button>"
+              .     "</div>"
+              .    "</fieldset>";
+
+        $html .=  "</div>";                     // itemsStyle }
+
+        $html .= "</form>"  // form }
+              . "</div>";   // displayOptions }
+
+        return $html;
+    }
+
+    protected function _renderOption($name,
+                                     $value,
+                                     $title,
+                                     $isOn       = false,
+                                     $type       = 'option',
+                                     $id         = null,
+                                     $css        = '',
+                                     $corner     = 'ui-corner-all')
     {
         $html = '';
 

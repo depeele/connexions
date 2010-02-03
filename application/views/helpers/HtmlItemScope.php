@@ -38,29 +38,22 @@ function init_itemScope()
      */
     $itemScope.find('input[emptyText]').input();
 
-    var $pForm  = $itemScope.parent('form');
-    if ($pForm.length < 1)
-    {
-        // Wrap our scope in a form
-        $pForm = $itemScope.wrap('<form />');
-    }
+    var $pForm  = $itemScope.closest('form');
 
     // Add an on-submit handler to our parent form
     $pForm.submit(function() {
         // Changing scope - adjust the form...
-        var scope   = $input.input('val');  //).val();
+        var scope   = $input.input('val');
 
-        // Change the form action to include the new scope
-        var action  = $pForm.attr('action') +'/'+ scope;
-        $pForm.attr('action', action);
+        if (scope.length > 0)
+        {
+            // Change the form action to include the new scope
+            var action  = $pForm.attr('action') +'/'+ scope;
+            $pForm.attr('action', action);
+        }
 
-        /* Disable scope, page numbers, isPrivate and isFavorite -- this
-         * removes these items from form serialization.
-         */
+        // Disable scope -- this removes these items from form serialization.
         $input.attr('disabled', true);
-        $pForm.find('input[name=page],button[name=page],'+
-                    'input[name=isPrivate],input[name=isFavorite]')
-                        .attr('disabled', true);
 
         var ser = $pForm.serialize();
         var a   = 1;
@@ -96,7 +89,7 @@ function init_itemScope()
     {
         $this->_initialize();
 
-        $html = "<div class='itemScope'>"   // itemScope {
+        $html = "<form class='itemScope'>"  // itemScope {
               .   "<ul>";
 
         $url    = '';
@@ -177,7 +170,7 @@ function init_itemScope()
               .   "</li>"
               .  "</ul>"
               .  "<br class='clear' />"
-              . "</div>";    // itemScope }
+              . "</form>";   // itemScope }
         
         return $html;
     }

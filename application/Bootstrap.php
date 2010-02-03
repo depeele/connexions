@@ -1,5 +1,8 @@
 <?php
 
+//error_reporting(E_ERROR);
+error_reporting(E_ALL);
+
 require_once('Connexions.php');
 require_once('Connexions/Autoloader.php');
 

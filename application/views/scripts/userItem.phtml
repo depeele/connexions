@@ -7,12 +7,18 @@
  *  members/methods:
  *      userItem        The Model_UserItem instance to present.
  *      viewer          The Model_User     instance of the current viewer
+ *      showParts       The parts to present
+                        (see Connexions_View_Helper_HtmlUserItems::$styleParts)
  */
 if ((! @isset($this->userItem)) ||
     (! $this->userItem instanceof Model_UserItem))
 {
     return;
 }
+
+if (! @isset($this->showParts))
+    $this->showParts = Connexions_View_Helper_HtmlUserItems::$styleParts[
+                        Connexions_View_Helper_HtmlUserItems::STYLE_REGULAR];
 
 /*
 printf ("<li class='item'>Item %s: %s </li>\n",
@@ -35,8 +41,9 @@ if ($item->isPrivate)   array_push($itemClasses, 'private');
 
 ?>
 <li class='item <?php echo implode(' ', $itemClasses) ?>'>
- <div class='status'>
-  <?php
+ <form class='userItem'>
+  <div class='status'>
+   <?php
     if ($isOwner)
     {
         printf (  "<div class='favorite'>"
@@ -48,147 +55,181 @@ if ($item->isPrivate)   array_push($itemClasses, 'private');
                 ($item->isFavorite ? " checked='true'" : ""),
                 ($item->isPrivate  ? " checked='true'" : "") );
     }
-
-  ?>
- </div>
- <div class='meta'>
-  <?php
-    printf (  "<a class='countTaggers' href='%s'>%d</a>"
-            . "<div class='rating'>"        // rating {
-            .  "<div class='stars'>",       // stars {
-            $this->url(array('action'   => 'url',
-                             'urlHash'  => $item->item->urlHash)),
-            $item->item->userCount);
-
-    if ( $item->item->ratingCount > 0 )
-    {
-        printf("<div class='average%s'>",   // stars .average {
-               ($isOwner ? " average-owner"
-                         : ""));
-
-        $avgRating = $item->item->ratingSum / $item->item->ratingCount;
-        $rating    = ceil( ($avgRating * 2.0) );
-
-        for ($rdex = 0; $rdex < 11; $rdex++)
-        {
-            printf ("<input type='radio' name='rating' value='%s' "
-                    .                              "disabled='true'%s/>",
-                    $rdex,
-                    ($rating == $rdex
-                        ? "checked='true' "
-                        : ""));
-        }
-
-        echo "</div>";                      // stars .average }
-    }
-
-    if ( $isOwner )
-    {
-        $rating = $item->item->rating;
-
-        echo "<div class='owner'>";         // stars .owner {
-
-        for ($rdex = 0; $rdex < 6; $rdex++)
-        {
-            printf ("<input type='radio' name='rating' value='%s' %s/>",
-                    $rdex,
-                    ($rating == $rdex
-                        ? "checked='true' "
-                        : ""));
-        }
-
-        echo "</div>";                      // stars .owner }
-    }
-
-    echo       "</div>";    // stars }
-
-    if ( $item->item->ratingCount > 0 )
-    {
-        printf(   "<div class='meta'>"
-               .   "<span class='count'>%d</span> raters, "
-               .   "<span class='average'>%3.2f</span> avg."
-               .  "</div>",
-               $item->item->ratingCount,
-               $item->item->ratingSum / $item->item->ratingCount);
-    }
-
-
-    echo  "</div>";     // rating }
-  ?>
- </div>
- <div class='data'>
-  <h4 class='itemName'>
+   ?>
+  </div>
+  <div class='meta'>
    <?php
+    if ($this->showParts['meta:countTaggers'])
+    {
+        printf (  "<a class='countTaggers' href='%s'>%d</a>",
+                $this->url(array('action'   => 'url',
+                                 'urlHash'  => $item->item->urlHash)),
+                $item->item->userCount);
+    }
+
+    if ( ($this->showParts['meta:rating:stars:average'] ||
+          $this->showParts['meta:rating:stars:owner'] ||
+          $this->showParts['meta:rating:meta'] ) &&
+         ( ($item->item->ratingCount > 0) ||
+           $isOwner) )
+    {
+
+        echo  "<div class='rating'>";       // rating {
+
+        if ($this->showParts['meta:rating:stars:average'] ||
+            $this->showParts['meta:rating:stars:owner'])
+        {
+            echo   "<div class='stars'>";       // stars {
+
+            if ( $this->showParts['meta:rating:stars:average'] &&
+                 ($item->item->ratingCount > 0) )
+            {
+                $ratingAvg = $item->item->ratingSum / $item->item->ratingCount;
+
+                echo $this->htmlStarRating($ratingAvg,
+                                           ($isOwner
+                                                ? "average-owner"
+                                                : "average"),
+                                           true,    // read-only
+                                           // Title
+                                           sprintf("%d raters, %5.2f avg.",
+                                                   $item->item->ratingCount,
+                                                   $ratingAvg));
+            }
+         
+            if ( $this->showParts['meta:rating:stars:owner'] &&
+                 $isOwner )
+            {
+                echo $this->htmlStarRating($item->rating, 'owner');
+            }
+
+            echo       "</div>";    // stars }
+        }
+
+        if ( $this->showParts['meta:rating:meta'] &&
+            ($item->item->ratingCount > 0) )
+        {
+            printf(   "<div class='meta'>"
+                   .   "<span class='count'>%d</span> raters, "
+                   .   "<span class='average'>%3.2f</span> avg."
+                   .  "</div>",
+                   $item->item->ratingCount,
+                   $item->item->ratingSum / $item->item->ratingCount);
+        }
+
+        echo  "</div>";     // rating }
+    }
+   ?>
+  </div>
+  <div class='data'>
+   <?php
+    if ($this->showParts['itemName'])
+    {
+        ?>
+   <h4 class='itemName'>
+    <?php
     printf ("<a href='%s' title='%s'>%s</a>",
             $item->item->url, $item->item->urlHash,
             htmlspecialchars($item->name));
-   ?>
-   <div class='control'>
-    <?php
-    if ($isOwner)
-    {
-        printf (   "<a class='item-edit'   href='%s'>edit</a> | "
-                .  "<a class='item-delete' href='%s'>delete</a>",
-                $this->url(array('action' => 'itemEdit',
-                                 'item'   => $item->itemId)),
-                $this->url(array('action' => 'itemDelete',
-                                 'item'   => $item->itemId)) );
-    }
-    else
-    {
-        $saveUrl = $this->url(array('action'       => 'post'))
-                 .      '?name='.        urlencode($item->name)
-                 .      '&url='.         urlencode($item->item->url)
-                 .      '&description='. urlencode($item->description)
-                 .      '&tags='.        urlencode($item->tags->__toString());
-
-        printf (   "<a class='item-save'   href='%s'>save</a>",
-                $saveUrl);
-    }
     ?>
-   </div>
-  </h4>
-  <div class='url'>
-  <?php
+    <div class='control'>
+     <?php
+        if ($isOwner)
+        {
+            printf (   "<a class='item-edit'   href='%s'>edit</a> | "
+                    .  "<a class='item-delete' href='%s'>delete</a>",
+                    $this->url(array('action' => 'itemEdit',
+                                     'item'   => $item->itemId)),
+                    $this->url(array('action' => 'itemDelete',
+                                     'item'   => $item->itemId)) );
+        }
+        else
+        {
+            $saveUrl = $this->url(array('action'       => 'post'))
+                     .  '?name='.        urlencode($item->name)
+                     .  '&url='.         urlencode($item->item->url)
+                     .  '&description='. urlencode($item->description)
+                     .  '&tags='.        urlencode($item->tags->__toString());
+
+            printf (   "<a class='item-save'   href='%s'>save</a>",
+                    $saveUrl);
+        }
+     ?>
+    </div>
+   </h4>
+    <?php
+    }
+
+    if ($this->showParts['url'])
+    {
+        ?>
+   <div class='url'>
+    <?php
     printf ("<a href='%s' title='%s'>%s</a>",
             $item->item->url, $item->item->urlHash, $item->item->url);
-  ?>
-  </div>
-  <br class='clear' />
-  <?php
-    if (! @empty($item->description) )
+    ?>
+   </div>
+    <?php
+    }
+
+    if ( $this->showParts['description'] &&
+         (! @empty($item->description)) )
     {
         printf ("<div class='description'>%s</div>",
                 htmlspecialchars($item->description));
     }
-  ?>
-  <div class='userName'>
-   <?php
+
+    if ($this->showParts['userName'])
+    {
+   ?>
+   <br class='clear' />
+   <div class='userName'>
+    <?php
     printf ("<a href='%s' title='%s'>%s</a>",
             $this->url(array('action'   => $item->user->name)),
             $item->user->fullName, $item->user->name);
-  
-   ?>
-  </div>
-  <ul class='tags'>
-   <?php
+    ?>
+   </div>
+    <?php
+    }
+
+    if ($this->showParts['tags'])
+    {
+        ?>
+   <ul class='tags'>
+    <?php
     foreach ($item->tags as $tag)
     {
         printf ("<li class='tag ui-state-default'><a href='%s'>%s</a></li>",
                 $this->url(array('action'   => 'tagged',
                                  'tag'      => $tag->tag)), $tag->tag);
     }
-   ?>
-  </ul>
-  <br class='clear' />
-  <div class='dates'>
-   <?php
-    printf (  "<div class='tagged'>%s</div>"
-            . "<div class='updated'>%s</div>",
-            $item->taggedOn,
-            $item->updatedOn);
-   ?>
+    ?>
+   </ul>
+   <br class='clear' />
+    <?php
+    }
+
+    if ( $this->showParts['dates:tagged'] ||
+         $this->showParts['dates:updated'] )
+    {
+        ?>
+   <div class='dates'>
+    <?php
+        if ($this->showParts['dates:tagged'])
+            printf ("<div class='tagged'>%s</div>",
+                    $item->taggedOn);
+
+        if ($this->showParts['dates:updated'])
+            printf ("<div class='updated'>%s</div>",
+                    $item->updatedOn);
+    ?>
+   </div>
+   <br class='clear' />
+    <?php
+    }
+
+    ?>
   </div>
-  <br class='clear' />
- </div>
+ </form>
 </li>

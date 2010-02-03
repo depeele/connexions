@@ -127,7 +127,7 @@ class Connexions_Controller_Route
 
         $parts = explode('/', strtolower(trim($path, '/')) );
 
-        // /*
+        /*
         Connexions::log("Connexions_Controller_Route::match: "
                             . "path[ {$path} ], "
                             . "parts[ ". implode(':',$parts) ." ]");
@@ -181,9 +181,10 @@ class Connexions_Controller_Route
             if (! @is_array($route))
                 break;
 
+            $newRoute = null;
             foreach ($route as $key => $val)
             {
-                // /*
+                /*
                 Connexions::log("Connexions_Controller_Route::match: Route: "
                                     . "key[ {$key} ], "
                                     . "part#{$idex}[ {$parts[$idex]} ]");
@@ -197,31 +198,33 @@ class Connexions_Controller_Route
                         // Pre-defined value
                         $params[$name] = $val;
                     }
-                    else
+                    else if (@isset($parts[$idex]))
                     {
                         // Pull the value from the URL
                         $params[$name] = $parts[$idex];
                         $idex++;
 
-                        $route =& $val;
+                        $newRoute = $val;
                         break;
                     }
                 }
-                else if (strcasecmp($key, $parts[$idex]) === 0)
+                else if ( (@isset($parts[$idex])) &&
+                          (strcasecmp($key, $parts[$idex]) === 0) )
                 {
                     // This is a non-parametric node that defines the action
                     $params['action'] = $key;
                     $idex++;
 
-                    $route =& $val;
+                    $newRoute = $val;
                     break;
                 }
             }
+            $route = $newRoute;
         }
 
         if (($idex < $nParts) && (! $partial))
         {
-            // /*
+            /*
             Connexions::log("Connexions_Controller_Route::match: ERROR");
             // */
 
@@ -229,7 +232,7 @@ class Connexions_Controller_Route
             return false;
         }
 
-        // /*
+        /*
         Connexions::log(
                 sprintf("Connexions_Controller_Route::match: "
                             . "Params [ %s ]",
