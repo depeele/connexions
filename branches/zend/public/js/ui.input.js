@@ -300,8 +300,9 @@ $.widget("ui.input", {
 
         if (this.options.emptyText !== null)
         {
-            if ( ((force === true) || (! this.element.is(':focus')) ) &&
-                (this.element.val().length < 1) )
+            //if ( ((force === true) || (! this.element.is(':focus')) ) &&
+            //    (this.element.val().length < 1) )
+            if ( (force === true) || (this.element.val().length < 1) )
             {
                 this.element.val(this.options.emptyText);
             }
