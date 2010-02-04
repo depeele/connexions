@@ -33,15 +33,31 @@ class Connexions
             return;
 
         if ($priority === null)
-            $priority = Zend_Log::INFO;
+            $priority = Zend_Log::DEBUG;
 
         if (self::$_log === null)
         {
-            //$writer = new Zend_Log_Writer_Firebug();
-            #$writer = new Zend_Log_Writer_Stream('/tmp/connexions-log.txt');
-            $writer = new Zend_Log_Writer_Stream('c:/wamp/logs/connexions-log.txt');
-            self::$_log = new Zend_Log($writer);
+            /* Logging is established on boot via:
+             *      application/Bootstrap.php
+             *          Bootstrap::_initLog()
+             *
+             * using data from:
+             *      application/configs/application.ini
+             *          resources.log.*
+             */
+            try
+            {
+                self::$_log = Zend_Registry::get('log');
+            }
+            catch (Zend_Exception $e)
+            {
+                // Don't try retrieving from the registry every time...
+                self::$_log = -1;
+            }
         }
+
+        if (! self::$_log instanceof Zend_Log)
+            return;
 
         self::$_log->log($message, $priority);
     }
