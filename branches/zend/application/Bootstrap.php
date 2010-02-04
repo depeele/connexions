@@ -1,7 +1,6 @@
 <?php
 
-//error_reporting(E_ERROR);
-error_reporting(E_ALL);
+//error_reporting(E_ALL);
 
 require_once('Connexions.php');
 require_once('Connexions/Autoloader.php');
@@ -41,8 +40,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         // Load ANY namespace
         $autoLoader->setFallbackAutoloader(true);
 
-        //Connexions::log('Bootstrap::Autoloader initialized');
-
         return $autoLoader;
 
         /*
@@ -53,6 +50,30 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
         return $autoLoader;
         */
+    }
+
+    protected function _initLogging()
+    {
+        $config = $this->getPluginResource('log');
+
+        try
+        {
+            $log = $config->init();
+        }
+        catch (Exception $e)
+        {
+            echo "<pre>*** Log Initialization error\n",
+                    print_r($e, true),
+                 "</pre>\n";
+            die;
+
+        }
+
+        Zend_Registry::set('log', $log);
+
+        Connexions::log('Bootstrap::Logging initialized');
+
+        return $log;
     }
 
     protected function _initRoute()

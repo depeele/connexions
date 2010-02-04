@@ -15,9 +15,9 @@
  * @category    ZendX
  * @package     ZendX_JQuery
  * @subpackage  View
- * @copyright   Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
  * @license     http://framework.zend.com/license/new-bsd     New BSD License
- * @version     $Id: JQuery.php 15478 2009-05-10 09:02:43Z beberlei $
+ * @version     $Id: JQuery.php 20165 2010-01-09 18:57:56Z bkarwin $
  */
 
 /**
@@ -30,7 +30,7 @@ require_once "Zend/Json.php";
  *
  * @todo       Offer convenience methods to add a tab or accordion container/pane combination.
  * @package    ZendX_JQuery
- * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
   */
 class ZendX_JQuery
@@ -79,25 +79,6 @@ class ZendX_JQuery
      * @const string File path after base and version
      */
     const CDN_JQUERY_PATH_GOOGLE = '/jquery.min.js';
-
-    /**
-     * @see http://code.google.com/apis/ajaxlibs/
-     * @const string The URL of google's jsapi that provides google.load()
-     */
-    const CDN_AJAX_API_LOADER  = 'http://www.google.com/jsapi';
-
-    /**
-     * @see http://code.google.com/apis/ajaxlibs/documentation/index.html#jquery
-     * @const string The name the loader uses for the jQuery library.
-     */
-    const CDN_LOADER_JQUERY    = 'jquery';
-
-    /**
-     * @see http://code.google.com/apis/ajaxlibs/documentation/index.html#jqueryui
-     * @const string The name the loader uses for the jQuery.ui library.
-     */
-    const CDN_LOADER_JQUERYUI  = 'jqueryui';
-
 
     /**
      * Which parts of the the jQuery library should be rendered on echo'ing
