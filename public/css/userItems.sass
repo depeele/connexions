@@ -1,3 +1,4 @@
+@import widths
 @import colors
 
 !displaySortOffset  = 5px
@@ -91,7 +92,7 @@
           .itemName
             padding-bottom: 0.5em
 
-          .url, .description
+          .url, .description, .descriptionSummary
             margin:         0
 
           .rating
@@ -132,6 +133,7 @@
 
 .items
   clear:          both
+  border-bottom = "1px solid" !borderColor
   .item
     position:       relative
     z-index:        1
@@ -143,7 +145,7 @@
       position:   absolute
       top:        0
       left:       0
-      width:      20px
+      width =     !controlBoxWidth
       height:     100%
       z-index:    3
       .checkbox
@@ -164,12 +166,13 @@
       display:      inline
       //position:     absolute
       //top:          0.25em
-      //right:        100px
+      //right =       !countBoxWidth
       font-size:    0.75em
       border:       0
       padding:      0 0 0 2em
       margin:       0
       font-weight:  normal
+      white-space:  pre
       z-index:      3
 
       a
@@ -180,7 +183,7 @@
     .meta
       position:   relative
       float:      right
-      width:      100px
+      width =     !countBoxWidth
       padding:    0 0 0 4px
       text-align: right
       z-index:    2
@@ -286,19 +289,24 @@
       // Item Url
       .url
         padding:    0 0 0 1em
-        margin:     0 175px 0 0
+        max-width = !urlBoxWidth
+
+        // IE6 fix
+        *width    = !urlBoxWidth
+
         a
           display:      inline
           font-weight:  normal
 
-      // Item Description
-      .description
+      // Item Description / Description Summary
+      .description, .descriptionSummary
         display:    block
         padding:    0 0 0 1em
         margin:     0 175px 0 0
+        color =     !controlColor
 
       // User Name
-      .userName
+      .userId
         display:    block
         float:      left
         font-size:  0.9em
@@ -313,6 +321,7 @@
         padding:    0.5em 0
         margin:     0
         text-align: right
+        //width:      45%
 
         // Individual tag
         .tag
@@ -336,14 +345,35 @@
         .updated
           float:      right
         
+  // Item (mine)
   .mine
+    min-height:   45px
     .data
       padding:    0.25em 0 0 32px
 
-      .userName
+      .userId
         display:  none
 
   // Item (private)
   .private
     .status
       background-color =  !borderColor
+
+  // Item (minimized)
+  .minimized
+    clear:        left
+    .control
+      float:      right
+      padding:    0
+      font-size:  0.9em
+    .data
+      .userId, .itemName, .descriptionSummary
+        display:  block
+        float:    left
+        margin:   0
+      .userId
+        width:    5em
+        padding:  0.25em 0
+        overflow: hidden
+      .descriptionSummary
+        padding:  0 0.5em
