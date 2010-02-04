@@ -121,14 +121,14 @@ function init_displayOptions()
     var $displayOptions = $('.displayOptions');
     var $control        = $displayOptions.find('.control:first');
 
-    $control.hover( // in
+    $control/*.hover( // in
                     function(e) {
                         $control.addClass('ui-state-hover');
                     },
                     // out
                     function(e) {
                         $control.removeClass('ui-state-hover');
-                    })
+                    })*/
             .click(function(e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -144,14 +144,14 @@ function init_displayOptions()
     var $displayStyle   = $displayOptions.find('.displayStyle');
     var $cControl       = $displayStyle.find('.control:first');
 
-    $cControl.hover(// in
+    $cControl/*.hover(// in
                     function(e) {
                         $cControl.addClass('ui-state-hover');
                     },
                     // out
                     function(e) {
                         $cControl.removeClass('ui-state-hover');
-                    })
+                    })*/
             .click(function(e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -162,6 +162,19 @@ function init_displayOptions()
     $cControl.find('a:first,b:first,.ui-icon:first')
                                          // Let it bubble up
                     .click(function(e) { e.preventDefault(); });
+
+    // Hover effects
+    $('.displayOptions .control, .displayOptions select, '+
+      '.displayOptions button,'+
+      '.pagination button,       .pagination select').hover(
+                    // in
+                    function(e) {
+                        $(this).addClass('ui-state-hover');
+                    },
+                    // out
+                    function(e) {
+                        $(this).removeClass('ui-state-hover');
+                    });
 
     return;
 
@@ -460,7 +473,8 @@ function init_userItems()
               .    "&nbsp;"
               .   "</div>"
               .  "</div>"
-              .  "<form style='display:none;'>";   // form {
+              .  "<form style='display:none;' "
+              .        "class='ui-state-active'>";  // form {
 
         $html .=  "<div class='field sortBy'>"  // itemsSortBy {
               .    "<label   for='itemsSortBy'>Sorted by</label>"
@@ -512,7 +526,10 @@ function init_userItems()
 
             if ($key === self::STYLE_CUSTOM)
             {
-                $itemHtml .= "<div class='{$cssClass} control ui-state-default'>";
+                $itemHtml .= "<div class='{$cssClass} control "
+                          .     ($style !== self::STYLE_CUSTOM
+                                    ? "ui-state-default"
+                                    : "ui-state-active") ."'>";
                 $cssClass  = '';
             }
 
@@ -572,7 +589,9 @@ function init_userItems()
                                 ? " disabled='true'"
                                 : ""));
                         
-        $html .=    "<div class='label'>Custom display</div>"
+        // Need 'legend' for vertical spacing control
+        $html .=    "<legend></legend>"
+              .     "<div class='label'>Custom display</div>"
               .     "<div class='item'>"
               .      "<div class='meta'>"
               .       "<div class='field countTaggers'>"
@@ -683,7 +702,8 @@ function init_userItems()
               .      "</div>"
               .     "</div>"
               .     "<div class='buttons'>"
-              .      "<button type='submit' class='ui-button ui-state-default' "
+              .      "<button type='submit' "
+              .             "class='ui-button ui-corner-all ui-state-default' "
               .              "name='itemsStyle' "
               .             "value='custom'>save</button>"
               .     "</div>"

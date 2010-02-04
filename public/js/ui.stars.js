@@ -10,6 +10,13 @@
  * $Date:: 2009-06-12 #$
  * $Build: 32 (2009-06-12)
  *
+ * Take control of pre-assembled HTML:
+ *  <div >
+ *    <div class='ui-stars ui-stars-cancel ...'><a ..></a></div>
+ *    <div class='ui-stars ui-stars-star ...'><a ..></a></div>
+ *    <div class='ui-stars ui-stars-star ...'><a ..></a></div>
+ *    ...
+ *  </div>
  * Depends:
  *  ui.core.js
  *
@@ -17,10 +24,10 @@
 (function($) {
 
 $.widget("ui.stars", {
-  version: "2.1.1",
+  version: "2.1.1a",
   options: {
     // Defaults
-    inputType: "radio", // radio|select
+    inputType: "div", // radio|select
     split: 0,
     disabled: false,
     cancelTitle: "Cancel Rating",
@@ -48,102 +55,25 @@ $.widget("ui.stars", {
   _create: function() {
     var self = this, o = this.options, id = 0;
 
-    o.isSelect = o.inputType == "select";
-    this.$form = $(this.element).closest("form");
-    this.$selec = o.isSelect ? $("select", this.element)  : null;
-    this.$rboxs = o.isSelect ? $("option", this.$selec)   : $(":radio", this.element);
+    //this.$stars  = $('.'+o.baseClass,   this.element);
+    this.$stars  = $('.'+o.starClass,   this.element);
+    this.$cancel = $('.'+o.cancelClass, this.element);
 
-    /*
-     * Map all inputs from $rboxs array to Stars elements
-     */
-    this.$stars = this.$rboxs.map(function(i)
-    {
-      var el = {
-        value:      this.value,
-        title:      (o.isSelect ? this.text : this.title) || this.value,
-        isDefault:  (o.isSelect && this.defaultSelected) || this.defaultChecked
-      };
-
-      if(i==0) {
-        o.split = typeof o.split != "number" ? 0 : o.split;
-        o.val2id = [];
-        o.id2val = [];
-        o.id2title = [];
-        o.name = o.isSelect ? self.$selec.get(0).name : this.name;
-        o.disabled = o.disabled || (o.isSelect ? $(self.$selec).attr("disabled") : $(this).attr("disabled"));
-      }
-
-      /*
-       * Consider it as a Cancel button?
-       */
-      if(el.value == o.cancelValue) {
-        o.cancelTitle = el.title;
-        return null;
-      }
-
-      o.val2id[el.value] = id;
-      o.id2val[id] = el.value;
-      o.id2title[id] = el.title;
-
-      if(el.isDefault) {
-        o.checked = id;
-        o.value = o.defaultValue = el.value;
-        o.title = el.title;
-      }
-
-      var $s = $("<div/>").addClass(o.baseClass +' '+ o.starClass);
-      var $a = $('<a/>').attr("title", o.showTitles ? el.title : "").text(el.value);
-
-
-      /*
-       * Prepare division settings
-       */
-      if(o.split) {
-        var oddeven = (id % o.split);
-        var stwidth = Math.floor(o.starWidth / o.split);
-        $s.width(stwidth);
-        $a.css("margin-left", "-" + (oddeven * stwidth) + "px");
-      }
-
-      id++;
-      return $s.append($a).get(0);
-    });
-
-    /*
-     * How many Stars?
-     */
-    o.items = id;
-
-    /*
-     * Remove old content
-     */
-    o.isSelect ? this.$selec.remove() : this.$rboxs.remove();
-
-    /*
-     * Append Stars interface
-     */
-    this.$cancel = $("<div/>").addClass(o.baseClass +' '+ o.cancelClass).append( $("<a/>").attr("title", o.showTitles ? o.cancelTitle : "").text(o.cancelValue) );
+    // How many Stars and how many are 'on'?
+    o.items = this.$stars.filter('.'+o.starClass).length;
+    o.value = this.$stars.filter('.'+o.starOnClass).length - 1;
+    if (o.value > 0) {
+        o.checked = o.defaultValue = o.value;
+    } else {
+        o.value = o.cancelValue;
+    }
 
     if (o.disabled)
         this.$cancel.addClass(o.cancelDisabledClass);
 
     //o.cancelShow &= !o.disabled && !o.oneVoteOnly;
     o.cancelShow &= !o.oneVoteOnly;
-    o.cancelShow && this.element.append(this.$cancel);
-    this.element.append(this.$stars);
-
-    /*
-     * Initial selection
-     */
-    if(o.checked === undefined) {
-      o.checked = -1;
-      o.value = o.defaultValue = o.cancelValue;
-      o.title = "";
-    }
-
-    this.$value = $('<input type="hidden" name="'+o.name+'" value="'+o.value+'" />');
-    this.element.append(this.$value);
-
+    //o.cancelShow && this.element.append(this.$cancel);
 
     /*
      * Attach stars event handler
@@ -153,9 +83,8 @@ $.widget("ui.stars", {
 
       var i = self.$stars.index(this);
       o.checked = i;
-      o.value = o.id2val[i];
-      o.title = o.id2title[i];
-      self.$value.attr({disabled: o.disabled ? "disabled" : "", value: o.value});
+      o.value   = i;
+      o.title   = $(this).find('a').attr('title');
 
       fillTo(i, false);
       self._disableCancel();
@@ -177,12 +106,11 @@ $.widget("ui.stars", {
      * Attach cancel event handler
      */
     this.$cancel.bind("click.stars", function(e) {
-      if(!o.forceSelect && (o.disabled || o.value == o.cancelValue)) return false;
+      if(!o.forceSelect && (o.disabled || o.value == o.cancelValue))
+        return false;
 
       o.checked = -1;
-      o.value = o.cancelValue;
-      o.title = "";
-      self.$value.val(o.value).attr({disabled: "disabled"});
+      o.value   = o.cancelValue;
 
       fillNone();
       self._disableCancel();
@@ -201,23 +129,13 @@ $.widget("ui.stars", {
       self.$stars.triggerHandler("mouseout.stars");
     });
 
-
-    /*
-     * Attach onReset event handler to the parent FORM
-     */
-    this.$form.bind("reset.stars", function(){
-      !o.disabled && self.select(o.defaultValue);
-    });
-
-
     /*
      * Clean up to avoid memory leaks in certain versions of IE 6
      */
     $(window).unload(function(){
       self.$cancel.unbind(".stars");
       self.$stars.unbind(".stars");
-      self.$form.unbind(".stars");
-      self.$selec = self.$rboxs = self.$stars = self.$value = self.$cancel = self.$form = null;
+      self.self.$stars = self.$cancel = null;
     });
 
 
@@ -228,9 +146,18 @@ $.widget("ui.stars", {
       if(index != -1) {
         var addClass = hover ? o.starHoverClass : o.starOnClass;
         var remClass = hover ? o.starOnClass    : o.starHoverClass;
-        self.$stars.eq(index).prevAll("." + o.starClass).andSelf().removeClass(remClass).addClass(addClass);
-        self.$stars.eq(index).nextAll("." + o.starClass).removeClass(o.starHoverClass + " " + o.starOnClass);
-        self._showCap(o.id2title[index]);
+
+        self.$stars.eq(index)
+                    .prevAll("." + o.starClass)
+                     .andSelf()
+                      .removeClass(remClass)
+                      .addClass(addClass)
+                     .end()
+                    .end()
+                    .nextAll("." + o.starClass)
+                     .removeClass(o.starHoverClass + " " + o.starOnClass);
+
+        self._showCap(self.$stars.eq(index).find('a').attr('title'));
       }
       else fillNone();
     };
@@ -252,9 +179,15 @@ $.widget("ui.stars", {
    * Private functions
    */
   _disableCancel: function() {
-    var o = this.options, disabled = o.disabled || o.oneVoteOnly || (o.value == o.cancelValue);
-    if(disabled)  this.$cancel.removeClass(o.cancelHoverClass).addClass(o.cancelDisabledClass);
-    else          this.$cancel.removeClass(o.cancelDisabledClass);
+    var o        = this.options,
+        disabled = o.disabled || o.oneVoteOnly || (o.value == o.cancelValue);
+
+    if(disabled)
+        this.$cancel.removeClass(o.cancelHoverClass)
+                    .addClass(o.cancelDisabledClass);
+    else
+        this.$cancel.removeClass(o.cancelDisabledClass);
+
     this.$cancel.css("opacity", disabled ? 0.5 : 1);
     return disabled;
   },
@@ -276,7 +209,10 @@ $.widget("ui.stars", {
     return this.options.value;
   },
   select: function(val) {
-    var o = this.options, e = (val == o.cancelValue) ? this.$cancel : this.$stars.eq(o.val2id[val]);
+    var o = this.options,
+        e = (val == o.cancelValue)
+                ? this.$cancel : this.$stars.eq(val);
+
     o.forceSelect = true;
     e.triggerHandler("click.stars");
     o.forceSelect = false;
@@ -296,11 +232,8 @@ $.widget("ui.stars", {
     this._disableAll();
   },
   destroy: function() {
-    this.options.isSelect ? this.$selec.appendTo(this.element) : this.$rboxs.appendTo(this.element);
-    this.$form.unbind(".stars");
-    this.$cancel.unbind(".stars").remove();
-    this.$stars.unbind(".stars").remove();
-    this.$value.remove();
+    this.$cancel.unbind(".stars");
+    this.$stars.unbind(".stars");
     this.element.unbind(".stars").removeData("stars");
   },
   callback: function(e, type) {

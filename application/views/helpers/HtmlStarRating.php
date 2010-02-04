@@ -39,10 +39,10 @@ class Connexions_View_Helper_HtmlStarRating extends Zend_View_Helper_Abstract
         
         for ($rdex = 0; $rdex < $onCount; $rdex++)
         {
-            $html .= sprintf(  "<div class='ui-stars ui-stars-star %s'>"
+            $html .= sprintf(  "<div class='ui-stars ui-stars-star "
+                             .             "ui-stars-star-on'>"
                              .  "<a title='%s'>&nbsp;</a>"
                              . "</div>",
-                             "ui-stars-star-on",
                              (! $readOnly
                                     ? $rdex + 1
                                     : ''));
