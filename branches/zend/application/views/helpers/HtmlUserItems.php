@@ -21,15 +21,24 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
 
     static public $styleParts       = array(
         self::STYLE_TITLE   => array(
+            // 'minimized'
+
+            // 'meta'
             'meta:countTaggers'         => true,
+            // 'meta:rating'
+            'meta:rating:meta'          => false,
+            // 'meta:rating:stars'
             'meta:rating:stars:average' => false,
             'meta:rating:stars:owner'   => false,
-            'meta:rating:meta'          => false,
+
             'itemName'                  => true,
             'url'                       => false,
+            'descriptionSummary'        => true,
             'description'               => false,
-            'userName'                  => false,
+            'userId'                    => true,
             'tags'                      => false,
+
+            // 'dates'
             'dates:tagged'              => false,
             'dates:updated'             => false
         ),
@@ -40,8 +49,9 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
             'meta:rating:meta'          => false,
             'itemName'                  => true,
             'url'                       => false,
+            'descriptionSummary'        => false,
             'description'               => true,
-            'userName'                  => true,
+            'userId'                    => true,
             'tags'                      => true,
             'dates:tagged'              => false,
             'dates:updated'             => false
@@ -53,8 +63,9 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
             'meta:rating:meta'          => true,
             'itemName'                  => true,
             'url'                       => true,
+            'descriptionSummary'        => false,
             'description'               => true,
-            'userName'                  => true,
+            'userId'                    => true,
             'tags'                      => true,
             'dates:tagged'              => true,
             'dates:updated'             => true
@@ -66,8 +77,9 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
             'meta:rating:meta'          => true,
             'itemName'                  => true,
             'url'                       => true,
+            'descriptionSummary'        => false,
             'description'               => true,
-            'userName'                  => true,
+            'userId'                    => true,
             'tags'                      => true,
             'dates:tagged'              => true,
             'dates:updated'             => true
@@ -92,235 +104,6 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
                     Model_UserItemSet::SORT_ORDER_ASC   => 'Ascending',
                     Model_UserItemSet::SORT_ORDER_DESC  => 'Descending'
                 );
-
-    protected function _initialize()
-    {
-        if (self::$_initialized)
-            return;
-
-        $view   =& $this->view;
-        $jQuery = $view->jQuery();
-
-        $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.js'))
-               ->addJavascriptFile($view->baseUrl('js/ui.stars.js'))
-               ->addJavascriptFile($view->baseUrl('js/ui.checkbox.js'))
-               ->addJavascriptFile($view->baseUrl('js/ui.button.js'))
-               ->addJavascriptFile($view->baseUrl('js/ui.input.js'))
-               ->addOnLoad('init_userItems();')
-               ->addOnLoad('init_displayOptions();')
-               ->javascriptCaptureStart();
-
-        ?>
-
-/************************************************
- * Initialize display options.
- *
- */
-function init_displayOptions()
-{
-    var $displayOptions = $('.displayOptions');
-    var $control        = $displayOptions.find('.control:first');
-
-    $control/*.hover( // in
-                    function(e) {
-                        $control.addClass('ui-state-hover');
-                    },
-                    // out
-                    function(e) {
-                        $control.removeClass('ui-state-hover');
-                    })*/
-            .click(function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                $displayOptions.find('form:first').toggle();
-                $control.toggleClass('ui-state-active');
-            });
-
-    $control.find('a:first, .ui-icon:first')
-                                         // Let it bubble up
-                    .click(function(e) {e.preventDefault(); });
-
-    var $displayStyle   = $displayOptions.find('.displayStyle');
-    var $cControl       = $displayStyle.find('.control:first');
-
-    $cControl/*.hover(// in
-                    function(e) {
-                        $cControl.addClass('ui-state-hover');
-                    },
-                    // out
-                    function(e) {
-                        $cControl.removeClass('ui-state-hover');
-                    })*/
-            .click(function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                $displayStyle.find('.custom.items').toggle();
-                $cControl.toggleClass('ui-state-active');
-            });
-    $cControl.find('a:first,b:first,.ui-icon:first')
-                                         // Let it bubble up
-                    .click(function(e) { e.preventDefault(); });
-
-    // Hover effects
-    $('.displayOptions .control, .displayOptions select, '+
-      '.displayOptions button,'+
-      '.pagination button,       .pagination select').hover(
-                    // in
-                    function(e) {
-                        $(this).addClass('ui-state-hover');
-                    },
-                    // out
-                    function(e) {
-                        $(this).removeClass('ui-state-hover');
-                    });
-
-    return;
-
-    /* Attach ui.input to the input field with defined 'emptyText' and a
-     * validation callback to enable/disable the submit button based upon
-     * whether or not there is text in the search box.
-    $displayOptions.find('input[emptyText]').input();
-     */
-
-    $displayOptions.fadeTo(100, 0.5)
-                   .hover(  // In
-                            function(event) {
-                                $(this).fadeTo(100, 1.0);
-                            },
-                            // Out
-                            function(event) {
-                                $(this).fadeTo(100, 0.5);
-                            }
-                   )
-                   // Resize the sort-order button widths
-                   .find('.sort-order .ui-radio-button')
-                                .width('16px');
-
-    /* Add logic to mirror the state of the underlying radio button to the
-     * container.  Also, when the container is clicked, toggle the underlying
-     * radio button.
-     */
-    $displayOptions.find('.ui-radio-button').each(function() {
-        var $item   = $(this);
-        var $radio  = $item.find('input:radio');
-
-        /* For the underlysing radio button, add a change handler to mirror
-         * state, and hide the button.
-         */
-        $radio.change(function() {
-                        if ($radio.is(':checked'))
-                            $item.parent().removeClass('ui-state-default')
-                                          .addClass('ui-radio-on '+
-                                                    'ui-state-highlight');
-                        else
-                            $item.parent().addClass('ui-state-default')
-                                          .removeClass('ui-radio-on '+
-                                                       'ui-state-highlight');
-                      })
-              .hide();
-
-        /* Proxy clicks on the container through to the underlying radio button
-         * (this should cause a 'change' event that we handle above.
-         */
-        $item.click(function(e) {
-            if (! $radio.is(':checked'))
-            {
-                $item.parent().parent().find('input:radio')
-                        .removeAttr('checked')
-                        .trigger('change');
-
-                $radio.attr('checked', true)
-                      .trigger('change');
-            }
-        });
-    });
-
-
-    /*
-    // All form items will set a cookie
-    $displayOptions.find('input,select').change(function() {
-        var name    = $(this).attr('name');
-        if (name.length < 0)
-            return;
-
-        $.cookie(name, $(this).val());
-
-        // Force a 'submit'
-        $displayOptions.submit();
-    });
-
-    $displayOptions.find(':submit').click(function() {
-        var page    = $(this).val();
-        //$.cookie('page', page);
-    });
-
-    $displayOptions.submit(function(e) {
-        // Disable all displayOption form elements -- this removes these items
-        // from form serialization.
-        //
-        // We've already set any settings as cookies and don't want these
-        // showing up in the URL as well.
-        $displayOptions.find('input,:not(input:submit),button,select')
-                .attr('disabled', true);
-
-        var ser = $displayOptions.serialize();
-        var a   = 1;
-    });
-    */
-}
-
-/************************************************
- * Initialize ui elements.
- *
- */
-function init_userItems()
-{
-    var $userItems  = $('form.userItem');
-
-    $userItems.find('.status,.control')
-            .fadeTo(100, 0.5)
-            .hover( // In
-                    function() {
-                        $(this).fadeTo(100, 1.0);
-                    },
-                    // Out
-                    function() {
-                        $(this).fadeTo(100, 0.5);
-                    });
-    // Favorite
-    $userItems.find('input[name=isFavorite]').checkbox({
-        css:        'connexions_sprites',
-        cssOn:      'star_fill',
-        cssOff:     'star_empty',
-        titleOn:    'Favorite: click to remove from Favorites',
-        titleOff:   'Click to add to Favorites',
-        useElTitle: false,
-        hideLabel:  true
-    });
-
-    // Privacy
-    $userItems.find('input[name=isPrivate]').checkbox({
-        css:        'connexions_sprites',
-        cssOn:      'lock_fill',
-        cssOff:     'lock_empty',
-        titleOn:    'Private: click to share',
-        titleOff:   'Public: click to mark as private',
-        useElTitle: false,
-        hideLabel:  true
-    });
-
-    // Rating - average and user
-    //$userItems.find('.rating .stars .average').stars({split:2});
-    $userItems.find('.rating .stars .owner').stars();
-}
-
-        <?php
-        $jQuery->javascriptCaptureEnd();
-
-        self::$_initialized = true;
-    }
 
     /** @brief  Render an HTML version of a paginated set of User Items.
      *  @param  paginator       The Zend_Paginator representing the items to
@@ -417,12 +200,14 @@ function init_userItems()
         $ownerStr = (String)$owner;
         if ($ownerStr === '*')
         {
-            $ownerStr = 'Bookmarks';
-            $ownerUrl = $this->view->baseUrl('/tagged');
+            $ownerStr      = 'Bookmarks';
+            $ownerUrl      = $this->view->baseUrl('/tagged');
+            $multipleUsers = true;
         }
         else
         {
-            $ownerUrl = $this->view->baseUrl($ownerStr);
+            $ownerUrl      = $this->view->baseUrl($ownerStr);
+            $multipleUsers = false;
         }
 
         $html .= $this->view->htmlItemScope($paginator,
@@ -443,14 +228,33 @@ function init_userItems()
             $html .= "<ul class='items'>";
 
             $show = self::$styleParts[$style];
+            if (! $multipleUsers)
+            {
+                /* If we're only show information for a single user, don't
+                 * bother showing the userId.
+                 */
+                $show['userId'] = 'hide';
+            }
+
+            /* View meta-info:
+             *  Include additional meta-info that is helpful for further view
+             *  renderers in determining what to render.
+             */
+            $show = $this->includeShowMeta($show);
             foreach ($paginator as $idex => $userItem)
             {
+                $html .= $this->view->htmlUserItem($userItem,
+                                                   $viewer,
+                                                   $show,
+                                                   $idex);
+                /*
                 $html .= $this->view->partial('userItem.phtml',
                                               array(
                                                   'index'    =>  $idex,
                                                   'userItem' => &$userItem,
                                                   'viewer'   => &$viewer,
                                                   'showParts'=> &$show));
+                */
             }
 
             $html .= "</ul>";
@@ -462,6 +266,182 @@ function init_userItems()
 
         // Return the rendered HTML
         return $html;
+    }
+    /** @brief  Given a show style array, include additional meta-information
+     *          useful for future view renderers in determining what to render.
+     *  @param  show    The show style array.
+     *
+     *  @return A new, updated show style array.
+     */
+    public function includeShowMeta($show)
+    {
+        /* View meta-info:
+         *  Include additional meta-info that is helpful for further view
+         *  renderers in determining what to render.
+         */
+        if (@ isset($show['minimized']))
+        {
+            $show['minimized'] =
+                   (($show['meta:rating:stars:average'] === false) &&
+                    ($show['meta:rating:stars:owner']   === false) &&
+                    ($show['meta:rating:meta']          === false) &&
+                    ($show['url']                       === false) &&
+                    ($show['description']               === false) &&
+                    ($show['tags']                      === false) &&
+                    ($show['dates:tagged']              === false) &&
+                    ($show['dates:updated']             === false));
+        }
+            
+        if (@ isset($show['meta:rating:stars']))
+        {
+            $show['meta:rating:stars'] =
+                    (($show['meta:rating:stars:average'] === true) ||
+                    ($show['meta:rating:stars:owner']   === true));
+        }
+
+        if (@ isset($show['meta:rating']))
+        {
+                $show['meta:rating'] =
+                    (($show['meta:rating:stars']         === true) ||
+                    ($show['meta:rating:stars:owner']   === true));
+        }
+
+        if (@ isset($show['meta']))
+        {
+            $show['meta'] =
+                    (($show['meta:rating']               === true) ||
+                    ($show['meta:countTaggers']         === true));
+        }
+
+        if (@ isset($show['dates']))
+        {
+            $show['dates'] =
+                    (($show['dates:tagged']              === true) ||
+                    ($show['dates:updated']             === true));
+        }
+
+        return $show;
+    }
+
+    /*************************************************************************
+     * Protected helpers
+     *
+     */
+    protected function _initialize()
+    {
+        if (self::$_initialized)
+            return;
+
+        // Include show-meta information for all pre-defined styles
+        foreach (self::$styleParts as $key => $show)
+        {
+            self::$styleParts[$key] = $this->includeShowMeta($show);
+        }
+
+        $view   =& $this->view;
+        $jQuery = $view->jQuery();
+
+        $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.js'))
+               ->addJavascriptFile($view->baseUrl('js/ui.stars.js'))
+               ->addJavascriptFile($view->baseUrl('js/ui.checkbox.js'))
+               ->addJavascriptFile($view->baseUrl('js/ui.button.js'))
+               ->addJavascriptFile($view->baseUrl('js/ui.input.js'))
+               ->addOnLoad('init_userItems();')
+               ->addOnLoad('init_displayOptions();')
+               ->javascriptCaptureStart();
+
+        ?>
+
+/************************************************
+ * Initialize display options.
+ *
+ */
+function init_displayOptions()
+{
+    var $displayOptions = $('.displayOptions');
+    var $control        = $displayOptions.find('.control:first');
+
+    $control.click(function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                $displayOptions.find('form:first').toggle();
+                $control.toggleClass('ui-state-active');
+            });
+
+    $control.find('a:first, .ui-icon:first')
+                                         // Let it bubble up
+                    .click(function(e) {e.preventDefault(); });
+
+    var $displayStyle   = $displayOptions.find('.displayStyle');
+    var $cControl       = $displayStyle.find('.control:first');
+
+    $cControl.click(function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                $displayStyle.find('.custom.items').toggle();
+                $cControl.toggleClass('ui-state-active');
+            });
+    $cControl.find('a:first,b:first,.ui-icon:first')
+                                         // Let it bubble up
+                    .click(function(e) { e.preventDefault(); });
+
+    return;
+}
+
+/************************************************
+ * Initialize ui elements.
+ *
+ */
+function init_userItems()
+{
+    var $userItems  = $('form.userItem');
+
+    /*
+    $userItems.find('.status,.control')
+            .fadeTo(100, 0.5)
+            .hover( // In
+                    function() {
+                        $(this).fadeTo(100, 1.0);
+                    },
+                    // Out
+                    function() {
+                        $(this).fadeTo(100, 0.5);
+                    });
+    */
+
+    // Favorite
+    $userItems.find('input[name=isFavorite]').checkbox({
+        css:        'connexions_sprites',
+        cssOn:      'star_fill',
+        cssOff:     'star_empty',
+        titleOn:    'Favorite: click to remove from Favorites',
+        titleOff:   'Click to add to Favorites',
+        useElTitle: false,
+        hideLabel:  true
+    });
+
+    // Privacy
+    $userItems.find('input[name=isPrivate]').checkbox({
+        css:        'connexions_sprites',
+        cssOn:      'lock_fill',
+        cssOff:     'lock_empty',
+        titleOn:    'Private: click to share',
+        titleOff:   'Public: click to mark as private',
+        useElTitle: false,
+        hideLabel:  true
+    });
+
+    // Rating - average and user
+    //$userItems.find('.rating .stars .average').stars({split:2});
+    $userItems.find('.rating .stars .owner').stars();
+}
+
+        <?php
+        $jQuery->javascriptCaptureEnd();
+
+        self::$_initialized = true;
     }
 
     protected function _renderDisplayOptions($style, $sortBy, $sortOrder)
@@ -651,15 +631,26 @@ function init_userItems()
                                 : ''). " />"
               .        "<label for='display-description'>description</label>"
               .       "</div>"
-              .       "<br class='clear' />"
-              .       "<div class='field userName'>"
+              .       "<div class='field descriptionSummary'>"
               .        "<input type='checkbox' "
-              .               "name='itemsStyleCustom[userName]' "
-              .                 "id='display-userName'"
-              .              ( $show['userName']
+              .               "name='itemsStyleCustom[descriptionSummary]' "
+              .                 "id='display-descriptionSummary'"
+              .              ( $show['descriptionSummary']
                                 ? " checked='true'"
                                 : ''). " />"
-              .        "<label for='display-userName'>User Name</label>"
+              .        "<label for='display-descriptionSummary'>"
+              .         "description-summary"
+              .        "</label>"
+              .       "</div>"
+              .       "<br class='clear' />"
+              .       "<div class='field userId'>"
+              .        "<input type='checkbox' "
+              .               "name='itemsStyleCustom[userId]' "
+              .                 "id='display-userId'"
+              .              ( $show['userId']
+                                ? " checked='true'"
+                                : ''). " />"
+              .        "<label for='display-userId'>User Name</label>"
               .       "</div>"
               .       "<div class='field tags'>"
               .        "<input type='checkbox' "

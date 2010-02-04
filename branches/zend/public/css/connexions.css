@@ -32,7 +32,7 @@ input, textarea, select { *font-size: 100%; }
 legend { color: #000; }
 
 /* fonts */
-body { font: 13px/1.231 arial,helvetica,clean,sans-serif; *font-size: small; *font: x-small; }
+body { font: 14px /1.231 arial,helvetica,clean,sans-serif; *font-size: small; *font: x-small; }
 
 select, input, button, textarea { font: 99% arial,helvetica,clean,sans-serif; }
 
@@ -54,7 +54,7 @@ html, body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form
 
 /* ****** template.sass ****** */
 /* ====== Page Head, Body, and Foot ====== */
-body { /* IE5.5 */ /* _text-align: center */ }
+body { /* IE5.5 */ /* _text-align: center */ min-width: 960px; }
 
 .body, .main { display: table-cell; *display: block; _position: relative; _left: -3px; _margin-right: -3px; width: auto; _zoom: 1; }
 
@@ -397,7 +397,7 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .itemScope ul li input { margin: 0.1em 0.25em 0; height: 1.5em; padding: 0.2em; }
 .itemScope .root { background-color: #0066cc; }
 .itemScope .scopeItems { padding: 0; background-color: #999999; }
-.itemScope .itemCount { background-color: #999999; color: white; padding: 0.5em; float: right; }
+.itemScope .itemCount { background-color: #999999; color: white; padding: 0.5em; float: right; width: 110px; text-align: center; }
 .itemScope .triangle-r { float: right; width: 0; height: 0; border-right: 0; border-top: 1em solid transparent; border-bottom: 1em solid transparent; border-left: 1em solid #fff; }
 
 /* ****** papgination.sass ****** */

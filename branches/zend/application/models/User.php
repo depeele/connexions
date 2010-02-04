@@ -171,6 +171,35 @@ class Model_User extends Connexions_Model_Cached
     }
 
     /*************************************************************************
+     * Connexions_Model overrides
+     *
+     */
+
+    /** @brief  Validate the given field.
+     *  @param  record  The record to validate within.
+     *  @param  field   The field to validate.
+     *
+     *  Note: This is overridden to generate any missing, auto-generated data
+     *        (e.g. apiKey).
+     *
+     *  @return true | false
+     */
+    protected function _validateField(&$record, $field)
+    {
+        //Connexions::log("Model_User::_validateField({$field})");
+
+        if ($field === 'apiKey')
+        {
+            if (! @isset($record[$field]))
+            {
+                $record[$field] = self::genApiKey();
+            }
+        }
+
+        return parent::_validateField($record, $field);
+    }
+
+    /*************************************************************************
      * Zend_Tag_Taggable Interface
      *
      */
@@ -214,6 +243,28 @@ class Model_User extends Connexions_Model_Cached
      * Static methods
      *
      */
+
+    /** @brief  Generate a new API key with characters [a-zA-Z0-9].
+     *  @param  len The length of the new key [ 10 ].
+     *
+     *  @return The new key.
+     */
+    public static function genApiKey($len = 10)
+    {
+        $chars    = array_merge(range('a','z'),range('A','Z'),range('0','9'));
+        $nChars   = count($chars);
+        $key      = '';
+
+        list($ms) = split(' ', microtime());
+        srand($ms * 100000);
+
+        for ($idex = 0; $idex < $len; $idex++)
+        {
+            $key .= $chars[ rand(0, $nChars) ];
+        }
+
+        return $key;
+    }
 
     /** @brief  Given a set of user names, retrieve the identifier for each.
      *  @param  names   The set of names as a comma-separated string or array.

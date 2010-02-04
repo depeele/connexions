@@ -68,7 +68,8 @@ $jQuery->setVersion('1.4')
        ->setUiVersion('1.7.2')
        ->enable()
        ->uiEnable()
-       ->prependOnLoad('search_initHandlers();')
+       ->addOnLoad('body_initHandlers();')
+       ->addOnLoad('search_initHandlers();')
        ->javascriptCaptureStart();
   ?>
 
@@ -93,6 +94,106 @@ function preloadImages()
 // Preload images that we use everywhere.
 preloadImages('<?= $baseUrl ?>images/logo.gif',
               '<?= $baseUrl ?>css/sprites/connexions.gif');
+
+/************************************************
+ * Iniitalize effects for elements in '.body'
+ *
+ */
+function body_initHandlers()
+{
+    if (false)
+    {
+    // Handle hover events for #pageHeader items.
+    $('#pageHeader li,#search .searchInput').bind('mouseenter',
+                    function(e) {
+                        window.console.debug("in: orig[ "+
+                                                this.localName +":"+
+                                                this.className +" ], "+
+                                                e.relatedTarget.localName +":"+
+                                                e.relatedTarget.className);
+
+                        var $target = $(this);
+
+                        /*
+                        if (!  $target.hasClass('ui-state-default'))
+                            return;
+                         */
+
+                        e.stopPropagation();
+                        
+                        $target.addClass('hover');
+                    });
+
+    $('#pageHeader li,#search .searchInput').bind('mouseleave',
+                    function(e) {
+                        window.console.debug("out: orig[ "+
+                                                this.localName +":"+
+                                                this.className +" ], "+
+                                                e.relatedTarget.localName +":"+
+                                                e.relatedTarget.className);
+
+                        var $target = $(this);
+
+                        /*
+                        if (!  $target.hasClass('ui-state-default'))
+                            return;
+                         */
+
+                        e.stopPropagation();
+                        
+                        // remove hover
+                        $target.removeClass('hover');
+                    });
+    }
+
+
+    /* Handle hover events for any current and future items with the class
+     * .ui-state-default
+     */
+    $('.body .ui-state-default').live('mouseenter',
+                    function(e) {
+                        window.console.debug("in: orig[ "+
+                                                this.localName +":"+
+                                                this.className +" ], "+
+                                                e.relatedTarget.localName +":"+
+                                                e.relatedTarget.className);
+
+                        var $target = $(this);
+
+                        /*
+                        if (!  $target.hasClass('ui-state-default'))
+                            return;
+                         */
+
+                        e.stopPropagation();
+                        
+                        // remove all others and hover here
+                        $('.ui-state-hover').removeClass('ui-state-hover');
+
+                        $target.addClass('ui-state-hover');
+                    });
+
+    $('.body .ui-state-default').live('mouseleave',
+                    function(e) {
+                        window.console.debug("out: orig[ "+
+                                                this.localName +":"+
+                                                this.className +" ], "+
+                                                e.relatedTarget.localName +":"+
+                                                e.relatedTarget.className);
+
+                        var $target = $(this);
+
+                        /*
+                        if (!  $target.hasClass('ui-state-default'))
+                            return;
+                         */
+
+                        e.stopPropagation();
+                        
+                        // remove hover
+                        $target.removeClass('ui-state-hover');
+                    });
+}
 
 /************************************************
  * Initialize the search form handlers

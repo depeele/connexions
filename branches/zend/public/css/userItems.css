@@ -19,7 +19,7 @@
 .displayOptions form .displayStyle .custom .item { border: 1px solid #cccccc; padding: 0 0.1em 0.1em 0.2em; }
 .displayOptions form .displayStyle .custom .item label { display: inline; float: none; width: auto; padding-left: 0.25em; }
 .displayOptions form .displayStyle .custom .item .itemName { padding-bottom: 0.5em; }
-.displayOptions form .displayStyle .custom .item .url, .displayOptions form .displayStyle .custom .item .description { margin: 0; }
+.displayOptions form .displayStyle .custom .item .url, .displayOptions form .displayStyle .custom .item .description, .displayOptions form .displayStyle .custom .item .descriptionSummary { margin: 0; }
 .displayOptions form .displayStyle .custom .item .rating { padding: 0.25em 0 0.25em 0.5em; text-align: left; }
 .displayOptions form .displayStyle .custom .item .rating .meta { text-align: left; float: none; padding: 0; }
 .displayOptions form .displayStyle .custom .item .tags { width: auto; text-align: left; }
@@ -31,13 +31,13 @@
 .pagination-top { float: left; padding: 0.5em 0; }
 .pagination-top .pager { display: inline; }
 
-.items { clear: both; }
+.items { clear: both; border-bottom: 1px solid #cccccc; }
 .items .item { position: relative; z-index: 1; margin-bottom: 0.25em; border-top: 1px solid #cccccc; }
 .items .item .status { position: absolute; top: 0; left: 0; width: 20px; height: 100%; z-index: 3; }
 .items .item .status .checkbox { border: 0; }
 .items .item .status .favorite { position: absolute; top: 4px; left: 4px; }
 .items .item .status .private { position: absolute; top: 24px; left: 4px; }
-.items .item .control { display: inline; font-size: 0.75em; border: 0; padding: 0 0 0 2em; margin: 0; font-weight: normal; z-index: 3; }
+.items .item .control { display: inline; font-size: 0.75em; border: 0; padding: 0 0 0 2em; margin: 0; font-weight: normal; white-space: pre; z-index: 3; }
 .items .item .control a { display: inline; font-weight: normal; }
 .items .item .meta { position: relative; float: right; width: 100px; padding: 0 0 0 4px; text-align: right; z-index: 2; }
 .items .item .meta .countTaggers { display: block; background-color: #999999; color: white; padding: 0.25em; font-weight: bold; text-align: center; }
@@ -61,16 +61,22 @@
 .items .item .data { position: relative; padding: 0.25em 0 0; z-index: 1; }
 .items .item .data .itemName { padding: 0; }
 .items .item .data .itemName a { display: inline; font-weight: bold; }
-.items .item .data .url { padding: 0 0 0 1em; margin: 0 175px 0 0; }
+.items .item .data .url { padding: 0 0 0 1em; max-width: 526px; *width: 526px; }
 .items .item .data .url a { display: inline; font-weight: normal; }
-.items .item .data .description { display: block; padding: 0 0 0 1em; margin: 0 175px 0 0; }
-.items .item .data .userName { display: block; float: left; font-size: 0.9em; padding: 0.5em 0 0.5em 1em; margin: 0; }
+.items .item .data .description, .items .item .data .descriptionSummary { display: block; padding: 0 0 0 1em; margin: 0 175px 0 0; color: #999999; }
+.items .item .data .userId { display: block; float: left; font-size: 0.9em; padding: 0.5em 0 0.5em 1em; margin: 0; }
 .items .item .data .tags { display: block; float: right; font-size: 0.9em; padding: 0.5em 0; margin: 0; text-align: right; }
 .items .item .data .tags .tag { display: block; float: right; padding: 0.1em; margin: 0.2em; }
 .items .item .data .tags .tag a { display: inline; font-weight: normal; }
 .items .item .data .dates { display: block; font-size: 0.8em; height: 1em; padding-left: 1em; color: #999999; }
 .items .item .data .dates .tagged { float: left; }
 .items .item .data .dates .updated { float: right; }
+.items .mine { min-height: 45px; }
 .items .mine .data { padding: 0.25em 0 0 32px; }
-.items .mine .data .userName { display: none; }
+.items .mine .data .userId { display: none; }
 .items .private .status { background-color: #cccccc; }
+.items .minimized { clear: left; }
+.items .minimized .control { float: right; padding: 0; font-size: 0.9em; }
+.items .minimized .data .userId, .items .minimized .data .itemName, .items .minimized .data .descriptionSummary { display: block; float: left; margin: 0; }
+.items .minimized .data .userId { width: 5em; padding: 0.25em 0; overflow: hidden; }
+.items .minimized .data .descriptionSummary { padding: 0 0.5em; }
