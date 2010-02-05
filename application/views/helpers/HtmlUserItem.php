@@ -233,7 +233,8 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
 
         if ($showParts['tags'] === true)
         {
-            if ($showParts['minimized'] === true)
+            if ( ($showParts['minimized'] === true) ||
+                 ($showParts['userId']    !== true) )
                 $html .= "<br class='clear' />";
 
             $html .= "<ul class='tags'>";       // tags {
