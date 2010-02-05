@@ -2,7 +2,7 @@ all: connexions.css userItems.css
 
 connexions.css: main.sass		\
 		colors.sass		\
-		widths.sass		\
+		sizes.sass		\
 		content.sass		\
 		grids.sass		\
 		libraries.sass		\
@@ -16,6 +16,6 @@ connexions.css: main.sass		\
 		themes/default/jquery-ui.css
 	sass -t compact main.sass connexions.css
 
-userItems.css: userItems.sass colors.sass widths.sass
+userItems.css: userItems.sass colors.sass sizes.sass
 	sass -t compact userItems.sass userItems.css
 
