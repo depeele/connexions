@@ -119,8 +119,7 @@ class Connexions_Set implements Countable,
     public function getOrder()
     {
         $order = $this->_select->getPart(Zend_Db_Select::ORDER);
-
-        $parts = preg_split('/\s+/', $order[0]);
+        $parts = $order[0]; //preg_split('/\s+/', $order[0]);
 
         return array('by'       => $parts[0],
                      'order'    => $parts[1]);
