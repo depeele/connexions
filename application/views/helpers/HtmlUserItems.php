@@ -720,7 +720,7 @@ function init_userItems()
                     ($show['meta:rating:meta']          === false) &&
                     ($show['url']                       === false) &&
                     ($show['description']               === false) &&
-                    ($show['tags']                      === false) &&
+                    //($show['tags']                      === false) &&
                     ($show['dates:tagged']              === false) &&
                     ($show['dates:updated']             === false));
         }
@@ -870,9 +870,7 @@ function init_userItems()
                                 : ""));
                         
         // Need 'legend' for vertical spacing control
-        $html .=    "<legend></legend>"
-              .     "<div class='label'>Custom display</div>"
-              .     "<div class='item'>"
+        $html .=    "<div class='item'>"
               .      "<div class='meta'>"
               .       "<div class='field countTaggers'>"
               .        "<input type='checkbox' "

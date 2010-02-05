@@ -34,6 +34,7 @@ $links->prependStylesheet($baseUrl .'css/connexions.css');
 //$links->prependStylesheet($baseUrl .'css/themes/default/jquery-ui.css');
 $links->prependStylesheet($baseUrl .'css/themes/base/ui.all.css');
 
+$jQuery->addJavascriptFile($this->baseurl('js/jquery.pngFix.js'));
 $jQuery->addJavascriptFile($this->baseurl('js/ui.input.js'));
 
 /*
@@ -68,6 +69,7 @@ $jQuery->setVersion('1.4')
        ->setUiVersion('1.7.2')
        ->enable()
        ->uiEnable()
+       ->addOnLoad('doc_pngFix();')
        ->addOnLoad('body_initHandlers();')
        ->addOnLoad('search_initHandlers();')
        ->javascriptCaptureStart();
@@ -94,6 +96,21 @@ function preloadImages()
 // Preload images that we use everywhere.
 preloadImages('<?= $baseUrl ?>images/logo.gif',
               '<?= $baseUrl ?>css/sprites/connexions.gif');
+
+/************************************************
+ * Iniitalize PNG-fix for the document.
+ *
+ * Note: Only effects IE5.5 and IE6.  All others
+ *       will return immediately and shouldn't
+ *       be impacted.
+ */
+function doc_pngFix()
+{
+    if (! $.isFunction($.fn.pngFix))
+        return;
+
+    $(document).pngFix( {blankgif: '<?= $baseUrl ?>images/bkank.gif'} );
+}
 
 /************************************************
  * Iniitalize effects for elements in '.body'

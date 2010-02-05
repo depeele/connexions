@@ -9,7 +9,7 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
     /** @brief  The maximum number of characters to include in a summary,
      *          particularly a summary of a description.
      */
-    public static   $summaryMax = 20;
+    public static   $summaryMax = 40;
 
     /** @brief  Generate an HTML view of a single User Item / Bookmark.
      *  @param  userItem    The Model_UserItem instance to present.
@@ -45,6 +45,9 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
         if ($userItem->isFavorite)      array_push($itemClasses, 'favorite');
         if ($userItem->isPrivate)       array_push($itemClasses, 'private');
         if ($showParts['minimized'])    array_push($itemClasses, 'minimized');
+        if ($showParts['minimized'] &&
+            ($showParts['userId'] !== true))
+                                        array_push($itemClasses, 'no-userId');
 
         $html .= "<li class='item "             // item {
               .             implode(' ', $itemClasses) . "'>"
@@ -140,7 +143,6 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
             $html .=   "</div>";                // meta }
         }
 
-
         $clearFloats = $showParts['minimized'];
         $html .=   "<div class='data'>";    // data {
 
@@ -148,15 +150,12 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
         if ( ($showParts['minimized'] === true) &&
              ($showParts['userId']    === true) )
         {
-            $html .= "<div class='userId'>"
-                  .   sprintf("<a href='%s' title='%s'>%s</a>",
-                              $this->view->url(array(
-                                      'action' => $userItem->user->name)),
-                              $userItem->user->fullName,
-                              $userItem->user->name)
-                  .  "</div>";
+            $html .= $this->_renderUserId($userItem);
         }
 
+
+        if ($showParts['minimized'] === true)
+            $html .= $this->_renderHtmlControl($userItem, $isOwner);
 
         if ($showParts['itemName'] === true)
         {
@@ -171,9 +170,6 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
 
             $html .= "</h4>";   // itemName }
         }
-
-        if ($showParts['minimized'] === true)
-            $html .= $this->_renderHtmlControl($userItem, $isOwner);
 
         if ($showParts['url'] === true)
         {
@@ -222,20 +218,16 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
              ($showParts['userId']    === true) )
         {
             $html .= "<br class='clear' />"
-                  .  "<div class='userId'>"
-                  .   sprintf("<a href='%s' title='%s'>%s</a>",
-                              $this->view->url(array(
-                                      'action' => $userItem->user->name)),
-                              $userItem->user->fullName,
-                              $userItem->user->name)
-                  .  "</div>";
+                  .  $this->_renderUserId($userItem);
         }
 
         if ($showParts['tags'] === true)
         {
+            /*
             if ( ($showParts['minimized'] === true) ||
                  ($showParts['userId']    !== true) )
                 $html .= "<br class='clear' />";
+            */
 
             $html .= "<ul class='tags'>";       // tags {
 
@@ -290,6 +282,44 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
      * Protected helpers
      *
      */
+    protected function _renderUserId($userItem)
+    {
+        $showAvatar = ( ! @empty($userItem->user->pictureUrl));
+
+        $html =  "<div class='userId'>"
+              .   sprintf("<a href='%s' title='%s'>",
+                          $this->view->url(array(
+                                  'action' => $userItem->user->name)),
+                          $userItem->user->fullName
+                            . ($showAvatar
+                                  // For avatar, include the userId in the
+                                  // anchor title
+                                ? " ({$userItem->user->name})"
+                                : ""));
+
+        $html .=   "<div class='img ui-state-highlight'>";
+        if ( $showAvatar )
+        {
+            // Include the user's picture / avatar
+            $html .= sprintf ("<img src='%s' />",
+                              $userItem->user->pictureUrl);
+        }
+        else
+        {
+            // Include the default user icon
+            $html .= "<div class='ui-icon ui-icon-person'>"
+                  .   "&nbsp;"
+                  .  "</div>";
+        }
+        $html .=   "</div>";
+
+        $html .=   "<span class='name'>{$userItem->user->name}</span>"
+              .   "</a>"
+              .  "</div>";
+
+        return $html;
+    }
+
     protected function _renderHtmlControl($userItem, $isOwner)
     {
         $html = "<div class='control'>";  //  control {

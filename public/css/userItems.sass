@@ -13,11 +13,11 @@
   .control
     z-index:        3
     cursor:         pointer
-    padding:        0 0 0.1em 0.2em
+    padding:        0.2em 0 0.1em 0.2em
     a
       font-weight:  normal
     .ui-icon
-      margin-top:   2px
+      //margin-top:   2px
       float:        right
 
   .field
@@ -53,33 +53,34 @@
       .field
         float:          left
         padding-bottom: 0
+        padding-right:  0.5em
         label
           display:  inline
           float:    none
           width:    auto
           padding:  0 0.1em
+        input,label
+          cursor:   pointer
 
     .displayStyle
       display:      block
+      position:     relative
       width:        auto
       text-align:   left
-      padding-top:  0.5em
+      padding-top:  1em
       a
         font-weight:  normal
       .option, .comma
         display:        block
         float:          left
+      .option.control
+        position:       relative
+        top:            -0.25em
       .comma
         padding-right:  0.5em
       .custom
-        padding-top:    0.75em
-        border-top =    "1px dotted" !borderColor
+        padding-top:    0.5em
         border-bottom:  0
-        legend
-          margin:       1em 0 0
-        .label
-          text-align:   right
-          font-style:   italic
         .item
           border =      "1px solid" !borderColor
           padding:      0 0.1em 0.1em 0.2em
@@ -90,31 +91,36 @@
             width:        auto
             padding-left: 0.25em
 
-          .itemName
-            padding-bottom: 0.5em
+          .meta
+            font-weight:  normal
 
-          .url, .description, .descriptionSummary
-            margin:         0
+          .data
+            padding-left: 0
+            .itemName
+              padding-bottom: 0.5em
 
-          .rating
-            padding:        0.25em 0 0.25em 0.5em
-            text-align:     left
+            .url, .description, .descriptionSummary
+              margin:         0
 
-            .meta
+            .rating
+              padding:        0.25em 0 0.25em 0.5em
+              text-align:     left
+
+              .meta
+                text-align:   left
+                float:        none
+                padding:      0
+
+            .tags
+              width:        auto
               text-align:   left
-              float:        none
-              padding:      0
+              .tag
+                display:  inline
+                float:    none
 
-          .tags
-            width:        auto
-            text-align:   left
-            .tag
-              display:  inline
-              float:    none
-
-          .dates
-            .updated
-              width:      auto
+            .dates
+              .updated
+                width:      auto
 
         .buttons
           text-align: right
@@ -293,13 +299,33 @@
         margin:     0 175px 0 0
         color =     !controlColor
 
-      // User Name
+      // UserId
       .userId
-        display:    block
-        float:      left
-        font-size:  0.9em
-        padding:    0.5em 0 0.5em 1em
-        margin:     0
+        display:      block
+        float:        left
+        font-size:    0.9em
+        padding:      0.5em 0 0.5em 1em
+        margin:       0
+        white-space:  pre
+        a
+          font-weight:  normal
+          .img
+            display:          block
+            position:         relative
+            float:            left
+            border:           0
+            background-color: transparent
+            img
+              width:          16px
+              height:         16px
+            .ui-icon
+              background-color: transparent
+              position:         relative
+              top:              -2px
+          .name
+            display:      inline
+            font-size:    0.9em
+            padding-left: 0.25em
 
       // List of tags for this item
       .tags
@@ -345,10 +371,7 @@
       // Item controls: edit, delete, save
       .control
         display:      inline
-        //position:     absolute
-        //top:          0.25em
-        //right =       !countBoxWidth
-        font-size:    0.75em
+        font-size:    0.65em
         border:       0
         padding:      0 0 0 2em
         margin:       0
@@ -369,17 +392,6 @@
           text-decoration:  none
     
         
-  // Item (mine)
-  .mine
-    min-height:   45px
-    .status
-      min-height: 45px
-    .data
-      //padding:    0.25em 0 0 32px
-
-      .userId
-        display:  none
-
   // Item (private)
   .private
     .status
@@ -388,19 +400,50 @@
 
   // Item (minimized)
   .minimized
-    clear:        left
+    clear:          left
     .control
-      float:      right
-      padding:    0
-      font-size:  0.9em
+      float:        right
+      padding:      0
+      font-size:    0.9em
+    .status
+      display:    none
     .data
-      .userId, .itemName, .descriptionSummary
-        display:  block
-        float:    left
-        margin:   0
+      margin-left:  5em
+      padding-left: 0
+      .itemName,.descriptionSummary
+        display:    inline
       .userId
-        width:    5em
-        padding:  0.25em 0
-        overflow: hidden
+        position:     absolute
+        left:         -5.25em
+        width:        5em
+        padding:      0.25em 0
+        overflow:     hidden
       .descriptionSummary
-        padding:  0 0.5em
+        padding:      0 0 0 0.5em
+        margin:       0
+      .tags
+        padding:      0.1em 0 0 0.5em
+        clear:        right
+        //margin-left:  4em
+
+  .no-userId
+    .data
+      margin-left:    32px
+
+      //.tags
+      //  clear:        right
+
+  // Item (mine)
+  .mine
+    min-height:   45px
+    .status
+      display:    block
+      min-height: 45px
+    //.data
+    //  .userId
+    //    display:  none
+
+  // Item (mine+minimized)
+  .mine.minimized
+    .userId
+      display:  none
