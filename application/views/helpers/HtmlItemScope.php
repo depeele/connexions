@@ -89,14 +89,14 @@ function init_itemScope()
     {
         $this->_initialize();
 
-        $html = "<form class='itemScope'>"  // itemScope {
+        $html = "<form class='itemScope ui-corner-all'>"    // itemScope {
               .   "<ul>";
 
         $url    = '';
         $action = '';
         if ( @is_array($path))
         {
-            $cssClass = 'root';
+            $cssClass = 'root ui-corner-tl';
             foreach ($path as $pathName => $pathUrl)
             {
                 $html .= sprintf (  "<li class='%s'>"
@@ -105,7 +105,7 @@ function init_itemScope()
                                   $cssClass,
                                   $pathUrl, $pathName);
 
-                if ($cssClass === 'root')
+                if (strpos($cssClass, 'root') !== false)
                 {
                     $action = $pathUrl;
 
@@ -165,7 +165,7 @@ function init_itemScope()
               .              "class='ui-input ui-corner-all "
               .                     "ui-state-default ui-state-empty' />"
               .   "</li>"
-              .   "<li class='itemCount'>"
+              .   "<li class='itemCount ui-corner-tr'>"
               .    number_format($paginator->getTotalItemCount())
               .   "</li>"
               .  "</ul>"

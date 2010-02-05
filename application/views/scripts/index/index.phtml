@@ -19,7 +19,7 @@
  *      itemsSortOrder  User Items sort order
  *                      (Connexions_View_Helpers_HtmlUserItems::
  *                                                          SORT_ORDER_*);
-        itemsStyleCustom    An array of custom style settings
+ *      itemsStyleCustom    An array of custom style settings
  *
  *      tagsMax         Maximum number of tags to present;
  *      tagsSortBy      Sort tags by (valid field of Model_Tag);
@@ -34,17 +34,6 @@ if ($this->owner !== '*')
     $this->headTitle($this->owner ."'s Bookmarks");
 else
     $this->headTitle('Bookmarks');
-
-if (@is_array($this->itemsStyleCustom))
-{
-    echo "<!-- itemsStyleCustom: ";
-    print_r($this->itemsStyleCustom);
-    echo " -->\n";
-
-    Connexions_View_Helper_HtmlUserItems::$styleParts[
-        Connexions_View_Helper_HtmlUserItems::STYLE_CUSTOM] =
-            $this->itemsStyleCustom;
-}
 
 ?>
 <div class='columnHeader'>
@@ -121,13 +110,37 @@ if ( @isset($this->tagList))
  */
 if (@isset($this->paginator))
 {
-    echo $this->htmlUserItems($this->paginator,
-                              $this->owner,
-                              $this->viewer,
-                              $this->tagInfo,
-                              $this->itemsStyle,
-                              $this->itemsSortBy,
-                              $this->itemsSortOrder);
+    $helper = $this->htmlUserItems();
+
+    if (@is_array($this->itemsStyleCustom))
+    {
+        echo "\n<!-- itemsStyleCustom: ";
+        print_r($this->itemsStyleCustom);
+        echo " -->\n";
+
+        $helper->setStyle(Connexions_View_Helper_HtmlUserItems::STYLE_CUSTOM)
+               ->setShowMeta($this->itemsStyleCustom);
+    }
+    else
+    {
+        $helper->setStyle($this->itemsStyle);
+    }
+
+    /* There a two ways we can do this:
+     *   1. Individually invoke the set methods followed by the render();
+     *   2. Directly invoke the render, passing in all values;
+     *   3. Directly invoke the nameed method (htmlUserItems), passing in
+     *      all values.
+     */
+    if (! @empty($this->itemsSortBy))
+        $helper->setSortBy($this->itemsSortBy);
+    if (! @empty($this->itemsSortOrder))
+        $helper->setSortOrder($this->itemsSortOrder);
+
+    echo $helper->render($this->paginator,
+                         $this->owner,
+                         $this->viewer,
+                         $this->tagInfo);
 }
 
 ?>

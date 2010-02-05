@@ -31,7 +31,7 @@ $jQuery = $this->jQuery();
 
 $links = $this->headLink();
 $links->prependStylesheet($baseUrl .'css/connexions.css');
-$links->prependStylesheet($baseUrl .'css/themes/default/jquery-ui.css');
+//$links->prependStylesheet($baseUrl .'css/themes/default/jquery-ui.css');
 $links->prependStylesheet($baseUrl .'css/themes/base/ui.all.css');
 
 $jQuery->addJavascriptFile($this->baseurl('js/ui.input.js'));
@@ -106,43 +106,33 @@ function body_initHandlers()
     // Handle hover events for #pageHeader items.
     $('#pageHeader li,#search .searchInput').bind('mouseenter',
                     function(e) {
+                        /*
                         window.console.debug("in: orig[ "+
                                                 this.localName +":"+
                                                 this.className +" ], "+
                                                 e.relatedTarget.localName +":"+
                                                 e.relatedTarget.className);
-
-                        var $target = $(this);
-
-                        /*
-                        if (!  $target.hasClass('ui-state-default'))
-                            return;
-                         */
+                        */
 
                         e.stopPropagation();
                         
-                        $target.addClass('hover');
+                        $(this).addClass('hover');
                     });
 
     $('#pageHeader li,#search .searchInput').bind('mouseleave',
                     function(e) {
+                        /*
                         window.console.debug("out: orig[ "+
                                                 this.localName +":"+
                                                 this.className +" ], "+
                                                 e.relatedTarget.localName +":"+
                                                 e.relatedTarget.className);
-
-                        var $target = $(this);
-
-                        /*
-                        if (!  $target.hasClass('ui-state-default'))
-                            return;
-                         */
+                        */
 
                         e.stopPropagation();
                         
                         // remove hover
-                        $target.removeClass('hover');
+                        $(this).removeClass('hover');
                     });
     }
 
@@ -152,46 +142,36 @@ function body_initHandlers()
      */
     $('.body .ui-state-default').live('mouseenter',
                     function(e) {
+                        /*
                         window.console.debug("in: orig[ "+
                                                 this.localName +":"+
                                                 this.className +" ], "+
                                                 e.relatedTarget.localName +":"+
                                                 e.relatedTarget.className);
-
-                        var $target = $(this);
-
-                        /*
-                        if (!  $target.hasClass('ui-state-default'))
-                            return;
-                         */
+                        */
 
                         e.stopPropagation();
                         
                         // remove all others and hover here
                         $('.ui-state-hover').removeClass('ui-state-hover');
 
-                        $target.addClass('ui-state-hover');
+                        $(this).addClass('ui-state-hover');
                     });
 
     $('.body .ui-state-default').live('mouseleave',
                     function(e) {
+                        /*
                         window.console.debug("out: orig[ "+
                                                 this.localName +":"+
                                                 this.className +" ], "+
                                                 e.relatedTarget.localName +":"+
                                                 e.relatedTarget.className);
-
-                        var $target = $(this);
-
-                        /*
-                        if (!  $target.hasClass('ui-state-default'))
-                            return;
-                         */
+                        */
 
                         e.stopPropagation();
                         
                         // remove hover
-                        $target.removeClass('ui-state-hover');
+                        $(this).removeClass('ui-state-hover');
                     });
 }
 
