@@ -13,7 +13,7 @@
 .displayOptions form .displayStyle a { font-weight: normal; }
 .displayOptions form .displayStyle .option, .displayOptions form .displayStyle .comma { display: block; float: left; }
 .displayOptions form .displayStyle .comma { padding-right: 0.5em; }
-.displayOptions form .displayStyle .custom { padding-top: 0.75em; border-top: 1px dotted #cccccc; }
+.displayOptions form .displayStyle .custom { padding-top: 0.75em; border-top: 1px dotted #cccccc; border-bottom: 0; }
 .displayOptions form .displayStyle .custom legend { margin: 1em 0 0; }
 .displayOptions form .displayStyle .custom .label { text-align: right; font-style: italic; }
 .displayOptions form .displayStyle .custom .item { border: 1px solid #cccccc; padding: 0 0.1em 0.1em 0.2em; }
@@ -35,12 +35,12 @@
 .items .item { position: relative; z-index: 1; margin-bottom: 0.25em; border-top: 1px solid #cccccc; }
 .items .item .status { position: absolute; top: 0; left: 0; width: 20px; height: 100%; z-index: 3; }
 .items .item .status .checkbox { border: 0; }
-.items .item .status .favorite { position: absolute; top: 4px; left: 4px; }
-.items .item .status .private { position: absolute; top: 24px; left: 4px; }
-.items .item .control { display: inline; font-size: 0.75em; border: 0; padding: 0 0 0 2em; margin: 0; font-weight: normal; white-space: pre; z-index: 3; }
-.items .item .control a { display: inline; font-weight: normal; }
+.items .item .status .favorite, .items .item .status .private { position: absolute; cursor: pointer; }
+.items .item .status .favorite { top: 4px; left: 4px; }
+.items .item .status .private { top: 24px; left: 4px; }
 .items .item .meta { position: relative; float: right; width: 100px; padding: 0 0 0 4px; text-align: right; z-index: 2; }
-.items .item .meta .countTaggers { display: block; background-color: #999999; color: white; padding: 0.25em; font-weight: bold; text-align: center; }
+.items .item .meta .countTaggers { display: block; background-color: #999999; color: white; padding: 0.25em; font-weight: normal; text-align: center; text-decoration: none; }
+.items .item .meta .countTaggers:hover { background-color: #b0d730; }
 .items .item .meta .rating { display: block; position: relative; }
 .items .item .meta .rating .stars { display: block; height: 18px; }
 .items .item .meta .rating .stars .owner, .items .item .meta .rating .stars .average, .items .item .meta .rating .stars .average-owner { display: block; width: 96px; overflow: hidden; }
@@ -58,7 +58,7 @@
 .items .item .meta .rating .stars .average-owner { position: absolute; top: 2px; left: 1px; }
 .items .item .meta .rating .stars .average-owner .ui-stars-star-on a { background-position: -88px -58px; }
 .items .item .meta .rating .meta { clear: left; color: #999999; font-size: 0.75em; }
-.items .item .data { position: relative; padding: 0.25em 0 0; z-index: 1; }
+.items .item .data { position: relative; padding: 0.25em 0 0 32px; z-index: 1; }
 .items .item .data .itemName { padding: 0; }
 .items .item .data .itemName a { display: inline; font-weight: bold; }
 .items .item .data .url { padding: 0 0 0 1em; max-width: 526px; *width: 526px; }
@@ -66,15 +66,20 @@
 .items .item .data .description, .items .item .data .descriptionSummary { display: block; padding: 0 0 0 1em; margin: 0 175px 0 0; color: #999999; }
 .items .item .data .userId { display: block; float: left; font-size: 0.9em; padding: 0.5em 0 0.5em 1em; margin: 0; }
 .items .item .data .tags { display: block; float: right; font-size: 0.9em; padding: 0.5em 0; margin: 0; text-align: right; }
-.items .item .data .tags .tag { display: block; float: right; padding: 0.1em; margin: 0.2em; }
-.items .item .data .tags .tag a { display: inline; font-weight: normal; }
+.items .item .data .tags .tag, .items .item .data .tags .tag:hover { display: block; float: right; padding: 0.2em; margin: 0.1em; background-color: #eeeeee; color: #172322; }
+.items .item .data .tags .tag a, .items .item .data .tags .tag a:hover, .items .item .data .tags .tag a:visited, .items .item .data .tags .tag a:focus, .items .item .data .tags .tag:hover a, .items .item .data .tags .tag:hover a:hover, .items .item .data .tags .tag:hover a:visited, .items .item .data .tags .tag:hover a:focus { display: inline; font-weight: normal; text-decoration: none; color: #172322; }
+.items .item .data .tags .tag:hover { background-color: #172322; color: #eeeeee; }
+.items .item .data .tags .tag:hover a, .items .item .data .tags .tag:hover a:hover, .items .item .data .tags .tag:hover a:visited, .items .item .data .tags .tag:hover a:focus { color: #eeeeee; }
 .items .item .data .dates { display: block; font-size: 0.8em; height: 1em; padding-left: 1em; color: #999999; }
 .items .item .data .dates .tagged { float: left; }
 .items .item .data .dates .updated { float: right; }
+.items .item .data .control { display: inline; font-size: 0.75em; border: 0; padding: 0 0 0 2em; margin: 0; font-weight: normal; white-space: pre; z-index: 3; color: #999999; }
+.items .item .data .control a { display: inline; font-weight: normal; text-decoration: none; padding: 0.1em; }
+.items .item .data .control a:hover { background-color: #0066cc; color: white; text-decoration: none; }
 .items .mine { min-height: 45px; }
-.items .mine .data { padding: 0.25em 0 0 32px; }
+.items .mine .status { min-height: 45px; }
 .items .mine .data .userId { display: none; }
-.items .private .status { background-color: #cccccc; }
+.items .private .status { background-color: #ffeeee; border-left: 1px dotted #ff3333; }
 .items .minimized { clear: left; }
 .items .minimized .control { float: right; padding: 0; font-size: 0.9em; }
 .items .minimized .data .userId, .items .minimized .data .itemName, .items .minimized .data .descriptionSummary { display: block; float: left; margin: 0; }

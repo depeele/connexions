@@ -377,7 +377,8 @@ cite { display: block; text-align: right; padding-top: 10px; }
 /* ****** tagCloud.sass ****** */
 .Tag_Cloud { list-style: none; text-align: justify; padding: 0; }
 .Tag_Cloud .tag { display: inline; font-size: 100%; margin: 0.25em; }
-.Tag_Cloud .tag a { display: inline-block; vertical-align: middle; }
+.Tag_Cloud .tag a { display: inline-block; vertical-align: middle; padding: 0 0.2em; }
+.Tag_Cloud .tag a:hover { text-decoration: none; background-color: #0066cc; color: white; }
 .Tag_Cloud .tag .selected { background-color: #ddd; }
 .Tag_Cloud .tag .size0 { font-size: 0.8em; font-weight: normal; color: #000; }
 .Tag_Cloud .tag .size1 { font-size: 0.9em; font-weight: normal; color: #23598c; }

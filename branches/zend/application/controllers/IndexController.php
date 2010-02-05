@@ -30,7 +30,14 @@ class IndexController extends Zend_Controller_Action
         $itemsStyle       = $request->getParam('itemsStyle',       null);
         $itemsSortBy      = $request->getParam('itemsSortBy',      null);
         $itemsSortOrder   = $request->getParam('itemsSortOrder',   null);
-        //$itemsStyleCustom = $request->getParam('itemsStyleCustom', null);
+        $itemsStyleCustom = $request->getParam('itemsStyleCustom', null);
+
+        /*
+        Connexions::log("IndexController:: "
+                            . "itemsStyleCustom[ "
+                            .   print_r($itemsStyleCustom, true)
+                            .       ' ]');
+        // */
 
         // Tag-cloud parameters
         $tagsMax       = $request->getParam('tagsMax',       250);
@@ -114,9 +121,42 @@ class IndexController extends Zend_Controller_Action
             $this->view->error =
                         "Invalid tag(s) [ {$tagInfo->invalidItems} ]";
 
+        /* Notify the View Helper of any sort / style settings, allowing it
+         * establish any required defaults.
+         */
+        $helper = $this->view->htmlUserItems();
+        $helper->setSortBy($itemsSortBy)
+               ->setSortOrder($itemsSortOrder);
+
+        $itemsSortBy    = $helper->getSortBy();
+        $itemsSortOrder = $helper->getSortOrder();
+
+        // /*
+        Connexions::log("IndexController: helper updated sort "
+                            . "by[ {$itemsSortBy} ], "
+                            . "order[ {$itemsSortOrder} ]");
+        // */
+
+        // Create the userItem set, mirroring the specified sorting criteria.
         $userItems = new Model_UserItemSet($tagInfo->validIds, $userIds);
         if (($itemsSortBy !== null) || ($itemsSortOrder !== null))
+        {
             $userItems->setOrder($itemsSortBy, $itemsSortOrder);
+        }
+
+        // Ensure that our display options match how we're retrieving the data
+        $res = $userItems->getOrder();
+
+        // /*
+        Connexions::log("IndexController: sort "
+                            . "by[ {$itemsSortBy} ] == [ {$res['by']} ], "
+                            . "order[ {$itemsSortOrder} ] == "
+                            .                   "[ {$res['order']} ]");
+        // */
+
+        $itemsSortBy    = $res['by'];
+        $itemsSortOrder = $res['order'];
+
 
         /* Use the Connexions_Controller_Action_Helper_Pager to create a
          * paginator
@@ -132,10 +172,10 @@ class IndexController extends Zend_Controller_Action
         $this->view->tagInfo        = $tagInfo;
 
         // User-Item parameters
+        //$this->view->itemsSortBy      = $itemsSortBy;
+        //$this->view->itemsSortOrder   = $itemsSortOrder;
         $this->view->itemsStyle       = $itemsStyle;
-        $this->view->itemsSortBy      = $itemsSortBy;
-        $this->view->itemsSortOrder   = $itemsSortOrder;
-        //$this->view->itemsStyleCustom = $itemsStyleCustom;
+        $this->view->itemsStyleCustom = $itemsStyleCustom;
 
         // Tag-cloud parameters
         $this->view->tagsMax        = $tagsMax;

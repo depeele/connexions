@@ -54,87 +54,99 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
         if ($isOwner)
         {
             $html .= "<div class='favorite'>"
-                  .  "<input type='checkbox' name='isFavorite' value='true' "
-                  .     ($userIitem->isFavorite ? " checked='true'" : "")
+                  .  "<input type='checkbox' name='isFavorite' value='true'"
+                  .     ($userItem->isFavorite ? " checked='true'" : "")
                   .         "/>"
                   . "</div>"
                   . "<div class='private'>"
-                  .  "<input type='checkbox' name='isPrivate' value='true' "
-                  .     ($userIitem->isPrivate  ? " checked='true'" : "")
+                  .  "<input type='checkbox' name='isPrivate' value='true'"
+                  .     ($userItem->isPrivate  ? " checked='true'" : "")
                   .         "/>"
                   . "</div>";
         }
 
-        $html .=   "</div>"
-              .    "<div class='meta'>";    // meta {
+        $html .=   "</div>";
 
-        if ($showParts['meta:countTaggers'] === true)
+        if ($showParts['meta'] === true)
         {
-           $html .= sprintf ("<a class='countTaggers' href='%s'>%d</a>",
-                             $this->view->url(array(
-                                     'action'   => 'url',
-                                     'urlHash'  => $userIitem->item->urlHash)),
-                             $userItem->item->userCount);
-        }
-
-        if ( ($showParts['meta:rating'] === true) &&
-             ( ($userItem->item->ratingCount > 0) ||
-               $isOwner) )
-        {
-
-            $html .=  "<div class='rating'>";       // rating {
-
-            if ($showParts['meta:rating:stars'])
+            $html .=   "<div class='meta'>";    // meta {
+            if ($showParts['meta:countTaggers'] === true)
             {
-                $html .= "<div class='stars'>";       // stars {
+               $html .= sprintf ("<a class='countTaggers' href='%s'>%d</a>",
+                                 $this->view->url(array(
+                                         'action'   => 'url',
+                                         'urlHash'  =>
+                                            $userItem->item->urlHash)),
+                                 $userItem->item->userCount);
+            }
 
-                $ratingAvg = ($userItem->item->ratingCount > 0
-                                ? $userItem->item->ratingSum /
-                                        $userItem->item->ratingCount
-                                : 0.0);
+            if ( ($showParts['meta:rating'] === true) &&
+                 ( ($userItem->item->ratingCount > 0) ||
+                   $isOwner) )
+            {
 
-                if ( $showParts['meta:rating:stars:average'] &&
+                $html .=  "<div class='rating'>";       // rating {
+
+                if ($showParts['meta:rating:stars'] === true)
+                {
+                    $html .= "<div class='stars'>";       // stars {
+
+                    $ratingAvg = ($userItem->item->ratingCount > 0
+                                    ? $userItem->item->ratingSum /
+                                            $userItem->item->ratingCount
+                                    : 0.0);
+
+                    if ( ($showParts['meta:rating:stars:average'] === true) &&
+                         ($userItem->item->ratingCount > 0) )
+                    {
+                        $ratingTitle = sprintf("%d raters, %5.2f avg.",
+                                               $userItem->item->ratingCount,
+                                               $ratingAvg);
+
+                        $html .= $this
+                                    ->view
+                                      ->htmlStarRating($ratingAvg,
+                                                       ($isOwner
+                                                        ? "average-owner"
+                                                        : "average"),
+                                                       true,    // read-only
+                                                       $ratingTitle);
+                    }
+             
+                    if ( ($showParts['meta:rating:stars:owner'] === true) &&
+                         $isOwner )
+                    {
+                        $html .= $this->view->htmlStarRating($userItem->rating,
+                                                            'owner');
+                    }
+
+                    $html .= "</div>";      // stars }
+                }
+
+                if ( ($showParts['meta:rating:meta'] === true) &&
                      ($userItem->item->ratingCount > 0) )
                 {
-                    $ratingTitle = sprintf("%d raters, %5.2f avg.",
-                                           $userItem->item->ratingCount,
-                                           $ratingAvg);
-
-                    $html .= $this->view->htmlStarRating($ratingAvg,
-                                                         ($isOwner
-                                                             ? "average-owner"
-                                                             : "average"),
-                                                         true,    // read-only
-                                                         $ratingTitle);
-                }
-         
-                if ( $showParts['meta:rating:stars:owner'] && $isOwner )
-                {
-                    $html .= $this->view->htmlStarRating($userItem->rating,
-                                                        'owner');
+                    $html .= "<div class='meta'>"
+                          .  sprintf( "<span class='count'>%d</span> raters, "
+                                     ."<span class='average'>%3.2f</span> avg.",
+                                        $userItem->item->ratingCount,
+                                        $ratingAvg)
+                          .  "</div>";
                 }
 
-                $html .= "</div>";      // stars }
+                $html .=  "</div>"; // rating }
             }
 
-            if ( $showParts['meta:rating:meta'] &&
-                ($userItem->item->ratingCount > 0) )
-            {
-                $html .= "<div class='meta'>"
-                      .  sprintf( "<span class='count'>%d</span> raters, "
-                                 ."<span class='average'>%3.2f</span> avg.",
-                                    $userItem->item->ratingCount,
-                                    $ratingAvg)
-                      .  "</div>";
-            }
-
-            $html .=  "</div>"; // rating }
+            $html .=   "</div>";                // meta }
         }
 
-        $html .=   "</div>"                 // meta }
-              .    "<div class='data'>";    // data {
 
-        if ($showParts['minimized'] && $showParts['userId'])
+        $clearFloats = $showParts['minimized'];
+        $html .=   "<div class='data'>";    // data {
+
+
+        if ( ($showParts['minimized'] === true) &&
+             ($showParts['userId']    === true) )
         {
             $html .= "<div class='userId'>"
                   .   sprintf("<a href='%s' title='%s'>%s</a>",
@@ -146,7 +158,7 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
         }
 
 
-        if ($showParts['itemName'])
+        if ($showParts['itemName'] === true)
         {
             $html .= "<h4 class='itemName'>"    // itemName {
                   .  sprintf("<a href='%s' title='%s'>%s</a>",
@@ -154,16 +166,16 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                              $userItem->item->urlHash,
                              htmlspecialchars($userItem->name));
 
-            if (! $showParts['minimized'])
+            if (! $showParts['minimized'] === true)
                 $html .= $this->_renderHtmlControl($userItem, $isOwner);
 
             $html .= "</h4>";   // itemName }
         }
 
-        if ($showParts['minimized'])
+        if ($showParts['minimized'] === true)
             $html .= $this->_renderHtmlControl($userItem, $isOwner);
 
-        if ($showParts['url'])
+        if ($showParts['url'] === true)
         {
             $html .= "<div class='url'>"
                   .   sprintf ("<a href='%s' title='%s'>%s</a>",
@@ -173,7 +185,7 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                   .  "</div>";
         }
 
-        if ( $showParts['descriptionSummary'] &&
+        if ( ($showParts['descriptionSummary'] === true) &&
              (! @empty($userItem->description)) )
         {
             $summary = html_entity_decode($userItem->description, ENT_QUOTES);
@@ -190,12 +202,15 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
             }
             $summary = htmlentities($summary, ENT_QUOTES);
 
+            if ($showParts['minimized'] === true)
+                $summary = "&mdash; ". $summary;
+
             $html .= "<div class='descriptionSummary'>"
-                  .   "&mdash; ". $summary
+                  .   $summary
                   .  "</div>";
         }
 
-        if ( $showParts['description'] &&
+        if ( ($showParts['description'] === true) &&
              (! @empty($userItem->description)) )
         {
             $html .= "<div class='description'>"
@@ -203,7 +218,8 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                   .  "</div>";
         }
 
-        if ( (! $showParts['minimized']) && $showParts['userId'])
+        if ( ($showParts['minimized'] !== true) &&
+             ($showParts['userId']    === true) )
         {
             $html .= "<br class='clear' />"
                   .  "<div class='userId'>"
@@ -215,13 +231,16 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                   .  "</div>";
         }
 
-        if ($showParts['tags'])
+        if ($showParts['tags'] === true)
         {
+            if ($showParts['minimized'] === true)
+                $html .= "<br class='clear' />";
+
             $html .= "<ul class='tags'>";       // tags {
 
             foreach ($userItem->tags as $tag)
             {
-                $html .= "<li class='tag ui-state-default'>"
+                $html .= "<li class='tag'>"
                       .   "<a href='"
                       .     $this->view->url(array(
                                         'action' => 'tagged',
@@ -232,26 +251,32 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
 
             $html .= "</ul>"                    // tags }
                   .  "<br class='clear' />";
+
+            $clearFloats = false;
         }
 
-        if ( $showParts['dates:tagged'] ||
-             $showParts['dates:updated'] )
+        if ( $showParts['dates'] )
         {
             $html .= "<div class='dates'>";
 
-            if ($showParts['dates:tagged'])
+            if ($showParts['dates:tagged'] === true)
                 $html .= "<div class='tagged'>"
                       .    $userItem->taggedOn
                       .  "</div>";
 
-            if ($showParts['dates:updated'])
+            if ($showParts['dates:updated'] === true)
                 $html .= "<div class='updated'>"
                       .    $userItem->updatedOn
                       .  "</div>";
 
             $html .= "</div>"
                   .  "<br class='clear' />";
+
+            $clearFloats = false;
         }
+
+        if ($clearFloats)
+            $html .= "<br class='clear' />";
 
         $html .=   "</div>"     // data }
               .   "</form>"     // userItem }
@@ -270,8 +295,8 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
 
         if ($isOwner)
         {
-            $html .= sprintf( "<a class='item-edit'   href='%s'>edit</a> | "
-                             ."<a class='item-delete' href='%s'>delete</a>",
+            $html .= sprintf( "<a class='item-edit'   href='%s'>EDIT</a> | "
+                             ."<a class='item-delete' href='%s'>DELETE</a>",
                             $this->view->url(array(
                                     'action' => 'itemEdit',
                                     'item'   => $userItem->itemId)),
@@ -287,7 +312,7 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                      .  '&description='. urlencode($userItem->description)
                      .  '&tags='.        urlencode(''.$userItem->tags);
 
-            $html .= sprintf ( "<a class='item-save'   href='%s'>save</a>",
+            $html .= sprintf ( "<a class='item-save'   href='%s'>SAVE</a>",
                               $saveUrl);
         }
 
