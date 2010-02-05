@@ -40,6 +40,7 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
                 'descriptionSummary'    => false
             ),
             'userId'                    => true,
+            'userId:avatar'             => true,
             'tags'                      => true,
 
             'dates:tagged'              => true,
@@ -71,6 +72,7 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
             'descriptionSummary'        => true,    // constructed data
             'description'               => false,
             'userId'                    => true,
+            'userId:avatar'             => true,
             'tags'                      => false,
 
             'dates'                     => false,   // show-meta
@@ -93,6 +95,7 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
             'descriptionSummary'        => false,   // constructed data
             'description'               => true,
             'userId'                    => true,
+            'userId:avatar'             => true,
             'tags'                      => true,
 
             'dates'                     => false,   // show-meta
@@ -115,6 +118,7 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
             'descriptionSummary'        => false,   // constructed data
             'description'               => true,
             'userId'                    => true,
+            'userId:avatar'             => true,
             'tags'                      => true,
 
             'dates'                     => true,    // show-meta
@@ -137,6 +141,7 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
             'descriptionSummary'        => false,   // constructed data
             'description'               => true,
             'userId'                    => true,
+            'userId:avatar'             => true,
             'tags'                      => true,
 
             'dates'                     => true,    // show-meta
@@ -203,13 +208,15 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
 function init_displayOptions()
 {
     var $displayOptions = $('.displayOptions');
+    var $form           = $displayOptions.find('form:first');
     var $control        = $displayOptions.find('.control:first');
 
+    // Click to toggle the displayOptions pane
     $control.click(function(e) {
                 e.preventDefault();
                 e.stopPropagation();
 
-                $displayOptions.find('form:first').toggle();
+                $form.toggle();
                 $control.toggleClass('ui-state-active');
             });
 
@@ -218,18 +225,71 @@ function init_displayOptions()
                     .click(function(e) {e.preventDefault(); });
 
     var $displayStyle   = $displayOptions.find('.displayStyle');
+    var $itemsStyle     = $displayStyle.find('input[name=itemsStyle]');
     var $cControl       = $displayStyle.find('.control:first');
 
+    // Click to toggle the 'display custom' pane / field-set
     $cControl.click(function(e) {
                 e.preventDefault();
                 e.stopPropagation();
 
+                $displayOptions.find('#buttons-global')
+                                    .toggleClass('buttons-custom');
+
                 $displayStyle.find('.custom.items').toggle();
                 $cControl.toggleClass('ui-state-active');
             });
-    $cControl.find('a:first,b:first,.ui-icon:first')
+    $cControl.find('> a, .control > a, .control > .ui-icon')
                                          // Let it bubble up
                     .click(function(e) { e.preventDefault(); });
+
+    /* When something in the 'display custom' pane / field-set changes, set the
+     * display style to 'custom'
+     */
+    $displayStyle.find('fieldset:first').change(function() {
+                $displayStyle.find('a.option-selected')
+                                            .removeClass('option-selected');
+                /*
+                $displayStyle.find('b:first').css({
+                                'font-weight':  'normal',
+                                'cursor':       'pointer'});
+                */
+                $cControl.find('a:first').addClass('option-selected');
+    });
+
+    // Allow only one display style to be selected at a time
+    $displayStyle.find('a.option').click(function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Retrieve the new style value from the 'itemsStyle-*' class
+                var style   = $(this).attr('class');
+                var pos     = style.indexOf('itemsStyle-') + 11;
+
+                style = style.substr(pos);
+                pos   = style.indexOf(' ');
+                if (pos > 0)
+                    style = style.substr(0, pos+1);
+
+                // Save the style in our hidden input
+                $itemsStyle.val(style);
+
+                $displayStyle.find('a.option-selected')
+                                            .removeClass('option-selected');
+                $(this).addClass('option-selected');
+
+                // Trigger a change event on our form
+                $form.change();
+    });
+
+    // Any change to the containing form should enable the submit button
+    $form.change(function() {
+                $displayOptions.find(':submit')
+                                    .removeClass('ui-state-disabled')
+                                    .removeAttr('disabled')
+                                    .addClass('ui-state-default,'+
+                                              'ui-state-highlight');
+    });
 
     return;
 }
@@ -522,7 +582,8 @@ function init_userItems()
             /* If we're only showing information for a single user, mark 
              * 'userId' as 'hide' (not true nor false).
              */
-            $val['userId'] = 'hide';
+            $val['userId']        = 'hide';
+            $val['userId:avatar'] = 'hide';
         }
 
         if (! @is_bool($val['minimized']))
@@ -806,7 +867,9 @@ function init_userItems()
               .   "</div>";                             // itemsSortOrder }
 
         $html .=  "<div class='field displayStyle'>"    // itemsStyle {
-              .    "<label for='itemsStyle'>Display</label>";
+              .    "<label for='itemsStyle'>Display</label>"
+              .    "<input type='hidden' name='itemsStyle' "
+              .          "value='{$style}' />";
 
         $idex       = 0;
         $titleCount = count(self::$styleTitles);
@@ -818,18 +881,21 @@ function init_userItems()
 
             if ($key === self::STYLE_CUSTOM)
             {
-                $itemHtml .= "<div class='{$cssClass} control ui-corner-all "
-                          .     ($this->_style !== self::STYLE_CUSTOM
-                                    ? "ui-state-default"
-                                    : "ui-state-active") ."'>";
+                $itemHtml .= "<div class='{$cssClass} control "
+                          .             "ui-corner-all ui-state-default"
+                          .     ($this->_style === self::STYLE_CUSTOM
+                                    ? " ui-state-active"
+                                    : "")
+                          .                 "'>";
                 $cssClass  = '';
             }
 
+            $cssClass .= " itemsStyle-{$key}";
             if ($key == $this->_style)
-                $itemHtml .= "<b class='{$cssClass}'>{$title}</b>";
-            else
-                $itemHtml .= "<a class='{$cssClass}' "
-                          .      "href='?itemsStyle={$key}'>{$title}</a>";
+                $cssClass .= ' option-selected';
+
+            $itemHtml .= "<a class='{$cssClass}' "
+                      .      "href='?itemsStyle={$key}'>{$title}</a>";
 
             if ($key === self::STYLE_CUSTOM)
             {
@@ -941,13 +1007,22 @@ function init_userItems()
               .       "</div>"
               .       "<br class='clear' />"
               .       "<div class='field userId'>"
+              .        "<div class='field userId-avatar'>"
+              .         "<input type='checkbox' "
+              .                "name='itemsStyleCustom[userId:avatar]' "
+              .                  "id='display-userId-avatar'"
+              .               ( $showMeta['userId:avatar']
+                                 ? " checked='true'"
+                                 : ''). " />"
+              .         "<label for='display-userId-avatar'>avatar</label>"
+              .        "</div>"
               .        "<input type='checkbox' "
               .               "name='itemsStyleCustom[userId]' "
               .                 "id='display-userId'"
               .              ( $showMeta['userId']
                                 ? " checked='true'"
                                 : ''). " />"
-              .        "<label for='display-userId'>User Name</label>"
+              .        "<label for='display-userId'>User Id</label>"
               .       "</div>"
               .       "<div class='field tags'>"
               .        "<input type='checkbox' "
@@ -989,15 +1064,30 @@ function init_userItems()
               .       "<br class='clear' />"
               .      "</div>"
               .     "</div>"
+              /*
               .     "<div class='buttons'>"
               .      "<button type='submit' "
               .             "class='ui-button ui-corner-all ui-state-default' "
               .              "name='itemsStyle' "
               .             "value='custom'>apply custom settings</button>"
               .     "</div>"
+              */
               .    "</fieldset>";
 
-        $html .=  "</div>";                     // itemsStyle }
+        $html .=  "</div>"                      // itemsStyle }
+              .   "<div id='buttons-global' class='buttons'"
+              /*
+              .           ($this->_style === self::STYLE_CUSTOM
+                                ? " style='display:none;'"
+                                : "")
+              */
+              .                         ">"
+              .    "<button type='submit' "
+              .           "class='ui-button ui-corner-all "
+              .                 "ui-state-default ui-state-disabled' "
+              .           "value='custom'"
+              .        "disabled='true'>apply</button>"
+              .   "</div>";
 
         $html .= "</form>"  // form }
               . "</div>";   // displayOptions }

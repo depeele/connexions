@@ -150,7 +150,7 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
         if ( ($showParts['minimized'] === true) &&
              ($showParts['userId']    === true) )
         {
-            $html .= $this->_renderUserId($userItem);
+            $html .= $this->_renderUserId($userItem, $showParts);
         }
 
 
@@ -218,7 +218,7 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
              ($showParts['userId']    === true) )
         {
             $html .= "<br class='clear' />"
-                  .  $this->_renderUserId($userItem);
+                  .  $this->_renderUserId($userItem, $showParts);
         }
 
         if ($showParts['tags'] === true)
@@ -282,20 +282,16 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
      * Protected helpers
      *
      */
-    protected function _renderUserId($userItem)
+    protected function _renderUserId($userItem, $showParts)
     {
-        $showAvatar = ( ! @empty($userItem->user->pictureUrl));
+        $showAvatar = (($showParts['userId:avatar'] === true) &&
+                       ( ! @empty($userItem->user->pictureUrl)) );
 
         $html =  "<div class='userId'>"
               .   sprintf("<a href='%s' title='%s'>",
                           $this->view->url(array(
                                   'action' => $userItem->user->name)),
-                          $userItem->user->fullName
-                            . ($showAvatar
-                                  // For avatar, include the userId in the
-                                  // anchor title
-                                ? " ({$userItem->user->name})"
-                                : ""));
+                          $userItem->user->fullName);
 
         $html .=   "<div class='img ui-state-highlight'>";
         if ( $showAvatar )

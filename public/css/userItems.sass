@@ -20,6 +20,20 @@
       //margin-top:   2px
       float:        right
 
+  .buttons
+    text-align: right
+    button
+      display:  inline
+      padding:  0.25em
+
+  #buttons-global
+    margin-top:   2em
+    padding:      0.5em 0.5em 0
+    border-top =  "1px dotted" !borderColor
+
+  .buttons-custom
+    margin-top:   0.5em !important
+
   .field
     display:        block
     padding-bottom: 0.25em
@@ -70,6 +84,8 @@
       padding-top:  1em
       a
         font-weight:  normal
+      .option-selected
+        font-weight:  bold
       .option, .comma
         display:        block
         float:          left
@@ -111,6 +127,10 @@
                 float:        none
                 padding:      0
 
+            .userId
+              .userId-avatar
+                float:        right
+                padding-left: 0.75em
             .tags
               width:        auto
               text-align:   left
@@ -121,13 +141,6 @@
             .dates
               .updated
                 width:      auto
-
-        .buttons
-          text-align: right
-          button
-            display:  inline
-            padding:  0.25em
-          
 
 .pagination-top
   float:      left

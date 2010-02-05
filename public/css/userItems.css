@@ -3,6 +3,10 @@
 .displayOptions .control { z-index: 3; cursor: pointer; padding: 0.2em 0 0.1em 0.2em; }
 .displayOptions .control a { font-weight: normal; }
 .displayOptions .control .ui-icon { float: right; }
+.displayOptions .buttons { text-align: right; }
+.displayOptions .buttons button { display: inline; padding: 0.25em; }
+.displayOptions #buttons-global { margin-top: 2em; padding: 0.5em 0.5em 0; border-top: 1px dotted #cccccc; }
+.displayOptions .buttons-custom { margin-top: 0.5em !important; }
 .displayOptions .field { display: block; padding-bottom: 0.25em; }
 .displayOptions .field label { clear: left; width: 6em; float: left; }
 .displayOptions form { position: absolute; top: 2.25em; right: 0; width: 22em; padding: 0.5em; z-index: 2; }
@@ -12,6 +16,7 @@
 .displayOptions form .sortOrder .field input, .displayOptions form .sortOrder .field label { cursor: pointer; }
 .displayOptions form .displayStyle { display: block; position: relative; width: auto; text-align: left; padding-top: 1em; }
 .displayOptions form .displayStyle a { font-weight: normal; }
+.displayOptions form .displayStyle .option-selected { font-weight: bold; }
 .displayOptions form .displayStyle .option, .displayOptions form .displayStyle .comma { display: block; float: left; }
 .displayOptions form .displayStyle .option.control { position: relative; top: -0.25em; }
 .displayOptions form .displayStyle .comma { padding-right: 0.5em; }
@@ -24,11 +29,10 @@
 .displayOptions form .displayStyle .custom .item .data .url, .displayOptions form .displayStyle .custom .item .data .description, .displayOptions form .displayStyle .custom .item .data .descriptionSummary { margin: 0; }
 .displayOptions form .displayStyle .custom .item .data .rating { padding: 0.25em 0 0.25em 0.5em; text-align: left; }
 .displayOptions form .displayStyle .custom .item .data .rating .meta { text-align: left; float: none; padding: 0; }
+.displayOptions form .displayStyle .custom .item .data .userId .userId-avatar { float: right; padding-left: 0.75em; }
 .displayOptions form .displayStyle .custom .item .data .tags { width: auto; text-align: left; }
 .displayOptions form .displayStyle .custom .item .data .tags .tag { display: inline; float: none; }
 .displayOptions form .displayStyle .custom .item .data .dates .updated { width: auto; }
-.displayOptions form .displayStyle .custom .buttons { text-align: right; }
-.displayOptions form .displayStyle .custom .buttons button { display: inline; padding: 0.25em; }
 
 .pagination-top { float: left; padding: 0.5em 0; }
 .pagination-top .pager { display: inline; }
