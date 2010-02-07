@@ -157,6 +157,10 @@ class Model_UserItem extends Connexions_Model
      */
     public function __get($name)
     {
+        list($sub, $field) = explode('_', $name);
+        if ( (! empty($sub)) && (! empty($field)) )
+            $name = $sub;
+
         switch ($name)
         {
         case 'user':    $res =& $this->_user();         break;
@@ -164,6 +168,9 @@ class Model_UserItem extends Connexions_Model
         case 'tags':    $res =& $this->_tags();         break;
         default:        $res =  parent::__get($name);   break;
         }
+
+        if (! empty($field))
+            $res = $res->{$field};
 
         return $res;
     }

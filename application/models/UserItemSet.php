@@ -197,36 +197,103 @@ class Model_UserItemSet extends Connexions_Set
     }
 
     /** @brief  Establish sorting for this set.
-     *  @param  by      Any field of the memberClass.
-     *  @param  order   Sort order
-     *                  (Model_UserItemSet::SORT_ORDER_ASC | SORT_ORDER_DESC ==
-     *                   Zend_Db_Select::SQL_ASC           | SQL_DESC)
+     *  @param  by          Any field of the memberClass.
+     *  @param  order       Sort order
+     *                      (Model_UserItemSet::SORT_ORDER_ASC|SORT_ORDER_DESC
+     *                              ==
+     *                      Zend_Db_Select::SQL_ASC           | SQL_DESC)
+     *  @param  smartLimit  For fields that are part of item, should we limit 
+     *                      the retrieved user items to only the earliest 
+     *                      representative in order to reduce the amount of 
+     *                      redundant data? [ true ].
      *
-     *  Override in order to support an order-by of 'date' as an alias for
-     *  'taggedOn'.
+     *  Override in order to support order aliases, forcing sort by:
+     *      'date'               => 'taggedOn'
+     *      'item_url'           => 'item_url'
+     *      'item_userCount'     => 'item_userCount'
+     *      'item_ratingCount'   => 'item_ratingCount'
+     *      'item_ratingSum'     => 'item_ratingSum'
+     *      'user_name'          => 'user_name'
+     *      'user_email'         => 'user_email'
+     *      'user_lastVisit'     => 'user_lastVisit'
+     *      'user_totalTags'     => 'user_totalTags' 
+     *      'user_totalItems'    => 'user_totalItems'
      *
      *  @return $this
      */
-    public function setOrder($by, $order)
+    public function setOrder($by, $order, $smartLimit = true)
     {
-        if ($by === 'date')
+        $orig   = $by;
+        $force  = false;
+        $group  = null;
+        switch ($by)
         {
-            /*
-            Connexions::log("Model_UserItem::setOrder: "
-                                . "Alias by 'date' to 'taggedOn'");
-            // */
+        case 'date':
+            $by    = 'taggedOn';
+            $force = true;
+            break;
 
-            $by = 'taggedOn';
+        case 'name':
+        case 'item_url':
+        case 'item_userCount':
+        case 'item_ratingCount':
+        case 'item_ratingSum':
+            // Sorting by item informamtion.
+            if ($smartLimit)
+            {
+                /* Also group by itemId and include 'taggedOn ASC' in the 
+                 * order-by so we'll only retrieve the earliest, representative 
+                 * userItem.
+                 *
+                 * Otherwise, we'll retrieve all user items for each item type, 
+                 * which, when presented, will show a large amount of redundant 
+                 * data (i.e. all item information will be identical).
+                 */
+                $by    = array("{$by} {$order}", 'taggedOn ASC');
+                $group = 'item_itemId';
+            }
+            $force = true;
+            break;
+
+        case 'user_name':
+        case 'user_email':
+        case 'user_lastVisit':
+        case 'user_totalTags':
+        case 'user_totalItems':
+            $force = true;
+            break;
         }
-        /*
+
+        // /*
+        if ($force || ($orig != $by))
+        {
+            if (is_array($by))
+                $byStr = var_export($by, true);
+            else
+                $byStr = $by;
+
+            Connexions::log("Model_UserItem::setOrder: "
+                                . "Alias '{$orig}' to '{$byStr}', '{$order}'");
+        }
         else
         {
             Connexions::log("Model_UserItem::setOrder: "
-                                . "Pass on 'by' [{$by}]");
+                                . "Pass on '{$by}'");
         }
         // */
 
-        return parent::setOrder($by, $order);
+
+        parent::setOrder($by, $order, $force);
+
+        if ($group !== null)
+            $this->_select->group('ui.itemId');
+
+        // /*
+        Connexions::log("Model_UserItem::setOrder: "
+                            . "sql[ {$this->_select->assemble()} ]");
+        // */
+
+        return $this;
     }
 
     /*************************************************************************

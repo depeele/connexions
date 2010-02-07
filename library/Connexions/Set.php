@@ -67,25 +67,31 @@ class Connexions_Set implements Countable,
     /** @brief  Establish sorting for this set.
      *  @param  by      Any field of the memberClass.
      *  @param  order   Sort order (Zend_Db_Select::SQL_ASC | SQL_DESC).
+     *  @param  force   Force the use of the provided 'by' value without check 
+     *                  [false].
      *
      *  @return $this
      */
-    public function setOrder($by, $order)
+    public function setOrder($by, $order, $force = false)
     {
-        // Validate 'by'
-        $memberClass = $this->_memberClass;
-        $model       = Connexions_Model::__sget($memberClass, 'model');
-        if (! @isset($model[$by]))
+        if ($force !== true)
         {
-            // Invalid 'by' -- use the first key
-            $keys = array_keys(Connexions_Model::__sget($memberClass, 'keys'));
+            // Validate 'by'
+            $memberClass = $this->_memberClass;
+            $model       = Connexions_Model::__sget($memberClass, 'model');
+            if (! @isset($model[$by]))
+            {
+                // Invalid 'by' -- use the first key
+                $keys = array_keys(Connexions_Model::__sget($memberClass,
+                                                            'keys'));
 
-            /*
-            Connexions::log("Connexions_Set::setOrder: "
+                /*
+                Connexions::log("Connexions_Set::setOrder: "
                                 . "Invalid 'by' [{$by}]: using [{$keys[0]}]");
-            // */
+                // */
 
-            $by   = $keys[0];
+                $by   = $keys[0];
+            }
         }
 
         // Validate 'order'
@@ -100,13 +106,19 @@ class Connexions_Set implements Countable,
             break;
         }
 
-        /*
+        // /*
         Connexions::log("Connexions_Set::setOrder: "
                             . "by[{$by}], order[{$order}]");
         // */
 
         $this->_select->reset(Zend_Db_Select::ORDER)
-                      ->order($by .' '. $order);
+                      ->order( (is_array($by) ? $by
+                                              : "{$by} {$order}") );
+
+        /*
+        Connexions::log("Connexions_Set::setOrder: "
+                            . "sql[ {$this->_select->assemble()} ]");
+        // */
 
         return $this;
     }

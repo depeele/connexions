@@ -5,12 +5,15 @@
  */
 class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
 {
-    const STYLE_TITLE               = 'title';
-    const STYLE_REGULAR             = 'regular';
-    const STYLE_FULL                = 'full';
-    const STYLE_CUSTOM              = 'custom';
+    static public   $numericGrouping    = 10;
 
-    static public   $styleTitles    = array(
+
+    const STYLE_TITLE                   = 'title';
+    const STYLE_REGULAR                 = 'regular';
+    const STYLE_FULL                    = 'full';
+    const STYLE_CUSTOM                  = 'custom';
+
+    static public   $styleTitles        = array(
         self::STYLE_TITLE   => 'Title',
         self::STYLE_REGULAR => 'Regular',
         self::STYLE_FULL    => 'Full',
@@ -152,15 +155,17 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
 
     const SORT_BY_DATE_TAGGED       = 'taggedOn';
     const SORT_BY_DATE_UPDATED      = 'dateUpdated';
-    const SORT_BY_TITLE             = 'name';
+    const SORT_BY_NAME              = 'name';
     const SORT_BY_RATING            = 'rating';
-    const SORT_BY_USER_COUNT        = 'userCount';
+    const SORT_BY_RATING_COUNT      = 'item_ratingCount';
+    const SORT_BY_USER_COUNT        = 'item_userCount';
 
     static public   $sortTitles     = array(
                     self::SORT_BY_DATE_TAGGED   => 'Tag Date',
                     self::SORT_BY_DATE_UPDATED  => 'Update Date',
-                    self::SORT_BY_TITLE         => 'Title',
+                    self::SORT_BY_NAME          => 'Title',
                     self::SORT_BY_RATING        => 'Rating',
+                    self::SORT_BY_RATING_COUNT  => 'Rating Count',
                     self::SORT_BY_USER_COUNT    => 'User Count'
                 );
 
@@ -205,10 +210,11 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
  * Initialize display options.
  *
  */
-function init_displayOptions()
+function init_userItemDisplayOptions()
 {
     var $displayOptions = $('.displayOptions');
     var $form           = $displayOptions.find('form:first');
+    var $submit         = $displayOptions.find(':submit');
     var $control        = $displayOptions.find('.control:first');
 
     // Click to toggle the displayOptions pane
@@ -227,6 +233,23 @@ function init_displayOptions()
     var $displayStyle   = $displayOptions.find('.displayStyle');
     var $itemsStyle     = $displayStyle.find('input[name=itemsStyle]');
     var $cControl       = $displayStyle.find('.control:first');
+
+    /* Attach a data item to each display option identifying the display type
+     * (pulled from the CSS class (itemsStyle-<type>
+     */
+    $displayStyle.find('a.option,div.option a:first').each(function() {
+                // Retrieve the new style value from the 'itemsStyle-*' class
+                var style   = $(this).attr('class');
+                var pos     = style.indexOf('itemsStyle-') + 11;
+
+                style = style.substr(pos);
+                pos   = style.indexOf(' ');
+                if (pos > 0)
+                    style = style.substr(0, pos+1);
+
+                // Save the style in a data item
+                $(this).data('itemsStyle', style);
+            });
 
     // Click to toggle the 'display custom' pane / field-set
     $cControl.click(function(e) {
@@ -247,51 +270,71 @@ function init_displayOptions()
      * display style to 'custom'
      */
     $displayStyle.find('fieldset:first').change(function() {
+                var $opt    = $cControl.find('a:first');
+
+                // Save the style in our hidden input
+                $itemsStyle.val( $opt.data('itemsStyle' ) );
+
+                // Turn "off" all other display options...
                 $displayStyle.find('a.option-selected')
                                             .removeClass('option-selected');
-                /*
-                $displayStyle.find('b:first').css({
-                                'font-weight':  'normal',
-                                'cursor':       'pointer'});
-                */
-                $cControl.find('a:first').addClass('option-selected');
-    });
+                // And turn 'custom' on.
+                $opt.addClass('option-selected');
+            });
 
     // Allow only one display style to be selected at a time
     $displayStyle.find('a.option').click(function(e) {
                 e.preventDefault();
                 e.stopPropagation();
 
-                // Retrieve the new style value from the 'itemsStyle-*' class
-                var style   = $(this).attr('class');
-                var pos     = style.indexOf('itemsStyle-') + 11;
-
-                style = style.substr(pos);
-                pos   = style.indexOf(' ');
-                if (pos > 0)
-                    style = style.substr(0, pos+1);
+                var $opt    = $(this);
 
                 // Save the style in our hidden input
-                $itemsStyle.val(style);
+                $itemsStyle.val( $opt.data('itemsStyle') );
 
                 $displayStyle.find('a.option-selected')
                                             .removeClass('option-selected');
-                $(this).addClass('option-selected');
+                $opt.addClass('option-selected');
 
                 // Trigger a change event on our form
                 $form.change();
-    });
+            });
 
     // Any change to the containing form should enable the submit button
     $form.change(function() {
-                $displayOptions.find(':submit')
-                                    .removeClass('ui-state-disabled')
-                                    .removeAttr('disabled')
-                                    .addClass('ui-state-default,'+
-                                              'ui-state-highlight');
+                $submit.removeClass('ui-state-disabled')
+                       .removeAttr('disabled')
+                       .addClass('ui-state-default,ui-state-highlight');
+            });
+
+    // Bind to submit.
+    $form.submit(function() {
+        var a   = 1;
     });
 
     return;
+}
+
+/************************************************
+ * Initialize group header options.
+ *
+ */
+function init_userItemsGroupHeader()
+{
+    var $headers    = $('#userItems .groupHeader');
+    var origOpacity = $headers.css('opacity');
+
+    $('#userItems .groupHeader').hover(
+            // in
+            function() {
+                $(this).fadeTo(100, 1.0);
+            },
+
+            // out
+            function() {
+                $(this).fadeTo(100, origOpacity);
+            }
+        );
 }
 
 /************************************************
@@ -301,7 +344,7 @@ function init_displayOptions()
 function init_userItems()
 {
     // Initialize display options
-    init_displayOptions();
+    init_userItemDisplayOptions();
 
     var $userItems  = $('form.userItem');
 
@@ -343,6 +386,9 @@ function init_userItems()
     // Rating - average and user
     //$userItems.find('.rating .stars .average').stars({split:2});
     $userItems.find('.rating .stars .owner').stars();
+
+    // Initialize display options
+    init_userItemsGroupHeader();
 }
 
         <?php
@@ -448,8 +494,9 @@ function init_userItems()
         {
         case self::SORT_BY_DATE_TAGGED:
         case self::SORT_BY_DATE_UPDATED:
-        case self::SORT_BY_TITLE:
+        case self::SORT_BY_NAME:
         case self::SORT_BY_RATING:
+        case self::SORT_BY_RATING_COUNT:
         case self::SORT_BY_USER_COUNT:
             break;
 
@@ -736,8 +783,20 @@ function init_userItems()
         {
             $html .= "<ul class='items'>";
 
+            // Group by the field identified in $this->_sortBy
+            $lastGroup = null;
             foreach ($paginator as $idex => $userItem)
             {
+                $groupVal = $userItem->{$this->_sortBy};
+                $newGroup = $this->_groupValue($this->_sortBy, $groupVal);
+
+                if ($newGroup !== $lastGroup)
+                {
+                    $html      .= $this->_renderGroupHeader($this->_sortBy,
+                                                            $newGroup);
+                    $lastGroup  = $newGroup;
+                }
+
                 $html .= $this->view->htmlUserItem($userItem,
                                                    $viewer,
                                                    $showMeta,
@@ -759,6 +818,124 @@ function init_userItems()
      * Protected helpers
      *
      */
+
+    /** @brief  Given a grouping identifier and values, return the group into
+     *          which the value falls.
+     *  @param  groupBy     The grouping identifier / field (self::SORT_BY_*);
+     *  @param  value       The value;
+     *
+     * @return  The value of the group into which the value falls.
+     */
+    protected function _groupValue($groupBy, $value)
+    {
+        $orig = $value;
+        switch ($groupBy)
+        {
+        case self::SORT_BY_DATE_TAGGED:       // 'taggedOn'
+        case self::SORT_BY_DATE_UPDATED:      // 'dateUpdated'
+            /* Dates are strings of the form YYYY-MM-DD HH:MM:SS
+             *
+             * Grouping should be by year:month:day, so strip off the time.
+             */
+            $value = substr($value, 0, 10);
+            break;
+            
+        case self::SORT_BY_NAME:              // 'name'
+            $value = strtoupper(substr($value, 0, 1));
+
+            break;
+
+        case self::SORT_BY_RATING:            // 'rating'
+            $value = floor($value);
+            break;
+
+        case self::SORT_BY_RATING_COUNT:      // 'ratingCount'
+        case self::SORT_BY_USER_COUNT:        // 'userCount'
+            /* We'll do numeric grouping in groups of:
+             *      self::$numericGrouping [ 10 ]
+             */
+            $value = floor($value / self::$numericGrouping) *
+                                                    self::$numericGrouping;
+            break;
+        }
+
+        // /*
+        Connexions::log(
+            sprintf("HtmlUserItems::_groupValue(%s, %s:%s) == [ %s ]",
+                    $groupBy, $orig, gettype($orig),
+                    $value));
+        // */
+
+        return $value;
+    }
+
+
+    protected $_lastYear    = null;
+
+    /** @brief  Render the HTML of a group header.
+     *  @param  groupBy     The grouping identifier / field (self::SORT_BY_*);
+     *  @param  value       The value of this group;
+     *
+     *  @return The HTML of the group header.
+     */
+    protected function _renderGroupHeader($groupBy, $value)
+    {
+        $html  =  "<div class='groupHeader ui-corner-tl'>" // groupHeader {
+               .   "<div class='group group". ucfirst($groupBy)
+                                      // groupTaggedOn, groupDateUpdated,
+                                      // groupName,     groupRating,
+                                      // groupUserCount
+               .              " ui-corner-tr'>";
+
+
+        switch ($groupBy)
+        {
+        case self::SORT_BY_DATE_TAGGED:       // 'taggedOn'
+        case self::SORT_BY_DATE_UPDATED:      // 'dateUpdated'
+            // The date group value will be of the form YYYY-MM-DD
+            list($year, $month, $day) = explode('-', $value);
+
+            // Figure out the day-of-week
+            $time      = strtotime($value);
+            $month     = date('M', $time);
+            $dayOfWeek = date('D', $time);
+
+            $html .= "<div class='date'>";
+
+            if ($year !== $this->_lastYear)
+            {
+                $html .=  "<span class='year'    >{$year}</span>";
+                $this->_lastYear = $year;
+            }
+
+            $html .=  "<div class='dateBox'>"
+                  .    "<span class='month'      >{$month}</span>"
+                  .    "<span class='day'        >{$day}</span>"
+                  .    "<span class='day-of-week'>{$dayOfWeek}</span>"
+                  .   "</div>"
+                  .  "</div>";
+            break;
+            
+        case self::SORT_BY_NAME:              // 'name'
+            $html .= "<div class='alpha'>"
+                  .   $value
+                  .  "</div>";
+            break;
+
+        case self::SORT_BY_RATING:            // 'rating'
+        case self::SORT_BY_RATING_COUNT:      // 'ratingCount'
+        case self::SORT_BY_USER_COUNT:        // 'userCount'
+            $html .= "<div class='numeric'>"
+                  .   $value
+                  .  "</div>";
+            break;
+        }
+
+        $html  .=  "</div>"
+               .  "</div>";                         // groupHeader }
+
+        return $html;
+    }
 
     /** @brief  Given a show style array, include additional show-meta 
      *          information useful for future view renderers in determining
@@ -869,7 +1046,7 @@ function init_userItems()
         $html .=  "<div class='field displayStyle'>"    // itemsStyle {
               .    "<label for='itemsStyle'>Display</label>"
               .    "<input type='hidden' name='itemsStyle' "
-              .          "value='{$style}' />";
+              .          "value='{$this->_style}' />";
 
         $idex       = 0;
         $titleCount = count(self::$styleTitles);

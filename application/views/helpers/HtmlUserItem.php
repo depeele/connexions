@@ -119,8 +119,12 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                     if ( ($showParts['meta:rating:stars:owner'] === true) &&
                          $isOwner )
                     {
-                        $html .= $this->view->htmlStarRating($userItem->rating,
-                                                            'owner');
+                        $html .= $this
+                                    ->view
+                                      ->htmlStarRating($userItem->rating,
+                                                       'owner',
+                                                       false,   // read-only
+                                                       $ratingTitle);
                     }
 
                     $html .= "</div>";      // stars }
