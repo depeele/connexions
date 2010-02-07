@@ -321,10 +321,12 @@ function init_userItemDisplayOptions()
  */
 function init_userItemsGroupHeader()
 {
-    var $headers    = $('#userItems .groupHeader');
-    var origOpacity = $headers.css('opacity');
+    var $headers    = $('#userItems .groupHeader .group');
+    var dimOpacity  = 0.5;
 
-    $('#userItems .groupHeader').hover(
+    $headers
+        .fadeTo(100, dimOpacity)
+        .hover(
             // in
             function() {
                 $(this).fadeTo(100, 1.0);
@@ -332,7 +334,7 @@ function init_userItemsGroupHeader()
 
             // out
             function() {
-                $(this).fadeTo(100, origOpacity);
+                $(this).fadeTo(100, dimOpacity);
             }
         );
 }
