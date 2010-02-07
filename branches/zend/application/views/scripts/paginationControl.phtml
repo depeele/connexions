@@ -19,17 +19,20 @@
  *      firstItemNumber
  *      lastItemNumber
  *
- *      excludeInfo   - true to exclude paging information
- *      cssClass      - css class for the form
+ *      excludeInfo     - true to exclude paging information
+ *      cssClass        - css class for the form
+ *      perPageChoices  - an array of integers
  */
 
 $marker         = array('first' => '&laquo;',   //'&#x00ab',    //'&laquo;',
-                        'prev' => '&lsaquo;',  //'&#x2039',    //'&lsaquo;',
-                        'next' => '&rsaquo;',  //'&#x203a',    //'&rsaquo;',
-                        'last' => '&raquo;'    //'&#x00bb',    //'&raquo;',
+                        'prev'  => '&lsaquo;',  //'&#x2039',    //'&lsaquo;',
+                        'next'  => '&rsaquo;',  //'&#x203a',    //'&rsaquo;',
+                        'last'  => '&raquo;'    //'&#x00bb',    //'&raquo;',
                 );
 $cssClass       = 'ui-corner-all';
-$perPageChoices = array(10, 25, 50, 100, 250, 500);
+
+if (! @is_array($this->perPageChoices))
+    $this->perPageChoices = array(10, 25, 50, 100, 250, 500);
 
 /*
 Connexions::log('paginationControl.phtml: vars[ '.
@@ -215,7 +218,7 @@ if ( (! @isset($this->excludeInfo)) || (! $this->excludeInfo) )
             //($pageCount      === 1 ? "" : "s"),
             $cssClass);
     
-    foreach ($perPageChoices as $perPage)
+    foreach ($this->perPageChoices as $perPage)
     {
         printf ( "<option value='%s'%s>%s</option>",
                      $perPage,

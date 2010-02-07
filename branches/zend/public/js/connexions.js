@@ -13,6 +13,10 @@
         catch(e) { };
     }
 
+    $.log = ($.isFunction(window.console.log)
+                ? window.console.log
+                : function() {});
+
     /*******************************************************************
      * Dynamic script inclusion -- Based upon jquery-include.js
      *
