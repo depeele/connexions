@@ -6,6 +6,7 @@
 class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
 {
     static public   $numericGrouping    = 10;
+    static public   $perPageChoices     = array(10, 25, 50, 100);
 
 
     const STYLE_TITLE                   = 'title';
@@ -207,7 +208,8 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
         ?>
 
 /************************************************
- * Initialize display options.
+ * Initialize display options, as well as the
+ * perPage selector in the bottom paginator.
  *
  */
 function init_userItemDisplayOptions()
@@ -217,7 +219,7 @@ function init_userItemDisplayOptions()
     var $submit         = $displayOptions.find(':submit');
     var $control        = $displayOptions.find('.control:first');
 
-    // Click to toggle the displayOptions pane
+    // Click the 'Display Options' button to toggle the displayOptions pane
     $control.click(function(e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -226,6 +228,10 @@ function init_userItemDisplayOptions()
                 $control.toggleClass('ui-state-active');
             });
 
+    /* For the anchor within the 'Display Options' button, disable the default
+     * browser action but allow the event to bubble up to the click handler on
+     * the 'Display Options' button.
+     */
     $control.find('a:first, .ui-icon:first')
                                          // Let it bubble up
                     .click(function(e) {e.preventDefault(); });
@@ -233,6 +239,7 @@ function init_userItemDisplayOptions()
     var $displayStyle   = $displayOptions.find('.displayStyle');
     var $itemsStyle     = $displayStyle.find('input[name=itemsStyle]');
     var $cControl       = $displayStyle.find('.control:first');
+    var $customFieldset = $displayStyle.find('fieldset:first');
 
     /* Attach a data item to each display option identifying the display type
      * (pulled from the CSS class (itemsStyle-<type>
@@ -251,7 +258,7 @@ function init_userItemDisplayOptions()
                 $(this).data('itemsStyle', style);
             });
 
-    // Click to toggle the 'display custom' pane / field-set
+    // Click the 'Custom' button to toggle the 'display custom' pane/field-set
     $cControl.click(function(e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -262,14 +269,18 @@ function init_userItemDisplayOptions()
                 $displayStyle.find('.custom.items').toggle();
                 $cControl.toggleClass('ui-state-active');
             });
+    /* For the anchors within the 'Custom' button, disable the default browser
+     * action but allow the event to bubble up to the click handler on the
+     * 'Custom' button.
+     */
     $cControl.find('> a, .control > a, .control > .ui-icon')
                                          // Let it bubble up
                     .click(function(e) { e.preventDefault(); });
 
-    /* When something in the 'display custom' pane / field-set changes, set the
-     * display style to 'custom'
+    /* When something in the 'display custom' pane/field-set changes, set the
+     * display style to 'custom', de-selecting the others.
      */
-    $displayStyle.find('fieldset:first').change(function() {
+    $customFieldset.change(function() {
                 var $opt    = $cControl.find('a:first');
 
                 // Save the style in our hidden input
@@ -300,7 +311,7 @@ function init_userItemDisplayOptions()
                 $form.change();
             });
 
-    // Any change to the containing form should enable the submit button
+    // Any change within the form should enable the submit button
     $form.change(function() {
                 $submit.removeClass('ui-state-disabled')
                        .removeAttr('disabled')
@@ -309,9 +320,67 @@ function init_userItemDisplayOptions()
 
     // Bind to submit.
     $form.submit(function() {
-        var a   = 1;
-    });
+                /* If the selected display style is NOT 'custom', disable all
+                 * the 'display custom' pane/field-set inputs so they will not
+                 * be included in the serialization of form values.
+                 */
+                if ($itemsStyle.val() != 'custom')
+                    // Disable all custom field values
+                    $customFieldset.find('input').attr('disabled', true);
 
+                // Serialize all form values to an array...
+                var settings    = $form.serializeArray();
+
+                /* ...and set a cookie for each
+                 *  itemsSortBy
+                 *  itemsSortOrder
+                 *  perPage
+                 *  itemsStyle
+                 *      and possibly
+                 *      itemsStyleCustom[ ... ]
+                 */
+                $(settings).each(function() {
+                    $.log("Add Cookie: name[%s], value[%s]",
+                          this.name, this.value);
+                    $.cookie(this.name, this.value);
+                });
+
+                /* Finally, disable ALL inputs so our URL will have no
+                 * parameters since we've stored them all in cookies.
+                 */
+                $form.find('input,select').attr('disabled', true);
+
+                // let the form be submitted
+            });
+
+    /* Finally, attach to the perPage selection box in the bottom pagination
+     * form.
+     */
+    var $pForm  = $('form.pagination:has(select[name=perPage])');
+
+    $pForm.submit(function() {
+                // Serialize all form values to an array...
+                var settings    = $pForm.serializeArray();
+
+                /* ...and set a cookie for each
+                 *  perPage
+                 */
+                $(settings).each(function() {
+                    $.log("Add Cookie: name[%s], value[%s]",
+                          this.name, this.value);
+                    $.cookie(this.name, this.value);
+                });
+
+                /* Finally, disable ALL inputs so our URL will have no
+                 * parameters since we've stored them all in cookies.
+                 */
+                $pForm.find('input,select').attr('disabled', true);
+            });
+
+    $pForm.find('select[name=perPage]').change(function() {
+                // On change, submit the form.
+                $pForm.submit();
+            });
     return;
 }
 
@@ -775,11 +844,14 @@ function init_userItems()
                   .  $this->view->paginationControl($paginator,
                                                     null,        // style
                                                     'paginationControl.phtml',
-                                                    array('excludeInfo' =>
-                                                            true,
-                                                          'cssClass'    =>
-                                                            'pagination-top'))
-                  .  $this->_renderDisplayOptions($showMeta);
+                                                    array(
+                                                      'excludeInfo'    =>
+                                                        true,
+                                                      'cssClass'       =>
+                                                        'pagination-top',
+                                                      'perPageChoices' =>
+                                                        self::$perPageChoices))
+                  .  $this->_renderDisplayOptions($paginator, $showMeta);
 
         if (count($paginator))
         {
@@ -809,7 +881,12 @@ function init_userItems()
         }
 
 
-        $html .= $paginator
+        $html .= $this->view->paginationControl($paginator,
+                                                null,        // style
+                                                'paginationControl.phtml',
+                                                array(
+                                                    'perPageChoices' =>
+                                                        self::$perPageChoices))
               .  "<br class='clear' />\n";
 
         // Return the rendered HTML
@@ -996,8 +1073,10 @@ function init_userItems()
         return $show;
     }
 
-    protected function _renderDisplayOptions($showMeta)
+    protected function _renderDisplayOptions($paginator, $showMeta)
     {
+        $itemCountPerPage = $paginator->getItemCountPerPage();
+
         $html = "<div class='displayOptions'>"      // displayOptions {
               .  "<div class='control ui-corner-all ui-state-default'>"
               .   "<a >Display Options</a>"
@@ -1043,9 +1122,26 @@ function init_userItems()
         }
 
         $html .=   "<br class='clear' />"
-              .   "</div>";                             // itemsSortOrder }
+              .   "</div>"                              // itemsSortOrder }
+              .   "<div class='field perPage'>"         // perPage {
+              .    "<label for='perPage'>Per page</label>"
+              .    "<select class='ui-input ui-state-default "
+              .                  "count' name='perPage'>"
+              .     "<!-- perPage: {$itemCountPerPage} -->";
 
-        $html .=  "<div class='field displayStyle'>"    // itemsStyle {
+        foreach (self::$perPageChoices as $perPage)
+        {
+            $html .= "<option value='{$perPage}'"
+                  .           ($perPage == $itemCountPerPage
+                                 ? ' selected'
+                                 : '')
+                  .                     ">{$perPage}</option>";
+        }
+    
+        $html .=   "</select>"
+              .    "<br class='clear' />"
+              .   "</div>"                              // perPage }
+              .   "<div class='field displayStyle'>"    // itemsStyle {
               .    "<label for='itemsStyle'>Display</label>"
               .    "<input type='hidden' name='itemsStyle' "
               .          "value='{$this->_style}' />";
@@ -1109,11 +1205,8 @@ function init_userItems()
         $html .= sprintf("<fieldset class='custom items'%s>",
                           ($this->_style !== self::STYLE_CUSTOM
                                 ? " style='display:none;'"
-                                : ""),
-                          ($this->_style !== self::STYLE_CUSTOM
-                                ? " disabled='true'"
                                 : ""));
-                        
+
         // Need 'legend' for vertical spacing control
         $html .=    "<div class='item'>"
               .      "<div class='meta'>"
@@ -1207,7 +1300,7 @@ function init_userItems()
               .        "<input type='checkbox' "
               .               "name='itemsStyleCustom[tags]' "
               .                 "id='display-tags' "
-              .                              "class='tag' "
+              .              "class='tag' "
               .              ( $showMeta['tags']
                                 ? " checked='true'"
                                 : ''). " />"

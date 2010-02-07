@@ -14,6 +14,7 @@
 .displayOptions form .sortOrder .field { float: left; padding-bottom: 0; padding-right: 0.5em; }
 .displayOptions form .sortOrder .field label { display: inline; float: none; width: auto; padding: 0 0.1em; }
 .displayOptions form .sortOrder .field input, .displayOptions form .sortOrder .field label { cursor: pointer; }
+.displayOptions form .perPage { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
 .displayOptions form .displayStyle { display: block; position: relative; width: auto; text-align: left; padding-top: 1em; }
 .displayOptions form .displayStyle a { font-weight: normal; }
 .displayOptions form .displayStyle .option-selected { font-weight: bold; }
