@@ -38,19 +38,41 @@ function init_itemScope()
      */
     $itemScope.find('input[emptyText]').input();
 
+    // Attach a hover effect for deletables
+    $itemScope.find('.deletable a.delete')
+                .css('opacity', 0.25)
+                .hover(
+        // in
+        function() {
+            $(this).css('opacity', 1.0)
+                   .addClass('ui-icon-circle-close')
+                   .removeClass('ui-icon-close');
+        },
+        // out
+        function() {
+            $(this).addClass('ui-icon-close')
+                   .removeClass('ui-icon-circle-close')
+                   .css('opacity', 0.25);
+        }
+    );
+
     var $pForm  = $itemScope.closest('form');
 
     // Add an on-submit handler to our parent form
     $pForm.submit(function() {
         // Changing scope - adjust the form...
         var scope   = $input.input('val');
+        var current = $pForm.find('input[name=scopeCurrent]').val();
+        var action  = $pForm.attr('action') +'/'+ current;
 
         if (scope.length > 0)
         {
             // Change the form action to include the new scope
-            var action  = $pForm.attr('action') +'/'+ scope;
-            $pForm.attr('action', action);
+            if (current.length > 0)
+                action += ',';
+            action += scope;
         }
+        $pForm.attr('action', action);
 
         // Disable scope -- this removes these items from form serialization.
         $input.attr('disabled', true);
@@ -89,21 +111,19 @@ function init_itemScope()
     {
         $this->_initialize();
 
-        $html = "<form class='itemScope ui-corner-all'>"    // itemScope {
-              .   "<ul>";
-
         $url    = '';
         $action = '';
+        $html   = '<ul>';
         if ( @is_array($path))
         {
             $cssClass = 'root ui-corner-tl';
             foreach ($path as $pathName => $pathUrl)
             {
-                $html .= sprintf (  "<li class='%s'>"
-                                  .  "<a href='%s'>%s</a>"
-                                  . "</li>",
-                                  $cssClass,
-                                  $pathUrl, $pathName);
+                $html .= sprintf(  "<li class='%s'>"
+                                 .  "<a href='%s'>%s</a>"
+                                 . "</li>",
+                                 $cssClass,
+                                 $pathUrl, $pathName);
 
                 if (strpos($cssClass, 'root') !== false)
                 {
@@ -111,11 +131,16 @@ function init_itemScope()
 
                     $cssClass = 'section';
                 }
+                else
+                {
+                    array_push($curScope, $pathName);
+                }
 
                 $url = $pathUrl;
             }
         }
 
+        $curScope = array();
         if ( $scopeInfo->hasValidItems())
         {
             $html .= "<li class='scopeItems'>"
@@ -143,16 +168,23 @@ function init_itemScope()
                 $others = array_diff($scopeInfo->validList, array($name));
                 $remUrl = $reqUrl .'/'. implode(',', $others);
         
+                /*
                 Connexions::log("HtmlItemScope: reqUrl[ {$reqUrl} ], "
                                         . "name[ {$name} ], "
                                         . "remUrl[ {$remUrl} ]");
+                // */
         
                 $html .= sprintf (  "<li class='deletable'>"
                                   .  "<a href='%s/%s'>%s</a>"
-                                  .  "<a href='%s'>x</a>"
+                                  .  "<a href='%s' "
+                                  .     "class='delete ui-icon ui-icon-close'>"
+                                  .   "x"
+                                  .  "</a>"
                                   . "</li>",
                                   $url, $name, $name,
                                   $remUrl);
+
+                array_push($curScope, $name);
             }
         
             $html .=  "</ul>"
@@ -169,8 +201,18 @@ function init_itemScope()
               .    number_format($paginator->getTotalItemCount())
               .   "</li>"
               .  "</ul>"
-              .  "<br class='clear' />"
-              . "</form>";   // itemScope }
+              .  "<br class='clear' />";
+
+
+
+        // Finalize the HTML
+        $html = "<form action='${action}' "
+              .        "class='itemScope ui-corner-all'>"
+              .  "<input type='hidden' name='scopeCurrent' "
+              .        "value='". implode(',', $curScope) ."'>"
+              .  $html
+              . "</form>";
+
         
         return $html;
     }

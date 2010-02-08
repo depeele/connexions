@@ -9,6 +9,7 @@
     li
       background-color: transparent
       float:            left
+      border-right =    "1px dotted" !borderColor
       //-moz-border-radius-bottomright:     1em
       //-moz-border-radius-topright:        1em
       //-webkit-border-bottom-right-radius: 1em
@@ -26,6 +27,13 @@
         margin:         0.1em 0.25em 0
         height:         1.5em
         padding:        0.2em
+    li.deletable
+      a.delete
+        display:          block
+        padding:          0
+        margin:           0.5em 0.25em
+        text-indent:      999em
+        text-decoration:  none
 
   .root
     background-color =  !linkColor
@@ -39,12 +47,3 @@
     float:              right
     width =             !countBoxWidth + 10px
     text-align:         center
-
-  .triangle-r
-    float:          right
-    width:          0
-    height:         0
-    border-right:   0
-    border-top:     1em solid transparent
-    border-bottom:  1em solid transparent
-    border-left:    1em solid #fff

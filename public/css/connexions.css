@@ -240,6 +240,10 @@ cite { display: block; text-align: right; padding-top: 10px; }
 
 .lock_fill { width: 13px; height: 16px; background-position: -13px -28px; }
 
+.button_delete_on { width: 16px; height: 16px; background-position: -72px -12px; }
+
+.button_delete_off { width: 16px; height: 16px; background-position: -88px -12px; }
+
 .status_ok { width: 15px; height: 15px; background-position: -72px  -28px; }
 
 .status_error { width: 15px; height: 15px; background-position: -87px  -28px; }
@@ -381,7 +385,6 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .Tag_Cloud .tag { display: inline; font-size: 100%; margin: 0.25em; }
 .Tag_Cloud .tag a { display: inline-block; vertical-align: middle; padding: 0 0.2em; }
 .Tag_Cloud .tag a:hover { text-decoration: none; background-color: #0066cc; color: white; }
-.Tag_Cloud .tag .selected { background-color: #ddd; }
 .Tag_Cloud .tag .size0 { font-size: 0.8em; font-weight: normal; color: #000; }
 .Tag_Cloud .tag .size1 { font-size: 0.9em; font-weight: normal; color: #23598c; }
 .Tag_Cloud .tag .size2 { font-size: 1em; font-weight: normal; color: #23598d; }
@@ -389,19 +392,22 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .Tag_Cloud .tag .size4 { font-size: 1.5em; font-weight: normal; color: #235994; }
 .Tag_Cloud .tag .size5 { font-size: 2em; font-weight: normal; color: #2359aa; }
 .Tag_Cloud .tag .size6 { font-size: 2.5em; font-weight: normal; color: #2359ff; }
+.Tag_Cloud .tag .selected { color: #000; }
+.Tag_Cloud .tag a.selected { background-image: none; background-color: #0066cc; color: white; }
+.Tag_Cloud .tag a.selected:hover { color: #0066cc; background-color: white; }
 
 /* ****** itemScope.sass ****** */
 .itemScope { background-color: #cccccc; }
 .itemScope a { color: white; }
 .itemScope ul { background-color: transparent; padding: 0; }
-.itemScope ul li { background-color: transparent; float: left; }
+.itemScope ul li { background-color: transparent; float: left; border-right: 1px dotted #cccccc; }
 .itemScope ul li a, .itemScope ul li input { display: block; float: left; font-weight: normal; }
 .itemScope ul li a { padding: 0.5em; }
 .itemScope ul li input { margin: 0.1em 0.25em 0; height: 1.5em; padding: 0.2em; }
+.itemScope ul li.deletable a.delete { display: block; padding: 0; margin: 0.5em 0.25em; text-indent: 999em; text-decoration: none; }
 .itemScope .root { background-color: #0066cc; }
 .itemScope .scopeItems { padding: 0; background-color: #999999; }
 .itemScope .itemCount { background-color: #999999; color: white; padding: 0.5em; float: right; width: 110px; text-align: center; }
-.itemScope .triangle-r { float: right; width: 0; height: 0; border-right: 0; border-top: 1em solid transparent; border-bottom: 1em solid transparent; border-left: 1em solid #fff; }
 
 /* ****** papgination.sass ****** */
 .pagination { clear: both; padding: 1em; float: left; text-align: center; }
