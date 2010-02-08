@@ -16,8 +16,6 @@
         text-decoration:    none
         background-color =  !linkColor
         color =             !pageColorBackground
-    .selected 
-      background-color: #ddd
     .size0 
       font-size:    0.8em
       font-weight:  normal
@@ -46,3 +44,13 @@
       font-size:    2.5em
       font-weight:  normal
       color:        #2359ff
+    .selected 
+      //background-color: #ddd
+      color:            #000
+    a.selected
+      background-image:     none
+      background-color =    !linkColor
+      color =               !pageColorBackground
+      &:hover
+        color =             !linkColor
+        background-color =  !pageColorBackground
