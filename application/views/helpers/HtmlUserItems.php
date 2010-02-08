@@ -242,7 +242,7 @@ function init_userItemDisplayOptions()
     var $customFieldset = $displayStyle.find('fieldset:first');
 
     /* Attach a data item to each display option identifying the display type
-     * (pulled from the CSS class (itemsStyle-<type>
+     * (pulled from the CSS class (itemsStyle-<type>)
      */
     $displayStyle.find('a.option,div.option a:first').each(function() {
                 // Retrieve the new style value from the 'itemsStyle-*' class
@@ -252,7 +252,7 @@ function init_userItemDisplayOptions()
                 style = style.substr(pos);
                 pos   = style.indexOf(' ');
                 if (pos > 0)
-                    style = style.substr(0, pos+1);
+                    style = style.substr(0, pos);
 
                 // Save the style in a data item
                 $(this).data('itemsStyle', style);
@@ -320,13 +320,25 @@ function init_userItemDisplayOptions()
 
     // Bind to submit.
     $form.submit(function() {
+                /* Remove all cookies related to 'custom' style.  This is 
+                 * because, when an option is NOT selected, it is not included 
+                 * so, to remove a previously selected options, we must first 
+                 * remove them all and then add in the ones that are explicitly 
+                 * selected.
+                 */
+                $customFieldset.find('input').each(function() {
+                    $.cookie( $(this).attr('name'), null );
+                });
+
                 /* If the selected display style is NOT 'custom', disable all
                  * the 'display custom' pane/field-set inputs so they will not
                  * be included in the serialization of form values.
                  */
-                if ($itemsStyle.val() != 'custom')
+                if ($itemsStyle.val() !== 'custom')
+                {
                     // Disable all custom field values
                     $customFieldset.find('input').attr('disabled', true);
+                }
 
                 // Serialize all form values to an array...
                 var settings    = $form.serializeArray();
@@ -390,7 +402,7 @@ function init_userItemDisplayOptions()
  */
 function init_userItemsGroupHeader()
 {
-    var $headers    = $('#userItems .groupHeader .group');
+    var $headers    = $('#userItems .groupHeader .groupType');
     var dimOpacity  = 0.5;
 
     $headers
@@ -964,7 +976,7 @@ function init_userItems()
                                       // groupTaggedOn, groupDateUpdated,
                                       // groupName,     groupRating,
                                       // groupUserCount
-               .              " ui-corner-tr'>";
+               .              " ui-corner-right'>";
 
 
         switch ($groupBy)
@@ -979,7 +991,7 @@ function init_userItems()
             $month     = date('M', $time);
             $dayOfWeek = date('D', $time);
 
-            $html .= "<div class='date'>";
+            $html .= "<div class='groupType date'>";
 
             if ($year !== $this->_lastYear)
             {
@@ -996,7 +1008,7 @@ function init_userItems()
             break;
             
         case self::SORT_BY_NAME:              // 'name'
-            $html .= "<div class='alpha'>"
+            $html .= "<div class='groupType alpha'>"
                   .   $value
                   .  "</div>";
             break;
@@ -1004,7 +1016,7 @@ function init_userItems()
         case self::SORT_BY_RATING:            // 'rating'
         case self::SORT_BY_RATING_COUNT:      // 'ratingCount'
         case self::SORT_BY_USER_COUNT:        // 'userCount'
-            $html .= "<div class='numeric'>"
+            $html .= "<div class='groupType numeric'>"
                   .   $value
                   .  "</div>";
             break;
@@ -1347,13 +1359,11 @@ function init_userItems()
               .    "</fieldset>";
 
         $html .=  "</div>"                      // itemsStyle }
-              .   "<div id='buttons-global' class='buttons'"
-              /*
+              .   "<div id='buttons-global' class='buttons"
               .           ($this->_style === self::STYLE_CUSTOM
-                                ? " style='display:none;'"
+                                ? " buttons-custom"
                                 : "")
-              */
-              .                         ">"
+              .                         "'>"
               .    "<button type='submit' "
               .           "class='ui-button ui-corner-all "
               .                 "ui-state-default ui-state-disabled' "

@@ -10,7 +10,7 @@
    <pages>
     <!-- Authenticated Users -->
     <userInfo>
-     <label>Welcome%html.br%%user.name%</label>
+     <label>%user.name%</label>
      <controller>index</controller>
      <action>%user.name%</action>
      <resource>member</resource>
