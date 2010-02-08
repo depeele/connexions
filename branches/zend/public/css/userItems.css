@@ -6,7 +6,7 @@
 .displayOptions .buttons { text-align: right; }
 .displayOptions .buttons button { display: inline; padding: 0.25em; }
 .displayOptions #buttons-global { margin-top: 2em; padding: 0.5em 0.5em 0; border-top: 1px dotted #cccccc; }
-.displayOptions .buttons-custom { margin-top: 0.5em !important; }
+.displayOptions .buttons-custom { margin-top: 0 !important; }
 .displayOptions .field { display: block; padding-bottom: 0.25em; }
 .displayOptions .field label { clear: left; width: 6em; float: left; }
 .displayOptions form { position: absolute; top: 2.25em; right: 0; width: 22em; padding: 0.5em; z-index: 2; }
@@ -38,17 +38,17 @@
 .pagination-top { float: left; padding: 0.5em 0; }
 .pagination-top .pager { display: inline; }
 
-.items { clear: both; border-bottom: 1px solid #cccccc; }
+.items { clear: both; padding-top: 2em; border-bottom: 1px solid #cccccc; }
 .items .groupHeader { position: relative; background-color: #eeeeff; border-bottom: 1px solid #cccccc; color: #999999; height: 20px; left: -15px; }
 .items .groupHeader .group { position: relative; background-color: #eeeeff; height: 20px; right: -20px; }
 .items .groupHeader .date { position: relative; left: -12px; }
-.items .groupHeader .date .year { position: absolute; left: 0.75em; top: -0.45em; font-size: 3em; font-weight: bold; color: #ddddff; z-index: 4; }
-.items .groupHeader .date .dateBox { position: relative; font-size: 1em; font-weight: bold; }
+.items .groupHeader .date .year { position: absolute; left: 1em; top: -0.45em; font-size: 3em; font-weight: bold; color: #ddddff; z-index: 4; }
+.items .groupHeader .date .dateBox { position: relative; left: -0.25em; font-size: 1em; font-weight: bold; }
 .items .groupHeader .date .dateBox .month { display: inline; }
 .items .groupHeader .date .dateBox .day { display: inline; padding: 0 0.25em; }
 .items .groupHeader .date .dateBox .day-of-week { display: block; font-size: 0.8em; font-weight: bold; }
-.items .groupHeader .alpha, .items .groupHeader .numeric { position: absolute; left: -0.55em; top: -0.4em; font-size: 3em; font-weight: bold; color: #bbbbff; z-index: 0; }
-.items .item { position: relative; z-index: 1; margin-bottom: 0.25em; border-top: 1px solid #cccccc; }
+.items .groupHeader .alpha, .items .groupHeader .numeric { position: absolute; left: -0.55em; top: -0.45em; font-size: 3em; font-weight: bold; color: #bbbbff; z-index: 0; }
+.items .item { position: relative; z-index: 1; margin-bottom: 1em; border-top: 1px solid #cccccc; }
 .items .item .status { position: absolute; top: 0; left: 0; width: 20px; height: 100%; z-index: 5; }
 .items .item .status .checkbox { border: 0; }
 .items .item .status .favorite, .items .item .status .private { position: absolute; cursor: pointer; }
