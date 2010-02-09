@@ -182,7 +182,7 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
     protected       $_sortBy        = self::SORT_BY_DATE_TAGGED;
     protected       $_sortOrder     = Model_UserItemSet::SORT_ORDER_DESC;
     protected       $_multipleUsers = true;
-
+    protected       $_scopeItems    = null;
 
     /** @brief  Set the View object.
      *  @param  view    The Zend_View_Interface
@@ -774,6 +774,28 @@ function init_userItems()
         return $this->_multipleUsers;
     }
 
+    /** @brief  Set the Connexions_Set that specifies the full set of scope 
+     *          items (for auto-suggest).
+     *  @param  scopeItems  A Connexions_Set instance.
+     *
+     *  @return Connexions_View_Helper_HtmlUserItems for a fluent interface.
+     */
+    public function setScopeItems(Connexions_Set $scopeItems)
+    {
+        $this->_scopeItems = $scopeItems;
+
+        return $this;
+    }
+
+    /** @brief  Get the current scopeItems value.
+     *
+     *  @return The Connexions_Set instance (null if not set).
+     */
+    public function getScopeItems()
+    {
+        return $this->_scopeItems;
+    }
+
     /** @brief  Render an HTML version of a paginated set of User Items.
      *  @param  paginator       The Zend_Paginator representing the items to
      *                          be presented.
@@ -852,7 +874,8 @@ function init_userItems()
                                                 $tagInfo,
                                                 'Tags',
                                                 'tags',
-                                                array($ownerStr => $ownerUrl))
+                                                array($ownerStr => $ownerUrl),
+                                                $this->_scopeItems)
                   .  $this->view->paginationControl($paginator,
                                                     null,        // style
                                                     'paginationControl.phtml',

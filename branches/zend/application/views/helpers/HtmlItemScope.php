@@ -9,18 +9,54 @@ class Connexions_View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
 {
     static protected    $_initialized   = false;
 
-    protected function _initialize()
+    protected function _initialize($scopeInfo, $scopeItems = null)
     {
         if (self::$_initialized)
             return;
 
+        $scopeData = null;
+        if ($scopeItems !== null)
+        {
+            $scopeData = array();
+            foreach ($scopeItems as $item)
+            {
+                $str = $item->__toString();
+
+                if ($scopeInfo->isValidItem($str))
+                    continue;
+
+                array_push($scopeData, '{value: "'. $str .'"}');
+            }
+
+            $scopeData = '['. implode(',', $scopeData) .']';
+
+            Connexions::log('Connexions_View_Helper_HtmlItemScope::_initliaze:'
+                            . " scopeData[ {$scopeData} ]");
+
+            /*
+            $scopeData = array();
+            foreach ($scopeItems as $item)
+            {
+                array_push($scopeData, array('value' => $item->__toString()));
+            }
+            */
+        }
+
         $view   =& $this->view;
+
+        $view->headLink()
+                ->appendStylesheet($view->baseUrl('css/autoSuggest.css'));
+
         $jQuery = $view->jQuery();
 
-        $jQuery->addJavascriptFile($view->baseUrl('js/ui.input.js'))
-               ->addOnLoad('init_itemScope();')
-               ->javascriptCaptureStart();
+        $baseUrl = $view->baseUrl('/');
+        if ($scopeItems === null)
+            $jQuery->addJavascriptFile($baseUrl .'js/ui.input.js');
+        else
+            $jQuery->addJavascriptFile($baseUrl .'js/jquery.autosuggest.js');
 
+        $jQuery->addOnLoad('init_itemScope();')
+               ->javascriptCaptureStart();
         ?>
 
 /************************************************
@@ -30,13 +66,28 @@ class Connexions_View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
 function init_itemScope()
 {
     var $itemScope  = $('.itemScope');
-    var $input      = $itemScope.find('input');
+    var $input      = $itemScope.find('.scopeEntry input');
+    var scopeData   = <?= ($scopeData !== null
+                                ? $scopeData    //json_encode($scopeData)
+                                : 'null') ?>;
 
-    /* Attach ui.input to the input field with defined 'emptyText' and a
-     * validation callback to enable/disable the submit button based upon
-     * whether or not there is text in the search box.
-     */
-    $itemScope.find('input[emptyText]').input();
+    if (scopeData === null)
+    {
+        /* Attach ui.input to the input field with defined 'emptyText' and a
+         * validation callback to enable/disable the submit button based upon
+         * whether or not there is text in the search box.
+         */
+        $input.input(); //itemScope.find('input[emptyText]').input();
+    }
+    else
+    {
+        // Attach autoSuggest to our input box
+        $input.autoSuggest(scopeData,
+                           {startText: $input.attr('emptyText')});
+
+        $input = $itemScope.find('.scopeEntry input.as-values');
+    }
+
 
     // Attach a hover effect for deletables
     $itemScope.find('.deletable a.delete')
@@ -61,7 +112,9 @@ function init_itemScope()
     // Add an on-submit handler to our parent form
     $pForm.submit(function() {
         // Changing scope - adjust the form...
-        var scope   = $input.input('val');
+        var scope   = (scopeData === null
+                        ? $input.input('val')
+                        : $input.val().replace(/,$/, ''));
         var current = $pForm.find('input[name=scopeCurrent]').val();
         var action  = $pForm.attr('action') +'/'+ current;
 
@@ -100,6 +153,9 @@ function init_itemScope()
      *                          array(root-name => root-url,
      *                                item-name => item-url,
      *                                ...)
+     *  @param  scopeItems  The full Connexions_Set that specifies all valid
+     *                      scope items
+     *                      (e.g. all matching Tags, all matching Users).
      *
      *  @return The HTML representation of the Item Scope.
      */
@@ -107,9 +163,10 @@ function init_itemScope()
                                   Connexions_Set_info   $scopeInfo,
                                                         $inputLabel = '',
                                                         $inputName  = '',
-                                                        $path       = null)
+                                                        $path       = null,
+                                  Connexions_Set        $scopeItems = null)
     {
-        $this->_initialize();
+        $this->_initialize($scopeInfo, $scopeItems);
 
         $url    = '';
         $action = '';

@@ -361,7 +361,7 @@ cite { display: block; text-align: right; padding-top: 10px; }
 #search { position: absolute; top: 0; right: 0; padding: 0.1em 0.5em 0.1em 0; width: 190px; height: 2em; background-color: #172322; *height: 46px  /* IE fix */; *padding-top: 18px  /* IE fix */; *padding-bottom: 0     /* IE fix */; /* Search Input / Choices */ /* Search Context choices */ }
 #search .searchBox { float: right; }
 #search .searchInput { border: 0; color: #999; }
-#search .searchInput input { border: none; height: 1.5em; margin: 0; padding: 0.1em 23px 0 2px; width: 145px; font-weight: normal; }
+#search .searchInput input { border: none; height: 1.5em; margin: 0; padding: 0.25em 23px 0 2px; width: 145px; font-weight: normal; }
 #search .focus { color: #000; }
 #search .submit { display: block; position: absolute; top: 0.25em; left: 150px; width: 23px; padding: 0; border: 0; border-left: 1px dotted #999; background-color: transparent; cursor: pointer; z-index: 101; *background-color: #fff   /* IE fix -- IE doesn't like 'transparent' as a color it uses a dark grey */; }
 #search .choices .list { top: 1.9em; left: -30px; }
@@ -399,15 +399,32 @@ cite { display: block; text-align: right; padding-top: 10px; }
 /* ****** itemScope.sass ****** */
 .itemScope { background-color: #cccccc; }
 .itemScope a { color: white; }
-.itemScope ul { background-color: transparent; padding: 0; }
+.itemScope ul { background-color: transparent; padding: 0.1em; }
 .itemScope ul li { background-color: transparent; float: left; border-right: 1px dotted #cccccc; }
 .itemScope ul li a, .itemScope ul li input { display: block; float: left; font-weight: normal; }
-.itemScope ul li a { padding: 0.5em; }
-.itemScope ul li input { margin: 0.1em 0.25em 0; height: 1.5em; padding: 0.2em; }
-.itemScope ul li.deletable a.delete { display: block; padding: 0; margin: 0.5em 0.25em; text-indent: 999em; text-decoration: none; }
+.itemScope ul li a { padding: 0.25em; }
+.itemScope ul li.deletable a.delete { display: block; padding: 0; margin: 0.25em; text-indent: 999em; text-decoration: none; }
+.itemScope ul li.scopeEntry { border: none; padding: 0.1em; }
+.itemScope ul li.scopeEntry input { margin: 0; padding: 0.1em; height: 1.25em; }
+.itemScope ul li.scopeEntry ul.as-selections { box-shadow: none; -webkit-box-shadow: none; -moz-box-shadow: none; border: none; padding: 0.1em; margin: 0; }
+.itemScope ul li.scopeEntry ul.as-selections li { border: none; margin: 0; padding: 0; }
+.itemScope ul li.scopeEntry ul.as-selections li.as-original { margin: 0; }
+.itemScope ul li.scopeEntry ul.as-selections li.as-original input.as-input { font-size: 1em; height: 1.25em; margin: 0; padding: 0; width: 9em; }
+.itemScope ul li.scopeEntry ul.as-selections li.as-original input.as-values { display: none; }
+.itemScope ul li.scopeEntry ul.as-selections li.as-selection-item { font-size: 0.9; font-family: inherit; padding: 0 0.25em 0.1em 0.5em; background-color: #eeeeee; color: #172322; box-shadow: none; -webkit-box-shadow: none; -moz-box-shadow: none; text-shadow: none; margin-right: 0.1em; -moz-border-radius: 0.5em 0.5em 0.5em 0.5em; -webkit-border-radius: 0.5em 0.5em 0.5em 0.5em; border-radius: 0.5em 0.5em 0.5em 0.5em; }
+.itemScope ul li.scopeEntry ul.as-selections li.as-selection-item a.as-close { font-family: inherit; font-size: 1em; text-shadow: none; }
+.itemScope ul li.scopeEntry ul.as-selections li.selected { color: #eeeeee; background-color: #172322; }
+.itemScope ul li.scopeEntry .as-results { display: block; }
+.itemScope ul li.scopeEntry .as-results .as-list { font-size: 1em; }
+.itemScope ul li.scopeEntry .as-results .as-list .as-result-item { text-shadow: none; background-image: none; margin: 0.25em; padding: 0.25em; border: 1px solid #cccccc; float: none; }
+.itemScope ul li.scopeEntry .as-results .as-list .as-result-item .as-message { padding: 0.25em; }
+.itemScope ul li.scopeEntry .as-results .as-list .active { color: white; background-color: #0066cc; }
+.itemScope ul li.scopeEntry .as-results .as-list .active em { background-color: #172322; }
 .itemScope .root { background-color: #0066cc; }
 .itemScope .scopeItems { padding: 0; background-color: #999999; }
-.itemScope .itemCount { background-color: #999999; color: white; padding: 0.5em; float: right; width: 110px; text-align: center; }
+.itemScope .scopeItems ul { padding-left: 0; }
+.itemScope .scopeItems ul li a { padding: 0.2em; }
+.itemScope .itemCount { background-color: #999999; color: white; padding: 0.25em; float: right; width: 110px; text-align: center; }
 
 /* ****** papgination.sass ****** */
 .pagination { clear: both; padding: 1em; float: left; text-align: center; }

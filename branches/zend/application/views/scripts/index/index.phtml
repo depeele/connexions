@@ -62,23 +62,29 @@ if ( @isset($this->userItems) )
         $userIds = $this->userItems->userIds();
 
         // Create a tag set and then retrieve its Tag_ItemList adapter
-        $tagSet        = new Model_TagSet( $userIds,
-                                           $this->userItems->itemIds() );
+        $this->tagSet = new Model_TagSet( $userIds,
+                                          $this->userItems->itemIds() );
         if ($this->owner === '*')
-            $tagSet->withAnyUser();
+            $this->tagSet->withAnyUser();
 
         /*
         Connexions::log(
                 sprintf("View Index: %s users, tag sql[ %s ]",
                             ($this->owner === '*' ? '*' : count($userIds)),
-                            $tagSet->select()->assemble()));
+                            $this->tagSet->select()->assemble()));
         // */
 
-        $this->tagList = $tagSet->get_Tag_ItemList(0, $this->tagsMax,
-                                                   $this->tagInfo,
-                                                   ($this->owner !== '*'
-                                                        ? null
-                                                        : '/tagged'));
+        $this->tagList =
+            $this->tagSet->get_Tag_ItemList(0, $this->tagsMax,
+                                            $this->tagInfo,
+                                            ($this->owner !== '*'
+                                                ? null
+                                                : '/tagged'));
+
+        /* Add g_ScopeAutoSuggest data to our Javascript comprised of all
+         * items in the current tag set.
+         * :TODO:
+         */
     }
 }
 
@@ -110,7 +116,7 @@ if ( @isset($this->tagList))
  */
 if (@isset($this->paginator))
 {
-    $helper = $this->htmlUserItems();
+    $uiHelper = $this->htmlUserItems();
 
     if (@is_array($this->itemsStyleCustom))
     {
@@ -118,12 +124,17 @@ if (@isset($this->paginator))
         print_r($this->itemsStyleCustom);
         echo " -->\n";
 
-        $helper->setStyle(Connexions_View_Helper_HtmlUserItems::STYLE_CUSTOM)
-               ->setShowMeta($this->itemsStyleCustom);
+        $uiHelper->setStyle(Connexions_View_Helper_HtmlUserItems::STYLE_CUSTOM)
+                 ->setShowMeta($this->itemsStyleCustom);
     }
     else
     {
-        $helper->setStyle($this->itemsStyle);
+        $uiHelper->setStyle($this->itemsStyle);
+    }
+
+    if (@isset($this->tagSet))
+    {
+        $uiHelper->setScopeItems($this->tagSet);
     }
 
     /* There a two ways we can do this:
@@ -133,14 +144,14 @@ if (@isset($this->paginator))
      *      all values.
      */
     if (! @empty($this->itemsSortBy))
-        $helper->setSortBy($this->itemsSortBy);
+        $uiHelper->setSortBy($this->itemsSortBy);
     if (! @empty($this->itemsSortOrder))
-        $helper->setSortOrder($this->itemsSortOrder);
+        $uiHelper->setSortOrder($this->itemsSortOrder);
 
-    echo $helper->render($this->paginator,
-                         $this->owner,
-                         $this->viewer,
-                         $this->tagInfo);
+    echo $uiHelper->render($this->paginator,
+                           $this->owner,
+                           $this->viewer,
+                           $this->tagInfo);
 }
 
 ?>
