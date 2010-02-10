@@ -415,7 +415,7 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .itemScope ul li.scopeEntry ul.as-selections li.as-selection-item a.as-close { font-family: inherit; font-size: 1em; text-shadow: none; }
 .itemScope ul li.scopeEntry ul.as-selections li.selected { color: #eeeeee; background-color: #172322; }
 .itemScope ul li.scopeEntry .as-results { display: block; }
-.itemScope ul li.scopeEntry .as-results .as-list { font-size: 1em; }
+.itemScope ul li.scopeEntry .as-results .as-list { font-size: 1em; z-index: 5; }
 .itemScope ul li.scopeEntry .as-results .as-list .as-result-item { text-shadow: none; background-image: none; margin: 0.25em; padding: 0.25em; border: 1px solid #cccccc; float: none; }
 .itemScope ul li.scopeEntry .as-results .as-list .as-result-item .as-message { padding: 0.25em; }
 .itemScope ul li.scopeEntry .as-results .as-list .active { color: white; background-color: #0066cc; }

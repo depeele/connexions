@@ -81,6 +81,17 @@ class Connexions_Controller_Action_Helper_JsonRpc
         return $this;
     }
 
+    /** @brief  Do we have an error?
+     *
+     *  @return true | false
+     */
+    public function hasError()
+    {
+        return (@is_array($this->_jsonRpc['error'])
+                    ? true
+                    : false);
+    }
+
     /*************************************************************************/
 
     /** @brief  Disable layouts and view renderer.
