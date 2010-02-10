@@ -106,9 +106,9 @@ class Connexions_Set implements Countable,
             break;
         }
 
-        // /*
+        /*
         Connexions::log("Connexions_Set::setOrder: "
-                            . "by[{$by}], order[{$order}]");
+                        . "by[{$by}], order[{$order}]");
         // */
 
         $this->_select->reset(Zend_Db_Select::ORDER)
@@ -117,7 +117,7 @@ class Connexions_Set implements Countable,
 
         /*
         Connexions::log("Connexions_Set::setOrder: "
-                            . "sql[ {$this->_select->assemble()} ]");
+                        . "sql[ {$this->_select->assemble()} ]");
         // */
 
         return $this;
@@ -145,6 +145,19 @@ class Connexions_Set implements Countable,
     public function select()
     {
         return $this->_select;
+    }
+
+    /** @brief  Limit the number of items returned.
+     *  @param  itemCountPerPage    The number of items per page
+     *  @param  offset              The page offset.
+     *
+     *  @return $this
+     */
+    public function limit($itemCountPerPage, $offset = 0)
+    {
+        $this->_select->limit($itemCountPerPage, $offset);
+
+        return $this;
     }
 
     /** @brief  Create a Zend_Tag_ItemList adapter for the top 'limit' items.
@@ -180,20 +193,23 @@ class Connexions_Set implements Countable,
     {
         if ($this->_count === null)
         {
+            $start = microtime(true);
             $res = $this->_select_forCount()
                         ->query(Zend_Db::FETCH_ASSOC)
                         ->fetch();
-
-            /*
-            printf ("<pre>Connexions_Set::count: count(res): %d, count: %s:\n",
-                    count($res), $res[self::ROW_COUNT_COLUMN]);
-            print_r($res, true);
-            echo "</pre>\n";
-            // */
+            $end   = microtime(true);
 
             $this->_count = (@isset($res[self::ROW_COUNT_COLUMN])
                                 ? $res[self::ROW_COUNT_COLUMN]
                                 : 0);
+
+            // /*
+            Connexions::log(sprintf("Connexions_Set::count():%s: "
+                                    . "%d: retrieve %f seconds",
+                                        $this->_memberClass,
+                                        $this->_count,
+                                        ($end - $start)) );
+            // */
         }
 
         return $this->_count;
@@ -215,12 +231,25 @@ class Connexions_Set implements Countable,
 
     public function offsetGet($offset)
     {
+        $start = microtime(true);
+
         // Retrieve a single row
         $this->_select->limit(1, $offset);
         $rows = $this->_select->query()->fetchAll();
+        $end1 = microtime(true);
 
         // Create a new instance of the member class using the retrieved data
         $inst = new $this->_memberClass($rows[0]);
+        $end2 = microtime(true);
+
+        // /*
+        Connexions::log(sprintf("Connexions_Set::offsetGet(%d):%s: "
+                                . "retrieve %f sec, instantiate %f secs",
+                                    $offset,
+                                    $this->_memberClass,
+                                    ($end1 - $start),
+                                    ($end2 - $end1)) );
+        // */
 
         // Return the new instance
         return $inst;
@@ -265,6 +294,7 @@ class Connexions_Set implements Countable,
      */
     public function getItems($offset, $itemCountPerPage)
     {
+        $start = microtime(true);
         if ($itemCountPerPage <= 0)
         {
             $this->_select->reset(Zend_Db_Select::LIMIT_COUNT);
@@ -274,8 +304,23 @@ class Connexions_Set implements Countable,
             $this->_select->limit($itemCountPerPage, $offset);
 
         $rows = $this->_select->query()->fetchAll();
+        $end1 = microtime(true);
 
-        return new $this->_iterClass($this, $rows);
+        $inst = new $this->_iterClass($this, $rows);
+        $end2 = microtime(true);
+
+        // /*
+        Connexions::log(sprintf("Connexions_Set::getItems(%d, %d):%s: "
+                                //. "sql[ %s ], "
+                                . "retrieve %f sec, instantiate %f secs",
+                                    $offset, $itemCountPerPage,
+                                    $this->_memberClass,
+                                    //$this->_select->assemble(),
+                                    ($end1 - $start),
+                                    ($end2 - $end1)) );
+        // */
+
+        return $inst;
     }
 
     /*************************************************************************

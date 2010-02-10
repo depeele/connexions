@@ -1,7 +1,7 @@
 <?php
 /** @file
  *
- *  This controller handles sigin-in, sign-out and registration and is accessed
+ *  This controller handles sign-in, sign-out and registration and is accessed
  *  via the url/routes:
  *      /auth/signIn
  *      /auth/signOut

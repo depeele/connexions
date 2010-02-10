@@ -264,7 +264,6 @@ class Model_UserItemSet extends Connexions_Set
             break;
         }
 
-        // /*
         if ($force || ($orig != $by))
         {
             if (is_array($by))
@@ -272,12 +271,15 @@ class Model_UserItemSet extends Connexions_Set
             else
                 $byStr = $by;
 
-            Connexions::log("Model_UserItem::setOrder: "
+            /*
+            Connexions::log("Model_UserItemSet::setOrder: "
                                 . "Alias '{$orig}' to '{$byStr}', '{$order}'");
+            // */
         }
+        /*
         else
         {
-            Connexions::log("Model_UserItem::setOrder: "
+            Connexions::log("Model_UserItemSet::setOrder: "
                                 . "Pass on '{$by}'");
         }
         // */
@@ -288,8 +290,8 @@ class Model_UserItemSet extends Connexions_Set
         if ($group !== null)
             $this->_select->group('ui.itemId');
 
-        // /*
-        Connexions::log("Model_UserItem::setOrder: "
+        /*
+        Connexions::log("Model_UserItemSet::setOrder: "
                             . "sql[ {$this->_select->assemble()} ]");
         // */
 

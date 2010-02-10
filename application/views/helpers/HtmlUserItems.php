@@ -546,8 +546,10 @@ function init_userItems()
             break;
         }
 
+        /*
         Connexions::log('Connexions_View_Helper_HtmlUserItems::'
                             . "setStyle({$orig}) == [ {$style} ]");
+        // */
     
         $this->_style = $style;
 
@@ -588,8 +590,10 @@ function init_userItems()
             break;
         }
 
+        /*
         Connexions::log('Connexions_View_Helper_HtmlUserItems::'
                             . "setSortBy({$orig}) == [ {$sortBy} ]");
+        // */
     
 
         $this->_sortBy = $sortBy;
@@ -627,8 +631,10 @@ function init_userItems()
             break;
         }
 
+        /*
         Connexions::log('Connexions_View_Helper_HtmlUserItems::'
                             . "setSortOrder({$orig}) == [ {$sortOrder} ]");
+        // */
     
         $this->_sortOrder = $sortOrder;
 
@@ -684,10 +690,12 @@ function init_userItems()
                 }
             }
 
+            /*
             Connexions::log('Connexions_View_Helper_HtmlUserItems::'
                                 . 'setShowMeta( [ '
                                 .       print_r($showMeta, true) .' ] ) == [ '
                                 .       print_r($this->_showMeta, true) .' ]');
+            // */
     
         }
 
@@ -727,9 +735,11 @@ function init_userItems()
             $this->_showMeta = $val;
         }
 
+        /*
         Connexions::log('Connexions_View_Helper_HtmlUserItems::'
                             . 'getShowMeta(): return[ '
                             .       print_r($val, true) .' ]');
+        // */
     
         return $val;
     }
@@ -743,9 +753,11 @@ function init_userItems()
     {
         $this->_multipleUsers = ($multipleUsers ? true : false);
 
+        /*
         Connexions::log('Connexions_View_Helper_HtmlUserItems::'
                             . 'setMultipleUsers('
                             .   ($multipleUsers ? 'true' : 'false') .')');
+        // */
     
         return $this;
     }
@@ -758,8 +770,10 @@ function init_userItems()
     {
         $this->_multipleUsers = false;
 
+        /*
         Connexions::log('Connexions_View_Helper_HtmlUserItems::'
                             . 'setSingleUser()');
+        // */
     
 
         return $this;
@@ -868,14 +882,33 @@ function init_userItems()
             $this->setSingleUser();
         }
 
-        $showMeta  = $this->getShowMeta();
+        $showMeta   = $this->getShowMeta();
+
+
+        // Construct the scope auto-completion callback URL
+        $scopeParts = array('format=json');
+        if ($owner !== '*')
+            array_push($scopeParts, 'owner='. $owner->name);
+
+        if ($tagInfo->hasValidItems())
+            array_push($scopeParts, 'tags='. $tagInfo->validitems);
+
+        $scopeCbUrl = $this->view->baseUrl('/scopeAutoComplete')
+                    . '?'. implode('&', $scopeParts);
+
+
+        // /*
+        Connexions::log("Connexions_View_Helper_HtmlUserItems: "
+                        .       "scopeCbUrl[ {$scopeCbUrl} ]");
+        // */
+
 
         $html     .= $this->view->htmlItemScope($paginator,
                                                 $tagInfo,
                                                 'Tags',
                                                 'tags',
                                                 array($ownerStr => $ownerUrl),
-                                                $this->_scopeItems)
+                                                $scopeCbUrl)
                   .  $this->view->paginationControl($paginator,
                                                     null,        // style
                                                     'paginationControl.phtml',
@@ -973,7 +1006,7 @@ function init_userItems()
             break;
         }
 
-        // /*
+        /*
         Connexions::log(
             sprintf("HtmlUserItems::_groupValue(%s, %s:%s) == [ %s ]",
                     $groupBy, $orig, gettype($orig),

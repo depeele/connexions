@@ -9,38 +9,10 @@ class Connexions_View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
 {
     static protected    $_initialized   = false;
 
-    protected function _initialize($scopeInfo, $scopeItems = null)
+    protected function _initialize($scopeCbUrl)
     {
         if (self::$_initialized)
             return;
-
-        $scopeData = null;
-        if ($scopeItems !== null)
-        {
-            $scopeData = array();
-            foreach ($scopeItems as $item)
-            {
-                $str = $item->__toString();
-
-                if ($scopeInfo->isValidItem($str))
-                    continue;
-
-                array_push($scopeData, '{value: "'. $str .'"}');
-            }
-
-            $scopeData = '['. implode(',', $scopeData) .']';
-
-            Connexions::log('Connexions_View_Helper_HtmlItemScope::_initliaze:'
-                            . " scopeData[ {$scopeData} ]");
-
-            /*
-            $scopeData = array();
-            foreach ($scopeItems as $item)
-            {
-                array_push($scopeData, array('value' => $item->__toString()));
-            }
-            */
-        }
 
         $view   =& $this->view;
 
@@ -50,10 +22,14 @@ class Connexions_View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
         $jQuery = $view->jQuery();
 
         $baseUrl = $view->baseUrl('/');
-        if ($scopeItems === null)
+        if ($scopeCbUrl === null)
             $jQuery->addJavascriptFile($baseUrl .'js/ui.input.js');
         else
+        {
             $jQuery->addJavascriptFile($baseUrl .'js/jquery.autosuggest.js');
+
+            list($scopeCbUrl, $scopeCbParams) = explode('?', $scopeCbUrl);
+        }
 
         $jQuery->addOnLoad('init_itemScope();')
                ->javascriptCaptureStart();
@@ -67,11 +43,11 @@ function init_itemScope()
 {
     var $itemScope  = $('.itemScope');
     var $input      = $itemScope.find('.scopeEntry input');
-    var scopeData   = <?= ($scopeData !== null
-                                ? $scopeData    //json_encode($scopeData)
+    var scopeCbUrl  = <?= ($scopeCbUrl !== null
+                                ? "'". $scopeCbUrl ."'"
                                 : 'null') ?>;
 
-    if (scopeData === null)
+    if (scopeCbUrl === null)
     {
         /* Attach ui.input to the input field with defined 'emptyText' and a
          * validation callback to enable/disable the submit button based upon
@@ -81,9 +57,18 @@ function init_itemScope()
     }
     else
     {
+        // queryParam, extraParams
         // Attach autoSuggest to our input box
-        $input.autoSuggest(scopeData,
-                           {startText: $input.attr('emptyText')});
+        $input.autoSuggest(scopeCbUrl,
+                           {startText:   $input.attr('emptyText'),
+                            extraParams: '&<?= $scopeCbParams ?>',
+                            minChars:    2,
+                            keyDelay:    200,
+                            retrieveComplete: function(data) {
+                                // JSON-RPC return
+                                if (data.result)
+                                    return data.result;
+                            }});
 
         $input = $itemScope.find('.scopeEntry input.as-values');
     }
@@ -153,9 +138,8 @@ function init_itemScope()
      *                          array(root-name => root-url,
      *                                item-name => item-url,
      *                                ...)
-     *  @param  scopeItems  The full Connexions_Set that specifies all valid
-     *                      scope items
-     *                      (e.g. all matching Tags, all matching Users).
+     *  @param  scopeCbUrl  The URL to use to retrieve scope items for scope 
+     *                      entry auto-completion.
      *
      *  @return The HTML representation of the Item Scope.
      */
@@ -164,9 +148,9 @@ function init_itemScope()
                                                         $inputLabel = '',
                                                         $inputName  = '',
                                                         $path       = null,
-                                  Connexions_Set        $scopeItems = null)
+                                                        $scopeCbUrl = null)
     {
-        $this->_initialize($scopeInfo, $scopeItems);
+        $this->_initialize($scopeCbUrl);
 
         $url    = '';
         $action = '';

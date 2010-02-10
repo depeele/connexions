@@ -112,6 +112,24 @@ class Model_TagSet extends Connexions_Set
         return $this;
     }
 
+    /** @brief  Limit the selection to tags matching the provided sub-string
+     *  @param  substr  The substring.
+     *
+     *  @return $this
+     */
+    public function like($substr)
+    {
+        $this->_select->where('t.tag LIKE ?', '%'.$substr.'%');
+
+        /*
+        Connexions::log(
+                sprintf("Model_TagSet: like[ %s ]\n",
+                        $this->_select->assemble()) );
+        // */
+
+        return $this;
+    }
+
     /** @brief  Set the weighting.
      *  @param  by      Weight by ('user', 'item', 'userItem').
      *

@@ -9,6 +9,9 @@
  *      /tagged          [/:tags]               Bookmarks of any owner,
  *                                              possibly limited by a set of
  *                                              tags
+ *      /scopeAutoComplete                      Auto-completion callback for
+ *                                              scope entry related to user 
+ *                                              item presentation.
  *
  *      /tags            [/:owners]             Tags, possibly limited by a set
  *                                              of owner(s).
@@ -47,6 +50,7 @@ class Connexions_Controller_Route
         // top/controller         sub-levels/named parameters
         '/'             => array(':controller'  => 'index',
                                  ':action'      => 'index',
+                                 'scopeAutoComplete'    => false,
                                  ':owner'       => array(
                                     ':tags'    => false)
                            ),
@@ -166,7 +170,7 @@ class Connexions_Controller_Route
         $params['controller'] = $controller;
         $params['action']     = $action;
 
-        // /*
+        /*
         Connexions::log("Connexions_Controller_Route::match: "
                             . "root[ {$root} ], "
                             . "routeKey[ {$routeKey} ], "
