@@ -306,7 +306,7 @@ class IndexController extends Zend_Controller_Action
         $userIds   = $userItems->userIds();
         $itemIds   = $userItems->itemIds();
 
-        // /*
+        /*
         Connexions::log(sprintf("IndexController::scopeAutoCompleteAction: "
                                 . "owner[ %s ], reqTags[ %s ], "
                                 . "like[ %s ],  limit[ %d ], "
