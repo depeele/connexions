@@ -594,7 +594,6 @@ function init_userItems()
         Connexions::log('Connexions_View_Helper_HtmlUserItems::'
                             . "setSortBy({$orig}) == [ {$sortBy} ]");
         // */
-    
 
         $this->_sortBy = $sortBy;
 
@@ -696,7 +695,6 @@ function init_userItems()
                                 .       print_r($showMeta, true) .' ] ) == [ '
                                 .       print_r($this->_showMeta, true) .' ]');
             // */
-    
         }
 
         return $this;
@@ -891,13 +889,23 @@ function init_userItems()
             array_push($scopeParts, 'owner='. $owner->name);
 
         if ($tagInfo->hasValidItems())
-            array_push($scopeParts, 'tags='. $tagInfo->validitems);
+        {
+            /*
+            Connexions::log(sprintf("Connexions_View_Helper_HtmlUserItems: "
+                                    .   "reqStr[ %s ], valid[ %s ]",
+                                    $tagInfo->reqStr,
+                                    var_export($tagInfo->valid, true)) );
+
+            // */
+
+            array_push($scopeParts, 'tags='. $tagInfo->validItems);
+        }
 
         $scopeCbUrl = $this->view->baseUrl('/scopeAutoComplete')
                     . '?'. implode('&', $scopeParts);
 
 
-        // /*
+        /*
         Connexions::log("Connexions_View_Helper_HtmlUserItems: "
                         .       "scopeCbUrl[ {$scopeCbUrl} ]");
         // */
