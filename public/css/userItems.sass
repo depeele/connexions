@@ -7,516 +7,480 @@
 /******* userItems.sass *******/
 // Styling for userItems / Bookmarks
 
-.displayOptions
-  float:        right
-  padding-top:  0.5em
+#userItems
+  .displayOptions
+    .buttons-custom
+      margin-top:   0 !important
 
-  .control
-    z-index:        3
-    cursor:         pointer
-    padding:        0.2em 0 0.1em 0.2em
-    a
-      font-weight:  normal
-    .ui-icon
-      //margin-top:   2px
-      float:        right
+    // To have the control appear as a tab when opened
+    //form
+    //  top:                1.87em
+    //.control.ui-state-active
+    //  border-bottom-color = !pageColorBackground
 
-  .buttons
-    text-align: right
-    button
+    form
+      width:              22em
+      //background-color =  !pageColorBackground
+      //border =            "1px solid" !borderColor
+
+      //.sortBy
+
+      .sortOrder
+        padding-top:      0.5em
+        padding-bottom:   0.5em
+        border-bottom =   "1px dotted" !borderColor
+        .field
+          float:          left
+          padding-bottom: 0
+          padding-right:  0.5em
+          label
+            display:  inline
+            float:    none
+            width:    auto
+            padding:  0 0.1em
+          input,label
+            cursor:   pointer
+
+      .perPage
+        padding-top:      0.5em
+        padding-bottom:   0.5em
+        border-bottom =   "1px dotted" !borderColor
+
+      .displayStyle
+        display:      block
+        position:     relative
+        width:        auto
+        text-align:   left
+        padding-top:  1em
+        a
+          font-weight:  normal
+        .option-selected
+          font-weight:  bold
+        .option, .comma
+          display:        block
+          float:          left
+        .option.control
+          position:       relative
+          top:            -0.25em
+        .comma
+          padding-right:  0.5em
+        .custom
+          padding-top:    0.5em
+          border-bottom:  0
+          .item
+            border =      "1px solid" !borderColor
+            padding:      0 0.1em 0.1em 0.2em
+
+            label
+              display:      inline
+              float:        none
+              width:        auto
+              padding-left: 0.25em
+
+            .meta
+              font-weight:  normal
+
+            .data
+              padding-left: 0
+              .itemName
+                padding-bottom: 0.5em
+
+              .url, .description, .descriptionSummary
+                margin:         0
+
+              .rating
+                padding:        0.25em 0 0.25em 0.5em
+                text-align:     left
+
+                .meta
+                  text-align:   left
+                  float:        none
+                  padding:      0
+
+              .userId
+                .userId-avatar
+                  float:        right
+                  padding-left: 0.75em
+              .tags
+                width:        auto
+                text-align:   left
+                .tag
+                  display:  inline
+                  float:    none
+
+              .dates
+                .updated
+                  width:      auto
+
+  .pagination-top
+    float:      left
+    padding:    0.5em 0
+    .pager
       display:  inline
-      padding:  0.25em
+    //  float:    none
+    //  .ui-state-default
+    //    font-weight:  normal
 
-  #buttons-global
-    margin-top:   2em
-    padding:      0.5em 0.5em 0
-    border-top =  "1px dotted" !borderColor
+  .items
+    clear:          both
+    padding-top:    2em
+    border-bottom = "1px solid" !borderColor
+    .groupHeader
+      // Left portion of group header, shifted left 15px
+      // (with .group, provides a solid header the full width)
+      position:             relative
+      background-color =    !groupHeaderColorBackground
+      border-bottom =       "1px solid" !borderColor
+      color =               !groupHeaderColor
+      height:               20px
+      left:                 -15px
+      .group
+        // Right portion of group header, shifted right 20px (5px over)
+        // (with .groupHeader, provides a solid header the full width)
+        position:           relative
+        background-color =  !groupHeaderColorBackground
+        height:             20px
+        right:              -20px
+      .date
+        position: relative
+        left:               -12px
+        .year
+          position:         absolute
+          left:             1em
+          top:              -0.45em
+          font-size:        3em
+          font-weight:      bold
+          color =           !groupHeaderYearColor
+          // Raise it above item, which has a top-border
+          z-index:          4
+          //+rotate(-90deg)
 
-  .buttons-custom
-    margin-top:   0 !important
+        .dateBox
+          position:         relative
+          left:             -0.25em
+          font-size:        1em
+          font-weight:      bold
+          .month
+            display:        inline
+          .day
+            display:        inline
+            padding:        0 0.25em
+          .day-of-week
+            display:        block
+            font-size:      0.8em
+            font-weight:    bold
+      .alpha,.numeric
+        position:     absolute
+        left:         -0.55em
+        top:          -0.45em
+        font-size:    3em
+        font-weight:  bold
+        color =       !groupHeaderAlphaColor
+        z-index:      0
 
-  .field
-    display:        block
-    padding-bottom: 0.25em
-    label
-      clear:  left
-      width:  6em
-      float:  left
+    .item
+      position:       relative
+      z-index:        1
+      margin-bottom:  1em
+      border-top =    "1px solid" !borderColor
 
-  // To have the control appear as a tab when opened
-  //form
-  //  top:                1.87em
-  //.control.ui-state-active
-  //  border-bottom-color = !pageColorBackground
+      // Item status: Favorite, Private
+      .status
+        position:   absolute
+        top:        0
+        left:       0
+        width =     !controlBoxWidth
+        height:     100%
+        z-index:    5
+        .checkbox
+          border:   0
 
-  form
-    position:           absolute
-    top:                2.25em
-    right:              0
-    width:              22em
-    padding:            0.5em
-    z-index:            2
-    //background-color =  !pageColorBackground
-    //border =            "1px solid" !borderColor
-
-    //.sortBy
-
-    .sortOrder
-      padding-top:      0.5em
-      padding-bottom:   0.5em
-      border-bottom =   "1px dotted" !borderColor
-      .field
-        float:          left
-        padding-bottom: 0
-        padding-right:  0.5em
-        label
-          display:  inline
-          float:    none
-          width:    auto
-          padding:  0 0.1em
-        input,label
+        .favorite,.private
+          position: absolute
           cursor:   pointer
 
-    .perPage
-      padding-top:      0.5em
-      padding-bottom:   0.5em
-      border-bottom =   "1px dotted" !borderColor
+        .favorite
+          top:      4px
+          left:     4px
 
-    .displayStyle
-      display:      block
-      position:     relative
-      width:        auto
-      text-align:   left
-      padding-top:  1em
-      a
-        font-weight:  normal
-      .option-selected
-        font-weight:  bold
-      .option, .comma
-        display:        block
-        float:          left
-      .option.control
-        position:       relative
-        top:            -0.25em
-      .comma
-        padding-right:  0.5em
-      .custom
-        padding-top:    0.5em
-        border-bottom:  0
-        .item
-          border =      "1px solid" !borderColor
-          padding:      0 0.1em 0.1em 0.2em
+        .private
+          top:      24px
+          left:     4px
 
-          label
-            display:      inline
-            float:        none
-            width:        auto
-            padding-left: 0.25em
+      // Tagger count, rating, tag date/time
+      .meta
+        position:   relative
+        float:      right
+        width =     !countBoxWidth
+        padding:    0 0 0 4px
+        text-align: right
+        z-index:    2
+        .countTaggers
+          display:            block
+          background-color =  !controlColor
+          color =             !pageColorBackground
+          padding:            0.25em
+          font-weight:        normal
+          text-align:         center
+          text-decoration:    none
+          &:hover
+            background-color =  !navColorHover
+        .rating
+          display:    block
+          position:   relative
+          .stars
+            display:  block
+            height:   18px
+            .owner, .average, .average-owner
+              display:      block
+              width:        96px
+              overflow:     hidden
+              .ui-stars
+                display:        block
+                float:          left
+                cursor:         pointer
+                //border-bottom:  1px solid transparent
+                // Hide the <a> text
+                overflow:       hidden
+                text-indent:    999em
+                a
+                  background: url('sprites/connexions.gif') no-repeat scroll 0 0
+                  display:    block
+                  width:      16px
+                  height:     16px
+
+              .ui-stars-star-off, .ui-stars-star, .ui-stars-star-disabled
+                a
+                  // sprites.sass::.star_1_off
+                  background-position:  -72px -58px
+
+              .ui-stars-star-on
+                a
+                  // sprites.sass::.star_1_on
+                  background-position:  -104px -58px
+
+              .ui-stars-star-hover
+                a
+                  // sprites.sass::.star_1_hover
+                  background-position:  -88px -58px
+
+              .ui-stars-cancel
+                padding:  1px
+                a
+                  // sprites.sass::.star_0
+                  width:                14px
+                  height:               14px
+                  //margin:               1px
+                  background-position:  -72px -44px
+
+              .ui-stars-cancel-hover
+                a
+                  // sprites.sass::.star_0_hover
+                  background-position:  -86px -44px
+
+              .ui-stars-cancel-disabled
+                a
+                  // sprites.sass::.star_0
+                  background-image:     none
+
+              .ui-stars-star-disabled, .ui-stars-cancel-disabled
+                cursor:   default
+
+          .stars
+            .average,.average-owner
+              padding-left: 16px
+            .average-owner
+              position:     absolute
+              top:          2px
+              left:         1px
+
+              .ui-stars-star-on
+                a
+                  // sprites.sass::.star_1_hover
+                  background-position:  -88px -58px
 
           .meta
+            clear:      left
+            color =     !controlColor
+            font-size:  0.75em
+
+      .data
+        position: relative
+        padding:  0.25em 0 0 32px
+        z-index:  1
+
+        // Item Name / title
+        .itemName
+          padding:      0
+
+          a
+            display:      inline
+            font-weight:  bold
+
+        // Item Url
+        .url
+          padding:    0 0 0 1em
+          max-width = !urlBoxWidth
+
+          // IE6 fix
+          *width    = !urlBoxWidth
+
+          a
+            display:      inline
             font-weight:  normal
 
-          .data
-            padding-left: 0
-            .itemName
-              padding-bottom: 0.5em
-
-            .url, .description, .descriptionSummary
-              margin:         0
-
-            .rating
-              padding:        0.25em 0 0.25em 0.5em
-              text-align:     left
-
-              .meta
-                text-align:   left
-                float:        none
-                padding:      0
-
-            .userId
-              .userId-avatar
-                float:        right
-                padding-left: 0.75em
-            .tags
-              width:        auto
-              text-align:   left
-              .tag
-                display:  inline
-                float:    none
-
-            .dates
-              .updated
-                width:      auto
-
-.pagination-top
-  float:      left
-  padding:    0.5em 0
-  .pager
-    display:  inline
-  //  float:    none
-  //  .ui-state-default
-  //    font-weight:  normal
-
-.items
-  clear:          both
-  padding-top:    2em
-  border-bottom = "1px solid" !borderColor
-  .groupHeader
-    // Left portion of group header, shifted left 15px
-    // (with .group, provides a solid header the full width)
-    position:             relative
-    background-color =    !groupHeaderColorBackground
-    border-bottom =       "1px solid" !borderColor
-    color =               !groupHeaderColor
-    height:               20px
-    left:                 -15px
-    .group
-      // Right portion of group header, shifted right 20px (5px over)
-      // (with .groupHeader, provides a solid header the full width)
-      position:           relative
-      background-color =  !groupHeaderColorBackground
-      height:             20px
-      right:              -20px
-    .date
-      position: relative
-      left:               -12px
-      .year
-        position:         absolute
-        left:             1em
-        top:              -0.45em
-        font-size:        3em
-        font-weight:      bold
-        color =           !groupHeaderYearColor
-        // Raise it above item, which has a top-border
-        z-index:          4
-        //+rotate(-90deg)
-
-      .dateBox
-        position:         relative
-        left:             -0.25em
-        font-size:        1em
-        font-weight:      bold
-        .month
-          display:        inline
-        .day
-          display:        inline
-          padding:        0 0.25em
-        .day-of-week
-          display:        block
-          font-size:      0.8em
-          font-weight:    bold
-    .alpha,.numeric
-      position:     absolute
-      left:         -0.55em
-      top:          -0.45em
-      font-size:    3em
-      font-weight:  bold
-      color =       !groupHeaderAlphaColor
-      z-index:      0
-
-  .item
-    position:       relative
-    z-index:        1
-    margin-bottom:  1em
-    border-top =    "1px solid" !borderColor
-
-    // Item status: Favorite, Private
-    .status
-      position:   absolute
-      top:        0
-      left:       0
-      width =     !controlBoxWidth
-      height:     100%
-      z-index:    5
-      .checkbox
-        border:   0
-
-      .favorite,.private
-        position: absolute
-        cursor:   pointer
-
-      .favorite
-        top:      4px
-        left:     4px
-
-      .private
-        top:      24px
-        left:     4px
-
-    // Tagger count, rating, tag date/time
-    .meta
-      position:   relative
-      float:      right
-      width =     !countBoxWidth
-      padding:    0 0 0 4px
-      text-align: right
-      z-index:    2
-      .countTaggers
-        display:            block
-        background-color =  !controlColor
-        color =             !pageColorBackground
-        padding:            0.25em
-        font-weight:        normal
-        text-align:         center
-        text-decoration:    none
-        &:hover
-          background-color =  !navColorHover
-      .rating
-        display:    block
-        position:   relative
-        .stars
-          display:  block
-          height:   18px
-          .owner, .average, .average-owner
-            display:      block
-            width:        96px
-            overflow:     hidden
-            .ui-stars
-              display:        block
-              float:          left
-              cursor:         pointer
-              //border-bottom:  1px solid transparent
-              // Hide the <a> text
-              overflow:       hidden
-              text-indent:    999em
-              a
-                background: url('sprites/connexions.gif') no-repeat scroll 0 0
-                display:    block
-                width:      16px
-                height:     16px
-
-            .ui-stars-star-off, .ui-stars-star, .ui-stars-star-disabled
-              a
-                // sprites.sass::.star_1_off
-                background-position:  -72px -58px
-
-            .ui-stars-star-on
-              a
-                // sprites.sass::.star_1_on
-                background-position:  -104px -58px
-
-            .ui-stars-star-hover
-              a
-                // sprites.sass::.star_1_hover
-                background-position:  -88px -58px
-
-            .ui-stars-cancel
-              padding:  1px
-              a
-                // sprites.sass::.star_0
-                width:                14px
-                height:               14px
-                //margin:               1px
-                background-position:  -72px -44px
-
-            .ui-stars-cancel-hover
-              a
-                // sprites.sass::.star_0_hover
-                background-position:  -86px -44px
-
-            .ui-stars-cancel-disabled
-              a
-                // sprites.sass::.star_0
-                background-image:     none
-
-            .ui-stars-star-disabled, .ui-stars-cancel-disabled
-              cursor:   default
-
-        .stars
-          .average,.average-owner
-            padding-left: 16px
-          .average-owner
-            position:     absolute
-            top:          2px
-            left:         1px
-
-            .ui-stars-star-on
-              a
-                // sprites.sass::.star_1_hover
-                background-position:  -88px -58px
-
-        .meta
-          clear:      left
+        // Item Description / Description Summary
+        .description, .descriptionSummary
+          display:    block
+          padding:    0 0 0 1em
+          margin:     0 175px 0 0
           color =     !controlColor
-          font-size:  0.75em
 
-    .data
-      position: relative
-      padding:  0.25em 0 0 32px
-      z-index:  1
-
-      // Item Name / title
-      .itemName
-        padding:      0
-
-        a
-          display:      inline
-          font-weight:  bold
-
-      // Item Url
-      .url
-        padding:    0 0 0 1em
-        max-width = !urlBoxWidth
-
-        // IE6 fix
-        *width    = !urlBoxWidth
-
-        a
-          display:      inline
-          font-weight:  normal
-
-      // Item Description / Description Summary
-      .description, .descriptionSummary
-        display:    block
-        padding:    0 0 0 1em
-        margin:     0 175px 0 0
-        color =     !controlColor
-
-      // UserId
-      .userId
-        display:      block
-        float:        left
-        font-size:    0.9em
-        padding:      0.5em 0 0.5em 1em
-        margin:       0
-        white-space:  pre
-        a
-          font-weight:  normal
-          .img
-            display:          block
-            position:         relative
-            float:            left
-            border:           0
-            background-color: transparent
-            img
-              width:          16px
-              height:         16px
-            .ui-icon
-              background-color: transparent
+        // UserId
+        .userId
+          display:      block
+          float:        left
+          font-size:    0.9em
+          padding:      0.5em 0 0.5em 1em
+          margin:       0
+          white-space:  pre
+          a
+            font-weight:  normal
+            .img
+              display:          block
               position:         relative
-              top:              -2px
-          .name
-            display:      inline
-            font-size:    0.9em
-            padding-left: 0.25em
+              float:            left
+              border:           0
+              background-color: transparent
+              img
+                width:          16px
+                height:         16px
+              .ui-icon
+                background-color: transparent
+                position:         relative
+                top:              -2px
+            .name
+              display:      inline
+              font-size:    0.9em
+              padding-left: 0.25em
 
-      // List of tags for this item
-      .tags
-        display:    block
-        float:      right
-        font-size:  0.9em
-        padding:    0.5em 0
-        margin:     0
-        text-align: right
-        //width:      45%
+        // List of tags for this item
+        .tags
+          display:    block
+          float:      right
+          font-size:  0.9em
+          padding:    0.5em 0
+          margin:     0
+          text-align: right
+          //width:      45%
 
-        // Individual tag
-        .tag,.tag:hover
-          display:            block
-          float:              right
-          padding:            0.2em
-          margin:             0.1em
-          background-color =  !tagColorBackground
-          color =             !tagColor
-          a,a:hover,a:visited,a:focus
+          // Individual tag
+          .tag,.tag:hover
+            display:            block
+            float:              right
+            padding:            0.2em
+            margin:             0.1em
+            background-color =  !tagColorBackground
+            color =             !tagColor
+            a,a:hover,a:visited,a:focus
+              display:          inline
+              font-weight:      normal
+              text-decoration:  none
+              color =           !tagColor
+          .tag:hover
+            background-color =  !tagColor
+            color =             !tagColorBackground
+            a, a:hover, a:visited, a:focus
+              color =           !tagColorBackground
+
+        // Dates (tagged, updated)
+        .dates
+          display:      block
+          font-size:    0.8em
+          height:       1em
+          padding-left: 1em
+          color =       !controlColor
+          .tagged
+            float:      left
+          .updated
+            float:      right
+
+        // Item controls: edit, delete, save
+        .control
+          display:      inline
+          font-size:    0.65em
+          border:       0
+          padding:      0 0 0 2em
+          margin:       0
+          font-weight:  normal
+          white-space:  pre
+          z-index:      3
+          color =       !controlColor
+
+          a
             display:          inline
             font-weight:      normal
             text-decoration:  none
-            color =           !tagColor
-        .tag:hover
-          background-color =  !tagColor
-          color =             !tagColorBackground
-          a, a:hover, a:visited, a:focus
-            color =           !tagColorBackground
+            padding:          0.1em
 
-      // Dates (tagged, updated)
-      .dates
-        display:      block
-        font-size:    0.8em
-        height:       1em
-        padding-left: 1em
-        color =       !controlColor
-        .tagged
-          float:      left
-        .updated
-          float:      right
+          a:hover
+            background-color =  !linkColor
+            color =             !pageColorBackground
+            text-decoration:  none
+      
+          
+    // Item (private)
+    .private
+      .status
+        background-color =  !privateColorBackground
+        border-left =       "1px dotted" !privateColorBorder
 
-      // Item controls: edit, delete, save
+    // Item (minimized)
+    .minimized
+      clear:          left
       .control
-        display:      inline
-        font-size:    0.65em
-        border:       0
-        padding:      0 0 0 2em
-        margin:       0
-        font-weight:  normal
-        white-space:  pre
-        z-index:      3
-        color =       !controlColor
+        float:        right
+        padding:      0
+        font-size:    0.9em
+      .status
+        display:    none
+      .data
+        margin-left:  5em
+        padding-left: 0
+        .itemName,.descriptionSummary
+          display:    inline
+        .userId
+          position:     absolute
+          left:         -5.25em
+          width:        5em
+          padding:      0.25em 0
+          overflow:     hidden
+        .descriptionSummary
+          padding:      0 0 0 0.5em
+          margin:       0
+        .tags
+          padding:      0.1em 0 0 0.5em
+          clear:        right
+          //margin-left:  4em
 
-        a
-          display:          inline
-          font-weight:      normal
-          text-decoration:  none
-          padding:          0.1em
+    .no-userId
+      .data
+        margin-left:    32px
 
-        a:hover
-          background-color =  !linkColor
-          color =             !pageColorBackground
-          text-decoration:  none
-    
-        
-  // Item (private)
-  .private
-    .status
-      background-color =  !privateColorBackground
-      border-left =       "1px dotted" !privateColorBorder
+        //.tags
+        //  clear:        right
 
-  // Item (minimized)
-  .minimized
-    clear:          left
-    .control
-      float:        right
-      padding:      0
-      font-size:    0.9em
-    .status
-      display:    none
-    .data
-      margin-left:  5em
-      padding-left: 0
-      .itemName,.descriptionSummary
-        display:    inline
+    // Item (mine)
+    .mine
+      min-height:   45px
+      .status
+        display:    block
+        min-height: 45px
+      //.data
+      //  .userId
+      //    display:  none
+
+    // Item (mine+minimized)
+    .mine.minimized
       .userId
-        position:     absolute
-        left:         -5.25em
-        width:        5em
-        padding:      0.25em 0
-        overflow:     hidden
-      .descriptionSummary
-        padding:      0 0 0 0.5em
-        margin:       0
-      .tags
-        padding:      0.1em 0 0 0.5em
-        clear:        right
-        //margin-left:  4em
-
-  .no-userId
-    .data
-      margin-left:    32px
-
-      //.tags
-      //  clear:        right
-
-  // Item (mine)
-  .mine
-    min-height:   45px
-    .status
-      display:    block
-      min-height: 45px
-    //.data
-    //  .userId
-    //    display:  none
-
-  // Item (mine+minimized)
-  .mine.minimized
-    .userId
-      display:  none
+        display:  none
