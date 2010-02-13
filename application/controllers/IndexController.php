@@ -45,7 +45,9 @@ class IndexController extends Zend_Controller_Action
         // */
 
         // Tag-cloud parameters
-        $tagsMax       = $request->getParam('tagsMax',       250);
+        $tagsMax       = $request->getParam('tagsMax',       100);
+        $tagsStyle     = $request->getParam('tagsStyle',     null);
+        $tagsTop       = $request->getParam('tagsTop',       null);
         $tagsSortBy    = $request->getParam('tagsSortBy',    'tag');
         $tagsSortOrder = $request->getParam('tagsSortOrder', null);
 
@@ -183,7 +185,9 @@ class IndexController extends Zend_Controller_Action
         $this->view->itemsStyleCustom = $itemsStyleCustom;
 
         // Tag-cloud parameters
+        $this->view->tagsStyle      = $tagsStyle;
         $this->view->tagsMax        = $tagsMax;
+        $this->view->tagsTop        = $tagsTop;
         $this->view->tagsSortBy     = $tagsSortBy;
         $this->view->tagsSortOrder  = $tagsSortOrder;
     }

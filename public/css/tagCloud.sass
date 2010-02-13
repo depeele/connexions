@@ -22,11 +22,62 @@
       background-color =  !tagsHeaderActiveColorBackground
       color =             !pageColorBackground
 
+  .displayOptions
+    form
+      width:              18em
+      .field
+        label
+          width:          5.5em
+      .tagsSortOrder
+        padding-top:      0.5em
+        padding-bottom:   0.5em
+        border-bottom =   "1px dotted" !borderColor
+        .field
+          float:          left
+          padding-bottom: 0
+          padding-right:  0.5em
+          label
+            display:    inline
+            float:      none
+            width:      auto
+            padding:    0 0.1em
+            font-size:  0.75em
+          input,label
+            cursor:   pointer
+
+      .tagsMax
+        padding-top:      0.5em
+        padding-bottom:   0.5em
+
+      .tagsTop
+        padding-top:      0.5em
+        padding-bottom:   0.5em
+        border-bottom =   "1px dotted" !borderColor
+
+      .tagsStyle
+        display:      block
+        position:     relative
+        width:        auto
+        text-align:   left
+        padding-top:  1em
+        a
+          font-weight:  normal
+        .option-selected
+          font-weight:  bold
+        .option, .comma
+          display:        block
+          float:          left
+        .option.control
+          position:       relative
+          top:            -0.25em
+        .comma
+          padding-right:  0.5em
+
 .cloud
   padding:              1em 0 2em 0.25em
   clear:                both
 
-  .topItems
+  .tagsTop
     float:              right
     border =            "1px solid" !borderColor
     background-color =  !tagsTopColorBackground
@@ -40,22 +91,19 @@
       padding:         0
       text-align:       center
       color =           !tagsTopHeaderColor
-    ul
-      padding:          0
-      //li
-      //  clear:        both
-
-      .item
-        display:        block
-        float:          left
-        font-weight:    normal
-        color =         !tagsTopTagColor
-      .itemCount
-        display:        block
-        float:          right
-        padding:        0.15em 0 0.15em 0.5em
-        color =         !tagsTopTagCountColor
-        font-size:      0.8em
+  ul
+    padding:          0
+    .item
+      display:        block
+      float:          left
+      font-weight:    normal
+      color =         !tagsTopTagColor
+    .itemCount
+      display:        block
+      float:          right
+      padding:        0.15em 0 0.15em 0.5em
+      color =         !tagsTopTagCountColor
+      font-size:      0.8em
 
 .Tag_Cloud
   list-style: none
@@ -75,31 +123,31 @@
         background-color =  !linkColor
         color =             !pageColorBackground
     .size0 
-      font-size:    0.8em
+      font-size:    0.500em
       font-weight:  normal
       color:        #000
     .size1 
-      font-size:    0.9em
+      font-size:    0.700em
       font-weight:  normal
       color:        #23598c
     .size2 
-      font-size:    1em
+      font-size:    0.900em
       font-weight:  normal
       color:        #23598d
     .size3 
-      font-size:    1.25em
+      font-size:    1.125em
       font-weight:  normal
       color:        #235992
     .size4 
-      font-size:    1.5em
+      font-size:    1.333em
       font-weight:  normal
       color:        #235994
     .size5 
-      font-size:    2em
+      font-size:    1.542em
       font-weight:  normal
       color:        #2359aa
     .size6 
-      font-size:    2.5em
+      font-size:    1.75em
       font-weight:  normal
       color:        #2359ff
     .selected 
