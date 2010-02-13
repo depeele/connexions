@@ -19,9 +19,13 @@
  *      itemsSortOrder  User Items sort order
  *                      (Connexions_View_Helpers_HtmlUserItems::
  *                                                          SORT_ORDER_*);
- *      itemsStyleCustom    An array of custom style settings
+ *      itemsStyleCustom
+ *                      An array of custom style settings
  *
  *      tagsMax         Maximum number of tags to present;
+ *      tagsTop         The number of top tags to present;
+ *      tagsStyle       Style of tag display
+ *                      (Connexions_View_Helper_HtmlTagCloud::STYLE_*);
  *      tagsSortBy      Sort tags by (valid field of Model_Tag);
  *      tagsSortOrder   Tag sort order.
  */
@@ -89,6 +93,17 @@ if ( @isset($this->userItems) )
 
 if ( @isset($this->tagList))
 {
+    $uiHelper = $this->htmlTagCloud();
+
+    if (! @empty($this->tagsStyle))
+        $uiHelper->setStyle($this->tagsStyle);
+    if (! @empty($this->tagsSortBy))
+        $uiHelper->setSortBy($this->tagsSortBy);
+    if (! @empty($this->tagsSortOrder))
+        $uiHelper->setSortOrder($this->tagsSortOrder);
+    if (@isset($this->tagsTop))
+        $uiHelper->setTagsTop($this->tagsTop);
+
     $time_start = microtime(true);
 
     $html = "<div class='columnHeader'>"
@@ -101,9 +116,7 @@ if ( @isset($this->tagList))
     /* Use the Connexions_View_Helper_HtmlTagCloud class to render the tag
      * cloud for $this->tagList.
      */
-    $html .= $this->htmlTagCloud($this->tagList,
-                                 $this->tagsSortBy,
-                                 $this->tagsSortOrder);
+    $html .= $uiHelper->render($this->tagList);
 
     $time_end   = microtime(true);
     $html .= sprintf ("%f seconds to render tag cloud<br />\n",

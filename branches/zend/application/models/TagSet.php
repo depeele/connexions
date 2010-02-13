@@ -9,6 +9,9 @@ class Model_TagSet extends Connexions_Set
 {
     const       MEMBER_CLASS    = 'Model_Tag';
 
+    const       SORT_ORDER_ASC  = Zend_Db_Select::SQL_ASC;
+    const       SORT_ORDER_DESC = Zend_Db_Select::SQL_DESC;
+
     protected   $_userIds       = null;
     protected   $_itemIds       = null;
     protected   $_tagIds        = null;
@@ -16,7 +19,6 @@ class Model_TagSet extends Connexions_Set
     protected   $_nonTrivial    = false;
 
     /** @brief  Create a new instance.
-     *  @param  order       The maximum number of tags.
      *  @param  userIds     An array of user identifiers.
      *  @param  itemIds     An array of item identifiers.
      *  @param  tagIds      An array of tag identifiers.
@@ -30,8 +32,8 @@ class Model_TagSet extends Connexions_Set
 
         // :TODO: Determine the proper order.
         try {
-            $order = Zend_Registry::get('orderBy').
-                     Zend_Registry::get('orderDir');
+            $order = Zend_Registry::get('orderBy') .' '
+                   . Zend_Registry::get('orderDir');
 
         } catch (Exception $e) {
             $order = 'userItemCount DESC';
