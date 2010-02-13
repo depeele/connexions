@@ -22,19 +22,21 @@ $this->headTitle('Tags');
 
 ?>
 <div class='columnHeader'>
- <p>Present to <?= $this->viewer ?>
+ <div class='connexions_sprites tag_bg
+             ui-corner-left ui-corer-tr'>&nbsp;</div>
+ <p>
   <?php
     if ( $this->userInfo && $this->userInfo->hasValidItems())
     {
             if (count($this->userInfo->validIds) == 1)
-                echo " all tags used by user ";
+                echo "All tags used by user ";
             else
-                echo " those tags in common to users ";
+                echo "Those tags in common to users ";
 
             echo "'{$this->userInfo->validItems}'.";
     }
     else
-    printf (" all tags.");
+        printf ("All tags.");
   ?>
  </p>
 </div>
@@ -48,8 +50,6 @@ echo $this->htmlItemScope($this->paginator,
                           'owners',
                           array('Tags'  => $this->baseUrl('/tags')));
 
-echo "<div class='displayOptions'>";    // displayOptions {
-
 /* Present the pagination control, established by
  * Bootstrap.php::_initViewGlobal() to be rendered via:
  *      views/scripts/paginationControl.phtml
@@ -59,6 +59,7 @@ echo $this->paginationControl($this->paginator,
                               'paginationControl.phtml',
                               array('excludeInfo' => true));
 
+echo "<div class='displayOptions'>";    // displayOptions {
 echo "</div>";  // displayOptions }
 
 if (count($this->paginator))
@@ -87,11 +88,14 @@ if (count($this->paginator))
     $time_start = microtime(true);
 
     $html = "<div class='columnHeader'>"
+          .  "<div class='connexions_sprites user_bg "
+          .              "ui-corner-left ui-corer-tr'>&nbsp;</div>"
           .  "<p>"
           .   "All people that have at least one of "
           .   "the currently presented tags."
           .  "</p>"
-          . "</div>";
+          . "</div>"
+          . "<div id='tagItems'>";
 
     /* Use the Connexions_View_Helper_HtmlTagCloud class to render the set of
      * users as a tag cloud.
@@ -103,7 +107,8 @@ if (count($this->paginator))
     $time_end   = microtime(true);
 
     $html .= sprintf ("%f seconds to render tag cloud<br />\n",
-                      $time_end - $time_start);
+                      $time_end - $time_start)
+          . "</div>";
 
 
     /*
@@ -121,6 +126,7 @@ if (count($this->paginator))
     echo $this->htmlTagCloud($tagList,
                              $this->sortBy,
                              $this->sortOrder,
+                             0,     // top tags
                              true); // exclude displayOptions since we handled
                                     // that earlier
 

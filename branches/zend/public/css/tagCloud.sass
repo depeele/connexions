@@ -1,4 +1,62 @@
 /******* tagCloud.sass *******/
+#tagItems
+  padding:              0 0.25em 0 0
+  border-top =          "2px solid" !borderColor
+  border-left =         "2px solid" !borderColor
+  border-bottom =       "2px solid" !borderColor
+  +corners(10px, 0, 0, 10px)
+
+  .tagRelation
+    position:           absolute
+    top:                5px
+    left:               -21px
+
+  .tagsHeader
+    //background-color =  !tagsHeaderColorBackground
+    border-bottom =     "1px solid " !tagsHeaderActiveColorBackground
+    padding:            0 0 0 0.5em
+    li
+      float:            left
+      padding:          0.25em
+    li.active
+      background-color =  !tagsHeaderActiveColorBackground
+      color =             !pageColorBackground
+
+.cloud
+  padding:              1em 0 2em 0.25em
+  clear:                both
+
+  .topItems
+    float:              right
+    border =            "1px solid" !borderColor
+    background-color =  !tagsTopColorBackground
+    padding:            0.25em
+    margin:             0 0 0.25em 1em
+    font-size:          0.9em
+    z-index:            1
+    h4
+      font-size:        1em
+      font-weight:      bold
+      padding:         0
+      text-align:       center
+      color =           !tagsTopHeaderColor
+    ul
+      padding:          0
+      //li
+      //  clear:        both
+
+      .item
+        display:        block
+        float:          left
+        font-weight:    normal
+        color =         !tagsTopTagColor
+      .itemCount
+        display:        block
+        float:          right
+        padding:        0.15em 0 0.15em 0.5em
+        color =         !tagsTopTagCountColor
+        font-size:      0.8em
+
 .Tag_Cloud
   list-style: none
   text-align: justify

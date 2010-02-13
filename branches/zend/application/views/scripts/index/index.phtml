@@ -37,13 +37,17 @@ else
 
 ?>
 <div class='columnHeader'>
- <p>Present the Bookmarks for <?= $this->owner ?>
-                          to  <?= $this->viewer ?>
+ <div class='connexions_sprites bookmark_bg
+             ui-corner-left ui-corer-tr'>&nbsp;</div>
+ <p>Bookmarks of <?= ($this->owner === '*'
+                            ? 'all users'
+                            : $this->owner) ?>
+    <br />
   <?php
     if ( $this->tagInfo->hasValidItems())
-        printf (" with tags '%s'", $this->tagInfo->validItems);
+        printf ("with tags '%s'.", $this->tagInfo->validItems);
     else
-        printf (", NO tags.");
+        printf ("NO tags.");
   ?>
  </p>
 </div>
@@ -80,11 +84,6 @@ if ( @isset($this->userItems) )
                                             ($this->owner !== '*'
                                                 ? null
                                                 : '/tagged'));
-
-        /* Add g_ScopeAutoSuggest data to our Javascript comprised of all
-         * items in the current tag set.
-         * :TODO:
-         */
     }
 }
 
@@ -93,8 +92,11 @@ if ( @isset($this->tagList))
     $time_start = microtime(true);
 
     $html = "<div class='columnHeader'>"
-          .  "<p>Tag's shared by all the currently presented items.</p>"
-          . "</div>";
+          .  "<div class='connexions_sprites tag_bg "
+          .              "ui-corner-left ui-corer-tr'>&nbsp;</div>"
+          .  "<p>Tags related to these bookmarks.</p>"
+          . "</div>"
+          . "<div id='tagItems'>";
 
     /* Use the Connexions_View_Helper_HtmlTagCloud class to render the tag
      * cloud for $this->tagList.
@@ -105,7 +107,8 @@ if ( @isset($this->tagList))
 
     $time_end   = microtime(true);
     $html .= sprintf ("%f seconds to render tag cloud<br />\n",
-                      $time_end - $time_start);
+                      $time_end - $time_start)
+          . "</div>";
 
     $this->layout()->right = $html;
 }

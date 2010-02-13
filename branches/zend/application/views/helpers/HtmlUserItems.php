@@ -214,7 +214,7 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
  */
 function init_userItemDisplayOptions()
 {
-    var $displayOptions = $('.displayOptions');
+    var $displayOptions = $('#userItems .displayOptions');
     var $form           = $displayOptions.find('form:first');
     var $submit         = $displayOptions.find(':submit');
     var $control        = $displayOptions.find('.control:first');
@@ -1149,6 +1149,14 @@ function init_userItems()
         return $show;
     }
 
+    /** @brief  Render the 'displayOptions' control area.
+     *  @param  paginator   The current paginator (so we know the number of 
+     *                                             items per page);
+     *  @param  showMeta    The set of custom options;
+     *
+     *
+     *  @return A string of HTML.
+     */
     protected function _renderDisplayOptions($paginator, $showMeta)
     {
         $itemCountPerPage = $paginator->getItemCountPerPage();
