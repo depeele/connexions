@@ -208,8 +208,7 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
         ?>
 
 /************************************************
- * Initialize display options, as well as the
- * perPage selector in the bottom paginator.
+ * Initialize display options.
  *
  */
 function init_userItemDisplayOptions()
@@ -218,6 +217,38 @@ function init_userItemDisplayOptions()
     var $form           = $displayOptions.find('form:first');
     var $submit         = $displayOptions.find(':submit');
     var $control        = $displayOptions.find('.control:first');
+
+    // Add an opacity hover effect to the displayOptions
+    $displayOptions.fadeTo(100, 0.5)
+                   .hover(  function() {    // in
+                                $displayOptions.fadeTo(100, 1.0);
+                            },
+                            function(e) {   // out
+                                /* For at least Mac Firefox 3.5, for <select>
+                                 * when we move into the options we receive a
+                                 * 'moustout' event on the select box with a
+                                 * related target of 'html'.  The wreaks havoc
+                                 * by de-selecting the select box and it's
+                                 * parent(s), causing the displayOptions to
+                                 * disappear.  NOT what we want, so IGNORE the
+                                 * event.
+                                 */
+                                if ((e.relatedTarget === undefined) ||
+                                    (e.relatedTarget === null)      ||
+                                    (e.relatedTarget.localName === 'html'))
+                                {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    return false;
+                                }
+
+                                $displayOptions.fadeTo(100, 0.5);
+
+                                // Also "close" the form
+                                if ($form.is(':visible'))
+                                    $control.click();
+                            }
+                         );
 
     // Click the 'Display Options' button to toggle the displayOptions pane
     $control.click(function(e) {
@@ -365,34 +396,6 @@ function init_userItemDisplayOptions()
                 // let the form be submitted
             });
 
-    /* Finally, attach to the perPage selection box in the bottom pagination
-     * form.
-     */
-    var $pForm  = $('form.pagination:has(select[name=perPage])');
-
-    $pForm.submit(function() {
-                // Serialize all form values to an array...
-                var settings    = $pForm.serializeArray();
-
-                /* ...and set a cookie for each
-                 *  perPage
-                 */
-                $(settings).each(function() {
-                    $.log("Add Cookie: name[%s], value[%s]",
-                          this.name, this.value);
-                    $.cookie(this.name, this.value);
-                });
-
-                /* Finally, disable ALL inputs so our URL will have no
-                 * parameters since we've stored them all in cookies.
-                 */
-                $pForm.find('input,select').attr('disabled', true);
-            });
-
-    $pForm.find('select[name=perPage]').change(function() {
-                // On change, submit the form.
-                $pForm.submit();
-            });
     return;
 }
 
@@ -910,6 +913,9 @@ function init_userItems()
                         .       "scopeCbUrl[ {$scopeCbUrl} ]");
         // */
 
+        $uiPagination = $this->view->htmlPaginationControl();
+        $uiPagination->setPerPageChoices(self::$perPageChoices);
+
 
         $html     .= $this->view->htmlItemScope($paginator,
                                                 $tagInfo,
@@ -917,16 +923,7 @@ function init_userItems()
                                                 'tags',
                                                 array($ownerStr => $ownerUrl),
                                                 $scopeCbUrl)
-                  .  $this->view->paginationControl($paginator,
-                                                    null,        // style
-                                                    'paginationControl.phtml',
-                                                    array(
-                                                      'excludeInfo'    =>
-                                                        true,
-                                                      'cssClass'       =>
-                                                        'pagination-top',
-                                                      'perPageChoices' =>
-                                                        self::$perPageChoices))
+                  .  $uiPagination->render($paginator, 'pagination-top', true)
                   .  $this->_renderDisplayOptions($paginator, $showMeta);
 
         if (count($paginator))
@@ -957,12 +954,7 @@ function init_userItems()
         }
 
 
-        $html .= $this->view->paginationControl($paginator,
-                                                null,        // style
-                                                'paginationControl.phtml',
-                                                array(
-                                                    'perPageChoices' =>
-                                                        self::$perPageChoices))
+        $html .= $uiPagination->render($paginator)
               .  "<br class='clear' />\n";
 
         // Return the rendered HTML
@@ -1209,7 +1201,7 @@ function init_userItems()
               .   "</div>"                              // itemsSortOrder }
               .   "<div class='field perPage'>"         // perPage {
               .    "<label for='perPage'>Per page</label>"
-              .    "<select class='ui-input ui-state-default "
+              .    "<select class='ui-input ui-state-default ui-corner-all "
               .                  "count' name='perPage'>"
               .     "<!-- perPage: {$itemCountPerPage} -->";
 

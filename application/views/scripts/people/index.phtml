@@ -63,7 +63,7 @@ if ( @isset($this->tagList))
 
 
     $time_end   = microtime(true);
-    $html .= sprintf ("%f seconds to render tag cloud<br />\n",
+    $html .= sprintf ("\n<!-- %f seconds to render tag cloud -->\n",
                       $time_end - $time_start);
 
 
@@ -79,14 +79,10 @@ echo $this->htmlItemScope($this->paginator,
 
 echo "<div class='displayOptions'>";    // displayOptions {
 
-/* Present the pagination control, established by
- * Bootstrap.php::_initViewGlobal() to be rendered via:
- *      views/scripts/paginationControl.phtml
+/* Present the pagination control.
+ * Default values are established via Bootstrap.php::_initViewGlobal().
  */
-echo $this->paginationControl($this->paginator,
-                              null,        // style
-                              'paginationControl.phtml',
-                              array('excludeInfo' => true));
+echo $this->htmlPaginationControl($this->paginator, 'pagination-top', true);
 
 echo "</div>";  // displayOptions }
 
@@ -110,7 +106,7 @@ if (count($this->paginator))
     echo "</ul>\n";
 }
 
-echo $this->paginator;
+echo $this->htmlPaginationControl($this->paginator);
 
 ?>
 
