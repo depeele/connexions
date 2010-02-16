@@ -2,32 +2,34 @@
 /** @file
  *
  *  View script for IndexController::index with incoming members:
- *      viewer          The Model_User instance representing the current
- *                      viewer;
- *      owner           The owner of the current item set -- either a string
- *                      or a Model_User instance;
- *      tagInfo         A Connexions_Set_Info instance containing
- *                      information about the requested tags;
- *      userItems       The Model_UserItemSet representing the items to
- *                      present;
- *      paginator       The paginator to use in presenting 'userItems';
+ *      viewer              The Model_User instance representing the current
+ *                          viewer;
+ *      owner               The owner of the current item set -- either a
+ *                          string or a Model_User instance;
+ *      tagInfo             A Connexions_Set_Info instance containing
+ *                          information about the requested tags;
+ *      userItems           The Model_UserItemSet representing the items to
+ *                          present;
+ *      paginator           The paginator to use in presenting 'userItems';
  *
- *      itemsStyle      Presentation style for user items
- *                      (Connexions_View_Helpers_HtmlUserItems::STYLE_*);
- *      itemsSortBy     Sort User Items by
- *                      (a field from Model_UserItem::$model);
- *      itemsSortOrder  User Items sort order
- *                      (Connexions_View_Helpers_HtmlUserItems::
+ *      itemsStyle          Presentation style for user items
+ *                          (Connexions_View_Helpers_HtmlUserItems::STYLE_*);
+ *      itemsSortBy         Sort User Items by
+ *                          (a field from Model_UserItem::$model);
+ *      itemsSortOrder      User Items sort order
+ *                          (Connexions_View_Helpers_HtmlUserItems::
  *                                                          SORT_ORDER_*);
  *      itemsStyleCustom
- *                      An array of custom style settings
+ *                          An array of custom style settings
  *
- *      tagsMax         Maximum number of tags to present;
- *      tagsTop         The number of top tags to present;
- *      tagsStyle       Style of tag display
- *                      (Connexions_View_Helper_HtmlTagCloud::STYLE_*);
- *      tagsSortBy      Sort tags by (valid field of Model_Tag);
- *      tagsSortOrder   Tag sort order.
+ *      sbTagsPerPage           Maximum number of tags to present in the
+ *                              sidebar;
+ *      sbTagsHighlightCount    The number of tags to ighlight in the sidebar;
+ *      sbTagsStyle             Style of sidebar tag display
+ *                              (Connexions_View_Helper_HtmlTagCloud::STYLE_*);
+ *      sbTagsSortBy            Sort tags in the sidebar by
+ *                              (valid field of Model_Tag);
+ *      sbTagsSortOrder         Sidebar Tag sort order.
  */
 $baseUrl = $this->baseUrl('/'); //Connexions::url('/');
 
@@ -83,7 +85,7 @@ if ( @isset($this->userItems) )
         // */
 
         $this->tagList =
-            $this->tagSet->get_Tag_ItemList(0, $this->tagsMax,
+            $this->tagSet->get_Tag_ItemList(0, $this->sbTagsPerPage,
                                             $this->tagInfo,
                                             ($this->owner !== '*'
                                                 ? null
@@ -94,15 +96,7 @@ if ( @isset($this->userItems) )
 if ( @isset($this->tagList))
 {
     $uiHelper = $this->htmlTagCloud();
-
-    if (! @empty($this->tagsStyle))
-        $uiHelper->setStyle($this->tagsStyle);
-    if (! @empty($this->tagsSortBy))
-        $uiHelper->setSortBy($this->tagsSortBy);
-    if (! @empty($this->tagsSortOrder))
-        $uiHelper->setSortOrder($this->tagsSortOrder);
-    if (@isset($this->tagsTop))
-        $uiHelper->setTagsTop($this->tagsTop);
+    $uiHelper->setPrefix('sbTags');
 
     $time_start = microtime(true);
 
@@ -116,10 +110,14 @@ if ( @isset($this->tagList))
     /* Use the Connexions_View_Helper_HtmlTagCloud class to render the tag
      * cloud for $this->tagList.
      */
-    $html .= $uiHelper->render($this->tagList);
+    $html .= $uiHelper->render($this->tagList,
+                               $this->sbTagsStyle,
+                               $this->sbTagsSortBy,
+                               $this->sbTagsSortOrder,
+                               $this->sbTagsHighlightCount);
 
     $time_end   = microtime(true);
-    $html .= sprintf ("%f seconds to render tag cloud<br />\n",
+    $html .= sprintf ("\n<!-- %f seconds to render tag cloud -->\n",
                       $time_end - $time_start)
           . "</div>";
 

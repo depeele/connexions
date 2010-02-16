@@ -16,23 +16,33 @@
  */
 class Connexions_View_Helper_HtmlTagCloud extends Zend_View_Helper_Abstract
 {
-    static public   $tagsMaxChoices     = array(50, 100, 250, 500);
-    static public   $tagsTopChoices     = array(0,  5,   10);
+    static public   $perPageChoices         = array(50, 100, 250, 500);
+    static public   $highlightCountChoices  = array(0,  5,   10);
 
-    const STYLE_LIST                    = 'list';
-    const STYLE_CLOUD                   = 'cloud';
+    static public   $defaults               = array(
+        'displayStyle'      => self::STYLE_CLOUD,
+        'sortBy'            => self::SORT_BY_TITLE,
+        'sortOrder'         => Model_TagSet::SORT_ORDER_ASC,
 
-    static public   $styleTitles        = array(
+        'perPage'           => 100,
+        'highlightCount'    => 5
+    );
+
+
+    const STYLE_LIST                        = 'list';
+    const STYLE_CLOUD                       = 'cloud';
+
+    static public   $styleTitles            = array(
         self::STYLE_LIST    => 'List',
         self::STYLE_CLOUD   => 'Cloud'
     );
 
-    const SORT_BY_TAG               = 'tag';
-    const SORT_BY_USER_ITEM_COUNT   = 'userItemCount';
+    const SORT_BY_TITLE     = 'title';
+    const SORT_BY_WEIGHT    = 'weight';
 
     static public   $sortTitles     = array(
-                    self::SORT_BY_TAG                   => 'Tag',
-                    self::SORT_BY_USER_ITEM_COUNT       => 'Item Count'
+                    self::SORT_BY_TITLE     => 'Name',
+                    self::SORT_BY_WEIGHT    => 'Weight'
                 );
 
     static public   $orderTitles    = array(
@@ -41,13 +51,18 @@ class Connexions_View_Helper_HtmlTagCloud extends Zend_View_Helper_Abstract
                 );
 
 
-    /** @brief  Set-able parameters with default values. */
-    protected       $_tagsStyle     = self::STYLE_CLOUD;
-    protected       $_tagsSortBy    = self::SORT_BY_TAG;
-    protected       $_tagsSortOrder = Model_TagSet::SORT_ORDER_ASC;
+    static protected $_initialized  = array();
 
-    protected       $_tagsMax       = 100;
-    protected       $_tagsTop       = 5;
+    /** @brief  Set-able parameters . */
+    protected       $_prefix            = 'tags';
+    protected       $_showRelation      = true;
+
+    protected       $_displayStyle      = null;
+    protected       $_sortBy            = null;
+    protected       $_sortOrder         = null;
+
+    protected       $_perPage           = null;
+    protected       $_highlightCount    = null;
 
 
     /** @brief  Set the View object.
@@ -61,111 +76,32 @@ class Connexions_View_Helper_HtmlTagCloud extends Zend_View_Helper_Abstract
     {
         parent::setView($view);
 
-        $jQuery =  $view->jQuery();
-
-        $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.js'))
-               ->addJavascriptFile($view->baseUrl('js/ui.button.js'))
-               ->addOnLoad('init_tagItems();')
-               ->javascriptCaptureStart();
-
-        ?>
-
-/************************************************
- * Initialize display options.
- *
- */
-function init_tagItemsDisplayOptions()
-{
-    var $displayOptions = $('#tagItems .displayOptions');
-    var $form           = $displayOptions.find('form:first');
-    var $submit         = $displayOptions.find(':submit');
-    var $control        = $displayOptions.find('.control:first');
-
-    // Click the 'Display Options' button to toggle the displayOptions pane
-    $control.click(function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                $form.toggle();
-                $control.toggleClass('ui-state-active');
-            });
-
-    /* For the anchor within the 'Display Options' button, disable the default
-     * browser action but allow the event to bubble up to the click handler on
-     * the 'Display Options' button.
-     */
-    $control.find('a')  // Let it bubble up
-              .click(function(e) {e.preventDefault(); });
-
-    // Any change within the form should enable the submit button
-    $form.change(function() {
-                $submit.removeClass('ui-state-disabled')
-                       .removeAttr('disabled')
-                       .addClass('ui-state-default,ui-state-highlight');
-            });
-
-    // Bind to submit.
-    $form.submit(function() {
-                // Serialize all form values to an array...
-                var settings    = $form.serializeArray();
-
-                /* ...and set a cookie for each
-                 *  tagsSortBy
-                 *  tagsSortOrder
-                 *  tagsMax
-                 *  tagsTop
-                 *  tagsStyle
-                 */
-                $(settings).each(function() {
-                    $.log("Add Cookie: name[%s], value[%s]",
-                          this.name, this.value);
-                    $.cookie(this.name, this.value);
-                });
-
-                /* Finally, disable ALL inputs so our URL will have no
-                 * parameters since we've stored them all in cookies.
-                 */
-                $form.find('input,select').attr('disabled', true);
-
-                // let the form be submitted
-            });
-
-    return;
-}
-
-/************************************************
- * Initialize ui elements.
- *
- */
-function init_tagItems()
-{
-    // Initialize display options
-    init_tagItemsDisplayOptions();
-
-    //var $tagItems   = $('form.tagItems');
-}
-
-        <?php
-        $jQuery->javascriptCaptureEnd();
+        if (! @isset(self::$_initialized[ $this->_prefix ]) )
+        {
+            $this->setPrefix($this->_prefix);
+        }
 
         return $this;
     }
 
     /** @brief  Render an HTML version of a tag cloud.
-     *  @param  itemList    A Connexions_Set_ItemList instance representing the
-     *                      items to be presented;
-     *  @param  sortBy      The tag field to sort by ( ['title'] | 'count' );
-     *  @param  sortOrder   Sort order ( ['ASC'] | 'DESC').
-     *  @param  tagsTop     How many of the top items to specially render [ 5 ].
+     *  @param  itemList        A Connexions_Set_ItemList instance representing
+     *                          the items to be presented;
+     *  @param  style           The display style ( ['cloud'] | 'list' );
+     *  @param  sortBy          The field to sort by ( ['title'] | 'count' );
+     *  @param  sortOrder       Sort order ( ['ASC'] | 'DESC').
+     *  @param  highlightCount  How many of items to highlight [ 5 ].
+     *
      *  @param  hideOptions Should display options be hidden?
      *
      *  @return The HTML representation of a tag cloud.
      */
-    public function htmlTagCloud($itemList      = null,
-                                 $sortBy        = 'title',
-                                 $sortOrder     = 'ASC',
-                                 $tagsTop       = 5,
-                                 $hideOptions   = false)
+    public function htmlTagCloud($itemList          = null,
+                                 $style             = null,
+                                 $sortBy            = null,
+                                 $sortOrder         = null,
+                                 $highlightCount    = null,
+                                 $hideOptions       = false)
     {
         if ( ! $itemList instanceof Connexions_Set_ItemList)
         {
@@ -173,54 +109,55 @@ function init_tagItems()
         }
 
         return $this->render($itemList, $sortBy, $sortOrder,
-                             $tagsTop, $hideOptions);
+                             $highlightCount, $hideOptions);
     }
 
 
     /** @brief  Render an HTML version of a tag cloud.
-     *  @param  itemList    A Connexions_Set_ItemList instance representing the
-     *                      items to be presented;
-     *  @param  sortBy      The tag field to sort by ( ['title'] | 'count' );
-     *  @param  sortOrder   Sort order ( ['ASC'] | 'DESC').
-     *  @param  tagsTop     How many of the top items to specially render [ 5 ].
-     *  @param  hideOptions Should display options be hidden?
+     *  @param  itemList        A Connexions_Set_ItemList instance representing
+     *                          the items to be presented;
+     *  @param  style           The display style ( ['cloud'] | 'list' );
+     *  @param  sortBy          The field to sort by ( ['title'] | 'count' );
+     *  @param  sortOrder       Sort order ( ['ASC'] | 'DESC').
+     *  @param  highlightCount  How many of items to highlight [ 5 ].
+     *  @param  hideOptions     Should display options be hidden?
      *
      *  @return The HTML representation of a tag cloud.
      */
     public function render(Connexions_Set_ItemList    $itemList,
-                           $sortBy        = null,
-                           $sortOrder     = null,
-                           $tagsTop       = null,
-                           $hideOptions   = null)
+                           $style           = null,
+                           $sortBy          = null,
+                           $sortOrder       = null,
+                           $highlightCount  = null,
+                           $hideOptions     = false)
     {
-        $this->_tagsMax = count($itemList);
+        $this->_perPage = count($itemList);
 
-        if (! empty($sortBy))       $this->setSortBy($sortBy);
-        if (! empty($sortOrder))    $this->setSortOrder($sortOrder);
-        if (  isset($tagsTop))      $this->setTagsTop($tagsTop);
+        $this->setStyle($style)
+             ->setSortBy($sortBy)
+             ->setSortOrder($sortOrder)
+             ->setHighlightCount($highlightCount);
 
 
         $html = '';
-        if ($hideOptions !== true)
-        {
-            /*
-            $html .= "<ul class='tagsHeader'>"
-                  .   "<li class='active ui-corner-top'>Tags</li>"
-                  .   "<br class='clear' />"
-                  .  "</ul>";
-            */
 
+        if ($this->_showRelation)
+        {
             $html .= "<div class='tagRelation "
                   .              "connexions_sprites relation_ltr'>"
                   .   "&nbsp;"
-                  .  "</div>"
-                  .  $this->_renderDisplayOptions()
+                  .  "</div>";
+        }
+
+        if ($hideOptions !== true)
+        {
+            $html .= $this->_renderDisplayOptions()
                   .  "<br class='clear' />";
         }
 
         $origItemList = clone $itemList;
         /*
-        $html .= "\n<!-- First {$this->_tagsTop} tags:\n";
+        $html .= "\n<!-- First {$this->_highlightCount} items:\n";
         foreach ($itemList as $idex => $item)
         {
             $html .= sprintf("    '%s' [%d]\n",
@@ -235,29 +172,31 @@ function init_tagItems()
         foreach ($itemList as $idex => $item)
         {
             array_push($itemListParts,
-                       sprintf("%s[%d, %d]",
-                               $item->tag, $item->tagId,
-                               $item->userItemCount) );
+                       sprintf("%s[%d]",
+                               $item->getTitle(),
+                               $item->getWeight()) );
         }
         $itemListStr = implode(', ', $itemListParts);
 
         Connexions::log("Connexions_View_Helper_HtmlTagCloud:: "
-                          . "tagsSortBy[ {$this->_tagsSortBy} ], "
-                          . "tagsSortOrder[ {$this->_tagsSortOrder} ], "
+                          . "sortBy[ {$this->_sortBy} ], "
+                          . "sortOrder[ {$this->_sortOrder} ], "
                           . count($itemList) . " items "
                           . "in list[ {$itemListStr} ]");
         // */
 
 
+        $uSortBy = ucfirst($this->_sortBy);
+
         // Create a sort function
         $sortFn = create_function('$a,$b',
-                      '$aVal = $a->'. $this->_tagsSortBy .';'
-                    . '$bVal = $b->'. $this->_tagsSortBy .';'
-                    . '$cmp = '. ($this->_tagsSortBy === 'tag'
+                      '$aVal = $a->get'. $uSortBy .'();'
+                    . '$bVal = $b->get'. $uSortBy .'();'
+                    . '$cmp = '. ($this->_sortBy === 'title'
                                     ? 'strcasecmp($aVal, $bVal)'
                                     : '($aVal - $bVal)') .';'
-                    .  ( (($this->_tagsSortOrder === 'ASC') ||
-                          ($this->_tagsSortOrder === 'asc'))
+                    .  ( (($this->_sortOrder === 'ASC') ||
+                          ($this->_sortOrder === 'asc'))
                             ? ''
                               // Reverse the comparison to reverse the ASC sort
                             : '$cmp = ($cmp < 0 '
@@ -281,7 +220,7 @@ function init_tagItems()
         // Sort the item list
         $itemList->uasort($sortFn);
 
-        if ($this->_tagsStyle === self::STYLE_CLOUD)
+        if ($this->_displayStyle === self::STYLE_CLOUD)
         {
             // Create a Zend_Tag_Cloud renderer (by default, renders HTML)
             $cloud = new Zend_Tag_Cloud(
@@ -325,8 +264,8 @@ function init_tagItems()
 
             // Render the HTML for a cloud
             $html .= "<div class='cloud'>"
-                  .   ($this->_tagsTop > 0
-                            ? $this->_renderTopCount( $origItemList )
+                  .   ($this->_highlightCount > 0
+                            ? $this->_renderHighlights( $origItemList )
                             : '')
                   .   $cloud->render()
                   .  "<br class='clear' />"
@@ -337,8 +276,8 @@ function init_tagItems()
             // Render the HTML for a list
             $html .= "<div class='cloud'>"
                   /* Showing top doesn't make sense when presenting a list...
-                  .   ($this->_tagsTop > 0
-                            ? $this->_renderTopCount( $origItemList )
+                  .   ($this->_highlightCount > 0
+                            ? $this->_renderHighlights( $origItemList )
                             : '')
                   */
                   .   $this->_renderList($itemList)
@@ -348,6 +287,206 @@ function init_tagItems()
 
         // Return the rendered HTML
         return $html;
+    }
+
+    /** @brief  Set the cookie-name prefix.
+     *  @param  prefix  A string prefix.
+     *
+     *  @return Connexions_View_Helper_HtmlTagCloud for a fluent interface.
+     */
+    public function setPrefix($prefix)
+    {
+        $this->_prefix = $prefix;
+
+        if (! @isset(self::$_initialized[$prefix]))
+        {
+            $view   = $this->view;
+            $jQuery = $view->jQuery();
+
+            $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.js'))
+                   ->addJavascriptFile($view->baseUrl('js/ui.button.js'))
+                   ->addOnLoad("init_{$prefix}Cloud();")
+                   ->javascriptCaptureStart();
+
+            ?>
+
+/************************************************
+ * Initialize display options.
+ *
+ */
+function init_<?= $prefix ?>CloudDisplayOptions()
+{
+    var $displayOptions = $('.<?= $prefix ?>-displayOptions');
+    var $form           = $displayOptions.find('form:first');
+    var $submit         = $displayOptions.find(':submit');
+    var $control        = $displayOptions.find('.control:first');
+
+    // Add an opacity hover effect to the displayOptions
+    $displayOptions.fadeTo(100, 0.5)
+                   .hover(  function() {    // in
+                                $displayOptions.fadeTo(100, 1.0);
+                            },
+                            function(e) {   // out
+                                /* For at least Mac Firefox 3.5, for <select>
+                                 * when we move into the options we receive a
+                                 * 'moustout' event on the select box with a
+                                 * related target of 'html'.  The wreaks havoc
+                                 * by de-selecting the select box and it's
+                                 * parent(s), causing the displayOptions to
+                                 * disappear.  NOT what we want, so IGNORE the
+                                 * event.
+                                 */
+                                if ((e.relatedTarget === undefined) ||
+                                    (e.relatedTarget === null)      ||
+                                    (e.relatedTarget.localName === 'html'))
+                                {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    return false;
+                                }
+
+                                $displayOptions.fadeTo(100, 0.5);
+
+                                // Also "close" the form
+                                if ($form.is(':visible'))
+                                    $control.click();
+                            }
+                         );
+
+    // Click the 'Display Options' button to toggle the displayOptions pane
+    $control.click(function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                $form.toggle();
+                $control.toggleClass('ui-state-active');
+            });
+
+    var $displayStyle   = $displayOptions.find('.displayStyle');
+    var $style          = $displayStyle.find('input[name=<?= $prefix ?>Style]');
+
+    /* Attach a data item to each display option identifying the display type
+     * (pulled from the CSS class (<?= $this->_prefix ?>Style-<type>)
+     */
+    $displayStyle.find('a.option,div.option a:first').each(function() {
+                // Retrieve the new style value from the
+                // '<?= $prefix ?>Style-*' class
+                var style   = $(this).attr('class');
+                var pos     = style.indexOf('<?= $prefix ?>Style-') + 6 +
+                                                    <?= strlen($prefix) ?>;
+
+                style = style.substr(pos);
+                pos   = style.indexOf(' ');
+                if (pos > 0)
+                    style = style.substr(0, pos);
+
+                // Save the style in a data item
+                $(this).data('displayStyle', style);
+            });
+
+    // Allow only one display style to be selected at a time
+    $displayStyle.find('a.option').click(function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var $opt    = $(this);
+
+                // Save the style in our hidden input
+                $style.val( $opt.data('displayStyle') );
+
+                $displayStyle.find('a.option-selected')
+                                            .removeClass('option-selected');
+                $opt.addClass('option-selected');
+
+                // Trigger a change event on our form
+                $form.change();
+            });
+
+    // Any change within the form should enable the submit button
+    $form.change(function() {
+                $submit.removeClass('ui-state-disabled')
+                       .removeAttr('disabled')
+                       .addClass('ui-state-default,ui-state-highlight');
+            });
+
+    // Bind to submit.
+    $form.submit(function() {
+                // Serialize all form values to an array...
+                var settings    = $form.serializeArray();
+
+                /* ...and set a cookie for each
+                 *  <?= $prefix ?>SortBy
+                 *  <?= $prefix ?>SortOrder
+                 *  <?= $prefix ?>PerPage
+                 *  <?= $prefix ?>Count
+                 *  <?= $prefix ?>Style
+                 */
+                $(settings).each(function() {
+                    $.log("Add Cookie: name[%s], value[%s]",
+                          this.name, this.value);
+                    $.cookie(this.name, this.value);
+                });
+
+                /* Finally, disable ALL inputs so our URL will have no
+                 * parameters since we've stored them all in cookies.
+                 */
+                $form.find('input,select').attr('disabled', true);
+
+                // let the form be submitted
+            });
+
+    return;
+}
+
+/************************************************
+ * Initialize ui elements.
+ *
+ */
+function init_<?= $prefix ?>Cloud()
+{
+    // Initialize display options
+    init_<?= $prefix ?>CloudDisplayOptions();
+
+    //var $tagCloud   = $('form.tagCloud');
+}
+
+            <?php
+            $jQuery->javascriptCaptureEnd();
+
+            self::$_initialized[$prefix] = true;
+        }
+
+        return $this;
+    }
+
+    /** @brief  Get the current prefix.
+     *
+     *  @return The string prefix.
+     */
+    public function getPrefix()
+    {
+        return $this->_prefix;
+    }
+
+    /** @brief  Set whether or not the "relation" indicator is presented.
+     *  @param  show    A boolean.
+     *
+     *  @return Connexions_View_Helper_HtmlTagCloud for a fluent interface.
+     */
+    public function setShowRelation($show)
+    {
+        $this->_showRelation = ($show ? true : false);
+
+        return $this;
+    }
+
+    /** @brief  Get the "show relation" indicator.
+     *
+     *  @return The boolean.
+     */
+    public function getShowRelation()
+    {
+        return $this->_showRelation;
     }
 
     /** @brief  Set the current style.
@@ -366,7 +505,7 @@ function init_tagItems()
             break;
 
         default:
-            $style = self::STYLE_CLOUD;
+            $style = self::$defaults['displayStyle'];
             break;
         }
 
@@ -375,7 +514,7 @@ function init_tagItems()
                             . "setStyle({$orig}) == [ {$style} ]");
         // */
     
-        $this->_tagsStyle = $style;
+        $this->_displayStyle = $style;
 
         return $this;
     }
@@ -386,7 +525,7 @@ function init_tagItems()
      */
     public function getStyle()
     {
-        return $this->_tagsStyle;
+        return $this->_displayStyle;
     }
 
     /** @brief  Set the current sortBy.
@@ -400,12 +539,12 @@ function init_tagItems()
 
         switch ($sortBy)
         {
-        case self::SORT_BY_TAG:
-        case self::SORT_BY_USER_ITEM_COUNT:
+        case self::SORT_BY_TITLE:
+        case self::SORT_BY_WEIGHT:
             break;
 
         default:
-            $sortBy = self::SORT_BY_TAG;
+            $sortBy = self::$defaults['sortBy'];
             break;
         }
 
@@ -414,7 +553,7 @@ function init_tagItems()
                             . "setSortBy({$orig}) == [ {$sortBy} ]");
         // */
 
-        $this->_tagsSortBy = $sortBy;
+        $this->_sortBy = $sortBy;
 
         return $this;
     }
@@ -425,7 +564,7 @@ function init_tagItems()
      */
     public function getSortBy()
     {
-        return $this->_tagsSortBy;
+        return $this->_sortBy;
     }
 
     /** @brief  Set the current sortOrder.
@@ -445,7 +584,7 @@ function init_tagItems()
             break;
 
         default:
-            $sortOrder = Model_TagSet::SORT_ORDER_ASC;
+            $sortOrder = self::$defaults['sortOrder'];
             break;
         }
 
@@ -454,7 +593,7 @@ function init_tagItems()
                             . "setSortOrder({$orig}) == [ {$sortOrder} ]");
         // */
     
-        $this->_tagsSortOrder = $sortOrder;
+        $this->_sortOrder = $sortOrder;
 
         return $this;
     }
@@ -465,31 +604,38 @@ function init_tagItems()
      */
     public function getSortOrder()
     {
-        return $this->_tagsSortOrder;
+        return $this->_sortOrder;
     }
 
-    /** @brief  Set the number of top tags to present
-     *  @param  tagsTop     The number of top tags (self::$tagsTopChoices).
+    /** @brief  Set the number of items to highlight
+     *  @param  highlightCount  The number of items to highlight
+     *                          (self::$highlightCountChoices).
      *
      *  @return Connexions_View_Helper_HtmlTagCloud for a fluent interface.
      */
-    public function setTagsTop($tagsTop)
+    public function setHighlightCount($highlightCount)
     {
-        if (in_array($tagsTop, self::$tagsTopChoices))
+        if (($highlightCount !== null) &&
+            in_array($highlightCount, self::$highlightCountChoices))
         {
-            $this->_tagsTop = $tagsTop;
+            $this->_highlightCount = $highlightCount;
+        }
+        else
+        {
+            // Default
+            $this->_highlightCount = self::$defaults['highlightCount'];
         }
 
         return $this;
     }
 
-    /** @brief  Get the current tagsTop value.
+    /** @brief  Get the current highlightCount value.
      *
-     *  @return The tagsTop value.
+     *  @return The highlightCount value.
      */
-    public function getTagsTop()
+    public function getHighlightCount()
     {
-        return $this->_tagsTop;
+        return $this->_highlightCount;
     }
 
     /*************************************************************************
@@ -532,22 +678,22 @@ function init_tagItems()
         return $html;
     }
 
-    /** @brief  Render the top tags (by count).
+    /** @brief  Render the top items (by count).
      *  @param  itemList    A Connexions_Set_ItemList instance representing the
      *                      items to be presented;
      *
      *
      *  @return A string of HTML.
      */
-    protected function _renderTopCount(Connexions_Set_ItemList   $itemList)
+    protected function _renderHighlights(Connexions_Set_ItemList   $itemList)
     {
-        $html .= "<div class='tagsTop ui-corner-all'>"
-              .   "<h4>Top {$this->_tagsTop}</h4>"
+        $html .= "<div class='highlights ui-corner-all'>"
+              .   "<h4>Top {$this->_highlightCount}</h4>"
               .   "<ul>";
 
         foreach ($itemList as $idex => $item)
         {
-            if ($idex > $this->_tagsTop)
+            if ($idex > $this->_highlightCount)
                 break;
 
             $html .= "<li>";
@@ -580,7 +726,9 @@ function init_tagItems()
      */
     protected function _renderDisplayOptions()
     {
-        $html .= "<div class='displayOptions'>"
+        $prefix = $this->_prefix;
+
+        $html .= "<div class='displayOptions {$prefix}-displayOptions'>"
               .   "<div class='control ui-corner-all ui-state-default'>"
               .    "<a>Display Options</a>"
               .    "<div class='ui-icon ui-icon-triangle-1-s'>&nbsp;</div>"
@@ -588,16 +736,16 @@ function init_tagItems()
               .   "<form class='ui-state-active ui-corner-all' "
               .         "style='display:none;'>";
 
-        $html .=  "<div class='field tagsSortBy'>"  // tagsSortBy {
-              .    "<label   for='tagsSortBy'>Sorted by</label>"
-              .    "<select name='tagsSortBy' "
-              .              "id='tagsSortBy' "
-              .           "class='sort-by sort-by-{$this->_tagsSortBy} "
+        $html .=  "<div class='field sortBy'>"          // sortBy {
+              .    "<label   for='{$prefix}SortBy'>Sorted by</label>"
+              .    "<select name='{$prefix}SortBy' "
+              .              "id='{$prefix}SortBy' "
+              .           "class='sort-by sort-by-{$this->_sortBy} "
               .                   "ui-input ui-state-default ui-corner-all'>";
 
         foreach (self::$sortTitles as $key => $title)
         {
-            $isOn = ($key == $this->_tagsSortBy);
+            $isOn = ($key == $this->_sortBy);
             $css  = 'ui-corner-all'
                   .   ($isOn ? ' option-on' : '');
 
@@ -614,71 +762,69 @@ function init_tagItems()
         }
 
         $html .=   "</select>"
-              .   "</div>";                             // tagsSortBy }
+              .   "</div>";                             // sortBy }
 
 
-        $html .=  "<div class='field tagsSortOrder'>"   // tagsSortOrder {
-              .    "<label for='tagsortOrder'>Sort order</label>";
+        $html .=  "<div class='field sortOrder'>"   // sortOrder {
+              .    "<label for='{$prefix}SortOrder'>Sort order</label>";
 
         foreach (self::$orderTitles as $key => $title)
         {
             $html .= "<div class='field'>"
-                  .   "<input type='radio' name='tagsSortOrder' "
-                  .                         "id='tagsSortOrder-{$key}' "
+                  .   "<input type='radio' name='{$prefix}SortOrder' "
+                  .                         "id='{$prefix}SortOrder-{$key}' "
                   .                      "value='{$key}'"
-                  .          ($key == $this->_tagsSortOrder
+                  .          ($key == $this->_sortOrder
                                  ? " checked='true'" : "" ). " />"
-                  .   "<label for='tagsSortOrder-{$key}'>{$title}</label>"
+                  .   "<label for='{$prefix}SortOrder-{$key}'>{$title}</label>"
                   .  "</div>";
         }
 
         $html .=   "<br class='clear' />"
-              .   "</div>"                              // tagsSortOrder }
-              .   "<div class='field tagsMax'>"         // tagsMax {
-              .    "<label for='tagsMax'>Tag count</label>"
-              .    "<select class='ui-input ui-state-default "
-              .                  "count' name='tagsMax'>"
-              .     "<!-- tagsMax: {$this->_tagsMax} -->";
+              .   "</div>"                              // sortOrder }
+              .   "<div class='field itemCounts'>"      // itemCounts {
+              .    "<div class='field perPage'>"        // perPage {
+              .     "<label for='{$prefix}PerPage'>Show</label>"
+              .     "<select class='ui-input ui-state-default ui-corner-all "
+              .                   "count' name='{$prefix}PerPage'>"
+              .      "<!-- {$prefix}PerPage: {$this->_perPage} -->";
 
-        foreach (self::$tagsMaxChoices as $countOption)
+        foreach (self::$perPageChoices as $countOption)
         {
             $html .= "<option value='{$countOption}'"
-                  .           ($countOption == $this->_tagsMax
+                  .           ($countOption == $this->_perPage
                                  ? ' selected'
                                  : '')
                   .                     ">{$countOption}</option>";
         }
     
-        $html .=   "</select>"
-              .    "<br class='clear' />"
-              .   "</div>"                              // tagsMax }
-              .   "<div class='field tagsTop'>"         // tagsTop {
-              .    "<label for='tagsTop'>Show top</label>"
-              .    "<select class='ui-input ui-state-default "
-              .                  "count' name='tagsTop'>"
-              .     "<!-- tagsTop: {$this->_tagsTop} -->";
+        $html .=    "</select>"
+              .     "<span class='label'>highlighting the</span>"
+              .    "</div>"                             // perPage }
+              .    "<div class='field highlightCount'>" // highlightCount {
+              .     "<label for='{$prefix}HighlightCount'>top</label>"
+              .     "<select class='ui-input ui-state-default ui-corner-all "
+              .                   "count' name='{$prefix}HighlightCount'>"
+              .      "<!-- {$prefix}HighlightCount: {$this->_highlightCount} -->";
 
-        foreach (self::$tagsTopChoices as $countOption)
+        foreach (self::$highlightCountChoices as $countOption)
         {
-            $label = ($countOption === 0
-                            ? 'none'
-                            : $countOption);
-
             $html .= "<option value='{$countOption}'"
-                  .           ($countOption == $this->_tagsTop
+                  .           ($countOption == $this->_highlightCount
                                  ? ' selected'
                                  : '')
-                  .                     ">{$label}</option>";
+                  .                     ">{$countOption}</option>";
         }
     
-        $html .=   "</select>"
+        $html .=    "</select>"
+              .    "</div>"                             // highlightCount }
               .    "<br class='clear' />"
-              .   "</div>";                             // tagsTop }
+              .   "</div>";                             // itemCounts }
 
-        $html .=  "<div class='field tagsStyle'>"       // tagsStyle {
-              .    "<label for='tagsStyle'>Display</label>"
-              .    "<input type='hidden' name='tagsStyle' "
-              .          "value='{$this->_tagsStyle}' />";
+        $html .=  "<div class='field displayStyle'>"    // displayStyle {
+              .    "<label for='{$prefix}Style'>Display</label>"
+              .    "<input type='hidden' name='{$prefix}Style' "
+              .          "value='{$this->_displayStyle}' />";
 
         $idex       = 0;
         $titleCount = count(self::$styleTitles);
@@ -686,17 +832,17 @@ function init_tagItems()
         foreach (self::$styleTitles as $key => $title)
         {
             $itemHtml = '';
-            $cssClass = "option tagsStyle-{$key}";
-            if ($key == $this->_tagsStyle)
+            $cssClass = "option {$prefix}Style-{$key}";
+            if ($key == $this->_displayStyle)
                 $cssClass .= ' option-selected';
 
             $itemHtml .= "<a class='{$cssClass}' "
-                      .      "href='?tagsStyle={$key}'>{$title}</a>";
+                      .      "href='?{$prefix}Style={$key}'>{$title}</a>";
 
             array_push($parts, $itemHtml);
         }
         $html .= implode("<span class='comma'>, </span>", $parts)
-              .   "</div>";                             // tagsStyle }
+              .   "</div>";                             // displayStyle }
 
         $html .=   "<div id='buttons-global' class='buttons'>"
               .     "<button type='submit' "

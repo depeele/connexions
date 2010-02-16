@@ -187,14 +187,24 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         // Establish the base title and separator
         $view->headTitle('connexions')->setSeparator(' > ');
 
-        // Set our default pagination -- 'Elastic', 'Jumping', 'Sliding'
-        Connexions_Controller_Action_Helper_Pager::setDefaults(
-                array('ScrollingStyle'      => 'Sliding',
-                      'ItemCountPerPage'    => 25,
-                      'PageRange'           =>  5) );
+        if ($this->hasOption('paging'))
+        {
+            /* Set our default pagination:
+             *  ScrollingStyle      -- 'Elastic', 'Jumping', 'Sliding'
+             *  ItemCountPerPage
+             *  PageRange
+             *  ...
+             */
+            $paging = $this->getOption('paging');
 
-        Zend_View_Helper_PaginationControl::setDefaultViewPartial(
-                                        'paginationControl.phtml');
+            /*
+            Connexions::log("Bootstrap::_initViewGlobal: paging [ ".
+                                var_export($paging, true) . " ]");
+            // */
+
+            Connexions_Controller_Action_Helper_Pager::setDefaults($paging);
+        }
+
 
         /* Add our view helpers to the helper plugin loader.
          *

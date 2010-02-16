@@ -394,24 +394,29 @@ cite { display: block; text-align: right; padding-top: 10px; }
 #tagItems .tagsHeader { border-bottom: 1px solid  #7c7c7c; padding: 0 0 0 0.5em; }
 #tagItems .tagsHeader li { float: left; padding: 0.25em; }
 #tagItems .tagsHeader li.active { background-color: #7c7c7c; color: white; }
-#tagItems .displayOptions form { width: 18em; }
-#tagItems .displayOptions form .field label { width: 5.5em; }
-#tagItems .displayOptions form .tagsSortOrder { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
-#tagItems .displayOptions form .tagsSortOrder .field { float: left; padding-bottom: 0; padding-right: 0.5em; }
-#tagItems .displayOptions form .tagsSortOrder .field label { display: inline; float: none; width: auto; padding: 0 0.1em; font-size: 0.75em; }
-#tagItems .displayOptions form .tagsSortOrder .field input, #tagItems .displayOptions form .tagsSortOrder .field label { cursor: pointer; }
-#tagItems .displayOptions form .tagsMax { padding-top: 0.5em; padding-bottom: 0.5em; }
-#tagItems .displayOptions form .tagsTop { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
-#tagItems .displayOptions form .tagsStyle { display: block; position: relative; width: auto; text-align: left; padding-top: 1em; }
-#tagItems .displayOptions form .tagsStyle a { font-weight: normal; }
-#tagItems .displayOptions form .tagsStyle .option-selected { font-weight: bold; }
-#tagItems .displayOptions form .tagsStyle .option, #tagItems .displayOptions form .tagsStyle .comma { display: block; float: left; }
-#tagItems .displayOptions form .tagsStyle .option.control { position: relative; top: -0.25em; }
-#tagItems .displayOptions form .tagsStyle .comma { padding-right: 0.5em; }
+
+#tagItems .displayOptions form, .sbUsers-displayOptions form, .tagsMain-displayOptions form { width: 18em; }
+#tagItems .displayOptions form .field label, .sbUsers-displayOptions form .field label, .tagsMain-displayOptions form .field label { width: 5.5em; }
+#tagItems .displayOptions form .sortOrder, .sbUsers-displayOptions form .sortOrder, .tagsMain-displayOptions form .sortOrder { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
+#tagItems .displayOptions form .sortOrder .field, .sbUsers-displayOptions form .sortOrder .field, .tagsMain-displayOptions form .sortOrder .field { float: left; padding-bottom: 0; padding-right: 0.5em; }
+#tagItems .displayOptions form .sortOrder .field label, .sbUsers-displayOptions form .sortOrder .field label, .tagsMain-displayOptions form .sortOrder .field label { display: inline; float: none; width: auto; padding: 0 0.1em; font-size: 0.75em; }
+#tagItems .displayOptions form .sortOrder .field input, #tagItems .displayOptions form .sortOrder .field label, .sbUsers-displayOptions form .sortOrder .field input, .sbUsers-displayOptions form .sortOrder .field label, .tagsMain-displayOptions form .sortOrder .field input, .tagsMain-displayOptions form .sortOrder .field label { cursor: pointer; }
+#tagItems .displayOptions form .itemCounts, .sbUsers-displayOptions form .itemCounts, .tagsMain-displayOptions form .itemCounts { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
+#tagItems .displayOptions form .itemCounts .field, .sbUsers-displayOptions form .itemCounts .field, .tagsMain-displayOptions form .itemCounts .field { display: inline; }
+#tagItems .displayOptions form .itemCounts .field label, .sbUsers-displayOptions form .itemCounts .field label, .tagsMain-displayOptions form .itemCounts .field label { width: 2.5em; }
+#tagItems .displayOptions form .itemCounts .field select, .sbUsers-displayOptions form .itemCounts .field select, .tagsMain-displayOptions form .itemCounts .field select { width: 4em; }
+#tagItems .displayOptions form .itemCounts .field label, #tagItems .displayOptions form .itemCounts .field select, #tagItems .displayOptions form .itemCounts .field .label, .sbUsers-displayOptions form .itemCounts .field label, .sbUsers-displayOptions form .itemCounts .field select, .sbUsers-displayOptions form .itemCounts .field .label, .tagsMain-displayOptions form .itemCounts .field label, .tagsMain-displayOptions form .itemCounts .field select, .tagsMain-displayOptions form .itemCounts .field .label { float: left; margin-bottom: 0.25em; }
+#tagItems .displayOptions form .itemCounts .field label, #tagItems .displayOptions form .itemCounts .field .label, .sbUsers-displayOptions form .itemCounts .field label, .sbUsers-displayOptions form .itemCounts .field .label, .tagsMain-displayOptions form .itemCounts .field label, .tagsMain-displayOptions form .itemCounts .field .label { padding: 0 0.25em; }
+#tagItems .displayOptions form .displayStyle, .sbUsers-displayOptions form .displayStyle, .tagsMain-displayOptions form .displayStyle { display: block; position: relative; width: auto; text-align: left; padding-top: 1em; }
+#tagItems .displayOptions form .displayStyle a, .sbUsers-displayOptions form .displayStyle a, .tagsMain-displayOptions form .displayStyle a { font-weight: normal; }
+#tagItems .displayOptions form .displayStyle .option-selected, .sbUsers-displayOptions form .displayStyle .option-selected, .tagsMain-displayOptions form .displayStyle .option-selected { font-weight: bold; }
+#tagItems .displayOptions form .displayStyle .option, #tagItems .displayOptions form .displayStyle .comma, .sbUsers-displayOptions form .displayStyle .option, .sbUsers-displayOptions form .displayStyle .comma, .tagsMain-displayOptions form .displayStyle .option, .tagsMain-displayOptions form .displayStyle .comma { display: block; float: left; }
+#tagItems .displayOptions form .displayStyle .option.control, .sbUsers-displayOptions form .displayStyle .option.control, .tagsMain-displayOptions form .displayStyle .option.control { position: relative; top: -0.25em; }
+#tagItems .displayOptions form .displayStyle .comma, .sbUsers-displayOptions form .displayStyle .comma, .tagsMain-displayOptions form .displayStyle .comma { padding-right: 0.5em; }
 
 .cloud { padding: 1em 0 2em 0.25em; clear: both; }
-.cloud .tagsTop { float: right; border: 1px solid #cccccc; background-color: #f3f3ff; padding: 0.25em; margin: 0 0 0.25em 1em; font-size: 0.9em; z-index: 1; }
-.cloud .tagsTop h4 { font-size: 1em; font-weight: bold; padding: 0; text-align: center; color: #172322; }
+.cloud .highlights { float: right; border: 1px solid #cccccc; background-color: #f3f3ff; padding: 0.25em; margin: 0 0 0.25em 1em; font-size: 0.9em; z-index: 1; }
+.cloud .highlights h4 { font-size: 1em; font-weight: bold; padding: 0; text-align: center; color: #172322; }
 .cloud ul { padding: 0; }
 .cloud ul .item { display: block; float: left; font-weight: normal; color: #2786c2; }
 .cloud ul .itemCount { display: block; float: right; padding: 0.15em 0 0.15em 0.5em; color: #999999; font-size: 0.8em; }
@@ -505,4 +510,4 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .displayOptions #buttons-global { margin-top: 2em; padding: 0.5em 0.5em 0; border-top: 1px dotted #cccccc; }
 .displayOptions .field { display: block; padding-bottom: 0.25em; }
 .displayOptions .field label { clear: left; width: 6em; float: left; }
-.displayOptions form { position: absolute; top: 2.25em; right: 0; padding: 0.5em; z-index: 2; }
+.displayOptions form { z-index: 4; position: absolute; top: 2.1em; right: 0; padding: 0.5em; }

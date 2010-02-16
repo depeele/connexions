@@ -22,65 +22,76 @@
       background-color =  !tagsHeaderActiveColorBackground
       color =             !pageColorBackground
 
-  .displayOptions
-    form
-      width:              18em
+#tagItems .displayOptions, .sbUsers-displayOptions, .tagsMain-displayOptions
+  form
+    width:              18em
+    .field
+      label
+        width:          5.5em
+    .sortOrder
+      padding-top:      0.5em
+      padding-bottom:   0.5em
+      border-bottom =   "1px dotted" !borderColor
       .field
+        float:          left
+        padding-bottom: 0
+        padding-right:  0.5em
         label
-          width:          5.5em
-      .tagsSortOrder
-        padding-top:      0.5em
-        padding-bottom:   0.5em
-        border-bottom =   "1px dotted" !borderColor
-        .field
+          display:    inline
+          float:      none
+          width:      auto
+          padding:    0 0.1em
+          font-size:  0.75em
+        input,label
+          cursor:   pointer
+
+    .itemCounts
+      padding-top:      0.5em
+      padding-bottom:   0.5em
+      border-bottom =   "1px dotted" !borderColor
+      .field
+        display:          inline
+
+        label
+          width:          2.5em
+
+        select
+          width:          4em
+
+        label, select, .label
           float:          left
-          padding-bottom: 0
-          padding-right:  0.5em
-          label
-            display:    inline
-            float:      none
-            width:      auto
-            padding:    0 0.1em
-            font-size:  0.75em
-          input,label
-            cursor:   pointer
+          margin-bottom:  0.25em
 
-      .tagsMax
-        padding-top:      0.5em
-        padding-bottom:   0.5em
+        label, .label
+          padding:        0 0.25em
 
-      .tagsTop
-        padding-top:      0.5em
-        padding-bottom:   0.5em
-        border-bottom =   "1px dotted" !borderColor
-
-      .tagsStyle
-        display:      block
-        position:     relative
-        width:        auto
-        text-align:   left
-        padding-top:  1em
-        a
-          font-weight:  normal
-        .option-selected
-          font-weight:  bold
-        .option, .comma
-          display:        block
-          float:          left
-        .option.control
-          position:       relative
-          top:            -0.25em
-        .comma
-          padding-right:  0.5em
+    .displayStyle
+      display:      block
+      position:     relative
+      width:        auto
+      text-align:   left
+      padding-top:  1em
+      a
+        font-weight:  normal
+      .option-selected
+        font-weight:  bold
+      .option, .comma
+        display:        block
+        float:          left
+      .option.control
+        position:       relative
+        top:            -0.25em
+      .comma
+        padding-right:  0.5em
 
 .cloud
   padding:              1em 0 2em 0.25em
   clear:                both
 
-  .tagsTop
+  .highlights
     float:              right
     border =            "1px solid" !borderColor
-    background-color =  !tagsTopColorBackground
+    background-color =  !highlightTopColorBackground
     padding:            0.25em
     margin:             0 0 0.25em 1em
     font-size:          0.9em
@@ -90,19 +101,19 @@
       font-weight:      bold
       padding:         0
       text-align:       center
-      color =           !tagsTopHeaderColor
+      color =           !highlightTopHeaderColor
   ul
     padding:          0
     .item
       display:        block
       float:          left
       font-weight:    normal
-      color =         !tagsTopTagColor
+      color =         !highlightTopTagColor
     .itemCount
       display:        block
       float:          right
       padding:        0.15em 0 0.15em 0.5em
-      color =         !tagsTopTagCountColor
+      color =         !highlightTopTagCountColor
       font-size:      0.8em
 
 .Tag_Cloud

@@ -29,7 +29,7 @@ class IndexController extends Zend_Controller_Action
 
         // Pagination parameters
         $page      = $request->getParam('page',      null);
-        $perPage   = $request->getParam('perPage',   null);
+        $perPage   = $request->getParam('PerPage',   null);
 
         // User-Item parameters
         $itemsStyle       = $request->getParam('itemsStyle',       null);
@@ -45,11 +45,11 @@ class IndexController extends Zend_Controller_Action
         // */
 
         // Tag-cloud parameters
-        $tagsMax       = $request->getParam('tagsMax',       100);
-        $tagsStyle     = $request->getParam('tagsStyle',     null);
-        $tagsTop       = $request->getParam('tagsTop',       null);
-        $tagsSortBy    = $request->getParam('tagsSortBy',    'tag');
-        $tagsSortOrder = $request->getParam('tagsSortOrder', null);
+        $sbTagsPerPage        = $request->getParam('sbTagsPerPage',   100);
+        $sbTagsStyle          = $request->getParam('sbTagsStyle',     null);
+        $sbTagsHighlightCount = $request->getParam('sbTagsHighlightCount', null);
+        $sbTagsSortBy         = $request->getParam('sbTagsSortBy',    'tag');
+        $sbTagsSortOrder      = $request->getParam('sbTagsSortOrder', null);
 
         /*
         Connexions::log("IndexController:: "
@@ -185,11 +185,11 @@ class IndexController extends Zend_Controller_Action
         $this->view->itemsStyleCustom = $itemsStyleCustom;
 
         // Tag-cloud parameters
-        $this->view->tagsStyle      = $tagsStyle;
-        $this->view->tagsMax        = $tagsMax;
-        $this->view->tagsTop        = $tagsTop;
-        $this->view->tagsSortBy     = $tagsSortBy;
-        $this->view->tagsSortOrder  = $tagsSortOrder;
+        $this->view->sbTagsStyle          = $sbTagsStyle;
+        $this->view->sbTagsPerPage        = $sbTagsPerPage;
+        $this->view->sbTagsHighlightCount = $sbTagsHighlightCount;
+        $this->view->sbTagsSortBy         = $sbTagsSortBy;
+        $this->view->sbTagsSortOrder      = $sbTagsSortOrder;
     }
 
     /** @brief  A JSON-RPC callback to retrieve auto-completion results for 

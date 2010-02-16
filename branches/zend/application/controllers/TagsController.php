@@ -21,31 +21,41 @@ class TagsController extends Zend_Controller_Action
         $owners    = $request->getParam('owners',    null);
 
         // Pagination parameters
-        $page      = $request->getParam('page',      null);
-        $perPage   = $request->getParam('perPage',   250);
+        $page        = $request->getParam('page',           null);
 
         // Tag-cloud parameters
-        $maxTags   = -1;    // ALL  $request->getParam('maxTags',   null);
-        $sortBy    = $request->getParam('sortBy',    'tag');
-        $sortOrder = $request->getParam('sortOrder', null);
+        $tagsPerPage            = $request->getParam('tagsPerPage',     250);
+        $tagsStyle              = $request->getParam('tagsStyle',       null);
+        $tagsHighlightCount     = $request->getParam('tagsHighlightCount',
+                                                                        null);
+        $tagsSortBy             = $request->getParam('tagsSortBy',      null);
+        $tagsSortOrder          = $request->getParam('tagsSortOrder',   null);
 
         // User-cloud parameters
-        $maxUsers      = $request->getParam('maxUsers',         500);
-        $userSortBy    = $request->getParam('userSortBy',       'name');
-        $userSortOrder = $request->getParam('userSortOrder',    null);
+        $sbUsersStyle           = $request->getParam('sbUsersStyle',    null);
+        $sbUsersPerPage         = $request->getParam('sbUsersPerPage',  500);
+        $sbUsersHighlightCount  = $request->getParam('sbUsersHighlightCount',
+                                                                        null);
+        $sbUsersSortBy          = $request->getParam('sbUsersSortBy',   null);
+        $sbUsersSortOrder       = $request->getParam('sbUsersSortOrder',null);
 
 
         // /*
-        Connexions::log("TagController:: "
+        Connexions::log("TagsController:: "
                             . "owners[ {$owners} ], "
                             . "page[ {$page} ], "
-                            . "perPage[ {$perPage} ], "
-                            . "maxTags[ {$maxTags} ], "
-                            . "sortBy[ {$sortBy} ], "
-                            . "sortOrder[ {$sortOrder} ], "
-                            . "maxUsers[ {$maxUsers} ], "
-                            . "userSortBy[ {$userSortBy} ], "
-                            . "userSortOrder[ {$userSortOrder} ]");
+                            . "tagsPerPage[ {$tagsPerPage} ], "
+                            . "tagsStyle[ {$tagsStyle} ], "
+                            . "tagsHighlightCount[ "
+                            .                   "{$tagsHighlightCount} ], "
+                            . "tagsSortBy[ {$tagsSortBy} ], "
+                            . "tagsSortOrder[ {$tagsSortOrder} ], "
+                            . "sbUsersStyle[ {$sbUsersStyle} ], "
+                            . "sbUsersPerPage[ {$sbUsersPerPage} ], "
+                            . "sbUsersHighlightCount[ "
+                            .                   "{$sbUsersHighlightCount} ], "
+                            . "sbUsersSortBy[ {$sbUsersSortBy} ], "
+                            . "sbUsersSortOrder[ {$sbUsersSortOrder} ]");
         // */
 
 
@@ -56,29 +66,7 @@ class TagsController extends Zend_Controller_Action
 
         // Retrieve the set of tags
         $tagSet    = new Model_TagSet( $userInfo->validIds );
-        $paginator = $this->_helper->Pager($tagSet, $page, $perPage);
-
-        /*
-        $paginator = new Zend_Paginator( $tagSet );
-
-        // Apply the pagination parameters
-        if ($page > 0)
-            $paginator->setCurrentPageNumber($page);
-        if ($perPage > 0)
-            $paginator->setItemCountPerPage($perPage);
-        */
-
-        /*
-        $items = array();
-        foreach ($paginator as $idex => $tag)
-        {
-            array_push($items, sprintf ("%s[%d, %d]",
-                                        $tag->tag, $tag->tagId,
-                                        $tag->userItemCount));
-        }
-        Connexions::log("TagsController: tags[ ". implode(', ', $items) ." ]");
-        */
-
+        $paginator = $this->_helper->Pager($tagSet, $page, $tagsPerPage);
 
         // Set the required view variables
         $this->view->tagSet     = $tagSet;
@@ -88,14 +76,17 @@ class TagsController extends Zend_Controller_Action
         $this->view->userInfo   = $userInfo;
 
         // Tag-cloud parameters
-        $this->view->maxTags    = $maxTags;
-        $this->view->sortBy     = $sortBy;
-        $this->view->sortOrder  = $sortOrder;
+        $this->view->tagsStyle              = $tagsStyle;
+        $this->view->tagsHighlightCount     = $tagsHighlightCount;
+        $this->view->tagsSortBy             = $tagsSortBy;
+        $this->view->tagsSortOrder          = $tagsSortOrder;
 
         // User-cloud parameters
-        $this->view->maxUsers       = $maxUsers;
-        $this->view->userSortBy     = $userSortBy;
-        $this->view->userSortOrder  = $userSortOrder;
+        $this->view->sbUsersStyle           = $sbUsersStyle;
+        $this->view->sbUsersPerPage         = $sbUsersPerPage;
+        $this->view->sbUsersHighlightCount  = $sbUsersHighlightCount;
+        $this->view->sbUsersSortBy          = $sbUsersSortBy;
+        $this->view->sbUsersSortOrder       = $sbUsersSortOrder;
     }
 
     /** @brief Redirect all other actions to 'index'

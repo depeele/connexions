@@ -2,20 +2,30 @@
 /** @file
  *
  *  View script for TagsController::index with incoming members:
- *      viewer          The Model_User instance representing the current
- *                      viewer;
- *      userInfo        A Connexions_Set_Info instance containing information
- *                      about the requested users;
- *      tagSet          The Model_TagSet representing the tags to present;
- *      paginator       The paginator to use in presenting 'tagSet';
+ *      viewer                  The Model_User instance representing the
+ *                              current viewer;
+ *      userInfo                A Connexions_Set_Info instance containing
+ *                              information about the requested users;
+ *      tagSet                  The Model_TagSet representing the tags to
+ *                              present;
+ *      paginator               The paginator to use in presenting 'tagSet';
  *
- *      maxTags         Tags per page;
- *      sortBy          Sort tags by (valid field of Model_Tag);
- *      sortOrder       Tag sort order;
+ *      tagsStyle               The presentation style to use for tags
+ *                              (Connexions_View_Helper_HtmlTagCloud::STYLE_*);
+ *      tagsHighlightCount      The number of tags to highlight;
+ *      tagsSortBy              Sort tags by (valid field of Model_Tag);
+ *      tagsSortOrder           Tag sort order;
  *
- *      maxUsers        Maximum number of users to present in the sidebar;
- *      userSortBy      Sort users by (valid field of Model_User);
- *      userSortOrder   User sort order.
+ *      sbUsersStyle            Style of display for the sidebar user "cloud"
+ *                              (Connexions_View_Helper_HtmlTagCloud::STYLE_*);
+ *      sbUsersPerPage          Maximum number of users to present in the
+ *                              "tag cloud" sidebar presentation;
+ *      sbUsersHighlightCount   The number of users to highlight in the
+ *                              sidebar;
+ *
+ *      sbUsersSortBy           Sort users in the sidebar by
+ *                              (valid field of Model_User);
+ *      sbUsersSortOrder        Sidebar User sort order.
  */
 
 $this->headTitle('Tags');
@@ -50,17 +60,13 @@ echo $this->htmlItemScope($this->paginator,
                           'owners',
                           array('Tags'  => $this->baseUrl('/tags')));
 
-/* Present the pagination control, established by
- * Bootstrap.php::_initViewGlobal() to be rendered via:
- *      views/scripts/paginationControl.phtml
+/* Present the pagination control.
+ * Default values are established via Bootstrap.php::_initViewGlobal().
  */
-echo $this->paginationControl($this->paginator,
-                              null,        // style
-                              'paginationControl.phtml',
-                              array('excludeInfo' => true));
+$uiHelper = $this->htmlPaginationControl();
+$uiHelper->setPrefix('tags');
 
-echo "<div class='displayOptions'>";    // displayOptions {
-echo "</div>";  // displayOptions }
+echo $uiHelper->render($this->paginator, 'pagination-top', true);
 
 if (count($this->paginator))
 {
@@ -82,11 +88,10 @@ if (count($this->paginator))
     // Since we're caching objects, we MUST modify the $viewer object...
     $this->viewer->weightBy('tag', $tagIds);
 
-    $this->userList = $userSet->get_Tag_ItemList(0, $this->maxUsers,
-                                                 $this->userInfo);
+    $this->userList = $userSet->get_Tag_ItemList(0, $this->sbUsersPerPage,
+                                                    $this->userInfo);
 
     $time_start = microtime(true);
-
     $html = "<div class='columnHeader'>"
           .  "<div class='connexions_sprites user_bg "
           .              "ui-corner-left ui-corer-tr'>&nbsp;</div>"
@@ -97,42 +102,38 @@ if (count($this->paginator))
           . "</div>"
           . "<div id='tagItems'>";
 
-    /* Use the Connexions_View_Helper_HtmlTagCloud class to render the set of
-     * users as a tag cloud.
+    /* Use the Connexions_View_Helper_HtmlTagCloud class to render a "Tag
+     * Cloud" view of the user list.
      */
-    $html .= $this->htmlTagCloud($this->userList,
-                                 $this->userSortBy,
-                                 $this->userSortOrder);
+    $uiHelper = $this->htmlTagCloud();
+    $uiHelper->setPrefix('sbUsers');
+
+    $html .= $uiHelper->render($this->userList,
+                               $this->sbUsersStyle,
+                               $this->sbUsersSortBy,
+                               $this->sbUsersSortOrder,
+                               $this->sbUsersHighlightCount);
 
     $time_end   = microtime(true);
 
-    $html .= sprintf ("%f seconds to render tag cloud<br />\n",
+    $html .= sprintf ("\n<!-- %f seconds to render tag cloud -->\n",
                       $time_end - $time_start)
           . "</div>";
 
-
-    /*
-    // Present the tag cloud for the tags of the current page.
-    $offset  = $this->paginator->getCurrentPageNumber();
-    $perPage = $this->paginator->getItemCountPerPage();
-
-    printf ("page[ %d ], perPage[ %d ]<br />\n", $offset, $perPage);
-
-    $tagList = $this->tagSet->get_Tag_ItemList($offset, $perPage);
-    */
-
     $this->layout()->right = $html;
 
-    echo $this->htmlTagCloud($tagList,
-                             $this->sortBy,
-                             $this->sortOrder,
-                             0,     // top tags
-                             true); // exclude displayOptions since we handled
-                                    // that earlier
 
+    // Present the tags
+    $uiHelper->setPrefix('tags')
+             ->setShowRelation(false);
+    echo $uiHelper->render($tagList,
+                           $this->tagsStyle,
+                           $this->tagsSortBy,
+                           $this->tagsSortOrder,
+                           $this->tagsHighlightCount);
 }
 
-echo $this->paginator;
+echo $this->htmlPaginationControl($this->paginator);
 
 ?>
 
