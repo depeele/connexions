@@ -61,8 +61,8 @@ function init_paginationControls()
                         }
              );
 
-    // Attach to any perPage selection box in pagination forms.
-    $controls.filter(':has(select[name=<?= $this->_prefix ?>perPage])')
+    // Attach to any PerPage selection box in pagination forms.
+    $controls.filter(':has(select[name=<?= $this->_prefix ?>PerPage])')
                 .each(function() {
                         var $cForm  = $(this);
 
@@ -71,7 +71,7 @@ function init_paginationControls()
                             var settings    = $cForm.serializeArray();
 
                             /* ...and set a cookie for each:
-                             *      <?= $this->_prefix ?>perPage
+                             *      <?= $this->_prefix ?>PerPage
                              */
                             $(settings).each(function() {
                                 $.log("Add Cookie: name[%s], value[%s]",
@@ -86,7 +86,7 @@ function init_paginationControls()
                             $cForm.find('input,select').attr('disabled', true);
                         });
 
-        $cForm.find('select[name=<?= $this->_prefix ?>perPage]')
+        $cForm.find('select[name=<?= $this->_prefix ?>PerPage]')
                 .change(function() {
                     // On change of the select item, submit the pagination form.
                     $cForm.submit();
