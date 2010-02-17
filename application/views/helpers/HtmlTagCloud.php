@@ -3,16 +3,6 @@
  *
  *  View helper to render a Tag Cloud in HTML.
  *
- *  Note: Within a view, use EITHER this helper:
- *          $view->htmlTagCloud();
- *
- *        OR the 'tagCloud.phtml' partial:
- *          $view->partial('tagCloud.phtml',
- *                         array('tagSet'   => &$tagSet,
- *                               'tagInfo'  => &$tagInfo));
- *
- *        Both make use of the Connexions_View_Helper_HtmlTagItem helper
- *        to render individual tag items.
  */
 class Connexions_View_Helper_HtmlTagCloud extends Zend_View_Helper_Abstract
 {

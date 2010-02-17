@@ -135,7 +135,7 @@ $.widget("ui.stars", {
     $(window).unload(function(){
       self.$cancel.unbind(".stars");
       self.$stars.unbind(".stars");
-      self.self.$stars = self.$cancel = null;
+      self.$stars = self.$cancel = null;
     });
 
 
