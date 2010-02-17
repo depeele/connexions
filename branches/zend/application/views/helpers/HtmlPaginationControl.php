@@ -197,7 +197,7 @@ function init_paginationControls()
         $html  = sprintf("\n<!-- pages     [ %s ] -->\n",
                          var_export($pages, true));
 
-        $html .= sprintf(  "<form class='%s'>"      // { form
+        $html .= sprintf(  "<form class='%s%s'>"    // { form
                          .  "<div class='pager'>",  // { pager
                          self::$cssClassForm,
                          (! @empty($cssClassExtra)

@@ -2,34 +2,97 @@
 /** @file
  *
  *  View script for PeopleController::index with incoming members:
- *      viewer      The Model_User instance representing the current viewer;
- *      owner       The owner of the current item set -- either a string or a
- *                  Model_User instance;
- *      tagInfo     A Connexions_Set_Info instance containing information about
- *                  the requested tags.
- *      userItems   The Model_UserItemSet representing the items to present.
- *      paginator   The paginator to use in presenting 'userItems'.
+ *      usersPrefix         The prefix to pass to the HtmlPaginationControl
+ *                          helper for the main pagination rednering.
+ *      tagsPrefix          The prefix to pass to the HtmlTagCloud helper for
+ *                          the sidebar tag display.
  *
- *      maxTags     Maximum number of tags to present;
- *      sortBy      Sort tags by (valid field of Model_Tag);
- *      sortOrder   Tag sort order.
+ *      viewer              The Model_User instance representing the current
+ *                          viewer;
+ *      owner               The owner of the current item set -- either a
+ *                          string or a Model_User instance;
+ *      tagInfo             A Connexions_Set_Info instance containing
+ *                          information about the requested tags.
+ *      userItems           The Model_UserItemSet representing the items to
+ *                          present.
+ *      paginator           The paginator to use in presenting 'userItems'.
+ *
+ *      usersStyle          Presentation style for user users
+ *                          (Connexions_View_Helpers_HtmlUserItems::STYLE_*);
+ *      usersSortBy         Sort Users by
+ *                          (a field from Model_User::$model);
+ *      usersSortOrder      User sort order
+ *                          (Connexions_View_Helpers_HtmlUserItems::
+ *                                                          SORT_ORDER_*);
+ *      usersStyleCustom    An array of custom style settings
+ *
+ *      tagsPerPage         Maximum number of tags to present in the sidebar;
+ *      tagsHighlightCount  The number of tags to ighlight in the sidebar;
+ *      tagsStyle           Style of sidebar tag display
+ *                          (Connexions_View_Helper_HtmlTagCloud::STYLE_*);
+ *      tagsSortBy          Sort tags in the sidebar by
+ *                          (valid field of Model_Tag);
+ *      tagsSortOrder       Sidebar Tag sort order.
  */
 
 $this->headTitle('People');
 
 ?>
 <div class='columnHeader'>
- <p>Present People to  <?= $this->viewer ?>
-  <?php
+ <div class='connexions_sprites user_bg
+             ui-corner-left ui-corer-tr'>&nbsp;</div>
+ <p>All People<?php
     if ( $this->tagInfo->hasValidItems())
         printf (" with tags '%s'", $this->tagInfo->validItems);
-    else
-        printf (", NO tags.");
-  ?>
+  ?>.
  </p>
 </div>
 
 <?php
+
+// Present the current scope information
+echo $this->htmlItemScope($this->paginator,
+                          $this->tagInfo,
+                          'Tags',
+                          'tags',
+                          array('People'    => $this->baseUrl('/people')));
+
+
+/* Present the pagination control.
+ * Default values are established via Bootstrap.php::_initViewGlobal().
+ */
+$uiHelper = $this->htmlPaginationControl();
+if (! @empty($this->usersPrefix))
+    $uiHelper->setPrefix($this->usersPrefix);
+
+if (count($this->paginator))
+{
+    echo $uiHelper->render($this->paginator, 'pagination-top', true);
+    echo "<br class='clear' />";
+
+    // Present the items of the current page
+    echo "<ul class='items'>\n";
+    foreach ($this->paginator as $idex => $user)
+    {
+        /* Present the current item -- This should probably be via a view
+         * partial like:
+         *      view/scripts/user_listItem.phtml
+         */
+        echo $this->partial('user_listItem.phtml',
+                            array(
+                                'index' => $idex,
+                                'user'  => $user
+                            ));
+    }
+    echo "</ul>\n";
+
+    echo $this->htmlPaginationControl($this->paginator);
+}
+
+/*****************************************************************************
+ * Render the HTML for the right-column
+ *
+ */
 if ( @isset($this->users) )
 {
     /* If $this->tagList is NOT set and we have 1 or more user, make use of the
@@ -48,65 +111,42 @@ if ( @isset($this->users) )
 
 if ( @isset($this->tagList))
 {
+    $uiHelper = $this->htmlTagCloud();
+    if (! @empty($this->tagsPrefix))
+        $uiHelper->setPrefix($this->tagsPrefix);
+
     $time_start = microtime(true);
 
     $html = "<div class='columnHeader'>"
           .  "<p>Tag's shared by all the currently presented people.</p>"
           . "</div>";
+    $html = "<div class='columnHeader'>"
+          .  "<div class='connexions_sprites tag_bg "
+          .              "ui-corner-left ui-corer-tr'>&nbsp;</div>"
+          .  "<p>"
+          .   "All tags shared by the currently presented people."
+          .  "</p>"
+          . "</div>"
+          . "<div id='tagItems'>";
 
     /* Use the Connexions_View_Helper_HtmlTagCloud class to render the tag
      * cloud for $this->tagList.
      */
-    $html .= $this->htmlTagCloud($this->tagList,
-                                 $this->sortBy,
-                                 $this->sortOrder);
-
+    $html .= $uiHelper->render($this->tagList,
+                               $this->tagsStyle,
+                               $this->tagsSortBy,
+                               $this->tagsSortOrder,
+                               $this->tagsHighlightCount);
 
     $time_end   = microtime(true);
+
     $html .= sprintf ("\n<!-- %f seconds to render tag cloud -->\n",
-                      $time_end - $time_start);
+                      $time_end - $time_start)
+          . "</div>";
 
 
     $this->layout()->right = $html;
 }
-
-// Present the current scope information
-echo $this->htmlItemScope($this->paginator,
-                          $this->tagInfo,
-                          'Tags',
-                          'tags',
-                          array('People'    => $this->baseUrl('/people')));
-
-echo "<div class='displayOptions'>";    // displayOptions {
-
-/* Present the pagination control.
- * Default values are established via Bootstrap.php::_initViewGlobal().
- */
-echo $this->htmlPaginationControl($this->paginator, 'pagination-top', true);
-
-echo "</div>";  // displayOptions }
-
-
-if (count($this->paginator))
-{
-    // Present the items of the current page
-    echo "<ul class='items'>\n";
-    foreach ($this->paginator as $idex => $user)
-    {
-        /* Present the current item -- This should probably be via a view
-         * partial like:
-         *      view/scripts/user_listItem.phtml
-         */
-        echo $this->partial('user_listItem.phtml',
-                            array(
-                                'index' => $idex,
-                                'user'  => $user
-                            ));
-    }
-    echo "</ul>\n";
-}
-
-echo $this->htmlPaginationControl($this->paginator);
 
 ?>
 

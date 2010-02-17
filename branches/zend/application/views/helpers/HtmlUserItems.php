@@ -8,6 +8,19 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
     static public   $numericGrouping    = 10;
     static public   $perPageChoices     = array(10, 25, 50, 100);
 
+    static public   $defaults               = array(
+        'displayStyle'      => self::STYLE_REGULAR,
+
+        'showMeta'          => null,
+
+        'sortBy'            => self::SORT_BY_DATE_TAGGED,
+        'sortOrder'         => Model_UserItemSet::SORT_ORDER_DESC,
+
+        'perPage'           => 50,
+        'multipleUsers'     => true,
+        'scopeItems'        => null
+    );
+
 
     const STYLE_TITLE                   = 'title';
     const STYLE_REGULAR                 = 'regular';
@@ -176,12 +189,17 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
                 );
 
 
-    /** @brief  Set-able parameters with default values. */
-    protected       $_style         = self::STYLE_REGULAR;
+
+    static protected $_initialized  = array();
+
+    /** @brief  Set-able parameters. */
+    protected       $_prefix        = 'items';
+
+    protected       $_displayStyle  = null;
     protected       $_showMeta      = null;
-    protected       $_sortBy        = self::SORT_BY_DATE_TAGGED;
-    protected       $_sortOrder     = Model_UserItemSet::SORT_ORDER_DESC;
-    protected       $_multipleUsers = true;
+    protected       $_sortBy        = null;
+    protected       $_sortOrder     = null;
+    protected       $_multipleUsers = null;
     protected       $_scopeItems    = null;
 
     /** @brief  Set the View object.
@@ -195,25 +213,89 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
     {
         parent::setView($view);
 
-        $jQuery =  $view->jQuery();
+        if (! @isset(self::$_initialized[ $this->_prefix ]) )
+        {
+            $this->setPrefix($this->_prefix);
+        }
+    }
 
-        $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.js'))
-               ->addJavascriptFile($view->baseUrl('js/ui.stars.js'))
-               ->addJavascriptFile($view->baseUrl('js/ui.checkbox.js'))
-               ->addJavascriptFile($view->baseUrl('js/ui.button.js'))
-               ->addJavascriptFile($view->baseUrl('js/ui.input.js'))
-               ->addOnLoad('init_userItems();')
-               ->javascriptCaptureStart();
+    /** @brief  Render an HTML version of a paginated set of User Items or,
+     *          if no arguments, this helper instance.
+     *  @param  paginator       The Zend_Paginator representing the items to
+     *                          be presented.
+     *  @param  owner           A Model_User instance representing the
+     *                          owner of the current area OR
+     *                          a String '*' indicating ALL users;
+     *  @param  viewer          A Model_User instance representing the
+     *                          current viewer;
+     *  @param  tagInfo         A Connexions_Set_Info instance containing
+     *                          information about the requested tags;
+     *  @param  style           The style to use for each item
+     *                          (Connexions_View_Helper_HtmlUserItems::
+     *                                                          STYLE_*);
+     *  @param  sortBy          The field used to sort the items
+     *                          (Connexions_View_Helper_HtmlUserItems::
+     *                                                      SORT_BY_*);
+     *  @param  sortOrder       The sort order
+     *                          (Model_UserItemSet::SORT_ORDER_ASC |
+     *                           Model_UserItemSet::SORT_ORDER_DESC)
+     *
+     *  @return The HTML representation of the user items.
+     */
+    public function htmlUserItems($paginator    = null,
+                                  $owner        = null,
+                                  $viewer       = null,
+                                  $tagInfo      = null,
+                                  $style        = null,
+                                  $sortBy       = null,
+                                  $sortOrder    = null)
+    {
+        if ((! $paginator instanceof Zend_Paginator)                         ||
+            ( (! $owner   instanceof Model_User) && (! @is_string($owner)) ) ||
+            (! $viewer    instanceof Model_User)                             ||
+            (! $tagInfo   instanceof Connexions_Set_Info))
+        {
+            return $this;
+        }
 
-        ?>
+        return $this->render($paginator, $owner, $viewer, $tagInfo,
+                             $style, $sortBy, $sortOrder);
+    }
+
+    /** @brief  Set the cookie-name prefix.
+     *  @param  prefix  A string prefix.
+     *
+     *  @return Connexions_View_Helper_HtmlUserItems for a fluent interface.
+     */
+    public function setPrefix($prefix)
+    {
+        Connexions::log("Connexions_Views_Helpers_HtmlUserItems::setPrefix: "
+                            .   "prefix[ {$prefix} ]");
+
+        $this->_prefix = $prefix;
+
+        if (! @isset(self::$_initialized[$prefix]))
+        {
+            $view   = $this->view;
+            $jQuery =  $view->jQuery();
+
+            $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.js'))
+                   ->addJavascriptFile($view->baseUrl('js/ui.stars.js'))
+                   ->addJavascriptFile($view->baseUrl('js/ui.checkbox.js'))
+                   ->addJavascriptFile($view->baseUrl('js/ui.button.js'))
+                   ->addJavascriptFile($view->baseUrl('js/ui.input.js'))
+                   ->addOnLoad("init_{$prefix}List();")
+                   ->javascriptCaptureStart();
+
+            ?>
 
 /************************************************
  * Initialize display options.
  *
  */
-function init_userItemDisplayOptions()
+function init_<?= $prefix ?>DisplayOptions()
 {
-    var $displayOptions = $('#userItems .displayOptions');
+    var $displayOptions = $('.<?= $prefix ?>-displayOptions');
     var $form           = $displayOptions.find('form:first');
     var $submit         = $displayOptions.find(':submit');
     var $control        = $displayOptions.find('.control:first');
@@ -268,17 +350,19 @@ function init_userItemDisplayOptions()
                     .click(function(e) {e.preventDefault(); });
 
     var $displayStyle   = $displayOptions.find('.displayStyle');
-    var $itemsStyle     = $displayStyle.find('input[name=itemsStyle]');
+    var $itemsStyle     = $displayStyle.find('input[name=<?= $prefix ?>Style]');
     var $cControl       = $displayStyle.find('.control:first');
     var $customFieldset = $displayStyle.find('fieldset:first');
 
     /* Attach a data item to each display option identifying the display type
-     * (pulled from the CSS class (itemsStyle-<type>)
+     * (pulled from the CSS class (<?= $prefix ?>Style-<type>)
      */
     $displayStyle.find('a.option,div.option a:first').each(function() {
-                // Retrieve the new style value from the 'itemsStyle-*' class
+                // Retrieve the new style value from the
+                // '<?= $prefix ?>Style-*' class
                 var style   = $(this).attr('class');
-                var pos     = style.indexOf('itemsStyle-') + 11;
+                var pos     = style.indexOf('<?= $prefix ?>Style-') + 6 +
+                                                    <?= strlen($prefix) ?>;
 
                 style = style.substr(pos);
                 pos   = style.indexOf(' ');
@@ -286,7 +370,7 @@ function init_userItemDisplayOptions()
                     style = style.substr(0, pos);
 
                 // Save the style in a data item
-                $(this).data('itemsStyle', style);
+                $(this).data('displayStyle', style);
             });
 
     // Click the 'Custom' button to toggle the 'display custom' pane/field-set
@@ -315,7 +399,7 @@ function init_userItemDisplayOptions()
                 var $opt    = $cControl.find('a:first');
 
                 // Save the style in our hidden input
-                $itemsStyle.val( $opt.data('itemsStyle' ) );
+                $itemsStyle.val( $opt.data('displayStyle' ) );
 
                 // Turn "off" all other display options...
                 $displayStyle.find('a.option-selected')
@@ -332,7 +416,7 @@ function init_userItemDisplayOptions()
                 var $opt    = $(this);
 
                 // Save the style in our hidden input
-                $itemsStyle.val( $opt.data('itemsStyle') );
+                $itemsStyle.val( $opt.data('displayStyle') );
 
                 $displayStyle.find('a.option-selected')
                                             .removeClass('option-selected');
@@ -375,12 +459,12 @@ function init_userItemDisplayOptions()
                 var settings    = $form.serializeArray();
 
                 /* ...and set a cookie for each
-                 *  itemsSortBy
-                 *  itemsSortOrder
-                 *  perPage
-                 *  itemsStyle
+                 *  <?= $prefix ?>SortBy
+                 *  <?= $prefix ?>SortOrder
+                 *  <?= $prefix ?>PerPage
+                 *  <?= $prefix ?>Style
                  *      and possibly
-                 *      itemsStyleCustom[ ... ]
+                 *      <?= $prefix ?>StyleCustom[ ... ]
                  */
                 $(settings).each(function() {
                     $.log("Add Cookie: name[%s], value[%s]",
@@ -403,9 +487,9 @@ function init_userItemDisplayOptions()
  * Initialize group header options.
  *
  */
-function init_userItemsGroupHeader()
+function init_<?= $prefix ?>GroupHeader()
 {
-    var $headers    = $('#userItems .groupHeader .groupType');
+    var $headers    = $('#<?= $prefix ?>List .groupHeader .groupType');
     var dimOpacity  = 0.5;
 
     $headers
@@ -427,25 +511,12 @@ function init_userItemsGroupHeader()
  * Initialize ui elements.
  *
  */
-function init_userItems()
+function init_<?= $prefix ?>List()
 {
     // Initialize display options
-    init_userItemDisplayOptions();
+    init_<?= $prefix ?>DisplayOptions();
 
-    var $userItems  = $('form.userItem');
-
-    /*
-    $userItems.find('.status,.control')
-            .fadeTo(100, 0.5)
-            .hover( // In
-                    function() {
-                        $(this).fadeTo(100, 1.0);
-                    },
-                    // Out
-                    function() {
-                        $(this).fadeTo(100, 0.5);
-                    });
-    */
+    var $userItems  = $('#<?= $prefix ?>List form.userItem');
 
     // Favorite
     $userItems.find('input[name=isFavorite]').checkbox({
@@ -474,57 +545,23 @@ function init_userItems()
     $userItems.find('.rating .stars .owner').stars();
 
     // Initialize display options
-    init_userItemsGroupHeader();
+    init_<?= $prefix ?>GroupHeader();
 }
 
-        <?php
-        $jQuery->javascriptCaptureEnd();
+            <?php
+            $jQuery->javascriptCaptureEnd();
+        }
 
         return $this;
     }
 
-
-    /** @brief  Render an HTML version of a paginated set of User Items or,
-     *          if no arguments, this helper instance.
-     *  @param  paginator       The Zend_Paginator representing the items to
-     *                          be presented.
-     *  @param  owner           A Model_User instance representing the
-     *                          owner of the current area OR
-     *                          a String '*' indicating ALL users;
-     *  @param  viewer          A Model_User instance representing the
-     *                          current viewer;
-     *  @param  tagInfo         A Connexions_Set_Info instance containing
-     *                          information about the requested tags;
-     *  @param  style           The style to use for each item
-     *                          (Connexions_View_Helper_HtmlUserItems::
-     *                                                          STYLE_*);
-     *  @param  sortBy          The field used to sort the items
-     *                          (Connexions_View_Helper_HtmlUserItems::
-     *                                                      SORT_BY_*);
-     *  @param  sortOrder       The sort order
-     *                          (Model_UserItemSet::SORT_ORDER_ASC |
-     *                           Model_UserItemSet::SORT_ORDER_DESC)
+    /** @brief  Get the current prefix.
      *
-     *  @return The HTML representation of the user items.
+     *  @return The string prefix.
      */
-    public function htmlUserItems($paginator    = null,
-                                  $owner        = null,
-                                  $viewer       = null,
-                                  $tagInfo      = null,
-                                  $style        = null,
-                                  $sortBy       = null,
-                                  $sortOrder    = null)
+    public function getPrefix()
     {
-        if ((! $paginator instanceof Zend_Paginator)                         ||
-            ( (! $owner   instanceof Model_User) && (! @is_string($owner)) ) ||
-            (! $viewer    instanceof Model_User)                             ||
-            (! $tagInfo   instanceof Connexions_Set_Info))
-        {
-            return $this;
-        }
-
-        return $this->render($paginator, $owner, $viewer, $tagInfo,
-                             $style, $sortBy, $sortOrder);
+        return $this->_prefix;
     }
 
     /** @brief  Set the current style.
@@ -545,7 +582,7 @@ function init_userItems()
             break;
 
         default:
-            $style = self::STYLE_REGULAR;
+            $style = self::$defaults['displayStyle'];
             break;
         }
 
@@ -554,7 +591,7 @@ function init_userItems()
                             . "setStyle({$orig}) == [ {$style} ]");
         // */
     
-        $this->_style = $style;
+        $this->_displayStyle = $style;
 
         return $this;
     }
@@ -565,7 +602,7 @@ function init_userItems()
      */
     public function getStyle()
     {
-        return $this->_style;
+        return $this->_displayStyle;
     }
 
 
@@ -589,7 +626,7 @@ function init_userItems()
             break;
 
         default:
-            $sortBy = self::SORT_BY_DATE_TAGGED;
+            $sortBy = self::$defaults['sortBy'];
             break;
         }
 
@@ -629,7 +666,7 @@ function init_userItems()
             break;
 
         default:
-            $sortOrder = Model_UserItemSet::SORT_ORDER_DESC;
+            $sortOrder = self::$defaults['sortOrder'];
             break;
         }
 
@@ -714,7 +751,7 @@ function init_userItems()
             $val = $this->_showMeta;
         }
         else
-            $val = self::$styleParts[$this->_style];
+            $val = self::$styleParts[$this->_displayStyle];
 
         if (! $this->_multipleUsers)
         {
@@ -855,9 +892,9 @@ function init_userItems()
         /*
         Connexions::log("Connexions_View_Helper_HtmlUserItems: "
                             . "validated to: "
-                            . "style[ {$this->_style} ], "
+                            . "style[ {$this->_displayStyle} ], "
                             . "styleTitle[ "
-                            .       self::$styleTitles[$this->_style]." ], "
+                            .   self::$styleTitles[$this->_displayStyle]." ], "
                             . "sortBy[ {$this->_sortBy} ], "
                             . "sortByTitle[ "
                             .       self::$sortTitles[$this->_sortBy]." ], "
@@ -866,7 +903,7 @@ function init_userItems()
                             .       self::$orderTitles[$this->_sortOrder]." ]");
         // */
 
-        $html = '';
+        $html = "<div id='{$this->_prefix}List'>";  // List {
 
         $ownerStr = (String)$owner;
         if ($ownerStr === '*')
@@ -914,7 +951,8 @@ function init_userItems()
         // */
 
         $uiPagination = $this->view->htmlPaginationControl();
-        $uiPagination->setPerPageChoices(self::$perPageChoices);
+        $uiPagination->setPrefix($this->_prefix)
+                     ->setPerPageChoices(self::$perPageChoices);
 
 
         $html     .= $this->view->htmlItemScope($paginator,
@@ -955,7 +993,8 @@ function init_userItems()
 
 
         $html .= $uiPagination->render($paginator)
-              .  "<br class='clear' />\n";
+              .  "<br class='clear' />\n"
+              . "</div>\n";                      // List }
 
         // Return the rendered HTML
         return $html;
@@ -1151,9 +1190,11 @@ function init_userItems()
      */
     protected function _renderDisplayOptions($paginator, $showMeta)
     {
+        $prefix           = $this->_prefix;
         $itemCountPerPage = $paginator->getItemCountPerPage();
 
-        $html = "<div class='displayOptions'>"      // displayOptions {
+        $html .= "<div class='displayOptions {$prefix}-displayOptions'>"
+                                                        // displayOptions {
               .  "<div class='control ui-corner-all ui-state-default'>"
               .   "<a >Display Options</a>"
               .   "<div class='ui-icon ui-icon-triangle-1-s'>"
@@ -1163,47 +1204,47 @@ function init_userItems()
               .  "<form style='display:none;' "
               .        "class='ui-state-active ui-corner-all'>";    // form {
 
-        $html .=  "<div class='field sortBy'>"  // itemsSortBy {
-              .    "<label   for='itemsSortBy'>Sorted by</label>"
-              .    "<select name='itemsSortBy' "
-              .              "id='itemsSortBy' "
+        $html .=  "<div class='field sortBy'>"  // sortBy {
+              .    "<label   for='{$prefix}SortBy'>Sorted by</label>"
+              .    "<select name='{$prefix}SortBy' "
+              .              "id='{$prefix}SortBy' "
               .           "class='sort-by sort-by-{$this->_sortBy} "
               .                   "ui-input ui-state-default ui-corner-all'>";
 
         foreach (self::$sortTitles as $key => $title)
         {
-            $html .= $this->_renderOption('sortBy',
+            $html .= $this->_renderOption("{$prefix}SortBy",
                                           $key,
                                           $title,
                                           $key == $this->_sortBy);
         }
 
         $html .=   "</select>"
-              .   "</div>";                             // itemsSortBy }
+              .   "</div>";                             // sortBy }
 
 
-        $html .=  "<div class='field sortOrder'>"       // itemsSortOrder {
-              .    "<label for='itemSortOrder'>Sort order</label>";
+        $html .=  "<div class='field sortOrder'>"       // sortOrder {
+              .    "<label for='{$prefix}SortOrder'>Sort order</label>";
 
         foreach (self::$orderTitles as $key => $title)
         {
             $html .= "<div class='field'>"
-                  .   "<input type='radio' name='itemsSortOrder' "
-                  .                         "id='itemsSortOrder-{$key}' "
+                  .   "<input type='radio' name='{$prefix}SortOrder' "
+                  .                         "id='{$prefix}SortOrder-{$key}' "
                   .                      "value='{$key}'"
                   .          ($key == $this->_sortOrder
                                  ? " checked='true'" : "" ). " />"
-                  .   "<label for='itemsSortOrder-{$key}'>{$title}</label>"
+                  .   "<label for='{$prefix}SortOrder-{$key}'>{$title}</label>"
                   .  "</div>";
         }
 
         $html .=   "<br class='clear' />"
-              .   "</div>"                              // itemsSortOrder }
+              .   "</div>"                              // sortOrder }
               .   "<div class='field perPage'>"         // perPage {
-              .    "<label for='perPage'>Per page</label>"
+              .    "<label for='{$prefix}PerPage'>Per page</label>"
               .    "<select class='ui-input ui-state-default ui-corner-all "
-              .                  "count' name='perPage'>"
-              .     "<!-- perPage: {$itemCountPerPage} -->";
+              .                  "count' name='{$prefix}PerPage'>"
+              .     "<!-- {$prefix}PerPage: {$itemCountPerPage} -->";
 
         foreach (self::$perPageChoices as $perPage)
         {
@@ -1217,10 +1258,10 @@ function init_userItems()
         $html .=   "</select>"
               .    "<br class='clear' />"
               .   "</div>"                              // perPage }
-              .   "<div class='field displayStyle'>"    // itemsStyle {
-              .    "<label for='itemsStyle'>Display</label>"
-              .    "<input type='hidden' name='itemsStyle' "
-              .          "value='{$this->_style}' />";
+              .   "<div class='field displayStyle'>"    // displayStyle {
+              .    "<label for='{$prefix}Style'>Display</label>"
+              .    "<input type='hidden' name='{$prefix}Style' "
+              .          "value='{$this->_displayStyle}' />";
 
         $idex       = 0;
         $titleCount = count(self::$styleTitles);
@@ -1234,19 +1275,19 @@ function init_userItems()
             {
                 $itemHtml .= "<div class='{$cssClass} control "
                           .             "ui-corner-all ui-state-default"
-                          .     ($this->_style === self::STYLE_CUSTOM
+                          .     ($this->_displayStyle === self::STYLE_CUSTOM
                                     ? " ui-state-active"
                                     : "")
                           .                 "'>";
                 $cssClass  = '';
             }
 
-            $cssClass .= " itemsStyle-{$key}";
-            if ($key == $this->_style)
+            $cssClass .= " {$prefix}Style-{$key}";
+            if ($key == $this->_displayStyle)
                 $cssClass .= ' option-selected';
 
             $itemHtml .= "<a class='{$cssClass}' "
-                      .      "href='?itemsStyle={$key}'>{$title}</a>";
+                      .      "href='?{$prefix}Style={$key}'>{$title}</a>";
 
             if ($key === self::STYLE_CUSTOM)
             {
@@ -1259,12 +1300,12 @@ function init_userItems()
             array_push($parts, $itemHtml);
 
             /*
-            $html .= $this->_renderOption('itemsStyle',
+            $html .= $this->_renderOption("{$prefix}Style",
                                           $key,
                                           $title,
-                                          $key == $this->_style,
+                                          $key == $this->_displayStyle,
                                           'radio',
-                                          'itemsStyle-'. $idex,
+                                          '{$prefix}Style-'. $idex,
                                           $key,
                                           ($idex === 0
                                             ? 'ui-corner-left'
@@ -1279,7 +1320,7 @@ function init_userItems()
 
 
         $html .= sprintf("<fieldset class='custom items'%s>",
-                          ($this->_style !== self::STYLE_CUSTOM
+                          ($this->_displayStyle !== self::STYLE_CUSTOM
                                 ? " style='display:none;'"
                                 : ""));
 
@@ -1288,7 +1329,7 @@ function init_userItems()
               .      "<div class='meta'>"
               .       "<div class='field countTaggers'>"
               .        "<input type='checkbox' "
-              .               "name='itemsStyleCustom[meta:countTaggers]' "
+              .               "name='{$prefix}StyleCustom[meta:countTaggers]' "
               .                 "id='display-countTaggers'"
               .              ( $showMeta['meta:countTaggers']
                                 ? " checked='true'"
@@ -1297,7 +1338,7 @@ function init_userItems()
               .       "</div>"
               .       "<div class='field rating'>"
               .        "<input type='checkbox' "
-              .               "name='itemsStyleCustom[meta:rating:stars]' "
+              .               "name='{$prefix}StyleCustom[meta:rating:stars]' "
               .                 "id='display-rating'"
               .              ( $showMeta['meta:rating:stars']
                                 ? " checked='true'"
@@ -1305,7 +1346,7 @@ function init_userItems()
               .        "<label for='display-rating'>Rating stars</label>"
               .        "<div class='meta'>"
               .         "<input type='checkbox' "
-              .                "name='itemsStyleCustom[meta:rating:meta]' "
+              .                "name='{$prefix}StyleCustom[meta:rating:meta]' "
               .                  "id='display-ratingMeta'"
               .               ( $showMeta['meta:rating:meta']
                                  ? " checked='true'"
@@ -1317,7 +1358,7 @@ function init_userItems()
               .      "<div class='data'>"
               .       "<h4 class='field itemName'>"
               .        "<input type='checkbox' "
-              .               "name='itemsStyleCustom[itemName]' "
+              .               "name='{$prefix}StyleCustom[itemName]' "
               .                 "id='display-itemName'"
               .              ( $showMeta['itemName']
                                 ? " checked='true'"
@@ -1326,7 +1367,7 @@ function init_userItems()
               .       "</h4>"
               .       "<div class='field url'>"
               .        "<input type='checkbox' "
-              .               "name='itemsStyleCustom[url]' "
+              .               "name='{$prefix}StyleCustom[url]' "
               .                 "id='display-url'"
               .              ( $showMeta['url']
                                 ? " checked='true'"
@@ -1335,7 +1376,7 @@ function init_userItems()
               .       "</div>"
               .       "<div class='field description'>"
               .        "<input type='checkbox' "
-              .               "name='itemsStyleCustom[description]' "
+              .               "name='{$prefix}StyleCustom[description]' "
               .                 "id='display-description'"
               .              ( $showMeta['description']
                                 ? " checked='true'"
@@ -1344,7 +1385,7 @@ function init_userItems()
               .       "</div>"
               .       "<div class='field descriptionSummary'>"
               .        "<input type='checkbox' "
-              .               "name='itemsStyleCustom[descriptionSummary]' "
+              .               "name='{$prefix}StyleCustom[descriptionSummary]' "
               .                 "id='display-descriptionSummary'"
               .              ( $showMeta['descriptionSummary']
                                 ? " checked='true'"
@@ -1357,7 +1398,7 @@ function init_userItems()
               .       "<div class='field userId'>"
               .        "<div class='field userId-avatar'>"
               .         "<input type='checkbox' "
-              .                "name='itemsStyleCustom[userId:avatar]' "
+              .                "name='{$prefix}StyleCustom[userId:avatar]' "
               .                  "id='display-userId-avatar'"
               .               ( $showMeta['userId:avatar']
                                  ? " checked='true'"
@@ -1365,7 +1406,7 @@ function init_userItems()
               .         "<label for='display-userId-avatar'>avatar</label>"
               .        "</div>"
               .        "<input type='checkbox' "
-              .               "name='itemsStyleCustom[userId]' "
+              .               "name='{$prefix}StyleCustom[userId]' "
               .                 "id='display-userId'"
               .              ( $showMeta['userId']
                                 ? " checked='true'"
@@ -1374,7 +1415,7 @@ function init_userItems()
               .       "</div>"
               .       "<div class='field tags'>"
               .        "<input type='checkbox' "
-              .               "name='itemsStyleCustom[tags]' "
+              .               "name='{$prefix}StyleCustom[tags]' "
               .                 "id='display-tags' "
               .              "class='tag' "
               .              ( $showMeta['tags']
@@ -1392,7 +1433,7 @@ function init_userItems()
               .       "<div class='dates'>"
               .        "<div class='field tagged'>"
               .         "<input type='checkbox' "
-              .               "name='itemsStyleCustom[dates:tagged]' "
+              .               "name='{$prefix}StyleCustom[dates:tagged]' "
               .                 "id='display-dateTagged'"
               .              ( $showMeta['dates:tagged']
                                 ? " checked='true'"
@@ -1401,7 +1442,7 @@ function init_userItems()
               .        "</div>"
               .        "<div class='field updated'>"
               .         "<input type='checkbox' "
-              .               "name='itemsStyleCustom[dates:updated]' "
+              .               "name='{$prefix}StyleCustom[dates:updated]' "
               .                 "id='display-dateUpdated'"
               .              ( $showMeta['dates:updated']
                                 ? " checked='true'"
@@ -1412,19 +1453,11 @@ function init_userItems()
               .       "<br class='clear' />"
               .      "</div>"
               .     "</div>"
-              /*
-              .     "<div class='buttons'>"
-              .      "<button type='submit' "
-              .             "class='ui-button ui-corner-all ui-state-default' "
-              .              "name='itemsStyle' "
-              .             "value='custom'>apply custom settings</button>"
-              .     "</div>"
-              */
               .    "</fieldset>";
 
-        $html .=  "</div>"                      // itemsStyle }
+        $html .=  "</div>"                      // displayStyle }
               .   "<div id='buttons-global' class='buttons"
-              .           ($this->_style === self::STYLE_CUSTOM
+              .           ($this->_displayStyle === self::STYLE_CUSTOM
                                 ? " buttons-custom"
                                 : "")
               .                         "'>"

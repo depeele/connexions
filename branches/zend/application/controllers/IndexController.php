@@ -29,13 +29,15 @@ class IndexController extends Zend_Controller_Action
 
         // Pagination parameters
         $page      = $request->getParam('page',      null);
-        $perPage   = $request->getParam('PerPage',   null);
 
         // User-Item parameters
-        $itemsStyle       = $request->getParam('itemsStyle',       null);
-        $itemsSortBy      = $request->getParam('itemsSortBy',      null);
-        $itemsSortOrder   = $request->getParam('itemsSortOrder',   null);
-        $itemsStyleCustom = $request->getParam('itemsStyleCustom', null);
+        $itemsPrefix      = 'items';
+        $itemsPerPage     = $request->getParam("{$itemsPrefix}PerPage",   null);
+        $itemsStyle       = $request->getParam("{$itemsPrefix}Style",     null);
+        $itemsSortBy      = $request->getParam("{$itemsPrefix}SortBy",    null);
+        $itemsSortOrder   = $request->getParam("{$itemsPrefix}SortOrder", null);
+        $itemsStyleCustom = $request->getParam("{$itemsPrefix}StyleCustom",
+                                                                          null);
 
         /*
         Connexions::log("IndexController:: "
@@ -45,11 +47,13 @@ class IndexController extends Zend_Controller_Action
         // */
 
         // Tag-cloud parameters
-        $sbTagsPerPage        = $request->getParam('sbTagsPerPage',   100);
-        $sbTagsStyle          = $request->getParam('sbTagsStyle',     null);
-        $sbTagsHighlightCount = $request->getParam('sbTagsHighlightCount', null);
-        $sbTagsSortBy         = $request->getParam('sbTagsSortBy',    'tag');
-        $sbTagsSortOrder      = $request->getParam('sbTagsSortOrder', null);
+        $tagsPrefix         = 'sbTags';
+        $tagsPerPage        = $request->getParam("{$tagsPrefix}PerPage",  100);
+        $tagsStyle          = $request->getParam("{$tagsPrefix}Style",    null);
+        $tagsHighlightCount = $request->getParam("{$tagsPrefix}HighlightCount",
+                                                                          null);
+        $tagsSortBy         = $request->getParam("{$tagsPrefix}SortBy", 'tag');
+        $tagsSortOrder      = $request->getParam("{$tagsPrefix}SortOrder",null);
 
         /*
         Connexions::log("IndexController:: "
@@ -168,28 +172,30 @@ class IndexController extends Zend_Controller_Action
         /* Use the Connexions_Controller_Action_Helper_Pager to create a
          * paginator
          */
-        $paginator = $this->_helper->Pager($userItems, $page, $perPage);
+        $paginator = $this->_helper->Pager($userItems, $page, $itemsPerPage);
 
         // Set the required view variables
-        $this->view->userItems      = $userItems;
-        $this->view->paginator      = $paginator;
+        $this->view->userItems       = $userItems;
+        $this->view->paginator       = $paginator;
 
-        $this->view->owner          = $owner;
-        $this->view->viewer         = $viewer;
-        $this->view->tagInfo        = $tagInfo;
+        $this->view->owner           = $owner;
+        $this->view->viewer          = $viewer;
+        $this->view->tagInfo         = $tagInfo;
 
         // User-Item parameters
+        $this->view->userItemsPrefix  = $itemsPrefix;
         //$this->view->itemsSortBy      = $itemsSortBy;
         //$this->view->itemsSortOrder   = $itemsSortOrder;
         $this->view->itemsStyle       = $itemsStyle;
         $this->view->itemsStyleCustom = $itemsStyleCustom;
 
         // Tag-cloud parameters
-        $this->view->sbTagsStyle          = $sbTagsStyle;
-        $this->view->sbTagsPerPage        = $sbTagsPerPage;
-        $this->view->sbTagsHighlightCount = $sbTagsHighlightCount;
-        $this->view->sbTagsSortBy         = $sbTagsSortBy;
-        $this->view->sbTagsSortOrder      = $sbTagsSortOrder;
+        $this->view->tagsPrefix         = $tagsPrefix;
+        $this->view->tagsStyle          = $tagsStyle;
+        $this->view->tagsPerPage        = $tagsPerPage;
+        $this->view->tagsHighlightCount = $tagsHighlightCount;
+        $this->view->tagsSortBy         = $tagsSortBy;
+        $this->view->tagsSortOrder      = $tagsSortOrder;
     }
 
     /** @brief  A JSON-RPC callback to retrieve auto-completion results for 

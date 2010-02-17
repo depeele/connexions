@@ -4,6 +4,25 @@
  *
  */
 ;(function($) {
+    function init_log()
+    {
+        $.log = ((window.console !== undefined) &&
+                 $.isFunction(window.console.log)
+                    ?  window.console.log
+                    : function() {});
+
+        $.log("Logging enabled");
+    }
+
+    if ( (window.console === undefined) || (! $.isFunction(window.console.log)))
+    {
+        $(document).ready(init_log);
+    }
+    else
+    {
+        init_log();
+    }
+
     /* IE6 Background Image Fix
      *  Thanks to http://www.visualjquery.com/rating/rating_redux.html
      */
@@ -12,10 +31,6 @@
         try { document.execCommand("BackgroundImageCache", false, true)}
         catch(e) { };
     }
-
-    $.log = ($.isFunction(window.console.log)
-                ? window.console.log
-                : function() {});
 
     /*******************************************************************
      * Dynamic script inclusion -- Based upon jquery-include.js

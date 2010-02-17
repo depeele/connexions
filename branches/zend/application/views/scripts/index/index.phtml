@@ -2,6 +2,9 @@
 /** @file
  *
  *  View script for IndexController::index with incoming members:
+ *      userItemsPrefix     The prefix to pass to the HtmlUserItems helper.
+ *      tagsPrefix          The prefix to pass to the HtmlTagCloud  helper.
+ *
  *      viewer              The Model_User instance representing the current
  *                          viewer;
  *      owner               The owner of the current item set -- either a
@@ -22,14 +25,14 @@
  *      itemsStyleCustom
  *                          An array of custom style settings
  *
- *      sbTagsPerPage           Maximum number of tags to present in the
+ *      tagsPerPage           Maximum number of tags to present in the
  *                              sidebar;
- *      sbTagsHighlightCount    The number of tags to ighlight in the sidebar;
- *      sbTagsStyle             Style of sidebar tag display
+ *      tagsHighlightCount    The number of tags to ighlight in the sidebar;
+ *      tagsStyle             Style of sidebar tag display
  *                              (Connexions_View_Helper_HtmlTagCloud::STYLE_*);
- *      sbTagsSortBy            Sort tags in the sidebar by
+ *      tagsSortBy            Sort tags in the sidebar by
  *                              (valid field of Model_Tag);
- *      sbTagsSortOrder         Sidebar Tag sort order.
+ *      tagsSortOrder         Sidebar Tag sort order.
  */
 $baseUrl = $this->baseUrl('/'); //Connexions::url('/');
 
@@ -58,7 +61,6 @@ else
  </p>
 </div>
 
-<div id='userItems'>
 <?php
 if ( @isset($this->userItems) )
 {
@@ -85,43 +87,12 @@ if ( @isset($this->userItems) )
         // */
 
         $this->tagList =
-            $this->tagSet->get_Tag_ItemList(0, $this->sbTagsPerPage,
+            $this->tagSet->get_Tag_ItemList(0, $this->tagsPerPage,
                                             $this->tagInfo,
                                             ($this->owner !== '*'
                                                 ? null
                                                 : '/tagged'));
     }
-}
-
-if ( @isset($this->tagList))
-{
-    $uiHelper = $this->htmlTagCloud();
-    $uiHelper->setPrefix('sbTags');
-
-    $time_start = microtime(true);
-
-    $html = "<div class='columnHeader'>"
-          .  "<div class='connexions_sprites tag_bg "
-          .              "ui-corner-left ui-corer-tr'>&nbsp;</div>"
-          .  "<p>Tags related to these bookmarks.</p>"
-          . "</div>"
-          . "<div id='tagItems'>";
-
-    /* Use the Connexions_View_Helper_HtmlTagCloud class to render the tag
-     * cloud for $this->tagList.
-     */
-    $html .= $uiHelper->render($this->tagList,
-                               $this->sbTagsStyle,
-                               $this->sbTagsSortBy,
-                               $this->sbTagsSortOrder,
-                               $this->sbTagsHighlightCount);
-
-    $time_end   = microtime(true);
-    $html .= sprintf ("\n<!-- %f seconds to render tag cloud -->\n",
-                      $time_end - $time_start)
-          . "</div>";
-
-    $this->layout()->right = $html;
 }
 
 /* Present the pagination control, established by
@@ -131,6 +102,8 @@ if ( @isset($this->tagList))
 if (@isset($this->paginator))
 {
     $uiHelper = $this->htmlUserItems();
+    if (! @empty($this->userItemsPrefix))
+        $uiHelper->setPrefix($this->userItemsPrefix);
 
     if (@is_array($this->itemsStyleCustom))
     {
@@ -169,7 +142,40 @@ if (@isset($this->paginator))
 }
 
 ?>
-</div>
 
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
+
+<?php
+if ( @isset($this->tagList))
+{
+    $uiHelper = $this->htmlTagCloud();
+    if (! @empty($this->tagsPrefix))
+        $uiHelper->setPrefix($this->tagsPrefix);
+
+    $time_start = microtime(true);
+
+    $html = "<div class='columnHeader'>"
+          .  "<div class='connexions_sprites tag_bg "
+          .              "ui-corner-left ui-corer-tr'>&nbsp;</div>"
+          .  "<p>Tags related to these bookmarks.</p>"
+          . "</div>"
+          . "<div id='tagItems'>";
+
+    /* Use the Connexions_View_Helper_HtmlTagCloud class to render the tag
+     * cloud for $this->tagList.
+     */
+    $html .= $uiHelper->render($this->tagList,
+                               $this->tagsStyle,
+                               $this->tagsSortBy,
+                               $this->tagsSortOrder,
+                               $this->tagsHighlightCount);
+
+    $time_end   = microtime(true);
+    $html .= sprintf ("\n<!-- %f seconds to render tag cloud -->\n",
+                      $time_end - $time_start)
+          . "</div>";
+
+    $this->layout()->right = $html;
+}
+

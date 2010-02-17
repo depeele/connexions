@@ -24,20 +24,25 @@ class TagsController extends Zend_Controller_Action
         $page        = $request->getParam('page',           null);
 
         // Tag-cloud parameters
-        $tagsPerPage            = $request->getParam('tagsPerPage',     250);
-        $tagsStyle              = $request->getParam('tagsStyle',       null);
-        $tagsHighlightCount     = $request->getParam('tagsHighlightCount',
-                                                                        null);
-        $tagsSortBy             = $request->getParam('tagsSortBy',      null);
-        $tagsSortOrder          = $request->getParam('tagsSortOrder',   null);
+        $tagsPrefix         = 'tags';
+        $tagsPerPage        = $request->getParam("{$tagsPrefix}PerPage",  250);
+        $tagsStyle          = $request->getParam("{$tagsPrefix}Style",    null);
+        $tagsHighlightCount = $request->getParam("{$tagsPrefix}HighlightCount",
+                                                                          null);
+        $tagsSortBy         = $request->getParam("{$tagsPrefix}SortBy",   null);
+        $tagsSortOrder      = $request->getParam("{$tagsPrefix}SortOrder",null);
 
         // User-cloud parameters
-        $sbUsersStyle           = $request->getParam('sbUsersStyle',    null);
-        $sbUsersPerPage         = $request->getParam('sbUsersPerPage',  500);
-        $sbUsersHighlightCount  = $request->getParam('sbUsersHighlightCount',
-                                                                        null);
-        $sbUsersSortBy          = $request->getParam('sbUsersSortBy',   null);
-        $sbUsersSortOrder       = $request->getParam('sbUsersSortOrder',null);
+        $usersPrefix            = 'sbUsers';
+        $usersStyle           = $request->getParam("{$usersPrefix}Style", null);
+        $usersPerPage         = $request->getParam("{$usersPrefix}PerPage",
+                                                                          500);
+        $usersHighlightCount  = $request->getParam(
+                                            "{$usersPrefix}HighlightCount",
+                                                                          null);
+        $usersSortBy          = $request->getParam("{$usersPrefix}SortBy",null);
+        $usersSortOrder       = $request->getParam("{$usersPrefix}SortOrder",
+                                                                          null);
 
 
         // /*
@@ -50,12 +55,12 @@ class TagsController extends Zend_Controller_Action
                             .                   "{$tagsHighlightCount} ], "
                             . "tagsSortBy[ {$tagsSortBy} ], "
                             . "tagsSortOrder[ {$tagsSortOrder} ], "
-                            . "sbUsersStyle[ {$sbUsersStyle} ], "
-                            . "sbUsersPerPage[ {$sbUsersPerPage} ], "
-                            . "sbUsersHighlightCount[ "
-                            .                   "{$sbUsersHighlightCount} ], "
-                            . "sbUsersSortBy[ {$sbUsersSortBy} ], "
-                            . "sbUsersSortOrder[ {$sbUsersSortOrder} ]");
+                            . "usersStyle[ {$usersStyle} ], "
+                            . "usersPerPage[ {$usersPerPage} ], "
+                            . "usersHighlightCount[ "
+                            .                   "{$usersHighlightCount} ], "
+                            . "usersSortBy[ {$usersSortBy} ], "
+                            . "usersSortOrder[ {$usersSortOrder} ]");
         // */
 
 
@@ -76,17 +81,19 @@ class TagsController extends Zend_Controller_Action
         $this->view->userInfo   = $userInfo;
 
         // Tag-cloud parameters
-        $this->view->tagsStyle              = $tagsStyle;
-        $this->view->tagsHighlightCount     = $tagsHighlightCount;
-        $this->view->tagsSortBy             = $tagsSortBy;
-        $this->view->tagsSortOrder          = $tagsSortOrder;
+        $this->view->tagsPrefix           = $tagsPrefix;
+        $this->view->tagsStyle            = $tagsStyle;
+        $this->view->tagsHighlightCount   = $tagsHighlightCount;
+        $this->view->tagsSortBy           = $tagsSortBy;
+        $this->view->tagsSortOrder        = $tagsSortOrder;
 
         // User-cloud parameters
-        $this->view->sbUsersStyle           = $sbUsersStyle;
-        $this->view->sbUsersPerPage         = $sbUsersPerPage;
-        $this->view->sbUsersHighlightCount  = $sbUsersHighlightCount;
-        $this->view->sbUsersSortBy          = $sbUsersSortBy;
-        $this->view->sbUsersSortOrder       = $sbUsersSortOrder;
+        $this->view->usersPrefix          = $usersPrefix;
+        $this->view->usersStyle           = $usersStyle;
+        $this->view->usersPerPage         = $usersPerPage;
+        $this->view->usersHighlightCount  = $usersHighlightCount;
+        $this->view->usersSortBy          = $usersSortBy;
+        $this->view->usersSortOrder       = $usersSortOrder;
     }
 
     /** @brief Redirect all other actions to 'index'

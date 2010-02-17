@@ -2,6 +2,11 @@
 /** @file
  *
  *  View script for TagsController::index with incoming members:
+ *      tagsPrefix              The prefix to pass to the HtmlTagCloud helper
+ *                              for the primary tag display.
+ *      usersPrefix             The prefix to pass to the HtmlTagCloud helper
+ *                              for the sidebar user "tag cloud".
+ *
  *      viewer                  The Model_User instance representing the
  *                              current viewer;
  *      userInfo                A Connexions_Set_Info instance containing
@@ -16,16 +21,16 @@
  *      tagsSortBy              Sort tags by (valid field of Model_Tag);
  *      tagsSortOrder           Tag sort order;
  *
- *      sbUsersStyle            Style of display for the sidebar user "cloud"
+ *      usersStyle            Style of display for the sidebar user "cloud"
  *                              (Connexions_View_Helper_HtmlTagCloud::STYLE_*);
- *      sbUsersPerPage          Maximum number of users to present in the
+ *      usersPerPage          Maximum number of users to present in the
  *                              "tag cloud" sidebar presentation;
- *      sbUsersHighlightCount   The number of users to highlight in the
+ *      usersHighlightCount   The number of users to highlight in the
  *                              sidebar;
  *
- *      sbUsersSortBy           Sort users in the sidebar by
+ *      usersSortBy           Sort users in the sidebar by
  *                              (valid field of Model_User);
- *      sbUsersSortOrder        Sidebar User sort order.
+ *      usersSortOrder        Sidebar User sort order.
  */
 
 $this->headTitle('Tags');
@@ -64,12 +69,13 @@ echo $this->htmlItemScope($this->paginator,
  * Default values are established via Bootstrap.php::_initViewGlobal().
  */
 $uiHelper = $this->htmlPaginationControl();
-$uiHelper->setPrefix('tags');
-
-echo $uiHelper->render($this->paginator, 'pagination-top', true);
+if (! @empty($this->tagsPrefix))
+    $uiHelper->setPrefix($this->tagsPrefix);
 
 if (count($this->paginator))
 {
+    echo $uiHelper->render($this->paginator, 'pagination-top', true);
+
     $tagList = new Connexions_Set_ItemList($this->paginator,
                                            new Connexions_Set_Info(''),
                                            '/tagged');
@@ -88,7 +94,7 @@ if (count($this->paginator))
     // Since we're caching objects, we MUST modify the $viewer object...
     $this->viewer->weightBy('tag', $tagIds);
 
-    $this->userList = $userSet->get_Tag_ItemList(0, $this->sbUsersPerPage,
+    $this->userList = $userSet->get_Tag_ItemList(0, $this->usersPerPage,
                                                     $this->userInfo);
 
     $time_start = microtime(true);
@@ -106,13 +112,14 @@ if (count($this->paginator))
      * Cloud" view of the user list.
      */
     $uiHelper = $this->htmlTagCloud();
-    $uiHelper->setPrefix('sbUsers');
+    if (! @empty($this->usersPrefix))
+        $uiHelper->setPrefix($this->usersPrefix);
 
     $html .= $uiHelper->render($this->userList,
-                               $this->sbUsersStyle,
-                               $this->sbUsersSortBy,
-                               $this->sbUsersSortOrder,
-                               $this->sbUsersHighlightCount);
+                               $this->usersStyle,
+                               $this->usersSortBy,
+                               $this->usersSortOrder,
+                               $this->usersHighlightCount);
 
     $time_end   = microtime(true);
 
@@ -131,9 +138,9 @@ if (count($this->paginator))
                            $this->tagsSortBy,
                            $this->tagsSortOrder,
                            $this->tagsHighlightCount);
-}
 
-echo $this->htmlPaginationControl($this->paginator);
+    echo $this->htmlPaginationControl($this->paginator);
+}
 
 ?>
 

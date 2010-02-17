@@ -24,19 +24,30 @@ class PeopleController extends Zend_Controller_Action
 
         // Pagination parameters
         $page      = $request->getParam('page',      null);
-        $perPage   = $request->getParam('PerPage',   null);
+
+        // User parameters
+        $usersPrefix      = 'users';
+        $usersPerPage     = $request->getParam("{$usersPrefix}PerPage",   null);
+        $usersStyle       = $request->getParam("{$usersPrefix}Style",     null);
+        $usersSortBy      = $request->getParam("{$usersPrefix}SortBy",    null);
+        $usersSortOrder   = $request->getParam("{$usersPrefix}SortOrder", null);
+        $usersStyleCustom = $request->getParam("{$usersPrefix}StyleCustom",
+                                                                          null);
+
 
         // Tag-cloud parameters
-        $maxTags   = $request->getParam('maxTags',   250);
-        $sortBy    = $request->getParam('sortBy',    'tag');
-        $sortOrder = $request->getParam('sortOrder', null);
+        $tagsPrefix = 'sbTags';
+        $tagsPerPage        = $request->getParam("{$tagsPrefix}PerPage",  250);
+        $tagsStyle          = $request->getParam("{$tagsPrefix}Style",    null);
+        $tagsHighlightCount = $request->getParam("{$tagsPrefix}HighlightCount",
+                                                                          null);
+        $tagsSortBy         = $request->getParam("{$tagsPrefix}SortBy", 'tag');
+        $tagsSortOrder      = $request->getParam("{$tagsPrefix}SortOrder",null);
 
-        // User-cloud parameters
-        $usersMax       = $request->getParam('usersMax',       100);
-        $usersStyle     = $request->getParam('usersStyle',     null);
-        $usersTop       = $request->getParam('usersTop',       null);
-        $usersSortBy    = $request->getParam('usersSortBy',    'name');
-        $usersSortOrder = $request->getParam('usersSortOrder', null);
+        $maxTags    = $request->getParam('maxTags',   250);
+        $sortBy     = $request->getParam('sortBy',    'tag');
+        $sortOrder  = $request->getParam('sortOrder', null);
+
 
         /*
         Connexions::log("PeopleController:: "
@@ -51,18 +62,7 @@ class PeopleController extends Zend_Controller_Action
 
         // Retrieve the set of users
         $users     = new Model_UserSet( $tagInfo->validIds );
-        $paginator = $this->_helper->Pager($users, $page, $perPage);
-
-        /*
-        $paginator = new Zend_Paginator( $users );
-
-        // Apply the pagination parameters
-        if ($page > 0)
-            $paginator->setCurrentPageNumber($page);
-        if ($perPage > 0)
-            $paginator->setItemCountPerPage($perPage);
-        */
-
+        $paginator = $this->_helper->Pager($users, $page, $usersPerPage);
 
         // Set the required view variables
         $this->view->users      = $users;
@@ -71,16 +71,19 @@ class PeopleController extends Zend_Controller_Action
         $this->view->viewer     = $viewer;
         $this->view->tagInfo    = $tagInfo;
 
-        // Tag-cloud parameters
-        $this->view->maxTags        = $maxTags;
-        $this->view->sortBy         = $sortBy;
-        $this->view->sortOrder      = $sortOrder;
-
-        // Tag-cloud parameters
+        // User parameters
         $this->view->usersStyle     = $usersStyle;
         $this->view->usersMax       = $usersMax;
         $this->view->usersTop       = $usersTop;
         $this->view->usersSortBy    = $usersSortBy;
         $this->view->usersSortOrder = $usersSortOrder;
+
+        // Tag-cloud parameters
+        $this->view->tagsPrefix         = $tagsPrefix;
+        $this->view->tagsStyle          = $tagsStyle;
+        $this->view->tagsPerPage        = $tagsPerPage;
+        $this->view->tagsHighlightCount = $tagsHighlightCount;
+        $this->view->tagsSortBy         = $tagsSortBy;
+        $this->view->tagsSortOrder      = $tagsSortOrder;
     }
 }
