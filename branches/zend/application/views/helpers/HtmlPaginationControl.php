@@ -18,7 +18,7 @@ class Connexions_View_Helper_HtmlPaginationControl
 
 
     protected static    $_initialized       = false;
-    protected           $_prefix            = '';
+    protected           $_namespace         = '';
     protected           $_perPageChoices    = array(10, 25, 50, 100, 250, 500);
 
     /** @brief  Set the View object.
@@ -26,17 +26,74 @@ class Connexions_View_Helper_HtmlPaginationControl
      *
      *  Override Zend_View_Helper_Abstract::setView() in order to initialize.
      *
+     *  Note: if '$view->viewNamespace' is defined, it will override any
+     *        namespace previously set for this instance.
+     *
      *  @return Zend_View_Helper_Abstract
      */
     public function setView(Zend_View_Interface $view)
     {
         parent::setView($view);
 
-        if (! self::$_initialized)
+        /*
+        Connexions::log("Connexions_View_Helper_HtmlPaginationControl:: "
+                            . "view namespace [ {$view->viewNamespace} ]");
+        // */
+
+        $namespace = null;
+        if ( (! @empty($view->viewNamespace)) &&
+             ($this->_namespace != $view->viewNamespace) )
+            // Pull the namespace from the view
+            $namespace = $view->viewNamespace;
+
+
+        if ( ($namespace !== null) &&
+             (! @isset(self::$_initialized[ $namespace ])) )
         {
+            /*
+            Connexions::log("Connexions_View_Helper_HtmlPaginationControl:: "
+                                . "set namespace from view [ {$namespace}]");
+            // */
+
+            $this->setNamespace($namespace);
+        }
+
+        return $this;
+    }
+
+    public function setPerPageChoices($choices)
+    {
+        if (@is_array($choices))
+            $this->_perPageChoices = $choices;
+
+        return $this;
+    }
+
+    /** @brief  Set the namespace, primarily for forms and cookies.
+     *  @param  namespace   A string prefix.
+     *
+     *  @return Connexions_View_Helper_HtmlPaginationControl
+     *              for a fluent interface.
+     */
+    public function setNamespace($namespace)
+    {
+        // /*
+        Connexions::log("Connexions_View_Helper_HtmlPaginationControl::"
+                            . "setNamespace( {$namespace} )");
+        // */
+
+        if ($this->view !== null)
+            // Pass this new namespace into our view
+            $this->view->viewNamespace = $namespace;
+
+        $this->_namespace = $namespace;
+
+        if (! @isset(self::$_initialized[$namespace]))
+        {
+            $view   = $this->view;
             $jQuery =  $view->jQuery();
 
-            $jQuery->addOnLoad('init_paginationControls();')
+            $jQuery->addOnLoad("init_{$namespace}PaginationControls();")
                    ->javascriptCaptureStart();
 
             ?>
@@ -46,7 +103,7 @@ class Connexions_View_Helper_HtmlPaginationControl
  * PerPage selector in the bottom paginator.
  *
  */
-function init_paginationControls()
+function init_<?= $namespace ?>PaginationControls()
 {
     var $controls = $('form.pagination');
 
@@ -54,15 +111,15 @@ function init_paginationControls()
     $controls.filter(':first')
              .fadeTo(100, 0.5)
              .hover(    function() {    // in
-                            $controls.fadeTo(100, 1.0);
+                            $(this).fadeTo(100, 1.0);
                         },
                         function() {    // out
-                            $controls.fadeTo(100, 0.5);
+                            $(this).fadeTo(100, 0.5);
                         }
              );
 
     // Attach to any PerPage selection box in pagination forms.
-    $controls.filter(':has(select[name=<?= $this->_prefix ?>PerPage])')
+    $controls.filter(':has(select[name=<?= $namespace ?>PerPage])')
                 .each(function() {
                         var $cForm  = $(this);
 
@@ -71,7 +128,7 @@ function init_paginationControls()
                             var settings    = $cForm.serializeArray();
 
                             /* ...and set a cookie for each:
-                             *      <?= $this->_prefix ?>PerPage
+                             *      <?= $namespace ?>PerPage
                              */
                             $(settings).each(function() {
                                 $.log("Add Cookie: name[%s], value[%s]",
@@ -86,7 +143,7 @@ function init_paginationControls()
                             $cForm.find('input,select').attr('disabled', true);
                         });
 
-        $cForm.find('select[name=<?= $this->_prefix ?>PerPage]')
+        $cForm.find('select[name=<?= $namespace ?>PerPage]')
                 .change(function() {
                     // On change of the select item, submit the pagination form.
                     $cForm.submit();
@@ -99,40 +156,19 @@ function init_paginationControls()
             <?php
             $jQuery->javascriptCaptureEnd();
 
-            self::$_initialized = true;
+            self::$_initialized[$namespace] = true;
         }
 
         return $this;
     }
 
-    public function setPerPageChoices($choices)
-    {
-        if (@is_array($choices))
-            $this->_perPageChoices = $choices;
-
-        return $this;
-    }
-
-    /** @brief  Set the cookie-name prefix.
-     *  @param  prefix  A string prefix.
+    /** @brief  Get the current namespace.
      *
-     *  @return Connexions_View_Helper_HtmlPaginationControl
-     *              for a fluent interface.
+     *  @return The namespace string.
      */
-    public function setPrefix($prefix)
+    public function getNamespace()
     {
-        $this->_prefix = $prefix;
-
-        return $this;
-    }
-
-    /** @brief  Get the cookie-name prefix.
-     *
-     *  @return The prefix string.
-     */
-    public function getPrefix()
-    {
-        return $this->_prefix;
+        return $this->_namespace;
     }
 
     /** @brief  Render an HTML version of a paginated set of User Items or,
@@ -145,12 +181,17 @@ function init_paginationControls()
      *  @return The HTML representation of the pagination control or
      *          Connexions_View_Helper_HtmlPaginationControl.
      */
-    public function htmlPaginationControl($paginator        = null,
+    public function htmlPaginationControl(Zend_Paginator    $paginator  = null,
                                           $cssClassExtra    = null,
                                           $excludeInfo      = false)
     {
-        if (! $paginator instanceof Zend_Paginator )
+        if ($paginator === null)    //! $paginator instanceof Zend_Paginator )
         {
+            /*
+            Connexions::log("Connexions_View_Helper_HtmlPaginationControl:: "
+                                . "return instance");
+            // */
+
             return $this;
         }
 
@@ -396,7 +437,7 @@ function init_paginationControls()
                     //number_format($pageCount),
                     //($pageCount      === 1 ? "" : "s"),
                     self::$cssClassButton,
-                    $this->_prefix);
+                    $this->_namespace);
             
             foreach ($this->_perPageChoices as $perPage)
             {

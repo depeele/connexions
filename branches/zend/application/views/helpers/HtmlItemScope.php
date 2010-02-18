@@ -154,7 +154,7 @@ function init_itemScope()
 
         $url    = '';
         $action = '';
-        $html   = '<ul>';
+        $html   = '<ul class="ui-corner-top">';
         if ( @is_array($path))
         {
             $cssClass = 'root ui-corner-tl';
@@ -184,8 +184,8 @@ function init_itemScope()
         $curScope = array();
         if ( $scopeInfo->hasValidItems())
         {
-            $html .= "<li class='scopeItems'>"
-                  .   "<ul>";
+            //$html .= "<li class='scopeItems'>"
+            //      .   "<ul>";
         
             // Grab the original request URL and clean it up.
             $reqUrl = Connexions::getRequestUri();
@@ -215,7 +215,7 @@ function init_itemScope()
                                         . "remUrl[ {$remUrl} ]");
                 // */
         
-                $html .= sprintf (  "<li class='deletable'>"
+                $html .= sprintf (  "<li class='scopeItem deletable'>"
                                   .  "<a href='%s/%s'>%s</a>"
                                   .  "<a href='%s' "
                                   .     "class='delete ui-icon ui-icon-close'>"
@@ -228,8 +228,8 @@ function init_itemScope()
                 array_push($curScope, $name);
             }
         
-            $html .=  "</ul>"
-                  .  "</li>";
+            //$html .=  "</ul>"
+            //      .  "</li>";
         }
         
         $html .=  "<li class='scopeEntry'>"
@@ -241,14 +241,14 @@ function init_itemScope()
               .   "<li class='itemCount ui-corner-tr'>"
               .    number_format($paginator->getTotalItemCount())
               .   "</li>"
-              .  "</ul>"
-              .  "<br class='clear' />";
+              .   "<br class='clear' />"
+              .  "</ul>";
 
 
 
         // Finalize the HTML
         $html = "<form action='${action}' "
-              .        "class='itemScope ui-corner-all'>"
+              .        "class='itemScope'>"
               .  "<input type='hidden' name='scopeCurrent' "
               .        "value='". implode(',', $curScope) ."'>"
               .  $html

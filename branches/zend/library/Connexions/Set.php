@@ -214,7 +214,7 @@ class Connexions_Set implements Countable,
                                 ? $res[self::ROW_COUNT_COLUMN]
                                 : 0);
 
-            // /*
+            /*
             Connexions::log(sprintf("Connexions_Set::count():%s: "
                                     . "%d: retrieve %f seconds",
                                         $this->_memberClass,
@@ -253,7 +253,7 @@ class Connexions_Set implements Countable,
         $inst = new $this->_memberClass($rows[0]);
         $end2 = microtime(true);
 
-        // /*
+        /*
         Connexions::log(sprintf("Connexions_Set::offsetGet(%d):%s: "
                                 . "retrieve %f sec, instantiate %f secs",
                                     $offset,
@@ -320,7 +320,7 @@ class Connexions_Set implements Countable,
         $inst = new $this->_iterClass($this, $rows);
         $end2 = microtime(true);
 
-        // /*
+        /*
         Connexions::log(sprintf("Connexions_Set::getItems(%d, %d):%s: "
                                 //. "sql[ %s ], "
                                 . "retrieve %f sec, instantiate %f secs",

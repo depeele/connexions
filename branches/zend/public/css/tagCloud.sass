@@ -1,5 +1,5 @@
 /******* tagCloud.sass *******/
-#tagItems
+.rightCol #tagItems, .rightCol #userItems
   padding:              0 0.25em 0 0
   border-top =          "2px solid" !borderColor
   border-left =         "2px solid" !borderColor
@@ -11,18 +11,7 @@
     top:                5px
     left:               -21px
 
-  .tagsHeader
-    //background-color =  !tagsHeaderColorBackground
-    border-bottom =     "1px solid " !tagsHeaderActiveColorBackground
-    padding:            0 0 0 0.5em
-    li
-      float:            left
-      padding:          0.25em
-    li.active
-      background-color =  !tagsHeaderActiveColorBackground
-      color =             !pageColorBackground
-
-#tagItems .displayOptions, .sbUsers-displayOptions, .tags-displayOptions
+#tagItems .displayOptions, #userItems .displayOptions
   form
     width:              18em
     .field
@@ -116,11 +105,11 @@
       color =         !highlightTopTagCountColor
       font-size:      0.8em
 
-.Tag_Cloud
+.Tag_Cloud,.User_Cloud
   list-style: none
   text-align: justify
   padding:    0
-  .tag 
+  .tag ,.user
     display:      inline
     //line-height:  1.25em
     font-size:    100%
@@ -133,6 +122,17 @@
         text-decoration:    none
         background-color =  !linkColor
         color =             !pageColorBackground
+    .avatar
+      display:          inline-block
+      vertical-align:   middle
+      margin:           2px
+      border:           none
+      img
+        width:          16px
+        height:         16px
+    .name
+      display:          inline-block
+      vertical-align:   middle
     .size0 
       font-size:    0.500em
       font-weight:  normal
@@ -158,7 +158,7 @@
       font-weight:  normal
       color:        #2359aa
     .size6 
-      font-size:    1.75em
+      font-size:    1.750em
       font-weight:  normal
       color:        #2359ff
     .selected 

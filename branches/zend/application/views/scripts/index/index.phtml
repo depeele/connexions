@@ -103,7 +103,8 @@ if (@isset($this->paginator))
 {
     $uiHelper = $this->htmlUserItems();
     if (! @empty($this->userItemsPrefix))
-        $uiHelper->setPrefix($this->userItemsPrefix);
+        $uiHelper->setNamespace($this->userItemsPrefix);
+
 
     if (@is_array($this->itemsStyleCustom))
     {
@@ -141,17 +142,16 @@ if (@isset($this->paginator))
                            $this->tagInfo);
 }
 
-?>
-
-
-<div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
-
-<?php
 if ( @isset($this->tagList))
 {
-    $uiHelper = $this->htmlItemCloud();
+    /************************************************************************
+     * We're now rendering the sidebar so we need to predefine the view
+     * namespace so our instances are properly initialized.
+     */
     if (! @empty($this->tagsPrefix))
-        $uiHelper->setPrefix($this->tagsPrefix);
+        $this->viewNamespace = $this->tagsPrefix;
+
+    $uiCloud = $this->htmlItemCloud();
 
     $time_start = microtime(true);
 
@@ -159,23 +159,26 @@ if ( @isset($this->tagList))
           .  "<div class='connexions_sprites tag_bg "
           .              "ui-corner-left ui-corer-tr'>&nbsp;</div>"
           .  "<p>Tags related to these bookmarks.</p>"
-          . "</div>"
-          . "<div id='tagItems'>";
+          . "</div>";
 
     /* Use the Connexions_View_Helper_HtmlItemCloud class to render the tag
      * cloud for $this->tagList.
      */
-    $html .= $uiHelper->render($this->tagList,
-                               $this->tagsStyle,
-                               $this->tagsSortBy,
-                               $this->tagsSortOrder,
-                               $this->tagsHighlightCount);
+    $html .= $uiCloud->render($this->tagList,
+                              $this->tagsStyle,
+                              Connexions_View_Helper_HtmlItemCloud::
+                                                                ITEM_TYPE_TAG,
+                              $this->tagsSortBy,
+                              $this->tagsSortOrder,
+                              $this->tagsHighlightCount);
 
     $time_end   = microtime(true);
     $html .= sprintf ("\n<!-- %f seconds to render tag cloud -->\n",
-                      $time_end - $time_start)
-          . "</div>";
+                      $time_end - $time_start);
 
     $this->layout()->right = $html;
 }
+?>
 
+
+<div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
