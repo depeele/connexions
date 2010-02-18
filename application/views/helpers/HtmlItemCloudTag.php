@@ -1,9 +1,9 @@
 <?php
 /** @file
  *
- *  View helper to render a single Tag in HTML.
+ *  View helper to render a single Tag within an HTML item cloud.
  */
-class Connexions_View_Helper_HtmlTagItem
+class Connexions_View_Helper_HtmlItemCloudTag
                     extends Zend_Tag_Cloud_Decorator_HtmlTag
 {
     /** @brief  Render an HTML version of a single tag item.
@@ -19,7 +19,7 @@ class Connexions_View_Helper_HtmlTagItem
      */
     public function render(Zend_Tag_ItemList $tags)
     {
-        //Connexions::log("Connexions_View_Helper_HtmlTagItem::render...");
+        //Connexions::log("Connexions_View_Helper_HtmlItemCloudTag::render...");
 
         if (($weightValues = $this->getClassList()) === null)
         {
@@ -41,7 +41,7 @@ class Connexions_View_Helper_HtmlTagItem
             $attribute  = '';
 
             /*
-            Connexions::log(sprintf('Connexions_View_Helper_HtmlTagItem: '.
+            Connexions::log(sprintf('Connexions_View_Helper_HtmlItemCloudTag: '.
                                         'tag[ %s ], %sselected',
                                      $tag->getTitle(),
                                      ($isSelected ? '' : 'NOT ')) );
