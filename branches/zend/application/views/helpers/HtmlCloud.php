@@ -1,10 +1,10 @@
 <?php
 /** @file
  *
- *  View helper to render a Tag Cloud in HTML.
+ *  View helper to render an Item Cloud in HTML.
  *
  */
-class Connexions_View_Helper_HtmlTagCloud extends Zend_View_Helper_Abstract
+class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 {
     static public   $perPageChoices         = array(50, 100, 250, 500);
     static public   $highlightCountChoices  = array(0,  5,   10);
@@ -12,7 +12,7 @@ class Connexions_View_Helper_HtmlTagCloud extends Zend_View_Helper_Abstract
     static public   $defaults               = array(
         'displayStyle'      => self::STYLE_CLOUD,
         'sortBy'            => self::SORT_BY_TITLE,
-        'sortOrder'         => Model_TagSet::SORT_ORDER_ASC,
+        'sortOrder'         => Connexions_Set::SORT_ORDER_ASC,
 
         'perPage'           => 100,
         'highlightCount'    => 5
@@ -74,7 +74,7 @@ class Connexions_View_Helper_HtmlTagCloud extends Zend_View_Helper_Abstract
         return $this;
     }
 
-    /** @brief  Render an HTML version of a tag cloud.
+    /** @brief  Render an HTML version of an item cloud.
      *  @param  itemList        A Connexions_Set_ItemList instance representing
      *                          the items to be presented;
      *  @param  style           The display style ( ['cloud'] | 'list' );
@@ -84,14 +84,14 @@ class Connexions_View_Helper_HtmlTagCloud extends Zend_View_Helper_Abstract
      *
      *  @param  hideOptions Should display options be hidden?
      *
-     *  @return The HTML representation of a tag cloud.
+     *  @return The HTML representation of an item cloud.
      */
-    public function htmlTagCloud($itemList          = null,
-                                 $style             = null,
-                                 $sortBy            = null,
-                                 $sortOrder         = null,
-                                 $highlightCount    = null,
-                                 $hideOptions       = false)
+    public function htmlItemCloud($itemList         = null,
+                                  $style            = null,
+                                  $sortBy           = null,
+                                  $sortOrder        = null,
+                                  $highlightCount   = null,
+                                  $hideOptions      = false)
     {
         if ( ! $itemList instanceof Connexions_Set_ItemList)
         {
@@ -103,7 +103,7 @@ class Connexions_View_Helper_HtmlTagCloud extends Zend_View_Helper_Abstract
     }
 
 
-    /** @brief  Render an HTML version of a tag cloud.
+    /** @brief  Render an HTML version of an item cloud.
      *  @param  itemList        A Connexions_Set_ItemList instance representing
      *                          the items to be presented;
      *  @param  style           The display style ( ['cloud'] | 'list' );
@@ -112,7 +112,7 @@ class Connexions_View_Helper_HtmlTagCloud extends Zend_View_Helper_Abstract
      *  @param  highlightCount  How many of items to highlight [ 5 ].
      *  @param  hideOptions     Should display options be hidden?
      *
-     *  @return The HTML representation of a tag cloud.
+     *  @return The HTML representation of an item cloud.
      */
     public function render(Connexions_Set_ItemList    $itemList,
                            $style           = null,
@@ -133,7 +133,7 @@ class Connexions_View_Helper_HtmlTagCloud extends Zend_View_Helper_Abstract
 
         if ($this->_showRelation)
         {
-            $html .= "<div class='tagRelation "
+            $html .= "<div class='cloudRelation "
                   .              "connexions_sprites relation_ltr'>"
                   .   "&nbsp;"
                   .  "</div>";
@@ -151,8 +151,8 @@ class Connexions_View_Helper_HtmlTagCloud extends Zend_View_Helper_Abstract
         foreach ($itemList as $idex => $item)
         {
             $html .= sprintf("    '%s' [%d]\n",
-                             $item->tag,
-                             $item->userItemCount);
+                             $item->getTitle(),
+                             $item->getWeight());
         }
         $html .= "\n -->\n";
          */
@@ -168,7 +168,7 @@ class Connexions_View_Helper_HtmlTagCloud extends Zend_View_Helper_Abstract
         }
         $itemListStr = implode(', ', $itemListParts);
 
-        Connexions::log("Connexions_View_Helper_HtmlTagCloud:: "
+        Connexions::log("Connexions_View_Helper_HtmlItemCloud:: "
                           . "sortBy[ {$this->_sortBy} ], "
                           . "sortOrder[ {$this->_sortOrder} ], "
                           . count($itemList) . " items "
@@ -195,7 +195,7 @@ class Connexions_View_Helper_HtmlTagCloud extends Zend_View_Helper_Abstract
                               .             '? -1 '
                               .             ': 0));')
                     /*
-                    . 'Connexions::log("HtmlTagCloud:cmp: '
+                    . 'Connexions::log("HtmlItemCloud:cmp: '
                     .                   'a[{$aVal}], '
                     .                   'b[{$bVal}]: "'
                     .                   '.($cmp < 0'
@@ -212,45 +212,50 @@ class Connexions_View_Helper_HtmlTagCloud extends Zend_View_Helper_Abstract
 
         if ($this->_displayStyle === self::STYLE_CLOUD)
         {
-            // Create a Zend_Tag_Cloud renderer (by default, renders HTML)
-            $cloud = new Zend_Tag_Cloud(
-                    array(
-                        /* Make the Connexions_View_Helper_HtmlTagItem helper
-                         * available.
-                         */
-                        'prefixPath'            => array(
-                            'prefix'    => 'Connexions_View_Helper',
-                            'path'      => APPLICATION_PATH .'/views/helpers/'
-                         ),
-                        'ItemList'              => &$itemList,
-                        'CloudDecorator'        => array(
-                            'decorator'         => 'htmlCloud',
-                            'options'           => array(
-                                'HtmlTags'      => array(
-                                    'ul'        => array(
-                                        'class' =>'Tag_Cloud'
-                                    )
-                                )
-                            )
-                        ),
-                        'TagDecorator'          => array(
-                            /* Use the Connexions_View_Helper_HtmlTagItem helper
-                             * to render tag items.
-                             */
-                            'decorator'         => 'htmlTagItem',   //'htmlTag',
-                            'options'           => array(
-                                'HtmlTags'      => array(
-                                    'li'        => array(
-                                        'class'=>'tag'
-                                    )
-                                ),
-                                'ClassList'     => array(
-                                    'size0', 'size1', 'size2', 'size3',
-                                    'size4', 'size5', 'size6'
-                                )
+            // Zend_Tag_Cloud configuration
+            $cloudConfig = array(
+                // Make helpers in 'application/views/helpers' available.
+                'prefixPath'            => array(
+                    'prefix'    => 'Connexions_View_Helper',
+                    'path'      => APPLICATION_PATH .'/views/helpers/'
+                 ),
+                'ItemList'              => &$itemList,
+                /* Use the default cloud decorator:
+                 *      Zend_Tag_Cloud_Decorator_HtmlItemCloud
+                 */
+                'CloudDecorator'        => array(
+                    'decorator'         => 'htmlCloud',
+                    'options'           => array(
+                        'HtmlTags'      => array(
+                            'ul'        => array(
+                                'class' =>'Tag_Cloud'
                             )
                         )
-                    ));
+                    )
+                )
+            );
+
+            /* Use our cloud item decorator:
+             *      Connexions_View_Helper_HtmlItemCloudTag
+             */
+            $cloudConfig['TagDecorator'] = array(
+                'decorator'         => 'htmlItemCloudTag',
+                'options'           => array(
+                    'HtmlTags'      => array(
+                        'li'        => array(
+                            'class'=>'tag'
+                        )
+                    ),
+                    'ClassList'     => array(
+                        'size0', 'size1', 'size2', 'size3',
+                        'size4', 'size5', 'size6'
+                    )
+                )
+            );
+
+
+            // Create a Zend_Tag_Cloud renderer (by default, renders HTML)
+            $cloud = new Zend_Tag_Cloud( $cloudConfig );
 
             // Render the HTML for a cloud
             $html .= "<div class='cloud'>"
@@ -282,7 +287,7 @@ class Connexions_View_Helper_HtmlTagCloud extends Zend_View_Helper_Abstract
     /** @brief  Set the cookie-name prefix.
      *  @param  prefix  A string prefix.
      *
-     *  @return Connexions_View_Helper_HtmlTagCloud for a fluent interface.
+     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
      */
     public function setPrefix($prefix)
     {
@@ -436,8 +441,6 @@ function init_<?= $prefix ?>Cloud()
 {
     // Initialize display options
     init_<?= $prefix ?>CloudDisplayOptions();
-
-    //var $tagCloud   = $('form.tagCloud');
 }
 
             <?php
@@ -461,7 +464,7 @@ function init_<?= $prefix ?>Cloud()
     /** @brief  Set whether or not the "relation" indicator is presented.
      *  @param  show    A boolean.
      *
-     *  @return Connexions_View_Helper_HtmlTagCloud for a fluent interface.
+     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
      */
     public function setShowRelation($show)
     {
@@ -482,7 +485,7 @@ function init_<?= $prefix ?>Cloud()
     /** @brief  Set the current style.
      *  @param  style   A style value (self::STYLE_*)
      *
-     *  @return Connexions_View_Helper_HtmlTagCloud for a fluent interface.
+     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
      */
     public function setStyle($style)
     {
@@ -500,7 +503,7 @@ function init_<?= $prefix ?>Cloud()
         }
 
         /*
-        Connexions::log('Connexions_View_Helper_HtmlTagCloud::'
+        Connexions::log('Connexions_View_Helper_HtmlItemCloud::'
                             . "setStyle({$orig}) == [ {$style} ]");
         // */
     
@@ -521,7 +524,7 @@ function init_<?= $prefix ?>Cloud()
     /** @brief  Set the current sortBy.
      *  @param  sortBy  A sortBy value (self::SORT_BY_*)
      *
-     *  @return Connexions_View_Helper_HtmlTagCloud for a fluent interface.
+     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
      */
     public function setSortBy($sortBy)
     {
@@ -539,7 +542,7 @@ function init_<?= $prefix ?>Cloud()
         }
 
         /*
-        Connexions::log('Connexions_View_Helper_HtmlTagCloud::'
+        Connexions::log('Connexions_View_Helper_HtmlItemCloud::'
                             . "setSortBy({$orig}) == [ {$sortBy} ]");
         // */
 
@@ -558,9 +561,9 @@ function init_<?= $prefix ?>Cloud()
     }
 
     /** @brief  Set the current sortOrder.
-     *  @param  sortOrder   A sortOrder value (Model_TagSet::SORT_ORDER_*)
+     *  @param  sortOrder   A sortOrder value (Connexions_Set::SORT_ORDER_*)
      *
-     *  @return Connexions_View_Helper_HtmlTagCloud for a fluent interface.
+     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
      */
     public function setSortOrder($sortOrder)
     {
@@ -569,8 +572,8 @@ function init_<?= $prefix ?>Cloud()
         $sortOrder = strtoupper($sortOrder);
         switch ($sortOrder)
         {
-        case Model_TagSet::SORT_ORDER_ASC:
-        case Model_TagSet::SORT_ORDER_DESC:
+        case Connexions_Set::SORT_ORDER_ASC:
+        case Connexions_Set::SORT_ORDER_DESC:
             break;
 
         default:
@@ -579,7 +582,7 @@ function init_<?= $prefix ?>Cloud()
         }
 
         /*
-        Connexions::log('Connexions_View_Helper_HtmlTagCloud::'
+        Connexions::log('Connexions_View_Helper_HtmlItemCloud::'
                             . "setSortOrder({$orig}) == [ {$sortOrder} ]");
         // */
     
@@ -590,7 +593,7 @@ function init_<?= $prefix ?>Cloud()
 
     /** @brief  Get the current sortOrder value.
      *
-     *  @return The sortOrder value (Model_TagSet::SORT_ORDER_*).
+     *  @return The sortOrder value (Connexions_Set::SORT_ORDER_*).
      */
     public function getSortOrder()
     {
@@ -601,7 +604,7 @@ function init_<?= $prefix ?>Cloud()
      *  @param  highlightCount  The number of items to highlight
      *                          (self::$highlightCountChoices).
      *
-     *  @return Connexions_View_Helper_HtmlTagCloud for a fluent interface.
+     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
      */
     public function setHighlightCount($highlightCount)
     {
@@ -633,7 +636,7 @@ function init_<?= $prefix ?>Cloud()
      *
      */
 
-    /** @brief  Render a tag list.
+    /** @brief  Render an item list.
      *  @param  itemList    A Connexions_Set_ItemList instance representing the
      *                      items to be presented;
      *
