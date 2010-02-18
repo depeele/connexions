@@ -5,7 +5,7 @@
  *  via the url/routes:
  *      /[<user>[/<tag list>]]
  *      /scopeAutoComplete?q=<query>
- *                          &limit=<max)
+ *                          &limit=<max>
  *                          &format=json
  *                          &owner=<name>
  *                          &tags=<comma-separated tag list>

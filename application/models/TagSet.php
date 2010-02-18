@@ -9,9 +9,6 @@ class Model_TagSet extends Connexions_Set
 {
     const       MEMBER_CLASS    = 'Model_Tag';
 
-    const       SORT_ORDER_ASC  = Zend_Db_Select::SQL_ASC;
-    const       SORT_ORDER_DESC = Zend_Db_Select::SQL_DESC;
-
     protected   $_userIds       = null;
     protected   $_itemIds       = null;
     protected   $_tagIds        = null;

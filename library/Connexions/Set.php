@@ -18,6 +18,10 @@ class Connexions_Set implements Countable,
     /** @brief  The name to use as the row count column. */
     const       ROW_COUNT_COLUMN    = 'connexions_set_row_count';
 
+    const       SORT_ORDER_ASC  = Zend_Db_Select::SQL_ASC;
+    const       SORT_ORDER_DESC = Zend_Db_Select::SQL_DESC;
+
+
     /** @brief  The name of the Iterator class to use for this set. */
     protected   $_iterClass     = 'Connexions_Set_Iterator';
 
@@ -65,10 +69,13 @@ class Connexions_Set implements Countable,
     }
 
     /** @brief  Establish sorting for this set.
-     *  @param  by      Any field of the memberClass.
-     *  @param  order   Sort order (Zend_Db_Select::SQL_ASC | SQL_DESC).
-     *  @param  force   Force the use of the provided 'by' value without check 
-     *                  [false].
+     *  @param  by          Any field of the memberClass.
+     *  @param  order       Sort order
+     *                      (Connexions_Set::SORT_ORDER_ASC | SORT_ORDER_DESC
+     *                              ==
+     *                      Zend_Db_Select::SQL_ASC         | SQL_DESC)
+     *  @param  force       Force the use of the provided 'by' value without
+     *                      check [false].
      *
      *  @return $this
      */
@@ -126,7 +133,11 @@ class Connexions_Set implements Countable,
     /** @brief  Retrieve the sort information for this set.
      *
      *  @return array('by'      => field to sort by,
-     *                'order'   =>  sort order (Zend_Db::SQL_ASC | DESC))
+     *                'order'   =>  sort order
+     *                              (Connexions_Set::SORT_ORDER_ASC |
+     *                                               SORT_ORDER_DESC
+     *                                  ==
+     *                               Zend_Db_Select::SQL_ASC | SQL_DESC)
      */
     public function getOrder()
     {

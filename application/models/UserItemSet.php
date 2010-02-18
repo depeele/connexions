@@ -9,9 +9,6 @@ class Model_UserItemSet extends Connexions_Set
 {
     const       MEMBER_CLASS    = 'Model_UserItem';
 
-    const       SORT_ORDER_ASC  = Zend_Db_Select::SQL_ASC;
-    const       SORT_ORDER_DESC = Zend_Db_Select::SQL_DESC;
-
     protected   $_tagIds        = null;
     protected   $_userIds       = null;
     protected   $_itemIds       = null;
@@ -199,9 +196,9 @@ class Model_UserItemSet extends Connexions_Set
     /** @brief  Establish sorting for this set.
      *  @param  by          Any field of the memberClass.
      *  @param  order       Sort order
-     *                      (Model_UserItemSet::SORT_ORDER_ASC|SORT_ORDER_DESC
+     *                      (Connexions_Set::SORT_ORDER_ASC | SORT_ORDER_DESC
      *                              ==
-     *                      Zend_Db_Select::SQL_ASC           | SQL_DESC)
+     *                      Zend_Db_Select::SQL_ASC         | SQL_DESC)
      *  @param  smartLimit  For fields that are part of item, should we limit 
      *                      the retrieved user items to only the earliest 
      *                      representative in order to reduce the amount of 
