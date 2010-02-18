@@ -1,7 +1,7 @@
 <?php
 /** @file
  *
- *  View helper to render an Item Cloud in HTML.
+ *  View helper to render an Item Cloud, possibly paginated, in HTML.
  *
  */
 class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
@@ -11,6 +11,7 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
     static public   $defaults               = array(
         'displayStyle'      => self::STYLE_CLOUD,
+        'itemType'          => self::ITEM_TYPE_TAG,
         'sortBy'            => self::SORT_BY_TITLE,
         'sortOrder'         => Connexions_Set::SORT_ORDER_ASC,
 
@@ -18,7 +19,12 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         'highlightCount'    => 5
     );
 
+    /** @brief  Cloud Item type -- determines the item decorator
+     */
+    const ITEM_TYPE_TAG                     = 'tag';
+    const ITEM_TYPE_USER                    = 'user';
 
+    /** @brief  Cloud Presentation style. */
     const STYLE_LIST                        = 'list';
     const STYLE_CLOUD                       = 'cloud';
 
@@ -27,6 +33,7 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         self::STYLE_CLOUD   => 'Cloud'
     );
 
+    /** @brief  Cloud item sorting. */
     const SORT_BY_TITLE     = 'title';
     const SORT_BY_WEIGHT    = 'weight';
 
@@ -41,13 +48,13 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                 );
 
 
-    static protected $_initialized  = array();
-
     /** @brief  Set-able parameters . */
-    protected       $_prefix            = 'tags';
+    protected       $_namespace         = 'tags';
     protected       $_showRelation      = true;
+    protected       $_paginator         = null;
 
     protected       $_displayStyle      = null;
+    protected       $_itemType          = null;
     protected       $_sortBy            = null;
     protected       $_sortOrder         = null;
 
@@ -55,10 +62,17 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
     protected       $_highlightCount    = null;
 
 
+    /** @brief  Variable Namespace/Prefix initialization indicators. */
+    static protected $_initialized  = array();
+
+
     /** @brief  Set the View object.
      *  @param  view    The Zend_View_Interface
      *
      *  Override Zend_View_Helper_Abstract::setView() in order to initialize.
+     *
+     *  Note: if '$view->viewNamespace' is defined, it will override any
+     *        namespace previously set for this instance.
      *
      *  @return Zend_View_Helper_Abstract
      */
@@ -66,9 +80,21 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
     {
         parent::setView($view);
 
-        if (! @isset(self::$_initialized[ $this->_prefix ]) )
+        $namespace = null;
+        if ( (! @empty($view->viewNamespace)) &&
+             ($this->_namespace != $view->viewNamespace) )
+            // Pull the namespace from the view
+            $namespace = $view->viewNamespace;
+
+        if ( ($namespace !== null) &&
+             (! @isset(self::$_initialized[ $namespace ])) )
         {
-            $this->setPrefix($this->_prefix);
+            /*
+            Connexions::log("Connexions_View_Helper_HtmlItemCloud:: "
+                                . "set namespace from view [ {$namespace}]");
+            // */
+
+            $this->setNamespace($namespace);
         }
 
         return $this;
@@ -77,9 +103,10 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
     /** @brief  Render an HTML version of an item cloud.
      *  @param  itemList        A Connexions_Set_ItemList instance representing
      *                          the items to be presented;
-     *  @param  style           The display style ( ['cloud'] | 'list' );
-     *  @param  sortBy          The field to sort by ( ['title'] | 'count' );
-     *  @param  sortOrder       Sort order ( ['ASC'] | 'DESC').
+     *  @param  style           The display style    ( self::STYLE_* );
+     *  @param  itemType        The item type        ( self::TYPE_* );
+     *  @param  sortBy          The field to sort by ( self::SORT_BY_* );
+     *  @param  sortOrder       Sort order ( Connexions_Set::SORT_ORDER_* );
      *  @param  highlightCount  How many of items to highlight [ 5 ].
      *
      *  @param  hideOptions Should display options be hidden?
@@ -88,6 +115,7 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     public function htmlItemCloud($itemList         = null,
                                   $style            = null,
+                                  $itemType         = null,
                                   $sortBy           = null,
                                   $sortOrder        = null,
                                   $highlightCount   = null,
@@ -98,7 +126,8 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
             return $this;
         }
 
-        return $this->render($itemList, $sortBy, $sortOrder,
+        return $this->render($itemList, $style, $itemType,
+                              $sortBy, $sortOrder,
                              $highlightCount, $hideOptions);
     }
 
@@ -106,9 +135,10 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
     /** @brief  Render an HTML version of an item cloud.
      *  @param  itemList        A Connexions_Set_ItemList instance representing
      *                          the items to be presented;
-     *  @param  style           The display style ( ['cloud'] | 'list' );
-     *  @param  sortBy          The field to sort by ( ['title'] | 'count' );
-     *  @param  sortOrder       Sort order ( ['ASC'] | 'DESC').
+     *  @param  style           The display style    ( self::STYLE_* );
+     *  @param  itemType        The item type        ( self::TYPE_* );
+     *  @param  sortBy          The field to sort by ( self::SORT_BY_* );
+     *  @param  sortOrder       Sort order ( Connexions_Set::SORT_ORDER_* );
      *  @param  highlightCount  How many of items to highlight [ 5 ].
      *  @param  hideOptions     Should display options be hidden?
      *
@@ -116,6 +146,7 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     public function render(Connexions_Set_ItemList    $itemList,
                            $style           = null,
+                           $itemType        = null,
                            $sortBy          = null,
                            $sortOrder       = null,
                            $highlightCount  = null,
@@ -124,12 +155,13 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         $this->_perPage = count($itemList);
 
         $this->setStyle($style)
+             ->setItemType($itemType)
              ->setSortBy($sortBy)
              ->setSortOrder($sortOrder)
              ->setHighlightCount($highlightCount);
 
 
-        $html = '';
+        $html = "<div id='{$itemType}Items'>";  // <itemType>Items {
 
         if ($this->_showRelation)
         {
@@ -137,6 +169,19 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                   .              "connexions_sprites relation_ltr'>"
                   .   "&nbsp;"
                   .  "</div>";
+        }
+
+        $uiPagination = null;
+        if ($this->_paginator instanceof Zend_Paginator)
+        {
+            /* Present the top pagination control.
+             * Default values are established via
+             *      Bootstrap.php::_initViewGlobal().
+             */
+            $uiPagination = $this->view->htmlPaginationControl();
+
+            $html .= $uiPagination->render($this->_paginator,
+                                           'pagination-top', true);
         }
 
         if ($hideOptions !== true)
@@ -235,23 +280,48 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                 )
             );
 
-            /* Use our cloud item decorator:
-             *      Connexions_View_Helper_HtmlItemCloudTag
-             */
-            $cloudConfig['TagDecorator'] = array(
-                'decorator'         => 'htmlItemCloudTag',
-                'options'           => array(
-                    'HtmlTags'      => array(
-                        'li'        => array(
-                            'class'=>'tag'
+            switch ($this->_itemType)
+            {
+            case self::ITEM_TYPE_TAG:
+                /* Use our cloud item decorator:
+                 *      Connexions_View_Helper_HtmlItemCloudTag
+                 */
+                $cloudConfig['TagDecorator'] = array(
+                    'decorator'         => 'htmlItemCloudTag',
+                    'options'           => array(
+                        'HtmlTags'      => array(
+                            'li'        => array(
+                                'class'=>'tag'
+                            )
+                        ),
+                        'ClassList'     => array(
+                            'size0', 'size1', 'size2', 'size3',
+                            'size4', 'size5', 'size6'
                         )
-                    ),
-                    'ClassList'     => array(
-                        'size0', 'size1', 'size2', 'size3',
-                        'size4', 'size5', 'size6'
                     )
-                )
-            );
+                );
+                break;
+
+            case self::ITEM_TYPE_USER:
+                /* Use our cloud item decorator:
+                 *      Connexions_View_Helper_HtmlItemCloudUser
+                 */
+                $cloudConfig['TagDecorator'] = array(
+                    'decorator'         => 'htmlItemCloudUser',
+                    'options'           => array(
+                        'HtmlTags'      => array(
+                            'li'        => array(
+                                'class'=>'user'
+                            )
+                        ),
+                        'ClassList'     => array(
+                            'size0', 'size1', 'size2', 'size3',
+                            'size4', 'size5', 'size6'
+                        )
+                    )
+                );
+                break;
+            }
 
 
             // Create a Zend_Tag_Cloud renderer (by default, renders HTML)
@@ -280,27 +350,44 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                   .  "</div>";
         }
 
+        if ($uiPagination !== null)
+        {
+            // Present the bottom pagination control.
+            $html .= $uiPagination->render($this->_paginator);
+        }
+
+        $html .= "</div>";  // <itemType>Items }
+
         // Return the rendered HTML
         return $html;
     }
 
-    /** @brief  Set the cookie-name prefix.
-     *  @param  prefix  A string prefix.
+    /** @brief  Set the namespace, primarily for forms and cookies.
+     *  @param  namespace   A string prefix.
      *
      *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
      */
-    public function setPrefix($prefix)
+    public function setNamespace($namespace)
     {
-        $this->_prefix = $prefix;
+        // /*
+        Connexions::log("Connexions_View_Helper_HtmlItemCloud::"
+                            .   "setNamespace( {$namespace} )");
+        // */
 
-        if (! @isset(self::$_initialized[$prefix]))
+        if ($this->view !== null)
+            // Pass this new namespace into our view
+            $this->view->viewNamespace = $namespace;
+
+        $this->_namespace = $namespace;
+
+        if (! @isset(self::$_initialized[$namespace]))
         {
             $view   = $this->view;
             $jQuery = $view->jQuery();
 
             $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.js'))
                    ->addJavascriptFile($view->baseUrl('js/ui.button.js'))
-                   ->addOnLoad("init_{$prefix}Cloud();")
+                   ->addOnLoad("init_{$namespace}Cloud();")
                    ->javascriptCaptureStart();
 
             ?>
@@ -309,9 +396,9 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
  * Initialize display options.
  *
  */
-function init_<?= $prefix ?>CloudDisplayOptions()
+function init_<?= $namespace ?>CloudDisplayOptions()
 {
-    var $displayOptions = $('.<?= $prefix ?>-displayOptions');
+    var $displayOptions = $('.<?= $namespace ?>-displayOptions');
     var $form           = $displayOptions.find('form:first');
     var $submit         = $displayOptions.find(':submit');
     var $control        = $displayOptions.find('.control:first');
@@ -358,17 +445,17 @@ function init_<?= $prefix ?>CloudDisplayOptions()
             });
 
     var $displayStyle   = $displayOptions.find('.displayStyle');
-    var $style          = $displayStyle.find('input[name=<?= $prefix ?>Style]');
+    var $style          = $displayStyle.find('input[name=<?= $namespace ?>Style]');
 
     /* Attach a data item to each display option identifying the display type
-     * (pulled from the CSS class (<?= $this->_prefix ?>Style-<type>)
+     * (pulled from the CSS class (<?= $namespace ?>Style-<type>)
      */
     $displayStyle.find('a.option,div.option a:first').each(function() {
                 // Retrieve the new style value from the
-                // '<?= $prefix ?>Style-*' class
+                // '<?= $namespace ?>Style-*' class
                 var style   = $(this).attr('class');
-                var pos     = style.indexOf('<?= $prefix ?>Style-') + 6 +
-                                                    <?= strlen($prefix) ?>;
+                var pos     = style.indexOf('<?= $namespace ?>Style-') + 6 +
+                                                    <?= strlen($namespace) ?>;
 
                 style = style.substr(pos);
                 pos   = style.indexOf(' ');
@@ -410,11 +497,11 @@ function init_<?= $prefix ?>CloudDisplayOptions()
                 var settings    = $form.serializeArray();
 
                 /* ...and set a cookie for each
-                 *  <?= $prefix ?>SortBy
-                 *  <?= $prefix ?>SortOrder
-                 *  <?= $prefix ?>PerPage
-                 *  <?= $prefix ?>Count
-                 *  <?= $prefix ?>Style
+                 *  <?= $namespace ?>SortBy
+                 *  <?= $namespace ?>SortOrder
+                 *  <?= $namespace ?>PerPage
+                 *  <?= $namespace ?>Count
+                 *  <?= $namespace ?>Style
                  */
                 $(settings).each(function() {
                     $.log("Add Cookie: name[%s], value[%s]",
@@ -437,28 +524,28 @@ function init_<?= $prefix ?>CloudDisplayOptions()
  * Initialize ui elements.
  *
  */
-function init_<?= $prefix ?>Cloud()
+function init_<?= $namespace ?>Cloud()
 {
     // Initialize display options
-    init_<?= $prefix ?>CloudDisplayOptions();
+    init_<?= $namespace ?>CloudDisplayOptions();
 }
 
             <?php
             $jQuery->javascriptCaptureEnd();
 
-            self::$_initialized[$prefix] = true;
+            self::$_initialized[$namespace] = true;
         }
 
         return $this;
     }
 
-    /** @brief  Get the current prefix.
+    /** @brief  Get the current namespace.
      *
-     *  @return The string prefix.
+     *  @return The string namespace.
      */
-    public function getPrefix()
+    public function getNamespace()
     {
-        return $this->_prefix;
+        return $this->_namespace;
     }
 
     /** @brief  Set whether or not the "relation" indicator is presented.
@@ -480,6 +567,77 @@ function init_<?= $prefix ?>Cloud()
     public function getShowRelation()
     {
         return $this->_showRelation;
+    }
+
+    /** @brief  Set the paginator to present.
+     *  @param  paginator   The Zend_Paginator instance.
+     *
+     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
+     */
+    public function setPaginator(Zend_Paginator $paginator)
+    {
+        $this->_paginator = $paginator;
+
+        return $this;
+    }
+
+    /** @brief  Unset the paginator.
+     *
+     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
+     */
+    public function unsetPaginator()
+    {
+        $this->_paginator = null;
+
+        return $this;
+    }
+
+    /** @brief  Get the current paginator.
+     *
+     *  @return The Zend_Paginator instance (or null if none).
+     */
+    public function getPaginator()
+    {
+        return $this->_paginator;
+    }
+
+    /** @brief  Set the cloud item type.
+     *  @param  itemType    A item type value (self::ITEM_TYPE_*)
+     *
+     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
+     */
+    public function setItemType($itemType)
+    {
+        $orig = $itemType;
+
+        switch ($itemType)
+        {
+        case self::ITEM_TYPE_TAG:
+        case self::ITEM_TYPE_USER:
+            break;
+
+        default:
+            $itemType = self::$defaults['itemType'];
+            break;
+        }
+
+        /*
+        Connexions::log('Connexions_View_Helper_HtmlItemCloud::'
+                            . "setType({$orig}) == [ {$itemType} ]");
+        // */
+    
+        $this->_itemType = $itemType;
+
+        return $this;
+    }
+
+    /** @brief  Get the current item type.
+     *
+     *  @return The item type value (self::ITEM_TYPE_*).
+     */
+    public function getItemType()
+    {
+        return $this->_itemType;
     }
 
     /** @brief  Set the current style.
@@ -719,9 +877,9 @@ function init_<?= $prefix ?>Cloud()
      */
     protected function _renderDisplayOptions()
     {
-        $prefix = $this->_prefix;
+        $namespace = $this->_namespace;
 
-        $html .= "<div class='displayOptions {$prefix}-displayOptions'>"
+        $html .= "<div class='displayOptions {$namespace}-displayOptions'>"
               .   "<div class='control ui-corner-all ui-state-default'>"
               .    "<a>Display Options</a>"
               .    "<div class='ui-icon ui-icon-triangle-1-s'>&nbsp;</div>"
@@ -730,9 +888,9 @@ function init_<?= $prefix ?>Cloud()
               .         "style='display:none;'>";
 
         $html .=  "<div class='field sortBy'>"          // sortBy {
-              .    "<label   for='{$prefix}SortBy'>Sorted by</label>"
-              .    "<select name='{$prefix}SortBy' "
-              .              "id='{$prefix}SortBy' "
+              .    "<label   for='{$namespace}SortBy'>Sorted by</label>"
+              .    "<select name='{$namespace}SortBy' "
+              .              "id='{$namespace}SortBy' "
               .           "class='sort-by sort-by-{$this->_sortBy} "
               .                   "ui-input ui-state-default ui-corner-all'>";
 
@@ -759,17 +917,17 @@ function init_<?= $prefix ?>Cloud()
 
 
         $html .=  "<div class='field sortOrder'>"   // sortOrder {
-              .    "<label for='{$prefix}SortOrder'>Sort order</label>";
+              .    "<label for='{$namespace}SortOrder'>Sort order</label>";
 
         foreach (self::$orderTitles as $key => $title)
         {
             $html .= "<div class='field'>"
-                  .   "<input type='radio' name='{$prefix}SortOrder' "
-                  .                         "id='{$prefix}SortOrder-{$key}' "
+                  .   "<input type='radio' name='{$namespace}SortOrder' "
+                  .                         "id='{$namespace}SortOrder-{$key}' "
                   .                      "value='{$key}'"
                   .          ($key == $this->_sortOrder
                                  ? " checked='true'" : "" ). " />"
-                  .   "<label for='{$prefix}SortOrder-{$key}'>{$title}</label>"
+                  .   "<label for='{$namespace}SortOrder-{$key}'>{$title}</label>"
                   .  "</div>";
         }
 
@@ -777,10 +935,10 @@ function init_<?= $prefix ?>Cloud()
               .   "</div>"                              // sortOrder }
               .   "<div class='field itemCounts'>"      // itemCounts {
               .    "<div class='field perPage'>"        // perPage {
-              .     "<label for='{$prefix}PerPage'>Show</label>"
+              .     "<label for='{$namespace}PerPage'>Show</label>"
               .     "<select class='ui-input ui-state-default ui-corner-all "
-              .                   "count' name='{$prefix}PerPage'>"
-              .      "<!-- {$prefix}PerPage: {$this->_perPage} -->";
+              .                   "count' name='{$namespace}PerPage'>"
+              .      "<!-- {$namespace}PerPage: {$this->_perPage} -->";
 
         foreach (self::$perPageChoices as $countOption)
         {
@@ -795,10 +953,10 @@ function init_<?= $prefix ?>Cloud()
               .     "<span class='label'>highlighting the</span>"
               .    "</div>"                             // perPage }
               .    "<div class='field highlightCount'>" // highlightCount {
-              .     "<label for='{$prefix}HighlightCount'>top</label>"
+              .     "<label for='{$namespace}HighlightCount'>top</label>"
               .     "<select class='ui-input ui-state-default ui-corner-all "
-              .                   "count' name='{$prefix}HighlightCount'>"
-              .      "<!-- {$prefix}HighlightCount: {$this->_highlightCount} -->";
+              .                   "count' name='{$namespace}HighlightCount'>"
+              .      "<!-- {$namespace}HighlightCount: {$this->_highlightCount} -->";
 
         foreach (self::$highlightCountChoices as $countOption)
         {
@@ -815,8 +973,8 @@ function init_<?= $prefix ?>Cloud()
               .   "</div>";                             // itemCounts }
 
         $html .=  "<div class='field displayStyle'>"    // displayStyle {
-              .    "<label for='{$prefix}Style'>Display</label>"
-              .    "<input type='hidden' name='{$prefix}Style' "
+              .    "<label for='{$namespace}Style'>Display</label>"
+              .    "<input type='hidden' name='{$namespace}Style' "
               .          "value='{$this->_displayStyle}' />";
 
         $idex       = 0;
@@ -825,12 +983,12 @@ function init_<?= $prefix ?>Cloud()
         foreach (self::$styleTitles as $key => $title)
         {
             $itemHtml = '';
-            $cssClass = "option {$prefix}Style-{$key}";
+            $cssClass = "option {$namespace}Style-{$key}";
             if ($key == $this->_displayStyle)
                 $cssClass .= ' option-selected';
 
             $itemHtml .= "<a class='{$cssClass}' "
-                      .      "href='?{$prefix}Style={$key}'>{$title}</a>";
+                      .      "href='?{$namespace}Style={$key}'>{$title}</a>";
 
             array_push($parts, $itemHtml);
         }

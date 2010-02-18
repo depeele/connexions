@@ -13,7 +13,8 @@
  *                              information about the requested users;
  *      tagSet                  The Model_TagSet representing the tags to
  *                              present;
- *      paginator               The paginator to use in presenting 'tagSet';
+ *      paginator               The Zend_Paginator instance to use in
+ *                              presenting 'tagSet';
  *
  *      tagsStyle               The presentation style to use for tags
  *                              (Connexions_View_Helper_HtmlItemCloud::STYLE_*);
@@ -87,21 +88,32 @@ echo $this->htmlItemScope($this->paginator,
                           array('Tags'  => $this->baseUrl('/tags')),
                           $scopeCbUrl);
 
-/* Present the pagination control.
- * Default values are established via Bootstrap.php::_initViewGlobal().
- */
-$uiHelper = $this->htmlPaginationControl();
-if (! @empty($this->tagsPrefix))
-    $uiHelper->setPrefix($this->tagsPrefix);
-
 if (count($this->paginator))
 {
-    echo $uiHelper->render($this->paginator, 'pagination-top', true);
-
     $tagList = new Connexions_Set_ItemList($this->paginator,
                                            new Connexions_Set_Info(''),
                                            '/tagged');
 
+    // Present the tags
+    $uiCloud = $this->htmlItemCloud();
+    if (! @empty($this->tagsPrefix))
+        $uiCloud->setNamespace($this->tagsPrefix);
+
+    $uiCloud->setShowRelation(false)
+            ->setPaginator($this->paginator);
+
+    echo $uiCloud->render($tagList,
+                          $this->tagsStyle,
+                          Connexions_View_Helper_HtmlItemCloud::
+                                                            ITEM_TYPE_TAG,
+                          $this->tagsSortBy,
+                          $this->tagsSortOrder,
+                          $this->tagsHighlightCount);
+
+    /***********************************************************************
+     * Generate the content for the right side-bar
+     *
+     */
     $tagIds = array();
     foreach ($tagList as $tag)
     {
@@ -127,41 +139,31 @@ if (count($this->paginator))
           .   "All people that have at least one of "
           .   "the currently presented tags."
           .  "</p>"
-          . "</div>"
-          . "<div id='tagItems'>";
+          . "</div>";
 
     /* Use the Connexions_View_Helper_HtmlItemCloud class to render a "Tag
      * Cloud" view of the user list.
      */
-    $uiHelper = $this->htmlItemCloud();
-    if (! @empty($this->usersPrefix))
-        $uiHelper->setPrefix($this->usersPrefix);
+    $uiCloud->unsetPaginator();
 
-    $html .= $uiHelper->render($this->userList,
-                               $this->usersStyle,
-                               $this->usersSortBy,
-                               $this->usersSortOrder,
-                               $this->usersHighlightCount);
+    if (! @empty($this->usersPrefix))
+        $uiCloud->setNamespace($this->usersPrefix);
+
+    $html .= $uiCloud->render($this->userList,
+                              $this->usersStyle,
+                              Connexions_View_Helper_HtmlItemCloud::
+                                                                ITEM_TYPE_USER,
+                              $this->usersSortBy,
+                              $this->usersSortOrder,
+                              $this->usersHighlightCount);
 
     $time_end   = microtime(true);
 
     $html .= sprintf ("\n<!-- %f seconds to render tag cloud -->\n",
-                      $time_end - $time_start)
-          . "</div>";
+                      $time_end - $time_start);
 
     $this->layout()->right = $html;
 
-
-    // Present the tags
-    $uiHelper->setPrefix('tags')
-             ->setShowRelation(false);
-    echo $uiHelper->render($tagList,
-                           $this->tagsStyle,
-                           $this->tagsSortBy,
-                           $this->tagsSortOrder,
-                           $this->tagsHighlightCount);
-
-    echo $this->htmlPaginationControl($this->paginator);
 }
 
 ?>

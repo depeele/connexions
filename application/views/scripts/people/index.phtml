@@ -57,17 +57,18 @@ echo $this->htmlItemScope($this->paginator,
                           'tags',
                           array('People'    => $this->baseUrl('/people')));
 
-
-/* Present the pagination control.
- * Default values are established via Bootstrap.php::_initViewGlobal().
- */
-$uiHelper = $this->htmlPaginationControl();
-if (! @empty($this->usersPrefix))
-    $uiHelper->setPrefix($this->usersPrefix);
+echo "<div id='userItems'>";    // userItems {
 
 if (count($this->paginator))
 {
-    echo $uiHelper->render($this->paginator, 'pagination-top', true);
+    /* Present the pagination control.
+     * Default values are established via Bootstrap.php::_initViewGlobal().
+     */
+    $uiPagination = $this->htmlPaginationControl();
+    if (! @empty($this->usersPrefix))
+        $uiPagination->setNamespace($this->usersPrefix);
+
+    echo $uiPagination->render($this->paginator, 'pagination-top', true);
     echo "<br class='clear' />";
 
     // Present the items of the current page
@@ -89,6 +90,8 @@ if (count($this->paginator))
     echo $this->htmlPaginationControl($this->paginator);
 }
 
+echo "</div>";  // userItems }
+
 /*****************************************************************************
  * Render the HTML for the right-column
  *
@@ -104,16 +107,20 @@ if ( @isset($this->users) )
         $tagSet        = new Model_TagSet( $this->users->userIds() );
         $tagSet->weightBy('user');
 
-        $this->tagList = $tagSet->get_Tag_ItemList(0, $this->maxTags,
+        $this->tagList = $tagSet->get_Tag_ItemList(0, $this->tagsPerPage,
                                                    $this->tagInfo);
     }
 }
 
 if ( @isset($this->tagList))
 {
-    $uiHelper = $this->htmlItemCloud();
+    /* Since we're now rendering the sidebar so we need to predefine the view
+     * namespace so our instances are properly initialized.
+     */
     if (! @empty($this->tagsPrefix))
-        $uiHelper->setPrefix($this->tagsPrefix);
+        $this->viewNamespace = $this->tagsPrefix;
+
+    $uiCloud = $this->htmlItemCloud();
 
     $time_start = microtime(true);
 
@@ -126,14 +133,15 @@ if ( @isset($this->tagList))
           .  "<p>"
           .   "All tags shared by the currently presented people."
           .  "</p>"
-          . "</div>"
-          . "<div id='tagItems'>";
+          . "</div>";
 
     /* Use the Connexions_View_Helper_HtmlItemCloud class to render the tag
      * cloud for $this->tagList.
      */
-    $html .= $uiHelper->render($this->tagList,
+    $html .= $uiCloud->render($this->tagList,
                                $this->tagsStyle,
+                               Connexions_View_Helper_HtmlItemCloud::
+                                                                ITEM_TYPE_TAG,
                                $this->tagsSortBy,
                                $this->tagsSortOrder,
                                $this->tagsHighlightCount);
@@ -141,8 +149,7 @@ if ( @isset($this->tagList))
     $time_end   = microtime(true);
 
     $html .= sprintf ("\n<!-- %f seconds to render tag cloud -->\n",
-                      $time_end - $time_start)
-          . "</div>";
+                      $time_end - $time_start);
 
 
     $this->layout()->right = $html;

@@ -1,11 +1,13 @@
+!itemCountWidth = !countBoxWidth + 10px
+
 /* ****** itemScope.sass ****** */
 .itemScope
-  background-color =    !borderColor
   a
     color =             !navColor
   ul
-    background-color:   transparent
+    background-color =  !borderColor
     padding:            0.1em
+    padding-right =     !itemCountWidth + 2px
     li
       background-color: transparent
       float:            left
@@ -23,101 +25,99 @@
         font-weight:    normal
       a
         padding:        0.25em
-    li.deletable
-      a.delete
-        display:          block
-        padding:          0
-        margin:           0.25em
-        text-indent:      999em
-        text-decoration:  none
 
-    li.scopeEntry
-      border:           none
-      padding:          0.1em
-      // Normal ui.input
-      input
-        margin:         0
-        padding:        0.1em
-        height:         1.25em
-      // jquery.autosuggest
-      ul.as-selections
-        box-shadow:             none
-        -webkit-box-shadow:     none
-        -moz-box-shadow:        none
-        border:         none
-        padding:        0.1em
-        margin:         0
-        li
-          border:       none
-          margin:       0
-          padding:      0
-        li.as-original
-          margin:       0
-          input.as-input
-            font-size:  1em
-            height:     1.25em
-            margin:     0
-            //padding:    0.1em
-            padding:    0
-            width:      9em
-          input.as-values
-            display:  none
-        li.as-selection-item
-          font-size:          0.9
-          font-family:        inherit
-          padding:            0 0.25em 0.1em 0.5em
-          background-color =  !tagColorBackground
-          color =             !tagColor
-          box-shadow:         none
-          -webkit-box-shadow: none
-          -moz-box-shadow:    none
-          text-shadow:        none
-          margin-right:       0.1em
-          +corners(0.5em,0.5em,0.5em,0.5em)
-          a.as-close
-            font-family:      inherit
-            font-size:        1em
-            text-shadow:      none
+  .scopeEntry
+    border:           none
+    padding:          0.1em 0.1em 0.1em 0.25em
+    // Normal ui.input
+    input
+      margin:         0
+      padding:        0.1em
+      height:         1.2em
+    // jquery.autosuggest
+    ul.as-selections
+      box-shadow:             none
+      -webkit-box-shadow:     none
+      -moz-box-shadow:        none
+      border:         none
+      padding:        0.1em
+      margin:         0
+      li
+        border:       none
+        margin:       0
+        padding:      0
+      li.as-original
+        margin:       0
+        input.as-input
+          font-size:  1em
+          height:     1.25em
+          margin:     0
+          //padding:    0.1em
+          padding:    0
+          width:      9em
+        input.as-values
+          display:  none
+      li.as-selection-item
+        font-size:          0.9
+        font-family:        inherit
+        padding:            0 0.25em 0.1em 0.5em
+        background-color =  !tagColorBackground
+        color =             !tagColor
+        box-shadow:         none
+        -webkit-box-shadow: none
+        -moz-box-shadow:    none
+        text-shadow:        none
+        margin-right:       0.1em
+        +corners(0.5em,0.5em,0.5em,0.5em)
+        a.as-close
+          font-family:      inherit
+          font-size:        1em
+          text-shadow:      none
 
-        li.selected
-          color =             !tagColorBackground
-          //background-color =  !linkColor
-          background-color =  !tagColor
+      li.selected
+        color =             !tagColorBackground
+        //background-color =  !linkColor
+        background-color =  !tagColor
 
-      .as-results
-        display:  block
-        .as-list
-          font-size:          1em
-          z-index:            5
-          .as-result-item
-            text-shadow:      none
-            background-image: none
-            margin:           0.25em
-            padding:          0.25em
-            border =          "1px solid" !borderColor
-            float:            none
-            .as-message
-              padding:        0.25em
-          .active
-            color            =  !pageColorBackground
-            background-color =  !linkColor
-            em
-              background-color = !tagColor
+    .as-results
+      display:  block
+      .as-list
+        font-size:          1em
+        z-index:            5
+        .as-result-item
+          text-shadow:      none
+          background-image: none
+          margin:           0.25em
+          padding:          0.25em
+          border =          "1px solid" !borderColor
+          float:            none
+          .as-message
+            padding:        0.25em
+        .active
+          color            =  !pageColorBackground
+          background-color =  !linkColor
+          em
+            background-color = !tagColor
 
   .root
     background-color =  !linkColor
-  .scopeItems
+  .scopeItem
     padding:            0
     background-color =  !controlColor
-    ul
-      padding-left:     0
-      li
-        a
-          padding:      0.2em
+  .deletable
+    a.delete
+      display:          block
+      padding:          0
+      margin:           0.25em
+      text-indent:      999em
+      text-decoration:  none
+
   .itemCount
+    position:           absolute
+    right:              0
     background-color =  !controlColor
     color =             !navColor
     padding:            0.25em
-    float:              right
-    width =             !countBoxWidth + 10px
+    float:              none
+    width =             !itemCountWidth
     text-align:         center

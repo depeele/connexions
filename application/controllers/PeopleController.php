@@ -36,17 +36,13 @@ class PeopleController extends Zend_Controller_Action
 
 
         // Tag-cloud parameters
-        $tagsPrefix = 'sbTags';
+        $tagsPrefix         = 'sbTags';
         $tagsPerPage        = $request->getParam("{$tagsPrefix}PerPage",  250);
         $tagsStyle          = $request->getParam("{$tagsPrefix}Style",    null);
         $tagsHighlightCount = $request->getParam("{$tagsPrefix}HighlightCount",
                                                                           null);
         $tagsSortBy         = $request->getParam("{$tagsPrefix}SortBy", 'tag');
         $tagsSortOrder      = $request->getParam("{$tagsPrefix}SortOrder",null);
-
-        $maxTags    = $request->getParam('maxTags',   250);
-        $sortBy     = $request->getParam('sortBy',    'tag');
-        $sortOrder  = $request->getParam('sortOrder', null);
 
 
         /*
@@ -72,6 +68,7 @@ class PeopleController extends Zend_Controller_Action
         $this->view->tagInfo    = $tagInfo;
 
         // User parameters
+        $this->view->usersPrefix    = $usersPrefix;
         $this->view->usersStyle     = $usersStyle;
         $this->view->usersMax       = $usersMax;
         $this->view->usersTop       = $usersTop;
