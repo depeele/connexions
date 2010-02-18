@@ -2,9 +2,9 @@
 /** @file
  *
  *  View script for TagsController::index with incoming members:
- *      tagsPrefix              The prefix to pass to the HtmlTagCloud helper
+ *      tagsPrefix              The prefix to pass to the HtmlItemCloud helper
  *                              for the primary tag display.
- *      usersPrefix             The prefix to pass to the HtmlTagCloud helper
+ *      usersPrefix             The prefix to pass to the HtmlItemCloud helper
  *                              for the sidebar user "tag cloud".
  *
  *      viewer                  The Model_User instance representing the
@@ -16,13 +16,13 @@
  *      paginator               The paginator to use in presenting 'tagSet';
  *
  *      tagsStyle               The presentation style to use for tags
- *                              (Connexions_View_Helper_HtmlTagCloud::STYLE_*);
+ *                              (Connexions_View_Helper_HtmlItemCloud::STYLE_*);
  *      tagsHighlightCount      The number of tags to highlight;
  *      tagsSortBy              Sort tags by (valid field of Model_Tag);
  *      tagsSortOrder           Tag sort order;
  *
  *      usersStyle            Style of display for the sidebar user "cloud"
- *                              (Connexions_View_Helper_HtmlTagCloud::STYLE_*);
+ *                              (Connexions_View_Helper_HtmlItemCloud::STYLE_*);
  *      usersPerPage          Maximum number of users to present in the
  *                              "tag cloud" sidebar presentation;
  *      usersHighlightCount   The number of users to highlight in the
@@ -58,12 +58,34 @@ $this->headTitle('Tags');
 
 <?php
 
+// Construct the scope auto-completion callback URL
+$scopeParts = array('format=json');
+//if ($owner !== '*')
+//    array_push($scopeParts, 'owner='. $owner->name);
+
+if ($this->userInfo->hasValidItems())
+{
+    /*
+    Connexions::log(sprintf("Tags::index.phtml: "
+                            .   "reqStr[ %s ], valid[ %s ]",
+                            $this->userInfo->reqStr,
+                            var_export($this->userInfo->valid, true)) );
+
+    // */
+
+    array_push($scopeParts, 'users='. $this->userInfo->validItems);
+}
+
+$scopeCbUrl = $this->baseUrl('/tags/scopeAutoComplete')
+            . '?'. implode('&', $scopeParts);
+
 // Present the current scope information
 echo $this->htmlItemScope($this->paginator,
                           $this->userInfo,
                           'Users',
                           'owners',
-                          array('Tags'  => $this->baseUrl('/tags')));
+                          array('Tags'  => $this->baseUrl('/tags')),
+                          $scopeCbUrl);
 
 /* Present the pagination control.
  * Default values are established via Bootstrap.php::_initViewGlobal().
@@ -108,10 +130,10 @@ if (count($this->paginator))
           . "</div>"
           . "<div id='tagItems'>";
 
-    /* Use the Connexions_View_Helper_HtmlTagCloud class to render a "Tag
+    /* Use the Connexions_View_Helper_HtmlItemCloud class to render a "Tag
      * Cloud" view of the user list.
      */
-    $uiHelper = $this->htmlTagCloud();
+    $uiHelper = $this->htmlItemCloud();
     if (! @empty($this->usersPrefix))
         $uiHelper->setPrefix($this->usersPrefix);
 

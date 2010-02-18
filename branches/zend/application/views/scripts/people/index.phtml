@@ -4,7 +4,7 @@
  *  View script for PeopleController::index with incoming members:
  *      usersPrefix         The prefix to pass to the HtmlPaginationControl
  *                          helper for the main pagination rednering.
- *      tagsPrefix          The prefix to pass to the HtmlTagCloud helper for
+ *      tagsPrefix          The prefix to pass to the HtmlItemCloud helper for
  *                          the sidebar tag display.
  *
  *      viewer              The Model_User instance representing the current
@@ -29,7 +29,7 @@
  *      tagsPerPage         Maximum number of tags to present in the sidebar;
  *      tagsHighlightCount  The number of tags to ighlight in the sidebar;
  *      tagsStyle           Style of sidebar tag display
- *                          (Connexions_View_Helper_HtmlTagCloud::STYLE_*);
+ *                          (Connexions_View_Helper_HtmlItemCloud::STYLE_*);
  *      tagsSortBy          Sort tags in the sidebar by
  *                          (valid field of Model_Tag);
  *      tagsSortOrder       Sidebar Tag sort order.
@@ -111,7 +111,7 @@ if ( @isset($this->users) )
 
 if ( @isset($this->tagList))
 {
-    $uiHelper = $this->htmlTagCloud();
+    $uiHelper = $this->htmlItemCloud();
     if (! @empty($this->tagsPrefix))
         $uiHelper->setPrefix($this->tagsPrefix);
 
@@ -129,7 +129,7 @@ if ( @isset($this->tagList))
           . "</div>"
           . "<div id='tagItems'>";
 
-    /* Use the Connexions_View_Helper_HtmlTagCloud class to render the tag
+    /* Use the Connexions_View_Helper_HtmlItemCloud class to render the tag
      * cloud for $this->tagList.
      */
     $html .= $uiHelper->render($this->tagList,
