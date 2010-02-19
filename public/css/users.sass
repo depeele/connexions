@@ -67,7 +67,7 @@
         .custom
           padding-top:    0.5em
           border-bottom:  0
-          .item
+          .user
             border =      "1px solid" !borderColor
             padding:      0 0.1em 0.1em 0.2em
 
@@ -97,20 +97,18 @@
                   float:        none
                   padding:      0
 
-              .userId
-                .userId-avatar
-                  float:        right
-                  padding-left: 0.75em
+              .avatar, .userId, .fullName, .email
+                position:       relative
+                display:        block
+                height:         auto
+                width:          auto
+                float:          none
               .tags
                 width:        auto
                 text-align:   left
                 .tag
                   display:  inline
                   float:    none
-
-              .dates
-                .updated
-                  width:      auto
 
   .users
     clear:          both
@@ -169,6 +167,10 @@
         color =       !groupHeaderAlphaColor
         z-index:      0
 
+    .person
+      clear:        both
+      min-height:   45px
+
     .user
       position:       relative
       z-index:        1
@@ -177,15 +179,14 @@
 
       // meta:count:items, tags
       .meta
-        position:   relative
-        float:      right
-        width =     !countBoxWidth
-        padding:    0 0 0 4px
-        text-align: right
-        z-index:    2
+        position:             relative
+        float:                right
+        width =               !countBoxWidth
+        background-color =    !controlColor
+        padding:              0
+        z-index:              2
         .countItems
           display:            block
-          background-color =  !controlColor
           color =             !pageColorBackground
           padding:            0.25em
           font-weight:        normal
@@ -194,7 +195,22 @@
           &:hover
             background-color =  !navColorHover
         .countTags
+          display:            block
+          position:           relative
+          color =             !pageColorBackground
+          padding:            0.25em
           font-size:          0.8em
+          font-weight:        normal
+          text-align:         center
+          text-decoration:    none
+          &:hover
+            background-color =  !navColorHover
+          // tag icon
+          .icon
+            position:           absolute
+            border:             none
+            right:              0
+            padding:            0 2px
 
       .data
         position: relative
@@ -218,7 +234,6 @@
                 width:            32px
                 height:           32px
               .ui-icon
-                background-color: transparent
                 position:         relative
                 left:             8px
         .relation
@@ -231,6 +246,7 @@
 
         // UserId
         .userId
+          float:        left
           padding:      0
           font-size:    1.25em
 
@@ -238,16 +254,19 @@
             display:      inline
             font-weight:  bold
 
+        // FullName
         .fullName
-          padding:      0 1em
+          float:        left
+          padding:      0.25em
 
           a
             display:      inline
             font-weight:  bold
 
-        // Item Url
+        // Email
         .email
-          padding:    0 0 0 1em
+          float:      right
+          padding:    0.25em
           border:     none
           max-width = !urlBoxWidth
 
@@ -257,14 +276,14 @@
           a
             display:      inline
             font-weight:  normal
-          .ui-icon
-            background-color: transparent
+          .icon
             position:         relative
             float:            left
 
 
         // List of tags for this item
         .tags
+          clear:      right
           display:    block
           float:      right
           font-size:  0.9em
@@ -292,15 +311,15 @@
             a, a:hover, a:visited, a:focus
               color =           !tagColorBackground
 
-        // Dates (tagged, updated)
+        // Dates (lastVisit)
         .dates
-          display:      block
+          float:        left
           font-size:    0.8em
           height:       1em
-          padding-left: 1em
+          padding:      1em
           color =       !controlColor
           .lastVisit
-            float:      left
+            display:    block
 
         // Item controls: edit, delete, save
         .control

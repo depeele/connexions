@@ -136,6 +136,7 @@ class Model_UserSet extends Connexions_Set
         }
 
         $this->_select->columns($cols)
+                      ->reset(Zend_Db_Select::ORDER)
                       ->order('weight DESC');
 
         $this->_weightSet = true;

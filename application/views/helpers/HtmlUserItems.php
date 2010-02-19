@@ -1292,7 +1292,7 @@ function init_<?= $namespace ?>List()
         // Need 'legend' for vertical spacing control
         $html .=    "<div class='item'>"
               .      "<div class='meta'>"
-              .       "<div class='field countTaggers'>"
+              .       "<div class='field countTaggers ui-corner-bottom'>"
               .        "<input type='checkbox' "
               .               "name='{$namespace}StyleCustom[meta:countTaggers]' "
               .                 "id='display-countTaggers'"
@@ -1309,7 +1309,7 @@ function init_<?= $namespace ?>List()
                                 ? " checked='true'"
                                 : ''). " />"
               .        "<label for='display-rating'>Rating stars</label>"
-              .        "<div class='meta'>"
+              .        "<div class='meta ui-corner-bottom'>"
               .         "<input type='checkbox' "
               .                "name='{$namespace}StyleCustom[meta:rating:meta]' "
               .                  "id='display-ratingMeta'"

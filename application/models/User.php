@@ -34,6 +34,29 @@ class Model_User extends Connexions_Model_Cached
 
     protected       $_isAuthenticated   = false;
 
+    protected       $_tags              = null; // user-related tags
+
+    /** @brief  Get a value of the given field.
+     *  @param  name    The field name.
+     *
+     *  Override to allow retrieval of user-related tags.
+     *
+     *  @return The field value (or null if invalid field).
+     */
+    public function __get($name)
+    {
+        switch ($name)
+        {
+        case 'tags':    $res =& $this->_tags();         break;
+        default:        $res =  parent::__get($name);   break;
+        }
+
+        if (! empty($field))
+            $res = $res->{$field};
+
+        return $res;
+    }
+
     /** @brief  Set a value in this record and mark it dirty.
      *  @param  name    The field name.
      *  @param  value   The new value.
@@ -44,10 +67,24 @@ class Model_User extends Connexions_Model_Cached
      */
     public function __set($name, $value)
     {
-        if ($name === 'password')
-            $value = md5($value);
+        $res = false;
+        switch ($name)
+        {
+        case 'tags':
+            // Do NOT allow external replacement of sub-instances.
+            break;
 
-        return parent::__set($name, $value);
+        case 'password':
+            $value = md5($value);
+            $res   =  parent::__set($name, $value);
+            break;
+
+        default:
+            $res =  parent::__set($name, $value);
+            break;
+        }
+
+        return $res;
     }
 
     /** @brief  Return a string representation of this instance.
@@ -237,6 +274,24 @@ class Model_User extends Connexions_Model_Cached
             $weight = (Float)($this->totalItems);
 
         return $weight;
+    }
+
+    /*************************************************************************
+     * Protected helpers
+     *
+     */
+    protected function _tags()
+    {
+        if ($this->_tags === null)
+        {
+            if (@isset($this->_record['userId']))
+            {
+                $this->_tags =
+                    new Model_TagSet(array($this->_record['userId']));
+            }
+        }
+
+        return $this->_tags;
     }
 
     /*************************************************************************

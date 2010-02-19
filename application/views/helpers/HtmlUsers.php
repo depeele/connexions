@@ -34,14 +34,8 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
     /** @brief  User-settable (via display options) style parts / show-meta */
     static protected $userStyleParts    = array(
             'meta:relation'             => true,
-
             'meta:count:items'          => true,
             'meta:count:tags'           => true,
-            'meta:count'                => array(
-                // implied sub-values
-                'meta:count:items'      => true,
-                'meta:count:tags'       => true
-            ),
 
             'avatar'                    => true,
             'userId'                    => true,
@@ -49,11 +43,7 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
             'email'                     => true,
             'tags'                      => true,
 
-            'dates:visited'             => true,
-            'dates'                     => array(
-                // implied sub-values
-                'dates:visited'         => true
-            ),
+            'dates:visited'             => true
 
     );
 
@@ -594,7 +584,7 @@ function init_<?= $namespace ?>List()
     }
 
     /** @brief  Set the current showMeta.
-     *  @param  showMeta    A showMeta value (self::SORT_BY_*)
+     *  @param  showMeta    A showMeta array.
      *
      *  @return Connexions_View_Helper_HtmlUsers for a fluent interface.
      */
@@ -669,9 +659,57 @@ function init_<?= $namespace ?>List()
         }
 
         /*
-        Connexions::log('Connexions_View_Helper_HtmlUsers::'
-                            . 'getShowMeta(): return[ '
-                            .       print_r($val, true) .' ]');
+        $str = "Connexions_View_Helper_HtmlUsers::getShowMeta(): [\n";
+        foreach ($val as $key => $dat)
+        {
+            $type = gettype($dat);
+
+            $str .= '   '. $key .': '. $type .' (';
+            switch ($type)
+            {
+            case 'boolean':
+                $str .= ($dat === true ? 'true' : 'false');
+                break;
+
+            case 'integer':
+                $str .= sprintf("%d", $dat);
+                break;
+
+            case 'double':
+                $str .= sprintf("%f", $dat);
+                break;
+
+            case 'string':
+                $str .= $dat;
+                break;
+
+            case 'array':
+                $str .= 'array';
+                break;
+
+            case 'object':
+                $str .= 'object';
+                break;
+
+            case 'resource':
+                $str .= 'resource';
+                break;
+
+            case 'NULL':
+                $str .= 'null';
+                break;
+
+            default:
+                $str .= $dat;
+            }
+
+            $str .= ")\n";
+        }
+
+        Connexions::log($str);
+        //Connexions::log('Connexions_View_Helper_HtmlUsers::'
+        //                    . 'getShowMeta(): return[ '
+        //                    .       print_r($val, true) .' ]');
         // */
     
         return $val;
@@ -1006,21 +1044,21 @@ function init_<?= $namespace ?>List()
 
         $html .= "<div class='displayOptions {$namespace}-displayOptions'>"
                                                         // displayOptions {
-              .  "<div class='control ui-corner-all ui-state-default'>"
-              .   "<a >Display Options</a>"
-              .   "<div class='ui-icon ui-icon-triangle-1-s'>"
-              .    "&nbsp;"
+              .   "<div class='control ui-corner-all ui-state-default'>"
+              .    "<a >Display Options</a>"
+              .    "<div class='ui-icon ui-icon-triangle-1-s'>"
+              .     "&nbsp;"
+              .    "</div>"
               .   "</div>"
-              .  "</div>"
-              .  "<form style='display:none;' "
-              .        "class='ui-state-active ui-corner-all'>";    // form {
+              .   "<form style='display:none;' "
+              .         "class='ui-state-active ui-corner-all'>";    // form {
 
-        $html .=  "<div class='field sortBy'>"  // sortBy {
-              .    "<label   for='{$namespace}SortBy'>Sorted by</label>"
-              .    "<select name='{$namespace}SortBy' "
-              .              "id='{$namespace}SortBy' "
-              .           "class='sort-by sort-by-{$this->_sortBy} "
-              .                   "ui-input ui-state-default ui-corner-all'>";
+        $html .=   "<div class='field sortBy'>"  // sortBy {
+              .     "<label   for='{$namespace}SortBy'>Sorted by</label>"
+              .     "<select name='{$namespace}SortBy' "
+              .               "id='{$namespace}SortBy' "
+              .            "class='sort-by sort-by-{$this->_sortBy} "
+              .                    "ui-input ui-state-default ui-corner-all'>";
 
         foreach (self::$sortTitles as $key => $title)
         {
@@ -1040,12 +1078,12 @@ function init_<?= $namespace ?>List()
                              $title);
         }
 
-        $html .=   "</select>"
-              .   "</div>";                             // sortBy }
+        $html .=    "</select>"
+              .    "</div>";                            // sortBy }
 
 
-        $html .=  "<div class='field sortOrder'>"       // sortOrder {
-              .    "<label for='{$namespace}SortOrder'>Sort order</label>";
+        $html .=   "<div class='field sortOrder'>"      // sortOrder {
+              .     "<label for='{$namespace}SortOrder'>Sort order</label>";
 
         foreach (self::$orderTitles as $key => $title)
         {
@@ -1061,13 +1099,13 @@ function init_<?= $namespace ?>List()
                   .  "</div>";
         }
 
-        $html .=   "<br class='clear' />"
-              .   "</div>"                              // sortOrder }
-              .   "<div class='field perPage'>"         // perPage {
-              .    "<label for='{$namespace}PerPage'>Per page</label>"
-              .    "<select class='ui-input ui-state-default ui-corner-all "
-              .                  "count' name='{$namespace}PerPage'>"
-              .     "<!-- {$namespace}PerPage: {$itemCountPerPage} -->";
+        $html .=    "<br class='clear' />"
+              .    "</div>"                             // sortOrder }
+              .    "<div class='field perPage'>"         // perPage {
+              .     "<label for='{$namespace}PerPage'>Per page</label>"
+              .     "<select class='ui-input ui-state-default ui-corner-all "
+              .                   "count' name='{$namespace}PerPage'>"
+              .      "<!-- {$namespace}PerPage: {$itemCountPerPage} -->";
 
         foreach (self::$perPageChoices as $perPage)
         {
@@ -1078,13 +1116,13 @@ function init_<?= $namespace ?>List()
                   .                     ">{$perPage}</option>";
         }
     
-        $html .=   "</select>"
-              .    "<br class='clear' />"
-              .   "</div>"                              // perPage }
-              .   "<div class='field displayStyle'>"    // displayStyle {
-              .    "<label for='{$namespace}Style'>Display</label>"
-              .    "<input type='hidden' name='{$namespace}Style' "
-              .          "value='{$this->_displayStyle}' />";
+        $html .=    "</select>"
+              .     "<br class='clear' />"
+              .    "</div>"                              // perPage }
+              .    "<div class='field displayStyle'>"    // displayStyle {
+              .     "<label for='{$namespace}Style'>Display</label>"
+              .     "<input type='hidden' name='{$namespace}Style' "
+              .           "value='{$this->_displayStyle}' />";
 
         $idex       = 0;
         $titleCount = count(self::$styleTitles);
@@ -1125,13 +1163,13 @@ function init_<?= $namespace ?>List()
         $html .= implode("<span class='comma'>, </span>", $parts);
 
 
-        $html .= sprintf("<fieldset class='custom items'%s>",
+        $html .= sprintf("<fieldset class='custom users'%s>",
                           ($this->_displayStyle !== self::STYLE_CUSTOM
                                 ? " style='display:none;'"
                                 : ""));
 
         // Need 'legend' for vertical spacing control
-        $html .=    "<div class='item'>"    // item {
+        $html .=    "<div class='user'>"    // user {
               .      "<div class='meta'>"   // meta {
               .       "<div class='field countItems'>"
               .        "<input type='checkbox' "
@@ -1151,7 +1189,6 @@ function init_<?= $namespace ?>List()
                                 : ''). " />"
               .        "<label for='display-countTags'>tag count</label>"
               .       "</div>"
-              .       "</div>"
               .      "</div>"               // meta }
               .      "<div class='data'>"   // data {
               .       "<div class='field avatar'>"
@@ -1163,7 +1200,7 @@ function init_<?= $namespace ?>List()
                                 : ''). " />"
               .        "<label for='display-avatar'>avatar</label>"
               .       "</div>"
-              .       "<h4 class='field userId'>"
+              .       "<div class='field userId'>"
               .        "<input type='checkbox' "
               .               "name='{$namespace}StyleCustom[userId]' "
               .                 "id='display-userId'"
@@ -1171,7 +1208,7 @@ function init_<?= $namespace ?>List()
                                 ? " checked='true'"
                                 : ''). " />"
               .        "<label for='display-userId'>User Name</label>"
-              .       "</h4>"
+              .       "</div>"
               .       "<div class='field fullName'>"
               .        "<input type='checkbox' "
               .               "name='{$namespace}StyleCustom[fullName]' "
@@ -1207,7 +1244,6 @@ function init_<?= $namespace ?>List()
               .        "<label class='tag'> ... </label>"
               .        "<label class='tag'> ... </label>"
               .       "</div>"
-              .       "<br class='clear' />"
               .       "<div class='dates'>"
               .        "<div class='field dateVisited'>"
               .         "<input type='checkbox' "
@@ -1220,7 +1256,7 @@ function init_<?= $namespace ?>List()
               .        "</div>"
               .       "</div>"                  // data }
               .       "<br class='clear' />"
-              .     "</div>"                    // item }
+              .     "</div>"                    // user }
               .    "</fieldset>";
 
         $html .=  "</div>"                      // displayStyle }

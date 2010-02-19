@@ -218,6 +218,18 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .detail { color: #777; font-size: 11px; display: block; }
 
 /* ****** sprites.sass ****** */
+.icon-normal .ui-icon { background-image: url(themes/base/images/ui-icons_222222_256x240.png); }
+
+.icon-default .ui-icon { background-image: url(themes/base/images/ui-icons_888888_256x240.png); }
+
+.icon-hover .ui-icon { background-image: url(themes/base/images/ui-icons_454545_256x240.png); }
+
+.icon-active .ui-icon { background-image: url(themes/base/images/ui-icons_454545_256x240.png); }
+
+.icon-highlight .ui-icon { background-image: url(themes/base/images/ui-icons_2e83ff_256x240.png); }
+
+.icon-error .ui-icon { background-image: url(themes/base/images/ui-icons_cd0a0a_256x240.png); }
+
 .connexions_sprites { background: url('sprites/connexions.gif') no-repeat scroll 0px 0px transparent; background-image: url('sprites/connexions.gif') !important; }
 
 .corner_inner_left { width: 12px; height: 10px; background-position: 0     0; }

@@ -53,6 +53,12 @@ class PeopleController extends Zend_Controller_Action
         $usersStyleCustom = $request->getParam($usersPrefix."StyleCustom",
                                                                          null);
 
+        /*
+        Connexions::log('PeopleController::'
+                            . 'usersStyleCustom( [ '
+                            .       print_r($usersStyleCustom, true) .' ] )');
+        // */
+
         $uiHelper = $this->view->htmlUsers();
         $uiHelper->setNamespace($usersPrefix)
                  ->setSortBy($usersSortBy)
