@@ -71,7 +71,7 @@
 #itemsList .items .item .data .userId a { font-weight: normal; }
 #itemsList .items .item .data .userId a .img { display: block; position: relative; float: left; border: 0; background-color: transparent; }
 #itemsList .items .item .data .userId a .img img { width: 16px; height: 16px; }
-#itemsList .items .item .data .userId a .img .ui-icon { background-color: transparent; position: relative; top: -2px; }
+#itemsList .items .item .data .userId a .img .ui-icon { position: relative; top: -2px; }
 #itemsList .items .item .data .userId a .name { display: inline; font-size: 0.9em; padding-left: 0.25em; }
 #itemsList .items .item .data .tags { display: block; float: right; font-size: 0.9em; padding: 0.5em 0; margin: 0; text-align: right; }
 #itemsList .items .item .data .tags .tag, #itemsList .items .item .data .tags .tag:hover { display: block; float: right; padding: 0.2em; margin: 0.1em; background-color: #eeeeee; color: #172322; }

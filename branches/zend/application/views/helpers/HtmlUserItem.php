@@ -75,7 +75,8 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
             $html .=   "<div class='meta'>";    // meta {
             if ($showParts['meta:countTaggers'] === true)
             {
-               $html .= sprintf ("<a class='countTaggers' href='%s'>%d</a>",
+               $html .= sprintf (  "<a class='countTaggers ui-corner-bottom' "
+                                 .     "href='%s'>%d</a>",
                                  $this->view->url(array(
                                          'action'   => 'url',
                                          'urlHash'  =>
@@ -297,7 +298,7 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                                   'action' => $userItem->user->name)),
                           $userItem->user->fullName);
 
-        $html .=   "<div class='img ui-state-highlight'>";
+        $html .=   "<div class='img icon-highlight'>";
         if ( $showAvatar )
         {
             // Include the user's picture / avatar

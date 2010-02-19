@@ -45,7 +45,7 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
 
         if ($showParts['meta'] === true)
         {
-            $html .=   "<div class='meta'>";    // meta {
+            $html .=   "<div class='meta ui-corner-bottom'>";    // meta {
             if ($showParts['meta:count:items'] === true)
             {
                 $html .= sprintf ("<a class='countItems' "
@@ -60,14 +60,28 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
 
             if ($showParts['meta:count:tags'] === true)
             {
-                $html .= sprintf ("<a class='countTags' "
-                                  .  "title='Tags' "
-                                  .   "href='%s'>%d</a>",
+                $html .= sprintf (  "<a class='countTags' "
+                                  .    "title='Tags' "
+                                  .     "href='%s'>"
+                                  .  "<div class='icon icon-active'>"
+                                  .   "<div class='ui-icon ui-icon-tag'>"
+                                  .    "&nbsp;"
+                                  .   "</div>"
+                                  .  "</div>"
+                                  .  "%d"
+                                  . "</a>",
                                  $this->view->url(array(
                                          'controller'   => 'tags',
                                          'action'       => 'index',
                                          'owner'        => $user->name)),
                                  $user->totalTags);
+            }
+
+            if ($showParts['meta:relation'])
+            {
+                $html .= "<div class='relation'>"
+                      .   ":TODO:"
+                      .  "</div>";
             }
 
             $html .=   "</div>";                // meta }
@@ -78,21 +92,12 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
 
         $html .= $this->_renderAvatar($user, $showParts);
 
-        if ($showParts['meta:relation'])
-        {
-            $html .= "\n"
-                  .  "<div class='relation'>"
-                  .   ":TODO:"
-                  .  "</div>";
-        }
-
         $html .= $this->_renderUserId($user, $showParts);
 
 
         if ($showParts['fullName'] === true)
         {
-            $html .= "\n"
-                  .  "<div class='fullName'>";   // fullName {
+            $html .= "<div class='fullName'>";   // fullName {
 
             if ($showParts['userId'] !== true)
             {
@@ -104,18 +109,23 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
                                  htmlspecialchars($user->fullName),
                                  htmlspecialchars($user->fullName));
             }
+            else
+            {
+                $html .= htmlspecialchars($user->fullName);
+            }
 
             $html .= "</div>";   // fullName }
         }
 
         if ($showParts['email'] === true)
         {
-            $html .= "\n"
-                  .  "<div class='email'>"
+            $html .= "<div class='email'>"
                   .   sprintf ( "<a href='mailto:%s' "
                                .  "title='%s'>"
-                               . "<div class='ui-icon ui-icon-mail-closed'>"
-                               .  "&nbsp;"
+                               . "<div class='icon icon-highlight'>"
+                               .  "<div class='ui-icon ui-icon-mail-closed'>"
+                               .   "&nbsp;"
+                               .  "</div>"
                                . "</div>"
                                . "%s"
                               . "</a>",
@@ -133,40 +143,46 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
                 $html .= "<br class='clear' />";
             */
 
-            $html .= "\n"
-                  .  "<ul class='tags'>";       // tags {
+            $html .= "<ul class='tags'>";       // tags {
 
-            foreach ($user->tags as $tag)
+            $tags = $user->tags->weightBy('userItem');
+
+            // Only show the top 5
+            $tagLimit = 5;
+            foreach ($tags as $tag)
             {
+                if ($tagLimit-- < 0)
+                    break;
+
+                $title  = $tag->getTitle();
+                $weight = $tag->getWeight();
+
                 $html .= "<li class='tag'>"
                       .   "<a href='"
-                      .     $this->view->url(array(
+                      .             $this->view->url(array(
                                         'action' => 'tagged',
-                                        'tag'    => $tag->tag))
-                      .         "'>{$tag->tag}</a>"
+                                        'tag'    => $title)) . "' "
+                      .      "title='{$title}: {$weight}'>"
+                      .     $title
+                      .   "</a>"
                       .  "</li>";
             }
 
-            $html .= "</ul>"                    // tags }
-                  .  "<br class='clear' />";
+            $html .= "</ul>";                   // tags }
 
-            $clearFloats = false;
+            $clearFloats = true;
         }
 
         if ( $showParts['dates'] )
         {
-            $html .= "\n"
-                  .  "<div class='dates'>";
+            $html .= "<div class='dates'>";
 
             if ($showParts['dates:visited'] === true)
                 $html .= "<div class='lastVisit'>"
                       .    $user->lastVisit
                       .  "</div>";
 
-            $html .= "</div>"
-                  .  "<br class='clear' />";
-
-            $clearFloats = false;
+            $html .= "</div>";
         }
 
         if ($clearFloats)
@@ -194,7 +210,7 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
                                   'action' => $user->name)),
                           $user->fullName);
 
-        $html .=   "<div class='img ui-state-highlight'>";
+        $html .=   "<div class='img icon-highlight'>";
         if ( ! @empty($user->pictureUrl))
         {
             // Include the user's picture / avatar
