@@ -40,7 +40,7 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
         if ($showParts['minimized'])    array_push($itemClasses, 'minimized');
 
         $html .= "<li class='person "           // person {
-              .             implode(' ', $itemClasses) . "'>"
+              .             implode(' ', $itemClasses) . "'>\n"
               .   "<form class='user'>";        // user {
 
         if ($showParts['meta'] === true)
@@ -48,9 +48,11 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
             $html .=   "<div class='meta'>";    // meta {
             if ($showParts['meta:count:items'] === true)
             {
-               $html .= sprintf ("<a class='countItems' href='%s'>%d</a>",
+                $html .= sprintf ("<a class='countItems' "
+                                  .   "href='%s' "
+                                  .  "title='Bookmarks'>%d</a>",
                                  $this->view->url(array(
-                                         'controller'   => 'tags',
+                                         'controller'   => 'index',
                                          'action'       => 'index',
                                          'owner'        => $user->name)),
                                  $user->totalItems);
@@ -58,9 +60,11 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
 
             if ($showParts['meta:count:tags'] === true)
             {
-               $html .= sprintf ("<a class='countTags' href='%s'>%d</a>",
+                $html .= sprintf ("<a class='countTags' "
+                                  .  "title='Tags' "
+                                  .   "href='%s'>%d</a>",
                                  $this->view->url(array(
-                                         'controller'   => 'index',
+                                         'controller'   => 'tags',
                                          'action'       => 'index',
                                          'owner'        => $user->name)),
                                  $user->totalTags);
@@ -76,7 +80,8 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
 
         if ($showParts['meta:relation'])
         {
-            $html .= "<div class='relation'>"
+            $html .= "\n"
+                  .  "<div class='relation'>"
                   .   ":TODO:"
                   .  "</div>";
         }
@@ -86,21 +91,34 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
 
         if ($showParts['fullName'] === true)
         {
-            $html .= "<div class='fullName'>"    // fullName {
-                  .  sprintf("<a href='%s' title='%s'>%s</a>",
-                             $this->view->url(array(
+            $html .= "\n"
+                  .  "<div class='fullName'>";   // fullName {
+
+            if ($showParts['userId'] !== true)
+            {
+                $html .= sprintf("<a href='%s' title='%s'>%s</a>",
+                                 $this->view->url(array(
                                          'controller'   => 'index',
                                          'action'       => 'index',
                                          'owner'        => $user->name)),
-                             htmlspecialchars($user->fullName));
+                                 htmlspecialchars($user->fullName),
+                                 htmlspecialchars($user->fullName));
+            }
 
             $html .= "</div>";   // fullName }
         }
 
         if ($showParts['email'] === true)
         {
-            $html .= "<div class='email'>"
-                  .   sprintf ("<a href='mailto:%s' title='%s'>%s</a>",
+            $html .= "\n"
+                  .  "<div class='email'>"
+                  .   sprintf ( "<a href='mailto:%s' "
+                               .  "title='%s'>"
+                               . "<div class='ui-icon ui-icon-mail-closed'>"
+                               .  "&nbsp;"
+                               . "</div>"
+                               . "%s"
+                              . "</a>",
                                $user->email,
                                $user->fullName,
                                $user->email)
@@ -115,7 +133,8 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
                 $html .= "<br class='clear' />";
             */
 
-            $html .= "<ul class='tags'>";       // tags {
+            $html .= "\n"
+                  .  "<ul class='tags'>";       // tags {
 
             foreach ($user->tags as $tag)
             {
@@ -136,7 +155,8 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
 
         if ( $showParts['dates'] )
         {
-            $html .= "<div class='dates'>";
+            $html .= "\n"
+                  .  "<div class='dates'>";
 
             if ($showParts['dates:visited'] === true)
                 $html .= "<div class='lastVisit'>"
@@ -154,7 +174,7 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
 
         $html .=   "</div>"     // data }
               .   "</form>"     // user }
-              .  "</li>";       // person }
+              .  "</li>\n";     // person }
 
         return $html;
     }
@@ -190,7 +210,7 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
         }
         $html .=   "</div>"
               .   "</a>"
-              .  "</div>"
+              .  "</div>";
 
         return $html;
     }

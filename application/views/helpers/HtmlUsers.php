@@ -13,7 +13,7 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
 
         'showMeta'          => null,
 
-        'sortBy'            => self::SORT_BY_DATE_TAGGED,
+        'sortBy'            => self::SORT_BY_NAME,
         'sortOrder'         => Model_UserSet::SORT_ORDER_DESC,
 
         'perPage'           => 50,
@@ -142,8 +142,6 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
 
 
 
-    static protected $_initialized  = array();
-
     /** @brief  Set-able parameters. */
     protected       $_namespace     = 'users';
 
@@ -152,6 +150,8 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
     protected       $_sortBy        = null;
     protected       $_sortOrder     = null;
     protected       $_scopeItems    = null;
+
+    static protected $_initialized  = array();
 
     /** @brief  Set the View object.
      *  @param  view    The Zend_View_Interface
@@ -517,7 +517,6 @@ function init_<?= $namespace ?>List()
 
         switch ($style)
         {
-        case self::STYLE_TITLE:
         case self::STYLE_FULL:
         case self::STYLE_REGULAR:
         case self::STYLE_CUSTOM:
@@ -831,13 +830,17 @@ function init_<?= $namespace ?>List()
                                             array($scopeRoot => $scopeUrl),
                                             $scopeCbUrl);
 
-        $html .= "<div id='{$this->_namespace}List'>"   // List {
+        $html .= "\n"
+              .  "<div id='{$this->_namespace}List'>"   // List {
+              .   "\n"
               .   $uiPagination->render($paginator, 'pagination-top', true)
+              .   "\n"
               .   $this->_renderDisplayOptions($paginator, $showMeta);
 
         if (count($paginator))
         {
-            $html .= "<ul class='people'>";
+            $html .= "\n"
+                  .  "<ul class='{$this->_namespace}'>";
 
             // Group by the field identified in $this->_sortBy
             $lastGroup = null;
@@ -859,7 +862,8 @@ function init_<?= $namespace ?>List()
                                                     $idex);
             }
 
-            $html .= "</ul>";
+            $html .= "\n"
+                  .  "</ul>";
         }
 
 
@@ -1090,7 +1094,9 @@ function init_<?= $namespace ?>List()
                   .                      "value='{$key}'"
                   .          ($key == $this->_sortOrder
                                  ? " checked='true'" : "" ). " />"
-                  .   "<label for='{$namespace}SortOrder-{$key}'>{$title}</label>"
+                  .   "<label for='{$namespace}SortOrder-{$key}'>"
+                  .    $title
+                  .   "</label>"
                   .  "</div>";
         }
 
@@ -1164,8 +1170,8 @@ function init_<?= $namespace ?>List()
                                 : ""));
 
         // Need 'legend' for vertical spacing control
-        $html .=    "<div class='item'>"
-              .      "<div class='meta'>"
+        $html .=    "<div class='item'>"    // item {
+              .      "<div class='meta'>"   // meta {
               .       "<div class='field countItems'>"
               .        "<input type='checkbox' "
               .              "name='{$namespace}StyleCustom[meta:count:items]' "
@@ -1185,8 +1191,8 @@ function init_<?= $namespace ?>List()
               .        "<label for='display-countTags'>tag count</label>"
               .       "</div>"
               .       "</div>"
-              .      "</div>"
-              .      "<div class='data'>"
+              .      "</div>"               // meta }
+              .      "<div class='data'>"   // data {
               .       "<div class='field avatar'>"
               .        "<input type='checkbox' "
               .               "name='{$namespace}StyleCustom[avatar]' "
@@ -1251,10 +1257,9 @@ function init_<?= $namespace ?>List()
                                 : ''). " />"
               .         "<label for='display-dateVisited'>date:visited</label>"
               .        "</div>"
-              .       "</div>"
+              .       "</div>"                  // data }
               .       "<br class='clear' />"
-              .      "</div>"
-              .     "</div>"
+              .     "</div>"                    // item }
               .    "</fieldset>";
 
         $html .=  "</div>"                      // displayStyle }

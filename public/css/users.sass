@@ -1,0 +1,334 @@
+@import sizes
+@import colors
+@import mixins
+
+!displaySortOffset  = 5px
+
+/******* users.sass *******/
+// Styling for users
+
+#usersList
+  .displayOptions
+    .buttons-custom
+      margin-top:   0 !important
+
+    // To have the control appear as a tab when opened
+    //form
+    //  top:                1.87em
+    //.control.ui-state-active
+    //  border-bottom-color = !pageColorBackground
+
+    form
+      width:              22em
+      //background-color =  !pageColorBackground
+      //border =            "1px solid" !borderColor
+
+      //.sortBy
+
+      .sortOrder
+        padding-top:      0.5em
+        padding-bottom:   0.5em
+        border-bottom =   "1px dotted" !borderColor
+        .field
+          float:          left
+          padding-bottom: 0
+          padding-right:  0.5em
+          label
+            display:  inline
+            float:    none
+            width:    auto
+            padding:  0 0.1em
+          input,label
+            cursor:   pointer
+
+      .perPage
+        padding-top:      0.5em
+        padding-bottom:   0.5em
+        border-bottom =   "1px dotted" !borderColor
+
+      .displayStyle
+        display:      block
+        position:     relative
+        width:        auto
+        text-align:   left
+        padding-top:  1em
+        a
+          font-weight:  normal
+        .option-selected
+          font-weight:  bold
+        .option, .comma
+          display:        block
+          float:          left
+        .option.control
+          position:       relative
+          top:            -0.25em
+        .comma
+          padding-right:  0.5em
+        .custom
+          padding-top:    0.5em
+          border-bottom:  0
+          .item
+            border =      "1px solid" !borderColor
+            padding:      0 0.1em 0.1em 0.2em
+
+            label
+              display:      inline
+              float:        none
+              width:        auto
+              padding-left: 0.25em
+
+            .meta
+              font-weight:  normal
+
+            .data
+              padding-left: 0
+              .itemName
+                padding-bottom: 0.5em
+
+              .url, .description, .descriptionSummary
+                margin:         0
+
+              .rating
+                padding:        0.25em 0 0.25em 0.5em
+                text-align:     left
+
+                .meta
+                  text-align:   left
+                  float:        none
+                  padding:      0
+
+              .userId
+                .userId-avatar
+                  float:        right
+                  padding-left: 0.75em
+              .tags
+                width:        auto
+                text-align:   left
+                .tag
+                  display:  inline
+                  float:    none
+
+              .dates
+                .updated
+                  width:      auto
+
+  .users
+    clear:          both
+    padding-top:    2em
+    border-bottom = "1px solid" !borderColor
+    .groupHeader
+      // Left portion of group header, shifted left 15px
+      // (with .group, provides a solid header the full width)
+      position:             relative
+      background-color =    !groupHeaderColorBackground
+      border-bottom =       "1px solid" !borderColor
+      color =               !groupHeaderColor
+      height:               20px
+      left:                 -15px
+      .group
+        // Right portion of group header, shifted right 20px (5px over)
+        // (with .groupHeader, provides a solid header the full width)
+        position:           relative
+        background-color =  !groupHeaderColorBackground
+        height:             20px
+        right:              -20px
+      .date
+        position: relative
+        left:               -12px
+        .year
+          position:         absolute
+          left:             1em
+          top:              -0.45em
+          font-size:        3em
+          font-weight:      bold
+          color =           !groupHeaderYearColor
+          // Raise it above user, which has a top-border
+          z-index:          4
+          //+rotate(-90deg)
+
+        .dateBox
+          position:         relative
+          left:             -0.25em
+          font-size:        1em
+          font-weight:      bold
+          .month
+            display:        inline
+          .day
+            display:        inline
+            padding:        0 0.25em
+          .day-of-week
+            display:        block
+            font-size:      0.8em
+            font-weight:    bold
+      .alpha,.numeric
+        position:     absolute
+        left:         -0.55em
+        top:          -0.45em
+        font-size:    3em
+        font-weight:  bold
+        color =       !groupHeaderAlphaColor
+        z-index:      0
+
+    .user
+      position:       relative
+      z-index:        1
+      margin-bottom:  1em
+      border-top =    "1px solid" !borderColor
+
+      // meta:count:items, tags
+      .meta
+        position:   relative
+        float:      right
+        width =     !countBoxWidth
+        padding:    0 0 0 4px
+        text-align: right
+        z-index:    2
+        .countItems
+          display:            block
+          background-color =  !controlColor
+          color =             !pageColorBackground
+          padding:            0.25em
+          font-weight:        normal
+          text-align:         center
+          text-decoration:    none
+          &:hover
+            background-color =  !navColorHover
+        .countTags
+          font-size:          0.8em
+
+      .data
+        position: relative
+        padding:  0.25em 0 0 40px
+        z-index:  1
+
+        // Avatar
+        .avatar
+          position:               absolute
+          left:                   0
+          top:                    0
+          width:                  32px
+          height:                 32px
+          a
+            .img
+              display:            block
+              position:           relative
+              border:             0
+              background-color:   transparent
+              img
+                width:            32px
+                height:           32px
+              .ui-icon
+                background-color: transparent
+                position:         relative
+                left:             8px
+        .relation
+          position:               absolute
+          left:                   0
+          top:                    32px
+          width:                  32px
+          text-align:             center
+          font-size:              0.6em
+
+        // UserId
+        .userId
+          padding:      0
+          font-size:    1.25em
+
+          a
+            display:      inline
+            font-weight:  bold
+
+        .fullName
+          padding:      0 1em
+
+          a
+            display:      inline
+            font-weight:  bold
+
+        // Item Url
+        .email
+          padding:    0 0 0 1em
+          border:     none
+          max-width = !urlBoxWidth
+
+          // IE6 fix
+          *width    = !urlBoxWidth
+
+          a
+            display:      inline
+            font-weight:  normal
+          .ui-icon
+            background-color: transparent
+            position:         relative
+            float:            left
+
+
+        // List of tags for this item
+        .tags
+          display:    block
+          float:      right
+          font-size:  0.9em
+          padding:    0.5em 0
+          margin:     0
+          text-align: right
+          //width:      45%
+
+          // Individual tag
+          .tag,.tag:hover
+            display:            block
+            float:              right
+            padding:            0.2em
+            margin:             0.1em
+            background-color =  !tagColorBackground
+            color =             !tagColor
+            a,a:hover,a:visited,a:focus
+              display:          inline
+              font-weight:      normal
+              text-decoration:  none
+              color =           !tagColor
+          .tag:hover
+            background-color =  !tagColor
+            color =             !tagColorBackground
+            a, a:hover, a:visited, a:focus
+              color =           !tagColorBackground
+
+        // Dates (tagged, updated)
+        .dates
+          display:      block
+          font-size:    0.8em
+          height:       1em
+          padding-left: 1em
+          color =       !controlColor
+          .lastVisit
+            float:      left
+
+        // Item controls: edit, delete, save
+        .control
+          display:      inline
+          font-size:    0.65em
+          border:       0
+          padding:      0 0 0 2em
+          margin:       0
+          font-weight:  normal
+          white-space:  pre
+          z-index:      3
+          color =       !controlColor
+
+          a
+            display:          inline
+            font-weight:      normal
+            text-decoration:  none
+            padding:          0.1em
+
+          a:hover
+            background-color =  !linkColor
+            color =             !pageColorBackground
+            text-decoration:  none
+      
+          
+    // Item (mine)
+    .mine
+      min-height:   45px
+      .status
+        display:    block
+        min-height: 45px

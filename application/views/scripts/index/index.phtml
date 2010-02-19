@@ -95,10 +95,7 @@ if ( @isset($this->userItems) )
     }
 }
 
-/* Present the pagination control, established by
- * Bootstrap.php::_initViewGlobal() to be rendered via:
- *      views/scripts/paginationControl.phtml
- */
+
 if (@isset($this->paginator))
 {
     $uiHelper = $this->htmlUserItems();
@@ -142,6 +139,10 @@ if (@isset($this->paginator))
                            $this->tagInfo);
 }
 
+/*****************************************************************************
+ * Render the HTML for the right-column
+ *
+ */
 if ( @isset($this->tagList))
 {
     /************************************************************************
