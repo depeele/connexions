@@ -13,9 +13,9 @@
  *                          string or a Model_User instance;
  *      tagInfo             A Connexions_Set_Info instance containing
  *                          information about the requested tags.
- *      userItems           The Model_UserItemSet representing the items to
+ *      users               The Model_UserSet representing the user to
  *                          present.
- *      paginator           The paginator to use in presenting 'userItems'.
+ *      paginator           The paginator to use in presenting 'users'.
  *
  *      usersStyle          Presentation style for user users
  *                          (Connexions_View_Helpers_HtmlUserItems::STYLE_*);
@@ -34,6 +34,9 @@
  *                          (valid field of Model_Tag);
  *      tagsSortOrder       Sidebar Tag sort order.
  */
+$baseUrl = $this->baseUrl('/'); //Connexions::url('/');
+$links = $this->headLink();
+$links->appendStylesheet($baseUrl .'css/users.css');
 
 $this->headTitle('People');
 
@@ -49,53 +52,6 @@ $this->headTitle('People');
 </div>
 
 <?php
-
-// Present the current scope information
-echo $this->htmlItemScope($this->paginator,
-                          $this->tagInfo,
-                          'Tags',
-                          'tags',
-                          array('People'    => $this->baseUrl('/people')));
-
-echo "<div id='userItems'>";    // userItems {
-
-if (count($this->paginator))
-{
-    /* Present the pagination control.
-     * Default values are established via Bootstrap.php::_initViewGlobal().
-     */
-    $uiPagination = $this->htmlPaginationControl();
-    if (! @empty($this->usersPrefix))
-        $uiPagination->setNamespace($this->usersPrefix);
-
-    echo $uiPagination->render($this->paginator, 'pagination-top', true);
-    echo "<br class='clear' />";
-
-    // Present the items of the current page
-    echo "<ul class='items'>\n";
-    foreach ($this->paginator as $idex => $user)
-    {
-        /* Present the current item -- This should probably be via a view
-         * partial like:
-         *      view/scripts/user_listItem.phtml
-         */
-        echo $this->partial('user_listItem.phtml',
-                            array(
-                                'index' => $idex,
-                                'user'  => $user
-                            ));
-    }
-    echo "</ul>\n";
-
-    echo $this->htmlPaginationControl($this->paginator);
-}
-
-echo "</div>";  // userItems }
-
-/*****************************************************************************
- * Render the HTML for the right-column
- *
- */
 if ( @isset($this->users) )
 {
     /* If $this->tagList is NOT set and we have 1 or more user, make use of the
@@ -104,7 +60,7 @@ if ( @isset($this->users) )
     if ((! @isset($this->tagList)) && (count($this->users) > 0))
     {
         // Create a tag set and then retrieve its Tag_ItemList adapter
-        $tagSet        = new Model_TagSet( $this->users->userIds() );
+        $tagSet = new Model_TagSet( $this->users->userIds() );
         $tagSet->weightBy('user');
 
         $this->tagList = $tagSet->get_Tag_ItemList(0, $this->tagsPerPage,
@@ -112,6 +68,52 @@ if ( @isset($this->users) )
     }
 }
 
+
+if (count($this->paginator))
+{
+    $uiHelper = $this->htmlUsers();
+    if (! @empty($this->usersPrefix))
+        $uiHelper->setNamespace($this->usersPrefix);
+
+    if (@is_array($this->usersStyleCustom))
+    {
+        echo "\n<!-- usersStyleCustom: ";
+        print_r($this->usersStyleCustom);
+        echo " -->\n";
+
+        $uiHelper->setStyle(Connexions_View_Helper_HtmlUsers::STYLE_CUSTOM)
+                 ->setShowMeta($this->usersStyleCustom);
+    }
+    else
+    {
+        $uiHelper->setStyle($this->usersStyle);
+    }
+
+    if (@isset($this->tagSet))
+    {
+        $uiHelper->setScopeItems($this->tagSet);
+    }
+
+    /* There a two ways we can do this:
+     *   1. Individually invoke the set methods followed by the render();
+     *   2. Directly invoke the render, passing in all values;
+     *   3. Directly invoke the nameed method (htmlUsers), passing in
+     *      all values.
+     */
+    if (! @empty($this->usersSortBy))
+        $uiHelper->setSortBy($this->usersSortBy);
+    if (! @empty($this->usersSortOrder))
+        $uiHelper->setSortOrder($this->usersSortOrder);
+
+    echo $uiHelper->render($this->paginator,
+                           $this->viewer,
+                           $this->tagInfo);
+}
+
+/*****************************************************************************
+ * Render the HTML for the right-column
+ *
+ */
 if ( @isset($this->tagList))
 {
     /* Since we're now rendering the sidebar so we need to predefine the view

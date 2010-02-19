@@ -1,0 +1,67 @@
+/* ****** users.sass ****** */
+#usersList .displayOptions .buttons-custom { margin-top: 0 !important; }
+#usersList .displayOptions form { width: 22em; }
+#usersList .displayOptions form .sortOrder { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
+#usersList .displayOptions form .sortOrder .field { float: left; padding-bottom: 0; padding-right: 0.5em; }
+#usersList .displayOptions form .sortOrder .field label { display: inline; float: none; width: auto; padding: 0 0.1em; }
+#usersList .displayOptions form .sortOrder .field input, #usersList .displayOptions form .sortOrder .field label { cursor: pointer; }
+#usersList .displayOptions form .perPage { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
+#usersList .displayOptions form .displayStyle { display: block; position: relative; width: auto; text-align: left; padding-top: 1em; }
+#usersList .displayOptions form .displayStyle a { font-weight: normal; }
+#usersList .displayOptions form .displayStyle .option-selected { font-weight: bold; }
+#usersList .displayOptions form .displayStyle .option, #usersList .displayOptions form .displayStyle .comma { display: block; float: left; }
+#usersList .displayOptions form .displayStyle .option.control { position: relative; top: -0.25em; }
+#usersList .displayOptions form .displayStyle .comma { padding-right: 0.5em; }
+#usersList .displayOptions form .displayStyle .custom { padding-top: 0.5em; border-bottom: 0; }
+#usersList .displayOptions form .displayStyle .custom .item { border: 1px solid #cccccc; padding: 0 0.1em 0.1em 0.2em; }
+#usersList .displayOptions form .displayStyle .custom .item label { display: inline; float: none; width: auto; padding-left: 0.25em; }
+#usersList .displayOptions form .displayStyle .custom .item .meta { font-weight: normal; }
+#usersList .displayOptions form .displayStyle .custom .item .data { padding-left: 0; }
+#usersList .displayOptions form .displayStyle .custom .item .data .itemName { padding-bottom: 0.5em; }
+#usersList .displayOptions form .displayStyle .custom .item .data .url, #usersList .displayOptions form .displayStyle .custom .item .data .description, #usersList .displayOptions form .displayStyle .custom .item .data .descriptionSummary { margin: 0; }
+#usersList .displayOptions form .displayStyle .custom .item .data .rating { padding: 0.25em 0 0.25em 0.5em; text-align: left; }
+#usersList .displayOptions form .displayStyle .custom .item .data .rating .meta { text-align: left; float: none; padding: 0; }
+#usersList .displayOptions form .displayStyle .custom .item .data .userId .userId-avatar { float: right; padding-left: 0.75em; }
+#usersList .displayOptions form .displayStyle .custom .item .data .tags { width: auto; text-align: left; }
+#usersList .displayOptions form .displayStyle .custom .item .data .tags .tag { display: inline; float: none; }
+#usersList .displayOptions form .displayStyle .custom .item .data .dates .updated { width: auto; }
+#usersList .users { clear: both; padding-top: 2em; border-bottom: 1px solid #cccccc; }
+#usersList .users .groupHeader { position: relative; background-color: #eeeeff; border-bottom: 1px solid #cccccc; color: #999999; height: 20px; left: -15px; }
+#usersList .users .groupHeader .group { position: relative; background-color: #eeeeff; height: 20px; right: -20px; }
+#usersList .users .groupHeader .date { position: relative; left: -12px; }
+#usersList .users .groupHeader .date .year { position: absolute; left: 1em; top: -0.45em; font-size: 3em; font-weight: bold; color: #ddddff; z-index: 4; }
+#usersList .users .groupHeader .date .dateBox { position: relative; left: -0.25em; font-size: 1em; font-weight: bold; }
+#usersList .users .groupHeader .date .dateBox .month { display: inline; }
+#usersList .users .groupHeader .date .dateBox .day { display: inline; padding: 0 0.25em; }
+#usersList .users .groupHeader .date .dateBox .day-of-week { display: block; font-size: 0.8em; font-weight: bold; }
+#usersList .users .groupHeader .alpha, #usersList .users .groupHeader .numeric { position: absolute; left: -0.55em; top: -0.45em; font-size: 3em; font-weight: bold; color: #bbbbff; z-index: 0; }
+#usersList .users .user { position: relative; z-index: 1; margin-bottom: 1em; border-top: 1px solid #cccccc; }
+#usersList .users .user .meta { position: relative; float: right; width: 100px; padding: 0 0 0 4px; text-align: right; z-index: 2; }
+#usersList .users .user .meta .countItems { display: block; background-color: #999999; color: white; padding: 0.25em; font-weight: normal; text-align: center; text-decoration: none; }
+#usersList .users .user .meta .countItems:hover { background-color: #b0d730; }
+#usersList .users .user .meta .countTags { font-size: 0.8em; }
+#usersList .users .user .data { position: relative; padding: 0.25em 0 0 40px; z-index: 1; }
+#usersList .users .user .data .avatar { position: absolute; left: 0; top: 0; width: 32px; height: 32px; }
+#usersList .users .user .data .avatar a .img { display: block; position: relative; border: 0; background-color: transparent; }
+#usersList .users .user .data .avatar a .img img { width: 32px; height: 32px; }
+#usersList .users .user .data .avatar a .img .ui-icon { background-color: transparent; position: relative; left: 8px; }
+#usersList .users .user .data .relation { position: absolute; left: 0; top: 32px; width: 32px; text-align: center; font-size: 0.6em; }
+#usersList .users .user .data .userId { padding: 0; font-size: 1.25em; }
+#usersList .users .user .data .userId a { display: inline; font-weight: bold; }
+#usersList .users .user .data .fullName { padding: 0 1em; }
+#usersList .users .user .data .fullName a { display: inline; font-weight: bold; }
+#usersList .users .user .data .email { padding: 0 0 0 1em; border: none; max-width: 526px; *width: 526px; }
+#usersList .users .user .data .email a { display: inline; font-weight: normal; }
+#usersList .users .user .data .email .ui-icon { background-color: transparent; position: relative; float: left; }
+#usersList .users .user .data .tags { display: block; float: right; font-size: 0.9em; padding: 0.5em 0; margin: 0; text-align: right; }
+#usersList .users .user .data .tags .tag, #usersList .users .user .data .tags .tag:hover { display: block; float: right; padding: 0.2em; margin: 0.1em; background-color: #eeeeee; color: #172322; }
+#usersList .users .user .data .tags .tag a, #usersList .users .user .data .tags .tag a:hover, #usersList .users .user .data .tags .tag a:visited, #usersList .users .user .data .tags .tag a:focus, #usersList .users .user .data .tags .tag:hover a, #usersList .users .user .data .tags .tag:hover a:hover, #usersList .users .user .data .tags .tag:hover a:visited, #usersList .users .user .data .tags .tag:hover a:focus { display: inline; font-weight: normal; text-decoration: none; color: #172322; }
+#usersList .users .user .data .tags .tag:hover { background-color: #172322; color: #eeeeee; }
+#usersList .users .user .data .tags .tag:hover a, #usersList .users .user .data .tags .tag:hover a:hover, #usersList .users .user .data .tags .tag:hover a:visited, #usersList .users .user .data .tags .tag:hover a:focus { color: #eeeeee; }
+#usersList .users .user .data .dates { display: block; font-size: 0.8em; height: 1em; padding-left: 1em; color: #999999; }
+#usersList .users .user .data .dates .lastVisit { float: left; }
+#usersList .users .user .data .control { display: inline; font-size: 0.65em; border: 0; padding: 0 0 0 2em; margin: 0; font-weight: normal; white-space: pre; z-index: 3; color: #999999; }
+#usersList .users .user .data .control a { display: inline; font-weight: normal; text-decoration: none; padding: 0.1em; }
+#usersList .users .user .data .control a:hover { background-color: #0066cc; color: white; text-decoration: none; }
+#usersList .users .mine { min-height: 45px; }
+#usersList .users .mine .status { display: block; min-height: 45px; }
