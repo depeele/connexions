@@ -224,6 +224,35 @@ class Connexions_Set_ItemList extends Zend_Tag_ItemList
         }
     }
 
+    /** @brief  Extract a portion of this list.
+     *  @param  start   The starting offset.
+     *  @param  count   The number of items.
+     *
+     *  @return A new array containing the identified items.
+     */
+    public function slice($start, $count)
+    {
+        /*
+        Connexions::log("Connexions_Set_ItemList:slice({$start}, {$count}): "
+                            . "_items[ ". gettype($this->_items) ." ]");
+        // */
+
+        $res = array();
+        if (is_array($this->_items))
+        {
+            /*
+            $len = count($this->_items);
+            Connexions::log("Connexions_Set_ItemList:slice: "
+                            . "size[ {$len} ]");
+            // */
+
+            $res = array_slice($this->_items, $start, $count);
+        }
+
+        return $res;
+
+    }
+
     /*************************************************************************
      * Protected helpers
      *

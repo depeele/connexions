@@ -2,37 +2,18 @@
 /** @file
  *
  *  View script for IndexController::index with incoming members:
- *      userItemsPrefix     The prefix to pass to the HtmlUserItems helper.
- *      tagsPrefix          The prefix to pass to the HtmlItemCloud  helper.
- *
- *      viewer              The Model_User instance representing the current
- *                          viewer;
  *      owner               The owner of the current item set -- either a
  *                          string or a Model_User instance;
+ *      viewer              The Model_User instance representing the current
+ *                          viewer;
  *      tagInfo             A Connexions_Set_Info instance containing
  *                          information about the requested tags;
- *      userItems           The Model_UserItemSet representing the items to
- *                          present;
- *      paginator           The paginator to use in presenting 'userItems';
  *
- *      itemsStyle          Presentation style for user items
- *                          (Connexions_View_Helpers_HtmlUserItems::STYLE_*);
- *      itemsSortBy         Sort User Items by
- *                          (a field from Model_UserItem::$model);
- *      itemsSortOrder      User Items sort order
- *                          (Connexions_View_Helpers_HtmlUserItems::
- *                                                          SORT_ORDER_*);
- *      itemsStyleCustom
- *                          An array of custom style settings
- *
- *      tagsPerPage           Maximum number of tags to present in the
- *                              sidebar;
- *      tagsHighlightCount    The number of tags to ighlight in the sidebar;
- *      tagsStyle             Style of sidebar tag display
- *                              (Connexions_View_Helper_HtmlItemCloud::STYLE_*);
- *      tagsSortBy            Sort tags in the sidebar by
- *                              (valid field of Model_Tag);
- *      tagsSortOrder         Sidebar Tag sort order.
+ *      paginator           A Zend_Paginator instance established for the
+ *                          presentation of the current Model_UserItemSet;
+ *      tagList             The Zend_Tag_ItemList instance established for the
+ *                          presentation of tags related to the current
+ *                          ModeL_UserItemSet;
  */
 $baseUrl = $this->baseUrl('/'); //Connexions::url('/');
 
@@ -62,124 +43,27 @@ else
 </div>
 
 <?php
-if ( @isset($this->userItems) )
-{
-    /* If $this->tagList is NOT set and we have 1 or more userItems, make use
-     * of the 'userItems' Model_UserItemSet instance to retrieve the tags for
-     * these userItems (specifically, for the unique items and unique users
-     * represented by these userItems).
-     */
-    if ((! @isset($this->tagList)) && (count($this->userItems) > 0))
-    {
-        $userIds = $this->userItems->userIds();
+/******************************************************************************
+ * Render the HTML for the primary view using the HtmlUserItems View Helper
+ * that should have been prepared by the Controller.
+ */
+echo $this->htmlUserItems($this->paginator,
+                          $this->owner,
+                          $this->viewer,
+                          $this->tagInfo);
 
-        // Create a tag set and then retrieve its Tag_ItemList adapter
-        $this->tagSet = new Model_TagSet( $userIds,
-                                          $this->userItems->itemIds() );
-        if ($this->owner === '*')
-            $this->tagSet->withAnyUser();
-
-        /*
-        Connexions::log(
-                sprintf("View Index: %s users, tag sql[ %s ]",
-                            ($this->owner === '*' ? '*' : count($userIds)),
-                            $this->tagSet->select()->assemble()));
-        // */
-
-        $this->tagList =
-            $this->tagSet->get_Tag_ItemList(0, $this->tagsPerPage,
-                                            $this->tagInfo,
-                                            ($this->owner !== '*'
-                                                ? null
-                                                : '/tagged'));
-    }
-}
-
-
-if (@isset($this->paginator))
-{
-    $uiHelper = $this->htmlUserItems();
-    if (! @empty($this->userItemsPrefix))
-        $uiHelper->setNamespace($this->userItemsPrefix);
-
-
-    if (@is_array($this->itemsStyleCustom))
-    {
-        echo "\n<!-- itemsStyleCustom: ";
-        print_r($this->itemsStyleCustom);
-        echo " -->\n";
-
-        $uiHelper->setStyle(Connexions_View_Helper_HtmlUserItems::STYLE_CUSTOM)
-                 ->setShowMeta($this->itemsStyleCustom);
-    }
-    else
-    {
-        $uiHelper->setStyle($this->itemsStyle);
-    }
-
-    if (@isset($this->tagSet))
-    {
-        $uiHelper->setScopeItems($this->tagSet);
-    }
-
-    /* There a two ways we can do this:
-     *   1. Individually invoke the set methods followed by the render();
-     *   2. Directly invoke the render, passing in all values;
-     *   3. Directly invoke the nameed method (htmlUserItems), passing in
-     *      all values.
-     */
-    if (! @empty($this->itemsSortBy))
-        $uiHelper->setSortBy($this->itemsSortBy);
-    if (! @empty($this->itemsSortOrder))
-        $uiHelper->setSortOrder($this->itemsSortOrder);
-
-    echo $uiHelper->render($this->paginator,
-                           $this->owner,
-                           $this->viewer,
-                           $this->tagInfo);
-}
-
-/*****************************************************************************
- * Render the HTML for the right-column
+/******************************************************************************
+ * Render the HTML for the right-column using the HtmlItemCloud View Helper
+ * that should have been prepared by the Controller.
  *
  */
-if ( @isset($this->tagList))
-{
-    /************************************************************************
-     * We're now rendering the sidebar so we need to predefine the view
-     * namespace so our instances are properly initialized.
-     */
-    if (! @empty($this->tagsPrefix))
-        $this->viewNamespace = $this->tagsPrefix;
-
-    $uiCloud = $this->htmlItemCloud();
-
-    $time_start = microtime(true);
-
-    $html = "<div class='columnHeader'>"
-          .  "<div class='connexions_sprites tag_bg "
-          .              "ui-corner-left ui-corer-tr'>&nbsp;</div>"
-          .  "<p>Tags related to these bookmarks.</p>"
-          . "</div>";
-
-    /* Use the Connexions_View_Helper_HtmlItemCloud class to render the tag
-     * cloud for $this->tagList.
-     */
-    $html .= $uiCloud->render($this->tagList,
-                              $this->tagsStyle,
-                              Connexions_View_Helper_HtmlItemCloud::
-                                                                ITEM_TYPE_TAG,
-                              $this->tagsSortBy,
-                              $this->tagsSortOrder,
-                              $this->tagsHighlightCount);
-
-    $time_end   = microtime(true);
-    $html .= sprintf ("\n<!-- %f seconds to render tag cloud -->\n",
-                      $time_end - $time_start);
-
-    $this->layout()->right = $html;
-}
+$this->layout()->right
+      = "<div class='columnHeader'>"
+      .  "<div class='connexions_sprites tag_bg "
+      .              "ui-corner-left ui-corer-tr'>&nbsp;</div>"
+      .  "<p>Tags related to these bookmarks.</p>"
+      . "</div>"
+      .  $this->htmlItemCloud($this->tagList);
 ?>
-
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

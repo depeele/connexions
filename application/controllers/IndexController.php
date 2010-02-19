@@ -27,44 +27,12 @@ class IndexController extends Zend_Controller_Action
         $owner     = $request->getParam('owner',     null);
         $reqTags   = $request->getParam('tags',      null);
 
-        // Pagination parameters
-        $page      = $request->getParam('page',      null);
-
-        // User-Item parameters
-        $itemsPrefix      = 'items';
-        $itemsPerPage     = $request->getParam("{$itemsPrefix}PerPage",   null);
-        $itemsStyle       = $request->getParam("{$itemsPrefix}Style",     null);
-        $itemsSortBy      = $request->getParam("{$itemsPrefix}SortBy",    null);
-        $itemsSortOrder   = $request->getParam("{$itemsPrefix}SortOrder", null);
-        $itemsStyleCustom = $request->getParam("{$itemsPrefix}StyleCustom",
-                                                                          null);
-
-        /*
-        Connexions::log("IndexController:: "
-                            . "itemsStyleCustom[ "
-                            .   print_r($itemsStyleCustom, true)
-                            .       ' ]');
-        // */
-
-        // Tag-cloud parameters
-        $tagsPrefix         = 'sbTags';
-        $tagsPerPage        = $request->getParam("{$tagsPrefix}PerPage",  100);
-        $tagsStyle          = $request->getParam("{$tagsPrefix}Style",    null);
-        $tagsHighlightCount = $request->getParam("{$tagsPrefix}HighlightCount",
-                                                                          null);
-        $tagsSortBy         = $request->getParam("{$tagsPrefix}SortBy", 'tag');
-        $tagsSortOrder      = $request->getParam("{$tagsPrefix}SortOrder",null);
-
-        /*
-        Connexions::log("IndexController:: "
-                            . "owner[ {$owner} ], "
-                            . "tags[ ". $request->getParam('tags','') ." ], "
-                            . "reqTags[ {$reqTags} ]");
-        // */
-
+        /* If this is a user/"owned" area (e.g. /<userName> [/ <tags ...>]),
+         * verify the validity of the requested user.
+         */
         if ($owner === 'mine')
         {
-            // No user specified -- use the currently authenticated user
+            // 'mine' == the currently authenticated user
             $owner =& $viewer;
             if ( ( ! $owner instanceof Model_User) ||
                  (! $owner->isAuthenticated()) )
@@ -74,7 +42,7 @@ class IndexController extends Zend_Controller_Action
             }
         }
 
-        $userIds = null;
+        $ownerIds = null;
         if (! $owner instanceof Model_User)
         {
             if (@empty($owner))
@@ -90,8 +58,8 @@ class IndexController extends Zend_Controller_Action
                                             "owner[ {$ownerInst->name} ]");
                     // */
 
-                    $owner   =& $ownerInst;
-                    $userIds =  array($owner->userId);
+                    $owner    =& $ownerInst;
+                    $ownerIds =  array($owner->userId);
                 }
                 else
                 {
@@ -127,75 +95,116 @@ class IndexController extends Zend_Controller_Action
             }
         }
 
+        // Parse the incoming request tags
         $tagInfo = new Connexions_Set_Info($reqTags, 'Model_Tag');
         if ($tagInfo->hasInvalidItems())
             $this->view->error =
                         "Invalid tag(s) [ {$tagInfo->invalidItems} ]";
 
-        /* Notify the View Helper of any sort / style settings, allowing it
-         * establish any required defaults.
+        /* Create the userItem set, scoped by any incoming valid tags and
+         * possibly the owner of the area.
          */
-        $helper = $this->view->htmlUserItems();
-        $helper->setSortBy($itemsSortBy)
-               ->setSortOrder($itemsSortOrder);
+        $userItems = new Model_UserItemSet($tagInfo->validIds, $ownerIds);
 
-        $itemsSortBy    = $helper->getSortBy();
-        $itemsSortOrder = $helper->getSortOrder();
+
+        /* Create the tagSet that will be presented in the side-bar:
+         *      All tags used by all users/items contained in the current
+         *      user item / bookmark set.
+         */
+        $tagSet = new Model_TagSet( $userItems->userIds(),
+                                    $userItems->itemIds() );
+        if ($owner === '*')
+            $tagSet->withAnyUser();
+
+
+        /********************************************************************
+         * Prepare for rendering the main view.
+         *
+         * Notify the HtmlUserItems View Helper (used to render the main view)
+         * of any incoming settings, allowing it establish any required
+         * defaults.
+         */
+        $itemsPrefix      = 'items';
+        $itemsPerPage     = $request->getParam($itemsPrefix."PerPage",   null);
+        $itemsStyle       = $request->getParam($itemsPrefix."Style",     null);
+        $itemsSortBy      = $request->getParam($itemsPrefix."SortBy",    null);
+        $itemsSortOrder   = $request->getParam($itemsPrefix."SortOrder", null);
+        $itemsStyleCustom = $request->getParam($itemsPrefix."StyleCustom",
+                                                                         null);
+
+        $uiHelper = $this->view->htmlUserItems();
+        $uiHelper->setNamespace($itemsPrefix)
+                 ->setSortBy($itemsSortBy)
+                 ->setSortOrder($itemsSortOrder);
+        if (is_array($itemsStyleCustom))
+            $uiHelper->setStyle(Connexions_View_Helper_HtmlUserItems
+                                                            ::STYLE_CUSTOM)
+                     ->setShowMeta($itemsStyleCustom);
+        else
+            $uiHelper->setStyle($itemsStyle);
 
         /*
-        Connexions::log("IndexController: helper updated sort "
-                            . "by[ {$itemsSortBy} ], "
-                            . "order[ {$itemsSortOrder} ]");
+        Connexions::log("IndexController: uiHelper updated sort "
+                            . "by[ {$uiHelper->getSortBy() } ], "
+                            . "order[ {$uiHelper->getSortOrder() } ]");
         // */
 
-        // Create the userItem set, mirroring the specified sorting criteria.
-        $userItems = new Model_UserItemSet($tagInfo->validIds, $userIds);
-        if (($itemsSortBy !== null) || ($itemsSortOrder !== null))
-        {
-            $userItems->setOrder($itemsSortBy, $itemsSortOrder);
-        }
-
-        // Ensure that our display options match how we're retrieving the data
-        $res = $userItems->getOrder();
-
-        /*
-        Connexions::log("IndexController: sort "
-                            . "by[ {$itemsSortBy} ] == [ {$res['by']} ], "
-                            . "order[ {$itemsSortOrder} ] == "
-                            .                   "[ {$res['order']} ]");
-        // */
-
-        $itemsSortBy    = $res['by'];
-        $itemsSortOrder = $res['order'];
-
+        /* Ensure that the final sort information is properly reflected in
+         * the source set.
+         */
+        $userItems->setOrder( $uiHelper->getSortBy(),
+                              $uiHelper->getSortOrder() );
 
         /* Use the Connexions_Controller_Action_Helper_Pager to create a
-         * paginator
+         * paginator for the retrieved user items / bookmarks.
          */
+        $page      = $request->getParam('page',  null);
         $paginator = $this->_helper->Pager($userItems, $page, $itemsPerPage);
 
-        // Set the required view variables
-        $this->view->userItems       = $userItems;
-        $this->view->paginator       = $paginator;
 
-        $this->view->owner           = $owner;
-        $this->view->viewer          = $viewer;
-        $this->view->tagInfo         = $tagInfo;
+        /********************************************************************
+         * Prepare for rendering the right column.
+         *
+         * Notify the HtmlItemCloud View Helper
+         * (used to render the right column) of any incoming settings, allowing
+         * it establish any required defaults.
+         */
+        $tagsPrefix         = 'sbTags';
+        $tagsPerPage        = $request->getParam($tagsPrefix."PerPage",  100);
+        $tagsStyle          = $request->getParam($tagsPrefix."Style",    null);
+        $tagsHighlightCount = $request->getParam($tagsPrefix."HighlightCount",
+                                                                         null);
+        $tagsSortBy         = $request->getParam($tagsPrefix."SortBy",  'tag');
+        $tagsSortOrder      = $request->getParam($tagsPrefix."SortOrder",null);
 
-        // User-Item parameters
-        $this->view->userItemsPrefix  = $itemsPrefix;
-        //$this->view->itemsSortBy      = $itemsSortBy;
-        //$this->view->itemsSortOrder   = $itemsSortOrder;
-        $this->view->itemsStyle       = $itemsStyle;
-        $this->view->itemsStyleCustom = $itemsStyleCustom;
+        $cloudHelper = $this->view->htmlItemCloud();
+        $cloudHelper->setNamespace($tagsPrefix)
+                    ->setStyle($tagsStyle)
+                    ->setItemType(Connexions_View_Helper_HtmlItemCloud::
+                                                            ITEM_TYPE_TAG)
+                    ->setSortBy($tagsSortBy)
+                    ->setSortOrder($tagsSortOrder)
+                    ->setHighlightCount($tagsHighlightCount);
 
-        // Tag-cloud parameters
-        $this->view->tagsPrefix         = $tagsPrefix;
-        $this->view->tagsStyle          = $tagsStyle;
-        $this->view->tagsPerPage        = $tagsPerPage;
-        $this->view->tagsHighlightCount = $tagsHighlightCount;
-        $this->view->tagsSortBy         = $tagsSortBy;
-        $this->view->tagsSortOrder      = $tagsSortOrder;
+        /* Retrieve the Connexions_Set_ItemList instance required by
+         * Zend_Tag_Cloud to render this tag set as a cloud
+         */
+        $tagList = $tagSet->get_Tag_ItemList(0, $tagsPerPage, $tagInfo,
+                                             ($owner !== '*'
+                                                ? null
+                                                : '/tagged'));
+
+
+        /********************************************************************
+         * Set the required view variables
+         *
+         */
+        $this->view->owner     = $owner;
+        $this->view->viewer    = $viewer;
+        $this->view->tagInfo   = $tagInfo;
+
+        $this->view->paginator = $paginator;
+        $this->view->tagList   = $tagList;
     }
 
     /** @brief  A JSON-RPC callback to retrieve auto-completion results for 
@@ -232,9 +241,10 @@ class IndexController extends Zend_Controller_Action
 
         $owner     = $request->getParam('owner', null);
         $reqTags   = $request->getParam('tags',  null);
-        $like      = $request->getParam('q',     null);
-        $limit     = $request->getParam('limit', 250);
 
+        /* If this is a user/"owned" area (e.g. /<userName> [/ <tags ...>]),
+         * verify the validity of the requested user.
+         */
         if ($owner === 'mine')
         {
             // No user specified -- use the currently authenticated user
@@ -248,7 +258,7 @@ class IndexController extends Zend_Controller_Action
             }
         }
 
-        $userIds = null;
+        $ownerIds = null;
         if ( (! $jsonRpc->hasError()) && (! $owner instanceof Model_User) )
         {
             if (@empty($owner))
@@ -264,8 +274,8 @@ class IndexController extends Zend_Controller_Action
                                             "owner[ {$ownerInst->name} ]");
                     // */
 
-                    $owner   =& $ownerInst;
-                    $userIds =  array($owner->userId);
+                    $owner    =& $ownerInst;
+                    $ownerIds =  array($owner->userId);
                 }
                 else
                 {
@@ -307,37 +317,41 @@ class IndexController extends Zend_Controller_Action
         }
 
 
+        // Parse the incoming request tags
         $tagInfo   = new Connexions_Set_Info($reqTags, 'Model_Tag');
         if ($tagInfo->hasInvalidItems())
             $jsonRpc->setError("Invalid tag(s) [ {$tagInfo->invalidItems} ]");
 
-        $userItems = new Model_UserItemSet($tagInfo->validIds, $userIds);
+        /* Create the userItem set, scoped by any incoming valid tags and
+         * possibly the owner of the area.
+         */
+        $userItems = new Model_UserItemSet($tagInfo->validIds, $ownerIds);
 
-        $userIds   = $userItems->userIds();
-        $itemIds   = $userItems->itemIds();
-
-        /*
-        Connexions::log(sprintf("IndexController::scopeAutoCompleteAction: "
-                                . "owner[ %s ], reqTags[ %s ], "
-                                . "like[ %s ],  limit[ %d ], "
-                                . "userIds[ %s ], itemIds[ %s ]",
-                                $owner, $reqTags,
-                                $like,  $limit,
-                                @implode(', ', $userIds),
-                                @implode(', ', $itemIds)) );
-        // */
-
-
-        // Create a tag set
-        $tagSet = new Model_TagSet( $userIds, $itemIds );
+        /* Create the tagSet that represents:
+         *      All tags used by all users/items contained in the current
+         *      user item / bookmark set.
+         *
+         * These are the items available for scoping.
+         */
+        $tagSet = new Model_TagSet( $userItems->userIds(),
+                                    $userItems->itemIds() );
         if ($owner === '*')
             $tagSet->withAnyUser();
+
+
+        /********************************************************************
+         * Prepare for rendering the JSON-RPC results.
+         *
+         */
+        $like  = $request->getParam('q',     null);
+        $limit = $request->getParam('limit', 250);
         if (! empty($like))
             $tagSet->like($like);
         if ($limit > 0)
             $tagSet = $tagSet->getItems(0, $limit);
 
 
+        // Convert the matching tags to the array required by auto-completion
         $scopeData = array();
         foreach ($tagSet as $item)
         {
@@ -357,6 +371,10 @@ class IndexController extends Zend_Controller_Action
                                 var_export($scopeData, true)) );
         // */
 
+        /*  Render the JSON-RPC response.
+         *      Note that this disables layouts and views, set the proper
+         *      Content-Type and outputs the JSON-RPC response.
+         */
         return $jsonRpc->sendResponse();
     }
 

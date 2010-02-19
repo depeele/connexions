@@ -21,46 +21,6 @@ class Connexions_View_Helper_HtmlPaginationControl
     protected           $_namespace         = '';
     protected           $_perPageChoices    = array(10, 25, 50, 100, 250, 500);
 
-    /** @brief  Set the View object.
-     *  @param  view    The Zend_View_Interface
-     *
-     *  Override Zend_View_Helper_Abstract::setView() in order to initialize.
-     *
-     *  Note: if '$view->viewNamespace' is defined, it will override any
-     *        namespace previously set for this instance.
-     *
-     *  @return Zend_View_Helper_Abstract
-     */
-    public function setView(Zend_View_Interface $view)
-    {
-        parent::setView($view);
-
-        /*
-        Connexions::log("Connexions_View_Helper_HtmlPaginationControl:: "
-                            . "view namespace [ {$view->viewNamespace} ]");
-        // */
-
-        $namespace = null;
-        if ( (! @empty($view->viewNamespace)) &&
-             ($this->_namespace != $view->viewNamespace) )
-            // Pull the namespace from the view
-            $namespace = $view->viewNamespace;
-
-
-        if ( ($namespace !== null) &&
-             (! @isset(self::$_initialized[ $namespace ])) )
-        {
-            /*
-            Connexions::log("Connexions_View_Helper_HtmlPaginationControl:: "
-                                . "set namespace from view [ {$namespace}]");
-            // */
-
-            $this->setNamespace($namespace);
-        }
-
-        return $this;
-    }
-
     public function setPerPageChoices($choices)
     {
         if (@is_array($choices))
@@ -81,10 +41,6 @@ class Connexions_View_Helper_HtmlPaginationControl
         Connexions::log("Connexions_View_Helper_HtmlPaginationControl::"
                             . "setNamespace( {$namespace} )");
         // */
-
-        if ($this->view !== null)
-            // Pass this new namespace into our view
-            $this->view->viewNamespace = $namespace;
 
         $this->_namespace = $namespace;
 

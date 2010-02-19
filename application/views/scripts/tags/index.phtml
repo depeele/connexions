@@ -2,36 +2,16 @@
 /** @file
  *
  *  View script for TagsController::index with incoming members:
- *      tagsPrefix              The prefix to pass to the HtmlItemCloud helper
- *                              for the primary tag display.
- *      usersPrefix             The prefix to pass to the HtmlItemCloud helper
- *                              for the sidebar user "tag cloud".
+ *      viewer              The Model_User instance representing the current
+ *                          viewer;
+ *      userInfo            A Connexions_Set_Info instance containing
+ *                          information about the requested users;
  *
- *      viewer                  The Model_User instance representing the
- *                              current viewer;
- *      userInfo                A Connexions_Set_Info instance containing
- *                              information about the requested users;
- *      tagSet                  The Model_TagSet representing the tags to
- *                              present;
- *      paginator               The Zend_Paginator instance to use in
- *                              presenting 'tagSet';
- *
- *      tagsStyle               The presentation style to use for tags
- *                              (Connexions_View_Helper_HtmlItemCloud::STYLE_*);
- *      tagsHighlightCount      The number of tags to highlight;
- *      tagsSortBy              Sort tags by (valid field of Model_Tag);
- *      tagsSortOrder           Tag sort order;
- *
- *      usersStyle            Style of display for the sidebar user "cloud"
- *                              (Connexions_View_Helper_HtmlItemCloud::STYLE_*);
- *      usersPerPage          Maximum number of users to present in the
- *                              "tag cloud" sidebar presentation;
- *      usersHighlightCount   The number of users to highlight in the
- *                              sidebar;
- *
- *      usersSortBy           Sort users in the sidebar by
- *                              (valid field of Model_User);
- *      usersSortOrder        Sidebar User sort order.
+ *      tagList             The Zend_Tag_ItemList instance established for the
+ *                          presentation of current Model_TagSet;
+ *      sbCloudHelper       The Connexions_View_Helper_HtmlItemCloud instance
+ *                          established for the cloud presentation of users
+ *                          related to the current ModeL_TagSet;
  */
 
 $this->headTitle('Tags');
@@ -58,115 +38,57 @@ $this->headTitle('Tags');
 </div>
 
 <?php
+/******************************************************************************
+ * Render the HTML for the primary view using the primary HtmlItemCloud View
+ * Helper that should have been prepared by the Controller.
+ *
+ */
+$uiCloud = $this->htmlItemCloud();
 
-// Construct the scope auto-completion callback URL
-$scopeParts = array('format=json');
-//if ($owner !== '*')
-//    array_push($scopeParts, 'owner='. $owner->name);
-
-if ($this->userInfo->hasValidItems())
-{
-    /*
-    Connexions::log(sprintf("Tags::index.phtml: "
-                            .   "reqStr[ %s ], valid[ %s ]",
-                            $this->userInfo->reqStr,
-                            var_export($this->userInfo->valid, true)) );
-
-    // */
-
-    array_push($scopeParts, 'users='. $this->userInfo->validItems);
-}
-
-$scopeCbUrl = $this->baseUrl('/tags/scopeAutoComplete')
-            . '?'. implode('&', $scopeParts);
+/*
+Connexions::log("tags:: Render main cloud: "
+                    . "Style[ {$uiCloud->getStyle()} ], "
+                    . "HighlightCount[ "
+                    .       $uiCloud->getHighlightCount() ." ], "
+                    . "SortBy[ {$uiCloud->getSortBy()} ], "
+                    . "SortOrder[ {$uiCloud->getSortOrder()} ]");
+// */
 
 // Present the current scope information
-echo $this->htmlItemScope($this->paginator,
-                          $this->userInfo,
-                          'Users',
-                          'owners',
-                          array('Tags'  => $this->baseUrl('/tags')),
-                          $scopeCbUrl);
+echo $this->htmlItemScope($uiCloud->getPaginator(),
+                          $this->userInfo);
 
-if (count($this->paginator))
+echo $uiCloud->render($this->tagList);
+
+/******************************************************************************
+ * Render the HTML for the right-column using the secondary HtmlItemCloud View
+ * Helper that should have been prepared by the Controller.
+ *
+ */
+if ( @isset($this->sbCloudHelper))
 {
-    $tagList = new Connexions_Set_ItemList($this->paginator,
-                                           new Connexions_Set_Info(''),
-                                           '/tagged');
+    /*
+    Connexions::log("tags:: Render sidebar cloud: "
+                        . "Style[ {$this->sbCloudHelper->getStyle()} ], "
+                        . "HighlightCount[ "
+                        .   $this->sbCloudHelper->getHighlightCount() ." ], "
+                        . "SortBy[ {$this->sbCloudHelper->getSortBy()} ], "
+                        . "SortOrder[ "
+                        .   $this->sbCloudHelper->getSortOrder() ." ]");
+    // */
 
-    // Present the tags
-    $uiCloud = $this->htmlItemCloud();
-    if (! @empty($this->tagsPrefix))
-        $uiCloud->setNamespace($this->tagsPrefix);
-
-    $uiCloud->setShowRelation(false)
-            ->setPaginator($this->paginator);
-
-    echo $uiCloud->render($tagList,
-                          $this->tagsStyle,
-                          Connexions_View_Helper_HtmlItemCloud::
-                                                            ITEM_TYPE_TAG,
-                          $this->tagsSortBy,
-                          $this->tagsSortOrder,
-                          $this->tagsHighlightCount);
-
-    /***********************************************************************
-     * Generate the content for the right side-bar
-     *
-     */
-    $tagIds = array();
-    foreach ($tagList as $tag)
-    {
-        array_push($tagIds, $tag->tagId);
-    }
-
-    // Create a user set for all users that have this set of tags
-    $userSet        = new Model_UserSet( $tagIds );
-    $userSet->withAnyTag()
-            ->weightBy('tag');
-    
-    // Since we're caching objects, we MUST modify the $viewer object...
-    $this->viewer->weightBy('tag', $tagIds);
-
-    $this->userList = $userSet->get_Tag_ItemList(0, $this->usersPerPage,
-                                                    $this->userInfo);
-
-    $time_start = microtime(true);
-    $html = "<div class='columnHeader'>"
-          .  "<div class='connexions_sprites user_bg "
-          .              "ui-corner-left ui-corer-tr'>&nbsp;</div>"
-          .  "<p>"
-          .   "All people that have at least one of "
-          .   "the currently presented tags."
-          .  "</p>"
-          . "</div>";
-
-    /* Use the Connexions_View_Helper_HtmlItemCloud class to render a "Tag
-     * Cloud" view of the user list.
-     */
-    $uiCloud->unsetPaginator();
-
-    if (! @empty($this->usersPrefix))
-        $uiCloud->setNamespace($this->usersPrefix);
-
-    $html .= $uiCloud->render($this->userList,
-                              $this->usersStyle,
-                              Connexions_View_Helper_HtmlItemCloud::
-                                                                ITEM_TYPE_USER,
-                              $this->usersSortBy,
-                              $this->usersSortOrder,
-                              $this->usersHighlightCount);
-
-    $time_end   = microtime(true);
-
-    $html .= sprintf ("\n<!-- %f seconds to render tag cloud -->\n",
-                      $time_end - $time_start);
-
-    $this->layout()->right = $html;
-
+    $this->layout()->right
+        = "<div class='columnHeader'>"
+        .  "<div class='connexions_sprites user_bg "
+        .              "ui-corner-left ui-corer-tr'>&nbsp;</div>"
+        .  "<p>"
+        .   "All people that have at least one of "
+        .   "the currently presented tags."
+        .  "</p>"
+        . "</div>"
+        . $this->sbCloudHelper->render();
 }
 
 ?>
-
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

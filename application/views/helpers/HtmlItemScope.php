@@ -7,41 +7,106 @@
  */
 class Connexions_View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
 {
-    static protected    $_initialized   = false;
+    /** @brief  Set-able parameters . */
+    protected       $_namespace         = null;     /* To allow render() to
+                                                     * initialize if the
+                                                     * namespace has not yet
+                                                     * been set.
+                                                     */
+    protected       $_inputLabel        = 'Items';
+    protected       $_inputName         = 'items';
+    protected       $_path              = null;
+    protected       $_autoCompleteUrl   = null;
 
-    protected function _initialize($scopeCbUrl)
+    /** @brief  Variable Namespace/Prefix initialization indicators. */
+    static protected $_initialized  = array();
+
+
+    /** @brief  Render an HTML version of Item Scope.
+     *  @param  paginator   The Zend_Paginator representing the items to be
+     *                      presented;
+     *  @param  scopeInfo   A Connexions_Set_Info instance containing
+     *                      information about the requested scope items
+     *                      (e.g.  tags, user);
+     *  @param  inputLabel  The text to present when the input box is empty;
+     *  @param  inputName   The form-name for the input box;
+     *  @param  path        A simple array containing the names and urls of the
+     *                      path items to the current scope:
+     *                          array(root-name => root-url,
+     *                                item-name => item-url,
+     *                                ...)
+     *  @param  scopeCbUrl  The URL to use to retrieve scope items for scope 
+     *                      entry auto-completion.
+     *
+     *  @return The HTML representation of the Item Scope.
+     */
+    public function htmlItemScope(Zend_Paginator        $paginator  = null,
+                                  Connexions_Set_Info   $scopeInfo  = null,
+                                                        $inputLabel = '',
+                                                        $inputName  = '',
+                                                        $path       = null,
+                                                        $scopeCbUrl = null)
     {
-        if (self::$_initialized)
-            return;
+        if ($paginator === null)
+            return $this;
 
-        $view   =& $this->view;
+        return $this->render($paginator, $scopeInfo,
+                             $inputLabel, $inputName, $path, $scopeCbUrl);
+    }
 
-        $view->headLink()
-                ->appendStylesheet($view->baseUrl('css/autoSuggest.css'));
+    /** @brief  Set the namespace, primarily for forms and cookies.
+     *  @param  namespace   A string prefix.
+     *  @param  force       Should initialization be forced even if the
+     *                      auto-completion url has not yet been set? [ false ]
+     *
+     *  @return Connexions_View_Helper_HtmlItemScope for a fluent interface.
+     */
+    public function setNamespace($namespace, $force = false)
+    {
+        // /*
+        Connexions::log("Connexions_View_Helper_HtmlItemScope::"
+                            .   "setNamespace( {$namespace} )");
+        // */
 
-        $jQuery = $view->jQuery();
+        $this->_namespace = $namespace;
 
-        $baseUrl = $view->baseUrl('/');
-        if ($scopeCbUrl === null)
-            $jQuery->addJavascriptFile($baseUrl .'js/ui.input.js');
-        else
+        if (! @isset(self::$_initialized[$namespace]))
         {
-            $jQuery->addJavascriptFile($baseUrl .'js/jquery.autosuggest.js');
+            if ( ($this->_autoCompleteUrl === null) && ($force !== true) )
+                /* Postpone initialization to see if the _autoCompleteUrl is
+                 * set before we render.
+                 */
+                return $this;
 
-            list($scopeCbUrl, $scopeCbParams) = explode('?', $scopeCbUrl);
-        }
+            $view   =& $this->view;
 
-        $jQuery->addOnLoad('init_itemScope();')
-               ->javascriptCaptureStart();
-        ?>
+            $view->headLink()
+                    ->appendStylesheet($view->baseUrl('css/autoSuggest.css'));
+
+            $jQuery = $view->jQuery();
+
+            $baseUrl = $view->baseUrl('/');
+            if (empty($this->_autoCompleteUrl))
+                $jQuery->addJavascriptFile($baseUrl.'js/ui.input.js');
+            else
+            {
+                $jQuery->addJavascriptFile($baseUrl.'js/jquery.autosuggest.js');
+
+                list($scopeCbUrl, $scopeCbParams)
+                                = explode('?', $this->_autoCompleteUrl);
+            }
+
+            $jQuery->addOnLoad("init_{$namespace}ItemScope();")
+                   ->javascriptCaptureStart();
+            ?>
 
 /************************************************
  * Initialize display options.
  *
  */
-function init_itemScope()
+function init_<?= $namespace ?>ItemScope()
 {
-    var $itemScope  = $('.itemScope');
+    var $itemScope  = $('.<?= $namespace ?>ItemScope');
     var $input      = $itemScope.find('.scopeEntry input');
     var scopeCbUrl  = <?= ($scopeCbUrl !== null
                                 ? "'". $scopeCbUrl ."'"
@@ -119,10 +184,22 @@ function init_itemScope()
         var a   = 1;
     });
 }
-        <?php
-        $jQuery->javascriptCaptureEnd();
+            <?php
+            $jQuery->javascriptCaptureEnd();
 
-        self::$_initialized = true;
+            self::$_initialized[$namespace] = true;
+        }
+
+        return $this;
+    }
+
+    /** @brief  Get the current namespace.
+     *
+     *  @return The string namespace.
+     */
+    public function getNamespace()
+    {
+        return $this->_namespace;
     }
 
     /** @brief  Render an HTML version of Item Scope.
@@ -143,22 +220,34 @@ function init_itemScope()
      *
      *  @return The HTML representation of the Item Scope.
      */
-    public function htmlItemScope(Zend_Paginator        $paginator,
-                                  Connexions_Set_info   $scopeInfo,
-                                                        $inputLabel = '',
-                                                        $inputName  = '',
-                                                        $path       = null,
-                                                        $scopeCbUrl = null)
+    public function render(Zend_Paginator       $paginator,
+                           Connexions_Set_Info  $scopeInfo,
+                                                $inputLabel = '',
+                                                $inputName  = '',
+                                                $path       = null,
+                                                $scopeCbUrl = null)
     {
-        $this->_initialize($scopeCbUrl);
+        if (! empty($inputLabel))   $this->setInputLabel($inputLabel);
+        if (! empty($inputName))    $this->setInputName($inputName);
+        if ($path       !== null)   $this->setPath($path);
+        if ($scopeCbUrl !== null)   $this->setAutoCompleteUrl($scopeCbUrl);
+
+        if ($this->_namespace === null)
+            $this->setNamespace('');
+
+        if (! @isset(self::$_initialized[$this->_namespace]))
+        {
+            // Initialization has been postponed.  Force it.
+            $this->setNamespace($this->_namespace, true);
+        }
 
         $url    = '';
         $action = '';
         $html   = '<ul class="ui-corner-top">';
-        if ( @is_array($path))
+        if ( @is_array($this->_path))
         {
             $cssClass = 'root ui-corner-tl';
-            foreach ($path as $pathName => $pathUrl)
+            foreach ($this->_path as $pathName => $pathUrl)
             {
                 $html .= sprintf(  "<li class='%s'>"
                                  .  "<a href='%s'>%s</a>"
@@ -233,8 +322,8 @@ function init_itemScope()
         }
         
         $html .=  "<li class='scopeEntry'>"
-              .    "<input     name='{$inputName}' "
-              .          "emptyText='{$inputLabel}' "
+              .    "<input     name='{$this->_inputName}' "
+              .          "emptyText='{$this->_inputLabel}' "
               .              "class='ui-input ui-corner-all "
               .                     "ui-state-default ui-state-empty' />"
               .   "</li>"
@@ -247,8 +336,8 @@ function init_itemScope()
 
 
         // Finalize the HTML
-        $html = "<form action='${action}' "
-              .        "class='itemScope'>"
+        $html = "<form action='{$action}' "
+              .        "class='itemScope {$this->_namespace}ItemScope'>"
               .  "<input type='hidden' name='scopeCurrent' "
               .        "value='". implode(',', $curScope) ."'>"
               .  $html
@@ -256,5 +345,89 @@ function init_itemScope()
 
         
         return $html;
+    }
+
+    /** @brief  Set the input label.
+     *  @param  inputLabel  The label string.
+     *
+     *  @return Connexions_View_Helper_HtmlItemScope for a fluent interface.
+     */
+    public function setInputLabel($inputLabel)
+    {
+        $this->_inputLabel = $inputLabel;
+
+        return $this;
+    }
+
+    /** @brief  Get the current input label.
+     *
+     *  @return  The label string.
+     */
+    public function getInputLabel()
+    {
+        return $this->_inputLabel;
+    }
+
+    /** @brief  Set the input field-name.
+     *  @param  inputName   The name string.
+     *
+     *  @return Connexions_View_Helper_HtmlItemScope for a fluent interface.
+     */
+    public function setInputName($inputName)
+    {
+        $this->_inputName = $inputName;
+
+        return $this;
+    }
+
+    /** @brief  Get the current input field-name.
+     *
+     *  @return  The name string.
+     */
+    public function getInputName()
+    {
+        return $this->_inputName;
+    }
+
+    /** @brief  Set the current "path".
+     *  @param  path    An array of path information.
+     *
+     *  @return Connexions_View_Helper_HtmlItemScope for a fluent interface.
+     */
+    public function setPath($path)
+    {
+        $this->_path = $path;
+
+        return $this;
+    }
+
+    /** @brief  Get the current path.
+     *
+     *  @return  The path.
+     */
+    public function getPath()
+    {
+        return $this->_path;
+    }
+
+    /** @brief  Set the auto-completion URL.
+     *  @param  url     The url string.
+     *
+     *  @return Connexions_View_Helper_HtmlItemScope for a fluent interface.
+     */
+    public function setAutoCompleteUrl($url)
+    {
+        $this->_autoCompleteUrl = $url;
+
+        return $this;
+    }
+
+    /** @brief  Get the current auto-completion URL.
+     *
+     *  @return  The url string.
+     */
+    public function getAutoCompleteUrl()
+    {
+        return $this->_autoCompleteUrl;
     }
 }

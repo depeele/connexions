@@ -15,6 +15,8 @@ class Model_TagSet extends Connexions_Set
 
     protected   $_nonTrivial    = false;
 
+    protected   $_weightSet     = false;
+
     /** @brief  Create a new instance.
      *  @param  userIds     An array of user identifiers.
      *  @param  itemIds     An array of item identifiers.
@@ -157,6 +159,8 @@ class Model_TagSet extends Connexions_Set
         $this->_select->columns($cols)
                       ->order('weight DESC');
 
+        $this->_weightSet = true;
+
         /*
         Connexions::log("Model_TagSet::weightBy({$by}): "
                             . "sql[ ". $this->_select->assemble() ." ]");
@@ -252,6 +256,82 @@ class Model_TagSet extends Connexions_Set
         }
 
         return implode(',', $tags);
+    }
+
+    /** @brief  Establish sorting for this set.
+     *  @param  by          Any field of the memberClass.
+     *  @param  order       Sort order
+     *                      (Connexions_Set::SORT_ORDER_ASC | SORT_ORDER_DESC
+     *                              ==
+     *                      Zend_Db_Select::SQL_ASC         | SQL_DESC)
+     *
+     *  Override in order to support order aliases, forcing sort by:
+     *      'userItemCount'     => 'userItemCount'
+     *      'itemCount'         => 'itemCount'
+     *      'userCount'         => 'userCount'
+     *
+     *      'title'             => 'tag'
+     *      'weight'            => 'weight'
+     *
+     *  @return $this
+     */
+    public function setOrder($by, $order)
+    {
+        $orig   = $by;
+        $force  = false;
+        switch ($by)
+        {
+        case 'title':
+            $by    = 'tag';
+            $force = true;
+            break;
+
+        case 'weight':
+            if (! $this->_weightSet)
+            {
+                // No weight has yet been set.  Default.
+                $this->weightBy('userItem');
+            }
+            $force = true;
+            break;
+
+        case 'userItemCount':
+        case 'itemCount':
+        case 'userCount':
+            // Sorting by meta informamtion.
+            $force = true;
+            break;
+        }
+
+        if ($force || ($orig != $by))
+        {
+            if (is_array($by))
+                $byStr = var_export($by, true);
+            else
+                $byStr = $by;
+
+            /*
+            Connexions::log("Model_TagSet::setOrder: "
+                                . "Alias '{$orig}' to '{$byStr}', '{$order}'");
+            // */
+        }
+        /*
+        else
+        {
+            Connexions::log("Model_TagSet::setOrder: "
+                                . "Pass on '{$by}'");
+        }
+        // */
+
+
+        parent::setOrder($by, $order, $force);
+
+        /*
+        Connexions::log("Model_TagSet::setOrder: "
+                            . "sql[ {$this->_select->assemble()} ]");
+        // */
+
+        return $this;
     }
 
     /*************************************************************************
