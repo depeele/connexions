@@ -51,6 +51,7 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
     /** @brief  Set-able parameters . */
     protected       $_namespace         = 'tags';
     protected       $_showRelation      = true;
+    protected       $_itemList          = null;
     protected       $_paginator         = null;
 
     protected       $_displayStyle      = null;
@@ -65,40 +66,6 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
     /** @brief  Variable Namespace/Prefix initialization indicators. */
     static protected $_initialized  = array();
 
-
-    /** @brief  Set the View object.
-     *  @param  view    The Zend_View_Interface
-     *
-     *  Override Zend_View_Helper_Abstract::setView() in order to initialize.
-     *
-     *  Note: if '$view->viewNamespace' is defined, it will override any
-     *        namespace previously set for this instance.
-     *
-     *  @return Zend_View_Helper_Abstract
-     */
-    public function setView(Zend_View_Interface $view)
-    {
-        parent::setView($view);
-
-        $namespace = null;
-        if ( (! @empty($view->viewNamespace)) &&
-             ($this->_namespace != $view->viewNamespace) )
-            // Pull the namespace from the view
-            $namespace = $view->viewNamespace;
-
-        if ( ($namespace !== null) &&
-             (! @isset(self::$_initialized[ $namespace ])) )
-        {
-            /*
-            Connexions::log("Connexions_View_Helper_HtmlItemCloud:: "
-                                . "set namespace from view [ {$namespace}]");
-            // */
-
-            $this->setNamespace($namespace);
-        }
-
-        return $this;
-    }
 
     /** @brief  Render an HTML version of an item cloud.
      *  @param  itemList        A Connexions_Set_ItemList instance representing
@@ -144,24 +111,24 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      *
      *  @return The HTML representation of an item cloud.
      */
-    public function render(Connexions_Set_ItemList    $itemList,
-                           $style           = null,
-                           $itemType        = null,
-                           $sortBy          = null,
-                           $sortOrder       = null,
-                           $highlightCount  = null,
-                           $hideOptions     = false)
+    public function render(Connexions_Set_ItemList  $itemList       = null,
+                                                    $style          = null,
+                                                    $itemType       = null,
+                                                    $sortBy         = null,
+                                                    $sortOrder      = null,
+                                                    $highlightCount = null,
+                                                    $hideOptions    = false)
     {
-        $this->_perPage = count($itemList);
+        if ($itemList       !== null)   $this->setItemList($itemList);
+        if (! empty($style))            $this->setStyle($style);
+        if (! empty($itemType))         $this->setItemType($itemType);
+        if (! empty($sortBy))           $this->setSortBy($sortBy);
+        if (! empty($sortOrder))        $this->setSortOrder($sortOrder);
+        if ($highlightCount !== null)   $this->setHighlightCount(
+                                                            $highlightCount);
 
-        $this->setStyle($style)
-             ->setItemType($itemType)
-             ->setSortBy($sortBy)
-             ->setSortOrder($sortOrder)
-             ->setHighlightCount($highlightCount);
 
-
-        $html = "<div id='{$itemType}Items'>";  // <itemType>Items {
+        $html = "<div id='{$this->_itemType}Items'>";  // <itemType>Items {
 
         if ($this->_showRelation)
         {
@@ -179,6 +146,7 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
              *      Bootstrap.php::_initViewGlobal().
              */
             $uiPagination = $this->view->htmlPaginationControl();
+            $uiPagination->setNamespace($this->_namespace);
 
             $html .= $uiPagination->render($this->_paginator,
                                            'pagination-top', true);
@@ -190,10 +158,9 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                   .  "<br class='clear' />";
         }
 
-        $origItemList = clone $itemList;
         /*
         $html .= "\n<!-- First {$this->_highlightCount} items:\n";
-        foreach ($itemList as $idex => $item)
+        foreach ($this->_itemList as $idex => $item)
         {
             $html .= sprintf("    '%s' [%d]\n",
                              $item->getTitle(),
@@ -204,7 +171,7 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
         /*
         $itemListParts = array();
-        foreach ($itemList as $idex => $item)
+        foreach ($this->_itemList as $idex => $item)
         {
             array_push($itemListParts,
                        sprintf("%s[%d]",
@@ -216,11 +183,12 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         Connexions::log("Connexions_View_Helper_HtmlItemCloud:: "
                           . "sortBy[ {$this->_sortBy} ], "
                           . "sortOrder[ {$this->_sortOrder} ], "
-                          . count($itemList) . " items "
+                          . count($this->_itemList) . " items "
                           . "in list[ {$itemListStr} ]");
         // */
 
 
+        /*
         $uSortBy = ucfirst($this->_sortBy);
 
         // Create a sort function
@@ -239,21 +207,20 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                               .         ': ($cmp > 0 '
                               .             '? -1 '
                               .             ': 0));')
-                    /*
-                    . 'Connexions::log("HtmlItemCloud:cmp: '
-                    .                   'a[{$aVal}], '
-                    .                   'b[{$bVal}]: "'
-                    .                   '.($cmp < 0'
-                    .                       '? "&lt;"'
-                    .                       ': ($cmp > 0'
-                    .                           '? "&gt;"'
-                    .                           ':"="))'
-                    .                 ');'
-                    */
+                  //. 'Connexions::log("HtmlItemCloud:cmp: '
+                  //.                   'a[{$aVal}], '
+                  //.                   'b[{$bVal}]: "'
+                  //.                   '.($cmp < 0'
+                  //.                       '? "&lt;"'
+                  //.                       ': ($cmp > 0'
+                  //.                           '? "&gt;"'
+                  //.                           ':"="))'
+                  //.                 ');'
                     . 'return  $cmp;');
 
         // Sort the item list
-        $itemList->uasort($sortFn);
+        $this->_itemList->uasort($sortFn);
+        */
 
         if ($this->_displayStyle === self::STYLE_CLOUD)
         {
@@ -264,7 +231,7 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                     'prefix'    => 'Connexions_View_Helper',
                     'path'      => APPLICATION_PATH .'/views/helpers/'
                  ),
-                'ItemList'              => &$itemList,
+                'ItemList'              => &$this->_itemList,
                 /* Use the default cloud decorator:
                  *      Zend_Tag_Cloud_Decorator_HtmlItemCloud
                  */
@@ -330,7 +297,7 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
             // Render the HTML for a cloud
             $html .= "<div class='cloud'>"
                   .   ($this->_highlightCount > 0
-                            ? $this->_renderHighlights( $origItemList )
+                            ? $this->_renderHighlights( )
                             : '')
                   .   $cloud->render()
                   .  "<br class='clear' />"
@@ -342,10 +309,10 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
             $html .= "<div class='cloud'>"
                   /* Showing top doesn't make sense when presenting a list...
                   .   ($this->_highlightCount > 0
-                            ? $this->_renderHighlights( $origItemList )
+                            ? $this->_renderHighlights( )
                             : '')
                   */
-                  .   $this->_renderList($itemList)
+                  .   $this->_renderList($this->_itemList)
                   .   "<br class='clear' />"
                   .  "</div>";
         }
@@ -373,10 +340,6 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         Connexions::log("Connexions_View_Helper_HtmlItemCloud::"
                             .   "setNamespace( {$namespace} )");
         // */
-
-        if ($this->view !== null)
-            // Pass this new namespace into our view
-            $this->view->viewNamespace = $namespace;
 
         $this->_namespace = $namespace;
 
@@ -567,6 +530,33 @@ function init_<?= $namespace ?>Cloud()
     public function getShowRelation()
     {
         return $this->_showRelation;
+    }
+
+    /** @brief  Set the item list to present.
+     *  @param  itemList    A Connexions_Set_ItemList instance representing the
+     *                      items to be presented;
+     *
+     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
+     */
+    public function setItemList(Connexions_Set_ItemList $itemList = null)
+    {
+        if ($itemList !== null)
+        {
+            $this->_itemList = $itemList;
+            $this->_perPage = count($itemList);
+        }
+
+        return $this;
+    }
+
+    /** @brief  Get the current item list.
+     *
+     *  @return The Connexions_Set_ItemList instance representing the
+     *          items to be presented (null if none set);
+     */
+    public function getItemList()
+    {
+        return $this->_itemList;
     }
 
     /** @brief  Set the paginator to present.
@@ -830,19 +820,77 @@ function init_<?= $namespace ?>Cloud()
     }
 
     /** @brief  Render the top items (by count).
-     *  @param  itemList    A Connexions_Set_ItemList instance representing the
-     *                      items to be presented;
-     *
      *
      *  @return A string of HTML.
      */
-    protected function _renderHighlights(Connexions_Set_ItemList   $itemList)
+    protected function _renderHighlights()
     {
+        /*
+        Connexions::log("HtmlItemCloud: _renderHighlights: "
+                            . "sort[ {$this->_sortBy}, {$this->_sortOrder} ]");
+        // */
+
+        /* If our list is already sorted by order, simply take the:
+         *  - first if order is 'DESC';
+         *  - last  if order is 'ASC'.
+         *
+         * Otherwise, we'll need to re-sort...
+         */
+        $topItems = array();
+        if ($this->_sortBy === 'weight')
+        {
+            switch ($this->_sortOrder)
+            {
+            case Connexions_Set::SORT_ORDER_ASC:
+                // Take the last
+                $topItems = $this->_itemList->slice(
+                                        (count($this->_itemList) -
+                                            $this->_highlightCount),
+                                        $this->_highlightCount);
+                break;
+
+            case Connexions_Set::SORT_ORDER_DESC:
+                // Take the first
+                $topItems = $this->_itemList->slice(
+                                        0,
+                                        $this->_highlightCount);
+                break;
+            }
+        }
+
+        if (empty($topItems))
+        {
+            // Re-sort...
+            /*
+            $count = count($this->_itemList);
+            Connexions::log("HtmlItemCloud: _renderHighlights: "
+                            . "re-sort {$count} items");
+            // */
+
+            $sortList = clone $this->_itemList;
+
+            // Create function to reverse sort by weight.
+            $sortFn = create_function('$a,$b',   '$aVal = $a->getWeight();'
+                                               . '$bVal = $b->getWeight();'
+                                               . '$cmp  = ($bVal - $aVal);'
+                                               . 'return  $cmp;');
+
+            // Sort the item list
+            $sortList->uasort($sortFn);
+
+            $topItems = $sortList->slice( 0, $this->_highlightCount );
+        }
+
+
+        /******************************************************************
+         * Render the top items.
+         *
+         */
         $html .= "<div class='highlights ui-corner-all'>"
               .   "<h4>Top {$this->_highlightCount}</h4>"
               .   "<ul>";
 
-        foreach ($itemList as $idex => $item)
+        foreach ($topItems as $idex => $item)
         {
             if ($idex > $this->_highlightCount)
                 break;
@@ -927,7 +975,9 @@ function init_<?= $namespace ?>Cloud()
                   .                      "value='{$key}'"
                   .          ($key == $this->_sortOrder
                                  ? " checked='true'" : "" ). " />"
-                  .   "<label for='{$namespace}SortOrder-{$key}'>{$title}</label>"
+                  .   "<label for='{$namespace}SortOrder-{$key}'>"
+                  .    $title
+                  .   "</label>"
                   .  "</div>";
         }
 
@@ -955,8 +1005,7 @@ function init_<?= $namespace ?>Cloud()
               .    "<div class='field highlightCount'>" // highlightCount {
               .     "<label for='{$namespace}HighlightCount'>top</label>"
               .     "<select class='ui-input ui-state-default ui-corner-all "
-              .                   "count' name='{$namespace}HighlightCount'>"
-              .      "<!-- {$namespace}HighlightCount: {$this->_highlightCount} -->";
+              .                   "count' name='{$namespace}HighlightCount'>";
 
         foreach (self::$highlightCountChoices as $countOption)
         {

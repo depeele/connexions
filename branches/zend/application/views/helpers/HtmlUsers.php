@@ -153,39 +153,6 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
 
     static protected $_initialized  = array();
 
-    /** @brief  Set the View object.
-     *  @param  view    The Zend_View_Interface
-     *
-     *  Override Zend_View_Helper_Abstract::setView() in order to initialize.
-     *
-     *  Note: If this new view has a 'viewNamespace', change our namespace.
-     *
-     *  @return Zend_View_Helper_Abstract
-     */
-    public function setView(Zend_View_Interface $view)
-    {
-        parent::setView($view);
-
-        $namespace = null;
-        if ( (! @empty($view->viewNamespace)) &&
-             ($this->_namespace != $view->viewNamespace) )
-            // Pull the namespace from the view
-            $namespace = $view->viewNamespace;
-
-        if ( ($namespace !== null) &&
-             (! @isset(self::$_initialized[ $namespace ])) )
-        {
-            /*
-            Connexions::log("Connexions_View_Helper_HtmlUsers:: "
-                                . "set namespace from view [ {$namespace}]");
-            // */
-
-            $this->setNamespace($namespace);
-        }
-
-        return $this;
-    }
-
     /** @brief  Render an HTML version of a paginated set of Users or,
      *          if no arguments, this helper instance.
      *  @param  paginator       The Zend_Paginator representing the items to
@@ -235,10 +202,6 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
         Connexions::log("Connexions_View_Helper_HtmlUsers::"
                             .   "setNamespace( {$namespace} )");
         // */
-
-        if ($this->view !== null)
-            // Pass this new namespace into our view
-            $this->view->viewNamespace = $namespace;
 
         $this->_namespace = $namespace;
 
@@ -558,12 +521,12 @@ function init_<?= $namespace ?>List()
 
         switch ($sortBy)
         {
-        case self::SORT_BY_DATE_TAGGED:
-        case self::SORT_BY_DATE_UPDATED:
         case self::SORT_BY_NAME:
-        case self::SORT_BY_RATING:
-        case self::SORT_BY_RATING_COUNT:
-        case self::SORT_BY_USER_COUNT:
+        case self::SORT_BY_FULLNAME:
+        case self::SORT_BY_EMAIL:
+        case self::SORT_BY_DATE_VISITED:
+        case self::SORT_BY_TAG_COUNT:
+        case self::SORT_BY_ITEM_COUNT:
             break;
 
         default:
@@ -817,30 +780,29 @@ function init_<?= $namespace ?>List()
         // */
 
         $uiPagination = $this->view->htmlPaginationControl();
-        $uiPagination->setPerPageChoices(self::$perPageChoices);
+        $uiPagination->setPerPageChoices(self::$perPageChoices)
+                     ->setNamespace($this->_namespace);
 
 
         $scopeRoot = 'People';
         $scopeUrl  = $this->view->baseUrl('/people');
 
-        $html .= $this->view->htmlItemScope($paginator,
-                                            $tagInfo,
-                                            'Tags',
-                                            'tags',
-                                            array($scopeRoot => $scopeUrl),
-                                            $scopeCbUrl);
+        $uiScope = $this->view->htmlItemScope();
+        $uiScope->setNamespace($this->_namespace)
+                ->setInputLabel('Tags')
+                ->setInputName( 'tags')
+                ->setPath( array($scopeRoot => $scopeUrl) )
+                ->setAutoCompleteUrl($scopeCbUrl);
 
-        $html .= "\n"
-              .  "<div id='{$this->_namespace}List'>"   // List {
-              .   "\n"
+        $html .= $uiScope->render($paginator, $tagInfo);
+
+        $html .= "<div id='{$this->_namespace}List'>"   // List {
               .   $uiPagination->render($paginator, 'pagination-top', true)
-              .   "\n"
               .   $this->_renderDisplayOptions($paginator, $showMeta);
 
         if (count($paginator))
         {
-            $html .= "\n"
-                  .  "<ul class='{$this->_namespace}'>";
+            $html .= "<ul class='{$this->_namespace}'>";
 
             // Group by the field identified in $this->_sortBy
             $lastGroup = null;
@@ -862,8 +824,7 @@ function init_<?= $namespace ?>List()
                                                     $idex);
             }
 
-            $html .= "\n"
-                  .  "</ul>";
+            $html .= "</ul>";
         }
 
 

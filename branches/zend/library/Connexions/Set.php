@@ -314,6 +314,14 @@ class Connexions_Set implements Countable,
         else
             $this->_select->limit($itemCountPerPage, $offset);
 
+        /*
+        Connexions::log(sprintf("Connexions_Set::getItems(%d, %d):%s: "
+                                . "sql[ %s ], ",
+                                    $offset, $itemCountPerPage,
+                                    $this->_memberClass,
+                                    $this->_select->assemble()));
+        // */
+
         $rows = $this->_select->query()->fetchAll();
         $end1 = microtime(true);
 

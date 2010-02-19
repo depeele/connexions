@@ -17,8 +17,7 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
         'sortOrder'         => Model_UserItemSet::SORT_ORDER_DESC,
 
         'perPage'           => 50,
-        'multipleUsers'     => true,
-        'scopeItems'        => null
+        'multipleUsers'     => true
     );
 
 
@@ -200,40 +199,6 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
     protected       $_sortBy        = null;
     protected       $_sortOrder     = null;
     protected       $_multipleUsers = null;
-    protected       $_scopeItems    = null;
-
-    /** @brief  Set the View object.
-     *  @param  view    The Zend_View_Interface
-     *
-     *  Override Zend_View_Helper_Abstract::setView() in order to initialize.
-     *
-     *  Note: If this new view has a 'viewNamespace', change our namespace.
-     *
-     *  @return Zend_View_Helper_Abstract
-     */
-    public function setView(Zend_View_Interface $view)
-    {
-        parent::setView($view);
-
-        $namespace = null;
-        if ( (! @empty($view->viewNamespace)) &&
-             ($this->_namespace != $view->viewNamespace) )
-            // Pull the namespace from the view
-            $namespace = $view->viewNamespace;
-
-        if ( ($namespace !== null) &&
-             (! @isset(self::$_initialized[ $namespace ])) )
-        {
-            /*
-            Connexions::log("Connexions_View_Helper_HtmlUserItems:: "
-                                . "set namespace from view [ {$namespace}]");
-            // */
-
-            $this->setNamespace($namespace);
-        }
-
-        return $this;
-    }
 
     /** @brief  Render an HTML version of a paginated set of User Items or,
      *          if no arguments, this helper instance.
@@ -289,10 +254,6 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
         Connexions::log("Connexions_View_Helper_HtmlUserItems::"
                             .   "setNamespace( {$namespace} )");
         // */
-
-        if ($this->view !== null)
-            // Pass this new namespace into our view
-            $this->view->viewNamespace = $namespace;
 
         $this->_namespace = $namespace;
 
@@ -848,28 +809,6 @@ function init_<?= $namespace ?>List()
         return $this->_multipleUsers;
     }
 
-    /** @brief  Set the Connexions_Set that specifies the full set of scope 
-     *          items (for auto-suggest).
-     *  @param  scopeItems  A Connexions_Set instance.
-     *
-     *  @return Connexions_View_Helper_HtmlUserItems for a fluent interface.
-     */
-    public function setScopeItems(Connexions_Set $scopeItems)
-    {
-        $this->_scopeItems = $scopeItems;
-
-        return $this;
-    }
-
-    /** @brief  Get the current scopeItems value.
-     *
-     *  @return The Connexions_Set instance (null if not set).
-     */
-    public function getScopeItems()
-    {
-        return $this->_scopeItems;
-    }
-
     /** @brief  Render an HTML version of a paginated set of User Items.
      *  @param  paginator       The Zend_Paginator representing the items to
      *                          be presented.
@@ -895,7 +834,7 @@ function init_<?= $namespace ?>List()
     public function render(Zend_Paginator            $paginator,
                            /* Model_User | String */ $owner,
                            Model_User                $viewer,
-                           Connexions_Set_info       $tagInfo,
+                           Connexions_Set_Info       $tagInfo,
                            $style        = null,
                            $sortBy       = null,
                            $sortOrder    = null)
@@ -973,15 +912,18 @@ function init_<?= $namespace ?>List()
         // */
 
         $uiPagination = $this->view->htmlPaginationControl();
-        $uiPagination->setPerPageChoices(self::$perPageChoices);
+        $uiPagination->setNamespace($this->_namespace)
+                     ->setPerPageChoices(self::$perPageChoices);
 
 
-        $html .= $this->view->htmlItemScope($paginator,
-                                            $tagInfo,
-                                            'Tags',
-                                            'tags',
-                                            array($ownerStr => $ownerUrl),
-                                            $scopeCbUrl);
+        $uiScope = $this->view->htmlItemScope();
+        $uiScope->setNamespace($this->_namespace)
+                ->setInputLabel('Tags')
+                ->setInputName( 'tags')
+                ->setPath( array($ownerStr => $ownerUrl) )
+                ->setAutoCompleteUrl($scopeCbUrl);
+
+        $html .= $uiScope->render($paginator, $tagInfo);
 
         $html .= "<div id='{$this->_namespace}List'>"   // List {
               .   $uiPagination->render($paginator, 'pagination-top', true)
