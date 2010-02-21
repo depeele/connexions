@@ -14,16 +14,19 @@
 #usersList .displayOptions form .displayStyle .comma { padding-right: 0.5em; }
 #usersList .displayOptions form .displayStyle .custom { padding-top: 0.5em; border-bottom: 0; }
 #usersList .displayOptions form .displayStyle .custom .user { border: 1px solid #cccccc; padding: 0 0.1em 0.1em 0.2em; }
-#usersList .displayOptions form .displayStyle .custom .user label { display: inline; float: none; width: auto; padding-left: 0.25em; }
-#usersList .displayOptions form .displayStyle .custom .user .meta { font-weight: normal; }
-#usersList .displayOptions form .displayStyle .custom .user .data { padding-left: 0; }
-#usersList .displayOptions form .displayStyle .custom .user .data .itemName { padding-bottom: 0.5em; }
-#usersList .displayOptions form .displayStyle .custom .user .data .url, #usersList .displayOptions form .displayStyle .custom .user .data .description, #usersList .displayOptions form .displayStyle .custom .user .data .descriptionSummary { margin: 0; }
-#usersList .displayOptions form .displayStyle .custom .user .data .rating { padding: 0.25em 0 0.25em 0.5em; text-align: left; }
-#usersList .displayOptions form .displayStyle .custom .user .data .rating .meta { text-align: left; float: none; padding: 0; }
-#usersList .displayOptions form .displayStyle .custom .user .data .avatar, #usersList .displayOptions form .displayStyle .custom .user .data .userId, #usersList .displayOptions form .displayStyle .custom .user .data .fullName, #usersList .displayOptions form .displayStyle .custom .user .data .email { position: relative; display: block; height: auto; width: auto; float: none; }
-#usersList .displayOptions form .displayStyle .custom .user .data .tags { width: auto; text-align: left; }
-#usersList .displayOptions form .displayStyle .custom .user .data .tags .tag { display: inline; float: none; }
+#usersList .displayOptions form .displayStyle .custom .user label { display: inline; float: none; width: auto; padding-left: 0; }
+#usersList .displayOptions form .displayStyle .custom .user .stats { font-weight: normal; }
+#usersList .displayOptions form .displayStyle .custom .user .data { padding-left: 24px; }
+#usersList .displayOptions form .displayStyle .custom .user .data .avatar { border: 1px solid #cccccc; height: 32px; width: 18px; margin-top: 0.2em; padding: 0 2px; }
+#usersList .displayOptions form .displayStyle .custom .user .data .avatar label { display: none; }
+#usersList .displayOptions form .displayStyle .custom .user .data .userId { font-size: 1.0em; }
+#usersList .displayOptions form .displayStyle .custom .user .data .fullName, #usersList .displayOptions form .displayStyle .custom .user .data .email { display: inline; font-size: 0.9em; padding: 0.25em 0 0.25em 1em; }
+#usersList .displayOptions form .displayStyle .custom .user .data .email { padding-right: 0.5em; }
+#usersList .displayOptions form .displayStyle .custom .user .data .fullName { float: none; }
+#usersList .displayOptions form .displayStyle .custom .user .data .tags { clear: both; width: auto; text-align: left; padding: 0.25em 0; }
+#usersList .displayOptions form .displayStyle .custom .user .data .tags label { display: inline; float: none; font-size: 0.8em; }
+#usersList .displayOptions form .displayStyle .custom .user .data .dates { padding: 0.25em 0; }
+#usersList .displayOptions form .displayStyle .custom .user .data .dates .lastVisit { display: block; }
 #usersList .users { clear: both; padding-top: 2em; border-bottom: 1px solid #cccccc; }
 #usersList .users .groupHeader { position: relative; background-color: #eeeeff; border-bottom: 1px solid #cccccc; color: #999999; height: 20px; left: -15px; }
 #usersList .users .groupHeader .group { position: relative; background-color: #eeeeff; height: 20px; right: -20px; }
@@ -36,18 +39,17 @@
 #usersList .users .groupHeader .alpha, #usersList .users .groupHeader .numeric { position: absolute; left: -0.55em; top: -0.45em; font-size: 3em; font-weight: bold; color: #bbbbff; z-index: 0; }
 #usersList .users .person { clear: both; min-height: 45px; }
 #usersList .users .user { position: relative; z-index: 1; margin-bottom: 1em; border-top: 1px solid #cccccc; }
-#usersList .users .user .meta { position: relative; float: right; width: 100px; background-color: #999999; padding: 0; z-index: 2; }
-#usersList .users .user .meta .countItems { display: block; color: white; padding: 0.25em; font-weight: normal; text-align: center; text-decoration: none; }
-#usersList .users .user .meta .countItems:hover { background-color: #b0d730; }
-#usersList .users .user .meta .countTags { display: block; position: relative; color: white; padding: 0.25em; font-size: 0.8em; font-weight: normal; text-align: center; text-decoration: none; }
-#usersList .users .user .meta .countTags:hover { background-color: #b0d730; }
-#usersList .users .user .meta .countTags .icon { position: absolute; border: none; right: 0; padding: 0 2px; }
+#usersList .users .user .stats { position: relative; float: right; width: 100px; background-color: #999999; padding: 0; z-index: 2; }
+#usersList .users .user .stats .countItems { display: block; color: white; padding: 0.25em; font-weight: normal; text-align: center; text-decoration: none; }
+#usersList .users .user .stats .countItems:hover { background-color: #b0d730; }
+#usersList .users .user .stats .countTags { display: block; position: relative; color: white; padding: 0.25em; font-size: 0.8em; font-weight: normal; text-align: center; text-decoration: none; }
+#usersList .users .user .stats .countTags:hover { background-color: #b0d730; }
+#usersList .users .user .stats .countTags .icon { position: absolute; border: none; right: 0; padding: 0 2px; }
 #usersList .users .user .data { position: relative; padding: 0.25em 0 0 40px; z-index: 1; }
 #usersList .users .user .data .avatar { position: absolute; left: 0; top: 0; width: 32px; height: 32px; }
 #usersList .users .user .data .avatar a .img { display: block; position: relative; border: 0; background-color: transparent; }
 #usersList .users .user .data .avatar a .img img { width: 32px; height: 32px; }
 #usersList .users .user .data .avatar a .img .ui-icon { position: relative; left: 8px; }
-#usersList .users .user .data .relation { position: absolute; left: 0; top: 32px; width: 32px; text-align: center; font-size: 0.6em; }
 #usersList .users .user .data .userId { float: left; padding: 0; font-size: 1.25em; }
 #usersList .users .user .data .userId a { display: inline; font-weight: bold; }
 #usersList .users .user .data .fullName { float: left; padding: 0.25em; }

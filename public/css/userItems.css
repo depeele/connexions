@@ -13,17 +13,23 @@
 #itemsList .displayOptions form .displayStyle .option.control { position: relative; top: -0.25em; }
 #itemsList .displayOptions form .displayStyle .comma { padding-right: 0.5em; }
 #itemsList .displayOptions form .displayStyle .custom { padding-top: 0.5em; border-bottom: 0; }
-#itemsList .displayOptions form .displayStyle .custom .item { border: 1px solid #cccccc; padding: 0 0.1em 0.1em 0.2em; }
+#itemsList .displayOptions form .displayStyle .custom .item { border: 1px solid #cccccc; padding: 0 0 0.1em 0.2em; }
 #itemsList .displayOptions form .displayStyle .custom .item label { display: inline; float: none; width: auto; padding-left: 0.25em; }
-#itemsList .displayOptions form .displayStyle .custom .item .meta { font-weight: normal; }
-#itemsList .displayOptions form .displayStyle .custom .item .data { padding-left: 0; }
+#itemsList .displayOptions form .displayStyle .custom .item .stats { font-weight: normal; padding: 0; }
+#itemsList .displayOptions form .displayStyle .custom .item .stats .rating { padding: 0.25em 0.1em 0.25em 0.5em; text-align: left; }
+#itemsList .displayOptions form .displayStyle .custom .item .stats .rating .info { text-align: left; float: none; padding: 0; }
+#itemsList .displayOptions form .displayStyle .custom .item .data { padding-left: 0; padding-right: 0.1em; }
 #itemsList .displayOptions form .displayStyle .custom .item .data .itemName { padding-bottom: 0.5em; }
-#itemsList .displayOptions form .displayStyle .custom .item .data .url, #itemsList .displayOptions form .displayStyle .custom .item .data .description, #itemsList .displayOptions form .displayStyle .custom .item .data .descriptionSummary { margin: 0; }
-#itemsList .displayOptions form .displayStyle .custom .item .data .rating { padding: 0.25em 0 0.25em 0.5em; text-align: left; }
-#itemsList .displayOptions form .displayStyle .custom .item .data .rating .meta { text-align: left; float: none; padding: 0; }
-#itemsList .displayOptions form .displayStyle .custom .item .data .userId .userId-avatar { float: right; padding-left: 0.75em; }
-#itemsList .displayOptions form .displayStyle .custom .item .data .tags { width: auto; text-align: left; }
-#itemsList .displayOptions form .displayStyle .custom .item .data .tags .tag { display: inline; float: none; }
+#itemsList .displayOptions form .displayStyle .custom .item .data .url, #itemsList .displayOptions form .displayStyle .custom .item .data .description, #itemsList .displayOptions form .displayStyle .custom .item .data .description .full, #itemsList .displayOptions form .displayStyle .custom .item .data .description .summary { margin: 0; }
+#itemsList .displayOptions form .displayStyle .custom .item .data .description { padding-bottom: 0.5em; }
+#itemsList .displayOptions form .displayStyle .custom .item .data .description .full, #itemsList .displayOptions form .displayStyle .custom .item .data .description .summary { padding: 0; }
+#itemsList .displayOptions form .displayStyle .custom .item .data .userId { white-space: normal; padding: 0 0 0 1em; font-size: 0.8em; }
+#itemsList .displayOptions form .displayStyle .custom .item .data .userId label { padding-left: 0; }
+#itemsList .displayOptions form .displayStyle .custom .item .data .userId .avatar { position: relative; float: left; padding: 0 0.75em 0 0.25em; }
+#itemsList .displayOptions form .displayStyle .custom .item .data .userId .avatar label { padding-left: 8px; }
+#itemsList .displayOptions form .displayStyle .custom .item .data .userId .avatar .img { position: absolute; left: 14px; top: 0; }
+#itemsList .displayOptions form .displayStyle .custom .item .data .tags { width: auto; text-align: left; padding: 0 0 1em 0; }
+#itemsList .displayOptions form .displayStyle .custom .item .data .tags label { display: inline; float: none; font-size: 0.8em; }
 #itemsList .displayOptions form .displayStyle .custom .item .data .dates .updated { width: auto; }
 #itemsList .items { clear: both; padding-top: 2em; border-bottom: 1px solid #cccccc; }
 #itemsList .items .groupHeader { position: relative; background-color: #eeeeff; border-bottom: 1px solid #cccccc; color: #999999; height: 20px; left: -15px; }
@@ -41,32 +47,33 @@
 #itemsList .items .item .status .favorite, #itemsList .items .item .status .private { position: absolute; cursor: pointer; }
 #itemsList .items .item .status .favorite { top: 4px; left: 4px; }
 #itemsList .items .item .status .private { top: 24px; left: 4px; }
-#itemsList .items .item .meta { position: relative; float: right; width: 100px; padding: 0 0 0 4px; text-align: right; z-index: 2; }
-#itemsList .items .item .meta .countTaggers { display: block; background-color: #999999; color: white; padding: 0.25em; font-weight: normal; text-align: center; text-decoration: none; }
-#itemsList .items .item .meta .countTaggers:hover { background-color: #b0d730; }
-#itemsList .items .item .meta .rating { display: block; position: relative; }
-#itemsList .items .item .meta .rating .stars { display: block; height: 18px; }
-#itemsList .items .item .meta .rating .stars .owner, #itemsList .items .item .meta .rating .stars .average, #itemsList .items .item .meta .rating .stars .average-owner { display: block; width: 96px; overflow: hidden; }
-#itemsList .items .item .meta .rating .stars .owner .ui-stars, #itemsList .items .item .meta .rating .stars .average .ui-stars, #itemsList .items .item .meta .rating .stars .average-owner .ui-stars { display: block; float: left; cursor: pointer; overflow: hidden; text-indent: 999em; }
-#itemsList .items .item .meta .rating .stars .owner .ui-stars a, #itemsList .items .item .meta .rating .stars .average .ui-stars a, #itemsList .items .item .meta .rating .stars .average-owner .ui-stars a { background: url('sprites/connexions.gif') no-repeat scroll 0 0; display: block; width: 16px; height: 16px; }
-#itemsList .items .item .meta .rating .stars .owner .ui-stars-star-off a, #itemsList .items .item .meta .rating .stars .owner .ui-stars-star a, #itemsList .items .item .meta .rating .stars .owner .ui-stars-star-disabled a, #itemsList .items .item .meta .rating .stars .average .ui-stars-star-off a, #itemsList .items .item .meta .rating .stars .average .ui-stars-star a, #itemsList .items .item .meta .rating .stars .average .ui-stars-star-disabled a, #itemsList .items .item .meta .rating .stars .average-owner .ui-stars-star-off a, #itemsList .items .item .meta .rating .stars .average-owner .ui-stars-star a, #itemsList .items .item .meta .rating .stars .average-owner .ui-stars-star-disabled a { background-position: -72px -58px; }
-#itemsList .items .item .meta .rating .stars .owner .ui-stars-star-on a, #itemsList .items .item .meta .rating .stars .average .ui-stars-star-on a, #itemsList .items .item .meta .rating .stars .average-owner .ui-stars-star-on a { background-position: -104px -58px; }
-#itemsList .items .item .meta .rating .stars .owner .ui-stars-star-hover a, #itemsList .items .item .meta .rating .stars .average .ui-stars-star-hover a, #itemsList .items .item .meta .rating .stars .average-owner .ui-stars-star-hover a { background-position: -88px -58px; }
-#itemsList .items .item .meta .rating .stars .owner .ui-stars-cancel, #itemsList .items .item .meta .rating .stars .average .ui-stars-cancel, #itemsList .items .item .meta .rating .stars .average-owner .ui-stars-cancel { padding: 1px; }
-#itemsList .items .item .meta .rating .stars .owner .ui-stars-cancel a, #itemsList .items .item .meta .rating .stars .average .ui-stars-cancel a, #itemsList .items .item .meta .rating .stars .average-owner .ui-stars-cancel a { width: 14px; height: 14px; background-position: -72px -44px; }
-#itemsList .items .item .meta .rating .stars .owner .ui-stars-cancel-hover a, #itemsList .items .item .meta .rating .stars .average .ui-stars-cancel-hover a, #itemsList .items .item .meta .rating .stars .average-owner .ui-stars-cancel-hover a { background-position: -86px -44px; }
-#itemsList .items .item .meta .rating .stars .owner .ui-stars-cancel-disabled a, #itemsList .items .item .meta .rating .stars .average .ui-stars-cancel-disabled a, #itemsList .items .item .meta .rating .stars .average-owner .ui-stars-cancel-disabled a { background-image: none; }
-#itemsList .items .item .meta .rating .stars .owner .ui-stars-star-disabled, #itemsList .items .item .meta .rating .stars .owner .ui-stars-cancel-disabled, #itemsList .items .item .meta .rating .stars .average .ui-stars-star-disabled, #itemsList .items .item .meta .rating .stars .average .ui-stars-cancel-disabled, #itemsList .items .item .meta .rating .stars .average-owner .ui-stars-star-disabled, #itemsList .items .item .meta .rating .stars .average-owner .ui-stars-cancel-disabled { cursor: default; }
-#itemsList .items .item .meta .rating .stars .average, #itemsList .items .item .meta .rating .stars .average-owner { padding-left: 16px; }
-#itemsList .items .item .meta .rating .stars .average-owner { position: absolute; top: 2px; left: 1px; }
-#itemsList .items .item .meta .rating .stars .average-owner .ui-stars-star-on a { background-position: -88px -58px; }
-#itemsList .items .item .meta .rating .meta { clear: left; color: #999999; font-size: 0.75em; }
+#itemsList .items .item .stats { position: relative; float: right; width: 100px; padding: 0 0 0 4px; text-align: right; z-index: 2; }
+#itemsList .items .item .stats .countTaggers { display: block; background-color: #999999; color: white; padding: 0.25em; font-weight: normal; text-align: center; text-decoration: none; }
+#itemsList .items .item .stats .countTaggers:hover { background-color: #b0d730; }
+#itemsList .items .item .stats .rating { display: block; position: relative; }
+#itemsList .items .item .stats .rating .stars { display: block; height: 18px; }
+#itemsList .items .item .stats .rating .stars .owner, #itemsList .items .item .stats .rating .stars .average, #itemsList .items .item .stats .rating .stars .average-owner { display: block; width: 96px; overflow: hidden; }
+#itemsList .items .item .stats .rating .stars .owner .ui-stars, #itemsList .items .item .stats .rating .stars .average .ui-stars, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars { display: block; float: left; cursor: pointer; overflow: hidden; text-indent: 999em; }
+#itemsList .items .item .stats .rating .stars .owner .ui-stars a, #itemsList .items .item .stats .rating .stars .average .ui-stars a, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars a { background: url('sprites/connexions.gif') no-repeat scroll 0 0; display: block; width: 16px; height: 16px; }
+#itemsList .items .item .stats .rating .stars .owner .ui-stars-star-off a, #itemsList .items .item .stats .rating .stars .owner .ui-stars-star a, #itemsList .items .item .stats .rating .stars .owner .ui-stars-star-disabled a, #itemsList .items .item .stats .rating .stars .average .ui-stars-star-off a, #itemsList .items .item .stats .rating .stars .average .ui-stars-star a, #itemsList .items .item .stats .rating .stars .average .ui-stars-star-disabled a, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-star-off a, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-star a, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-star-disabled a { background-position: -72px -58px; }
+#itemsList .items .item .stats .rating .stars .owner .ui-stars-star-on a, #itemsList .items .item .stats .rating .stars .average .ui-stars-star-on a, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-star-on a { background-position: -104px -58px; }
+#itemsList .items .item .stats .rating .stars .owner .ui-stars-star-hover a, #itemsList .items .item .stats .rating .stars .average .ui-stars-star-hover a, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-star-hover a { background-position: -88px -58px; }
+#itemsList .items .item .stats .rating .stars .owner .ui-stars-cancel, #itemsList .items .item .stats .rating .stars .average .ui-stars-cancel, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-cancel { padding: 1px; }
+#itemsList .items .item .stats .rating .stars .owner .ui-stars-cancel a, #itemsList .items .item .stats .rating .stars .average .ui-stars-cancel a, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-cancel a { width: 14px; height: 14px; background-position: -72px -44px; }
+#itemsList .items .item .stats .rating .stars .owner .ui-stars-cancel-hover a, #itemsList .items .item .stats .rating .stars .average .ui-stars-cancel-hover a, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-cancel-hover a { background-position: -86px -44px; }
+#itemsList .items .item .stats .rating .stars .owner .ui-stars-cancel-disabled a, #itemsList .items .item .stats .rating .stars .average .ui-stars-cancel-disabled a, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-cancel-disabled a { background-image: none; }
+#itemsList .items .item .stats .rating .stars .owner .ui-stars-star-disabled, #itemsList .items .item .stats .rating .stars .owner .ui-stars-cancel-disabled, #itemsList .items .item .stats .rating .stars .average .ui-stars-star-disabled, #itemsList .items .item .stats .rating .stars .average .ui-stars-cancel-disabled, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-star-disabled, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-cancel-disabled { cursor: default; }
+#itemsList .items .item .stats .rating .stars .average, #itemsList .items .item .stats .rating .stars .average-owner { padding-left: 16px; }
+#itemsList .items .item .stats .rating .stars .average-owner { position: absolute; top: 2px; left: 1px; }
+#itemsList .items .item .stats .rating .stars .average-owner .ui-stars-star-on a { background-position: -88px -58px; }
+#itemsList .items .item .stats .rating .info { clear: left; color: #999999; font-size: 0.75em; }
 #itemsList .items .item .data { position: relative; padding: 0.25em 0 0 32px; z-index: 1; }
 #itemsList .items .item .data .itemName { padding: 0; }
 #itemsList .items .item .data .itemName a { display: inline; font-weight: bold; }
 #itemsList .items .item .data .url { padding: 0 0 0 1em; max-width: 526px; *width: 526px; }
 #itemsList .items .item .data .url a { display: inline; font-weight: normal; }
-#itemsList .items .item .data .description, #itemsList .items .item .data .descriptionSummary { display: block; padding: 0 0 0 1em; margin: 0 175px 0 0; color: #999999; }
+#itemsList .items .item .data .description { display: block; padding: 0 0 0 1em; margin: 0 175px 0 0; color: #999999; }
+#itemsList .items .item .data .description .full, #itemsList .items .item .data .description .summary { display: block; }
 #itemsList .items .item .data .userId { display: block; float: left; font-size: 0.9em; padding: 0.5em 0 0.5em 1em; margin: 0; white-space: pre; }
 #itemsList .items .item .data .userId a { font-weight: normal; }
 #itemsList .items .item .data .userId a .img { display: block; position: relative; float: left; border: 0; background-color: transparent; }

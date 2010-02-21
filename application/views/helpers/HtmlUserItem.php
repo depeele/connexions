@@ -14,26 +14,16 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
     /** @brief  Generate an HTML view of a single User Item / Bookmark.
      *  @param  userItem    The Model_UserItem instance to present.
      *  @param  viewer      The Model_User     instance of the current viewer
-     *  @param  showParts   The parts to present [ null === 'regular' ]
-     *                      (see Connexions_View_Helper_HtmlUserItems::
-     *                                                          $styleParts)
+     *  @param  showParts   The parts to present.
      *  @param  index       The index of this item in any list [ 0 ].
      *  @return The HTML representation of the user items.
      */
     public function htmlUserItem(Model_UserItem $userItem,
                                  Model_User     $viewer,
-                                                $showParts  = null,
+                                 array          $showParts  = array(),
                                                 $index      = 0)
     {
-        $html = '';
-
-        if (! @is_array($showParts))
-        {
-            $showParts = Connexions_View_Helper_HtmlUserItems::
-                            $styleParts[Connexions_View_Helper_HtmlUserItems::
-                                                                STYLE_REGULAR];
-        }
-
+        $html    = '';
         $isOwner = ( ($viewer && ($userItem->user->userId === $viewer->userId))
                         ? true
                         : false );
@@ -46,7 +36,7 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
         if ($userItem->isPrivate)       array_push($itemClasses, 'private');
         if ($showParts['minimized'])    array_push($itemClasses, 'minimized');
         if ($showParts['minimized'] &&
-            ($showParts['userId'] !== true))
+            ($showParts['item:data:userId'] !== true))
                                         array_push($itemClasses, 'no-userId');
 
         $html .= "<li class='item "             // item {
@@ -70,10 +60,10 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
 
         $html .=   "</div>";
 
-        if ($showParts['meta'] === true)
+        if ($showParts['item:stats'] === true)
         {
-            $html .=   "<div class='meta'>";    // meta {
-            if ($showParts['meta:countTaggers'] === true)
+            $html .=   "<div class='stats'>";   // stats {
+            if ($showParts['item:stats:countTaggers'] === true)
             {
                $html .= sprintf (  "<a class='countTaggers ui-corner-bottom' "
                                  .     "href='%s'>%d</a>",
@@ -84,14 +74,14 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                                  $userItem->item->userCount);
             }
 
-            if ( ($showParts['meta:rating'] === true) &&
+            if ( ($showParts['item:stats:rating'] === true) &&
                  ( ($userItem->item->ratingCount > 0) ||
                    $isOwner) )
             {
 
                 $html .=  "<div class='rating'>";       // rating {
 
-                if ($showParts['meta:rating:stars'] === true)
+                if ($showParts['item:stats:rating:stars'] === true)
                 {
                     $html .= "<div class='stars'>";       // stars {
 
@@ -100,7 +90,8 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                                             $userItem->item->ratingCount
                                     : 0.0);
 
-                    if ( ($showParts['meta:rating:stars:average'] === true) &&
+                    if ( ($showParts['item:stats:rating:stars:average']
+                                                                === true) &&
                          ($userItem->item->ratingCount > 0) )
                     {
                         $ratingTitle = sprintf("%d raters, %5.2f avg.",
@@ -117,7 +108,8 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                                                        $ratingTitle);
                     }
              
-                    if ( ($showParts['meta:rating:stars:owner'] === true) &&
+                    if ( ($showParts['item:stats:rating:stars:owner']
+                                                                === true) &&
                          $isOwner )
                     {
                         $html .= $this
@@ -131,7 +123,7 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                     $html .= "</div>";      // stars }
                 }
 
-                if ( ($showParts['meta:rating:meta'] === true) &&
+                if ( ($showParts['item:stats:rating:info'] === true) &&
                      ($userItem->item->ratingCount > 0) )
                 {
                     $html .= "<div class='meta'>"
@@ -145,15 +137,15 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                 $html .=  "</div>"; // rating }
             }
 
-            $html .=   "</div>";                // meta }
+            $html .=   "</div>";                // stats }
         }
 
         $clearFloats = $showParts['minimized'];
         $html .=   "<div class='data'>";    // data {
 
 
-        if ( ($showParts['minimized'] === true) &&
-             ($showParts['userId']    === true) )
+        if ( ($showParts['minimized']        === true) &&
+             ($showParts['item:data:userId'] === true) )
         {
             $html .= $this->_renderUserId($userItem, $showParts);
         }
@@ -162,7 +154,7 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
         if ($showParts['minimized'] === true)
             $html .= $this->_renderHtmlControl($userItem, $isOwner);
 
-        if ($showParts['itemName'] === true)
+        if ($showParts['item:data:itemName'] === true)
         {
             $html .= "<h4 class='itemName'>"    // itemName {
                   .  sprintf("<a href='%s' title='%s'>%s</a>",
@@ -176,7 +168,7 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
             $html .= "</h4>";   // itemName }
         }
 
-        if ($showParts['url'] === true)
+        if ($showParts['item:data:url'] === true)
         {
             $html .= "<div class='url'>"
                   .   sprintf ("<a href='%s' title='%s'>%s</a>",
@@ -186,7 +178,7 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                   .  "</div>";
         }
 
-        if ( ($showParts['descriptionSummary'] === true) &&
+        if ( ($showParts['item:data:description:summary'] === true) &&
              (! @empty($userItem->description)) )
         {
             $summary = html_entity_decode($userItem->description, ENT_QUOTES);
@@ -211,7 +203,7 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                   .  "</div>";
         }
 
-        if ( ($showParts['description'] === true) &&
+        if ( ($showParts['item:data:description:full'] === true) &&
              (! @empty($userItem->description)) )
         {
             $html .= "<div class='description'>"
@@ -219,18 +211,18 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                   .  "</div>";
         }
 
-        if ( ($showParts['minimized'] !== true) &&
-             ($showParts['userId']    === true) )
+        if ( ($showParts['minimized']        !== true) &&
+             ($showParts['item:data:userId'] === true) )
         {
             $html .= "<br class='clear' />"
                   .  $this->_renderUserId($userItem, $showParts);
         }
 
-        if ($showParts['tags'] === true)
+        if ($showParts['item:data:tags'] === true)
         {
             /*
-            if ( ($showParts['minimized'] === true) ||
-                 ($showParts['userId']    !== true) )
+            if ( ($showParts['minimized']        === true) ||
+                 ($showParts['item:data:userId'] !== true) )
                 $html .= "<br class='clear' />";
             */
 
@@ -253,16 +245,16 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
             $clearFloats = false;
         }
 
-        if ( $showParts['dates'] )
+        if ( $showParts['item:data:dates'] )
         {
             $html .= "<div class='dates'>";
 
-            if ($showParts['dates:tagged'] === true)
+            if ($showParts['item:data:dates:tagged'] === true)
                 $html .= "<div class='tagged'>"
                       .    $userItem->taggedOn
                       .  "</div>";
 
-            if ($showParts['dates:updated'] === true)
+            if ($showParts['item:data:dates:updated'] === true)
                 $html .= "<div class='updated'>"
                       .    $userItem->updatedOn
                       .  "</div>";
@@ -289,7 +281,7 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
      */
     protected function _renderUserId($userItem, $showParts)
     {
-        $showAvatar = (($showParts['userId:avatar'] === true) &&
+        $showAvatar = (($showParts['item:data:userId:avatar'] === true) &&
                        ( ! @empty($userItem->user->pictureUrl)) );
 
         $html =  "<div class='userId'>"

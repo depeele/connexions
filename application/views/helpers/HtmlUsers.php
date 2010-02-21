@@ -9,15 +9,12 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
     static public   $perPageChoices     = array(10, 25, 50, 100);
 
     static public   $defaults               = array(
-        'displayStyle'      => self::STYLE_REGULAR,
-
-        'showMeta'          => null,
-
         'sortBy'            => self::SORT_BY_NAME,
         'sortOrder'         => Model_UserSet::SORT_ORDER_DESC,
 
         'perPage'           => 50,
-        'scopeItems'        => null
+
+        'displayStyle'      => self::STYLE_REGULAR
     );
 
 
@@ -31,77 +28,64 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
         self::STYLE_CUSTOM  => 'Custom'
     );
 
-    /** @brief  User-settable (via display options) style parts / show-meta */
-    static protected $userStyleParts    = array(
-            'meta:relation'             => true,
-            'meta:count:items'          => true,
-            'meta:count:tags'           => true,
-
-            'avatar'                    => true,
-            'userId'                    => true,
-            'fullName'                  => true,
-            'email'                     => true,
-            'tags'                      => true,
-
-            'dates:visited'             => true
-
+    /** @brief  Display style definition */
+    static protected $displayStyles     = array(
+        'user:stats'                        => array(
+            'containerCss'  => 'ui-corner-bottom'
+        ),
+        'user:stats:countItems'             => 'item count',
+        'user:stats:countTags'              => 'tag count',
+        'user:data:avatar'                  => array(
+            'label'         => 'avatar',
+            'containerTitle'=> 'avatar',
+            'extraPre'      => "<div class='img icon-highlight'><div class='ui-icon ui-icon-person'>&nbsp;</div></div>"
+        ),
+        'user:data:userId'                  => array(
+            'label'         => 'User Id',
+            'containerEl'   => 'h4'
+        ),
+        'user:data:fullName'                => 'Full Name',
+        'user:data:email'                   => array(
+            'label'         => 'email@ddress',
+            'extraPre'      => "<div class='img icon-highlight'><div class='ui-icon ui-icon-mail-closed'>&nbsp;</div></div>"
+        ),
+        'user:data:email'                   => 'email@',
+        'user:data:tags'                    => array(
+            'label'         => 'Top tags',
+            'extraPost'     => "<label class='tag'>...</label><label class='tag'>...</label><label class='tag'>...</label><label class='tag'>...</label>"
+        ),
+        'user:data:dates'                   => array(
+            'containerPost' => "<br class='clear' />"
+        ),
+        'user:data:dates:lastVisit'         => 'date:Last Visited'
     );
 
 
-    static public   $styleParts     = array(
-        self::STYLE_REGULAR => array(
-            'minimized'                 => false,   // show-meta
-
-            'meta'                      => true,    // show-meta
-            'meta:relation'             => true,
-            'meta:count'                => true,    // show-meta
-            'meta:count:items'          => true,
-            'meta:count:tags'           => true,
-
-            'avatar'                    => true,
-            'userId'                    => true,
-            'fullName'                  => true,
-            'email'                     => true,
-            'tags'                      => false,
-
-            'dates'                     => false,   // show-meta
-            'dates:visited'             => false,
+    /** @brief  Pre-defined style groups. */
+    static public   $styleGroups    = array(
+        self::STYLE_REGULAR => array('user:stats:countItems',
+                                     'user:stats:countTags',
+                                     'user:data:avatar',
+                                     'user:data:userId',
+                                     'user:data:fullName',
+                                     'user:data:email'
         ),
-        self::STYLE_FULL    => array(
-            'minimized'                 => false,   // show-meta
-
-            'meta'                      => true,    // show-meta
-            'meta:relation'             => true,
-            'meta:count'                => true,    // show-meta
-            'meta:count:items'          => true,
-            'meta:count:tags'           => true,
-
-            'avatar'                    => true,
-            'userId'                    => true,
-            'fullName'                  => true,
-            'email'                     => true,
-            'tags'                      => true,
-
-            'dates'                     => true,    // show-meta
-            'dates:visited'             => true,
+        self::STYLE_FULL    => array('user:stats:countItems',
+                                     'user:stats:countTags',
+                                     'user:data:avatar',
+                                     'user:data:userId',
+                                     'user:data:fullName',
+                                     'user:data:email',
+                                     'user:data:tags',
+                                     'user:data:dates:lastVisit'
         ),
-        self::STYLE_CUSTOM  => array(
-            'minimized'                 => false,   // show-meta
-
-            'meta'                      => true,    // show-meta
-            'meta:relation'             => true,
-            'meta:count'                => true,    // show-meta
-            'meta:count:items'          => true,
-            'meta:count:tags'           => true,
-
-            'avatar'                    => true,
-            'userId'                    => true,
-            'fullName'                  => true,
-            'email'                     => true,
-            'tags'                      => true,
-
-            'dates'                     => true,    // show-meta
-            'dates:visited'             => true,
+        self::STYLE_CUSTOM  => array('user:stats:countItems',
+                                     'user:stats:countTags',
+                                     'user:data:avatar',
+                                     'user:data:userId',
+                                     'user:data:fullName',
+                                     'user:data:email',
+                                     'user:data:tags'
         )
     );
 
@@ -131,17 +115,27 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
                 );
 
 
+    static protected $_initialized  = array();
 
     /** @brief  Set-able parameters. */
-    protected       $_namespace     = 'users';
+    protected       $_namespace         = 'users';
 
-    protected       $_displayStyle  = null;
-    protected       $_showMeta      = null;
-    protected       $_sortBy        = null;
-    protected       $_sortOrder     = null;
-    protected       $_scopeItems    = null;
+    protected       $_displayStyle      = null;
+    protected       $_displayStyleStr   = null;
+    protected       $_sortBy            = null;
+    protected       $_sortOrder         = null;
+    protected       $_scopeItems        = null;
 
-    static protected $_initialized  = array();
+    public function __construct()
+    {
+        $this->_displayStyle =
+            new Connexions_DisplayStyle(
+                    array(
+                        'namespace'     => $this->_namespace,
+                        'definition'    => self::$displayStyles,
+                        'groups'        => self::$styleGroups
+                    ));
+    }
 
     /** @brief  Render an HTML version of a paginated set of Users or,
      *          if no arguments, this helper instance.
@@ -195,6 +189,9 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
 
         $this->_namespace = $namespace;
 
+        // Update our displayStyle namespace.
+        $this->_displayStyle->setNamespace($namespace);
+
         if (! @isset(self::$_initialized[$namespace]))
         {
             $view   = $this->view;
@@ -220,22 +217,24 @@ function init_<?= $namespace ?>DisplayOptions()
     var $form           = $displayOptions.find('form:first');
     var $submit         = $displayOptions.find(':submit');
     var $control        = $displayOptions.find('.control:first');
+    var styleGroups     = <?= json_encode($this->_displayStyle
+                                                    ->getGroupsMap()) ?>;
 
+    /*
     // Add an opacity hover effect to the displayOptions
     $displayOptions.fadeTo(100, 0.5)
                    .hover(  function() {    // in
                                 $displayOptions.fadeTo(100, 1.0);
                             },
                             function(e) {   // out
-                                /* For at least Mac Firefox 3.5, for <select>
-                                 * when we move into the options we receive a
-                                 * 'moustout' event on the select box with a
-                                 * related target of 'html'.  The wreaks havoc
-                                 * by de-selecting the select box and it's
-                                 * parent(s), causing the displayOptions to
-                                 * disappear.  NOT what we want, so IGNORE the
-                                 * event.
-                                 */
+                                // For at least Mac Firefox 3.5, for <select>
+                                // when we move into the options we receive a
+                                // 'moustout' event on the select box with a
+                                // related target of 'html'.  The wreaks havoc
+                                // by de-selecting the select box and it's
+                                // parent(s), causing the displayOptions to
+                                // disappear.  NOT what we want, so IGNORE the
+                                // event.
                                 if ((e.relatedTarget === undefined) ||
                                     (e.relatedTarget === null)      ||
                                     (e.relatedTarget.localName === 'html'))
@@ -252,6 +251,7 @@ function init_<?= $namespace ?>DisplayOptions()
                                     $control.click();
                             }
                          );
+    */
 
     // Click the 'Display Options' button to toggle the displayOptions pane
     $control.click(function(e) {
@@ -275,8 +275,10 @@ function init_<?= $namespace ?>DisplayOptions()
     var $cControl       = $displayStyle.find('.control:first');
     var $customFieldset = $displayStyle.find('fieldset:first');
 
-    /* Attach a data item to each display option identifying the display type
-     * (pulled from the CSS class (<?= $namespace ?>Style-<type>)
+    /* Attach a data item to each display option identifying the display style.
+     *
+     * Note: The style name is pulled from the CSS class
+     *          (<?= $namespace ?>Style-<type>)
      */
     $displayStyle.find('a.option,div.option a:first').each(function() {
                 // Retrieve the new style value from the
@@ -302,7 +304,7 @@ function init_<?= $namespace ?>DisplayOptions()
                 $displayOptions.find('#buttons-global')
                                     .toggleClass('buttons-custom');
 
-                $displayStyle.find('.custom.items').toggle();
+                $displayStyle.find('fieldset.custom').toggle();
                 $cControl.toggleClass('ui-state-active');
             });
     /* For the anchors within the 'Custom' button, disable the default browser
@@ -334,14 +336,22 @@ function init_<?= $namespace ?>DisplayOptions()
                 e.preventDefault();
                 e.stopPropagation();
 
-                var $opt    = $(this);
+                var $opt        = $(this);
+                var newStyle    = $opt.data('displayStyle');
 
                 // Save the style in our hidden input
-                $itemsStyle.val( $opt.data('displayStyle') );
+                $itemsStyle.val( newStyle );
 
                 $displayStyle.find('a.option-selected')
                                             .removeClass('option-selected');
                 $opt.addClass('option-selected');
+
+                // Turn OFF all items in the customFieldset...
+                $customFieldset.find('input').removeAttr('checked');
+
+                // Turn ON  the items for this new display style.
+                $customFieldset.find( styleGroups[ newStyle ])
+                               .attr('checked', true);
 
                 // Trigger a change event on our form
                 $form.change();
@@ -439,7 +449,7 @@ function init_<?= $namespace ?>List()
 
     //var $userItems  = $('#<?= $namespace ?>List form.userItem');
 
-    // Initialize display options
+    // Initialize any group headers
     init_<?= $namespace ?>GroupHeader();
 }
 
@@ -461,10 +471,11 @@ function init_<?= $namespace ?>List()
 
     /** @brief  Set the current style.
      *  @param  style   A style value (self::STYLE_*)
+     *  @param  values  If provided, an array of field values for this style.
      *
      *  @return Connexions_View_Helper_HtmlUsers for a fluent interface.
      */
-    public function setStyle($style)
+    public function setStyle($style, array $values = null)
     {
         $orig = $style;
 
@@ -485,7 +496,15 @@ function init_<?= $namespace ?>List()
                             . "setStyle({$orig}) == [ {$style} ]");
         // */
     
-        $this->_displayStyle = $style;
+        $this->_displayStyleStr = $style;
+        if ($values !== null)
+        {
+            $this->_displayStyle->setValues($values);
+        }
+        else
+        {
+            $this->_displayStyle->setValuesByGroup($style);
+        }
 
         return $this;
     }
@@ -496,7 +515,8 @@ function init_<?= $namespace ?>List()
      */
     public function getStyle()
     {
-        return $this->_displayStyle;
+        //return $this->_displayStyle->getBestGroupMatch();
+        return $this->_displayStyleStr;
     }
 
 
@@ -583,133 +603,27 @@ function init_<?= $namespace ?>List()
         return $this->_sortOrder;
     }
 
-    /** @brief  Set the current showMeta.
-     *  @param  showMeta    A showMeta array.
-     *
-     *  @return Connexions_View_Helper_HtmlUsers for a fluent interface.
-     */
-    public function setShowMeta(Array $showMeta)
-    {
-        if (@is_array($showMeta))
-        {
-            /* Leave modifications / mix-ins for retrieval since other relevant 
-             * values may change before then.
-             */
-            $this->_showMeta = array();
-
-            foreach (self::$userStyleParts as $key => $val)
-            {
-                $newVal = (@isset($showMeta[$key])
-                            ? true
-                            : false);
-
-                $this->_showMeta[$key] = $newVal;
-                if ($newVal && @is_array($val))
-                {
-                    // Additional settings
-                    foreach ($val as $subKey => $subVal)
-                    {
-                        /* If the main key was set to true, then all sub-keys 
-                         * are directly set to the specified value.
-                         *
-                         * If the main key was set to false, then all sub-keys 
-                         u that are specified true must also be set false.  
-                         * Those specified false are either-or settings and are 
-                         * NOT directly implied when the main key is false.
-                         */
-                        if (($newVal === true) || ($subVal === true))
-                            $this->_showMeta[$subKey] = $subVal;
-                    }
-                }
-            }
-
-            /*
-            Connexions::log('Connexions_View_Helper_HtmlUsers::'
-                                . 'setShowMeta( [ '
-                                .       print_r($showMeta, true) .' ] ) == [ '
-                                .       print_r($this->_showMeta, true) .' ]');
-            // */
-        }
-
-        return $this;
-    }
-
     /** @brief  Get the current showMeta value.
      *
      *  @return The showMeta value (self::SORT_BY_*).
      */
     public function getShowMeta()
     {
-        if (@is_array($this->_showMeta))
-        {
-            $val = $this->_showMeta;
-        }
-        else
-            $val = self::$styleParts[$this->_displayStyle];
+        $val = $this->_displayStyle->getValues();
 
         if (! @is_bool($val['minimized']))
         {
-            /* View meta-info:
-             *  Include additional meta-info that is helpful for further view
-             *  renderers in determining what to render.
+            /* Include additional meta information:
+             *      minimized
              */
-            $val = $this->_includeShowMeta($val);
-
-            $this->_showMeta = $val;
+            $val['minimized'] =
+                   (($val['user:data:dates:lastVisit'] === false) );
         }
 
         /*
-        $str = "Connexions_View_Helper_HtmlUsers::getShowMeta(): [\n";
-        foreach ($val as $key => $dat)
-        {
-            $type = gettype($dat);
-
-            $str .= '   '. $key .': '. $type .' (';
-            switch ($type)
-            {
-            case 'boolean':
-                $str .= ($dat === true ? 'true' : 'false');
-                break;
-
-            case 'integer':
-                $str .= sprintf("%d", $dat);
-                break;
-
-            case 'double':
-                $str .= sprintf("%f", $dat);
-                break;
-
-            case 'string':
-                $str .= $dat;
-                break;
-
-            case 'array':
-                $str .= 'array';
-                break;
-
-            case 'object':
-                $str .= 'object';
-                break;
-
-            case 'resource':
-                $str .= 'resource';
-                break;
-
-            case 'NULL':
-                $str .= 'null';
-                break;
-
-            default:
-                $str .= $dat;
-            }
-
-            $str .= ")\n";
-        }
-
-        Connexions::log($str);
-        //Connexions::log('Connexions_View_Helper_HtmlUsers::'
-        //                    . 'getShowMeta(): return[ '
-        //                    .       print_r($val, true) .' ]');
+        Connexions::log('Connexions_View_Helper_HtmlUsers::'
+                            . 'getShowMeta(): return[ '
+                            .       print_r($val, true) .' ]');
         // */
     
         return $val;
@@ -836,7 +750,7 @@ function init_<?= $namespace ?>List()
 
         $html .= "<div id='{$this->_namespace}List'>"   // List {
               .   $uiPagination->render($paginator, 'pagination-top', true)
-              .   $this->_renderDisplayOptions($paginator, $showMeta);
+              .   $this->_renderDisplayOptions($paginator);
 
         if (count($paginator))
         {
@@ -982,7 +896,7 @@ function init_<?= $namespace ?>List()
         case self::SORT_BY_TAG_COUNT:         // 'totalTags'
         case self::SORT_BY_ITEM_COUNT:        // 'totalItems'
             $html .= "<div class='groupType numeric'>"
-                  .   $value
+                  .   $value .'<sup>+</sup>'
                   .  "</div>";
             break;
         }
@@ -1032,12 +946,10 @@ function init_<?= $namespace ?>List()
     /** @brief  Render the 'displayOptions' control area.
      *  @param  paginator   The current paginator (so we know the number of 
      *                                             items per page);
-     *  @param  showMeta    The set of custom options;
-     *
      *
      *  @return A string of HTML.
      */
-    protected function _renderDisplayOptions($paginator, $showMeta)
+    protected function _renderDisplayOptions($paginator)
     {
         $namespace        = $this->_namespace;
         $itemCountPerPage = $paginator->getItemCountPerPage();
@@ -1122,7 +1034,7 @@ function init_<?= $namespace ?>List()
               .    "<div class='field displayStyle'>"    // displayStyle {
               .     "<label for='{$namespace}Style'>Display</label>"
               .     "<input type='hidden' name='{$namespace}Style' "
-              .           "value='{$this->_displayStyle}' />";
+              .           "value='{$this->_displayStyleStr}' />";
 
         $idex       = 0;
         $titleCount = count(self::$styleTitles);
@@ -1136,7 +1048,7 @@ function init_<?= $namespace ?>List()
             {
                 $itemHtml .= "<div class='{$cssClass} control "
                           .             "ui-corner-all ui-state-default"
-                          .     ($this->_displayStyle === self::STYLE_CUSTOM
+                          .     ($this->_displayStyleStr === self::STYLE_CUSTOM
                                     ? " ui-state-active"
                                     : "")
                           .                 "'>";
@@ -1144,7 +1056,7 @@ function init_<?= $namespace ?>List()
             }
 
             $cssClass .= " {$namespace}Style-{$key}";
-            if ($key == $this->_displayStyle)
+            if ($key == $this->_displayStyleStr)
                 $cssClass .= ' option-selected';
 
             $itemHtml .= "<a class='{$cssClass}' "
@@ -1163,28 +1075,36 @@ function init_<?= $namespace ?>List()
         $html .= implode("<span class='comma'>, </span>", $parts);
 
 
+        $html .= $this->_displayStyle
+                        ->renderFieldset(array(
+                            'class' => 'custom',
+                            'style' => ($this->_displayStyleStr
+                                                !== self::STYLE_CUSTOM
+                                            ? 'display:none;'
+                                            : '')) );
+
+        /*
         $html .= sprintf("<fieldset class='custom users'%s>",
-                          ($this->_displayStyle !== self::STYLE_CUSTOM
+                          ($this->_displayStyleStr !== self::STYLE_CUSTOM
                                 ? " style='display:none;'"
                                 : ""));
 
-        // Need 'legend' for vertical spacing control
         $html .=    "<div class='user'>"    // user {
               .      "<div class='meta'>"   // meta {
               .       "<div class='field countItems'>"
               .        "<input type='checkbox' "
-              .              "name='{$namespace}StyleCustom[meta:count:items]' "
+              .              "name='{$namespace}StyleCustom[user:stats:countItems]' "
               .                "id='display-countItems'"
-              .              ( $showMeta['meta:count:items']
+              .              ( $showMeta['user:stats:countItems']
                                 ? " checked='true'"
                                 : ''). " />"
               .        "<label for='display-countItems'>item count</label>"
               .       "</div>"
               .       "<div class='field countTags'>"
               .        "<input type='checkbox' "
-              .              "name='{$namespace}StyleCustom[meta:count:tags]' "
+              .              "name='{$namespace}StyleCustom[user:stats:countTags]' "
               .                "id='display-countTags'"
-              .              ( $showMeta['meta:count:tags']
+              .              ( $showMeta['user:stats:countTags']
                                 ? " checked='true'"
                                 : ''). " />"
               .        "<label for='display-countTags'>tag count</label>"
@@ -1193,9 +1113,9 @@ function init_<?= $namespace ?>List()
               .      "<div class='data'>"   // data {
               .       "<div class='field avatar'>"
               .        "<input type='checkbox' "
-              .               "name='{$namespace}StyleCustom[avatar]' "
+              .               "name='{$namespace}StyleCustom[user:data:avatar]' "
               .                 "id='display-avatar'"
-              .              ( $showMeta['avatar']
+              .              ( $showMeta['user:data:avatar']
                                 ? " checked='true'"
                                 : ''). " />"
               .        "<label for='display-avatar'>avatar</label>"
@@ -1204,7 +1124,7 @@ function init_<?= $namespace ?>List()
               .        "<input type='checkbox' "
               .               "name='{$namespace}StyleCustom[userId]' "
               .                 "id='display-userId'"
-              .              ( $showMeta['userId']
+              .              ( $showMeta['user:data:userId']
                                 ? " checked='true'"
                                 : ''). " />"
               .        "<label for='display-userId'>User Name</label>"
@@ -1213,7 +1133,7 @@ function init_<?= $namespace ?>List()
               .        "<input type='checkbox' "
               .               "name='{$namespace}StyleCustom[fullName]' "
               .                 "id='display-fullName'"
-              .              ( $showMeta['fullName']
+              .              ( $showMeta['user:data:fullName']
                                 ? " checked='true'"
                                 : ''). " />"
               .        "<label for='display-fullName'>full name</label>"
@@ -1222,7 +1142,7 @@ function init_<?= $namespace ?>List()
               .        "<input type='checkbox' "
               .               "name='{$namespace}StyleCustom[email]' "
               .                 "id='display-email'"
-              .              ( $showMeta['email']
+              .              ( $showMeta['user:data:email']
                                 ? " checked='true'"
                                 : ''). " />"
               .        "<label for='display-email'>email address</label>"
@@ -1233,7 +1153,7 @@ function init_<?= $namespace ?>List()
               .               "name='{$namespace}StyleCustom[tags]' "
               .                 "id='display-tags' "
               .              "class='tag' "
-              .              ( $showMeta['tags']
+              .              ( $showMeta['user:data:tags']
                                 ? " checked='true'"
                                 : ''). " />"
               .        "<label for='display-tags' class='tag'>"
@@ -1249,7 +1169,7 @@ function init_<?= $namespace ?>List()
               .         "<input type='checkbox' "
               .               "name='{$namespace}StyleCustom[dates:visited]' "
               .                 "id='display-dateVisited'"
-              .              ( $showMeta['dates:visited']
+              .              ( $showMeta['user:data:dates:lastVisit']
                                 ? " checked='true'"
                                 : ''). " />"
               .         "<label for='display-dateVisited'>date:visited</label>"
@@ -1258,10 +1178,11 @@ function init_<?= $namespace ?>List()
               .       "<br class='clear' />"
               .     "</div>"                    // user }
               .    "</fieldset>";
+         */
 
         $html .=  "</div>"                      // displayStyle }
               .   "<div id='buttons-global' class='buttons"
-              .           ($this->_displayStyle === self::STYLE_CUSTOM
+              .           ($this->_displayStyleStr === self::STYLE_CUSTOM
                                 ? " buttons-custom"
                                 : "")
               .                         "'>"

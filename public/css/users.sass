@@ -75,40 +75,48 @@
               display:      inline
               float:        none
               width:        auto
-              padding-left: 0.25em
+              padding-left: 0
 
-            .meta
+            .stats
               font-weight:  normal
 
             .data
-              padding-left: 0
-              .itemName
-                padding-bottom: 0.5em
+              padding-left: 24px
+              .avatar
+                border =        "1px solid" !borderColor
+                height:         32px
+                width:          18px
+                margin-top:     0.2em
+                padding:        0 2px
+                label
+                  display:      none
 
-              .url, .description, .descriptionSummary
-                margin:         0
+              .userId
+                font-size:      1.0em
 
-              .rating
-                padding:        0.25em 0 0.25em 0.5em
-                text-align:     left
-
-                .meta
-                  text-align:   left
-                  float:        none
-                  padding:      0
-
-              .avatar, .userId, .fullName, .email
-                position:       relative
-                display:        block
-                height:         auto
-                width:          auto
+              .fullName, .email
+                display:        inline
+                font-size:      0.9em
+                padding:        0.25em 0 0.25em 1em
+              .email
+                padding-right:  0.5em
+              .fullName
                 float:          none
+
               .tags
+                clear:        both
                 width:        auto
                 text-align:   left
-                .tag
-                  display:  inline
-                  float:    none
+                padding:      0.25em 0
+                label
+                  display:    inline
+                  float:      none
+                  font-size:  0.8em
+
+              .dates
+                padding:      0.25em 0
+                .lastVisit
+                  display:    block
 
   .users
     clear:          both
@@ -177,8 +185,8 @@
       margin-bottom:  1em
       border-top =    "1px solid" !borderColor
 
-      // meta:count:items, tags
-      .meta
+      // stats:countItems, countTags
+      .stats
         position:             relative
         float:                right
         width =               !countBoxWidth
@@ -236,13 +244,6 @@
               .ui-icon
                 position:         relative
                 left:             8px
-        .relation
-          position:               absolute
-          left:                   0
-          top:                    32px
-          width:                  32px
-          text-align:             center
-          font-size:              0.6em
 
         // UserId
         .userId

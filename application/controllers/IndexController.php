@@ -138,8 +138,8 @@ class IndexController extends Zend_Controller_Action
                  ->setSortOrder($itemsSortOrder);
         if (is_array($itemsStyleCustom))
             $uiHelper->setStyle(Connexions_View_Helper_HtmlUserItems
-                                                            ::STYLE_CUSTOM)
-                     ->setShowMeta($itemsStyleCustom);
+                                                            ::STYLE_CUSTOM,
+                                $itemsStyleCustom);
         else
             $uiHelper->setStyle($itemsStyle);
 
