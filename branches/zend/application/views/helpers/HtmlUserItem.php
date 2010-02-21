@@ -151,7 +151,7 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
         }
 
 
-        if ($showParts['minimized'] === true)
+        if (($showParts['minimized'] === true) && ($viewer->isAuthenticated()))
             $html .= $this->_renderHtmlControl($userItem, $isOwner);
 
         if ($showParts['item:data:itemName'] === true)
@@ -162,7 +162,8 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                              $userItem->item->urlHash,
                              htmlspecialchars($userItem->name));
 
-            if (! $showParts['minimized'] === true)
+            if ((! $showParts['minimized'] === true) &&
+                ($viewer->isAuthenticated()) )
                 $html .= $this->_renderHtmlControl($userItem, $isOwner);
 
             $html .= "</h4>";   // itemName }
