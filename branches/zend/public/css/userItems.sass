@@ -69,7 +69,7 @@
           border-bottom:  0
           .item
             border =      "1px solid" !borderColor
-            padding:      0 0.1em 0.1em 0.2em
+            padding:      0 0 0.1em 0.2em
 
             label
               display:      inline
@@ -77,36 +77,57 @@
               width:        auto
               padding-left: 0.25em
 
-            .meta
+            .stats
               font-weight:  normal
-
-            .data
-              padding-left: 0
-              .itemName
-                padding-bottom: 0.5em
-
-              .url, .description, .descriptionSummary
-                margin:         0
+              padding:      0
 
               .rating
-                padding:        0.25em 0 0.25em 0.5em
+                padding:        0.25em 0.1em 0.25em 0.5em
                 text-align:     left
 
-                .meta
+                .info
                   text-align:   left
                   float:        none
                   padding:      0
 
+            .data
+              padding-left:       0
+              padding-right:      0.1em
+              .itemName
+                padding-bottom:   0.5em
+
+              .url, .description, .description .full, .description .summary
+                margin:           0
+
+              .description
+                padding-bottom:   0.5em
+                .full, .summary
+                  padding:        0
+
               .userId
-                .userId-avatar
-                  float:        right
-                  padding-left: 0.75em
+                white-space:      normal
+                padding:          0 0 0 1em
+                font-size:        0.8em
+                label
+                  padding-left:   0
+                .avatar
+                  position:       relative
+                  float:          left
+                  padding:        0 0.75em 0 0.25em
+                  label
+                    padding-left: 8px
+                  .img
+                    position:     absolute
+                    left:         14px
+                    top:          0
               .tags
-                width:        auto
-                text-align:   left
-                .tag
-                  display:  inline
-                  float:    none
+                width:            auto
+                text-align:       left
+                padding:          0 0 1em 0
+                label
+                  display:        inline
+                  float:          none
+                  font-size:      0.8em
 
               .dates
                 .updated
@@ -199,7 +220,7 @@
           left:     4px
 
       // Tagger count, rating, tag date/time
-      .meta
+      .stats
         position:   relative
         float:      right
         width =     !countBoxWidth
@@ -290,7 +311,7 @@
                   // sprites.sass::.star_1_hover
                   background-position:  -88px -58px
 
-          .meta
+          .info
             clear:      left
             color =     !controlColor
             font-size:  0.75em
@@ -321,11 +342,14 @@
             font-weight:  normal
 
         // Item Description / Description Summary
-        .description, .descriptionSummary
+        .description
           display:    block
           padding:    0 0 0 1em
           margin:     0 175px 0 0
           color =     !controlColor
+
+          .full, .summary
+            display:  block
 
         // UserId
         .userId

@@ -65,8 +65,8 @@ class PeopleController extends Zend_Controller_Action
                  ->setSortOrder($usersSortOrder);
         if (is_array($usersStyleCustom))
             $uiHelper->setStyle(Connexions_View_Helper_HtmlUsers
-                                                            ::STYLE_CUSTOM)
-                     ->setShowMeta($usersStyleCustom);
+                                                        ::STYLE_CUSTOM,
+                                $usersStyleCustom);
         else
             $uiHelper->setStyle($usersStyle);
 

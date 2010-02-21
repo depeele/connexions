@@ -9,26 +9,16 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
     /** @brief  Generate an HTML view of a single User Item / Bookmark.
      *  @param  user        The Model_User instance to present.
      *  @param  viewer      The Model_User instance of the current viewer
-     *  @param  showParts   The parts to present [ null === 'regular' ]
-     *                      (see Connexions_View_Helper_HtmlUsersUser::
-     *                                                          $styleParts)
+     *  @param  showParts   The parts to present.
      *  @param  index       The index of this item in any list [ 0 ].
      *  @return The HTML representation of the user items.
      */
     public function htmlUsersUser(Model_User    $user,
                                   Model_User    $viewer,
-                                                $showParts  = null,
+                                  array         $showParts  = array(),
                                                 $index      = 0)
     {
         $html = '';
-
-        if (! @is_array($showParts))
-        {
-            $showParts = Connexions_View_Helper_HtmlUsersUser::
-                            $styleParts[Connexions_View_Helper_HtmlUsersUser::
-                                                                STYLE_REGULAR];
-        }
-
         $isMe = ( ($viewer && ($user->userId === $viewer->userId))
                         ? true
                         : false );
@@ -43,10 +33,10 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
               .             implode(' ', $itemClasses) . "'>\n"
               .   "<form class='user'>";        // user {
 
-        if ($showParts['meta'] === true)
+        if ($showParts['user:stats'] === true)
         {
-            $html .=   "<div class='meta ui-corner-bottom'>";    // meta {
-            if ($showParts['meta:count:items'] === true)
+            $html .=   "<div class='stats ui-corner-bottom'>";  // stats {
+            if ($showParts['user:stats:countItems'] === true)
             {
                 $html .= sprintf ("<a class='countItems' "
                                   .   "href='%s' "
@@ -58,7 +48,7 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
                                  $user->totalItems);
             }
 
-            if ($showParts['meta:count:tags'] === true)
+            if ($showParts['user:stats:countTags'] === true)
             {
                 $html .= sprintf (  "<a class='countTags' "
                                   .    "title='Tags' "
@@ -77,14 +67,7 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
                                  $user->totalTags);
             }
 
-            if ($showParts['meta:relation'])
-            {
-                $html .= "<div class='relation'>"
-                      .   ":TODO:"
-                      .  "</div>";
-            }
-
-            $html .=   "</div>";                // meta }
+            $html .=   "</div>";                // stats }
         }
 
         $clearFloats = $showParts['minimized'];
@@ -95,11 +78,11 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
         $html .= $this->_renderUserId($user, $showParts);
 
 
-        if ($showParts['fullName'] === true)
+        if ($showParts['user:data:fullName'] === true)
         {
             $html .= "<div class='fullName'>";   // fullName {
 
-            if ($showParts['userId'] !== true)
+            if ($showParts['user:data:userId'] !== true)
             {
                 $html .= sprintf("<a href='%s' title='%s'>%s</a>",
                                  $this->view->url(array(
@@ -117,7 +100,7 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
             $html .= "</div>";   // fullName }
         }
 
-        if ($showParts['email'] === true)
+        if ($showParts['user:data:email'] === true)
         {
             $html .= "<div class='email'>"
                   .   sprintf ( "<a href='mailto:%s' "
@@ -135,7 +118,7 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
                   .  "</div>";
         }
 
-        if ($showParts['tags'] === true)
+        if ($showParts['user:data:tags'] === true)
         {
             /*
             if ( ($showParts['minimized'] === true) ||
@@ -173,11 +156,11 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
             $clearFloats = true;
         }
 
-        if ( $showParts['dates'] )
+        if ( $showParts['user:data:dates'] )
         {
             $html .= "<div class='dates'>";
 
-            if ($showParts['dates:visited'] === true)
+            if ($showParts['user:data:dates:lastVisit'] === true)
                 $html .= "<div class='lastVisit'>"
                       .    $user->lastVisit
                       .  "</div>";
@@ -201,7 +184,7 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
      */
     protected function _renderAvatar($user, $showParts)
     {
-        if ($showParts['avatar'] !== true)
+        if ($showParts['user:data:avatar'] !== true)
             return '';
 
         $html =  "<div class='avatar'>"
@@ -233,7 +216,7 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
 
     protected function _renderUserId($user, $showParts)
     {
-        if ($showParts['userId'] !== true)
+        if ($showParts['user:data:userId'] !== true)
             return '';
 
         $html =  "<div class='userId'>"
