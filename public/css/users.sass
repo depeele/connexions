@@ -182,7 +182,7 @@
     .user
       position:       relative
       z-index:        1
-      margin-bottom:  1em
+      padding-bottom: 1em
       border-top =    "1px solid" !borderColor
 
       // stats:countItems, countTags
@@ -205,20 +205,22 @@
         .countTags
           display:            block
           position:           relative
-          color =             !pageColorBackground
-          padding:            0.25em
-          font-size:          0.8em
+          color =             !borderColor
+          padding:            0.25em 16px 0.25em 0.25em
+          font-size:          0.75em
           font-weight:        normal
-          text-align:         center
+          text-align:         right
           text-decoration:    none
           &:hover
             background-color =  !navColorHover
+            color =             !pageColorBackground
           // tag icon
           .icon
             position:           absolute
             border:             none
-            right:              0
-            padding:            0 2px
+            top:                0.25em
+            right:              -2px
+            padding:            0
 
       .data
         position: relative
@@ -250,6 +252,7 @@
           float:        left
           padding:      0
           font-size:    1.25em
+          width:        6em
 
           a
             display:      inline
@@ -288,7 +291,7 @@
           display:    block
           float:      right
           font-size:  0.9em
-          padding:    0.5em 0
+          padding:    0.5em 0 0
           margin:     0
           text-align: right
           //width:      45%

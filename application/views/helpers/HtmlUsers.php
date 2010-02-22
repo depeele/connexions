@@ -10,7 +10,7 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
 
     static public   $defaults               = array(
         'sortBy'            => self::SORT_BY_NAME,
-        'sortOrder'         => Model_UserSet::SORT_ORDER_DESC,
+        'sortOrder'         => Model_UserSet::SORT_ORDER_ASC,
 
         'perPage'           => 50,
 
@@ -500,6 +500,7 @@ function init_<?= $namespace ?>List()
         if ($values !== null)
         {
             $this->_displayStyle->setValues($values);
+            $this->_displayStyleStr = $this->_displayStyle->getBestGroupMatch();
         }
         else
         {

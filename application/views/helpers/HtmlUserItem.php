@@ -251,12 +251,22 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
             $html .= "<div class='dates'>";
 
             if ($showParts['item:data:dates:tagged'] === true)
-                $html .= "<div class='tagged'>"
+            {
+                $dateTitle = 'date tagged';
+                if (($showParts['item:data:dates:updated'] === true) &&
+                    ($userItem->updatedOn == $userItem->taggedOn) )
+                {
+                    $dateTitle .= '/updated';
+                }
+
+                $html .= "<div class='tagged' title='{$dateTitle}'>"
                       .    $userItem->taggedOn
                       .  "</div>";
+            }
 
-            if ($showParts['item:data:dates:updated'] === true)
-                $html .= "<div class='updated'>"
+            if (($showParts['item:data:dates:updated'] === true) &&
+                ($userItem->updatedOn != $userItem->taggedOn) )
+                $html .= "<div class='updated' title='date updated'>"
                       .    $userItem->updatedOn
                       .  "</div>";
 
