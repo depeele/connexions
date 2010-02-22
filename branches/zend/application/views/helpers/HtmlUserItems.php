@@ -109,7 +109,7 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
 
 
     const SORT_BY_DATE_TAGGED       = 'taggedOn';
-    const SORT_BY_DATE_UPDATED      = 'dateUpdated';
+    const SORT_BY_DATE_UPDATED      = 'updatedOn';
     const SORT_BY_NAME              = 'name';
     const SORT_BY_RATING            = 'rating';
     const SORT_BY_RATING_COUNT      = 'item_ratingCount';
@@ -544,13 +544,14 @@ function init_<?= $namespace ?>List()
                             . "setStyle({$orig}) == [ {$style} ]");
         // */
     
-        $this->_displayStyleStr = $style;
         if ($values !== null)
         {
             $this->_displayStyle->setValues($values);
+            $this->_displayStyleStr = $this->_displayStyle->getBestGroupMatch();
         }
         else
         {
+            $this->_displayStyleStr = $style;
             $this->_displayStyle->setValuesByGroup($style);
         }
 
@@ -668,20 +669,21 @@ function init_<?= $namespace ?>List()
 
         $val = $this->_displayStyle->getValues();
 
+        /*
+        Connexions::log("Connexions_View_Helper_HtmlUserItems::"
+                            . "getShowMeta(): "
+                            . "[ ". print_r($val, true) ." ]");
+        // */
+
         if (! @is_bool($val['minimized']))
         {
             /* Include additional meta information:
              *      minimized
              */
             $val['minimized'] =
-                   (($val['item:meta:rating:stars:average'] === false) &&
-                    ($val['item:meta:rating:stars:owner']   === false) &&
-                    ($val['item:meta:rating:meta']          === false) &&
-                    ($val['item:data:url']                  === false) &&
-                    ($val['item:data:description']          === false) &&
-                    //($val['item:data:tags']                 === false) &&
-                    ($val['item:data:dates:tagged']         === false) &&
-                    ($val['item:data:dates:updated']        === false));
+                   (($val['item:stats:rating']          !== true) &&
+                    ($val['item:data:url']              !== true) &&
+                    ($val['item:data:description:full'] !== true));
         }
 
         /*
@@ -1048,10 +1050,19 @@ function init_<?= $namespace ?>List()
 
         foreach (self::$sortTitles as $key => $title)
         {
-            $html .= $this->_renderOption("{$namespace}SortBy",
-                                          $key,
-                                          $title,
-                                          $key == $this->_sortBy);
+            $isOn = ($key == $this->_sortBy);
+            $css  = 'ui-corner-all';
+
+            if ($isOn)  $css .= ' option-on';
+
+            $html .= sprintf(  "<option%s title='%s' value='%s'%s>"
+                             .  "<span>%s</span>"
+                             . "</option>",
+                             ( !@empty($css) ? " class='". $css ."'" : ""),
+                             $title,
+                             $key,
+                             ($isOn          ? " selected"           : ""),
+                             $title);
         }
 
         $html .=   "</select>"
@@ -1069,7 +1080,9 @@ function init_<?= $namespace ?>List()
                   .                      "value='{$key}'"
                   .          ($key == $this->_sortOrder
                                  ? " checked='true'" : "" ). " />"
-                  .   "<label for='{$namespace}SortOrder-{$key}'>{$title}</label>"
+                  .   "<label for='{$namespace}SortOrder-{$key}'>"
+                  .    $title
+                  .   "</label>"
                   .  "</div>";
         }
 
@@ -1145,143 +1158,6 @@ function init_<?= $namespace ?>List()
                                             ? 'display:none;'
                                             : '')) );
 
-        /*
-        $html .= sprintf("<fieldset class='custom items'%s>",
-                          ($this->_displayStyleStr !== self::STYLE_CUSTOM
-                                ? " style='display:none;'"
-                                : ""));
-
-        $html .=    "<div class='item'>"
-              .      "<div class='meta'>"
-              .       "<div class='field countTaggers ui-corner-bottom'>"
-              .        "<input type='checkbox' "
-              .               "name='{$namespace}StyleCustom[meta:countTaggers]' "
-              .                 "id='display-countTaggers'"
-              .              ( $showMeta['meta:countTaggers']
-                                ? " checked='true'"
-                                : ''). " />"
-              .        "<label for='display-countTaggers'>user count</label>"
-              .       "</div>"
-              .       "<div class='field rating'>"
-              .        "<input type='checkbox' "
-              .               "name='{$namespace}StyleCustom[meta:rating:stars]' "
-              .                 "id='display-rating'"
-              .              ( $showMeta['meta:rating:stars']
-                                ? " checked='true'"
-                                : ''). " />"
-              .        "<label for='display-rating'>Rating stars</label>"
-              .        "<div class='meta ui-corner-bottom'>"
-              .         "<input type='checkbox' "
-              .                "name='{$namespace}StyleCustom[meta:rating:meta]' "
-              .                  "id='display-ratingMeta'"
-              .               ( $showMeta['meta:rating:meta']
-                                 ? " checked='true'"
-                                 : ''). " />"
-              .         "<label for='display-ratingMeta'>Rating info</label>"
-              .        "</div>"
-              .       "</div>"
-              .      "</div>"
-              .      "<div class='data'>"
-              .       "<h4 class='field itemName'>"
-              .        "<input type='checkbox' "
-              .               "name='{$namespace}StyleCustom[itemName]' "
-              .                 "id='display-itemName'"
-              .              ( $showMeta['itemName']
-                                ? " checked='true'"
-                                : ''). " />"
-              .        "<label for='display-itemName'>Title</label>"
-              .       "</h4>"
-              .       "<div class='field url'>"
-              .        "<input type='checkbox' "
-              .               "name='{$namespace}StyleCustom[url]' "
-              .                 "id='display-url'"
-              .              ( $showMeta['url']
-                                ? " checked='true'"
-                                : ''). " />"
-              .        "<label for='display-url'>url</label>"
-              .       "</div>"
-              .       "<div class='field description'>"
-              .        "<input type='checkbox' "
-              .               "name='{$namespace}StyleCustom[description]' "
-              .                 "id='display-description'"
-              .              ( $showMeta['description']
-                                ? " checked='true'"
-                                : ''). " />"
-              .        "<label for='display-description'>description</label>"
-              .       "</div>"
-              .       "<div class='field descriptionSummary'>"
-              .        "<input type='checkbox' "
-              .               "name='{$namespace}StyleCustom[descriptionSummary]' "
-              .                 "id='display-descriptionSummary'"
-              .              ( $showMeta['descriptionSummary']
-                                ? " checked='true'"
-                                : ''). " />"
-              .        "<label for='display-descriptionSummary'>"
-              .         "description-summary"
-              .        "</label>"
-              .       "</div>"
-              .       "<br class='clear' />"
-              .       "<div class='field userId'>"
-              .        "<div class='field userId-avatar'>"
-              .         "<input type='checkbox' "
-              .                "name='{$namespace}StyleCustom[userId:avatar]' "
-              .                  "id='display-userId-avatar'"
-              .               ( $showMeta['userId:avatar']
-                                 ? " checked='true'"
-                                 : ''). " />"
-              .         "<label for='display-userId-avatar'>avatar</label>"
-              .        "</div>"
-              .        "<input type='checkbox' "
-              .               "name='{$namespace}StyleCustom[userId]' "
-              .                 "id='display-userId'"
-              .              ( $showMeta['userId']
-                                ? " checked='true'"
-                                : ''). " />"
-              .        "<label for='display-userId'>User Id</label>"
-              .       "</div>"
-              .       "<div class='field tags'>"
-              .        "<input type='checkbox' "
-              .               "name='{$namespace}StyleCustom[tags]' "
-              .                 "id='display-tags' "
-              .              "class='tag' "
-              .              ( $showMeta['tags']
-                                ? " checked='true'"
-                                : ''). " />"
-              .        "<label for='display-tags' class='tag'>"
-              .         "tags"
-              .        "</label>"
-              .        "<label class='tag'> ... </label>"
-              .        "<label class='tag'> ... </label>"
-              .        "<label class='tag'> ... </label>"
-              .        "<label class='tag'> ... </label>"
-              .       "</div>"
-              .       "<br class='clear' />"
-              .       "<div class='dates'>"
-              .        "<div class='field tagged'>"
-              .         "<input type='checkbox' "
-              .               "name='{$namespace}StyleCustom[dates:tagged]' "
-              .                 "id='display-dateTagged'"
-              .              ( $showMeta['dates:tagged']
-                                ? " checked='true'"
-                                : ''). " />"
-              .         "<label for='display-dateTagged'>date:Tagged</label>"
-              .        "</div>"
-              .        "<div class='field updated'>"
-              .         "<input type='checkbox' "
-              .               "name='{$namespace}StyleCustom[dates:updated]' "
-              .                 "id='display-dateUpdated'"
-              .              ( $showMeta['dates:updated']
-                                ? " checked='true'"
-                                : ''). " />"
-              .         "<label for='display-dateUpdated'>date:Updated</label>"
-              .        "</div>"
-              .       "</div>"
-              .       "<br class='clear' />"
-              .      "</div>"
-              .     "</div>"
-              .    "</fieldset>";
-         */
-
         $html .=  "</div>"                      // displayStyle }
               .   "<div id='buttons-global' class='buttons"
               .           ($this->_displayStyleStr === self::STYLE_CUSTOM
@@ -1297,102 +1173,6 @@ function init_<?= $namespace ?>List()
 
         $html .= "</form>"  // form }
               . "</div>";   // displayOptions }
-
-        return $html;
-    }
-
-    protected function _renderOption($name,
-                                     $value,
-                                     $title,
-                                     $isOn       = false,
-                                     $type       = 'option',
-                                     $id         = null,
-                                     $css        = '',
-                                     $corner     = 'ui-corner-all')
-    {
-        $html = '';
-
-        switch ($type)
-        {
-        case 'toggle-button':
-            $html = sprintf(  "<button type='submit' "
-                            .         "name='%s' "
-                            .           "%s"
-                            .        "class='ui-state-%s "
-                            .               "ui-toggle-button%s%s' "
-                            .        "title='%s' value='%s'>"
-                            .  "<span>%s</span>"
-                            . "</button>",
-                            $name,
-                            ($id !== null
-                                ? "id='". $id ."' "
-                                : ""),
-                            ( $isOn
-                                ? "highlight"
-                                : "default"),
-                            ( !@empty($css)
-                                ? " ". $css
-                                : ""),
-                            ( !@empty($corner)
-                                ? " ". $corner
-                                : ""),
-                            $title,
-                            $value,
-                            $title);
-            break;
-
-        case 'radio':
-            $html = sprintf(  "<div class='ui-radio%s ui-state-%s%s'>"
-                            .  "<div class='ui-radio-button%s' "
-                            .          "title='%s'>"
-                            .   "<input type='radio' "
-                            .          "name='%s' "
-                            .            "id='%s' "
-                            .          "title='%s' value='%s'%s />"
-                            .   "<label for='%s'>%s</label>"
-                            .  "</div>"
-                            . "</div>",
-                            ($isOn ? " ui-radio-on" : ""),
-                            ($isOn ? "highlight"    : "default"),
-                            ( !@empty($corner)
-                                ? " ". $corner
-                                : ""),
-
-                            ( !@empty($css)
-                                ? " ". $css
-                                : ""),
-                            $title,
-
-                            $name,
-                            ($id === null
-                                ? $name
-                                : $id),
-                            $title,
-                            $value,
-                            ($isOn ? " checked" : ""),
-
-                            ($id === null
-                                ? $name
-                                : $id),
-                            $title);
-            break;
-
-        case 'option':
-        default:
-            if ($isOn)              $css .= ' option-on';
-            if (! empty($corner))   $css .= ' '. $corner;
-
-            $html = sprintf(  "<option%s title='%s' value='%s'%s>"
-                            .  "<span>%s</span>"
-                            . "</option>",
-                            ( !@empty($css)
-                                ? " class='". $css ."'"
-                                : ""),
-                            $title,
-                            $value,
-                            ($isOn ? " selected" : ""),
-                            $title);
-        }
 
         return $html;
     }

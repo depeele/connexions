@@ -74,10 +74,12 @@ class Connexions_Set_ItemList extends Zend_Tag_ItemList
 
             /*
             Connexions::log(
-                    sprintf("Connexions_Set_ItemList: #%d [ %s : %f ]",
+                    sprintf("Connexions_Set_ItemList: #%d [ %s : %f , "
+                                                        . "url[ %s ]]",
                             count($this->_items),
                             $completed->getTitle(),
-                            $completed->getWeight()) );
+                            $completed->getWeight(),
+                            $completed->getParam('url')) );
             // */
 
             array_push($this->_items, $completed);
@@ -269,23 +271,19 @@ class Connexions_Set_ItemList extends Zend_Tag_ItemList
             throw new Exception("Connexions_Set_ItemList: "
                                     ."Items MUST implement Zend_Tag_Taggable");
 
-        if ($this->_reqInfo === null)
-            return $item;
-
         /* Include additional parameters for this item:
          *      selected    boolean indicating whether this item is in the
          *                  item list for the current request / view;
          *      url         The url to visit if this item is clicked.
          */
         $itemStr  = strtolower($item->__toString());
-        $itemList = $this->_validList;  //$this->_reqInfo->validList;
+        $itemList = $this->_validList;
 
         $url = $this->_reqUrl;
         if (! @empty($this->_reqStr))
             // Remove the requested items from the request URL
             $url = str_replace('/'. $this->_reqStr, '', $url);
 
-        //if ($this->_reqInfo->isValidItem($itemStr))
         if (@in_array($itemStr, $itemList))
         {
             // Remove this item from the new item list.
@@ -306,7 +304,7 @@ class Connexions_Set_ItemList extends Zend_Tag_ItemList
 
         /*
         Connexions::log(
-                sprintf("Connexions_Set_ItemList::current: "
+                sprintf("Connexions_Set_ItemList::_completeItem: "
                             . "reqUrl[ %s ], "
                             . "itemStr[ %s ], "
                             . "weight[ %f ], "
@@ -316,7 +314,9 @@ class Connexions_Set_ItemList extends Zend_Tag_ItemList
                         $this->_reqUrl,
                         $itemStr,
                         $item->getWeight(),
-                        implode(', ', $this->_validList),
+                        (@is_array($this->_validList)
+                            ? implode(', ', $this->_validList)
+                            : ''),
                         $this->_reqStr,
                         ($item->getParam('selected') ? '' : 'NOT '),
                         $item->getParam('url') ));

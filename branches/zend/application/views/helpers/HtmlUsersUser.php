@@ -33,6 +33,10 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
               .             implode(' ', $itemClasses) . "'>\n"
               .   "<form class='user'>";        // user {
 
+        /*****************
+         * stats
+         *
+         */
         if ($showParts['user:stats'] === true)
         {
             $html .=   "<div class='stats ui-corner-bottom'>";  // stats {
@@ -73,11 +77,60 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
         $clearFloats = $showParts['minimized'];
         $html .=   "<div class='data'>";    // data {
 
-        $html .= $this->_renderAvatar($user, $showParts);
+        /*****************
+         * avatar
+         *
+         */
+        if ($showParts['user:data:avatar'] === true)
+        {
+            $html .= "<div class='avatar'>"
+                  .   sprintf("<a href='%s' title='%s'>",
+                              $this->view->url(array(
+                                      'action' => $user->name)),
+                              $user->fullName);
 
-        $html .= $this->_renderUserId($user, $showParts);
+            $html .=   "<div class='img icon-highlight'>";
+            if ( ! @empty($user->pictureUrl))
+            {
+                // Include the user's picture / avatar
+                $html .= sprintf ("<img src='%s' />",
+                                  $user->pictureUrl);
+            }
+            else
+            {
+                // Include the default user icon
+                $html .= "<div class='ui-icon ui-icon-person'>"
+                      .   "&nbsp;"
+                      .  "</div>";
+            }
+            $html .=   "</div>"
+                  .   "</a>"
+                  .  "</div>";
+        }
+
+        /*****************
+         * userId
+         *
+         */
+        if ($showParts['user:data:userId'] === true)
+        {
+            $html .= "<div class='userId'>"
+                  .   sprintf("<a href='%s' title='%s'>",
+                              $this->view->url(array(
+                                      'controller'  => 'index',
+                                      'action'      => 'index',
+                                      'owner'       => $user->name)),
+                              $user->fullName)
+                  .    "<span class='name'>{$user->name}</span>"
+                  .   "</a>"
+                  .  "</div>";
+        }
 
 
+        /*****************
+         * fullName
+         *
+         */
         if ($showParts['user:data:fullName'] === true)
         {
             $html .= "<div class='fullName'>";   // fullName {
@@ -100,6 +153,10 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
             $html .= "</div>";   // fullName }
         }
 
+        /*****************
+         * email address
+         *
+         */
         if ($showParts['user:data:email'] === true)
         {
             $html .= "<div class='email'>"
@@ -118,6 +175,10 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
                   .  "</div>";
         }
 
+        /*****************
+         * tags
+         *
+         */
         if ($showParts['user:data:tags'] === true)
         {
             /*
@@ -143,8 +204,10 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
                 $html .= "<li class='tag'>"
                       .   "<a href='"
                       .             $this->view->url(array(
-                                        'action' => 'tagged',
-                                        'tag'    => $title)) . "' "
+                                        'controller' => 'index',
+                                        'action'     => 'index',
+                                        'owner'      => $user->name,
+                                        'tag'        => $title)) . "' "
                       .      "title='{$title}: {$weight}'>"
                       .     $title
                       .   "</a>"
@@ -156,6 +219,10 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
             $clearFloats = true;
         }
 
+        /*****************
+         * dates
+         *
+         */
         if ( $showParts['user:data:dates'] )
         {
             $html .= "<div class='dates'>";
@@ -182,55 +249,6 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
      * Protected helpers
      *
      */
-    protected function _renderAvatar($user, $showParts)
-    {
-        if ($showParts['user:data:avatar'] !== true)
-            return '';
-
-        $html =  "<div class='avatar'>"
-              .   sprintf("<a href='%s' title='%s'>",
-                          $this->view->url(array(
-                                  'action' => $user->name)),
-                          $user->fullName);
-
-        $html .=   "<div class='img icon-highlight'>";
-        if ( ! @empty($user->pictureUrl))
-        {
-            // Include the user's picture / avatar
-            $html .= sprintf ("<img src='%s' />",
-                              $user->pictureUrl);
-        }
-        else
-        {
-            // Include the default user icon
-            $html .= "<div class='ui-icon ui-icon-person'>"
-                  .   "&nbsp;"
-                  .  "</div>";
-        }
-        $html .=   "</div>"
-              .   "</a>"
-              .  "</div>";
-
-        return $html;
-    }
-
-    protected function _renderUserId($user, $showParts)
-    {
-        if ($showParts['user:data:userId'] !== true)
-            return '';
-
-        $html =  "<div class='userId'>"
-              .   sprintf("<a href='%s' title='%s'>",
-                          $this->view->url(array(
-                                  'action' => $user->name)),
-                          $user->fullName)
-              .    "<span class='name'>{$user->name}</span>"
-              .   "</a>"
-              .  "</div>";
-
-        return $html;
-    }
-
     protected function _renderHtmlControl($user, $isMe)
     {
         $html = "<div class='control'>";  //  control {
