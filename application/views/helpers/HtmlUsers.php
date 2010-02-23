@@ -22,12 +22,6 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
     const STYLE_FULL                    = 'full';
     const STYLE_CUSTOM                  = 'custom';
 
-    static public   $styleTitles        = array(
-        self::STYLE_REGULAR => 'Regular',
-        self::STYLE_FULL    => 'Full',
-        self::STYLE_CUSTOM  => 'Custom'
-    );
-
     /** @brief  Display style definition */
     static protected $displayStyles     = array(
         'user:stats'                        => array(
@@ -63,29 +57,39 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
 
     /** @brief  Pre-defined style groups. */
     static public   $styleGroups    = array(
-        self::STYLE_REGULAR => array('user:stats:countItems',
-                                     'user:stats:countTags',
-                                     'user:data:avatar',
-                                     'user:data:userId',
-                                     'user:data:fullName',
-                                     'user:data:email'
+        self::STYLE_REGULAR => array(
+            'label'     => 'Regular',
+            'options'   => array('user:stats:countItems',
+                                 'user:stats:countTags',
+                                 'user:data:avatar',
+                                 'user:data:userId',
+                                 'user:data:fullName',
+                                 'user:data:email'
+            )
         ),
-        self::STYLE_FULL    => array('user:stats:countItems',
-                                     'user:stats:countTags',
-                                     'user:data:avatar',
-                                     'user:data:userId',
-                                     'user:data:fullName',
-                                     'user:data:email',
-                                     'user:data:tags',
-                                     'user:data:dates:lastVisit'
+        self::STYLE_FULL    => array(
+            'label'     => 'Full',
+            'options'   => array('user:stats:countItems',
+                                 'user:stats:countTags',
+                                 'user:data:avatar',
+                                 'user:data:userId',
+                                 'user:data:fullName',
+                                 'user:data:email',
+                                 'user:data:tags',
+                                 'user:data:dates:lastVisit'
+            )
         ),
-        self::STYLE_CUSTOM  => array('user:stats:countItems',
-                                     'user:stats:countTags',
-                                     'user:data:avatar',
-                                     'user:data:userId',
-                                     'user:data:fullName',
-                                     'user:data:email',
-                                     'user:data:tags'
+        self::STYLE_CUSTOM  => array(
+            'label'     => 'Custom',
+            'isCustom'  => true,
+            'options'   => array('user:stats:countItems',
+                                 'user:stats:countTags',
+                                 'user:data:avatar',
+                                 'user:data:userId',
+                                 'user:data:fullName',
+                                 'user:data:email',
+                                 'user:data:tags'
+            )
         )
     );
 
@@ -120,22 +124,10 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
     /** @brief  Set-able parameters. */
     protected       $_namespace         = 'users';
 
-    protected       $_displayStyle      = null;
-    protected       $_displayStyleStr   = null;
+    protected       $_displayOptions    = null;
     protected       $_sortBy            = null;
     protected       $_sortOrder         = null;
     protected       $_scopeItems        = null;
-
-    public function __construct()
-    {
-        $this->_displayStyle =
-            new Connexions_DisplayStyle(
-                    array(
-                        'namespace'     => $this->_namespace,
-                        'definition'    => self::$displayStyles,
-                        'groups'        => self::$styleGroups
-                    ));
-    }
 
     /** @brief  Render an HTML version of a paginated set of Users or,
      *          if no arguments, this helper instance.
@@ -189,238 +181,26 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
 
         $this->_namespace = $namespace;
 
-        // Update our displayStyle namespace.
-        $this->_displayStyle->setNamespace($namespace);
-
-        if (! @isset(self::$_initialized[$namespace]))
+        if (! @isset(self::$_initialized['__global__']))
         {
+            // Include required jQuery
             $view   = $this->view;
             $jQuery =  $view->jQuery();
 
-            $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.stars.js'))
+            $jQuery->addJavascriptFile($view->baseUrl('js/ui.stars.js'))
                    ->addJavascriptFile($view->baseUrl('js/ui.checkbox.js'))
                    ->addJavascriptFile($view->baseUrl('js/ui.button.js'))
                    ->addJavascriptFile($view->baseUrl('js/ui.input.js'))
-                   ->addOnLoad("init_{$namespace}List();")
                    ->javascriptCaptureStart();
-
             ?>
-
-/************************************************
- * Initialize display options.
- *
- */
-function init_<?= $namespace ?>DisplayOptions()
-{
-    var $displayOptions = $('.<?= $namespace ?>-displayOptions');
-    var $form           = $displayOptions.find('form:first');
-    var $submit         = $displayOptions.find(':submit');
-    var $control        = $displayOptions.find('.control:first');
-    var styleGroups     = <?= json_encode($this->_displayStyle
-                                                    ->getGroupsMap()) ?>;
-
-    /*
-    // Add an opacity hover effect to the displayOptions
-    $displayOptions.fadeTo(100, 0.5)
-                   .hover(  function() {    // in
-                                $displayOptions.fadeTo(100, 1.0);
-                            },
-                            function(e) {   // out
-                                // For at least Mac Firefox 3.5, for <select>
-                                // when we move into the options we receive a
-                                // 'moustout' event on the select box with a
-                                // related target of 'html'.  The wreaks havoc
-                                // by de-selecting the select box and it's
-                                // parent(s), causing the displayOptions to
-                                // disappear.  NOT what we want, so IGNORE the
-                                // event.
-                                if ((e.relatedTarget === undefined) ||
-                                    (e.relatedTarget === null)      ||
-                                    (e.relatedTarget.localName === 'html'))
-                                {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    return false;
-                                }
-
-                                $displayOptions.fadeTo(100, 0.5);
-
-                                // Also "close" the form
-                                if ($form.is(':visible'))
-                                    $control.click();
-                            }
-                         );
-    */
-
-    // Click the 'Display Options' button to toggle the displayOptions pane
-    $control.click(function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                $form.toggle();
-                $control.toggleClass('ui-state-active');
-            });
-
-    /* For the anchor within the 'Display Options' button, disable the default
-     * browser action but allow the event to bubble up to the click handler on
-     * the 'Display Options' button.
-     */
-    $control.find('a:first, .ui-icon:first')
-                                         // Let it bubble up
-                    .click(function(e) {e.preventDefault(); });
-
-    var $displayStyle   = $displayOptions.find('.displayStyle');
-    var $itemsStyle     = $displayStyle.find('input[name=<?= $namespace ?>Style]');
-    var $cControl       = $displayStyle.find('.control:first');
-    var $customFieldset = $displayStyle.find('fieldset:first');
-
-    /* Attach a data item to each display option identifying the display style.
-     *
-     * Note: The style name is pulled from the CSS class
-     *          (<?= $namespace ?>Style-<type>)
-     */
-    $displayStyle.find('a.option,div.option a:first').each(function() {
-                // Retrieve the new style value from the
-                // '<?= $namespace ?>Style-*' class
-                var style   = $(this).attr('class');
-                var pos     = style.indexOf('<?= $namespace ?>Style-') + 6 +
-                                                    <?= strlen($namespace) ?>;
-
-                style = style.substr(pos);
-                pos   = style.indexOf(' ');
-                if (pos > 0)
-                    style = style.substr(0, pos);
-
-                // Save the style in a data item
-                $(this).data('displayStyle', style);
-            });
-
-    // Click the 'Custom' button to toggle the 'display custom' pane/field-set
-    $cControl.click(function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                $displayOptions.find('#buttons-global')
-                                    .toggleClass('buttons-custom');
-
-                $displayStyle.find('fieldset.custom').toggle();
-                $cControl.toggleClass('ui-state-active');
-            });
-    /* For the anchors within the 'Custom' button, disable the default browser
-     * action but allow the event to bubble up to the click handler on the
-     * 'Custom' button.
-     */
-    $cControl.find('> a, .control > a, .control > .ui-icon')
-                                         // Let it bubble up
-                    .click(function(e) { e.preventDefault(); });
-
-    /* When something in the 'display custom' pane/field-set changes, set the
-     * display style to 'custom', de-selecting the others.
-     */
-    $customFieldset.change(function() {
-                var $opt    = $cControl.find('a:first');
-
-                // Save the style in our hidden input
-                $itemsStyle.val( $opt.data('displayStyle' ) );
-
-                // Turn "off" all other display options...
-                $displayStyle.find('a.option-selected')
-                                            .removeClass('option-selected');
-                // And turn 'custom' on.
-                $opt.addClass('option-selected');
-            });
-
-    // Allow only one display style to be selected at a time
-    $displayStyle.find('a.option').click(function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                var $opt        = $(this);
-                var newStyle    = $opt.data('displayStyle');
-
-                // Save the style in our hidden input
-                $itemsStyle.val( newStyle );
-
-                $displayStyle.find('a.option-selected')
-                                            .removeClass('option-selected');
-                $opt.addClass('option-selected');
-
-                // Turn OFF all items in the customFieldset...
-                $customFieldset.find('input').removeAttr('checked');
-
-                // Turn ON  the items for this new display style.
-                $customFieldset.find( styleGroups[ newStyle ])
-                               .attr('checked', true);
-
-                // Trigger a change event on our form
-                $form.change();
-            });
-
-    // Any change within the form should enable the submit button
-    $form.change(function() {
-                $submit.removeClass('ui-state-disabled')
-                       .removeAttr('disabled')
-                       .addClass('ui-state-default,ui-state-highlight');
-            });
-
-    // Bind to submit.
-    $form.submit(function() {
-                /* Remove all cookies related to 'custom' style.  This is 
-                 * because, when an option is NOT selected, it is not included 
-                 * so, to remove a previously selected options, we must first 
-                 * remove them all and then add in the ones that are explicitly 
-                 * selected.
-                 */
-                $customFieldset.find('input').each(function() {
-                    $.cookie( $(this).attr('name'), null );
-                });
-
-                /* If the selected display style is NOT 'custom', disable all
-                 * the 'display custom' pane/field-set inputs so they will not
-                 * be included in the serialization of form values.
-                 */
-                if ($itemsStyle.val() !== 'custom')
-                {
-                    // Disable all custom field values
-                    $customFieldset.find('input').attr('disabled', true);
-                }
-
-                // Serialize all form values to an array...
-                var settings    = $form.serializeArray();
-
-                /* ...and set a cookie for each
-                 *  <?= $namespace ?>SortBy
-                 *  <?= $namespace ?>SortOrder
-                 *  <?= $namespace ?>PerPage
-                 *  <?= $namespace ?>Style
-                 *      and possibly
-                 *      <?= $namespace ?>StyleCustom[ ... ]
-                 */
-                $(settings).each(function() {
-                    $.log("Add Cookie: name[%s], value[%s]",
-                          this.name, this.value);
-                    $.cookie(this.name, this.value);
-                });
-
-                /* Finally, disable ALL inputs so our URL will have no
-                 * parameters since we've stored them all in cookies.
-                 */
-                $form.find('input,select').attr('disabled', true);
-
-                // let the form be submitted
-            });
-
-    return;
-}
 
 /************************************************
  * Initialize group header options.
  *
  */
-function init_<?= $namespace ?>GroupHeader()
+function init_GroupHeader(namespace)
 {
-    var $headers    = $('#<?= $namespace ?>List .groupHeader .groupType');
+    var $headers    = $('#'+ namespace +'List .groupHeader .groupType');
     var dimOpacity  = 0.5;
 
     $headers
@@ -442,19 +222,40 @@ function init_<?= $namespace ?>GroupHeader()
  * Initialize ui elements.
  *
  */
-function init_<?= $namespace ?>List()
+function init_UsersList(namespace)
 {
-    // Initialize display options
-    init_<?= $namespace ?>DisplayOptions();
-
-    //var $userItems  = $('#<?= $namespace ?>List form.userItem');
-
     // Initialize any group headers
-    init_<?= $namespace ?>GroupHeader();
+    init_GroupHeader(namespace);
 }
 
             <?php
             $jQuery->javascriptCaptureEnd();
+
+            self::$_initialized['__global__'] = true;
+        }
+
+
+        if (! @isset(self::$_initialized[$namespace]))
+        {
+            $view   = $this->view;
+
+            // Set / Update our displayOptions namespace.
+            if ($this->_displayOptions === null)
+            {
+                $dsConfig = array(
+                                'namespace'     => $namespace,
+                                'definition'    => self::$displayStyles,
+                                'groups'        => self::$styleGroups
+                            );
+
+                $this->_displayOptions = $view->htmlDisplayOptions($dsConfig);
+            }
+            else
+            {
+                $this->_displayOptions->setNamespace($namespace);
+            }
+
+            $view->jQuery()->addOnLoad("init_UsersList('{$namespace}');");
         }
 
         return $this;
@@ -477,36 +278,33 @@ function init_<?= $namespace ?>List()
      */
     public function setStyle($style, array $values = null)
     {
-        $orig = $style;
-
-        switch ($style)
+        if ($values !== null)
         {
-        case self::STYLE_FULL:
-        case self::STYLE_REGULAR:
-        case self::STYLE_CUSTOM:
-            break;
+            $this->_displayOptions->setGroupValues($values);
+        }
+        else
+        {
+            switch ($style)
+            {
+            case self::STYLE_REGULAR:
+            case self::STYLE_FULL:
+            case self::STYLE_CUSTOM:
+                break;
 
-        default:
-            $style = self::$defaults['displayStyle'];
-            break;
+            default:
+                $style = self::$defaults['displayStyle'];
+                break;
+            }
+
+            $this->_displayOptions->setGroup($style);
         }
 
         /*
         Connexions::log('Connexions_View_Helper_HtmlUsers::'
-                            . "setStyle({$orig}) == [ {$style} ]");
+                            . "setStyle({$style}) == [ "
+                            .   $this->_displayOptions->getGroup() ." ]");
         // */
     
-        $this->_displayStyleStr = $style;
-        if ($values !== null)
-        {
-            $this->_displayStyle->setValues($values);
-            $this->_displayStyleStr = $this->_displayStyle->getBestGroupMatch();
-        }
-        else
-        {
-            $this->_displayStyle->setValuesByGroup($style);
-        }
-
         return $this;
     }
 
@@ -516,8 +314,7 @@ function init_<?= $namespace ?>List()
      */
     public function getStyle()
     {
-        //return $this->_displayStyle->getBestGroupMatch();
-        return $this->_displayStyleStr;
+        return $this->_displayOptions->getGroup();
     }
 
 
@@ -610,7 +407,7 @@ function init_<?= $namespace ?>List()
      */
     public function getShowMeta()
     {
-        $val = $this->_displayStyle->getValues();
+        $val = $this->_displayOptions->getGroupValues();
 
         if (! @is_bool($val['minimized']))
         {
@@ -692,9 +489,7 @@ function init_<?= $namespace ?>List()
         /*
         Connexions::log("Connexions_View_Helper_HtmlUsers: "
                             . "validated to: "
-                            . "style[ {$this->_displayStyle} ], "
-                            . "styleTitle[ "
-                            .   self::$styleTitles[$this->_displayStyle]." ], "
+                            . "style[ {$this->getStyle()} ], "
                             . "sortBy[ {$this->_sortBy} ], "
                             . "sortByTitle[ "
                             .       self::$sortTitles[$this->_sortBy]." ], "
@@ -955,23 +750,15 @@ function init_<?= $namespace ?>List()
         $namespace        = $this->_namespace;
         $itemCountPerPage = $paginator->getItemCountPerPage();
 
-        $html .= "<div class='displayOptions {$namespace}-displayOptions'>"
-                                                        // displayOptions {
-              .   "<div class='control ui-corner-all ui-state-default'>"
-              .    "<a >Display Options</a>"
-              .    "<div class='ui-icon ui-icon-triangle-1-s'>"
-              .     "&nbsp;"
-              .    "</div>"
-              .   "</div>"
-              .   "<form style='display:none;' "
-              .         "class='ui-state-active ui-corner-all'>";    // form {
-
-        $html .=   "<div class='field sortBy'>"  // sortBy {
-              .     "<label   for='{$namespace}SortBy'>Sorted by</label>"
-              .     "<select name='{$namespace}SortBy' "
-              .               "id='{$namespace}SortBy' "
-              .            "class='sort-by sort-by-{$this->_sortBy} "
-              .                    "ui-input ui-state-default ui-corner-all'>";
+        /**************************************************************
+         * SortBy
+         *
+         */
+        $html =  "<label   for='{$namespace}SortBy'>Sorted by</label>"
+              .  "<select name='{$namespace}SortBy' "
+              .            "id='{$namespace}SortBy' "
+              .         "class='sort-by sort-by-{$this->_sortBy} "
+              .                 "ui-input ui-state-default ui-corner-all'>";
 
         foreach (self::$sortTitles as $key => $title)
         {
@@ -991,12 +778,16 @@ function init_<?= $namespace ?>List()
                              $title);
         }
 
-        $html .=    "</select>"
-              .    "</div>";                            // sortBy }
+        $html .= "</select>";
+
+        $this->_displayOptions->addFormField('sortBy', $html);
 
 
-        $html .=   "<div class='field sortOrder'>"      // sortOrder {
-              .     "<label for='{$namespace}SortOrder'>Sort order</label>";
+        /**************************************************************
+         * SortOrder
+         *
+         */
+        $html =  "<label for='{$namespace}SortOrder'>Sort order</label>";
 
         foreach (self::$orderTitles as $key => $title)
         {
@@ -1012,13 +803,18 @@ function init_<?= $namespace ?>List()
                   .  "</div>";
         }
 
-        $html .=    "<br class='clear' />"
-              .    "</div>"                             // sortOrder }
-              .    "<div class='field perPage'>"         // perPage {
-              .     "<label for='{$namespace}PerPage'>Per page</label>"
-              .     "<select class='ui-input ui-state-default ui-corner-all "
-              .                   "count' name='{$namespace}PerPage'>"
-              .      "<!-- {$namespace}PerPage: {$itemCountPerPage} -->";
+        $html .= "<br class='clear' />";
+
+        $this->_displayOptions->addFormField('sortOrder', $html);
+
+        /**************************************************************
+         * PerPage
+         *
+         */
+        $html =  "<label for='{$namespace}PerPage'>Per page</label>"
+              .  "<select class='ui-input ui-state-default ui-corner-all "
+              .                "count' name='{$namespace}PerPage'>"
+              .   "<!-- {$namespace}PerPage: {$itemCountPerPage} -->";
 
         foreach (self::$perPageChoices as $perPage)
         {
@@ -1029,174 +825,15 @@ function init_<?= $namespace ?>List()
                   .                     ">{$perPage}</option>";
         }
     
-        $html .=    "</select>"
-              .     "<br class='clear' />"
-              .    "</div>"                              // perPage }
-              .    "<div class='field displayStyle'>"    // displayStyle {
-              .     "<label for='{$namespace}Style'>Display</label>"
-              .     "<input type='hidden' name='{$namespace}Style' "
-              .           "value='{$this->_displayStyleStr}' />";
+        $html .= "</select>"
+              .  "<br class='clear' />";
 
-        $idex       = 0;
-        $titleCount = count(self::$styleTitles);
-        $parts      = array();
-        foreach (self::$styleTitles as $key => $title)
-        {
-            $itemHtml = '';
-            $cssClass = 'option';
+        $this->_displayOptions->addFormField('perPage', $html);
 
-            if ($key === self::STYLE_CUSTOM)
-            {
-                $itemHtml .= "<div class='{$cssClass} control "
-                          .             "ui-corner-all ui-state-default"
-                          .     ($this->_displayStyleStr === self::STYLE_CUSTOM
-                                    ? " ui-state-active"
-                                    : "")
-                          .                 "'>";
-                $cssClass  = '';
-            }
-
-            $cssClass .= " {$namespace}Style-{$key}";
-            if ($key == $this->_displayStyleStr)
-                $cssClass .= ' option-selected';
-
-            $itemHtml .= "<a class='{$cssClass}' "
-                      .      "href='?{$namespace}Style={$key}'>{$title}</a>";
-
-            if ($key === self::STYLE_CUSTOM)
-            {
-                $itemHtml .=  "<div class='ui-icon ui-icon-triangle-1-s'>"
-                          .    "&nbsp;"
-                          .   "</div>"
-                          .  "</div>";
-            }
-
-            array_push($parts, $itemHtml);
-        }
-        $html .= implode("<span class='comma'>, </span>", $parts);
-
-
-        $html .= $this->_displayStyle
-                        ->renderFieldset(array(
-                            'class' => 'custom',
-                            'style' => ($this->_displayStyleStr
-                                                !== self::STYLE_CUSTOM
-                                            ? 'display:none;'
-                                            : '')) );
-
-        /*
-        $html .= sprintf("<fieldset class='custom users'%s>",
-                          ($this->_displayStyleStr !== self::STYLE_CUSTOM
-                                ? " style='display:none;'"
-                                : ""));
-
-        $html .=    "<div class='user'>"    // user {
-              .      "<div class='meta'>"   // meta {
-              .       "<div class='field countItems'>"
-              .        "<input type='checkbox' "
-              .              "name='{$namespace}StyleCustom[user:stats:countItems]' "
-              .                "id='display-countItems'"
-              .              ( $showMeta['user:stats:countItems']
-                                ? " checked='true'"
-                                : ''). " />"
-              .        "<label for='display-countItems'>item count</label>"
-              .       "</div>"
-              .       "<div class='field countTags'>"
-              .        "<input type='checkbox' "
-              .              "name='{$namespace}StyleCustom[user:stats:countTags]' "
-              .                "id='display-countTags'"
-              .              ( $showMeta['user:stats:countTags']
-                                ? " checked='true'"
-                                : ''). " />"
-              .        "<label for='display-countTags'>tag count</label>"
-              .       "</div>"
-              .      "</div>"               // meta }
-              .      "<div class='data'>"   // data {
-              .       "<div class='field avatar'>"
-              .        "<input type='checkbox' "
-              .               "name='{$namespace}StyleCustom[user:data:avatar]' "
-              .                 "id='display-avatar'"
-              .              ( $showMeta['user:data:avatar']
-                                ? " checked='true'"
-                                : ''). " />"
-              .        "<label for='display-avatar'>avatar</label>"
-              .       "</div>"
-              .       "<div class='field userId'>"
-              .        "<input type='checkbox' "
-              .               "name='{$namespace}StyleCustom[userId]' "
-              .                 "id='display-userId'"
-              .              ( $showMeta['user:data:userId']
-                                ? " checked='true'"
-                                : ''). " />"
-              .        "<label for='display-userId'>User Name</label>"
-              .       "</div>"
-              .       "<div class='field fullName'>"
-              .        "<input type='checkbox' "
-              .               "name='{$namespace}StyleCustom[fullName]' "
-              .                 "id='display-fullName'"
-              .              ( $showMeta['user:data:fullName']
-                                ? " checked='true'"
-                                : ''). " />"
-              .        "<label for='display-fullName'>full name</label>"
-              .       "</div>"
-              .       "<div class='field email'>"
-              .        "<input type='checkbox' "
-              .               "name='{$namespace}StyleCustom[email]' "
-              .                 "id='display-email'"
-              .              ( $showMeta['user:data:email']
-                                ? " checked='true'"
-                                : ''). " />"
-              .        "<label for='display-email'>email address</label>"
-              .       "</div>"
-              .       "<br class='clear' />"
-              .       "<div class='field tags'>"
-              .        "<input type='checkbox' "
-              .               "name='{$namespace}StyleCustom[tags]' "
-              .                 "id='display-tags' "
-              .              "class='tag' "
-              .              ( $showMeta['user:data:tags']
-                                ? " checked='true'"
-                                : ''). " />"
-              .        "<label for='display-tags' class='tag'>"
-              .         "tags"
-              .        "</label>"
-              .        "<label class='tag'> ... </label>"
-              .        "<label class='tag'> ... </label>"
-              .        "<label class='tag'> ... </label>"
-              .        "<label class='tag'> ... </label>"
-              .       "</div>"
-              .       "<div class='dates'>"
-              .        "<div class='field dateVisited'>"
-              .         "<input type='checkbox' "
-              .               "name='{$namespace}StyleCustom[dates:visited]' "
-              .                 "id='display-dateVisited'"
-              .              ( $showMeta['user:data:dates:lastVisit']
-                                ? " checked='true'"
-                                : ''). " />"
-              .         "<label for='display-dateVisited'>date:visited</label>"
-              .        "</div>"
-              .       "</div>"                  // data }
-              .       "<br class='clear' />"
-              .     "</div>"                    // user }
-              .    "</fieldset>";
+        /* _displayOptions->render will use the previously added fields, along
+         * with the available display styles to render the complete display
+         * options form.
          */
-
-        $html .=  "</div>"                      // displayStyle }
-              .   "<div id='buttons-global' class='buttons"
-              .           ($this->_displayStyleStr === self::STYLE_CUSTOM
-                                ? " buttons-custom"
-                                : "")
-              .                         "'>"
-              .    "<button type='submit' "
-              .           "class='ui-button ui-corner-all "
-              .                 "ui-state-default ui-state-disabled' "
-              .           "value='custom'"
-              .        "disabled='true'>apply</button>"
-              .   "</div>";
-
-        $html .= "</form>"  // form }
-              . "</div>";   // displayOptions }
-
-        return $html;
+        return $this->_displayOptions->render();
     }
 }
