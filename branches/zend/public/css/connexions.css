@@ -519,7 +519,7 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .displayOptions .control .ui-icon { float: right; }
 .displayOptions .buttons { text-align: right; }
 .displayOptions .buttons button { display: inline; padding: 0.25em; }
-.displayOptions #buttons-global { margin-top: 2em; padding: 0.5em 0.5em 0; border-top: 1px dotted #cccccc; }
+.displayOptions #buttons-global { padding: 0.5em 0.5em 0; border-top: 1px dotted #cccccc; }
 .displayOptions .field { display: block; padding-bottom: 0.25em; }
 .displayOptions .field label { clear: left; width: 6em; float: left; }
 .displayOptions form { z-index: 4; position: absolute; top: 2.1em; right: 0; padding: 0.5em; }

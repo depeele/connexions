@@ -12,7 +12,7 @@
 #itemsList .displayOptions form .displayStyle .option, #itemsList .displayOptions form .displayStyle .comma { display: block; float: left; }
 #itemsList .displayOptions form .displayStyle .option.control { position: relative; top: -0.25em; }
 #itemsList .displayOptions form .displayStyle .comma { padding-right: 0.5em; }
-#itemsList .displayOptions form .displayStyle .custom { padding-top: 0.5em; border-bottom: 0; }
+#itemsList .displayOptions form .displayStyle .custom { padding-top: 0.5em; border: none; }
 #itemsList .displayOptions form .displayStyle .custom .item { border: 1px solid #cccccc; padding: 0 0 0.1em 0.2em; }
 #itemsList .displayOptions form .displayStyle .custom .item label { display: inline; float: none; width: auto; padding-left: 0.25em; }
 #itemsList .displayOptions form .displayStyle .custom .item .stats { font-weight: normal; padding: 0; }

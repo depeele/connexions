@@ -28,9 +28,16 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
     const STYLE_LIST                        = 'list';
     const STYLE_CLOUD                       = 'cloud';
 
-    static public   $styleTitles            = array(
-        self::STYLE_LIST    => 'List',
-        self::STYLE_CLOUD   => 'Cloud'
+    /** @brief  Pre-defined style "groups". */
+    static protected $styleGroups       = array(
+        self::STYLE_LIST    => array(
+            'label'     => 'List',
+            'options'   => array()
+        ),
+        self::STYLE_CLOUD   => array(
+            'label'     => 'Cloud',
+            'options'   => array()
+        )
     );
 
     /** @brief  Cloud item sorting. */
@@ -50,11 +57,12 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
     /** @brief  Set-able parameters . */
     protected       $_namespace         = 'tags';
+
+    protected       $_displayOptions    = null;
     protected       $_showRelation      = true;
     protected       $_itemList          = null;
     protected       $_paginator         = null;
 
-    protected       $_displayStyle      = null;
     protected       $_itemType          = null;
     protected       $_sortBy            = null;
     protected       $_sortOrder         = null;
@@ -158,71 +166,7 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                   .  "<br class='clear' />";
         }
 
-        /*
-        $html .= "\n<!-- First {$this->_highlightCount} items:\n";
-        foreach ($this->_itemList as $idex => $item)
-        {
-            $html .= sprintf("    '%s' [%d]\n",
-                             $item->getTitle(),
-                             $item->getWeight());
-        }
-        $html .= "\n -->\n";
-         */
-
-        /*
-        $itemListParts = array();
-        foreach ($this->_itemList as $idex => $item)
-        {
-            array_push($itemListParts,
-                       sprintf("%s[%d]",
-                               $item->getTitle(),
-                               $item->getWeight()) );
-        }
-        $itemListStr = implode(', ', $itemListParts);
-
-        Connexions::log("Connexions_View_Helper_HtmlItemCloud:: "
-                          . "sortBy[ {$this->_sortBy} ], "
-                          . "sortOrder[ {$this->_sortOrder} ], "
-                          . count($this->_itemList) . " items "
-                          . "in list[ {$itemListStr} ]");
-        // */
-
-
-        /*
-        $uSortBy = ucfirst($this->_sortBy);
-
-        // Create a sort function
-        $sortFn = create_function('$a,$b',
-                      '$aVal = $a->get'. $uSortBy .'();'
-                    . '$bVal = $b->get'. $uSortBy .'();'
-                    . '$cmp = '. ($this->_sortBy === 'title'
-                                    ? 'strcasecmp($aVal, $bVal)'
-                                    : '($aVal - $bVal)') .';'
-                    .  ( (($this->_sortOrder === 'ASC') ||
-                          ($this->_sortOrder === 'asc'))
-                            ? ''
-                              // Reverse the comparison to reverse the ASC sort
-                            : '$cmp = ($cmp < 0 '
-                              .         '? 1 '
-                              .         ': ($cmp > 0 '
-                              .             '? -1 '
-                              .             ': 0));')
-                  //. 'Connexions::log("HtmlItemCloud:cmp: '
-                  //.                   'a[{$aVal}], '
-                  //.                   'b[{$bVal}]: "'
-                  //.                   '.($cmp < 0'
-                  //.                       '? "&lt;"'
-                  //.                       ': ($cmp > 0'
-                  //.                           '? "&gt;"'
-                  //.                           ':"="))'
-                  //.                 ');'
-                    . 'return  $cmp;');
-
-        // Sort the item list
-        $this->_itemList->uasort($sortFn);
-        */
-
-        if ($this->_displayStyle === self::STYLE_CLOUD)
+        if ($this->getStyle() === self::STYLE_CLOUD)
         {
             // Zend_Tag_Cloud configuration
             $cloudConfig = array(
@@ -343,160 +287,52 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
         $this->_namespace = $namespace;
 
-        if (! @isset(self::$_initialized[$namespace]))
+        if (! @isset(self::$_initialized['__global__']))
         {
             $view   = $this->view;
             $jQuery = $view->jQuery();
 
             $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.js'))
                    ->addJavascriptFile($view->baseUrl('js/ui.button.js'))
-                   ->addOnLoad("init_{$namespace}Cloud();")
                    ->javascriptCaptureStart();
 
             ?>
 
 /************************************************
- * Initialize display options.
- *
- */
-function init_<?= $namespace ?>CloudDisplayOptions()
-{
-    var $displayOptions = $('.<?= $namespace ?>-displayOptions');
-    var $form           = $displayOptions.find('form:first');
-    var $submit         = $displayOptions.find(':submit');
-    var $control        = $displayOptions.find('.control:first');
-
-    // Add an opacity hover effect to the displayOptions
-    $displayOptions.fadeTo(100, 0.5)
-                   .hover(  function() {    // in
-                                $displayOptions.fadeTo(100, 1.0);
-                            },
-                            function(e) {   // out
-                                /* For at least Mac Firefox 3.5, for <select>
-                                 * when we move into the options we receive a
-                                 * 'moustout' event on the select box with a
-                                 * related target of 'html'.  The wreaks havoc
-                                 * by de-selecting the select box and it's
-                                 * parent(s), causing the displayOptions to
-                                 * disappear.  NOT what we want, so IGNORE the
-                                 * event.
-                                 */
-                                if ((e.relatedTarget === undefined) ||
-                                    (e.relatedTarget === null)      ||
-                                    (e.relatedTarget.localName === 'html'))
-                                {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    return false;
-                                }
-
-                                $displayOptions.fadeTo(100, 0.5);
-
-                                // Also "close" the form
-                                if ($form.is(':visible'))
-                                    $control.click();
-                            }
-                         );
-
-    // Click the 'Display Options' button to toggle the displayOptions pane
-    $control.click(function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                $form.toggle();
-                $control.toggleClass('ui-state-active');
-            });
-
-    var $displayStyle   = $displayOptions.find('.displayStyle');
-    var $style          = $displayStyle.find('input[name=<?= $namespace ?>Style]');
-
-    /* Attach a data item to each display option identifying the display type
-     * (pulled from the CSS class (<?= $namespace ?>Style-<type>)
-     */
-    $displayStyle.find('a.option,div.option a:first').each(function() {
-                // Retrieve the new style value from the
-                // '<?= $namespace ?>Style-*' class
-                var style   = $(this).attr('class');
-                var pos     = style.indexOf('<?= $namespace ?>Style-') + 6 +
-                                                    <?= strlen($namespace) ?>;
-
-                style = style.substr(pos);
-                pos   = style.indexOf(' ');
-                if (pos > 0)
-                    style = style.substr(0, pos);
-
-                // Save the style in a data item
-                $(this).data('displayStyle', style);
-            });
-
-    // Allow only one display style to be selected at a time
-    $displayStyle.find('a.option').click(function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                var $opt    = $(this);
-
-                // Save the style in our hidden input
-                $style.val( $opt.data('displayStyle') );
-
-                $displayStyle.find('a.option-selected')
-                                            .removeClass('option-selected');
-                $opt.addClass('option-selected');
-
-                // Trigger a change event on our form
-                $form.change();
-            });
-
-    // Any change within the form should enable the submit button
-    $form.change(function() {
-                $submit.removeClass('ui-state-disabled')
-                       .removeAttr('disabled')
-                       .addClass('ui-state-default,ui-state-highlight');
-            });
-
-    // Bind to submit.
-    $form.submit(function() {
-                // Serialize all form values to an array...
-                var settings    = $form.serializeArray();
-
-                /* ...and set a cookie for each
-                 *  <?= $namespace ?>SortBy
-                 *  <?= $namespace ?>SortOrder
-                 *  <?= $namespace ?>PerPage
-                 *  <?= $namespace ?>Count
-                 *  <?= $namespace ?>Style
-                 */
-                $(settings).each(function() {
-                    $.log("Add Cookie: name[%s], value[%s]",
-                          this.name, this.value);
-                    $.cookie(this.name, this.value);
-                });
-
-                /* Finally, disable ALL inputs so our URL will have no
-                 * parameters since we've stored them all in cookies.
-                 */
-                $form.find('input,select').attr('disabled', true);
-
-                // let the form be submitted
-            });
-
-    return;
-}
-
-/************************************************
  * Initialize ui elements.
  *
  */
-function init_<?= $namespace ?>Cloud()
+function init_ItemCloud(namespace)
 {
-    // Initialize display options
-    init_<?= $namespace ?>CloudDisplayOptions();
 }
 
             <?php
             $jQuery->javascriptCaptureEnd();
 
-            self::$_initialized[$namespace] = true;
+            self::$_initialized['__global__'] = true;
+        }
+
+        if (! @isset(self::$_initialized[$namespace]))
+        {
+            $view   = $this->view;
+
+            // Set / Update our displayOptions namespace.
+            if ($this->_displayOptions === null)
+            {
+                $dsConfig = array(
+                                'namespace'     => $namespace,
+                                'groups'        => self::$styleGroups
+                            );
+
+                $this->_displayOptions = $view->htmlDisplayOptions($dsConfig);
+            }
+            else
+            {
+                $this->_displayOptions->setNamespace($namespace);
+            }
+
+            // Include required jQuery
+            $view->jQuery()->addOnLoad("init_ItemCloud('{$namespace}');");
         }
 
         return $this;
@@ -632,31 +468,38 @@ function init_<?= $namespace ?>Cloud()
 
     /** @brief  Set the current style.
      *  @param  style   A style value (self::STYLE_*)
+     *  @param  values  If provided, an array of field values for this style.
      *
      *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
      */
-    public function setStyle($style)
+    public function setStyle($style, array $values = null)
     {
-        $orig = $style;
-
-        switch ($style)
+        if ($values !== null)
         {
-        case self::STYLE_LIST:
-        case self::STYLE_CLOUD:
-            break;
+            $this->_displayOptions->setGroupValues($values);
+        }
+        else
+        {
+            switch ($style)
+            {
+            case self::STYLE_LIST:
+            case self::STYLE_CLOUD:
+                break;
 
-        default:
-            $style = self::$defaults['displayStyle'];
-            break;
+            default:
+                $style = self::$defaults['displayStyle'];
+                break;
+            }
+
+            $this->_displayOptions->setGroup($style);
         }
 
-        /*
+        // /*
         Connexions::log('Connexions_View_Helper_HtmlItemCloud::'
-                            . "setStyle({$orig}) == [ {$style} ]");
+                            . "setStyle({$style}) == [ "
+                            .   $this->_displayOptions->getGroup() ." ]");
         // */
     
-        $this->_displayStyle = $style;
-
         return $this;
     }
 
@@ -666,7 +509,7 @@ function init_<?= $namespace ?>Cloud()
      */
     public function getStyle()
     {
-        return $this->_displayStyle;
+        return $this->_displayOptions->getGroup();
     }
 
     /** @brief  Set the current sortBy.
@@ -935,12 +778,15 @@ function init_<?= $namespace ?>Cloud()
               .   "<form class='ui-state-active ui-corner-all' "
               .         "style='display:none;'>";
 
-        $html .=  "<div class='field sortBy'>"          // sortBy {
-              .    "<label   for='{$namespace}SortBy'>Sorted by</label>"
-              .    "<select name='{$namespace}SortBy' "
-              .              "id='{$namespace}SortBy' "
-              .           "class='sort-by sort-by-{$this->_sortBy} "
-              .                   "ui-input ui-state-default ui-corner-all'>";
+        /**************************************************************
+         * SortBy
+         *
+         */
+        $html =  "<label   for='{$namespace}SortBy'>Sorted by</label>"
+              .  "<select name='{$namespace}SortBy' "
+              .            "id='{$namespace}SortBy' "
+              .         "class='sort-by sort-by-{$this->_sortBy} "
+              .                 "ui-input ui-state-default ui-corner-all'>";
 
         foreach (self::$sortTitles as $key => $title)
         {
@@ -960,12 +806,16 @@ function init_<?= $namespace ?>Cloud()
                              $title);
         }
 
-        $html .=   "</select>"
-              .   "</div>";                             // sortBy }
+        $html .= "</select>";
+
+        $this->_displayOptions->addFormField('sortBy', $html);
 
 
-        $html .=  "<div class='field sortOrder'>"   // sortOrder {
-              .    "<label for='{$namespace}SortOrder'>Sort order</label>";
+        /**************************************************************
+         * SortOrder
+         *
+         */
+        $html =    "<label for='{$namespace}SortOrder'>Sort order</label>";
 
         foreach (self::$orderTitles as $key => $title)
         {
@@ -981,10 +831,16 @@ function init_<?= $namespace ?>Cloud()
                   .  "</div>";
         }
 
-        $html .=   "<br class='clear' />"
-              .   "</div>"                              // sortOrder }
-              .   "<div class='field itemCounts'>"      // itemCounts {
-              .    "<div class='field perPage'>"        // perPage {
+        $html .=   "<br class='clear' />";
+
+        $this->_displayOptions->addFormField('sortOrder', $html);
+
+
+        /**************************************************************
+         * ItemCounts: perPage, highlightCount
+         *
+         */
+        $html =    "<div class='field perPage'>"        // perPage {
               .     "<label for='{$namespace}PerPage'>Show</label>"
               .     "<select class='ui-input ui-state-default ui-corner-all "
               .                   "count' name='{$namespace}PerPage'>"
@@ -1018,43 +874,15 @@ function init_<?= $namespace ?>Cloud()
     
         $html .=    "</select>"
               .    "</div>"                             // highlightCount }
-              .    "<br class='clear' />"
-              .   "</div>";                             // itemCounts }
+              .    "<br class='clear' />";
 
-        $html .=  "<div class='field displayStyle'>"    // displayStyle {
-              .    "<label for='{$namespace}Style'>Display</label>"
-              .    "<input type='hidden' name='{$namespace}Style' "
-              .          "value='{$this->_displayStyle}' />";
+        $this->_displayOptions->addFormField('itemsCount', $html);
 
-        $idex       = 0;
-        $titleCount = count(self::$styleTitles);
-        $parts      = array();
-        foreach (self::$styleTitles as $key => $title)
-        {
-            $itemHtml = '';
-            $cssClass = "option {$namespace}Style-{$key}";
-            if ($key == $this->_displayStyle)
-                $cssClass .= ' option-selected';
-
-            $itemHtml .= "<a class='{$cssClass}' "
-                      .      "href='?{$namespace}Style={$key}'>{$title}</a>";
-
-            array_push($parts, $itemHtml);
-        }
-        $html .= implode("<span class='comma'>, </span>", $parts)
-              .   "</div>";                             // displayStyle }
-
-        $html .=   "<div id='buttons-global' class='buttons'>"
-              .     "<button type='submit' "
-              .            "class='ui-button ui-corner-all "
-              .                  "ui-state-default ui-state-disabled' "
-              .            "value='custom'"
-              .         "disabled='true'>apply</button>"
-              .    "</div>"
-              .   "</form>"
-              .  "</div>";
-
-        return $html;
+        /* _displayOptions->render will use the previously added fields, along
+         * with the available display styles to render the complete display
+         * options form.
+         */
+        return $this->_displayOptions->render();
     }
 
 }
