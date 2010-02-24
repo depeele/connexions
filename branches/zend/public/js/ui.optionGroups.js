@@ -1,6 +1,52 @@
 /** @file
  *
- *  Provide option groups for a set of checkbox options.
+ *  Provide option groups for a set of checkbox options.  These must have the
+ *  following HTML structure:
+ *
+ *      <div class='_NS_OptionGroups'>      // _NS_ defines the namespace
+ *        ...
+ *        <ul class='groups'>               // define groups
+ *         <li [ class='isCustom' ] >       // 'isCustom' iff this group
+ *                                          // represents the "custom" group
+ *                                          // to allow the user to select
+ *                                          // any desired options as opposed
+ *                                          // to those associated with a
+ *                                          // particular pre-defined group.
+ *          <input type='radio'
+ *              [ class='is
+ *                 name='_NS_OptionGroup'
+ *                value='GROUP-NAME'        // define GROUP-NAME
+ *
+ *                 [ checked='checked' if this group is selected ] />
+ *
+ *          <label  for='_NS_OptionGroup'>
+ *           GROUP-LABEL                    // define GROUP-LABEL / title
+ *          </label>
+ *         </li>
+ *         ...
+ *        </ul>
+ *        <fieldset class='options'>        // define groupable options
+ *         ...
+ *         <div class='option'>
+ *          <input type='checkbox'
+ *                class='inGroup-GROUP-NAME ...'   // One 'inGroup-*' class
+ *                                                  // for each group this
+ *                                                  // option is part of
+ *
+ *                                          // define a colon-separated
+ *                                          // option name that mirrors the
+ *                                          // CSS selector to this point
+ *                 name='_NS_OptionGroups_option[OPTION-NAME]'
+ *
+ *                 [ checked='checked' if this option is selected ] />
+ *
+ *          <label for='_NS_OptionGroups_option[OPTION-NAME]'>
+ *           OPTION-LABEL                   // define OPTION-LABEL / title
+ *          </label>
+ *         </div>
+ *         ...
+ *        </fieldset>
+ *      </div>
  *
  *  Requires:
  *      ui.core.js
@@ -12,25 +58,24 @@ $.widget("ui.optionGroups", {
     options: {
         // Defaults
         namespace:  null,   // Form/cookie namespace
-        form:       null,   // Our parent/controlling form
-        groups:     null    // Display style groups.
+        form:       null    // Our parent/controlling form
     },
 
     /** @brief  Initialize a new instance.
      *
      *  Valid options are:
      *      namespace   The form / cookie namespace [ '' ];
-     *      groups      An object of style-name => CSS selector;
+     *      groups      An object of group-name => CSS selector;
      *
      *  @triggers:
-     *      'enabled.uicheckbox'    when element is enabled;
-     *      'disabled.uicheckbox'   when element is disabled;
-     *      'checked.uicheckbox'    when element is checked;
-     *      'unchecked.uicheckbox'  when element is unchecked.
+     *      'change.optionGroup'    when the option group is changed, passing
+     *                              data:
+     *                                  {'group':    groupName,
+     *                                   'selector': selector for all fields}
      */
     _create: function() {
-        var self    = this;
-        var opts    = this.options;
+        var self        = this;
+        var opts        = this.options;
 
         if (opts.namespace === null)
         {
@@ -38,6 +83,20 @@ $.widget("ui.optionGroups", {
             var ns  = self.element.data('namespace');
             if (ns !== undefined)
                 opts.namespace = ns;
+            else
+            {
+                /* Attempt to retrieve the namespace from the CSS class
+                 * '_NS_OptionGroups'
+                 */
+                var css = self.element.attr('class');
+
+                ns = css.replace(/^(?:.* )?(.*?)OptionGroups(?: .*)?$/,
+                                      '$1');
+
+                if ((ns !== undefined) && (ns.length > 0))
+                    opts.namespace = ns;
+            }
+
         }
         if (opts.form === null)
         {
@@ -49,52 +108,67 @@ $.widget("ui.optionGroups", {
                 // Choose the closest form
                 opts.form = self.element.closest('form');
         }
-        if (opts.groups === null)
-        {
-            // See if the DOM element has a 'groups' data item
-            var sg  = self.element.data('groups');
-            if (sg !== undefined)
-                opts.groups = sg;
-        }
 
-
-        /* Attach a data item to each display option identifying the display
-         * style.  In the process, identify the currently selected group, the
-         * LAST one with  CSS class 'option-selected'.
+        /* The currently selected group:
+         *  self.element.find('ul.groups :checked').val();
          *
-         * Note: The style name is pulled from the CSS class:
-         *          namespace+'Style-<type>'
-         *
-         *       The currently active group has the CSS class:
-         *          'option-selected'
-         *
-         *  :XXX: Should we use 'groups' here?
+         * Prepare the presentation:
+         *  - Remove the CSS class 'ui-state-active' from all 'li' elements;
+         *  - Add the CSS class 'ui-state-active' to the 'li' element
+         *    containing the currently selected group;
+         *  - Hide and disable all group radio buttons;
+         *  - Add the 'toggle'  class to any group NOT marked 'isCustom';
+         *  - Add the 'control' class to any group marked 'isCustom';
+         *  - Add a down-arrow icon to the 'isCustom' control
+         *  - Append '<span class='comma'>,</span>' after all but the last 'li'
+         *    element;
+         *  - For all input elements, add the classes:
+         *      'ui-corner-all ui-state-default'
          */
-        self.element.find('a.option,div.option a:first').each(function() {
-            // Retrieve the new style value
-            var css     = $(this).attr('class');
-            var pos     = css.indexOf(opts.namespace +'Style-')
-                        + opts.namespace.length + 6 /* Style- len */;
-            var group   = null;
+        var $groups     = self.element.find('ul.groups');
 
-            group = css.substr(pos);
-            pos   = group.indexOf(' ');
-            if (pos > 0)
-                group = group.substr(0, pos);
+        $groups.find('li').removeClass('ui-state-active');
+        $groups.find(':checked').parent().addClass('ui-state-active');
+        $groups.find(':radio').hide();
+        $groups.find('li:not(.isCustom)')
+                    .addClass('toggle');
+        $groups.find('li.isCustom')
+                    .addClass('control ui-corner-all ui-state-default')
+                    .append(  "<div class='ui-icon ui-icon-triangle-1-s'>"
+                            +  "&nbsp;"
+                            + "</div>");
 
-            // Save the group a data item
-            $(this).data('group',  group);
-        });
+        $groups.find('li:not(:last)')
+                    .after("<span class='comma'>,</span>");
+
+        self.element.find('input')
+                    .addClass('ui-corner-all ui-state-default');
+
+
+        /* Add a new hidden input to represent the group radio buttons that
+         * we've hidden.
+        $groups.append("<input type='hidden' "
+                            + "name='"+  $groups.find(':radio:first')
+                                                    .attr('name') +"' "
+                            + "value='"+ $groups.find(':checked')
+                                                    .val() +"' />");
+         */
+
+
+        /* Now, the currently selected group can be found via:
+         *  self.element.find('ul.groups :checked').val();
+         *  self.element.find('ul.groups li.ui-state-active :radio').val();
+         *  -- self.element.find('ul.groups input[type=hidden]').val();
+         */
 
         // Interaction events
         self._bindEvents();
 
 
-        /* If the currently selected group is NOT the fieldset control, toggle
+        /* If the currently selected group is NOT the 'isCustom' group, toggle
          * the fieldset control closed.
          */
-        if (! this.element.find('a.option-selected')
-                                .parent().hasClass('control'))
+        if (! $groups.find('li.ui-state-active').hasClass('isCustom'))
         {
             self.toggleFieldset();
         }
@@ -106,63 +180,79 @@ $.widget("ui.optionGroups", {
      */
     _bindEvents: function() {
         var self            = this;
-        var $styleControl   = self.element.find('.control:first');
-        var $styleFieldset  = self.element.find('fieldset:first');
-        var $itemsStyle     = self.element.find('input[name='
-                            +                       self.options.namespace
-                            +                                   'Style]');
-
+        var $groups         = self.element.find('ul.groups');
+        var $groupFieldset  = self.element.find('fieldset:first');
+        var $groupControl   = $groups.find('.control:first');
 
         var _prevent_default        = function(e) {
             e.preventDefault();
         };
 
-        var _styleControl_click     = function(e) {
+        var _groupControl_click     = function(e) {
             e.preventDefault();
             e.stopPropagation();
 
             self.toggleFieldset();
         };
 
-        var _styleFieldset_change   = function(e) {
-            var $opt    = $styleControl.find('a:first');
-
-            // Activate this style
-            self.setStyle( $opt.data('group') );
-        };
-
-        var _group_click     = function(e) {
-            // Allow only one display style to be selected at a time
+        var _groupFieldset_change   = function(e) {
+            /* The fieldset has changed so change the current group to
+             * the 'isCustom' / 'control' group.
+             *
+             * Don't allow propagation -- we will directly trigger any events
+             *                            that need to be passed on.
+             */
             e.preventDefault();
             e.stopPropagation();
 
-            var $opt        = $(this);
+            var $group  = $groupControl.find(':radio');
 
-            // Activate this style
-            self.setStyle( $opt.data('group') );
+            // Activate this group
+            self.setGroup( $group.val() );
+
+            return false;
+        };
+
+        var _group_select    = function(e) {
+            /*
+            if ($(e.target).is(':radio'))
+                // Avoid infinite event loops ;^)
+                return;
+            */
+
+            // Allow only one display group to be selected at a time
+            e.preventDefault();
+            e.stopPropagation();
+
+            var $group  = $(this).find(':radio');
+
+            // Activate this group
+            self.setGroup( $group.val() );
         };
 
         // Bind to submit.
         var _form_submit        = function(e) {
-            /* Remove all cookies related to 'custom' style.  This is
-             * because, when an option is NOT selected, it is not
-             * included so, to remove a previously selected options, we
-             * must first remove them all and then add in the ones that
-             * are explicitly selected.
+            /* Remove all cookies directly identifying options.  This is
+             * because, when an option is NOT selected, it is not included so,
+             * to remove a previously selected options, we must first remove
+             * them all and then add in the ones that are explicitly selected.
              */
-            $styleFieldset.find('input').each(function() {
+            $groupFieldset.find(':checkbox').each(function() {
+                $.log("Remove Cookie: name[ %s ] / [ %s ]",
+                        this.name, $(this).attr('name'));
+
                 $.cookie( $(this).attr('name'), null );
             });
 
-            /* If the selected display style is NOT 'custom', disable
+            /* If the selected display group is NOT 'custom', disable
              * all the 'display custom' pane/field-set inputs so they
              * will not be included in the serialization of form
              * values.
              */
-            if ($itemsStyle.val() !== 'custom')
+            if (! $groups.find('li.ui-state-active').hasClass('isCustom'))
             {
                 // Disable all custom field values
-                $styleFieldset.find('input').attr('disabled', true);
+                $groupFieldset.find(':checkbox').attr('disabled', true);
             }
 
             // let the form be submitted
@@ -174,28 +264,22 @@ $.widget("ui.optionGroups", {
          *
          */
 
-        /* Toggle the display style area.
-         * the display style to 'custom', de-selecting the others.
+        /* Toggle the display group area.
+         * the display group to 'custom', de-selecting the others.
          */
-        $styleControl
-                .bind('click.uioptiongroups', _styleControl_click);
+        $groupControl
+                .bind('click.uioptiongroups', _groupControl_click);
 
-        /* For all anchors within the control button, disable the default
-         * browser action but allow the event to bubble up to any parent click
-         * handlers (e.g. _styleControl_click).
-         */
-        $styleControl.find('> a, .control > a, .control > .ui-icon')
-                .bind('click.uioptiongroups', _prevent_default);
-
-        /* When something in the style fieldset changes, set the display style
+        /* When something in the group fieldset changes, set the display group
          * to 'custom', de-selecting the others.
          */
-        $styleFieldset
-                .bind('change.uioptiongroups', _styleFieldset_change);
+        $groupFieldset
+                .bind('change.uioptiongroups', _groupFieldset_change);
 
-        // Allow only one display style to be selected at a time
-        self.element.find('a.option')
-                .bind('click.uioptiongroups', _group_click);
+        // Allow only one display group to be selected at a time
+        $groups.find('li:not(.control)')    // ('li.toggle')
+                .bind('change.uioptiongroups', _group_select)
+                .bind('click.uioptiongroups',  _group_select);
 
         // Bind to submit.
         self.options.form
@@ -206,42 +290,97 @@ $.widget("ui.optionGroups", {
      * Public methods
      *
      */
-    getStyle: function() {
-        return this.element.find('a.option-selected')
-                                    .data('group');
+    getGroup: function() {
+        /* Now, the currently selected group can be found in three ways:
+         *  this.element.find('ul.groups :checked').val();
+         *  this.element.find('ul.groups li.ui-state-active :radio').val();
+         *  -- this.element.find('ul.groups input[type=hidden]').val();
+         */
+        return this.element.find('ul.groups :checked').val();
     },
 
-    setStyle: function(style) {
-        // Save the style in our hidden input
+    setGroup: function(group) {
+        /* Now, the currently selected group can be found in three ways:
+         *  this.element.find('ul.groups :checked').val();
+         *  this.element.find('ul.groups li.ui-state-active :radio').val();
+         *  -- this.element.find('ul.groups input[type=hidden]').val();
+         */
         var self            = this;
-        var $itemsStyle     = self.element.find('input[name='
-                            +                       self.options.namespace
-                            +                                   'Style]');
-        var $styleFieldset  = self.element.find('fieldset:first');
+        var $groups         = self.element.find('ul.groups');
+        var $groupFieldset  = self.element.find('fieldset:first');
+        var $newGroup       = $groups.find(':radio[value='+group+']');
+        if ($newGroup.length !== 1)
+            return;
 
+        // Select the new radio button
+        $groups.find(':checked').attr('checked', false)
+                                .removeAttr('checked');
+        $newGroup.attr('checked', 'checked');
 
-        $itemsStyle.val( style );
+        /* Remove 'ui-state-active' from all groups and add it JUST to the new
+         * one
+         */
+        $groups.find('li.ui-state-active').removeClass('ui-state-active');
+        $newGroup.parent().addClass('ui-state-active');
 
-        // Remove the 'option-selected' class from the current selection
-        self.element.find('a.option-selected')
-                                    .removeClass('option-selected');
+        // Set the hidden input value
+        // $groups.find('input[type=hidden]').val(group);
 
-        // Add the 'option-selected' class to the new selection
-        self.element.find('a.'+ self.options.namespace +'Style-'+ style)
-                                    .addClass('option-selected');
-
-        if (style !== 'custom')
+        if (! $newGroup.parent().hasClass('control'))
         {
-            // Turn OFF all items in the style fieldset...
-            $styleFieldset.find('input').removeAttr('checked');
+            // Turn OFF all items in the group fieldset...
+            $groupFieldset.find('input').removeAttr('checked');
 
-            // Turn ON  the items for this new display style.
-            $styleFieldset.find( self.options.groups[ style ])
-                           .attr('checked', true);
+            // Turn ON  the items for this new display group.
+            $groupFieldset.find('.inGroup-'+ group)
+                           .attr('checked', 'checked');
         }
 
-        // Trigger a change event on our form
-        self.options.form.change();
+        /* Gather the set of selected AND deselected options.  For each,
+         * retrieve its name (e.g. 'sel1:sel2:sel3') and convert it to a CSS
+         * selector.
+         *
+         * Generate an array of CSS selectors that will choose all selected
+         * options and a second that will choose all de-selected options.
+         */
+        var selected    = [];
+        var deSelected  = [];
+        $groupFieldset.find('input:checked').each(function() {
+            selected.push( '.' + $(this).attr('name')
+                                            .replace(/^.*?\[(.*?)\]$/, '$1')
+                                            .replace(/:/g, ' .') );
+        });
+
+        $groupFieldset.find('input:not(:checked)').each(function() {
+            deSelected.push( '.' + $(this).attr('name')
+                                            .replace(/^.*?\[(.*?)\]$/, '$1')
+                                            .replace(/:/g, ' .') );
+        });
+
+        var groupInfo   = {'group'      : group,
+                           'selected'   : selected,
+                           'deSelected' : deSelected};
+
+        self.element.data('groupInfo', groupInfo);
+
+        /* Trigger the 'change' event passing the name of the new group along
+         * with an array of CSS selectors that will match all items of the
+         * group and an array of CSS selectors that will match all items NOT of
+         * the group.
+         */
+        self.options.form.trigger('change', groupInfo);
+    },
+
+    getGroupInfo: function() {
+        return this.element.data('groupInfo');
+    },
+
+    enable: function() {
+        this.find(':input').removeAttr('disabled');
+    },
+
+    disable: function() {
+        this.find(':input').attr('disabled', true);
     },
 
     toggleFieldset: function()
@@ -259,31 +398,31 @@ $.widget("ui.optionGroups", {
                 .removeData('group');
 
         // Unbind events
-        var $styleControl   = self.element.find('.control:first');
-        var $itemsStyle     = self.element.find('input[name='
+        var $groupControl   = self.element.find('.control:first');
+        var $itemsGroup     = self.element.find('input[name='
                             +                       self.options.namespace
-                            +                                   'Style]');
+                            +                                   'Group]');
 
-        /* Toggle the display style area.
-         * the display style to 'custom', de-selecting the others.
+        /* Toggle the display group area.
+         * the display group to 'custom', de-selecting the others.
          */
-        $styleControl
+        $groupControl
                 .unbind('.uioptiongroups');
 
         /* For all anchors within the control button, disable the default
          * browser action but allow the event to bubble up to any parent click
-         * handlers (e.g. _styleControl_click).
+         * handlers (e.g. _groupControl_click).
          */
-        $styleControl.find('> a, .control > a, .control > .ui-icon')
+        $groupControl.find('> a, .control > a, .control > .ui-icon')
                 .unbind('.uioptiongroups');
 
-        /* When something in the style fieldset changes, set the display style
+        /* When something in the group fieldset changes, set the display group
          * to 'custom', de-selecting the others.
          */
         self.element.find('fieldset:first')
                 .unbind('.uioptiongroups');
 
-        // Allow only one display style to be selected at a time
+        // Allow only one display group to be selected at a time
         self.element.find('a.option')
                 .unbind('.uioptiongroups');
 

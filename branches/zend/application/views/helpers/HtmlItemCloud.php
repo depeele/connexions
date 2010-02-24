@@ -876,7 +876,7 @@ function init_ItemCloud(namespace)
               .    "</div>"                             // highlightCount }
               .    "<br class='clear' />";
 
-        $this->_displayOptions->addFormField('itemsCount', $html);
+        $this->_displayOptions->addFormField('itemCounts', $html);
 
         /* _displayOptions->render will use the previously added fields, along
          * with the available display styles to render the complete display

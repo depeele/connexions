@@ -1,32 +1,20 @@
 /* ****** users.sass ****** */
-#usersList .displayOptions .buttons-custom { margin-top: 0 !important; }
 #usersList .displayOptions form { width: 22em; }
-#usersList .displayOptions form .sortOrder { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
-#usersList .displayOptions form .sortOrder .field { float: left; padding-bottom: 0; padding-right: 0.5em; }
-#usersList .displayOptions form .sortOrder .field label { display: inline; float: none; width: auto; padding: 0 0.1em; }
-#usersList .displayOptions form .sortOrder .field input, #usersList .displayOptions form .sortOrder .field label { cursor: pointer; }
-#usersList .displayOptions form .perPage { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
-#usersList .displayOptions form .displayStyle { display: block; position: relative; width: auto; text-align: left; padding-top: 1em; }
-#usersList .displayOptions form .displayStyle a { font-weight: normal; }
-#usersList .displayOptions form .displayStyle .option-selected { font-weight: bold; }
-#usersList .displayOptions form .displayStyle .option, #usersList .displayOptions form .displayStyle .comma { display: block; float: left; }
-#usersList .displayOptions form .displayStyle .option.control { position: relative; top: -0.25em; }
-#usersList .displayOptions form .displayStyle .comma { padding-right: 0.5em; }
-#usersList .displayOptions form .displayStyle .custom { padding-top: 0.5em; border-bottom: 0; }
-#usersList .displayOptions form .displayStyle .custom .user { border: 1px solid #cccccc; padding: 0 0.1em 0.1em 0.2em; }
-#usersList .displayOptions form .displayStyle .custom .user label { display: inline; float: none; width: auto; padding-left: 0; }
-#usersList .displayOptions form .displayStyle .custom .user .stats { font-weight: normal; }
-#usersList .displayOptions form .displayStyle .custom .user .data { padding-left: 24px; }
-#usersList .displayOptions form .displayStyle .custom .user .data .avatar { border: 1px solid #cccccc; height: 32px; width: 18px; margin-top: 0.2em; padding: 0 2px; }
-#usersList .displayOptions form .displayStyle .custom .user .data .avatar label { display: none; }
-#usersList .displayOptions form .displayStyle .custom .user .data .userId { font-size: 1.0em; }
-#usersList .displayOptions form .displayStyle .custom .user .data .fullName, #usersList .displayOptions form .displayStyle .custom .user .data .email { display: inline; font-size: 0.9em; padding: 0.25em 0 0.25em 1em; }
-#usersList .displayOptions form .displayStyle .custom .user .data .email { padding-right: 0.5em; }
-#usersList .displayOptions form .displayStyle .custom .user .data .fullName { float: none; }
-#usersList .displayOptions form .displayStyle .custom .user .data .tags { clear: both; width: auto; text-align: left; padding: 0.25em 0; }
-#usersList .displayOptions form .displayStyle .custom .user .data .tags label { display: inline; float: none; font-size: 0.8em; }
-#usersList .displayOptions form .displayStyle .custom .user .data .dates { padding: 0.25em 0; }
-#usersList .displayOptions form .displayStyle .custom .user .data .dates .lastVisit { display: block; }
+#usersList .displayOptions form .displayStyle .users, #usersList .displayOptions form .displayStyle fieldset.options { border-bottom: none; padding-top: 1em; }
+#usersList .displayOptions form .displayStyle .users .user, #usersList .displayOptions form .displayStyle fieldset.options .user { border: 1px solid #cccccc; padding: 0 0.1em 0.1em 0.2em; }
+#usersList .displayOptions form .displayStyle .users .user label, #usersList .displayOptions form .displayStyle fieldset.options .user label { display: inline; float: none; width: auto; padding-left: 0; }
+#usersList .displayOptions form .displayStyle .users .user .stats, #usersList .displayOptions form .displayStyle fieldset.options .user .stats { font-weight: normal; }
+#usersList .displayOptions form .displayStyle .users .user .data, #usersList .displayOptions form .displayStyle fieldset.options .user .data { padding-left: 24px; }
+#usersList .displayOptions form .displayStyle .users .user .data .avatar, #usersList .displayOptions form .displayStyle fieldset.options .user .data .avatar { border: 1px solid #cccccc; height: 32px; width: 18px; margin-top: 0.2em; padding: 0 2px; }
+#usersList .displayOptions form .displayStyle .users .user .data .avatar label, #usersList .displayOptions form .displayStyle fieldset.options .user .data .avatar label { display: none; }
+#usersList .displayOptions form .displayStyle .users .user .data .userId, #usersList .displayOptions form .displayStyle fieldset.options .user .data .userId { font-size: 1.0em; }
+#usersList .displayOptions form .displayStyle .users .user .data .fullName, #usersList .displayOptions form .displayStyle .users .user .data .email, #usersList .displayOptions form .displayStyle fieldset.options .user .data .fullName, #usersList .displayOptions form .displayStyle fieldset.options .user .data .email { display: inline; font-size: 0.9em; padding: 0.25em 0; }
+#usersList .displayOptions form .displayStyle .users .user .data .email, #usersList .displayOptions form .displayStyle fieldset.options .user .data .email { padding-right: 0.5em; }
+#usersList .displayOptions form .displayStyle .users .user .data .fullName, #usersList .displayOptions form .displayStyle fieldset.options .user .data .fullName { float: none; }
+#usersList .displayOptions form .displayStyle .users .user .data .tags, #usersList .displayOptions form .displayStyle fieldset.options .user .data .tags { clear: both; width: auto; text-align: left; padding: 0.25em 0; }
+#usersList .displayOptions form .displayStyle .users .user .data .tags label, #usersList .displayOptions form .displayStyle fieldset.options .user .data .tags label { display: inline; float: none; font-size: 0.8em; }
+#usersList .displayOptions form .displayStyle .users .user .data .dates, #usersList .displayOptions form .displayStyle fieldset.options .user .data .dates { padding: 0.25em 0; }
+#usersList .displayOptions form .displayStyle .users .user .data .dates .lastVisit, #usersList .displayOptions form .displayStyle fieldset.options .user .data .dates .lastVisit { display: block; }
 #usersList .users { clear: both; padding-top: 2em; border-bottom: 1px solid #cccccc; }
 #usersList .users .groupHeader { position: relative; background-color: #eeeeff; border-bottom: 1px solid #cccccc; color: #999999; height: 20px; left: -15px; }
 #usersList .users .groupHeader .group { position: relative; background-color: #eeeeff; height: 20px; right: -20px; }

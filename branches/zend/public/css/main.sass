@@ -114,6 +114,66 @@
       width:  6em
       float:  left
 
+  //.sortBy
+
+  .sortOrder
+    padding-top:      0.5em
+    padding-bottom:   0.5em
+    border-bottom =   "1px dotted" !borderColor
+    .field
+      float:          left
+      padding-bottom: 0
+      padding-right:  0.5em
+      label
+        display:  inline
+        float:    none
+        width:    auto
+        padding:  0 0.1em
+      input,label
+        cursor:   pointer
+
+  .perPage
+    padding-top:      0.5em
+    padding-bottom:   0.5em
+    border-bottom =   "1px dotted" !borderColor
+
+  .displayStyle
+    display:      block
+    position:     relative
+    width:        auto
+    text-align:   left
+    padding-top:  1em
+
+    label
+      cursor:     pointer
+
+    ul.groups
+      padding:          0
+      li.field, .comma
+        display:        block
+        float:          left
+        padding:        0.25em 0
+        label
+          display:      inline
+          float:        none
+          width:        auto
+          padding:      0
+      li.field
+        cursor:         pointer
+      li.control
+        position:       relative
+        padding:        0.25em 0 0.25em 0.25em
+      li.ui-state-active
+        font-weight:    bold
+      li.toggle
+        border:         none
+      .comma
+        padding-right:  0.25em
+
+    fieldset.options
+      padding-top:    0.5em
+      border:         none
+
   // To have the control appear as a tab when opened
   //form
   //  top:                1.87em

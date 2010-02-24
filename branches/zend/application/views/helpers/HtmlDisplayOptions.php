@@ -18,8 +18,6 @@
  *        the following additional properties:
  *          'label'         REQUIRED -- the label for the form field 
  *                          representing this item;
- *          'type'          the form-field input type
- *                              ( ['checkbox'], 'radio' );
  *          'extraPre'      a string of HTML that is to be included within the 
  *                          DOM container for this item BEFORE the form 
  *                          elements of the item itself;
@@ -612,109 +610,50 @@ function init_DisplayOptions(opts)
     public function renderDisplayStyle(array $opts = array())
     {
         $namespace = $this->_namespace;
+        $fName     = "{$namespace}OptionGroup";
 
         $html =   "<div class='field displayStyle "     // displayStyle {
-              .                     "{$namespace}-DisplayStyle'>"
-              .    "<label for='{$namespace}Style'>Display</label>"
-              .    "<input type='hidden' name='{$namespace}Style' "
-              .          "value='{$this->_currentGroup}' />";
+              .                     "ui-optionGroups "
+              .                     "{$namespace}OptionGroups'>"
+              .    "<label for='{$fName}'>Display</label>"
+              .    "<ul class='groups'>";               // groups {
 
-        $idex       = 0;
-        $parts = array();
         foreach ($this->_groups as $key => $info)
         {
-            $title    = $info['label'];
-            $itemHtml = '';
-            $cssClass = 'option';
-
-            if ($info['isCustom'])
-            {
-                $itemHtml .= "<div class='{$cssClass} control "
-                          .             "ui-corner-all ui-state-default"
-                          .     ($key === $this->_currentGroup
-                                    ? " ui-state-active"
-                                    : "")
-                          .                 "'>";
-                $cssClass  = '';
-            }
-
-            $cssClass .= " {$namespace}Style-{$key}";
-            if ($key == $this->_currentGroup)
-                $cssClass .= ' option-selected';
-
-            $itemHtml .= "<a class='{$cssClass}' "
-                      .      "href='?{$namespace}Style={$key}'>{$title}</a>";
-
-            if ($info['isCustom'])
-            {
-                $itemHtml .=  "<div class='ui-icon ui-icon-triangle-1-s'>"
-                          .    "&nbsp;"
-                          .   "</div>"
-                          .  "</div>";
-            }
-
-            array_push($parts, $itemHtml);
+            $html .= "<li class='field"
+                  .     ($info['isCustom']
+                            ? " isCustom"
+                            : "") ."'>"
+                  .   "<input type='radio' "
+                  .          "name='{$fName}' "
+                  .         "value='{$key}' "
+                  .     ($key === $this->_currentGroup
+                            ? " checked='checked'"
+                            : "") ." />"
+                  .   "<label for='{$fName}'>{$info['label']}</label>"
+                  .  "</li>";
         }
 
-        $html .= implode("<span class='comma'>, </span>", $parts)
-              .  "<br class='clear' />";
+        $html .=    "<br class='clear' />"
+              .    "</ul>";                     // groups }
 
 
-        $html .= $this->renderGroupValues(array(
-                            'class' => 'custom',
-                            /*
-                            'style' => ($this->_groups[$this->_currentGroup]
-                                                                ['isCustom']
-                                            ? 'display:none;'
-                                            : '')*/ ) );
+        if (! empty($this->_definition))
+        {
+            $html .= "<fieldset class='options {$namespace}'>";
+
+            foreach ($this->_definition as $name => $val)
+            {
+                $html .= $this->_renderOptionGroupsElement($name, $val);
+            }
+
+            $html .= "</fieldset>";
+        }
 
         $html .=  "</div>";                     // displayStyle }
 
         return $html;
     }
-
-    /** @brief  Render the form fieldset representing all display-style 
-     *          options.
-     *  @param  opts    Additional rendering options:
-     *                      'class' => Additional CSS class(es) for fieldset
-     *                      'style' => Additional CSS styling   for fieldset
-     *
-     *  @return The HTML of the fieldset.
-     */
-    public function renderGroupValues(array $opts = array())
-    {
-        /*
-        Connexions::log("Connexions_View_Helper_HtmlDisplayOptions:"
-                            . "renderGroupValues: "
-                            .   "_fieldMap [ "
-                            .       print_r($this->_fieldMap, true)
-                            .                                           " ], "
-                            .   "_definition [ "
-                            .       print_r($this->_definition, true)
-                            .                                           " ]");
-        // */
-
-        $html = '';
-        if (! empty($this->_definition))
-        {
-            $html = sprintf("<fieldset class='%s%s'%s>\n",
-                            $this->_namespace,
-                            (isset($opts['class']) ? " {$opts['class']}"
-                                                   : ''),
-                            (isset($opts['style']) ? " style='{$opts['style']}'"
-                                                   : ''));
-
-            foreach ($this->_definition as $name => $val)
-            {
-                $html .= $this->_renderElement($name, $val);
-            }
-
-            $html .= "</fieldset>\n";
-        }
-
-        return $html;
-    }
-
 
     /**************************************************************************
      * Initialization Methods
@@ -791,6 +730,7 @@ function init_DisplayOptions(opts)
 
             $dir['fieldName'] = $fieldName;
             $dir['selector']  = '.'. implode(' .', $path);
+            $dir['inGroup']   = array();
 
             if (is_array($defLabel))
             {
@@ -812,21 +752,6 @@ function init_DisplayOptions(opts)
 
             if (! isset($dir['isSet']))
                 $dir['isSet'] = true;
-
-            // Validate the type, defaulting to 'checkbox'
-            //if (! isset($dir['type']))  $dir['type'] = 'checkbox';
-
-            switch (@strtolower($dir['type']))
-            {
-            case 'radio':
-                $dir['type'] = 'radio';
-                break;
-
-            case 'checkbox':
-            default:
-                $dir['type'] = 'checkbox';
-                break;
-            }
 
             /*
             Connexions::log('Connexions::View_Helper_HtmlDisplayOptions:"
@@ -991,6 +916,10 @@ function init_DisplayOptions(opts)
                 continue;
             }
 
+            // Add this group to the list of groups this field belongs to
+            array_push($this->_fieldMap[ $fieldName ]['inGroup'], $name);
+
+            // Associate this field with the 'options' of the group.
             $group['options'][$fieldName] =& $this->_fieldMap[$fieldName];
         }
 
@@ -1013,18 +942,18 @@ function init_DisplayOptions(opts)
      *
      *  @return The HTML of the element.
      */
-    protected function _renderElement($name, &$val, $indent = 1)
+    protected function _renderOptionGroupsElement($name, &$val, $indent = 1)
     {
         $inStr      = str_repeat(' ', $indent);
-        $isField    = (is_array($val) && (isset($val['label'])));
+        $isOption   = (is_array($val) && (isset($val['label'])));
         $hasClass   = (is_array($val) && (isset($val['containerCss'])));
         $hasTitle   = (is_array($val) && (isset($val['containerTitle'])));
         $el         = (is_array($val) && (isset($val['containerEl']))
                             ? $val['containerEl']
                             : 'div');
         $html       = $inStr ."<${el} class='{$name}"
-                    .                        ($isField
-                                                ? ' field'
+                    .                        ($isOption
+                                                ? ' option'
                                                 : '')
                     .                        ($hasClass
                                                 ? " {$val['containerCss']}"
@@ -1044,27 +973,37 @@ function init_DisplayOptions(opts)
             {
                 // This is a form-field
                 $addIndent = 1;
-                $ns        = "{$this->_namespace}StyleCustom";
-                $fName     = "{$ns}[{$val['fieldName']}]";
+                $ns        = "{$this->_namespace}OptionGroups_option";
                 $fId       = "{$ns}-{$name}";
+                $fName     = "{$ns}[{$val['fieldName']}]";
+
+                /* Assemble the list of groups this field belongs to and add
+                 * them as 'inGroup-<name>' css classes.
+                 */
+                $cssGroups = '';
+                foreach ($val['inGroup'] as $groupName)
+                {
+                    $cssGroups .= " inGroup-{$groupName}";
+                }
 
                 /*
                 Connexions::log("Connexions_View_Helper_HtmlDisplayOptions:"
-                            . "_renderElement: "
+                            . "_renderOptionGroupsElement: "
                             .   "field [ ". print_r($val, true) ." ]");
                 // */
 
                 if (isset($val['extraPre']))
                     $html .= $inStr .' '. $val['extraPre'] ."\n";
 
-                $html .= $inStr." <input type='{$val['type']}' "
-                      .                 "name='{$fName}' "
+                $html .= $inStr." <input type='checkbox' "
+                      .                "class='{$cssGroups}' "
                       .                   "id='{$fId}'"
+                      .                 "name='{$fName}' "
                       .                     ($val['isSet'] === true
-                                                ? " checked='true'"
+                                                ? " checked='checked'"
                                                 : "") ." />\n"
                       .  $inStr." <label for='{$fId}'>"
-                      .           $val['label']
+                      .            $val['label']
                       .          "</label>\n";
 
                 if (isset($val['extraPost']))
@@ -1073,8 +1012,8 @@ function init_DisplayOptions(opts)
 
             foreach ($val as $cName => $cVal)
             {
-                if (is_array($cVal))
-                    $html .= $this->_renderElement($cName, $cVal,
+                if ( ($cName !== 'inGroup') && is_array($cVal))
+                    $html .= $this->_renderOptionGroupsElement($cName, $cVal,
                                                    $indent + $addIndent);
             }
         }

@@ -23,10 +23,7 @@ $.widget("ui.dropdownForm", {
      *      groups      An object of style-name => CSS selector;
      *
      *  @triggers:
-     *      'enabled.uicheckbox'    when element is enabled;
-     *      'disabled.uicheckbox'   when element is disabled;
-     *      'checked.uicheckbox'    when element is checked;
-     *      'unchecked.uicheckbox'  when element is unchecked.
+     *      'apply.uidropdownform'  when the form is submitted;
      */
     _create: function() {
         var self        = this;
@@ -47,21 +44,16 @@ $.widget("ui.dropdownForm", {
 
         $control.fadeTo(100, 0.5);
 
+        /* Activate a ui.optionGroups handler for any container/div in this
+         * form with a CSS class of 'ui-optionGroups'.
+         * ui.optionGroups handler for them.
+         */
+        self.element.find('.ui-optionGroups').optionGroups();
+
 
         $form.hide();
 
         self._bindEvents();
-
-        /* If there is a '.displayStyle' div in this form, activate a
-         * ui.optionGroups handler for it.
-         */
-        var $displayStyle   = self.element.find('.displayStyle');
-        if ( (opts.groups !== undefined) && ($displayStyle.length > 0) )
-        {
-            // Initialize the display style control
-            opts.form = $form;
-            $displayStyle.optionGroups( opts );
-        }
 
     },
 
@@ -95,24 +87,8 @@ $.widget("ui.dropdownForm", {
 
         var _mouse_leave    = function(e) {
             if ($form.is(':visible'))
+                // Don't fade if the form is currently visible
                 return;
-
-            // For at least Mac Firefox 3.5, for <select>
-            // when we move into the options we receive a
-            // 'moustout' event on the select box with a
-            // related target of 'html'.  The wreaks havoc
-            // by de-selecting the select box and it's
-            // parent(s), causing the displayOptions to
-            // disappear.  NOT what we want, so IGNORE the
-            // event.
-            if ((e.relatedTarget === undefined) ||
-                (e.relatedTarget === null)      ||
-                (e.relatedTarget.localName === 'html'))
-            {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
 
             $control.fadeTo(100, 0.5);
         };
@@ -132,10 +108,23 @@ $.widget("ui.dropdownForm", {
         };
 
         var _form_change        = function(e) {
+            /*
+            // Remember which fields have changed
+            var changed = self.element.data('changed.uidropdownform');
+
+            if (! $.isArray(changed))
+            {
+                changed = [];
+            }
+            changed.push(e.target);
+
+            self.element.data('changed.uidropdownform', changed);
+            */
+
             // Any change within the form should enable the submit button
             $submit.removeClass('ui-state-disabled')
                    .removeAttr('disabled')
-                   .addClass('ui-state-default,ui-state-highlight');
+                   .addClass('ui-state-default');
         };
 
         var _form_submit        = function(e) {
@@ -159,7 +148,11 @@ $.widget("ui.dropdownForm", {
             /* Finally, disable ALL inputs so our URL will have no
              * parameters since we've stored them all in cookies.
              */
-            $form.find('input,select').attr('disabled', true);
+            self.disable();
+            //$form.find('input,select').attr('disabled', true);
+
+            //self.element.trigger('apply.uidropdownform');
+            //$form.trigger('apply.uidropdownform');
 
             // let the form be submitted
         };
@@ -194,14 +187,68 @@ $.widget("ui.dropdownForm", {
      * Public methods
      *
      */
-    getStyle: function() {
+    getGroup: function() {
         return this.element.find('.displayStyle')
-                            .optionGroups( 'getStyle' );
+                            .optionGroups( 'getGroup' );
     },
 
-    setStyle: function(style) {
+    setGroup: function(style) {
         return this.element.find('.displayStyle')
-                            .optionGroups( 'setStyle', style );
+                            .optionGroups( 'setGroup', style );
+    },
+
+    getGroupInfo: function() {
+        return this.element.find('.displayStyle')
+                            .optionGroups( 'getGroupInfo' );
+    },
+
+    open: function() {
+        if (this.element.find('form:first').is(':visible'))
+            // Already opened
+            return;
+
+        this.element.find('.control:first').click();
+    },
+
+    close: function() {
+        if (! this.element.find('form:first').is(':visible'))
+            // Already closed
+            return;
+
+        this.element.find('.control:first').click();
+    },
+
+    enable: function(enableSubmit) {
+        var $form       = this.element.find('form:first');
+        var $submit     = this.element.find(':submit');
+
+        $form.find('input,select').removeAttr('disabled');
+
+        if (enableSubmit !== true)
+        {
+            // Any change within the form should enable the submit button
+            $submit.removeClass('ui-state-default ui-state-highlight')
+                   .addClass('ui-state-disabled')
+                   .attr('disabled', true);
+        }
+        else
+        {
+            $submit.removeClass('ui-state-disabled')
+                   .removeAttr('disabled')
+                   .addClass('ui-state-default');
+        }
+    },
+
+    disable: function() {
+        var $form       = this.element.find('form:first');
+        var $submit     = this.element.find(':submit');
+
+        $form.find('input,select').attr('disabled', true);
+
+        // Any change within the form should enable the submit button
+        $submit.removeClass('ui-state-default ui-state-highlight')
+               .addClass('ui-state-disabled')
+               .attr('disabled', true);
     },
 
     destroy: function() {
