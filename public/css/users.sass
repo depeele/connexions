@@ -9,8 +9,6 @@
 
 #usersList
   .displayOptions
-    .buttons-custom
-      margin-top:   0 !important
 
     // To have the control appear as a tab when opened
     //form
@@ -23,50 +21,10 @@
       //background-color =  !pageColorBackground
       //border =            "1px solid" !borderColor
 
-      //.sortBy
-
-      .sortOrder
-        padding-top:      0.5em
-        padding-bottom:   0.5em
-        border-bottom =   "1px dotted" !borderColor
-        .field
-          float:          left
-          padding-bottom: 0
-          padding-right:  0.5em
-          label
-            display:  inline
-            float:    none
-            width:    auto
-            padding:  0 0.1em
-          input,label
-            cursor:   pointer
-
-      .perPage
-        padding-top:      0.5em
-        padding-bottom:   0.5em
-        border-bottom =   "1px dotted" !borderColor
-
       .displayStyle
-        display:      block
-        position:     relative
-        width:        auto
-        text-align:   left
-        padding-top:  1em
-        a
-          font-weight:  normal
-        .option-selected
-          font-weight:  bold
-        .option, .comma
-          display:        block
-          float:          left
-        .option.control
-          position:       relative
-          top:            -0.25em
-        .comma
-          padding-right:  0.5em
-        .custom
-          padding-top:    0.5em
-          border-bottom:  0
+        .users, fieldset.options
+          border-bottom:  none
+          padding-top:    1em
           .user
             border =      "1px solid" !borderColor
             padding:      0 0.1em 0.1em 0.2em
@@ -97,7 +55,7 @@
               .fullName, .email
                 display:        inline
                 font-size:      0.9em
-                padding:        0.25em 0 0.25em 1em
+                padding:        0.25em 0
               .email
                 padding-right:  0.5em
               .fullName

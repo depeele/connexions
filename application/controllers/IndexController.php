@@ -126,11 +126,12 @@ class IndexController extends Zend_Controller_Action
          */
         $itemsPrefix      = 'items';
         $itemsPerPage     = $request->getParam($itemsPrefix."PerPage",   null);
-        $itemsStyle       = $request->getParam($itemsPrefix."Style",     null);
+        $itemsStyle       = $request->getParam($itemsPrefix."OptionGroup",
+                                                                         null);
         $itemsSortBy      = $request->getParam($itemsPrefix."SortBy",    null);
         $itemsSortOrder   = $request->getParam($itemsPrefix."SortOrder", null);
-        $itemsStyleCustom = $request->getParam($itemsPrefix."StyleCustom",
-                                                                         null);
+        $itemsStyleCustom = $request->getParam($itemsPrefix
+                                                ."OptionGroups_option",  null);
 
         $uiHelper = $this->view->htmlUserItems();
         $uiHelper->setNamespace($itemsPrefix)
@@ -171,7 +172,8 @@ class IndexController extends Zend_Controller_Action
          */
         $tagsPrefix         = 'sbTags';
         $tagsPerPage        = $request->getParam($tagsPrefix."PerPage",  100);
-        $tagsStyle          = $request->getParam($tagsPrefix."Style",    null);
+        $tagsStyle          = $request->getParam($tagsPrefix."OptionGroup",
+                                                                         null);
         $tagsHighlightCount = $request->getParam($tagsPrefix."HighlightCount",
                                                                          null);
         $tagsSortBy         = $request->getParam($tagsPrefix."SortBy",  'tag');

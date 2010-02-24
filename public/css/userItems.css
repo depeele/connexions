@@ -1,36 +1,24 @@
 /* ****** userItems.sass ****** */
-#itemsList .displayOptions .buttons-custom { margin-top: 0 !important; }
 #itemsList .displayOptions form { width: 22em; }
-#itemsList .displayOptions form .sortOrder { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
-#itemsList .displayOptions form .sortOrder .field { float: left; padding-bottom: 0; padding-right: 0.5em; }
-#itemsList .displayOptions form .sortOrder .field label { display: inline; float: none; width: auto; padding: 0 0.1em; }
-#itemsList .displayOptions form .sortOrder .field input, #itemsList .displayOptions form .sortOrder .field label { cursor: pointer; }
-#itemsList .displayOptions form .perPage { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
-#itemsList .displayOptions form .displayStyle { display: block; position: relative; width: auto; text-align: left; padding-top: 1em; }
-#itemsList .displayOptions form .displayStyle a { font-weight: normal; }
-#itemsList .displayOptions form .displayStyle .option-selected { font-weight: bold; }
-#itemsList .displayOptions form .displayStyle .option, #itemsList .displayOptions form .displayStyle .comma { display: block; float: left; }
-#itemsList .displayOptions form .displayStyle .option.control { position: relative; top: -0.25em; }
-#itemsList .displayOptions form .displayStyle .comma { padding-right: 0.5em; }
-#itemsList .displayOptions form .displayStyle .custom { padding-top: 0.5em; border: none; }
-#itemsList .displayOptions form .displayStyle .custom .item { border: 1px solid #cccccc; padding: 0 0 0.1em 0.2em; }
-#itemsList .displayOptions form .displayStyle .custom .item label { display: inline; float: none; width: auto; padding-left: 0.25em; }
-#itemsList .displayOptions form .displayStyle .custom .item .stats { font-weight: normal; padding: 0; }
-#itemsList .displayOptions form .displayStyle .custom .item .stats .rating { padding: 0.25em 0.1em 0.25em 0.5em; text-align: left; }
-#itemsList .displayOptions form .displayStyle .custom .item .stats .rating .info { text-align: left; float: none; padding: 0; }
-#itemsList .displayOptions form .displayStyle .custom .item .data { padding-left: 0; padding-right: 0.1em; }
-#itemsList .displayOptions form .displayStyle .custom .item .data .itemName { padding-bottom: 0.5em; }
-#itemsList .displayOptions form .displayStyle .custom .item .data .url, #itemsList .displayOptions form .displayStyle .custom .item .data .description, #itemsList .displayOptions form .displayStyle .custom .item .data .description .full, #itemsList .displayOptions form .displayStyle .custom .item .data .description .summary { margin: 0; }
-#itemsList .displayOptions form .displayStyle .custom .item .data .description { padding-bottom: 0.5em; }
-#itemsList .displayOptions form .displayStyle .custom .item .data .description .full, #itemsList .displayOptions form .displayStyle .custom .item .data .description .summary { padding: 0; }
-#itemsList .displayOptions form .displayStyle .custom .item .data .userId { white-space: normal; padding: 0 0 0 1em; font-size: 0.8em; }
-#itemsList .displayOptions form .displayStyle .custom .item .data .userId label { padding-left: 0; }
-#itemsList .displayOptions form .displayStyle .custom .item .data .userId .avatar { position: relative; float: left; padding: 0 0.75em 0 0.25em; }
-#itemsList .displayOptions form .displayStyle .custom .item .data .userId .avatar label { padding-left: 8px; }
-#itemsList .displayOptions form .displayStyle .custom .item .data .userId .avatar .img { position: absolute; left: 14px; top: 0; }
-#itemsList .displayOptions form .displayStyle .custom .item .data .tags { width: auto; text-align: left; padding: 0 0 1em 0; }
-#itemsList .displayOptions form .displayStyle .custom .item .data .tags label { display: inline; float: none; font-size: 0.8em; }
-#itemsList .displayOptions form .displayStyle .custom .item .data .dates .updated { width: auto; }
+#itemsList .displayOptions form .displayStyle .items, #itemsList .displayOptions form .displayStyle fieldset.options { border-bottom: none; padding-top: 1em; }
+#itemsList .displayOptions form .displayStyle .items .item, #itemsList .displayOptions form .displayStyle fieldset.options .item { border: 1px solid #cccccc; padding: 0 0 0.1em 0.2em; }
+#itemsList .displayOptions form .displayStyle .items .item label, #itemsList .displayOptions form .displayStyle fieldset.options .item label { display: inline; float: none; width: auto; padding-left: 0.25em; }
+#itemsList .displayOptions form .displayStyle .items .item .stats, #itemsList .displayOptions form .displayStyle fieldset.options .item .stats { font-weight: normal; padding: 0; }
+#itemsList .displayOptions form .displayStyle .items .item .stats .rating, #itemsList .displayOptions form .displayStyle fieldset.options .item .stats .rating { padding: 0.25em 0.1em 0.25em 0.5em; text-align: left; }
+#itemsList .displayOptions form .displayStyle .items .item .stats .rating .info, #itemsList .displayOptions form .displayStyle fieldset.options .item .stats .rating .info { text-align: left; float: none; padding: 0; }
+#itemsList .displayOptions form .displayStyle .items .item .data, #itemsList .displayOptions form .displayStyle fieldset.options .item .data { padding-left: 0; padding-right: 0.1em; }
+#itemsList .displayOptions form .displayStyle .items .item .data .itemName, #itemsList .displayOptions form .displayStyle fieldset.options .item .data .itemName { padding-bottom: 0.5em; }
+#itemsList .displayOptions form .displayStyle .items .item .data .url, #itemsList .displayOptions form .displayStyle .items .item .data .description, #itemsList .displayOptions form .displayStyle .items .item .data .description .full, #itemsList .displayOptions form .displayStyle .items .item .data .description .summary, #itemsList .displayOptions form .displayStyle fieldset.options .item .data .url, #itemsList .displayOptions form .displayStyle fieldset.options .item .data .description, #itemsList .displayOptions form .displayStyle fieldset.options .item .data .description .full, #itemsList .displayOptions form .displayStyle fieldset.options .item .data .description .summary { margin: 0; }
+#itemsList .displayOptions form .displayStyle .items .item .data .description, #itemsList .displayOptions form .displayStyle fieldset.options .item .data .description { padding-bottom: 0.5em; }
+#itemsList .displayOptions form .displayStyle .items .item .data .description .full, #itemsList .displayOptions form .displayStyle .items .item .data .description .summary, #itemsList .displayOptions form .displayStyle fieldset.options .item .data .description .full, #itemsList .displayOptions form .displayStyle fieldset.options .item .data .description .summary { padding: 0; }
+#itemsList .displayOptions form .displayStyle .items .item .data .userId, #itemsList .displayOptions form .displayStyle fieldset.options .item .data .userId { white-space: normal; padding: 0 0 0 1em; font-size: 0.8em; }
+#itemsList .displayOptions form .displayStyle .items .item .data .userId label, #itemsList .displayOptions form .displayStyle fieldset.options .item .data .userId label { padding-left: 0; }
+#itemsList .displayOptions form .displayStyle .items .item .data .userId .avatar, #itemsList .displayOptions form .displayStyle fieldset.options .item .data .userId .avatar { position: relative; float: left; padding: 0 0.75em 0 0.25em; }
+#itemsList .displayOptions form .displayStyle .items .item .data .userId .avatar label, #itemsList .displayOptions form .displayStyle fieldset.options .item .data .userId .avatar label { padding-left: 8px; }
+#itemsList .displayOptions form .displayStyle .items .item .data .userId .avatar .img, #itemsList .displayOptions form .displayStyle fieldset.options .item .data .userId .avatar .img { position: absolute; left: 14px; top: 0; }
+#itemsList .displayOptions form .displayStyle .items .item .data .tags, #itemsList .displayOptions form .displayStyle fieldset.options .item .data .tags { width: auto; text-align: left; padding: 0 0 1em 0; }
+#itemsList .displayOptions form .displayStyle .items .item .data .tags label, #itemsList .displayOptions form .displayStyle fieldset.options .item .data .tags label { display: inline; float: none; font-size: 0.8em; }
+#itemsList .displayOptions form .displayStyle .items .item .data .dates .updated, #itemsList .displayOptions form .displayStyle fieldset.options .item .data .dates .updated { width: auto; }
 #itemsList .items { clear: both; padding-top: 2em; border-bottom: 1px solid #cccccc; }
 #itemsList .items .groupHeader { position: relative; background-color: #eeeeff; border-bottom: 1px solid #cccccc; color: #999999; height: 20px; left: -15px; }
 #itemsList .items .groupHeader .group { position: relative; background-color: #eeeeff; height: 20px; right: -20px; }
@@ -96,9 +84,9 @@
 #itemsList .items .minimized .control { float: right; padding: 0; font-size: 0.9em; }
 #itemsList .items .minimized .status { display: none; }
 #itemsList .items .minimized .data { margin-left: 5em; padding-left: 0; }
-#itemsList .items .minimized .data .itemName, #itemsList .items .minimized .data .descriptionSummary { display: inline; }
+#itemsList .items .minimized .data .itemName, #itemsList .items .minimized .data .description, #itemsList .items .minimized .data .description .summary, #itemsList .items .minimized .data .description .full { display: inline; }
 #itemsList .items .minimized .data .userId { position: absolute; left: -5.25em; width: 5em; padding: 0.25em 0; overflow: hidden; }
-#itemsList .items .minimized .data .descriptionSummary { padding: 0 0 0 0.5em; margin: 0; }
+#itemsList .items .minimized .data .description .summary { padding: 0 0 0 0.5em; margin: 0; }
 #itemsList .items .minimized .data .tags { padding: 0.1em 0 0 0.5em; clear: right; }
 #itemsList .items .no-userId .data { margin-left: 32px; }
 #itemsList .items .mine { min-height: 45px; }

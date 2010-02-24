@@ -169,10 +169,15 @@ function body_initHandlers()
                         // */
                         e.stopPropagation();
                         
-                        // remove all others and hover here
-                        $('.ui-state-hover').removeClass('ui-state-hover');
+                        var $el = $(this);
 
-                        $(this).addClass('ui-state-hover');
+                        if (! $el.attr('disabled'))
+                        {
+                            // remove all others and hover here
+                            $('.ui-state-hover').removeClass('ui-state-hover');
+
+                            $el.addClass('ui-state-hover');
+                        }
                     });
 
     $('.body .ui-state-default').live('mouseleave',

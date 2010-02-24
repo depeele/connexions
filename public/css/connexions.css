@@ -522,4 +522,20 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .displayOptions #buttons-global { padding: 0.5em 0.5em 0; border-top: 1px dotted #cccccc; }
 .displayOptions .field { display: block; padding-bottom: 0.25em; }
 .displayOptions .field label { clear: left; width: 6em; float: left; }
+.displayOptions .sortOrder { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
+.displayOptions .sortOrder .field { float: left; padding-bottom: 0; padding-right: 0.5em; }
+.displayOptions .sortOrder .field label { display: inline; float: none; width: auto; padding: 0 0.1em; }
+.displayOptions .sortOrder .field input, .displayOptions .sortOrder .field label { cursor: pointer; }
+.displayOptions .perPage { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
+.displayOptions .displayStyle { display: block; position: relative; width: auto; text-align: left; padding-top: 1em; }
+.displayOptions .displayStyle label { cursor: pointer; }
+.displayOptions .displayStyle ul.groups { padding: 0; }
+.displayOptions .displayStyle ul.groups li.field, .displayOptions .displayStyle ul.groups .comma { display: block; float: left; padding: 0.25em 0; }
+.displayOptions .displayStyle ul.groups li.field label, .displayOptions .displayStyle ul.groups .comma label { display: inline; float: none; width: auto; padding: 0; }
+.displayOptions .displayStyle ul.groups li.field { cursor: pointer; }
+.displayOptions .displayStyle ul.groups li.control { position: relative; padding: 0.25em 0 0.25em 0.25em; }
+.displayOptions .displayStyle ul.groups li.ui-state-active { font-weight: bold; }
+.displayOptions .displayStyle ul.groups li.toggle { border: none; }
+.displayOptions .displayStyle ul.groups .comma { padding-right: 0.25em; }
+.displayOptions .displayStyle fieldset.options { padding-top: 0.5em; border: none; }
 .displayOptions form { z-index: 4; position: absolute; top: 2.1em; right: 0; padding: 0.5em; }

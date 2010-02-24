@@ -74,11 +74,13 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                                  $userItem->item->userCount);
             }
 
+            /*
             if ( ($showParts['item:stats:rating'] === true) &&
                  ( ($userItem->item->ratingCount > 0) ||
                    $isOwner) )
+            */
+            if ($showParts['item:stats:rating'] === true)
             {
-
                 $html .=  "<div class='rating'>";       // rating {
 
                 if ($showParts['item:stats:rating:stars'] === true)
@@ -90,10 +92,9 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                                             $userItem->item->ratingCount
                                     : 0.0);
 
-                    if ( ($showParts['item:stats:rating:stars:average']
-                                                                === true) &&
-                         ($userItem->item->ratingCount > 0) )
+                    if ($userItem->item->ratingCount > 0)
                     {
+                        // Present the avarage
                         $ratingTitle = sprintf("%d raters, %5.2f avg.",
                                                $userItem->item->ratingCount,
                                                $ratingAvg);
@@ -107,17 +108,16 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                                                        true,    // read-only
                                                        $ratingTitle);
                     }
-             
-                    if ( ($showParts['item:stats:rating:stars:owner']
-                                                                === true) &&
-                         $isOwner )
+
+                    if ( $isOwner )
                     {
+                        // Present the owner's rating
                         $html .= $this
-                                    ->view
-                                      ->htmlStarRating($userItem->rating,
-                                                       'owner',
-                                                       false,   // read-only
-                                                       $ratingTitle);
+                                ->view
+                                  ->htmlStarRating($userItem->rating,
+                                                   'owner',
+                                                   false,   // read-only
+                                                   $ratingTitle);
                     }
 
                     $html .= "</div>";      // stars }
@@ -126,7 +126,7 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                 if ( ($showParts['item:stats:rating:info'] === true) &&
                      ($userItem->item->ratingCount > 0) )
                 {
-                    $html .= "<div class='meta'>"
+                    $html .= "<div class='info'>"
                           .  sprintf( "<span class='count'>%d</span> raters, "
                                      ."<span class='average'>%3.2f</span> avg.",
                                         $userItem->item->ratingCount,
@@ -179,37 +179,45 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                   .  "</div>";
         }
 
-        if ( ($showParts['item:data:description:summary'] === true) &&
+        if ( ($showParts['item:data:description'] === true) &&
              (! @empty($userItem->description)) )
         {
-            $summary = html_entity_decode($userItem->description, ENT_QUOTES);
-            if (strlen($summary) > self::$summaryMax)
+            $html .= "<div class='description'>";   // description {
+
+
+            if ($showParts['item:data:description:summary'] === true)
             {
-                // Shorten to no more than 'summaryMax' characters
-                $summary = substr($summary, 0, self::$summaryMax);
-                $summary = substr($summary, 0, strrpos($summary, " "));
+                $summary = html_entity_decode($userItem->description,
+                                              ENT_QUOTES);
+                if (strlen($summary) > self::$summaryMax)
+                {
+                    // Shorten to no more than 'summaryMax' characters
+                    $summary = substr($summary, 0, self::$summaryMax);
+                    $summary = substr($summary, 0, strrpos($summary, " "));
 
-                // Trim any white-space or punctuation from the end
-                $summary = rtrim($summary, " \t\n\r.!?:;,-");
+                    // Trim any white-space or punctuation from the end
+                    $summary = rtrim($summary, " \t\n\r.!?:;,-");
 
-                $summary .= '...';
+                    $summary .= '...';
+                }
+                $summary = htmlentities($summary, ENT_QUOTES);
+
+                if ($showParts['minimized'] === true)
+                    $summary = "&mdash; ". $summary;
+
+                $html .= "<div class='summary'>"
+                      .   $summary
+                      .  "</div>";
             }
-            $summary = htmlentities($summary, ENT_QUOTES);
 
-            if ($showParts['minimized'] === true)
-                $summary = "&mdash; ". $summary;
+            if ($showParts['item:data:description:full'] === true)
+            {
+                $html .= "<div class='full'>"
+                      .   htmlspecialchars($userItem->description)
+                      .  "</div>";
+            }
 
-            $html .= "<div class='descriptionSummary'>"
-                  .   $summary
-                  .  "</div>";
-        }
-
-        if ( ($showParts['item:data:description:full'] === true) &&
-             (! @empty($userItem->description)) )
-        {
-            $html .= "<div class='description'>"
-                  .   htmlspecialchars($userItem->description)
-                  .  "</div>";
+            $html .= "</div>";                      // description }
         }
 
         if ( ($showParts['minimized']        !== true) &&
