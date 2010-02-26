@@ -29,15 +29,6 @@ class Model_UserSet extends Connexions_Set
     {
         $memberClass  = self::MEMBER_CLASS;
 
-        // :TODO: Determine the proper order.
-        try {
-            $order = Zend_Registry::get('orderBy').
-                     Zend_Registry::get('orderDir');
-
-        } catch (Exception $e) {
-            $order = 'u.name ASC';
-        }
-
         if ( (! @empty($tagIds)) && (! @is_array($tagIds)) )
             $tagIds = array($tagIds);
         if ( (! @empty($itemIds)) && (! @is_array($itemIds)) )
@@ -54,8 +45,7 @@ class Model_UserSet extends Connexions_Set
                      ->join(array('uti'   => 'userTagItem'),  // table / as
                                   '(u.userId=uti.userId)',    // condition
                                   '')                         // columns (none)
-                     ->group('u.userId')
-                     ->order($order);
+                     ->group('u.userId');
 
         if (! @empty($tagIds))
         {
@@ -96,6 +86,38 @@ class Model_UserSet extends Connexions_Set
         return parent::__construct($select, $memberClass);
     }
 
+    /** @brief  Map a field name.
+     *  @param  name    The provided name.
+     *
+     *  @return The new, mapped name (null if the name is NOT a valid field).
+     */
+    public function mapField($name)
+    {
+        switch ($name)
+        {
+        case 'title':
+            $name  = 'name';
+            break;
+
+        case 'weight':
+            if (! $this->_weightSet)
+            {
+                /* No weight has yet been set.
+                 *
+                 * Set it to the default (but don't reorder).
+                 */
+                $this->weightBy(null, false);
+            }
+            break;
+
+        default:
+            $name = parent::mapField($name);
+            break;
+        }
+
+        return $name;
+    }
+
     /** @brief  Modify the tag restrictions to allow a match if a user has used
      *          ANY of the specified tags (vs all).
      *
@@ -111,15 +133,16 @@ class Model_UserSet extends Connexions_Set
     }
 
     /** @brief  Set the weighting.
-     *  @param  by      Weight by ('tag', 'item', 'userItem').
+     *  @param  by      Weight by ('tag', 'item', [ 'userItem' ]).
+     *  @param  reorder Should ordering be changed? [ true ]
      *
      *  @return $this
      */
-    public function weightBy($by)
+    public function weightBy($by = null, $reorder = true)
     {
         $cols = array();
 
-        switch (strtolower($by))
+        switch ($by)
         {
         case 'tag':
             $cols['weight'] = 'COUNT(DISTINCT uti.tagId)';
@@ -129,15 +152,19 @@ class Model_UserSet extends Connexions_Set
             $cols['weight'] = 'COUNT(DISTINCT uti.itemId)';
             break;
 
-        case 'useritem':
+        case 'userItem':
         default:            // Default to 'userItem'
             $cols['weight'] = 'COUNT(DISTINCT uti.userId,uti.itemId)';
             break;
         }
 
-        $this->_select->columns($cols)
-                      ->reset(Zend_Db_Select::ORDER)
-                      ->order('weight DESC');
+        $this->_select->columns($cols);
+
+        if ($reorder === true)
+        {
+            $this->_select->reset(Zend_Db_Select::ORDER)
+                          ->order('weight DESC');
+        }
 
         $this->_weightSet = true;
 
@@ -234,71 +261,6 @@ class Model_UserSet extends Connexions_Set
         // */
 
         return $ids;
-    }
-
-    /** @brief  Establish sorting for this set.
-     *  @param  by          Any field of the memberClass.
-     *  @param  order       Sort order
-     *                      (Connexions_Set::SORT_ORDER_ASC | SORT_ORDER_DESC
-     *                              ==
-     *                      Zend_Db_Select::SQL_ASC         | SQL_DESC)
-     *
-     *  Override in order to support order aliases, forcing sort by:
-     *      'title'     => 'name'
-     *      'weight'    => 'weight'
-     *
-     *  @return $this
-     */
-    public function setOrder($by, $order)
-    {
-        $orig   = $by;
-        $force  = false;
-        switch ($by)
-        {
-        case 'title':
-            $by    = 'name';
-            $force = true;
-            break;
-
-        case 'weight':
-            if (! $this->_weightSet)
-            {
-                // No weight has yet been set.  Default.
-                $this->weightBy('userItem');
-            }
-            $force = true;
-            break;
-        }
-
-        if ($force || ($orig != $by))
-        {
-            if (is_array($by))
-                $byStr = var_export($by, true);
-            else
-                $byStr = $by;
-
-            /*
-            Connexions::log("Model_UserSet::setOrder: "
-                                . "Alias '{$orig}' to '{$byStr}', '{$order}'");
-            // */
-        }
-        /*
-        else
-        {
-            Connexions::log("Model_UserSet::setOrder: "
-                                . "Pass on '{$by}'");
-        }
-        // */
-
-
-        parent::setOrder($by, $order, $force);
-
-        /*
-        Connexions::log("Model_UserSet::setOrder: "
-                            . "sql[ {$this->_select->assemble()} ]");
-        // */
-
-        return $this;
     }
 
     /*************************************************************************

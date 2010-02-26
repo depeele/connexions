@@ -30,7 +30,7 @@ class TagsController extends Zend_Controller_Action
             $this->view->error =
                     "Invalid user(s) [ {$userInfo->invalidItems} ]";
 
-        // Retrieve the set of tags
+        // Retrieve the complete set of tags
         $tagSet = new Model_TagSet( $userInfo->validIds );
 
         /********************************************************************
@@ -39,27 +39,36 @@ class TagsController extends Zend_Controller_Action
          * Establish the primary HtmlItemCloud View Helper, setting it up using
          * the incoming tag-cloud parameters.
          */
-        $tagsPrefix         = 'tags';
-        $tagsPerPage        = $request->getParam($tagsPrefix."PerPage",  250);
-        $tagsStyle          = $request->getParam($tagsPrefix."Style",    null);
-        $tagsHighlightCount = $request->getParam($tagsPrefix."HighlightCount",
-                                                                         null);
-        $tagsSortBy         = $request->getParam($tagsPrefix."SortBy",   null);
-        $tagsSortOrder      = $request->getParam($tagsPrefix."SortOrder",null);
+        $prefix             = 'tags';
+        $tagsPerPage        = $request->getParam($prefix."PerPage",     250);
+        $tagsHighlightCount = $request->getParam($prefix."HighlightCount",
+                                                                        null);
+        $tagsSortBy         = $request->getParam($prefix."SortBy",      null);
+        $tagsSortOrder      = $request->getParam($prefix."SortOrder",   null);
+        $tagsStyle          = $request->getParam($prefix."OptionGroup", null);
 
-        /*
-        Connexions::log("TagsController:: tagsSortBy[ {$tagsSortBy} ], "
-                                       . "tagsSortOrder[ {$tagsSortOrder} ]");
+        // /*
+        Connexions::log('TagsController::'
+                            . 'prefix [ '. $prefix .' ], '
+                            . 'params [ '
+                            .   print_r($request->getParams(), true) ." ],\n"
+                            . "    PerPage        [ {$tagsPerPage} ],\n"
+                            . "    HighlightCount [ {$tagsHighlightCount} ],\n"
+                            . "    SortBy         [ {$tagsSortBy} ],\n"
+                            . "    SortOrder      [ {$tagsSortOrder} ],\n"
+                            . "    Style          [ {$tagsStyle} ]");
         // */
 
         $cloudHelper = $this->view->htmlItemCloud();
-        $cloudHelper->setNamespace($tagsPrefix)
+        $cloudHelper->setNamespace($prefix)
                     ->setShowRelation( false )
                     ->setStyle($tagsStyle)
                     ->setItemType(Connexions_View_Helper_HtmlItemCloud::
                                                             ITEM_TYPE_TAG)
+                    ->setItemBaseUrl( '/tagged' )
                     ->setSortBy($tagsSortBy)
                     ->setSortOrder($tagsSortOrder)
+                    ->setPerPage($tagsPerPage)
                     ->setHighlightCount($tagsHighlightCount);
 
         /*
@@ -70,31 +79,27 @@ class TagsController extends Zend_Controller_Action
 
         /* Ensure that the final sort information is properly reflected in
          * the source set.
+         *
+         * Do this NOW since we're about to use the set to create a paginator.
          */
-        $tagSet->setOrder( $cloudHelper->getSortBy(),
+        $tagSet->setOrder( $cloudHelper->getSortBy() .' '.
                            $cloudHelper->getSortOrder() );
 
         /* Use the Connexions_Controller_Action_Helper_Pager to create a
-         * paginator for the retrieved tags.
+         * paginator for the retrieved tagSet.
          */
         $page      = $request->getParam('page',  null);
-        $paginator = $this->_helper->Pager($tagSet, $page, $tagsPerPage);
+        $paginator = $this->_helper->Pager($tagSet,
+                                           $page,
+                                           $cloudHelper->getPerPage());
 
-        $cloudHelper->setPaginator($paginator);
+        $cloudHelper->setItemSet($paginator);
 
-        /* Retrieve the Connexions_Set_ItemList instance required by
-         * Zend_Tag_Cloud to render this tag set as a cloud
-         *
-         * Directly instantiate using the paginator we've just created.
-         *
-        $tagList = $tagSet->get_Tag_ItemList(0, $tagsPerPage, $tagInfo,
-                                             ($owner !== '*'
-                                                ? null
-                                                : '/tagged'));
-         */
+        /*
         $tagList = new Connexions_Set_ItemList($paginator,
                                                null,
                                                '/tagged');
+        */
 
 
 
@@ -124,30 +129,26 @@ class TagsController extends Zend_Controller_Action
          * (used to render the right column) and set it up using the incoming
          * user-cloud parameters.
          */
-        $usrsPrefix         = 'sbUsers';
-        $usrsPerPage        = $request->getParam($usrsPrefix."PerPage",  500);
-        $usrsStyle          = $request->getParam($usrsPrefix."Style",    null);
-        $usrsHighlightCount = $request->getParam($usrsPrefix."HighlightCount",
-                                                                         null);
-        $usrsSortBy         = $request->getParam($usrsPrefix."SortBy",   null);
-        $usrsSortOrder      = $request->getParam($usrsPrefix."SortOrder",null);
+        $prefix             = 'sbUsers';
+        $usrsPerPage        = $request->getParam($prefix."PerPage",     500);
+        $usrsHighlightCount = $request->getParam($prefix."HighlightCount",
+                                                                        null);
+        $usrsSortBy         = $request->getParam($prefix."SortBy",      null);
+        $usrsSortOrder      = $request->getParam($prefix."SortOrder",   null);
+        $usrsStyle          = $request->getParam($prefix."OptionGroup", null);
 
-        /*
-        Connexions::log("TagsController:: sbUser info: "
-                            . "PerPage[ {$usrsPerPage} ], "
-                            . "Style[ {$usrsStyle} ], "
-                            . "HighlightCount[ {$usrsHighlightCount} ], "
-                            . "SortBy[ {$usrsSortBy} ], "
-                            . "SortOrder[ {$usrsSortOrder} ]");
+        // /*
+        Connexions::log('TagsController::'
+                            . "right-column prefix [ {$prefix} ],\n"
+                            . "    PerPage        [ {$usrsPerPage} ],\n"
+                            . "    HighlightCount [ {$usrsHighlightCount} ],\n"
+                            . "    SortBy         [ {$usrsSortBy} ],\n"
+                            . "    SortOrder      [ {$usrsSortOrder} ],\n"
+                            . "    Style          [ {$usrsStyle} ]");
         // */
 
-
         // Retrieve the ids of all tags we're currently presenting
-        $tagIds = array();
-        foreach ($tagList as $tag)
-        {
-            array_push($tagIds, $tag->tagId);
-        }
+        $tagIds = $tagSet->tagIds();
 
         // Create a user set for all users that have this set of tags
         $userSet = new Model_UserSet( $tagIds );
@@ -155,28 +156,46 @@ class TagsController extends Zend_Controller_Action
                 ->weightBy('tag');
     
         // Since we're caching objects, we MUST modify the $viewer object...
-        $viewer->weightBy('tag', $tagIds);
-
-        /* Retrieve the Connexions_Set_ItemList instance required by
-         * Zend_Tag_Cloud to render this set as a cloud
-         */
-        $userList = $userSet->get_Tag_ItemList(0, $usrsPerPage, $userInfo);
-
-
+        //$viewer->weightBy('tag', $tagIds);
 
         /* Create a new instance of the HtmlItemCloud view helper since we'll
          * be presenting two different clouds.
          */
         $sbCloudHelper = new Connexions_View_Helper_HtmlItemCloud();
         $sbCloudHelper->setView($this->view)
-                      ->setNamespace($usrsPrefix)
-                      ->setItemList($userList)
+                      ->setNamespace($prefix)
                       ->setStyle($usrsStyle)
                       ->setItemType(Connexions_View_Helper_HtmlItemCloud::
                                                             ITEM_TYPE_USER)
+                      ->setItemSet($userSet)
+                      ->setItemSetInfo($userInfo)
+                      /*
+                      ->setItemBaseUrl( ($owner !== '*'
+                                            ? null
+                                            : '/tagged'))
+                      */
                       ->setSortBy($usrsSortBy)
                       ->setSortOrder($usrsSortOrder)
+                      ->setPerPage($usrsPerPage)
                       ->setHighlightCount($usrsHighlightCount);
+
+        /* Reflect any sorting changes introduced by HtmlItemCloud
+         *      e.g. if the sort by and/or order were null and thus a default
+         *           was set
+        $userSet->setOrder( array('weight DESC',
+                                  $sbCloudHelper->getSortBy() .' '.
+                                        $sbCloudHelper->getSortOrder()) );
+         */
+
+        /* Retrieve the Connexions_Set_ItemList instance required by
+         * Zend_Tag_Cloud to render this set as a cloud
+        $userList = $userSet->get_Tag_ItemList(0, $usrsPerPage, $userInfo);
+
+        $sbCloudHelper->setItemList($userList);
+         */
+
+
+
 
         /*
         Connexions::log("TagsController:: Final sbUser info: "
@@ -194,7 +213,7 @@ class TagsController extends Zend_Controller_Action
         $this->view->viewer        = $viewer;
         $this->view->userInfo      = $userInfo;
 
-        $this->view->tagList       = $tagList;
+        $this->view->tagSet        = $tagSet;
         $this->view->sbCloudHelper = $sbCloudHelper;
     }
 

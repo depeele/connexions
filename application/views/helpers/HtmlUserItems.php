@@ -543,7 +543,7 @@ function init_UserItems(namespace)
 
         $val = $this->_displayOptions->getGroupValues();
 
-        // /*
+        /*
         Connexions::log("Connexions_View_Helper_HtmlUserItems::"
                             . "getShowMeta(): "
                             . "[ ". print_r($val, true) ." ]");
