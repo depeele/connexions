@@ -124,17 +124,29 @@ class IndexController extends Zend_Controller_Action
          * of any incoming settings, allowing it establish any required
          * defaults.
          */
-        $itemsPrefix      = 'items';
-        $itemsPerPage     = $request->getParam($itemsPrefix."PerPage",   null);
-        $itemsStyle       = $request->getParam($itemsPrefix."OptionGroup",
-                                                                         null);
-        $itemsSortBy      = $request->getParam($itemsPrefix."SortBy",    null);
-        $itemsSortOrder   = $request->getParam($itemsPrefix."SortOrder", null);
-        $itemsStyleCustom = $request->getParam($itemsPrefix
-                                                ."OptionGroups_option",  null);
+        $prefix           = 'items';
+        $itemsPerPage     = $request->getParam($prefix."PerPage",       null);
+        $itemsSortBy      = $request->getParam($prefix."SortBy",        null);
+        $itemsSortOrder   = $request->getParam($prefix."SortOrder",     null);
+        $itemsStyle       = $request->getParam($prefix."OptionGroup",   null);
+        $itemsStyleCustom = $request->getParam($prefix."OptionGroups_option",
+                                                                        null);
+
+        // /*
+        Connexions::log('IndexController::'
+                            . 'prefix [ '. $prefix .' ], '
+                            . 'params [ '
+                            .   print_r($request->getParams(), true) ." ],\n"
+                            . "    PerPage        [ {$itemsPerPage} ],\n"
+                            . "    SortBy         [ {$itemsSortBy} ],\n"
+                            . "    SortOrder      [ {$itemsSortOrder} ],\n"
+                            . "    Style          [ {$itemsStyle} ],\n"
+                            . "    StyleCustom    [ "
+                            .           print_r($itemsStyleCustom, true) .' ]');
+        // */
 
         $uiHelper = $this->view->htmlUserItems();
-        $uiHelper->setNamespace($itemsPrefix)
+        $uiHelper->setNamespace($prefix)
                  ->setSortBy($itemsSortBy)
                  ->setSortOrder($itemsSortOrder);
         if (is_array($itemsStyleCustom))
@@ -153,8 +165,13 @@ class IndexController extends Zend_Controller_Action
         /* Ensure that the final sort information is properly reflected in
          * the source set.
          */
-        $userItems->setOrder( $uiHelper->getSortBy(),
+        $userItems->setOrder( $uiHelper->getSortBy() .' '.
                               $uiHelper->getSortOrder() );
+
+        // /*
+        Connexions::log("IndexController: userItems "
+                            . "SQL[ ". $userItems->select()->assemble() ." ]");
+        // */
 
         /* Use the Connexions_Controller_Action_Helper_Pager to create a
          * paginator for the retrieved user items / bookmarks.
@@ -170,31 +187,77 @@ class IndexController extends Zend_Controller_Action
          * (used to render the right column) of any incoming settings, allowing
          * it establish any required defaults.
          */
-        $tagsPrefix         = 'sbTags';
-        $tagsPerPage        = $request->getParam($tagsPrefix."PerPage",  100);
-        $tagsStyle          = $request->getParam($tagsPrefix."OptionGroup",
-                                                                         null);
-        $tagsHighlightCount = $request->getParam($tagsPrefix."HighlightCount",
-                                                                         null);
-        $tagsSortBy         = $request->getParam($tagsPrefix."SortBy",  'tag');
-        $tagsSortOrder      = $request->getParam($tagsPrefix."SortOrder",null);
+        $prefix             = 'sbTags';
+        $tagsPerPage        = $request->getParam($prefix."PerPage",     100);
+        $tagsHighlightCount = $request->getParam($prefix."HighlightCount",
+                                                                        null);
+        $tagsSortBy         = $request->getParam($prefix."SortBy",      'tag');
+        $tagsSortOrder      = $request->getParam($prefix."SortOrder",   null);
+        $tagsStyle          = $request->getParam($prefix."OptionGroup", null);
+
+        // /*
+        Connexions::log('IndexController::'
+                            . "right-column prefix [ {$prefix} ],\n"
+                            . "    PerPage        [ {$tagsPerPage} ],\n"
+                            . "    HighlightCount [ {$tagsHighlightCount} ],\n"
+                            . "    SortBy         [ {$tagsSortBy} ],\n"
+                            . "    SortOrder      [ {$tagsSortOrder} ],\n"
+                            . "    Style          [ {$tagsStyle} ]");
+        // */
+
 
         $cloudHelper = $this->view->htmlItemCloud();
-        $cloudHelper->setNamespace($tagsPrefix)
+        $cloudHelper->setNamespace($prefix)
                     ->setStyle($tagsStyle)
                     ->setItemType(Connexions_View_Helper_HtmlItemCloud::
                                                             ITEM_TYPE_TAG)
                     ->setSortBy($tagsSortBy)
                     ->setSortOrder($tagsSortOrder)
-                    ->setHighlightCount($tagsHighlightCount);
+                    ->setPerPage($tagsPerPage)
+                    ->setHighlightCount($tagsHighlightCount)
+                    ->setItemSet($tagSet)
+                    ->setItemSetInfo($tagInfo)
+                    ->setItemBaseUrl( ($owner !== '*'
+                                        ? null
+                                        : '/tagged'));
+
+        /* Reflect any changes introduced by HtmlItemCloud
+         *      e.g. if any settings were null, resulting in the use of a
+         *           default value.
+         *
+         * If the incoming sort order does NOT specify weight, over-ride with
+         * 'weight DESC' as a first ordering with the specified order as a
+         * secondary.
+        $tagsStyle     = $cloudHelper->getStyle();
+        $tagsSortBy    = $cloudHelper->getSortBy();
+        $tagsSortOrder = $cloudHelper->getSortOrder();
+        $tagsPerPage   = $cloudHelper->getPerPage();
+        $order         = array();
+        if ($tagsSortBy !== 'weight')
+        {
+            $tagSet->weightBy();
+            array_push($order, 'weight DESC' );
+        }
+        array_push($order, $tagsSortBy .' '. $tagsSortOrder);
+
+        // Reflect any changes to order and/or perPage to the tagSet
+        $tagSet->setOrder( $order )
+               ->limit($tagsPerPage);
+         */
+
+
+        /*
+        Connexions::log("IndexController: tagSet "
+                            . "SQL[ ". $tagSet->select()->assemble() ." ]");
+        // */
 
         /* Retrieve the Connexions_Set_ItemList instance required by
          * Zend_Tag_Cloud to render this tag set as a cloud
-         */
         $tagList = $tagSet->get_Tag_ItemList(0, $tagsPerPage, $tagInfo,
                                              ($owner !== '*'
                                                 ? null
                                                 : '/tagged'));
+         */
 
 
         /********************************************************************
@@ -206,7 +269,7 @@ class IndexController extends Zend_Controller_Action
         $this->view->tagInfo   = $tagInfo;
 
         $this->view->paginator = $paginator;
-        $this->view->tagList   = $tagList;
+        $this->view->tagSet    = $tagSet;
     }
 
     /** @brief  A JSON-RPC callback to retrieve auto-completion results for 

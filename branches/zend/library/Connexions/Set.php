@@ -7,8 +7,6 @@
  *      $set       = new Connexions_Set('Model_UserItem', $select);
  *      $paginator = new Zend_Paginator($set);
  *
- *  Requires:
- *      LATE_STATIC_BINDING     to be defined (Connexions.php)
  */
 class Connexions_Set implements Countable,
                                 IteratorAggregate,
@@ -35,6 +33,10 @@ class Connexions_Set implements Countable,
     protected   $_select        = null;
     protected   $_select_count  = null;
 
+    protected   $_error     = null;     /* If there has been an error, this
+                                         * will contain the error message
+                                         * string.
+                                         */
     /** @brief  Create a new instance.
      *  @param  select      A Zend_Db_Select instance representing the set of
      *                      items.
@@ -59,6 +61,16 @@ class Connexions_Set implements Countable,
             $this->_iterClass = $iterClass;
     }
 
+    public function getError()
+    {
+        return $this->_error;
+    }
+
+    public function hasError()
+    {
+        return ($this->_error !== null);;
+    }
+
     /** @brief  Return the memberClass for this instance.
      *
      *  @return The string representing the member class.
@@ -68,59 +80,61 @@ class Connexions_Set implements Countable,
         return $this->_memberClass;
     }
 
+    /** @brief  Map a field name.
+     *  @param  name    The provided name.
+     *
+     *  @return The new, mapped name (null if the name is NOT a valid field).
+     */
+    public function mapField($name)
+    {
+        $model = Connexions_Model::__sget($this->_memberClass, 'model');
+        if (! @isset($model[$name]))
+        {
+            //$this->_addError("Invalid field [ {$name} ]");
+            $name = null;
+        }
+
+        return $name;
+    }
+
     /** @brief  Establish sorting for this set.
-     *  @param  by          Any field of the memberClass.
-     *  @param  order       Sort order
-     *                      (Connexions_Set::SORT_ORDER_ASC | SORT_ORDER_DESC
-     *                              ==
-     *                      Zend_Db_Select::SQL_ASC         | SQL_DESC)
-     *  @param  force       Force the use of the provided 'by' value without
-     *                      check [false].
+     *  @param  order       A string or array of strings identifying the
+     *                      field(s) to sort by.  Each may also, optionally
+     *                      include a sorting order (ASC, DESC) following the
+     *                      field name, separated by a space.
      *
      *  @return $this
      */
-    public function setOrder($by, $order, $force = false)
+    public function setOrder($order)
     {
-        if ($force !== true)
+        if (! is_array($order))     $order = array($order);
+
+        // Validate the incoming order
+        $newOrder    = array();
+        foreach ($order as $spec)
         {
-            // Validate 'by'
-            $memberClass = $this->_memberClass;
-            $model       = Connexions_Model::__sget($memberClass, 'model');
-            if (! @isset($model[$by]))
+            $orderParts = $this->_parse_order($spec);
+            if ($orderParts === null)
             {
-                // Invalid 'by' -- use the first key
-                $keys = array_keys(Connexions_Model::__sget($memberClass,
-                                                            'keys'));
+                $this->_addError("setOrder: Invalid spepcification [{$spec}]");
 
                 /*
                 Connexions::log("Connexions_Set::setOrder: "
-                                . "Invalid 'by' [{$by}]: using [{$keys[0]}]");
+                                . "Invalid specification [{$spec}] -- skip");
                 // */
-
-                $by   = $keys[0];
+                continue;
             }
-        }
 
-        // Validate 'order'
-        switch ($order)
-        {
-        case Zend_Db_Select::SQL_ASC:
-        case Zend_Db_Select::SQL_DESC:
-            break;
-
-        default:
-            $order = Zend_Db_Select::SQL_ASC;
-            break;
+            array_push($newOrder, implode(' ', $orderParts));
         }
 
         /*
         Connexions::log("Connexions_Set::setOrder: "
-                        . "by[{$by}], order[{$order}]");
+                        . "order[ ". print_r($newOrder, true) ." ]");
         // */
 
         $this->_select->reset(Zend_Db_Select::ORDER)
-                      ->order( (is_array($by) ? $by
-                                              : "{$by} {$order}") );
+                      ->order( $newOrder );
 
         /*
         Connexions::log("Connexions_Set::setOrder: "
@@ -132,20 +146,11 @@ class Connexions_Set implements Countable,
 
     /** @brief  Retrieve the sort information for this set.
      *
-     *  @return array('by'      => field to sort by,
-     *                'order'   =>  sort order
-     *                              (Connexions_Set::SORT_ORDER_ASC |
-     *                                               SORT_ORDER_DESC
-     *                                  ==
-     *                               Zend_Db_Select::SQL_ASC | SQL_DESC)
+     *  @return An order array.
      */
     public function getOrder()
     {
-        $order = $this->_select->getPart(Zend_Db_Select::ORDER);
-        $parts = $order[0]; //preg_split('/\s+/', $order[0]);
-
-        return array('by'       => $parts[0],
-                     'order'    => $parts[1]);
+        return $this->_select->getPart(Zend_Db_Select::ORDER);
     }
 
     /** @brief  Return the current Zend_Db_Select instance representing the
@@ -171,26 +176,59 @@ class Connexions_Set implements Countable,
         return $this;
     }
 
+    /** @brief  Retrieve the number of items per page.
+     *
+     *  @return The number of items per page.
+     */
+    public function getItemCountPerPage()
+    {
+        return $this->_select->getPart(Zend_Db_Select::LIMIT_COUNT);
+    }
+
+    /** @brief  Retrieve the current page number.
+     *
+     *  @return The current page number.
+     */
+    public function getItemPageNumber()
+    {
+        return $this->_select->getPart(Zend_Db_Select::LIMIT_OFFSET);
+    }
+
     /** @brief  Create a Zend_Tag_ItemList adapter for the top 'limit' items.
-     *  @param  offset      The page offset [0];
-     *  @param  limit       The number of items per page [100];
      *  @param  setInfo     A Connexions_Set_Info instance containing
      *                      information about any items specified in the
      *                      request.
      *  @param  url         The base url for items
      *                      (defaults to the request URL).
+     *  @param  offset      The page offset [0];
+     *  @param  limit       The number of items per page [100];
      *
      *  @return A Connexions_Set_ItemList instance
      *              (subclass of Zend_Tag_ItemList)
      *
      */
-    public function get_Tag_ItemList(                    $offset    = null,
-                                                         $perPage   = null,
-                                     Connexions_Set_info $setInfo   = null,
-                                                    $url            = null)
+    public function get_Tag_ItemList(Connexions_Set_Info $setInfo   = null,
+                                                         $url       = null,
+                                                         $offset    = null,
+                                                         $perPage   = null)
     {
-        if ($offset  === null)  $offset  = 0;
-        if ($perPage === null)  $perPage = 100;
+        /* If 'offset' and/or 'perPage' are not provided, see if we have any
+         * limits already established on the 'select'.
+         */
+        if ($offset === null)
+            $offset  = $this->getItemPageNumber();
+        if ($perPage === null)
+        {
+            $perPage = $this->getItemCountPerPage();
+            if ($perPage < 1)
+                $perPage = 100;
+        }
+
+        // /*
+        Connexions::log("Connexions_Set::get_Tag_ItemList: "
+                            . "offset[ {$offset} ], perPage[ {$perPage} ], "
+                            . "sql[ {$this->_select->assemble()} ]");
+        // */
 
         return new Connexions_Set_ItemList($this->getItems($offset, $perPage),
                                            $setInfo, $url);
@@ -249,8 +287,12 @@ class Connexions_Set implements Countable,
         $rows = $this->_select->query()->fetchAll();
         $end1 = microtime(true);
 
+        // Note that this is a backed record.
+        $rec = $rows[0];
+        $rec['@isBacked'] = true;
+
         // Create a new instance of the member class using the retrieved data
-        $inst = new $this->_memberClass($rows[0]);
+        $inst = new $this->_memberClass($rec);
         $end2 = microtime(true);
 
         /*
@@ -346,6 +388,73 @@ class Connexions_Set implements Countable,
      * Protected helpers
      *
      */
+
+    /** @brief  Add a new error.
+     *  @param  err     The error string.
+     *
+     *  @return $this
+     */
+    protected function _addError($err)
+    {
+        if ($this->_error === null)
+            $this->_error = array();
+
+        array_push($this->_error, $err);
+
+        return $this;
+    }
+
+    /** @brief  Split an 'order by' specification string into the field name
+     *          and direction.
+     *  @param  spec    The specification string.
+     *
+     *  @return An array [ field, sort_direction ]
+     */
+    protected function _parse_order($spec)
+    {
+        if (empty($spec))
+            return null;
+
+        $dir = self::SORT_ORDER_ASC;
+        if (preg_match('/(.*\W)('. self::SORT_ORDER_ASC  .'|'
+                                 . self::SORT_ORDER_DESC .')\b/si',
+                       $spec, $matches))
+        {
+            $by  = trim($matches[1]);
+            $dir = trim($matches[2]);
+
+            // Validate 'dir'
+            switch ($dir)
+            {
+            case self::SORT_ORDER_ASC:
+            case self::SORT_ORDER_DESC:
+                break;
+
+            default:
+                $dir = self::SORT_ORDER_ASC;
+                break;
+            }
+        }
+        else
+        {
+            $by = $spec;
+        }
+
+        // Map and validate the field
+        $vBy = $this->mapField($by);
+        if ($vBy === null)
+        {
+            // Invalid field.
+            
+            /*
+            Connexions::log("Connexions_Set::_parse_order: "
+                            . "Invalid 'by' [{$by}]");
+            // */
+            return null;
+        }
+
+        return array($vBy, $dir);
+    }
 
     /** @brief  Generate a Zend_Db_Select instance representing the COUNT for
      *          the set of items represented by $this->_select.

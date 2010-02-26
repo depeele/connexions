@@ -193,96 +193,106 @@ class Model_UserItemSet extends Connexions_Set
         return $ids;
     }
 
-    /** @brief  Establish sorting for this set.
-     *  @param  by          Any field of the memberClass.
-     *  @param  order       Sort order
-     *                      (Connexions_Set::SORT_ORDER_ASC | SORT_ORDER_DESC
-     *                              ==
-     *                      Zend_Db_Select::SQL_ASC         | SQL_DESC)
-     *  @param  smartLimit  For fields that are part of item, should we limit 
-     *                      the retrieved user items to only the earliest 
-     *                      representative in order to reduce the amount of 
-     *                      redundant data? [ true ].
+    /** @brief  Map a field name.
+     *  @param  name    The provided name.
      *
-     *  Override in order to support order aliases, forcing sort by:
-     *      'date'               => 'taggedOn'
-     *      'item_url'           => 'item_url'
-     *      'item_userCount'     => 'item_userCount'
-     *      'item_ratingCount'   => 'item_ratingCount'
-     *      'item_ratingSum'     => 'item_ratingSum'
-     *      'user_name'          => 'user_name'
-     *      'user_email'         => 'user_email'
-     *      'user_lastVisit'     => 'user_lastVisit'
-     *      'user_totalTags'     => 'user_totalTags' 
-     *      'user_totalItems'    => 'user_totalItems'
-     *
-     *  @return $this
+     *  @return The new, mapped name (null if the name is NOT a valid field).
      */
-    public function setOrder($by, $order, $smartLimit = true)
+    public function mapField($name)
     {
-        $orig   = $by;
-        $force  = false;
-        $group  = null;
-        switch ($by)
+        switch ($name)
         {
+        // Convenience
         case 'date':
-            $by    = 'taggedOn';
-            $force = true;
+            $name  = 'taggedOn';
             break;
 
-        case 'name':
+        // sub-instance names
         case 'item_url':
         case 'item_userCount':
         case 'item_ratingCount':
         case 'item_ratingSum':
-            // Sorting by item informamtion.
-            if ($smartLimit)
-            {
-                /* Also group by itemId and include 'taggedOn ASC' in the 
-                 * order-by so we'll only retrieve the earliest, representative 
-                 * userItem.
-                 *
-                 * Otherwise, we'll retrieve all user items for each item type, 
-                 * which, when presented, will show a large amount of redundant 
-                 * data (i.e. all item information will be identical).
-                 */
-                $by    = array("{$by} {$order}", 'taggedOn ASC');
-                $group = 'item_itemId';
-            }
-            $force = true;
-            break;
 
         case 'user_name':
         case 'user_email':
         case 'user_lastVisit':
         case 'user_totalTags':
         case 'user_totalItems':
-            $force = true;
+            break;
+
+        default:
+            $name = parent::mapField($name);
             break;
         }
 
-        if ($force || ($orig != $by))
+        return $name;
+    }
+
+    /** @brief  Establish sorting for this set.
+     *  @param  order       A string or array of strings identifying the
+     *                      field(s) to sort by.  Each may also, optionally
+     *                      include a sorting order (ASC, DESC) following the
+     *                      field name, separated by a space.
+     *  @param  smartLimit  For fields that are part of item, should we limit 
+     *                      the retrieved user items to only the earliest 
+     *                      representative in order to reduce the amount of 
+     *                      redundant data? [ true ].
+     *
+     *  @return $this
+     */
+    public function setOrder($order, $smartLimit = true)
+    {
+        $group = null;
+        if ($smartLimit)
         {
-            if (is_array($by))
-                $byStr = var_export($by, true);
-            else
-                $byStr = $by;
+            if (! is_array($order)) $order = array($order);
 
-            /*
-            Connexions::log("Model_UserItemSet::setOrder: "
-                                . "Alias '{$orig}' to '{$byStr}', '{$order}'");
-            // */
+            $newOrder = array();
+            foreach ($order as $spec)
+            {
+                $orderParts = $this->_parse_order($spec);
+                if ($orderParts === null)
+                {
+                    // /*
+                    Connexions::log("Model_UserItemSet::setOrder: "
+                                    . "Invalid specification [{$spec}] --skip");
+                    // */
+                    continue;
+                }
+
+                // Check for special fields
+                switch ($orderParts[0])
+                {
+                case 'name':
+                case 'item_url':
+                case 'item_userCount':
+                case 'item_ratingCount':
+                case 'item_ratingSum':
+                    /* Sorting by item informamtion.
+                     *
+                     * Also group by itemId and include 'taggedOn ASC' in the
+                     * order-by so we'll only retrieve the earliest,
+                     * representative userItem.
+                     *
+                     * Otherwise, we'll retrieve all user items for each item
+                     * type, which, when presented, will show a large amount of
+                     * redundant data
+                     * (i.e. all item information will be identical).
+                     */
+                    $group = 'item_itemId';
+
+                    array_push($newOrder, implode(' ', $orderParts));
+                    array_push($newOrder, 'taggedOn ASC');
+                    break;
+
+                default:
+                    array_push($newOrder, implode(' ', $orderParts));
+                    break;
+                }
+            }
         }
-        /*
-        else
-        {
-            Connexions::log("Model_UserItemSet::setOrder: "
-                                . "Pass on '{$by}'");
-        }
-        // */
 
-
-        parent::setOrder($by, $order, $force);
+        parent::setOrder($order);
 
         if ($group !== null)
             $this->_select->group('ui.itemId');

@@ -45,22 +45,28 @@ class PeopleController extends Zend_Controller_Action
          * of any incoming settings, allowing it establish any required
          * defaults.
          */
-        $usersPrefix      = 'users';
-        $usersPerPage     = $request->getParam($usersPrefix."PerPage",   null);
-        $usersStyle       = $request->getParam($usersPrefix."Style",     null);
-        $usersSortBy      = $request->getParam($usersPrefix."SortBy",    null);
-        $usersSortOrder   = $request->getParam($usersPrefix."SortOrder", null);
-        $usersStyleCustom = $request->getParam($usersPrefix."StyleCustom",
-                                                                         null);
-
-        /*
+        $prefix           = 'users';
+        $usersPerPage     = $request->getParam($prefix."PerPage",       null);
+        $usersSortBy      = $request->getParam($prefix."SortBy",        null);
+        $usersSortOrder   = $request->getParam($prefix."SortOrder",     null);
+        $usersStyle       = $request->getParam($prefix."OptionGroup",   null);
+        $usersStyleCustom = $request->getParam($prefix."OptionGroups_option",
+                                                                        null);
+        // /*
         Connexions::log('PeopleController::'
-                            . 'usersStyleCustom( [ '
-                            .       print_r($usersStyleCustom, true) .' ] )');
+                            . 'prefix [ '. $prefix .' ], '
+                            . 'params [ '
+                            .   print_r($request->getParams(), true) ." ],\n"
+                            . "    PerPage        [ {$usersPerPage} ],\n"
+                            . "    SortBy         [ {$usersSortBy} ],\n"
+                            . "    SortOrder      [ {$usersSortOrder} ],\n"
+                            . "    Style          [ {$usersStyle} ]"
+                            . "    StyleCustom    [ "
+                            .           print_r($usersStyleCustom, true) .' ]');
         // */
 
         $uiHelper = $this->view->htmlUsers();
-        $uiHelper->setNamespace($usersPrefix)
+        $uiHelper->setNamespace($prefix)
                  ->setSortBy($usersSortBy)
                  ->setSortOrder($usersSortOrder);
         if (is_array($usersStyleCustom))
@@ -71,7 +77,7 @@ class PeopleController extends Zend_Controller_Action
             $uiHelper->setStyle($usersStyle);
 
         /*
-        Connexions::log("IndexController: uiHelper updated sort "
+        Connexions::log("PeopleController: uiHelper updated sort "
                             . "by[ {$uiHelper->getSortBy() } ], "
                             . "order[ {$uiHelper->getSortOrder() } ]");
         // */
@@ -79,8 +85,13 @@ class PeopleController extends Zend_Controller_Action
         /* Ensure that the final sort information is properly reflected in
          * the source set.
          */
-        $userSet->setOrder( $uiHelper->getSortBy(),
+        $userSet->setOrder( $uiHelper->getSortBy() .' '.
                             $uiHelper->getSortOrder() );
+
+        // /*
+        Connexions::log("PeopleController: userSet "
+                            . "SQL[ ". $userSet->select()->assemble() ." ]");
+        // */
 
         /* Use the Connexions_Controller_Action_Helper_Pager to create a
          * paginator for the retrieved user set.
@@ -96,29 +107,49 @@ class PeopleController extends Zend_Controller_Action
          * (used to render the right column) of any incoming settings, allowing
          * it establish any required defaults.
          */
-        $tagsPrefix         = 'sbTags';
-        $tagsPerPage        = $request->getParam("{$tagsPrefix}PerPage",  250);
-        $tagsStyle          = $request->getParam("{$tagsPrefix}Style",    null);
-        $tagsHighlightCount = $request->getParam("{$tagsPrefix}HighlightCount",
-                                                                          null);
-        $tagsSortBy         = $request->getParam("{$tagsPrefix}SortBy", 'tag');
-        $tagsSortOrder      = $request->getParam("{$tagsPrefix}SortOrder",null);
+        $prefix             = 'sbTags';
+        $tagsPerPage        = $request->getParam("{$prefix}PerPage",    250);
+        $tagsHighlightCount = $request->getParam("{$prefix}HighlightCount",
+                                                                        null);
+        $tagsSortBy         = $request->getParam("{$prefix}SortBy",     'tag');
+        $tagsSortOrder      = $request->getParam("{$prefix}SortOrder",  null);
+        $tagsStyle          = $request->getParam("{$prefix}OptionGroup",null);
+
+        // /*
+        Connexions::log('PeopleController::'
+                            . "right-column prefix [ {$prefix} ],\n"
+                            . "    PerPage        [ {$tagsPerPage} ],\n"
+                            . "    HighlightCount [ {$tagsHighlightCount} ],\n"
+                            . "    SortBy         [ {$tagsSortBy} ],\n"
+                            . "    SortOrder      [ {$tagsSortOrder} ],\n"
+                            . "    Style          [ {$tagsStyle} ]");
+        // */
 
 
         $cloudHelper = $this->view->htmlItemCloud();
-        $cloudHelper->setNamespace($tagsPrefix)
+        $cloudHelper->setNamespace($prefix)
                     ->setStyle($tagsStyle)
                     ->setItemType(Connexions_View_Helper_HtmlItemCloud::
                                                             ITEM_TYPE_TAG)
                     ->setSortBy($tagsSortBy)
                     ->setSortOrder($tagsSortOrder)
-                    ->setHighlightCount($tagsHighlightCount);
+                    ->setPerPage($tagsPerPage)
+                    ->setHighlightCount($tagsHighlightCount)
+                    ->setItemSet($tagSet)
+                    ->setItemSetInfo($tagInfo);
 
+        /* Reflect any sorting changes introduced by HtmlItemCloud
+         *      e.g. if the sort by and/or order were null and thus a default
+         *           was set
+        $tagSet->setOrder( array('weight DESC',
+                                 $cloudHelper->getSortBy() .' '.
+                                        $cloudHelper->getSortOrder()) );
+         */
 
         /* Retrieve the Connexions_Set_ItemList instance required by
          * Zend_Tag_Cloud to render this tag set as a cloud
-         */
         $tagList = $tagSet->get_Tag_ItemList(0, $tagsPerPage, $tagInfo);
+         */
 
 
         /********************************************************************
@@ -129,6 +160,6 @@ class PeopleController extends Zend_Controller_Action
         $this->view->tagInfo   = $tagInfo;
 
         $this->view->paginator = $paginator;
-        $this->view->tagList   = $tagList;
+        $this->view->tagSet    = $tagSet;
     }
 }

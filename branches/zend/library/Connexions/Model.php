@@ -69,6 +69,19 @@ abstract class Connexions_Model
         $this->_init($id, $db);
     }
 
+    /** @brief  Map a field name.
+     *  @param  name    The provided name.
+     *
+     *  @return The new, mapped name (null if the name is NOT a valid field).
+     */
+    public function mapField($name)
+    {
+        if (! @isset($this->_model[$name]))
+            $name = null;
+
+        return $name;
+    }
+
     /** @brief  Is this instance backed by an existing, matching database
      *          record?
      *  
@@ -116,33 +129,34 @@ abstract class Connexions_Model
      */
     public function __set($name, $value)
     {
-        if (! @isset($this->_model[$name]))
+        $vName = $this->mapField($name);
+        if ($vName === null)
         {
             // Invalid field
-            $this->_error = 'Invalid field "'.  $name .'"';
+            $this->_error = "Invalid field '{$name}'";
             return false;
         }
 
-        if ($this->_model[$name] === 'auto')
+        if ($this->_model[$vName] === 'auto')
         {
             // Modification of an 'auto' generated key field is NOT permitted
-            $this->_error = 'Cannot modify auto field "'.  $name .'"';
+            $this->_error = "Cannot modify auto field '{$name}' == '{$vName}'";
             return false;
         }
 
-        $tmpRec  = array($name => $value);
+        $tmpRec  = array($vName => $value);
 
-        $isValid = $this->_validateField($tmpRec, $name);
+        $isValid = $this->_validateField($tmpRec, $vName);
         if ($isValid)
         {
             if (! @is_array($this->_record))
                 $this->_record = array();
 
-            $this->_record[$name]    = $tmpRec[$name];
-            $this->_validated[$name] = true;
-            $this->_dirty[$name]     = true;
-            $this->_isValid          = true;
-            $this->_error            = null;
+            $this->_record[$vName]    = $tmpRec[$vName];
+            $this->_validated[$vName] = true;
+            $this->_dirty[$vName]     = true;
+            $this->_isValid           = true;
+            $this->_error             = null;
         }
 
         return $isValid;
@@ -177,8 +191,10 @@ abstract class Connexions_Model
      */
     public function __isset($name)
     {
-        if ( (! @is_array($this->_record)) ||
-             (! @isset($this->_record[$name])) )
+        $vName = $this->mapField($name);
+        if ( ($vName === null)              ||
+             (! @is_array($this->_record))  ||
+             (! @isset($this->_record[$vName])) )
         {
             // Invalid or unset field
             //Connexions::log("Connexions_Model::__isset({$name}): FALSE");
@@ -739,6 +755,10 @@ abstract class Connexions_Model
         if ($field !== null)
         {
             // Validate the given field
+            $field = $this->mapField($field);
+            if ($field === null)
+                return false;
+
             $this->_validated[$field] =
                     ( (@isset($this->_validated[$field]) &&
                        $this->_validated[$field]) ||
@@ -750,6 +770,10 @@ abstract class Connexions_Model
             $isValid = true;
             foreach ($this->_model as $field => $type)
             {
+                $field = $this->mapField($field);
+                if ($field === null)
+                    return false;
+
                 $this->_validated[$field] =
                     ( (@isset($this->_validated[$field]) &&
                        $this->_validated[$field]) ||
@@ -771,6 +795,10 @@ abstract class Connexions_Model
      */
     protected function _validateField(&$record, $field)
     {
+        $field = $this->mapField($field);
+        if ($field === null)
+            return false;
+
         $isValid = true;
 
         if (! @isset($record[$field]))

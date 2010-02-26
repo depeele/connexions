@@ -11,7 +11,7 @@
  *
  *      paginator           A Zend_Paginator instance established for the
  *                          presentation of the current Model_UserItemSet;
- *      tagList             The Zend_Tag_ItemList instance established for the
+ *      tagSet              The Connexions_Set instance established for the
  *                          presentation of tags related to the current
  *                          ModeL_UserItemSet;
  */
@@ -63,7 +63,7 @@ $this->layout()->right
       .              "ui-corner-left ui-corer-tr'>&nbsp;</div>"
       .  "<p>Tags related to these bookmarks.</p>"
       . "</div>"
-      .  $this->htmlItemCloud($this->tagList);
+      .  $this->htmlItemCloud()->render();
 ?>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

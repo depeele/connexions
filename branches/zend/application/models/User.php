@@ -3,9 +3,13 @@
  *
  *  Model for the User table.
  *
+ *  Note: Since we pull tag sets with varying weight measuremennts so, at least
+ *        for now, DO NOT change the base class from Connexions_Model to
+ *        Connexions_Model_Cached to make it cacheable.
  */
 
-class Model_User extends Connexions_Model_Cached
+//class Model_User extends Connexions_Model_Cached
+class Model_User extends Connexions_Model
                 implements  Zend_Tag_Taggable
 {
     /*************************************************************************
