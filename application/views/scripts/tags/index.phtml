@@ -54,11 +54,14 @@ Connexions::log("tags:: Render main cloud: "
                     . "SortOrder[ {$uiCloud->getSortOrder()} ]");
 // */
 
-// Present the current scope information
-echo $this->htmlItemScope($uiCloud->getPaginator(),
+/* Present the current scope information
+ *  The itemSet connected with the uiCloud instance SHOULD be a Zend_Paginator
+ *  in this instance.
+ */
+echo $this->htmlItemScope($uiCloud->getItemSet(),
                           $this->userInfo);
 
-echo $uiCloud->render($this->tagList);
+echo $uiCloud->render();    //$this->tagList);
 
 /******************************************************************************
  * Render the HTML for the right-column using the secondary HtmlItemCloud View
