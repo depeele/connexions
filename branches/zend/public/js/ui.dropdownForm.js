@@ -100,6 +100,8 @@ $.widget("ui.dropdownForm", {
 
             $form.toggle();
             $control.toggleClass('ui-state-active');
+
+            return false;
         };
 
         var _prevent_default    = function(e) {
@@ -171,13 +173,6 @@ $.widget("ui.dropdownForm", {
         $control.bind('mouseenter.uidroppdownform', _mouse_enter)
                 .bind('mouseleave.uidroppdownform', _mouse_leave)
                 .bind('click.uidropdownform', _control_click);
-
-        /* For the anchor within the 'Display Options' button, disable the
-         * default browser action but allow the event to bubble up to the click
-         * handler on the 'Display Options' button.
-         */
-        $control.find('a:first, .ui-icon:first')
-                    .bind('click.uidropdownform', _prevent_default);
 
         $form.bind('change.uidropdownform', _form_change)
              .bind('submit.uidropdownform', _form_submit);
