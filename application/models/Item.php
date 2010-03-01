@@ -42,7 +42,7 @@ class Model_Item extends Connexions_Model_Cached
      */
 
     /** @brief  Retrieve all records and return an array of instances.
-     *  @param  id      The record identifier.
+     *  @param  id      The record identifier (itemId, url, or urlHash.
      *
      *  @return A new instance (false if no matching user).
      */

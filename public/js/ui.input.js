@@ -93,7 +93,16 @@ $.widget("ui.input", {
         {
             var empty   = self.element.attr('emptyText');
             if ((empty !== undefined) && (empty.length > 0))
+            {
                 opts.emptyText = empty;
+            }
+            else
+            {
+                // If there is a current value, use that.
+                var val     = self.element.val();
+                if ((val !== undefined) && (val.length > 0))
+                    opts.emptyText = val;
+            }
         }
 
         self.setEmptyText(opts.emptyText, true);

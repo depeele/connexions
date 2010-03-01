@@ -76,17 +76,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         return $log;
     }
 
-    protected function _initRoute()
-    {
-        $front  = Zend_Controller_Front::getInstance();
-        $router = $front->getRouter();
-
-        $route = new Connexions_Controller_Route();
-        $router->addRoute('default', $route);
-
-        return $route;
-    }
-
     protected function _initDb()
     {
         $config = $this->getPluginResource('db');
@@ -120,7 +109,19 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         }
 
         Zend_Registry::set('db', $db);
+
         return $db;
+    }
+
+    protected function _initRoute()
+    {
+        $front  = Zend_Controller_Front::getInstance();
+        $router = $front->getRouter();
+
+        $route = new Connexions_Controller_Route();
+        $router->addRoute('default', $route);
+
+        return $route;
     }
 
     protected function _initPlugins()

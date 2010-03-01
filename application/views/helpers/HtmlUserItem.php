@@ -342,10 +342,12 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                              ."<a class='item-delete' href='%s'>DELETE</a>",
                             $this->view->url(array(
                                     'action' => 'itemEdit',
-                                    'item'   => $userItem->itemId)),
+                                    'item'   => $userItem->user->userId
+                                                . '.'. $userItem->itemId)),
                             $this->view->url(array(
                                     'action' => 'itemDelete',
-                                    'item'   => $userItem->itemId)) );
+                                    'item'   => $userItem->user->userId
+                                                . '.'. $userItem->itemId)) );
         }
         else
         {

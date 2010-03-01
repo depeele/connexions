@@ -304,6 +304,10 @@ cite { display: block; text-align: right; padding-top: 10px; }
 
 .welcome_gradient { background-position: -110px -110px; }
 
+.scope_separator { height: 24px; width: 16px; background-position: -189px -210px; }
+
+.scope_go { height: 24px; width: 16px; background-position: -189px -236px; }
+
 /* smallIcons.gif 15x44 */
 .smallIcon_bookmark { background: url('sprites/smallIcons.gif') no-repeat scroll 3px 0px transparent; }
 
@@ -406,10 +410,6 @@ cite { display: block; text-align: right; padding-top: 10px; }
 
 #tagItems .displayOptions form, #userItems .displayOptions form { width: 18em; }
 #tagItems .displayOptions form .field label, #userItems .displayOptions form .field label { width: 5.5em; }
-#tagItems .displayOptions form .sortOrder, #userItems .displayOptions form .sortOrder { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
-#tagItems .displayOptions form .sortOrder .field, #userItems .displayOptions form .sortOrder .field { float: left; padding-bottom: 0; padding-right: 0.5em; }
-#tagItems .displayOptions form .sortOrder .field label, #userItems .displayOptions form .sortOrder .field label { display: inline; float: none; width: auto; padding: 0 0.1em; font-size: 0.75em; }
-#tagItems .displayOptions form .sortOrder .field input, #tagItems .displayOptions form .sortOrder .field label, #userItems .displayOptions form .sortOrder .field input, #userItems .displayOptions form .sortOrder .field label { cursor: pointer; }
 #tagItems .displayOptions form .itemCounts, #userItems .displayOptions form .itemCounts { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
 #tagItems .displayOptions form .itemCounts .field, #userItems .displayOptions form .itemCounts .field { display: inline; }
 #tagItems .displayOptions form .itemCounts .field label, #userItems .displayOptions form .itemCounts .field label { width: 2.5em; }
@@ -503,10 +503,18 @@ cite { display: block; text-align: right; padding-top: 10px; }
 
 /* Page Content */
 #pageContent { padding: 0 0 0 1em; z-index: 10; }
+#pageContent .error { padding: 1em; color: #cd0a0a; }
 
 /* Page Footer */
-#pageFooter { clear: both; margin-top: 1em; border-top: 1px solid #ddd; padding: 0.5em; z-index: 1; }
+#pageFooter { clear: both; margin-top: 1em; border-top: 1px solid #cccccc; padding: 0.5em; z-index: 1; }
+#pageFooter .db-profile { background-color: #cccccc; padding: 0.25em; }
+#pageFooter .db-profile ul { padding: 0 1em; }
+#pageFooter .db-profile ul li { padding: 0; }
+#pageFooter .db-profile ul li dl { padding: 0 1em; }
+#pageFooter .db-profile ul li dl dt { font-weight: bold; }
+#pageFooter .db-profile ul li dl dd { padding: 0 1em; }
 
+/* Columns */
 .columnHeader { height: 3em; }
 .columnHeader p { padding: 0 36px 1em 1em; text-align: right; color: #0066cc; }
 .columnHeader .connexions_sprites { position: absolute; right: 0px; top: -4px; }

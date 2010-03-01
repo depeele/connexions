@@ -91,4 +91,5 @@
 #itemsList .items .no-userId .data { margin-left: 32px; }
 #itemsList .items .mine { min-height: 45px; }
 #itemsList .items .mine .status { display: block; min-height: 45px; }
-#itemsList .items .mine.minimized .userId { display: none; }
+#itemsList .items .mine.minimized { display: block; min-height: 64px; }
+#itemsList .items .mine.minimized .status { top: 24px; }

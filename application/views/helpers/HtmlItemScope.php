@@ -97,7 +97,7 @@ class Connexions_View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
             }
 
             $jQuery->addOnLoad("init_{$namespace}ItemScope();")
-                   ->javascriptCaptureStart();
+                   ->javascriptCaptureStart();  // jQuery {
             ?>
 
 /************************************************
@@ -185,7 +185,7 @@ function init_<?= $namespace ?>ItemScope()
     });
 }
             <?php
-            $jQuery->javascriptCaptureEnd();
+            $jQuery->javascriptCaptureEnd();    // jQuery }
 
             self::$_initialized[$namespace] = true;
         }

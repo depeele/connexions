@@ -1,13 +1,65 @@
 @import sizes
 @import colors
 @import mixins
+@import urls
 
 !displaySortOffset  = 5px
 
-/******* userItems.sass *******/
-// Styling for userItems / Bookmarks
+/******* urlItems.sass *******/
+.columnHeader
+  .itemInfo
+    .label
+      display:        block
+      float:          left
+    .title
+      font-size:      1.2em
+      font-weight:    bold
+      display:        block
+    a, .subTitle
+      font-size:      0.9em
 
-#itemsList
+.main
+  .itemScope
+    clear:  both
+
+// Styling the url chooser form (similar to .itemScope)
+#urlChooser
+  background-color =  !linkColor
+  color =             !navColor
+  padding:            0
+  label,input,button
+    background-color: transparent
+    display:          block
+    float:            left
+    padding:          0.1em
+
+  label
+    padding:        0 2em 0 1em
+    // .connexions_sprites .scope_root
+    background = !connexions_sprites_url "no-repeat scroll right -210px transparent"
+    height:         24px
+    line-height:    24px
+    overflow:       hidden
+
+  input
+    margin:       0.1em 0.5em
+    padding:      0.1em 0.1em 0.1em 0.25em
+    height:       1.2em
+    width:        40em
+
+  button
+    border:       none
+    // .connexions_sprites .scope_go
+    background =  !connexions_sprites_url "no-repeat scroll right -236px transparent"
+    height:       24px
+    line-height:  24px
+    width:        16px
+    cursor:       pointer
+    span
+      display:  none
+
+// Styling for urlItems -- should match userItems.sass:#itemsList
+#urlItemsList
   .displayOptions
     // To have the control appear as a tab when opened
     //form
@@ -90,7 +142,7 @@
                 .updated
                   width:      auto
 
-  .items
+  .urlItems
     clear:          both
     padding-top:    2em
     border-bottom = "1px solid" !borderColor
@@ -443,10 +495,10 @@
 
     // Item (mine)
     .mine
-      min-height:   45px
+      min-height:   40px
       .status
         display:    block
-        min-height: 45px
+        min-height: 40px
       //.data
       //  .userId
       //    display:  none

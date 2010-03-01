@@ -448,6 +448,13 @@ abstract class Connexions_Model
         else
             $inData =& $data;
 
+        /*
+        Connexions::log("Connexions_Model:_data2where:: "
+                        . "table '{$this->_table}', "
+                        .   "data[ "
+                        .       print_r($data, true) . " ]");
+        // */
+
         $isKey       = true;
         $keysMatched = array();
         $where       = array();
@@ -608,16 +615,20 @@ abstract class Connexions_Model
             $select =  'SELECT * FROM '. $this->_table
                     .  ' WHERE '. implode(' AND ', array_keys($where));
 
+            // /*
+            Connexions::log("Connexions_Model:_init:: "
+                            . "table '{$this->_table}', "
+                            . "where( "
+                            .   "clause[ "
+                            .       implode(' AND ', array_keys($where))
+                            .                 " ], "
+                            .   "binding[ "
+                            .       implode(', ', array_values($where))
+                            .                 " ]");
+            // */
+
             try
             {
-                /*
-                printf ("Connexions_Model: _init table '%s'; ".
-                            "where( clause[%s], binding[%s] )\n",
-                         $this->_table,
-                         implode(' AND ', array_keys($where)),
-                         implode(', ', array_values($where)) );
-                // */
-
                 $rec       = $this->_db->fetchRow($select,
                                                   array_values($where));
                 $this->_id = $id;
