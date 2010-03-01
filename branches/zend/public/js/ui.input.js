@@ -198,7 +198,7 @@ $.widget("ui.input", {
                 .bind('focus.uiinput',      _focus)
                 .bind('blur.uiinput',       _blur);
 
-        if (self.element.val().length > 0)
+        if (this.val().length > 0)
         {
             // Perform an initial validation
             self.validate();
@@ -368,7 +368,7 @@ $.widget("ui.input", {
         }
         else if (this.options.validation === '!empty')
         {
-            newState = ((this.element.val().length > 0)
+            newState = ((this.val().length > 0)
                                     ? true
                                     : false);
             msg.push('Cannot be empty');
