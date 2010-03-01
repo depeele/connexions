@@ -1,3 +1,5 @@
+@import urls
+
 /******* sprites.sass *******/
 // ui-icon background-image overrides
 .icon-normal .ui-icon
@@ -15,8 +17,8 @@
 
 // connexions_sprites
 .connexions_sprites
-  background: url('sprites/connexions.gif') no-repeat scroll 0px 0px transparent
-  background-image: url('sprites/connexions.gif') !important
+  background = !connexions_sprites_url "no-repeat scroll 0px 0px transparent"
+  background-image = !connexions_sprites_url "!important"
 .corner_inner_left
   width: 12px
   height: 10px
@@ -158,6 +160,19 @@
   //width:  1px
   //height: 26px
   background-position: -110px -110px
+
+.scope_root
+  height: 24px
+  width:  16px
+  background-position:  -189px -210px
+.scope_go
+  height: 24px
+  width:  16px
+  background-position:  -189px -236px
+.scope_root_item
+  height: 24px
+  width:  16px
+  background-position:  -189px -262px
 
 /* smallIcons.gif 15x44 */
 .smallIcon_bookmark

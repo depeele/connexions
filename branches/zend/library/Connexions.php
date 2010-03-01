@@ -264,4 +264,23 @@ class Connexions
 
         return $str;
     }
+
+    /** @brief  Given a string, normalize and generate an MD5 hash.
+     *  @param  str     The string to operate on.
+     *
+     *  Normalization involves collapsing all white-space and converting to
+     *  lower-case.
+     *
+     *  @return The MD5 hash string.
+     */
+    public static function normalizedMd5($str)
+    {
+        // If this already appears to be an MD5 hash, don't compute it again.
+        if ((strlen($str) !== 32) || (preg_match('/[^0-9a-f]/i', $str)) )
+        {
+            $str = md5( strtolower(preg_replace('/\s+/', ' ', $str)) );
+        }
+
+        return $str;
+    }
 }

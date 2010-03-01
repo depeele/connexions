@@ -21,7 +21,7 @@
  *      /subscriptions   /:owner    [/:tags]    Owner subscriptions
  *      /inbox           /:owner    [/:tags]    Owner inbox
  *
- *      /url             /:url                  Lookup url
+ *      /url             /:url      [/:tags]    Lookup url
  *      /people          [/:tags]               People list
  *
  *      /settings       [/:type     [/:cmd]]    Viewer settings
@@ -72,7 +72,9 @@ class Connexions_Controller_Route
                                     ':tags'    => false)
                            ),
   
-        'url'           => array(':url'     => false),
+        'url'           => array(':url'     => array(
+                                    ':tags'    => false)
+                           ),
         'people'        => array(':tags'    => false),
   
         'settings'      => array(':type'    => array(

@@ -156,22 +156,11 @@ class IndexController extends Zend_Controller_Action
         else
             $uiHelper->setStyle($itemsStyle);
 
-        /*
-        Connexions::log("IndexController: uiHelper updated sort "
-                            . "by[ {$uiHelper->getSortBy() } ], "
-                            . "order[ {$uiHelper->getSortOrder() } ]");
-        // */
-
         /* Ensure that the final sort information is properly reflected in
          * the source set.
          */
         $userItems->setOrder( $uiHelper->getSortBy() .' '.
                               $uiHelper->getSortOrder() );
-
-        // /*
-        Connexions::log("IndexController: userItems "
-                            . "SQL[ ". $userItems->select()->assemble() ." ]");
-        // */
 
         /* Use the Connexions_Controller_Action_Helper_Pager to create a
          * paginator for the retrieved user items / bookmarks.
@@ -220,45 +209,6 @@ class IndexController extends Zend_Controller_Action
                     ->setItemBaseUrl( ($owner !== '*'
                                         ? null
                                         : '/tagged'));
-
-        /* Reflect any changes introduced by HtmlItemCloud
-         *      e.g. if any settings were null, resulting in the use of a
-         *           default value.
-         *
-         * If the incoming sort order does NOT specify weight, over-ride with
-         * 'weight DESC' as a first ordering with the specified order as a
-         * secondary.
-        $tagsStyle     = $cloudHelper->getStyle();
-        $tagsSortBy    = $cloudHelper->getSortBy();
-        $tagsSortOrder = $cloudHelper->getSortOrder();
-        $tagsPerPage   = $cloudHelper->getPerPage();
-        $order         = array();
-        if ($tagsSortBy !== 'weight')
-        {
-            $tagSet->weightBy();
-            array_push($order, 'weight DESC' );
-        }
-        array_push($order, $tagsSortBy .' '. $tagsSortOrder);
-
-        // Reflect any changes to order and/or perPage to the tagSet
-        $tagSet->setOrder( $order )
-               ->limit($tagsPerPage);
-         */
-
-
-        /*
-        Connexions::log("IndexController: tagSet "
-                            . "SQL[ ". $tagSet->select()->assemble() ." ]");
-        // */
-
-        /* Retrieve the Connexions_Set_ItemList instance required by
-         * Zend_Tag_Cloud to render this tag set as a cloud
-        $tagList = $tagSet->get_Tag_ItemList(0, $tagsPerPage, $tagInfo,
-                                             ($owner !== '*'
-                                                ? null
-                                                : '/tagged'));
-         */
-
 
         /********************************************************************
          * Set the required view variables

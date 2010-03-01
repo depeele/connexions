@@ -1,4 +1,4 @@
-all: connexions.css userItems.css users.css
+all: connexions.css userItems.css users.css urlItems.css
 
 connexions.css: main.sass		\
     		mixins.sass		\
@@ -22,6 +22,11 @@ userItems.css: mixins.sass userItems.sass colors.sass sizes.sass
 
 users.css: mixins.sass users.sass colors.sass sizes.sass
 	sass -t compact users.sass users.css
+
+urlItems.css: mixins.sass urlItems.sass colors.sass sizes.sass urls.sass
+	sass -t compact urlItems.sass urlItems.css
+
+sprites.sass:	urls.sass
 
 #connexions.css: main.less		\
 #		colors.less		\

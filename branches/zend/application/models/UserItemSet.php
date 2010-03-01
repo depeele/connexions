@@ -30,6 +30,14 @@ class Model_UserItemSet extends Connexions_Set
     {
         $memberClass = self::MEMBER_CLASS;
 
+        /*
+        Connexions::log("Model_UserItemSet: "
+                            . "tagIds [ ". print_r($tagIds, true)  ." ], "
+                            . "userIds[ ". print_r($userIds, true) ." ], "
+                            . "itemIds[ ". print_r($itemIds, true) ." ]");
+        // */
+
+
         /* :TODO: Determine the current, authenticated user
          *        and the proper order.
          */

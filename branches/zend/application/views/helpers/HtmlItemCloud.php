@@ -820,7 +820,7 @@ function init_ItemCloud(namespace)
 
         $itemList->uasort($sortFn);
 
-        // /*
+        /*
         Connexions::log("HtmlItemCloud: _sort: ----------------------- "
                             . count($itemList) ." items, "
                             . "sorted [ {$sortBy}, {$sortOrder} ]");
