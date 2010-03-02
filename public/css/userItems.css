@@ -57,7 +57,7 @@ ul.items .groupHeader .date .year, ul.urlItems .groupHeader .date .year { positi
 ul.items .groupHeader .date .dateBox, ul.urlItems .groupHeader .date .dateBox { position: relative; left: -0.25em; font-size: 1em; font-weight: bold; }
 ul.items .groupHeader .date .dateBox .month, ul.urlItems .groupHeader .date .dateBox .month { display: inline; }
 ul.items .groupHeader .date .dateBox .day, ul.urlItems .groupHeader .date .dateBox .day { display: inline; padding: 0 0.25em; }
-ul.items .groupHeader .date .dateBox .day-of-week, ul.urlItems .groupHeader .date .dateBox .day-of-week { display: block; font-size: 0.8em; font-weight: bold; }
+ul.items .groupHeader .date .dateBox .day-of-week, ul.urlItems .groupHeader .date .dateBox .day-of-week { display: block; position: absolute; font-size: 0.8em; font-weight: bold; z-index: 4; }
 ul.items .groupHeader .alpha, ul.items .groupHeader .numeric, ul.urlItems .groupHeader .alpha, ul.urlItems .groupHeader .numeric { position: absolute; left: -0.55em; top: -0.45em; font-size: 3em; font-weight: bold; color: #bbbbff; z-index: 0; }
 ul.items .item, ul.urlItems .item { position: relative; z-index: 1; margin-bottom: 1em; border-top: 1px solid #cccccc; }
 ul.items .item .status, ul.urlItems .item .status { position: absolute; top: 0; left: 0; width: 20px; height: 100%; z-index: 5; }
