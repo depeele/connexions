@@ -1,6 +1,7 @@
 @import sizes
 @import colors
 @import mixins
+@import uiStars
 @import urls
 
 !displaySortOffset  = 5px
@@ -252,73 +253,23 @@
           .stars
             display:  block
             height:   18px
-            .owner, .average, .average-owner
-              display:      block
-              width:        96px
-              overflow:     hidden
-              .ui-stars
-                display:        block
-                float:          left
-                cursor:         pointer
-                //border-bottom:  1px solid transparent
-                // Hide the <a> text
-                overflow:       hidden
-                text-indent:    999em
-                a
-                  background: url('sprites/connexions.gif') no-repeat scroll 0 0
-                  display:    block
-                  width:      16px
-                  height:     16px
-
-              .ui-stars-star-off, .ui-stars-star, .ui-stars-star-disabled
-                a
-                  // sprites.sass::.star_1_off
-                  background-position:  -72px -58px
-
-              .ui-stars-star-on
-                a
-                  // sprites.sass::.star_1_on
-                  background-position:  -104px -58px
-
-              .ui-stars-star-hover
-                a
-                  // sprites.sass::.star_1_hover
-                  background-position:  -88px -58px
-
-              .ui-stars-cancel
-                padding:  1px
-                a
-                  // sprites.sass::.star_0
-                  width:                14px
-                  height:               14px
-                  //margin:               1px
-                  background-position:  -72px -44px
-
-              .ui-stars-cancel-hover
-                a
-                  // sprites.sass::.star_0_hover
-                  background-position:  -86px -44px
-
-              .ui-stars-cancel-disabled
-                a
-                  // sprites.sass::.star_0
-                  background-image:     none
-
-              .ui-stars-star-disabled, .ui-stars-cancel-disabled
-                cursor:   default
-
-          .stars
             .average,.average-owner
               padding-left: 16px
+
+            .average
+              .ui-stars-star
+                cursor:                 default
+                a
+                  cursor:               default
+
             .average-owner
               position:     absolute
-              top:          2px
+              top:          3px
               left:         1px
+              +opacity(0.7)
 
-              .ui-stars-star-on
-                a
-                  // sprites.sass::.star_1_hover
-                  background-position:  -88px -58px
+              .ui-stars-star-disabled
+                display:    none
 
           .info
             clear:      left
