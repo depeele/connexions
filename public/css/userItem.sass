@@ -1,0 +1,347 @@
+@import sizes
+@import colors
+@import mixins
+@import uiStars
+
+!displaySortOffset  = 5px
+
+/******* userItem.sass *******/
+// Styling for a single userItem / Bookmark
+// Used by userItems.sass as well as urlItems.sass
+
+ul.items, ul.urlItems
+  clear:          both
+  padding-top:    2em
+  border-bottom = "1px solid" !borderColor
+  .groupHeader
+    // Left portion of group header, shifted left 15px
+    // (with .group, provides a solid header the full width)
+    position:             relative
+    background-color =    !groupHeaderColorBackground
+    border-bottom =       "1px solid" !borderColor
+    color =               !groupHeaderColor
+    height:               20px
+    left:                 -15px
+    .group
+      // Right portion of group header, shifted right 20px (5px over)
+      // (with .groupHeader, provides a solid header the full width)
+      position:           relative
+      background-color =  !groupHeaderColorBackground
+      height:             20px
+      right:              -20px
+    .date
+      position: relative
+      left:               -12px
+      .year
+        position:         absolute
+        left:             1em
+        top:              -0.45em
+        font-size:        3em
+        font-weight:      bold
+        color =           !groupHeaderYearColor
+        // Raise it above item, which has a top-border
+        z-index:          4
+        //+rotate(-90deg)
+
+      .dateBox
+        position:         relative
+        left:             -0.25em
+        font-size:        1em
+        font-weight:      bold
+        .month
+          display:        inline
+        .day
+          display:        inline
+          padding:        0 0.25em
+        .day-of-week
+          display:        block
+          font-size:      0.8em
+          font-weight:    bold
+    .alpha,.numeric
+      position:     absolute
+      left:         -0.55em
+      top:          -0.45em
+      font-size:    3em
+      font-weight:  bold
+      color =       !groupHeaderAlphaColor
+      z-index:      0
+
+  .item
+    position:       relative
+    z-index:        1
+    margin-bottom:  1em
+    border-top =    "1px solid" !borderColor
+
+    // Item status: Favorite, Private
+    .status
+      position:   absolute
+      top:        0
+      left:       0
+      width =     !controlBoxWidth
+      height:     100%
+      z-index:    5
+      .checkbox
+        border:   0
+
+      .favorite,.private
+        position: absolute
+        cursor:   pointer
+
+      .favorite
+        top:          4px
+        left:         4px
+        .star_empty
+          visibility: hidden
+
+      .private
+        top:          24px
+        left:         4px
+        .lock_empty
+          visibility: hidden
+
+    // Tagger count, rating, tag date/time
+    .stats
+      position:   relative
+      float:      right
+      width =     !countBoxWidth
+      padding:    0 0 0 4px
+      text-align: right
+      z-index:    2
+      .countTaggers
+        display:            block
+        background-color =  !controlColor
+        color =             !pageColorBackground
+        padding:            0.25em
+        font-weight:        normal
+        text-align:         center
+        text-decoration:    none
+        &:hover
+          background-color =  !navColorHover
+      .rating
+        display:    block
+        position:   relative
+        .stars
+          display:  block
+          height:   18px
+
+          .average, .average-owner
+            padding-left: 16px
+
+          .average
+            .ui-stars-star
+              cursor:                 default
+              a
+                cursor:               default
+
+            .ui-stars-star-disabled
+              visibility: hidden
+
+
+          .average-owner
+            position:     absolute
+            top:          3px
+            left:         1px
+            +opacity(0.7)
+
+            .ui-stars-star-disabled
+              visibility: hidden
+
+          .owner
+            .ui-stars-star-disabled, .ui-stars-cancel
+              visibility: hidden
+
+        .info
+          clear:      left
+          color =     !controlColor
+          font-size:  0.75em
+
+    .data
+      position: relative
+      padding:  0.25em 0 0 32px
+      z-index:  1
+
+      // Item Name / title
+      .itemName
+        padding:      0
+
+        a
+          display:      inline
+          font-weight:  bold
+
+      // Item Url
+      .url
+        padding:    0 0 0 1em
+        max-width = !urlBoxWidth
+
+        // IE6 fix
+        *width    = !urlBoxWidth
+
+        a
+          display:      inline
+          font-weight:  normal
+
+      // Item Description / Description Summary
+      .description
+        display:    block
+        padding:    0 0 0 1em
+        margin:     0 175px 0 0
+        color =     !controlColor
+
+        .full, .summary
+          display:  block
+
+      // UserId
+      .userId
+        display:      block
+        float:        left
+        font-size:    0.9em
+        padding:      0.5em 0 0.5em 1em
+        margin:       0
+        white-space:  pre
+        a
+          font-weight:  normal
+          .img
+            display:          block
+            position:         relative
+            float:            left
+            border:           0
+            background-color: transparent
+            img
+              width:          16px
+              height:         16px
+            .ui-icon
+              position:         relative
+              top:              -2px
+          .name
+            display:      inline
+            font-size:    0.9em
+            padding-left: 0.25em
+
+      // List of tags for this item
+      .tags
+        display:    block
+        float:      right
+        font-size:  0.9em
+        padding:    0.5em 0
+        margin:     0
+        text-align: right
+
+        // Individual tag
+        .tag,.tag:hover
+          display:            block
+          float:              right
+          padding:            0.2em
+          margin:             0.1em
+          background-color =  !tagColorBackground
+          color =             !tagColor
+          a,a:hover,a:visited,a:focus
+            display:          inline
+            font-weight:      normal
+            text-decoration:  none
+            color =           !tagColor
+        .tag:hover
+          background-color =  !tagColor
+          color =             !tagColorBackground
+          a, a:hover, a:visited, a:focus
+            color =           !tagColorBackground
+
+      // Dates (tagged, updated)
+      .dates
+        display:      block
+        font-size:    0.8em
+        height:       1em
+        padding-left: 1em
+        color =       !controlColor
+        .tagged
+          float:      left
+        .updated
+          float:      right
+
+      // Item controls: edit, delete, save
+      .control
+        float:        right
+        padding:      0
+        font-size:    0.65em
+        border:       0
+        padding:      0 0 0 2em
+        margin:       0
+        font-weight:  normal
+        white-space:  pre
+        z-index:      3
+        color =       !controlColor
+        visibility:   hidden
+
+        a
+          display:          inline
+          font-weight:      normal
+          text-decoration:  none
+          padding:          0.1em
+
+        a:hover
+          background-color =  !linkColor
+          color =             !pageColorBackground
+          text-decoration:  none
+    
+  .item:hover
+    .control
+      visibility:       visible
+    .status
+      .favorite
+        .star_empty
+          visibility:   visible
+      .private
+        .lock_empty
+          visibility:   visible
+    .stats
+      .rating
+        .owner
+          .ui-stars-star-disabled, .ui-stars-cancel
+            visibility: visible
+
+        
+  // Item (private)
+  .private
+    .status
+      background-color =  !privateColorBackground
+      border-left =       "1px dotted" !privateColorBorder
+
+  // Item (minimized)
+  .minimized
+    clear:          left
+    .control
+      float:        right
+      padding:      0
+      font-size:    0.9em
+    .status
+      display:    none
+    .data
+      margin-left:  5em
+      padding-left: 0
+      .itemName,.description,.description .summary,.description .full
+        display:    inline
+      .userId
+        position:     absolute
+        left:         -5.25em
+        width:        5em
+        padding:      0.25em 0
+        overflow:     hidden
+      .description .summary
+        padding:      0 0 0 0.5em
+        margin:       0
+      .tags
+        padding:      0.1em 0 0 0.5em
+        clear:        right
+
+  // Item (mine)
+  .mine
+    min-height:   45px
+    .status
+      display:    block
+      min-height: 45px
+
+  // Item (mine+minimized)
+  .mine.minimized
+    display:        block
+    min-height:     64px 
+    .status
+      top:          24px
