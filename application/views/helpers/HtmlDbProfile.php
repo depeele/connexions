@@ -26,6 +26,10 @@ class Connexions_View_Helper_HtmlDbProfile extends Zend_View_Helper_Abstract
         $longest      = null;
 
         $profiles = $profiler->getQueryProfiles();
+
+        if (! $profiles)
+            return ('');
+
         $times    = array();
         $queries  = array();
         foreach ($profiles as $query)

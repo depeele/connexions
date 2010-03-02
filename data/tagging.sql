@@ -52,6 +52,19 @@ CREATE TABLE network (
   KEY `n_memberId`      (`memberId`)
 );
 
+CREATE TABLE memberGroup (
+  groupId           int(10)     unsigned        NOT NULL default 0,
+  name              varchar(128)                NOT NULL default '',
+
+  groupType         enum('user', 'item', 'tag') NOT NULL default 'tag',
+
+  controlMembers    enum('owner', 'group')      NOT NULL default 'owner',
+  controlItems      enum('owner', 'group')      NOT NULL default 'owner',
+
+  PRIMARY KEY           (`groupId`),
+  KEY `n_groupType`     (`groupType`)
+);
+
 --
 -- association tables
 --
