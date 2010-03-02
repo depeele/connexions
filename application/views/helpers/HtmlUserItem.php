@@ -105,8 +105,8 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                                                        ($isOwner
                                                         ? "average-owner"
                                                         : "average"),
-                                                       true,    // read-only
-                                                       $ratingTitle);
+                                                       $ratingTitle,
+                                                       true);   // read-only
                     }
 
                     if ( $isOwner )
@@ -115,9 +115,7 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                         $html .= $this
                                 ->view
                                   ->htmlStarRating($userItem->rating,
-                                                   'owner',
-                                                   false,   // read-only
-                                                   $ratingTitle);
+                                                   'owner');
                     }
 
                     $html .= "</div>";      // stars }

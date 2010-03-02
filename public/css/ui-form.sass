@@ -1,3 +1,5 @@
+@import colors
+
 /******* ui-form.sass *******/
 /* ====== Forms ====== */
 .ui-form
@@ -14,9 +16,9 @@
   .ui-button 
     cursor:           pointer
   .ui-state-valid 
-    color:            #667E32
+    color =           !validationValidColor
   .ui-state-invalid 
-    color:            #CD0A0A
+    color =           !errorColor
   .ui-dropDown
     position:         relative
     padding-right:    16px

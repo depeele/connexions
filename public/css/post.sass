@@ -1,0 +1,118 @@
+@import sizes
+@import colors
+@import mixins
+@import uiStars
+
+/******* post.sass *******/
+// Styling for bookmark post form
+#post
+  padding:            2em 3em
+  background-color =  !pageColorBackground
+
+  +corners(10px, 10px, 10px, 10px)
+
+  .legend
+    text-align:     right
+    padding-right:  2em
+    width:          10em
+    h1
+      padding:  0
+    p
+      padding:  0
+
+  .field
+    padding-bottom: 1em
+
+    .text
+      width:        30em
+
+    .ui-field-status
+      position: absolute
+      top:      1.2em
+      right:    -18em
+      width:    16em
+
+  .click-to-edit
+    label
+      display:  none
+
+    input
+      border-color:   transparent
+      color =         !validationInputColor
+
+    input:focus
+      border-color =  !validationFocusBorderColor
+      color =         !validationFocusColor
+
+  .buttons
+    position:     relative
+    text-align:   right
+
+    input, label
+      position: relative
+      display:  inline
+
+  .personalize
+    width:    100%
+
+    .field
+      display:  block
+      float:    left
+      padding:  0 0.5em 0 0
+
+      label
+        display:  block
+        float:    left
+
+    .userRating
+      display:  block
+      float:    left
+      padding:  0 2.5em 0 0
+
+      // Accomadate a wrapped label
+      height:   32px
+
+      label
+        display:  block
+        float:    right
+        padding:  2px 0 0 0.25em
+        width:    2em
+        color =   !linkColor
+
+      .ui-stars-wrapper
+        float:    left
+
+  .formError
+    padding:      1em 0
+    font-weight:  bold
+    text-align:   center
+
+  // checkbox styling
+  .personalize
+    .checkbox
+      position: relative
+      display:  inline
+      cursor:   pointer
+      border:   none
+
+  // star rating styling
+  //.ui-stars-wrapper
+  //  display:    inline
+  //  height:     18px
+
+  //  div
+  //    display:    block
+  //    float:      left
+  //    cursor:     pointer
+
+  //    // So we can hide the <a> text
+  //    overflow:   hidden
+
+  //  a
+  //    display:    block
+  //    width:      200%
+  //    height:     100%
+  //    text-align: right
+
+  //  .star-rating-readonly
+  //    cursor:     default

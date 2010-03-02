@@ -276,6 +276,8 @@ cite { display: block; text-align: right; padding-top: 10px; }
 
 .star_1_on { width: 16px; height: 16px; background-position: -104px -58px; }
 
+.star_1_owner { width: 16px; height: 16px; background-position: -104px -42px; }
+
 .star_empty { width: 15px; height: 15px; background-position: 0     -44px; }
 
 .star_fill { width: 15px; height: 15px; background-position: -15px -44px; }
@@ -304,9 +306,11 @@ cite { display: block; text-align: right; padding-top: 10px; }
 
 .welcome_gradient { background-position: -110px -110px; }
 
-.scope_separator { height: 24px; width: 16px; background-position: -189px -210px; }
+.scope_root { height: 24px; width: 16px; background-position: -189px -210px; }
 
 .scope_go { height: 24px; width: 16px; background-position: -189px -236px; }
+
+.scope_root_item { height: 24px; width: 16px; background-position: -189px -262px; }
 
 /* smallIcons.gif 15x44 */
 .smallIcon_bookmark { background: url('sprites/smallIcons.gif') no-repeat scroll 3px 0px transparent; }
@@ -397,8 +401,8 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .ui-form label { display: block; font-size: 0.8em; font-weight: normal; }
 .ui-form input, .ui-form select, .ui-form textarea, .ui-form .ui-button { /* Also requires ui-state-* to provide the border */ padding: 0.3em; }
 .ui-form .ui-button { cursor: pointer; }
-.ui-form .ui-state-valid { color: #667E32; }
-.ui-form .ui-state-invalid { color: #CD0A0A; }
+.ui-form .ui-state-valid { color: #667e32; }
+.ui-form .ui-state-invalid { color: #cd0a0a; }
 .ui-form .ui-dropDown { position: relative; padding-right: 16px; }
 .ui-form .ui-dropDown ul { display: none; position: absolute; top: 1.5em; right: 0; padding: 2px; z-index: 10; }
 .ui-form .ui-dropDown ul li { padding: 2px; display: block; }

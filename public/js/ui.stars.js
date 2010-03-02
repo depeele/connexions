@@ -12,11 +12,13 @@
  *
  * Take control of pre-assembled HTML:
  *  <div >
+ *    <input type='hidden' name='rating' value='...' />
  *    <div class='ui-stars ui-stars-cancel ...'><a ..></a></div>
  *    <div class='ui-stars ui-stars-star ...'><a ..></a></div>
  *    <div class='ui-stars ui-stars-star ...'><a ..></a></div>
  *    ...
  *  </div>
+ *
  * Depends:
  *  ui.core.js
  *
@@ -58,10 +60,11 @@ $.widget("ui.stars", {
     //this.$stars  = $('.'+o.baseClass,   this.element);
     this.$stars  = $('.'+o.starClass,   this.element);
     this.$cancel = $('.'+o.cancelClass, this.element);
+    this.$input  = $('input[type=hidden]:first', this.element);
 
     // How many Stars and how many are 'on'?
     o.items = this.$stars.filter('.'+o.starClass).length;
-    o.value = this.$stars.filter('.'+o.starOnClass).length - 1;
+    o.value = this.$stars.filter('.'+o.starOnClass).length; // - 1;
     if (o.value > 0) {
         o.checked = o.defaultValue = o.value;
     } else {
@@ -83,10 +86,12 @@ $.widget("ui.stars", {
 
       var i = self.$stars.index(this);
       o.checked = i;
-      o.value   = i;
+      o.value   = i + 1;
       o.title   = $(this).find('a').attr('title');
 
-      fillTo(i, false);
+      self.$input.val(o.value);
+
+      fillTo(o.checked, false);
       self._disableCancel();
 
       !o.forceSelect && self.callback(e, "star");
@@ -98,7 +103,7 @@ $.widget("ui.stars", {
     })
     .bind("mouseout.stars", function() {
       if(o.disabled) return false;
-      fillTo(self.options.checked, false);
+      fillTo(o.checked, false);
     });
 
 
@@ -111,6 +116,8 @@ $.widget("ui.stars", {
 
       o.checked = -1;
       o.value   = o.cancelValue;
+
+      self.$input.val(o.cancelValue);
 
       fillNone();
       self._disableCancel();
@@ -143,17 +150,19 @@ $.widget("ui.stars", {
      * Star selection helpers
      */
     function fillTo(index, hover) {
-      if(index != -1) {
+      if(index >= 0) {
         var addClass = hover ? o.starHoverClass : o.starOnClass;
         var remClass = hover ? o.starOnClass    : o.starHoverClass;
 
         self.$stars.eq(index)
-                    .prevAll("." + o.starClass)
-                     .andSelf()
                       .removeClass(remClass)
                       .addClass(addClass)
-                     .end()
-                    .end()
+                    .prevAll("." + o.starClass)
+                      .removeClass(remClass)
+                      .addClass(addClass);
+        //             .end()
+        //            .end()
+        self.$stars.eq(index)
                     .nextAll("." + o.starClass)
                      .removeClass(o.starHoverClass + " " + o.starOnClass);
 
@@ -211,7 +220,7 @@ $.widget("ui.stars", {
   select: function(val) {
     var o = this.options,
         e = (val == o.cancelValue)
-                ? this.$cancel : this.$stars.eq(val);
+                ? this.$cancel : this.$stars.eq(val - 1);
 
     o.forceSelect = true;
     e.triggerHandler("click.stars");

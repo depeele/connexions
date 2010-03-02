@@ -1,4 +1,4 @@
-all: connexions.css userItems.css users.css urlItems.css
+all: connexions.css userItems.css users.css urlItems.css post.css
 
 connexions.css: main.sass		\
     		mixins.sass		\
@@ -17,14 +17,17 @@ connexions.css: main.sass		\
 		themes/default/jquery-ui.css
 	sass -t compact main.sass connexions.css
 
-userItems.css: mixins.sass userItems.sass colors.sass sizes.sass
+userItems.css: mixins.sass userItems.sass uiStars.sass colors.sass sizes.sass
 	sass -t compact userItems.sass userItems.css
 
 users.css: mixins.sass users.sass colors.sass sizes.sass
 	sass -t compact users.sass users.css
 
-urlItems.css: mixins.sass urlItems.sass colors.sass sizes.sass urls.sass
+urlItems.css: mixins.sass urlItems.sass uiStars.sass colors.sass sizes.sass urls.sass
 	sass -t compact urlItems.sass urlItems.css
+
+post.css: mixins.sass post.sass colors.sass
+	sass -t compact post.sass post.css
 
 sprites.sass:	urls.sass
 

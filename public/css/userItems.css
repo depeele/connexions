@@ -1,3 +1,17 @@
+.ui-stars-wrapper { display: block; width: 96px; overflow: hidden; }
+.ui-stars-wrapper .ui-stars { display: block; float: left; overflow: hidden; text-indent: 999em; }
+.ui-stars-wrapper .ui-stars a { background: url('sprites/connexions.gif') no-repeat scroll 0 0; display: block; width: 16px; height: 16px; }
+.ui-stars-wrapper .ui-stars-star-off a, .ui-stars-wrapper .ui-stars-star a, .ui-stars-wrapper .ui-stars-star-disabled a { background-position: -72px -58px; }
+.ui-stars-wrapper .ui-stars-star { cursor: pointer; }
+.ui-stars-wrapper .ui-stars-star a { cursor: pointer; }
+.ui-stars-wrapper .ui-stars-star-on a { background-position: -104px -58px; }
+.ui-stars-wrapper .ui-stars-star-hover a { background-position: -88px -58px; }
+.ui-stars-wrapper .ui-stars-cancel { padding: 1px; }
+.ui-stars-wrapper .ui-stars-cancel a { width: 14px; height: 14px; background-position: -72px -44px; }
+.ui-stars-wrapper .ui-stars-cancel-hover a { background-position: -86px -44px; }
+.ui-stars-wrapper .ui-stars-cancel-disabled a { background-image: none; }
+.ui-stars-wrapper .ui-stars-star-disabled, .ui-stars-wrapper .ui-stars-cancel-disabled { cursor: default; }
+
 /* ****** userItems.sass ****** */
 #itemsList .displayOptions form { width: 22em; }
 #itemsList .displayOptions form .displayStyle .items, #itemsList .displayOptions form .displayStyle fieldset.options { border-bottom: none; padding-top: 1em; }
@@ -40,20 +54,11 @@
 #itemsList .items .item .stats .countTaggers:hover { background-color: #b0d730; }
 #itemsList .items .item .stats .rating { display: block; position: relative; }
 #itemsList .items .item .stats .rating .stars { display: block; height: 18px; }
-#itemsList .items .item .stats .rating .stars .owner, #itemsList .items .item .stats .rating .stars .average, #itemsList .items .item .stats .rating .stars .average-owner { display: block; width: 96px; overflow: hidden; }
-#itemsList .items .item .stats .rating .stars .owner .ui-stars, #itemsList .items .item .stats .rating .stars .average .ui-stars, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars { display: block; float: left; cursor: pointer; overflow: hidden; text-indent: 999em; }
-#itemsList .items .item .stats .rating .stars .owner .ui-stars a, #itemsList .items .item .stats .rating .stars .average .ui-stars a, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars a { background: url('sprites/connexions.gif') no-repeat scroll 0 0; display: block; width: 16px; height: 16px; }
-#itemsList .items .item .stats .rating .stars .owner .ui-stars-star-off a, #itemsList .items .item .stats .rating .stars .owner .ui-stars-star a, #itemsList .items .item .stats .rating .stars .owner .ui-stars-star-disabled a, #itemsList .items .item .stats .rating .stars .average .ui-stars-star-off a, #itemsList .items .item .stats .rating .stars .average .ui-stars-star a, #itemsList .items .item .stats .rating .stars .average .ui-stars-star-disabled a, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-star-off a, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-star a, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-star-disabled a { background-position: -72px -58px; }
-#itemsList .items .item .stats .rating .stars .owner .ui-stars-star-on a, #itemsList .items .item .stats .rating .stars .average .ui-stars-star-on a, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-star-on a { background-position: -104px -58px; }
-#itemsList .items .item .stats .rating .stars .owner .ui-stars-star-hover a, #itemsList .items .item .stats .rating .stars .average .ui-stars-star-hover a, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-star-hover a { background-position: -88px -58px; }
-#itemsList .items .item .stats .rating .stars .owner .ui-stars-cancel, #itemsList .items .item .stats .rating .stars .average .ui-stars-cancel, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-cancel { padding: 1px; }
-#itemsList .items .item .stats .rating .stars .owner .ui-stars-cancel a, #itemsList .items .item .stats .rating .stars .average .ui-stars-cancel a, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-cancel a { width: 14px; height: 14px; background-position: -72px -44px; }
-#itemsList .items .item .stats .rating .stars .owner .ui-stars-cancel-hover a, #itemsList .items .item .stats .rating .stars .average .ui-stars-cancel-hover a, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-cancel-hover a { background-position: -86px -44px; }
-#itemsList .items .item .stats .rating .stars .owner .ui-stars-cancel-disabled a, #itemsList .items .item .stats .rating .stars .average .ui-stars-cancel-disabled a, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-cancel-disabled a { background-image: none; }
-#itemsList .items .item .stats .rating .stars .owner .ui-stars-star-disabled, #itemsList .items .item .stats .rating .stars .owner .ui-stars-cancel-disabled, #itemsList .items .item .stats .rating .stars .average .ui-stars-star-disabled, #itemsList .items .item .stats .rating .stars .average .ui-stars-cancel-disabled, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-star-disabled, #itemsList .items .item .stats .rating .stars .average-owner .ui-stars-cancel-disabled { cursor: default; }
 #itemsList .items .item .stats .rating .stars .average, #itemsList .items .item .stats .rating .stars .average-owner { padding-left: 16px; }
-#itemsList .items .item .stats .rating .stars .average-owner { position: absolute; top: 2px; left: 1px; }
-#itemsList .items .item .stats .rating .stars .average-owner .ui-stars-star-on a { background-position: -88px -58px; }
+#itemsList .items .item .stats .rating .stars .average .ui-stars-star { cursor: default; }
+#itemsList .items .item .stats .rating .stars .average .ui-stars-star a { cursor: default; }
+#itemsList .items .item .stats .rating .stars .average-owner { position: absolute; top: 3px; left: 1px; opacity: 0.7; filter: Alpha(Opacity= 70 ); }
+#itemsList .items .item .stats .rating .stars .average-owner .ui-stars-star-disabled { display: none; }
 #itemsList .items .item .stats .rating .info { clear: left; color: #999999; font-size: 0.75em; }
 #itemsList .items .item .data { position: relative; padding: 0.25em 0 0 32px; z-index: 1; }
 #itemsList .items .item .data .itemName { padding: 0; }
