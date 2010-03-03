@@ -270,6 +270,7 @@ class Model_User extends Connexions_Model
 
     public function getWeight()
     {
+        $weight = 0;
         if (@isset($this->weight))
             $weight = (Float)($this->weight);
         else if (@isset($this->tagCount))

@@ -1,4 +1,4 @@
-all: connexions.css userItems.css users.css urlItems.css post.css
+all: connexions.css userItems.css users.css urlItems.css post.css inbox.css
 
 connexions.css: main.sass		\
     		mixins.sass		\
@@ -30,6 +30,9 @@ urlItems.css: mixins.sass urlItems.sass userItem.sass uiStars.sass \
 
 post.css: mixins.sass post.sass colors.sass
 	sass -t compact post.sass post.css
+
+inbox.css: mixins.sass inbox.sass colors.sass sizes.sass
+	sass -t compact inbox.sass inbox.css
 
 sprites.sass:	urls.sass
 

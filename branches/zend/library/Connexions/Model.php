@@ -76,8 +76,12 @@ abstract class Connexions_Model
      */
     public function mapField($name)
     {
-        if (! @isset($this->_model[$name]))
+        if (( ! (is_array($this->_record) &&
+                 isset($this->_record[$name])) ) &&
+            (! isset($this->_model[$name])) )
+        {
             $name = null;
+        }
 
         return $name;
     }
@@ -133,7 +137,7 @@ abstract class Connexions_Model
         if ($vName === null)
         {
             // Invalid field
-            $this->_error = "Invalid field '{$name}'";
+            $this->_error = "Invalid field '{$name}' on set";
             return false;
         }
 
@@ -169,35 +173,40 @@ abstract class Connexions_Model
      */
     public function __get($name)
     {
-        if ( (! @is_array($this->_record)) ||
-             (! @isset($this->_record[$name])) )
+        $vName = $this->mapField($name);
+        if ($vName === null)
         {
-            // Invalid or unset field
+            // Invalid field
+            $this->_error = "Invalid field '{$name}' on get";
             return null;
         }
 
         // If this field has not yet been validated, validate it now.
-        if ( (! @isset($this->_validated[$name])) ||
-            ($this->_validated[$name] !== true) )
-            $this->_validate($name);
+        if ( (! @isset($this->_validated[$vName])) ||
+            ($this->_validated[$vName] !== true) )
+            $this->_validate($vName);
 
-        return $this->_record[$name];
+        /*
+        Connexions::log(sprintf("Model::__get(%s / %s): [ %s ]",
+                                $name, $vName,
+                                print_r($this->_record[$vName], true)));
+        // */
+
+        return $this->_record[$vName];
     }
 
     /** @brief  Is the given field set?
      *  @param  name    The field name.
      *
-     *  @return The field value (or null if invalid field).
+     *  @return true | false
      */
     public function __isset($name)
     {
         $vName = $this->mapField($name);
-        if ( ($vName === null)              ||
-             (! @is_array($this->_record))  ||
-             (! @isset($this->_record[$vName])) )
+        if ($vName === null)
         {
-            // Invalid or unset field
-            //Connexions::log("Connexions_Model::__isset({$name}): FALSE");
+            // Invalid field
+            $this->_error = "Invalid field '{$name}' on isset";
             return false;
         }
 
