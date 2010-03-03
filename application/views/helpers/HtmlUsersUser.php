@@ -42,6 +42,8 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
             $html .=   "<div class='stats ui-corner-bottom'>";  // stats {
             if ($showParts['user:stats:countItems'] === true)
             {
+                $count = $user->getWeight();    // $user->totalItems;
+
                 $html .= sprintf ("<a class='countItems' "
                                   .   "href='%s' "
                                   .  "title='Bookmarks'>%d</a>",
@@ -49,7 +51,7 @@ class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
                                          'controller'   => 'index',
                                          'action'       => 'index',
                                          'owner'        => $user->name)),
-                                 $user->totalItems);
+                                 $count);
             }
 
             if ($showParts['user:stats:countTags'] === true)

@@ -129,6 +129,14 @@ class InboxController extends Zend_Controller_Action
                                     $userItems->itemIds() );
         $tagSet->withAnyUser();
 
+        /* Create the userSet that will be presented in the side-bar:
+         *      All users that have tagged something for this user.
+         */
+        $senderSet = new Model_UserSet( $tagIds,
+                                        $userItems->itemIds(),
+                                        $userItems->userIds() );
+        $senderSet->weightBy('item');
+
 
         /********************************************************************
          * Prepare for rendering the main view.
@@ -259,6 +267,7 @@ class InboxController extends Zend_Controller_Action
         $this->view->tagInfo   = $tagInfo;
 
         $this->view->paginator = $paginator;
+        $this->view->senderSet = $senderSet;
         $this->view->tagSet    = $tagSet;
     }
 

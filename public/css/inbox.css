@@ -1,0 +1,14 @@
+/* ****** inbox.sass ****** */
+#sendersList { padding-bottom: 2em; }
+#sendersList .users { clear: both; padding: 1em 2em 0.5em; border-top: 2px solid #cccccc; border-left: 2px solid #cccccc; border-bottom: 2px solid #cccccc; -moz-border-radius: 10px 0 0 10px; -webkit-border-radius: 10px 0 0 10px; border-radius: 10px 0 0 10px; }
+#sendersList .users .user { clear: both; position: relative; padding-bottom: 0.25em; border-bottom: 1px dotted #cccccc; }
+#sendersList .users .user .stats { float: right; }
+#sendersList .users .user .stats .countItems { display: block; font-weight: normal; text-align: center; text-decoration: none; }
+#sendersList .users .user .data { position: relative; padding: 0; }
+#sendersList .users .user .data .avatar { float: left; width: 16px; height: 16px; }
+#sendersList .users .user .data .avatar a .img { display: block; position: relative; border: 0; background-color: transparent; }
+#sendersList .users .user .data .avatar a .img img { width: 16px; height: 16px; }
+#sendersList .users .user .data .avatar a .img .ui-icon { position: relative; left: 8px; }
+#sendersList .users .user .data .userId { float: left; padding: 0 0 0 1em; font-size: 1em; }
+#sendersList .users .user .data .userId a { display: inline; font-weight: bold; }
+#sendersList .users .last { border-bottom: none; }
