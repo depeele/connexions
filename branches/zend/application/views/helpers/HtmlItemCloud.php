@@ -74,6 +74,8 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
     protected       $_perPage           = null;
     protected       $_highlightCount    = null;
 
+    protected       $_hiddenItems       = array();
+
 
     /** @brief  Variable Namespace/Prefix initialization indicators. */
     static protected $_initialized      = array();
@@ -157,9 +159,32 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                                                     $this->_itemBaseUrl);
         }
 
+        if (! empty($this->_hiddenItems))
+        {
+            // Remove any tags that are to be hidden
+            /*
+            Connexions::log("Connexions_View_Helper_HtmlItemCloud:: "
+                                . "filter out tags [ "
+                                .   implode(", ", $this->_hiddenItems) ." ]");
+            // */
+
+            foreach ($itemList as $key => $item)
+            {
+                if (in_array($item->getTitle(), $this->_hiddenItems))
+                {
+                    /*
+                    Connexions::log("Connexions_View_Helper_HtmlItemCloud:: "
+                                    . "remove tag [{$item->getTitle()}]");
+                    // */
+
+                    unset($itemList[$key]);
+                }
+            }
+        }
+
+
         $sortedList = $this->_sort($itemList, $this->_sortBy,
                                               $this->_sortOrder);
-
 
         if ($this->getStyle() === self::STYLE_CLOUD)
         {
@@ -715,6 +740,16 @@ function init_ItemCloud(namespace)
     public function getHighlightCount()
     {
         return $this->_highlightCount;
+    }
+
+    /** @brief  Add a tag that should NOT be included in the context URL.
+     *  @param  str     The tag (name).
+     *
+     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
+     */
+    public function addHiddenItem($str)
+    {
+        array_push($this->_hiddenItems, $str);
     }
 
     /*************************************************************************

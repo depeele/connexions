@@ -16,6 +16,13 @@
      <resource>member</resource>
      <class>welcome</class>
      <pages>
+      <inbox>
+       <label>Inbox</label>
+       <controller>inbox</controller>
+       <action>%user.name%</action>
+       <resource>member</resource>
+       <class>local</class>
+      </inbox>
       <post>
        <label>Post</label>
        <controller>post</controller>

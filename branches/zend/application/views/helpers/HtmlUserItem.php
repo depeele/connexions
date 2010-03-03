@@ -83,7 +83,8 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
             {
                 $html .=  "<div class='rating'>";       // rating {
 
-                if ($showParts['item:stats:rating:stars'] === true)
+                if (($showParts['item:stats:rating:stars'] === true) &&
+                    ( ($userItem->item->ratingCount > 0) || $isOwner ) )
                 {
                     $html .= "<div class='stars'>";       // stars {
 
@@ -301,33 +302,39 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
      */
     protected function _renderUserId($userItem, $showParts)
     {
-        $showAvatar = (($showParts['item:data:userId:avatar'] === true) &&
-                       ( ! @empty($userItem->user->pictureUrl)) );
-
         $html =  "<div class='userId'>"
               .   sprintf("<a href='%s' title='%s'>",
                           $this->view->url(array(
                                   'action' => $userItem->user->name)),
                           $userItem->user->fullName);
 
-        $html .=   "<div class='img icon-highlight'>";
-        if ( $showAvatar )
+        if ($showParts['item:data:userId:avatar'] === true)
         {
-            // Include the user's picture / avatar
-            $html .= sprintf ("<img src='%s' />",
-                              $userItem->user->pictureUrl);
-        }
-        else
-        {
-            // Include the default user icon
-            $html .= "<div class='ui-icon ui-icon-person'>"
-                  .   "&nbsp;"
-                  .  "</div>";
-        }
-        $html .=   "</div>";
+            $html .=   "<div class='img icon-highlight'>";
 
-        $html .=   "<span class='name'>{$userItem->user->name}</span>"
-              .   "</a>"
+            if ( ! @empty($userItem->user->pictureUrl))
+            {
+                // Include the user's picture / avatar
+                $html .= sprintf ("<img src='%s' />",
+                                  $userItem->user->pictureUrl);
+            }
+            else
+            {
+                // Include the default user icon
+                $html .= "<div class='ui-icon ui-icon-person'>"
+                      .   "&nbsp;"
+                      .  "</div>";
+            }
+
+            $html .=   "</div>";
+        }
+
+        if ($showParts['item:data:userId:id'] === true)
+        {
+            $html .= "<span class='name'>{$userItem->user->name}</span>";
+        }
+
+        $html .=  "</a>"
               .  "</div>";
 
         return $html;

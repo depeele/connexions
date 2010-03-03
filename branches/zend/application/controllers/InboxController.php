@@ -1,41 +1,95 @@
 <?php
 /** @file
  *
- *  This controller controls access to Url and is accessed via the url/routes:
- *      /url[/<md5 hash of url>]
+ *  This controller controls access to the "inbox" for users or user-groups.
+ *  It may be access via the url/routes:
+ *      /inbox/<user>[/<tag list>]]
  */
 
-class UrlController extends Zend_Controller_Action
+class InboxController extends Zend_Controller_Action
 {
-
-    public function init()
-    {
-        /* Initialize action controller here */
-    }
 
     public function indexAction()
     {
-        $request = $this->getRequest();
-        $url     = $request->getParam('url',  null);
+        $viewer   =& Zend_Registry::get('user');
 
-        if (empty($url))
-            return $this->_forward('choose');
+        $request  = $this->getRequest();
+        $owner    = $request->getParam('owner',     null);
+        $reqTags  = $request->getParam('tags',      null);
 
-        /* If the incoming URL is NOT an MD5 hash (32 hex characters), convert
-         * it to a normalzed hash now
+        /* If this is a user/"owned" area (e.g. /<userName> [/ <tags ...>]),
+         * verify the validity of the requested user.
          */
-        $urlHash = Connexions::normalizedMd5($url);
-        if ($urlHash !== $url)
+        if ($owner === 'mine')
         {
-            // Redirect using the URL hash
-            //$newUrl = $this->_helper->url($urlHash);
-
-            return $this->_helper->redirector
-                                    ->setGotoRoute(array('url', $urlHash));
+            // 'mine' == the currently authenticated user
+            $owner =& $viewer;
+            if ( ( ! $owner instanceof Model_User) ||
+                 (! $owner->isAuthenticated()) )
+            {
+                // Unauthenticated user -- Redirect to signIn
+                return $this->_helper->redirector('signIn','auth');
+            }
         }
 
-        $viewer =& Zend_Registry::get('user');
-        $reqTags = $request->getParam('tags', null);
+
+        if ( (! $owner instanceof Model_User) && (! empty($owner)) )
+        {
+            /* :TODO: Allow user-groups to be named here.
+             *
+             * Is this a valid user?
+             */
+            $ownerInst = Model_User::find(array('name' => $owner));
+            if ($ownerInst->isBacked())
+            {
+                /*
+                Connexions::log("IndexController:: Valid ".
+                                        "owner[ {$ownerInst->name} ]");
+                // */
+
+                $owner =& $ownerInst;
+            }
+            else
+            {
+                // Invalid user!
+                /*
+                Connexions::log("IndexController:: "
+                                    . "Unknown User with tags; "
+                                    . "set owner to '*'");
+                // */
+
+                $this->view->error = "Unknown user [ {$owner} ].";
+            }
+        }
+
+
+
+        /* :TODO: Is 'viewer' allowed to see the inbox of 'owner'??
+         *        - For a user       inbox,
+         *          or  a user-group inbox with visibility:private
+         *                              ONLY the owner may view
+         *        - For a user-group inbox with visibility:group
+         *                              ONLY members of the group may view
+         *        - For a user-group inbox with visibility:public
+         *                              anyone can view
+         *
+         * For now, only the owner may view.
+         */
+        if ( ( ! $owner instanceof Model_User) ||
+             ($owner->userId !== $viewer->userId) )
+        {
+            // Redirect to the viewer's inbox
+            return $this->_forward('index', 'inbox', null,
+                                   array('owner' => $viewer->name));
+        }
+        $forTagStr = 'for:'. $owner->name;
+        $forTag    = new Model_Tag($forTagStr);
+
+        /*
+        Connexions::log("InboxController:: forTag[ "
+                            . $forTag->debugDump() . " ]");
+        // */
+
 
         // Parse the incoming request tags
         $tagInfo = new Connexions_Set_Info($reqTags, 'Model_Tag');
@@ -43,36 +97,29 @@ class UrlController extends Zend_Controller_Action
             $this->view->error =
                         "Invalid tag(s) [ {$tagInfo->invalidItems} ]";
 
-
-        // /*
-        Connexions::log("UrlController:: "
-                        . 'tagIds[ '
-                        .       implode(', ', $tagInfo->validIds) .' ], '
-                        . "url[ {$url} ], "
-                        . "urlHash[ {$urlHash} ]");
+        /*
+        Connexions::log(sprintf("InboxController:: tagInfo: "
+                                .   "itemClass[ %s ], reqStr[ %s ], "
+                                .   "validItems[ %s ], invalidItems[ %s ]",
+                                $tagInfo->itemClass,
+                                $tagInfo->reqStr,
+                                $tagInfo->validItems,
+                                $tagInfo->invalidItems));
         // */
-        $item = new Model_Item($urlHash);
 
-        // /*
-        Connexions::log("UrlController:: "
-                        . 'item[ '
-                        .       $item->debugDump() .' ]');
-        // */
-        if (! $item->isValid())
-        {
-            // This URL has not been bookmarked here.
-            $this->view->url   = $url;
-            $this->view->error = "There are no bookarks for the provided URL.";
-
-            return $this->_forward('choose');
-        }
-
-        /* Create the userItem set, scoped by any incoming valid tags and
-         * possibly the owner of the area.
+        /* Create the userItem set, scoped by any incoming valid tags from
+         * ALL users.
          */
-        $userItems = new Model_UserItemSet($tagInfo->validIds,
-                                           null,    // userIds
-                                           $item->itemId);
+        $tagIds = $tagInfo->validIds;
+        array_push($tagIds, $forTag->tagId);
+
+        /*
+        Connexions::log("InboxController:: tagIds[ "
+                            . implode(', ', $tagIds) ." ]");
+        // */
+
+        $userItems = new Model_UserItemSet($tagIds);
+
 
         /* Create the tagSet that will be presented in the side-bar:
          *      All tags used by all users/items contained in the current
@@ -82,14 +129,15 @@ class UrlController extends Zend_Controller_Action
                                     $userItems->itemIds() );
         $tagSet->withAnyUser();
 
+
         /********************************************************************
          * Prepare for rendering the main view.
          *
-         * Notify the HtmlUrlItems View Helper (used to render the main view)
+         * Notify the HtmlUserItems View Helper (used to render the main view)
          * of any incoming settings, allowing it establish any required
          * defaults.
          */
-        $prefix           = 'urlItems';
+        $prefix           = 'inboxItems';
         $itemsPerPage     = $request->getParam($prefix."PerPage",       null);
         $itemsSortBy      = $request->getParam($prefix."SortBy",        null);
         $itemsSortOrder   = $request->getParam($prefix."SortOrder",     null);
@@ -97,8 +145,8 @@ class UrlController extends Zend_Controller_Action
         $itemsStyleCustom = $request->getParam($prefix."OptionGroups_option",
                                                                         null);
 
-        // /*
-        Connexions::log('UrlController::'
+        /*
+        Connexions::log('InboxController::'
                             . 'prefix [ '. $prefix .' ], '
                             . 'params [ '
                             .   print_r($request->getParams(), true) ." ],\n"
@@ -110,16 +158,27 @@ class UrlController extends Zend_Controller_Action
                             .           print_r($itemsStyleCustom, true) .' ]');
         // */
 
-        $uiHelper = $this->view->htmlUrlItems();
+        $uiHelper = $this->view->htmlUserItems();
         $uiHelper->setNamespace($prefix)
                  ->setSortBy($itemsSortBy)
                  ->setSortOrder($itemsSortOrder);
         if (is_array($itemsStyleCustom))
-            $uiHelper->setStyle(Connexions_View_Helper_HtmlUrlItems
+            $uiHelper->setStyle(Connexions_View_Helper_HtmlUserItems
                                                             ::STYLE_CUSTOM,
                                 $itemsStyleCustom);
         else
             $uiHelper->setStyle($itemsStyle);
+
+        // Set Scope information
+        $scopeHelper = $this->view->htmlItemScope();
+
+        $uiHelper->setMultipleUsers();
+
+        $scopeHelper->setPath(array('Inbox' =>
+                                        $this->view->baseUrl('/inbox/'.
+                                                                $owner->name)));
+
+
 
         /* Ensure that the final sort information is properly reflected in
          * the source set.
@@ -128,7 +187,7 @@ class UrlController extends Zend_Controller_Action
                               $uiHelper->getSortOrder() );
 
         // /*
-        Connexions::log("UrlController:: updated params:\n"
+        Connexions::log("InboxController:: updated params:\n"
                             . '    SortBy         [ '
                             .           $uiHelper->getSortBy() ." ],\n"
                             . '    SortOrder      [ '
@@ -140,19 +199,20 @@ class UrlController extends Zend_Controller_Action
                                                 true) .' ]');
         // */
 
+
         /* Use the Connexions_Controller_Action_Helper_Pager to create a
          * paginator for the retrieved user items / bookmarks.
          */
         $page      = $request->getParam('page',  null);
-        $paginator = $this->_helper->Pager($userItems, $page,
-                                           $itemsPerPage);
+        $paginator = $this->_helper->Pager($userItems, $page, $itemsPerPage);
+
 
         /********************************************************************
          * Prepare for rendering the right column.
          *
-         * Create a second HtmlItemCloud View Helper
-         * (used to render the right column) and set it up using the incoming
-         * user-cloud parameters.
+         * Notify the HtmlItemCloud View Helper
+         * (used to render the right column) of any incoming settings, allowing
+         * it establish any required defaults.
          */
         $prefix             = 'sbTags';
         $tagsPerPage        = $request->getParam($prefix."PerPage",     100);
@@ -162,8 +222,8 @@ class UrlController extends Zend_Controller_Action
         $tagsSortOrder      = $request->getParam($prefix."SortOrder",   null);
         $tagsStyle          = $request->getParam($prefix."OptionGroup", null);
 
-        // /*
-        Connexions::log('UrlController::'
+        /*
+        Connexions::log('InboxController::'
                             . "right-column prefix [ {$prefix} ],\n"
                             . "    PerPage        [ {$tagsPerPage} ],\n"
                             . "    HighlightCount [ {$tagsHighlightCount} ],\n"
@@ -186,24 +246,20 @@ class UrlController extends Zend_Controller_Action
                     ->setItemSetInfo($tagInfo)
                     ->setItemBaseUrl( ($owner !== '*'
                                         ? null
-                                        : '/tagged'));
+                                        : '/tagged'))
+                    // Do NOT show the 'for:<user>' tag
+                    ->addHiddenItem($forTagStr);
 
         /********************************************************************
          * Set the required view variables
          *
          */
+        $this->view->owner     = $owner;
         $this->view->viewer    = $viewer;
-        $this->view->item      = $item;
         $this->view->tagInfo   = $tagInfo;
 
         $this->view->paginator = $paginator;
         $this->view->tagSet    = $tagSet;
-    }
-
-    public function chooseAction()
-    {
-        // Nothing much to do...
-        $this->view->viewer    = Zend_Registry::get('user');
     }
 
     /** @brief Redirect all other actions to 'index'
@@ -215,10 +271,20 @@ class UrlController extends Zend_Controller_Action
     {
         if (substr($method, -6) == 'Action')
         {
-            $url = substr($method, 0, -6);
+            $owner = substr($method, 0, -6);
 
-            return $this->_forward('index', 'url', null,
-                                   array('url' => $url));
+            /*
+            $request = $this->getRequest();
+
+            Connexions::log("InboxController::__call({$method}): "
+                                           . "owner[ {$owner} ], "
+                                           . "parameters[ "
+                                           .    $request->getParam('tags','')
+                                           .        " ]");
+            // */
+
+            return $this->_forward('index', 'inbox', null,
+                                   array('owner' => $owner));
         }
 
         throw new Exception('Invalid method "'. $method .'" called', 500);

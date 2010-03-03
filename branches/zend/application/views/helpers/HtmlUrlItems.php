@@ -41,7 +41,7 @@ class Connexions_View_Helper_HtmlUrlItems extends Zend_View_Helper_Abstract
             'label'         => 'avatar',
             'extraPre'      => "<div class='img icon-highlight'><div class='ui-icon ui-icon-person'>&nbsp;</div></div>"
         ),
-        'item:data:userId'                  => 'User Id',
+        'item:data:userId:id'               => 'User Id',
         'item:data:tags'                    => array(
             'label'         => 'tags',
             'extraPost'     => "<label class='tag'>...</label><label class='tag'>...</label><label class='tag'>...</label><label class='tag'>...</label>",
@@ -61,7 +61,7 @@ class Connexions_View_Helper_HtmlUrlItems extends Zend_View_Helper_Abstract
             'options'   => array('item:data:itemName',
                                  'item:data:description:summary',
                                  'item:data:userId:avatar',
-                                 'item:data:userId',
+                                 'item:data:userId:id',
                                  'item:data:tags'
             )
         ),
@@ -71,7 +71,7 @@ class Connexions_View_Helper_HtmlUrlItems extends Zend_View_Helper_Abstract
                                  'item:data:itemName',
                                  'item:data:description:full',
                                  'item:data:userId:avatar',
-                                 'item:data:userId',
+                                 'item:data:userId:id',
                                  'item:data:tags',
                                  'item:data:dates:tagged'
             )
@@ -83,7 +83,7 @@ class Connexions_View_Helper_HtmlUrlItems extends Zend_View_Helper_Abstract
                                  'item:data:itemName',
                                  'item:data:description:full',
                                  'item:data:userId:avatar',
-                                 'item:data:userId',
+                                 'item:data:userId:id',
                                  'item:data:tags',
                                  'item:data:dates:tagged',
                                  'item:data:dates:updated'
@@ -95,7 +95,7 @@ class Connexions_View_Helper_HtmlUrlItems extends Zend_View_Helper_Abstract
             'options'   => array('item:data:itemName',
                                  'item:data:description:summary',
                                  'item:data:userId:avatar',
-                                 'item:data:userId',
+                                 'item:data:userId:id',
                                  'item:data:tags',
             )
         )

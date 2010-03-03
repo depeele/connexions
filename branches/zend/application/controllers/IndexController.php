@@ -156,11 +156,60 @@ class IndexController extends Zend_Controller_Action
         else
             $uiHelper->setStyle($itemsStyle);
 
+
+        // Set Scope information
+        $scopeHelper = $this->view->htmlItemScope();
+        $scopeParts  = array('format=json');
+        if ($owner === '*')
+        {
+            // Multiple / all users
+            $uiHelper->setMultipleUsers();
+
+            $scopeHelper->setPath(array('Bookmarks' =>
+                                            $this->view->baseUrl('/tagged')));
+        }
+        else
+        {
+            // Single user
+            $ownerStr = (String)$owner;
+
+            $uiHelper->setSingleUser();
+
+            $scopeHelper->setPath(array($ownerStr =>
+                                            $this->view->baseUrl($ownerStr)));
+
+            array_push($scopeParts, 'owner='. $ownerStr);
+        }
+
+        if ($tagInfo->hasValidItems())
+        {
+            array_push($scopeParts, 'tags='. $tagInfo->validItems);
+        }
+
+        $scopeCbUrl = $this->view->baseUrl('/scopeAutoComplete')
+                    . '?'. implode('&', $scopeParts);
+        $scopeHelper->setAutoCompleteUrl( $scopeCbUrl );
+
+
+
         /* Ensure that the final sort information is properly reflected in
          * the source set.
          */
         $userItems->setOrder( $uiHelper->getSortBy() .' '.
                               $uiHelper->getSortOrder() );
+
+        // /*
+        Connexions::log("IndexController:: updated params:\n"
+                            . '    SortBy         [ '
+                            .           $uiHelper->getSortBy() ." ],\n"
+                            . '    SortOrder      [ '
+                            .           $uiHelper->getSortOrder() ." ],\n"
+                            . '    Style          [ '
+                            .           $uiHelper->getStyle() ." ],\n"
+                            . '    ShowMeta       [ '
+                            .           print_r($uiHelper->getShowMeta(),
+                                                true) .' ]');
+        // */
 
         /* Use the Connexions_Controller_Action_Helper_Pager to create a
          * paginator for the retrieved user items / bookmarks.

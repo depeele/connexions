@@ -17,6 +17,7 @@ class Connexions_View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
     protected       $_inputName         = 'items';
     protected       $_path              = null;
     protected       $_autoCompleteUrl   = null;
+    protected       $_hiddenItems       = array();
 
     /** @brief  Variable Namespace/Prefix initialization indicators. */
     static protected $_initialized  = array();
@@ -291,6 +292,9 @@ function init_<?= $namespace ?>ItemScope()
         
             foreach ($scopeInfo->valid as $name => $id)
             {
+                if (in_array($name, $this->_hiddenItems))
+                    continue;
+
                 /* Get the set of all OTHER scope items (i.e. everything EXCEPT
                  * the current) and use it to construct the URL to use for
                  * removing this item from the scope.
@@ -429,5 +433,15 @@ function init_<?= $namespace ?>ItemScope()
     public function getAutoCompleteUrl()
     {
         return $this->_autoCompleteUrl;
+    }
+
+    /** @brief  Add a scope item that should be hidden.
+     *  @param  str     The scope item (name).
+     *
+     *  @return Connexions_View_Helper_HtmlItemScope for a fluent interface.
+     */
+    public function addHiddenItem($str)
+    {
+        array_push($this->_hiddenItems, $str);
     }
 }

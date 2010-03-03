@@ -20,21 +20,16 @@ $baseUrl = $this->baseUrl('/'); //Connexions::url('/');
 $links = $this->headLink();
 $links->appendStylesheet($baseUrl .'css/userItems.css');
 
-if ($this->owner !== '*')
-    $this->headTitle($this->owner ."'s Bookmarks");
-else
-    $this->headTitle('Bookmarks');
+$this->headTitle('inbox')
+     ->headTitle($this->owner);
 
 ?>
 <div class='columnHeader'>
- <div class='connexions_sprites bookmark_bg
+ <div class='connexions_sprites inbox_bg
              ui-corner-left ui-corer-tr'>&nbsp;</div>
- <p>Bookmarks of <?= ($this->owner === '*'
-                            ? 'all users'
-                            : $this->owner) ?>
+ <p>Inbox for <?= $this->owner ?>
     <?php
-        if (($this->owner instanceof Model_User) &&
-            (! empty($this->owner->pictureUrl)) )
+        if (! empty($this->owner->pictureUrl))
         {
             printf ("<img class='avatar' src='%s' title='%s' />\n",
                     $this->owner->pictureUrl,
@@ -43,8 +38,10 @@ else
     ?>
     <br />
   <?php
-    if ( $this->tagInfo->hasValidItems())
-        printf ("with tags '%s'.", $this->tagInfo->validItems);
+    $forPat = '/for:'. $this->owner->name .'(,?$)/';
+    $tagStr = preg_replace($forPat, '', $this->tagInfo->validItems);
+    if ( ! empty($tagStr))
+        printf ("with tags '%s'.", $tagStr);
     else
         printf ("NO tags.");
   ?>

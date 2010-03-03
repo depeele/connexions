@@ -46,7 +46,7 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
             'label'         => 'avatar',
             'extraPre'      => "<div class='img icon-highlight'><div class='ui-icon ui-icon-person'>&nbsp;</div></div>"
         ),
-        'item:data:userId'                  => 'User Id',
+        'item:data:userId:id'               => 'User Id',
         'item:data:tags'                    => array(
             'label'         => 'tags',
             'extraPost'     => "<label class='tag'>...</label><label class='tag'>...</label><label class='tag'>...</label><label class='tag'>...</label>",
@@ -67,7 +67,7 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
                                  'item:data:itemName',
                                  'item:data:description:summary',
                                  'item:data:userId:avatar',
-                                 'item:data:userId'
+                                 'item:data:userId:id'
             )
         ),
         self::STYLE_REGULAR => array(
@@ -75,9 +75,9 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
             'options'   => array('item:stats:countTaggers',
                                  'item:stats:rating:stars',
                                  'item:data:itemName',
-                                 'item:data:description:full',
+                                 'item:data:description:summary',
                                  'item:data:userId:avatar',
-                                 'item:data:userId',
+                                 'item:data:userId:id',
                                  'item:data:tags',
                                  'item:data:dates:tagged'
             )
@@ -91,7 +91,7 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
                                  'item:data:url',
                                  'item:data:description:full',
                                  'item:data:userId:avatar',
-                                 'item:data:userId',
+                                 'item:data:userId:id',
                                  'item:data:tags',
                                  'item:data:dates:tagged',
                                  'item:data:dates:updated'
@@ -104,7 +104,7 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
                                  'item:data:itemName',
                                  'item:data:description:summary',
                                  'item:data:userId:avatar',
-                                 'item:data:userId',
+                                 'item:data:userId:id',
                                  'item:data:tags',
             )
         )
@@ -149,9 +149,6 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
      *          if no arguments, this helper instance.
      *  @param  paginator       The Zend_Paginator representing the items to
      *                          be presented.
-     *  @param  owner           A Model_User instance representing the
-     *                          owner of the current area OR
-     *                          a String '*' indicating ALL users;
      *  @param  viewer          A Model_User instance representing the
      *                          current viewer;
      *  @param  tagInfo         A Connexions_Set_Info instance containing
@@ -169,7 +166,6 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
      *  @return The HTML representation of the user items.
      */
     public function htmlUserItems($paginator    = null,
-                                  $owner        = null,
                                   $viewer       = null,
                                   $tagInfo      = null,
                                   $style        = null,
@@ -177,14 +173,13 @@ class Connexions_View_Helper_HtmlUserItems extends Zend_View_Helper_Abstract
                                   $sortOrder    = null)
     {
         if ((! $paginator instanceof Zend_Paginator)                         ||
-            ( (! $owner   instanceof Model_User) && (! @is_string($owner)) ) ||
             (! $viewer    instanceof Model_User)                             ||
             (! $tagInfo   instanceof Connexions_Set_Info))
         {
             return $this;
         }
 
-        return $this->render($paginator, $owner, $viewer, $tagInfo,
+        return $this->render($paginator, $viewer, $tagInfo,
                              $style, $sortBy, $sortOrder);
     }
 
@@ -466,7 +461,7 @@ function init_UserItems(namespace)
              */
             $this->_displayOptions
                     ->setGroupValue('item:data:userId:avatar','hide')
-                    ->setGroupValue('item:data:userId',       'hide');
+                    ->setGroupValue('item:data:userId:id',    'hide');
         }
 
         $val = $this->_displayOptions->getGroupValues();
@@ -483,7 +478,7 @@ function init_UserItems(namespace)
              *      minimized
              */
             $val['minimized'] =
-                   (($val['item:stats:rating']          !== true) &&
+                   (//($val['item:stats:rating']          !== true) &&
                     ($val['item:data:url']              !== true) &&
                     ($val['item:data:description:full'] !== true));
         }
@@ -544,9 +539,6 @@ function init_UserItems(namespace)
     /** @brief  Render an HTML version of a paginated set of User Items.
      *  @param  paginator       The Zend_Paginator representing the items to
      *                          be presented.
-     *  @param  owner           A Model_User instance representing the
-     *                          owner of the current area OR
-     *                          a String '*' indicating ALL users;
      *  @param  viewer          A Model_User instance representing the
      *                          current viewer;
      *  @param  tagInfo         A Connexions_Set_Info instance containing
@@ -564,7 +556,6 @@ function init_UserItems(namespace)
      *  @return The HTML representation of the user items.
      */
     public function render(Zend_Paginator            $paginator,
-                           /* Model_User | String */ $owner,
                            Model_User                $viewer,
                            Connexions_Set_Info       $tagInfo,
                            $style        = null,
@@ -594,64 +585,18 @@ function init_UserItems(namespace)
                             .       self::$orderTitles[$this->_sortOrder]." ]");
         // */
 
-        $html = "";
-
-        $ownerStr = (String)$owner;
-        if ($ownerStr === '*')
-        {
-            $ownerStr      = 'Bookmarks';
-            $ownerUrl      = $this->view->baseUrl('/tagged');
-
-            $this->setMultipleUsers();
-        }
-        else
-        {
-            $ownerUrl      = $this->view->baseUrl($ownerStr);
-
-            $this->setSingleUser();
-        }
-
-        $showMeta   = $this->getShowMeta();
-
-
-        // Construct the scope auto-completion callback URL
-        $scopeParts = array('format=json');
-        if ($owner !== '*')
-            array_push($scopeParts, 'owner='. $owner->name);
-
-        if ($tagInfo->hasValidItems())
-        {
-            /*
-            Connexions::log(sprintf("Connexions_View_Helper_HtmlUserItems: "
-                                    .   "reqStr[ %s ], valid[ %s ]",
-                                    $tagInfo->reqStr,
-                                    var_export($tagInfo->valid, true)) );
-
-            // */
-
-            array_push($scopeParts, 'tags='. $tagInfo->validItems);
-        }
-
-        $scopeCbUrl = $this->view->baseUrl('/scopeAutoComplete')
-                    . '?'. implode('&', $scopeParts);
-
-
-        /*
-        Connexions::log("Connexions_View_Helper_HtmlUserItems: "
-                        .       "scopeCbUrl[ {$scopeCbUrl} ]");
-        // */
+        $html         = "";
+        $showMeta     = $this->getShowMeta();
 
         $uiPagination = $this->view->htmlPaginationControl();
         $uiPagination->setNamespace($this->_namespace)
                      ->setPerPageChoices(self::$perPageChoices);
 
 
-        $uiScope = $this->view->htmlItemScope();
+        $uiScope      = $this->view->htmlItemScope();
         $uiScope->setNamespace($this->_namespace)
                 ->setInputLabel('Tags')
-                ->setInputName( 'tags')
-                ->setPath( array($ownerStr => $ownerUrl) )
-                ->setAutoCompleteUrl($scopeCbUrl);
+                ->setInputName( 'tags');
 
         $html .= $uiScope->render($paginator, $tagInfo);
 

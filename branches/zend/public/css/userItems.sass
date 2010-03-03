@@ -8,7 +8,7 @@
 /******* userItems.sass *******/
 // Styling for userItems / Bookmarks
 
-#itemsList
+#itemsList, #inboxItemsList
   .displayOptions
     // To have the control appear as a tab when opened
     //form
@@ -22,7 +22,7 @@
       //border =            "1px solid" !borderColor
 
       .displayStyle
-        .items, fieldset.options
+        .items, .inboxItems, fieldset.options
           border-bottom:  none
           padding-top:    1em
           .item
@@ -78,6 +78,8 @@
                     position:     absolute
                     left:         14px
                     top:          0
+                .id
+                  display:        inline
               .tags
                 width:            auto
                 text-align:       left

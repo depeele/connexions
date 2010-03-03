@@ -296,6 +296,8 @@ cite { display: block; text-align: right; padding-top: 10px; }
 
 .tag_bg { background-position: -100px -160px; width: 48px; height: 48px; }
 
+.inbox_bg { background-position: -150px -160px; width: 48px; height: 48px; }
+
 .relation_ltr { background-position: -102px -210px; width: 20px; height: 20px; }
 
 .search_bg { width: 173px; height: 23px; background-position: 0    -87px; }
@@ -522,6 +524,7 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .columnHeader { height: 3em; }
 .columnHeader p { padding: 0 36px 1em 1em; text-align: right; color: #0066cc; }
 .columnHeader .connexions_sprites { position: absolute; right: 0px; top: -4px; }
+.columnHeader .avatar { position: absolute; width: 25px; height: 25px; top: -6px; right: -2px; opacity: 0.6; filter: Alpha(Opacity= 60 ); }
 
 .rightCol { padding-left: 2em; padding-right: 0.2em; }
 
