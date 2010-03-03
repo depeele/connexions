@@ -9,8 +9,8 @@
 // Styling for a single userItem / Bookmark
 // Used by userItems.sass as well as urlItems.sass
 
-#itemsList, #urlItemsList
-  .items, .urlItems
+#itemsList, #inboxItemsList, #urlItemsList
+  .items, .inboxItems, .urlItems
     clear:          both
     padding-top:    2em
     border-bottom = "1px solid" !borderColor
@@ -162,7 +162,7 @@
 
       .data
         position: relative
-        padding:  0.25em 0 0 32px
+        padding = "0.25em 0 0" !controlBoxWidth + 12px
         z-index:  1
 
         // Item Name / title
@@ -225,6 +225,7 @@
         // List of tags for this item
         .tags
           display:    block
+          clear:      right
           float:      right
           font-size:  0.9em
           padding:    0.5em 0
@@ -350,8 +351,22 @@
       min-height:     64px 
       .status
         top:          0
+        // If an avatar is presented, make sure it is ABOVE the status
         z-index:      1
         .favorite
           top:          28px
         .private
           top:          48px
+
+    // Item (mine+no-userId)
+    .mine.no-userId
+      min-height:     45px 
+      .status
+        top:          0
+        .favorite
+          top:          4px
+        .private
+          top:          24px
+      .data
+        margin-left:    0
+        padding-left =  !controlBoxWidth + 12px
