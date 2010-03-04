@@ -1,7 +1,12 @@
 <?php
 /** @file
  *
- *  View script for IndexController::index with incoming members:
+ *  View script for IndexController::index to render the main content.
+ *
+ *  The Connexions_View_Helper_HtmlUserItems helper MUST be initialized
+ *  before this view is rendered.
+ *
+ *  Incoming members:
  *      owner               The owner of the current item set -- either a
  *                          string or a Model_User instance;
  *      viewer              The Model_User instance representing the current
@@ -11,9 +16,6 @@
  *
  *      paginator           A Zend_Paginator instance established for the
  *                          presentation of the current Model_UserItemSet;
- *      tagSet              The Connexions_Set instance established for the
- *                          presentation of tags related to the current
- *                          ModeL_UserItemSet;
  */
 $baseUrl = $this->baseUrl('/'); //Connexions::url('/');
 
@@ -51,27 +53,8 @@ else
  </p>
 </div>
 
-<?php
-/******************************************************************************
- * Render the HTML for the primary view using the HtmlUserItems View Helper
- * that should have been prepared by the Controller.
- */
-echo $this->htmlUserItems($this->paginator,
-                          $this->viewer,
-                          $this->tagInfo);
-
-/******************************************************************************
- * Render the HTML for the right-column using the HtmlItemCloud View Helper
- * that should have been prepared by the Controller.
- *
- */
-$this->layout()->right
-      = "<div class='columnHeader'>"
-      .  "<div class='connexions_sprites tag_bg "
-      .              "ui-corner-left ui-corer-tr'>&nbsp;</div>"
-      .  "<p>Tags related to these bookmarks.</p>"
-      . "</div>"
-      .  $this->htmlItemCloud()->render();
-?>
+<?= $this->htmlUserItems($this->paginator,
+                         $this->viewer,
+                         $this->tagInfo) ?>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

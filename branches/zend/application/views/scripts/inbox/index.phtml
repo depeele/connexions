@@ -11,13 +11,6 @@
  *
  *      paginator           A Zend_Paginator instance established for the
  *                          presentation of the current Model_UserItemSet;
- *      senderSet           The Connexions_Set instance established for the
- *                          presentation of users who have tagged items for
- *                          this user (i.e. all users related to the current
- *                                          ModeL_UserItemSet);
- *      tagSet              The Connexions_Set instance established for the
- *                          presentation of tags related to the current
- *                          ModeL_UserItemSet;
  */
 $baseUrl = $this->baseUrl('/'); //Connexions::url('/');
 
@@ -53,109 +46,8 @@ $this->headTitle('inbox')
  </p>
 </div>
 
-<?php
-/******************************************************************************
- * Render the HTML for the primary view using the HtmlUserItems View Helper
- * that should have been prepared by the Controller.
- */
-echo $this->htmlUserItems($this->paginator,
-                          $this->viewer,
-                          $this->tagInfo);
-
-/******************************************************************************
- * Render the HTML for the right-column:
- *      - The list of senders;
- *      - A tag cloud using the HtmlItemCloud View Helper that should have been
- *        prepared by the Controller.
- *
- * First, present the list of senders.  Look at the display options for the
- * item list to see if the user is interested in seeing avatars.
- */
-$itemMeta   = $this->htmlUserItems()->getShowMeta();
-$showAvatar = $itemMeta['item:data:userId:avatar'];
-
-$nSenders   = count($this->senderSet);
-
-$sbHtml  =  "<div class='columnHeader'>"
-         .   "<div class='connexions_sprites user_bg "
-         .               "ui-corner-left ui-corer-tr'>&nbsp;</div>"
-         .   sprintf("<p>%d sender%s of these bookmarks.</p>",
-                     $nSenders, ($nSenders == 1 ? "" : "s"))
-         .  "</div>"
-         .  "<div id='sendersList'>"
-         .   "<ul class='users'>";
-
-$idex = 0;
-foreach ($this->senderSet as $sender)
-{
-    $css = 'user';
-    if ($idex++ >= ($nSenders - 1))
-        $css .= ' last';
-
-    $senderUrl = $this->url(array('controller' => 'index',
-                                  'action'     => 'index',
-                                  'owner'      => $sender->name));
-
-    $sbHtml .= "<li class='{$css}'>"
-            .   "<div class='stats'>"
-            .    "<a class='countItems' title='{$sender->fullName}' "
-            .        "href='{$senderUrl}'>"
-            .     $sender->getWeight()
-            .    "</a>"
-            .   "</div>"
-            .   "<div class='data'>";
-
-    if ($showAvatar === true)
-    {
-        $sbHtml .= "<div class='avatar img icon-highlight'>"
-                .   "<a href='{$senderUrl}' title='{$sender->fullName}'>";
-
-        if ( ! @empty($sender->pictureUrl))
-        {
-            // Include the user's picture / avatar
-            $sbHtml .= "<img src='{$sender->pictureUrl}' />";
-        }
-        else
-        {
-            // Include the default user icon
-            $sbHtml .= "<div class='ui-icon ui-icon-person'>"
-                    .   "&nbsp;"
-                    .  "</div>";
-        }
-
-        $sbHtml .=  "</a>"
-                .  "</div>";
-    }
-
-    //if ($showMeta['user:data:userId'] === true)
-    {
-        $sbHtml .= "<div class='userId'>"
-                .   "<a href='{$senderUrl}' title='{$sender->fullName}'>"
-                .    "<span class='name'>{$sender->name}</span>"
-                .   "</a>"
-                .  "</div>";
-    }
-
-    $sbHtml .=   "<br class='clear' />"
-            .   "</div>"
-            .  "</li>";
-
-    //"<li>{$sender->name}, {$sender->weight}</li>";
-    //$sbHtml .= $this->htmlUsersUser($sender, $this->viewer, $showMeta);
-}
-$sbHtml .=   "</ul>"
-         .  "</div>";
-
-
-// Present the tag cloud using the HtmlItemCloud View Helper.
-$sbHtml .= "<div class='columnHeader'>"
-         .  "<div class='connexions_sprites tag_bg "
-         .              "ui-corner-left ui-corer-tr'>&nbsp;</div>"
-         .  "<p>Tags related to these bookmarks.</p>"
-         . "</div>"
-         .  $this->htmlItemCloud()->render();
-
-$this->layout()->right = $sbHtml;
-?>
+<?= $this->htmlUserItems($this->paginator,
+                         $this->viewer,
+                         $this->tagInfo) ?>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

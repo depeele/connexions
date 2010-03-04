@@ -119,42 +119,9 @@ function doc_pngFix()
  */
 function body_initHandlers()
 {
-    if (false)
+
+    if (true)
     {
-    // Handle hover events for #pageHeader items.
-    $('#pageHeader li,#search .searchInput').bind('mouseenter',
-                    function(e) {
-                        /*
-                        window.console.debug("in: orig[ "+
-                                                this.localName +":"+
-                                                this.className +" ], "+
-                                                e.relatedTarget.localName +":"+
-                                                e.relatedTarget.className);
-                        */
-
-                        e.stopPropagation();
-                        
-                        $(this).addClass('hover');
-                    });
-
-    $('#pageHeader li,#search .searchInput').bind('mouseleave',
-                    function(e) {
-                        /*
-                        window.console.debug("out: orig[ "+
-                                                this.localName +":"+
-                                                this.className +" ], "+
-                                                e.relatedTarget.localName +":"+
-                                                e.relatedTarget.className);
-                        */
-
-                        e.stopPropagation();
-                        
-                        // remove hover
-                        $(this).removeClass('hover');
-                    });
-    }
-
-
     /* Handle hover events for any current and future items with the class
      * .ui-state-default
      */
@@ -195,6 +162,7 @@ function body_initHandlers()
                         // remove hover
                         $(this).removeClass('ui-state-hover');
                     });
+    }
 }
 
 /************************************************

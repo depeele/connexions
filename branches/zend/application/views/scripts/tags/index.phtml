@@ -1,7 +1,12 @@
 <?php
 /** @file
  *
- *  View script for TagsController::index with incoming members:
+ *  View script for TagsController::index to render the main content.
+ *
+ *  The Connexions_View_Helper_HtmlItemCloud helper MUST be initialized
+ *  before this view is rendered.
+ *
+ *  Incoming members:
  *      viewer              The Model_User instance representing the current
  *                          viewer;
  *      userInfo            A Connexions_Set_Info instance containing
@@ -15,6 +20,8 @@
  */
 
 $this->headTitle('Tags');
+
+$uiCloud = $this->htmlItemCloud();
 
 ?>
 <div class='columnHeader'>
@@ -37,61 +44,9 @@ $this->headTitle('Tags');
  </p>
 </div>
 
-<?php
-/******************************************************************************
- * Render the HTML for the primary view using the primary HtmlItemCloud View
- * Helper that should have been prepared by the Controller.
- *
- */
-$uiCloud = $this->htmlItemCloud();
+<?= $this->htmlItemScope($uiCloud->getItemSet(),
+                         $this->userInfo) ?>
 
-/*
-Connexions::log("tags:: Render main cloud: "
-                    . "Style[ {$uiCloud->getStyle()} ], "
-                    . "HighlightCount[ "
-                    .       $uiCloud->getHighlightCount() ." ], "
-                    . "SortBy[ {$uiCloud->getSortBy()} ], "
-                    . "SortOrder[ {$uiCloud->getSortOrder()} ]");
-// */
-
-/* Present the current scope information
- *  The itemSet connected with the uiCloud instance SHOULD be a Zend_Paginator
- *  in this instance.
- */
-echo $this->htmlItemScope($uiCloud->getItemSet(),
-                          $this->userInfo);
-
-echo $uiCloud->render();    //$this->tagList);
-
-/******************************************************************************
- * Render the HTML for the right-column using the secondary HtmlItemCloud View
- * Helper that should have been prepared by the Controller.
- *
- */
-if ( @isset($this->sbCloudHelper))
-{
-    /*
-    Connexions::log("tags:: Render sidebar cloud: "
-                        . "Style[ {$this->sbCloudHelper->getStyle()} ], "
-                        . "HighlightCount[ "
-                        .   $this->sbCloudHelper->getHighlightCount() ." ], "
-                        . "SortBy[ {$this->sbCloudHelper->getSortBy()} ], "
-                        . "SortOrder[ "
-                        .   $this->sbCloudHelper->getSortOrder() ." ]");
-    // */
-
-    $this->layout()->right
-        = "<div class='columnHeader'>"
-        .  "<div class='connexions_sprites user_bg "
-        .              "ui-corner-left ui-corer-tr'>&nbsp;</div>"
-        .  "<p>"
-        .   "All people that have at least one of "
-        .   "the currently presented tags."
-        .  "</p>"
-        . "</div>"
-        . $this->sbCloudHelper->render();
-}
-
-?>
+<?= $uiCloud->render() ?>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

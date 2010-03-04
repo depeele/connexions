@@ -135,28 +135,36 @@ $jQuery->javascriptCaptureEnd();
     <div class='field<?= (! @empty($this->postInfo['url'])
                                         ? ' click-to-edit'
                                         : '') ?>'>
-     <div class='ui-field-status'></div>
      <label for='url'>URL</label>
+     <div class='ui-field-status'></div>
      <input type='text' class='text required' autocomplete='off'
-           name='url' value='<?= $this->postInfo['url'] ?>'
-                      emptyText='URL of  the page' />
+            name='url'  value='<?= $this->postInfo['url'] ?>'
+                    emptyText='URL to bookmark' />
+     <div class='field-info'>required</div>
     </div>
     <div class='field'>
-     <div class='ui-field-status'></div>
      <label for='name'>Name</label>
+     <div class='ui-field-status'></div>
      <input type='text' class='text required' autocomplete='off'
-            name='name' value='<?= $this->postInfo['name'] ?>' />
+            name='name' value='<?= $this->postInfo['name'] ?>'
+                    emptyText='Bookmark name' />
+     <div class='field-info'>required</div>
     </div>
     <div class='field'>
      <label for='description'>Description</label>
      <textarea class='text'
-            name='description'><?= $this->postInfo['description'] ?></textarea>
+                name='description'
+           emptyText='Description / Notes for this bookmark'>
+      <?= $this->postInfo['description'] ?>
+     </textarea>
     </div>
     <div class='field'>
-     <div class='ui-field-status'></div>
      <label for='tags'>Tags</label>
-     <input type='text' class='text required' autocomplete='off'
-            name='tags' value='<?= $this->postInfo['tags'] ?>' />
+     <div class='ui-field-status'></div>
+     <input type='text' class='text' autocomplete='off'
+            name='tags' value='<?= $this->postInfo['tags'] ?>'
+                    emptyText='A comma-separated list of tags' />
+     <div class='field-info'>comma-separated, 30 characters per tag</div>
     </div>
     <div class='personalize buttons ui-helper-clearfix'>
      <div class='field userRating'>

@@ -84,7 +84,7 @@
   height:           3em
 
   p
-    padding:        0 36px 1em 1em
+    padding:        0 40px 1em 1em
     text-align:     right
     color =         !linkColor
 
@@ -92,6 +92,7 @@
     position:       absolute
     right:          0px
     top:            -4px
+    +opacity(0.4)
 
   .avatar
     position:       absolute
@@ -153,10 +154,11 @@
       padding-bottom: 0
       padding-right:  0.5em
       label
-        display:  inline
-        float:    none
-        width:    auto
-        padding:  0 0.1em
+        display:    inline
+        float:      none
+        width:      auto
+        padding:    0 0.1em
+        font-size:  0.8em
       input,label
         cursor:   pointer
 
@@ -214,3 +216,37 @@
     top:                2.1em
     right:              0
     padding:            0.5em
+
+// ********************************************
+// ui.theme overrides
+.ui-widget
+  font-size:    1em
+  font-family:  Arial, Helvetica, sans-serif
+
+.ui-state-default a, .ui-state-default a:link
+  color = !linkColor
+
+.ui-state-default a:visited
+  color = !linkColorVisited
+
+.ui-tabs .ui-tabs-nav
+  font-size:  0.7em
+
+.ui-tabs .ui-tabs-panel
+  padding:      1em
+
+.ui-widget-content
+  border-color =  !borderColor
+  a
+    color =       !linkColor
+  a:visited
+    color =       !linkColorVisited
+
+.rightCol
+  .ui-tabs
+    border-right: none
+    +corners(4px, 0, 0, 4px)
+
+    .ui-tabs-panel
+      padding:    1em 0.25em 1em 0
+

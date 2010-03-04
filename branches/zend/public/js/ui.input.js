@@ -15,7 +15,7 @@ $.widget("ui.input", {
         emptyText:      null,
         validationEl:   null,       // The element to present validation
                                     // information in [:sibling
-                                    // .ui-field-status]
+                                    //                  .ui-field-status]
         validation:     null        /* The validation criteria
                                      *      '!empty'
                                      *      function(value)
@@ -32,6 +32,9 @@ $.widget("ui.input", {
      *      emptyText       Text to present when the field is empty;
      *      validationEl:   The element to present validation information in
      *                      [ parent().find('.ui-field-status:first) ]
+     *      hideLabel:      Hide any label associated with this input?
+     *                          [ true if 'emptyText' is provided,
+     *                            false otherwise ];
      *      validation:     The validation criteria:
      *                          '!empty'
      *                          function(value) that returns:
@@ -84,9 +87,8 @@ $.widget("ui.input", {
         else if (opts.priority === 'secondary')
             self.element.addClass('ui-priority-secondary');
 
-        if (opts.enabled)
-            self.element.addClass('ui-state-default');
-        else
+        self.element.addClass('ui-state-default');
+        if (! opts.enabled)
             self.element.addClass('ui-state-disabled');
 
         if (opts.emptyText === null)
@@ -216,7 +218,6 @@ $.widget("ui.input", {
         {
             this.options.enabled = true;
             this.element.removeClass('ui-state-disabled')
-                        .addClass(   'ui-state-default')
                         .removeAttr('disabled');
 
             this.element.trigger('enabled.uiinput');
@@ -229,8 +230,7 @@ $.widget("ui.input", {
         {
             this.options.enabled = false;
             this.element.attr('disabled', true)
-                        .removeClass('ui-state-default')
-                        .addClass(   'ui-state-disabled');
+                        .addClass('ui-state-disabled');
 
             this.element.trigger('disabled.uiinput');
         }
@@ -302,6 +302,25 @@ $.widget("ui.input", {
 
         if (this.options.emptyText !== null)
         {
+            if (this.options.hideLabel === undefined)
+            {
+                this.options.hideLabel = true;
+
+                // Attempt to locate the label associated with this field...
+                var id      = this.element.attr('id');
+                if ((id === undefined) || (id.length < 1))
+                    id = this.element.attr('name');
+
+                if ((id !== undefined) && (id.length > 0))
+                {
+                    var $label  = this.element
+                                        .parent()
+                                            .find('label[for='+ id +']');
+                    
+                    $label.hide();
+                }
+            }
+
             //if ( ((force === true) || (! this.element.is(':focus')) ) &&
             //    (this.element.val().length < 1) )
             if ( (force === true) || (this.element.val().length < 1) )

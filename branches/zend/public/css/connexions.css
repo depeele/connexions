@@ -411,8 +411,8 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .ui-form .ui-dropDown:hover ul { display: block; }
 
 /* ****** tagCloud.sass ****** */
-.rightCol #tagItems, .rightCol #userItems { padding: 0 0.25em 0 0; border-top: 2px solid #cccccc; border-left: 2px solid #cccccc; border-bottom: 2px solid #cccccc; -moz-border-radius: 10px 0 0 10px; -webkit-border-radius: 10px 0 0 10px; border-radius: 10px 0 0 10px; }
-.rightCol #tagItems .cloudRelation, .rightCol #userItems .cloudRelation { position: absolute; top: 5px; left: -21px; }
+.rightCol #tagItems, .rightCol #userItems { padding: 0 0.25em 0 0; border-top: 3px solid #eeeeee; }
+.rightCol #tagItems .cloudRelation, .rightCol #userItems .cloudRelation { position: absolute; top: -2px; left: -19px; }
 
 #tagItems .displayOptions form, #userItems .displayOptions form { width: 18em; }
 #tagItems .displayOptions form .field label, #userItems .displayOptions form .field label { width: 5.5em; }
@@ -453,6 +453,8 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .Tag_Cloud .tag  .selected, .Tag_Cloud .user .selected, .User_Cloud .tag  .selected, .User_Cloud .user .selected { color: #000; }
 .Tag_Cloud .tag  a.selected, .Tag_Cloud .user a.selected, .User_Cloud .tag  a.selected, .User_Cloud .user a.selected { background-image: none; background-color: #0066cc; color: white; }
 .Tag_Cloud .tag  a.selected:hover, .Tag_Cloud .user a.selected:hover, .User_Cloud .tag  a.selected:hover, .User_Cloud .user a.selected:hover { color: #0066cc; background-color: white; }
+
+#sidebar-tabs .cloud { padding-left: 1.25em; }
 
 /* ****** itemScope.sass ****** */
 .itemScope a { color: white; }
@@ -522,8 +524,8 @@ cite { display: block; text-align: right; padding-top: 10px; }
 
 /* Columns */
 .columnHeader { height: 3em; }
-.columnHeader p { padding: 0 36px 1em 1em; text-align: right; color: #0066cc; }
-.columnHeader .connexions_sprites { position: absolute; right: 0px; top: -4px; }
+.columnHeader p { padding: 0 40px 1em 1em; text-align: right; color: #0066cc; }
+.columnHeader .connexions_sprites { position: absolute; right: 0px; top: -4px; opacity: 0.4; filter: Alpha(Opacity= 40 ); }
 .columnHeader .avatar { position: absolute; width: 25px; height: 25px; top: -6px; right: -2px; opacity: 0.6; filter: Alpha(Opacity= 60 ); }
 
 .rightCol { padding-left: 2em; padding-right: 0.2em; }
@@ -539,7 +541,7 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .displayOptions .field label { clear: left; width: 6em; float: left; }
 .displayOptions .sortOrder { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
 .displayOptions .sortOrder .field { float: left; padding-bottom: 0; padding-right: 0.5em; }
-.displayOptions .sortOrder .field label { display: inline; float: none; width: auto; padding: 0 0.1em; }
+.displayOptions .sortOrder .field label { display: inline; float: none; width: auto; padding: 0 0.1em; font-size: 0.8em; }
 .displayOptions .sortOrder .field input, .displayOptions .sortOrder .field label { cursor: pointer; }
 .displayOptions .perPage { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
 .displayOptions .displayStyle { display: block; position: relative; width: auto; text-align: left; padding-top: 1em; }
@@ -554,3 +556,20 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .displayOptions .displayStyle ul.groups .comma { padding-right: 0.25em; }
 .displayOptions .displayStyle fieldset.options { padding-top: 0.5em; border: none; }
 .displayOptions form { z-index: 4; position: absolute; top: 2.1em; right: 0; padding: 0.5em; }
+
+.ui-widget { font-size: 1em; font-family: Arial, Helvetica, sans-serif; }
+
+.ui-state-default a, .ui-state-default a:link { color: #0066cc; }
+
+.ui-state-default a:visited { color: #005a9c; }
+
+.ui-tabs .ui-tabs-nav { font-size: 0.7em; }
+
+.ui-tabs .ui-tabs-panel { padding: 1em; }
+
+.ui-widget-content { border-color: #cccccc; }
+.ui-widget-content a { color: #0066cc; }
+.ui-widget-content a:visited { color: #005a9c; }
+
+.rightCol .ui-tabs { border-right: none; -moz-border-radius: 4px 0 0 4px; -webkit-border-radius: 4px 0 0 4px; border-radius: 4px 0 0 4px; }
+.rightCol .ui-tabs .ui-tabs-panel { padding: 1em 0.25em 1em 0; }
