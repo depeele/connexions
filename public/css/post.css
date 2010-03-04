@@ -1,7 +1,9 @@
 .ui-stars-wrapper { display: block; width: 96px; overflow: hidden; }
-.ui-stars-wrapper .ui-stars { display: block; float: left; cursor: pointer; overflow: hidden; text-indent: 999em; }
+.ui-stars-wrapper .ui-stars { display: block; float: left; overflow: hidden; text-indent: 999em; }
 .ui-stars-wrapper .ui-stars a { background: url('sprites/connexions.gif') no-repeat scroll 0 0; display: block; width: 16px; height: 16px; }
 .ui-stars-wrapper .ui-stars-star-off a, .ui-stars-wrapper .ui-stars-star a, .ui-stars-wrapper .ui-stars-star-disabled a { background-position: -72px -58px; }
+.ui-stars-wrapper .ui-stars-star { cursor: pointer; }
+.ui-stars-wrapper .ui-stars-star a { cursor: pointer; }
 .ui-stars-wrapper .ui-stars-star-on a { background-position: -104px -58px; }
 .ui-stars-wrapper .ui-stars-star-hover a { background-position: -88px -58px; }
 .ui-stars-wrapper .ui-stars-cancel { padding: 1px; }
@@ -17,13 +19,14 @@
 #post .legend p { padding: 0; }
 #post .field { padding-bottom: 1em; }
 #post .field .text { width: 30em; }
-#post .field .ui-field-status { position: absolute; top: 1.2em; right: -18em; width: 16em; }
+#post .field .ui-field-status { position: absolute; bottom: 1.2em; right: -17em; width: 16em; }
+#post .field .field-info { font-size: 0.9em; color: #aaaaaa; text-align: right; }
 #post .click-to-edit label { display: none; }
 #post .click-to-edit input { border-color: transparent; color: #aaaaaa; }
 #post .click-to-edit input:focus { border-color: #aaaaaa; color: black; }
 #post .buttons { position: relative; text-align: right; }
 #post .buttons input, #post .buttons label { position: relative; display: inline; }
-#post .personalize { width: 100%; }
+#post .personalize { width: 100%; padding-top: 1em; }
 #post .personalize .field { display: block; float: left; padding: 0 0.5em 0 0; }
 #post .personalize .field label { display: block; float: left; }
 #post .personalize .userRating { display: block; float: left; padding: 0 2.5em 0 0; height: 32px; }

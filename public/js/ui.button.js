@@ -36,6 +36,7 @@ $.widget("ui.button", {
         }
 
         self.element.addClass( 'ui-button '
+                              +'ui-state-default '
                               +'ui-corner-all ');
 
         if (opts.priority === 'primary')
@@ -114,7 +115,6 @@ $.widget("ui.button", {
         var wasEnabled  = (this.options.enabled === true);
 
         this.element.removeClass('ui-state-disabled')
-                    .addClass(   'ui-state-default')
                     .removeAttr('disabled');
 
         if (! wasEnabled)
@@ -131,7 +131,6 @@ $.widget("ui.button", {
 
         this.options.enabled = false;
         this.element.attr('disabled', true)
-                    .removeClass('ui-state-default')
                     .addClass(   'ui-state-disabled');
 
         if (wasEnabled)

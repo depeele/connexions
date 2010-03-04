@@ -8,24 +8,30 @@
 
 class InboxController extends Zend_Controller_Action
 {
+    protected   $_viewer    = null;
+    protected   $_owner     = null;
+    protected   $_forTag    = null;
+    protected   $_tagInfo   = null;
+    protected   $_userItems = null;
+    protected   $_tagIds    = null;
 
     public function indexAction()
     {
-        $viewer   =& Zend_Registry::get('user');
+        $this->_viewer =& Zend_Registry::get('user');
 
-        $request  = $this->getRequest();
-        $owner    = $request->getParam('owner',     null);
-        $reqTags  = $request->getParam('tags',      null);
+        $request       = $this->getRequest();
+        $this->_owner  = $request->getParam('owner',     null);
+        $reqTags       = $request->getParam('tags',      null);
 
         /* If this is a user/"owned" area (e.g. /<userName> [/ <tags ...>]),
          * verify the validity of the requested user.
          */
-        if ($owner === 'mine')
+        if ($this->_owner === 'mine')
         {
             // 'mine' == the currently authenticated user
-            $owner =& $viewer;
-            if ( ( ! $owner instanceof Model_User) ||
-                 (! $owner->isAuthenticated()) )
+            $this->_owner =& $this->_viewer;
+            if ( ( ! $this->_owner instanceof Model_User) ||
+                 (! $this->_owner->isAuthenticated()) )
             {
                 // Unauthenticated user -- Redirect to signIn
                 return $this->_helper->redirector('signIn','auth');
@@ -33,13 +39,14 @@ class InboxController extends Zend_Controller_Action
         }
 
 
-        if ( (! $owner instanceof Model_User) && (! empty($owner)) )
+        if ( (! $this->_owner instanceof Model_User) &&
+             (! empty($this->_owner)) )
         {
             /* :TODO: Allow user-groups to be named here.
              *
              * Is this a valid user?
              */
-            $ownerInst = Model_User::find(array('name' => $owner));
+            $ownerInst = Model_User::find(array('name' => $this->_owner));
             if ($ownerInst->isBacked())
             {
                 /*
@@ -47,7 +54,7 @@ class InboxController extends Zend_Controller_Action
                                         "owner[ {$ownerInst->name} ]");
                 // */
 
-                $owner =& $ownerInst;
+                $this->_owner =& $ownerInst;
             }
             else
             {
@@ -58,10 +65,13 @@ class InboxController extends Zend_Controller_Action
                                     . "set owner to '*'");
                 // */
 
-                $this->view->error = "Unknown user [ {$owner} ].";
+                $this->view->error = "Unknown user [ {$this->_owner} ].";
             }
         }
 
+        /* :TODO: Allow filtering by "sender" (i.e. the person that tagged
+         *        items for this inbox).
+         */
 
 
         /* :TODO: Is 'viewer' allowed to see the inbox of 'owner'??
@@ -75,68 +85,92 @@ class InboxController extends Zend_Controller_Action
          *
          * For now, only the owner may view.
          */
-        if ( ( ! $owner instanceof Model_User) ||
-             ($owner->userId !== $viewer->userId) )
+        if ( ( ! $this->_owner instanceof Model_User) ||
+             ($this->_owner->userId !== $this->_viewer->userId) )
         {
             // Redirect to the viewer's inbox
             return $this->_forward('index', 'inbox', null,
-                                   array('owner' => $viewer->name));
+                                   array('owner' => $this->_viewer->name));
         }
-        $forTagStr = 'for:'. $owner->name;
-        $forTag    = new Model_Tag($forTagStr);
+        $forTagStr = 'for:'. $this->_owner->name;
+        $this->_forTag    = new Model_Tag($forTagStr);
 
         /*
         Connexions::log("InboxController:: forTag[ "
-                            . $forTag->debugDump() . " ]");
+                            . $this->_forTag->debugDump() . " ]");
         // */
 
 
         // Parse the incoming request tags
-        $tagInfo = new Connexions_Set_Info($reqTags, 'Model_Tag');
-        if ($tagInfo->hasInvalidItems())
+        $this->_tagInfo = new Connexions_Set_Info($reqTags, 'Model_Tag');
+        if ($this->_tagInfo->hasInvalidItems())
             $this->view->error =
-                        "Invalid tag(s) [ {$tagInfo->invalidItems} ]";
+                        "Invalid tag(s) [ {$this->_tagInfo->invalidItems} ]";
 
         /*
         Connexions::log(sprintf("InboxController:: tagInfo: "
                                 .   "itemClass[ %s ], reqStr[ %s ], "
                                 .   "validItems[ %s ], invalidItems[ %s ]",
-                                $tagInfo->itemClass,
-                                $tagInfo->reqStr,
-                                $tagInfo->validItems,
-                                $tagInfo->invalidItems));
+                                $this->_tagInfo->itemClass,
+                                $this->_tagInfo->reqStr,
+                                $this->_tagInfo->validItems,
+                                $this->_tagInfo->invalidItems));
         // */
 
         /* Create the userItem set, scoped by any incoming valid tags from
          * ALL users.
          */
-        $tagIds = $tagInfo->validIds;
-        array_push($tagIds, $forTag->tagId);
+        $this->_tagIds = $this->_tagInfo->validIds;
+        array_push($this->_tagIds, $this->_forTag->tagId);
 
         /*
         Connexions::log("InboxController:: tagIds[ "
-                            . implode(', ', $tagIds) ." ]");
+                            . implode(', ', $this->_tagIds) ." ]");
         // */
 
-        $userItems = new Model_UserItemSet($tagIds);
+        $this->_userItems = new Model_UserItemSet($this->_tagIds);
 
 
-        /* Create the tagSet that will be presented in the side-bar:
-         *      All tags used by all users/items contained in the current
-         *      user item / bookmark set.
-         */
-        $tagSet = new Model_TagSet( $userItems->userIds(),
-                                    $userItems->itemIds() );
-        $tagSet->withAnyUser();
+        $this->_htmlContent();
+        $this->_htmlSidebar();
+    }
 
-        /* Create the userSet that will be presented in the side-bar:
-         *      All users that have tagged something for this user.
-         */
-        $senderSet = new Model_UserSet( $tagIds,
-                                        $userItems->itemIds(),
-                                        $userItems->userIds() );
-        $senderSet->weightBy('item');
+    /** @brief Redirect all other actions to 'index'
+     *  @param  method      The target method.
+     *  @param  args        Incoming arguments.
+     *
+     */
+    public function __call($method, $args)
+    {
+        if (substr($method, -6) == 'Action')
+        {
+            $owner = substr($method, 0, -6);
 
+            /*
+            $request = $this->getRequest();
+
+            Connexions::log("InboxController::__call({$method}): "
+                                           . "owner[ {$owner} ], "
+                                           . "parameters[ "
+                                           .    $request->getParam('tags','')
+                                           .        " ]");
+            // */
+
+            return $this->_forward('index', 'inbox', null,
+                                   array('owner' => $owner));
+        }
+
+        throw new Exception('Invalid method "'. $method .'" called', 500);
+    }
+
+    /*************************************************************************
+     * Context-specific view initialization and invocation
+     *
+     */
+    protected function _htmlContent()
+    {
+        $request =& $this->getRequest();
+        $layout  =& $this->view->layout();
 
         /********************************************************************
          * Prepare for rendering the main view.
@@ -166,6 +200,7 @@ class InboxController extends Zend_Controller_Action
                             .           print_r($itemsStyleCustom, true) .' ]');
         // */
 
+        // Initialize the Connexions_View_Helper_HtmlUserItems helper...
         $uiHelper = $this->view->htmlUserItems();
         $uiHelper->setNamespace($prefix)
                  ->setSortBy($itemsSortBy)
@@ -182,17 +217,16 @@ class InboxController extends Zend_Controller_Action
 
         $uiHelper->setMultipleUsers();
 
-        $scopeHelper->setPath(array('Inbox' =>
-                                        $this->view->baseUrl('/inbox/'.
-                                                                $owner->name)));
+        $inboxUrl = $this->view->baseUrl('/inbox/'. $this->_owner->name);
+        $scopeHelper->setPath(array('Inbox' => $inboxUrl));
 
 
 
         /* Ensure that the final sort information is properly reflected in
          * the source set.
          */
-        $userItems->setOrder( $uiHelper->getSortBy() .' '.
-                              $uiHelper->getSortOrder() );
+        $this->_userItems->setOrder( $uiHelper->getSortBy() .' '.
+                                     $uiHelper->getSortOrder() );
 
         // /*
         Connexions::log("InboxController:: updated params:\n"
@@ -212,8 +246,39 @@ class InboxController extends Zend_Controller_Action
          * paginator for the retrieved user items / bookmarks.
          */
         $page      = $request->getParam('page',  null);
-        $paginator = $this->_helper->Pager($userItems, $page, $itemsPerPage);
+        $paginator = $this->_helper->Pager($this->_userItems,
+                                           $page, $itemsPerPage);
 
+        /********************************************************************
+         * Set the required view variables and render this main view
+         *
+         */
+        $this->view->owner     = $this->_owner;
+        $this->view->viewer    = $this->_viewer;
+        $this->view->tagInfo   = $this->_tagInfo;
+        $this->view->paginator = $paginator;
+    }
+
+    protected function _htmlSidebar()
+    {
+        $request =& $this->getRequest();
+        $layout  =& $this->view->layout();
+
+        /* Create the tagSet that will be presented in the side-bar:
+         *      All tags used by all users/items contained in the current
+         *      user item / bookmark set.
+         */
+        $tagSet = new Model_TagSet( $this->_userItems->userIds(),
+                                    $this->_userItems->itemIds() );
+        $tagSet->withAnyUser();
+
+        /* Create the userSet that will be presented in the side-bar:
+         *      All users that have tagged something for this user.
+         */
+        $senderSet = new Model_UserSet( $this->_tagIds,
+                                        $this->_userItems->itemIds(),
+                                        $this->_userItems->userIds() );
+        $senderSet->weightBy('item');
 
         /********************************************************************
          * Prepare for rendering the right column.
@@ -241,6 +306,7 @@ class InboxController extends Zend_Controller_Action
         // */
 
 
+        // Initialize the Connexions_View_Helper_HtmlItemCloud helper...
         $cloudHelper = $this->view->htmlItemCloud();
         $cloudHelper->setNamespace($prefix)
                     ->setStyle($tagsStyle)
@@ -251,51 +317,19 @@ class InboxController extends Zend_Controller_Action
                     ->setPerPage($tagsPerPage)
                     ->setHighlightCount($tagsHighlightCount)
                     ->setItemSet($tagSet)
-                    ->setItemSetInfo($tagInfo)
-                    ->setItemBaseUrl( ($owner !== '*'
+                    ->setItemSetInfo($this->_tagInfo)
+                    ->setItemBaseUrl( ($this->_owner !== '*'
                                         ? null
                                         : '/tagged'))
                     // Do NOT show the 'for:<user>' tag
-                    ->addHiddenItem($forTagStr);
+                    ->addHiddenItem($this->_forTag->tag);  //$forTagStr);
 
-        /********************************************************************
-         * Set the required view variables
-         *
-         */
-        $this->view->owner     = $owner;
-        $this->view->viewer    = $viewer;
-        $this->view->tagInfo   = $tagInfo;
 
-        $this->view->paginator = $paginator;
+        // Set the additional required view variables
         $this->view->senderSet = $senderSet;
-        $this->view->tagSet    = $tagSet;
-    }
 
-    /** @brief Redirect all other actions to 'index'
-     *  @param  method      The target method.
-     *  @param  args        Incoming arguments.
-     *
-     */
-    public function __call($method, $args)
-    {
-        if (substr($method, -6) == 'Action')
-        {
-            $owner = substr($method, 0, -6);
 
-            /*
-            $request = $this->getRequest();
-
-            Connexions::log("InboxController::__call({$method}): "
-                                           . "owner[ {$owner} ], "
-                                           . "parameters[ "
-                                           .    $request->getParam('tags','')
-                                           .        " ]");
-            // */
-
-            return $this->_forward('index', 'inbox', null,
-                                   array('owner' => $owner));
-        }
-
-        throw new Exception('Invalid method "'. $method .'" called', 500);
+        // Render the sidebar into the 'right' placeholder
+        $this->view->renderToPlaceholder('inbox/sidebar.phtml', 'right');
     }
 }

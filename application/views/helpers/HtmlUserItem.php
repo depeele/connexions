@@ -244,7 +244,8 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
                 $html .= "<li class='tag'>"
                       .   "<a href='"
                       .     $this->view->url(array(
-                                        'action' => 'tagged',
+                                        'action' => 'index',
+                                        'owner'  => $userItem->user->name,
                                         'tag'    => $tag->tag))
                       .         "'>{$tag->tag}</a>"
                       .  "</li>";

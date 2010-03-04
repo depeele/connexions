@@ -1,15 +1,15 @@
 /******* tagCloud.sass *******/
 .rightCol #tagItems, .rightCol #userItems
   padding:              0 0.25em 0 0
-  border-top =          "2px solid" !borderColor
-  border-left =         "2px solid" !borderColor
-  border-bottom =       "2px solid" !borderColor
-  +corners(10px, 0, 0, 10px)
+  border-top =          "3px solid" !columnHeaderBorderColor
+  //border-left =         "2px solid" !borderColor
+  //border-bottom =       "2px solid" !borderColor
+  //+corners(10px, 0, 0, 10px)
 
   .cloudRelation
     position:           absolute
-    top:                5px
-    left:               -21px
+    top:                -2px
+    left:               -19px
 
 #tagItems, #userItems
   .displayOptions
@@ -157,3 +157,7 @@
       &:hover
         color =             !linkColor
         background-color =  !pageColorBackground
+
+#sidebar-tabs
+  .cloud
+    padding-left: 1.25em

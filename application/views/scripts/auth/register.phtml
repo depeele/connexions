@@ -178,22 +178,25 @@ $jQuery->javascriptCaptureEnd();
   <div class="userInput unit"><!-- { -->
    <form method='post'>
     <div class='field'>
-     <div class='ui-field-status'></div>
-     <label for='user'>User Name / ID</label>
+     <label for='user'>Desired User Name / ID</label>
      <input type='text' class='text required' autocomplete='off'
-            name='user' value='<?= $this->user ?>' />
+            name='user' value='<?= $this->user ?>'
+                    emptyText='Desired User Name / ID' />
+     <div class='ui-field-status'></div>
     </div>
     <div class='field'>
-     <div class='ui-field-status'></div>
      <label for='password'>Password</label>
      <input type='password' class='text required' autocomplete='off'
-           name='password' value='<?= $this->pass ?>' />
+           name='password' value='<?= $this->pass ?>'
+                       emptyText='Password' />
+     <div class='ui-field-status'></div>
     </div>
     <div class='field'>
-     <div class='ui-field-status'></div>
      <label for='password2'>Re-type Password for verfication</label>
      <input type='password' class='text required' autocomplete='off'
-            name='password2' />
+            name='password2'
+                        emptyText='Re-type Password for verification' />
+     <div class='ui-field-status'></div>
     </div>
     <div class='field buttons'>
      <button name='submit'>Join Connexions</button>

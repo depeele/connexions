@@ -7,10 +7,15 @@
 
 class UrlController extends Zend_Controller_Action
 {
+    protected   $_viewer    = null;
+    protected   $_tagInfo   = null;
+    protected   $_item      = null;
+    protected   $_userItems = null;
 
     public function init()
     {
         /* Initialize action controller here */
+        $this->_viewer  =& Zend_Registry::get('user');
     }
 
     public function indexAction()
@@ -34,31 +39,24 @@ class UrlController extends Zend_Controller_Action
                                     ->setGotoRoute(array('url', $urlHash));
         }
 
-        $viewer =& Zend_Registry::get('user');
         $reqTags = $request->getParam('tags', null);
 
         // Parse the incoming request tags
-        $tagInfo = new Connexions_Set_Info($reqTags, 'Model_Tag');
-        if ($tagInfo->hasInvalidItems())
+        $this->_tagInfo = new Connexions_Set_Info($reqTags, 'Model_Tag');
+        if ($this->_tagInfo->hasInvalidItems())
             $this->view->error =
-                        "Invalid tag(s) [ {$tagInfo->invalidItems} ]";
+                        "Invalid tag(s) [ {$this->_tagInfo->invalidItems} ]";
 
 
-        // /*
-        Connexions::log("UrlController:: "
-                        . 'tagIds[ '
-                        .       implode(', ', $tagInfo->validIds) .' ], '
-                        . "url[ {$url} ], "
-                        . "urlHash[ {$urlHash} ]");
-        // */
-        $item = new Model_Item($urlHash);
+        // Locate the item with the requested URL (if there is one).
+        $this->_item = new Model_Item($urlHash);
 
         // /*
         Connexions::log("UrlController:: "
                         . 'item[ '
-                        .       $item->debugDump() .' ]');
+                        .       $this->_item->debugDump() .' ]');
         // */
-        if (! $item->isValid())
+        if (! $this->_item->isValid())
         {
             // This URL has not been bookmarked here.
             $this->view->url   = $url;
@@ -67,20 +65,49 @@ class UrlController extends Zend_Controller_Action
             return $this->_forward('choose');
         }
 
+
         /* Create the userItem set, scoped by any incoming valid tags and
          * possibly the owner of the area.
          */
-        $userItems = new Model_UserItemSet($tagInfo->validIds,
-                                           null,    // userIds
-                                           $item->itemId);
+        $this->_userItems = new Model_UserItemSet($this->_tagInfo->validIds,
+                                                  null,    // userIds
+                                                  $this->_item->itemId);
 
-        /* Create the tagSet that will be presented in the side-bar:
-         *      All tags used by all users/items contained in the current
-         *      user item / bookmark set.
-         */
-        $tagSet = new Model_TagSet( $userItems->userIds(),
-                                    $userItems->itemIds() );
-        $tagSet->withAnyUser();
+        $this->_htmlContent();
+        $this->_htmlSidebar();
+    }
+
+    public function chooseAction()
+    {
+        // Nothing much to do...
+    }
+
+    /** @brief Redirect all other actions to 'index'
+     *  @param  method      The target method.
+     *  @param  args        Incoming arguments.
+     *
+     */
+    public function __call($method, $args)
+    {
+        if (substr($method, -6) == 'Action')
+        {
+            $url = substr($method, 0, -6);
+
+            return $this->_forward('index', 'url', null,
+                                   array('url' => $url));
+        }
+
+        throw new Exception('Invalid method "'. $method .'" called', 500);
+    }
+
+    /*************************************************************************
+     * Context-specific view initialization and invocation
+     *
+     */
+    protected function _htmlContent()
+    {
+        $request =& $this->getRequest();
+        $layout  =& $this->view->layout();
 
         /********************************************************************
          * Prepare for rendering the main view.
@@ -110,6 +137,7 @@ class UrlController extends Zend_Controller_Action
                             .           print_r($itemsStyleCustom, true) .' ]');
         // */
 
+        // Initialize the Connexions_View_Helper_HtmlUrlItems helper...
         $uiHelper = $this->view->htmlUrlItems();
         $uiHelper->setNamespace($prefix)
                  ->setSortBy($itemsSortBy)
@@ -124,10 +152,10 @@ class UrlController extends Zend_Controller_Action
         /* Ensure that the final sort information is properly reflected in
          * the source set.
          */
-        $userItems->setOrder( $uiHelper->getSortBy() .' '.
-                              $uiHelper->getSortOrder() );
+        $this->_userItems->setOrder( $uiHelper->getSortBy() .' '.
+                                     $uiHelper->getSortOrder() );
 
-        // /*
+        /*
         Connexions::log("UrlController:: updated params:\n"
                             . '    SortBy         [ '
                             .           $uiHelper->getSortBy() ." ],\n"
@@ -144,8 +172,32 @@ class UrlController extends Zend_Controller_Action
          * paginator for the retrieved user items / bookmarks.
          */
         $page      = $request->getParam('page',  null);
-        $paginator = $this->_helper->Pager($userItems, $page,
+        $paginator = $this->_helper->Pager($this->_userItems, $page,
                                            $itemsPerPage);
+
+        // Set the required view variables.
+        $this->view->viewer    = $this->_viewer;
+        $this->view->tagInfo   = $this->_tagInfo;
+        $this->view->item      = $this->_item;
+        $this->view->paginator = $paginator;
+
+        /* The default view script (views/scripts/index/index.phtml) will
+         * render this main view
+         */
+    }
+
+    protected function _htmlSidebar()
+    {
+        $request =& $this->getRequest();
+        $layout  =& $this->view->layout();
+
+        /* Create the tagSet that will be presented in the side-bar:
+         *      All tags used by all users/items contained in the current
+         *      user item / bookmark set.
+         */
+        $tagSet = new Model_TagSet( $this->_userItems->userIds(),
+                                    $this->_userItems->itemIds() );
+        $tagSet->withAnyUser();
 
         /********************************************************************
          * Prepare for rendering the right column.
@@ -162,7 +214,7 @@ class UrlController extends Zend_Controller_Action
         $tagsSortOrder      = $request->getParam($prefix."SortOrder",   null);
         $tagsStyle          = $request->getParam($prefix."OptionGroup", null);
 
-        // /*
+        /*
         Connexions::log('UrlController::'
                             . "right-column prefix [ {$prefix} ],\n"
                             . "    PerPage        [ {$tagsPerPage} ],\n"
@@ -173,6 +225,7 @@ class UrlController extends Zend_Controller_Action
         // */
 
 
+        // Initialize the Connexions_View_Helper_HtmlItemCloud helper...
         $cloudHelper = $this->view->htmlItemCloud();
         $cloudHelper->setNamespace($prefix)
                     ->setStyle($tagsStyle)
@@ -183,44 +236,10 @@ class UrlController extends Zend_Controller_Action
                     ->setPerPage($tagsPerPage)
                     ->setHighlightCount($tagsHighlightCount)
                     ->setItemSet($tagSet)
-                    ->setItemSetInfo($tagInfo)
-                    ->setItemBaseUrl( ($owner !== '*'
-                                        ? null
-                                        : '/tagged'));
+                    ->setItemSetInfo($this->_tagInfo);
+                    //->setItemBaseUrl( '/tagged');
 
-        /********************************************************************
-         * Set the required view variables
-         *
-         */
-        $this->view->viewer    = $viewer;
-        $this->view->item      = $item;
-        $this->view->tagInfo   = $tagInfo;
-
-        $this->view->paginator = $paginator;
-        $this->view->tagSet    = $tagSet;
-    }
-
-    public function chooseAction()
-    {
-        // Nothing much to do...
-        $this->view->viewer    = Zend_Registry::get('user');
-    }
-
-    /** @brief Redirect all other actions to 'index'
-     *  @param  method      The target method.
-     *  @param  args        Incoming arguments.
-     *
-     */
-    public function __call($method, $args)
-    {
-        if (substr($method, -6) == 'Action')
-        {
-            $url = substr($method, 0, -6);
-
-            return $this->_forward('index', 'url', null,
-                                   array('url' => $url));
-        }
-
-        throw new Exception('Invalid method "'. $method .'" called', 500);
+        // Render the sidebar into the 'right' placeholder
+        $this->view->renderToPlaceholder('url/sidebar.phtml', 'right');
     }
 }

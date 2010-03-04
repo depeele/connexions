@@ -8,35 +8,45 @@
 
 class PeopleController extends Zend_Controller_Action
 {
+    protected   $_viewer    = null;
+    protected   $_tagInfo   = null;
+    protected   $_userSet   = null;
 
     public function init()
     {
         /* Initialize action controller here */
+        $this->_viewer  =& Zend_Registry::get('user');
     }
 
     public function indexAction()
     {
-        $viewer    =& Zend_Registry::get('user');
-
         $request   = $this->getRequest();
         $reqTags   = $request->getParam('tags',      null);
 
         // Parse the incoming request tags
-        $tagInfo = new Connexions_Set_Info($reqTags, 'Model_Tag');
-        if ($tagInfo->hasInvalidItems())
+        $this->_tagInfo = new Connexions_Set_Info($reqTags, 'Model_Tag');
+        if ($this->_tagInfo->hasInvalidItems())
             $this->view->error =
-                        "Invalid tag(s) [ {$tagInfo->invalidItems} ]";
+                        "Invalid tag(s) [ {$this->_tagInfo->invalidItems} ]";
 
         /* Create the user set, scoped by any incoming valid tags
          * (i.e. the set of tag-related users).
          */
-        $userSet = new Model_UserSet( $tagInfo->validIds );
+        $this->_userSet = new Model_UserSet( $this->_tagInfo->validIds );
 
-        /* Create the tagSet that will be presented in the side-bar:
-         *      All tags used by all users contained in the current user set.
-         */
-        $tagSet = new Model_TagSet( $userSet->userIds() );
-        $tagSet->weightBy('user');
+
+        $this->_htmlContent();
+        $this->_htmlSidebar();
+    }
+
+    /*************************************************************************
+     * Context-specific view initialization and invocation
+     *
+     */
+    protected function _htmlContent()
+    {
+        $request =& $this->getRequest();
+        $layout  =& $this->view->layout();
 
         /********************************************************************
          * Prepare for rendering the main view.
@@ -65,6 +75,7 @@ class PeopleController extends Zend_Controller_Action
                             .           print_r($usersStyleCustom, true) .' ]');
         // */
 
+        // Initialize the Connexions_View_Helper_HtmlUsers helper...
         $uiHelper = $this->view->htmlUsers();
         $uiHelper->setNamespace($prefix)
                  ->setSortBy($usersSortBy)
@@ -85,20 +96,46 @@ class PeopleController extends Zend_Controller_Action
         /* Ensure that the final sort information is properly reflected in
          * the source set.
          */
-        $userSet->setOrder( $uiHelper->getSortBy() .' '.
-                            $uiHelper->getSortOrder() );
+        $this->_userSet->setOrder( $uiHelper->getSortBy() .' '.
+                                   $uiHelper->getSortOrder() );
 
-        // /*
+        /*
         Connexions::log("PeopleController: userSet "
-                            . "SQL[ ". $userSet->select()->assemble() ." ]");
+                            . "SQL[ "
+                            .   $this->_userSet->select()->assemble() ." ]");
         // */
 
         /* Use the Connexions_Controller_Action_Helper_Pager to create a
          * paginator for the retrieved user set.
          */
         $page      = $request->getParam('page',  null);
-        $paginator = $this->_helper->Pager($userSet, $page, $usersPerPage);
+        $paginator = $this->_helper->Pager($this->_userSet,
+                                           $page, $usersPerPage);
 
+
+        /********************************************************************
+         * Set the required view variables
+         *
+         */
+        $this->view->viewer    = $this->_viewer;
+        $this->view->tagInfo   = $this->_tagInfo;
+        $this->view->paginator = $paginator;
+
+        /* The default view script (views/scripts/index/index.phtml) will
+         * render this main view
+         */
+    }
+
+    protected function _htmlSidebar()
+    {
+        $request =& $this->getRequest();
+        $layout  =& $this->view->layout();
+
+        /* Create the tagSet that will be presented in the side-bar:
+         *      All tags used by all users contained in the current user set.
+         */
+        $tagSet = new Model_TagSet( $this->_userSet->userIds() );
+        $tagSet->weightBy('user');
 
         /********************************************************************
          * Prepare for rendering the right column.
@@ -126,6 +163,7 @@ class PeopleController extends Zend_Controller_Action
         // */
 
 
+        // Initialize the Connexions_View_Helper_HtmlItemCloud helper...
         $cloudHelper = $this->view->htmlItemCloud();
         $cloudHelper->setNamespace($prefix)
                     ->setStyle($tagsStyle)
@@ -136,30 +174,9 @@ class PeopleController extends Zend_Controller_Action
                     ->setPerPage($tagsPerPage)
                     ->setHighlightCount($tagsHighlightCount)
                     ->setItemSet($tagSet)
-                    ->setItemSetInfo($tagInfo);
+                    ->setItemSetInfo($this->_tagInfo);
 
-        /* Reflect any sorting changes introduced by HtmlItemCloud
-         *      e.g. if the sort by and/or order were null and thus a default
-         *           was set
-        $tagSet->setOrder( array('weight DESC',
-                                 $cloudHelper->getSortBy() .' '.
-                                        $cloudHelper->getSortOrder()) );
-         */
-
-        /* Retrieve the Connexions_Set_ItemList instance required by
-         * Zend_Tag_Cloud to render this tag set as a cloud
-        $tagList = $tagSet->get_Tag_ItemList(0, $tagsPerPage, $tagInfo);
-         */
-
-
-        /********************************************************************
-         * Set the required view variables
-         *
-         */
-        $this->view->viewer    = $viewer;
-        $this->view->tagInfo   = $tagInfo;
-
-        $this->view->paginator = $paginator;
-        $this->view->tagSet    = $tagSet;
+        // Render the sidebar into the 'right' placeholder
+        $this->view->renderToPlaceholder('people/sidebar.phtml', 'right');
     }
 }
