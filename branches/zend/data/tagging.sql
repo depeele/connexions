@@ -1,6 +1,6 @@
 CREATE TABLE user (
   userId        int(10)     unsigned    NOT NULL auto_increment,
-  name          varchar(30)             NOT NULL default '',
+  name          varchar(30)             NOT NULL unique default '',
   password      varchar(64)             NOT NULL default '',
 
   fullName      varchar(255)            NOT NULL default '',
@@ -34,9 +34,18 @@ CREATE TABLE item (
   KEY `i_urlHash`   (`urlHash`)
 );
 
+-- NOTE: There seems to be some issue with short tags:
+--          select * from tag where tag='vi'
+--              returns tags 'vi' AND 'ui'
+--          select * from tag where tag='svn'
+--              returns tags 'svn' AND 'sun'
+--
+--       Seems like:
+--          u === v
+--          i === j
 CREATE TABLE tag (
   tagId         int(10)     unsigned    NOT NULL auto_increment,
-  tag           varchar(30)             NOT NULL default '',
+  tag           varchar(30)             NOT NULL unique default '',
 
   PRIMARY KEY   (`tagId`),
   KEY `t_tag`   (`tag`)
@@ -53,16 +62,23 @@ CREATE TABLE network (
 );
 
 CREATE TABLE memberGroup (
-  groupId           int(10)     unsigned        NOT NULL default 0,
-  name              varchar(128)                NOT NULL default '',
+  groupId           int(10)     unsigned            NOT NULL auto_increment,
+  name              varchar(128)                    NOT NULL unique default '',
 
-  groupType         enum('user', 'item', 'tag') NOT NULL default 'tag',
+  groupType         enum('user',  'item',  'tag')   NOT NULL default 'tag',
 
-  controlMembers    enum('owner', 'group')      NOT NULL default 'owner',
-  controlItems      enum('owner', 'group')      NOT NULL default 'owner',
+  controlMembers    enum('owner',  'group')         NOT NULL default 'owner',
+  controlItems      enum('owner',  'group')         NOT NULL default 'owner',
+
+  visibility        enum('private','group',
+                         'public')                  NOT NULL default 'private',
+
+  canTransfer       tinyint(1)  unsigned            NOT NULL default 0,
+  ownerId           int(10)     unsigned            NOT NULL default 0,
 
   PRIMARY KEY           (`groupId`),
-  KEY `n_groupType`     (`groupType`)
+  KEY `n_groupType`     (`groupType`),
+  KEY `n_ownerId`       (`ownerId`)
 );
 
 --
@@ -106,9 +122,31 @@ CREATE TABLE userTag (
   userId        int(10)     unsigned    NOT NULL default 0,
   tagId         int(10)     unsigned    NOT NULL default 0,
 
-  PRIMARY KEY   (`userId`, `tagId`),
+  PRIMARY KEY       (`userId`, `tagId`),
   KEY `ut_userId`   (`userId`),
   KEY `ut_tagId`    (`tagId`)
+);
+
+-- Members of a memberGroup
+CREATE TABLE groupMember (
+  userId        int(10)     unsigned    NOT NULL default 0,
+  groupId       int(10)     unsigned    NOT NULL default 0,
+
+  PRIMARY KEY       (`userId`, `groupId`),
+  KEY `ut_userId`   (`userId`),
+  KEY `ut_groupId`  (`groupId`)
+);
+
+-- Items within a memberGroup
+--      The target table depends upon the 'groupType' of the memberGroup
+--      (user, item, or tag).
+CREATE TABLE groupItem (
+  itemId        int(10)     unsigned    NOT NULL default 0,
+  groupId       int(10)     unsigned    NOT NULL default 0,
+
+  PRIMARY KEY       (`itemId`, `groupId`),
+  KEY `ut_itemId`   (`itemId`),
+  KEY `ut_groupId`  (`groupId`)
 );
 
 --

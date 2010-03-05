@@ -2,7 +2,7 @@
 // Define path to application directory
 defined('APPLICATION_PATH')
     || define('APPLICATION_PATH',
-                realpath(dirname(__FILE__) . '/../../application'));
+                realpath(dirname(__FILE__) . '/../../../application'));
 
 // Define application environment
 defined('APPLICATION_ENV')
@@ -52,6 +52,19 @@ $autoLoader->unshiftAutoloader($connexionsLoader);
 $autoLoader->setFallbackAutoloader(true);
 
 Zend_Session::start();
+
+/***************************************************************************
+ * Setup logging.
+ *
+ */
+
+$logConfig = $config->resources->log;
+$logger    = Zend_Log::factory($logConfig);
+
+Zend_Registry::set('log', $logger);
+
+Connexions::log("Test Logging initialized");
+
 
 /***************************************************************************
  * Setup a Database connection.
