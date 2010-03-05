@@ -80,6 +80,7 @@ class UrlController extends Zend_Controller_Action
     public function chooseAction()
     {
         // Nothing much to do...
+        $this->view->renderToPlaceholder('url/choose-sidebar.phtml', 'right');
     }
 
     /** @brief Redirect all other actions to 'index'
