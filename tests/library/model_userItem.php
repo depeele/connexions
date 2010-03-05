@@ -11,6 +11,12 @@ $time_end   = microtime(true);
 printf ("<pre>Record for userId==1, itemId==1, %f seconds, %s bytes:\n",
         $time_end - $time_start,
         number_format($mem_end  - $mem_start));
+echo "--------------------------------------------------\n",
+     " Array Dump:\n";
+print_r($rec->toArray());
+
+echo "--------------------------------------------------\n",
+     " Debug Dump:\n";
 echo ($rec instanceof Connexions_Model ? $rec->debugDump() : " *** ERROR\n");
 echo "\n\n";
 
@@ -37,9 +43,9 @@ echo "\n\n";
 printf ("taggedOn:     %s\n", $rec->taggedOn);
 printf ("isPrivate:    %s\n", ($rec->isPrivate ? 'true' : 'false'));
 printf ("userId:       %d\n", $rec->userId);
-printf ("user->userId: %d\n", $rec->user->userId);
-printf ("user->name:   %s\n", $rec->user->name);
-printf ("item->url:    %s\n", $rec->item->url);
+printf ("user->userId: %d : %d\n", $rec->user->userId, $rec->user_userId);
+printf ("user->name:   %s : %s\n", $rec->user->name,   $rec->user_name);
+printf ("item->url:    %s : %s\n", $rec->item->url,    $rec->item_url);
 printf ("tags[0]->tag: %s\n", $rec->tags[0]->tag);
 
 $mem_end    = memory_get_usage();

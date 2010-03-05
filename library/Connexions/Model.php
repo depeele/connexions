@@ -229,6 +229,11 @@ abstract class Connexions_Model
      */
     public function save()
     {
+        /*
+        Connexions::log(sprintf("Connexions_Model::save: record[ "
+                                .   $this->debugDump(true) ." ]"));
+        // */
+
         if ($this->isDirty() !== true)
             return true;
 
@@ -251,14 +256,14 @@ abstract class Connexions_Model
             $dirty = array_intersect_key($this->_record, $this->_dirty);
 
             /*
-            printf ("Connexions_Model: Update table '%s'; ".
-                        "fields[%s], values[%s], ".
-                        "where( clause[%s], binding[%s] )\n",
-                     $this->_table,
-                     implode(', ', array_keys($dirty)),
-                     implode(', ', array_values($dirty)),
-                     implode(' AND ', array_keys($where)),
-                     implode(', ', array_values($where)) );
+            Connexions::log(sprintf("Connexions_Model: Update table '%s'; ".
+                                    "fields[%s], values[%s], ".
+                                    "where( clause[%s], binding[%s] )\n",
+                                    $this->_table,
+                                    implode(', ', array_keys($dirty)),
+                                    implode(', ', array_values($dirty)),
+                                    implode(' AND ', array_keys($where)),
+                                    implode(', ', array_values($where)) ) );
             // */
 
             if ( (count($dirty) < 1) ||
@@ -274,14 +279,26 @@ abstract class Connexions_Model
         {
             // This is a new record that we need to insert
             /*
-            printf ("Connexions_Model: Insert table '%s'; ".
-                        "fields[%s], values[%s]\n",
-                     $this->_table,
-                     implode(', ', array_keys($this->_record)),
-                     implode(', ', array_values($this->_record)) );
+            Connexions::log(sprintf("Connexions_Model: Insert table '%s'; ".
+                                    "fields[%s], values[%s]\n",
+                                    $this->_table,
+                                    implode(', ', array_keys($this->_record)),
+                                    implode(', ',
+                                            array_values($this->_record)) ) );
             // */
 
-            if ( $this->_db->insert($this->_table, $this->_record) === 1)
+            // Catch exceptions like -- duplicate primary key...
+            try
+            {
+                $res = $this->_db->insert($this->_table, $this->_record);
+            }
+            catch (Zend_Db_Statement_Exception $e)
+            {
+                $this->_error = $e->getMessage();
+                $res          = false;
+            }
+               
+            if ($res === 1)
             {
                 $res = true;
 
@@ -330,16 +347,20 @@ abstract class Connexions_Model
             }
 
             /*
-            printf ("Connexions_Model: Delete from '%s'; ".
-                            "where( clause[%s], binding[%s] )\n",
-                     $this->_table,
-                     implode(' AND ', array_keys($where)),
-                     implode(', ', array_values($where)) );
+            Connexions::log(sprintf("Connexions_Model: Delete from '%s'; ".
+                                    "where( clause[%s], binding[%s] )\n",
+                                    $this->_table,
+                                    implode(' AND ', array_keys($where)),
+                                    implode(', ', array_values($where)) ) );
             // */
             if ($this->_db->delete($this->_table, $where) )
             {
                 $res = true;
             }
+        }
+        else
+        {
+            $this->_error = "Record is not backed";
         }
 
         return $res;
@@ -624,7 +645,7 @@ abstract class Connexions_Model
             $select =  'SELECT * FROM '. $this->_table
                     .  ' WHERE '. implode(' AND ', array_keys($where));
 
-            // /*
+            /*
             Connexions::log("Connexions_Model:_init:: "
                             . "table '{$this->_table}', "
                             . "where( "

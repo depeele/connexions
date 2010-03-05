@@ -315,7 +315,7 @@ class Model_User extends Connexions_Model
         $nChars   = count($chars);
         $key      = '';
 
-        list($ms) = split(' ', microtime());
+        list($ms) = explode(' ', microtime());
         srand($ms * 100000);
 
         for ($idex = 0; $idex < $len; $idex++)
