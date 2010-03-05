@@ -4,14 +4,11 @@
 $this->headTitle('Sign In');
 
 $jQuery = $this->jQuery();
-$jQuery->addStylesheet($this->baseUrl('css/auth.css'));
-
-$jQuery->addJavascriptFile($this->baseUrl('js/ui.button.js'));
-$jQuery->addJavascriptFile($this->baseUrl('js/ui.input.js'));
-
-$jQuery->addOnLoad('authSignin_onLoad();');
-
-$jQuery->javascriptCaptureStart();
+$jQuery->addStylesheet($this->baseUrl('css/validationForm.css'))
+       ->addJavascriptFile($this->baseUrl('js/ui.button.js'))
+       ->addJavascriptFile($this->baseUrl('js/ui.input.js'))
+       ->addOnLoad('authSignin_onLoad();')
+       ->javascriptCaptureStart();
 ?>
 /************************************************
  * UI Initialization
@@ -71,8 +68,8 @@ function validate_form()
 $jQuery->javascriptCaptureEnd();
 
 ?>
-<div id="auth">
- <div class="line"><!-- { -->
+<div class="line"><!-- { -->
+ <div id="auth" class='ui-validation-form'>
   <div class="legend unit"><!-- { -->
    <h1>Sign in</h1>
    <p>
@@ -84,22 +81,30 @@ $jQuery->javascriptCaptureEnd();
     <div class='field'>
      <label for='user'>Username</label>
      <input type='text' class='text required'
-            name='user' value='<?= $this->user ?>' />
+            name='user' value='<?= $this->user ?>'
+                     tabindex='1' />
+     <div class='ui-field-info'>
+      <div class='ui-field-status'></div>
+     </div>
     </div>
     <div class='field'>
      <label for='password' >Password</label>
      <input type='password' class='text required'
-            name='password' />
+            name='password'
+                         tabindex='2' />
+     <div class='ui-field-info'>
+      <div class='ui-field-status'></div>
+     </div>
     </div>
     <div class='field buttons'>
-     <button name='submit'>Sign in</button>
+     <button name='submit' tabindex='3'>Sign in</button>
     </div>
    </form>
  
    <? if ($this->welcome)   echo "Welcome!!<br />"; ?>
-   <div class='error'>
+   <div class='formError'>
     <?= (@isset($this->error) ? $this->error : '') ?>
    </div>
   </div><!-- userInput } -->
- </div><!-- line } -->
-</div>
+ </div>
+</div><!-- line } -->

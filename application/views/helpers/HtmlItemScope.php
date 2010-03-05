@@ -115,11 +115,7 @@ function init_<?= $namespace ?>ItemScope()
 
     if (scopeCbUrl === null)
     {
-        /* Attach ui.input to the input field with defined 'emptyText' and a
-         * validation callback to enable/disable the submit button based upon
-         * whether or not there is text in the search box.
-         */
-        $input.input(); //itemScope.find('input[emptyText]').input();
+        $input.input();
     }
     else
     {

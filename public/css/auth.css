@@ -1,54 +1,11 @@
-#auth {
-  padding:          2em 3em;
-  background-color: #F4F4EE;
-  background-color: #86c9ef;
-
-  -moz-border-radius:     10px;
-  -webkit-border-radius:  10px;
-  border-radius:          10px;
-}
-
-#auth .legend {
-  text-align:     right;
-  padding-right:  2em;
-  width:          10em;
-}
-#auth .legend h1 {
-  padding:  0;
-}
-#auth .legend p {
-  padding:  0;
-}
-
-#auth .userInput {
-}
-
-#auth form .field {
-  padding-bottom: 1em;
-}
-#auth form .field input.text {
-  width:        12em;
-}
-#auth form .field .ui-field-status {
-  position: absolute;
-  top:      1.2em;
-  right:    -18em;
-  width:    16em;
-}
-
-#auth form .buttons {
-  text-align:   right;
-}
-#auth form input.button {
-  background-color: #59A5D1;
-  border-color:     #408BB6;
-  color:            #fff;
-  cursor:           pointer;
-}
-
-#auth .formError {
-  padding:      1em 0;
-  font-weight:  bold;
-  text-align:   center;
-}
-
+/* ****** auth.sass ****** */
+#auth { padding: 2em 3em; background-color: #86c9ef; -moz-border-radius: 10px 10px 10px 10px; -webkit-border-radius: 10px 10px 10px 10px; border-radius: 10px 10px 10px 10px; }
+#auth .legend { text-align: right; padding-right: 2em; width: 10em; }
+#auth .legend h1 { padding: 0; }
+#auth .legend p { padding: 0; }
+#auth form .field { padding-bottom: 1em; }
+#auth form .field input.text { width: 12em; }
+#auth form .field .ui-field-status { position: absolute; top: 1.2em; right: -18em; width: 16em; }
+#auth form .buttons { text-align: right; }
+#auth form input.button { background-color: #59A5D1; border-color: #408BB6; color: #fff; cursor: pointer; }
+#auth .formError { padding: 1em 0; font-weight: bold; text-align: center; }

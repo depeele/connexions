@@ -1,4 +1,5 @@
-all: connexions.css userItems.css users.css urlItems.css post.css inbox.css
+all: connexions.css userItems.css users.css urlItems.css inbox.css	\
+ 	validationForm.css post.css auth.css inbox.css
 
 connexions.css: main.sass		\
     		mixins.sass		\
@@ -28,11 +29,17 @@ urlItems.css: mixins.sass urlItems.sass userItem.sass uiStars.sass \
 		colors.sass sizes.sass urls.sass
 	sass -t compact urlItems.sass urlItems.css
 
+inbox.css: mixins.sass inbox.sass colors.sass sizes.sass
+	sass -t compact inbox.sass inbox.css
+
+validationForm.css: mixins.sass validationForm.sass colors.sass uiStars.sass
+	sass -t compact validationForm.sass validationForm.css
+
 post.css: mixins.sass post.sass colors.sass
 	sass -t compact post.sass post.css
 
-inbox.css: mixins.sass inbox.sass colors.sass sizes.sass
-	sass -t compact inbox.sass inbox.css
+auth.css: mixins.sass auth.sass colors.sass
+	sass -t compact auth.sass auth.css
 
 sprites.sass:	urls.sass
 

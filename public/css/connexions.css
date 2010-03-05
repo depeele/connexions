@@ -341,7 +341,7 @@ cite { display: block; text-align: right; padding-top: 10px; }
 #pageHeader .tabs a { padding: 2px; color: white; font-weight: normal; text-decoration: none; }
 #pageHeader .tabs li.active a, #pageHeader .tabs a:hover { color: #b0d730; }
 #pageHeader .nav { position: absolute; top: 0; left: 0; padding: 0; width: 560px; *width: 561px; }
-#pageHeader .nav li { float: left; width: 90px; text-align: center; padding: 0.25em 0; background-color: #172322; height: 2em; }
+#pageHeader .nav li { float: left; width: 90px; text-align: center; padding: 0.25em 0; background-color: #172322; height: 2em; *height: 1.6em; }
 #pageHeader ul.sub { display: none; position: absolute; top: 2em; left: 2px; color: white; padding: 0; margin: 0; }
 #pageHeader li:hover ul.sub { display: block; }
 
@@ -351,7 +351,7 @@ cite { display: block; text-align: right; padding-top: 10px; }
 
 #pageHeader ul.sub li a:hover, #search ul.sub li a:hover, #search ul.sub li:hover span { color: #7fcdfe; }
 
-#pageHeader ul.sub li.outter, #search ul.sub li.outter { background: none repeat scroll 0 0 transparent; padding: 0 16px; }
+#pageHeader ul.sub li.outter, #search ul.sub li.outter { background: none repeat scroll 0 0 transparent; padding: 0 13px; }
 
 #pageHeader ul.sub .corner_inner_left, #search ul.sub .corner_inner_left { position: absolute; top: 0; left: -12px; }
 
@@ -378,7 +378,7 @@ cite { display: block; text-align: right; padding-top: 10px; }
 /* Welcome / Join -- first tab item */
 #pageHeader .tabs li.welcome, #pageHeader .tabs li.join { width: 110px; border-right: 1px dotted #666666; -moz-border-radius: 0 0 0 20px; -webkit-border-radius: 0 0 0 20px; border-radius: 0 0 0 20px; }
 
-#pageHeader .tabs li.welcome { padding: 0.1em 0; background: url('sprites/welcome_bg_gradient.gif') repeat-x scroll 0 0 transparent; }
+#pageHeader .tabs li.welcome { background: url('sprites/welcome_bg_gradient.gif') repeat-x scroll 0 0 transparent; }
 #pageHeader .tabs li.welcome ul.sub { left: 0; }
 #pageHeader .tabs li.welcome ul.sub li { width: 100px; }
 #pageHeader .tabs li.welcome ul.sub .corner_inner_left { display: none  /* Hide the upper left corner  of the sub-menu */; }
@@ -388,13 +388,13 @@ cite { display: block; text-align: right; padding-top: 10px; }
 #pageHeader .tabs li.join a:hover { color: #2786c2; }
 
 /* Search */
-#search { position: absolute; top: 0; right: 0; padding: 0.1em 0.5em 0.1em 0; width: 190px; height: 2em; background-color: #172322; *height: 46px  /* IE fix */; *padding-top: 18px  /* IE fix */; *padding-bottom: 0     /* IE fix */; /* Search Input / Choices */ /* Search Context choices */ }
+#search { position: absolute; top: 0; right: 0; padding: 0 0.5em 0 0; width: 190px; height: 2em; background-color: #172322; /* Search Input / Choices */ /* Search Context choices */ }
 #search .searchBox { float: right; }
 #search .searchInput { border: 0; color: #999; }
 #search .searchInput input { border: none; height: 1.5em; margin: 0; padding: 0.25em 23px 0 2px; width: 145px; font-weight: normal; }
 #search .focus { color: #000; }
 #search .submit { display: block; position: absolute; top: 0.25em; left: 150px; width: 23px; padding: 0; border: 0; border-left: 1px dotted #999; background-color: transparent; cursor: pointer; z-index: 101; *background-color: #fff   /* IE fix -- IE doesn't like 'transparent' as a color it uses a dark grey */; }
-#search .choices .list { top: 1.9em; left: -30px; }
+#search .choices .list { top: 1.9em; left: -30px; *top: 2em; }
 #search .choices .list li { width: 180px; /* IE Fix */ *width: 145px; }
 #search:hover .list { display: block; }
 
@@ -525,8 +525,8 @@ cite { display: block; text-align: right; padding-top: 10px; }
 /* Columns */
 .columnHeader { height: 3em; }
 .columnHeader p { padding: 0 40px 1em 1em; text-align: right; color: #0066cc; }
-.columnHeader .connexions_sprites { position: absolute; right: 0px; top: -4px; opacity: 0.4; filter: Alpha(Opacity= 40 ); }
-.columnHeader .avatar { position: absolute; width: 25px; height: 25px; top: -6px; right: -2px; opacity: 0.6; filter: Alpha(Opacity= 60 ); }
+.columnHeader .context-bg { position: absolute; right: 0px; top: -4px; opacity: 0.4; filter: alpha(opacity=40); -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=40)'; }
+.columnHeader .avatar { position: absolute; width: 25px; height: 25px; top: -6px; right: -2px; opacity: 0.6; filter: alpha(opacity=60); -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=60)'; }
 
 .rightCol { padding-left: 2em; padding-right: 0.2em; }
 
