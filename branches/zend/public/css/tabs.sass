@@ -90,6 +90,9 @@
       padding =           !navPadSubItem_tb "0"
       background-color =  !navColorBackground
       height =            !tabHeight
+
+      // IE7 fix
+      :*height=           !tabHeight - 0.4em
   /* Sub-menu */
   ul.sub
     display:          none
@@ -129,7 +132,7 @@
 #pageHeader ul.sub li.outter,
 #search ul.sub li.outter
   background: none repeat scroll 0 0 transparent
-  padding:          0 16px
+  padding:          0 13px
 
 #pageHeader ul.sub .corner_inner_left,
 #search ul.sub .corner_inner_left
@@ -207,7 +210,6 @@
 
 #pageHeader .tabs
   li.welcome
-    padding =             !navPadItem "0"
     //background-color =    !navColorWelcomeBackground
     background: url('sprites/welcome_bg_gradient.gif') repeat-x scroll 0 0 transparent
     ul.sub
@@ -230,14 +232,12 @@
   position:         absolute
   top:              0
   right:            0
-  padding =         !navPadItem !searchPad_r !navPadItem 0
+  //padding =         !navPadItem !searchPad_r !navPadItem "0"
+  :padding=         "0" !searchPad_r "0 0"
   width =           !navWidthSearch
   height =          !tabHeight
   background-color = !navColorBackground
 
-  *height:          46px  /* IE fix */
-  *padding-top:     18px  /* IE fix */
-  *padding-bottom:  0     /* IE fix */
   .searchBox
     float:          right
   /* Search Input / Choices */
@@ -273,6 +273,8 @@
     .list
       top =             !tabHeight - !navPadItem
       left:             -30px
+      // IE fix
+      *top =            !tabHeight
       li
         width:            180px
         /* IE Fix */

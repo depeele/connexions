@@ -12,7 +12,7 @@
  *
  * Take control of pre-assembled HTML:
  *  <div >
- *    <input type='hidden' name='rating' value='...' />
+ *    <input class='ui-stars-rating' type='hidden' name='rating' value='...' />
  *    <div class='ui-stars ui-stars-cancel ...'><a ..></a></div>
  *    <div class='ui-stars ui-stars-star ...'><a ..></a></div>
  *    <div class='ui-stars ui-stars-star ...'><a ..></a></div>

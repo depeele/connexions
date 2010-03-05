@@ -1,33 +1,36 @@
-=corners(!tl, !tr, !br, !bl)
-  -moz-border-radius =    !tl !tr !br !bl
-  -webkit-border-radius = !tl !tr !br !bl
-  border-radius =         !tl !tr !br !bl
+=corners(!tl, !tr = !tl, !br = !tr, !bl = !tl)
+  :-moz-border-radius=    !tl !tr !br !bl
+  :-webkit-border-radius= !tl !tr !br !bl
+  :border-radius=         !tl !tr !br !bl
 
-=opacity(!o)
-  opacity = !o
-  filter =  "Alpha(Opacity=" !o * 100 ")"
+!ms_filter_base = "progid:DXImageTransform.Microsoft."
 
-!filter_prefix =  "progid:DXImageTransform.Microsoft.BasicImage(rotation="
-!filter_suffix =  ")"
+// 10% opcatiy: +opacity(10)
+=opacity( !pct )
+  :opacity=     !pct / 100
+  // IE5-7
+  :filter=      "alpha(opacity=#{!pct})"
+  // IE8
+  :-ms-filter=  "'#{!ms_filter_base}Alpha(Opacity=#{!pct})'"
 
 =rotate(!deg)
   display:            block
-  -webkit-transform = "rotate(" !deg ")"
-  -moz-transform =    "rotate(" !deg ")"
+  :-webkit-transform= "rotate(" !deg ")"
+  :-moz-transform=    "rotate(" !deg ")"
 
   // 0=0deg, 1=90deg, 2=180deg, 3=270deg
   @if !deg == 0deg
-    filter =  !filter_prefix"0"!filter_suffix
+    :filter=  "#{!ms_filter_base}BasicImage(rotation=0)"
   @if !deg == 90deg
-    filter =  !filter_prefix"1"!filter_suffix
+    :filter=  "#{!ms_filter_base}BasicImage(rotation=1)"
   @if !deg == -90deg
-    filter =  !filter_prefix"-1"!filter_suffix
+    :filter=  "#{!ms_filter_base}BasicImage(rotation=-1)"
   @if !deg == 180deg
-    filter =  !filter_prefix"2"!filter_suffix
+    :filter=  "#{!ms_filter_base}BasicImage(rotation=2)"
   @if !deg == -180deg
-    filter =  !filter_prefix"-2"!filter_suffix
+    :filter=  "#{!ms_filter_base}BasicImage(rotation=-2)"
   @if !deg == 270deg
-    filter =  !filter_prefix"3"!filter_suffix
+    :filter=  "#{!ms_filter_base}BasicImage(rotation=3)"
   @if !deg == -270deg
-    filter =  !filter_prefix"-3"!filter_suffix
+    :filter=  "#{!ms_filter_base}BasicImage(rotation=-3)"
 

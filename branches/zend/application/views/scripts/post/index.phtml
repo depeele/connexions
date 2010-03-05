@@ -5,18 +5,17 @@ if (! @is_array($this->postInfo))
 
 $this->headTitle('Save a Bookmark');
 
-$jQuery = $this->jQuery();
-$jQuery->addStylesheet($this->baseUrl('css/post.css'));
-$jQuery->addJavascriptFile($this->baseUrl('js/ui.stars.js'));
-$jQuery->addJavascriptFile($this->baseUrl('js/ui.checkbox.js'));
-$jQuery->addJavascriptFile($this->baseUrl('js/ui.button.js'));
-$jQuery->addJavascriptFile($this->baseUrl('js/ui.input.js'));
-
 //$noConflict = Zend_JQuery_View_Helper_JQuery::getJQueryHandler();
 
-$jQuery->addOnLoad('post_onLoad();');
-
-$jQuery->javascriptCaptureStart();
+$jQuery = $this->jQuery();
+$jQuery->addStylesheet($this->baseUrl('css/post.css'))
+       ->addStylesheet($this->baseUrl('css/validationForm.css'))
+       ->addJavascriptFile($this->baseUrl('js/ui.stars.js'))
+       ->addJavascriptFile($this->baseUrl('js/ui.checkbox.js'))
+       ->addJavascriptFile($this->baseUrl('js/ui.button.js'))
+       ->addJavascriptFile($this->baseUrl('js/ui.input.js'))
+       ->addOnLoad('post_onLoad();')
+       ->javascriptCaptureStart();
 ?>
 
 /************************************************
@@ -33,6 +32,21 @@ function post_onLoad()
     $form.hide();   // hide while we prepare....
 
     $form.addClass('ui-form');
+
+    // For any input with the 'click-to-edit' class, add a validation listener
+    $form.find('.click-to-edit').bind('validationChanged', function() {
+        // On ANY validation change, remove the 'click-to-edit' class and
+        // unbind this listener.
+        var $el = $(this);
+        if ($el.data('validationInitialized') !== true)
+        {
+            $el.data('validationInitialized', true);
+            return;
+        }
+
+        $el.removeClass('click-to-edit')
+           .unbind('validationChange');
+    });
 
     $error  = $('.formError');
     $submit = $('#post button[name=submit]');
@@ -120,51 +134,62 @@ function validate_form()
 <?php
 $jQuery->javascriptCaptureEnd();
 
+$this->postInfo['url'] = 'test';
 
 ?>
-<div id="post">
- <div class="line"><!-- { -->
+<div class="line"><!-- { -->
+ <div id="post" class='ui-validation-form'>
+  <div class='context-ribbon'>&nbsp;</div>
   <div class="legend unit"><!-- { -->
+   <div class='context-bg connexions_sprites bookmark_bg'>
+     &nbsp;
+   </div>
    <h1>Post</h1>
-   <p>
-    a new bookmark:
-   </p>
+   <p>a new bookmark</p>
   </div><!-- legend } -->
   <div class="userInput unit"><!-- { -->
    <form method='post'>
     <div class='field<?= (! @empty($this->postInfo['url'])
                                         ? ' click-to-edit'
                                         : '') ?>'>
-     <label for='url'>URL</label>
-     <div class='ui-field-status'></div>
+     <label for='url'>URL to bookmark</label>
      <input type='text' class='text required' autocomplete='off'
             name='url'  value='<?= $this->postInfo['url'] ?>'
-                    emptyText='URL to bookmark' />
-     <div class='field-info'>required</div>
+                     tabindex='1' />
+     <div class='ui-field-info'>
+      <div class='ui-field-status'></div>
+      <div class='ui-field-requirements'>required</div>
+     </div>
     </div>
     <div class='field'>
-     <label for='name'>Name</label>
-     <div class='ui-field-status'></div>
+     <label for='name'>Bookmark name / title</label>
      <input type='text' class='text required' autocomplete='off'
             name='name' value='<?= $this->postInfo['name'] ?>'
-                    emptyText='Bookmark name' />
-     <div class='field-info'>required</div>
+                     tabindex='2' />
+     <div class='ui-field-info'>
+      <div class='ui-field-status'></div>
+      <div class='ui-field-requirements'>required</div>
+     </div>
     </div>
     <div class='field'>
-     <label for='description'>Description</label>
+     <label for='description'>Description / Notes for this bookmark</label>
      <textarea class='text'
                 name='description'
-           emptyText='Description / Notes for this bookmark'>
+            tabindex='3'>
       <?= $this->postInfo['description'] ?>
      </textarea>
     </div>
     <div class='field'>
      <label for='tags'>Tags</label>
-     <div class='ui-field-status'></div>
      <input type='text' class='text' autocomplete='off'
             name='tags' value='<?= $this->postInfo['tags'] ?>'
-                    emptyText='A comma-separated list of tags' />
-     <div class='field-info'>comma-separated, 30 characters per tag</div>
+                     tabindex='4' />
+     <div class='ui-field-info'>
+      <div class='ui-field-status'></div>
+      <div class='ui-field-requirements'>
+       comma-separated, 30 characters per tag
+      </div>
+     </div>
     </div>
     <div class='personalize buttons ui-helper-clearfix'>
      <div class='field userRating'>
@@ -203,8 +228,9 @@ $jQuery->javascriptCaptureEnd();
             type='checkbox' value='true'
             <?= ($this->postInfo['isPrivate'] ? ' checked' : '') ?> />
      </div>
-     <button name='submit'>Save</button>
-     <button name='cancel'>Cancel</button>
+     <button name='submit' tabindex='5'>Save</button>
+     <button name='cancel' tabindex='6'>Cancel</button>
+     <br class='clear' />
     </div>
    </form>
    <div id='tags'>
@@ -215,5 +241,6 @@ $jQuery->javascriptCaptureEnd();
     <?= (@isset($this->error) ? $this->error : '') ?>
    </div>
   </div><!-- userInput } -->
- </div><!-- line } -->
-</div>
+  <br class='clear' />
+ </div>
+</div><!-- line } -->

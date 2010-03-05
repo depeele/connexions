@@ -1,36 +1,7 @@
-.ui-stars-wrapper { display: block; width: 96px; overflow: hidden; }
-.ui-stars-wrapper .ui-stars { display: block; float: left; overflow: hidden; text-indent: 999em; }
-.ui-stars-wrapper .ui-stars a { background: url('sprites/connexions.gif') no-repeat scroll 0 0; display: block; width: 16px; height: 16px; }
-.ui-stars-wrapper .ui-stars-star-off a, .ui-stars-wrapper .ui-stars-star a, .ui-stars-wrapper .ui-stars-star-disabled a { background-position: -72px -58px; }
-.ui-stars-wrapper .ui-stars-star { cursor: pointer; }
-.ui-stars-wrapper .ui-stars-star a { cursor: pointer; }
-.ui-stars-wrapper .ui-stars-star-on a { background-position: -104px -58px; }
-.ui-stars-wrapper .ui-stars-star-hover a { background-position: -88px -58px; }
-.ui-stars-wrapper .ui-stars-cancel { padding: 1px; }
-.ui-stars-wrapper .ui-stars-cancel a { width: 14px; height: 14px; background-position: -72px -44px; }
-.ui-stars-wrapper .ui-stars-cancel-hover a { background-position: -86px -44px; }
-.ui-stars-wrapper .ui-stars-cancel-disabled a { background-image: none; }
-.ui-stars-wrapper .ui-stars-star-disabled, .ui-stars-wrapper .ui-stars-cancel-disabled { cursor: default; }
-
 /* ****** post.sass ****** */
-#post { padding: 2em 3em; background-color: white; -moz-border-radius: 10px 10px 10px 10px; -webkit-border-radius: 10px 10px 10px 10px; border-radius: 10px 10px 10px 10px; }
-#post .legend { text-align: right; padding-right: 2em; width: 10em; }
-#post .legend h1 { padding: 0; }
-#post .legend p { padding: 0; }
-#post .field { padding-bottom: 1em; }
-#post .field .text { width: 30em; }
-#post .field .ui-field-status { position: absolute; bottom: 1.2em; right: -17em; width: 16em; }
-#post .field .field-info { font-size: 0.9em; color: #aaaaaa; text-align: right; }
-#post .click-to-edit label { display: none; }
-#post .click-to-edit input { border-color: transparent; color: #aaaaaa; }
-#post .click-to-edit input:focus { border-color: #aaaaaa; color: black; }
-#post .buttons { position: relative; text-align: right; }
-#post .buttons input, #post .buttons label { position: relative; display: inline; }
-#post .personalize { width: 100%; padding-top: 1em; }
-#post .personalize .field { display: block; float: left; padding: 0 0.5em 0 0; }
-#post .personalize .field label { display: block; float: left; }
-#post .personalize .userRating { display: block; float: left; padding: 0 2.5em 0 0; height: 32px; }
-#post .personalize .userRating label { display: block; float: right; padding: 2px 0 0 0.25em; width: 2em; color: #0066cc; }
-#post .personalize .userRating .ui-stars-wrapper { float: left; }
-#post .formError { padding: 1em 0; font-weight: bold; text-align: center; }
-#post .personalize .checkbox { position: relative; display: inline; cursor: pointer; border: none; }
+#post { padding: 0; }
+#post .context-ribbon { position: absolute; top: 0; left: 0; width: 48px; height: 100%; background-color: #3d7cc2; -moz-border-radius: 8px 0 0 8px; -webkit-border-radius: 8px 0 0 8px; border-radius: 8px 0 0 8px; }
+#post .legend { margin-left: 48px; text-align: left; }
+#post .legend .context-bg { position: absolute; left: -48px; -moz-border-radius: 8px 0 0 0; -webkit-border-radius: 8px 0 0 0; border-radius: 8px 0 0 0; }
+#post .legend h1 { padding: 0 0 0 0.2em; }
+#post .legend p { padding: 0 0 0 0.5em; }

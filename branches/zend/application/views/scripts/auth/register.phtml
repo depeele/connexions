@@ -4,14 +4,11 @@
 $this->headTitle('Join');
 
 $jQuery = $this->jQuery();
-$jQuery->addStylesheet($this->baseUrl('css/auth.css'));
-//$jQuery->addJavascriptFile($this->baseUrl('js/ui.stars.js'));
-$jQuery->addJavascriptFile($this->baseUrl('js/ui.input.js'));
-$jQuery->addJavascriptFile($this->baseUrl('js/ui.button.js'));
-
-$jQuery->addOnLoad('authRegister_onLoad();');
-
-$jQuery->javascriptCaptureStart();
+$jQuery->addStylesheet($this->baseUrl('css/validationForm.css'))
+       ->addJavascriptFile($this->baseUrl('js/ui.button.js'))
+       ->addJavascriptFile($this->baseUrl('js/ui.input.js'))
+       ->addOnLoad('authRegister_onLoad();')
+       ->javascriptCaptureStart();
 ?>
 /************************************************
  * Initialize the form handlers
@@ -167,8 +164,8 @@ $jQuery->javascriptCaptureEnd();
 
 
 ?>
-<div id="auth">
- <div class="line"><!-- { -->
+<div class="line"><!-- { -->
+ <div id="auth" class='ui-validation-form'>
   <div class="legend unit"><!-- { -->
    <h1>Join</h1>
    <p>
@@ -181,25 +178,31 @@ $jQuery->javascriptCaptureEnd();
      <label for='user'>Desired User Name / ID</label>
      <input type='text' class='text required' autocomplete='off'
             name='user' value='<?= $this->user ?>'
-                    emptyText='Desired User Name / ID' />
-     <div class='ui-field-status'></div>
+                     tabindex='1' />
+     <div class='ui-field-info'>
+      <div class='ui-field-status'></div>
+     </div>
     </div>
     <div class='field'>
      <label for='password'>Password</label>
      <input type='password' class='text required' autocomplete='off'
-           name='password' value='<?= $this->pass ?>'
-                       emptyText='Password' />
-     <div class='ui-field-status'></div>
+           name='password'  value='<?= $this->pass ?>'
+                         tabindex='2' />
+     <div class='ui-field-info'>
+      <div class='ui-field-status'></div>
+     </div>
     </div>
     <div class='field'>
      <label for='password2'>Re-type Password for verfication</label>
      <input type='password' class='text required' autocomplete='off'
             name='password2'
-                        emptyText='Re-type Password for verification' />
-     <div class='ui-field-status'></div>
+                         tabindex='3' />
+     <div class='ui-field-info'>
+      <div class='ui-field-status'></div>
+     </div>
     </div>
     <div class='field buttons'>
-     <button name='submit'>Join Connexions</button>
+     <button name='submit' tabindex='4'>Join Connexions</button>
     </div>
    </form>
  
@@ -207,5 +210,5 @@ $jQuery->javascriptCaptureEnd();
     <?= (@isset($this->error) ? $this->error : '') ?>
    </div>
   </div><!-- userInput } -->
- </div><!-- line } -->
-</div>
+ </div>
+</div><!-- line } -->

@@ -82,7 +82,8 @@ class Connexions_View_Helper_HtmlStarRating extends Zend_View_Helper_Abstract
             // */
 
             // We need a hidden form element and cancel
-            $html .= "<input type='hidden' name='rating' value='{$rating}' />"
+            $html .= "<input class='ui-stars-rating' type='hidden' "
+                  .          "name='rating' value='{$rating}' />"
                   .  "<div class='ui-stars ui-stars-cancel "
                   .              "ui-stars-cancel-disabled'>"
                   .   "<a title='cancel'>&nbsp;</a>"

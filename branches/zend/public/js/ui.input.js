@@ -93,10 +93,40 @@ $.widget("ui.input", {
 
         if (opts.emptyText === null)
         {
+            // See if there is an 'emptyText' attribute
             var empty   = self.element.attr('emptyText');
             if ((empty !== undefined) && (empty.length > 0))
             {
                 opts.emptyText = empty;
+            }
+
+        }
+
+        if ((opts.emptyText === null) && (! self.element.is(':password')) )
+        {
+            // See if there is a label associated with this field
+            if (opts.hideLabel !== false)
+            {
+                // Attempt to locate the label associated with this field...
+                var id      = self.element.attr('id');
+                var $label  = null;
+                if ((id === undefined) || (id.length < 1))
+                    id = self.element.attr('name');
+
+                if ((id !== undefined) && (id.length > 0))
+                    $label  = self.element
+                                        .parent()
+                                            .find('label[for='+ id +']');
+
+                if (($label !== null) && ($label.length > 0))
+                {
+                    /* We've found the label!  Use it's text as the 'emptyText'
+                     * and set 'hideLabel' to true.
+                     */
+                
+                    opts.emptyText = $label.text();
+                    opts.hideLabel = true;
+                }
             }
         }
 
@@ -158,7 +188,7 @@ $.widget("ui.input", {
             if (self.options.enabled === true)
             {
                 if ((self.options.emptyText !== null) &&
-                    (self.element.val() == self.options.emptyText))
+                    (self.val().length < 1))
                 {
                     self.element.val('');
                 }
@@ -175,7 +205,7 @@ $.widget("ui.input", {
                 self.validate();
             }
 
-            if (self.element.val().length < 1)
+            if (self.val().length < 1)
             {
                 self.element.addClass('ui-state-empty');
 
@@ -292,8 +322,15 @@ $.widget("ui.input", {
 
     setEmptyText: function(str, force)
     {
+        if (this.element.is(':password'))
+        {
+            this.options.hideLabel = false;
+            this.options.emptyText = null;
+            return;
+        }
+
         if ((this.options.emptyText !== null) &&
-            (this.element.val() == this.options.emptyText))
+            (this.val() == this.options.emptyText))
         {
             this.element.val('');
         }
@@ -302,7 +339,7 @@ $.widget("ui.input", {
 
         if (this.options.emptyText !== null)
         {
-            if (this.options.hideLabel === undefined)
+            if (this.options.hideLabel !== false)
             {
                 this.options.hideLabel = true;
 
@@ -316,14 +353,14 @@ $.widget("ui.input", {
                     var $label  = this.element
                                         .parent()
                                             .find('label[for='+ id +']');
-                    
+                
                     $label.hide();
                 }
             }
 
-            //if ( ((force === true) || (! this.element.is(':focus')) ) &&
-            //    (this.element.val().length < 1) )
-            if ( (force === true) || (this.element.val().length < 1) )
+            //if ( (force === true) || (this.val().length < 1) )
+            if ( ((force === true) || (! this.element.is(':focus')) ) &&
+                (this.val().length < 1) )
             {
                 this.element.val(this.options.emptyText);
             }
@@ -338,14 +375,12 @@ $.widget("ui.input", {
         if (newVal === undefined)
         {
             // Value retrieval
+            ret = self.element.val().trim();
+
             if ((self.options.emptyText !== null) &&
-                (self.element.val() == self.options.emptyText))
+                (ret == self.options.emptyText))
             {
                 ret = '';
-            }
-            else
-            {
-                ret = self.element.val();
             }
         }
         else
@@ -365,7 +400,7 @@ $.widget("ui.input", {
         if ($.isFunction(this.options.validation))
         {
             var ret = this.options.validation.apply(this.element,
-                                                    [this.element.val()]);
+                                                    [this.val()]);
             if (typeof ret === 'string')
             {
                 // Invalid with a message

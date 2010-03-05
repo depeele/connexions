@@ -45,8 +45,8 @@ $jQuery->javascriptCaptureEnd();    // jQuery }
 
 ?>
 <div class='columnHeader'>
- <div class='connexions_sprites bookmark_bg
-             ui-corner-left ui-corer-tr'>&nbsp;</div>
+ <div class='context-bg connexions_sprites bookmark_bg
+             ui-corner-left ui-corner-tr'>&nbsp;</div>
  <div class='itemInfo'>
   <p>
    <span class='title'>Lookup a URL</span>
@@ -64,15 +64,5 @@ $jQuery->javascriptCaptureEnd();    // jQuery }
  </button>
  <br class='clear' />
 </form>
-
-<?php
-/******************************************************************************
- * Render the HTML for the right-column using the HtmlItemCloud View Helper
- * that should have been prepared by the Controller.
- *
- */
-$this->layout()->right = "Right Column...";
-
-?>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
