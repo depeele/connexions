@@ -2,7 +2,7 @@
 // Define path to application directory
 defined('APPLICATION_PATH')
     || define('APPLICATION_PATH',
-                realpath(dirname(__FILE__) . '/../../../application'));
+                realpath(dirname(__FILE__) . '/../../application'));
 
 // Define application environment
 defined('APPLICATION_ENV')
@@ -27,71 +27,11 @@ $config = new Zend_Config_Ini(APPLICATION_PATH . '/configs/application.ini',
 
 Zend_Registry::set('config', $config);
 
-/***************************************************************************
- * Setup the Timezone.
- *
- */
-$zone = $config->get('timezone', 'PST');
 
-date_default_timezone_set($zone);
+/** Zend_Application */
+require_once('Zend/Application.php');
 
-/***************************************************************************
- * Setup the Autoloader.
- *
- */
-require_once('Zend/Loader/Autoloader.php');
-require_once('Connexions.php');
-require_once('Connexions/Autoloader.php');
+// Create application and perform non-view-related bootstrapping.
+$application = new Zend_Application(APPLICATION_ENV, $config);
 
-$autoLoader = Zend_Loader_Autoloader::getInstance();
-
-$connexionsLoader = new Connexions_Autoloader();
-$autoLoader->unshiftAutoloader($connexionsLoader);
-
-// Load ANY namespace
-$autoLoader->setFallbackAutoloader(true);
-
-Zend_Session::start();
-
-/***************************************************************************
- * Setup logging.
- *
- */
-
-$logConfig = $config->resources->log;
-$logger    = Zend_Log::factory($logConfig);
-
-Zend_Registry::set('log', $logger);
-
-Connexions::log("Test Logging initialized");
-
-
-/***************************************************************************
- * Setup a Database connection.
- *
- */
-$db  = Zend_Db::factory($config->resources->db);
-
-try
-{
-    $db->getConnection();
-}
-catch (Zend_Db_Adapter_Exception $e)
-{
-    /* perhaps a failed login credential, or perhaps the RDBMS is not
-     * running
-     */
-    die("*** Database error: Failed to login or DB not accessible");
-}
-catch (Zend_Exception $e)
-{
-    // perhaps factory() failed to load the specified Adapter class
-    die("*** Database error: Cannot load specified adapter class");
-}
-
-if (! $db->isConnected())
-{
-    die("*** Cannot connect to database");
-}
-
-Zend_Registry::set('db', $db);
+$application->bootstrap('common');
