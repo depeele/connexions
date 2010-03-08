@@ -5,32 +5,139 @@
 require_once('Connexions.php');
 require_once('Connexions/Autoloader.php');
 
-date_default_timezone_set('UTC');
-
 class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 {
-    protected function _initTimezone()
+    /** @brief  Perform all initialization that will be needed no matter what
+     *          the view.
+     */
+    protected function _initCommon()
+    {
+        $this->_commonTimezone()
+             ->_commonSession()
+             ->_commonAutoload()
+             ->_commonLogging()
+             ->_commonDb()
+             ->_commonUser();
+    }
+
+    protected function _initView()
+    {
+        // Initialize common view portions.
+        $this->_viewAcl()
+             ->_viewRoute()
+             ->_viewPlugins();
+
+        // Initialize the view
+        $viewResource = $this->getPluginResource('view');
+        $view         = $viewResource->init();
+
+        /*******************************************************************
+         * Add our view helpers as well as the ZendX JQuery view helper.
+         *
+         */
+        $view->addHelperPath(APPLICATION_PATH .'/views/helpers',
+                                'Connexions_View_Helper')
+             ->addHelperPath("ZendX/JQuery/View/Helper",
+                                "ZendX_JQuery_View_Helper");
+
+
+        /*******************************************************************
+         * Initialize the default ACL and Role for this view.
+         *
+         */
+        $acl  = Zend_Registry::get('acl'); //$this->getResource('acl');
+
+        // Initialize the default ACL and Role for this view
+        Zend_View_Helper_Navigation_HelperAbstract::setDefaultAcl($acl);
+        Zend_View_Helper_Navigation_HelperAbstract::setDefaultRole('guest');
+
+
+        /*******************************************************************
+         * Establish the base title and separator
+         *
+         */
+        $view->headTitle('connexions')->setSeparator(' > ');
+
+
+        /*******************************************************************
+         * Initialize paging.
+         *
+         */
+        if ($this->hasOption('paging'))
+        {
+            /* Set our default pagination:
+             *  ScrollingStyle      -- 'Elastic', 'Jumping', 'Sliding'
+             *  ItemCountPerPage
+             *  PageRange
+             *  ...
+             */
+            $paging = $this->getOption('paging');
+
+            /*
+            Connexions::log("Bootstrap::_initView: paging [ ".
+                                var_export($paging, true) . " ]");
+            // */
+
+            Connexions_Controller_Action_Helper_Pager::setDefaults($paging);
+        }
+
+        /*******************************************************************
+         * Initialize Navigation
+         *
+         */
+        $config = new Zend_Config_Xml(
+                                APPLICATION_PATH .'/configs/navigation.xml',
+                                'nav');
+
+        $nav    = new Zend_Navigation($config);
+        $view->navigation($nav);
+
+        /* If there is a current, authenticated user, set our ACL role to
+         * 'member'
+         */
+        $user = Zend_Registry::get('user');
+        if ($user->isAuthenticated())
+        {
+            $view->navigation()->setRole('member');
+        }
+
+        // /*
+        Connexions::log("Bootstrap::_initView: role[ "
+                        .   $view->navigation()->getRole()
+                        .       " ]");
+        // */
+
+        return $view;
+    }
+
+
+
+
+    protected function _commonTimezone()    //_initTimezone()
     {
         if ($this->hasOption('timezone'))
         {
             $zone = $this->getOption('timezone');
-
-            date_default_timezone_set($zone);
         }
         else
         {
-            $zone = date_default_timezone_get();
+            $zone = 'UTC';
         }
 
-        return $zone;
+        date_default_timezone_set($zone);
+
+        //return $zone;
+        return $this;
     }
 
-    protected function _initSession()
+    protected function _commonSession() //_initSession()
     {
         Zend_Session::start();
+
+        return $this;
     }
 
-    protected function _initAutoload()
+    protected function _commonAutoload()    //_initAutoload()
     {
         $autoLoader = Zend_Loader_Autoloader::getInstance();
 
@@ -40,7 +147,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         // Load ANY namespace
         $autoLoader->setFallbackAutoloader(true);
 
-        return $autoLoader;
+        return $this;   //return $autoLoader;
 
         /*
         $autoLoader = new Zend_Application_Module_Autoloader(array(
@@ -52,7 +159,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         */
     }
 
-    protected function _initLogging()
+    protected function _commonLogging() //_initLogging()
     {
         $config = $this->getPluginResource('log');
 
@@ -73,10 +180,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
         Connexions::log('Bootstrap::Logging initialized');
 
-        return $log;
+        return $this;   //return $log;
     }
 
-    protected function _initDb()
+    protected function _commonDb()  //_initDb()
     {
         $config = $this->getPluginResource('db');
         $db     = $config->getDbAdapter();
@@ -110,42 +217,181 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
         Zend_Registry::set('db', $db);
 
-        return $db;
+        Connexions::log('Bootstrap::Database initialized');
+
+        return $this;   //return $db;
     }
 
-    protected function _initRoute()
+    protected function _commonUser()    //_initUser()
     {
-        $front  = Zend_Controller_Front::getInstance();
-        $router = $front->getRouter();
-
-        $route = new Connexions_Controller_Route();
-        $router->addRoute('default', $route);
-
-        return $route;
-    }
-
-    protected function _initPlugins()
-    {
-        $front = Zend_Controller_Front::getInstance();
-
-        /* Register our authentication plugin (performs
-         * identification/authentication during dispatchLoopStartup().
-         */
-        $front->registerPlugin(new Connexions_Controller_Plugin_Auth());
-    }
-
-    protected function _initActionHelpers()
-    {
-        /* Register our Controller Action Helpers Prefix.
+        /* Attempt to identify and authenticate the current user:
+         *  1) First, look in the session-based authentication store for an
+         *     identity;
          *
-         * This will make available all helpers in:
-         *  library/Connexions/Controller/Action/Helper
+         *     a) If an identity is found in the store, make sure it identifies
+         *        a valid user;
+         *        i)  If the identity represents a valid user, consider the
+         *            user authenticated (should there be other checks??);
+         *        ii) Otherwise, fall back to looking at the request.
+         *
+         *  2) If no valid identity was found in the session-based
+         *     authentication store, see if our request contains identity and
+         *     authentication information;
+         *
+         *     a) If identity and authentication information were found in the
+         *        request, validate the identity and attempt authentication
+         *        verification;
+         *     b) If the identity is invalid or authentication fails, then we
+         *        have no authenticated user and create an "invalid" Model_User
+         *        instance to represent this fact;
+         *
+         *  3) Set the Model_User instance in our local cache and return it
+         *     to be stored as the 'User' resource.
          */
-        Zend_Controller_Action_HelperBroker::addPrefix(
-                                        'Connexions_Controller_Action_Helper');
+
+        // 1) See if the session-based authentication store has an identity
+        $auth = Zend_Auth::getInstance();
+        $auth->setStorage(new Zend_Auth_Storage_Session('connexions', 'user'));
+
+        $user   = null;
+        $userId = $auth->getIdentity();
+        /*
+        Connexions::log(sprintf("Bootstrap::_initUser: "
+                                . "UserId from session [ %s ]",
+                                    print_r($userId, true)) );
+        // */
+
+        if ($userId !== null)
+        {
+            /* 1.a) There appears to be identity information in our
+             *      authentication store (session/cookie).  Does it identify a
+             *      valid user?
+             */
+            $user = Model_User::find($userId);
+
+            /*
+            Connexions::log("Bootstrap::_initUser: userId[{$userId}], "
+                                . "User Model:\n"
+                                .   $user->debugDump());
+            // */
+
+            if ($user->isBacked())
+            {
+                // 1.a.i) We have a valid user -- consider them authenticated.
+                /*
+                Connexions::log(sprintf("Bootstrap::_initUser: "
+                                        .   "Initially Authenticated as "
+                                        .       "[ %s ]",
+                                        $user) );
+                // */
+                $user->setAuthenticated();
+            }
+        }
+
+        if ( ($user === null) || (! $user->isBacked()) )
+        {
+            // 2) Do we have identity and authentication information?
+            $userId  = $req->getParam('user', null);
+            $pass    = $req->getParam('password');
+
+            /*
+            Connexions::log(sprintf("Bootstrap::_initUser: "
+                                    .   "User[ %s ], pass[ %s ]...",
+                                    $userId, $pass) );
+            // */
+
+            /* Generate a Model_User instance based upon the incoming userId.
+             *
+             * Note: If $userId is null, this will generate a Model_User
+             *       instance that is marked as 'invalid'.
+             *
+             * If we already have a non-null user and $userId is null, then we
+             * already have a $user that is marked as invalid.  Otherwise, we
+             * need to create a new Model_User instance with the given $userId.
+             */
+            if (($user === null) || ($userId !== null))
+                $user = Model_User::find($userId);
+
+            /*
+            Connexions::log("Bootstrap::_initUser: "
+                            .   "User[ {$userId} ], pass[ {$pass} ], "
+                            .   "User Model:\n"
+                            .       $user->debugDump() );
+            // */
+
+            if ( $user->isBacked() && (! @empty($pass)) )
+            {
+                /* Perform authentication verification.
+                 *
+                 * Note: The Connexions_Auth adapter uses the
+                 *       Model_User::authenticate method to verify credentials.
+                 *       This ensures that the Model_User instance is properly
+                 *       marked as authenticated or NOT authenticated in
+                 *       addition to returning a valid Zend_Auth_Result.
+                 */
+                $adapter = new Connexions_Auth($user, $pass);
+                $res     = $auth->authenticate($adapter);
+
+                /*
+                Connexions::log("Bootstrap::_initUser: "
+                                .   "User authentication is"
+                                .       ($res->isValid() ? "" : " NOT")
+                                .   "valid/Authenticated, results:\n"
+                                .   print_r($res, true));
+                // */
+
+                /*
+                if (! $res->isValid())
+                {
+                    // Invalid password.
+                    Connexions::log("Bootstrap::_initUser: "
+                                    .   "User [ {$userId} ] "
+                                    .   "NOT authenticated: [ "
+                                    .       $res->getMessages() ." ], ".
+                                    .   "user error[ {$user->getError()} ]");
+                }
+                // */
+            }
+            /*
+            else
+            {
+                // Invalid user or missing password.
+                Connexions::log("Bootstrap::_initUser: "
+                                .   "User [ {$userId} ] "
+                                .   "NOT authenticated: "
+                                .   "User is"
+                                .       ($user->isValid()  ? "" : " NOT")
+                                .   " valid, is"
+                                .       ($user->isBacked() ? "" : " NOT")
+                                .   " backed, "
+                                .   "password[ {$pass} ]");
+            }
+            // */
+        }
+
+        // /*
+        Connexions::log(sprintf("Bootstrap::_initUser: "
+                                .  "Final user '%s' is%s authenticated",
+                                $user,
+                                ($user->isAuthenticated() ? '':' NOT')) );
+        // */
+
+        /* Make it easy to retrieive user from anywhere.
+         *
+         * Without this, we would need to retrieve the current bootstrap and
+         * the request the 'user' resource.
+         *
+         * From a Zend_Controller_Action:
+         *      $this->getInvokeArg('bootstrap')->getResource('user');
+         *      
+         */
+        Zend_Registry::set('user', $user);
+
+
+        return $this;   //return $user;
     }
 
-    protected function _initAcl()
+    protected function _viewAcl() //_initAcl()
     {
         // Setup ACL
         $acl = new Zend_Acl();
@@ -162,125 +408,53 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $acl->allow('guest',  'guest');
         $acl->deny( 'member', 'guest');
 
-        Zend_View_Helper_Navigation_HelperAbstract::setDefaultAcl($acl);
-        Zend_View_Helper_Navigation_HelperAbstract::setDefaultRole('guest');
+        Zend_Registry::set('acl', $acl);
 
-        /* Note: The proper role will be set in
-         *       Connexions_Controller_Plugin_Auth during dispatchLoopStartup().
-         */
+        return $this;   //return $acl;
     }
 
-    /**************************************************************************
-     * View-specific Bootstrapping -- the following Bootstrap methods can be
-     * skipped via:
-     *      $_GLOBALS['gNoView'] = true;
-     */
-    protected function _initViewGlobal()
+    protected function _viewRoute()   //_initRoute()
     {
-        if (@isset($_GLOBALS['gNoView']) && ($_GLOBALS['gNoView'] === true))
-            return;
+        $front  = Zend_Controller_Front::getInstance();
+        $router = $front->getRouter();
 
-        // Make sure we have an initialized view.
-        $this->bootstrap('view');
+        $route = new Connexions_Controller_Route();
+        $router->addRoute('default', $route);
 
-        $view = $this->getResource('view');
+        Connexions::log('Bootstrap::Route initialized');
 
-        // Establish the base title and separator
-        $view->headTitle('connexions')->setSeparator(' > ');
-
-        if ($this->hasOption('paging'))
-        {
-            /* Set our default pagination:
-             *  ScrollingStyle      -- 'Elastic', 'Jumping', 'Sliding'
-             *  ItemCountPerPage
-             *  PageRange
-             *  ...
-             */
-            $paging = $this->getOption('paging');
-
-            /*
-            Connexions::log("Bootstrap::_initViewGlobal: paging [ ".
-                                var_export($paging, true) . " ]");
-            // */
-
-            Connexions_Controller_Action_Helper_Pager::setDefaults($paging);
-        }
-
-
-        /* Add our view helpers to the helper plugin loader.
-         *
-         * This will make available all helpers in:
-         *  application/views/helpers
-         */
-        $loader = $view->getPluginLoader('helper');
-        $loader->addPrefixPath('Connexions_View_Helper',
-                               APPLICATION_PATH .'/views/helpers');
-
-
-        /* Put the 'view' in the registry so it will be accessible to
-         *      Connexions_Controller_Plugin_Auth
-         *
-         * to set the ACL role used by view navigation.
-         */
-        Zend_Registry::set('view', $view);
-
-        return $view;
+        return $this;   //return $route;
     }
 
-    protected function _initDoctype()
+    protected function _viewPlugins()
     {
-        if (@isset($_GLOBALS['gNoView']) && ($_GLOBALS['gNoView'] === true))
-            return;
+        /*
+        $front = Zend_Controller_Front::getInstance();
 
-        $view = $this->getResource('view'); //Zend_Registry::get('view');
-        $view->doctype('XHTML1_STRICT');
-    }
-
-    protected function _initJQueryViewHelpers()
-    {
-        if (@isset($_GLOBALS['gNoView']) && ($_GLOBALS['gNoView'] === true))
-            return;
+        // Register our authentication plugin (performs
+        // identification/authentication during dispatchLoopStartup().
+        $front->registerPlugin(new Connexions_Controller_Plugin_Auth());
+        */
 
         /*
-        Zend_Controller_Action_HelperBroker::addPrefix(
-                                        'ZendX_JQuery_View_Helper');
+        $viewResource = new Connexions_Application_Resource_View();
+        $this->registerPluginResource($viewResource);
         */
 
-        $view = $this->getResource('view'); //Zend_Registry::get('view');
-        $view->addHelperPath("ZendX/JQuery/View/Helper",
-                             "ZendX_JQuery_View_Helper");
-    }
-
-    protected function _initNavigation()
-    {
-        if (@isset($_GLOBALS['gNoView']) && ($_GLOBALS['gNoView'] === true))
-            return;
-
-        /* Use our router as the navigation provider
-        $route = $this->getResource('route');
-        $view  = $this->getResource('view');
-
-        $view->navigation($nav);
+        /*
+        $loader = $this->getPluginLoader();
+        $loader->addPrefixPath('Connexions_Application_Resource_View',
+                                    'Connexions/Application/Resource');
         */
 
-        $config = new Zend_Config_Xml(
-                                APPLICATION_PATH .'/configs/navigation.xml',
-                                'nav');
-
-        $nav    = new Zend_Navigation($config);
-
-        /* Set the default navigation container:
-         *  $view   = $this->getResource('view');
+        /* Register our Controller Action Helpers Prefix.
          *
-         *  $view->getHelper('navigation')->setContainer($nav)
-         *      OR
-         *  $view->navigation($nav);
-         *      OR
-         *  Zend_Registry::set('Zend_Navigation', $nav);
-         *
-         *  We've placed the view in the registry for easier access.
+         * This will make available all helpers in:
+         *  library/Connexions/Controller/Action/Helper
          */
-        $view = $this->getResource('view'); //Zend_Registry::get('view');
-        $view->navigation($nav);
+        Zend_Controller_Action_HelperBroker::addPrefix(
+                                        'Connexions_Controller_Action_Helper');
+
+        return $this;
     }
 }
