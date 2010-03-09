@@ -16,7 +16,7 @@
  * @package    Zend_Validate
  * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: EmailAddress.php 20358 2010-01-17 19:03:49Z thomas $
+ * @version    $Id: EmailAddress.php 21083 2010-02-18 19:29:20Z thomas $
  */
 
 /**
@@ -362,8 +362,8 @@ class Zend_Validate_EmailAddress extends Zend_Validate_Abstract
                 }
 
                 $segmentData = array(
-                    'network'   => (int)$this->_binaryToIp(str_pad(substr($binaryHost, 0, $host[1]), 32, 0)),
-                    'broadcast' => (int)$this->_binaryToIp(str_pad(substr($binaryHost, 0, $host[1]), 32, 1))
+                    'network'   => (int)$this->_toIp(str_pad(substr($binaryHost, 0, $host[1]), 32, 0)),
+                    'broadcast' => (int)$this->_toIp(str_pad(substr($binaryHost, 0, $host[1]), 32, 1))
                 );
 
                 for ($j = $i; $j < 4; $j++) {
@@ -441,10 +441,9 @@ class Zend_Validate_EmailAddress extends Zend_Validate_Abstract
      */
     private function _validateMXRecords()
     {
-        $result = true;
         $mxHosts = array();
-        getmxrr($this->_hostname, $mxHosts);
-        if ($this->_options['deep'] && function_exists('checkdnsrr')) {
+        $result = getmxrr($this->_hostname, $mxHosts);
+        if ($result && $this->_options['deep'] && function_exists('checkdnsrr')) {
             $validAddress = false;
             $reserved     = true;
             foreach ($mxHosts as $hostname) {
