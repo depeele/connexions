@@ -26,16 +26,16 @@ function authSignin_onLoad()
     $form.addClass('ui-form');
 
     $error      = $('.formError');
-    $submit     = $('#auth button[name=submit]');
+    $submit     = $('#auth button[name=method]');
 
     $submit.button({ priority:'primary', enabled:false});
 
     // Style all remaining input[type=text] / textarea controls with ui.input
     $('#auth input[type=text],#auth input[type=password],textarea')
-            .input()
             .bind('validationChanged.uiinput', function() {
                     validate_form();
-                  });
+                  })
+            .input();
 
     $form.show();
 }
@@ -79,9 +79,9 @@ $jQuery->javascriptCaptureEnd();
   <div class="userInput unit"><!-- { -->
    <form method='post'>
     <div class='field'>
-     <label for='user'>Username</label>
-     <input type='text' class='text required'
-            name='user' value='<?= $this->user ?>'
+     <label for='username'>User name</label>
+     <input type='text' class='text required' name='username'
+                        value='<?= $this->username ?>'
                      tabindex='1' />
      <div class='ui-field-info'>
       <div class='ui-field-status'></div>
@@ -97,7 +97,9 @@ $jQuery->javascriptCaptureEnd();
      </div>
     </div>
     <div class='field buttons'>
-     <button name='submit' tabindex='3'>Sign in</button>
+     <button name='method' tabindex='3' value='userpassword'>
+      Sign-in
+     </button>
     </div>
    </form>
  

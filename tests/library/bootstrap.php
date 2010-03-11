@@ -27,6 +27,40 @@ $config = new Zend_Config_Ini(APPLICATION_PATH . '/configs/application.ini',
 
 Zend_Registry::set('config', $config);
 
+$user = $pass = null;
+if ( $argc > 1)
+{
+    /*
+    echo "<pre>argv:\n";
+    print_r($argv);
+    echo "</pre>\n";
+    // */
+
+    // See if '-u=<users>' or '-p=<password>' are in argv
+    for ($idex = 1; $idex < $argc; $idex++)
+    {
+        if (preg_match('/^\s*-(u|p)=(.*?)\s*$/', $argv[$idex], $matches))
+        {
+            switch ($matches[1])
+            {
+            case 'u':
+                $user = $matches[2];
+                break;
+
+            case 'p':
+                $pass = $matches[2];
+                break;
+            }
+        }
+    }
+}
+
+/*
+echo "<pre>_GET:\n";
+print_r($_GET);
+echo "</pre>\n";
+die;
+// */
 
 /** Zend_Application */
 require_once('Zend/Application.php');
@@ -35,3 +69,26 @@ require_once('Zend/Application.php');
 $application = new Zend_Application(APPLICATION_ENV, $config);
 
 $application->bootstrap('common');
+
+if (($user !== null) && ($pass !== null))
+{
+    // Attempt to authenticate
+    $_POST['username'] = $user;
+    $_POST['password'] = $pass;
+
+    $auth        = Zend_Auth::getInstance();
+    $authAdapter = new Connexions_Auth_UserPassword();
+    $authResult  = $auth->authenticate($authAdapter);
+
+    if (! $authResult->isValid())
+    {
+        printf ("*** Invalid user/pass [ %s / %s ]\n", $user, $pass);
+    }
+    else
+    {
+        $user = $authResult->getUser();
+
+        printf ("--- Authenticated as:\n%s\n\n", $user->debugDump());
+        Zend_Registry::set('user', $user);
+    }
+}

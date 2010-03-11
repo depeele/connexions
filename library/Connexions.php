@@ -29,9 +29,6 @@ class Connexions
      */
     public static function log($message, $priority = null)
     {
-        if (defined('APPLICATION_ENV') && (APPLICATION_ENV !== 'development'))
-            return;
-
         if ($priority === null)
             $priority = Zend_Log::DEBUG;
 
@@ -57,7 +54,10 @@ class Connexions
         }
 
         if (! self::$_log instanceof Zend_Log)
+        {
+            //echo "Connexions::log: DISABLED [{$message}]\n";
             return;
+        }
 
         self::$_log->log($message, $priority);
     }

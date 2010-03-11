@@ -149,6 +149,17 @@ CREATE TABLE groupItem (
   KEY `ut_groupId`  (`groupId`)
 );
 
+-- User Authentication methods
+CREATE TABLE userAuth (
+  userId        int(10)     unsigned    NOT NULL default 0,
+  authType      varchar(30)             NOT NULL unique default 'password',
+
+  credential    varchar(255)            NOT NULL default '',
+
+  KEY `ua_userId`       (`userId`),
+  KEY `ua_credential`   (`credential`)
+);
+
 --
 -- fact table
 --

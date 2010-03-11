@@ -84,6 +84,19 @@ class Connexions_Autoloader implements Zend_Loader_Autoloader_Interface
 
         $filePath .= $ds . implode($ds, $classParts) .'.php';
 
+        /*
+        $btStr = '';
+        $bt    = debug_backtrace();
+        foreach ($bt as $tr)
+        {
+            $btStr .= sprintf ("-- %s::%s: @%d (%s)\n",
+                                $tr['class'], $tr['function'],
+                                $tr['line'],  $tr['file']);
+        }
+        Connexions::log("Autoloader::autoload: class[ {$class} ], "
+                        .   "filePath[ {$filePath} ] -- trace:\n{$btStr}\n");
+        // */
+
         return include $filePath;
     }
 }
