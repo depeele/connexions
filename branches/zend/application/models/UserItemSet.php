@@ -49,14 +49,8 @@ class Model_UserItemSet extends Connexions_Set
             $curUserId = null;
         }
 
-        try {
-            $order = Zend_Registry::get('orderBy').
-                     Zend_Registry::get('orderDir');
-
-        } catch (Exception $e) {
-            // Treat the current user as Unauthenticated.
-            $order = 'ui.taggedOn ASC';
-        }
+        // Use a default order.
+        $order = 'ui.taggedOn ASC';
 
         if ( (! @empty($tagIds)) && (! @is_array($tagIds)) )
             $tagIds = array($tagIds);

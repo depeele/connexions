@@ -7,6 +7,22 @@ require_once('Connexions/Autoloader.php');
 
 class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 {
+    /** @brief  Allow the direct setting of container resources.
+     *  @param  name    The resource name.
+     *  @param  val     The resource value.
+     *
+     *  @return Zend_Application_Bootstrap_Bootstrap
+     */
+    public function setResource($name, $val)
+    {
+        $resource  = strtolower($name);
+        $container = $this->getContainer();
+        $container->{$name} = $val;
+
+        return $this;
+    }
+    
+
     /** @brief  Perform all initialization that will be needed no matter what
      *          the view.
      */
@@ -17,7 +33,9 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
              ->_commonAutoload()
              ->_commonLogging()
              ->_commonDb()
-             ->_commonUser();
+             ->_commonAuth()
+             ->_commonRequest()
+             ->_commonPlugins();
     }
 
     protected function _initView()
@@ -45,7 +63,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
          * Initialize the default ACL and Role for this view.
          *
          */
-        $acl  = Zend_Registry::get('acl'); //$this->getResource('acl');
+        //$acl  = Zend_Registry::get('acl'); //$this->getResource('acl');
+        $acl = $this->getResource('acl');
 
         // Initialize the default ACL and Role for this view
         Zend_View_Helper_Navigation_HelperAbstract::setDefaultAcl($acl);
@@ -95,7 +114,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         /* If there is a current, authenticated user, set our ACL role to
          * 'member'
          */
-        $user = Zend_Registry::get('user');
+        $user = $this->getResource('user'); //Zend_Registry::get('user');
         if ($user->isAuthenticated())
         {
             $view->navigation()->setRole('member');
@@ -112,8 +131,13 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
 
 
+    /*************************************************************************
+     * Batch initialization helpers
+     *
+     */
 
-    protected function _commonTimezone()    //_initTimezone()
+    /** @brief  Initialize the default timezone. */
+    protected function _commonTimezone()
     {
         if ($this->hasOption('timezone'))
         {
@@ -126,28 +150,29 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
         date_default_timezone_set($zone);
 
-        //return $zone;
         return $this;
     }
 
-    protected function _commonSession() //_initSession()
+    /** @brief  Initialize the PHP session. */
+    protected function _commonSession()
     {
         Zend_Session::start();
 
         return $this;
     }
 
-    protected function _commonAutoload()    //_initAutoload()
+    /** @brief  Initialize autoloading. */
+    protected function _commonAutoload()
     {
         $autoLoader = Zend_Loader_Autoloader::getInstance();
 
         $connexionsLoader = new Connexions_Autoloader();
         $autoLoader->unshiftAutoloader($connexionsLoader);
 
-        // Load ANY namespace
+        // Tell the loader to load ANY namespace
         $autoLoader->setFallbackAutoloader(true);
 
-        return $this;   //return $autoLoader;
+        return $this;
 
         /*
         $autoLoader = new Zend_Application_Module_Autoloader(array(
@@ -159,31 +184,43 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         */
     }
 
-    protected function _commonLogging() //_initLogging()
+    /** @brief  Initialize logging. */
+    protected function _commonLogging()
     {
-        $config = $this->getPluginResource('log');
+        $resources = $this->getOption('resources');
 
-        try
+        // Do we have 'resources.log' in our options?
+        if ( is_array($resources) && isset($resources['log']))
         {
-            $log = $config->init();
+            try
+            {
+                $config = $this->getPluginResource('log');
+                $log    = $config->init();
+            }
+            catch (Exception $e)
+            {
+                echo "<pre>*** Log Initialization error\n",
+                        print_r($e, true),
+                     "</pre>\n";
+                die;
+            }
         }
-        catch (Exception $e)
+        else
         {
-            echo "<pre>*** Log Initialization error\n",
-                    print_r($e, true),
-                 "</pre>\n";
-            die;
-
+            // Logging is NOT enabled.
+            $log = -1;
         }
 
+        // Make the log available via the global Registry
         Zend_Registry::set('log', $log);
 
         Connexions::log('Bootstrap::Logging initialized');
 
-        return $this;   //return $log;
+        return $this;
     }
 
-    protected function _commonDb()  //_initDb()
+    /** @brief  Initialize the databsae. */
+    protected function _commonDb()
     {
         $config = $this->getPluginResource('db');
         $db     = $config->getDbAdapter();
@@ -215,183 +252,169 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             die("*** Cannot connect to database");
         }
 
+        /* Make this available via the global Registry and as a Bootstrap
+         * Resource
+         */
         Zend_Registry::set('db', $db);
+        $this->setResource('db', $db);
 
-        Connexions::log('Bootstrap::Database initialized');
+        //Connexions::log('Bootstrap::Database initialized');
 
-        return $this;   //return $db;
+        return $this;
     }
 
-    protected function _commonUser()    //_initUser()
+    /** @brief  Initialize authentication. */
+    protected function _commonAuth()
     {
-        /* Attempt to identify and authenticate the current user:
-         *  1) First, look in the session-based authentication store for an
-         *     identity;
-         *
-         *     a) If an identity is found in the store, make sure it identifies
-         *        a valid user;
-         *        i)  If the identity represents a valid user, consider the
-         *            user authenticated (should there be other checks??);
-         *        ii) Otherwise, fall back to looking at the request.
-         *
-         *  2) If no valid identity was found in the session-based
-         *     authentication store, see if our request contains identity and
-         *     authentication information;
-         *
-         *     a) If identity and authentication information were found in the
-         *        request, validate the identity and attempt authentication
-         *        verification;
-         *     b) If the identity is invalid or authentication fails, then we
-         *        have no authenticated user and create an "invalid" Model_User
-         *        instance to represent this fact;
-         *
-         *  3) Set the Model_User instance in our local cache and return it
-         *     to be stored as the 'User' resource.
-         */
-
-        // 1) See if the session-based authentication store has an identity
+        // Initialize authentication to use session-based storage
         $auth = Zend_Auth::getInstance();
         $auth->setStorage(new Zend_Auth_Storage_Session('connexions', 'user'));
 
-        $user   = null;
+        // See if there is a user currently identified
         $userId = $auth->getIdentity();
+
         /*
-        Connexions::log(sprintf("Bootstrap::_initUser: "
-                                . "UserId from session [ %s ]",
-                                    print_r($userId, true)) );
+        Connexions::log("Bootstrap::_commonAuth: "
+                                . "UserId from session [ "
+                                .   print_r($userId, true) ." ]");
         // */
 
+        $user = null;
         if ($userId !== null)
         {
-            /* 1.a) There appears to be identity information in our
-             *      authentication store (session/cookie).  Does it identify a
-             *      valid user?
-             */
-            $user = Model_User::find($userId);
+            // Does the identity represent a valid user?
+            //$user = Model_User::find($userId);
+            $user = new Model_User( $userId );
 
             /*
-            Connexions::log("Bootstrap::_initUser: userId[{$userId}], "
+            Connexions::log("Bootstrap::_commonAuth: userId[{$userId}], "
                                 . "User Model:\n"
                                 .   $user->debugDump());
             // */
 
             if ($user->isBacked())
             {
-                // 1.a.i) We have a valid user -- consider them authenticated.
+                /* We have a valid user identified in our session-based
+                 * authentication store -- consider them authenticated.
+                 */
+
                 /*
-                Connexions::log(sprintf("Bootstrap::_initUser: "
+                Connexions::log(sprintf("Bootstrap::_commonAuth: "
                                         .   "Initially Authenticated as "
                                         .       "[ %s ]",
                                         $user) );
                 // */
+
                 $user->setAuthenticated();
+            }
+            else
+            {
+                /* Invalid user identified in our session-based authentication
+                 * store -- clear the identity.
+                 */
+
+                // /*
+                Connexions::log("Bootstrap::_commonAuth: "
+                                .   "Invalid identity [ {$userId} ] - CLEAR");
+                // */
+
+                $auth->clearIdentity();
+
+                unset($user);
+                $user = null;
             }
         }
 
-        if ( ($user === null) || (! $user->isBacked()) )
+        if ($user === null)
         {
-            // 2) Do we have identity and authentication information?
-            $userId  = $req->getParam('user', null);
-            $pass    = $req->getParam('password');
-
-            /*
-            Connexions::log(sprintf("Bootstrap::_initUser: "
-                                    .   "User[ %s ], pass[ %s ]...",
-                                    $userId, $pass) );
-            // */
-
-            /* Generate a Model_User instance based upon the incoming userId.
+            /* :TODO: Any Transport-level / Atomic
+             *          Identification & Authentication should occur here,
+             *          storing the identity in the global Auth instance:
+             *              Zend_Auth::getInstance()->setIdentity( $id );
              *
-             * Note: If $userId is null, this will generate a Model_User
-             *       instance that is marked as 'invalid'.
-             *
-             * If we already have a non-null user and $userId is null, then we
-             * already have a $user that is marked as invalid.  Otherwise, we
-             * need to create a new Model_User instance with the given $userId.
+             *  Example:
+             *      $res = $auth->authenticate(new Connexions_Auth_ApacheSsl());
+             *      if ($res->isValid())
+             *          $user = $res->getUser();
+             *      else
+             *          Create an 'anonymous', unauthenticated user
              */
-            if (($user === null) || ($userId !== null))
-                $user = Model_User::find($userId);
 
-            /*
-            Connexions::log("Bootstrap::_initUser: "
-                            .   "User[ {$userId} ], pass[ {$pass} ], "
-                            .   "User Model:\n"
-                            .       $user->debugDump() );
-            // */
-
-            if ( $user->isBacked() && (! @empty($pass)) )
-            {
-                /* Perform authentication verification.
-                 *
-                 * Note: The Connexions_Auth adapter uses the
-                 *       Model_User::authenticate method to verify credentials.
-                 *       This ensures that the Model_User instance is properly
-                 *       marked as authenticated or NOT authenticated in
-                 *       addition to returning a valid Zend_Auth_Result.
-                 */
-                $adapter = new Connexions_Auth($user, $pass);
-                $res     = $auth->authenticate($adapter);
-
-                /*
-                Connexions::log("Bootstrap::_initUser: "
-                                .   "User authentication is"
-                                .       ($res->isValid() ? "" : " NOT")
-                                .   "valid/Authenticated, results:\n"
-                                .   print_r($res, true));
-                // */
-
-                /*
-                if (! $res->isValid())
-                {
-                    // Invalid password.
-                    Connexions::log("Bootstrap::_initUser: "
-                                    .   "User [ {$userId} ] "
-                                    .   "NOT authenticated: [ "
-                                    .       $res->getMessages() ." ], ".
-                                    .   "user error[ {$user->getError()} ]");
-                }
-                // */
-            }
-            /*
-            else
-            {
-                // Invalid user or missing password.
-                Connexions::log("Bootstrap::_initUser: "
-                                .   "User [ {$userId} ] "
-                                .   "NOT authenticated: "
-                                .   "User is"
-                                .       ($user->isValid()  ? "" : " NOT")
-                                .   " valid, is"
-                                .       ($user->isBacked() ? "" : " NOT")
-                                .   " backed, "
-                                .   "password[ {$pass} ]");
-            }
-            // */
+            // Create an 'anonymous', unauthenticated user
+            $user = new Model_User(array(
+                            '@isBacked' => false,
+                            '@isRecord' => true,
+                            'name'      => 'anonymous',
+                            'fullName'  => 'Anonymous'
+                        ));
         }
 
         // /*
-        Connexions::log(sprintf("Bootstrap::_initUser: "
+        Connexions::log(sprintf("Bootstrap::_commonAuth: "
                                 .  "Final user '%s' is%s authenticated",
                                 $user,
                                 ($user->isAuthenticated() ? '':' NOT')) );
         // */
 
-        /* Make it easy to retrieive user from anywhere.
+        /* Make this available via the global Registry and as a Bootstrap
+         * Resource.
          *
-         * Without this, we would need to retrieve the current bootstrap and
-         * the request the 'user' resource.
+         * Without making this available via the global Registry, we would need
+         * to retrieve the current bootstrap and the request the 'user'
+         * resource.
          *
          * From a Zend_Controller_Action:
          *      $this->getInvokeArg('bootstrap')->getResource('user');
          *      
          */
         Zend_Registry::set('user', $user);
+        $this->setResource('user', $user);
 
-
-        return $this;   //return $user;
+        return $this;
     }
 
-    protected function _viewAcl() //_initAcl()
+    /** @brief  Initialize the incoming request, assigning it to the front
+     *          controller.
+     */
+    protected function _commonRequest()
+    {
+        $front   = Zend_Controller_Front::getInstance();
+        $request = $front->getRequest();
+        if ($request === null)
+        {
+            /* We don't already have a request assigned so create one ASSUMING
+             * HTTP.
+             */
+            $request = new Zend_Controller_Request_Http();
+            $front->setRequest($request);
+        }
+
+        // Make the request available as a Bootstrap Resource
+        $this->setResource('request', $request);
+
+        return $this;
+    }
+
+    /** @brief  Initialize common, pre-view plugins and helpers. */
+    protected function _commonPlugins()
+    {
+        /*
+        $front = Zend_Controller_Front::getInstance();
+
+        // Register our authentication plugin (performs
+        // identification/authentication during dispatchLoopStartup().
+        $front->registerPlugin(new Connexions_Controller_Plugin_Auth());
+        */
+    }
+
+
+    /*******************************************
+     * For Views
+     *
+     */
+
+    /** @brief  Initialize the view-related ACL. */
+    protected function _viewAcl()
     {
         // Setup ACL
         $acl = new Zend_Acl();
@@ -408,12 +431,17 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $acl->allow('guest',  'guest');
         $acl->deny( 'member', 'guest');
 
+        /* Make this available via the global Registry and as a Bootstrap
+         * Resource
+         */
         Zend_Registry::set('acl', $acl);
+        $this->setResource('acl', $acl);
 
-        return $this;   //return $acl;
+        return $this;
     }
 
-    protected function _viewRoute()   //_initRoute()
+    /** @brief  Initialize view-related routing. */
+    protected function _viewRoute()
     {
         $front  = Zend_Controller_Front::getInstance();
         $router = $front->getRouter();
@@ -421,11 +449,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $route = new Connexions_Controller_Route();
         $router->addRoute('default', $route);
 
-        Connexions::log('Bootstrap::Route initialized');
+        //Connexions::log('Bootstrap::Route initialized');
 
-        return $this;   //return $route;
+        return $this;
     }
 
+    /** @brief  Initialize view-related plugins and helpers. */
     protected function _viewPlugins()
     {
         /*
