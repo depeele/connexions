@@ -3,8 +3,6 @@
  *
  *  The base class for Connexions Database Table Models.
  *
- *  Requires:
- *      LATE_STATIC_BINDING     to be defined (Connexions.php)
  */
 abstract class Connexions_Model
 {
@@ -975,9 +973,9 @@ abstract class Connexions_Model
         {
             $className = get_class($this);
 
-            $this->_table =& self::__sget($className, 'table');
-            $this->_keys  =& self::__sget($className, 'keys');
-            $this->_model =& self::__sget($className, 'model');
+            $this->_table =& self::metaData('table', $className);
+            $this->_keys  =& self::metaData('keys',  $className);
+            $this->_model =& self::metaData('model', $className);
         }
     }
 
@@ -1023,7 +1021,7 @@ abstract class Connexions_Model
             $db = Connexions::getDb();
 
         $select = $db->select()
-                     ->from(self::__sget($className, 'table'));
+                     ->from(self::metaData('table', $className));
         if (! @empty($where))
             $select->where($where);
 
@@ -1034,14 +1032,28 @@ abstract class Connexions_Model
      * Static methods supporting late static binding
      *
      */
-    public static function __sget($className, $member)
-    {
-        if (LATE_STATIC_BINDING)
-            // PHP >= 5.3 -- simply access the late static bound member
-            return $className::$$member;
 
-        // PHP < 5.3 -- requires reflection to access late static bindings
+    /** @brief  Retrieve the value of a static meta-data member of this Model.
+     *  @param  name        The name of the desired meta-data.
+     *  @param  className   The calling classes name -- needed only when we
+     *                      call this method from another static method of the
+     *                      Connexions_Model class.
+     *
+     *  @return The value.
+     */
+    public static function metaData($name, $className = null)
+    {
+        // PHP >= 5.3 -- simply access the late static bound member
+        if ($className === null)
+            $className = get_called_class();
+
+        return $className::$$name;
+
+
+        /* PHP < 5.3 -- requires reflection to access late static bindings AND
+         *              requires that the class name ALWAYS be passed in.
+         */
         $reflect = new ReflectionClass($className);
-        return $reflect->getStaticPropertyValue($member);
+        return $reflect->getStaticPropertyValue($name);
     }
 }

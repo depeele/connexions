@@ -87,7 +87,7 @@ class Connexions_Set implements Countable,
      */
     public function mapField($name)
     {
-        $model = Connexions_Model::__sget($this->_memberClass, 'model');
+        $model = Connexions_Model::metaData('model', $this->_memberClass);
         if (! @isset($model[$name]))
         {
             //$this->_addError("Invalid field [ {$name} ]");
@@ -242,11 +242,9 @@ class Connexions_Set implements Countable,
     {
         if ($this->_count === null)
         {
-            $start = microtime(true);
             $res = $this->_select_forCount()
                         ->query(Zend_Db::FETCH_ASSOC)
                         ->fetch();
-            $end   = microtime(true);
 
             $this->_count = (@isset($res[self::ROW_COUNT_COLUMN])
                                 ? $res[self::ROW_COUNT_COLUMN]
@@ -254,10 +252,9 @@ class Connexions_Set implements Countable,
 
             /*
             Connexions::log(sprintf("Connexions_Set::count():%s: "
-                                    . "%d: retrieve %f seconds",
+                                    . "%d",
                                         $this->_memberClass,
-                                        $this->_count,
-                                        ($end - $start)) );
+                                        $this->_count) );
             // */
         }
 
@@ -280,12 +277,10 @@ class Connexions_Set implements Countable,
 
     public function offsetGet($offset)
     {
-        $start = microtime(true);
 
         // Retrieve a single row
         $this->_select->limit(1, $offset);
         $rows = $this->_select->query()->fetchAll();
-        $end1 = microtime(true);
 
         // Note that this is a backed record.
         $rec = $rows[0];
@@ -293,15 +288,11 @@ class Connexions_Set implements Countable,
 
         // Create a new instance of the member class using the retrieved data
         $inst = new $this->_memberClass($rec);
-        $end2 = microtime(true);
 
         /*
-        Connexions::log(sprintf("Connexions_Set::offsetGet(%d):%s: "
-                                . "retrieve %f sec, instantiate %f secs",
+        Connexions::log(sprintf("Connexions_Set::offsetGet(%d):%s",
                                     $offset,
-                                    $this->_memberClass,
-                                    ($end1 - $start),
-                                    ($end2 - $end1)) );
+                                    $this->_memberClass) );
         // */
 
         // Return the new instance
@@ -347,7 +338,6 @@ class Connexions_Set implements Countable,
      */
     public function getItems($offset, $itemCountPerPage)
     {
-        $start = microtime(true);
         if ($itemCountPerPage <= 0)
         {
             $this->_select->reset(Zend_Db_Select::LIMIT_COUNT);
@@ -365,20 +355,17 @@ class Connexions_Set implements Countable,
         // */
 
         $rows = $this->_select->query()->fetchAll();
-        $end1 = microtime(true);
 
         $inst = new $this->_iterClass($this, $rows);
-        $end2 = microtime(true);
 
         /*
         Connexions::log(sprintf("Connexions_Set::getItems(%d, %d):%s: "
                                 //. "sql[ %s ], "
-                                . "retrieve %f sec, instantiate %f secs",
+                                ,
                                     $offset, $itemCountPerPage,
                                     $this->_memberClass,
                                     //$this->_select->assemble(),
-                                    ($end1 - $start),
-                                    ($end2 - $end1)) );
+                                    ));
         // */
 
         return $inst;

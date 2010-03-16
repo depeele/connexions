@@ -34,11 +34,25 @@ class Model_User extends Connexions_Model
                                     'totalTags'     => 'integer',
                                     'totalItems'    => 'integer'
     );
+
+    /** @brief  The set of models that are dependent upon this model.
+     *
+     *  This is primarily used to perform cascade on delete
+     *  (i.e. deleting a Model_User from the database will also caused the
+     *        deletion of associated Model_UserAuth and Model_UserItem
+     *        records).
+     */
+    public static   $dependents = array('Model_UserAuth',
+                                        'Model_UserItem');
+
     /*************************************************************************/
 
     protected       $_isAuthenticated   = false;
 
-    protected       $_tags              = null; // user-related tags
+    // Associated model caches (e.g. user-related tags and userItems)
+    protected       $_tags              = null; // Model_TagSet
+    protected       $_userItems         = null; // Model_UserItemSet
+
 
     /** @brief  Get a value of the given field.
      *  @param  name    The field name.
@@ -51,8 +65,9 @@ class Model_User extends Connexions_Model
     {
         switch ($name)
         {
-        case 'tags':    $res =& $this->_tags();         break;
-        default:        $res =  parent::__get($name);   break;
+        case 'tags':        $res =& $this->_tags();         break;
+        case 'userItems':   $res =& $this->_userItems();    break;
+        default:            $res =  parent::__get($name);   break;
         }
 
         if (! empty($field))
@@ -75,6 +90,7 @@ class Model_User extends Connexions_Model
         switch ($name)
         {
         case 'tags':
+        case 'userItems':
             // Do NOT allow external replacement of sub-instances.
             break;
 
@@ -297,6 +313,21 @@ class Model_User extends Connexions_Model
         }
 
         return $this->_tags;
+    }
+
+    protected function _userItems()
+    {
+        if ($this->_userItems === null)
+        {
+            if (@isset($this->_record['userId']))
+            {
+                $this->_userItems =
+                    new Model_UserItemSet(null, // tagIds
+                                          array($this->_record['userId']));
+            }
+        }
+
+        return $this->_userItems;
     }
 
     /*************************************************************************

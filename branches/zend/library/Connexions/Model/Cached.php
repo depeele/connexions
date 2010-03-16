@@ -4,8 +4,6 @@
  *  The base class for Connexions Database Table Model that supports instance
  *  caching.
  *
- *  Requires:
- *      LATE_STATIC_BINDING     to be defined (Connexions.php)
  */
 abstract class Connexions_Model_Cached extends Connexions_Model
 {
@@ -42,10 +40,11 @@ abstract class Connexions_Model_Cached extends Connexions_Model
      */
     public static function find($className, $id, $db = null)
     {
-        $instanceId = (LATE_STATIC_BINDING
-                        ? $className::_instanceId($id)
-                        : call_user_func(array($className, '_instanceId'),
-                                         $id));
+        /* PHP < 5.3:
+         *  $instanceId = call_user_func(array($className, '_instanceId'),
+         *                               $id);
+         */
+        $instanceId = $className::_instanceId($id);
 
         /*
         Connexions::log("Connexions_Model_Cached::find: "
@@ -72,10 +71,11 @@ abstract class Connexions_Model_Cached extends Connexions_Model
                 self::$_cache[$instanceId] =& $instance;
             }
 
-            $newInstId = (LATE_STATIC_BINDING
-                            ? $className::_instanceId($instance->_record)
-                            : call_user_func(array($className, '_instanceId'),
-                                             $instance->_record));
+            /* PHP < 5.3:
+             *  $newInstId = call_user_func(array($className, '_instanceId'),
+             *                              $instance->_record);
+             */
+            $newInstId = $className::_instanceId($instance->_record);
 
             if ($newInstId !== $instanceId)
             {

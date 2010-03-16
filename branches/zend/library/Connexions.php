@@ -11,12 +11,6 @@
  *      $class::$table      Access the static 'table' member of the class
  *                          identified by the value of $class.
  */
-defined('LATE_STATIC_BINDING')
-    || define('LATE_STATIC_BINDING',
-              ((version_compare(PHP_VERSION, "5.3.0") >= 0)
-                    ? true
-                    : false) );
-
 class Connexions
 {
     protected static    $_user  = null;
