@@ -167,7 +167,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $autoLoader = Zend_Loader_Autoloader::getInstance();
 
         $connexionsLoader = new Connexions_Autoloader();
-        $autoLoader->unshiftAutoloader($connexionsLoader);
+        $autoLoader->unshiftAutoloader($connexionsLoader,
+                                       $connexionsLoader->getNamespaces());
 
         // Tell the loader to load ANY namespace
         $autoLoader->setFallbackAutoloader(true);

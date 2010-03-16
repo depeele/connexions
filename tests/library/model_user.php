@@ -1,57 +1,94 @@
 <?php
 require_once('./bootstrap.php');
 
+echo "<pre>";
+echo "<h3>Model_User tests</h3>";
+
 $rec = Model_User::find(1);
-echo "<pre>Record for 1:\n";
-echo ($rec instanceof Connexions_Model ? $rec->debugDump() : " *** ERROR\n");
-echo "</pre><hr />";
+echo "Record for 1:\n";
+
+if ($rec instanceof Connexions_Model)
+{
+    echo $rec->debugDump();
+
+    $tags = $rec->tags;
+    $idex = 0;
+    printf ("\n%d tags; First 5: ", count($tags));
+    foreach ($tags as $tag)
+    {
+        if ($idex++ >= 5)
+            break;
+
+        printf ("%d: id[%d] '%s', ", $idex, $tag->tagId, $tag);
+    }
+    echo "\n";
+
+    $userItems = $rec->userItems;
+    $idex = 0;
+    printf ("\n%d user-items; First 5: ", count($userItems));
+    foreach ($userItems as $item)
+    {
+        if ($idex++ >= 5)
+            break;
+
+        printf ("%d: id[%d, %d] '%s', ",
+                $idex, $item->userId, $item->itemId, $item);
+    }
+    echo "\n";
+            
+}
+else
+{
+    echo " *** ERROR\n";
+}
+echo "<hr />";
 unset($rec);
 
 /*****************************************************************************/
 $rec = Model_User::find(array('userId' => 1));
-echo "<pre>Record for userId==1:\n";
+echo "Record for userId==1:\n";
 echo ($rec instanceof Connexions_Model ? $rec->debugDump() : " *** ERROR\n");
-echo "</pre><hr />";
+echo "<hr />";
 unset($rec);
 
 /*****************************************************************************/
 $rec = Model_User::find(array('userId' => 1, 'name' => 'dep'));
-echo "<pre>Record for userId==1, name=='dep':\n";
+echo "Record for userId==1, name=='dep':\n";
 echo ($rec instanceof Connexions_Model ? $rec->debugDump() : " *** ERROR\n");
-echo "</pre><hr />";
+echo "<hr />";
 unset($rec);
 
 /*****************************************************************************/
 $rec = Model_User::find(array('userId' => 1, 'name' => 'abcdef'));
-echo "<pre>Record for userId==1, name=='abcdef':\n";
+echo "Record for userId==1, name=='abcdef':\n";
 echo ($rec instanceof Connexions_Model ? $rec->debugDump() : " *** ERROR\n");
-echo "</pre><hr />";
+echo "<hr />";
 unset($rec);
 
 /*****************************************************************************/
 $rec = Model_User::find('dep');
-echo "<pre>Record for 'dep':\n";
+echo "Record for 'dep':\n";
 echo ($rec instanceof Connexions_Model ? $rec->debugDump() : " *** ERROR\n");
-echo "</pre><hr />";
+echo "<hr />";
 unset($rec);
 
 /*****************************************************************************/
 $rec = Model_User::find('abcdef');
-echo "<pre>Record for 'abcdef':\n";
+echo "Record for 'abcdef':\n";
 echo ($rec instanceof Connexions_Model ? $rec->debugDump() : " *** ERROR\n");
-echo "</pre><hr />";
+echo "<hr />";
 unset($rec);
 
 /*****************************************************************************/
 $rec = Model_User::find(91827371);
-echo "<pre>Record for '91827371':\n";
+echo "Record for '91827371':\n";
 echo ($rec instanceof Connexions_Model ? $rec->debugDump() : " *** ERROR\n");
-echo "</pre><hr />";
+echo "<hr />";
 unset($rec);
 
 /*****************************************************************************/
 $rec = Model_User::find(array('invalidKey' => 123));
-echo "<pre>Record for invalidKey==123:\n";
+echo "Record for invalidKey==123:\n";
 echo ($rec instanceof Connexions_Model ? $rec->debugDump() : " *** ERROR\n");
 echo "\n\n";
 
@@ -64,12 +101,12 @@ $rec->invalidField = 'def';
 echo "Set 'invalidField':\n";
 echo ($rec instanceof Connexions_Model ? $rec->debugDump() : " *** ERROR\n");
 
-echo "</pre><hr />";
+echo "<hr />";
 unset($rec);
 
 /*****************************************************************************/
 $rec = new Model_User(array('name'  => 'Test User'));
-echo "<pre>Record for name=='Test User':\n";
+echo "Record for name=='Test User':\n";
 echo ($rec instanceof Connexions_Model ? $rec->debugDump() : " *** ERROR\n");
 echo "\n\n";
 
@@ -114,13 +151,13 @@ if ($res === true)
 else
     echo "** FAILURE\n";
 
-echo "</pre><hr />";
+echo "<hr />";
 unset($rec);
 
 /*****************************************************************************/
 $users = 'dep,sab,cag';
 $data  = Model_User::ids('dep,sab,cag');
-echo "<pre>ID information for '{$users}':\n";
+echo "ID information for '{$users}':\n";
 print_r($data);
-echo "</pre><hr />";
+echo "<hr />";
 unset($data);

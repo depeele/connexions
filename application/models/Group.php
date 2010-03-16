@@ -36,9 +36,11 @@ class Model_Group extends Connexions_Model
 
     protected       $_isAuthenticated   = false;
 
-    protected       $_owner             = null; // group owner   (Model_User)
-    protected       $_members           = null; // group members
-    protected       $_items             = null; // group items
+    // Associated model caches
+    protected       $_owner             = null; // Model_User
+    protected       $_members           = null; // Model_GroupMemberSet
+    protected       $_items             = null; // Model_GroupItemSet
+
 
     /** @brief  Get a value of the given field.
      *  @param  name    The field name.

@@ -22,6 +22,16 @@ class Model_Item extends Connexions_Model_Cached
                                     'ratingCount'   => 'integer',
                                     'ratingSum'     => 'integer'
     );
+
+    /** @brief  The set of models that are dependent upon this model.
+     *
+     *  This is primarily used to perform cascade on delete
+     *  (i.e. deleting a Model_User from the database will also caused the
+     *        deletion of associated Model_UserAuth and Model_UserItem
+     *        records).
+     */
+    public static   $dependents = array('Model_UserItem');
+
     /*************************************************************************/
 
     /** @brief  Return a string representation of this instance.

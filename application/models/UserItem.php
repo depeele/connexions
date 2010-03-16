@@ -33,9 +33,10 @@ class Model_UserItem extends Connexions_Model
 
     protected static    $_foreignFields = null;
 
-    protected           $_user          = null;
-    protected           $_item          = null;
-    protected           $_tags          = null;
+    // Associated model caches (e.g. userItem's user, item, tags).
+    protected           $_user          = null; // Model_User
+    protected           $_item          = null; // Model_Item
+    protected           $_tags          = null; // Model_TagSet
 
 
     /** @brief  Create a new instance.
@@ -138,8 +139,8 @@ class Model_UserItem extends Connexions_Model
      */
     public function __toString()
     {
-        if ($this->isValid() && (! @empty($this->_record['url'])))
-            return $this->_record['url'];
+        if ($this->isValid() && (! @empty($this->_record['name'])))
+            return $this->_record['name'];
 
         return parent::__toString();
     }
@@ -147,7 +148,7 @@ class Model_UserItem extends Connexions_Model
     /** @brief  Get a value of the given field.
      *  @param  name    The field name.
      *
-     *  Note: Sub-instances or their fields are addressed by pre-pending the
+     *  Note: Sub-instances or their fields may be addressed by pre-pending the
      *        sub-instance name:
      *          user[_<field>]
      *          item[_<field>]

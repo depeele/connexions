@@ -33,8 +33,9 @@ class Connexions_Set_Iterator extends ArrayIterator
         $db    = $this->_parentSet->select()->getAdapter();
         $row['@isBacked'] = true;
 
-        return (LATE_STATIC_BINDING
-                    ? $memberClass::find($row, $db)
-                    : call_user_func(array($memberClass, 'find'), $row, $db));
+        /* PHP < 5.3:
+         *  return call_user_func(array($memberClass, 'find'), $row, $db);
+         */
+        return $memberClass::find($row, $db);
     }
 }

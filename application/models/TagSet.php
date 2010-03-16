@@ -39,7 +39,7 @@ class Model_TagSet extends Connexions_Set
 
         // Generate a Zend_Db_Select instance
         $db     = Connexions::getDb();
-        $table  = Connexions_Model::__sget($memberClass, 'table');
+        $table  = Connexions_Model::metaData('table', $memberClass);
 
         $select = $db->select()
                      ->from(array('t' => $table))

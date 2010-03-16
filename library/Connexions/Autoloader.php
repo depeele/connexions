@@ -32,7 +32,12 @@ class Connexions_Autoloader implements Zend_Loader_Autoloader_Interface
                 'ZendX_'        => array('path' => APPLICATION_LIBRARY_PATH),
                 'Connexions_'   => array('path' => APPLICATION_LIBRARY_PATH),
                 'Model_'        => array('path' => APPLICATION_MODEL_PATH,
-                                         'shift'=> 1)
+                                         'shift'=> 1),
+                /* Force the Zend_Loader to call us for any class that has
+                 * no prefix -- we could use this to remove any prefix from our
+                 *              model classes.
+                 */
+                ''              => array('path' => APPLICATION_MODEL_PATH)
     );
 
     /** @brief  Constructor
@@ -67,7 +72,7 @@ class Connexions_Autoloader implements Zend_Loader_Autoloader_Interface
         if (! $mapInfo)
         {
             // Default to APPLICATION_LIBRARY_PATH
-            $filePath = APPLICATION_LIBRARY_PATH;
+            $filePath = APPLICATION_MODEL_PATH; //APPLICATION_LIBRARY_PATH;
         }
         else
         {
