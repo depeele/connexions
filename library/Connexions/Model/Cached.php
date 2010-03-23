@@ -32,14 +32,19 @@ abstract class Connexions_Model_Cached extends Connexions_Model
 
     /** @brief  Locate the record for the identified user and return a new User
      *          instance.
-     *  @param  className   The name of the concrete sub-class.
      *  @param  id          The record identifier.
      *  @param  db          An optional database instance (Zend_Db_Abstract).
+     *  @param  className   The name of the concrete sub-class.
      *
      *  @return An instance, possibly from our instance cache.
      */
-    public static function find($className, $id, $db = null)
+    public static function find($id, $db = null, $className = null)
     {
+        // PHP < 5.3, comment out this test, requiring callers to supply ALL
+        //            parameters.
+        if ($className === null)
+            $className = get_called_class();
+
         /* PHP < 5.3:
          *  $instanceId = call_user_func(array($className, '_instanceId'),
          *                               $id);
@@ -60,7 +65,7 @@ abstract class Connexions_Model_Cached extends Connexions_Model
         }
 
         // Find/Create a new instance.
-        $instance = parent::find($className, $id, $db);
+        $instance = parent::find($id, $db, $className);
         if ($instance instanceof $className)
         {
             if ($instanceId !== null)

@@ -1,17 +1,18 @@
 <?php
 /** @file
  *
- *  The base class for a set of Connexions Database Table Model instances.
+ *  The abstract base class for a set of Connexions Database Table Model
+ *  instances.
  *
  *  This can be directly used as a Zend_Paginator adapter:
  *      $set       = new Connexions_Set('Model_UserItem', $select);
  *      $paginator = new Zend_Paginator($set);
  *
  */
-class Connexions_Set implements Countable,
-                                IteratorAggregate,
-                                ArrayAccess,
-                                Zend_Paginator_Adapter_Interface
+abstract class Connexions_Set implements Countable,
+                                         IteratorAggregate,
+                                         ArrayAccess,
+                                         Zend_Paginator_Adapter_Interface
 {
     /** @brief  The name to use as the row count column. */
     const       ROW_COUNT_COLUMN    = 'connexions_set_row_count';
@@ -39,9 +40,10 @@ class Connexions_Set implements Countable,
                                          */
     /** @brief  Create a new instance.
      *  @param  select      A Zend_Db_Select instance representing the set of
-     *                      items.
+     *                      items;
      *  @param  memberClass The name of the Model class for members of this
-     *                      set.
+     *                      set (if _memberClass has not yet been set by the
+     *                           concrete instance);
      *  @param  iterClass   The name of the class to create for a set iterator
      *                      [ 'Connexions_Set_Iterator' ].
      */
@@ -49,13 +51,17 @@ class Connexions_Set implements Countable,
                                 $memberClass    = null,
                                 $iterClass      = null)
     {
-        if (! @is_string($memberClass))
-            throw new Exception("Connexions_Set requires 'memberClass' ".
-                                    "either directly specified or as ".
-                                    "a member of the provided 'select'");
+        if ($this->_memberClass === null)
+        {
+            if (! @is_string($memberClass))
+                throw new Exception("Connexions_Set requires 'memberClass' "
+                                    . "either directly specified or as "
+                                    . "a member of the provided 'select'");
 
-        $this->_select      = $select;
-        $this->_memberClass = $memberClass;
+            $this->_memberClass = $memberClass;
+        }
+
+        $this->_select = $select;
 
         if (! @empty($iterClass))
             $this->_iterClass = $iterClass;

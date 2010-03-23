@@ -1,7 +1,7 @@
 <?php
 /** @file
  *
- *  The base class for Connexions Database Table Models.
+ *  The abstract base class for Connexions Database Table Models.
  *
  */
 abstract class Connexions_Model
@@ -10,6 +10,18 @@ abstract class Connexions_Model
      * The following static, identity members MUST be overridden by concrete
      * classes.
      *
+     *   table          is the name of the underlying database table
+     *   keys           is an array of database keys, increasing order by most
+     *                  used
+     *
+     *   model          an associative array of 'field' => 'type' defining all
+     *                  fields of the table.  Valid types are:
+     *                      auto        - an auto-incrementing integer value
+     *                      integer
+     *                      float
+     *                      boolean
+     *                      datetime
+     *                      string      - default type
      */
     public static   $table  = null;
     public static   $keys   = null;
@@ -317,48 +329,41 @@ abstract class Connexions_Model
      */
     public function delete()
     {
-       $res = false;
-        if ($this->_isBacked === true)
-        {
-            /* Generate a where clause comprised of ALL the keys of this
-             * record.
-             *
-             * Note: We COULD just pass the entire record as the where clause,
-             *       but then this would negate any advantage gained by having
-             *       indexed keys.
-             */
-            $where  = array();
-            foreach ($this->_keys as $field)
-            {
-                if (! @isset($this->_record[$field]))
-                {
-                    throw(new Exception("*** Cannot delete record: ".
-                                            "Missing key [ ". $field ." ]"));
-                }
-
-                $where['('. $field .'=?)'] = $this->_record[$field];
-            }
-
-            if (empty($where))
-            {
-                throw(new Exception("*** Don't delete all records!!"));
-            }
-
-            /*
-            Connexions::log(sprintf("Connexions_Model: Delete from '%s'; ".
-                                    "where( clause[%s], binding[%s] )\n",
-                                    $this->_table,
-                                    implode(' AND ', array_keys($where)),
-                                    implode(', ', array_values($where)) ) );
-            // */
-            if ($this->_db->delete($this->_table, $where) )
-            {
-                $res = true;
-            }
-        }
-        else
+        if ($this->_isBacked !== true)
         {
             $this->_error = "Record is not backed";
+            return false;
+        }
+
+        /* Generate a where clause comprised of ALL the keys of this
+         * record.
+         *
+         * Note: We COULD just pass the entire record as the where clause,
+         *       but then this would negate any advantage gained by having
+         *       indexed keys.
+         */
+        $res   = false;
+        $where = $this->_record2where();
+        if (empty($where))
+        {
+            throw(new Exception('Connexions_Model::delete:'
+                                .  ' ('. get_class($this) .') '
+                                .  'There are no keys with associated values '
+                                .  'set for this record.  '
+                                .  'ABORT, otherwise ALL records woudl be '
+                                .  'deleted!'));
+        }
+
+        /*
+        Connexions::log(sprintf("Connexions_Model: Delete from '%s'; ".
+                                "where( clause[%s], binding[%s] )\n",
+                                $this->_table,
+                                implode(' AND ', array_keys($where)),
+                                implode(', ', array_values($where)) ) );
+        // */
+        if ($this->_db->delete($this->_table, $where) )
+        {
+            $res = true;
         }
 
         return $res;
@@ -374,7 +379,8 @@ abstract class Connexions_Model
         if (! @empty($error))
             $this->_error = $error;
 
-        $this->_isValid = false;
+        $this->_isValid   = false;
+        $this->_validated = array();
     }
 
     public function toArray()
@@ -486,19 +492,19 @@ abstract class Connexions_Model
         $isKey       = true;
         $keysMatched = array();
         $where       = array();
-        foreach ($inData as $key => &$val)
+        foreach ($inData as $field => &$val)
         {
-            /* If 'key' is a string, see if it matches a database key field
-             * name.
+            /* Attempt to match the current field against the keys for this
+             * model.
              */
             $dbKey = false;
-            if (@is_string($key))
+            foreach ($this->_keys as $key)
             {
-                /* See if this 'key' matches a database key field
-                 * that we haven't already seen...
-                 */
-                if (@in_array($key, $this->_keys) &&
-                    (! @isset($keysMatched[$key])) )
+                if (isset($keysMatches[$key]))
+                    // We've already matched this 'key', skip it...
+                    continue;
+
+                if ( (! is_string($field)) || ($field == $key) )
                 {
                     // See if the value matches the type of this key.
                     try
@@ -513,47 +519,16 @@ abstract class Connexions_Model
                         // No match on value, therefore no match on key field
                     }
                 }
+
+                if ($dbKey !== false)
+                    break;
             }
-            else
+
+            if ($dbKey !== false)
             {
-                /* This 'key' seems to be the index of an array.  See if the
-                 * provided value matches any of the keys from our database.
-                 */
-                foreach ($this->_keys as $checkKey)
-                {
-                    if (@isset($keysMatched[$checkKey]))
-                    {
-                        // We've already matched this 'key', skip it....
-                        continue;
-                    }
-
-                    try
-                    {
-                        $val   = $this->_coherse($val,
-                                                 $this->_model[$checkKey]);
-                        $dbKey = $checkKey;
-
-                        // Match!
-                        break;
-                    }
-                    catch(Exception $e)
-                    {
-                        // Ignore and continue
-                    }
-                }
+                $isKey = true;
+                $where["({$dbKey}=?)"] = $val;
             }
-
-            if ($dbKey === false)
-            {
-                /* The 'key' from this key/value pair doesn't match a
-                 * database key field name or value/type.
-                 */
-                $isKey = false;
-                break;
-            }
-
-            $where['('.$dbKey.'=?)'] = $val;
-
         }
 
         return ($isKey && (! empty($where))
@@ -576,16 +551,6 @@ abstract class Connexions_Model
      */
     protected function _init($id, $db = null)
     {
-        $isBacked = false;
-        $isRecord = false;
-
-        /*
-        $class    = get_class($this);
-        echo "<pre>Connexions_Model::_init: class[{$class}], id:\n",
-             print_r($id, true),
-             "</pre>\n";
-        // */
-
         // (Re)set our state
         $this->_id        = null;
         $this->_isBacked  = false;
@@ -595,14 +560,33 @@ abstract class Connexions_Model
         $this->_validated = array();
         $this->_dirty     = array();
 
-        if (@is_array($id) && @isset($id['@isBacked']))
-        {
-            $isBacked = ($id['@isBacked'] ? true : false);
-            unset($id['@isBacked']);
+        if ($db !== null)
+            $this->_db = $db;
 
-            if ($isBacked)
+        // Make sure we have a database conneciont in $this->_db
+        if ( ! $this->_db instanceof Zend_Db_Adapter_Abstract)
+            $this->_db = $this->getDb();
+
+        $isBacked = false;
+        $isRecord = false;
+
+        if (is_array($id))
+        {
+            if (isset($id['@isBacked']))
             {
-                $isRecord = true;
+                $isBacked = ($id['@isBacked'] ? true : false);
+                unset($id['@isBacked']);
+
+                if ($isBacked)
+                {
+                    $isRecord = true;
+                    unset($id['@isRecord']);
+                }
+            }
+
+            if (isset($id['@isRecord']))
+            {
+                $isRecord = ($id['@isRecord'] ? true : false);
                 unset($id['@isRecord']);
             }
         }
@@ -613,16 +597,6 @@ abstract class Connexions_Model
             unset($id['@isRecord']);
         }
 
-        if ($db !== null)
-            $this->_db = $db;
-
-        // Make sure we have a database conneciont in $this->_db
-        if ( ! $this->_db instanceof Zend_Db_Adapter_Abstract)
-            $this->_db = Connexions::getDb();
-
-        if ($id === null)
-            return $this;
-
         /* Attempt to figure out what 'id' represents:
          *  - a scaler value representing a database key;
          *  - an array of key/value pair(s) representing a set of database
@@ -630,8 +604,43 @@ abstract class Connexions_Model
          *  - an array of key/value pairs representing record data
          *    (iff isBacked is true).
          */
-        if ( ($isRecord !== true) && ($isBacked !== true) &&
-             (($where = $this->_data2where($id)) !== false) )
+        if ( $isRecord )
+        {
+            /***************************************************************
+             * $id is incoming record data, possibly backed.
+             *
+             */
+            $this->_record = $id;
+
+            if ($isBacked === true)
+            {
+                /* The incomding record initialization data is backed
+                 * (i.e. directly from the database), so call it valid.
+                 */
+                $this->_isValid  = true;
+                $this->_isBacked = true;
+            }
+            else
+            {
+                /* The incoming record initialization data is NOT backed, so
+                 * perform validation.
+                 */
+                $this->_isValid = $this->_validate();
+                if ($this->_isValid !== true)
+                {
+                    $invalid = array_diff(array_keys($this->_record),
+                                          array_keys($this->_validated));
+
+                    $this->_error = 'Invalid fields and/or values ['
+                                  .     implode(', ', $invalid) .']';
+
+                    $this->_record    = null;
+                    $this->_validated = array();
+                    $this->_dirty     = array();
+                }
+            }
+        }
+        else if ( ($where = $this->_data2where($id)) !== false )
         {
             /***************************************************************
              * 'id' was NOT marked as a backed record AND we have
@@ -673,109 +682,121 @@ abstract class Connexions_Model
                  * Invoke this method again noting that the data is a backed
                  * record.
                  */
-                $rec['@isBacked'] = true;
+                $rec['@isBacked'] = true;   // implies '@isRecord'
                 $this->_init($rec, $this->_db);
             }
             else
             {
-                // No matching record
-                $idParts = array();
+                /*************************************
+                 * No matching record
+                 *
+                 * Attempt to parse the data into
+                 * record initialization data.
+                 */
                 if (@is_array($id))
                 {
-                    /* The incoming 'id' is an array, perhaps it is the data
-                     * for a new record.
+                    /* Attempt to parse this array into data that
+                     * can be used to initialize this record.
+                     *
+                     * It will either invoke this method again with valid
+                     * initialization data, or will set an error.  Either way,
+                     * we're finished.
                      */
-                    $idKeys = array_keys($id);
-                    if (is_string($idKeys[0]))
-                    {
-                        /* 'id' is an associative array.  Remove any field that
-                         * is an 'auto' key and, if there are fields remaining,
-                         * call it a non-backed record.
-                         */
-                        foreach ($this->_keys as $dbKey)
-                        {
-                            if (@isset($id[$dbKey]) &&
-                                ($this->_model[$dbKey] === 'auto') )
-                            {
-                                /* Remember the fields that we remove in case
-                                 * we end up removing them all.
-                                 */
-                                array_push($idParts, $dbKey.'=='.$id[$dbKey]);
-
-                                unset($id[$dbKey]);
-                            }
-                        }
-
-                        if (! @empty($id))
-                        {
-                            /* We have data for a new record that includes one
-                             * or more non-auto fields.
-                             *
-                             * Invoke this method again noting that the data
-                             * represents a non-backed record.
-                             */
-                            $id['@isRecord'] = true;
-                            return $this->_init($id, $this->_db);
-                        }
-
-                        // Oops.  The only fields were all 'auto' keys
-                    }
-
-                    // Assemble an error message
-                    foreach ($id as $key => $val)
-                    {
-                        if (@is_string($key))
-                        {
-                            array_push($idParts, $key.'=='.$val);
-                        }
-                        else
-                            array_push($idParts, $val);
-                    }
+                    $this->_array2record($id);
                 }
                 else
                 {
-                    array_push($idParts, $id);
+                    $this->_error = "No record matching '{$id}'";
                 }
-
-                $this->_error = 'No record matching "'
-                              .         implode(', ', $idParts) . '"';
             }
         }
-        else if (@is_array($id))
+        else if (is_array($id))
         {
-            /***************************************************************
-             * $id is incoming record data, possibly backed.
-             *
-             */
-            $this->_record = $id;
-
-            if ($isBacked === true)
-            {
-                $this->_isValid  = true;
-                $this->_isBacked = true;
-            }
-            else
-            {
-                // Validate this incoming data.
-                $this->_isValid = $this->_validate();
-                if ($this->_isValid !== true)
-                {
-                    $invalid = array_diff(array_keys($this->_record),
-                                          array_keys($this->_validated));
-
-                    $this->_error = 'Invalid fields and/or values ['
-                                  .     implode(', ', $invalid) .']';
-
-                    $this->_record    = null;
-                    $this->_validated = array();
-                    $this->_dirty     = array();
-                }
-            }
+            // Try marking this array data as '@isRecord'...
+            $id['@isRecord'] = true;
+            return $this->_init($id, $db);
         }
         else
         {
             // Not a key nor valid record data...
+            $this->_error = "Invalid record initialization data: '{$id}'";
         }
+
+        return $this;
+    }
+
+    /** @brief  Given an array, see if it contains valid data for the
+     *          initialization of a new, unbacked record.
+     *  @param  id      The initialization array.
+     *
+     *  @return Connexions_Model to provide a fluent interface.
+     */
+    protected function _array2record(array $id)
+    {
+        /* The incoming 'id' is an array, perhaps it is the data
+         * for a new record.
+         */
+        $idParts = array();
+        $idKeys  = array_keys($id);
+        if (is_string($idKeys[0]))
+        {
+            /* 'id' is an associative array.  Use our 'model' to try and build
+             * a valid record initialization array.
+             *
+             * Start by removing any field that has a type of 'auto'.  If there
+             * are fields remaining, call it a non-backed record.
+             */
+            foreach ($this->_keys as $key)
+            {
+                if ($this->_model[$key] !== 'auto')
+                    continue;
+
+                if (isset($id[$key]) )
+                {
+                    /* Remember the fields that we remove in case
+                     * we end up removing them all.
+                     */
+                    array_push($idParts, $key.'=='.$id[$key]);
+
+                    unset($id[$key]);
+                }
+            }
+
+            if (! @empty($id))
+            {
+                /* We have data that includes one or more non-auto fields.
+                 *
+                 * The fields MAY NOT be valid for a record, but that will be
+                 * taken care of down the line.  Invoke the _init() method
+                 * again, noting that the data seems to represent a non-backed
+                 * record.
+                 */
+                $id['@isRecord'] = true;
+                return $this->_init($id, $this->_db);
+            }
+
+            /* The only fields were all 'auto' keys.
+             *
+             * Fall through to error...
+             */
+        }
+
+        /***********************************************************
+         * Error -- assemble and record an error message.
+         *
+         */
+        foreach ($id as $key => $val)
+        {
+            if (@is_string($key))
+            {
+                array_push($idParts, $key.'=='.$val);
+            }
+            else
+                array_push($idParts, $val);
+        }
+
+        $this->_error = 'No record matching "'
+                      .         implode(', ', $idParts) . '"';
 
         return $this;
     }
@@ -791,36 +812,28 @@ abstract class Connexions_Model
     protected function _validate($field = null)
     {
         $isValid = false;
-        if ($field !== null)
+        if ($field === null)
         {
-            // Validate the given field
+            $fields = $this->_model;
+        }
+        else
+            $fields = array( $field => null );
+
+        // Validate all fields, assuming they will be valid.
+        $isValid = true;
+        foreach ($this->_model as $field => $type)
+        {
             $field = $this->mapField($field);
             if ($field === null)
                 return false;
 
             $this->_validated[$field] =
-                    ( (@isset($this->_validated[$field]) &&
-                       $this->_validated[$field]) ||
-                     $this->_validateField($this->_record, $field));
-        }
-        else
-        {
-            // Validate all fields -- assume it will be valid
-            $isValid = true;
-            foreach ($this->_model as $field => $type)
-            {
-                $field = $this->mapField($field);
-                if ($field === null)
-                    return false;
+                ( (@isset($this->_validated[$field]) &&
+                          $this->_validated[$field]) ||
+                 $this->_validateField($this->_record, $field));
 
-                $this->_validated[$field] =
-                    ( (@isset($this->_validated[$field]) &&
-                       $this->_validated[$field]) ||
-                     $this->_validateField($this->_record, $field));
-
-                if ($this->_validated[$field] !== true)
-                    $isValid = false;
-            }
+            if ($this->_validated[$field] !== true)
+                $isValid = false;
         }
 
         return $isValid;
@@ -828,28 +841,32 @@ abstract class Connexions_Model
 
     /** @brief  Validate the given field.
      *  @param  record  The record to validate within.
-     *  @param  field   The field to validate.
+     *  @param  field   The pre-mapped field to validate.
      *
      *  @return true | false
      */
     protected function _validateField(&$record, $field)
     {
-        $field = $this->mapField($field);
-        if ($field === null)
-            return false;
-
         $isValid = true;
-
         if (! @isset($record[$field]))
         {
-            /* This field has no value.  If it is key field that is NOT 'auto',
-             * consider it invalid.  Otherwise, allow it.
+            /* This field has no value.
+             *
+             * See if it is a 'key' field.  If so, we only allow 'auto' keys to 
+             * be empty.
              */
-            if ( (in_array($field, $this->_keys)) &&
-                 ($this->_model[$field] !== 'auto') )
+            if ($this->_model[$field] !== 'auto')
             {
-                // Key field that is NOT 'auto' -- INVALID
-                $isValid = false;
+                // The field is NOT marked 'auto'.  See if it matches any key.
+                if (in_array($field, $this->_keys))
+                {
+                    /* This field matches a non-auto key.
+                     *
+                     * We don't allow empty key fields so mark this field
+                     * invalid.
+                     */
+                    $isValid = false;
+                }
             }
 
             return $isValid;
@@ -949,7 +966,9 @@ abstract class Connexions_Model
         case 'datetime':
             $date = date_parse($value);
             if (! @empty($date['errors']))
+            {
                 throw (new Exception(implode('\n', $date['errors'])));
+            }
 
             // Format the date/time for MySQL 'YYYY-MM-DD HH:mm:ss'
             $value = sprintf("%04d-%02d-%02d %02d:%02d:%02d",
@@ -984,46 +1003,84 @@ abstract class Connexions_Model
      *
      */
 
+    /** @brief  Retrieve a database adapter.
+     *
+     *  @return A Zend_Db_Adapter_Abstract instance
+     */
+    public static function getDb()
+    {
+        $db = null;
+        if (isset($this))
+        {
+            $db = $this->_db;
+        }
+
+        if ( ! $db instanceof Zend_Db_Adapter_Abstract)
+            $db = Connexions::getDb();
+
+        return $db;
+    }
+
     /** @brief  Locate the identified record.
-     *  @param  className   The name of the concrete sub-class.
      *  @param  id          The record identifier.
      *  @param  db          An optional database instance (Zend_Db_Abstract).
+     *  @param  className   The name of the concrete sub-class.
      *
      *  @return A new instance (check isBacked(), isValid(), getError()).
      */
-    public static function find($className, $id, $db = null)
+    public static function find($id, $db = null, $className = null)
     {
-        /* For php >= 5.3, we could do away with the incoming $className along
-         * with the need for a fetchAll() in the concrete classes and simply
-         * use:
-         *  $className = get_called_class();
-         */
+        // PHP < 5.3, comment out this test, requiring callers to supply ALL
+        //            parameters.
+        if ($className === null)
+            $className = get_called_class();
+
         return new $className($id, $db);
     }
 
     /** @brief  Return a Zend_Db_Select instance for all records matching the
      *          given 'where' clause.
-     *  @param  className   The name of the concrete sub-class.
-     *  @param  where       A string or associative array of restrictions.
-     *  @param  db          An optional database instance (Zend_Db_Abstract).
+     *  @param  config      Configuration settings for the desired
+     *                      Zend_Db_Select:
+     *                          db          An optional Zend_Db_Abstract
+     *                                      database adapter [ self::getDb() ];
+     *                          modelClass  The name of the concrete
+     *                                      Connexions_Model sub-class
+     *                                      [ get_called_class() ];
+     *                          as          The SQL alias to use for the target
+     *                                      table [ 't' ];
+     *                          where       A string or associative array of
+     *                                      restrictions [ none ];
      *
      *  @return A Zend_Db_Select instance that can retrieve the desired
-     *          records.
+     *          records.  The target table will be aliased as 't'.
      */
-    public static function select($className, $where = null, $db = null)
+    public static function select(array $config = array())
     {
-        /* For php >= 5.3, we could do away with the incoming $className along
-         * with the need for a fetchAll() in the concrete classes and simply
-         * use:
-         *  $className = get_called_class();
-         */
-        if ($db === null)
-            $db = Connexions::getDb();
+        if ( ! @empty($config['as']))
+            $as = $config['as'];
+        else
+            $as = 't';
 
+        if ( isset($config['db']) && ($db instanceof Zend_Db_Abstract))
+            $db = $config['db'];
+        else
+            $db = self::getDb();
+
+        if ( isset($config['modelClass']))
+            $modelClass = $config['modelClass'];
+        else
+            // PHP < 5.3, comment out this else, requiring callers to supply
+            //            the 'modelClass' (i.e. throw an exception here).
+            $modelClass = get_called_class();
+
+        // Construct the Zend_Db_Select instance.
         $select = $db->select()
-                     ->from(self::metaData('table', $className));
-        if (! @empty($where))
-            $select->where($where);
+                     ->from( array($as => self::metaData('table',
+                                                         $modelClass)));
+
+        if (! @empty($config['where']))
+            $select->where( $config['where'] );
 
         return $select;
     }
@@ -1043,17 +1100,15 @@ abstract class Connexions_Model
      */
     public static function metaData($name, $className = null)
     {
-        // PHP >= 5.3 -- simply access the late static bound member
+        /* PHP < 5.3 -- requires reflection to access late static bindings AND
+         *              requires that the class name ALWAYS be passed in.
+         *
+         *  $reflect = new ReflectionClass($className);
+         *  return $reflect->getStaticPropertyValue($name);
+         */
         if ($className === null)
             $className = get_called_class();
 
         return $className::$$name;
-
-
-        /* PHP < 5.3 -- requires reflection to access late static bindings AND
-         *              requires that the class name ALWAYS be passed in.
-         */
-        $reflect = new ReflectionClass($className);
-        return $reflect->getStaticPropertyValue($name);
     }
 }
