@@ -375,6 +375,6 @@ class Model_UserItem extends Connexions_Model
      */
     public static function find($id, $db = null)
     {
-        return parent::find(__CLASS__, $id, $db);
+        return parent::find($id, $db, __CLASS__);
     }
 }

@@ -9,11 +9,9 @@ class Model_UserItemSet extends Connexions_Set
 {
     const       MEMBER_CLASS    = 'Model_UserItem';
 
-    protected   $_tagIds        = null;
     protected   $_userIds       = null;
     protected   $_itemIds       = null;
-
-    protected   $_nonTrivial    = false;
+    protected   $_tagIds        = null;
 
     protected   $_select_items  = null;
     protected   $_select_users  = null;
@@ -52,12 +50,12 @@ class Model_UserItemSet extends Connexions_Set
         // Use a default order.
         $order = 'ui.taggedOn ASC';
 
-        if ( (! @empty($tagIds)) && (! @is_array($tagIds)) )
-            $tagIds = array($tagIds);
         if ( (! @empty($userIds)) && (! @is_array($userIds)) )
             $userIds = array($userIds);
         if ( (! @empty($itemIds)) && (! @is_array($itemIds)) )
             $itemIds = array($itemIds);
+        if ( (! @empty($tagIds)) && (! @is_array($tagIds)) )
+            $tagIds = array($tagIds);
 
 
         /* Include all columns/fields from Item and User, prefixed.
@@ -103,21 +101,18 @@ class Model_UserItemSet extends Connexions_Set
                    ->where('uti.tagId IN (?)', $tagIds)
                    ->group(array('uti.userId', 'uti.itemId'))
                    ->having('COUNT(DISTINCT uti.tagId)='.count($tagIds));
-            $this->_nonTrivial = true;
         }
 
         if (! @empty($userIds))
         {
             // User Restrictions
             $select->where('u.userId IN (?)', $userIds);
-            $this->_nonTrivial = true;
         }
 
         if (! @empty($itemIds))
         {
             // Item Restrictions
             $select->where('i.itemId IN (?)', $itemIds);
-            $this->_nonTrivial = true;
         }
 
         /*
@@ -128,48 +123,11 @@ class Model_UserItemSet extends Connexions_Set
         // Include '_memberClass' in $select so we can use 'Connexions_Set'
         $select->_memberClass = $memberClass;
 
-        $this->_tagIds  = $tagIds;
         $this->_userIds = $userIds;
         $this->_itemIds = $itemIds;
+        $this->_tagIds  = $tagIds;
 
         return parent::__construct($select, $memberClass);
-    }
-
-    /** @brief  Retrieve the array of item identifiers for all items in this
-     *          set.
-     *
-     *  @return An array of item identifiers.
-     */
-    public function itemIds()
-    {
-        if ($this->_nonTrivial !== true)
-        {
-            /*
-            Connexions::log("UserItemSet::itemIds: "
-                                . "trivial [ "
-                                .       implode(', ', $this->_itemIds) ." ]");
-            // */
-
-            return $this->_itemIds;
-        }
-
-        $select = $this->_select_items();
-
-        /*
-        Connexions::log("UserItemSet::itemIds: "
-                            . "non-trivial, sql [ ". $select->assemble() ." ]");
-        // */
-
-        $recs   = $select->query()->fetchAll();
-
-        // Convert the returned array of records to a simple array of ids
-        $ids    = array();
-        foreach ($recs as $idex => $row)
-        {
-            $ids[] = $row['itemId']; // $row[0];
-        }
-
-        return $ids;
     }
 
     /** @brief  Retrieve the array of user identifiers for all users in this
@@ -179,8 +137,17 @@ class Model_UserItemSet extends Connexions_Set
      */
     public function userIds()
     {
-        if ($this->_nonTrivial !== true)
-            return $this->_userIds;
+        if ( (! empty($this->_userIds)) ||
+               (empty($this->_itemIds) &&
+                empty($this->_tagIds)) )
+        {
+            // Trivially the set of ids we were given
+            if ($this->_userIds !== null)
+                return $this->_userIds;
+            else
+                // ALL userIds
+                return array();
+        }
 
         $select = $this->_select_users();
         $recs   = $select->query()->fetchAll();
@@ -190,6 +157,38 @@ class Model_UserItemSet extends Connexions_Set
         foreach ($recs as $idex => $row)
         {
             $ids[] = $row['userId']; // $row[0];
+        }
+
+        return $ids;
+    }
+
+    /** @brief  Retrieve the array of item identifiers for all items in this
+     *          set.
+     *
+     *  @return An array of item identifiers.
+     */
+    public function itemIds()
+    {
+        if ( (! empty($this->_itemIds)) ||
+               (empty($this->_userIds) &&
+                empty($this->_tagIds)) )
+        {
+            // Trivially the set of ids we were given
+            if ($this->_itemIds !== null)
+                return $this->_itemIds;
+            else
+                // ALL userIds
+                return array();
+        }
+
+        $select = $this->_select_items();
+        $recs   = $select->query()->fetchAll();
+
+        // Convert the returned array of records to a simple array of ids
+        $ids    = array();
+        foreach ($recs as $idex => $row)
+        {
+            $ids[] = $row['itemId']; // $row[0];
         }
 
         return $ids;
@@ -312,28 +311,6 @@ class Model_UserItemSet extends Connexions_Set
      *
      */
 
-    /** @brief  Return a Zend_Db_Select instance capable of retrieving the item
-     *          identifiers of the userItems represented by this set.
-     *
-     *  @return A Zend_Db_Select instance capable of retrieving the item
-     *          identifiers of the userItems represented by this set.
-     *
-     *          Note: This MAY be different than $this->_itemIds
-     */
-    protected function _select_items()
-    {
-        $select = clone $this->_select;
-
-        $select->reset(Zend_Db_Select::COLUMNS)
-               ->reset(Zend_Db_Select::ORDER)
-               ->reset(Zend_Db_Select::GROUP)
-               ->group('ui.itemId')
-               ->columns('ui.itemId')
-               ->distinct();
-
-        return $select;
-    }
-
     /** @brief  Return a Zend_Db_Select instance capable of retrieving the user
      *          identifiers of the userItems represented by this set.
      *
@@ -350,8 +327,28 @@ class Model_UserItemSet extends Connexions_Set
                ->reset(Zend_Db_Select::ORDER)
                ->reset(Zend_Db_Select::GROUP)
                ->group('ui.userId')
-               ->columns('ui.userId')
-               ->distinct();
+               ->columns('ui.userId');
+
+        return $select;
+    }
+
+    /** @brief  Return a Zend_Db_Select instance capable of retrieving the item
+     *          identifiers of the userItems represented by this set.
+     *
+     *  @return A Zend_Db_Select instance capable of retrieving the item
+     *          identifiers of the userItems represented by this set.
+     *
+     *          Note: This MAY be different than $this->_itemIds
+     */
+    protected function _select_items()
+    {
+        $select = clone $this->_select;
+
+        $select->reset(Zend_Db_Select::COLUMNS)
+               ->reset(Zend_Db_Select::ORDER)
+               ->reset(Zend_Db_Select::GROUP)
+               ->group('ui.itemId')
+               ->columns('ui.itemId');
 
         return $select;
     }
