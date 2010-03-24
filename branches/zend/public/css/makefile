@@ -1,4 +1,4 @@
-YUI_COMP	= "${HOME}/src/javascript/yuicompressor/yuicompressor"
+YUI_COMP	= "yuicompressor"
 
 
 all: connexions.min.css userItems.min.css users.min.css 	\
