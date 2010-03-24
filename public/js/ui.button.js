@@ -5,6 +5,7 @@
  *  Requires:
  *      ui.core.js
  */
+/*jslint nomen: false, laxbreak: true, white: false, onevar: false */
 (function($) {
 
 $.widget("ui.button", {
@@ -40,14 +41,22 @@ $.widget("ui.button", {
                               +'ui-corner-all ');
 
         if (opts.priority === 'primary')
+        {
             self.element.addClass('ui-priority-primary');
+        }
         else if (opts.priority === 'secondary')
+        {
             self.element.addClass('ui-priority-secondary');
+        }
 
         if (opts.enabled)
+        {
             self.enable();
+        }
         else
+        {
             self.disable();
+        }
 
         // Interaction events
         self._bindEvents();
@@ -67,8 +76,10 @@ $.widget("ui.button", {
                 el.addClass('ui-state-hover');
             // */
 
-            if (self.options.enabled === true);
+            if (self.options.enabled === true)
+            {
                 self.element.addClass('ui-state-hover');
+            }
         };
 
         var _mouseleave = function(e) {
@@ -88,7 +99,9 @@ $.widget("ui.button", {
             // */
 
             if (self.options.enabled === true)
+            {
                 self.element.addClass('ui-state-focus');
+            }
         };
 
         var _blur       = function(e) {
@@ -152,5 +165,5 @@ $.widget("ui.button", {
     }
 });
 
-})(jQuery);
+}(jQuery));
 

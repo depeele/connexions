@@ -5,6 +5,8 @@
  *  Requires:
  *      ui.core.js
  */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false, clearTimeout:false, setTimeout:false */
 (function($) {
 
 $.widget("ui.input", {
@@ -57,7 +59,9 @@ $.widget("ui.input", {
         if (opts.validationEl)
         {
             if (opts.validationEl.jquery === undefined)
+            {
                 opts.validationEl = $(opts.validationEl);
+            }
         }
         else
         {
@@ -83,13 +87,19 @@ $.widget("ui.input", {
         self.keyTimer = null;
 
         if (opts.priority === 'primary')
+        {
             self.element.addClass('ui-priority-primary');
+        }
         else if (opts.priority === 'secondary')
+        {
             self.element.addClass('ui-priority-secondary');
+        }
 
         self.element.addClass('ui-state-default');
         if (! opts.enabled)
+        {
             self.element.addClass('ui-state-disabled');
+        }
 
         if (opts.emptyText === null)
         {
@@ -111,12 +121,16 @@ $.widget("ui.input", {
                 var id      = self.element.attr('id');
                 var $label  = null;
                 if ((id === undefined) || (id.length < 1))
+                {
                     id = self.element.attr('name');
+                }
 
                 if ((id !== undefined) && (id.length > 0))
+                {
                     $label  = self.element
                                         .parent()
                                             .find('label[for='+ id +']');
+                }
 
                 if (($label !== null) && ($label.length > 0))
                 {
@@ -150,8 +164,10 @@ $.widget("ui.input", {
                 el.addClass('ui-state-hover');
             // */
 
-            if (self.options.enabled === true);
+            if (self.options.enabled === true)
+            {
                 self.element.addClass('ui-state-hover');
+            }
         };
 
         var _mouseleave = function(e) {
@@ -166,14 +182,20 @@ $.widget("ui.input", {
                 el.input('validate');
             // */
             if (self.options.enabled !== true)
+            {
                 return;
+            }
 
             if (self.keyTimer !== null)
+            {
                 clearTimeout(self.keyTimer);
+            }
 
             if (e.keyCode === 9)    // tab
+            {
                 // let '_blur' handle leaving this field.
                 return;
+            }
 
             // Clear the current validation information
             self.valid(undefined);
@@ -276,7 +298,9 @@ $.widget("ui.input", {
     valid: function(state)
     {
         if (state === this.options.valid)
+        {
             return;
+        }
 
         // Clear out validation information
         this.element
@@ -330,7 +354,7 @@ $.widget("ui.input", {
         }
 
         if ((this.options.emptyText !== null) &&
-            (this.val() == this.options.emptyText))
+            (this.val() === this.options.emptyText))
         {
             this.element.val('');
         }
@@ -346,7 +370,9 @@ $.widget("ui.input", {
                 // Attempt to locate the label associated with this field...
                 var id      = this.element.attr('id');
                 if ((id === undefined) || (id.length < 1))
+                {
                     id = this.element.attr('name');
+                }
 
                 if ((id !== undefined) && (id.length > 0))
                 {
@@ -378,7 +404,7 @@ $.widget("ui.input", {
             ret = self.element.val().trim();
 
             if ((self.options.emptyText !== null) &&
-                (ret == self.options.emptyText))
+                (ret === self.options.emptyText))
             {
                 ret = '';
             }
@@ -395,7 +421,7 @@ $.widget("ui.input", {
     validate: function()
     {
         var msg         = [];
-        var newState    = undefined;
+        var newState;
 
         if ($.isFunction(this.options.validation))
         {
@@ -447,4 +473,4 @@ $.widget("ui.input", {
 });
 
 
-})(jQuery);
+}(jQuery));

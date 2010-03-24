@@ -23,6 +23,8 @@
  *  ui.core.js
  *
  */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false */
 (function($) {
 
 $.widget("ui.stars", {
@@ -71,84 +73,22 @@ $.widget("ui.stars", {
         o.value = o.cancelValue;
     }
 
-    if (o.disabled)
+    if (o.disabled) {
         this.$cancel.addClass(o.cancelDisabledClass);
+    }
 
     //o.cancelShow &= !o.disabled && !o.oneVoteOnly;
     o.cancelShow &= !o.oneVoteOnly;
     //o.cancelShow && this.element.append(this.$cancel);
 
     /*
-     * Attach stars event handler
-     */
-    this.$stars.bind("click.stars", function(e) {
-      if(!o.forceSelect && o.disabled) return false;
-
-      var i = self.$stars.index(this);
-      o.checked = i;
-      o.value   = i + 1;
-      o.title   = $(this).find('a').attr('title');
-
-      self.$input.val(o.value);
-
-      fillTo(o.checked, false);
-      self._disableCancel();
-
-      !o.forceSelect && self.callback(e, "star");
-    })
-    .bind("mouseover.stars", function() {
-      if(o.disabled) return false;
-      var i = self.$stars.index(this);
-      fillTo(i, true);
-    })
-    .bind("mouseout.stars", function() {
-      if(o.disabled) return false;
-      fillTo(o.checked, false);
-    });
-
-
-    /*
-     * Attach cancel event handler
-     */
-    this.$cancel.bind("click.stars", function(e) {
-      if(!o.forceSelect && (o.disabled || o.value == o.cancelValue))
-        return false;
-
-      o.checked = -1;
-      o.value   = o.cancelValue;
-
-      self.$input.val(o.cancelValue);
-
-      fillNone();
-      self._disableCancel();
-
-      !o.forceSelect && self.callback(e, "cancel");
-    })
-    .bind("mouseover.stars", function() {
-      if(self._disableCancel()) return false;
-      self.$cancel.addClass(o.cancelHoverClass);
-      fillNone();
-      self._showCap(o.cancelTitle);
-    })
-    .bind("mouseout.stars", function() {
-      if(self._disableCancel()) return false;
-      self.$cancel.removeClass(o.cancelHoverClass);
-      self.$stars.triggerHandler("mouseout.stars");
-    });
-
-    /*
-     * Clean up to avoid memory leaks in certain versions of IE 6
-     */
-    $(window).unload(function(){
-      self.$cancel.unbind(".stars");
-      self.$stars.unbind(".stars");
-      self.$stars = self.$cancel = null;
-    });
-
-
-    /*
      * Star selection helpers
      */
+    function fillNone() {
+      self.$stars.removeClass(o.starOnClass + " " + o.starHoverClass);
+      self._showCap("");
+    }
+
     function fillTo(index, hover) {
       if(index >= 0) {
         var addClass = hover ? o.starHoverClass : o.starOnClass;
@@ -168,12 +108,91 @@ $.widget("ui.stars", {
 
         self._showCap(self.$stars.eq(index).find('a').attr('title'));
       }
-      else fillNone();
-    };
-    function fillNone() {
-      self.$stars.removeClass(o.starOnClass + " " + o.starHoverClass);
-      self._showCap("");
-    };
+      else {
+          fillNone();
+      }
+    }
+
+
+    /*
+     * Attach stars event handler
+     */
+    this.$stars.bind("click.stars", function(e) {
+      if(!o.forceSelect && o.disabled) {
+        return false;
+      }
+
+      var i = self.$stars.index(this);
+      o.checked = i;
+      o.value   = i + 1;
+      o.title   = $(this).find('a').attr('title');
+
+      self.$input.val(o.value);
+
+      fillTo(o.checked, false);
+      self._disableCancel();
+
+      !o.forceSelect && self.callback(e, "star");
+    })
+    .bind("mouseover.stars", function() {
+      if(o.disabled) {
+        return false;
+      }
+      var i = self.$stars.index(this);
+      fillTo(i, true);
+    })
+    .bind("mouseout.stars", function() {
+      if(o.disabled) {
+        return false;
+      }
+      fillTo(o.checked, false);
+    });
+
+
+    /*
+     * Attach cancel event handler
+     */
+    this.$cancel.bind("click.stars", function(e) {
+      if(!o.forceSelect && (o.disabled || o.value === o.cancelValue))
+      {
+        return false;
+      }
+
+      o.checked = -1;
+      o.value   = o.cancelValue;
+
+      self.$input.val(o.cancelValue);
+
+      fillNone();
+      self._disableCancel();
+
+      !o.forceSelect && self.callback(e, "cancel");
+    })
+    .bind("mouseover.stars", function() {
+      if(self._disableCancel()) {
+        return false;
+      }
+      self.$cancel.addClass(o.cancelHoverClass);
+      fillNone();
+      self._showCap(o.cancelTitle);
+    })
+    .bind("mouseout.stars", function() {
+      if(self._disableCancel()) {
+        return false;
+      }
+      self.$cancel.removeClass(o.cancelHoverClass);
+      self.$stars.triggerHandler("mouseout.stars");
+    });
+
+    /*
+     * Clean up to avoid memory leaks in certain versions of IE 6
+     */
+    $(window).unload(function(){
+      self.$cancel.unbind(".stars");
+      self.$stars.unbind(".stars");
+      self.$stars = self.$cancel = null;
+    });
+
 
 
     /*
@@ -189,13 +208,15 @@ $.widget("ui.stars", {
    */
   _disableCancel: function() {
     var o        = this.options,
-        disabled = o.disabled || o.oneVoteOnly || (o.value == o.cancelValue);
+        disabled = o.disabled || o.oneVoteOnly || (o.value === o.cancelValue);
 
-    if(disabled)
+    if(disabled) {
         this.$cancel.removeClass(o.cancelHoverClass)
                     .addClass(o.cancelDisabledClass);
-    else
+    }
+    else {
         this.$cancel.removeClass(o.cancelDisabledClass);
+    }
 
     this.$cancel.css("opacity", disabled ? 0.5 : 1);
     return disabled;
@@ -203,12 +224,12 @@ $.widget("ui.stars", {
   _disableAll: function() {
     var o = this.options;
     this._disableCancel();
-    if(o.disabled)  this.$stars.filter("div").addClass(o.starDisabledClass);
-    else            this.$stars.filter("div").removeClass(o.starDisabledClass);
+    if(o.disabled) {this.$stars.filter("div").addClass(o.starDisabledClass);}
+    else           {this.$stars.filter("div").removeClass(o.starDisabledClass);}
   },
   _showCap: function(s) {
     var o = this.options;
-    if(o.captionEl) o.captionEl.text(s);
+    if(o.captionEl) {o.captionEl.text(s);}
   },
 
   /*
@@ -219,7 +240,7 @@ $.widget("ui.stars", {
   },
   select: function(val) {
     var o = this.options,
-        e = (val == o.cancelValue)
+        e = (val === o.cancelValue)
                 ? this.$cancel : this.$stars.eq(val - 1);
 
     o.forceSelect = true;
@@ -227,7 +248,7 @@ $.widget("ui.stars", {
     o.forceSelect = false;
   },
   selectID: function(id) {
-    var o = this.options, e = (id == -1) ? this.$cancel : this.$stars.eq(id);
+    var o = this.options, e = (id === -1) ? this.$cancel : this.$stars.eq(id);
     o.forceSelect = true;
     e.triggerHandler("click.stars");
     o.forceSelect = false;
@@ -252,4 +273,4 @@ $.widget("ui.stars", {
   }
 });
 
-})(jQuery);
+}(jQuery));

@@ -5,6 +5,8 @@
  *  Requires:
  *      ui.core.js
  */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false */
 (function($) {
 
 $.widget("ui.dropdownForm", {
@@ -87,8 +89,10 @@ $.widget("ui.dropdownForm", {
 
         var _mouse_leave    = function(e) {
             if ($form.is(':visible'))
+            {
                 // Don't fade if the form is currently visible
                 return;
+            }
 
             $control.fadeTo(100, 0.5);
         };
@@ -199,16 +203,20 @@ $.widget("ui.dropdownForm", {
 
     open: function() {
         if (this.element.find('form:first').is(':visible'))
+        {
             // Already opened
             return;
+        }
 
         this.element.find('.control:first').click();
     },
 
     close: function() {
         if (! this.element.find('form:first').is(':visible'))
+        {
             // Already closed
             return;
+        }
 
         this.element.find('.control:first').click();
     },
@@ -270,4 +278,4 @@ $.widget("ui.dropdownForm", {
 });
 
 
-})(jQuery);
+}(jQuery));
