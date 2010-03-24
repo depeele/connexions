@@ -31,12 +31,12 @@ $jQuery = $this->jQuery();
 
 $links = $this->headLink();
 $links->prependStylesheet($baseUrl .'css/connexions.css');
-//$links->prependStylesheet($baseUrl .'css/themes/default/jquery-ui.css');
-$links->prependStylesheet($baseUrl .'css/themes/base/ui.all.css');
+$links->prependStylesheet($baseUrl .'css/themes/default/jquery-ui.css');
+//$links->prependStylesheet($baseUrl .'css/themes/base/jquery.ui.all.css');
 
-$jQuery->addJavascriptFile($this->baseurl('js/connexions.js'));
+$jQuery->addJavascriptFile($this->baseurl('js/connexions.min.js'));
 $jQuery->addJavascriptFile($this->baseurl('js/jquery.pngFix.js'));
-$jQuery->addJavascriptFile($this->baseurl('js/ui.input.js'));
+$jQuery->addJavascriptFile($this->baseurl('js/ui.input.min.js'));
 
 /*
 
@@ -62,8 +62,8 @@ if ( @isset($config->cdn) && $config->cdn->use )
 else
 {
     // Use our local jQuery / jQuery.ui
-    $jQuery->setLocalPath($baseUrl   .'js/jquery.js')
-           ->setUiLocalPath($baseUrl .'js/jquery-ui.js');
+    $jQuery->setLocalPath($baseUrl   .'js/jquery.min.js')
+           ->setUiLocalPath($baseUrl .'js/jquery-ui.min.js');
 }
 
 $jQuery->setVersion('1.4.2')
