@@ -239,7 +239,10 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
 
             $html .= "<ul class='tags'>";       // tags {
 
-            foreach ($userItem->tags as $tag)
+            // Retrieve the tags and sort them in alpha order
+            $tags = $userItem->tags->setOrder('tag');
+
+            foreach ($tags as $tag)
             {
                 $html .= "<li class='tag'>"
                       .   "<a href='"

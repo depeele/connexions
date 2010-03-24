@@ -276,9 +276,12 @@ class IndexController extends Zend_Controller_Action
         /* Create the tagSet that will be presented in the side-bar:
          *      All tags used by all users/items contained in the current
          *      user item / bookmark set.
+         *
+         *  $tagSet = new Model_TagSet( $this->_userSet->userIds(),
+         *                              $this->_userSet->itemIds() );
          */
-        $tagSet = new Model_TagSet( $this->_userItems->userIds(),
-                                    $this->_userItems->itemIds() );
+        $tagSet = $this->_userItems
+                            ->getRelatedSet(Connexions_Set::RELATED_TAGS);
         if ($this->_owner === '*')
             $tagSet->withAnyUser();
 

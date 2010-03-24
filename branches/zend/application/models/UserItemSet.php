@@ -91,6 +91,44 @@ class Model_UserItemSet extends Connexions_Set
                                     : '') . ')')
                      ->order($order);
 
+        if (! @empty($userIds))
+        {
+            // User Restrictions
+            $nUserIds = count($userIds);
+            if ($nUserIds === 1)
+            {
+                $select->where('u.userId=?', $userIds);
+
+            }
+            else
+            {
+                $select->where('u.userId IN (?)', $userIds);
+
+                /* Require ALL provided tags
+                $select->having('COUNT(DISTINCT u.userId)='. $nUserIds);
+                */
+            }
+        }
+
+        if (! @empty($itemIds))
+        {
+            // Item Restrictions
+            $nItemIds = count($itemIds);
+            if ($nItemIds === 1)
+            {
+                $select->where('i.itemId=?', $itemIds);
+
+            }
+            else
+            {
+                $select->where('i.itemId IN (?)', $itemIds);
+
+                /* Require ALL provided items
+                $select->having('COUNT(DISTINCT i.itemId)='. $nItemIds);
+                */
+            }
+        }
+
         if (! @empty($tagIds))
         {
             // Tag Restrictions -- required 'userTagItem'
@@ -98,21 +136,21 @@ class Model_UserItemSet extends Connexions_Set
                           '(i.itemId=uti.itemId) AND '.
                           '(u.userId=uti.userId)',          // condition
                           '')                               // columns (none)
-                   ->where('uti.tagId IN (?)', $tagIds)
-                   ->group(array('uti.userId', 'uti.itemId'))
-                   ->having('COUNT(DISTINCT uti.tagId)='.count($tagIds));
-        }
+                   ->group(array('uti.userId', 'uti.itemId'));
 
-        if (! @empty($userIds))
-        {
-            // User Restrictions
-            $select->where('u.userId IN (?)', $userIds);
-        }
 
-        if (! @empty($itemIds))
-        {
-            // Item Restrictions
-            $select->where('i.itemId IN (?)', $itemIds);
+            $nTags = count($tagIds);
+            if ($nTags === 1)
+            {
+                $select->where('uti.tagId=?', $tagIds);
+            }
+            else
+            {
+                $select->where('uti.tagId IN (?)', $tagIds);
+
+                // Require ALL provided tags
+                $select->having('COUNT(DISTINCT uti.tagId)='. $nTags);
+            }
         }
 
         /*
@@ -128,6 +166,20 @@ class Model_UserItemSet extends Connexions_Set
         $this->_tagIds  = $tagIds;
 
         return parent::__construct($select, $memberClass);
+    }
+
+    /** @brief  Retrieve a set of items that are related to this set.
+     *  @param  type    The type of item (Connexions_Set::RELATED_*).
+     *  @param  tagIds  Any additional tag restrictions.
+     *
+     *  @return The new Connexions_Set instance.
+     */
+    public function getRelatedSet($type, $tagIds = null)
+    {
+        return parent::getRelatedSet($type,
+                                     $this->userIds(),  // userIds
+                                     $this->itemIds(),  // itemIds
+                                     $tagIds);          // tagIds
     }
 
     /** @brief  Retrieve the array of user identifiers for all users in this
@@ -151,6 +203,12 @@ class Model_UserItemSet extends Connexions_Set
 
         $select = $this->_select_users();
         $recs   = $select->query()->fetchAll();
+
+        /*
+        Connexions::log('Model_UserItemSet::userIds(): '
+                        . "sql [ {$select->assemble()} ], retrieved "
+                        . count($recs) .' records');
+        // */
 
         // Convert the returned array of records to a simple array of ids
         $ids    = array();
@@ -184,6 +242,13 @@ class Model_UserItemSet extends Connexions_Set
         $select = $this->_select_items();
         $recs   = $select->query()->fetchAll();
 
+        /*
+        Connexions::log('Model_UserItemSet::itemIds(): '
+                        . "sql [ {$select->assemble()} ], retrieved "
+                        . count($recs) .' records');
+        // */
+
+
         // Convert the returned array of records to a simple array of ids
         $ids    = array();
         foreach ($recs as $idex => $row)
@@ -194,6 +259,43 @@ class Model_UserItemSet extends Connexions_Set
         return $ids;
     }
 
+    /** @brief  Retrieve the array of tag identifiers for all tags related to
+     *          userItems in this set.
+     *
+     *  @return An array of tag identifiers.
+     */
+    public function tagIds()
+    {
+        if ( (! empty($this->_tagIds)) ||
+               (empty($this->_userIds) &&
+                empty($this->_itemIds)) )
+        {
+            // Trivially the set of ids we were given
+            if ($this->_tagIds !== null)
+                return $this->_tagIds;
+            else
+                // ALL userIds
+                return array();
+        }
+
+        $select = $this->_select_tags();
+        $recs   = $select->query()->fetchAll();
+
+        /*
+        Connexions::log('Model_UserItemSet::tagIds(): '
+                        . "sql [ {$select->assemble()} ], retrieved "
+                        . count($recs) .' records');
+        // */
+
+        // Convert the returned array of records to a simple array of ids
+        $ids    = array();
+        foreach ($recs as $idex => $row)
+        {
+            $ids[] = $row['tagId']; // $row[0];
+        }
+
+        return $ids;
+    }
     /** @brief  Map a field name.
      *  @param  name    The provided name.
      *
@@ -254,7 +356,7 @@ class Model_UserItemSet extends Connexions_Set
                 $orderParts = $this->_parse_order($spec);
                 if ($orderParts === null)
                 {
-                    // /*
+                    /*
                     Connexions::log("Model_UserItemSet::setOrder: "
                                     . "Invalid specification [{$spec}] --skip");
                     // */
@@ -353,4 +455,24 @@ class Model_UserItemSet extends Connexions_Set
         return $select;
     }
 
+    /** @brief  Return a Zend_Db_Select instance capable of retrieving the tag
+     *          identifiers of all tags relalted to the userItems represented
+     *          by this set.
+     *
+     *  @return A Zend_Db_Select instance capable of retrieving the item
+     *          identifiers of the userItems represented by this set.
+     */
+    protected function _select_tags()
+    {
+        $select = clone $this->_select;
+
+        $select->join(array('uti'   => 'userTagItem'),  // table / as
+                      '(i.itemId=uti.itemId) AND '.
+                      '(u.userId=uti.userId)',          // condition
+                      '')                               // columns (none)
+               ->group('uti.tagId')
+               ->columns('ui.tagId');
+
+        return $select;
+    }
 }

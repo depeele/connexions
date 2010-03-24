@@ -5,8 +5,8 @@ $this->headTitle('Sign In');
 
 $jQuery = $this->jQuery();
 $jQuery->addStylesheet($this->baseUrl('css/validationForm.css'))
-       ->addJavascriptFile($this->baseUrl('js/ui.button.js'))
-       ->addJavascriptFile($this->baseUrl('js/ui.input.js'))
+       ->addJavascriptFile($this->baseUrl('js/ui.button.min.js'))
+       ->addJavascriptFile($this->baseUrl('js/ui.input.min.js'))
        ->addOnLoad('authSignin_onLoad();')
        ->javascriptCaptureStart();
 ?>

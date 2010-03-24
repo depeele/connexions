@@ -1,5 +1,13 @@
-all: connexions.css userItems.css users.css urlItems.css inbox.css	\
- 	validationForm.css post.css auth.css inbox.css
+YUI_COMP	= "${HOME}/src/javascript/yuicompressor/yuicompressor"
+
+
+all: connexions.min.css userItems.min.css users.min.css 	\
+	urlItems.min.css inbox.min.css				\
+ 	validationForm.min.css post.min.css auth.min.css 	\
+	inbox.min.css
+
+#all: connexions.css userItems.css users.css urlItems.css inbox.css	\
+# 	validationForm.css post.css auth.css inbox.css
 
 connexions.css: main.sass		\
     		mixins.sass		\
@@ -43,21 +51,28 @@ auth.css: mixins.sass auth.sass colors.sass
 
 sprites.sass:	urls.sass
 
-#connexions.css: main.less		\
-#		colors.less		\
-#		sizes.less		\
-#		content.less		\
-#		grids.less		\
-#		libraries.less		\
-#		pagination.less		\
-#		itemScope.less		\
-#		sprites.less		\
-#		tabs.less		\
-#		tagCloud.less		\
-#		template.less		\
-#		ui-form.less		\
-#		themes/default/jquery-ui.css
-#	lessc main.less connexions.css
-#
-#userItems.css: userItems.less colors.less sizes.less
-#	lessc userItems.less userItems.css
+#----------------------------------------------------------------------------
+
+connexions.min.css:	connexions.css
+	$(YUI_COMP) connexions.css
+
+userItems.min.css:	userItems.css
+	$(YUI_COMP) userItems.css
+
+users.min.css:	users.css
+	$(YUI_COMP) users.css
+
+urlItems.min.css:	urlItems.css
+	$(YUI_COMP) urlItems.css
+
+inbox.min.css:	inbox.css
+	$(YUI_COMP) inbox.css
+
+validationForm.min.css:	validationForm.css
+	$(YUI_COMP) validationForm.css
+
+post.min.css:	post.css
+	$(YUI_COMP) post.css
+
+auth.min.css:	auth.css
+	$(YUI_COMP) auth.css

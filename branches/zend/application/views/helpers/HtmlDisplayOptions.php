@@ -96,9 +96,9 @@ class Connexions_View_Helper_HtmlDisplayOptions
         $view   = $this->view;
         $jQuery = $view->jQuery();
 
-        $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.js'))
-               ->addJavascriptFile($view->baseUrl('js/ui.optionGroups.js'))
-               ->addJavascriptFile($view->baseUrl('js/ui.dropdownForm.js'))
+        $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.min.js'))
+               ->addJavascriptFile($view->baseUrl('js/ui.optionGroups.min.js'))
+               ->addJavascriptFile($view->baseUrl('js/ui.dropdownForm.min.js'))
                ->javascriptCaptureStart();
         ?>
 

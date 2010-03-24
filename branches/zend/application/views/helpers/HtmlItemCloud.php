@@ -312,8 +312,8 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
             $view   = $this->view;
             $jQuery = $view->jQuery();
 
-            $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.button.js'))
+            $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.min.js'))
+                   ->addJavascriptFile($view->baseUrl('js/ui.button.min.js'))
                    ->javascriptCaptureStart();
 
             ?>

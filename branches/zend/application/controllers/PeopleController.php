@@ -133,9 +133,12 @@ class PeopleController extends Zend_Controller_Action
 
         /* Create the tagSet that will be presented in the side-bar:
          *      All tags used by all users contained in the current user set.
+         *
+         *  $tagSet = new Model_TagSet( $this->_userSet->userIds() );
          */
-        $tagSet = new Model_TagSet( $this->_userSet->userIds() );
-        $tagSet->weightBy('user');
+        $tagSet = $this->_userSet
+                            ->getRelatedSet(Connexions_Set::RELATED_TAGS)
+                            ->weightBy('user');
 
         /********************************************************************
          * Prepare for rendering the right column.

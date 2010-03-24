@@ -418,10 +418,10 @@ class Connexions_View_Helper_HtmlDisplayStyle extends Zend_View_Helper_Abstract
             $view   = $this->view;
             $jQuery = $view->jQuery();
 
-            $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.checkbox.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.button.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.optionGroups.js'))
+            $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.min.js'))
+                   ->addJavascriptFile($view->baseUrl('js/ui.checkbox.min.js'))
+                   ->addJavascriptFile($view->baseUrl('js/ui.button.min.js'))
+                   ->addJavascriptFile($view->baseUrl('js/ui.optionGroups.min.js'))
                    ->javascriptCaptureStart();
             ?>
 

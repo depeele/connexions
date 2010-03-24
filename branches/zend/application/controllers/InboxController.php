@@ -267,19 +267,28 @@ class InboxController extends Zend_Controller_Action
         /* Create the tagSet that will be presented in the side-bar:
          *      All tags used by all users/items contained in the current
          *      user item / bookmark set.
+         *
+         *  $tagSet = new Model_TagSet( $this->_userItems->userIds(),
+         *                              $this->_userItems->itemIds() );
+         *  $tagSet->withAnyUser();
          */
-        $tagSet = new Model_TagSet( $this->_userItems->userIds(),
-                                    $this->_userItems->itemIds() );
-        $tagSet->withAnyUser();
+         $tagSet = $this->_userItems
+                            ->getRelatedSet(Connexions_Set::RELATED_TAGS)
+                            ->withAnyUser();
 
         /* Create the userSet that will be presented in the side-bar:
          *      All users that have tagged something for this user.
+         *
+         *  $senderSet = new Model_UserSet( $this->_tagIds,
+         *                                  $this->_userItems->itemIds(),
+         *                                  $this->_userItems->userIds() );
+         *  $senderSet->weightBy('item');
          */
-        $senderSet = new Model_UserSet( $this->_tagIds,
-                                        $this->_userItems->itemIds(),
-                                        $this->_userItems->userIds() );
-        $senderSet->weightBy('item');
-
+        $senderSet = $this->_userItems
+                            ->getRelatedSet(Connexions_Set::RELATED_USERS,
+                                            $this->_tagIds)
+                            ->weightBy('item');
+            
         /********************************************************************
          * Prepare for rendering the right column.
          *

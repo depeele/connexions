@@ -187,10 +187,10 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
             $view   = $this->view;
             $jQuery =  $view->jQuery();
 
-            $jQuery->addJavascriptFile($view->baseUrl('js/ui.stars.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.checkbox.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.button.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.input.js'))
+            $jQuery->addJavascriptFile($view->baseUrl('js/ui.stars.min.js'))
+                   ->addJavascriptFile($view->baseUrl('js/ui.checkbox.min.js'))
+                   ->addJavascriptFile($view->baseUrl('js/ui.button.min.js'))
+                   ->addJavascriptFile($view->baseUrl('js/ui.input.min.js'))
                    ->javascriptCaptureStart();
             ?>
 

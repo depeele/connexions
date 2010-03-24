@@ -88,7 +88,7 @@ class Connexions_View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
 
             $baseUrl = $view->baseUrl('/');
             if (empty($this->_autoCompleteUrl))
-                $jQuery->addJavascriptFile($baseUrl.'js/ui.input.js');
+                $jQuery->addJavascriptFile($baseUrl.'js/ui.input.min.js');
             else
             {
                 $jQuery->addJavascriptFile($baseUrl.'js/jquery.autosuggest.js');

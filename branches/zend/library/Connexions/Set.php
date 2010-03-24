@@ -17,8 +17,17 @@ abstract class Connexions_Set implements Countable,
     /** @brief  The name to use as the row count column. */
     const       ROW_COUNT_COLUMN    = 'connexions_set_row_count';
 
-    const       SORT_ORDER_ASC  = Zend_Db_Select::SQL_ASC;
-    const       SORT_ORDER_DESC = Zend_Db_Select::SQL_DESC;
+    /** @brief  Valid sort orders. */
+    const       SORT_ORDER_ASC      = Zend_Db_Select::SQL_ASC;
+    const       SORT_ORDER_DESC     = Zend_Db_Select::SQL_DESC;
+
+    /** @brief  Valid related type values. */
+    const       RELATED_USERS       = 'users';
+    const       RELATED_TAGS        = 'tags';
+    const       RELATED_ITEMS       = 'items';
+    const       RELATED_USERITEMS   = 'userItems';
+    const       RELATED_GROUPS      = 'groups';
+
 
 
     /** @brief  The name of the Iterator class to use for this set. */
@@ -200,6 +209,53 @@ abstract class Connexions_Set implements Countable,
         return $this->_select->getPart(Zend_Db_Select::LIMIT_OFFSET);
     }
 
+    /** @brief  Retrieve a set of items that are related to this set.
+     *  @param  type    The type of item (Connexions_Set::RELATED_*);
+     *  @param  userIds The array of userIds to use in the relation;
+     *  @param  itemIds The array of itemIds to use in the relation;
+     *  @param  tagIds  The array of tagIds  to use in the relation;
+     *
+     *  @return The new Connexions_Set instance.
+     */
+    public function getRelatedSet($type,
+                                  $userIds = null,
+                                  $itemIds = null,
+                                  $tagIds  = null)
+    {
+        $set = null;
+        switch ($type)
+        {
+        case self::RELATED_USERS:
+            $set     = new Model_UserSet($tagIds, $itemIds, $userIds);
+            break;
+
+        case self::RELATED_TAGS:
+            $set     = new Model_TagSet($userIds, $itemIds, $tagIds);
+            break;
+
+        case self::RELATED_ITEMS:
+            throw(new Exception("Connexions_Set::getRelatedSet({$type}): "
+                                . 'Not-implemented for this type'));
+            break;
+
+        case self::RELATED_USERITEMS:
+            $set     = new Model_UserItemSet($tagIds, $userIds, $itemIds);
+            break;
+
+        case self::RELATED_GROUPS:
+            throw(new Exception("Connexions_Set::getRelatedSet({$type}): "
+                                . 'Not-implemented for this type'));
+            break;
+
+        default:
+            throw(new Exception("Connexions_Set::getRelatedSet({$type}): "
+                                . 'Unexpected type'));
+            break;
+        }
+
+        return $set;
+    }
+
     /** @brief  Create a Zend_Tag_ItemList adapter for the top 'limit' items.
      *  @param  setInfo     A Connexions_Set_Info instance containing
      *                      information about any items specified in the
@@ -230,7 +286,7 @@ abstract class Connexions_Set implements Countable,
                 $perPage = 100;
         }
 
-        // /*
+        /*
         Connexions::log("Connexions_Set::get_Tag_ItemList: "
                             . "offset[ {$offset} ], perPage[ {$perPage} ], "
                             . "sql[ {$this->_select->assemble()} ]");
@@ -464,6 +520,12 @@ abstract class Connexions_Set implements Countable,
         $count = clone $this->_select;
         $count->__toString();    // ZF-3719 workaround
 
+        /*
+        Connexions::log("Connexions_Set::_select_forCount:"
+                        .   "[ ". get_class($this) ." ]: "
+                        .   "original sql[ {$count->assemble()} ]");
+        // */
+
         $db         = $count->getAdapter();
 
         // Default count column expression and name
@@ -494,8 +556,14 @@ abstract class Connexions_Set implements Countable,
              * the COUNT query.
              */
             if ( ($isDistinct && (count($columns) > 1)) ||
-                 (count($groups) > 1)                   ||
-                 (! @empty($having)) )
+                 /* We use grouping for userItem to select a unique item.
+                  *
+                  * This does NOT require a sub-select to count, it just
+                  * requires the grouping change in the final else below...
+                  *
+                  *(count($groups) > 1)                   ||
+                  */
+                  (! @empty($having)) )
             {
                 $count = $db->select()->from($this->_select);
             }
@@ -518,10 +586,22 @@ abstract class Connexions_Set implements Countable,
                      ($groups[0] !== Zend_Db_Select::SQL_WILDCARD)  &&
                      (! $groups[0] instanceof Zend_Db_Expr))
             {
-                $groupPart = $db->quoteIdentifier($groups[0], true);
+                /* Grouping can consist of multiple group identifiers, which
+                 * MUST all be included here in order to properly count unique
+                 * items.
+                 */
+                //$groupPart = $db->quoteIdentifier($groups[0], true);
+
+                $parts = array();
+                foreach ($groups as $group)
+                {
+                    array_push($parts, $db->quoteIdentifier($group, true));
+                }
+
+                $groupPart = implode(',', $parts);
             }
 
-            /* If the original query had a GROUP BY or DISTINCE and only one
+            /* If the original query had a GROUP BY or DISTINCT and only one
              * column was specified, create a COUNT(DISTINCT ) query instead of
              * a regular COUNT query.
              */
@@ -542,6 +622,11 @@ abstract class Connexions_Set implements Countable,
 
         $this->_select_count = $count;
 
+        /*
+        Connexions::log("Connexions_Set::_select_forCount:"
+                        .   "[ ". get_class($this) ." ]: "
+                        .   "sql[ {$count->assemble()} ]");
+        // */
         return $this->_select_count;
     }
 }
