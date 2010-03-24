@@ -454,8 +454,6 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .Tag_Cloud .tag  a.selected, .Tag_Cloud .user a.selected, .User_Cloud .tag  a.selected, .User_Cloud .user a.selected { background-image: none; background-color: #0066cc; color: white; }
 .Tag_Cloud .tag  a.selected:hover, .Tag_Cloud .user a.selected:hover, .User_Cloud .tag  a.selected:hover, .User_Cloud .user a.selected:hover { color: #0066cc; background-color: white; }
 
-#sidebar-tabs .cloud { padding-left: 1.25em; }
-
 /* ****** itemScope.sass ****** */
 .itemScope a { color: white; }
 .itemScope ul { background-color: #cccccc; padding: 0.1em; padding-right: 112px; }

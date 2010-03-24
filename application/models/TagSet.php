@@ -55,20 +55,57 @@ class Model_TagSet extends Connexions_Set
         if (! @empty($userIds))
         {
             // User Restrictions
-            $select->where('uti.userId IN (?)', $userIds)
-                   ->having('userCount='.count($userIds));
+            $nUserIds = count($userIds);
+            if ($nUserIds === 1)
+            {
+                $select->where('uti.userId=?', $userIds);
+
+            }
+            else
+            {
+                $select->where('uti.userId IN (?)', $userIds);
+
+                // Require ALL provided tags
+                $select->having('COUNT(DISTINCT uti.userId)='. $nUserIds);
+            }
         }
 
         if (! @empty($itemIds))
         {
             // Item Restrictions
-            $select->where('uti.itemId IN (?)', $itemIds);
+            $nItemIds = count($itemIds);
+            if ($nItemIds === 1)
+            {
+                $select->where('uti.itemId=?', $itemIds);
+
+            }
+            else
+            {
+                $select->where('uti.itemId IN (?)', $itemIds);
+
+                /* Require ALL provided items
+                $select->having('COUNT(DISTINCT uti.itemId)='. $nItemIds);
+                */
+            }
         }
 
         if (! @empty($tagIds))
         {
-            // Tag Restrictions -- required 'userTagItem'
-            $select->where('uti.tagId IN (?)', $tagIds);
+            // Tag Restrictions
+            $nTagIds = count($tagIds);
+            if ($nTagIds === 1)
+            {
+                $select->where('uti.tagId=?', $tagIds);
+
+            }
+            else
+            {
+                $select->where('uti.tagId IN (?)', $tagIds);
+
+                /* Require ALL provided tags
+                $select->having('COUNT(DISTINCT uti.tagId)='. $nTagIds);
+                */
+            }
         }
 
         // Remember the original user, item, and tag identifiers.
@@ -184,6 +221,19 @@ class Model_TagSet extends Connexions_Set
         // */
 
         return $this;
+    }
+
+    /** @brief  Retrieve a set of items that are related to this set.
+     *  @param  type    The type of item (Connexions_Set::RELATED_*).
+     *
+     *  @return The new Connexions_Set instance.
+     */
+    public function getRelatedSet($type)
+    {
+        return parent::getRelatedSet($type,
+                                     null,              // userIds
+                                     null,              // itemIds
+                                     $this->tagIds());
     }
 
     /** @brief  Retrieve the array of user identifiers of all userItems that
@@ -364,7 +414,7 @@ class Model_TagSet extends Connexions_Set
         $select->reset(Zend_Db_Select::COLUMNS)
                ->reset(Zend_Db_Select::ORDER)
                ->reset(Zend_Db_Select::GROUP)
-               ->group('uti.tagrId')
+               ->group('uti.tagId')
                ->columns('uti.tagId');
 
         return $select;

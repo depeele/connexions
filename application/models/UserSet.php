@@ -45,23 +45,59 @@ class Model_UserSet extends Connexions_Set
                                   '')                         // columns (none)
                      ->group('u.userId');
 
-        if (! @empty($tagIds))
+        if (! @empty($userIds))
         {
-            // Tag Restrictions -- required 'userTagItem'
-            $select->where('uti.tagId IN (?)', $tagIds)
-                   ->having('COUNT(DISTINCT uti.tagId)='.count($tagIds));
+            // User Restrictions
+            $nUserIds = count($userIds);
+            if ($nUserIds === 1)
+            {
+                $select->where('u.userId=?', $userIds);
+
+            }
+            else
+            {
+                $select->where('u.userId IN (?)', $userIds);
+
+                /* Require ALL provided tags
+                $select->having('COUNT(DISTINCT u.userId)='. $nUserIds);
+                */
+            }
         }
 
         if (! @empty($itemIds))
         {
             // Item Restrictions
-            $select->where('uti.itemId IN (?)', $itemIds);
+            $nItemIds = count($itemIds);
+            if ($nItemIds === 1)
+            {
+                $select->where('uti.itemId=?', $itemIds);
+
+            }
+            else
+            {
+                $select->where('uti.itemId IN (?)', $itemIds);
+
+                /* Require ALL provided items
+                $select->having('COUNT(DISTINCT uti.itemId)='. $nItemIds);
+                */
+            }
         }
 
-        if (! @empty($userIds))
+        if (! @empty($tagIds))
         {
-            // User Restrictions
-            $select->where('u.userId IN (?)', $userIds);
+            // Tag Restrictions -- required 'userTagItem'
+            $nTagIds = count($tagIds);
+            if ($nTagIds === 1)
+            {
+                $select->where('uti.tagId=?', $tagIds);
+            }
+            else
+            {
+                $select->where('uti.tagId IN (?)', $tagIds);
+
+                // Require ALL provided items
+                $select->having('COUNT(DISTINCT uti.tagId)='. $nTagIds);
+            }
         }
 
 
@@ -169,6 +205,16 @@ class Model_UserSet extends Connexions_Set
         // */
 
         return $this;
+    }
+
+    /** @brief  Retrieve a set of items that are related to this set.
+     *  @param  type    The type of item (Connexions_Set::RELATED_*).
+     *
+     *  @return The new Connexions_Set instance.
+     */
+    public function getRelatedSet($type)
+    {
+        return parent::getRelatedSet($type, $this->userIds());
     }
 
     /** @brief  Retrieve the array of user identifiers for all users in this
