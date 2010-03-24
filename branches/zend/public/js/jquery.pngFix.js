@@ -30,6 +30,7 @@
  * @desc Fixes all PNG's within div with class examples, provides blank gif for input with png
  * --------------------------------------------------------------------
  */
+/*jslint nomen: false, laxbreak: true */
 
 (function($) {
 

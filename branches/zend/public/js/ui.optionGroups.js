@@ -51,6 +51,9 @@
  *  Requires:
  *      ui.core.js
  */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, document:false */
+
 (function($) {
 
 $.widget("ui.optionGroups", {
@@ -82,7 +85,9 @@ $.widget("ui.optionGroups", {
             // See if the DOM element has a 'namespace' data item
             var ns  = self.element.data('namespace');
             if (ns !== undefined)
+            {
                 opts.namespace = ns;
+            }
             else
             {
                 /* Attempt to retrieve the namespace from the CSS class
@@ -94,7 +99,9 @@ $.widget("ui.optionGroups", {
                                       '$1');
 
                 if ((ns !== undefined) && (ns.length > 0))
+                {
                     opts.namespace = ns;
+                }
             }
 
         }
@@ -103,10 +110,14 @@ $.widget("ui.optionGroups", {
             // See if the DOM element has a 'form' data item
             var fm  = self.element.data('form');
             if (fm !== undefined)
+            {
                 opts.form = fm;
+            }
             else
+            {
                 // Choose the closest form
                 opts.form = self.element.closest('form');
+            }
         }
 
         /* The currently selected group:
@@ -310,7 +321,9 @@ $.widget("ui.optionGroups", {
         var $groupFieldset  = self.element.find('fieldset:first');
         var $newGroup       = $groups.find(':radio[value='+group+']');
         if ($newGroup.length !== 1)
+        {
             return;
+        }
 
         // Select the new radio button
         $groups.find(':checked').attr('checked', false)
@@ -433,4 +446,4 @@ $.widget("ui.optionGroups", {
 });
 
 
-})(jQuery);
+}(jQuery));

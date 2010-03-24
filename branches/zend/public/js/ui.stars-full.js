@@ -14,6 +14,7 @@
  *  ui.core.js
  *
  */
+/*jslint nomen: false, laxbreak: true */
 (function($) {
 
 $.widget("ui.stars", {

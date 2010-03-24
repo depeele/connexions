@@ -5,6 +5,8 @@
  *  Requires:
  *      ui.core.js
  */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false */
 (function($) {
 
 $.widget("ui.checkbox", {
@@ -65,16 +67,20 @@ $.widget("ui.checkbox", {
         opts.checked = self.element.attr('checked')  ? true  : false;
         opts.title   = '';
 
-        var name     = self.element.attr('name')
-        var id       = self.element.attr('id')
+        var name     = self.element.attr('name');
+        var id       = self.element.attr('id');
 
         // Try to locate the associated label
         self.$label  = false;
 
         if (id)
+        {
             self.$label = $('label[for='+ id +']');
+        }
         if ((! self.$label) && name)
+        {
             self.$label = $('label[for='+ name +']');
+        }
 
         if (opts.useElTitle === true)
         {
@@ -132,14 +138,19 @@ $.widget("ui.checkbox", {
         {
             // We have a label for this field.
             if (opts.hideLabel === true)
+            {
                 // Hide it.
                 self.$label.hide();
+            }
             else
             {
                 // Treat a click on the label as a click on the item.
                 self.$label.click(function(e) {
-                                self.element.trigger('click',[e]);
-                                return stopEvent(e);
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    self.element.trigger('click',[e]);
+                    return false;
                 });
             }
         }
@@ -156,8 +167,10 @@ $.widget("ui.checkbox", {
         var self    = this;
 
         var _mouseenter = function(e) {
-            if (self.options.enabled === true);
+            if (self.options.enabled === true)
+            {
                 self.element.addClass('ui-state-hover');
+            }
         };
 
         var _mouseleave = function(e) {
@@ -166,7 +179,9 @@ $.widget("ui.checkbox", {
 
         var _focus      = function(e) {
             if (self.options.enabled === true)
+            {
                 self.element.addClass('ui-state-focus');
+            }
         };
 
         var _blur       = function(e) {
@@ -219,12 +234,18 @@ $.widget("ui.checkbox", {
     toggle: function()
     {
         if (! this.options.enabled)
+        {
             return;
+        }
 
         if (this.options.checked)
+        {
             this.uncheck();
+        }
         else
+        {
             this.check();
+        }
     },
 
     check: function()
@@ -264,12 +285,16 @@ $.widget("ui.checkbox", {
          * during initialization.  When that happens, simply return.
          */
         if (this._isInit === true)
+        {
             return;
+        }
 
         this.$orig.insertAfter(this.element);
 
         if (this.$label)
+        {
             this.$label.show();
+        }
 
         this.$value.remove();
 
@@ -278,4 +303,4 @@ $.widget("ui.checkbox", {
 });
 
 
-})(jQuery);
+}(jQuery));

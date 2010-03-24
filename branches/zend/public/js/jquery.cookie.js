@@ -7,6 +7,8 @@
  * http://www.gnu.org/licenses/gpl.html
  *
  */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, document:false */
 
 /**
  * Create a cookie with the given name and value and other optional parameters.
@@ -54,16 +56,18 @@
  * @author Klaus Hartl/klaus.hartl@stilbuero.de
  */
 jQuery.cookie = function(name, value, options) {
-    if (typeof value != 'undefined') { // name and value given, set cookie
+    if (typeof value !== 'undefined') { // name and value given, set cookie
         options = options || {};
         if (value === null) {
             value = '';
             options.expires = -1;
         }
         var expires = '';
-        if (options.expires && (typeof options.expires == 'number' || options.expires.toUTCString)) {
+        if (options.expires &&
+            (typeof options.expires === 'number' ||
+             options.expires.toUTCString)) {
             var date;
-            if (typeof options.expires == 'number') {
+            if (typeof options.expires === 'number') {
                 date = new Date();
                 date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
             } else {
@@ -80,12 +84,12 @@ jQuery.cookie = function(name, value, options) {
         document.cookie = [name, '=', encodeURIComponent(value), expires, path, domain, secure].join('');
     } else { // only name given, get cookie
         var cookieValue = null;
-        if (document.cookie && document.cookie != '') {
+        if (document.cookie && document.cookie !== '') {
             var cookies = document.cookie.split(';');
             for (var i = 0; i < cookies.length; i++) {
                 var cookie = jQuery.trim(cookies[i]);
                 // Does this cookie string begin with the name we want?
-                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                     break;
                 }

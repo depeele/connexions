@@ -18,6 +18,8 @@
  *   http://www.opensource.org/licenses/mit-license.php
  *   http://www.gnu.org/licenses/gpl.html
  */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false */
 
 (function($){
 	$.fn.autoSuggest = function(data, options) {

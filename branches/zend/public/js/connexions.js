@@ -3,7 +3,9 @@
  *  Provide global Javascript functionality for Connexions.
  *
  */
-;(function($) {
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false, document:false, setTimeout:false */
+(function($) {
     function init_log()
     {
         $.log = ((window.console !== undefined) &&
@@ -28,8 +30,8 @@
      */
     if ($.browser.msie)
     {
-        try { document.execCommand("BackgroundImageCache", false, true)}
-        catch(e) { };
+        try { document.execCommand("BackgroundImageCache", false, true); }
+        catch(e) { }
     }
 
     /*******************************************************************
@@ -53,6 +55,16 @@
     }
     $.event.remove(window, 'load', $.ready);
     $.event.add(window, 'load', function(){ $.ready(); });
+
+    function scriptLoaded(script, url)
+    {
+        $.includeScripts[url] = true;
+
+        // Invoke all callbacks that we have queued for this script
+        $.each($.includeCallbacks[url], function(idex, onload) {
+            onload.call(script);
+        });
+    }
 
     $.extend({
         includeScripts:     {}, // by url: false | $(script)
@@ -85,7 +97,9 @@
             script.onreadystatechange = function() {
                 if ( (script.readyState !== 'complete') &&
                      (script.readyState !== 'loaded') )
+                {
                     return;
+                }
 
                 scriptLoaded(script, url);
             };
@@ -95,7 +109,9 @@
             $.includeScripts[url]     = false;
             $.includeCallbacks[url] = [];
             if (typeof onload === 'function')
+            {
                 $.includeCallbacks[url].push(onload);
+            }
 
             // Put the script into the DOM -- loading begins now
             document.getElementsByTagName('head')[0].appendChild(script);
@@ -109,7 +125,9 @@
             // See if all included scripts have loaded
             $.each($.includeScripts, function(url, state) {
                 if (state === false)
+                {
                     return (isReady = false); // Stop traversal
+                }
             });
 
             if (isReady)
@@ -127,16 +145,7 @@
         }
     });
 
-    function scriptLoaded(script, url)
-    {
-        $.includeScripts[url] = true;
-
-        // Invoke all callbacks that we have queued for this script
-        $.each($.includeCallbacks[url], function(idex, onload) {
-            onload.call(script);
-        });
-    }
     }
     /*******************************************************************/
 
- })(jQuery);
+ }(jQuery));
