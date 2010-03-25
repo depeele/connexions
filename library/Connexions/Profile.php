@@ -21,8 +21,10 @@ class   Connexions_Profile
     {
         if ($logger === null)
         {
-            self::$_log = Zend_Registry::get('log');
+            $logger = Zend_Registry::get('log');
         }
+
+        self::$_log = $logger;
     }
 
     /** @brief  Begin profiling.
@@ -94,6 +96,9 @@ class   Connexions_Profile
         }
         else
         {
+            if (($uid === 0) || ($uid === null))
+                $uid = self::$_uid;
+
             if ( ! isset(self::$_profiles[$uid]) )
             {
                 printf ("*** Profile::%s: unknown uid[ %s ]\n",
