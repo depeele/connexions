@@ -25,8 +25,6 @@ class Model_UserSet extends Connexions_Set
                                 $itemIds  = null,
                                 $userIds  = null)
     {
-        $memberClass  = self::MEMBER_CLASS;
-
         if ( (! @empty($userIds)) && (! @is_array($userIds)) )
             $userIds = array($userIds);
         if ( (! @empty($itemIds)) && (! @is_array($itemIds)) )
@@ -36,7 +34,7 @@ class Model_UserSet extends Connexions_Set
 
         // Generate a Zend_Db_Select instance
         $db     = Connexions::getDb();
-        $table  = Connexions_Model::metaData('table', $memberClass);
+        $table  = Connexions_Model::metaData('table', self::MEMBER_CLASS);
 
         $select = $db->select()
                      ->from(array('u' => $table))
@@ -101,9 +99,6 @@ class Model_UserSet extends Connexions_Set
         }
 
 
-        // Include '_memberClass' in $select so we can use 'Connexions_Set'
-        $select->_memberClass = $memberClass;
-
         $this->_userIds = $userIds;
         $this->_itemIds = $itemIds;
         $this->_tagIds  = $tagIds;
@@ -114,7 +109,7 @@ class Model_UserSet extends Connexions_Set
                         $select->assemble()) );
         // */
 
-        return parent::__construct($select, $memberClass);
+        return parent::__construct($select, self::MEMBER_CLASS);
     }
 
     /** @brief  Map a field name.

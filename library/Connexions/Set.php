@@ -8,12 +8,80 @@
  *      $set       = new Connexions_Set('Model_UserItem', $select);
  *      $paginator = new Zend_Paginator($set);
  *
+ *
+ *  This provides functionality similar to Zend_Db_Table_Rowset_Abstract but
+ *  provides Lazy-loading and a Direct Model connection, making it similar in
+ *  many respects to ActiveRecord.
+ *
+ *      Lazy-loading:   no database interactions nor Model instantiations occur
+ *                      until a caller attempts to access a record.
+ *      Direct Model:   when an offset is requested from this set, a
+ *                      Connexions_Model instance is returned.
+ *
+ *
+ *  Connexions_Set accepts a Zend_Db_Select that represents the desired set of
+ *  items along with the name of the Connexions_Model class that represents the
+ *  members of this set.
+ *
+ *  Concrete classes include a MEMBER_CLASS constant that identifies the name
+ *  Connexions_Model class to be used to represent individual rows.
+ *
+ *  Records are retrieved either one at a time, or in a group:
+ *      getItems(offset, count) - Ensures that all records in the specified
+ *                                range have been retrieved, and wraps them in
+ *                                an instance of the iterator class
+ *                                (Connexions_Set_Iterator), which further
+ *                                delays instantiation of the Connexions_Model
+ *                                for a record until a specific offset is
+ *                                requested;
+ *
+ *      offsetGet(offset),      - Retrieves the single requested row, wrapping
+ *      current(),                it in a Connexions_Model instance;
+ *      getItem(offset)           (the primary difference with getItem() and
+ *                                 the other two methods is that getItem() does
+ *                                 NOT alter the current iteration
+ *                                 position/key)
+ *
+ *
+ *
+ *
+ * old....
+ *      getIterator()           - Uses getItems() to retrieve an iterator for
+ *                                all records represented by the select
+ *                                specified on instantiation;
+ *
+ *  Interface Soup
+ *  --------------------------------------------------------------------------
+ *  Countable           count
+ *  ArrayAccess         offsetExists/Get/Set/Unset
+ *  SeekableIterator    seek                                : Iterator
+ *  Iterator            current, key, next, rewind, valid   : Traversable
+ *  IteratorAggregate   getIterator                         : Traversable
+ *
+ *  ArrayIterator                                           : Countable,
+ *                                                            Iterator,
+ *                                                            Traversable,
+ *                                                            ArrayAccess,
+ *                                                            SeekableIterator
+ *
+ *
+ *  Zend_Db_Table_Rowset_Abstract                           : Countable,
+ *                                                            ArrayAccess,
+ *                                                            SeekableIterator
+ *
+ *  Zend_Paginator_Adapter_Interface                        : Countable
+ *                      getItems
+ *
  */
-abstract class Connexions_Set implements Countable,
-                                         IteratorAggregate,
+abstract class Connexions_Set extends    ArrayIterator
+                              implements Countable,
                                          ArrayAccess,
+                                         SeekableIterator,
                                          Zend_Paginator_Adapter_Interface
 {
+    /** @brief  The number of records to retrieve on a cache miss. */
+    const       FETCH_COUNT         = 100;
+
     /** @brief  The name to use as the row count column. */
     const       ROW_COUNT_COLUMN    = 'connexions_set_row_count';
 
@@ -29,7 +97,6 @@ abstract class Connexions_Set implements Countable,
     const       RELATED_GROUPS      = 'groups';
 
 
-
     /** @brief  The name of the Iterator class to use for this set. */
     protected   $_iterClass     = 'Connexions_Set_Iterator';
 
@@ -39,11 +106,23 @@ abstract class Connexions_Set implements Countable,
     /** @brief  Total number of records. */
     protected   $_count         = null;
 
+    /** @brief  The original data for each row. */
+    protected   $_data          = array();
+
+    /** @brief  Cache of instantiated Connexions_Model objects that parallels
+     *          $_data.
+     */
+    protected   $_members       = array();
+
+    /** @brief  Iterator pointer (i.e. current iteration offset). */
+    protected   $_pointer       = 0;
+
+
     /** @brief  Zend_Db_Select instance representing all items of this set. */
     protected   $_select        = null;
     protected   $_select_count  = null;
 
-    protected   $_error     = null;     /* If there has been an error, this
+    protected   $_error         = null; /* If there has been an error, this
                                          * will contain the error message
                                          * string.
                                          */
@@ -51,8 +130,7 @@ abstract class Connexions_Set implements Countable,
      *  @param  select      A Zend_Db_Select instance representing the set of
      *                      items;
      *  @param  memberClass The name of the Model class for members of this
-     *                      set (if _memberClass has not yet been set by the
-     *                           concrete instance);
+     *                      set;
      *  @param  iterClass   The name of the class to create for a set iterator
      *                      [ 'Connexions_Set_Iterator' ].
      */
@@ -63,9 +141,11 @@ abstract class Connexions_Set implements Countable,
         if ($this->_memberClass === null)
         {
             if (! @is_string($memberClass))
+            {
                 throw new Exception("Connexions_Set requires 'memberClass' "
                                     . "either directly specified or as "
                                     . "a member of the provided 'select'");
+            }
 
             $this->_memberClass = $memberClass;
         }
@@ -118,6 +198,8 @@ abstract class Connexions_Set implements Countable,
      *                      include a sorting order (ASC, DESC) following the
      *                      field name, separated by a space.
      *
+     *  Note: When the order is changed, any cached data will be flushed.
+     *
      *  @return $this
      */
     public function setOrder($order)
@@ -143,13 +225,28 @@ abstract class Connexions_Set implements Countable,
             array_push($newOrder, implode(' ', $orderParts));
         }
 
+        $curOrder = $this->_select->getPart(Zend_Db_Select::ORDER);
+
         /*
         Connexions::log("Connexions_Set::setOrder: "
-                        . "order[ ". print_r($newOrder, true) ." ]");
+                        . "current[ ". print_r($curOrder, true) ." ]");
+                        . "order[ ".   print_r($newOrder, true) ." ]");
         // */
 
-        $this->_select->reset(Zend_Db_Select::ORDER)
-                      ->order( $newOrder );
+        if ($curOrder != $newOrder)
+        {
+            $this->_select->reset(Zend_Db_Select::ORDER)
+                          ->order( $newOrder );
+
+            /*
+            Connexions::log("Connexions_Set::setOrder: "
+                            . "order change: Flush all data");
+            // */
+
+            // Flush all cached data
+            $this->_data    = array();
+            $this->_members = array();
+        }
 
         /*
         Connexions::log("Connexions_Set::setOrder: "
@@ -300,6 +397,13 @@ abstract class Connexions_Set implements Countable,
      * Countable Interface
      *
      */
+
+    /** @brief  Return the number of elements in this set.
+     *
+     *  Override Zend_Db_Table_Rowset_Abstract so we can delay until needed.
+     *
+     *  @return int
+     */
     public function count()
     {
         if ($this->_count === null)
@@ -309,8 +413,8 @@ abstract class Connexions_Set implements Countable,
                         ->fetch();
 
             $this->_count = (@isset($res[self::ROW_COUNT_COLUMN])
-                                ? $res[self::ROW_COUNT_COLUMN]
-                                : 0);
+                                  ? $res[self::ROW_COUNT_COLUMN]
+                                  : 0);
 
             /*
             Connexions::log(sprintf("Connexions_Set::count():%s: "
@@ -327,6 +431,15 @@ abstract class Connexions_Set implements Countable,
      * ArrayAccess Interface
      *
      */
+
+    /** @brief  Check if an offset "exists".
+     *  @param  offset      The new offset (numeric).
+     *
+     *  Override Zend_Db_Table_Abstract so we can delay count() and actual
+     *  retrieval of row data.
+     *
+     *  @return boolean
+     */
     public function offsetExists($offset)
     {
         if ( (! @is_numeric($offset)) ||
@@ -337,9 +450,20 @@ abstract class Connexions_Set implements Countable,
         return true;
     }
 
+    /** @brief  Get the member for the given offset
+     *  @param  offset  The desired offset.
+     *
+     *  Required by the ArrayAccess implementation
+     *
+     *  @return Connexions_Model instance.
+     */
     public function offsetGet($offset)
     {
+        $this->_pointer = (int) $offset;
 
+        return $this->current();
+
+        /*
         // Retrieve a single row
         $this->_select->limit(1, $offset);
         $rows = $this->_select->query()->fetchAll();
@@ -351,40 +475,124 @@ abstract class Connexions_Set implements Countable,
         // Create a new instance of the member class using the retrieved data
         $inst = new $this->_memberClass($rec);
 
-        /*
         Connexions::log(sprintf("Connexions_Set::offsetGet(%d):%s",
                                     $offset,
                                     $this->_memberClass) );
-        // */
 
         // Return the new instance
         return $inst;
+        */
     }
 
+    /** @brief  Does nothing
+     *  @param  offset
+     *  @param  value
+     *
+     *  Required by the ArrayAccess implementation
+     */
     public function offsetSet($offset, $value)
     {
         // Disallow...
-        return;
     }
 
+    /** @brief  Does nothing
+     *  @param  offset
+     *
+     *  Required by the ArrayAccess implementation
+     */
     public function offsetUnset($offset)
     {
         // Disallow...
-        return;
     }
 
     /*************************************************************************
-     * IteratorAggregate Interface
+     * Iterator Interface
+     */
+
+    /** @brief  Return the identifying key of the current element.
+     *
+     *  Similar to the key() function for arrays in PHP.
+     *  Required by interface Iterator.
+     *
+     *  @return int
+     */
+    public function key()
+    {
+        return $this->_pointer;
+    }
+
+    /** @brief  Rewind the Iterator to the first element.
+     *
+     *  Similar to the reset() function for arrays in PHP.
+     *  Required by interface Iterator.
+     *
+     *  @return Connexions_Set for a Fluent interface.
+     */
+    public function rewind()
+    {
+        $this->_pointer = 0;
+        return $this;
+    }
+
+    /** @brief  Move forward to next element.
+     *
+     *  Similar to the next() function for arrays in PHP.
+     *  Required by interface Iterator.
+     *
+     *  @return void
+     */
+    public function next()
+    {
+        ++$this->_pointer;
+    }
+
+    /** @brief  Return the current element.
+     *
+     *  Similar to the current() function for arrays in PHP
+     *  Required by interface Iterator.
+     *
+     *  @return Connexions_Model instance representing the current Item
+     */
+    public function current()
+    {
+        return $this->getItem($this->_pointer);
+    }
+
+    /** @brief  Check if the current location is valid.
+     *
+     *  Override Zend_Db_Table_Rowset_Abstract so we can delay count() until
+     *  needed.
+     *
+     *  @return bool    (false if there's nothing more to iterate over).
+     */
+    public function valid()
+    {
+        return ( ($this->_pointer >= 0) &&
+                 ($this->_pointer <  $this->count()) );
+    }
+
+    /*************************************************************************
+     * SeekableIterator Interface
      *
      */
 
-    /** @brief  Return a foreach-compatible iterator for the current set.
+    /** @brief  Move our current position.
+     *  @param  int position    The new position.
      *
-     *  @return Traversable
+     *  Override Zend_Db_Table_Rowset_Abstract so we can delay count() until
+     *  needed.
+     *
+     *  @throws Zend_Db_Table_Rowset_Exception
+     *
+     *  @return Connexions_Set
      */
-    public function getIterator()
+    public function seek($position)
     {
-        return $this->getItems(0, -1);
+        if ($this->_count === null)
+            // Establish the count.
+            $this->count();
+
+        return parent::seek($position);
     }
 
     /*************************************************************************
@@ -402,41 +610,154 @@ abstract class Connexions_Set implements Countable,
     {
         if ($itemCountPerPage <= 0)
         {
-            $this->_select->reset(Zend_Db_Select::LIMIT_COUNT);
-            $this->_select->reset(Zend_Db_Select::LIMIT_OFFSET);
+            $offset           = 0;
+            $itemCountPerPage = $this->count();
         }
-        else
-            $this->_select->limit($itemCountPerPage, $offset);
 
-        /*
-        Connexions::log(sprintf("Connexions_Set::getItems(%d, %d):%s: "
-                                . "sql[ %s ], ",
-                                    $offset, $itemCountPerPage,
-                                    $this->_memberClass,
-                                    $this->_select->assemble()));
-        // */
+        // Ensure that the desired records are cached.
+        $this->_cacheRecords($offset, $itemCountPerPage);
 
-        $rows = $this->_select->query()->fetchAll();
-
+        $rows = array_slice($this->_data, $offset, $itemCountPerPage);
         $inst = new $this->_iterClass($this, $rows);
 
-        /*
-        Connexions::log(sprintf("Connexions_Set::getItems(%d, %d):%s: "
-                                //. "sql[ %s ], "
-                                ,
+        // /*
+        Connexions::log(sprintf("Connexions_Set::getItems(%d, %d):%s: ",
                                     $offset, $itemCountPerPage,
-                                    $this->_memberClass,
-                                    //$this->_select->assemble(),
+                                    $this->_memberClass
                                     ));
         // */
 
         return $inst;
     }
 
+    /** @brief  Get the member for the given offset
+     *  @param  offset  The desired offset.
+     *
+     *  Note: This differs from offsetGet() in that the current iteration
+     *        offset is NOT modified.
+     *
+     *  @return Connexions_Model instance representing the desired Item
+     */
+    public function getItem($offset)
+    {
+        if ( ($offset < 0) || ($offset >= $this->count()) )
+        {
+            /*
+            Connexions::log(sprintf("Connexions_Set(%s)::getItem(%d):%s "
+                                    .   "-- INVALID OFFSET",
+                                    get_class($this),
+                                    $offset,
+                                    $this->_memberClass));
+            // */
+
+            return null;
+        }
+
+        if (! isset($this->_members[$offset]))
+        {
+            // Ensure that the needed record is cached.
+            $this->_cacheRecords($offset, 1);
+
+            /* Access the raw record data, ensuring that it is marked as a
+             * database-backed record.
+             */
+            $rec =& $this->_data[$offset];
+            $rec['@isBacked'] = true;
+
+            // Create a new instance of the member class using the record.
+            $this->_members[$offset] = new $this->_memberClass( $rec );
+
+            /*
+            Connexions::log(sprintf("Connexions_Set(%s)::getItem(%d):%s",
+                                        get_class($this),
+                                        $offset,
+                                        $this->_memberClass));
+            // */
+        }
+        /*
+        else
+        {
+            Connexions::log(sprintf("Connexions_Set(%s)::getItem(%d):%s "
+                                    .   "-- return existing instance",
+                                    get_class($this),
+                                    $offset,
+                                    $this->_memberClass));
+        }
+        // */
+
+        // Return the record instance
+        return $this->_members[$offset];
+    }
+
     /*************************************************************************
      * Protected helpers
      *
      */
+
+    /** @brief  Ensure that all records in the given range have been cached.
+     *  @param  offset  The beginning offset.
+     *  @param  count   The number of records to retrieve.
+     *
+     */
+    protected function _cacheRecords($offset, $count)
+    {
+        /* Find the first missing record -- we'll retrieve everything from that
+         * point, even if it's already cached.  We stop with the first to avoid
+         * excessive overhead checking to see what's cached.
+         */
+        $firstMissing = -1;
+        for ($idex = 0; $idex < $count; $idex++)
+        {
+            if (! isset($this->_data[$offset + $idex]))
+            {
+                $firstMissing = $idex;
+                break;
+            }
+        }
+
+        if ($firstMissing === -1)
+            // The entire range is already cached.
+            return;
+
+
+        /* Retrieve the raw record data in the range:
+         *      ($offset + $firstMissing) .. ($offset + $count)
+         *
+         * Remember the current offset/count and adjust to pull
+         * a range.
+         */
+        $origOffset  = $this->_select->getPart(Zend_Db_Select::LIMIT_OFFSET);
+        $origCount   = $this->_select->getPart(Zend_Db_Select::LIMIT_COUNT);
+
+        $fetchOffset = $offset + $firstMissing;
+        $fetchCount  = ($offset + $count) - $fetchOffset;
+        if ($fetchCount < self::FETCH_COUNT)
+            $fetchCount = self::FETCH_COUNT;
+
+        $this->_select->limit($fetchCount, $fetchOffset);
+
+        // Retrieve everything in the current range.
+        $rows = $this->_select->query()->fetchAll();
+
+        // Reset the limit
+        $this->_select->limit($origCount, $origOffset);
+
+        // /*
+        Connexions::log(sprintf("Connexions_Set(%s)::_cacheRecords(%d, %d):%s "
+                                . "retrieved %d/%d items (%d..%d)",
+                                get_class($this),
+                                $offset, $count,
+                                $this->_memberClass,
+                                count($rows), $fetchCount,
+                                $fetchOffset, $fetchOffset + count($rows)
+                                ));
+        // */
+
+        /* Cache the raw row data, splicing it into the proper offset
+         * within _data.
+         */
+        array_splice($this->_data, $offset, count($rows), $rows);
+    }
 
     /** @brief  Add a new error.
      *  @param  err     The error string.
