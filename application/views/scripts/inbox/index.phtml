@@ -46,6 +46,9 @@ $this->headTitle('inbox')
  </p>
 </div>
 
+<?= $this->htmlItemScope($this->paginator,
+                         $this->tagInfo) ?>
+
 <?= $this->htmlUserItems($this->paginator,
                          $this->viewer,
                          $this->tagInfo) ?>

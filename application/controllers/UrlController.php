@@ -11,6 +11,7 @@ class UrlController extends Zend_Controller_Action
     protected   $_tagInfo   = null;
     protected   $_item      = null;
     protected   $_userItems = null;
+    protected   $_urlHash   = null;
 
     public function init()
     {
@@ -29,14 +30,15 @@ class UrlController extends Zend_Controller_Action
         /* If the incoming URL is NOT an MD5 hash (32 hex characters), convert
          * it to a normalzed hash now
          */
-        $urlHash = Connexions::normalizedMd5($url);
-        if ($urlHash !== $url)
+        $this->_urlHash = Connexions::normalizedMd5($url);
+        if ($this->_urlHash !== $url)
         {
             // Redirect using the URL hash
-            //$newUrl = $this->_helper->url($urlHash);
+            //$newUrl = $this->_helper->url($this->_urlHash);
 
             return $this->_helper->redirector
-                                    ->setGotoRoute(array('url', $urlHash));
+                                    ->setGotoRoute(array('url',
+                                                         $this->_urlHash));
         }
 
         $reqTags = $request->getParam('tags', null);
@@ -49,7 +51,7 @@ class UrlController extends Zend_Controller_Action
 
 
         // Locate the item with the requested URL (if there is one).
-        $this->_item = new Model_Item($urlHash);
+        $this->_item = new Model_Item($this->_urlHash);
 
         // /*
         Connexions::log("UrlController:: "
@@ -149,6 +151,25 @@ class UrlController extends Zend_Controller_Action
                                 $itemsStyleCustom);
         else
             $uiHelper->setStyle($itemsStyle);
+
+        // Set Scope information
+        $scopeParts  = array('format=json');
+        if ($this->_tagInfo->hasValidItems())
+        {
+            array_push($scopeParts, 'tags='. $this->_tagInfo->validItems);
+        }
+
+        $scopeUrl    = $this->view->baseUrl('/tagged');
+        $scopeCbUrl  = $this->view->baseUrl('/scopeAutoComplete')
+                     . '?'. implode('&', $scopeParts);
+
+        $scopeHelper = $this->view->htmlItemScope();
+        $scopeHelper->setNamespace($prefix)
+                    ->setInputLabel('Tags')
+                    ->setInputName( 'tags')
+                    ->setPath(array('Bookmarks' => $scopeUrl))
+                    ->setAutoCompleteUrl( $scopeCbUrl );
+
 
         /* Ensure that the final sort information is properly reflected in
          * the source set.

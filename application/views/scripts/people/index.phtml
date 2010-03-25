@@ -32,6 +32,9 @@ $this->headTitle('People');
  </p>
 </div>
 
+<?= $this->htmlItemScope($this->paginator,
+                         $this->tagInfo) ?>
+
 <?= $this->htmlUsers($this->paginator,
                      $this->viewer,
                      $this->tagInfo) ?>

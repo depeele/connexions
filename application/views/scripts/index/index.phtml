@@ -17,6 +17,9 @@
  *      paginator           A Zend_Paginator instance established for the
  *                          presentation of the current Model_UserItemSet;
  */
+Connexions_Profile::checkpoint('Connexions',
+                               'IndexView rendering beginning');
+
 $baseUrl = $this->baseUrl('/'); //Connexions::url('/');
 
 $links = $this->headLink();
@@ -53,8 +56,16 @@ else
  </p>
 </div>
 
+<?= $this->htmlItemScope($this->paginator,
+                         $this->tagInfo) ?>
+
 <?= $this->htmlUserItems($this->paginator,
                          $this->viewer,
                          $this->tagInfo) ?>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
+
+<?php
+
+Connexions_Profile::checkpoint('Connexions',
+                               'IndexView rendering complete');

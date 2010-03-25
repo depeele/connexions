@@ -201,7 +201,7 @@ function init_<?= $namespace ?>ItemScope()
 
     /** @brief  Render an HTML version of Item Scope.
      *  @param  paginator   The Zend_Paginator representing the items to be
-     *                      presented;
+     *                      presented -- used to present the item count;
      *  @param  scopeInfo   A Connexions_Set_Info instance containing
      *                      information about the requested scope items
      *                      (e.g.  tags, user);

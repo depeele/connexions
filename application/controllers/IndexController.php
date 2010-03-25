@@ -113,6 +113,9 @@ class IndexController extends Zend_Controller_Action
                                                   $ownerIds);
 
 
+        Connexions_Profile::checkpoint('Connexions',
+                                       'IndexController::indexAction: '
+                                       . 'User Item Set retrieved');
         $this->_htmlContent();
         $this->_htmlSidebar();
     }
@@ -169,7 +172,7 @@ class IndexController extends Zend_Controller_Action
         $itemsStyleCustom = $request->getParam($prefix."OptionGroups_option",
                                                                         null);
 
-        // /*
+        /*
         Connexions::log('IndexController::'
                             . 'prefix [ '. $prefix .' ], '
                             . 'params [ '
@@ -196,15 +199,14 @@ class IndexController extends Zend_Controller_Action
 
 
         // Set Scope information
-        $scopeHelper = $this->view->htmlItemScope();
         $scopeParts  = array('format=json');
+        $scopePath   = array();
         if ($this->_owner === '*')
         {
             // Multiple / all users
             $uiHelper->setMultipleUsers();
 
-            $scopeHelper->setPath(array('Bookmarks' =>
-                                            $this->view->baseUrl('/tagged')));
+            $scopePath = array('Bookmarks' => $this->view->baseUrl('/tagged'));
         }
         else
         {
@@ -213,8 +215,7 @@ class IndexController extends Zend_Controller_Action
 
             $uiHelper->setSingleUser();
 
-            $scopeHelper->setPath(array($ownerStr =>
-                                            $this->view->baseUrl($ownerStr)));
+            $scopePath = array($ownerStr => $this->view->baseUrl($ownerStr));
 
             array_push($scopeParts, 'owner='. $ownerStr);
         }
@@ -224,9 +225,15 @@ class IndexController extends Zend_Controller_Action
             array_push($scopeParts, 'tags='. $this->_tagInfo->validItems);
         }
 
-        $scopeCbUrl = $this->view->baseUrl('/scopeAutoComplete')
-                    . '?'. implode('&', $scopeParts);
-        $scopeHelper->setAutoCompleteUrl( $scopeCbUrl );
+        $scopeCbUrl  = $this->view->baseUrl('/scopeAutoComplete')
+                     . '?'. implode('&', $scopeParts);
+
+        $scopeHelper = $this->view->htmlItemScope();
+        $scopeHelper->setNamespace($prefix)
+                    ->setInputLabel('Tags')
+                    ->setInputName( 'tags')
+                    ->setPath( $scopePath )
+                    ->setAutoCompleteUrl( $scopeCbUrl );
 
 
 
@@ -266,6 +273,10 @@ class IndexController extends Zend_Controller_Action
         /* The default view script (views/scripts/index/index.phtml) will
          * render this main view
          */
+        Connexions_Profile::checkpoint('Connexions',
+                                       'IndexController::_htmlContent: '
+                                       . 'view initialized and '
+                                       . 'ready to render');
     }
 
     protected function _htmlSidebar()
@@ -301,7 +312,7 @@ class IndexController extends Zend_Controller_Action
         $tagsSortOrder      = $request->getParam($prefix."SortOrder",   null);
         $tagsStyle          = $request->getParam($prefix."OptionGroup", null);
 
-        // /*
+        /*
         Connexions::log('IndexController::'
                             . "right-column prefix [ {$prefix} ],\n"
                             . "    PerPage        [ {$tagsPerPage} ],\n"
@@ -329,8 +340,18 @@ class IndexController extends Zend_Controller_Action
                                         : '/tagged'));
 
 
+        Connexions_Profile::checkpoint('Connexions',
+                                       'IndexController::_htmlSidebar: '
+                                       . 'view initialized and '
+                                       . 'ready to render');
+
         // Render the sidebar into the 'right' placeholder
         $this->view->renderToPlaceholder('index/sidebar.phtml', 'right');
+
+        Connexions_Profile::checkpoint('Connexions',
+                                       'IndexController::_htmlSidebar: '
+                                       . 'rendered to placeholder');
+
 
         //$layout->right = $this->view->render('index/sidebar.phtml');
         //$layout->right = $this->render('sidebar');

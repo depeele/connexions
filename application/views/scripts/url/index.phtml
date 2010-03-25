@@ -49,6 +49,9 @@ $this->headTitle('Bookmarks for "'. $item0['name'] .'"');
  </div>
 </div>
 
+<?= $this->htmlItemScope($this->paginator,
+                         $this->tagInfo) ?>
+
 <?= $this->htmlUrlItems($this->paginator,
                         $this->viewer,
                         $this->tagInfo) ?>

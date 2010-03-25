@@ -593,13 +593,6 @@ function init_UserItems(namespace)
                      ->setPerPageChoices(self::$perPageChoices);
 
 
-        $uiScope      = $this->view->htmlItemScope();
-        $uiScope->setNamespace($this->_namespace)
-                ->setInputLabel('Tags')
-                ->setInputName( 'tags');
-
-        $html .= $uiScope->render($paginator, $tagInfo);
-
         $html .= "<div id='{$this->_namespace}List'>"   // List {
               .   $uiPagination->render($paginator, 'pagination-top', true)
               .   $this->_renderDisplayOptions($paginator);
