@@ -520,49 +520,12 @@ function init_UrlItems(namespace)
 
         $html = "";
 
-        $scopeStr = 'Bookmarks';
-        $scopeUrl = $this->view->baseUrl('/tagged');
-
         $showMeta   = $this->getShowMeta();
-
-
-        // Construct the scope auto-completion callback URL
-        $scopeParts = array('format=json');
-        if ($tagInfo->hasValidItems())
-        {
-            /*
-            Connexions::log(sprintf("Connexions_View_Helper_HtmlUrlItems: "
-                                    .   "reqStr[ %s ], valid[ %s ]",
-                                    $tagInfo->reqStr,
-                                    var_export($tagInfo->valid, true)) );
-
-            // */
-
-            array_push($scopeParts, 'tags='. $tagInfo->validItems);
-        }
-
-        $scopeCbUrl = $this->view->baseUrl('/scopeAutoComplete')
-                    . '?'. implode('&', $scopeParts);
-
-
-        /*
-        Connexions::log("Connexions_View_Helper_HtmlUrlItems: "
-                        .       "scopeCbUrl[ {$scopeCbUrl} ]");
-        // */
 
         $uiPagination = $this->view->htmlPaginationControl();
         $uiPagination->setNamespace($this->_namespace)
                      ->setPerPageChoices(self::$perPageChoices);
 
-
-        $uiScope = $this->view->htmlItemScope();
-        $uiScope->setNamespace($this->_namespace)
-                ->setInputLabel('Tags')
-                ->setInputName( 'tags')
-                ->setPath( array($scopeStr => $scopeUrl) )
-                ->setAutoCompleteUrl($scopeCbUrl);
-
-        $html .= $uiScope->render($paginator, $tagInfo);
 
         $html .= "<div id='{$this->_namespace}List'>"   // List {
               .   $uiPagination->render($paginator, 'pagination-top', true)

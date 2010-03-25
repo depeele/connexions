@@ -93,6 +93,25 @@ class PeopleController extends Zend_Controller_Action
                             . "order[ {$uiHelper->getSortOrder() } ]");
         // */
 
+
+        // Set Scope information
+        $scopeParts  = array('format=json');
+        if ($this->_tagInfo->hasValidItems())
+        {
+            array_push($scopeParts, 'tags='. $this->_tagInfo->validItems);
+        }
+
+        $scopeUrl    = $this->view->baseUrl('/people');
+        $scopeCbUrl  = $this->view->baseUrl('/scopeAutoComplete')
+                     . '?'. implode('&', $scopeParts);
+
+        $scopeHelper = $this->view->htmlItemScope();
+        $scopeHelper->setNamespace($prefix)
+                    ->setInputLabel('Tags')
+                    ->setInputName( 'tags')
+                    ->setPath(array('People' => $scopeUrl))
+                    ->setAutoCompleteUrl( $scopeCbUrl );
+
         /* Ensure that the final sort information is properly reflected in
          * the source set.
          */

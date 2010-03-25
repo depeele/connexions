@@ -212,14 +212,26 @@ class InboxController extends Zend_Controller_Action
         else
             $uiHelper->setStyle($itemsStyle);
 
-        // Set Scope information
-        $scopeHelper = $this->view->htmlItemScope();
-
         $uiHelper->setMultipleUsers();
 
-        $inboxUrl = $this->view->baseUrl('/inbox/'. $this->_owner->name);
-        $scopeHelper->setPath(array('Inbox' => $inboxUrl));
 
+        // Set Scope information
+        $scopeParts  = array('format=json');
+        if ($this->_tagInfo->hasValidItems())
+        {
+            array_push($scopeParts, 'tags='. $this->_tagInfo->validItems);
+        }
+
+        $inboxUrl    = $this->view->baseUrl('/inbox/'. $this->_owner->name);
+        $scopeCbUrl  = $this->view->baseUrl('/scopeAutoComplete')
+                     . '?'. implode('&', $scopeParts);
+
+        $scopeHelper = $this->view->htmlItemScope();
+        $scopeHelper->setNamespace($prefix)
+                    ->setInputLabel('Tags')
+                    ->setInputName( 'tags')
+                    ->setPath(array('Inbox' => $inboxUrl))
+                    ->setAutoCompleteUrl( $scopeCbUrl );
 
 
         /* Ensure that the final sort information is properly reflected in

@@ -36,6 +36,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
              ->_commonAuth()
              ->_commonRequest()
              ->_commonPlugins();
+
+        /*
+        Connexions_Profile::checkpoint('Connexions',
+                                       'Bootstrap::_initCommon complete');
+        // */
     }
 
     protected function _initView()
@@ -120,11 +125,16 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             $view->navigation()->setRole('member');
         }
 
-        // /*
+        /*
         Connexions::log("Bootstrap::_initView: role[ "
                         .   $view->navigation()->getRole()
                         .       " ]");
         // */
+
+        Connexions_Profile::checkpoint('Connexions',
+                                       "Bootstrap::_initView complete: "
+                                       .    "role[ %s ]",
+                                       $view->navigation()->getRole());
 
         return $view;
     }
@@ -215,7 +225,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         // Make the log available via the global Registry
         Zend_Registry::set('log', $log);
 
-        Connexions::log('Bootstrap::Logging initialized');
+        //Connexions::log('Bootstrap::Logging initialized');
+        Connexions_Profile::init($log);
+        Connexions_Profile::start('Connexions',
+                                  'Bootstrap::Logging initialized');
 
         return $this;
     }
@@ -350,12 +363,19 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
                         ));
         }
 
-        // /*
+        /*
         Connexions::log(sprintf("Bootstrap::_commonAuth: "
                                 .  "Final user '%s' is%s authenticated",
                                 $user,
                                 ($user->isAuthenticated() ? '':' NOT')) );
         // */
+        Connexions_Profile::checkpoint('Connexions',
+                                       "Bootstrap::_commonAuth complete: "
+                                       .  "Final user '%s' is%s authenticated",
+                                       $user,
+                                       ($user->isAuthenticated()
+                                            ? '':' NOT'));
+
 
         /* Make this available via the global Registry and as a Bootstrap
          * Resource.

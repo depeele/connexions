@@ -127,7 +127,6 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
     protected       $_displayOptions    = null;
     protected       $_sortBy            = null;
     protected       $_sortOrder         = null;
-    protected       $_scopeItems        = null;
 
     /** @brief  Render an HTML version of a paginated set of Users or,
      *          if no arguments, this helper instance.
@@ -427,28 +426,6 @@ function init_UsersList(namespace)
         return $val;
     }
 
-    /** @brief  Set the Connexions_Set that specifies the full set of scope 
-     *          items (for auto-suggest).
-     *  @param  scopeItems  A Connexions_Set instance.
-     *
-     *  @return Connexions_View_Helper_HtmlUsers for a fluent interface.
-     */
-    public function setScopeItems(Connexions_Set $scopeItems)
-    {
-        $this->_scopeItems = $scopeItems;
-
-        return $this;
-    }
-
-    /** @brief  Get the current scopeItems value.
-     *
-     *  @return The Connexions_Set instance (null if not set).
-     */
-    public function getScopeItems()
-    {
-        return $this->_scopeItems;
-    }
-
     /** @brief  Render an HTML version of a paginated set of Users.
      *  @param  paginator       The Zend_Paginator representing the items to
      *                          be presented.
@@ -503,46 +480,10 @@ function init_UsersList(namespace)
         $showMeta   = $this->getShowMeta();
 
 
-        // Construct the scope auto-completion callback URL
-        $scopeParts = array('format=json');
-        if ($tagInfo->hasValidItems())
-        {
-            /*
-            Connexions::log(sprintf("Connexions_View_Helper_HtmlUsers: "
-                                    .   "reqStr[ %s ], valid[ %s ]",
-                                    $tagInfo->reqStr,
-                                    var_export($tagInfo->valid, true)) );
-
-            // */
-
-            array_push($scopeParts, 'tags='. $tagInfo->validItems);
-        }
-
-        $scopeCbUrl = $this->view->baseUrl('/scopeAutoComplete')
-                    . '?'. implode('&', $scopeParts);
-
-
-        /*
-        Connexions::log("Connexions_View_Helper_HtmlUsers: "
-                        .       "scopeCbUrl[ {$scopeCbUrl} ]");
-        // */
-
         $uiPagination = $this->view->htmlPaginationControl();
         $uiPagination->setPerPageChoices(self::$perPageChoices)
                      ->setNamespace($this->_namespace);
 
-
-        $scopeRoot = 'People';
-        $scopeUrl  = $this->view->baseUrl('/people');
-
-        $uiScope = $this->view->htmlItemScope();
-        $uiScope->setNamespace($this->_namespace)
-                ->setInputLabel('Tags')
-                ->setInputName( 'tags')
-                ->setPath( array($scopeRoot => $scopeUrl) )
-                ->setAutoCompleteUrl($scopeCbUrl);
-
-        $html .= $uiScope->render($paginator, $tagInfo);
 
         $html .= "<div id='{$this->_namespace}List'>"   // List {
               .   $uiPagination->render($paginator, 'pagination-top', true)
