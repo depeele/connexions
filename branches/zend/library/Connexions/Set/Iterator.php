@@ -22,20 +22,6 @@ class Connexions_Set_Iterator extends ArrayIterator
 
     public function current()
     {
-        $memberClass  = $this->_parentSet->memberClass();
-        $offset = $this->key();
-        $row    = parent::current();
-
-        if ($row instanceof $memberClass)
-            return $row;
-
-        // Create Model instance for each retrieved record
-        $db    = $this->_parentSet->select()->getAdapter();
-        $row['@isBacked'] = true;
-
-        /* PHP < 5.3:
-         *  return call_user_func(array($memberClass, 'find'), $row, $db);
-         */
-        return $memberClass::find($row, $db);
+        return $this->_parentSet->getItem($this->key());
     }
 }

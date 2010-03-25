@@ -26,8 +26,6 @@ class Model_UserItemSet extends Connexions_Set
                                 $userIds  = null,
                                 $itemIds  = null)
     {
-        $memberClass = self::MEMBER_CLASS;
-
         /*
         Connexions::log("Model_UserItemSet: "
                             . "tagIds [ ". print_r($tagIds, true)  ." ], "
@@ -75,7 +73,7 @@ class Model_UserItemSet extends Connexions_Set
 
         // Generate a Zend_Db_Select instance
         $db     = Connexions::getDb();
-        $table  = Connexions_Model::metaData('table', $memberClass);
+        $table  = Connexions_Model::metaData('table', self::MEMBER_CLASS);
 
         $select = $db->select()
                      ->from(array('ui' => $table))
@@ -158,14 +156,11 @@ class Model_UserItemSet extends Connexions_Set
                             . "select[ ". $select->assemble() ." ]");
         // */
 
-        // Include '_memberClass' in $select so we can use 'Connexions_Set'
-        $select->_memberClass = $memberClass;
-
         $this->_userIds = $userIds;
         $this->_itemIds = $itemIds;
         $this->_tagIds  = $tagIds;
 
-        return parent::__construct($select, $memberClass);
+        return parent::__construct($select, self::MEMBER_CLASS);
     }
 
     /** @brief  Retrieve a set of items that are related to this set.
