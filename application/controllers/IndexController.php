@@ -18,10 +18,26 @@ class IndexController extends Zend_Controller_Action
     protected   $_tagInfo   = null;
     protected   $_userItems = null;
 
+    public      $contexts   = array(
+                                'index' => array('partial', 'json',
+                                                 'rss',     'atom'),
+                              );
+
     public function init()
     {
         /* Initialize action controller here */
         $this->_viewer  =& Zend_Registry::get('user');
+
+        $this->_forward('index');
+
+        // Initialize context switching
+        $this->_helper->contextSwitch()->initContext();
+
+        /*
+        $cs = $this->getHelper('contextSwitch');
+        $cs->addActionContext('index', array('json', 'rss', 'atom'))
+           ->initContext();
+        */
     }
 
     public function indexAction()
@@ -116,8 +132,45 @@ class IndexController extends Zend_Controller_Action
         Connexions_Profile::checkpoint('Connexions',
                                        'IndexController::indexAction: '
                                        . 'User Item Set retrieved');
-        $this->_htmlContent();
-        $this->_htmlSidebar();
+
+        /*****************************************************************
+         * Determine the proper rendering format.  The only ones we deal with
+         * directly are:
+         *      partial - render a single part of this page
+         *      html    - normal HTML rendering
+         *
+         * All others are handled by the 'contextSwitch' established in
+         * this controller's init method.
+         */
+        $format = $request->getParam('format', 'html');
+        $this->view->format = $format;
+
+        Connexions::log("IndexController::format[ {$format} ]");
+        if ($format === 'partial')
+        {
+            // Render just PART of the page
+            $this->_helper->layout->setLayout('partial');
+
+            $part = $request->getParam('part', 'content');
+            switch ($part)
+            {
+            case 'sidebar':
+                $this->_htmlSidebar(true);
+                $this->render('sidebar');
+                break;
+
+            case 'content':
+            default:
+                $this->_htmlContent();
+                break;
+            }
+        }
+        else if ($format === 'html')
+        {
+            // Normal HTML rendering
+            $this->_htmlContent();
+            $this->_htmlSidebar();
+        }
     }
 
     /** @brief Redirect all other actions to 'index'
@@ -279,10 +332,9 @@ class IndexController extends Zend_Controller_Action
                                        . 'ready to render');
     }
 
-    protected function _htmlSidebar()
+    protected function _htmlSidebar($immediate = false)
     {
         $request =& $this->getRequest();
-        $layout  =& $this->view->layout();
 
         /* Create the tagSet that will be presented in the side-bar:
          *      All tags used by all users/items contained in the current
@@ -345,15 +397,14 @@ class IndexController extends Zend_Controller_Action
                                        . 'view initialized and '
                                        . 'ready to render');
 
-        // Render the sidebar into the 'right' placeholder
-        $this->view->renderToPlaceholder('index/sidebar.phtml', 'right');
+        if (! $immediate)
+        {
+            // Render the sidebar into the 'right' placeholder
+            $this->view->renderToPlaceholder('index/sidebar.phtml', 'right');
 
-        Connexions_Profile::checkpoint('Connexions',
-                                       'IndexController::_htmlSidebar: '
-                                       . 'rendered to placeholder');
-
-
-        //$layout->right = $this->view->render('index/sidebar.phtml');
-        //$layout->right = $this->render('sidebar');
+            Connexions_Profile::checkpoint('Connexions',
+                                           'IndexController::_htmlSidebar: '
+                                           . 'rendered to placeholder');
+        }
     }
 }

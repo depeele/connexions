@@ -189,7 +189,8 @@ function init_<?= $namespace ?>PaginationControls()
          *      firstItemNumber
          *      lastItemNumber
          */
-        $pages = get_object_vars($paginator->getPages());
+        $pages = $paginator->getPages();
+        $pages = get_object_vars($pages);
 
         $html  = sprintf("\n<!-- pages     [ %s ] -->\n",
                          var_export($pages, true));
@@ -300,7 +301,6 @@ function init_<?= $namespace ?>PaginationControls()
                             $page, $page);
                             //$this->view->url(array('page' => $page)), $page);
             }
-            
             
             // Present the pages AFTER the current range
             if ($pages['lastPageInRange'] < $pages['last'])
@@ -424,6 +424,7 @@ function init_<?= $namespace ?>PaginationControls()
                     self::$cssClassButton,
                     number_format($pages['firstItemNumber']),
                     number_format($pages['lastItemNumber']));
+
         }
         
         $html .= "</form>";                 // form }
