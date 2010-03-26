@@ -592,13 +592,14 @@ function init_UserItems(namespace)
         $uiPagination->setNamespace($this->_namespace)
                      ->setPerPageChoices(self::$perPageChoices);
 
-
         $html .= "<div id='{$this->_namespace}List'>"   // List {
               .   $uiPagination->render($paginator, 'pagination-top', true)
               .   $this->_renderDisplayOptions($paginator);
 
-        if (count($paginator))
+        $nPages = count($paginator);
+        if ($nPages > 0)
         {
+
             $html .= "<ul class='{$this->_namespace}'>";
 
             // Group by the field identified in $this->_sortBy

@@ -608,6 +608,14 @@ abstract class Connexions_Set extends    ArrayIterator
      */
     public function getItems($offset, $itemCountPerPage)
     {
+        /*
+        $mid = sprintf("Connexions_Set::getItems(%d, %d):%s: ",
+                       $offset, $itemCountPerPage,
+                       $this->_memberClass);
+
+        Connexions_Profile::start($mid, 'begin');
+        // */
+
         if ($itemCountPerPage <= 0)
         {
             $offset           = 0;
@@ -617,15 +625,24 @@ abstract class Connexions_Set extends    ArrayIterator
         // Ensure that the desired records are cached.
         $this->_cacheRecords($offset, $itemCountPerPage);
 
+        //Connexions_Profile::checkpoint($mid, 'records cached');
+
         $rows = array_slice($this->_data, $offset, $itemCountPerPage);
+
+        //Connexions_Profile::checkpoint($mid, 'rows extracted');
+
         $inst = new $this->_iterClass($this, $rows);
 
-        // /*
+        //Connexions_Profile::checkpoint($mid, 'iterator instantiated');
+
+        /*
         Connexions::log(sprintf("Connexions_Set::getItems(%d, %d):%s: ",
                                     $offset, $itemCountPerPage,
                                     $this->_memberClass
                                     ));
         // */
+
+        //Connexions_Profile::stop($mid, 'complete');
 
         return $inst;
     }
@@ -716,9 +733,18 @@ abstract class Connexions_Set extends    ArrayIterator
         }
 
         if ($firstMissing === -1)
+        {
             // The entire range is already cached.
             return;
+        }
 
+
+        /*
+        $mid = 'Connexions_Set::_cacheRecords';
+        Connexions_Profile::start($mid,
+                                  "begin: ({$offset}, {$count}):"
+                                  ."{$this->_memberClass}:");
+        // */
 
         /* Retrieve the raw record data in the range:
          *      ($offset + $firstMissing) .. ($offset + $count)
@@ -736,13 +762,21 @@ abstract class Connexions_Set extends    ArrayIterator
 
         $this->_select->limit($fetchCount, $fetchOffset);
 
+        /*
+        Connexions_Profile::checkpoint($mid,
+                                       "ready to fetch "
+                                       ."[ {$this->_select->assemble()} ]");
+        // */
+
         // Retrieve everything in the current range.
         $rows = $this->_select->query()->fetchAll();
+
+        //Connexions_Profile::checkpoint($mid, count($rows).' fetched');
 
         // Reset the limit
         $this->_select->limit($origCount, $origOffset);
 
-        // /*
+        /*
         Connexions::log(sprintf("Connexions_Set(%s)::_cacheRecords(%d, %d):%s "
                                 . "retrieved %d/%d items (%d..%d)",
                                 get_class($this),
@@ -757,6 +791,8 @@ abstract class Connexions_Set extends    ArrayIterator
          * within _data.
          */
         array_splice($this->_data, $offset, count($rows), $rows);
+
+        //Connexions_Profile::stop($mid, 'complete');
     }
 
     /** @brief  Add a new error.

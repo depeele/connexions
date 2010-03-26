@@ -231,6 +231,7 @@ class Zend_Controller_Action_Helper_ContextSwitch extends Zend_Controller_Action
      */
     public function initContext($format = null)
     {
+        $this->_viewRenderer   = null;  // Force a new resolution :BUG-depeele:
         $this->_currentContext = null;
 
         $controller = $this->getActionController();

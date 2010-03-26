@@ -43,10 +43,17 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         // */
     }
 
-    protected function _initView()
+    protected function _initMinimalView()
     {
-        // Initialize common view portions.
-        $this->_viewAcl()
+        // Ensure that 'common' has been initialized.
+        $this->bootstrap('common');
+
+        /************************************************
+         * Perform minimal view initialization
+         *
+         */
+        $this->_viewContext()
+             ->_viewAcl()
              ->_viewRoute()
              ->_viewPlugins();
 
@@ -54,15 +61,23 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $viewResource = $this->getPluginResource('view');
         $view         = $viewResource->init();
 
-        /*******************************************************************
-         * Add our view helpers as well as the ZendX JQuery view helper.
-         *
-         */
+        // Add our view helpers as well as the ZendX JQuery view helper.
         $view->addHelperPath(APPLICATION_PATH .'/views/helpers',
                                 'Connexions_View_Helper')
              ->addHelperPath("ZendX/JQuery/View/Helper",
                                 "ZendX_JQuery_View_Helper");
 
+
+        return $view;
+    }
+
+    protected function _initView()
+    {
+        /* Ensure that 'minimalView' has been initialized and retrieve the
+         * generated view.
+         */
+        $this->bootstrap('minimalView');
+        $view = $this->getResource('minimalView');
 
         /*******************************************************************
          * Initialize the default ACL and Role for this view.
@@ -426,13 +441,49 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         // identification/authentication during dispatchLoopStartup().
         $front->registerPlugin(new Connexions_Controller_Plugin_Auth());
         */
-    }
 
+        return $this;
+    }
 
     /*******************************************
      * For Views
      *
      */
+
+    /** @brief  Initialize available render contexts.
+     *
+     *  The choice of context is handled by the view renderer based upon the
+     *  'format' request parameter.
+     */
+    protected function _viewContext()
+    {
+        $contextSwitch =
+          Zend_Controller_Action_HelperBroker::getStaticHelper('contextSwitch');
+
+        $contextSwitch->setContexts(array(
+            'partial'   => array(
+                'suffix'    => 'part',
+            ),
+            'json'      => array(
+                'suffix'    => 'json',
+                'headers'   => array('Content-Type'  => 'application/json'),
+                'callbacks' => array(
+                    'init'  => array($this, 'jsonp_init'),
+                    'post'  => array($this, 'jsonp_post'),
+                ),
+            ),
+            'rss'       => array(
+                'suffix'    => 'rss',
+                'headers'   => array('Content-Type'  => 'application/xml'),
+            ),
+            'atom'      => array(
+                'suffix'    => 'atom',
+                'headers'   => array('Content-Type'  => 'application/xml'),
+            ),
+        ));
+
+        return $this;
+    }
 
     /** @brief  Initialize the view-related ACL. */
     protected function _viewAcl()
@@ -507,4 +558,87 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
         return $this;
     }
+
+    /*******************************************
+     * JSON Processing
+     *
+     */
+
+    public function rss_post()
+    {
+        $viewRenderer =
+          Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer');
+
+        $view = $viewRenderer->view;
+
+        Connexions::log("rss_post: format[ {$view->format} ]...");
+    }
+
+    public function jsonp_init()
+    {
+        $viewRenderer =
+          Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer');
+
+        $view = $viewRenderer->view;
+        if ($view instanceof Zend_View_Interface)
+        {
+            // Disable rendering -- we'll handle it in jsonp_post()
+            $viewRenderer->setNoRender(true);
+        }
+    }
+
+    /** @brief  Perform post-processing of a JSON request.
+     *
+     *  JSONP handling makes use of the following view variables:
+     *      rpc         If set, this SHOULD be a JsonRpc instance that SHOULD
+     *                  contain the reply data;
+     *      callback    If set, this is the JSONP callback name specified by
+     *                  the remote caller;
+     *      data        REQUIRED, this object defines all data that will be
+     *                  JSON encoded and returned to the remote caller.
+     *                  If NOT provided, view rendering will be re-enabled,
+     *                  causing application/views/scripts/
+     *                              <controller>/<action>.json.pthml
+     *                  to be rendered.
+     */
+    public function jsonp_post()
+    {
+        $front        = Zend_Controller_Front::getInstance();
+        $viewRenderer =
+          Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer');
+
+        $view = $viewRenderer->view;
+        if ((! $view instanceof Zend_View_Interface) ||
+            ( (! isset($view->data)) &&
+             ((! isset($view->rpc)) || ( ! $view->rpc instanceof JsonRpc)) ))
+        {
+            // Invalid state for JSONP.  Re-enable view rendering and return.
+            $viewRenderer->setNoRender(false);
+            return;
+        }
+
+        if (isset($view->rpc))
+        {
+            // The return data is the RPC reply
+            $json = $view->rpc->genReply();
+        }
+        else
+        {
+            // Grab JSONP information from the view.
+        }
+
+        if ($front instanceof Zend_Controller_Front)
+        {
+            /* Set the response body -- this determines what will be returned
+             * to the remove caller.
+             */
+            $front->getResponse()->setBody($json);
+        }
+        else
+        {
+            // Not sure that this can happen...  if it does, punt.
+            echo $json;
+        }
+    }
+
 }

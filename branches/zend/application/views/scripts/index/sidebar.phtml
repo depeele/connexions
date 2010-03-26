@@ -9,8 +9,22 @@
 
 $jQuery = $this->jQuery();
 
+/* Add an onLoad 'init_sidebar' call
+ *
+ * Note: For 'partial' rendering, this will be moved to straight javascript in
+ *       layouts/partial.phtml
+ */
 $jQuery->addOnLoad("init_sidebar();")
-       ->javascriptCaptureStart();
+
+if ($this->format !== 'partial')
+{
+    /***********************************************************************
+     * Full rendering that includes this sidebar along with full page
+     * content.
+     *
+     * Include the function to perform sidebar tab control initialization.
+     */
+    $jQuery->javascriptCaptureStart();
     ?>
 
 /************************************************
@@ -22,7 +36,8 @@ function init_sidebar()
     $('#sidebar-tabs').tabs();
 }
     <?php
-$jQuery->javascriptCaptureEnd()
+    $jQuery->javascriptCaptureEnd();
+}
 
 ?>
 <div id='sidebar-tabs'>
