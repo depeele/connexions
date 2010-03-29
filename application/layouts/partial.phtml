@@ -1,0 +1,23 @@
+<?php
+/* Move all onLoad actions to straight Javascript after clearing any
+ * existing Javascript.
+ */
+$jQuery  = $this->jQuery();
+$actions = $jQuery->getOnLoadActions();
+
+// Clear any existing Javascript
+$jQuery->clearJavascript();
+
+// "Move" the onLoad actions to straight Javascript calls
+foreach ($actions as $action)
+{
+    $jQuery->addJavascript($action);
+}
+
+// Only render straight Javascript
+$jQuery->setRenderMode(ZendX_JQuery::RENDER_JAVASCRIPT);
+
+?>
+<!-- Partial Rendering -->
+<?= $this->layout()->content ?>
+<?= $this->jQuery() ?>
