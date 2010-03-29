@@ -210,18 +210,21 @@ function init_<?= $namespace ?>PaginationControls()
             {
                 $html .= sprintf(
                           "<button type='submit' "
-                        .         "name='page' "
+                        .         "name='%sPage' "
                         .        "class='ends-left ui-state-default %s' "
                         .        "value='%s' "
                         .        "title='Previous Page'>%s</button>"
                         . "<button type='submit' "
-                        .         "name='page' "
+                        .         "name='%sPage' "
                         .        "class='ui-state-default %s' "
                         .        "value='%s' "
                         .        "title='Page %s'>%s</button>",
+                        $this->_namespace,
                         self::$cssClassButton,
                         $pages['previous'],
                         self::$marker['prev'],
+
+                        $this->_namespace,
                         self::$cssClassButton,
                         $pages['first'],
                         $pages['first'], $pages['first']);
@@ -229,10 +232,11 @@ function init_<?= $namespace ?>PaginationControls()
                 if ($pages['firstPageInRange'] > ($pages['first'] + 1))
                     $html .= sprintf(
                               "<button type='submit' "
-                            .         "name='page' "
+                            .         "name='%sPage' "
                             .        "class='ui-state-default %s' "
                             .        "value='%s' "
                             .        "title='Page %s'>%s</button>",
+                        $this->_namespace,
                             self::$cssClassButton,
                             $pages['first'] + 1,
                             $pages['first'] + 1, $pages['first'] + 1);
@@ -246,11 +250,12 @@ function init_<?= $namespace ?>PaginationControls()
             {
                 $html .= sprintf(
                           "<button type='submit' "
-                        .         "name='page' "
+                        .         "name='%sPage' "
                         .        "class='ends-left ui-state-%s %s' "
                         .        "%s"
                         .        "value='%s' "
                         .        "title='Previous Page'>%s</button>",
+                        $this->_namespace,
                         (@isset($pages['previous'])
                             ? 'default'
                             : 'disabled'),
@@ -266,10 +271,11 @@ function init_<?= $namespace ?>PaginationControls()
                 if (@isset($pages['previous']))
                     $html .= spritnf(
                               "<button type='submit' "
-                            .         "name='page' "
+                            .         "name='%sPage' "
                             .        "class='ends-left ui-state-default %s' "
                             .        "value='%s' "
                             .        "title='Previous Page'>%s</button>",
+                            $this->_namespace,
                             self::$cssClassButton,
                             $pages['previous'],
                             self::$marker['prev']);
@@ -292,14 +298,14 @@ function init_<?= $namespace ?>PaginationControls()
                 else
                     $html .= sprintf(
                               "<button type='submit' "
-                            .         "name='page' "
+                            .         "name='%sPage' "
                             .        "class='ui-state-default %s' "
                             .        "value='%s' "
                             .        "title='Page %s'>%s</button>",
+                            $this->_namespace,
                             self::$cssClassButton,
                             $page,
                             $page, $page);
-                            //$this->view->url(array('page' => $page)), $page);
             }
             
             // Present the pages AFTER the current range
@@ -313,28 +319,32 @@ function init_<?= $namespace ?>PaginationControls()
                 if ($pages['lastPageInRange'] < ($pages['last'] - 1))
                     $html .= sprintf(
                               "<button type='submit' "
-                            .         "name='page' "
+                            .         "name='%sPage' "
                             .        "class='ui-state-default %s' "
                             .        "value='%s' "
                             .        "title='Page %s'>%s</button>",
+                            $this->_namespace,
                             self::$cssClassButton,
                             $pages['last'] - 1,
                             $pages['last'] - 1, $pages['last'] - 1);
             
                 $html .= sprintf(
                           "<button type='submit' "
-                        .         "name='page' "
+                        .         "name='%sPage' "
                         .        "class='ui-state-default %s' "
                         .        "value='%s' "
                         .        "title='Page %s'>%s</button>"
                         . "<button type='submit' "
-                        .         "name='page' "
+                        .         "name='%sPage' "
                         .        "class='ends-right ui-state-default %s' "
                         .        "value='%s' "
                         .        "title='Next Page'>%s</button>",
+                        $this->_namespace,
                         self::$cssClassButton,
                         $pages['last'],
                         $pages['last'], $pages['last'],
+
+                        $this->_namespace,
                         self::$cssClassButton,
                         $pages['next'],
                         self::$marker['next']);
@@ -343,11 +353,12 @@ function init_<?= $namespace ?>PaginationControls()
             {
                 $html .= sprintf(
                           "<button type='submit' "
-                        .         "name='page' "
+                        .         "name='%sPage' "
                         .        "class='ends-right ui-state-%s %s' "
                         .        "%s"
                         .        "value='%s' "
                         .        "title='Next Page'>%s</button>",
+                        $this->_namespace,
                         (@isset($pages['next'])
                             ? 'default'
                             : 'disabled'),

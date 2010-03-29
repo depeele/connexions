@@ -12,16 +12,34 @@ class Connexions_Set_Iterator extends ArrayIterator
 {
     /** @brief  The Connexions_Set that is the source of these items. */
     protected   $_parentSet     = null;
+    protected   $_parentOffset  = 0;
 
-    public function __construct(Connexions_Set $parentSet, $array)
+    public function __construct(Connexions_Set  $parentSet,
+                                                $array,
+                                                $parentOffset)
     {
-        $this->_parentSet =  $parentSet;
+        $this->_parentSet    =  $parentSet;
+        $this->_parentOffset =  $parentOffset;
+
+        /*
+        Connexions::log("Connexions_Set_Iterator:: "
+                        . "parent(". get_class($parentSet) ."), "
+                        . "offset[ {$offset} ], "
+                        . "count[ ". count($array) ." ]");
+        // */
 
         parent::__construct($array);
     }
 
     public function current()
     {
-        return $this->_parentSet->getItem($this->key());
+        /*
+        Connexions::log("Connexions_Set_Iterator::current(): "
+                        . "parent(". get_class($this->_parentSet) ."), "
+                        . "offset[ {$this->key()} ], "
+                        . "parentOffset[ {$this->_parentOffset} ]");
+        // */
+
+        return $this->_parentSet->getItem($this->_parentOffset + $this->key());
     }
 }

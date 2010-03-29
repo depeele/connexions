@@ -133,6 +133,11 @@ class IndexController extends Zend_Controller_Action
                                        'IndexController::indexAction: '
                                        . 'User Item Set retrieved');
 
+        // Set the view variables required for all views/layouts.
+        $this->view->owner     = $this->_owner;
+        $this->view->viewer    = $this->_viewer;
+        $this->view->tagInfo   = $this->_tagInfo;
+
         /*****************************************************************
          * Determine the proper rendering format.  The only ones we deal with
          * directly are:
@@ -170,6 +175,34 @@ class IndexController extends Zend_Controller_Action
             // Normal HTML rendering
             $this->_htmlContent();
             $this->_htmlSidebar();
+        }
+        else
+        {
+            /* Retrieve any sort and paging parameters, falling back to
+             * helper-controlled defaults.
+             */
+            $sortBy    = $request->getParam("sortBy",
+                                            Connexions_View_Helper_UserItems::
+                                                    $defaults['sortBy']);
+            $sortOrder = $request->getParam("sortOrder",
+                                            Connexions_View_Helper_UserItems::
+                                                    $defaults['sortOrder']);
+            $page      = $request->getParam("page",    1);
+            $perPage   = $request->getParam("perPage",
+                                            Connexions_View_Helper_UserItems::
+                                                    $defaults['perPage']);
+
+            /* Ensure that the final sort information is properly reflected in
+             * the source set.
+             */
+            $this->_userItems->setOrder( $sortBy .' '. $sortOrder );
+
+            // Create a paginator
+            $paginator = $this->_helper->Pager($this->_userItems,
+                                               $page, $perPage);
+
+            // Additional view variables for the alternate views.
+            $this->view->paginator = $paginator;
         }
     }
 
@@ -219,18 +252,20 @@ class IndexController extends Zend_Controller_Action
          */
         $prefix           = 'items';
         $itemsPerPage     = $request->getParam($prefix."PerPage",       null);
+        $itemsPage        = $request->getParam($prefix.'Page',          null);
         $itemsSortBy      = $request->getParam($prefix."SortBy",        null);
         $itemsSortOrder   = $request->getParam($prefix."SortOrder",     null);
         $itemsStyle       = $request->getParam($prefix."OptionGroup",   null);
         $itemsStyleCustom = $request->getParam($prefix."OptionGroups_option",
                                                                         null);
 
-        /*
+        // /*
         Connexions::log('IndexController::'
                             . 'prefix [ '. $prefix .' ], '
-                            . 'params [ '
-                            .   print_r($request->getParams(), true) ." ],\n"
+                            //. 'params [ '
+                            //.   print_r($request->getParams(), true) ." ],\n"
                             . "    PerPage        [ {$itemsPerPage} ],\n"
+                            . "    Page           [ {$itemsPage} ],\n"
                             . "    SortBy         [ {$itemsSortBy} ],\n"
                             . "    SortOrder      [ {$itemsSortOrder} ],\n"
                             . "    Style          [ {$itemsStyle} ],\n"
@@ -241,6 +276,7 @@ class IndexController extends Zend_Controller_Action
         // Initialize the Connexions_View_Helper_HtmlUserItems helper...
         $uiHelper = $this->view->htmlUserItems();
         $uiHelper->setNamespace($prefix)
+                 ->setPerPage($itemsPerPage)
                  ->setSortBy($itemsSortBy)
                  ->setSortOrder($itemsSortOrder);
         if (is_array($itemsStyleCustom))
@@ -249,6 +285,7 @@ class IndexController extends Zend_Controller_Action
                                 $itemsStyleCustom);
         else
             $uiHelper->setStyle($itemsStyle);
+        /**************************************************/
 
 
         // Set Scope information
@@ -312,15 +349,12 @@ class IndexController extends Zend_Controller_Action
         /* Use the Connexions_Controller_Action_Helper_Pager to create a
          * paginator for the retrieved user items / bookmarks.
          */
-        $page      = $request->getParam('page',  null);
         $paginator = $this->_helper->Pager($this->_userItems,
-                                           $page, $itemsPerPage);
+                                           $itemsPage,
+                                           $uiHelper->getPerPage());
 
 
-        // Set the required view variables.
-        $this->view->owner     = $this->_owner;
-        $this->view->viewer    = $this->_viewer;
-        $this->view->tagInfo   = $this->_tagInfo;
+        // Additional view variables for the HTML view.
         $this->view->paginator = $paginator;
 
         /* The default view script (views/scripts/index/index.phtml) will
@@ -358,6 +392,7 @@ class IndexController extends Zend_Controller_Action
          */
         $prefix             = 'sbTags';
         $tagsPerPage        = $request->getParam($prefix."PerPage",     100);
+        $tagsPage           = $request->getParam($prefix."Page",        1);
         $tagsHighlightCount = $request->getParam($prefix."HighlightCount",
                                                                         null);
         $tagsSortBy         = $request->getParam($prefix."SortBy",      'tag');
@@ -368,6 +403,7 @@ class IndexController extends Zend_Controller_Action
         Connexions::log('IndexController::'
                             . "right-column prefix [ {$prefix} ],\n"
                             . "    PerPage        [ {$tagsPerPage} ],\n"
+                            . "    Page           [ {$tagsPage} ],\n"
                             . "    HighlightCount [ {$tagsHighlightCount} ],\n"
                             . "    SortBy         [ {$tagsSortBy} ],\n"
                             . "    SortOrder      [ {$tagsSortOrder} ],\n"

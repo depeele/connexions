@@ -631,7 +631,7 @@ abstract class Connexions_Set extends    ArrayIterator
 
         //Connexions_Profile::checkpoint($mid, 'rows extracted');
 
-        $inst = new $this->_iterClass($this, $rows);
+        $inst = new $this->_iterClass($this, $rows, $offset);
 
         //Connexions_Profile::checkpoint($mid, 'iterator instantiated');
 
@@ -757,7 +757,7 @@ abstract class Connexions_Set extends    ArrayIterator
 
         $fetchOffset = $offset + $firstMissing;
         $fetchCount  = ($offset + $count) - $fetchOffset;
-        if ($fetchCount < self::FETCH_COUNT)
+        if ($fetchCount < 2)    //self::FETCH_COUNT)
             $fetchCount = self::FETCH_COUNT;
 
         $this->_select->limit($fetchCount, $fetchOffset);
@@ -789,10 +789,21 @@ abstract class Connexions_Set extends    ArrayIterator
 
         /* Cache the raw row data, splicing it into the proper offset
          * within _data.
+         *
+         * :NOTE: array_splice has issues if the target array is not AT LEAST
+         *        the length of the initial offset.  SO, we cannot just do:
+         *          array_splice($this->_data, $offset, $rowCnt, $rows);
+         *
+         *        we must first ensure that the target array is "padded" out
+         *        to at least $offset...
          */
+        $this->_data = array_pad($this->_data, $offset, null);
         array_splice($this->_data, $offset, count($rows), $rows);
 
-        //Connexions_Profile::stop($mid, 'complete');
+        /*
+        Connexions_Profile::stop($mid, 'complete, data contains '
+                                 . count($this->_data) .' item(s)');
+        // */
     }
 
     /** @brief  Add a new error.

@@ -1,0 +1,93 @@
+<?php
+/** @file
+ *
+ *  View script for IndexController::index to render an RSS version of the main
+ *  content.
+ *
+ *  The Connexions_View_Helper_HtmlUserItems helper MUST be initialized
+ *  before this view is rendered.
+ *
+ *  Incoming members:
+ *      owner               The owner of the current item set -- either a
+ *                          string or a Model_User instance;
+ *      viewer              The Model_User instance representing the current
+ *                          viewer;
+ *      tagInfo             A Connexions_Set_Info instance containing
+ *                          information about the requested tags;
+ *
+ *      userItems           A Model_UserItemSet contaning all user items;
+ *
+ *      perPage             The number of items per page;
+ *      page                The page to present;
+ */
+Connexions_Profile::checkpoint('Connexions',
+                               'IndexView RSS rendering beginning');
+
+$baseUrl = $this->baseUrl('/'); //Connexions::url('/');
+
+if ($this->owner !== '*')
+    $this->headTitle($this->owner ."'s Bookmarks");
+else
+    $this->headTitle('Bookmarks');
+
+echo "<?xml version='1.0' encoding='utf-8'?>\n";
+?>
+<rss version='2.0'>
+ <channel>
+  <?= $this->headTitle() ?>
+  <link><?=  $baseUrl ?></link>
+  <description>Posts</description>
+  <generator>Connexions</generator>
+  <ttl>60</ttl>
+<?php
+
+foreach ($this->paginator as $idex => $userItem)
+{
+    /*
+    Connexions_Profile::checkpoint('Connexions',
+                                   "IndexView RSS item {$idex}: retrieved");
+    // */
+
+
+    $isOwner = ($userItem->user->userId === $this->viewer->userId);
+    $title          = $userItem->name;
+    $description    = $userItem->description;
+    $link           = $userItem->item->url;
+    $pubDate        = $userItem->taggedOn;
+    $author         = $userItem->user->email;
+    $guid           = $baseUrl .'/url/'. $userItem->item->urlHash;
+
+    echo "  <item>\n";
+    echo "   <title>{$title}</title>\n";
+    echo "   <description>{$description}</description>\n";
+    echo "   <link>{$link}</link>\n";
+    echo "   <pubDate>{$pubDate}</pubDate>\n";
+    echo "   <author>{$author}</author>\n";
+    echo "   <guid>{$guid}</guid>\n";
+
+    /*
+    Connexions_Profile::checkpoint('Connexions',
+                                   "IndexView RSS item {$idex} get tags");
+    // */
+
+    foreach ($userItem->tags as $tag)
+    {
+        $category = $tag->tag;
+        echo "   <category>{$category}</category>\n";
+    }
+
+    echo "  </item>\n";
+
+    /*
+    Connexions_Profile::checkpoint('Connexions',
+                                   "IndexView RSS item {$idex} rendered");
+    // */
+}
+
+?>
+ </channel>
+</rss>
+<?php
+
+Connexions_Profile::checkpoint('Connexions',
+                               'IndexView RSS rendering complete');
