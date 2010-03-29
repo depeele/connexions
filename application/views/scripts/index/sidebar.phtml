@@ -8,7 +8,9 @@
  */
 
 $jQuery = $this->jQuery();
-$jQuery->javascriptCaptureStart();
+
+$jQuery->addOnLoad("init_sidebar();")
+       ->javascriptCaptureStart();
 ?>
 
 /************************************************

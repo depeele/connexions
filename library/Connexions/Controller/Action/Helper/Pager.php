@@ -109,6 +109,11 @@ class Connexions_Controller_Action_Helper_Pager
                            $curPage = null,
                            $perPage = null)
     {
+        /*
+        $mid = 'Connexions_Controller_Action_Helper_Pager::direct';
+        Connexions::log($mid .": curPage[ {$curPage} ], perPage[ {$perPage} ]");
+        // */
+
         return $this->make($data, $curPage, $perPage);
     }
 }
