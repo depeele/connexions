@@ -462,7 +462,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
         $contextSwitch->setContexts(array(
             'partial'   => array(
-                'suffix'    => 'part',
+                //'suffix'    => 'part',
             ),
             'json'      => array(
                 'suffix'    => 'json',
