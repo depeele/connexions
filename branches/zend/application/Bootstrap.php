@@ -610,9 +610,13 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $view = $viewRenderer->view;
         if ((! $view instanceof Zend_View_Interface) ||
             ( (! isset($view->data)) &&
-             ((! isset($view->rpc)) || ( ! $view->rpc instanceof JsonRpc)) ))
+             ((! isset($view->rpc)) ||
+              ( ! $view->rpc instanceof Connexions_JsonRpc)) ))
         {
             // Invalid state for JSONP.  Re-enable view rendering and return.
+            Connexions::log("jsonp_post: Missing data/rpc information.  "
+                            . "Fallback to normal rendering...");
+
             $viewRenderer->setNoRender(false);
             return;
         }
@@ -620,7 +624,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         if (isset($view->rpc))
         {
             // The return data is the RPC reply
-            $json = $view->rpc->genReply();
+            $json = $view->rpc->toJson();
         }
         else
         {
@@ -639,6 +643,9 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             // Not sure that this can happen...  if it does, punt.
             echo $json;
         }
+
+        Connexions_Profile::stop('Connexions',
+                                 'JSON rendering COMPLETE');
     }
 
 }

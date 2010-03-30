@@ -52,6 +52,23 @@ class Model_Tag extends Connexions_Model
         return parent::__toString();
     }
 
+    /** @brief  Return an associative array representing this tag.
+     *  @param  public  Include only "public" information?
+     *
+     *  @return An associaitve array.
+     */
+    public function toArray($public = true)
+    {
+        $ret = $this->_record;
+        if ($public)
+        {
+            // Remove non-public information
+            $ret = $ret['tag'];
+        }
+
+        return $ret;
+    }
+
     /*************************************************************************
      * Zend_Tag_Taggable Interface
      *

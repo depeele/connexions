@@ -17,6 +17,12 @@ class IndexController extends Zend_Controller_Action
     protected   $_owner     = null;
     protected   $_tagInfo   = null;
     protected   $_userItems = null;
+    protected   $_paginator = null;
+
+    protected   $_page      = null;
+    protected   $_perPage   = null;
+    protected   $_sortBy    = null;
+    protected   $_sortOrder = null;
 
     public      $contexts   = array(
                                 'index' => array('partial', 'json',
@@ -31,11 +37,12 @@ class IndexController extends Zend_Controller_Action
         $this->_forward('index');
 
         // Initialize context switching
-        $this->_helper->contextSwitch()->initContext();
+        $cs = $this->_helper->contextSwitch();
+        $cs->initContext();
 
         /*
         $cs = $this->getHelper('contextSwitch');
-        $cs->addActionContext('index', array('json', 'rss', 'atom'))
+        $cs->addActionContext('index', array('partial', 'json', 'rss', 'atom'))
            ->initContext();
         */
     }
@@ -129,81 +136,17 @@ class IndexController extends Zend_Controller_Action
                                                   $ownerIds);
 
 
+        // Set the view variables required for all views/layouts.
+        $this->view->owner   = $this->_owner;
+        $this->view->viewer  = $this->_viewer;
+        $this->view->tagInfo = $this->_tagInfo;
+
         Connexions_Profile::checkpoint('Connexions',
                                        'IndexController::indexAction: '
                                        . 'User Item Set retrieved');
 
-        // Set the view variables required for all views/layouts.
-        $this->view->owner     = $this->_owner;
-        $this->view->viewer    = $this->_viewer;
-        $this->view->tagInfo   = $this->_tagInfo;
-
-        /*****************************************************************
-         * Determine the proper rendering format.  The only ones we deal with
-         * directly are:
-         *      partial - render a single part of this page
-         *      html    - normal HTML rendering
-         *
-         * All others are handled by the 'contextSwitch' established in
-         * this controller's init method.
-         */
-        $format = $request->getParam('format', 'html');
-        $this->view->format = $format;
-
-        Connexions::log("IndexController::format[ {$format} ]");
-        if ($format === 'partial')
-        {
-            // Render just PART of the page
-            $this->_helper->layout->setLayout('partial');
-
-            $part = $request->getParam('part', 'content');
-            switch ($part)
-            {
-            case 'sidebar':
-                $this->_htmlSidebar(true);
-                $this->render('sidebar');
-                break;
-
-            case 'content':
-            default:
-                $this->_htmlContent();
-                break;
-            }
-        }
-        else if ($format === 'html')
-        {
-            // Normal HTML rendering
-            $this->_htmlContent();
-            $this->_htmlSidebar();
-        }
-        else
-        {
-            /* Retrieve any sort and paging parameters, falling back to
-             * helper-controlled defaults.
-             */
-            $sortBy    = $request->getParam("sortBy",
-                                            Connexions_View_Helper_UserItems::
-                                                    $defaults['sortBy']);
-            $sortOrder = $request->getParam("sortOrder",
-                                            Connexions_View_Helper_UserItems::
-                                                    $defaults['sortOrder']);
-            $page      = $request->getParam("page",    1);
-            $perPage   = $request->getParam("perPage",
-                                            Connexions_View_Helper_UserItems::
-                                                    $defaults['perPage']);
-
-            /* Ensure that the final sort information is properly reflected in
-             * the source set.
-             */
-            $this->_userItems->setOrder( $sortBy .' '. $sortOrder );
-
-            // Create a paginator
-            $paginator = $this->_helper->Pager($this->_userItems,
-                                               $page, $perPage);
-
-            // Additional view variables for the alternate views.
-            $this->view->paginator = $paginator;
-        }
+        // Handle this request based up 'format'
+        $this->_handleFormat();
     }
 
     /** @brief Redirect all other actions to 'index'
@@ -235,9 +178,170 @@ class IndexController extends Zend_Controller_Action
     }
 
     /*************************************************************************
+     * Protected Helpers
+     *
+     */
+
+    /** @brief  Determine the proper rendering format.  The only ones we deal
+     *          with directly are:
+     *              partial - render a single part of this page
+     *              html    - normal HTML rendering
+     *
+     *  All others are handled by the 'contextSwitch' established in
+     *  this controller's init method.
+     */
+    protected function _handleFormat()
+    {
+        $request =& $this->getRequest();
+
+        $this->view->format  = $this->_helper
+                                        ->contextSwitch()
+                                            ->getCurrentContext();
+        if (empty($this->view->format))
+            $this->view->format = $request->getParam('format', 'html');
+
+        Connexions::log("IndexController::_handleFormat(): "
+                        . "format[ {$this->view->format} ]");
+
+        switch ($this->view->format)
+        {
+        case 'partial':
+            // Render just PART of the page
+            $this->_helper->layout->setLayout('partial');
+
+            $part = $request->getParam('part', 'content');
+            switch ($part)
+            {
+            case 'sidebar':
+                $this->_htmlSidebar(true);
+                $this->render('sidebar');
+                break;
+
+            case 'content':
+            default:
+                $this->_htmlContent();
+                break;
+            }
+            break;
+
+        case 'html':
+            // Normal HTML rendering
+            $this->_htmlContent();
+            $this->_htmlSidebar();
+            break;
+
+        case 'json':
+            $this->_jsonContent();
+            break;
+
+        default:
+            $this->_createPaginator($request);
+
+            // Additional view variables for the alternate views.
+            $this->view->paginator = $this->_paginator;
+            break;
+        }
+    }
+
+    /*************************************************************************
      * Context-specific view initialization and invocation
      *
      */
+
+    protected function _createPaginator($req, $namespace = '')
+    {
+        /* Retrieve any sort and paging parameters from the RPC request,
+         * falling back to helper-controlled defaults.
+         */
+        $this->_page      = $req->getParam($namespace ."Page",    1);
+        $this->_perPage   = $req->getParam($namespace ."PerPage",
+                                    Connexions_View_Helper_UserItems::
+                                                $defaults['perPage']);
+        $this->_sortBy    = $req->getParam($namespace ."SortBy",
+                                    Connexions_View_Helper_UserItems::
+                                                $defaults['sortBy']);
+        $this->_sortOrder = $req->getParam($namespace ."SortOrder",
+                                    Connexions_View_Helper_UserItems::
+                                                $defaults['sortOrder']);
+
+        /* Ensure that the final sort information is properly reflected in
+         * the source set.
+         */
+        $this->_userItems->setOrder( $this->_sortBy .' '. $this->_sortOrder );
+
+        // Create a paginator
+        $this->_paginator = $this->_helper->Pager($this->_userItems,
+                                                  $this->_page,
+                                                  $this->_perPage);
+    }
+
+    protected function _jsonContent()
+    {
+        $request =& $this->getRequest();
+
+        $rpc = new Connexions_JsonRpc($request, 'get');
+        $this->view->rpc = $rpc;
+
+        if (! $rpc->isValid())
+            return;
+
+        $method = strtolower($rpc->getMethod());
+
+        Connexions::log("IndexController::_jsonContent: "
+                        . "method [ {$method} ]");
+
+        switch ($method)
+        {
+        case 'get':
+            $this->_createPaginator($rpc->getRequest());
+
+            $items = array();
+            foreach ($this->_paginator as $item)
+            {
+                array_push($items, $item->toArray(true));
+            }
+
+            $rpc->setResult( $items );
+            break;
+
+        case 'autocomplete':
+            /* Autocompletion callback for tag entry
+             *
+             * Locate all tags associated with the current userItems that
+             * also match the beginning of the completion string.
+             */
+            $tagSet = $this->_userItems->getRelatedSet('tags');
+
+            // Retrieve the term we're supposed to match
+            $like = $rpc->getParam('term', $rpc->getParam('q', null));
+            if (empty($like))
+            {
+                // No term was provided -- limit to 500 entries
+                $tagSet->limit(500);
+            }
+            else
+            {
+                // Limit to tags that look like the requested term
+                $tagSet->like($like);
+            }
+
+            $tags = array();
+            foreach ($tagSet as $tag)
+            {
+                array_push($tags, $tag->tag);
+            }
+
+            $rpc->setResult( $tags );
+            break;
+
+        default:
+            // Unhandled JSON-RPC method
+            $rpc->setError("Unknown method '{}'",
+                           Zend_Json_Server_Error::ERROR_INVALID_METHOD);
+            break;
+        }
+    }
+
     protected function _htmlContent()
     {
         $request =& $this->getRequest();
@@ -251,23 +355,24 @@ class IndexController extends Zend_Controller_Action
          * defaults.
          */
         $prefix           = 'items';
-        $itemsPerPage     = $request->getParam($prefix."PerPage",       null);
-        $itemsPage        = $request->getParam($prefix.'Page',          null);
-        $itemsSortBy      = $request->getParam($prefix."SortBy",        null);
-        $itemsSortOrder   = $request->getParam($prefix."SortOrder",     null);
         $itemsStyle       = $request->getParam($prefix."OptionGroup",   null);
         $itemsStyleCustom = $request->getParam($prefix."OptionGroups_option",
                                                                         null);
+
+        /* Generate a paginator for the requested item set.  This will also
+         * initialize '_page, '_perPage', '_sortBy', and '_sortOrder'
+         */
+        $this->_createPaginator($request);
 
         // /*
         Connexions::log('IndexController::'
                             . 'prefix [ '. $prefix .' ], '
                             //. 'params [ '
                             //.   print_r($request->getParams(), true) ." ],\n"
-                            . "    PerPage        [ {$itemsPerPage} ],\n"
-                            . "    Page           [ {$itemsPage} ],\n"
-                            . "    SortBy         [ {$itemsSortBy} ],\n"
-                            . "    SortOrder      [ {$itemsSortOrder} ],\n"
+                            . "    PerPage        [ {$this->_perPage} ],\n"
+                            . "    Page           [ {$this->_page} ],\n"
+                            . "    SortBy         [ {$this->_sortBy} ],\n"
+                            . "    SortOrder      [ {$this->_sortOrder} ],\n"
                             . "    Style          [ {$itemsStyle} ],\n"
                             . "    StyleCustom    [ "
                             .           print_r($itemsStyleCustom, true) .' ]');
@@ -276,9 +381,9 @@ class IndexController extends Zend_Controller_Action
         // Initialize the Connexions_View_Helper_HtmlUserItems helper...
         $uiHelper = $this->view->htmlUserItems();
         $uiHelper->setNamespace($prefix)
-                 ->setPerPage($itemsPerPage)
-                 ->setSortBy($itemsSortBy)
-                 ->setSortOrder($itemsSortOrder);
+                 ->setPerPage($this->_perPage)
+                 ->setSortBy($this->_sortBy)
+                 ->setSortOrder($this->_sortOrder);
         if (is_array($itemsStyleCustom))
             $uiHelper->setStyle(Connexions_View_Helper_HtmlUserItems
                                                             ::STYLE_CUSTOM,
@@ -289,7 +394,8 @@ class IndexController extends Zend_Controller_Action
 
 
         // Set Scope information
-        $scopeParts  = array('format=json');
+        $scopeParts  = array('format=json',
+                             'method=autocomplete');
         $scopePath   = array();
         if ($this->_owner === '*')
         {
@@ -315,8 +421,7 @@ class IndexController extends Zend_Controller_Action
             array_push($scopeParts, 'tags='. $this->_tagInfo->validItems);
         }
 
-        $scopeCbUrl  = $this->view->baseUrl('/scopeAutoComplete')
-                     . '?'. implode('&', $scopeParts);
+        $scopeCbUrl  = $this->view->url() .'?'. implode('&', $scopeParts);
 
         $scopeHelper = $this->view->htmlItemScope();
         $scopeHelper->setNamespace($prefix)
@@ -326,36 +431,8 @@ class IndexController extends Zend_Controller_Action
                     ->setAutoCompleteUrl( $scopeCbUrl );
 
 
-
-        /* Ensure that the final sort information is properly reflected in
-         * the source set.
-         */
-        $this->_userItems->setOrder( $uiHelper->getSortBy() .' '.
-                                     $uiHelper->getSortOrder() );
-
-        /*
-        Connexions::log("IndexController:: updated params:\n"
-                            . '    SortBy         [ '
-                            .           $uiHelper->getSortBy() ." ],\n"
-                            . '    SortOrder      [ '
-                            .           $uiHelper->getSortOrder() ." ],\n"
-                            . '    Style          [ '
-                            .           $uiHelper->getStyle() ." ],\n"
-                            . '    ShowMeta       [ '
-                            .           print_r($uiHelper->getShowMeta(),
-                                                true) .' ]');
-        // */
-
-        /* Use the Connexions_Controller_Action_Helper_Pager to create a
-         * paginator for the retrieved user items / bookmarks.
-         */
-        $paginator = $this->_helper->Pager($this->_userItems,
-                                           $itemsPage,
-                                           $uiHelper->getPerPage());
-
-
         // Additional view variables for the HTML view.
-        $this->view->paginator = $paginator;
+        $this->view->paginator = $this->_paginator;
 
         /* The default view script (views/scripts/index/index.phtml) will
          * render this main view

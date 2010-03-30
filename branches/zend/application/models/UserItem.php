@@ -201,9 +201,24 @@ class Model_UserItem extends Connexions_Model
         return $res;
     }
 
-    public function toArray($deep = false)
+    /** @brief  Return an associative array representing this item.
+     *  @param  deep    Include details about sub-instances (user, item, tags)?
+     *  @param  public  Include only "public" information?
+     *
+     *  @return An associaitve array.
+     */
+    public function toArray($deep = false, $public = true)
     {
         $ret = $this->_record;
+
+        if ($public)
+        {
+
+            // Remove non-public information
+            unset($ret['userId']);
+            unset($ret['itemId']);
+        }
+
         if ($deep)
         {
             $user =& $this->_user();
@@ -211,16 +226,16 @@ class Model_UserItem extends Connexions_Model
             $tags =& $this->_tags();
 
             $ret['user'] = ($user instanceof Connexions_Model
-                                ? $user->toArray()
+                                ? $user->toArray($public)
                                 : array());
             $ret['item'] = ($item instanceof Connexions_Model
-                                ? $item->toArray()
+                                ? $item->toArray($public)
                                 : array());
             $ret['tags'] = array();
             foreach ($tags as $tag)
             {
                 if ($tag instanceof Connexions_Model)
-                    array_push($ret['tags'], $tag->toArray());
+                    array_push($ret['tags'], $tag->toArray($public));
             }
         }
 

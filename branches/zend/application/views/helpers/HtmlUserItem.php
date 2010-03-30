@@ -4,13 +4,9 @@
  *  View helper to render a single User Item / Bookmark in HTML.
  *
  */
-class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
+class Connexions_View_Helper_HtmlUserItem
+                                extends Connexions_View_Helper_UserItem
 {
-    /** @brief  The maximum number of characters to include in a summary,
-     *          particularly a summary of a description.
-     */
-    public static   $summaryMax = 40;
-
     /** @brief  Generate an HTML view of a single User Item / Bookmark.
      *  @param  userItem    The Model_UserItem instance to present.
      *  @param  viewer      The Model_User     instance of the current viewer
@@ -189,20 +185,7 @@ class Connexions_View_Helper_HtmlUserItem extends Zend_View_Helper_Abstract
 
             if ($showParts['item:data:description:summary'] === true)
             {
-                $summary = html_entity_decode($userItem->description,
-                                              ENT_QUOTES);
-                if (strlen($summary) > self::$summaryMax)
-                {
-                    // Shorten to no more than 'summaryMax' characters
-                    $summary = substr($summary, 0, self::$summaryMax);
-                    $summary = substr($summary, 0, strrpos($summary, " "));
-
-                    // Trim any white-space or punctuation from the end
-                    $summary = rtrim($summary, " \t\n\r.!?:;,-");
-
-                    $summary .= '...';
-                }
-                $summary = htmlentities($summary, ENT_QUOTES);
+                $summary = $this->getSummary($userItem->description);
 
                 if ($showParts['minimized'] === true)
                     $summary = "&mdash; ". $summary;

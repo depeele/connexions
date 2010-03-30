@@ -102,6 +102,16 @@ class Connexions_Autoloader implements Zend_Loader_Autoloader_Interface
                         .   "filePath[ {$filePath} ] -- trace:\n{$btStr}\n");
         // */
 
-        return include $filePath;
+        $res = @include $filePath;
+
+        if (! $res)
+        {
+            printf ("<pre>autoload: Cannot include '%s' for class '%s'\n",
+                    $filePath, $class);
+            debug_print_backtrace();
+            die;
+        }
+
+        return true;
     }
 }

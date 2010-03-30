@@ -119,6 +119,26 @@ class Model_User extends Connexions_Model
         return parent::__toString();
     }
 
+
+    /** @brief  Return an associative array representing this item.
+     *  @param  public  Include only "public" information?
+     *
+     *  @return An associaitve array.
+     */
+    public function toArray($public = true)
+    {
+        $ret = $this->_record;
+        if ($public)
+        {
+            // Remove non-public information
+            unset($ret['userId']);
+            unset($ret['password']);
+            unset($ret['apiKey']);
+        }
+
+        return $ret;
+    }
+
     /** @brief  Is this user authenticated?
      *
      *  @return true | false
