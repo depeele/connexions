@@ -4,7 +4,7 @@
  *  View script for IndexController::index to render an RSS version of the main
  *  content.
  *
- *  The Connexions_View_Helper_HtmlUserItems helper MUST be initialized
+ *  The Connexions_View_Helper_FeedUserItems helper MUST be initialized
  *  before this view is rendered.
  *
  *  Incoming members:
@@ -30,64 +30,6 @@ if ($this->owner !== '*')
 else
     $this->headTitle('Bookmarks');
 
-echo "<?xml version='1.0' encoding='utf-8'?>\n";
-?>
-<rss version='2.0'>
- <channel>
-  <?= $this->headTitle() ?>
-  <link><?=  $baseUrl ?></link>
-  <description>Posts</description>
-  <generator>Connexions</generator>
-  <ttl>60</ttl>
-<?php
+$this->feedUserItems($this->paginator, 'Rss');
 
-foreach ($this->paginator as $idex => $userItem)
-{
-    /*
-    Connexions_Profile::checkpoint('Connexions',
-                                   "IndexView RSS item {$idex}: retrieved");
-    // */
-
-
-    $isOwner = ($userItem->user->userId === $this->viewer->userId);
-    $title          = $userItem->name;
-    $description    = $userItem->description;
-    $link           = $userItem->item->url;
-    $pubDate        = $userItem->taggedOn;
-    $author         = $userItem->user->email;
-    $guid           = $baseUrl .'/url/'. $userItem->item->urlHash;
-
-    echo "  <item>\n";
-    echo "   <title>{$title}</title>\n";
-    echo "   <description>{$description}</description>\n";
-    echo "   <link>{$link}</link>\n";
-    echo "   <pubDate>{$pubDate}</pubDate>\n";
-    echo "   <author>{$author}</author>\n";
-    echo "   <guid>{$guid}</guid>\n";
-
-    /*
-    Connexions_Profile::checkpoint('Connexions',
-                                   "IndexView RSS item {$idex} get tags");
-    // */
-
-    foreach ($userItem->tags as $tag)
-    {
-        $category = $tag->tag;
-        echo "   <category>{$category}</category>\n";
-    }
-
-    echo "  </item>\n";
-
-    /*
-    Connexions_Profile::checkpoint('Connexions',
-                                   "IndexView RSS item {$idex} rendered");
-    // */
-}
-
-?>
- </channel>
-</rss>
-<?php
-
-Connexions_Profile::checkpoint('Connexions',
-                               'IndexView RSS rendering complete');
+Connexions_Profile::stop('Connexions', 'IndexView RSS rendering COMPLETE');

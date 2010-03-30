@@ -338,6 +338,13 @@ function init_UserItems(namespace)
     {
         if (! $this->_multipleUsers)
         {
+            if (! $this->_displayOptions instanceof
+                            Connexions_View_Helper_HtmlDisplayOptions)
+            {
+                echo "<pre>\n";
+                debug_print_backtrace();
+            }
+
             /* If we're only showing information for a single user, mark 
              * 'userId' as 'hide' (not true nor false).
              */
