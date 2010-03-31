@@ -40,9 +40,9 @@ class Model_TagSet extends Connexions_Set
 
         $select = $db->select()
                      ->from(array('t' => $table))
-                     ->join(array('uti'   => 'userTagItem'), // table / as
-                            't.tagId=uti.tagId',             // condition
-                            false)                           // columns (none)
+                     ->joinLeft(array('uti' => 'userTagItem'),  // table / as
+                                't.tagId=uti.tagId',            // condition
+                                false)                          // no columns
                      ->columns(array(
                                 'userItemCount' =>
                                         'COUNT(DISTINCT uti.itemid,uti.userId)',
