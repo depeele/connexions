@@ -773,12 +773,12 @@ function init_ItemCloud(namespace)
 
         foreach($itemList as $key => $item)
         {
-            Connexions::log(sprintf("HtmlItemCloud: _sort: %s: "
-                                    . "(%s) title [ %s ], weight[ %d ]",
-                                    $key,
-                                    get_class($item),
-                                    $item->getTitle(),
-                                    $item->getWeight() ) );
+            Connexions::log("HtmlItemCloud: _sort: %s: "
+                            . "(%s) title [ %s ], weight[ %d ]",
+                            $key,
+                            get_class($item),
+                            $item->getTitle(),
+                            $item->getWeight() );
         }
         // */
 
@@ -861,11 +861,11 @@ function init_ItemCloud(namespace)
                             . "sorted [ {$sortBy}, {$sortOrder} ]");
         foreach($itemList as $key => $item)
         {
-            Connexions::log(sprintf("HtmlItemCloud: _sort: %-3s: "
-                                    . "title [ %-15s ], weight[ %d ]",
-                                    $key,
-                                    $item->getTitle(),
-                                    $item->getWeight() ) );
+            Connexions::log("HtmlItemCloud: _sort: %-3s: "
+                            . "title [ %-15s ], weight[ %d ]",
+                            $key,
+                            $item->getTitle(),
+                            $item->getWeight() );
         }
         // */
         return $itemList;

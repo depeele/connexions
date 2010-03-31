@@ -56,12 +56,20 @@ else
  </p>
 </div>
 
-<?= $this->htmlItemScope($this->paginator,
-                         $this->tagInfo) ?>
+<?php
+Connexions_Profile::checkpoint('Connexions',
+                               'IndexView render scope');
 
-<?= $this->htmlUserItems($this->paginator,
-                         $this->viewer,
-                         $this->tagInfo) ?>
+echo $this->htmlItemScope($this->paginator,
+                          $this->tagInfo);
+
+Connexions_Profile::checkpoint('Connexions',
+                               'IndexView render items');
+
+echo $this->htmlUserItems($this->paginator,
+                          $this->viewer,
+                          $this->tagInfo);
+?>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
 

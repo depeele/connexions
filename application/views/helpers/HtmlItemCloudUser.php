@@ -37,10 +37,10 @@ class Connexions_View_Helper_HtmlItemCloudUser
             $attribute  = '';
 
             /*
-            Connexions::log(sprintf('Connexions_View_Helper_HtmlItemCloudUser:'
-                                        . 'user[ %s ], %sselected',
-                                     $user->getTitle(),
-                                     ($isSelected ? '' : 'NOT ')) );
+            Connexions::log('Connexions_View_Helper_HtmlItemCloudUser:'
+                            . 'user[ %s ], %sselected',
+                            $user->getTitle(),
+                            ($isSelected ? '' : 'NOT '));
             // */
 
             if (($classList = $this->getClassList()) === null)

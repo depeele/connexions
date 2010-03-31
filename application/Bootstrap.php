@@ -328,10 +328,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
                  */
 
                 /*
-                Connexions::log(sprintf("Bootstrap::_commonAuth: "
-                                        .   "Initially Authenticated as "
-                                        .       "[ %s ]",
-                                        $user) );
+                Connexions::log("Bootstrap::_commonAuth: "
+                                .   "Initially Authenticated as "
+                                .       "[ %s ]",
+                                $user);
                 // */
 
                 $user->setAuthenticated();
@@ -379,10 +379,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         }
 
         /*
-        Connexions::log(sprintf("Bootstrap::_commonAuth: "
-                                .  "Final user '%s' is%s authenticated",
-                                $user,
-                                ($user->isAuthenticated() ? '':' NOT')) );
+        Connexions::log("Bootstrap::_commonAuth: "
+                        .  "Final user '%s' is%s authenticated",
+                        $user,
+                        ($user->isAuthenticated() ? '':' NOT'));
         // */
         Connexions_Profile::checkpoint('Connexions',
                                        "Bootstrap::_commonAuth complete: "

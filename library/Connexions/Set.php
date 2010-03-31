@@ -417,10 +417,8 @@ abstract class Connexions_Set extends    ArrayIterator
                                   : 0);
 
             /*
-            Connexions::log(sprintf("Connexions_Set::count():%s: "
-                                    . "%d",
-                                        $this->_memberClass,
-                                        $this->_count) );
+            Connexions::log("Connexions_Set::count():%s: %d",
+                            $this->_memberClass, $this->_count);
             // */
         }
 
@@ -475,9 +473,8 @@ abstract class Connexions_Set extends    ArrayIterator
         // Create a new instance of the member class using the retrieved data
         $inst = new $this->_memberClass($rec);
 
-        Connexions::log(sprintf("Connexions_Set::offsetGet(%d):%s",
-                                    $offset,
-                                    $this->_memberClass) );
+        Connexions::log("Connexions_Set::offsetGet(%d):%s",
+                        $offset, $this->_memberClass);
 
         // Return the new instance
         return $inst;
@@ -636,10 +633,8 @@ abstract class Connexions_Set extends    ArrayIterator
         //Connexions_Profile::checkpoint($mid, 'iterator instantiated');
 
         /*
-        Connexions::log(sprintf("Connexions_Set::getItems(%d, %d):%s: ",
-                                    $offset, $itemCountPerPage,
-                                    $this->_memberClass
-                                    ));
+        Connexions::log("Connexions_Set::getItems(%d, %d):%s: ",
+                        $offset, $itemCountPerPage, $this->_memberClass);
         // */
 
         //Connexions_Profile::stop($mid, 'complete');
@@ -660,11 +655,11 @@ abstract class Connexions_Set extends    ArrayIterator
         if ( ($offset < 0) || ($offset >= $this->count()) )
         {
             /*
-            Connexions::log(sprintf("Connexions_Set(%s)::getItem(%d):%s "
-                                    .   "-- INVALID OFFSET",
-                                    get_class($this),
-                                    $offset,
-                                    $this->_memberClass));
+            Connexions::log("Connexions_Set(%s)::getItem(%d):%s "
+                            .   "-- INVALID OFFSET",
+                            get_class($this),
+                            $offset,
+                            $this->_memberClass);
             // */
 
             return null;
@@ -685,20 +680,20 @@ abstract class Connexions_Set extends    ArrayIterator
             $this->_members[$offset] = new $this->_memberClass( $rec );
 
             /*
-            Connexions::log(sprintf("Connexions_Set(%s)::getItem(%d):%s",
-                                        get_class($this),
-                                        $offset,
-                                        $this->_memberClass));
+            Connexions::log("Connexions_Set(%s)::getItem(%d):%s",
+                            get_class($this),
+                            $offset,
+                            $this->_memberClass);
             // */
         }
         /*
         else
         {
-            Connexions::log(sprintf("Connexions_Set(%s)::getItem(%d):%s "
-                                    .   "-- return existing instance",
-                                    get_class($this),
-                                    $offset,
-                                    $this->_memberClass));
+            Connexions::log("Connexions_Set(%s)::getItem(%d):%s "
+                            .   "-- return existing instance",
+                            get_class($this),
+                            $offset,
+                            $this->_memberClass);
         }
         // */
 
@@ -718,6 +713,8 @@ abstract class Connexions_Set extends    ArrayIterator
      */
     protected function _cacheRecords($offset, $count)
     {
+        $mid = 'Connexions_Set::_cacheRecords';
+
         /* Find the first missing record -- we'll retrieve everything from that
          * point, even if it's already cached.  We stop with the first to avoid
          * excessive overhead checking to see what's cached.
@@ -740,7 +737,6 @@ abstract class Connexions_Set extends    ArrayIterator
 
 
         /*
-        $mid = 'Connexions_Set::_cacheRecords';
         Connexions_Profile::start($mid,
                                   "begin: ({$offset}, {$count}):"
                                   ."{$this->_memberClass}:");
@@ -762,8 +758,8 @@ abstract class Connexions_Set extends    ArrayIterator
 
         $this->_select->limit($fetchCount, $fetchOffset);
 
-        /*
-        Connexions_Profile::checkpoint($mid,
+        // /*
+        Connexions_Profile::start($mid,
                                        "ready to fetch "
                                        ."[ {$this->_select->assemble()} ]");
         // */
@@ -771,20 +767,20 @@ abstract class Connexions_Set extends    ArrayIterator
         // Retrieve everything in the current range.
         $rows = $this->_select->query()->fetchAll();
 
-        //Connexions_Profile::checkpoint($mid, count($rows).' fetched');
+        Connexions_Profile::stop($mid, count($rows).' fetched');
 
         // Reset the limit
         $this->_select->limit($origCount, $origOffset);
 
         /*
-        Connexions::log(sprintf("Connexions_Set(%s)::_cacheRecords(%d, %d):%s "
-                                . "retrieved %d/%d items (%d..%d)",
-                                get_class($this),
-                                $offset, $count,
-                                $this->_memberClass,
-                                count($rows), $fetchCount,
-                                $fetchOffset, $fetchOffset + count($rows)
-                                ));
+        Connexions::log("Connexions_Set(%s)::_cacheRecords(%d, %d):%s "
+                        . "retrieved %d/%d items (%d..%d)",
+                        get_class($this),
+                        $offset, $count,
+                        $this->_memberClass,
+                        count($rows), $fetchCount,
+                        $fetchOffset, $fetchOffset + count($rows)
+                        );
         // */
 
         /* Cache the raw row data, splicing it into the proper offset

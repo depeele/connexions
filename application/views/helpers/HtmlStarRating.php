@@ -56,12 +56,12 @@ class Connexions_View_Helper_HtmlStarRating extends Zend_View_Helper_Abstract
         }
 
         /*
-        Connexions::log(sprintf("Connexions_View_Helper_HtmlStarRating: "
-                                . "rating[ %f ], onCount[ %d ], "
-                                . "useSplits[ %s ], readOnly[ %s ] -->",
-                                $rating, $onCount,
-                                ($useSplits ? 'true' : 'false'),
-                                ($readOnly ? 'true' : 'false')) );
+        Connexions::log("Connexions_View_Helper_HtmlStarRating: "
+                        . "rating[ %f ], onCount[ %d ], "
+                        . "useSplits[ %s ], readOnly[ %s ] -->",
+                        $rating, $onCount,
+                        ($useSplits ? 'true' : 'false'),
+                        ($readOnly ? 'true' : 'false'));
         // */
 
         $html =  "<div class='{$css} ui-stars-wrapper'"

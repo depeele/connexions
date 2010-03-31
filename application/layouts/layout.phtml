@@ -1,4 +1,8 @@
-<?= $this->render('header.phtml') ?>
+<?php
+Connexions_Profile::checkpoint('Connexions', 'layout::BEGIN');
+
+echo $this->render('header.phtml');
+?>
 
   <div id="pageContent" class="body"><!-- { body -->
    <div class="rightCol" role="complementary"><!-- { right -->
@@ -9,4 +13,7 @@
    </div><!-- main } -->
   </div><!-- body } -->
 
-<?= $this->render('footer.phtml') ?>
+<?php
+echo $this->render('footer.phtml');
+
+Connexions_Profile::stop('Connexions', 'layout::COMPLETE');
