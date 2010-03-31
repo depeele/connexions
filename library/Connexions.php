@@ -18,14 +18,11 @@ class Connexions
     protected static    $_log   = null;
 
     /** @brief  Provide a general logging mechanism.
-     *  @param  message     The message to present
-     *  @param  priority    The Zend_Log priority [Zend_Log::INFO].
+     *  @param  fmt     The sprintf-like format string
+     *  @param  ...     Any additional sprintf arguments matching 'fmt'.
      */
-    public static function log($message, $priority = null)
+    public static function log($fmt /*, ... */ )
     {
-        if ($priority === null)
-            $priority = Zend_Log::DEBUG;
-
         if (self::$_log === null)
         {
             /* Logging is established on boot via:
@@ -49,11 +46,27 @@ class Connexions
 
         if (! self::$_log instanceof Zend_Log)
         {
-            //echo "Connexions::log: DISABLED [{$message}]\n";
+            //echo "Connexions::log: DISABLED [{$fmt}]\n";
             return;
         }
 
-        self::$_log->log($message, $priority);
+        /****************************************************************
+         * Generate the log message.
+         *
+         */
+        $argv = func_get_args();
+        $argc = count($argv);
+        if ($argc > 1)
+        {
+            /*$fmt = */   array_shift($argv);
+            $message = vsprintf($fmt, $argv);
+        }
+        else
+        {
+            $message = $fmt;
+        }
+
+        self::$_log->log($message, Zend_Log::DEBUG);
     }
 
     /** @brief  Return the current Database Adapter.
