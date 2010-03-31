@@ -145,7 +145,7 @@ class IndexController extends Zend_Controller_Action
                                        'IndexController::indexAction: '
                                        . 'User Item Set retrieved');
 
-        // Handle this request based up 'format'
+        // Handle this request based on the current context / format
         $this->_handleFormat();
     }
 
@@ -250,6 +250,11 @@ class IndexController extends Zend_Controller_Action
 
     protected function _createPaginator($req, $namespace = '')
     {
+        Connexions_Profile::checkpoint('Connexions',
+                                       'IndexController::_createPaginator: '
+                                       . '%s: begin',
+                                       $namespace);
+
         /* Retrieve any sort and paging parameters from the RPC request,
          * falling back to helper-controlled defaults.
          */
@@ -273,6 +278,12 @@ class IndexController extends Zend_Controller_Action
         $this->_paginator = $this->_helper->Pager($this->_userItems,
                                                   $this->_page,
                                                   $this->_perPage);
+
+        Connexions_Profile::checkpoint('Connexions',
+                                       'IndexController::_createPaginator: '
+                                       . '%s: page %d, perPage %d: end',
+                                       $namespace,
+                                       $this->_page, $this->_perPage);
     }
 
     protected function _jsonContent()
@@ -287,13 +298,14 @@ class IndexController extends Zend_Controller_Action
 
         $method = strtolower($rpc->getMethod());
 
-        Connexions::log("IndexController::_jsonContent: "
-                        . "method [ {$method} ]");
+        Connexions_Profile::checkpoint('Connexions',
+                                       'IndexController::_jsonContent: '
+                                       . "method[ {$method} ]");
 
         switch ($method)
         {
         case 'get':
-            $this->_createPaginator($rpc->getRequest());
+            $this->_createPaginator($rpc);  //->getRequest());
 
             $items = array();
             foreach ($this->_paginator as $item)
@@ -345,7 +357,6 @@ class IndexController extends Zend_Controller_Action
     protected function _htmlContent()
     {
         $request =& $this->getRequest();
-        $layout  =& $this->view->layout();
 
         /********************************************************************
          * Prepare for rendering the main view.
@@ -362,9 +373,9 @@ class IndexController extends Zend_Controller_Action
         /* Generate a paginator for the requested item set.  This will also
          * initialize '_page, '_perPage', '_sortBy', and '_sortOrder'
          */
-        $this->_createPaginator($request);
+        $this->_createPaginator($request, $prefix);
 
-        // /*
+        /*
         Connexions::log('IndexController::'
                             . 'prefix [ '. $prefix .' ], '
                             //. 'params [ '
@@ -390,6 +401,11 @@ class IndexController extends Zend_Controller_Action
                                 $itemsStyleCustom);
         else
             $uiHelper->setStyle($itemsStyle);
+
+        Connexions_Profile::checkpoint('Connexions',
+                                       'IndexController::_htmlContent: '
+                                       . 'HtmlUserItems helper initialized');
+
         /**************************************************/
 
 
@@ -429,6 +445,10 @@ class IndexController extends Zend_Controller_Action
                     ->setInputName( 'tags')
                     ->setPath( $scopePath )
                     ->setAutoCompleteUrl( $scopeCbUrl );
+
+        Connexions_Profile::checkpoint('Connexions',
+                                       'IndexController::_htmlContent: '
+                                       . 'HtmlItemScope Helper initialized');
 
 
         // Additional view variables for the HTML view.

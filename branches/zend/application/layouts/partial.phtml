@@ -1,4 +1,6 @@
 <?php
+Connexions_Profile::checkpoint('Connexions', 'partial::BEGIN');
+
 /* Move all onLoad actions to straight Javascript after clearing any
  * existing Javascript.
  */
@@ -17,7 +19,8 @@ foreach ($actions as $action)
 // Only render straight Javascript
 $jQuery->setRenderMode(ZendX_JQuery::RENDER_JAVASCRIPT);
 
-?>
-<!-- Partial Rendering -->
-<?= $this->layout()->content ?>
-<?= $this->jQuery() ?>
+// Partial Rendering
+echo $this->layout()->content;
+echo $this->jQuery();
+
+Connexions_Profile::stop('Connexions', 'partial::COMPLETE');

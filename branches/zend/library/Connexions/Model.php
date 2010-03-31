@@ -197,9 +197,9 @@ abstract class Connexions_Model
             $this->_validate($vName);
 
         /*
-        Connexions::log(sprintf("Model::__get(%s / %s): [ %s ]",
-                                $name, $vName,
-                                print_r($this->_record[$vName], true)));
+        Connexions::log("Model::__get(%s / %s): [ %s ]",
+                        $name, $vName,
+                        print_r($this->_record[$vName], true));
         // */
 
         return $this->_record[$vName];
@@ -240,8 +240,8 @@ abstract class Connexions_Model
     public function save()
     {
         /*
-        Connexions::log(sprintf("Connexions_Model::save: record[ "
-                                .   $this->debugDump(true) ." ]"));
+        Connexions::log("Connexions_Model::save: record[ %s ]",
+                        $this->debugDump(true));
         // */
 
         if ($this->isDirty() !== true)
@@ -266,14 +266,14 @@ abstract class Connexions_Model
             $dirty = array_intersect_key($this->_record, $this->_dirty);
 
             /*
-            Connexions::log(sprintf("Connexions_Model: Update table '%s'; ".
-                                    "fields[%s], values[%s], ".
-                                    "where( clause[%s], binding[%s] )\n",
-                                    $this->_table,
-                                    implode(', ', array_keys($dirty)),
-                                    implode(', ', array_values($dirty)),
-                                    implode(' AND ', array_keys($where)),
-                                    implode(', ', array_values($where)) ) );
+            Connexions::log("Connexions_Model: Update table '%s'; "
+                            . "fields[%s], values[%s], "
+                            . "where( clause[%s], binding[%s] )\n",
+                            $this->_table,
+                            implode(', ', array_keys($dirty)),
+                            implode(', ', array_values($dirty)),
+                            implode(' AND ', array_keys($where)),
+                            implode(', ', array_values($where)) );
             // */
 
             if ( (count($dirty) < 1) ||
@@ -289,12 +289,11 @@ abstract class Connexions_Model
         {
             // This is a new record that we need to insert
             /*
-            Connexions::log(sprintf("Connexions_Model: Insert table '%s'; ".
-                                    "fields[%s], values[%s]\n",
-                                    $this->_table,
-                                    implode(', ', array_keys($this->_record)),
-                                    implode(', ',
-                                            array_values($this->_record)) ) );
+            Connexions::log("Connexions_Model: Insert table '%s'; "
+                            . "fields[%s], values[%s]\n",
+                            $this->_table,
+                            implode(', ', array_keys($this->_record)),
+                            implode(', ', array_values($this->_record)) );
             // */
 
             // Catch exceptions like -- duplicate primary key...
@@ -355,11 +354,11 @@ abstract class Connexions_Model
         }
 
         /*
-        Connexions::log(sprintf("Connexions_Model: Delete from '%s'; ".
-                                "where( clause[%s], binding[%s] )\n",
-                                $this->_table,
-                                implode(' AND ', array_keys($where)),
-                                implode(', ', array_values($where)) ) );
+        Connexions::log("Connexions_Model: Delete from '%s'; "
+                        . "where( clause[%s], binding[%s] )\n",
+                        $this->_table,
+                        implode(' AND ', array_keys($where)),
+                        implode(', ', array_values($where)) );
         // */
         if ($this->_db->delete($this->_table, $where) )
         {

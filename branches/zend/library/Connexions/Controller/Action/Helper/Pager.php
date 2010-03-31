@@ -50,9 +50,7 @@ class Connexions_Controller_Action_Helper_Pager
             }
             else
             {
-                throw new Exception(
-                                "Connexions_Controller_Action_Helper_Pager: "
-                                . "invalid method '{$method}'");
+                throw new Exception("{$class}: invalid method '{$method}'");
             }
         }
     }

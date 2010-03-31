@@ -108,13 +108,13 @@ class InboxController extends Zend_Controller_Action
                         "Invalid tag(s) [ {$this->_tagInfo->invalidItems} ]";
 
         /*
-        Connexions::log(sprintf("InboxController:: tagInfo: "
-                                .   "itemClass[ %s ], reqStr[ %s ], "
-                                .   "validItems[ %s ], invalidItems[ %s ]",
-                                $this->_tagInfo->itemClass,
-                                $this->_tagInfo->reqStr,
-                                $this->_tagInfo->validItems,
-                                $this->_tagInfo->invalidItems));
+        Connexions::log("InboxController:: tagInfo: "
+                        .   "itemClass[ %s ], reqStr[ %s ], "
+                        .   "validItems[ %s ], invalidItems[ %s ]",
+                        $this->_tagInfo->itemClass,
+                        $this->_tagInfo->reqStr,
+                        $this->_tagInfo->validItems,
+                        $this->_tagInfo->invalidItems);
         // */
 
         /* Create the userItem set, scoped by any incoming valid tags from

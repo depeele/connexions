@@ -86,11 +86,11 @@ class Connexions_Set_ItemList extends Zend_Tag_ItemList
         }
 
         /*
-        Connexions::log(sprintf("Connexions_Set_ItemList:: ".
-                                    "reqUrl[ %s ], ".
-                                    "reqStr[ %s ]",
-                                $this->_reqUrl,
-                                $this->_reqStr));
+        Connexions::log("Connexions_Set_ItemList:: "
+                        . "reqUrl[ %s ], "
+                        . "reqStr[ %s ]",
+                        $this->_reqUrl,
+                        $this->_reqStr);
         // */
     }
 

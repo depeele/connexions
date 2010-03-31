@@ -41,10 +41,10 @@ class Connexions_View_Helper_HtmlItemCloudTag
             $attribute  = '';
 
             /*
-            Connexions::log(sprintf('Connexions_View_Helper_HtmlItemCloudTag: '.
-                                        'tag[ %s ], %sselected',
-                                     $tag->getTitle(),
-                                     ($isSelected ? '' : 'NOT ')) );
+            Connexions::log('Connexions_View_Helper_HtmlItemCloudTag: '
+                            . 'tag[ %s ], %sselected',
+                            $tag->getTitle(),
+                            ($isSelected ? '' : 'NOT '));
             // */
 
             if (($classList = $this->getClassList()) === null)
