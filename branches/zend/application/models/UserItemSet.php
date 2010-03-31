@@ -56,19 +56,17 @@ class Model_UserItemSet extends Connexions_Set
             $tagIds = array($tagIds);
 
 
-        /* Include all columns/fields from Item and User, prefixed.
-         * Note: These will be used by Model_UserItem (self::MEMBER_CLASS) to
-         *       provide access to the referenced User and Item.
+        /* Include all columns/fields from Item, prefixed by 'item_'.
+         *
+         * Note: These are primarily used to allow sorting by item_ratingCount
+         *       and item_userCount, though they will also be used to provide
+         *       access to the referenced Item without requiring a second
+         *       query.
          */
         $itemColumns = array();
         foreach (Model_Item::$model as $field => $type)
         {
             $itemColumns['item_'.$field] = 'i.'.$field;
-        }
-        $userColumns = array();
-        foreach (Model_User::$model as $field => $type)
-        {
-            $userColumns['user_'.$field] = 'u.'.$field;
         }
 
         // Generate a Zend_Db_Select instance
@@ -77,12 +75,9 @@ class Model_UserItemSet extends Connexions_Set
 
         $select = $db->select()
                      ->from(array('ui' => $table))
-                     ->join(array('i'  => 'item'),      // table / as
-                            '(i.itemId=ui.itemId)',     // condition
-                            $itemColumns)               // columns
-                     ->join(array('u'  => 'user'),      // table / as
-                            '(u.userId=ui.userId)',     // condition
-                            $userColumns)               // columns
+                     ->joinLeft(array('i'  => 'item'),  // table / as
+                                '(i.itemId=ui.itemId)', // condition
+                                $itemColumns)           // columns
                      ->where('((ui.isPrivate=false) '.
                                  ($curUserId !== null
                                     ? 'OR (ui.userId='.$curUserId.')'
@@ -95,12 +90,12 @@ class Model_UserItemSet extends Connexions_Set
             $nUserIds = count($userIds);
             if ($nUserIds === 1)
             {
-                $select->where('u.userId=?', $userIds);
+                $select->where('ui.userId=?', $userIds);
 
             }
             else
             {
-                $select->where('u.userId IN (?)', $userIds);
+                $select->where('ui.userId IN (?)', $userIds);
 
                 /* Require ALL provided tags
                 $select->having('COUNT(DISTINCT u.userId)='. $nUserIds);
@@ -114,12 +109,12 @@ class Model_UserItemSet extends Connexions_Set
             $nItemIds = count($itemIds);
             if ($nItemIds === 1)
             {
-                $select->where('i.itemId=?', $itemIds);
+                $select->where('ui.itemId=?', $itemIds);
 
             }
             else
             {
-                $select->where('i.itemId IN (?)', $itemIds);
+                $select->where('ui.itemId IN (?)', $itemIds);
 
                 /* Require ALL provided items
                 $select->having('COUNT(DISTINCT i.itemId)='. $nItemIds);
@@ -130,10 +125,10 @@ class Model_UserItemSet extends Connexions_Set
         if (! @empty($tagIds))
         {
             // Tag Restrictions -- required 'userTagItem'
-            $select->join(array('uti'   => 'userTagItem'),  // table / as
-                          '(i.itemId=uti.itemId) AND '.
-                          '(u.userId=uti.userId)',          // condition
-                          '')                               // columns (none)
+            $select->joinLeft(array('uti'   => 'userTagItem'),// table / as
+                              '(i.itemId=uti.itemId) AND '.
+                              '(ui.userId=uti.userId)',       // condition
+                              '')                             // columns (none)
                    ->group(array('uti.userId', 'uti.itemId'));
 
 
@@ -311,13 +306,6 @@ class Model_UserItemSet extends Connexions_Set
         case 'item_ratingCount':
         case 'item_ratingSum':
 
-        case 'user_name':
-        case 'user_email':
-        case 'user_lastVisit':
-        case 'user_totalTags':
-        case 'user_totalItems':
-            break;
-
         default:
             $name = parent::mapField($name);
             break;
@@ -461,10 +449,10 @@ class Model_UserItemSet extends Connexions_Set
     {
         $select = clone $this->_select;
 
-        $select->join(array('uti'   => 'userTagItem'),  // table / as
-                      '(i.itemId=uti.itemId) AND '.
-                      '(u.userId=uti.userId)',          // condition
-                      '')                               // columns (none)
+        $select->joinLeft(array('uti'   => 'userTagItem'),  // table / as
+                          '(ui.itemId=uti.itemId) AND '.
+                          '(ui.userId=uti.userId)',         // condition
+                          '')                               // columns (none)
                ->group('uti.tagId')
                ->columns('ui.tagId');
 

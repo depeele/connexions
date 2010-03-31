@@ -38,9 +38,9 @@ class Model_UserSet extends Connexions_Set
 
         $select = $db->select()
                      ->from(array('u' => $table))
-                     ->join(array('uti'   => 'userTagItem'),  // table / as
-                                  '(u.userId=uti.userId)',    // condition
-                                  '')                         // columns (none)
+                     ->joinLeft(array('uti' => 'userTagItem'),  // table / as
+                                '(u.userId=uti.userId)',        // condition
+                                false)                          // no columns
                      ->group('u.userId');
 
         if (! @empty($userIds))
