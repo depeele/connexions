@@ -405,7 +405,7 @@ class Connexions_View_Helper_HtmlDisplayStyle extends Zend_View_Helper_Abstract
      */
     public function setNamespace($namespace)
     {
-        // /*
+        /*
         Connexions::log("Connexions_View_Helper_HtmlDisplayStyle::"
                             .   "setNamespace( {$namespace} )");
         // */
@@ -421,7 +421,7 @@ class Connexions_View_Helper_HtmlDisplayStyle extends Zend_View_Helper_Abstract
             $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.min.js'))
                    ->addJavascriptFile($view->baseUrl('js/ui.checkbox.min.js'))
                    ->addJavascriptFile($view->baseUrl('js/ui.button.min.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.optionGroups.min.js'))
+                   ->addJavascriptFile($view->baseUrl('js/ui.optionGroups.js'))
                    ->javascriptCaptureStart();
             ?>
 
@@ -447,7 +447,7 @@ function init_DisplayStyle(namespace, styleGroups)
 
             $jsonGroupMap = json_encode($this->getGroupsMap());
 
-            // /*
+            /*
             Connexions::log("Connexions_View_Helper_HtmlDisplayStyle::"
                                 .   "setNamespace( {$namespace} ): "
                                 .   "groupMap[ {$jsonGroupMap} ]");

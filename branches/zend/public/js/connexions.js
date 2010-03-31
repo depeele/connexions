@@ -34,7 +34,7 @@
         catch(e) { }
     }
 
-    /*******************************************************************
+    /*************************************************************************
      * Dynamic script inclusion -- Based upon jquery-include.js
      *
      * Note: This modifies jQuery.ready to wait for any scripts that have been
@@ -146,6 +146,46 @@
     });
 
     }
-    /*******************************************************************/
+    /*************************************************************************/
+
+    /*************************************************************************
+     * Overlay any element.
+     *
+     */
+    $.fn.mask = function() {
+        return this.each(function() {
+            var $el         = $(this);
+            var zIndex      = $el.css('z-index');
+            if (zIndex === 'auto')
+            {
+                zIndex = 99999;
+            }
+            else
+            {
+                zIndex++;
+            }
+
+            var $overlay    = $('<div></div>')
+                                    .addClass('ui-widget-overlay')
+                                    .appendTo($el)
+                                    .css({width:    $el.width(),
+                                          height:   $el.height(),
+                                          'z-index':zIndex});
+
+            if ($.fn.bgiframe)
+            {
+                $overlay.bgiframe();
+            }
+        });
+    };
+
+    $.fn.unmask = function() {
+        return this.each(function() {
+            var $el         = $(this);
+            var $overlay    = $el.find('ui-widget-overlay');
+
+            $overlay.remove();
+        });
+    };
 
  }(jQuery));

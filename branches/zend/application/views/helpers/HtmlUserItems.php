@@ -164,7 +164,7 @@ class Connexions_View_Helper_HtmlUserItems
      */
     public function setNamespace($namespace)
     {
-        // /*
+        /*
         Connexions::log("Connexions_View_Helper_HtmlUserItems::"
                             .   "setNamespace( {$namespace} )");
         // */
@@ -444,8 +444,11 @@ function init_UserItems(namespace)
         $nPages = count($paginator);
         if ($nPages > 0)
         {
+            /*
             Connexions::log("Connexions_View_Helper_HtmlUserItems: "
-                            . "render page {$paginator->getCurrentPageNumber()}");
+                            . "render page %d",
+                            $paginator->getCurrentPageNumber());
+            // */
 
             $html .= "<ul class='{$this->_namespace}'>";
 

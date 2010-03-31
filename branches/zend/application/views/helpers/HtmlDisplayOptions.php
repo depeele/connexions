@@ -97,7 +97,7 @@ class Connexions_View_Helper_HtmlDisplayOptions
         $jQuery = $view->jQuery();
 
         $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.min.js'))
-               ->addJavascriptFile($view->baseUrl('js/ui.optionGroups.min.js'))
+               ->addJavascriptFile($view->baseUrl('js/ui.optionGroups.js'))
                ->addJavascriptFile($view->baseUrl('js/ui.dropdownForm.min.js'))
                ->javascriptCaptureStart();
         ?>
@@ -667,7 +667,7 @@ function init_DisplayOptions(opts)
      */
     public function setNamespace($namespace)
     {
-        // /*
+        /*
         Connexions::log("Connexions_View_Helper_HtmlDisplayOptions::"
                             .   "setNamespace( {$namespace} )");
         // */

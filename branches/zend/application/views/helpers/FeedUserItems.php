@@ -41,18 +41,8 @@ class Connexions_View_Helper_FeedUserItems
     public function render(Zend_Paginator   $paginator,
                                             $type)
     {
-        Connexions_Profile::stop('Connexions',
-                                 'Feed generation begin');
-
         $feed = $this->_genFeed($paginator, $type);
-
-        Connexions_Profile::stop('Connexions',
-                                 'Feed generation complete');
-
         $feed->send();
-
-        Connexions_Profile::stop('Connexions',
-                                 'Feed send complete');
     }
 
     /**************************************************************************
@@ -71,9 +61,6 @@ class Connexions_View_Helper_FeedUserItems
     protected function _genFeed(Zend_Paginator  $paginator,
                                                 $type)
     {
-        $mid = "Connexions_View_Helper_FeedUserItems::_genFeed({$type})";
-        Connexions_Profile::start($mid, 'begin');
-
         $view     = $this->view;
         $title    = htmlspecialchars_decode(strip_tags($view->headTitle()));
 
@@ -99,20 +86,13 @@ class Connexions_View_Helper_FeedUserItems
                         .   "main info[ ". print_r($feedInfo, true) ." ]");
         // */
 
-        Connexions_Profile::checkpoint($mid, 'adding %d entries',
-                                             count($paginator));
-
         foreach ($paginator as $item)
         {
             array_push($feedInfo['entries'],
                        $view->feedUserItem($item));
         }
 
-        Connexions_Profile::checkpoint($mid, 'entries added');
-
         $feed = Zend_Feed::importArray($feedInfo, $type);
-
-        Connexions_Profile::stop($mid, 'complete');
 
         return $feed;
     }

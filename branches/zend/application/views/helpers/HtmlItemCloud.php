@@ -300,7 +300,7 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     public function setNamespace($namespace)
     {
-        // /*
+        /*
         Connexions::log("Connexions_View_Helper_HtmlItemCloud::"
                             .   "setNamespace( {$namespace} )");
         // */
@@ -421,7 +421,7 @@ function init_ItemCloud(namespace)
                      *       will also ensure the computed weight field is
                      *       included.
                      */
-                    $itemSet->setOrder( 'weight DESC' );
+                    $itemSet->setOrder( 'weight DESC', 'name ASC' );
                 }
             }
             else

@@ -54,7 +54,7 @@ class Connexions_View_Helper_UserItems extends Zend_View_Helper_Abstract
      */
     public function setNamespace($namespace)
     {
-        // /*
+        /*
         Connexions::log("Connexions_View_Helper_UserItems::"
                             .   "setNamespace( {$namespace} )");
         // */

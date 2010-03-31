@@ -37,7 +37,7 @@ class Connexions_View_Helper_HtmlPaginationControl
      */
     public function setNamespace($namespace)
     {
-        // /*
+        /*
         Connexions::log("Connexions_View_Helper_HtmlPaginationControl::"
                             . "setNamespace( {$namespace} )");
         // */

@@ -13,25 +13,6 @@
  *                                          ModeL_UserItemSet);
  */
 
-$jQuery = $this->jQuery();
-
-$jQuery->addOnLoad("init_sidebar();")
-       ->javascriptCaptureStart();
-    ?>
-
-/************************************************
- * Initialize the sidebar tab control
- *
- */
-function init_sidebar()
-{
-    $('#sidebar-tabs').tabs();
-}
-    <?php
-$jQuery->javascriptCaptureEnd();
-
-
-
 $showAvatar = true;
 if ( isset($this->htmlUserItems))
 {
@@ -43,11 +24,12 @@ $nSenders   = count($this->senderSet);
 
 
 ?>
+<?= $this->render('sidebar.phtml') ?>
 
 <div id='sidebar-tabs'><!-- { -->
  <ul>
-  <li><a href='#sidebar-tags'  >Tags</a></li>
-  <li><a href='#sidebar-people'>People</a></li>
+  <li><a href='#sidebar-tags'  ><span>Tags</span></a></li>
+  <li><a href='#sidebar-people'><span>People</span></a></li>
  </ul>
  <div id='sidebar-tags'>
   <div class='columnHeader'>

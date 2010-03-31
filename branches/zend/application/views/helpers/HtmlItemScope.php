@@ -64,7 +64,7 @@ class Connexions_View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
      */
     public function setNamespace($namespace, $force = false)
     {
-        // /*
+        /*
         Connexions::log("Connexions_View_Helper_HtmlItemScope::"
                             .   "setNamespace( {$namespace} )");
         // */
