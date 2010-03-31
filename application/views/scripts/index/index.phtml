@@ -17,8 +17,7 @@
  *      paginator           A Zend_Paginator instance established for the
  *                          presentation of the current Model_UserItemSet;
  */
-Connexions_Profile::checkpoint('Connexions',
-                               'IndexView rendering beginning');
+//Connexions_Profile::checkpoint('Connexions', 'IndexView begin');
 
 $baseUrl = $this->baseUrl('/'); //Connexions::url('/');
 
@@ -57,14 +56,12 @@ else
 </div>
 
 <?php
-Connexions_Profile::checkpoint('Connexions',
-                               'IndexView render scope');
+//Connexions_Profile::checkpoint('Connexions', 'IndexView render scope');
 
 echo $this->htmlItemScope($this->paginator,
                           $this->tagInfo);
 
-Connexions_Profile::checkpoint('Connexions',
-                               'IndexView render items');
+//Connexions_Profile::checkpoint('Connexions', 'IndexView render items');
 
 echo $this->htmlUserItems($this->paginator,
                           $this->viewer,
@@ -75,5 +72,4 @@ echo $this->htmlUserItems($this->paginator,
 
 <?php
 
-Connexions_Profile::checkpoint('Connexions',
-                               'IndexView rendering complete');
+//Connexions_Profile::checkpoint('Connexions', 'IndexView complete');

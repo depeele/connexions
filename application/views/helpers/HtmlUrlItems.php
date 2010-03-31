@@ -178,7 +178,7 @@ class Connexions_View_Helper_HtmlUrlItems extends Zend_View_Helper_Abstract
      */
     public function setNamespace($namespace)
     {
-        // /*
+        /*
         Connexions::log("Connexions_View_Helper_HtmlUrlItems::"
                             .   "setNamespace( {$namespace} )");
         // */

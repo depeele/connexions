@@ -758,16 +758,15 @@ abstract class Connexions_Set extends    ArrayIterator
 
         $this->_select->limit($fetchCount, $fetchOffset);
 
-        // /*
-        Connexions_Profile::start($mid,
-                                       "ready to fetch "
-                                       ."[ {$this->_select->assemble()} ]");
+        /*
+        Connexions_Profile::start($mid, "ready to fetch [ %s ]",
+                                  $this->_select->assemble());
         // */
 
         // Retrieve everything in the current range.
         $rows = $this->_select->query()->fetchAll();
 
-        Connexions_Profile::stop($mid, count($rows).' fetched');
+        //Connexions_Profile::stop($mid, count($rows).' fetched');
 
         // Reset the limit
         $this->_select->limit($origCount, $origOffset);

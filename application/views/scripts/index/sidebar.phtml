@@ -3,49 +3,32 @@
  *
  *  View script for IndexController::index to render the sidebar content.
  *
- *  The Connexions_View_Helper_HtmlItemCloud helper MUST be initialized
- *  before this view is rendered.
  */
 
-$jQuery = $this->jQuery();
-
-$jQuery->addOnLoad("init_sidebar();")
-       ->javascriptCaptureStart();
+$partUrl = $this->url . '?format=partial&part=';
 ?>
+<?= $this->render('sidebar.phtml') ?>
 
-/************************************************
- * Initialize the sidebar tab control
- *
- */
-function init_sidebar()
-{
-    $('#sidebar-tabs').tabs();
-}
-<?php
-$jQuery->javascriptCaptureEnd();
-
-?>
+<!-- Dynamically initialized tabs -->
 <div id='sidebar-tabs'>
  <ul>
-  <li><a href='#sidebar-tags'  >Tags</a></li>
-  <!-- li><a href='#sidebar-people'>People</a></li -->
+  <li><a href='<?= $partUrl .'sidebar-tags'   ?>'><span>Tags</span></a></li>
+  <li><a href='<?= $partUrl .'sidebar-people' ?>'><span>People</span></a></li>
  </ul>
- <div id='sidebar-tags'>
-  <div class='columnHeader'>
-   <div class='context-bg connexions_sprites tag_bg ui-corner-left'>
-    &nbsp;
-   </div>
-   <p>Tags related to these bookmarks.</p>
-  </div>
-  <?= $this->htmlItemCloud()->render() ?>
- </div>
-
- <!-- div id='sidebar-people'>
-  <div class='columnHeader'>
-   <div class='context-bg connexions_sprites user_bg ui-corner-left'>
-    &nbsp;
-   </div>
-   <p>People that I have tagged items for...</p>
-  </div>
- </div -->
 </div>
+
+<!-- Statically initialized tabs
+<div id='sidebar-tabs'>
+ <ul>
+  <li><a href='#sidebar-tags'  ><span>Tags</span></a></li>
+  <li><a href='#sidebar-people'><span>People</span></a></li>
+ </ul>
+
+ <div id='sidebar-tags'>
+  <?= $this->render('index/sidebar-tags.phtml') ?>
+ </div>
+ <div id='sidebar-people'>
+  <?= $this->render('index/sidebar-people.phtml') ?>
+ </div>
+</div>
+ -->

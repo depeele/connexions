@@ -173,7 +173,7 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
      */
     public function setNamespace($namespace)
     {
-        // /*
+        /*
         Connexions::log("Connexions_View_Helper_HtmlUsers::"
                             .   "setNamespace( {$namespace} )");
         // */
@@ -567,10 +567,9 @@ function init_UsersList(namespace)
         }
 
         /*
-        Connexions::log(
-            sprintf("HtmlUsers::_groupValue(%s, %s:%s) == [ %s ]",
-                    $groupBy, $orig, gettype($orig),
-                    $value));
+        Connexions::log("HtmlUsers::_groupValue(%s, %s:%s) == [ %s ]",
+                        $groupBy, $orig, gettype($orig),
+                        $value);
         // */
 
         return $value;

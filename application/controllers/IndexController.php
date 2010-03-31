@@ -13,6 +13,8 @@
 
 class IndexController extends Zend_Controller_Action
 {
+    protected   $_request   = null;
+    protected   $_url       = null;
     protected   $_viewer    = null;
     protected   $_owner     = null;
     protected   $_tagInfo   = null;
@@ -40,6 +42,10 @@ class IndexController extends Zend_Controller_Action
         $cs = $this->_helper->contextSwitch();
         $cs->initContext();
 
+        $this->_request =& $this->getRequest();
+        $this->_url     = $this->_request->getBasePath()
+                        . $this->_request->getPathInfo();
+
         /*
         $cs = $this->getHelper('contextSwitch');
         $cs->addActionContext('index', array('partial', 'json', 'rss', 'atom'))
@@ -49,7 +55,7 @@ class IndexController extends Zend_Controller_Action
 
     public function indexAction()
     {
-        $request       =& $this->getRequest();
+        $request       =& $this->_request;
 
         $this->_owner  = $request->getParam('owner',     null);
         $reqTags       = $request->getParam('tags',      null);
@@ -135,15 +141,20 @@ class IndexController extends Zend_Controller_Action
         $this->_userItems = new Model_UserItemSet($this->_tagInfo->validIds,
                                                   $ownerIds);
 
+        Connexions::log('IndexController: url[ %s ]',
+                        $this->_url);
 
         // Set the view variables required for all views/layouts.
+        $this->view->url     = $this->_url;
         $this->view->owner   = $this->_owner;
         $this->view->viewer  = $this->_viewer;
         $this->view->tagInfo = $this->_tagInfo;
 
+        /*
         Connexions_Profile::checkpoint('Connexions',
                                        'IndexController::indexAction: '
                                        . 'User Item Set retrieved');
+        // */
 
         // Handle this request based on the current context / format
         $this->_handleFormat();
@@ -161,13 +172,12 @@ class IndexController extends Zend_Controller_Action
             $owner = substr($method, 0, -6);
 
             /*
-            $request = $this->getRequest();
-
-            Connexions::log("IndexController::__call({$method}): "
-                                           . "owner[ {$owner} ], "
-                                           . "parameters[ "
-                                           .    $request->getParam('tags','')
-                                           .        " ]");
+            Connexions::log("IndexController::__call(%s): "
+                            .   'owner[ %s ], '
+                            .   'tags[ %s ]',
+                            $method,
+                            $owner,
+                            $this->_request->getParam('tags', '') );
             // */
 
             return $this->_forward('index', 'index', null,
@@ -192,16 +202,17 @@ class IndexController extends Zend_Controller_Action
      */
     protected function _handleFormat()
     {
-        $request =& $this->getRequest();
-
-        $this->view->format  = $this->_helper
+        $request            =& $this->_request;
+        $this->view->format =  $this->_helper
                                         ->contextSwitch()
                                             ->getCurrentContext();
         if (empty($this->view->format))
             $this->view->format = $request->getParam('format', 'html');
 
+        /*
         Connexions::log("IndexController::_handleFormat(): "
                         . "format[ {$this->view->format} ]");
+        // */
 
         switch ($this->view->format)
         {
@@ -209,12 +220,14 @@ class IndexController extends Zend_Controller_Action
             // Render just PART of the page
             $this->_helper->layout->setLayout('partial');
 
-            $part = $request->getParam('part', 'content');
-            switch ($part)
+            $parts = preg_split('/\s*[\.:\-]\s*/',
+                                $request->getParam('part', 'content'));
+            switch ($parts[0])
             {
             case 'sidebar':
-                $this->_htmlSidebar(true);
-                $this->render('sidebar');
+                $this->_htmlSidebar(false, (count($parts) > 1
+                                                ? $parts[1]
+                                                : null));
                 break;
 
             case 'content':
@@ -250,10 +263,12 @@ class IndexController extends Zend_Controller_Action
 
     protected function _createPaginator($req, $namespace = '')
     {
+        /*
         Connexions_Profile::checkpoint('Connexions',
                                        'IndexController::_createPaginator: '
                                        . '%s: begin',
                                        $namespace);
+        // */
 
         /* Retrieve any sort and paging parameters from the RPC request,
          * falling back to helper-controlled defaults.
@@ -279,18 +294,18 @@ class IndexController extends Zend_Controller_Action
                                                   $this->_page,
                                                   $this->_perPage);
 
+        /*
         Connexions_Profile::checkpoint('Connexions',
                                        'IndexController::_createPaginator: '
                                        . '%s: page %d, perPage %d: end',
                                        $namespace,
                                        $this->_page, $this->_perPage);
+        // */
     }
 
     protected function _jsonContent()
     {
-        $request =& $this->getRequest();
-
-        $rpc = new Connexions_JsonRpc($request, 'get');
+        $rpc = new Connexions_JsonRpc($this->_request, 'get');
         $this->view->rpc = $rpc;
 
         if (! $rpc->isValid())
@@ -298,14 +313,16 @@ class IndexController extends Zend_Controller_Action
 
         $method = strtolower($rpc->getMethod());
 
+        /*
         Connexions_Profile::checkpoint('Connexions',
                                        'IndexController::_jsonContent: '
                                        . "method[ {$method} ]");
+        // */
 
         switch ($method)
         {
         case 'get':
-            $this->_createPaginator($rpc);  //->getRequest());
+            $this->_createPaginator($rpc);
 
             $items = array();
             foreach ($this->_paginator as $item)
@@ -356,10 +373,9 @@ class IndexController extends Zend_Controller_Action
 
     protected function _htmlContent()
     {
-        $request =& $this->getRequest();
+        $request =& $this->_request;
 
-        /********************************************************************
-         * Prepare for rendering the main view.
+        /* Prepare for rendering the main view.
          *
          * Notify the HtmlUserItems View Helper (used to render the main view)
          * of any incoming settings, allowing it establish any required
@@ -378,8 +394,6 @@ class IndexController extends Zend_Controller_Action
         /*
         Connexions::log('IndexController::'
                             . 'prefix [ '. $prefix .' ], '
-                            //. 'params [ '
-                            //.   print_r($request->getParams(), true) ." ],\n"
                             . "    PerPage        [ {$this->_perPage} ],\n"
                             . "    Page           [ {$this->_page} ],\n"
                             . "    SortBy         [ {$this->_sortBy} ],\n"
@@ -402,9 +416,11 @@ class IndexController extends Zend_Controller_Action
         else
             $uiHelper->setStyle($itemsStyle);
 
+        /*
         Connexions_Profile::checkpoint('Connexions',
                                        'IndexController::_htmlContent: '
                                        . 'HtmlUserItems helper initialized');
+        // */
 
         /**************************************************/
 
@@ -446,9 +462,11 @@ class IndexController extends Zend_Controller_Action
                     ->setPath( $scopePath )
                     ->setAutoCompleteUrl( $scopeCbUrl );
 
+        /*
         Connexions_Profile::checkpoint('Connexions',
                                        'IndexController::_htmlContent: '
                                        . 'HtmlItemScope Helper initialized');
+        // */
 
 
         // Additional view variables for the HTML view.
@@ -457,15 +475,58 @@ class IndexController extends Zend_Controller_Action
         /* The default view script (views/scripts/index/index.phtml) will
          * render this main view
          */
+        /*
         Connexions_Profile::checkpoint('Connexions',
                                        'IndexController::_htmlContent: '
                                        . 'view initialized and '
                                        . 'ready to render');
+        // */
     }
 
-    protected function _htmlSidebar($immediate = false)
+    protected function _htmlSidebar($usePlaceholder = true,
+                                    $part           = null)
     {
-        $request =& $this->getRequest();
+        if (($part === null) || ($part === 'tags'))
+        {
+            $this->_htmlSidebar_prepareTags();
+        }
+
+        switch ($part)
+        {
+        case 'tags':
+            $this->render('sidebar-tags');
+            break;
+
+        case 'people':
+            $this->render('sidebar-people');
+            break;
+
+        default:
+            // Render the entire sidebar
+            if ($usePlaceholder === true)
+            {
+                // Render the sidebar into the 'right' placeholder
+                $this->view->renderToPlaceholder('index/sidebar.phtml',
+                                                 'right');
+
+                /*
+                Connexions_Profile::checkpoint('Connexions',
+                                               'IndexController::_htmlSidebar: '
+                                               . 'rendered to placeholder');
+                // */
+            }
+            else
+            {
+                    $this->render('sidebar');
+            }
+            break;
+        }
+
+    }
+
+    protected function _htmlSidebar_prepareTags()
+    {
+        $request =& $this->_request;
 
         /* Create the tagSet that will be presented in the side-bar:
          *      All tags used by all users/items contained in the current
@@ -480,8 +541,7 @@ class IndexController extends Zend_Controller_Action
             $tagSet->withAnyUser();
 
 
-        /********************************************************************
-         * Prepare for rendering the right column.
+        /* Prepare to render the tags in the sidebar.
          *
          * Notify the HtmlItemCloud View Helper
          * (used to render the right column) of any incoming settings, allowing
@@ -495,18 +555,6 @@ class IndexController extends Zend_Controller_Action
         $tagsSortBy         = $request->getParam($prefix."SortBy",      'tag');
         $tagsSortOrder      = $request->getParam($prefix."SortOrder",   null);
         $tagsStyle          = $request->getParam($prefix."OptionGroup", null);
-
-        /*
-        Connexions::log('IndexController::'
-                            . "right-column prefix [ {$prefix} ],\n"
-                            . "    PerPage        [ {$tagsPerPage} ],\n"
-                            . "    Page           [ {$tagsPage} ],\n"
-                            . "    HighlightCount [ {$tagsHighlightCount} ],\n"
-                            . "    SortBy         [ {$tagsSortBy} ],\n"
-                            . "    SortOrder      [ {$tagsSortOrder} ],\n"
-                            . "    Style          [ {$tagsStyle} ]");
-        // */
-
 
         // Initialize the Connexions_View_Helper_HtmlItemCloud helper...
         $cloudHelper = $this->view->htmlItemCloud();
@@ -523,21 +571,5 @@ class IndexController extends Zend_Controller_Action
                     ->setItemBaseUrl( ($this->_owner !== '*'
                                         ? null
                                         : '/tagged'));
-
-
-        Connexions_Profile::checkpoint('Connexions',
-                                       'IndexController::_htmlSidebar: '
-                                       . 'view initialized and '
-                                       . 'ready to render');
-
-        if (! $immediate)
-        {
-            // Render the sidebar into the 'right' placeholder
-            $this->view->renderToPlaceholder('index/sidebar.phtml', 'right');
-
-            Connexions_Profile::checkpoint('Connexions',
-                                           'IndexController::_htmlSidebar: '
-                                           . 'rendered to placeholder');
-        }
     }
 }

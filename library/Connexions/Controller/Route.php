@@ -268,6 +268,12 @@ class Connexions_Controller_Route
                              $encode    = false)
     {
         /*
+        Connexions::log("Connexions_Controller_Route::assemble: "
+                        . "data[ %s ]",
+                        preg_replace("/\\n\s*". "/s", ' ',
+                                      var_export($data, true)));
+        // */
+        /*
         echo "\n<!-- Connexions_Controller_Route:: assemble:\n";
         echo " data: "; print_r($data);
         echo " currentRoute: "; print_r($this->_currentRoute);
