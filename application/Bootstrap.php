@@ -475,10 +475,18 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             'rss'       => array(
                 'suffix'    => 'rss',
                 'headers'   => array('Content-Type'  => 'application/xml'),
+                'callbacks' => array(
+                    'init'  => array($this, 'feed_init'),
+                    'post'  => array($this, 'feed_post'),
+                ),
             ),
             'atom'      => array(
                 'suffix'    => 'atom',
                 'headers'   => array('Content-Type'  => 'application/xml'),
+                'callbacks' => array(
+                    'init'  => array($this, 'feed_init'),
+                    'post'  => array($this, 'feed_post'),
+                ),
             ),
         ));
 
@@ -564,16 +572,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
      *
      */
 
-    public function rss_post()
-    {
-        $viewRenderer =
-          Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer');
-
-        $view = $viewRenderer->view;
-
-        Connexions::log("rss_post: format[ {$view->format} ]...");
-    }
-
     public function jsonp_init()
     {
         $viewRenderer =
@@ -582,7 +580,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $view = $viewRenderer->view;
         if ($view instanceof Zend_View_Interface)
         {
-            // Disable rendering -- we'll handle it in jsonp_post()
+            /* Disable rendering -- we'll handle it directly, performing the
+             *                      final output in jsonp_post()
+             */
+            Connexions::log('Bootstrap::jsonp_init: Disable auto rendering');
+
             $viewRenderer->setNoRender(true);
         }
     }
@@ -629,6 +631,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         else
         {
             // Grab JSONP information from the view.
+            $json = json_encode($view->data);
         }
 
         if ($front instanceof Zend_Controller_Front)
@@ -637,10 +640,14 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
              * to the remove caller.
              */
             $front->getResponse()->setBody($json);
+            Connexions::log('Bootstrap::jsonp_post: '
+                            .   'place JSON in response body');
         }
         else
         {
             // Not sure that this can happen...  if it does, punt.
+            Connexions::log('Bootstrap::jsonp_post: '
+                            .   'echo JSON directly');
             echo $json;
         }
 
@@ -648,4 +655,59 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
                                  'JSON rendering COMPLETE');
     }
 
+    /*******************************************
+     * Feed Processing
+     *
+     */
+
+    public function feed_init()
+    {
+        $viewRenderer =
+          Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer');
+
+        $view = $viewRenderer->view;
+        if ($view instanceof Zend_View_Interface)
+        {
+            /* Disable rendering -- we'll handle it directly, performing the
+             *                      final output in feed_post()
+             */
+            Connexions::log('Bootstrap::feed_init: Disable auto rendering');
+
+            $viewRenderer->setNoRender(true);
+        }
+    }
+
+    /** @brief  Perform post-processing of a Feed request.
+     *
+     *  Feed handling makes use of the following view variables:
+     *      feed        SHOULD be a Zend_Feed instance containing the feed data
+     *                  to be returned;
+     */
+    public function feed_post()
+    {
+        $viewRenderer =
+          Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer');
+
+        $view = $viewRenderer->view;
+        if ((! $view instanceof Zend_View_Interface) ||
+            (! isset($view->feed)) ||
+            (! $view->feed instanceof Zend_Feed_Abstract))
+        {
+            // Invalid state for JSONP.  Re-enable view rendering and return.
+            Connexions::log("feed_post: Missing feed information.  "
+                            . "feed is "
+                            .   (! isset($view->feed)
+                                    ? 'MISSING'
+                                    : get_class($view->feed))
+                            . ". Fallback to normal rendering...");
+
+            $viewRenderer->setNoRender(false);
+            return;
+        }
+
+        $view->feed->send();
+
+        Connexions_Profile::stop('Connexions',
+                                 'Feed rendering COMPLETE');
+    }
 }

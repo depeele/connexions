@@ -341,7 +341,7 @@ class InboxController extends Zend_Controller_Action
                     ->setItemSetInfo($this->_tagInfo)
                     ->setItemBaseUrl( ($this->_owner !== '*'
                                         ? null
-                                        : '/tagged'))
+                                        : '/bookmarks'))
                     // Do NOT show the 'for:<user>' tag
                     ->addHiddenItem($this->_forTag->tag);  //$forTagStr);
 

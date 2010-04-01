@@ -1,35 +1,21 @@
 <?php
 /** @file
  *
- *  View script for IndexController::index to render an RSS version of the main
- *  content.
- *
- *  The Connexions_View_Helper_FeedUserItems helper MUST be initialized
- *  before this view is rendered.
+ *  View script for IndexController::index to render an RSS version of the
+ *  main content.
  *
  *  Incoming members:
- *      owner               The owner of the current item set -- either a
- *                          string or a Model_User instance;
- *      viewer              The Model_User instance representing the current
- *                          viewer;
- *      tagInfo             A Connexions_Set_Info instance containing
- *                          information about the requested tags;
+ *      paginator           The Zend_Paginator representing the items to be
+ *                          presented.
  *
- *      userItems           A Model_UserItemSet contaning all user items;
- *
- *      perPage             The number of items per page;
- *      page                The page to present;
+ *  Sets 'feed' in the view for Bootstrap::feed_post to use in final rendering.
  */
 Connexions_Profile::checkpoint('Connexions',
                                'IndexView RSS rendering beginning');
 
-$baseUrl = $this->baseUrl('/'); //Connexions::url('/');
+// Use the application/views/helpers/FeedUserItems.php view helper...
+$this->feed = $this->feedUserItems($this->paginator, 'Rss');
 
-if ($this->owner !== '*')
-    $this->headTitle($this->owner ."'s Bookmarks");
-else
-    $this->headTitle('Bookmarks');
-
-$this->feedUserItems($this->paginator, 'Rss');
-
-Connexions_Profile::stop('Connexions', 'IndexView RSS rendering COMPLETE');
+Connexions_Profile::checkpoint('Connexions',
+                               'IndexView RSS rendering COMPLETE, '
+                               . 'feed is class '. get_class($this->feed));

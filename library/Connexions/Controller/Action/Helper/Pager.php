@@ -87,6 +87,10 @@ class Connexions_Controller_Action_Helper_Pager
         $pager = new Zend_Paginator( $data );
         $pager->setPageRange(self::$_defaultPageRange);
 
+        Connexions::log("Connexions_Controller_Action_Helper_Pager:: "
+                        . "perPage[ %d ], curPage[ %d ]",
+                        $perPage, $curPage);
+
         if ($perPage > 0)
             $pager->setItemCountPerPage($perPage);
 

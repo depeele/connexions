@@ -36,15 +36,13 @@ class IndexController extends Zend_Controller_Action
         /* Initialize action controller here */
         $this->_viewer  =& Zend_Registry::get('user');
 
-        $this->_forward('index');
+        //$this->_forward('index');
 
         // Initialize context switching
         $cs = $this->_helper->contextSwitch();
         $cs->initContext();
 
         $this->_request =& $this->getRequest();
-        $this->_url     = $this->_request->getBasePath()
-                        . $this->_request->getPathInfo();
 
         /*
         $cs = $this->getHelper('contextSwitch');
@@ -53,144 +51,198 @@ class IndexController extends Zend_Controller_Action
         */
     }
 
+    /** @brief  Index/Get/View action.
+     *
+     *  Retrieve a set of userItems / Bookmarks based upon the requested
+     *  'owner' and/or 'tags'.
+     *
+     *  Once retrieved, perform further setup based upon the current
+     *  context/format.
+     */
     public function indexAction()
     {
+        Connexions::log("IndexController::indexAction");
+
         $request       =& $this->_request;
 
-        $this->_owner  = $request->getParam('owner',     null);
-        $reqTags       = $request->getParam('tags',      null);
+        $reqOwner      = $request->getParam('owner',     null);
 
         /* If this is a user/"owned" area (e.g. /<userName> [/ <tags ...>]),
          * verify the validity of the requested user.
          */
-        if ($this->_owner === 'mine')
+        if ($reqOwner === 'mine')
         {
-            // 'mine' == the currently authenticated user
-            $this->_owner =& $this->_viewer;
-            if ( ( ! $this->_owner instanceof Model_User) ||
-                 (! $this->_owner->isAuthenticated()) )
+            // 'mine' == the currently authenticated user (viewer)
+            if ( ( ! $this->_viewer instanceof Model_User) ||
+                 (! $this->_viewer->isAuthenticated()) )
             {
                 // Unauthenticated user -- Redirect to signIn
                 return $this->_helper->redirector('signIn','auth');
             }
+
+            // Redirect to the viewer's bookmarks
+            return $this->_helper->redirector($this->_viewer->name);
         }
 
+        /***************************************************************
+         * Process the requested 'owner' and 'tags'
+         *
+         */
+        $reqTags  = $request->getParam('tags',      null);
+
         $ownerIds = null;
-        if (! $this->_owner instanceof Model_User)
+        $tagIds   = null;
+        if ($reqOwner === '*')
         {
-            if (@empty($this->_owner))
-                $this->_owner = '*';
-            else if ($this->_owner !== '*')
+            $this->_owner = $reqOwner;
+        }
+        else
+        {
+            // Resolve the incoming 'owner' name.
+            $user = $this->_resolveUserName($reqOwner);
+
+            if ($user !== null) // ($user instanceof Model_User)
             {
-                // Is this a valid user?
-                $ownerInst = Model_User::find(array('name' => $this->_owner));
-                if ($ownerInst->isBacked())
-                {
-                    /*
-                    Connexions::log("IndexController:: Valid ".
-                                            "owner[ {$ownerInst->name} ]");
-                    // */
-
-                    $this->_owner =& $ownerInst;
-                    $ownerIds     =  array($this->_owner->userId);
-                }
-                else
-                {
-                    /* NOT a valid user.
-                     *
-                     * If 'tags' wasn't spepcified, use 'owner' as 'tags'
-                     */
-                    if (empty($reqTags))
-                    {
-                        /*
-                        Connexions::log("IndexController:: "
-                                            . "Unknown User and no tags; "
-                                            . "use owner as tags "
-                                            . "[ {$this->_owner} ] "
-                                            . "and set owner to '*'");
-                        // */
-                        $reqTags      = $this->_owner;
-                        $this->_owner = '*';
-                    }
-                    else
-                    {
-                        // Invalid user!
-                        /*
-                        Connexions::log("IndexController:: "
-                                            . "Unknown User with tags; "
-                                            . "set owner to '*'");
-                        // */
-
-                        $this->view->error = "Unknown user [ "
-                                           .        $this->_owner ." ].";
-                        $this->_owner      = '*';
-                    }
-                }
+                // A valid user
+                $this->_owner = $user;
+                $ownerIds     = array($this->_owner->userId);
+            }
+            // 'owner' is NOT a valid user.
+            else if (empty($reqTags))   // If 'tags' are empty, user 'owner'
+            {
+                /* No 'tags' were specified.  Use the owner as 'tags' and set
+                 * 'owner' to '*'
+                 */
+                $this->_owner = '*';
+                $reqTags      = $reqOwner;
+            }
+            else
+            {
+                /* 'tags' have already been specified.  Set 'owner' to '*' and
+                 * report that the provided 'owner' is NOT a valid user.
+                 */
+                $this->_owner      = '*';
+                $this->view->error = "Unknown user [ {$reqOwner} ]";
             }
         }
 
         // Parse the incoming request tags
         $this->_tagInfo = new Connexions_Set_Info($reqTags, 'Model_Tag');
         if ($this->_tagInfo->hasInvalidItems())
-            $this->view->error =
+        {
+            if (! empty($this->view->error))
+                $this->view->error .= '<br />';
+            $this->view->error .=
                         "Invalid tag(s) [ {$this->_tagInfo->invalidItems} ]";
+        }
+        else
+        {
+            $tagIds = $this->_tagInfo->validIds;
+        }
 
-        /* Create the userItem set, scoped by any incoming valid tags and
-         * possibly the owner of the area.
+        /***************************************************************
+         * We now have a valid 'owner' (ownerIds) and 'tags' ($tagIds)
+         *
+         * Adjust the URL to reflect the validated 'owner' and 'tags'
          */
-        $this->_userItems = new Model_UserItemSet($this->_tagInfo->validIds,
-                                                  $ownerIds);
+        $this->_url = $request->getBasePath()
+                    . ($this->_owner instanceof Model_User
+                        ? '/'. $this->_owner->name
+                        : '')
+                    . ($this->_tagInfo->hasValidItems()
+                        ? '/'. $this->_tagInfo->validItems
+                        : '')
+                    . '/';
 
-        Connexions::log('IndexController: url[ %s ]',
-                        $this->_url);
+        /* Create the userItem set, scoped by any valid tags and possibly the
+         * owner of the area.
+         */
+        $this->_userItems = new Model_UserItemSet($tagIds, $ownerIds);
+
 
         // Set the view variables required for all views/layouts.
-        $this->view->url     = $this->_url;
-        $this->view->owner   = $this->_owner;
-        $this->view->viewer  = $this->_viewer;
-        $this->view->tagInfo = $this->_tagInfo;
+        if ($this->_owner !== '*')
+            $this->view->headTitle($this->owner ."'s Bookmarks");
+        else
+            $this->view->headTitle('Bookmarks');
 
-        /*
-        Connexions_Profile::checkpoint('Connexions',
-                                       'IndexController::indexAction: '
-                                       . 'User Item Set retrieved');
-        // */
+        $this->view->url       = $this->_url;
+        $this->view->owner     = $this->_owner;
+        $this->view->viewer    = $this->_viewer;
+        $this->view->tagInfo   = $this->_tagInfo;
+        $this->view->userItems = $this->_userItems;
 
         // Handle this request based on the current context / format
         $this->_handleFormat();
     }
 
-    /** @brief Redirect all other actions to 'index'
-     *  @param  method      The target method.
-     *  @param  args        Incoming arguments.
-     *
-     */
-    public function __call($method, $args)
+    public function postAction()
     {
-        if (substr($method, -6) == 'Action')
+        Connexions::log("IndexController::postAction");
+
+        if ( (! $this->_viewer instanceof Model_User) ||
+             (! $this->_viewer->isAuthenticated()) )
         {
-            $owner = substr($method, 0, -6);
-
-            /*
-            Connexions::log("IndexController::__call(%s): "
-                            .   'owner[ %s ], '
-                            .   'tags[ %s ]',
-                            $method,
-                            $owner,
-                            $this->_request->getParam('tags', '') );
-            // */
-
-            return $this->_forward('index', 'index', null,
-                                   array('owner' => $owner));
+            // Unauthenticated user -- Redirect to signIn
+            return $this->_helper->redirector('signIn','auth');
         }
 
-        throw new Exception('Invalid method "'. $method .'" called', 500);
+        //$this->_helper->layout->setLayout('post');
+
+        $request  =& $this->_request;
+        $postInfo = array(
+            'name'          => $request->getParam('name',        null),
+            'url'           => $request->getParam('url',         null),
+            'description'   => $request->getParam('description', null),
+            'tags'          => $request->getParam('tags',        null),
+            'rating'        => $request->getParam('rating',      null),
+            'isFavorite'    => $request->getParam('isFavorite',  false),
+            'isPrivate'     => $request->getParam('isPrivate',   false)
+        );
+
+        $this->view->viewer   = $viewer;
+        $this->view->postInfo = $postInfo;
     }
 
     /*************************************************************************
      * Protected Helpers
      *
      */
+
+    /** @brief  Given a string that is supposed to represent a user, see if it
+     *          represents a valid user.
+     *  @param  name    The user name.
+     *
+     *  @return A Model_User instance matching 'name', null if no match.
+     */
+    protected function _resolveUserName($name)
+    {
+        $res = null;
+
+        if ((! @empty($name)) && ($name !== '*'))
+        {
+            // Does the name match an existing user?
+            if ($name === $this->_viewer->name)
+            {
+                // 'name' matches the current viewer...
+                $ownerInst =& $this->_viewer;
+            }
+            else
+            {
+                $ownerInst = Model_User::find(array('name' => $name));
+            }
+
+            // Have we located a valid, backed user?
+            if ($ownerInst->isBacked())
+            {
+                // YES -- we've located an existing user.
+
+                $res = $ownerInst;
+            }
+        }
+
+        return $res;
+    }
 
     /** @brief  Determine the proper rendering format.  The only ones we deal
      *          with directly are:
@@ -202,26 +254,23 @@ class IndexController extends Zend_Controller_Action
      */
     protected function _handleFormat()
     {
-        $request            =& $this->_request;
-        $this->view->format =  $this->_helper
-                                        ->contextSwitch()
-                                            ->getCurrentContext();
-        if (empty($this->view->format))
-            $this->view->format = $request->getParam('format', 'html');
+        $format =  $this->_helper->contextSwitch()->getCurrentContext();
+        if (empty($format))
+            $format = $this->_request->getParam('format', 'html');
 
         /*
         Connexions::log("IndexController::_handleFormat(): "
-                        . "format[ {$this->view->format} ]");
+                        . "format[ {$format} ]");
         // */
 
-        switch ($this->view->format)
+        switch ($format)
         {
         case 'partial':
             // Render just PART of the page
             $this->_helper->layout->setLayout('partial');
 
             $parts = preg_split('/\s*[\.:\-]\s*/',
-                                $request->getParam('part', 'content'));
+                                $this->_request->getParam('part', 'content'));
             switch ($parts[0])
             {
             case 'sidebar':
@@ -247,11 +296,14 @@ class IndexController extends Zend_Controller_Action
             $this->_jsonContent();
             break;
 
-        default:
-            $this->_createPaginator($request);
+        case 'rss':
+        case 'atom':
+            $this->_createPaginator($this->_request);
 
             // Additional view variables for the alternate views.
             $this->view->paginator = $this->_paginator;
+            $this->render('index');
+
             break;
         }
     }
@@ -261,6 +313,21 @@ class IndexController extends Zend_Controller_Action
      *
      */
 
+    /** @brief  Create a paginator ($this->_paginator) for the current
+     *          userItem / Bookmark set.
+     *  @param  req         The request to retrieve parameters from.
+     *  @param  namespace   The namespace.
+     *
+     *  This will ALSO adjust the sort order for _userItems and fill in the
+     *  following members:
+     *      _paginator
+     *      _page
+     *      _perPage
+     *      _sortBy
+     *      _sortOrder
+     *
+     *  @return void
+     */
     protected function _createPaginator($req, $namespace = '')
     {
         /*
@@ -294,12 +361,16 @@ class IndexController extends Zend_Controller_Action
                                                   $this->_page,
                                                   $this->_perPage);
 
-        /*
+        // /*
         Connexions_Profile::checkpoint('Connexions',
                                        'IndexController::_createPaginator: '
-                                       . '%s: page %d, perPage %d: end',
+                                       . '%s: page %d, perPage %d, '
+                                       . '%d pages, %d/%d items: end',
                                        $namespace,
-                                       $this->_page, $this->_perPage);
+                                       $this->_page, $this->_perPage,
+                                       count($this->_paginator),
+                                       $this->_paginator->getCurrentItemCount(),
+                                       count($this->_userItems));
         // */
     }
 
@@ -324,13 +395,9 @@ class IndexController extends Zend_Controller_Action
         case 'get':
             $this->_createPaginator($rpc);
 
-            $items = array();
-            foreach ($this->_paginator as $item)
-            {
-                array_push($items, $item->toArray(true));
-            }
+            $this->view->paginator = $this->_paginator;
 
-            $rpc->setResult( $items );
+            $this->render('index');
             break;
 
         case 'autocomplete':
@@ -434,7 +501,8 @@ class IndexController extends Zend_Controller_Action
             // Multiple / all users
             $uiHelper->setMultipleUsers();
 
-            $scopePath = array('Bookmarks' => $this->view->baseUrl('/tagged'));
+            $scopePath = array('Bookmarks' =>
+                                    $this->view->baseUrl('/bookmarks'));
         }
         else
         {
@@ -570,6 +638,6 @@ class IndexController extends Zend_Controller_Action
                     ->setItemSetInfo($this->_tagInfo)
                     ->setItemBaseUrl( ($this->_owner !== '*'
                                         ? null
-                                        : '/tagged'));
+                                        : '/bookmarks'));
     }
 }
