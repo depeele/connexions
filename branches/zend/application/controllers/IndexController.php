@@ -13,6 +13,12 @@
 
 class IndexController extends Zend_Controller_Action
 {
+    const   CRUD_SUCCESS            = 0;
+    const   CRUD_UNAUTHENTICATED    = 1;
+    const   CRUD_INVALID_DATA       = 2;
+    const   CRUD_BACKEND_FAILURE    = 3;
+
+
     protected   $_request   = null;
     protected   $_url       = null;
     protected   $_viewer    = null;
@@ -209,6 +215,75 @@ class IndexController extends Zend_Controller_Action
      *
      */
 
+    /** @brief  Given an incoming request with userItem / Bookmark creation
+     *          data, validate the request and, if valid, attempt to create a
+     *          new userItem / Bookmark.
+     *  @param  request     The incoming request.
+     *
+     *  On failure/error, $this->view->error will be set to indicate the type
+     *  of error.
+     *
+     *  @return A status code (self::CRUD_*).
+     */
+    protected function _create($request)
+    {
+        Connexions::log("IndexController::_create");
+
+        if ( (! $this->_viewer instanceof Model_User) ||
+             (! $this->_viewer->isAuthenticated()) )
+        {
+            // Unauthenticated user
+            $this->view->error = 'Unauthenticated';
+            return self::CRUD_UNAUTHENTICATED;
+        }
+
+        //$this->_helper->layout->setLayout('post');
+
+        $itemInfo = array(
+            'name'          => $request->getParam('name',        null),
+            'url'           => $request->getParam('url',         null),
+            'description'   => $request->getParam('description', null),
+            'tags'          => $request->getParam('tags',        null),
+            'rating'        => $request->getParam('rating',      null),
+            'isFavorite'    => $request->getParam('isFavorite',  false),
+            'isPrivate'     => $request->getParam('isPrivate',   false)
+        );
+
+        // Validate and, if valid, attempt to create this new item.
+        if (empty($itemInfo['name']))
+        {
+            $this->view->error = 'Name is required';
+            return self::CRUD_INVALID_DATA;
+        }
+        if (empty($itemInfo['url']))
+        {
+            $this->view->error = 'URL is required';
+            return self::CRUD_INVALID_DATA;
+        }
+        if (empty($itemInfo['tags']))
+        {
+            $this->view->error = 'Tags are required';
+            return self::CRUD_INVALID_DATA;
+        }
+
+        /* VALID -- attempt to create the user item.
+         *
+         *  1) See if an item exists for the given URL;
+         *     a) NO  - create one;
+         *     b) YES - use it;
+         *  2) Fill in 'userId' and 'itemId' and create the item;
+         *  3) For each tag:
+         *     a) See if a matching Tag exists;
+         *        i)  NO  - create one;
+         *        ii) YES - use it;
+         *     b) Fill in required information for new join tables and create
+         *        entries:
+         *          userTag
+         *          itemTag
+         *          userTagItem
+         */
+    }
+
     /** @brief  Given a string that is supposed to represent a user, see if it
      *          represents a valid user.
      *  @param  name    The user name.
@@ -266,7 +341,9 @@ class IndexController extends Zend_Controller_Action
         switch ($format)
         {
         case 'partial':
-            // Render just PART of the page
+            /* Render just PART of the page and MAY not require the userItem
+             * paginator.
+             */
             $this->_helper->layout->setLayout('partial');
 
             $parts = preg_split('/\s*[\.:\-]\s*/',
@@ -374,9 +451,15 @@ class IndexController extends Zend_Controller_Action
         // */
     }
 
+    /** @brief  Generate a JsonRPC from the incoming request, using a default
+     *          method of 'read' and then perform any requested action.
+     *
+     *  This will populate $this->view->rpc for use in Bootstrap::jsonp_post()
+     *  for final output.
+     */
     protected function _jsonContent()
     {
-        $rpc = new Connexions_JsonRpc($this->_request, 'get');
+        $rpc = new Connexions_JsonRpc($this->_request, 'read');
         $this->view->rpc = $rpc;
 
         if (! $rpc->isValid())
@@ -392,12 +475,21 @@ class IndexController extends Zend_Controller_Action
 
         switch ($method)
         {
-        case 'get':
+        case 'create':
+            break;
+
+        case 'read':
             $this->_createPaginator($rpc);
 
             $this->view->paginator = $this->_paginator;
 
             $this->render('index');
+            break;
+
+        case 'update':
+            break;
+
+        case 'delete':
             break;
 
         case 'autocomplete':
