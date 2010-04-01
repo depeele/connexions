@@ -2,16 +2,13 @@
 /** @file
  *
  *  A connexions router to handle the strange routing rules:
- *      /                                       All bookmarks
+ *      /                                       === '/bookmarks'
  *      /:owner          [/:tags]               Bookmarks of the given owner,
  *                                              possibly limited by a set of
  *                                              tags
- *      /tagged          [/:tags]               Bookmarks of any owner,
+ *      /bookmarks       [/:tags]               Bookmarks of any owner,
  *                                              possibly limited by a set of
  *                                              tags
- *      /scopeAutoComplete                      Auto-completion callback for
- *                                              scope entry related to user 
- *                                              item presentation.
  *
  *      /tags            [/:owners]             Tags, possibly limited by a set
  *                                              of owner(s).
@@ -50,11 +47,10 @@ class Connexions_Controller_Route
         // top/controller         sub-levels/named parameters
         '/'             => array(':controller'  => 'index',
                                  ':action'      => 'index',
-                                 'scopeAutoComplete'    => false,
                                  ':owner'       => array(
                                     ':tags'    => false)
                            ),
-        'tagged'        => array(':controller'  => 'index',
+        'bookmarks'     => array(':controller'  => 'index',
                                  ':action'      => 'index',
                                  ':owner'       => '*',
                                  ':tags'        => false
@@ -89,7 +85,11 @@ class Connexions_Controller_Route
                                     )
                            ),
   
-        'post'          => array(':params'  => false),
+        //'post'          => array(':params'  => false),
+        'post'          => array(':controller'  => 'index',
+                                 ':action'      => 'post',
+                                 ':params'      => false,
+                           ),
   
         'search'        => array(':context' => array(
                                     ':terms'   => false)
@@ -273,11 +273,6 @@ class Connexions_Controller_Route
                         preg_replace("/\\n\s*". "/s", ' ',
                                       var_export($data, true)));
         // */
-        /*
-        echo "\n<!-- Connexions_Controller_Route:: assemble:\n";
-        echo " data: "; print_r($data);
-        echo " currentRoute: "; print_r($this->_currentRoute);
-        // */
 
         $url = '';
 
@@ -303,11 +298,14 @@ class Connexions_Controller_Route
                 $url .= $val .'/';
             }
         }
-        $url = rtrim($url, '/');
+        $url = trim($url, '/');
 
         /*
-        printf (" url[ %s ]\n", $url);
-        echo "\n -->\n";
+        Connexions::log("Connexions_Controller_Route::assemble: "
+                        . "url[ %s ], data[ %s ]",
+                        $url,
+                        preg_replace("/\\n\s*". "/s", ' ',
+                                      var_export($data, true)));
         // */
 
         return $url;

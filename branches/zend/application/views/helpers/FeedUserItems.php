@@ -41,26 +41,6 @@ class Connexions_View_Helper_FeedUserItems
     public function render(Zend_Paginator   $paginator,
                                             $type)
     {
-        $feed = $this->_genFeed($paginator, $type);
-        $feed->send();
-    }
-
-    /**************************************************************************
-     * Protected helpers
-     *
-     */
-
-    /** @brief  Generate a Zend_Feed version of a paginated set of User Items.
-     *  @param  paginator   The Zend_Paginator representing the items to be
-     *                      presented.
-     *  @param  type        The type of feed to generate
-     *                      ('Atom', 'Rss', 'Pubsubhubbub')
-     *
-     *  @return The Zend_Feed representation of the user items.
-     */
-    protected function _genFeed(Zend_Paginator  $paginator,
-                                                $type)
-    {
         $view     = $this->view;
         $title    = htmlspecialchars_decode(strip_tags($view->headTitle()));
 

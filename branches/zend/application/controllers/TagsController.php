@@ -120,7 +120,7 @@ class TagsController extends Zend_Controller_Action
                     ->setStyle($tagsStyle)
                     ->setItemType(Connexions_View_Helper_HtmlItemCloud::
                                                             ITEM_TYPE_TAG)
-                    ->setItemBaseUrl( '/tagged' )
+                    ->setItemBaseUrl( '/bookmarks' )
                     ->setSortBy($tagsSortBy)
                     ->setSortOrder($tagsSortOrder)
                     ->setPerPage($tagsPerPage)
@@ -208,7 +208,7 @@ class TagsController extends Zend_Controller_Action
                       /*
                       ->setItemBaseUrl( ($owner !== '*'
                                             ? null
-                                            : '/tagged'))
+                                            : '/bookmarks'))
                       */
                       ->setSortBy($usrsSortBy)
                       ->setSortOrder($usrsSortOrder)

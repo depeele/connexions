@@ -283,11 +283,133 @@ class Connexions
     public static function normalizedMd5($str)
     {
         // If this already appears to be an MD5 hash, don't compute it again.
-        if ((strlen($str) !== 32) || (preg_match('/[^0-9a-f]/i', $str)) )
+        $url = self::normalizeUrl($str);
+
+        return md5($url);
+    }
+
+    /** @brief  Normalize a URL.
+     *  @param  url     The url string to normalize.
+     *
+     *  @return The normalized URL string.
+     */
+    public static function normalizeUrl($url)
+    {
+        // decode and lower-case the incoming url
+        $url = rawurldecode($url);
+        $url = urldecode($url);
+        $url = strtolower($url);
+        $url = trim(preg_replace('/\s+/', ' ', $url), ' \t');
+
+        $uri = parse_url( $url );
+
+
+        $scheme = null;
+        $host   = null;
+        $port   = null;
+        $path   = null;
+
+        // Generate a normalized URI: See RFC 3886, section 6
+        foreach ($uri as $part => $val)
         {
-            $str = md5( strtolower(preg_replace('/\s+/', ' ', $str)) );
+            switch ($part)
+            {
+            case 'scheme':
+                // schemes are case-insensitive
+                $scheme = $val;
+
+                if (($scheme === 'mailto') && (@empty($uri['host'])))
+                {
+                    // Use 'localhost' for control
+                    $host = 'localhost';
+                }
+                break;
+
+            case 'host':
+                // hostnames are case-insensitive
+                $host = $val;
+                break;
+
+            case 'port':
+                // ports should be integer
+                $port = (int)$val;
+                break;
+
+            case 'user':
+            case 'pass':
+                // no change
+                break;
+
+            case 'path':
+                // Convert any '\' to '/'
+                $path = str_replace('\\', '/', $val);
+
+                // Collapse and trim white-space
+                $path = trim(preg_replace('/\s+/', ' ', $path));
+
+                $val  = $path;
+                break;
+
+            case 'query':
+                // Collapse and trim white-space
+                $val = trim(preg_replace('/\s+/', ' ', $val));
+
+                // Ensure a normalized order
+                parse_str($val, $query);
+                ksort($query);
+
+                //$val   = http_build_str($query);
+                $val   = http_build_query($query);
+                break;
+
+            case 'fragment':
+                // no change
+                break;
+
+            default:
+                break;
+            }
+
+            $uri[$part] = $val;
         }
 
-        return $str;
+        if ($port !== null)
+        {
+            // Remove default port number for known schemes
+            //      RFC 3986, section 6.2.3
+            if ($scheme === 'mailto')
+                $defPort = 25;
+            else
+                $defPort = getservbyname($scheme, 'tcp');
+
+            if ($port === $defPort)
+            {
+                unset($uri['port']);
+            }
+        }
+
+        // Scheme based normalization
+        //      RFC 3986, section 6.2.3
+        if (! empty($host))
+        {
+            $uri['host'] = $host;
+            if (empty($path))
+                $uri['path'] = '/';
+        }
+        else if (! empty($path))
+        {
+            $uri['path'] = $path;
+        }
+
+        $normUrl = http_build_url($uri);
+
+        if ($scheme === 'mailto')
+        {
+            // Final normalization of 'mailto'.
+            //      Remove 'localhost'
+            $normUrl = preg_replace('#//localhost/#', '', $normUrl);
+        }
+
+        return $normUrl;
     }
 }

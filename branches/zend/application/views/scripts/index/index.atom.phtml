@@ -4,21 +4,17 @@
  *  View script for IndexController::index to render an Atom version of the
  *  main content.
  *
- *  The Connexions_View_Helper_FeedUserItems helper MUST be initialized
- *  before this view is rendered.
- *
  *  Incoming members:
- *      owner               The owner of the current item set -- either a
- *                          string or a Model_User instance;
  *      paginator           The Zend_Paginator representing the items to be
  *                          presented.
+ *
+ *  Sets 'feed' in the view for Bootstrap::feed_post to use in final rendering.
  */
 Connexions_Profile::checkpoint('Connexions',
                                'IndexView Atom rendering beginning');
 
-if ($this->owner !== '*')
-    $this->headTitle($this->owner ."'s Bookmarks");
-else
-    $this->headTitle('Bookmarks');
+// Use the application/views/helpers/FeedUserItems.php view helper...
+$this->feed = $this->feedUserItems($this->paginator, 'Atom');
 
-$this->feedUserItems($this->paginator, 'Atom');
+Connexions_Profile::checkpoint('Connexions',
+                               'IndexView Atom rendering COMPLETE');

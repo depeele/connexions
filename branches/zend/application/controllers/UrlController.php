@@ -159,7 +159,7 @@ class UrlController extends Zend_Controller_Action
             array_push($scopeParts, 'tags='. $this->_tagInfo->validItems);
         }
 
-        $scopeUrl    = $this->view->baseUrl('/tagged');
+        $scopeUrl    = $this->view->baseUrl('/bookmarks');
         $scopeCbUrl  = $this->view->baseUrl('/scopeAutoComplete')
                      . '?'. implode('&', $scopeParts);
 
@@ -259,7 +259,7 @@ class UrlController extends Zend_Controller_Action
                     ->setHighlightCount($tagsHighlightCount)
                     ->setItemSet($tagSet)
                     ->setItemSetInfo($this->_tagInfo);
-                    //->setItemBaseUrl( '/tagged');
+                    //->setItemBaseUrl( '/bookmarks');
 
         // Render the sidebar into the 'right' placeholder
         $this->view->renderToPlaceholder('url/sidebar.phtml', 'right');
