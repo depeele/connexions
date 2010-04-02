@@ -272,31 +272,35 @@ class Connexions
         return $str;
     }
 
-    /** @brief  Given a string, normalize and generate an MD5 hash.
-     *  @param  str     The string to operate on.
-     *
-     *  Normalization involves collapsing all white-space and converting to
-     *  lower-case.
+    /** @brief  Given a URL string, normalize and generate an MD5 hash.
+     *  @param  url     The URL string to operate on.
      *
      *  @return The MD5 hash string.
      */
-    public static function normalizedMd5($str)
+    public static function md5Url($str)
     {
-        // If this already appears to be an MD5 hash, don't compute it again.
-        $url = self::normalizeUrl($str);
+        /* If this already appears to be an MD5 hash (32 hex characters), don't 
+         * compute it again.
+         */
+        if ((strlen($str) === 32) &&
+            (strspn($str, '0123456789abcdef') === 32))
+        {
+            // Appears to ALREADY be an MD5 hash
+            return $str;
+        }
 
-        return md5($url);
+        // Normalize and compute the MD5 hash
+        return md5( self::normalizeUrl($str) );
     }
 
     /** @brief  Normalize a URL.
-     *  @param  url     The url string to normalize.
+     *  @param  url     The URL string to normalize.
      *
      *  @return The normalized URL string.
      */
     public static function normalizeUrl($url)
     {
         // decode and lower-case the incoming url
-        $url = rawurldecode($url);
         $url = urldecode($url);
         $url = strtolower($url);
         $url = trim(preg_replace('/\s+/', ' ', $url), ' \t');
@@ -317,12 +321,6 @@ class Connexions
             case 'scheme':
                 // schemes are case-insensitive
                 $scheme = $val;
-
-                if (($scheme === 'mailto') && (@empty($uri['host'])))
-                {
-                    // Use 'localhost' for control
-                    $host = 'localhost';
-                }
                 break;
 
             case 'host':
@@ -347,7 +345,24 @@ class Connexions
                 // Collapse and trim white-space
                 $path = trim(preg_replace('/\s+/', ' ', $path));
 
-                $val  = $path;
+                /* Make the path absolute, collapsing all '.' and '..' portions 
+                 * of the path.
+                 */
+                $dirs = array();
+                foreach (explode('/', $path) as $dir)
+                {
+                    if ($dir === '.')
+                        continue;
+                    if ($dir === '..')
+                    {
+                        array_pop($dirs);
+                        continue;
+                    }
+
+                    array_push($dirs, $dir);
+                }
+
+                $val  = implode('/', $dirs);
                 break;
 
             case 'query':
@@ -358,8 +373,10 @@ class Connexions
                 parse_str($val, $query);
                 ksort($query);
 
-                //$val   = http_build_str($query);
-                $val   = http_build_query($query);
+                /* Re-build the query -- this will also perform urlencode() on 
+                 *                       each element.
+                 */
+                $val = http_build_query($query);
                 break;
 
             case 'fragment':
@@ -401,14 +418,40 @@ class Connexions
             $uri['path'] = $path;
         }
 
-        $normUrl = http_build_url($uri);
-
-        if ($scheme === 'mailto')
+        /**************************************************
+         * Construct the normalized URL
+         *
+         *  $normUrl = http_build_url($uri);
+         */
+        $normUrl = $uri['scheme'] .':';
+        if ($uri['scheme'] !== 'mailto')
         {
-            // Final normalization of 'mailto'.
-            //      Remove 'localhost'
-            $normUrl = preg_replace('#//localhost/#', '', $normUrl);
+            $normUrl .= '//';
+
+            if (! @empty($uri['user']))
+            {
+                $normUrl .= $uri['user'];
+                if (! @empty($uri['pass']))
+                    $normUrl .= ':'. $uri['pass'];
+                $normUrl .= '@';
+            }
+
+            $normUrl .= $uri['host'];
+            if (isset($uri['port']) && ($uri['port'] > 0))
+                $normUrl .= ':'. $uri['port'];
         }
+        else
+        {
+            // mailto
+            $uri['path'] = trim($uri['path'], '/');
+        }
+
+        $normUrl .= $uri['path'];
+        if (! @empty($uri['query']))
+            $normUrl .= '?'. $uri['query'];
+
+        if (! @empty($uri['fragment']))
+            $normUrl .= '#'. $uri['fragment'];
 
         return $normUrl;
     }
