@@ -509,7 +509,8 @@ cite { display: block; text-align: right; padding-top: 10px; }
 
 /* Page Content */
 #pageContent { padding: 0 0 0 1em; z-index: 10; }
-#pageContent .error { padding: 1em; color: #cd0a0a; }
+#pageContent .error { color: #cd0a0a; }
+#pageContent .success { color: #667e32; }
 
 /* Page Footer */
 #pageFooter { clear: both; margin-top: 1em; border-top: 1px solid #cccccc; padding: 0.5em; z-index: 1; }

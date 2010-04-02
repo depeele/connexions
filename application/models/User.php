@@ -247,6 +247,19 @@ class Model_User extends Connexions_Model
         return $this;
     }
 
+    /** @brief  Invalidate any cache we have of sub-instances
+     *          (i.e. _tags, _userItems).
+     *
+     *  @return This Model_User for a fluent interface.
+     */
+    public function invalidateCache()
+    {
+        $this->_tags      = null;
+        $this->_userItems = null;
+
+        return $this;
+    }
+
     /*************************************************************************
      * Connexions_Model overrides
      *

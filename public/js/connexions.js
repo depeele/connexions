@@ -154,6 +154,7 @@
      */
     $.fn.mask = function() {
         return this.each(function() {
+            var $spin       = $('#pageHeader h1 a img');
             var $el         = $(this);
             var zIndex      = $el.css('z-index');
             if (zIndex === 'auto')
@@ -172,6 +173,9 @@
                                           height:   $el.height(),
                                           'z-index':zIndex});
 
+            var url = $spin.attr('src');
+            $spin.attr('src', url.replace('.gif', '-spinner.gif') );
+
             if ($.fn.bgiframe)
             {
                 $overlay.bgiframe();
@@ -181,10 +185,14 @@
 
     $.fn.unmask = function() {
         return this.each(function() {
+            var $spin       = $('#pageHeader h1 a img');
             var $el         = $(this);
             var $overlay    = $el.find('ui-widget-overlay');
 
             $overlay.remove();
+
+            var url = $spin.attr('src');
+            $spin.attr('src', url.replace('-spinner.gif', '.gif') );
         });
     };
 

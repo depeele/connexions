@@ -201,6 +201,104 @@ class Model_UserItem extends Connexions_Model
         return $res;
     }
 
+    /** @brief  Given a set of tags (either an array of tagIds or a 
+     *          comma-separated string of tags), associate all tags with this 
+     *          userItem.  If tags do not exist, they will be created.
+     *  @param  tags    The set of tags -- as an array of tagIds or a 
+     *                  comma-separated string of tags.
+     *
+     *  Note: This method will also update the appropriate join tables
+     *        ( userTag, itemTag, and userTagItem ) and user tag statistics.
+     *
+     *        ASSUME that these are completely new tags for this userItem.
+     *
+     *  @return This Model_UserItem for a fluent interface.
+     */
+    public function addTags($tags)
+    {
+        // Retrieve the count of existing tags for this userItem
+        $curTagCount = count($this->tags);
+
+        if (! is_array($tags))
+        {
+            $tagInfo = self::ids($tags);
+            foreach ($tagInfo['invalid'] as $tagStr)
+            {
+                $tag = new Model_Tag($tagStr);
+                $tag->save();
+
+                array_push($tagInfo['valid'], $tag->tagId);
+            }
+
+            $tags = $tagInfo['valid'];
+        }
+
+        // Create the appropriate join table entries for each new tag
+        foreach ($tags as $tagId)
+        {
+            // Create the userTag entry
+            $rec = array('tagId'  => $tagId,
+                         'userId' => $this->userId);
+            $this->_db->insert('userTag', $rec);
+
+            // Create the itemTag entry
+            $rec = array('tagId'  => $tagId,
+                         'itemId' => $this->itemId);
+            $this->_db->insert('itemTag', $rec);
+
+            // Create the userTagItem entry
+            $rec = array('tagId'  => $tagId,
+                         'itemId' => $this->itemId,
+                         'userId' => $this->userId);
+            $this->_db->insert('userTagItem', $rec);
+        }
+
+        // Update tag statistics for the owner of this userItem.
+        $this->_tags = null;    // clear any cache of tags
+        $newTagCount = count($this->tags);
+
+        $this->user->totalTags += (newTagCount - $oldTagCount);
+        $this->user->save();
+
+        return $this;
+    }
+
+    /** @brief  Remove all tags associated with this userItem / Bookmark.
+     *
+     *  @return This Model_UserItem for a fluent interface.
+     */
+    public function removeTags()
+    {
+        // Retrieve the set of existing tags for this userItem
+        $curTags = $this->tags;
+
+        // Delete the join table entries for each existing tag
+        foreach ($curTags as $tag)
+        {
+            // Delete the userTag entry
+            $where = array('tagId'  => $tag->tagId,
+                           'userId' => $this->userId);
+            $this->_db->delete('userTag', $where);
+
+            // Delete the itemTag entry
+            $where = array('tagId'  => $tag->tagId,
+                           'itemId' => $this->itemId);
+            $this->_db->delete('itemTag', $where);
+
+            // Delete the userTagItem entry
+            $where = array('tagId'  => $tag->tagId,
+                           'userId' => $this->userId,
+                           'itemId' => $this->itemId);
+            $this->_db->delete('userTagItem', $where);
+        }
+
+        // Update tag statistics for the owner of this userItem.
+        $this->user->totalTags -= count($curTags);
+        $this->user->save();
+
+        return $this;
+    }
+
     /** @brief  Return an associative array representing this item.
      *  @param  deep    Include details about sub-instances (user, item, tags)?
      *  @param  public  Include only "public" information?
@@ -294,6 +392,20 @@ class Model_UserItem extends Connexions_Model
                             'tags', $tagStr);
 
         return $str;
+    }
+
+    /** @brief  Invalidate any cache we have of sub-instances
+     *          (i.e. _user, _item, _tags).
+     *
+     *  @return This Model_UserItem for a fluent interface.
+     */
+    public function invalidateCache()
+    {
+        $this->_user = null;
+        $this->_item = null;
+        $this->_tags = null;
+
+        return $this;
     }
 
     /*************************************************************************

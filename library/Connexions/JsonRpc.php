@@ -196,8 +196,8 @@ class Connexions_JsonRpc
         $this->_isValid = false;
         $this->_request = new Zend_Json_Server_Request();
 
-        $this->_callback = $request->getParam('jsonp',
-                            $request->getParam('callback', ''));
+        $this->_callback = $request->getParam('callback',
+                            $request->getParam('jsonp', ''));
 
         /* See if perhaps there is JSON-encoded data in the 'rpc' or 'json'
          * parameter.
