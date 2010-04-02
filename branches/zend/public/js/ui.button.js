@@ -6,6 +6,7 @@
  *      ui.core.js
  */
 /*jslint nomen: false, laxbreak: true, white: false, onevar: false */
+/*global jQuery:false */
 (function($) {
 
 $.widget("ui.button", {

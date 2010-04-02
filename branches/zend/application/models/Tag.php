@@ -137,7 +137,7 @@ class Model_Tag extends Connexions_Model
             return null;
 
         if (! @is_array($tags))
-            $tags = preg_split('/\s*,\s*/', $tags);
+            $tags = preg_split('/\s*,\s*/', strtolower($tags) );
 
         if ($db === null)
             $db = Connexions::getDb();

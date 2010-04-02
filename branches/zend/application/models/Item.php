@@ -34,6 +34,36 @@ class Model_Item extends Connexions_Model_Cached
 
     /*************************************************************************/
 
+    /** @brief  Set a value in this record and mark it dirty.
+     *  @param  name    The field name.
+     *  @param  value   The new value.
+     *
+     *  Override to ensure that, when 'url' is set, we also set 'urlHash' and, 
+     *  if 'urlHash' is set, it correctly matches 'url'.
+     *
+     *  @return true | false
+     */
+    public function __set($name, $value)
+    {
+        switch ($name)
+        {
+        case 'url':
+            $hash = Connexions::md5Url($value);
+            parent::__set('urlHash', $hash);
+            break;
+
+        case 'urlHash':
+            if (! empty($this->_record['url']))
+            {
+                $value = Connexions::md5Url($this->_record['url']);
+            }
+            break;
+        }
+
+        return parent::__set($name, $value);
+    }
+
+
     /** @brief  Return a string representation of this instance.
      *
      *  @return The string-based representation.
@@ -44,6 +74,33 @@ class Model_Item extends Connexions_Model_Cached
             return $this->_record['url'];
 
         return parent::__toString();
+    }
+
+    /*************************************************************************
+     * Connexions_Model - overloads
+     *
+     */
+
+    /** @brief  Initialize this model/record.  This will cause an overall
+     *          reset of this instance, possibly (re)retrieving the data.
+     *  @param  id      The record identifier.
+     *  @param  db      An optional database instance (Zend_Db_Abstract).
+     *
+     *  Overload to allow conversion of 'id' provided as a URL to a URL hash.
+     *
+     *  @return Connexions_Model to provide a fluent interface.
+     */
+    protected function _init($id, $db = null)
+    {
+        if (is_string($id) && (! is_numeric($id)) )
+        {
+            /* Connexions::md5Url() handles deciding whether or not this is 
+             * already a hash.
+             */
+            $id = Connexions::md5Url($id);
+        }
+
+        return parent::_init($id, $db);
     }
 
     /*************************************************************************

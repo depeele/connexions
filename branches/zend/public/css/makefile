@@ -1,4 +1,4 @@
-YUI_COMP	= "yuicompressor"
+YUI_COMP	= yuicompressor
 
 
 all: connexions.min.css userItems.min.css users.min.css 	\
@@ -53,26 +53,5 @@ sprites.sass:	urls.sass
 
 #----------------------------------------------------------------------------
 
-connexions.min.css:	connexions.css
-	$(YUI_COMP) connexions.css
-
-userItems.min.css:	userItems.css
-	$(YUI_COMP) userItems.css
-
-users.min.css:	users.css
-	$(YUI_COMP) users.css
-
-urlItems.min.css:	urlItems.css
-	$(YUI_COMP) urlItems.css
-
-inbox.min.css:	inbox.css
-	$(YUI_COMP) inbox.css
-
-validationForm.min.css:	validationForm.css
-	$(YUI_COMP) validationForm.css
-
-post.min.css:	post.css
-	$(YUI_COMP) post.css
-
-auth.min.css:	auth.css
-	$(YUI_COMP) auth.css
+%.min.css : %.css
+	$(YUI_COMP) $<

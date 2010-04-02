@@ -3,12 +3,7 @@
  *
  *  This controller controls access to UserItems / Bookmarks and is accessed
  *  via the url/routes:
- *      /[<user>[/<tag list>]]
- *      /scopeAutoComplete?q=<query>
- *                          &limit=<max>
- *                          &format=json
- *                          &owner=<name>
- *                          &tags=<comma-separated tag list>
+ *      /[ (<user> | bookmarks) [/<tag list>]]
  */
 
 class IndexController extends Zend_Controller_Action
@@ -206,6 +201,8 @@ class IndexController extends Zend_Controller_Action
             'isPrivate'     => $request->getParam('isPrivate',   false)
         );
 
+        $this->view->headTitle('Save a Bookmark');
+
         $this->view->viewer   = $viewer;
         $this->view->postInfo = $postInfo;
     }
@@ -218,14 +215,13 @@ class IndexController extends Zend_Controller_Action
     /** @brief  Given an incoming request with userItem / Bookmark creation
      *          data, validate the request and, if valid, attempt to create a
      *          new userItem / Bookmark.
-     *  @param  request     The incoming request.
+     *  @param  rpc     The incoming JsonRpc.
      *
-     *  On failure/error, $this->view->error will be set to indicate the type
-     *  of error.
+     *  On failure/error, the rpc will have the appropriate error set.
      *
      *  @return A status code (self::CRUD_*).
      */
-    protected function _create($request)
+    protected function _create(Connexions_JsonRpc $rpc)
     {
         Connexions::log("IndexController::_create");
 
@@ -233,55 +229,329 @@ class IndexController extends Zend_Controller_Action
              (! $this->_viewer->isAuthenticated()) )
         {
             // Unauthenticated user
-            $this->view->error = 'Unauthenticated';
+            $rpc->setError('Unauthenticated.  Sign In to create bookmarks.');
             return self::CRUD_UNAUTHENTICATED;
         }
 
-        //$this->_helper->layout->setLayout('post');
-
         $itemInfo = array(
-            'name'          => $request->getParam('name',        null),
-            'url'           => $request->getParam('url',         null),
-            'description'   => $request->getParam('description', null),
-            'tags'          => $request->getParam('tags',        null),
-            'rating'        => $request->getParam('rating',      null),
-            'isFavorite'    => $request->getParam('isFavorite',  false),
-            'isPrivate'     => $request->getParam('isPrivate',   false)
+            'name'          => $rpc->getParam('name',        null),
+            'url'           => $rpc->getParam('url',         null),
+            'description'   => $rpc->getParam('description', null),
+            'tags'          => $rpc->getParam('tags',        null),
+            'rating'        => $rpc->getParam('rating',      null),
+            'isFavorite'    => $rpc->getParam('isFavorite',  false),
+            'isPrivate'     => $rpc->getParam('isPrivate',   false)
         );
 
         // Validate and, if valid, attempt to create this new item.
         if (empty($itemInfo['name']))
         {
-            $this->view->error = 'Name is required';
+            $rpc->setError('The Bookmark name / title is required.');
             return self::CRUD_INVALID_DATA;
         }
         if (empty($itemInfo['url']))
         {
-            $this->view->error = 'URL is required';
+            $rpc->setError('The URL to Bookmark is required.');
             return self::CRUD_INVALID_DATA;
         }
         if (empty($itemInfo['tags']))
         {
-            $this->view->error = 'Tags are required';
+            $rpc->setError('One or more tags are required.');
             return self::CRUD_INVALID_DATA;
         }
 
-        /* VALID -- attempt to create the user item.
+        /* VALID -- attempt to create the userItem / Bookmark.
          *
          *  1) See if an item exists for the given URL;
          *     a) NO  - create one;
          *     b) YES - use it;
-         *  2) Fill in 'userId' and 'itemId' and create the item;
-         *  3) For each tag:
-         *     a) See if a matching Tag exists;
-         *        i)  NO  - create one;
-         *        ii) YES - use it;
-         *     b) Fill in required information for new join tables and create
-         *        entries:
-         *          userTag
-         *          itemTag
-         *          userTagItem
+         *  2) Fill in 'userId' and 'itemId' and create the userItem;
+         *  3) Associate all tags with this userItem;
+         *  4) Update statistics:
+         *     a) item  userCount, ratingCount, ratingSum;
+         *     b) user  totalItems, totalTags
          */
+
+        // 1) Find / Create the item
+        $item = new Model_Item( $itemInfo['url'] );
+        if (! $item->isBacked())
+        {
+            // Save this new item.
+            $item->save();
+        }
+
+        // 2) Find / Create the userItem
+        $userItem = new Model_UserItem( array(
+                            'userId' => $this->_viewer->userId,
+                            'itemId' => $item->itemId) );
+        if ($userItem->isBacked())
+        {
+            // The userItem / Bookmark already exists!  Update??
+            $rpc->setError('Bookmark already exists.');
+            return self::CRUD_INVALID_DATA;
+        }
+
+        // Save this new userItem.
+        $userItem->save();
+
+        // 3) Add tags to this userItem
+        $userItem->addTags($itemInfo['tags']);
+
+        // 4) Update statistics
+        //    a) item  userCount, ratingCount, ratingSum;
+        $item->userCount += 1;
+        if ($userItem->rating > 0)
+        {
+            $item->ratingCount++;
+            $item->ratingSum += $useritem->rating;
+        }
+        $item->save();
+
+        // 4.b) user  totalItems, totalTags
+        $this->_viewer->totalItems++;
+        $this->_viewer->totalTags = count($this->_viewer->invalidateCache()
+                                                        ->tags);
+        $this->_viewer->save();
+
+        $rpc->setResult('Bookmark created.');
+        return self::CRUD_SUCCESS;
+    }
+
+    /** @brief  Given an incoming request with userItem / Bookmark update
+     *          data, validate the request and, if valid, attempt to update an
+     *          existing userItem / Bookmark.
+     *  @param  rpc     The incoming JsonRpc.
+     *
+     *  On failure/error, the rpc will have the appropriate error set.
+     *
+     *  @return A status code (self::CRUD_*).
+     */
+    protected function _update(Connexions_JsonRpc $rpc)
+    {
+        Connexions::log("IndexController::_update");
+
+        if ( (! $this->_viewer instanceof Model_User) ||
+             (! $this->_viewer->isAuthenticated()) )
+        {
+            // Unauthenticated user
+            $rpc->setError('Unauthenticated.  Sign In to update bookmarks.');
+            return self::CRUD_UNAUTHENTICATED;
+        }
+
+        $itemInfo = array(
+            'itemId'        => $rpc->getParam('itemId',      null),
+            'name'          => $rpc->getParam('name',        null),
+            'url'           => $rpc->getParam('url',         null),
+            'description'   => $rpc->getParam('description', null),
+            'tags'          => $rpc->getParam('tags',        null),
+            'rating'        => $rpc->getParam('rating',      null),
+            'isFavorite'    => $rpc->getParam('isFavorite',  false),
+            'isPrivate'     => $rpc->getParam('isPrivate',   false)
+        );
+
+        // Validate and, if valid, attempt to update the usetItem / Bookmark.
+        if (empty($itemInfo['itemId']))
+        {
+            $rpc->setError('Missing item identifier.');
+            return self::CRUD_INVALID_DATA;
+        }
+
+        // Find the existing userItem / Bookmark
+        $userItem = new Model_UserItem( array(
+                            'userId' => $this->_viewer->userId,
+                            'itemId' => $itemInfo['itemId']) );
+        if (! $userItem->isBacked())
+        {
+            // NOT found -- create instead??
+            $rpc->setError('No matching bookmark found.');
+            return self::CRUD_INVALID_DATA;
+        }
+
+        if (empty($itemInfo['name']))
+        {
+            $rpc->setError('The Bookmark name / title is required.');
+            return self::CRUD_INVALID_DATA;
+        }
+        if (empty($itemInfo['url']))
+        {
+            $rpc->setError('The URL to Bookmark is required.');
+            return self::CRUD_INVALID_DATA;
+        }
+        if (empty($itemInfo['tags']))
+        {
+            $rpc->setError('One or more tags are required.');
+            return self::CRUD_INVALID_DATA;
+        }
+
+        $itemInfo['urlHash'] = Connexions::md5Url($itemInfo['url']);
+
+        /* VALID -- attempt to update an existing userItem / Bookmark...
+         *
+         *  1) Remove all current tags from this userItem / Bookmark;
+         *  2) Find the current item as well as the item associated with the 
+         *     incoming URL;
+         *  3) Update item statistics, and save new item:
+         *     a) item changed:
+         *        i)  curItem:
+         *            A)  userCount-
+         *            B)  ratingCount-cur, ratingSum-cur
+         *        ii) newItem
+         *            A)  userCount+
+         *            B)  ratingCount+new, ratingSum+new
+         *
+         *     b) item unchanged, has the rating changed?
+         *        i)  item  ratingCount-cur, ratingSum-cur
+         *        ii) item  ratingCount+new, ratingSum+new
+         *
+         *  4) Update full userItem / Bookmark based upon incoming data and 
+         *     save it;
+         *
+         *  5) Associate all tags with this userItem / Bookmark;
+         */
+
+        // 1) Remove all current tags from this userItem / Bookmark;
+        $userItem->removeTags();
+
+        // 2) Find the current item as well as the item associated with the 
+        //    incoming URL;
+        $curItem = $userItem->item;
+        $newItem = new Model_Item( $itemInfo['url'] );
+
+        // 3) Update item statistics
+        if ($curItem->itemId !== $newItem->itemId)
+        {
+            // 3.a.i.A) Update the current item user counts
+            $curItem->userCount--;
+            if ($userItem->rating > 0)
+            {
+                // 3.a.i.B) Update the current item rating
+                $curItem->ratingCount--;
+                $curItem->ratingSum -= $userItem->rating;
+                $curItem->save();
+            }
+
+            // 3.a.ii.A) Update the new item user counts
+            $newItem->userCount++;
+        }
+        else
+        {
+            // 3.b) item unchanged, has the rating changed?
+            if ($userItem->rating !== $itemInfo['rating'])
+            {
+                if ($userItem->rating > 0)
+                {
+                    // 3.b.i) Remove old rating
+                    $curItem->ratingCount--;
+                    $curItem->ratingSum  -= $userItem->rating;
+                    $curItem->save();
+                }
+
+                if ($itemInfo['rating'] > 0)
+                {
+                    // 3.b.ii) Include new rating
+                    $newItem->ratingCount--;
+                    $newItem->ratingSum  -= $itemInfo['rating'];
+                }
+            }
+        }
+        $newItem->save();
+
+
+        // 4) Update full userItem / Bookmark based upon incoming data and save 
+        //    it;
+        $userItem->itemId      = $newItem->itemId;
+        $userItem->name        = $itemInfo['name'];
+        $userItem->url         = $itemInfo['url'];
+        $userItem->description = $itemInfo['description'];
+        $userItem->rating      = $itemInfo['rating'];
+        $userItem->isFavorite  = $itemInfo['isFavorite'];
+        $userItem->isPrivate   = $itemInfo['isPrivate'];
+
+        $userItem->save();
+
+        // 5) Associate all tags with this updated userItem / Bookmark;
+        $userItem->addTags($itemInfo['tags']);
+
+        $rpc->setResult('Bookmark Updated');
+        return self::CRUD_SUCCESS;
+    }
+
+    /** @brief  Given incoming userItem / Bookmark identification information,
+     *          validate the request and, if valid, attempt to delete an
+     *          existing userItem / Bookmark.
+     *  @param  rpc     The incoming JsonRpc.
+     *
+     *  On failure/error, the rpc will have the appropriate error set.
+     *
+     *  @return A status code (self::CRUD_*).
+     */
+    protected function _delete(Connexions_JsonRpc $rpc)
+    {
+        Connexions::log("IndexController::_delete");
+
+        if ( (! $this->_viewer instanceof Model_User) ||
+             (! $this->_viewer->isAuthenticated()) )
+        {
+            // Unauthenticated user
+            $rpc->setError('Unauthenticated.  Sign In to delete bookmarks.');
+            return self::CRUD_UNAUTHENTICATED;
+        }
+
+        $itemId = $rpc->getParam('itemId',      null);
+
+        // Validate and, if valid, attempt to delete the userItem / Bookmar.
+        if (empty($itemInfo['itemId']))
+        {
+            $rpc->setError('Missing item identifier.');
+            return self::CRUD_INVALID_DATA;
+        }
+
+        // Find the existing userItem / Bookmark
+        $userItem = new Model_UserItem( array(
+                            'userId' => $this->_viewer->userId,
+                            'itemId' => $itemInfo['itemId']) );
+        if (! $userItem->isBacked())
+        {
+            // NOT found
+            $rpc->setError('No matching bookmark found.');
+            return self::CRUD_INVALID_DATA;
+        }
+
+        /* VALID -- attempt to delete this existing userItem / Bookmark...
+         *
+         *  1) Remove all current tags from this userItem / Bookmark;
+         *  2) Delete the useritem / Bookmark;
+         *  3) Update item statistics, and save new item:
+         *     a) userCount-
+         *     b) ratingCount-cur, ratingSum-cur
+         */
+        $rating  = $userItem->rating;
+        $curItem = $userItem->item;
+
+        // 1) Remove all current tags from this userItem / Bookmark;
+        $userItem->removeTags();
+
+        // 2) Delete the useritem / Bookmark;
+        if (! $userItem->delete())
+        {
+            $rpc->setError( $userItem->getError() );
+            return self::CRUD_INVALID_DATA;
+        }
+
+        // 3) Update item statistics
+        if ($rating > 0)
+        {
+            // 2.b) rating
+            $curItem->ratingCount--;
+            $curItem->ratingSum -= $rating;
+        }
+
+        $curItem->userCount--;
+        $curItem->save();
+
+
+        $rpc->setResult('Bookmark Deleted');
+        return self::CRUD_SUCCESS;
     }
 
     /** @brief  Given a string that is supposed to represent a user, see if it
@@ -476,6 +746,7 @@ class IndexController extends Zend_Controller_Action
         switch ($method)
         {
         case 'create':
+            $this->_create($rpc);
             break;
 
         case 'read':
@@ -487,9 +758,11 @@ class IndexController extends Zend_Controller_Action
             break;
 
         case 'update':
+            $this->_update($rpc);
             break;
 
         case 'delete':
+            $this->_delete($rpc);
             break;
 
         case 'autocomplete':
@@ -690,7 +963,7 @@ class IndexController extends Zend_Controller_Action
 
         /* Create the tagSet that will be presented in the side-bar:
          *      All tags used by all users/items contained in the current
-         *      user item / bookmark set.
+         *      userItem / bookmark set.
          *
          *  $tagSet = new Model_TagSet( $this->_userSet->userIds(),
          *                              $this->_userSet->itemIds() );

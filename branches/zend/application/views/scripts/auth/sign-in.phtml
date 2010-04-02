@@ -16,7 +16,7 @@ $jQuery->addStylesheet($this->baseUrl('css/validationForm.css'))
  */
 var $form       = null;
 var $submit     = null;
-var $error      = null;
+var $status     = null;
 
 function authSignin_onLoad()
 {
@@ -25,7 +25,7 @@ function authSignin_onLoad()
 
     $form.addClass('ui-form');
 
-    $error      = $('.formError');
+    $status     = $('#auth .status');
     $submit     = $('#auth button[name=method]');
 
     $submit.button({ priority:'primary', enabled:false});
@@ -56,11 +56,15 @@ function validate_form()
     if (isValid)
     {
         $submit.button('enable');
-        $error.text('');
+        $status.removeClass('error')
+               .addClass('success')
+               .text('');
     }
     else
     {
         $submit.button('disable');
+        $status.removeClass('success')
+               .addClass('error');
     }
 }
 
@@ -75,6 +79,9 @@ $jQuery->javascriptCaptureEnd();
    <p>
     or <?= Connexions::anchor('/auth/register', 'Join now') ?>
    </p>
+   <div class='status<?= (@isset($this->error) ? ' error' : '') ?>'>
+    <?= (@isset($this->error) ? $this->error : '') ?>
+   </div>
   </div><!-- legend } -->
   <div class="userInput unit"><!-- { -->
    <form method='post'>
@@ -104,9 +111,6 @@ $jQuery->javascriptCaptureEnd();
    </form>
  
    <? if ($this->welcome)   echo "Welcome!!<br />"; ?>
-   <div class='formError'>
-    <?= (@isset($this->error) ? $this->error : '') ?>
-   </div>
   </div><!-- userInput } -->
  </div>
 </div><!-- line } -->

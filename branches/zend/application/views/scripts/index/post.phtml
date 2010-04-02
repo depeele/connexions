@@ -3,8 +3,6 @@ if (! @is_array($this->postInfo))
     $this->postInfo = array();
 //$this->postInfo['url'] = 'url://to-edit/';
 
-$this->headTitle('Save a Bookmark');
-
 //$noConflict = Zend_JQuery_View_Helper_JQuery::getJQueryHandler();
 
 $jQuery = $this->jQuery();
@@ -24,7 +22,7 @@ $jQuery->addStylesheet($this->baseUrl('css/post.css'))
  */
 var $form       = null;
 var $submit     = null;
-var $error      = null;
+var $status     = null;
 
 function post_onLoad()
 {
@@ -48,7 +46,7 @@ function post_onLoad()
            .unbind('validationChange');
     });
 
-    $error  = $('.formError');
+    $status = $('#post .status');
     $submit = $('#post button[name=submit]');
 
     $submit.button({ priority:'primary', enabled:false});
@@ -104,6 +102,31 @@ function post_onLoad()
                   })
             .input();
 
+    // Catch form submissions and turn them into JsonRpc calls.
+    $form.bind('submit', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var rpc = {jsonrpc: '2.0',
+                   method:  'create',
+                   params:  $form.serializeArray(),
+                   id:      getTime()};
+
+        $form.mask();
+        $.ajax({url:      "<?= $this->url() ?>",
+                type:     "POST",
+                dataType: "json",
+                data:     rpc,
+                error:    function(req, stat, err) {
+                },
+                success:  function(data) {
+                },
+                complete: function(req, stat) {
+                    $form.unmask();
+                }
+        });
+    });
+
     $form.show();
 }
 
@@ -123,11 +146,15 @@ function validate_form()
     if (isValid)
     {
         $submit.button('enable');
-        $error.text('');
+        $status.removeClass('error')
+               .addClass('success')
+               .text('');
     }
     else
     {
         $submit.button('disable');
+        $status.removeClass('success')
+               .addClass('error');
     }
 }
 
@@ -144,6 +171,9 @@ $jQuery->javascriptCaptureEnd();
    </div>
    <h1>Post</h1>
    <p>a new bookmark</p>
+   <div class='status<?= (@isset($this->error) ? ' error' : '') ?>'>
+    <?= (@isset($this->error) ? $this->error : '') ?>
+   </div>
   </div><!-- legend } -->
   <div class="userInput unit"><!-- { -->
    <form method='post'>
@@ -179,13 +209,13 @@ $jQuery->javascriptCaptureEnd();
     </div>
     <div class='field'>
      <label for='tags'>Tags</label>
-     <input type='text' class='text' autocomplete='off'
+     <input type='text' class='text required' autocomplete='off'
             name='tags' value='<?= $this->postInfo['tags'] ?>'
                      tabindex='4' />
      <div class='ui-field-info'>
       <div class='ui-field-status'></div>
       <div class='ui-field-requirements'>
-       comma-separated, 30 characters per tag
+       comma-separated, 30 characters per tag - required
       </div>
      </div>
     </div>
@@ -233,10 +263,6 @@ $jQuery->javascriptCaptureEnd();
    </form>
    <div id='tags'>
      Tag selection area.
-   </div>
- 
-   <div class='formError'>
-    <?= (@isset($this->error) ? $this->error : '') ?>
    </div>
   </div><!-- userInput } -->
   <br class='clear' />
