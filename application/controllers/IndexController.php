@@ -210,6 +210,8 @@ class IndexController extends Zend_Controller_Action
     /*************************************************************************
      * Protected Helpers
      *
+     *
+     * CRUD operations for userItems / Bookmarks
      */
 
     /** @brief  Given an incoming request with userItem / Bookmark creation
@@ -219,7 +221,7 @@ class IndexController extends Zend_Controller_Action
      *
      *  On failure/error, the rpc will have the appropriate error set.
      *
-     *  @return A status code (self::CRUD_*).
+     *  @return void
      */
     protected function _create(Connexions_JsonRpc $rpc)
     {
@@ -230,7 +232,7 @@ class IndexController extends Zend_Controller_Action
         {
             // Unauthenticated user
             $rpc->setError('Unauthenticated.  Sign In to create bookmarks.');
-            return self::CRUD_UNAUTHENTICATED;
+            return;
         }
 
         $itemInfo = array(
@@ -247,17 +249,17 @@ class IndexController extends Zend_Controller_Action
         if (empty($itemInfo['name']))
         {
             $rpc->setError('The Bookmark name / title is required.');
-            return self::CRUD_INVALID_DATA;
+            return;
         }
         if (empty($itemInfo['url']))
         {
             $rpc->setError('The URL to Bookmark is required.');
-            return self::CRUD_INVALID_DATA;
+            return;
         }
         if (empty($itemInfo['tags']))
         {
             $rpc->setError('One or more tags are required.');
-            return self::CRUD_INVALID_DATA;
+            return;
         }
 
         /* VALID -- attempt to create the userItem / Bookmark.
@@ -288,14 +290,14 @@ class IndexController extends Zend_Controller_Action
         {
             // The userItem / Bookmark already exists!  Update??
             $rpc->setError('Bookmark already exists.');
-            return self::CRUD_INVALID_DATA;
+            return;
         }
 
         // Save this new userItem.
         $userItem->save();
 
         // 3) Add tags to this userItem
-        $userItem->addTags($itemInfo['tags']);
+        $userItem->tagsAdd($itemInfo['tags']);
 
         // 4) Update statistics
         //    a) item  userCount, ratingCount, ratingSum;
@@ -314,7 +316,24 @@ class IndexController extends Zend_Controller_Action
         $this->_viewer->save();
 
         $rpc->setResult('Bookmark created.');
-        return self::CRUD_SUCCESS;
+    }
+
+    /** @brief  Given an incoming request with userItem / Bookmark
+     *          identification data, retrieve the matching userItem / Bookmark
+     *          and return it.
+     *  @param  rpc     The incoming JsonRpc.
+     *
+     *  On failure/error, the rpc will have the appropriate error set.
+     *
+     *  @return void
+     */
+    protected function _read(Connexions_JsonRpc $rpc)
+    {
+        $this->_createPaginator($rpc);
+
+        $this->view->paginator = $this->_paginator;
+
+        $this->render('index');
     }
 
     /** @brief  Given an incoming request with userItem / Bookmark update
@@ -324,7 +343,7 @@ class IndexController extends Zend_Controller_Action
      *
      *  On failure/error, the rpc will have the appropriate error set.
      *
-     *  @return A status code (self::CRUD_*).
+     *  @return void
      */
     protected function _update(Connexions_JsonRpc $rpc)
     {
@@ -335,13 +354,18 @@ class IndexController extends Zend_Controller_Action
         {
             // Unauthenticated user
             $rpc->setError('Unauthenticated.  Sign In to update bookmarks.');
-            return self::CRUD_UNAUTHENTICATED;
+            return;
         }
 
         $itemInfo = array(
+            // item identifier: userItem == $this->_viewer->userId, itemId
             'itemId'        => $rpc->getParam('itemId',      null),
-            'name'          => $rpc->getParam('name',        null),
+
+            // New item information
             'url'           => $rpc->getParam('url',         null),
+
+            // New userItem information
+            'name'          => $rpc->getParam('name',        null),
             'description'   => $rpc->getParam('description', null),
             'tags'          => $rpc->getParam('tags',        null),
             'rating'        => $rpc->getParam('rating',      null),
@@ -350,10 +374,10 @@ class IndexController extends Zend_Controller_Action
         );
 
         // Validate and, if valid, attempt to update the usetItem / Bookmark.
-        if (empty($itemInfo['itemId']))
+        if ($itemInfo['itemId'] === null)
         {
             $rpc->setError('Missing item identifier.');
-            return self::CRUD_INVALID_DATA;
+            return;
         }
 
         // Find the existing userItem / Bookmark
@@ -364,104 +388,72 @@ class IndexController extends Zend_Controller_Action
         {
             // NOT found -- create instead??
             $rpc->setError('No matching bookmark found.');
-            return self::CRUD_INVALID_DATA;
+            return;
         }
 
-        if (empty($itemInfo['name']))
-        {
-            $rpc->setError('The Bookmark name / title is required.');
-            return self::CRUD_INVALID_DATA;
-        }
-        if (empty($itemInfo['url']))
-        {
-            $rpc->setError('The URL to Bookmark is required.');
-            return self::CRUD_INVALID_DATA;
-        }
         if (empty($itemInfo['tags']))
         {
             $rpc->setError('One or more tags are required.');
-            return self::CRUD_INVALID_DATA;
+            return;
         }
 
+        // For all others, missing information defaults to the current value
+        if (empty($itemInfo['url']))
+            $itemInfo['url'] = $userItem->item->url;
+        if (empty($itemInfo['name']))
+            $itemInfo['name'] = $uesrItem->name;
+
+        // Compute the normalized has for the incoming URL
         $itemInfo['urlHash'] = Connexions::md5Url($itemInfo['url']);
 
         /* VALID -- attempt to update an existing userItem / Bookmark...
          *
-         *  1) Remove all current tags from this userItem / Bookmark;
-         *  2) Find the current item as well as the item associated with the 
+         *  1) Find the current item as well as the item associated with the 
          *     incoming URL;
-         *  3) Update item statistics, and save new item:
-         *     a) item changed:
-         *        i)  curItem:
-         *            A)  userCount-
-         *            B)  ratingCount-cur, ratingSum-cur
-         *        ii) newItem
-         *            A)  userCount+
-         *            B)  ratingCount+new, ratingSum+new
+         *  2) See if the item is changing:
+         *     i)  YES - the item has changed;
+         *         a) Remove all current tags from this userItem / Bookmark;
+         *         b) Change the itemId to the identifier of the new item;
+         *     ii) No change
+         *         a) Change the current set of tags for this
+         *            userItem / Bookmark;
          *
-         *     b) item unchanged, has the rating changed?
-         *        i)  item  ratingCount-cur, ratingSum-cur
-         *        ii) item  ratingCount+new, ratingSum+new
-         *
-         *  4) Update full userItem / Bookmark based upon incoming data and 
+         *  3) Update full userItem / Bookmark based upon incoming data and 
          *     save it;
-         *
-         *  5) Associate all tags with this userItem / Bookmark;
          */
 
-        // 1) Remove all current tags from this userItem / Bookmark;
-        $userItem->removeTags();
-
-        // 2) Find the current item as well as the item associated with the 
-        //    incoming URL;
+        /* 1) Find the current item as well as the item associated with the 
+         *    incoming URL;
+         */
         $curItem = $userItem->item;
         $newItem = new Model_Item( $itemInfo['url'] );
 
-        // 3) Update item statistics
+        // 2) See if the item is changing...
         if ($curItem->itemId !== $newItem->itemId)
         {
-            // 3.a.i.A) Update the current item user counts
-            $curItem->userCount--;
-            if ($userItem->rating > 0)
-            {
-                // 3.a.i.B) Update the current item rating
-                $curItem->ratingCount--;
-                $curItem->ratingSum -= $userItem->rating;
-                $curItem->save();
-            }
+            /* 2.i.a) YES - the item has changed, remove all tags associated 
+             *              with the current item
+             */
+            $userItem->tagsDelete();
 
-            // 3.a.ii.A) Update the new item user counts
-            $newItem->userCount++;
+            if (! $newItem->isBacked())
+                // Save the new item
+                $newItem->save();
+
+            // 2.i.b) Change the itemId to the identifier of the new item;
+            $userItem->itemId = $newItem->itemId;
         }
         else
         {
-            // 3.b) item unchanged, has the rating changed?
-            if ($userItem->rating !== $itemInfo['rating'])
-            {
-                if ($userItem->rating > 0)
-                {
-                    // 3.b.i) Remove old rating
-                    $curItem->ratingCount--;
-                    $curItem->ratingSum  -= $userItem->rating;
-                    $curItem->save();
-                }
-
-                if ($itemInfo['rating'] > 0)
-                {
-                    // 3.b.ii) Include new rating
-                    $newItem->ratingCount--;
-                    $newItem->ratingSum  -= $itemInfo['rating'];
-                }
-            }
+            /* 2.ii.a) NO - the item is unchanged, change the current set of 
+             *              tags for this
+             */
+            $userItem->tagsUpdate($itemInfo['tags']);
         }
-        $newItem->save();
 
-
-        // 4) Update full userItem / Bookmark based upon incoming data and save 
+        // 3) Update full userItem / Bookmark based upon incoming data and save 
         //    it;
-        $userItem->itemId      = $newItem->itemId;
         $userItem->name        = $itemInfo['name'];
-        $userItem->url         = $itemInfo['url'];
         $userItem->description = $itemInfo['description'];
         $userItem->rating      = $itemInfo['rating'];
         $userItem->isFavorite  = $itemInfo['isFavorite'];
@@ -469,11 +461,7 @@ class IndexController extends Zend_Controller_Action
 
         $userItem->save();
 
-        // 5) Associate all tags with this updated userItem / Bookmark;
-        $userItem->addTags($itemInfo['tags']);
-
         $rpc->setResult('Bookmark Updated');
-        return self::CRUD_SUCCESS;
     }
 
     /** @brief  Given incoming userItem / Bookmark identification information,
@@ -483,7 +471,7 @@ class IndexController extends Zend_Controller_Action
      *
      *  On failure/error, the rpc will have the appropriate error set.
      *
-     *  @return A status code (self::CRUD_*).
+     *  @return void
      */
     protected function _delete(Connexions_JsonRpc $rpc)
     {
@@ -494,7 +482,7 @@ class IndexController extends Zend_Controller_Action
         {
             // Unauthenticated user
             $rpc->setError('Unauthenticated.  Sign In to delete bookmarks.');
-            return self::CRUD_UNAUTHENTICATED;
+            return;
         }
 
         $itemId = $rpc->getParam('itemId',      null);
@@ -503,7 +491,7 @@ class IndexController extends Zend_Controller_Action
         if (empty($itemInfo['itemId']))
         {
             $rpc->setError('Missing item identifier.');
-            return self::CRUD_INVALID_DATA;
+            return;
         }
 
         // Find the existing userItem / Bookmark
@@ -514,44 +502,31 @@ class IndexController extends Zend_Controller_Action
         {
             // NOT found
             $rpc->setError('No matching bookmark found.');
-            return self::CRUD_INVALID_DATA;
+            return;
         }
 
         /* VALID -- attempt to delete this existing userItem / Bookmark...
          *
          *  1) Remove all current tags from this userItem / Bookmark;
          *  2) Delete the useritem / Bookmark;
-         *  3) Update item statistics, and save new item:
-         *     a) userCount-
-         *     b) ratingCount-cur, ratingSum-cur
+         *  3) Notify related models of this update;
          */
         $rating  = $userItem->rating;
         $curItem = $userItem->item;
 
         // 1) Remove all current tags from this userItem / Bookmark;
-        $userItem->removeTags();
+        $userItem->tagsDelete();
 
         // 2) Delete the useritem / Bookmark;
         if (! $userItem->delete())
         {
             $rpc->setError( $userItem->getError() );
-            return self::CRUD_INVALID_DATA;
+            return;
         }
 
-        // 3) Update item statistics
-        if ($rating > 0)
-        {
-            // 2.b) rating
-            $curItem->ratingCount--;
-            $curItem->ratingSum -= $rating;
-        }
-
-        $curItem->userCount--;
-        $curItem->save();
-
+        // 3) Notify related models of this update
 
         $rpc->setResult('Bookmark Deleted');
-        return self::CRUD_SUCCESS;
     }
 
     /** @brief  Given a string that is supposed to represent a user, see if it
@@ -750,11 +725,7 @@ class IndexController extends Zend_Controller_Action
             break;
 
         case 'read':
-            $this->_createPaginator($rpc);
-
-            $this->view->paginator = $this->_paginator;
-
-            $this->render('index');
+            $this->_read($rpc);
             break;
 
         case 'update':

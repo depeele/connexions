@@ -16,6 +16,9 @@ class Model_UserItemSet extends Connexions_Set
     protected   $_select_items  = null;
     protected   $_select_users  = null;
 
+    // Have we added a join to the Item table yet?
+    protected   $_itemJoined    = false;
+
     /** @brief  Create a new instance.
      *  @param  tagIds      An array of tag identifiers.
      *  @param  userIds     An array of user identifiers.
@@ -34,9 +37,7 @@ class Model_UserItemSet extends Connexions_Set
         // */
 
 
-        /* :TODO: Determine the current, authenticated user
-         *        and the proper order.
-         */
+        // Determine the current, authenticated user.
         try {
             $curUserId = Zend_Registry::get('user')->userId;
 
@@ -62,12 +63,12 @@ class Model_UserItemSet extends Connexions_Set
          *       and item_userCount, though they will also be used to provide
          *       access to the referenced Item without requiring a second
          *       query.
-         */
         $itemColumns = array();
         foreach (Model_Item::$model as $field => $type)
         {
             $itemColumns['item_'.$field] = 'i.'.$field;
         }
+         */
 
         // Generate a Zend_Db_Select instance
         $db     = Connexions::getDb();
@@ -75,9 +76,11 @@ class Model_UserItemSet extends Connexions_Set
 
         $select = $db->select()
                      ->from(array('ui' => $table))
+                     /*
                      ->joinLeft(array('i'  => 'item'),  // table / as
                                 '(i.itemId=ui.itemId)', // condition
                                 $itemColumns)           // columns
+                    */
                      ->where('((ui.isPrivate=false) '.
                                  ($curUserId !== null
                                     ? 'OR (ui.userId='.$curUserId.')'
@@ -126,7 +129,7 @@ class Model_UserItemSet extends Connexions_Set
         {
             // Tag Restrictions -- required 'userTagItem'
             $select->joinLeft(array('uti'   => 'userTagItem'),// table / as
-                              '(i.itemId=uti.itemId) AND '.
+                              //'(i.itemId=uti.itemId) AND '.
                               '(ui.userId=uti.userId)',       // condition
                               '')                             // columns (none)
                    ->group(array('uti.userId', 'uti.itemId'));
@@ -305,6 +308,7 @@ class Model_UserItemSet extends Connexions_Set
         case 'item_userCount':
         case 'item_ratingCount':
         case 'item_ratingSum':
+            break;
 
         default:
             $name = parent::mapField($name);
@@ -339,7 +343,7 @@ class Model_UserItemSet extends Connexions_Set
                 $orderParts = $this->_parse_order($spec);
                 if ($orderParts === null)
                 {
-                    /*
+                    // /*
                     Connexions::log("Model_UserItemSet::setOrder: "
                                     . "Invalid specification [{$spec}] --skip");
                     // */
@@ -365,8 +369,13 @@ class Model_UserItemSet extends Connexions_Set
                      * redundant data
                      * (i.e. all item information will be identical).
                      */
-                    $group = 'item_itemId';
 
+                    /* If our query doesn't already include a join with the 
+                     * item table, add it now.
+                     */
+                    $this->_joinItem();
+
+                    $group = 'item_itemId';
                     array_push($newOrder, implode(' ', $orderParts));
                     array_push($newOrder, 'taggedOn ASC');
                     break;
@@ -383,8 +392,9 @@ class Model_UserItemSet extends Connexions_Set
         if ($group !== null)
             $this->_select->group('ui.itemId');
 
-        /*
+        // /*
         Connexions::log("Model_UserItemSet::setOrder: "
+                            . "order[ ". print_r($order, true) ." ], "
                             . "sql[ {$this->_select->assemble()} ]");
         // */
 
@@ -395,6 +405,35 @@ class Model_UserItemSet extends Connexions_Set
      * Protected helpers methods
      *
      */
+
+    /** @brief  If our current query doesn't already include a join with the 
+     *          Item table, add the join now.
+     *
+     *  @return $this
+     */
+    protected function _joinItem()
+    {
+        if ($this->_itemJoined)
+            return $this;
+
+        // Include all columns/fields from Item, prefixed by 'item_'.
+        $itemColumns = array();
+        foreach (Model_Item::$model as $field => $type)
+        {
+            $itemColumns['item_'.$field] = 'i.'.$field;
+        }
+
+        $this->_select->joinLeft(array('i'  => 'item'),     // table / as
+                                 '(i.itemId=ui.itemId)',    // condition
+                                 $itemColumns);             // columns
+
+        Connexions::log("Model_UserItemSet::_joinItem: sql[ %s ]",
+                        $this->_select->assemble());
+
+        $this->_itemJoined = true;
+
+        return $this;
+    }
 
     /** @brief  Return a Zend_Db_Select instance capable of retrieving the user
      *          identifiers of the userItems represented by this set.

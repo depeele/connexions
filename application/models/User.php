@@ -260,6 +260,17 @@ class Model_User extends Connexions_Model
         return $this;
     }
 
+    /** @brief  Notification from a related model that tags related to this 
+     *          user have been updated.  Perform any required maintainence 
+     *          (e.g.  updating tag statistics).
+     *
+     *  @return This Model_User for a fluent interface.
+     */
+    public function tagsUpdated()
+    {
+        return $this;
+    }
+
     /*************************************************************************
      * Connexions_Model overrides
      *
