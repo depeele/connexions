@@ -76,6 +76,17 @@ class Model_Item extends Connexions_Model_Cached
         return parent::__toString();
     }
 
+    /** @brief  Notification from a related model that tags related to this 
+     *          item have been updated.  Perform any required maintainence 
+     *          (e.g.  updating tag statistics).
+     *
+     *  @return This Model_Item for a fluent interface.
+     */
+    public function tagsUpdated()
+    {
+        return $this;
+    }
+
     /*************************************************************************
      * Connexions_Model - overloads
      *

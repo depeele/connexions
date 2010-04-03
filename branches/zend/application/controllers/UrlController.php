@@ -30,7 +30,7 @@ class UrlController extends Zend_Controller_Action
         /* If the incoming URL is NOT an MD5 hash (32 hex characters), convert
          * it to a normalzed hash now
          */
-        $this->_urlHash = Connexions::normalizedMd5($url);
+        $this->_urlHash = Connexions::md5Url($url);
         if ($this->_urlHash !== $url)
         {
             // Redirect using the URL hash

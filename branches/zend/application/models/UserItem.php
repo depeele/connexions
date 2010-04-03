@@ -201,6 +201,102 @@ class Model_UserItem extends Connexions_Model
         return $res;
     }
 
+    /** @brief  Modify the set of tags associated with this userItem / 
+     *          Bookmark.
+     *  @param  tags    The new, full set of tags for this userItem / Bookmark.
+     *                  This may be an array of tagIds or a comma-separated 
+     *                  string of tags.
+     *
+     *  @return This Model_UserItem for a fluent interface.
+     */
+    public function tagsUpdate($tags)
+    {
+        if (! is_array($tags))
+        {
+            /* Parse the tags into an array of 'valid' / existing tagIds and
+             * a second array of 'invalid' / non-existing tag names.
+             */
+            $tagInfo = self::ids($tags);
+
+            /* Create all tags that do not yet exist, adding the new tagId to 
+             * the list of 'valid' tagIds.
+             */
+            foreach ($tagInfo['invalid'] as $tagStr)
+            {
+                $tag = new Model_Tag($tagStr);
+                $tag->save();
+
+                array_push($tagInfo['valid'], $tag->tagId);
+            }
+
+            $tags = $tagInfo['valid'];
+        }
+
+        /* Change the set of tags for this userItem / Bookmark.
+         *
+         * This involves:
+         *  1) Determine which of the current tags should be deleted, and which 
+         *     of the new tags are being added;
+         *          e.g.    new     = (a,    c, d,    f, g, h, i)
+         *                  current = (a, b, c, d, e, f         )
+         *                  -------------------------------------
+         *                  delete  = (   b,       e            )
+         *                  keep    = (a,    c, d,    f         )
+         *
+         *                  add     = diff(new, keep)
+         *                            (                  g, h, i)
+         *
+         *  2) Add any new tags;
+         *  3) Delete any tags that are no longer needed.
+         */
+        $userId  = $this->userId;
+        $itemId  = $this->itemId;
+
+        $tagsDelete = array();
+        $tagsKeep   = array();
+        foreach ($this->tags as $tag)
+        {
+            if (! in_array($tag->tagId, $tags))
+            {
+                // This tag is to be deleted
+                array_push($tagsDelete, $tag->tagId);
+            }
+            else
+            {
+                // This tag is to be kept
+                array_push($tagsKeep,   $tag->tagId);
+            }
+        }
+
+        /* The tags that will be added will be the difference between the 
+         * incoming set of tags and those we will be keeping.
+         */
+        $tagsAdd = array_diff($tags, $tagsKeep);
+
+        // 2) Add any new tags (tagsAdd);
+        if (! empty($tagsAdd))
+        {
+            //                             vv don't notify related models here
+            $this->tagsAdd($tagsAdd,       false);
+        }
+
+        // 3) Delete any tags that are no longer needed (tagsDelete).
+        if (! empty($tagsDelete))
+        {
+            //                             vv don't notify related models here
+            $this->tagsDelete($tagsDelete, false);
+        }
+
+        // Invalidate our tag cache.
+        $this->_tags = null;
+
+        // Notify related models of this update to tags
+        $this->user->tagsUpdated();
+        $this->item->tagsUpdated();
+
+        return $this;
+    }
+
     /** @brief  Given a set of tags (either an array of tagIds or a 
      *          comma-separated string of tags), associate all tags with this 
      *          userItem.  If tags do not exist, they will be created.
@@ -208,20 +304,25 @@ class Model_UserItem extends Connexions_Model
      *                  comma-separated string of tags.
      *
      *  Note: This method will also update the appropriate join tables
-     *        ( userTag, itemTag, and userTagItem ) and user tag statistics.
-     *
-     *        ASSUME that these are completely new tags for this userItem.
+     *        ( userTag, itemTag, and userTagItem ).
      *
      *  @return This Model_UserItem for a fluent interface.
      */
-    public function addTags($tags)
+    public function tagsAdd($tags, $notify = true)
     {
         // Retrieve the count of existing tags for this userItem
         $curTagCount = count($this->tags);
 
         if (! is_array($tags))
         {
+            /* Parse the tags into an array of 'valid' / existing tagIds and
+             * a second array of 'invalid' / non-existing tag names.
+             */
             $tagInfo = self::ids($tags);
+
+            /* Create all tags that do not yet exist, adding the new tagId to 
+             * the list of 'valid' tagIds.
+             */
             foreach ($tagInfo['invalid'] as $tagStr)
             {
                 $tag = new Model_Tag($tagStr);
@@ -234,67 +335,140 @@ class Model_UserItem extends Connexions_Model
         }
 
         // Create the appropriate join table entries for each new tag
+        $userId = $this->userId;
+        $itemId = $this->itemId;
         foreach ($tags as $tagId)
         {
             // Create the userTag entry
-            $rec = array('tagId'  => $tagId,
-                         'userId' => $this->userId);
-            $this->_db->insert('userTag', $rec);
+            try
+            {
+                $this->_db->insert('userTag',
+                                   array('userId' => $userId,
+                                         'tagId'  => $tagId));
+            }
+            catch (Exception $e) { /* IGNORE -- likely a duplicate entry */ }
 
             // Create the itemTag entry
-            $rec = array('tagId'  => $tagId,
-                         'itemId' => $this->itemId);
-            $this->_db->insert('itemTag', $rec);
+            try
+            {
+                $this->_db->insert('itemTag',
+                                   array('itemId' => $itemId,
+                                         'tagId'  => $tagId));
+            }
+            catch (Exception $e) { /* IGNORE -- likely a duplicate entry */ }
 
             // Create the userTagItem entry
-            $rec = array('tagId'  => $tagId,
-                         'itemId' => $this->itemId,
-                         'userId' => $this->userId);
-            $this->_db->insert('userTagItem', $rec);
+            try
+            {
+                $this->_db->insert('userTagItem',
+                                   array('userId' => $userId,
+                                         'tagId'  => $tagId,
+                                         'itemId' => $itemId));
+            }
+            catch (Exception $e) { /* IGNORE -- likely a duplicate entry */ }
         }
 
-        // Update tag statistics for the owner of this userItem.
-        $this->_tags = null;    // clear any cache of tags
-        $newTagCount = count($this->tags);
+        // Invalidate our tag cache.
+        $this->_tags = null;
 
-        $this->user->totalTags += (newTagCount - $oldTagCount);
-        $this->user->save();
+        if ($notify)
+        {
+            // Notify related models of this update to tags
+            $this->user->tagsUpdated();
+            $this->item->tagsUpdated();
+        }
 
         return $this;
     }
 
-    /** @brief  Remove all tags associated with this userItem / Bookmark.
+    /** @brief  Remove the given set of tags associated with this userItem / 
+     *          Bookmark.
+     *  @param  tags    An array of tagIds to delete
+     *                  (empty to delete all tags);
+     *
+     *  Note: This method will also update the appropriate join tables
+     *        ( userTag, itemTag, and userTagItem ).
      *
      *  @return This Model_UserItem for a fluent interface.
      */
-    public function removeTags()
+    public function tagsDelete(array $tags = array(), $notify = true)
     {
-        // Retrieve the set of existing tags for this userItem
-        $curTags = $this->tags;
-
-        // Delete the join table entries for each existing tag
-        foreach ($curTags as $tag)
+        if (empty($tags))
         {
-            // Delete the userTag entry
-            $where = array('tagId'  => $tag->tagId,
-                           'userId' => $this->userId);
-            $this->_db->delete('userTag', $where);
-
-            // Delete the itemTag entry
-            $where = array('tagId'  => $tag->tagId,
-                           'itemId' => $this->itemId);
-            $this->_db->delete('itemTag', $where);
-
-            // Delete the userTagItem entry
-            $where = array('tagId'  => $tag->tagId,
-                           'userId' => $this->userId,
-                           'itemId' => $this->itemId);
-            $this->_db->delete('userTagItem', $where);
+            // Retrieve the set of tagIds for this userItem
+            $tags = array();
+            foreach ($this->tags as $tag)
+            {
+                array_push($tags, $tag->tagId);
+            }
         }
 
-        // Update tag statistics for the owner of this userItem.
-        $this->user->totalTags -= count($curTags);
-        $this->user->save();
+        // Delete the join table entries for each existing tag
+        $userId = $this->userId;
+        $itemId = $this->itemId;
+
+        /* Delete all userTagItem entries matching this userItem and any of the 
+         * provided tags.
+         */
+        $this->_db->delete('userTagItem', array('userId=?'     => $userId,
+                                                'tagId IN (?)' => $tags,
+                                                'itemId=?'     => $itemId));
+
+
+        // Adjust related joinTables by walking through all provided tags...
+        foreach ($tags as $tagId)
+        {
+            /* If there are no more 'userTagItem' entries matching 
+             * 'userId/tagId'...
+             *      'count' represents the number of items the user identified 
+             *      by 'userId' has tagged with the tag identified by 'tagId'
+             */
+            $select = $this->_db->select()
+                                    ->from('userTagItem',
+                                           array('count' =>
+                                                    'COUNT(DISTINCT itemId)'))
+                                    ->where(array('userId=?' => $userId,
+                                                  'tagId=?'  => $tagId));
+            $count = $select->query()->fetchColumn(1);
+            if ($count < 1)
+            {
+                // ... Delete the 'userTag' record matching 'userId/tagId'
+                $this->_db->delete('userTag',
+                                    array('userId=?' => $userId,
+                                          'tagId=?'  => $tagId));
+            }
+
+            /* If there are no more 'userTagItem' entries matching 
+             * 'itemId/tagId'...
+             *      'count' represents the number of users that have tagged the 
+             *      item identified by 'itemId' with the tag identified by 
+             *      'tagId'
+             */
+            $select = $this->_db->select()
+                                    ->from('userTagItem',
+                                           array('count' =>
+                                                    'COUNT(DISTINCT userId)'))
+                                    ->where(array('itemId=?' => $itemId,
+                                                  'tagId=?'  => $tagId));
+            $count = $select->query()->fetchColumn(1);
+            if ($count < 1)
+            {
+                // ... Delete the 'itemTag' record matching 'itemId/tagId'
+                $this->_db->delete('itemTag',
+                                    array('itemId=?' => $itemId,
+                                          'tagId=?'  => $tagId));
+            }
+        }
+
+        // Invalidate our tag cache.
+        $this->_tags = null;
+
+        if ($notify)
+        {
+            // Notify related models of this update to tags
+            $this->user->tagsUpdated();
+            $this->item->tagsUpdated();
+        }
 
         return $this;
     }

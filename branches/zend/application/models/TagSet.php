@@ -65,8 +65,9 @@ class Model_TagSet extends Connexions_Set
             {
                 $select->where('uti.userId IN (?)', $userIds);
 
-                // Require ALL provided tags
+                /* Require ALL provided users
                 $select->having('COUNT(DISTINCT uti.userId)='. $nUserIds);
+                 */
             }
         }
 
