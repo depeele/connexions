@@ -189,7 +189,6 @@ class Model_User extends Connexions_Model
      *  @param  tagIds  If provided, an array of tagIds to limit the query.
      *
      *  @return $this
-     */
     public function weightBy($by, $tagIds = null)
     {
         $cols = array();
@@ -225,27 +224,18 @@ class Model_User extends Connexions_Model
             $select->where('uti.tagId IN (?)', $tagIds)
                    ->having('COUNT(DISTINCT uti.tagId)='.count($tagIds));
         }
-        /*
-        Connexions::log("Model_User::weightBy({$by}): "
-                            . "sql[ ". $select->assemble() ." ]");
-        // */
 
         $recs   = $select->query()->fetchAll();
 
         if (@count($recs) == 1)
         {
-            /*
-            Connexions::log(
-                    sprintf("Model_User::weightBy: %d record [ %s ]",
-                            count($recs), print_r($recs[0], true)) );
-            // */
-
             // Include this 'weight' in our record data
             $this->_record['weight'] = $recs[0]['weight'];
         }
 
         return $this;
     }
+     */
 
     /** @brief  Invalidate any cache we have of sub-instances
      *          (i.e. _tags, _userItems).

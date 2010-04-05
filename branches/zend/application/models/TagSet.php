@@ -25,98 +25,24 @@ class Model_TagSet extends Connexions_Set
                                 $itemIds    = null,
                                 $tagIds     = null)
     {
-        if ( (! @empty($userIds)) && (! @is_array($userIds)) )
-            $userIds = array($userIds);
-        if ( (! @empty($itemIds)) && (! @is_array($itemIds)) )
-            $itemIds = array($itemIds);
-        if ( (! @empty($tagIds)) && (! @is_array($tagIds)) )
-            $tagIds = array($tagIds);
-
-
-        // Generate a Zend_Db_Select instance
-        $db     = Connexions::getDb();
-        $table  = Connexions_Model::metaData('table',
-                                             self::MEMBER_CLASS);
-
-        $select = $db->select()
-                     ->from(array('t' => $table))
-                     ->joinLeft(array('uti' => 'userTagItem'),  // table / as
-                                't.tagId=uti.tagId',            // condition
-                                false)                          // no columns
-                     ->columns(array(
-                                'userItemCount' =>
-                                        'COUNT(DISTINCT uti.itemid,uti.userId)',
-                                'itemCount' =>
-                                        'COUNT(DISTINCT uti.itemId)',
-                                'userCount' =>
-                                        'COUNT(DISTINCT uti.userId)'))
-                     ->group('t.tagId');
-
-        if (! @empty($userIds))
+        if ($userIds instanceof Zend_Db_Select)
         {
-            // User Restrictions
-            $nUserIds = count($userIds);
-            if ($nUserIds === 1)
-            {
-                $select->where('uti.userId=?', $userIds);
-
-            }
-            else
-            {
-                $select->where('uti.userId IN (?)', $userIds);
-
-                /* Require ALL provided users
-                $select->having('COUNT(DISTINCT uti.userId)='. $nUserIds);
-                 */
-            }
+            return parent::__construct($userIds, self::MEMBER_CLASS);
         }
 
-        if (! @empty($itemIds))
-        {
-            // Item Restrictions
-            $nItemIds = count($itemIds);
-            if ($nItemIds === 1)
-            {
-                $select->where('uti.itemId=?', $itemIds);
+        $select = $this->_commonSelect(self::MEMBER_CLASS,
+                                       $userIds, $itemIds, $tagIds);
 
-            }
-            else
-            {
-                $select->where('uti.itemId IN (?)', $itemIds);
+        // Use a default order.
+        $select->order('t.tag ASC');
 
-                /* Require ALL provided items
-                $select->having('COUNT(DISTINCT uti.itemId)='. $nItemIds);
-                */
-            }
-        }
-
-        if (! @empty($tagIds))
-        {
-            // Tag Restrictions
-            $nTagIds = count($tagIds);
-            if ($nTagIds === 1)
-            {
-                $select->where('uti.tagId=?', $tagIds);
-
-            }
-            else
-            {
-                $select->where('uti.tagId IN (?)', $tagIds);
-
-                /* Require ALL provided tags
-                $select->having('COUNT(DISTINCT uti.tagId)='. $nTagIds);
-                */
-            }
-        }
-
-        // Remember the original user, item, and tag identifiers.
         $this->_userIds = $userIds;
         $this->_itemIds = $itemIds;
         $this->_tagIds  = $tagIds;
 
         /*
         Connexions::log(
-                sprintf("Model_TagSet: select[ %s ]\n",
+                sprintf("Model_TagSet: select[ %s ]<br />\n",
                         $select->assemble()) );
         // */
 
@@ -199,16 +125,16 @@ class Model_TagSet extends Connexions_Set
         switch ($by)
         {
         case 'user':
-            $cols['weight'] = 'COUNT(DISTINCT uti.userId)';
+            $cols['weight'] = 'uti.userCount';
             break;
 
         case 'item':
-            $cols['weight'] = 'COUNT(DISTINCT uti.itemId)';
+            $cols['weight'] = 'uti.itemCount';
             break;
 
         case 'userItem':
         default:            // Default to 'userItem'
-            $cols['weight'] = 'COUNT(DISTINCT uti.userId,uti.itemId)';
+            $cols['weight'] = 'uti.userItemCount';
             break;
         }
 
@@ -373,8 +299,8 @@ class Model_TagSet extends Connexions_Set
         $select->reset(Zend_Db_Select::COLUMNS)
                ->reset(Zend_Db_Select::ORDER)
                ->reset(Zend_Db_Select::GROUP)
-               ->group('uti.userId')
-               ->columns('uti.userId');
+               ->columns('userId', 'uti')
+               ->group('uti.userId');
 
         return $select;
     }
@@ -394,8 +320,8 @@ class Model_TagSet extends Connexions_Set
         $select->reset(Zend_Db_Select::COLUMNS)
                ->reset(Zend_Db_Select::ORDER)
                ->reset(Zend_Db_Select::GROUP)
-               ->group('uti.userId')
-               ->columns('uti.itemId');
+               ->columns('itemId', 'uti')
+               ->group('uti.itemId');
 
         return $select;
     }
@@ -415,8 +341,8 @@ class Model_TagSet extends Connexions_Set
         $select->reset(Zend_Db_Select::COLUMNS)
                ->reset(Zend_Db_Select::ORDER)
                ->reset(Zend_Db_Select::GROUP)
-               ->group('uti.tagId')
-               ->columns('uti.tagId');
+               ->columns('tagId', 'uti')
+               ->group('uti.tagId');
 
         return $select;
     }

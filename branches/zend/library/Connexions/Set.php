@@ -154,6 +154,8 @@ abstract class Connexions_Set extends    ArrayIterator
 
         if (! @empty($iterClass))
             $this->_iterClass = $iterClass;
+
+        //Connexions::log("Connexions_Set: sql[ %s ]", $select->assemble());
     }
 
     public function getError()
@@ -323,25 +325,28 @@ abstract class Connexions_Set extends    ArrayIterator
         switch ($type)
         {
         case self::RELATED_USERS:
-            $set     = new Model_UserSet($tagIds, $itemIds, $userIds);
+            $class    = 'Model_User';
+            $setClass = 'Model_UserSet';
             break;
 
         case self::RELATED_TAGS:
-            $set     = new Model_TagSet($userIds, $itemIds, $tagIds);
+            $class    = 'Model_Tag';
+            $setClass = 'Model_TagSet';
             break;
 
         case self::RELATED_ITEMS:
-            throw(new Exception("Connexions_Set::getRelatedSet({$type}): "
-                                . 'Not-implemented for this type'));
+            $class    = 'Model_Item';
+            $setClass = 'Model_ItemSet';
             break;
 
         case self::RELATED_USERITEMS:
-            $set     = new Model_UserItemSet($tagIds, $userIds, $itemIds);
+            $class    = 'Model_UserItem';
+            $setClass = 'Model_UserItemSet';
             break;
 
         case self::RELATED_GROUPS:
-            throw(new Exception("Connexions_Set::getRelatedSet({$type}): "
-                                . 'Not-implemented for this type'));
+            $class    = 'Model_Group';
+            $setClass = 'Model_GroupSet';
             break;
 
         default:
@@ -350,6 +355,13 @@ abstract class Connexions_Set extends    ArrayIterator
             break;
         }
 
+        $select = $this->_commonSelect($class, $userIds, $itemIds, $tagIds);
+
+        Connexions::log("Connexions_Set::getRelatedSet(%s): sql[ %s ]",
+                        $type, $select->assemble());
+
+        $set    = new $setClass($select);
+         
         return $set;
     }
 
@@ -383,7 +395,7 @@ abstract class Connexions_Set extends    ArrayIterator
                 $perPage = 100;
         }
 
-        /*
+        // /*
         Connexions::log("Connexions_Set::get_Tag_ItemList: "
                             . "offset[ {$offset} ], perPage[ {$perPage} ], "
                             . "sql[ {$this->_select->assemble()} ]");
@@ -613,6 +625,13 @@ abstract class Connexions_Set extends    ArrayIterator
         Connexions_Profile::start($mid, 'begin');
         // */
 
+        /*
+        Connexions::log("Connexions_Set::getItems(%d, %d): "
+                        .   "initial sql[ %s ]",
+                        $offset, $itemCountPerPage,
+                        $this->_select->assemble());
+        // */
+
         if ($itemCountPerPage <= 0)
         {
             $offset           = 0;
@@ -706,6 +725,114 @@ abstract class Connexions_Set extends    ArrayIterator
      *
      */
 
+    /** @brief  Construct the common Zend_Db_Select for a set.
+     *  @param  class       The name of the Model class.
+     *  @param  userIds     The array of userIds to use in the relation;
+     *  @param  itemIds     The array of itemIds to use in the relation;
+     *  @param  tagIds      The array of tagIds  to use in the relation;
+     *  @param  exactTags   If 'tagIds' is provided,  should we require a match
+     *                      on ALL tags? [ true ];
+     *
+     *  @return The new Connexions_Set instance.
+     */
+    protected function _commonSelect($class,
+                                     $userIds   = null,
+                                     $itemIds   = null,
+                                     $tagIds    = null,
+                                     $exactTags = true)
+    {
+        switch ($class)
+        {
+        case 'Model_User':
+            $as       = 'u';
+            $table    = Model_User::metaData('table');
+            $keys     = Model_User::metaData('keys');
+            break;
+
+        case 'Model_Tag':
+            $as       = 't';
+            $table    = Model_Tag::metaData('table');
+            $keys     = Model_Tag::metaData('keys');
+            break;
+
+        case 'Model_Item':
+            $as       = 'i';
+            $table    = Model_Item::metaData('table');
+            $keys     = Model_Item::metaData('keys');
+            break;
+
+        case 'Model_UserItem':
+            $as       = 'ui';
+            $table    = Model_UserItem::metaData('table');
+            $keys     = Model_UserItem::metaData('keys');
+            break;
+
+        case 'Model_Group':
+            $as       = 'g';
+            $table    = Model_Group::metaData('table');
+            $keys     = Model_Group::metaData('keys');
+            break;
+
+        default:
+            throw(new Exception("Connexions_Set::getRelatedSet({$class}): "
+                                . 'Unexpected class'));
+            break;
+        }
+
+        $db        = Connexions::getDb();
+        $groupBy   = $keys[0];
+        $subKeys   = (is_array($keys[0]) ? $keys[0] : array( $keys[0] ));
+
+        $subSelect = $db->select();
+        $subSelect->from('userTagItem',
+                         array('*',
+                               'userItemCount'  =>
+                                                'COUNT(DISTINCT userId,itemId)',
+                               'userCount'      =>
+                                                'COUNT(DISTINCT userId)',
+                               'itemCount'      =>
+                                                'COUNT(DISTINCT itemId)',
+                               'tagCount'       =>
+                                                'COUNT(DISTINCT tagId)'))
+                  ->group($groupBy);
+
+        if (! empty($userIds))
+            $subSelect->where('userId IN (?)', $userIds);
+        if (! empty($itemIds))
+            $subSelect->where('itemId IN (?)', $itemIds);
+        if (! empty($tagIds))
+        {
+            $subSelect->where('tagId IN (?)', $tagIds);
+
+            if ($exactTags === true)
+            {
+                $nTagIds = count($tagIds);
+                $subSelect->having('tagCount='. $nTagIds);
+            }
+        }
+
+        $joinCond = array();
+        foreach ($subKeys as $name)
+        {
+            array_push($joinCond, "{$as}.{$name}=uti.{$name}");
+        }
+
+        $select = $db->select();
+        $select->from(array($as => $table),
+                      array("{$as}.*",
+                            'uti.userItemCount',
+                            'uti.userCount',
+                            'uti.itemCount',
+                            'uti.tagCount'))
+               ->join(array('uti' => $subSelect),
+                      implode(' AND ', $joinCond),
+                      null);
+         
+        Connexions::log("Connexions_Set::_commonSelect(): sql[ %s ]",
+                        $select->assemble());
+        return $select;
+    }
+
     /** @brief  Ensure that all records in the given range have been cached.
      *  @param  offset  The beginning offset.
      *  @param  count   The number of records to retrieve.
@@ -758,7 +885,7 @@ abstract class Connexions_Set extends    ArrayIterator
 
         $this->_select->limit($fetchCount, $fetchOffset);
 
-        /*
+        // /*
         Connexions_Profile::start($mid, "ready to fetch [ %s ]",
                                   $this->_select->assemble());
         // */
@@ -883,7 +1010,7 @@ abstract class Connexions_Set extends    ArrayIterator
         $count = clone $this->_select;
         $count->__toString();    // ZF-3719 workaround
 
-        /*
+        // /*
         Connexions::log("Connexions_Set::_select_forCount:"
                         .   "[ ". get_class($this) ." ]: "
                         .   "original sql[ {$count->assemble()} ]");
@@ -919,16 +1046,15 @@ abstract class Connexions_Set extends    ArrayIterator
              * the COUNT query.
              */
             if ( ($isDistinct && (count($columns) > 1)) ||
-                 /* We use grouping for userItem to select a unique item.
+                 /* :XXX: We use grouping for userItem to select a unique item.
                   *
                   * This does NOT require a sub-select to count, it just
                   * requires the grouping change in the final else below...
-                  *
-                  *(count($groups) > 1)                   ||
                   */
+                  (count($groups) > 1)                   ||
                   (! @empty($having)) )
             {
-                $count = $db->select()->from($this->_select);
+                $count = $db->select()->from( $count );
             }
             else if ($isDistinct)
             {
@@ -944,17 +1070,20 @@ abstract class Connexions_Set extends    ArrayIterator
                 }
 
                 $groupPart = $col;
+
+                Connexions::log("Connexions_Set::_select_forCount: "
+                                .   "*********** DISTINCT, group [ %s ] ",
+                                print_r($groupParts, true));
             }
             else if ((! @empty($groups))                            &&
                      ($groups[0] !== Zend_Db_Select::SQL_WILDCARD)  &&
                      (! $groups[0] instanceof Zend_Db_Expr))
             {
+                $groupPart = $db->quoteIdentifier($groups[0], true);
+
                 /* Grouping can consist of multiple group identifiers, which
                  * MUST all be included here in order to properly count unique
                  * items.
-                 */
-                //$groupPart = $db->quoteIdentifier($groups[0], true);
-
                 $parts = array();
                 foreach ($groups as $group)
                 {
@@ -962,6 +1091,11 @@ abstract class Connexions_Set extends    ArrayIterator
                 }
 
                 $groupPart = implode(',', $parts);
+                 */
+
+                Connexions::log("Connexions_Set::_select_forCount: "
+                                .   "*********** GROUPS, group [ %s ] ",
+                                print_r($groupParts, true));
             }
 
             /* If the original query had a GROUP BY or DISTINCT and only one
@@ -985,10 +1119,10 @@ abstract class Connexions_Set extends    ArrayIterator
 
         $this->_select_count = $count;
 
-        /*
+        // /*
         Connexions::log("Connexions_Set::_select_forCount:"
                         .   "[ ". get_class($this) ." ]: "
-                        .   "sql[ {$count->assemble()} ]");
+                        .   "FINAL sql[ {$count->assemble()} ]");
         // */
         return $this->_select_count;
     }
