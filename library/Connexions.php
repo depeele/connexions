@@ -1,15 +1,9 @@
 <?php
 /** @file
  *
- *  The Connexions singleton.  Provided general functionality.
+ *  The Connexions singleton, in addition to a few general helper functions.
+ *  Provides general functionality.
  *
- */
-
-/** @brief  Is Late Static Binding supported by this version of PHP.
- *
- *  Late static binding allows things like:
- *      $class::$table      Access the static 'table' member of the class
- *                          identified by the value of $class.
  */
 class Connexions
 {
@@ -455,4 +449,35 @@ class Connexions
 
         return $normUrl;
     }
+
+    /** @brief  Search for 'needle' in 'haystack' including any sub-arrays
+     *          within 'haystack'.
+     *  @param  needle      The item to locate (mixed).
+     *  @param  haystack    The array to search.
+     *
+     *  @return true | false
+     */
+    public static function in_array($needle, array $haystack)
+    {
+        foreach ($haystack as $key => $value)
+        {
+            if ($needle === $value)
+                return true;
+
+            if (is_array($value))
+            {
+                if ( ($res = self::in_array($needle, $value)) !== false)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
 }
+
+/****************************************************************************
+ * General helper functions.
+ *
+ */
+

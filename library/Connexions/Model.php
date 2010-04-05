@@ -12,7 +12,8 @@ abstract class Connexions_Model
      *
      *   table          is the name of the underlying database table
      *   keys           is an array of database keys, increasing order by most
-     *                  used
+     *                  used.  The first key MUST be the primary key, which MAY
+     *                  be an array of keys.
      *
      *   model          an associative array of 'field' => 'type' defining all
      *                  fields of the table.  Valid types are:
@@ -410,7 +411,7 @@ abstract class Connexions_Model
                     $val     = $this->{$key};   
                 }
 
-                $isKey   = in_array($key, $this->_keys);
+                $isKey   = Connexions::in_array($key, $this->_keys);
                 $isValid = $this->_validated[$key];
                 $isDirty = $this->_dirty[$key];
 
@@ -453,14 +454,20 @@ abstract class Connexions_Model
     protected function _record2where($includeDirty = true)
     {
         $where = array();
-        foreach ($this->_keys as $key)
+        foreach ($this->_keys as $keys)
         {
-            if ( (($includeDirty === true) ||
-                  (! @isset($this->_dirty[$key]))) &&
-                 (@isset($this->_record[$key])) )
+            if (! is_array($keys))
+                $keys = array($keys);
+
+            foreach ($keys as $key)
             {
-                $where['('.$key.'=?)'] = $this->_record[$key];
-                //array_push($where, $key.'='.$this->_record[$key]);
+                if ( (($includeDirty === true) ||
+                      (! @isset($this->_dirty[$key]))) &&
+                     (@isset($this->_record[$key])) )
+                {
+                    $where['('.$key.'=?)'] = $this->_record[$key];
+                    //array_push($where, $key.'='.$this->_record[$key]);
+                }
             }
         }
 
@@ -497,26 +504,37 @@ abstract class Connexions_Model
              * model.
              */
             $dbKey = false;
-            foreach ($this->_keys as $key)
+            foreach ($this->_keys as $keys)
             {
-                if (isset($keysMatches[$key]))
-                    // We've already matched this 'key', skip it...
-                    continue;
+                if (! is_array($keys))
+                    $keys = array($keys);
 
-                if ( (! is_string($field)) || ($field == $key) )
+                foreach ($keys as $key)
                 {
-                    // See if the value matches the type of this key.
-                    try
-                    {
-                        $val   = $this->_coherse($val, $this->_model[$key]);
-                        $dbKey = $key;
+                    if (isset($keysMatches[$key]))
+                        // We've already matched this 'key', skip it...
+                        continue;
 
-                        // We have a match by field name and value.
-                    }
-                    catch(Exception $e)
+                    if ( (! is_string($field)) || ($field == $key) )
                     {
-                        // No match on value, therefore no match on key field
+                        // See if the value matches the type of this key.
+                        try
+                        {
+                            $val   = $this->_coherse($val,
+                                                     $this->_model[$key]);
+                            $dbKey = $key;
+
+                            // We have a match by field name and value.
+                        }
+                        catch(Exception $e)
+                        {
+                            // No match on value, therefore no match on key
+                            // field
+                        }
                     }
+
+                    if ($dbKey !== false)
+                        break;
                 }
 
                 if ($dbKey !== false)
@@ -745,19 +763,25 @@ abstract class Connexions_Model
              * Start by removing any field that has a type of 'auto'.  If there
              * are fields remaining, call it a non-backed record.
              */
-            foreach ($this->_keys as $key)
+            foreach ($this->_keys as $keys)
             {
-                if ($this->_model[$key] !== 'auto')
-                    continue;
+                if (! is_array($keys))
+                    $keys = array($keys);
 
-                if (isset($id[$key]) )
+                foreach ($keys as $key)
                 {
-                    /* Remember the fields that we remove in case
-                     * we end up removing them all.
-                     */
-                    array_push($idParts, $key.'=='.$id[$key]);
+                    if ($this->_model[$key] !== 'auto')
+                        continue;
 
-                    unset($id[$key]);
+                    if (isset($id[$key]) )
+                    {
+                        /* Remember the fields that we remove in case
+                         * we end up removing them all.
+                         */
+                        array_push($idParts, $key.'=='.$id[$key]);
+
+                        unset($id[$key]);
+                    }
                 }
             }
 
@@ -857,7 +881,7 @@ abstract class Connexions_Model
             if ($this->_model[$field] !== 'auto')
             {
                 // The field is NOT marked 'auto'.  See if it matches any key.
-                if (in_array($field, $this->_keys))
+                if (Connexions::in_array($field, $this->_keys))
                 {
                     /* This field matches a non-auto key.
                      *

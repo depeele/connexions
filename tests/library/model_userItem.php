@@ -1,101 +1,81 @@
 <?php
 require_once('./bootstrap.php');
 
-$time_start = microtime(true);
-$mem_start  = memory_get_usage();
-$mem_first  = $mem_start;
-$rec        = Model_UserItem::find(array('userId'  => 1,
+echo "<pre>";
+echo "<h3>Model_UserItem tests</h3>";
+
+$userItem   = Model_UserItem::find(array('userId'  => 1,
                                          'itemId'  => 1));
-number_format($mem_end    = memory_get_usage());
-$time_end   = microtime(true);
-printf ("<pre>Record for userId==1, itemId==1, %f seconds, %s bytes:\n",
-        $time_end - $time_start,
-        number_format($mem_end  - $mem_start));
-echo "--------------------------------------------------\n",
-     " Array Dump:\n";
-print_r($rec->toArray());
-
-echo "--------------------------------------------------\n",
-     " Debug Dump:\n";
-echo ($rec instanceof Connexions_Model ? $rec->debugDump() : " *** ERROR\n");
-echo "\n\n";
-
-/*****************************************************************************/
-$rec->taggedOn  = date('Y-m-d H:i:s');
-$rec->isPrivate = (! $rec->isPrivate);
-echo 'Save (should be an update with new "taggedOn" and toggled "isPrivate"):',
-     "\n";
-$time_start = microtime(true);
-$res        = $rec->save();
-$mem_end    = memory_get_usage();
-$time_end   = microtime(true);
-if ($res === true)
+if ($userItem instanceof Connexions_Model)
 {
-    printf ("-- success, %f seconds, %s bytes\n",
-            $time_end - $time_start,
-            number_format($mem_end  - $mem_start));
-    echo ($rec instanceof Connexions_Model ? $rec->debugDump() : " *** ERROR\n");
+    echo "Record for userId==1, itemId==1:\n";
+    echo $userItem->debugDump();
 }
 else
+{
+    echo " *** ERROR\n";
+}
+echo "<hr />\n";
+
+/*****************************************************************************/
+$userItem->taggedOn  = date('Y-m-d H:i:s');
+$userItem->isPrivate = (! $userItem->isPrivate);
+echo 'Save (should be an update with new "taggedOn" and toggled "isPrivate"):',
+     "\n";
+$res        = $userItem->save();
+if ($res === true)
+{
+    echo "-- success\n";
+    $userItem->debugDump();
+}
+else
+{
     echo "** FAILURE\n";
-echo "\n\n";
+}
+echo "\n\n\n";
 
-printf ("taggedOn:     %s\n", $rec->taggedOn);
-printf ("isPrivate:    %s\n", ($rec->isPrivate ? 'true' : 'false'));
-printf ("userId:       %d\n", $rec->userId);
-printf ("user->userId: %d : %d\n", $rec->user->userId, $rec->user_userId);
-printf ("user->name:   %s : %s\n", $rec->user->name,   $rec->user_name);
-printf ("item->url:    %s : %s\n", $rec->item->url,    $rec->item_url);
-printf ("tags[0]->tag: %s\n", $rec->tags[0]->tag);
+printf ("taggedOn:     %s\n", $userItem->taggedOn);
+printf ("isPrivate:    %s\n", ($userItem->isPrivate ? 'true' : 'false'));
+printf ("userId:       %d\n", $userItem->userId);
+printf ("user->userId: %d : %d\n", $userItem->user->userId,
+                                   $userItem->user_userId);
+printf ("user->name:   %s : %s\n", $userItem->user->name,
+                                   $userItem->user_name);
+printf ("item->url:    %s : %s\n", $userItem->item->url,
+                                   $userItem->item_url);
+printf ("tags[0]->tag: %s\n", $userItem->tags[0]->tag);
 
-$mem_end    = memory_get_usage();
-$time_end   = microtime(true);
-printf ("-- Retrieval + Access: %f seconds, %s bytes:\n",
-            $time_end - $time_start,
-            number_format($mem_end  - $mem_start));
-
-unset($rec);
-echo "</pre><hr />";
+unset($userItem);
+echo "<hr />\n";
 
 /*****************************************************************************/
 $tagIds  = array(5);    //array(1,2,5);
 $userIds = array(1,2,441);
 $itemIds = array();
 
-$time_start = microtime(true);
-$mem_start  = memory_get_usage();
-$recs       = new Model_UserItemSet($tagIds, $userIds, $itemIds);
-$mem_end    = memory_get_usage();
-$time_end   = microtime(true);
+$userItems = new Model_UserItemSet($tagIds, $userIds, $itemIds);
 
-printf ("<pre>%d Set Record(s) from users (%s) with tags (%s), %f seconds, %s bytes:\n",
-            $recs->count(),
+printf ("%d Set Record(s) from users (%s) with tags (%s):\n",
+            $userItems->count(),
             implode(', ', $userIds),
-            implode(', ', $tagIds),
-            $time_end - $time_start,
-            number_format($mem_end  - $mem_start));
-foreach ($recs as $idex => $rec)
+            implode(', ', $tagIds));
+foreach ($userItems as $idex => $userItem)
 {
     printf ("Record %d, ", $idex);
-    if ($rec instanceof Connexions_Model)
+    if ($userItem instanceof Connexions_Model)
     {
-        echo " Instance: ", $rec->debugDump();
+        echo " Instance: ", $userItem->debugDump();
     }
     else
     {
         echo " Array: ";
-        print_r($rec);
+        print_r($userItem);
     }
-    unset($rec);
+    unset($userItem);
     echo "\n------------------------------------\n";
 }
-$mem_end    = memory_get_usage();
-$time_end   = microtime(true);
-printf ("-- Retrieval + Iteration: %f seconds, %s bytes:\n",
-            $time_end - $time_start,
-            number_format($mem_end  - $mem_start));
-unset($recs);
-echo "</pre><hr />";
+unset($userItems);
+echo "<hr />";
 
 /*****************************************************************************/
 /*
@@ -206,7 +186,3 @@ echo "</pre><hr />";
 // */
 
 /*****************************************************************************/
-$mem_last = $mem_end;
-
-printf ("Total memory: %s bytes<br />\n",
-        number_format($mem_last - $mem_first));

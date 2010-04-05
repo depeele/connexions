@@ -16,7 +16,7 @@ class Model_UserItem extends Connexions_Model
      */
     public static   $table  = 'userItem';
                               // order 'keys' by most used
-    public static   $keys   = array('userId', 'itemId',
+    public static   $keys   = array(array('userId', 'itemId'),
                                     'rating', 'isPrivate','taggedOn');
     public static   $model  = array('userId'        => 'integer',
                                     'itemId'        => 'integer',
