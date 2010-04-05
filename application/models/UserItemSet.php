@@ -264,7 +264,7 @@ class Model_UserItemSet extends Connexions_Set
                 $orderParts = $this->_parse_order($spec);
                 if ($orderParts === null)
                 {
-                    // /*
+                    /*
                     Connexions::log("Model_UserItemSet::setOrder: "
                                     . "Invalid specification [{$spec}] --skip");
                     // */
@@ -313,7 +313,7 @@ class Model_UserItemSet extends Connexions_Set
         if ($group !== null)
             $this->_select->group('ui.itemId');
 
-        // /*
+        /*
         Connexions::log("Model_UserItemSet::setOrder: "
                             . "order[ ". print_r($order, true) ." ], "
                             . "sql[ {$this->_select->assemble()} ]");
@@ -348,8 +348,10 @@ class Model_UserItemSet extends Connexions_Set
                                  '(i.itemId=ui.itemId)',    // condition
                                  $itemColumns);             // columns
 
+        /*
         Connexions::log("Model_UserItemSet::_joinItem: sql[ %s ]",
                         $this->_select->assemble());
+        // */
 
         $this->_itemJoined = true;
 
@@ -374,8 +376,10 @@ class Model_UserItemSet extends Connexions_Set
                ->columns('userId',   'ui')
                ->group('ui.userId');
 
+        /*
         Connexions::log("Model_UserItemSet::_select_users(): sql[ %s ]",
                         $select->assemble());
+        // */
 
         return $select;
     }
@@ -398,8 +402,10 @@ class Model_UserItemSet extends Connexions_Set
                ->columns('itemId', 'ui')
                ->group('ui.itemId');
 
+        /*
         Connexions::log("Model_UserItemSet::_select_items(): sql[ %s ]",
                         $select->assemble());
+        // */
 
         return $select;
     }
@@ -421,8 +427,10 @@ class Model_UserItemSet extends Connexions_Set
                ->columns('tagId', 'uti')
                ->group('uti.tagId');
 
+        /*
         Connexions::log("Model_UserItemSet::_select_tags(): sql[ %s ]",
                         $select->assemble());
+        // */
 
         return $select;
     }
