@@ -49,7 +49,7 @@ unset($userItem);
 echo "<hr />\n";
 
 /*****************************************************************************/
-$tagIds  = array(5);    //array(1,2,5);
+$tagIds  = array(5,6);
 $userIds = array(1,2,441);
 $itemIds = array();
 
@@ -58,7 +58,8 @@ $userItems = new Model_UserItemSet($tagIds, $userIds, $itemIds);
 printf ("%d Set Record(s) from users (%s) with tags (%s):\n",
             $userItems->count(),
             implode(', ', $userIds),
-            implode(', ', $tagIds));
+            //implode(', ', $tagIds));
+            implode(', ', $userItems->tagIds()));
 foreach ($userItems as $idex => $userItem)
 {
     printf ("Record %d, ", $idex);
@@ -186,3 +187,5 @@ echo "</pre><hr />";
 // */
 
 /*****************************************************************************/
+echo "</pre>";
+db_profile_output();

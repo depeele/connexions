@@ -25,85 +25,23 @@ class Model_UserSet extends Connexions_Set
                                 $itemIds  = null,
                                 $userIds  = null)
     {
-        if ( (! @empty($userIds)) && (! @is_array($userIds)) )
-            $userIds = array($userIds);
-        if ( (! @empty($itemIds)) && (! @is_array($itemIds)) )
-            $itemIds = array($itemIds);
-        if ( (! @empty($tagIds)) && (! @is_array($tagIds)) )
-            $tagIds = array($tagIds);
-
-        // Generate a Zend_Db_Select instance
-        $db     = Connexions::getDb();
-        $table  = Connexions_Model::metaData('table', self::MEMBER_CLASS);
-
-        $select = $db->select()
-                     ->from(array('u' => $table))
-                     ->joinLeft(array('uti' => 'userTagItem'),  // table / as
-                                '(u.userId=uti.userId)',        // condition
-                                false)                          // no columns
-                     ->group('u.userId');
-
-        if (! @empty($userIds))
+        if ($tagIds instanceof Zend_Db_Select)
         {
-            // User Restrictions
-            $nUserIds = count($userIds);
-            if ($nUserIds === 1)
-            {
-                $select->where('u.userId=?', $userIds);
-
-            }
-            else
-            {
-                $select->where('u.userId IN (?)', $userIds);
-
-                /* Require ALL provided tags
-                $select->having('COUNT(DISTINCT u.userId)='. $nUserIds);
-                */
-            }
+            return parent::__construct($tagIds, self::MEMBER_CLASS);
         }
 
-        if (! @empty($itemIds))
-        {
-            // Item Restrictions
-            $nItemIds = count($itemIds);
-            if ($nItemIds === 1)
-            {
-                $select->where('uti.itemId=?', $itemIds);
+        $select = $this->_commonSelect(self::MEMBER_CLASS,
+                                       $userIds, $itemIds, $tagIds,
+                                       false);  // NOT exact tags
 
-            }
-            else
-            {
-                $select->where('uti.itemId IN (?)', $itemIds);
-
-                /* Require ALL provided items
-                $select->having('COUNT(DISTINCT uti.itemId)='. $nItemIds);
-                */
-            }
-        }
-
-        if (! @empty($tagIds))
-        {
-            // Tag Restrictions -- required 'userTagItem'
-            $nTagIds = count($tagIds);
-            if ($nTagIds === 1)
-            {
-                $select->where('uti.tagId=?', $tagIds);
-            }
-            else
-            {
-                $select->where('uti.tagId IN (?)', $tagIds);
-
-                // Require ALL provided items
-                $select->having('COUNT(DISTINCT uti.tagId)='. $nTagIds);
-            }
-        }
-
+        // Use a default order.
+        $select->order('u.lastVisit DESC');
 
         $this->_userIds = $userIds;
         $this->_itemIds = $itemIds;
         $this->_tagIds  = $tagIds;
 
-        /*
+        // /*
         Connexions::log(
                 sprintf("Model_UserSet: select[ %s ]<br />\n",
                         $select->assemble()) );
@@ -151,9 +89,7 @@ class Model_UserSet extends Connexions_Set
      */
     public function withAnyTag()
     {
-        $this->_select->reset(Zend_Db_Select::HAVING)
-                      ->columns(array('tagCount' =>
-                                            'COUNT(DISTINCT uti.tagId)'));
+        $this->_select->reset(Zend_Db_Select::HAVING);
 
         return $this;
     }
@@ -168,19 +104,24 @@ class Model_UserSet extends Connexions_Set
     {
         $cols = array();
 
+        // /*
+        Connexions::log("Model_UserSet::weightBy(%s): init sql[ %s ]",
+                         $by, $this->_select->assemble());
+        // */
+
         switch ($by)
         {
         case 'tag':
-            $cols['weight'] = 'COUNT(DISTINCT uti.tagId)';
+            $cols['weight'] = 'uti.tagCount';
             break;
 
         case 'item':
-            $cols['weight'] = 'COUNT(DISTINCT uti.itemId)';
+            $cols['weight'] = 'uti.itemCount';
             break;
 
         case 'userItem':
         default:            // Default to 'userItem'
-            $cols['weight'] = 'COUNT(DISTINCT uti.userId,uti.itemId)';
+            $cols['weight'] = 'uti.userItemCount';
             break;
         }
 
@@ -209,7 +150,10 @@ class Model_UserSet extends Connexions_Set
      */
     public function getRelatedSet($type)
     {
-        return parent::getRelatedSet($type, $this->userIds());
+        return parent::getRelatedSet($type,
+                                     $this->userIds(),  // userIds
+                                     null,              // itemIds
+                                     null);             // tagIds
     }
 
     /** @brief  Retrieve the array of user identifiers for all users in this
@@ -334,8 +278,8 @@ class Model_UserSet extends Connexions_Set
         $select->reset(Zend_Db_Select::COLUMNS)
                ->reset(Zend_Db_Select::ORDER)
                ->reset(Zend_Db_Select::GROUP)
-               ->group('u.userId')
-               ->columns('u.userId');
+               ->columns('userId', 'uti')
+               ->group('uti.userId');
 
         return $select;
     }
@@ -355,8 +299,8 @@ class Model_UserSet extends Connexions_Set
         $select->reset(Zend_Db_Select::COLUMNS)
                ->reset(Zend_Db_Select::ORDER)
                ->reset(Zend_Db_Select::GROUP)
-               ->group('uti.itemId')
-               ->columns('uti.itemId');
+               ->columns('itemId', 'uti')
+               ->group('uti.itemId');
 
         return $select;
     }
@@ -376,8 +320,8 @@ class Model_UserSet extends Connexions_Set
         $select->reset(Zend_Db_Select::COLUMNS)
                ->reset(Zend_Db_Select::ORDER)
                ->reset(Zend_Db_Select::GROUP)
-               ->group('uti.tagId')
-               ->columns('uti.tagId');
+               ->columns('tagId', 'uti')
+               ->group('uti.tagId');
 
         return $select;
     }

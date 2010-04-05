@@ -1,16 +1,12 @@
 <?php
 require_once('./bootstrap.php');
 
-$time_start = microtime(true);
-$mem_start  = memory_get_usage();
-$mem_first  = $mem_start;
+echo "<pre>";
+echo "<h3>Model_UserSet tests</h3>";
+
 $set        = new Model_UserSet();
 
-number_format($mem_end    = memory_get_usage());
-$time_end   = microtime(true);
-printf ("<pre>%d records, %f seconds, %s bytes:\n",
-        number_format( count($set) ),
-        $time_end - $time_start,
+printf ("%d records:\n",
         number_format($mem_end  - $mem_start));
 if (! $set instanceof Connexions_Set)
     echo " *** ERROR: Wrong Set class (". get_class($set) .")\n";
@@ -39,7 +35,7 @@ $set->setOrder($order);
 
 echo "SQL: ", $set->select()->assemble() ,"\n";
 
-printf ("<pre>%d records:\n",
+printf ("%d records:\n",
         number_format( count($set) ));
 if (! $set instanceof Connexions_Set)
     echo " *** ERROR: Wrong Set class (". get_class($set) .")\n";
@@ -62,3 +58,11 @@ else
 echo "\n\n";
 
 /*****************************************************************************/
+$users    = 'dep';
+$userInfo = new Connexions_Set_Info($users, 'Model_User');
+
+$itemList = $set->get_Tag_ItemList($userInfo, '/', 0, 100);
+foreach ($itemList as $item)
+{
+    printf ("%4d: '%s'\n", $item->weight, $item->title);
+}
