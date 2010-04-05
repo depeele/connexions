@@ -357,8 +357,10 @@ abstract class Connexions_Set extends    ArrayIterator
 
         $select = $this->_commonSelect($class, $userIds, $itemIds, $tagIds);
 
+        /*
         Connexions::log("Connexions_Set::getRelatedSet(%s): sql[ %s ]",
                         $type, $select->assemble());
+        // */
 
         $set    = new $setClass($select);
          
@@ -395,7 +397,7 @@ abstract class Connexions_Set extends    ArrayIterator
                 $perPage = 100;
         }
 
-        // /*
+        /*
         Connexions::log("Connexions_Set::get_Tag_ItemList: "
                             . "offset[ {$offset} ], perPage[ {$perPage} ], "
                             . "sql[ {$this->_select->assemble()} ]");
@@ -828,8 +830,11 @@ abstract class Connexions_Set extends    ArrayIterator
                       implode(' AND ', $joinCond),
                       null);
          
+        /*
         Connexions::log("Connexions_Set::_commonSelect(): sql[ %s ]",
                         $select->assemble());
+        // */
+
         return $select;
     }
 
@@ -885,7 +890,7 @@ abstract class Connexions_Set extends    ArrayIterator
 
         $this->_select->limit($fetchCount, $fetchOffset);
 
-        // /*
+        /*
         Connexions_Profile::start($mid, "ready to fetch [ %s ]",
                                   $this->_select->assemble());
         // */
@@ -1010,7 +1015,7 @@ abstract class Connexions_Set extends    ArrayIterator
         $count = clone $this->_select;
         $count->__toString();    // ZF-3719 workaround
 
-        // /*
+        /*
         Connexions::log("Connexions_Set::_select_forCount:"
                         .   "[ ". get_class($this) ." ]: "
                         .   "original sql[ {$count->assemble()} ]");
@@ -1071,9 +1076,11 @@ abstract class Connexions_Set extends    ArrayIterator
 
                 $groupPart = $col;
 
+                /*
                 Connexions::log("Connexions_Set::_select_forCount: "
                                 .   "*********** DISTINCT, group [ %s ] ",
                                 print_r($groupParts, true));
+                // */
             }
             else if ((! @empty($groups))                            &&
                      ($groups[0] !== Zend_Db_Select::SQL_WILDCARD)  &&
@@ -1093,9 +1100,11 @@ abstract class Connexions_Set extends    ArrayIterator
                 $groupPart = implode(',', $parts);
                  */
 
+                /*
                 Connexions::log("Connexions_Set::_select_forCount: "
                                 .   "*********** GROUPS, group [ %s ] ",
                                 print_r($groupParts, true));
+                // */
             }
 
             /* If the original query had a GROUP BY or DISTINCT and only one
@@ -1119,7 +1128,7 @@ abstract class Connexions_Set extends    ArrayIterator
 
         $this->_select_count = $count;
 
-        // /*
+        /*
         Connexions::log("Connexions_Set::_select_forCount:"
                         .   "[ ". get_class($this) ." ]: "
                         .   "FINAL sql[ {$count->assemble()} ]");
