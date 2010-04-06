@@ -22,6 +22,12 @@ class Connexions_Auth_ApacheSsl extends Connexions_Auth_Abstract
 {
     protected   $_issuer    = null;
 
+    /** @brief  Return the authentication type of the concreted instance. */
+    public function getAuthType()
+    {
+        return 'pki';
+    }
+
     /** @brief  Retrieve the authenticated issuer.
      *
      *  @return Issuer string (null if not authenticated).
@@ -108,78 +114,33 @@ class Connexions_Auth_ApacheSsl extends Connexions_Auth_Abstract
 
             return $this;
         }
-        $this->_identity = $_SERVER['SSL_CLIENT_S_DN'];
+        $identity   = $_SERVER['SSL_CLIENT_S_DN'];
+        $credential = $identity;
 
 
         /* We have an authenticated Issuer and Client Distinguished Name,
          * see if we can locate the user that is associated with this
          * Client Distinguished Name.
-         *
-         * Note: This will perform the final Zend_Auth_Result setting
          */
+        if (! $this->_matchUser($identity, $credential))
+        {
+            // Error set by _matchUser
+            return $this;
+        }
+
+        /*****************************************************************
+         * Success!
+         *
+         */
+        $this->_setResult(self::SUCCESS, $identity);
+
+        /*
+        Connexions::log("Connexions_Auth_ApacheSsl::authenticate: "
+                        . "User authenticated:%s\n",
+                        $this->_user->debugDump());
+        // */
+
+
         return $this->_matchUser();
-    }
-
-    /** @brief  Certificate-based authentication has been successful.  We have
-     *          an authenticated Issuer and Client Distinguished Name.  Now,
-     *          see if we can find a valid user associated with the Client
-     *          Distinguished Name.
-     *
-     *  @return Connexions_Auth_ApacheSsl for a fluent interface
-     */
-    protected function _matchUser()
-    {
-        $userAuth = new Model_UserAuth( $this->_identity );
-
-        // /*
-        Connexions::log("Connexions_Auth_ApacheSsl::_matchUser: "
-                            . "Client.DN [ {$this->_identity} ], "
-                            . "UserAuth map:\n"
-                            . $userAuth->debugDump());
-        // */
-
-        if ($userAuth->isBacked())
-        {
-            /* We found a matching authentication record.  Now,
-             * retrieve the identified user.
-             */
-            $user = new Model_User( $userAuth->userId );
-
-            // /*
-            Connexions::log("Connexions_Auth_ApacheSsl::_matchUser: "
-                            . "Client.DN [ {$this->_identity} ], "
-                            . "Mapped to user:\n"
-                            . $user->debugDump());
-            // */
-        }
-
-        if ( ($user === null) || (! $user->isBacked()) )
-        {
-            // FAILURE
-            $this->_setResult(self::FAILURE,
-                              $this->_endpoint,
-                              "ApacheSsl login failure. "
-                                        . "Unmapped Client.DN "
-                                        .   "[ {$this->_identity} ]");
-        }
-        else
-        {
-            // SUCCESS
-            $user->setAuthenticated();
-
-            $this->_setResult(self::SUCCESS,
-                              $user);
-        }
-
-        // /*
-        Connexions::log("Connenxions_Auth_ApacheSsl::authanticate: "
-                        .   "code [ {$this->_code} ], "
-                        .   "identity [ {$this->_identity} ], "
-                        .   "messages [ "
-                        .       @implode('; ', $this->_messages) ." ]");
-        // */
-
-
-        return $this;
     }
 }

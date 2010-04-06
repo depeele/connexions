@@ -16,7 +16,8 @@
 abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
                                         implements Zend_Auth_Adapter_Interface
 {
-    protected   $_user      = null; // Model_User instance
+    protected   $_user          = null; // Model_User     instance
+    protected   $_userAuth      = null; // Model_UserAuth instance
 
     /** @brief  Construct a new instatnce.
      *
@@ -30,6 +31,9 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
     {
         return $this->_user;
     }
+
+    /** @brief  Return the authentication type of the concreted instance. */
+    abstract public function getAuthType();
 
     /** @brief  Set / initialize the Zend_Auth_Result portion.
      *  @param  code        The authentication status code.
@@ -55,11 +59,72 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
             // On error, ensure that our Model_User instance is empty.
             $this->_user = null;
         }
-        else if ($identity instanceof Model_User)
+        else
         {
-            $this->_user = $identity;
+            if ($identity instanceof Model_User)
+            {
+                $this->_user = $identity;
+            }
+            $this->_user->setAuthenticated();
         }
 
         return $this;
+    }
+
+    /** @brief  Given a credential, see if there is a userAuth record for the
+     *          credential/authentication type pair.
+     *  @param  identity        The incoming user identity.
+     *  @param  credential      The credential to match.
+     *
+     *  @return true | false
+     */
+    protected function _matchUser($identity, $credential)
+    {
+        // Locate the authentication record matching the provided credential
+        $userAuth = new Model_UserAuth(array(
+                            'authType'   => $this->getAuthType(),
+                            'credential' => $credential));
+        if (! $userAuth->isBacked())
+        {
+            // CANNOT FIND a matching authentication record.
+            $this->_setResult(self::FAILURE,
+                              $identity,
+                              "Authentication failure. "
+                              . "Unmapped Credential for user "
+                              .   "'{$identity}'");
+            return false;
+        }
+
+        /*
+        Connexions::log("Connexions_Auth_Abstract::_matchUser(%s, %s): "
+                        . "found Model_UserAuth for user %d",
+                        $identity, $credential, $userAuth->userId);
+        // */
+
+        // Retrieve the identified user
+        $user = new Model_User( $userAuth->userId );
+        if ( ! $user->isBacked() )
+        {
+            // FAILURE -- actually, an internal database consistency error.
+            $this->_setResult(self::FAILURE,
+                              $identity,
+                              "Authentication failure. "
+                              . "Internal consistenty error for user "
+                              .   "'{$identity}'");
+            return false;
+        }
+
+        /*
+        Connexions::log("Connexions_Auth_Abstract::_matchUser(%s, %s): "
+                        . "found Model_User: useId[ %d ], name[%s ]",
+                        $identity, $credential, $user->userId, $user->name);
+        // */
+
+
+        // We've retrieve a Model_UserAuth and matching Model_User
+        $this->_user     = $user;
+        $this->_userAuth = $userAuth;
+
+        return true;
     }
 }

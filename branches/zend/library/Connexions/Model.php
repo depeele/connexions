@@ -80,6 +80,104 @@ abstract class Connexions_Model
         $this->_init($id, $db);
     }
 
+    /** @brief  Get a value of the given field.
+     *  @param  name    The field name.
+     *
+     *  @return The field value (or null if invalid field).
+     */
+    public function __get($name)
+    {
+        $vName = $this->mapField($name);
+        if ($vName === null)
+        {
+            // Invalid field
+            $this->_error = "Invalid field '{$name}' on get";
+            return null;
+        }
+
+        // If this field has not yet been validated, validate it now.
+        if ( (! @isset($this->_validated[$vName])) ||
+            ($this->_validated[$vName] !== true) )
+            $this->_validate($vName);
+
+        /*
+        Connexions::log("Model::__get(%s / %s): [ %s ]",
+                        $name, $vName,
+                        print_r($this->_record[$vName], true));
+        // */
+
+        return $this->_record[$vName];
+    }
+
+    /** @brief  Set a value in this record and mark it dirty.
+     *  @param  name    The field name.
+     *  @param  value   The new value.
+     *
+     *  @return true | false
+     */
+    public function __set($name, $value)
+    {
+        $vName = $this->mapField($name);
+        if ($vName === null)
+        {
+            // Invalid field
+            $this->_error = "Invalid field '{$name}' on set";
+            return false;
+        }
+
+        if ($this->_model[$vName] === 'auto')
+        {
+            // Modification of an 'auto' generated key field is NOT permitted
+            $this->_error = "Cannot modify auto field '{$name}' == '{$vName}'";
+            return false;
+        }
+
+        $tmpRec  = array($vName => $value);
+
+        $isValid = $this->_validateField($tmpRec, $vName);
+        if ($isValid)
+        {
+            if (! @is_array($this->_record))
+                $this->_record = array();
+
+            $this->_record[$vName]    = $tmpRec[$vName];
+            $this->_validated[$vName] = true;
+            $this->_dirty[$vName]     = true;
+            $this->_isValid           = true;
+            $this->_error             = null;
+        }
+
+        return $isValid;
+    }
+
+    /** @brief  Is the given field set?
+     *  @param  name    The field name.
+     *
+     *  @return true | false
+     */
+    public function __isset($name)
+    {
+        $vName = $this->mapField($name);
+        if ($vName === null)
+        {
+            // Invalid field
+            $this->_error = "Invalid field '{$name}' on isset";
+            return false;
+        }
+
+        //Connexions::log("Connexions_Model::__isset({$name}): true");
+        return true;
+    }
+
+    /** @brief  Return a string representation of this instance.
+     *
+     *  @return The string-based representation.
+     */
+    public function __toString()
+    {
+        return (String)($this->_id);
+    }
+
     /** @brief  Map a field name.
      *  @param  name    The provided name.
      *
@@ -134,104 +232,6 @@ abstract class Connexions_Model
     public function hasError()
     {
         return ($this->_error !== null);;
-    }
-
-    /** @brief  Set a value in this record and mark it dirty.
-     *  @param  name    The field name.
-     *  @param  value   The new value.
-     *
-     *  @return true | false
-     */
-    public function __set($name, $value)
-    {
-        $vName = $this->mapField($name);
-        if ($vName === null)
-        {
-            // Invalid field
-            $this->_error = "Invalid field '{$name}' on set";
-            return false;
-        }
-
-        if ($this->_model[$vName] === 'auto')
-        {
-            // Modification of an 'auto' generated key field is NOT permitted
-            $this->_error = "Cannot modify auto field '{$name}' == '{$vName}'";
-            return false;
-        }
-
-        $tmpRec  = array($vName => $value);
-
-        $isValid = $this->_validateField($tmpRec, $vName);
-        if ($isValid)
-        {
-            if (! @is_array($this->_record))
-                $this->_record = array();
-
-            $this->_record[$vName]    = $tmpRec[$vName];
-            $this->_validated[$vName] = true;
-            $this->_dirty[$vName]     = true;
-            $this->_isValid           = true;
-            $this->_error             = null;
-        }
-
-        return $isValid;
-    }
-
-    /** @brief  Get a value of the given field.
-     *  @param  name    The field name.
-     *
-     *  @return The field value (or null if invalid field).
-     */
-    public function __get($name)
-    {
-        $vName = $this->mapField($name);
-        if ($vName === null)
-        {
-            // Invalid field
-            $this->_error = "Invalid field '{$name}' on get";
-            return null;
-        }
-
-        // If this field has not yet been validated, validate it now.
-        if ( (! @isset($this->_validated[$vName])) ||
-            ($this->_validated[$vName] !== true) )
-            $this->_validate($vName);
-
-        /*
-        Connexions::log("Model::__get(%s / %s): [ %s ]",
-                        $name, $vName,
-                        print_r($this->_record[$vName], true));
-        // */
-
-        return $this->_record[$vName];
-    }
-
-    /** @brief  Is the given field set?
-     *  @param  name    The field name.
-     *
-     *  @return true | false
-     */
-    public function __isset($name)
-    {
-        $vName = $this->mapField($name);
-        if ($vName === null)
-        {
-            // Invalid field
-            $this->_error = "Invalid field '{$name}' on isset";
-            return false;
-        }
-
-        //Connexions::log("Connexions_Model::__isset({$name}): true");
-        return true;
-    }
-
-    /** @brief  Return a string representation of this instance.
-     *
-     *  @return The string-based representation.
-     */
-    public function __toString()
-    {
-        return (String)($this->_id);
     }
 
     /** @brief  If this record is dirty, save it to the database.
@@ -580,7 +580,7 @@ abstract class Connexions_Model
         if ($db !== null)
             $this->_db = $db;
 
-        // Make sure we have a database conneciont in $this->_db
+        // Make sure we have a database connecion in $this->_db
         if ( ! $this->_db instanceof Zend_Db_Adapter_Abstract)
             $this->_db = $this->getDb();
 
@@ -1072,11 +1072,14 @@ abstract class Connexions_Model
      *                                      [ get_called_class() ];
      *                          as          The SQL alias to use for the target
      *                                      table [ 't' ];
+     *                          cols        An array, string, or Zend_Db_Expr
+     *                                      identifying the columns to include
+     *                                      [ '*' ];
      *                          where       A string or associative array of
      *                                      restrictions [ none ];
      *
      *  @return A Zend_Db_Select instance that can retrieve the desired
-     *          records.  The target table will be aliased as 't'.
+     *          records.
      */
     public static function select(array $config = array())
     {
@@ -1084,6 +1087,12 @@ abstract class Connexions_Model
             $as = $config['as'];
         else
             $as = 't';
+
+        if ( ! @empty($config['cols']))
+            $cols = $config['cols'];
+        else
+            $cols = "{$as}.*";
+
 
         if ( isset($config['db']) && ($db instanceof Zend_Db_Abstract))
             $db = $config['db'];
@@ -1100,7 +1109,8 @@ abstract class Connexions_Model
         // Construct the Zend_Db_Select instance.
         $select = $db->select()
                      ->from( array($as => self::metaData('table',
-                                                         $modelClass)));
+                                                         $modelClass)),
+                             $cols);
 
         if (! @empty($config['where']))
             $select->where( $config['where'] );

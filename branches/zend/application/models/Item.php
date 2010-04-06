@@ -103,12 +103,27 @@ class Model_Item extends Connexions_Model_Cached
      */
     protected function _init($id, $db = null)
     {
+        /*
+        Connexions::log('Model_Item::_init(): initial id[ %s ]',
+                        print_r($id, true));
+        // */
+
         if (is_string($id) && (! is_numeric($id)) )
         {
             /* Connexions::md5Url() handles deciding whether or not this is 
              * already a hash.
              */
-            $id = Connexions::md5Url($id);
+            $md5Url = Connexions::md5Url($id);
+            $url    = ($md5Url === $id ? null : $id);
+
+            $id = array('urlHash' => $md5Url);
+            if ($url !== null)
+                $id['url'] = $url;
+
+            /*
+            Connexions::log('Model_Item::_init(): id[ %s ]',
+                            print_r($id, true));
+            // */
         }
 
         return parent::_init($id, $db);
@@ -143,8 +158,14 @@ class Model_Item extends Connexions_Model_Cached
      */
     protected static function _instanceId($id)
     {
-        return __CLASS__ .'_'.  (! @empty($id['itemId'])
-                                    ?  $id['itemId']
-                                    : 'generic');
+        return __CLASS__ .'_'.  (! is_array($id)
+                                    ? $id
+                                    : (isset($id['itemId'])
+                                        ?  $id['itemId']
+                                        : (! @empty($id['urlHash'])
+                                            ? $id['urlHash']
+                                            : (! @empty($id['url'])
+                                                    ? $id['url']
+                                                    : 'generic'))));
     }
 }

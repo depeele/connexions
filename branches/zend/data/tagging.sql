@@ -152,7 +152,7 @@ CREATE TABLE groupItem (
 -- User Authentication methods
 CREATE TABLE userAuth (
   userId        int(10)     unsigned    NOT NULL default 0,
-  authType      varchar(30)             NOT NULL unique default 'password',
+  authType      varchar(30)             NOT NULL default 'password',
 
   credential    varchar(255)            NOT NULL default '',
 

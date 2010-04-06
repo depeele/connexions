@@ -65,6 +65,12 @@ class Connexions_Auth_OpenId extends Connexions_Auth_Abstract
         parent::__construct(self::FAILURE, null);
     }
 
+    /** @brief  Return the authentication type of the concreted instance. */
+    public function getAuthType()
+    {
+        return 'openid';
+    }
+
     public function getNickname()
     {
         return $this->_nickname;
@@ -272,8 +278,37 @@ class Connexions_Auth_OpenId extends Connexions_Auth_Abstract
                  * authenticated endpoint?
                  */
                 $this->_endpoint = $endpoint;
+                $identity   = $endpoint;
+                $credential = $identity;
 
-                $this->_matchUser();
+                if (! $this->_matchUser($identity, $credential))
+                {
+                    // Error set by _matchUser
+                    return $this;
+                }
+
+                if ($this->_extensions !== null)
+                {
+                    $data            = $this->_extensions->getProperties();
+                    $this->_nickname = (isset($data['nickname'])
+                                            ? $data['nickname']
+                                            : null);
+                    $this->_fullname = (isset($data['fullname'])
+                                            ? $data['fullname']
+                                            : null);
+                }
+
+                /*************************************************************
+                 * Success!
+                 *
+                 */
+                $this->_setResult(self::SUCCESS, $identity);
+
+                /*
+                Connexions::log("Connexions_Auth_OpenId::authenticate: "
+                                . "User authenticated:%s\n",
+                                $this->_user->debugDump());
+                // */
             }
             else
             {
@@ -282,75 +317,6 @@ class Connexions_Auth_OpenId extends Connexions_Auth_Abstract
                                   "Authentication failed",
                                         $consumer->getError());
             }
-        }
-
-        return $this;
-    }
-
-
-    /** @brief  OpenId authentication has been successful.  We have an
-     *          authenticated endpoint.  Now, see if we can find a valid user
-     *          associated with the endpoint.
-     *
-     *  MAY modify our Zend_Auth_Result information.
-     */
-    protected function _matchUser()
-    {
-        if ($this->_extensions !== null)
-        {
-            $data            = $this->_extensions->getProperties();
-            $this->_nickname = (isset($data['nickname'])
-                                    ? $data['nickname']
-                                    : null);
-            $this->_fullname = (isset($data['fullname'])
-                                    ? $data['fullname']
-                                    : null);
-        }
-
-        $userAuth = new Model_UserAuth( $this->_endpoint );
-
-        /*
-        Connexions::log("Connexions_Auth_OpenId::_matchUser: "
-                            . "OpenId.identifier[ {$this->_endpoint} ], "
-                            . "SRE.nickname[ {$this->_nickname} ], "
-                            . "SRE.fullname[ {$this->_fullname} ], "
-                            . "UserAuth map:\n"
-                            . $userAuth->debugDump());
-        // */
-
-        if ($userAuth->isBacked())
-        {
-            /* We found a matching authentication record.  Now,
-             * retrieve the identified user.
-             */
-            $user = new Model_User( $userAuth->userId );
-
-            /*
-            Connexions::log("Connexions_Auth_OpenId::_matchUser: "
-                            . "OpenId.identifier[ {$this->_endpoint} ], "
-                            . "Mapped to user:\n"
-                            . $user->debugDump());
-            // */
-        }
-
-        if ( ($user === null) || (! $user->isBacked()) )
-        {
-            // FAILURE
-            $this->_setResult(self::FAILURE,
-                              $this->_endpoint,
-                              "OpenId login failure. "
-                                        . "Unmapped endpoint "
-                                        .   "[ {$this->_endpoint} ], "
-                                        .   "nickname [ {$this->_nickname} ], "
-                                        .   "fullname [ {$this->_fullname} ]");
-        }
-        else
-        {
-            // SUCCESS
-            $user->setAuthenticated();
-
-            $this->_setResult(self::SUCCESS,
-                              $user);
         }
 
         return $this;

@@ -52,7 +52,7 @@ class IndexController extends Zend_Controller_Action
         */
     }
 
-    /** @brief  Index/Get/View action.
+    /** @brief  Index/Get/Read/View action.
      *
      *  Retrieve a set of userItems / Bookmarks based upon the requested
      *  'owner' and/or 'tags'.
@@ -64,9 +64,9 @@ class IndexController extends Zend_Controller_Action
     {
         Connexions::log("IndexController::indexAction");
 
-        $request       =& $this->_request;
+        $request  =& $this->_request;
 
-        $reqOwner      = $request->getParam('owner',     null);
+        $reqOwner =  $request->getParam('owner', null);
 
         /* If this is a user/"owned" area (e.g. /<userName> [/ <tags ...>]),
          * verify the validity of the requested user.
@@ -89,7 +89,7 @@ class IndexController extends Zend_Controller_Action
          * Process the requested 'owner' and 'tags'
          *
          */
-        $reqTags  = $request->getParam('tags',      null);
+        $reqTags  = $request->getParam('tags', null);
 
         $ownerIds = null;
         $tagIds   = null;
@@ -177,6 +177,9 @@ class IndexController extends Zend_Controller_Action
         $this->_handleFormat();
     }
 
+    /** @brief  Post action -- simply present the Post/Create view.
+     *
+     */
     public function postAction()
     {
         Connexions::log("IndexController::postAction");
@@ -210,8 +213,175 @@ class IndexController extends Zend_Controller_Action
     /*************************************************************************
      * Protected Helpers
      *
+     */
+
+    /** @brief  Determine the proper rendering format.  The only ones we deal
+     *          with directly are:
+     *              partial - render a single part of this page
+     *              html    - normal HTML rendering
      *
-     * CRUD operations for userItems / Bookmarks
+     *  All others are handled by the 'contextSwitch' established in
+     *  this controller's init method.
+     */
+    protected function _handleFormat()
+    {
+        $format =  $this->_helper->contextSwitch()->getCurrentContext();
+        if (empty($format))
+            $format = $this->_request->getParam('format', 'html');
+
+        /*
+        Connexions::log("IndexController::_handleFormat(): "
+                        . "format[ {$format} ]");
+        // */
+
+        switch ($format)
+        {
+        case 'partial':
+            /* Render just PART of the page and MAY not require the userItem
+             * paginator.
+             *
+             *  part=(content | sidebar([.:-](tags | people))? )
+             */
+            $this->_helper->layout->setLayout('partial');
+
+            $parts = preg_split('/\s*[\.:\-]\s*/',
+                                $this->_request->getParam('part', 'content'));
+            switch ($parts[0])
+            {
+            case 'sidebar':
+                $this->_htmlSidebar(false, (count($parts) > 1
+                                                ? $parts[1]
+                                                : null));
+                break;
+
+            case 'content':
+            default:
+                $this->_htmlContent();
+                break;
+            }
+            break;
+
+        case 'html':
+            // Normal HTML rendering
+            $this->_htmlContent();
+            $this->_htmlSidebar();
+            break;
+
+        case 'json':
+            $this->_jsonContent();
+            break;
+
+        case 'rss':
+        case 'atom':
+            $this->_createPaginator($this->_request);
+
+            // Additional view variables for the alternate views.
+            $this->view->paginator = $this->_paginator;
+            $this->render('index');
+
+            break;
+        }
+    }
+
+    /** @brief  Given a string that is supposed to represent a user, see if it
+     *          represents a valid user.
+     *  @param  name    The user name.
+     *
+     *  @return A Model_User instance matching 'name', null if no match.
+     */
+    protected function _resolveUserName($name)
+    {
+        $res = null;
+
+        if ((! @empty($name)) && ($name !== '*'))
+        {
+            // Does the name match an existing user?
+            if ($name === $this->_viewer->name)
+            {
+                // 'name' matches the current viewer...
+                $ownerInst =& $this->_viewer;
+            }
+            else
+            {
+                $ownerInst = Model_User::find(array('name' => $name));
+            }
+
+            // Have we located a valid, backed user?
+            if ($ownerInst->isBacked())
+            {
+                // YES -- we've located an existing user.
+
+                $res = $ownerInst;
+            }
+        }
+
+        return $res;
+    }
+
+    /** @brief  Create a paginator ($this->_paginator) for the current
+     *          userItem / Bookmark set.
+     *  @param  req         The request to retrieve parameters from.
+     *  @param  namespace   The namespace.
+     *
+     *  This will ALSO adjust the sort order for _userItems and fill in the
+     *  following members:
+     *      _paginator
+     *      _page
+     *      _perPage
+     *      _sortBy
+     *      _sortOrder
+     *
+     *  @return void
+     */
+    protected function _createPaginator($req, $namespace = '')
+    {
+        /*
+        Connexions_Profile::checkpoint('Connexions',
+                                       'IndexController::_createPaginator: '
+                                       . '%s: begin',
+                                       $namespace);
+        // */
+
+        /* Retrieve any sort and paging parameters from the RPC request,
+         * falling back to helper-controlled defaults.
+         */
+        $this->_page      = $req->getParam($namespace ."Page",    1);
+        $this->_perPage   = $req->getParam($namespace ."PerPage",
+                                    Connexions_View_Helper_UserItems::
+                                                $defaults['perPage']);
+        $this->_sortBy    = $req->getParam($namespace ."SortBy",
+                                    Connexions_View_Helper_UserItems::
+                                                $defaults['sortBy']);
+        $this->_sortOrder = $req->getParam($namespace ."SortOrder",
+                                    Connexions_View_Helper_UserItems::
+                                                $defaults['sortOrder']);
+
+        /* Ensure that the final sort information is properly reflected in
+         * the source set.
+         */
+        $this->_userItems->setOrder( $this->_sortBy .' '. $this->_sortOrder );
+
+        // Create a paginator
+        $this->_paginator = $this->_helper->Pager($this->_userItems,
+                                                  $this->_page,
+                                                  $this->_perPage);
+
+        // /*
+        Connexions_Profile::checkpoint('Connexions',
+                                       'IndexController::_createPaginator: '
+                                       . '%s: page %d, perPage %d, '
+                                       . '%d pages, %d/%d items: end',
+                                       $namespace,
+                                       $this->_page, $this->_perPage,
+                                       count($this->_paginator),
+                                       $this->_paginator->getCurrentItemCount(),
+                                       count($this->_userItems));
+        // */
+    }
+
+    /*****************************************************
+     * Json-RPC CRUD operations for userItems / Bookmarks
+     *
      */
 
     /** @brief  Given an incoming request with userItem / Bookmark creation
@@ -529,172 +699,10 @@ class IndexController extends Zend_Controller_Action
         $rpc->setResult('Bookmark Deleted');
     }
 
-    /** @brief  Given a string that is supposed to represent a user, see if it
-     *          represents a valid user.
-     *  @param  name    The user name.
-     *
-     *  @return A Model_User instance matching 'name', null if no match.
-     */
-    protected function _resolveUserName($name)
-    {
-        $res = null;
-
-        if ((! @empty($name)) && ($name !== '*'))
-        {
-            // Does the name match an existing user?
-            if ($name === $this->_viewer->name)
-            {
-                // 'name' matches the current viewer...
-                $ownerInst =& $this->_viewer;
-            }
-            else
-            {
-                $ownerInst = Model_User::find(array('name' => $name));
-            }
-
-            // Have we located a valid, backed user?
-            if ($ownerInst->isBacked())
-            {
-                // YES -- we've located an existing user.
-
-                $res = $ownerInst;
-            }
-        }
-
-        return $res;
-    }
-
-    /** @brief  Determine the proper rendering format.  The only ones we deal
-     *          with directly are:
-     *              partial - render a single part of this page
-     *              html    - normal HTML rendering
-     *
-     *  All others are handled by the 'contextSwitch' established in
-     *  this controller's init method.
-     */
-    protected function _handleFormat()
-    {
-        $format =  $this->_helper->contextSwitch()->getCurrentContext();
-        if (empty($format))
-            $format = $this->_request->getParam('format', 'html');
-
-        /*
-        Connexions::log("IndexController::_handleFormat(): "
-                        . "format[ {$format} ]");
-        // */
-
-        switch ($format)
-        {
-        case 'partial':
-            /* Render just PART of the page and MAY not require the userItem
-             * paginator.
-             */
-            $this->_helper->layout->setLayout('partial');
-
-            $parts = preg_split('/\s*[\.:\-]\s*/',
-                                $this->_request->getParam('part', 'content'));
-            switch ($parts[0])
-            {
-            case 'sidebar':
-                $this->_htmlSidebar(false, (count($parts) > 1
-                                                ? $parts[1]
-                                                : null));
-                break;
-
-            case 'content':
-            default:
-                $this->_htmlContent();
-                break;
-            }
-            break;
-
-        case 'html':
-            // Normal HTML rendering
-            $this->_htmlContent();
-            $this->_htmlSidebar();
-            break;
-
-        case 'json':
-            $this->_jsonContent();
-            break;
-
-        case 'rss':
-        case 'atom':
-            $this->_createPaginator($this->_request);
-
-            // Additional view variables for the alternate views.
-            $this->view->paginator = $this->_paginator;
-            $this->render('index');
-
-            break;
-        }
-    }
-
     /*************************************************************************
      * Context-specific view initialization and invocation
      *
      */
-
-    /** @brief  Create a paginator ($this->_paginator) for the current
-     *          userItem / Bookmark set.
-     *  @param  req         The request to retrieve parameters from.
-     *  @param  namespace   The namespace.
-     *
-     *  This will ALSO adjust the sort order for _userItems and fill in the
-     *  following members:
-     *      _paginator
-     *      _page
-     *      _perPage
-     *      _sortBy
-     *      _sortOrder
-     *
-     *  @return void
-     */
-    protected function _createPaginator($req, $namespace = '')
-    {
-        /*
-        Connexions_Profile::checkpoint('Connexions',
-                                       'IndexController::_createPaginator: '
-                                       . '%s: begin',
-                                       $namespace);
-        // */
-
-        /* Retrieve any sort and paging parameters from the RPC request,
-         * falling back to helper-controlled defaults.
-         */
-        $this->_page      = $req->getParam($namespace ."Page",    1);
-        $this->_perPage   = $req->getParam($namespace ."PerPage",
-                                    Connexions_View_Helper_UserItems::
-                                                $defaults['perPage']);
-        $this->_sortBy    = $req->getParam($namespace ."SortBy",
-                                    Connexions_View_Helper_UserItems::
-                                                $defaults['sortBy']);
-        $this->_sortOrder = $req->getParam($namespace ."SortOrder",
-                                    Connexions_View_Helper_UserItems::
-                                                $defaults['sortOrder']);
-
-        /* Ensure that the final sort information is properly reflected in
-         * the source set.
-         */
-        $this->_userItems->setOrder( $this->_sortBy .' '. $this->_sortOrder );
-
-        // Create a paginator
-        $this->_paginator = $this->_helper->Pager($this->_userItems,
-                                                  $this->_page,
-                                                  $this->_perPage);
-
-        // /*
-        Connexions_Profile::checkpoint('Connexions',
-                                       'IndexController::_createPaginator: '
-                                       . '%s: page %d, perPage %d, '
-                                       . '%d pages, %d/%d items: end',
-                                       $namespace,
-                                       $this->_page, $this->_perPage,
-                                       count($this->_paginator),
-                                       $this->_paginator->getCurrentItemCount(),
-                                       count($this->_userItems));
-        // */
-    }
 
     /** @brief  Generate a JsonRPC from the incoming request, using a default
      *          method of 'read' and then perform any requested action.
@@ -704,7 +712,28 @@ class IndexController extends Zend_Controller_Action
      */
     protected function _jsonContent()
     {
-        $rpc = new Connexions_JsonRpc($this->_request, 'read');
+        if ($request->isPost())
+        {
+            // Create a new userItem / Bookmark
+            $defMethod = 'create';
+        }
+        else if ($request->isPut())
+        {
+            // Update an existing userItem / Bookmark
+            $defMethod = 'update';
+        }
+        else if ($request->isDelete())
+        {
+            // Delete an existing userItem / Bookmark
+            $defMethod = 'delete';
+        }
+        else // $request->isGet()
+        {
+            // Read an existing userItem / Bookmark
+            $defMethod = 'read';
+        }
+
+        $rpc = new Connexions_JsonRpc($this->_request, $defMethod);
         $this->view->rpc = $rpc;
 
         if (! $rpc->isValid())
@@ -774,6 +803,14 @@ class IndexController extends Zend_Controller_Action
         }
     }
 
+    /** @brief  Generate HTML for the primary body/content based upon the
+     *          incoming request.
+     *
+     *  This will create a 'paginator' for the previously created _userItems
+     *  set, initialize the Connexions_View_Helper_HtmlUserItems and
+     *  Connexions_View_Helper_HtmlItemScope view helpers, and populate any
+     *  additional view variables all based upon the incoming request.
+     */
     protected function _htmlContent()
     {
         $request =& $this->_request;
@@ -887,6 +924,15 @@ class IndexController extends Zend_Controller_Action
         // */
     }
 
+    /** @brief  Generate HTML for the sidebar based upon the incoming request.
+     *  @param  usePlaceholder      Should the rendering be performed
+     *                              immediately into a placeholder?
+     *                              [ true, into the 'right' placeholder ]
+     *  @param  part                The portion of the sidebar to render
+     *                                  (tags | people)
+     *                              [ null == all ]
+     *
+     */
     protected function _htmlSidebar($usePlaceholder = true,
                                     $part           = null)
     {
@@ -928,6 +974,10 @@ class IndexController extends Zend_Controller_Action
 
     }
 
+    /** @brief  Create a set of tags related to the current userItems and
+     *          prepare the Connexions_View_Helper_HtmlItemCloud view helper to
+     *          render them.
+     */
     protected function _htmlSidebar_prepareTags()
     {
         $request =& $this->_request;

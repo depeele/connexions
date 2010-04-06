@@ -6,8 +6,8 @@ echo "<h3>Model_UserSet tests</h3>";
 
 $set        = new Model_UserSet();
 
-printf ("%d records:\n",
-        number_format($mem_end  - $mem_start));
+printf ("%s records:\n",
+        number_format( count($set) ));
 if (! $set instanceof Connexions_Set)
     echo " *** ERROR: Wrong Set class (". get_class($set) .")\n";
 else
@@ -35,7 +35,7 @@ $set->setOrder($order);
 
 echo "SQL: ", $set->select()->assemble() ,"\n";
 
-printf ("%d records:\n",
+printf ("%s records:\n",
         number_format( count($set) ));
 if (! $set instanceof Connexions_Set)
     echo " *** ERROR: Wrong Set class (". get_class($set) .")\n";
@@ -61,8 +61,16 @@ echo "\n\n";
 $users    = 'dep';
 $userInfo = new Connexions_Set_Info($users, 'Model_User');
 
-$itemList = $set->get_Tag_ItemList($userInfo, '/', 0, 100);
-foreach ($itemList as $item)
+$order    = array('weight DESC');
+$weightBy = 'totalItems';
+echo "New ordering '", implode(', ', $order) ,"', weightBy '{$weightBy}':\n";
+$set->weightBy($weightBy);
+$set->setOrder($order);
+
+printf ("Select SQL[ %s ]\n", $set->select()->assemble());
+
+$userList = $set->get_Tag_ItemList($userInfo, '/', 0, 100);
+foreach ($userList as $user)
 {
-    printf ("%4d: '%s'\n", $item->weight, $item->title);
+    printf ("%4d: '%s'\n", $user->weight, $user->name);
 }
