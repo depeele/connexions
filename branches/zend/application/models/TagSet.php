@@ -27,18 +27,20 @@ class Model_TagSet extends Connexions_Set
     {
         if ($userIds instanceof Zend_Db_Select)
         {
-            return parent::__construct($userIds, self::MEMBER_CLASS);
+            $select = $userIds;
         }
+        else
+        {
+            $select = $this->_commonSelect(self::MEMBER_CLASS,
+                                           $userIds, $itemIds, $tagIds);
 
-        $select = $this->_commonSelect(self::MEMBER_CLASS,
-                                       $userIds, $itemIds, $tagIds);
+            // Use a default order.
+            $select->order('t.tag ASC');
 
-        // Use a default order.
-        $select->order('t.tag ASC');
-
-        $this->_userIds = $userIds;
-        $this->_itemIds = $itemIds;
-        $this->_tagIds  = $tagIds;
+            $this->_userIds = $userIds;
+            $this->_itemIds = $itemIds;
+            $this->_tagIds  = $tagIds;
+        }
 
         /*
         Connexions::log(

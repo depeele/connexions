@@ -37,6 +37,23 @@ class Model_UserItemSet extends Connexions_Set
         // */
 
 
+        if ($tagIds instanceof Zend_Db_Select)
+        {
+            $select = $tagIds;
+        }
+        else
+        {
+            $select = $this->_commonSelect(self::MEMBER_CLASS,
+                                           $userIds, $itemIds, $tagIds);
+
+            // Use a default order.
+            $select->order('ui.taggedOn ASC');
+
+            $this->_userIds = $userIds;
+            $this->_itemIds = $itemIds;
+            $this->_tagIds  = $tagIds;
+        }
+
         // Determine the current, authenticated user.
         try {
             $curUserId = Zend_Registry::get('user')->userId;
@@ -46,35 +63,18 @@ class Model_UserItemSet extends Connexions_Set
             $curUserId = null;
         }
 
-        if ($tagIds instanceof Zend_Db_Select)
-        {
-            return parent::__construct($tagIds, self::MEMBER_CLASS);
-        }
-
-        $select = $this->_commonSelect(self::MEMBER_CLASS,
-                                       $userIds, $itemIds, $tagIds);
-
-        // Privacy filter
+        // Privacy filter -- for EVERY incoming/constructed select??
         $select->where('ui.isPrivate=false'
                        .    ($curUserId !== null
                                 ? ' OR ui.userId='. $curUserId
                                 : ''));
-
-        // Use a default order.
-        $select->order('ui.taggedOn ASC');
 
         /*
         Connexions::log("Model_UserItemSet: "
                             . "select[ ". $select->assemble() ." ]");
         // */
 
-        $this->_userIds = $userIds;
-        $this->_itemIds = $itemIds;
-        $this->_tagIds  = $tagIds;
-
-        $res = parent::__construct($select, self::MEMBER_CLASS);
-
-        return $res;
+        return parent::__construct($select, self::MEMBER_CLASS);
     }
 
     /** @brief  Retrieve a set of items that are related to this set.
