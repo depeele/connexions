@@ -27,21 +27,23 @@ class Model_UserSet extends Connexions_Set
     {
         if ($tagIds instanceof Zend_Db_Select)
         {
-            return parent::__construct($tagIds, self::MEMBER_CLASS);
+            $select = $tagIds;
+        }
+        else
+        {
+            $select = $this->_commonSelect(self::MEMBER_CLASS,
+                                           $userIds, $itemIds, $tagIds,
+                                           false);  // NOT exact tags
+
+            // Use a default order.
+            $select->order('u.lastVisit DESC');
+
+            $this->_userIds = $userIds;
+            $this->_itemIds = $itemIds;
+            $this->_tagIds  = $tagIds;
         }
 
-        $select = $this->_commonSelect(self::MEMBER_CLASS,
-                                       $userIds, $itemIds, $tagIds,
-                                       false);  // NOT exact tags
-
-        // Use a default order.
-        $select->order('u.lastVisit DESC');
-
-        $this->_userIds = $userIds;
-        $this->_itemIds = $itemIds;
-        $this->_tagIds  = $tagIds;
-
-        // /*
+        /*
         Connexions::log(
                 sprintf("Model_UserSet: select[ %s ]<br />\n",
                         $select->assemble()) );
