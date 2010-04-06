@@ -13,7 +13,7 @@ class Model_UserAuth extends Connexions_Model
      */
     public static   $table  = 'userAuth';
                               // order 'keys' by most used
-    public static   $keys   = array('userId', 'credential');
+    public static   $keys   = array('authType', 'userId', 'credential');
     public static   $model  = array('userId'        => 'integer',
                                     'authType'      => 'string',
                                     'credential'    => 'string'

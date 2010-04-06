@@ -127,8 +127,8 @@ class AuthController extends Zend_Controller_Action
          *
          */
         Connexions::log("AuthController: Authentication Success: "
-                        .   "id[ {$user} ], user:\n"
-                        .   $user->debugDump());
+                        .   "id[ %s ], user: %s\n",
+                        $user, $user->debugDump());
 
         Zend_Registry::set('user', $user);
 

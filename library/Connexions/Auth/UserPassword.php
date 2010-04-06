@@ -7,6 +7,12 @@
 
 class Connexions_Auth_UserPassword extends Connexions_Auth_Abstract
 {
+    /** @brief  Return the authentication type of the concreted instance. */
+    public function getAuthType()
+    {
+        return 'password';
+    }
+
     /** @brief  Perform an authentication attempt.
      *
      *  @throws Zend_Auth_Adapter_Exception if authentication cannot be
@@ -44,45 +50,41 @@ class Connexions_Auth_UserPassword extends Connexions_Auth_Abstract
         }
         $password = $_POST['password'];
 
-        // Does 'userName' identify a valid user?
-        $user = new Model_User( $userName );
-
-        /*
-        Connexions::log("Connexions_Auth_UserPassword::authenticate: "
-                        . "username[ {$userName} ] "
-                        . "Mapped to user:\n"
-                        . $user->debugDump());
-        // */
-
-        if (! $user->isBacked())
+        /* See if we can find a credential that matches, along with a valid
+         * user
+         */
+        if (! $this->_matchUser($userName, md5($userName .':'. $password)))
         {
-            // Invalid user
-            $this->_setResult(self::FAILURE_IDENTITY_NOT_FOUND,
-                              $userName,
-                              "Unknown user name '{$userName}'");
+            // Error set by _matchUser
             return $this;
         }
 
-        if (! $user->authenticate($password))
+        if ($this->_user->name !== $userName)
         {
-            // Invalid password
+            // Invalid password -- at least for THIS user...
             $this->_setResult(self::FAILURE_CREDENTIAL_INVALID,
                               $userName,
                               "Invalid password");
+
+            /*
+            Connexions::log("Connexions_Auth_UserPassword::authenticate: "
+                            . "Mis-matched user name: [ %s ] !== [ %s ]",
+                            $this->_user->name, $userName);
+            // */
             return $this;
         }
+
 
         /*****************************************************************
          * Success!
          *
          */
-        $this->_setResult(self::SUCCESS,
-                          $user);
+        $this->_setResult(self::SUCCESS, $userName);
 
         /*
         Connexions::log("Connexions_Auth_UserPassword::authenticate: "
-                        . "User authenticated:\n"
-                        . $user->debugDump());
+                        . "User authenticated:%s\n",
+                        $this->_user->debugDump());
         // */
 
         return $this;

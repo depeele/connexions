@@ -20,7 +20,7 @@ echo "<hr />";
 
 /*****************************************************************************/
 $urlHash = '383cb614a2cc9247b86cad9a315d02e3';
-$item = Model_Item::find($urlHash);
+$item    = Model_Item::find($urlHash);
 printf ("Record for '%s':\n", $urlHash);
 echo ($item instanceof Connexions_Model ? $item->debugDump() : " *** ERROR\n");
 
@@ -28,7 +28,7 @@ unset($item);
 echo "<hr />";
 
 /*****************************************************************************/
-$url = 'http://www.clipperz.com/';
+$url  = 'http://www.clipperz.com/';
 $item = Model_Item::find($url);
 printf ("Record for url '%s':\n", $url);
 echo ($item instanceof Connexions_Model ? $item->debugDump() : " *** ERROR\n");
@@ -44,6 +44,15 @@ echo $item->debugDump();
 echo "\n\nChange the URL back to the original:\n";
 $item->url = $url;
 echo $item->debugDump();
+
+unset($item);
+echo "<hr />";
+
+/*****************************************************************************/
+$url  = 'http://www.newsTester.com/';
+$item = Model_Item::find($url);
+printf ("Record for url '%s':\n", $url);
+echo ($item instanceof Connexions_Model ? $item->debugDump() : " *** ERROR\n");
 
 unset($item);
 echo "<hr />";

@@ -743,45 +743,31 @@ abstract class Connexions_Set extends    ArrayIterator
                                      $tagIds    = null,
                                      $exactTags = true)
     {
-        switch ($class)
-        {
-        case 'Model_User':
-            $as       = 'u';
-            $table    = Model_User::metaData('table');
-            $keys     = Model_User::metaData('keys');
-            break;
+        /* Convert the model class name to an abbreviation composed of all
+         * upper-case characters following the first '_', then converted to
+         * lower-case (e.g. Model_UserTagItem == 'uti').
+         */
+        $as = strtolower(preg_replace('/^[^_]+_([A-Z])[a-z]+'.
+                                           '(?:([A-Z])[a-z]+)?'.
+                                           '(?:([A-Z])[a-z]+)?$/',
+                                      '$1$2$3', $class));
 
-        case 'Model_Tag':
-            $as       = 't';
-            $table    = Model_Tag::metaData('table');
-            $keys     = Model_Tag::metaData('keys');
-            break;
+        $config = array(
+            'as'         => $as,
+            'cols'       => array("{$as}.*",
+                                  'uti.userItemCount',
+                                  'uti.userCount',
+                                  'uti.itemCount',
+                                  'uti.tagCount'),
+            'modelClass' => $class
+        );
 
-        case 'Model_Item':
-            $as       = 'i';
-            $table    = Model_Item::metaData('table');
-            $keys     = Model_Item::metaData('keys');
-            break;
+        // Construct the initial select
+        $keys   = $class::metaData('keys');
+        $select = $class::select($config);
+        $db     = $select->getAdapter();
 
-        case 'Model_UserItem':
-            $as       = 'ui';
-            $table    = Model_UserItem::metaData('table');
-            $keys     = Model_UserItem::metaData('keys');
-            break;
-
-        case 'Model_Group':
-            $as       = 'g';
-            $table    = Model_Group::metaData('table');
-            $keys     = Model_Group::metaData('keys');
-            break;
-
-        default:
-            throw(new Exception("Connexions_Set::getRelatedSet({$class}): "
-                                . 'Unexpected class'));
-            break;
-        }
-
-        $db        = Connexions::getDb();
+        // Construct the sub-select
         $groupBy   = $keys[0];
         $subKeys   = (is_array($keys[0]) ? $keys[0] : array( $keys[0] ));
 
@@ -819,14 +805,8 @@ abstract class Connexions_Set extends    ArrayIterator
             array_push($joinCond, "{$as}.{$name}=uti.{$name}");
         }
 
-        $select = $db->select();
-        $select->from(array($as => $table),
-                      array("{$as}.*",
-                            'uti.userItemCount',
-                            'uti.userCount',
-                            'uti.itemCount',
-                            'uti.tagCount'))
-               ->join(array('uti' => $subSelect),
+        // Join the select and sub-select
+        $select->join(array('uti' => $subSelect),
                       implode(' AND ', $joinCond),
                       null);
          

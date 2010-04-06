@@ -54,6 +54,12 @@ class Model_UserItemSet extends Connexions_Set
         $select = $this->_commonSelect(self::MEMBER_CLASS,
                                        $userIds, $itemIds, $tagIds);
 
+        // Privacy filter
+        $select->where('ui.isPrivate=false'
+                       .    ($curUserId !== null
+                                ? ' OR ui.userId='. $curUserId
+                                : ''));
+
         // Use a default order.
         $select->order('ui.taggedOn ASC');
 
