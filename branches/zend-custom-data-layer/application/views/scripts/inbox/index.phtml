@@ -1,0 +1,56 @@
+<?php
+/** @file
+ *
+ *  View script for IndexController::index with incoming members:
+ *      owner               The owner of the current item set -- either a
+ *                          string or a Model_User instance;
+ *      viewer              The Model_User instance representing the current
+ *                          viewer;
+ *      tagInfo             A Connexions_Set_Info instance containing
+ *                          information about the requested tags;
+ *
+ *      paginator           A Zend_Paginator instance established for the
+ *                          presentation of the current Model_UserItemSet;
+ */
+$baseUrl = $this->baseUrl('/'); //Connexions::url('/');
+
+$links = $this->headLink();
+$links->appendStylesheet($baseUrl .'css/userItems.css')
+      ->appendStylesheet($baseUrl .'css/inbox.css');
+
+$this->headTitle('inbox')
+     ->headTitle($this->owner);
+
+?>
+<div class='columnHeader'>
+ <div class='context-bg connexions_sprites inbox_bg
+             ui-corner-left ui-corner-tr'>&nbsp;</div>
+ <p>Inbox for <?= $this->owner ?>
+    <?php
+        if (! empty($this->owner->pictureUrl))
+        {
+            printf ("<img class='avatar' src='%s' title='%s' />\n",
+                    $this->owner->pictureUrl,
+                    $this->owner->fullName);
+        }
+    ?>
+    <br />
+  <?php
+    $forPat = '/for:'. $this->owner->name .'(,?$)/';
+    $tagStr = preg_replace($forPat, '', $this->tagInfo->validItems);
+    if ( ! empty($tagStr))
+        printf ("with tags '%s'.", $tagStr);
+    else
+        printf ("NO tags.");
+  ?>
+ </p>
+</div>
+
+<?= $this->htmlItemScope($this->paginator,
+                         $this->tagInfo) ?>
+
+<?= $this->htmlUserItems($this->paginator,
+                         $this->viewer,
+                         $this->tagInfo) ?>
+
+<div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

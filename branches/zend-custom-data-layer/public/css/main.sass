@@ -1,0 +1,255 @@
+@import mixins
+@import colors
+@import sizes
+@import libraries
+@import template
+@import grids
+@import content
+@import sprites
+@import tabs
+@import ui-form
+@import tagCloud
+@import itemScope
+@import pagination
+
+/******* main.sass *******/
+//a, a:link, a:visited, a:focus, a:hover
+//  color =     !linkColor
+//  outline:    0 none
+//
+//a:active
+//  outline:    0 none
+//  position:   relative
+//  top:        1px
+
+/* Page Header */
+#pageHeader
+  height:       3.5em
+  z-index:      100
+  h1#siteName
+    position:     absolute
+    top:          0
+    left:         0
+    color:        #000
+    font-weight:  bold
+    font-size:    26px
+    padding-top:  5px
+    height:       45px
+    width:        200px
+    span
+      display:      block
+      float:        left
+
+    img
+      position:     relative
+      float:        left
+      height:       34px
+      top:          5px
+      left:         -4px
+      margin-right: -10px
+
+/* Page Content */
+#pageContent
+  padding:          0 0 0 1em
+  z-index:          10
+
+  .error
+    //padding:  1em
+    color =   !errorColor
+
+  .success
+    color =   !successColor
+
+/* Page Footer */
+#pageFooter
+  clear:            both
+  margin-top:       1em
+  border-top =      "1px solid" !borderColor
+  padding:          0.5em
+  z-index:          1
+
+  .db-profile
+    background-color =    !borderColor
+    padding:              0.25em
+    ul
+      padding:            0 1em
+      li
+        padding:          0
+        dl
+          padding:        0 1em
+          dt
+            font-weight:  bold
+          dd
+            padding:      0 1em
+
+/* Columns */
+.columnHeader
+  height:           3em
+
+  p
+    padding:        0 40px 1em 1em
+    text-align:     right
+    color =         !linkColor
+
+  .context-bg
+    position:       absolute
+    right:          0px
+    top:            -4px
+    +opacity(40)
+
+  .avatar
+    position:       absolute
+    width:          25px
+    height:         25px
+    top:            -6px
+    right:          -2px
+    +opacity(60)
+
+.rightCol
+  padding-left:     2em
+  padding-right:    0.2em
+
+  //.columnHeader
+  //  .tag_bg
+  //    top:          8px
+  //    z-index:      20
+
+.displayOptions
+  float:        right
+  padding-top:  0.5em
+
+  .control
+    z-index:        3
+    cursor:         pointer
+    padding:        0.2em 0 0.1em 0.2em
+    a
+      font-weight:  normal
+    .ui-icon
+      //margin-top:   2px
+      float:        right
+
+  .buttons
+    text-align: right
+    button
+      display:  inline
+      padding:  0.25em
+
+  #buttons-global
+    padding:      0.5em 0.5em 0
+    border-top =  "1px dotted" !borderColor
+
+  .field
+    display:        block
+    padding-bottom: 0.25em
+    label
+      clear:  left
+      width:  6em
+      float:  left
+
+  //.sortBy
+
+  .sortOrder
+    padding-top:      0.5em
+    padding-bottom:   0.5em
+    border-bottom =   "1px dotted" !borderColor
+    .field
+      float:          left
+      padding-bottom: 0
+      padding-right:  0.5em
+      label
+        display:    inline
+        float:      none
+        width:      auto
+        padding:    0 0.1em
+        font-size:  0.8em
+      input,label
+        cursor:   pointer
+
+  .perPage
+    padding-top:      0.5em
+    padding-bottom:   0.5em
+    border-bottom =   "1px dotted" !borderColor
+
+  .displayStyle
+    display:      block
+    position:     relative
+    width:        auto
+    text-align:   left
+    padding-top:  1em
+
+    label
+      cursor:     pointer
+
+    ul.groups
+      padding:          0
+      li.field, .comma
+        display:        block
+        float:          left
+        padding:        0.25em 0
+        label
+          display:      inline
+          float:        none
+          width:        auto
+          padding:      0
+      li.field
+        cursor:         pointer
+      li.control
+        position:       relative
+        padding:        0.25em 0 0.25em 0.25em
+      li.ui-state-active
+        font-weight:    bold
+      li.toggle
+        border:         none
+      .comma
+        padding-right:  0.25em
+
+    fieldset.options
+      padding-top:    0.5em
+      border:         none
+
+  // To have the control appear as a tab when opened
+  //form
+  //  top:                1.87em
+  //.control.ui-state-active
+  //  border-bottom-color = !pageColorBackground
+
+  form
+    z-index:            4
+    position:           absolute
+    top:                2.1em
+    right:              0
+    padding:            0.5em
+
+// ********************************************
+// ui.theme overrides
+.ui-widget
+  font-size:    1em
+  font-family:  Arial, Helvetica, sans-serif
+
+.ui-state-default a, .ui-state-default a:link
+  color = !linkColor
+
+.ui-state-default a:visited
+  color = !linkColorVisited
+
+.ui-tabs .ui-tabs-nav
+  font-size:  0.7em
+
+.ui-tabs .ui-tabs-panel
+  padding:      1em
+
+.ui-widget-content
+  border-color =  !borderColor
+  a
+    color =       !linkColor
+  a:visited
+    color =       !linkColorVisited
+
+.rightCol
+  .ui-tabs
+    border-right: none
+    +corners(4px, 0, 0, 4px)
+
+    .ui-tabs-panel
+      padding:    1em 0.25em 1em 0
+

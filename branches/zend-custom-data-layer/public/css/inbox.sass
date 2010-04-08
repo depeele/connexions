@@ -1,0 +1,70 @@
+@import sizes
+@import colors
+@import mixins
+
+/******* inbox.sass *******/
+// Styling for inbox
+
+// Side-bar senders list
+.rightCol #sendersList
+  padding:              0 0.25em 0 0
+  border-top =          "3px solid" !columnHeaderBorderColor
+
+  .listRelation
+    position:           absolute
+    top:                -2px
+    left:               -19px
+
+  .users
+    padding:        1em 0 0 1.25em
+    clear:          both
+
+    .user
+      clear:          both
+      position:       relative
+      padding-bottom: 0.25em
+      border-bottom = "1px dotted" !borderColor
+
+      // stats:countItems
+      .stats
+        float:                right
+        .countItems
+          display:            block
+          font-weight:        normal
+          text-align:         center
+          text-decoration:    none
+
+      .data
+        position: relative
+        padding:  0
+
+        // Avatar
+        .avatar
+          float:                  left
+          width:                  16px
+          height:                 16px
+          a
+            .img
+              display:            block
+              position:           relative
+              border:             0
+              background-color:   transparent
+              img
+                width:            16px
+                height:           16px
+              .ui-icon
+                position:         relative
+                left:             8px
+
+        // UserId
+        .userId
+          float:        left
+          padding:      0 0 0 1em
+          font-size:    1em
+
+          a
+            display:      inline
+            font-weight:  bold
+
+    .last
+      border-bottom:  none

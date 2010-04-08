@@ -1,0 +1,270 @@
+<?php
+if (! @is_array($this->postInfo))
+    $this->postInfo = array();
+//$this->postInfo['url'] = 'url://to-edit/';
+
+//$noConflict = Zend_JQuery_View_Helper_JQuery::getJQueryHandler();
+
+$jQuery = $this->jQuery();
+$jQuery->addStylesheet($this->baseUrl('css/post.css'))
+       ->addStylesheet($this->baseUrl('css/validationForm.css'))
+       ->addJavascriptFile($this->baseUrl('js/ui.stars.min.js'))
+       ->addJavascriptFile($this->baseUrl('js/ui.checkbox.min.js'))
+       ->addJavascriptFile($this->baseUrl('js/ui.button.min.js'))
+       ->addJavascriptFile($this->baseUrl('js/ui.input.min.js'))
+       ->addOnLoad('post_onLoad();')
+       ->javascriptCaptureStart();
+?>
+
+/************************************************
+ * Initialize the post form handlers
+ *
+ */
+var $form       = null;
+var $submit     = null;
+var $status     = null;
+
+function post_onLoad()
+{
+    $form   = $('#post form');
+    $form.hide();   // hide while we prepare....
+
+    $form.addClass('ui-form');
+
+    // For any input with the 'click-to-edit' class, add a validation listener
+    $form.find('.click-to-edit').bind('validationChanged', function() {
+        // On ANY validation change, remove the 'click-to-edit' class and
+        // unbind this listener.
+        var $el = $(this);
+        if ($el.data('validationInitialized') !== true)
+        {
+            $el.data('validationInitialized', true);
+            return;
+        }
+
+        $el.removeClass('click-to-edit')
+           .unbind('validationChange');
+    });
+
+    $status = $('#post .status');
+    $submit = $('#post button[name=submit]');
+
+    $submit.button({ priority:'primary', enabled:false});
+    $('#post button[name=cancel]').button({ priority:'secondary'});
+
+    // Rating
+    $('#post .stars-wrapper').stars({
+        captionEl:          $('label[for=rating]')
+    });
+    /*
+    $('#post .stars-wrapper').stars({
+        captionEl:          $('label[for=rating]'),
+        baseClass:          'connexions_sprites',
+        mirrorCss:          true,
+
+        cancelClass:        'star_0',
+        cancelHoverClass:   'star_0_hover',
+        cancelDisabledClass:'star_0_off',
+
+        starClass:          'star_1',
+        starOnClass:        'star_1_on',
+        starHoverClass:     'star_1_hover',
+        starDisabledClass:  'star_1_off'
+    });
+    */
+
+    // Favorite
+    $('#post input[name=isFavorite]').checkbox({
+            css:        'connexions_sprites',
+            cssOn:      'star_fill',
+            cssOff:     'star_empty',
+            titleOn:    'Favorite: click to remove from Favorites',
+            titleOff:   'Click to add to Favorites',
+            useElTitle: false,
+            hideLabel:  true
+    });
+
+    // Privacy
+    $('#post input[name=isPrivate]').checkbox({
+            css:        'connexions_sprites',
+            cssOn:      'lock_fill',
+            cssOff:     'lock_empty',
+            titleOn:    'Private: click to share',
+            titleOff:   'Public: click to mark as private',
+            useElTitle: false,
+            hideLabel:  true
+    });
+
+    // Style all remaining input[type=text] / textarea controls with ui.input
+    $('#post input[type=text],#post input[type=password],textarea')
+            .bind('validationChanged.uiinput', function() {
+                    validate_form();
+                  })
+            .input();
+
+    // Catch form submissions and turn them into JsonRpc calls.
+    $form.bind('submit', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var rpc = {jsonrpc: '2.0',
+                   method:  'create',
+                   params:  $form.serializeArray(),
+                   id:      getTime()};
+
+        $form.mask();
+        $.ajax({url:      "<?= $this->url() ?>",
+                type:     "POST",
+                dataType: "json",
+                data:     rpc,
+                error:    function(req, stat, err) {
+                },
+                success:  function(data) {
+                },
+                complete: function(req, stat) {
+                    $form.unmask();
+                }
+        });
+    });
+
+    $form.show();
+}
+
+function validate_form()
+{
+    var $required   = $('.required');
+    var isValid     = true;
+
+    $required.each(function() {
+        if (! $(this).hasClass('ui-state-valid'))
+        {
+            isValid = false;
+            return false;
+        }
+    });
+
+    if (isValid)
+    {
+        $submit.button('enable');
+        $status.removeClass('error')
+               .addClass('success')
+               .text('');
+    }
+    else
+    {
+        $submit.button('disable');
+        $status.removeClass('success')
+               .addClass('error');
+    }
+}
+
+<?php
+$jQuery->javascriptCaptureEnd();
+
+?>
+<div class="line"><!-- { -->
+ <div id="post" class='ui-validation-form'>
+  <div class='context-ribbon'>&nbsp;</div>
+  <div class="legend unit"><!-- { -->
+   <div class='context-bg connexions_sprites bookmark_bg'>
+     &nbsp;
+   </div>
+   <h1>Post</h1>
+   <p>a new bookmark</p>
+   <div class='status<?= (@isset($this->error) ? ' error' : '') ?>'>
+    <?= (@isset($this->error) ? $this->error : '') ?>
+   </div>
+  </div><!-- legend } -->
+  <div class="userInput unit"><!-- { -->
+   <form method='post'>
+    <div class='field<?= (! @empty($this->postInfo['url'])
+                                        ? ' click-to-edit'
+                                        : '') ?>'>
+     <label for='url'>URL to bookmark</label>
+     <input type='text' class='text required' autocomplete='off'
+            name='url'  value='<?= $this->postInfo['url'] ?>'
+                     tabindex='1' />
+     <div class='ui-field-info'>
+      <div class='ui-field-status'></div>
+      <div class='ui-field-requirements'>required</div>
+     </div>
+    </div>
+    <div class='field'>
+     <label for='name'>Bookmark name / title</label>
+     <input type='text' class='text required' autocomplete='off'
+            name='name' value='<?= $this->postInfo['name'] ?>'
+                     tabindex='2' />
+     <div class='ui-field-info'>
+      <div class='ui-field-status'></div>
+      <div class='ui-field-requirements'>required</div>
+     </div>
+    </div>
+    <div class='field'>
+     <label for='description'>Description / Notes for this bookmark</label>
+     <textarea class='text'
+                name='description'
+            tabindex='3'>
+      <?= $this->postInfo['description'] ?>
+     </textarea>
+    </div>
+    <div class='field'>
+     <label for='tags'>Tags</label>
+     <input type='text' class='text required' autocomplete='off'
+            name='tags' value='<?= $this->postInfo['tags'] ?>'
+                     tabindex='4' />
+     <div class='ui-field-info'>
+      <div class='ui-field-status'></div>
+      <div class='ui-field-requirements'>
+       comma-separated, 30 characters per tag - required
+      </div>
+     </div>
+    </div>
+    <div class='personalize buttons ui-helper-clearfix'>
+     <div class='field userRating'>
+      <label for='rating'>rating</label>
+      <?= $this->htmlStarRating($this->postInfo['rating'],
+                                'stars-wrapper') ?>
+      <!-- div class='stars-wrapper'>
+       <input name='rating' type='radio' value='1' title='Terrible'
+             <?= ($this->postInfo['rating'] == '1'
+                     ? " checked='true'" : '') ?> />
+       <input name='rating' type='radio' value='2' title='Fair'
+             <?= ($this->postInfo['rating'] == '2'
+                     ? " checked='true'" : '') ?> />
+       <input name='rating' type='radio' value='3' title='Average'
+             <?= ($this->postInfo['rating'] == '3'
+                     ? " checked='true'" : '') ?> />
+       <input name='rating' type='radio' value='4' title='Good'
+             <?= ($this->postInfo['rating'] == '4'
+                     ? " checked='true'" : '') ?> />
+       <input name='rating' type='radio' value='5' title='Excellent'
+             <?= ($this->postInfo['rating'] == '5'
+                     ? " checked='true'" : '') ?> />
+      </div -->
+     </div>
+
+     <div class='field favorite'>
+      <label for='isFavorite'>Favorite</label>
+      <input name='isFavorite'
+            type='checkbox' value='true'
+            <?= ($this->postInfo['isFavorite'] ? ' checked' : '') ?> />
+     </div>
+
+     <div class='field private'>
+      <label for='isPrivate'>Private</label>
+      <input name='isPrivate'
+            type='checkbox' value='true'
+            <?= ($this->postInfo['isPrivate'] ? ' checked' : '') ?> />
+     </div>
+     <button name='submit' tabindex='5'>Save</button>
+     <button name='cancel' tabindex='6'>Cancel</button>
+     <br class='clear' />
+    </div>
+   </form>
+   <div id='tags'>
+     Tag selection area.
+   </div>
+  </div><!-- userInput } -->
+  <br class='clear' />
+ </div>
+</div><!-- line } -->

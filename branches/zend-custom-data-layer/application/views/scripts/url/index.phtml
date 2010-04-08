@@ -1,0 +1,59 @@
+<?php
+/** @file
+ *
+ *  View script for UrlController::index to render the main content.
+ *
+ *  The Connexions_View_Helper_HtmlUrlItems helper MUST be initialized
+ *  before this view is rendered.
+ *
+ *  Incoming members:
+ *      viewer              The Model_User instance representing the current
+ *                          viewer;
+ *      item                A Model_Item instance representing the base item;
+ *      tagInfo             A Connexions_Set_Info instance containing
+ *                          information about the requested tags;
+ *
+ *      paginator           A Zend_Paginator instance established for the
+ *                          presentation of the current Model_UserItemSet;
+ */
+$baseUrl = $this->baseUrl('/');
+
+$links = $this->headLink();
+$links->appendStylesheet($baseUrl .'css/urlItems.css');
+
+// Grab the first item from the paginator
+$item0 = $this->paginator->getItem(0);
+
+//echo "<pre>Item:\n", $this->item->debugDump() ,"</pre>\n";
+//echo "<pre>UseItem 0:\n", print_r($item0, true) ,"</pre>\n";
+
+$this->headTitle('Bookmarks for "'. $item0['name'] .'"');
+
+?>
+<div class='columnHeader'>
+ <div class='context-bg connexions_sprites bookmark_bg
+             ui-corner-left ui-corner-tr'>&nbsp;</div>
+ <div class='itemInfo'>
+  <p>
+   <span class='title'><?= $item0['name'] ?></span>
+   <a href='<?= $this->item->url ?>'><?= $this->item->url ?></a>
+   <?php
+    /*
+    if ( $this->tagInfo->hasValidItems())
+        printf ("with tags '%s'.", $this->tagInfo->validItems);
+    else
+        printf ("NO tags.");
+    */
+   ?>
+  </p>
+ </div>
+</div>
+
+<?= $this->htmlItemScope($this->paginator,
+                         $this->tagInfo) ?>
+
+<?= $this->htmlUrlItems($this->paginator,
+                        $this->viewer,
+                        $this->tagInfo) ?>
+
+<div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

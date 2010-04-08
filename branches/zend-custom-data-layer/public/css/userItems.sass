@@ -1,0 +1,96 @@
+@import sizes
+@import colors
+@import mixins
+@import uiStars
+
+!displaySortOffset  = 5px
+
+/******* userItems.sass *******/
+// Styling for userItems / Bookmarks
+
+#itemsList, #inboxItemsList
+  .displayOptions
+    // To have the control appear as a tab when opened
+    //form
+    //  top:                1.87em
+    //.control.ui-state-active
+    //  border-bottom-color = !pageColorBackground
+
+    form
+      width:              22em
+      //background-color =  !pageColorBackground
+      //border =            "1px solid" !borderColor
+
+      .displayStyle
+        .items, .inboxItems, fieldset.options
+          border-bottom:  none
+          padding-top:    1em
+          .item
+            border =      "1px solid" !borderColor
+            padding:      0 0 0.1em 0.2em
+
+            label
+              display:      inline
+              float:        none
+              width:        auto
+              padding-left: 0.25em
+
+            .stats
+              font-weight:  normal
+              padding:      0
+
+              .rating
+                padding:        0.25em 0.1em 0.25em 0.5em
+                text-align:     left
+
+                .info
+                  text-align:   left
+                  float:        none
+                  padding:      0
+
+            .data
+              padding-left:       0
+              padding-right:      0.1em
+              .itemName
+                padding-bottom:   0.5em
+
+              .url, .description, .description .full, .description .summary
+                margin:           0
+
+              .description
+                padding-bottom:   0.5em
+                .full, .summary
+                  padding:        0
+
+              .userId
+                white-space:      normal
+                padding:          0 0 0 1em
+                font-size:        0.8em
+                label
+                  padding-left:   0
+                .avatar
+                  position:       relative
+                  float:          left
+                  padding:        0 0.75em 0 0.25em
+                  label
+                    padding-left: 8px
+                  .img
+                    position:     absolute
+                    left:         14px
+                    top:          0
+                .id
+                  display:        inline
+              .tags
+                width:            auto
+                text-align:       left
+                padding:          0 0 1em 0
+                label
+                  display:        inline
+                  float:          none
+                  font-size:      0.8em
+
+              .dates
+                .updated
+                  width:      auto
+
+@import userItem
