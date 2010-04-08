@@ -1,0 +1,137 @@
+@import sizes
+@import colors
+@import mixins
+@import uiStars
+
+/******* post.sass *******/
+// Styling for bookmark post form
+.line
+  padding:            1em
+
+.ui-validation-form
+  padding:            0 0 0 0.5em
+  float:              left
+  width:              auto
+  background-color =  !pageColorBackground
+  border =            "2px solid" !borderColor
+  +corners(10px)
+
+  .legend
+    text-align:     right
+    padding-right:  2em
+    h1
+      padding:  0
+      color =   !navColorSelected
+    p
+      padding:  0
+      color =   !fieldInfoColor
+
+  .userInput
+    padding:          1em
+    //background-color: #eef
+    +corners(10px)
+
+    .field
+      padding-bottom: 1em
+
+      label
+        color =       !fieldInfoColor
+
+      .text
+        width:        30em
+
+      .ui-field-info
+        height:         1.25em
+        font-size:      0.9em
+        padding-left:   2em
+        +opacity(50)
+
+        .ui-field-status
+          float:        left
+
+        .ui-field-requirements
+          float:        right
+          color =       !fieldInfoColor
+          text-align:   right
+
+    .click-to-edit
+      label
+        display:  none
+
+      input
+        border-color:       transparent
+        color =             !validationInputColor
+        background-color =  !pageColorBackground
+        background-image:   none
+
+      input:focus
+        border-color =      !validationFocusBorderColor
+        color =             !validationFocusColor
+
+      .ui-field-info
+        visibility: hidden
+
+      &:hover
+        .ui-field-info
+          visibility: visible
+
+    .buttons
+      position:     relative
+      text-align:   right
+
+      input, label, button
+        position: relative
+        display:  inline
+        cursor:   pointer
+
+    .personalize
+      width:        100%
+      padding-top:  1em
+
+      .field
+        display:  block
+        float:    left
+        padding:  0 0.5em 0 0
+
+        label
+          display:  block
+          float:    left
+
+      .userRating
+        display:  block
+        float:    left
+        padding:  0 2.5em 0 0
+
+        // Accomadate a wrapped label
+        height:   32px
+        width:    160px
+
+        label
+          display:  block
+          float:    right
+          padding:  2px 0 0 0.25em
+          width:    2em
+          color =   !linkColor
+
+      .favorite,.private
+        input
+          width:    0
+          height:   0
+          margin:   0
+          padding:  0
+
+      // checkbox styling
+      .checkbox
+        position: relative
+        display:  inline
+        cursor:   pointer
+        border:   none
+
+        .ui-stars-wrapper
+          float:    left
+
+    .formError
+      padding:      0
+      font-weight:  bold
+      text-align:   left
+      color =       !errorColor

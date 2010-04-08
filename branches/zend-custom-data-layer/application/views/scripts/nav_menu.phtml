@@ -1,0 +1,299 @@
+<?php
+/** @file
+ *
+ *  A view partial to render the top-level navigation menu.
+ *
+ *  $this implements the Zend_View_Interface and has at least the following
+ *  members/methods:
+ *      navigation()    Returns the Zend_View_Helper_Navigtion instance to be
+ *                      used to retrieve the Zend_View_Helper_Navigation_Menu
+ *                      instance to aid in rendering.
+ *      container       The Zend_Navigation_Page representing the container,
+ *                      established via
+ *                          $view->navigation()
+ *                               ->menu()
+ *                               ->renderPartial($container, ...)
+ */
+$request        = Connexions::getRequest();
+$searchContexts = Zend_Registry::get('config')->searchContext;
+if ($searchContexts instanceof Zend_Config)
+{
+    $searchContexts = $searchContexts->toArray();
+}
+else
+{
+    $searchContexts = array();
+}
+
+renderMenu($this->navigation()->menu(), $this->container);
+renderSearch($request, $searchContexts);
+
+/** @brief  Given a previous depth and current depth, close all open li/ul tags
+ *  @param  indent          The indent for the current depth.
+ *  @param  prevDepth       The previous depth.
+ *  @param  depth           The current depth
+ *  @param  includeCorners  Should outter corners be include?
+ */
+function closeTags($indent, $prevDepth, $depth, $includeCorners = true)
+{
+    // Close li/ul tags until we're at current depth
+    for ($idex = $prevDepth; $idex > $depth; $idex--)
+    {
+        printf("<!-- closeTags: prevDepth[ %d ], depth[ %d ], idex[ %d ] -->\n",
+                $prevDepth, $depth, $idex);
+
+        $ind = $indent . str_repeat(' ', $idex);
+        echo $ind, " </li>\n";
+
+        if ( ($idex > ($depth + 1)) || $includeCorners)
+        {
+            // Add one final 'li.outter' with outter corners
+            echo $ind, " <li class='outter'>\n",
+                 $ind, "  <div class='connexions_sprites corner_outter_left'>",
+                         "</div>\n",
+                 $ind, "  <div class='corner_outter_middle'>",
+                         "</div>\n",
+                 $ind, "  <div class='connexions_sprites corner_outter_right'>",
+                         "</div>",
+                 $ind, " </li>\n";
+        }
+
+        echo $ind, "</ul>\n";
+    }
+}
+
+/** @brief  Render a menu for the given container
+ *  @param  helper      The navigation menu view helper.
+ *  @param  container   The container to render.
+ *  @param  ulClass     The CSS class for the top-level ul
+ */
+function renderMenu($helper, $container, $ulClass = 'nav')
+{
+    $uri      = Connexions::getRequestUri();
+    $iterator = new RecursiveIteratorIterator($container,
+                        RecursiveIteratorIterator::SELF_FIRST);
+
+    /* Attempt to simplify the current request uri by stripping off any query
+     * and/or fragment.
+     */
+    $uri =  preg_replace('/[\?#].*$/', '', $uri);
+
+    /* First, iterate through and determine the lowest page that matches the
+     * current URI.
+     */
+    foreach ($iterator as $page)
+    {
+        if (! $helper->accept($page))
+        {
+            // NOT accepted by ACL or visibility
+            continue;
+        }
+
+        $href = $page->getHref();
+
+        //$isActive = preg_match('#^'.$href.'$#', $uri);
+        $isActive = preg_match('#^'.$href.'#', $uri);
+        if ($isActive)
+        {
+            $page->setActive(true);
+        }
+    }
+    $iterator->rewind();
+
+    $prevDepth = -1;
+    $liFirst   = false;
+    foreach ($iterator as $page)
+    {
+        if (! $helper->accept($page))
+        {
+            // NOT accepted by ACL or visibility
+            continue;
+        }
+
+        $depth    = $iterator->getDepth();
+        $indent   = str_repeat(' ', $depth);
+        $href     = $page->getHref();
+        $isActive = ($depth > 0
+                        //? preg_match('#^'.$href.'$#', $uri)
+                        ? preg_match('#^'.$href.'#', $uri)
+                        : $page->isActive(true));
+
+        if ($depth > $prevDepth)
+        {
+            // Start a new <ul>
+            $ulClasses = array();
+            if ( ($depth == 0) && (! @empty($ulClass)))
+                array_push($ulClasses, $ulClass);
+            else if ($depth > 0)
+                array_push($ulClasses, 'sub');
+            if ($isActive)  //$page->isActive(true))
+                array_push($ulClasses, 'active');
+
+            echo $indent, '<ul',
+                        (! @empty($ulClasses)
+                            ? " class='". implode(' ', $ulClasses) ."'"
+                            : ""),
+                          ">\n";
+            $liFirst = true;
+        }
+        else if ($depth < $prevDepth)
+        {
+            // Close li/ul tags until we're at current depth
+            closeTags($indent, $prevDepth, $depth);
+        }
+
+        if ($depth <= $prevDepth)
+        {
+            // Close the previous <li>
+            echo $indent, " </li>\n";
+        }
+
+        // Render the <li> for this page
+        $liClasses = array();
+        if ( $liFirst )
+            array_push($liClasses, 'first');
+        if ($isActive)  // $page->isActive(true))
+            array_push($liClasses, 'active');
+        if ( ($pageClass = $page->getClass()) !== null)
+            array_push($liClasses, $pageClass);
+    
+        printf ("%s <li%s>",
+                $indent,
+                (! @empty($liClasses)
+                    ? " class='". implode(' ', $liClasses) ."'"
+                    : ""));
+        if (($depth > 0) && $liFirst)
+        {
+            // Include the left inner corner
+            echo "<div class='connexions_sprites corner_inner_left'>",
+                 "</div>";
+        }
+
+        //$href  = $page->getHref();
+        $label = Connexions::replaceables($page->getLabel());
+        printf ("<a href='%s'>%s</a>",
+                $href, $label);
+
+        if (($depth > 0) && $liFirst)
+        {
+            // Include the right inner corner
+            echo "<div class='connexions_sprites corner_inner_right'>",
+                 "</div>";
+        }
+
+        $liFirst = false;
+
+        /*
+        if ($depth == 0)
+        {
+            // The top-level items include a toggle
+            echo "<span class='toggle'></span>";
+        }
+        */
+        echo "\n";
+
+        $prevDepth = $depth;
+    }
+
+    // Finished iterating -- close all open li/ul tags
+printf ("<!-- depth: %d -->\n", $depth);
+    closeTags($indent, $depth+1, 0, false);
+
+    return;
+}
+
+/** @brief  Render the search form.
+ *  @param  request         The incoming request.
+ *  @param  searchContexts  An array of search contexts.
+ *
+ */
+function renderSearch($request, array $searchContexts)
+{
+    $searchTerm     = $request->getParam('q', null);
+    $searchContext  = $request->getParam('searchContext', 'all');
+
+    ?>
+    <form id='search' action='<?= Connexions::url('/search') ?>' method='post'>
+     <div class='searchBox'><!-- searchBox { -->
+      <div class='searchInput'><!-- searchInput { -->
+       <div class='choices'>
+        <input name='searchContext' type='hidden'
+              value='<?= $searchContext ?>' />
+        <ul class='sub list'>
+         <?php
+            /* Render the list of available search contexts.
+             *
+             * This is defined in 'application/configs/application.ini' via
+             *     'searchContext.<name> = <label>
+             */
+            $contextText = 'Search connexions';
+            $ind         = "         ";
+            $nItems      = count($searchContexts);
+            $idex        = 0;
+            foreach($searchContexts as $name => $label)
+            {
+                $id        = 'search-choice-'. $name;
+                $liClasses = array();
+                if ( $idex == 0 )
+                    array_push($liClasses, 'first');
+                else if ( ($idex + 1) >= $nItems)
+                    array_push($liClasses, 'last');
+                if ($searchContext == $name)
+                {
+                    //array_push($liClasses, 'on');
+                    array_push($liClasses, 'active');
+                    $contextText = $label;
+                }
+
+                printf ("%s<li id='%s'%s>",
+                        $ind, $id,
+                        (! @empty($liClasses)
+                            ? " class='". implode(' ', $liClasses) ."'"
+                            : ""));
+                if ($idex == 0)
+                {
+                    // Include the left inner corner
+                    echo "<div class='connexions_sprites corner_inner_left'>",
+                         "</div>";
+                }
+
+                $label = Connexions::replaceables($label);
+                printf ("<a>%s</a>", $label);
+                /*
+                printf ("<span>%s</span>",
+                        $label);
+                */
+
+                if ($idex == 0)
+                {
+                    // Include the right inner corner
+                    echo "<div class='connexions_sprites corner_inner_right'>",
+                         "</div>";
+                }
+                echo "</li>\n";
+                $idex++;
+            }
+
+            // Add one final 'li.outter' with outter corners
+            echo $ind, " <li class='outter'>\n",
+                 $ind, "  <div class='connexions_sprites corner_outter_left'>",
+                         "</div>\n",
+                 $ind, "  <div class='corner_outter_middle'>",
+                         "</div>\n",
+                 $ind, "  <div class='connexions_sprites corner_outter_right'>",
+                         "</div>",
+                 $ind, " </li>\n";
+         ?>
+        </ul>
+       </div>
+       <input name='q'       type='text' class='input ui-corner-all'
+             value="<?= (@empty($searchTerm) ? $contextText : $searchTerm) ?>"
+              autocomplete='off' maxlength='255' size='30' />
+      </div><!-- searchInput } -->
+      <button class='submit connexions_sprites magnifier_small'>&nbsp;</button>
+     </div><!-- searchBox } -->
+    </form>
+
+    <?php
+}
+
