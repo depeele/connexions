@@ -1,0 +1,39 @@
+@import sizes
+@import colors
+@import mixins
+
+/******* post.sass *******/
+// Styling for bookmark post form
+//  (in addition to styles from validationForm.sass)
+#post
+  padding:              0
+  .context-ribbon
+    position:           absolute
+    top:                0
+    left:               0
+    width:              48px
+    height:             100%
+    background-color =  !contextColorBackground
+    +corners(8px, 0, 0, 8px)
+    
+  .legend
+    margin-left:        48px
+    padding-right:      0
+    text-align:         left
+
+    .context-bg
+      position:         absolute
+      left:             -48px
+      +corners(8px, 0, 0, 0)
+
+    h1
+      padding:          0 2em 0 0.2em
+
+    p
+      padding:          0 0 0 0.5em
+
+    .status
+      margin-top:       5em
+      padding:          0.5em
+      text-align:       center
+      color:            #999

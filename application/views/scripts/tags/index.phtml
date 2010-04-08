@@ -1,0 +1,52 @@
+<?php
+/** @file
+ *
+ *  View script for TagsController::index to render the main content.
+ *
+ *  The Connexions_View_Helper_HtmlItemCloud helper MUST be initialized
+ *  before this view is rendered.
+ *
+ *  Incoming members:
+ *      viewer              The Model_User instance representing the current
+ *                          viewer;
+ *      userInfo            A Connexions_Set_Info instance containing
+ *                          information about the requested users;
+ *
+ *      tagList             The Zend_Tag_ItemList instance established for the
+ *                          presentation of current Model_TagSet;
+ *      sbCloudHelper       The Connexions_View_Helper_HtmlItemCloud instance
+ *                          established for the cloud presentation of users
+ *                          related to the current ModeL_TagSet;
+ */
+
+$this->headTitle('Tags');
+
+$uiCloud = $this->htmlItemCloud();
+
+?>
+<div class='columnHeader'>
+ <div class='context-bg connexions_sprites tag_bg
+             ui-corner-left ui-corner-tr'>&nbsp;</div>
+ <p>
+  <?php
+    if ( $this->userInfo && $this->userInfo->hasValidItems())
+    {
+            if (count($this->userInfo->validIds) == 1)
+                echo "All tags used by user ";
+            else
+                echo "Those tags in common to users ";
+
+            echo "'{$this->userInfo->validItems}'.";
+    }
+    else
+        printf ("All tags.");
+  ?>
+ </p>
+</div>
+
+<?= $this->htmlItemScope($uiCloud->getItemSet(),
+                         $this->userInfo) ?>
+
+<?= $uiCloud->render() ?>
+
+<div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

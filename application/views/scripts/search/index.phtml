@@ -1,0 +1,17 @@
+<?php
+
+$this->headTitle("Search results for '". $this->terms ."'");
+
+?>
+<p>Present search results for     <?= $this->owner ?>
+                          to      <?= $this->viewer ?>,
+                          context '<?= $this->context ?>',
+                          terms   '<?= $this->terms ?>'
+<?php   if (@empty($this->tags))
+            printf (", NO tags.");
+        else
+            printf (" with tags '%s'", $this->tags);
+?>
+</p>
+
+<div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

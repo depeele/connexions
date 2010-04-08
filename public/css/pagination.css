@@ -1,0 +1,96 @@
+div.pagination {
+  /*
+  padding:  0.1em;
+  margin:   0.1em;
+  */
+}
+
+div.pagination .pager {
+  /*white-space:      nowrap;*/
+}
+
+div.pagination .pager a,
+div.pagination .pager .current,
+div.pagination .pager .disabled,
+div.pagination .pager .skip {
+  position:         relative;
+
+  /*
+  display:          block;
+  float:            left;
+  width:            2.5em;
+  text-align:       center;
+  margin:           0 0.1em;
+  */
+
+  padding:          0.1em 0.2em;
+  margin:           0 0.1em;
+
+  border:           1px solid #4a5154;
+
+  text-decoration:  none;
+  /*color:            #4a5154;*/
+}
+
+div.pagination .pager a:hover,
+div.pagination .pager a:active {
+  border-color: #06c;
+  color:        #000;
+}
+
+div.pagination .pager .current {
+  background-color: #4a5154;
+  color:            #fff;
+  font-weight:      bold;
+}
+
+div.pagination .pager .disabled {
+  border-color:     #eee;
+  color:            #ddd;
+}
+
+div.pagination .pager .skip,
+div.pagination .pager .ends,
+div.pagination .pager a.ends:hover,
+div.pagination .pager a.ends:active {
+  border-color:     #fff;
+}
+
+div.pagination .pager .skip {
+  /*width:            1em;*/
+  top:              -0.25em;
+}
+div.pagination .pager .ends {
+  /*width:            1em;*/
+}
+
+div.pagination .pager .left {
+  /*text-align:       right;*/
+}
+div.pagination .pager .right {
+  /*text-align:       left;*/
+}
+
+div.pagination .info {
+  float:            right;
+  font-size:        0.85em;
+  text-align:       center;
+  width:            8em;
+}
+div.pagination .info div {
+  clear:            both;
+}
+
+div.pagination .info .itemRange {
+}
+
+div.pagination .info .label,
+div.pagination .info .count {
+  display:          block;
+}
+div.pagination .info .label{
+  float:            left;
+}
+div.pagination .info .count {
+  float:            right;
+}

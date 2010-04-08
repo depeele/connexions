@@ -1,12 +1,14 @@
 #!/bin/sh
+PASS=$1
+
 echo "Dropping connexions database..."
-mysqladmin -u root -p drop connexions
+mysqladmin --user=root --password="$1" drop connexions
 
 echo "Creating connexions database..."
-mysqladmin -u root -p create connexions
+mysqladmin --user=root --password="$1" create connexions
 
 echo "Grating access..."
-mysql -u root -p mysql -e "GRANT ALL ON connexions.* TO 'connexions'@'localhost';"
+mysql --user=root --password="$1" mysql -e "GRANT ALL ON connexions.* TO 'connexions'@'localhost';"
 
 echo "Creating tag tables..."
 mysql -u connexions connexions < tagging.sql

@@ -1,0 +1,68 @@
+@import 'libraries.css';
+@import 'template.css';
+@import 'grids.css';
+@import 'content.css';
+@import 'sprites.css';
+@import 'tabs.css';
+@import 'themes/default/jquery-ui.css';
+@import 'ui-form.css';
+@import 'tagCloud.css';
+@import 'pagination.css';
+
+a, a:link, a:visited, a:focus, a:hover {
+  color:      #06c;
+  outline:    0 none;
+}
+a:active {
+  outline:    0 none;
+  position:   relative;
+  top:        1px;
+}
+
+/* Page Header */
+#pageHeader {
+  height:       5em;
+  z-index:      100;
+}
+#pageHeader h1#siteName {
+  position:     absolute;
+  top:          0;
+  left:         0;
+
+  color:        #000;
+  font-weight:  bold;
+  font-size:    26px;
+  padding-top:  5px;
+
+  height:       45px;
+  width:        200px;
+}
+#pageHeader h1#siteName span {
+  display:      block;
+  float:        left;
+}
+#pageHeader h1#siteName img {
+  position:     relative;
+  float:        left;
+  height:       34px;
+  top:          5px;
+  left:         -4px;
+  margin-right: -10px;
+}
+
+/* Page Content */
+#pageContent {
+  padding:          0 1em;
+  z-index:          10;
+}
+
+/* Page Footer */
+#pageFooter {
+  clear:            both;
+  margin-top:       1em;
+  border-top:       1px solid #ddd;
+  padding:          0.5em;
+  z-index:          1;
+}
+
+.rightCol{padding-left:1em;}

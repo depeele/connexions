@@ -1,0 +1,20 @@
+<?php
+/** @file
+ *
+ *  View script for IndexController::index to render an Atom version of the
+ *  main content.
+ *
+ *  Incoming members:
+ *      paginator           The Zend_Paginator representing the items to be
+ *                          presented.
+ *
+ *  Sets 'feed' in the view for Bootstrap::feed_post to use in final rendering.
+ */
+Connexions_Profile::checkpoint('Connexions',
+                               'IndexView Atom rendering beginning');
+
+// Use the application/views/helpers/FeedUserItems.php view helper...
+$this->feed = $this->feedUserItems($this->paginator, 'Atom');
+
+Connexions_Profile::checkpoint('Connexions',
+                               'IndexView Atom rendering COMPLETE');
