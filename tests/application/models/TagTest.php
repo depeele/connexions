@@ -23,6 +23,7 @@ class TagTest extends BaseTestCase
         $expected['tagCount']      = 32;
 
         $data     = array(
+                             // Also test tag normalization
             'tag'         => strtoupper($expected['tag']),
         );
 

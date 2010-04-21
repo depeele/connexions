@@ -122,24 +122,54 @@ abstract class Connexions_Model_Set
      *
      */
 
-    /** @brief  Set the Data Mapper for this model set.
-     *  @param  mapper      The Mapper class name or instance.
+    /** @brief  Set the Data Mapper for this model.
+     *  @param  mapper      The mapper class name or instance.
      *
      *  @return $this for a fluent interface.
      */
-    public function setMapper($mapper)
+    public function setMapper($mapper = null)
     {
-        $this->_mapper = $mapper;
+        if ($mapper === null)
+        {
+            /* Use the name of the current class to construct a Mapper
+             * class name:
+             *      (.*Model)_<Class> => (.*Model)_Mapper_<Class>
+             */
+            $mapper = preg_replace('/(.*?Model)_Set_(.*?)/',
+                                    '$1_Mapper_$2', get_class($this));
+
+            /*
+            Connexions::log("Connexions_Model::setMapper(%s)",
+                            $mapper);
+            // */
+        }
+
+        if (! $mapper instanceof Connexions_Model_Mapper)
+        {
+            /* Invoke the mapper Factory.  It will look in the cache for an 
+             * existing instance and, if not found, create and cache a new 
+             * Mapper instance.
+             */
+            $this->_mapper = Connexions_Model_Mapper::factory($mapper);
+        }
 
         return $this;
     }
 
-    /** @brief  Retrieve the Data Mapper for this model set.
+    /** @brief  Retrieve the data mapper for this model.
      *
      *  @return A Connexions_Model_Mapper instance
      */
     public function getMapper()
     {
+        if ( (! is_object($this->_mapper)) &&
+             ($this->_mapper !== Connexions_Model_Mapper::NO_INSTANCE) )
+        {
+            // Establish a default mapper and return it.
+            $this->setMapper($this->_mapper);
+        }
+        //if (! $this->_mapper instanceof Connexions_Model_Mapper)
+
         return $this->_mapper;
     }
 
@@ -248,7 +278,9 @@ abstract class Connexions_Model_Set
         {
             if ($item instanceof Connexions_Model)
                 array_push($res, $item->toArray($deep, $public));
-            else
+            else if (is_object($item) && method_exists($item, 'toArray'))
+                array_push($res, $item->toArray());
+            else if (is_array($item))
                 array_push($res, $item);
         }
 
@@ -449,7 +481,7 @@ abstract class Connexions_Model_Set
         }
 
         // Ensure that each item in the range is a Model instance
-        $modelName = $this->getModelName();
+        $mapper = $this->getMapper();
         for ($idex = 0; $idex < $itemCountPerPage; $idex++)
         {
             $item =& $this->_members[$offset + $idex];
@@ -457,12 +489,7 @@ abstract class Connexions_Model_Set
             {
                 // Create a new instance of the member class using the record.
                 $this->_members[$offset + $idex] =
-                        new $modelName(array('mapper'   => $this->_mapper,
-                                             'data'     => $item,
-                                             'isBacked' => true,
-                                             'isValid'  => true,
-                                        )
-                             );
+                        $mapper->makeModel( $item );
             }
         }
 
@@ -494,12 +521,7 @@ abstract class Connexions_Model_Set
              */
 
             // Create a new instance of the member class using the record.
-            $item = new $modelName(array('mapper'   => $this->_mapper,
-                                         'data'     => $item,
-                                         'isBacked' => true,
-                                         'isValid'  => true,
-                                    )
-                         );
+            $item = $this->getMapper()->makeModel( $item );
 
             $this->_members[$offset] = $item;
         }

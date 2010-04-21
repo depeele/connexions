@@ -38,6 +38,29 @@ class Model_Mapper_UserAuth extends Model_Mapper_Base
         return $model;
     }
 
+    /** @brief  Fetch all matching model instances.
+     *  @param  where   Optional WHERE clause (string, array, Zend_Db_Select)
+     *  @param  order   Optional ORDER clause (string, array)
+     *  @param  count   Optional LIMIT count
+     *  @param  offset  Optional LIMIT offset
+     *
+     *  Note: If 'where' is a simple array of values or a single value, this
+     *        method (via _where) will only match the value(s) against primary
+     *        key(s).
+     *
+     *        To match against another field, 'where' MUST be an associative
+     *        array of condition/value pairs.
+     *
+     *  @return A Connexions_Model_Set instance that provides access to all
+     *          matching Domain Model instances.
+     */
+    public function fetch($where   = null,
+                          $order   = null,
+                          $count   = null,
+                          $offset  = null)
+    {
+    }
+
     /** @brief  Retrieve the user related to this userAuth.
      *  @param  userAuth    The Model_UserAuth instance.
      *

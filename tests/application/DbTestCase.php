@@ -48,7 +48,7 @@ abstract class DbTestCase extends Zend_Test_PHPUnit_DatabaseTestCase
                             .   "Expected[ %-15s ] != [ %-15s ]\n",
                             $idex, $columnName,
                             $expected, $actual);
-                    */
+                    // */
                 }
                 catch (Exception $e)
                 {

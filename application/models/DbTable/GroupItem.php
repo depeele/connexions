@@ -21,7 +21,7 @@ class Model_DbTable_GroupItem extends Zend_Db_Table_Abstract
 
             'Group' => array(
                 'columns'       => 'groupId',
-                'refTableClass' => 'Model_DbTable_Group',
+                'refTableClass' => 'Model_DbTable_MemberGroup',
                 'refColumns'    => 'groupId',
             ),
     );

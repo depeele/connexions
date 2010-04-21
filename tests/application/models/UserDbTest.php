@@ -296,6 +296,18 @@ class UserDbTest extends DbTestCase
             $ds);
     }
 
+    public function testUserSetCount()
+    {
+        $expectedCount = 4; // Remember, 1 was deleted in a test above...
+        $expectedTotal = 4; // Remember, 1 was deleted in a test above...
+
+        $mapper = new Model_Mapper_User( );
+        $users  = $mapper->fetch();
+
+        $this->assertEquals($expectedCount, $users->count());
+        $this->assertEquals($expectedTotal, $users->getTotalCount());
+    }
+
     public function testUserSetLimitOrder()
     {
         $mapper = new Model_Mapper_User( );
@@ -309,5 +321,20 @@ class UserDbTest extends DbTestCase
                   dirname(__FILE__) .'/_files/userSetLimitOrderAssertion.xml');
 
         $this->assertModelSetEquals( $ds->getTable('user'), $users );
+    }
+
+    public function testUserSetLimitCount()
+    {
+        $expectedCount = 2;
+        $expectedTotal = 4; // Remember, 1 was deleted in a test above...
+
+        $mapper = new Model_Mapper_User( );
+        $users  = $mapper->fetch(null,
+                                 array('name ASC'), // order
+                                 $expectedCount,    // count
+                                 1);                // offset
+
+        $this->assertEquals($expectedCount, $users->count());
+        $this->assertEquals($expectedTotal, $users->getTotalCount());
     }
 }
