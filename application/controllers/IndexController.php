@@ -8,6 +8,10 @@
 
 class IndexController extends Zend_Controller_Action
 {
+    // Tell Connexions_Controller_Action_Helper_ResourceInjector which
+    // Bootstrap resources to make directly available
+    public  $dependencies = array('db','layout');
+
     const   CRUD_SUCCESS            = 0;
     const   CRUD_UNAUTHENTICATED    = 1;
     const   CRUD_INVALID_DATA       = 2;
@@ -191,6 +195,7 @@ class IndexController extends Zend_Controller_Action
             return $this->_helper->redirector('signIn','auth');
         }
 
+        //$this->layout->setLayout('post');
         //$this->_helper->layout->setLayout('post');
 
         $request  =& $this->_request;
@@ -242,7 +247,8 @@ class IndexController extends Zend_Controller_Action
              *
              *  part=(content | sidebar([.:-](tags | people))? )
              */
-            $this->_helper->layout->setLayout('partial');
+            //$this->_helper->layout->setLayout('partial');
+            $this->layout->setLayout('partial');
 
             $parts = preg_split('/\s*[\.:\-]\s*/',
                                 $this->_request->getParam('part', 'content'));

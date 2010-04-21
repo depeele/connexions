@@ -4,12 +4,19 @@ require_once('./bootstrap.php');
 echo "<pre>";
 echo "<h3>Model_UserItem tests</h3>";
 
+/*
+$mapper = new Model_UserItemMapper( );
+
+$id       = array('userId' => 1, 'itemId' => 1);
+$userItem = $mapper->find( $id );
+*/
+
 $userItem   = Model_UserItem::find(array('userId'  => 1,
                                          'itemId'  => 1));
 if ($userItem instanceof Connexions_Model)
 {
-    echo "Record for userId==1, itemId==1:\n";
-    echo $userItem->debugDump();
+    printf ("Record for userId==1, itemId==1: (%s); %s\n",
+            get_class($userItem), $userItem->debugDump());
 }
 else
 {

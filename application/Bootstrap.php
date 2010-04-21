@@ -37,7 +37,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
              ->_commonRequest()
              ->_commonPlugins();
 
-        /*
+        // /*
         Connexions_Profile::checkpoint('Connexions',
                                        'Bootstrap::_initCommon complete');
         // */
@@ -54,8 +54,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
          */
         $this->_viewContext()
              ->_viewAcl()
-             ->_viewRoute()
-             ->_viewPlugins();
+             ->_viewRoute();
 
         // Initialize the view
         $viewResource = $this->getPluginResource('view');
@@ -66,7 +65,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
                                 'Connexions_View_Helper')
              ->addHelperPath("ZendX/JQuery/View/Helper",
                                 "ZendX_JQuery_View_Helper");
-
 
         return $view;
     }
@@ -80,6 +78,48 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $view = $this->getResource('minimalView');
 
         /*******************************************************************
+         * Set view defaults:
+         *  encoding, doctype, head metadata,
+         *  base title and title separator
+         *
+         *  from resources.view
+         *          .encoding
+         *          .doctype
+         *          .contentType
+         *          .title
+         *          .titleSeparator
+         */
+        $options = $this->getOptions();
+        if (isset($options['resources']['view']))
+        {
+            $optsView =& $options['resources']['view'];
+            $view     =  new Zend_View($optsView);
+
+            if (isset($optsView['doctype']))
+                $view->doctype($optsView['doctype']);
+
+            if (isset($optsView['contentType']))
+                $view->headMeta()->appendHttpEquiv(
+                                'Content-Type',
+                                $optsView['contentType']
+                           );
+
+            if (isset($optsView['title']))
+                $view->headTitle($optsView['title']);
+
+            if (isset($optsView['titleSeparator']))
+                $view->headTitle()
+                        ->setSeparator(
+                            $optsView['titleSeparator'] );
+        }
+        else
+        {
+            $optsView = null;
+
+            $view = new Zend_View();
+        }
+
+        /*******************************************************************
          * Initialize the default ACL and Role for this view.
          *
          */
@@ -89,13 +129,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         // Initialize the default ACL and Role for this view
         Zend_View_Helper_Navigation_HelperAbstract::setDefaultAcl($acl);
         Zend_View_Helper_Navigation_HelperAbstract::setDefaultRole('guest');
-
-
-        /*******************************************************************
-         * Establish the base title and separator
-         *
-         */
-        $view->headTitle('connexions')->setSeparator(' > ');
 
 
         /*******************************************************************
@@ -129,13 +162,15 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
                                 'nav');
 
         $nav    = new Zend_Navigation($config);
+        $this->setResource('navigation', $nav);
+
         $view->navigation($nav);
 
         /* If there is a current, authenticated user, set our ACL role to
          * 'member'
          */
         $user = $this->getResource('user'); //Zend_Registry::get('user');
-        if ($user->isAuthenticated())
+        if ($user && $user->isAuthenticated())
         {
             $view->navigation()->setRole('member');
         }
@@ -153,8 +188,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
         return $view;
     }
-
-
 
     /*************************************************************************
      * Batch initialization helpers
@@ -189,6 +222,20 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
     /** @brief  Initialize autoloading. */
     protected function _commonAutoload()
     {
+        /*
+        $autoLoader = Zend_Loader_Autoloader::getInstance();
+        $autoLoader->registerNamespace('Connexions_');
+
+        $loader = new Zend_Application_Module_Autoloader(
+                array('namespace'   => '',  //'App',    App_Model_
+                      'basePath'    => dirname(__FILE__),
+                )
+        );
+        $this->setResource('ResourceLoader', $loader);
+
+        return $this;
+        // */
+
         $autoLoader = Zend_Loader_Autoloader::getInstance();
 
         $connexionsLoader = new Connexions_Autoloader();
@@ -251,6 +298,34 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
     /** @brief  Initialize the databsae. */
     protected function _commonDb()
     {
+        /* Database cache configuration is found in:
+         *  cache.db
+         *      .frontEnd
+         *          .adapter    Front-end adapter name
+         *          .params     Front-end adapter options
+         *      .backEnd
+         *          .adapter    Back-end adapter name
+         *          .params     Back-end adapter options
+         */
+        $cache = $this->getOption('cache');
+        if (isset($cache['db']))
+        {
+            // Create a metadata cache to be used with all table objects.
+            $dbCache =& $cache['db'];
+
+            /*
+            Connexions::log("Bootstrap::_commonDb: dbCache [ ".
+                                var_export($dbCache, true) . " ]");
+            // */
+
+            $cache = Zend_Cache::factory($dbCache['frontEnd']['adapter'],
+                                         $dbCache['backEnd']['adapter'],
+                                         $dbCache['frontEnd']['params'],
+                                         $dbCache['backEnd']['params']);
+
+            Zend_Db_Table::setDefaultMetadataCache($cache);
+        }
+
         $config = $this->getPluginResource('db');
         $db     = $config->getDbAdapter();
 
@@ -281,6 +356,9 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             die("*** Cannot connect to database");
         }
 
+        // Make this the default database adapter for Zend_Db_Table
+        Zend_Db_Table::setDefaultAdapter($db);
+
         /* Make this available via the global Registry and as a Bootstrap
          * Resource
          */
@@ -299,61 +377,17 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $auth = Zend_Auth::getInstance();
         $auth->setStorage(new Zend_Auth_Storage_Session('connexions', 'user'));
 
-        // See if there is a user currently identified
-        $userId = $auth->getIdentity();
-
-        /*
-        Connexions::log("Bootstrap::_commonAuth: "
-                                . "UserId from session [ "
-                                .   print_r($userId, true) ." ]");
-        // */
-
-        $user = null;
-        if ($userId !== null)
+        if  ($auth->hasIdentity())
         {
-            // Does the identity represent a valid user?
-            //$user = Model_User::find($userId);
-            $user = new Model_User( $userId );
-
-            /*
-            Connexions::log("Bootstrap::_commonAuth: userId[{$userId}], "
-                                . "User Model:\n"
-                                .   $user->debugDump());
-            // */
-
-            if ($user->isBacked())
-            {
-                /* We have a valid user identified in our session-based
-                 * authentication store -- consider them authenticated.
-                 */
-
-                /*
-                Connexions::log("Bootstrap::_commonAuth: "
-                                .   "Initially Authenticated as "
-                                .       "[ %s ]",
-                                $user);
-                // */
-
-                $user->setAuthenticated();
-            }
-            else
-            {
-                /* Invalid user identified in our session-based authentication
-                 * store -- clear the identity.
-                 */
-
-                // /*
-                Connexions::log("Bootstrap::_commonAuth: "
-                                .   "Invalid identity [ {$userId} ] - CLEAR");
-                // */
-
-                $auth->clearIdentity();
-
-                unset($user);
-                $user = null;
-            }
+            Connexions::log("Bootstrap::_commonAuth: Auth has identity...");
+            $user = new Model_User( $auth->getIdentity() );
+            $user->setAuthenticated();
         }
 
+        /*
+        Connexions::log("Bootstrap::_commonAuth: user is %sNULL",
+                        ($user === null ? '' : 'NOT '));
+        // */
         if ($user === null)
         {
             /* :TODO: Any Transport-level / Atomic
@@ -369,28 +403,15 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
              *          Create an 'anonymous', unauthenticated user
              */
 
+            //Connexions::log("Bootstrap::_commonAuth: create an anonymous user");
+
             // Create an 'anonymous', unauthenticated user
-            $user = new Model_User(array(
-                            '@isBacked' => false,
-                            '@isRecord' => true,
-                            'name'      => 'anonymous',
-                            'fullName'  => 'Anonymous'
-                        ));
+            $user = new Model_User(array('name'      => 'anonymous',
+                                         'fullName'  => 'Anonymous'
+                                   ));
         }
 
-        /*
-        Connexions::log("Bootstrap::_commonAuth: "
-                        .  "Final user '%s' is%s authenticated",
-                        $user,
-                        ($user->isAuthenticated() ? '':' NOT'));
-        // */
-        Connexions_Profile::checkpoint('Connexions',
-                                       "Bootstrap::_commonAuth complete: "
-                                       .  "Final user '%s' is%s authenticated",
-                                       $user,
-                                       ($user->isAuthenticated()
-                                            ? '':' NOT'));
-
+        //Connexions::log("Bootstrap::_commonAuth: Add 'user' to registry");
 
         /* Make this available via the global Registry and as a Bootstrap
          * Resource.
@@ -405,6 +426,13 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
          */
         Zend_Registry::set('user', $user);
         $this->setResource('user', $user);
+
+        Connexions_Profile::checkpoint('Connexions',
+                                       "Bootstrap::_commonAuth complete: "
+                                       .    "user[ %s ], %sauthenticated",
+                                       $user->name,
+                                       ($user->isAuthenticated()
+                                            ? '' : 'NOT '));
 
         return $this;
     }
@@ -441,6 +469,18 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         // identification/authentication during dispatchLoopStartup().
         $front->registerPlugin(new Connexions_Controller_Plugin_Auth());
         */
+
+        /* Register our Controller Action Helpers Prefix.
+         *
+         * This will make available all helpers in:
+         *  library/Connexions/Controller/Action/Helper
+         */
+        Zend_Controller_Action_HelperBroker::addPrefix(
+                                        'Connexions_Controller_Action_Helper');
+
+        // Register a Resource Injector
+        Zend_Controller_Action_HelperBroker::addHelper(
+                new Connexions_Controller_Action_Helper_ResourceInjector());
 
         return $this;
     }
@@ -530,39 +570,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $router->addRoute('default', $route);
 
         //Connexions::log('Bootstrap::Route initialized');
-
-        return $this;
-    }
-
-    /** @brief  Initialize view-related plugins and helpers. */
-    protected function _viewPlugins()
-    {
-        /*
-        $front = Zend_Controller_Front::getInstance();
-
-        // Register our authentication plugin (performs
-        // identification/authentication during dispatchLoopStartup().
-        $front->registerPlugin(new Connexions_Controller_Plugin_Auth());
-        */
-
-        /*
-        $viewResource = new Connexions_Application_Resource_View();
-        $this->registerPluginResource($viewResource);
-        */
-
-        /*
-        $loader = $this->getPluginLoader();
-        $loader->addPrefixPath('Connexions_Application_Resource_View',
-                                    'Connexions/Application/Resource');
-        */
-
-        /* Register our Controller Action Helpers Prefix.
-         *
-         * This will make available all helpers in:
-         *  library/Connexions/Controller/Action/Helper
-         */
-        Zend_Controller_Action_HelperBroker::addPrefix(
-                                        'Connexions_Controller_Action_Helper');
 
         return $this;
     }

@@ -2,40 +2,52 @@
 /** @file
  *
  *  Model for the Tag table.
- *
- *  Note: Since we pull tag sets with varying weight measuremennts so, at least
- *        for now, DO NOT change the base class from Connexions_Model to
- *        Connexions_Model_Cached to make it cacheable.
  */
 
 class Model_Tag extends Connexions_Model
                 implements  Zend_Tag_Taggable
 {
-    /*************************************************************************
-     * Connexions_Model - static, identity members
-     *
-     */
-    public static   $table  = 'tag';
-                              // order 'keys' by most used
-    public static   $keys   = array('tagId', 'tag');
-    public static   $model  = array('tagId' => 'auto',
-                                    'tag'   => 'string'
+    //protected   $_mapper    = 'Model_Mapper_Tag';
+
+    // The data for this Model
+    protected   $_data      = array(
+            'tagId'         => null,
+            'tag'           => '',
+
+            /* Note: these items are typically computed and may not be 
+             *       persisted directly.
+             */
+            'userItemCount' => null,
+            'userCount'     => null,
+            'itemCount'     => null,
+            'tagCount'      => null,
     );
 
-    /*************************************************************************/
-
-    /** @brief  Set a value in this record and mark it dirty.
-     *  @param  name    The field name.
-     *  @param  value   The new value.
+    /*************************************************************************
+     * Connexions_Model abstract method implementations
      *
-     *  Override to ensure that 'tag' is normalized.
-     *
-     *  @return true | false
      */
+    public function getId()
+    {
+        return ( $this->isBacked()
+                    ? $this->tagId
+                    : null );
+    }
+
+    /*************************************************************************
+     * Connexions_Model overrides
+     *
+     */
+
     public function __set($name, $value)
     {
-        if ($name === 'tag')
+        switch ($name)
+        {
+        case 'tag':
+            // Normalize the tag name
             $value = strtolower($value);
+            break;
+        }
 
         return parent::__set($name, $value);
     }
@@ -46,27 +58,33 @@ class Model_Tag extends Connexions_Model
      */
     public function __toString()
     {
-        if ($this->isValid() && (! @empty($this->_record['tag'])))
-            return $this->_record['tag'];
+        if (! empty($this->tag))
+            return $this->tag;
 
         return parent::__toString();
     }
 
-    /** @brief  Return an associative array representing this tag.
+    /** @brief  Return an array version of this instance.
+     *  @param  deep    Should any associated models be retrieved?
+     *                      [ Connexions_Model::DEPTH_DEEP ] |
+     *                        Connexions_Model::DEPTH_SHALLOW
      *  @param  public  Include only "public" information?
+     *                      [ Connexions_Model::FIELDS_PUBLIC ] |
+     *                        Connexions_Model::FIELDS_ALL
      *
-     *  @return An associaitve array.
+     *  @return An array representation of this Domain Model.
      */
-    public function toArray($public = true)
+    public function toArray($deep   = self::DEPTH_DEEP,
+                            $public = self::FIELDS_PUBLIC)
     {
-        $ret = $this->_record;
-        if ($public)
+        $data = $this->_data;
+
+        if ($public === self::FIELDS_PUBLIC)
         {
-            // Remove non-public information
-            $ret = $ret['tag'];
+            unset($data['tagId']);
         }
 
-        return $ret;
+        return $data;
     }
 
     /*************************************************************************
@@ -115,93 +133,5 @@ class Model_Tag extends Connexions_Model
         // */
 
         return $weight;
-    }
-
-    /*************************************************************************
-     * Static methods
-     *
-     */
-
-    /** @brief  Given a set of tags, retrieve the tag identifier for each.
-     *  @param  tags    The set of tags as a comma-separated string or array.
-     *  @param  db      An optional database instance (Zend_Db_Abstract).
-     *
-     *  @return An array
-     *              { valid:   { <tagName>: <tag id>, ... },
-     *                invalid: [invalid tag names, ...]
-     *              }
-     */
-    public static function ids($tags, $db = null)
-    {
-        if (@empty($tags))
-            return null;
-
-        if (! @is_array($tags))
-            $tags = preg_split('/\s*,\s*/', strtolower($tags) );
-
-        if ($db === null)
-            $db = Connexions::getDb();
-        $select = $db->select()
-                     ->from(self::$table)
-                     ->where('tag IN (?)', $tags);
-        $recs   = $select->query()->fetchAll();
-
-        /* Convert the returned array of records to a simple array of
-         *   tagName => tagId
-         *
-         * This will be used for the list of valid tags.
-         */
-        $valid  = array();
-        foreach ($recs as $idex => $row)
-        {
-            $valid[$row['tag']] = $row['tagId'];
-        }
-
-        $invalid = array();
-        if (count($valid) < count($tags))
-        {
-            // Include invalid entries for those tags that are invalid
-            foreach ($tags as $tag)
-            {
-                if (! @isset($valid[$tag]))
-                    $invalid[] = $tag;
-            }
-        }
-
-        return array('valid' => $valid, 'invalid' => $invalid);
-    }
-
-    /*************************************************************************
-     * Connexions_Model - abstract static method implementations
-     *
-     */
-
-    /** @brief  Retrieve all records and return an array of instances.
-     *  @param  id      The record identifier.
-     *  @param  db      An optional database instance (Zend_Db_Abstract).
-     *
-     *  @return A new instance (false if no matching user).
-     */
-    public static function find($id, $db = null)
-    {
-        return parent::find($id, $db, __CLASS__);
-    }
-
-    /*************************************************************************
-     * Connexions_Model_Cached - abstract static method implementations
-     *
-     */
-
-    /** @brief  Given a record identifier, generate an unique instance
-     *          identifier.
-     *  @param  id      The record identifier.
-     *
-     *  @return A unique instance identifier string.
-     */
-    protected static function _instanceId($id)
-    {
-        return __CLASS__ .'_'.  (! @empty($id['tagId'])
-                                    ?  $id['tagId']
-                                    : 'generic');
     }
 }

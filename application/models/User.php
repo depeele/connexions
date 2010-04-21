@@ -1,110 +1,133 @@
 <?php
 /** @file
  *
- *  Model for the User table.
+ *  User Domain Model.
  *
- *  Note: Since we pull tag sets with varying weight measuremennts so, at least
- *        for now, DO NOT change the base class from Connexions_Model to
- *        Connexions_Model_Cached to make it cacheable.
  */
 
-//class Model_User extends Connexions_Model_Cached
 class Model_User extends Connexions_Model
-                implements  Zend_Tag_Taggable
+                    implements  Zend_Tag_Taggable,
+                                Zend_Auth_Adapter_Interface
 {
-    /*************************************************************************
-     * Connexions_Model - static, identity members
-     *
-     */
-    public static   $table  = 'user';
-                              // order 'keys' by most used
-    public static   $keys   = array('userId', 'name');
-    public static   $model  = array('userId'        => 'auto',
-                                    'name'          => 'string',
-                                    'password'      => 'string',
+    //protected   $_mapper    = 'Model_Mapper_User';
 
-                                    'fullName'      => 'string',
-                                    'email'         => 'string',
-                                    'apiKey'        => 'string',
-                                    'pictureUrl'    => 'string',
-                                    'profile'       => 'string',
-                                    'networkShared' => 'boolean',
-                                    'lastVisit'     => 'datetime',
-                                    'lastVisitFor'  => 'datetime',
-                                    'totalTags'     => 'integer',
-                                    'totalItems'    => 'integer'
+    // The data for this Model
+    protected   $_data      = array(
+            'userId'        => null,
+            'name'          => '',
+            'fullName'      => '',
+            'email'         => '',
+            'apiKey'        => '',
+            'pictureUrl'    => '',
+            'profile'       => '',
+            'lastVisit'     => '',
+            'totalTags'     => '',
+            'totalItems'    => '',
+
+            /* Note: these items are typically computed and may not be 
+             *       persisted directly.
+             */
+            'userItemCount' => null,
+            'userCount'     => null,
+            'itemCount'     => null,
+            'tagCount'      => null,
     );
 
-    /** @brief  The set of models that are dependent upon this model.
+    // Data that is an instance of another Model or Model_Set
+    protected   $_tags              = null;
+    protected   $_bookmarks         = null;
+
+    protected   $_authType          = 'password';
+    protected   $_credential        = null;
+    protected   $_isAuthenticated   = false;
+
+    /*************************************************************************
+     * Connexions_Model abstract method implementations
      *
-     *  This is primarily used to perform cascade on delete
-     *  (i.e. deleting a Model_User from the database will also caused the
-     *        deletion of associated Model_UserAuth and Model_UserItem
-     *        records).
      */
-    public static   $dependents = array('Model_UserAuth',
-                                        'Model_UserItem');
+    public function getId()
+    {
+        return ( $this->isBacked()
+                    ? $this->userId
+                    : null );
+    }
 
-    /*************************************************************************/
+    public function setAuthType($authType)
+    {
+        $this->_authType = $authType;
+    }
 
-    protected       $_isAuthenticated   = false;
+    public function setCredential($credential)
+    {
+        $this->_credential = $credential;
+    }
 
-    // Associated model caches (e.g. user-related tags and userItems)
-    protected       $_tags              = null; // Model_TagSet
-    protected       $_userItems         = null; // Model_UserItemSet
-
-
-    /** @brief  Get a value of the given field.
-     *  @param  name    The field name.
+    /*************************************************************************
+     * Connexions_Model overrides
      *
-     *  Override to allow retrieval of user-related tags.
-     *
-     *  @return The field value (or null if invalid field).
      */
+
     public function __get($name)
     {
         switch ($name)
         {
-        case 'tags':        $res =& $this->_tags();         break;
-        case 'userItems':   $res =& $this->_userItems();    break;
-        default:            $res =  parent::__get($name);   break;
+        case 'authType':      $val = $this->_authType;        break;
+        case 'credential':    $val = $this->_credential;      break;
+        case 'authenticated': $val = $this->_isAuthenticated; break;
+        case 'tags':          $val = $this->_tags();          break;
+        case 'bookmarks':     $val = $this->_bookmarks();     break;
+        default:              $val = parent::__get($name);    break;
         }
 
-        if (! empty($field))
-            $res = $res->{$field};
-
-        return $res;
+        return $val;
     }
 
-    /** @brief  Set a value in this record and mark it dirty.
-     *  @param  name    The field name.
-     *  @param  value   The new value.
-     *
-     *  Override to properly encode 'password' when set.
-     *
-     *  @return true | false
-     */
     public function __set($name, $value)
     {
-        $res = false;
         switch ($name)
         {
+        case 'authType':
+            $this->_authType = $value;
+            return;
+
+            break;
+
+        case 'credential':
+            $this->_credential = $value;
+            return;
+
+            break;
+
+        case 'authenticated':
+            $this->_isAuthenticated = (bool)$value;
+            return;
+
+            break;
+
         case 'tags':
-        case 'userItems':
-            // Do NOT allow external replacement of sub-instances.
+            if ( ! ($value instanceof Model_Tags))
+            {
+                throw new Exception("Tags can only be set using an "
+                                    . "instance of Model_Tags");
+            }
+            $this->_tags = $value;
+            return;
+
             break;
 
-        case 'password':
-            $value = md5($value);
-            $res   =  parent::__set($name, $value);
-            break;
+        case 'bookmarks':
+            if ( ! ($value instanceof Model_Bookmarks))
+            {
+                throw new Exception("Bookmarks can only be set using an "
+                                    . "instance of Model_Bookmarks");
+            }
+            $this->_bookmarks = $value;
+            return;
 
-        default:
-            $res =  parent::__set($name, $value);
             break;
         }
 
-        return $res;
+        return parent::__set($name, $value);
     }
 
     /** @brief  Return a string representation of this instance.
@@ -113,181 +136,219 @@ class Model_User extends Connexions_Model
      */
     public function __toString()
     {
-        if ($this->isValid() && (! @empty($this->_record['name'])))
-            return $this->_record['name'];
+        if (! empty($this->name))
+            return $this->name;
 
         return parent::__toString();
     }
 
-
-    /** @brief  Return an associative array representing this item.
+    /** @brief  Return an array version of this instance.
+     *  @param  deep    Should any associated models be retrieved?
+     *                      [ Connexions_Model::DEPTH_DEEP ] |
+     *                        Connexions_Model::DEPTH_SHALLOW
      *  @param  public  Include only "public" information?
+     *                      [ Connexions_Model::FIELDS_PUBLIC ] |
+     *                        Connexions_Model::FIELDS_ALL
      *
-     *  @return An associaitve array.
+     *  @return An array representation of this Domain Model.
      */
-    public function toArray($public = true)
+    public function toArray($deep   = self::DEPTH_DEEP,
+                            $public = self::FIELDS_PUBLIC)
     {
-        $ret = $this->_record;
-        if ($public)
+        $data = $this->_data;
+
+        if ($public === self::FIELDS_PUBLIC)
         {
-            // Remove non-public information
-            unset($ret['userId']);
-            unset($ret['password']);
-            unset($ret['apiKey']);
+            unset($data['userId']);
+            unset($data['apiKey']);
         }
 
-        return $ret;
+        return $data;
     }
 
-    /** @brief  Is this user authenticated?
+    /** @brief  Invalidate the data contained in this model instance.
      *
-     *  @return true | false
+     *  @return $this for a fluent interface.
+     */
+    public function invalidate()
+    {
+        $this->invalidateCache();
+
+        $this->_authType        = 'password';
+        $this->_credential      = null;
+        $this->_isAuthenticated = false;
+
+        return parent::invalidate();
+    }
+
+    /** @brief  Invalidate our internal cache of sub-instances.
+     *
+     *  @return $this for a fluent interface
+     */
+    public function invalidateCache()
+    {
+        $this->_tags        = null;
+        $this->_bookmarks   = null;
+
+        return $this;
+    }
+
+    /** @brief  Set the authentication state for this user.
+     *  @param  val     The new state (true | false).
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function setAuthenticated($state = true)
+    {
+        $this->_isAuthenticated = (bool)$state;
+
+        return $this;
+    }
+
+    /** @brief  Retrieve the authentication state for this user.
+     *
+     *  @return The authentication state (true | false).
      */
     public function isAuthenticated()
     {
         return $this->_isAuthenticated;
     }
 
-    /** @brief  Set the authentication state.
-     *  @param  isAuthenticated     true | false
-     *
-     *  @return Model_User to provide a fluent interface.
-     */
-    public function setAuthenticated($isAuthenticated   = true)
-    {
-        $this->_isAuthenticated = $isAuthenticated;
-        
-        return $this;
-    }
-
-    /** @brief  Validate the user's password.
-     *  @param  pass        The password to validate.
-     *
-     *  @return true | false
-     */
-    public function authenticate($pass)
-    {
-        $this->_isAuthenticated = false;
-
-        if ($this->isValid())
-        {
-            $checkPass = md5($pass);
-            if ($this->_record['password'] == $checkPass)
-            {
-                $this->_isAuthenticated = true;
-                return true;
-            }
-
-            $this->_error = 'Invalid password.';
-        }
-
-        return false;
-    }
-
-    /** @brief  Set the weighting.
-     *  @param  by      Weight by ('tag', 'item', 'userItem').
-     *  @param  tagIds  If provided, an array of tagIds to limit the query.
-     *
-     *  @return $this
-    public function weightBy($by, $tagIds = null)
-    {
-        $cols = array();
-
-        switch (strtolower($by))
-        {
-        case 'tag':
-            $cols['weight'] = 'COUNT(DISTINCT uti.tagId)';
-            break;
-
-        case 'item':
-            $cols['weight'] = 'COUNT(DISTINCT uti.itemId)';
-            break;
-
-        case 'useritem':
-        default:            // Default to 'userItem'
-            $cols['weight'] = 'COUNT(DISTINCT uti.userId,uti.itemId)';
-            break;
-        }
-
-        $select = $this->_db->select()
-                            ->from(array('u'  => $this->_table))
-                            ->join(array('uti'=> 'userTagItem'),
-                                         '(u.userId=uti.userId)',
-                                         '')
-                            ->group('u.userId')
-                            ->where('u.userId=?', $this->userId)
-                            ->columns($cols);
-
-        if (! @empty($tagIds))
-        {
-            // Tag Restrictions -- required 'userTagItem'
-            $select->where('uti.tagId IN (?)', $tagIds)
-                   ->having('COUNT(DISTINCT uti.tagId)='.count($tagIds));
-        }
-
-        $recs   = $select->query()->fetchAll();
-
-        if (@count($recs) == 1)
-        {
-            // Include this 'weight' in our record data
-            $this->_record['weight'] = $recs[0]['weight'];
-        }
-
-        return $this;
-    }
-     */
-
-    /** @brief  Invalidate any cache we have of sub-instances
-     *          (i.e. _tags, _userItems).
-     *
-     *  @return This Model_User for a fluent interface.
-     */
-    public function invalidateCache()
-    {
-        $this->_tags      = null;
-        $this->_userItems = null;
-
-        return $this;
-    }
-
-    /** @brief  Notification from a related model that tags related to this 
-     *          user have been updated.  Perform any required maintainence 
-     *          (e.g.  updating tag statistics).
-     *
-     *  @return This Model_User for a fluent interface.
-     */
-    public function tagsUpdated()
-    {
-        return $this;
-    }
-
     /*************************************************************************
-     * Connexions_Model overrides
+     * Zend_Auth_Adapter_Interface
      *
      */
 
-    /** @brief  Validate the given field.
-     *  @param  record  The record to validate within.
-     *  @param  field   The field to validate.
+    /** @brief  Perform an authentication check.
      *
-     *  Note: This is overridden to generate any missing, auto-generated data
-     *        (e.g. apiKey).
+     *  This makes use of the current Model_User instance as the holder of 
+     *  incoming information
+     *      (i.e. 'userId' or 'name' AND 'credential' AND 'authType').
      *
-     *  @return true | false
+     *  To authenticate:
+     *      1) If THIS instance is backed
+     *         a) THEN use THIS instance as the validated user;
+     *         b) ELSE locate a valid user using the 'userId' or 'name' from 
+     *            THIS instance,
+     *      2) Locate a Model_UserAuth instance using the 'userId' of the 
+     *         validated user as well as the 'authType' from THIS instance;
+     *      3) Invoke 'compare()' on the Model_UserAuth instance passing in the 
+     *         'credential' from THIS instance;
+     *      4) Generate an appropriate Zend_Auth_Result;
+     *
+     *
+     *  Note: This requires AT LEAST
+     *              'name' OR 'userId',
+     *              setCredential() and possible setAuthType()
+     *
+     *  @return Zend_Auth_Result
      */
-    protected function _validateField(&$record, $field)
+    public function authenticate()
     {
-        //Connexions::log("Model_User::_validateField({$field})");
-
-        if ($field === 'apiKey')
+        // See if the user represented by this instnace can be located
+        // either by userId or name
+        $user = null;
+        $auth = null;
+        if ($this->isBacked())
         {
-            if (! @isset($record[$field]))
+            // 1a) Use THIS instance as the validated user;
+            $user =& $this;
+        }
+        else
+        {
+            // 1b) Locate a valid user, backed user...
+            $mapper = $this->getMapper();
+            if ($this->userId !== null)
             {
-                $record[$field] = self::genApiKey();
+                $user = $mapper->find( $this->userId );
+            }
+            else if ( ! empty($this->name) )
+            {
+                $matches = $mapper->fetch( array('name=?' => $this->name) );
+                if (! empty($matches))
+                    $user = current($matches);
+            }
+            /* Ambiguous User...
+            else
+            {
+                throw new Exception("Requires either 'userId' or 'name'");
+            }
+             */
+        }
+
+        /* 2) */
+        if ( $user !== null )
+        {
+            /* 2) See if we can find a 'userAuth' record for this
+             *    userId and authType
+             *
+             * Note: We're using the 'userId' of the located user instance and 
+             *       the 'authType' and 'credential' set on THIS instance.
+             *       They MAY be different (see 1b above).
+             */
+            $authMapper =
+                Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
+            $auth       = $authMapper->find( array($user->userId,
+                                                   $this->_authType) );
+            if ($auth !== null)
+                $auth->user = $user;
+
+
+            /*
+            Connexions::log("Model_User::authenticate(): "
+                            . "Found user '%s':%d, authType[ %s ], "
+                            . "UserAuth [ %s ]",
+                            $user->name, $user->userId, $this->_authType,
+                            (is_object($auth)
+                                ? get_class($auth)
+                                : gettype($auth)) );
+            // */
+
+            /* 3) Invoke 'compare()' on the Model_UserAuth instance passing in 
+             *    the 'credential' from THIS instance;
+             */
+            if ( (! $auth instanceof Model_UserAuth) ||
+                 (  $auth->compare($this->_credential) !== true ) )
+            {
+                // Authentication failure : Invalid Credential
+                $auth = null;
             }
         }
 
-        return parent::_validateField($record, $field);
+
+        // 4) Generate an appropriate Zend_Auth_Result;
+        if ($user === null)
+        {
+            $result = new Zend_Auth_Result(
+                            //Zend_Auth_Result::FAILURE_IDENTITY_NOT_FOUND,
+                            Zend_Auth_Result::FAILURE_IDENTITY_AMBIGUOUS,
+                            null);
+        }
+        else if ($auth === null)
+        {
+            $result = new Zend_Auth_Result(
+                            Zend_Auth_Result::FAILURE_CREDENTIAL_INVALID,
+                            null);
+        }
+        else
+        {
+            if ($user !== $this)
+            {
+                $config = $user->toArray( self::DEPTH_SHALLOW,
+                                          self::FIELDS_ALL );
+
+                // Update THIS model to match the identified/authenticated user
+                $this->populate($config);
+            }
+
+            $this->setAuthenticated();
+
+            // and generate a SUCCESS result
+            $result = new Zend_Auth_Result(Zend_Auth_Result::SUCCESS,
+                                           $config);
+        }
+
+        return $result;
     }
 
     /*************************************************************************
@@ -321,11 +382,11 @@ class Model_User extends Connexions_Model
     public function getWeight()
     {
         $weight = 0;
-        if (@isset($this->weight))
+        if (isset($this->weight))
             $weight = (Float)($this->weight);
-        else if (@isset($this->tagCount))
+        else if (isset($this->tagCount))
             $weight = (Float)($this->tagCount);
-        else
+        else if (isset($this->totalItems))
             $weight = (Float)($this->totalItems);
 
         return $weight;
@@ -339,29 +400,20 @@ class Model_User extends Connexions_Model
     {
         if ($this->_tags === null)
         {
-            if (@isset($this->_record['userId']))
-            {
-                $this->_tags =
-                    new Model_TagSet(array($this->_record['userId']));
-            }
+            $this->_tags = $this->getMapper()->getTags( $this );
         }
 
         return $this->_tags;
     }
 
-    protected function _userItems()
+    protected function _bookmarks()
     {
-        if ($this->_userItems === null)
+        if ($this->_bookmarks)
         {
-            if (@isset($this->_record['userId']))
-            {
-                $this->_userItems =
-                    new Model_UserItemSet(null, // tagIds
-                                          array($this->_record['userId']));
-            }
+            $this->_bookmarks = $this->getMapper()->getBookmarks( $this );
         }
 
-        return $this->_userItems;
+        return $this->_bookmarks;
     }
 
     /*************************************************************************
@@ -389,114 +441,5 @@ class Model_User extends Connexions_Model
         }
 
         return $key;
-    }
-
-    /** @brief  Given a set of user names, retrieve the identifier for each.
-     *  @param  names   The set of names as a comma-separated string or array.
-     *  @param  db      An optional database instance (Zend_Db_Abstract).
-     *
-     *  @return An array
-     *              { valid:   { <userName>: <user id>, ... },
-     *                invalid: [invalid user names, ...]
-     *              }
-     */
-    public static function ids($names, $db = null)
-    {
-        if (@empty($names))
-            return null;
-
-        if (! @is_array($names))
-            $names = preg_split('/\s*,\s*/', $names);
-
-        if ($db === null)
-            $db = Connexions::getDb();
-        $select = $db->select()
-                     ->from(self::$table)
-                     ->where('name IN (?)', $names);
-        $recs   = $select->query()->fetchAll();
-
-        /* Convert the returned array of records to a simple array of
-         *   userName => userId
-         *
-         * This will be used for the list of valid names.
-         */
-        $valid  = array();
-        foreach ($recs as $idex => $row)
-        {
-            $valid[$row['name']] = $row['userId'];
-        }
-
-        $invalid = array();
-        if (count($valid) < count($names))
-        {
-            // Include invalid entries for those names that are invalid
-            foreach ($names as $name)
-            {
-                if (! @isset($valid[$name]))
-                    $invalid[] = $name;
-            }
-        }
-
-        return array('valid' => $valid, 'invalid' => $invalid);
-    }
-
-    /*************************************************************************
-     * Connexions_Model - abstract static method implementations
-     *
-     */
-
-    /** @brief  Retrieve all records and return an array of instances.
-     *  @param  id      The record identifier.
-     *  @param  db      An optional database instance (Zend_Db_Abstract).
-     *
-     *  @return A new instance (false if no matching user).
-     */
-    public static function find($id, $db = null)
-    {
-        //Connexions::log("Model::User::find: id[ ". print_r($id, true) ." ]");
-        return parent::find($id, $db, __CLASS__);
-    }
-
-    /*************************************************************************
-     * Connexions_Model_Cached - abstract static method implementations
-     *
-     */
-
-    /** @brief  Given a record identifier, generate an unique instance
-     *          identifier.
-     *  @param  id      The record identifier.
-     *
-     *  @return A unique instance identifier string (null if invalid).
-     */
-    protected static function _instanceId($id)
-    {
-        $instanceId = __CLASS__ .'_';
-        if (@is_array($id))
-        {
-            if (! @empty($id['userId']))
-                $instanceId .= $id['userId'];
-            else if (! @empty($id['name']))
-                $instanceId .= $id['name'];
-            else
-            {
-                // INVALID
-                $instanceId = null;
-            }
-        }
-        else if (@is_string($id))
-            $instanceId .= $id;
-        else
-        {
-            // INVALID
-            $instanceId = null;
-        }
-
-        /*
-        Connexions::log("Model_User::_instanceId: "
-                            . "id[ ". print_r($id, true) ." ], "
-                            . "instanceId[ {$instanceId} ]");
-        // */
-
-        return $instanceId;
     }
 }

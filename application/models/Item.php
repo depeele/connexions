@@ -5,57 +5,68 @@
  *
  */
 
-class Model_Item extends Connexions_Model_Cached
+class Model_Item extends Connexions_Model
 {
-    /*************************************************************************
-     * Connexions_Model - static, identity members
-     *
-     */
-    public static   $table  = 'item';
-                              // order 'keys' by most used
-    public static   $keys   = array('itemId', 'urlHash');
-    public static   $model  = array('itemId'        => 'auto',
-                                    'url'           => 'string',
-                                    'urlHash'       => 'string',
+    //protected   $_mapper    = 'Model_Mapper_Item';
 
-                                    'userCount'     => 'integer',
-                                    'ratingCount'   => 'integer',
-                                    'ratingSum'     => 'integer'
+    // The data for this Model
+    protected   $_data      = array(
+            'itemId'        => null,
+            'url'           => '',
+            'urlHash'       => '',
+            'userCount'     => '',
+            'ratingCount'   => '',
+            'ratingSum'     => '',
+
+            /* Note: these items are typically computed and may not be 
+             *       persisted directly.
+             */
+            'userItemCount' => null,
+            //'userCount'     => null,
+            'itemCount'     => null,
+            'tagCount'      => null,
     );
 
-    /** @brief  The set of models that are dependent upon this model.
+    /*************************************************************************
+     * Connexions_Model abstract method implementations
      *
-     *  This is primarily used to perform cascade on delete
-     *  (i.e. deleting a Model_User from the database will also caused the
-     *        deletion of associated Model_UserAuth and Model_UserItem
-     *        records).
      */
-    public static   $dependents = array('Model_UserItem');
+    public function getId()
+    {
+        return ( $this->isBacked()
+                    ? $this->itemId
+                    : null );
+    }
 
-    /*************************************************************************/
-
-    /** @brief  Set a value in this record and mark it dirty.
-     *  @param  name    The field name.
-     *  @param  value   The new value.
+    /*************************************************************************
+     * Connexions_Model overrides
      *
-     *  Override to ensure that, when 'url' is set, we also set 'urlHash' and, 
-     *  if 'urlHash' is set, it correctly matches 'url'.
-     *
-     *  @return true | false
      */
+
     public function __set($name, $value)
     {
         switch ($name)
         {
         case 'url':
+            // If the url is set, update the urlHash
             $hash = Connexions::md5Url($value);
             parent::__set('urlHash', $hash);
             break;
 
         case 'urlHash':
-            if (! empty($this->_record['url']))
+            if (! empty($this->url))
             {
-                $value = Connexions::md5Url($this->_record['url']);
+                // Force the url hash to the hash of the current url.
+                $newValue = Connexions::md5Url($this->url);
+
+                if ($value !== $newValue)
+                {
+                    Connexions::log("Model_Item::__set(%s, %s): "
+                                    . "Rewrite the hash to "
+                                    . "'%s' to match the existing URL",
+                                    $name, $value, $newValue);
+                    $value = $newValue;
+                }
             }
             break;
         }
@@ -63,109 +74,40 @@ class Model_Item extends Connexions_Model_Cached
         return parent::__set($name, $value);
     }
 
-
     /** @brief  Return a string representation of this instance.
      *
      *  @return The string-based representation.
      */
     public function __toString()
     {
-        if ($this->isValid() && (! @empty($this->_record['url'])))
+        if (! empty($this->url))
             return $this->_record['url'];
+        else if (! empty($this->urlHash))
+            return $this->_record['urlHash'];
 
         return parent::__toString();
     }
 
-    /** @brief  Notification from a related model that tags related to this 
-     *          item have been updated.  Perform any required maintainence 
-     *          (e.g.  updating tag statistics).
+    /** @brief  Return an array version of this instance.
+     *  @param  deep    Should any associated models be retrieved?
+     *                      [ Connexions_Model::DEPTH_DEEP ] |
+     *                        Connexions_Model::DEPTH_SHALLOW
+     *  @param  public  Include only "public" information?
+     *                      [ Connexions_Model::FIELDS_PUBLIC ] |
+     *                        Connexions_Model::FIELDS_ALL
      *
-     *  @return This Model_Item for a fluent interface.
+     *  @return An array representation of this Domain Model.
      */
-    public function tagsUpdated()
+    public function toArray($deep   = self::DEPTH_DEEP,
+                            $public = self::FIELDS_PUBLIC)
     {
-        return $this;
-    }
+        $data = $this->_data;
 
-    /*************************************************************************
-     * Connexions_Model - overloads
-     *
-     */
-
-    /** @brief  Initialize this model/record.  This will cause an overall
-     *          reset of this instance, possibly (re)retrieving the data.
-     *  @param  id      The record identifier.
-     *  @param  db      An optional database instance (Zend_Db_Abstract).
-     *
-     *  Overload to allow conversion of 'id' provided as a URL to a URL hash.
-     *
-     *  @return Connexions_Model to provide a fluent interface.
-     */
-    protected function _init($id, $db = null)
-    {
-        /*
-        Connexions::log('Model_Item::_init(): initial id[ %s ]',
-                        print_r($id, true));
-        // */
-
-        if (is_string($id) && (! is_numeric($id)) )
+        if ($public)
         {
-            /* Connexions::md5Url() handles deciding whether or not this is 
-             * already a hash.
-             */
-            $md5Url = Connexions::md5Url($id);
-            $url    = ($md5Url === $id ? null : $id);
-
-            $id = array('urlHash' => $md5Url);
-            if ($url !== null)
-                $id['url'] = $url;
-
-            /*
-            Connexions::log('Model_Item::_init(): id[ %s ]',
-                            print_r($id, true));
-            // */
+            unset($data['itemId']);
         }
 
-        return parent::_init($id, $db);
-    }
-
-    /*************************************************************************
-     * Connexions_Model - abstract static method implementations
-     *
-     */
-
-    /** @brief  Retrieve all records and return an array of instances.
-     *  @param  id      The record identifier (itemId, url, or urlHash.
-     *  @param  db      An optional database instance (Zend_Db_Abstract).
-     *
-     *  @return A new instance (false if no matching user).
-     */
-    public static function find($id, $db = null)
-    {
-        return parent::find($id, $db, __CLASS__);
-    }
-
-    /*************************************************************************
-     * Connexions_Model_Cached - abstract static method implementations
-     *
-     */
-
-    /** @brief  Given a record identifier, generate an unique instance
-     *          identifier.
-     *  @param  id      The record identifier.
-     *
-     *  @return A unique instance identifier string.
-     */
-    protected static function _instanceId($id)
-    {
-        return __CLASS__ .'_'.  (! is_array($id)
-                                    ? $id
-                                    : (isset($id['itemId'])
-                                        ?  $id['itemId']
-                                        : (! @empty($id['urlHash'])
-                                            ? $id['urlHash']
-                                            : (! @empty($id['url'])
-                                                    ? $id['url']
-                                                    : 'generic'))));
+        return $data;
     }
 }

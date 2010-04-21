@@ -304,7 +304,7 @@ class Model_UserItem extends Connexions_Model
      *                  comma-separated string of tags.
      *
      *  Note: This method will also update the appropriate join tables
-     *        ( userTag, itemTag, and userTagItem ).
+     *        ( userTagItem ).
      *
      *  @return This Model_UserItem for a fluent interface.
      */
@@ -339,24 +339,6 @@ class Model_UserItem extends Connexions_Model
         $itemId = $this->itemId;
         foreach ($tags as $tagId)
         {
-            // Create the userTag entry
-            try
-            {
-                $this->_db->insert('userTag',
-                                   array('userId' => $userId,
-                                         'tagId'  => $tagId));
-            }
-            catch (Exception $e) { /* IGNORE -- likely a duplicate entry */ }
-
-            // Create the itemTag entry
-            try
-            {
-                $this->_db->insert('itemTag',
-                                   array('itemId' => $itemId,
-                                         'tagId'  => $tagId));
-            }
-            catch (Exception $e) { /* IGNORE -- likely a duplicate entry */ }
-
             // Create the userTagItem entry
             try
             {
@@ -387,7 +369,7 @@ class Model_UserItem extends Connexions_Model
      *                  (empty to delete all tags);
      *
      *  Note: This method will also update the appropriate join tables
-     *        ( userTag, itemTag, and userTagItem ).
+     *        ( userTagItem ).
      *
      *  @return This Model_UserItem for a fluent interface.
      */
@@ -413,52 +395,6 @@ class Model_UserItem extends Connexions_Model
         $this->_db->delete('userTagItem', array('userId=?'     => $userId,
                                                 'tagId IN (?)' => $tags,
                                                 'itemId=?'     => $itemId));
-
-
-        // Adjust related joinTables by walking through all provided tags...
-        foreach ($tags as $tagId)
-        {
-            /* If there are no more 'userTagItem' entries matching 
-             * 'userId/tagId'...
-             *      'count' represents the number of items the user identified 
-             *      by 'userId' has tagged with the tag identified by 'tagId'
-             */
-            $select = $this->_db->select()
-                                    ->from('userTagItem',
-                                           array('count' =>
-                                                    'COUNT(DISTINCT itemId)'))
-                                    ->where(array('userId=?' => $userId,
-                                                  'tagId=?'  => $tagId));
-            $count = $select->query()->fetchColumn(1);
-            if ($count < 1)
-            {
-                // ... Delete the 'userTag' record matching 'userId/tagId'
-                $this->_db->delete('userTag',
-                                    array('userId=?' => $userId,
-                                          'tagId=?'  => $tagId));
-            }
-
-            /* If there are no more 'userTagItem' entries matching 
-             * 'itemId/tagId'...
-             *      'count' represents the number of users that have tagged the 
-             *      item identified by 'itemId' with the tag identified by 
-             *      'tagId'
-             */
-            $select = $this->_db->select()
-                                    ->from('userTagItem',
-                                           array('count' =>
-                                                    'COUNT(DISTINCT userId)'))
-                                    ->where(array('itemId=?' => $itemId,
-                                                  'tagId=?'  => $tagId));
-            $count = $select->query()->fetchColumn(1);
-            if ($count < 1)
-            {
-                // ... Delete the 'itemTag' record matching 'itemId/tagId'
-                $this->_db->delete('itemTag',
-                                    array('itemId=?' => $itemId,
-                                          'tagId=?'  => $tagId));
-            }
-        }
 
         // Invalidate our tag cache.
         $this->_tags = null;
