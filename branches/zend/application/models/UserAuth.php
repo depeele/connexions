@@ -82,18 +82,6 @@ class Model_UserAuth extends Connexions_Model
         return parent::__set($name, $value);
     }
 
-    /** @brief  Retrieve all records and return an array of instances.
-     *  @param  id      The record identifier.
-     *  @param  db      An optional database instance (Zend_Db_Abstract).
-     *
-     *  @return A new instance (false if no matching user).
-     */
-    public static function find($id, $db = null)
-    {
-        //Connexions::log("Model::User::find: id[ ". print_r($id, true) ." ]");
-        return parent::find($id, $db, __CLASS__);
-    }
-
     /** @brief  Invalidate the data contained in this model instance.
      *
      *  @return $this for a fluent interface.

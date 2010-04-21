@@ -266,7 +266,9 @@ class Model_User extends Connexions_Model
             {
                 $matches = $mapper->fetch( array('name=?' => $this->name) );
                 if (! empty($matches))
-                    $user = current($matches);
+                {
+                    $user = $matches[0];
+                }
             }
             /* Ambiguous User...
             else

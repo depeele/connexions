@@ -188,6 +188,18 @@ abstract class Connexions_Model_Mapper
         return $domainModel;
     }
 
+    /** @brief  Remove the given model instance from the identity map.
+     *  @param  model   The model instance.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function unsetIdentity(Connexions_Model $model)
+    {
+        $this->_unsetIdentity($model->getId());
+
+        return $this;
+    }
+
     /*********************************************************************
      * Abstract methods
      *
@@ -256,7 +268,7 @@ abstract class Connexions_Model_Mapper
      *
      *  @return true | false
      */
-    public function _hasIdentity($id)
+    protected function _hasIdentity($id)
     {
         if (is_array($id))
             $id = implode(':', $id);
@@ -270,7 +282,7 @@ abstract class Connexions_Model_Mapper
      *
      *  @return The Model instance (null if not found).
      */
-    public function _getIdentity($id)
+    protected function _getIdentity($id)
     {
         if (is_array($id))
             $id = implode(':', $id);
@@ -295,7 +307,7 @@ abstract class Connexions_Model_Mapper
      *
      *  @return The Model instance (null if not found).
      */
-    public function _setIdentity($id, $model)
+    protected function _setIdentity($id, $model)
     {
         if (is_array($id))
             $id = implode(':', $id);
@@ -316,7 +328,7 @@ abstract class Connexions_Model_Mapper
      *  @param  id      The model instance identifier.
      *
      */
-    public function _unsetIdentity($id)
+    protected function _unsetIdentity($id)
     {
         if (is_array($id))
             $id = implode(':', $id);
