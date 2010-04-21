@@ -422,7 +422,20 @@ abstract class Connexions_Model_Mapper_DbTable
                         $select->assemble());
         // */
 
-        $model = $accessor->fetchRow( $select );
+        try
+        {
+            $model = $accessor->fetchRow( $select );
+        }
+        catch (Exception $e)
+        {
+            Connexions::log("Connexions_Model_Mapper_DbTable[%s]::_find(): "
+                            .   "EXCEPTION: %s",
+                            get_class($this),
+                            $e->getMessage());
+
+            // Re-throw the exception
+            throw $e;
+        }
 
         /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::_find(%s): "

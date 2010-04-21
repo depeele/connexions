@@ -15,7 +15,7 @@ class UserAuthDbTest extends DbTestCase
                         'pictureUrl'    => '/connexions/images/User1.png',
                         'profile'       => null,
                         'lastVisit'     => '2007-04-12 12:38:02',
-                        'totalTags'     => 39,
+                        'totalTags'     => 24,
                         'totalItems'    => 5,
 
                         'userItemCount' => null,
@@ -46,7 +46,7 @@ class UserAuthDbTest extends DbTestCase
     {
         return $this->createFlatXmlDataSet(
                         dirname(__FILE__) .'/_files/5users.xml');
-                        //dirname(__FILE__) .'/_files/userSeed.xml');
+                        //dirname(__FILE__) .'/_files/userAuthSeed.xml');
     }
 
     public function testUserAuthRetrieveByUnknownId()
@@ -89,6 +89,7 @@ class UserAuthDbTest extends DbTestCase
                                          $authTarget['authType']) );
 
         $user = $userAuth->user;
+
         $this->assertEquals($expected,
                             $user->toArray( Connexions_Model::DEPTH_SHALLOW,
                                             Connexions_Model::FIELDS_ALL ));
@@ -109,7 +110,10 @@ class UserAuthDbTest extends DbTestCase
         $expected = $this->_user1['password'];
 
         $mapper   = new Model_Mapper_UserAuth( );
+
         $userAuth = $mapper->find( $expected['credential'] );
+
+        $this->assertNotEquals(null, $userAuth);
         $this->assertEquals($expected, $userAuth->toArray());
     }
 
@@ -118,7 +122,10 @@ class UserAuthDbTest extends DbTestCase
         $expected = $this->_user1['openid'];
 
         $mapper   = new Model_Mapper_UserAuth( );
+
         $userAuth = $mapper->find( $expected['credential'] );
+
+        $this->assertNotEquals(null, $userAuth);
         $this->assertEquals($expected, $userAuth->toArray());
     }
 
@@ -127,7 +134,10 @@ class UserAuthDbTest extends DbTestCase
         $expected = $this->_user1['pki'];
 
         $mapper   = new Model_Mapper_UserAuth( );
+
         $userAuth = $mapper->find( $expected['credential'] );
+
+        $this->assertNotEquals(null, $userAuth);
         $this->assertEquals($expected, $userAuth->toArray());
     }
 
@@ -145,6 +155,7 @@ class UserAuthDbTest extends DbTestCase
         $userAuth = new Model_UserAuth( $data );
         $userAuth = $userAuth->save();
 
+        $this->assertNotEquals(null, $userAuth);
         $this->assertEquals($expected, $userAuth->toArray());
 
         // Check the database consistency

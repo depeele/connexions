@@ -273,6 +273,9 @@ abstract class Connexions_Model
      */
     public function invalidate()
     {
+        // Ensure any Mapper-based identity map has been cleared.
+        $this->unsetIdentity();
+
         foreach ($this->_data as $key => $val)
         {
             $this->__set($key, null);
@@ -280,6 +283,17 @@ abstract class Connexions_Model
 
         $this->_isBacked  = false;
         $this->_isValid   = false;
+
+        return $this;
+    }
+
+    /** @brief  Remove the identity map entry for this instance.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function unsetIdentity()
+    {
+        $this->getMapper()->unsetIdentity( $this );
 
         return $this;
     }

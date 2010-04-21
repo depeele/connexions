@@ -29,7 +29,7 @@ class Model_Mapper_UserAuth extends Model_Mapper_Base
         {
             // ASSUME this should be a match on credential
             $models = parent::fetch( array('credential' => $id), null, 1 );
-            if (is_array($models))
+            if ($models instanceof Connexions_Model_Set)
                 $model = $models[0];
             else
                 $model = null;

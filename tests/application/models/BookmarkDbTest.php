@@ -133,10 +133,13 @@ class BookmarkDbTest extends DbTestCase
         $bookmark = $mapper->find( array( $expected['user']['userId'],
                                           $expected['item']['itemId']) );
 
+        /*
         Connexions::log("testBookmarkRetrieveById1: bookmark[ %s ]",
                         Connexions::varExport(
                             $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
                                                 Connexions_Model::FIELDS_ALL )) );
+        // */
+
         $this->assertEquals($expected,
                             $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
                                                 Connexions_Model::FIELDS_ALL ));
@@ -431,14 +434,6 @@ class BookmarkDbTest extends DbTestCase
         $expected['tags']     = $this->_tags2;
         $expected['taggedOn'] = date('Y-m-d h:i:s');
 
-        /* Clear out identity maps
-        $userMapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $userMapper->_unsetIdentity($expected['user']['userId']);
-
-        $itemMapper = Connexions_Model_Mapper::factory('Model_Mapper_Item');
-        $itemMapper->_unsetIdentity($expected['item']['itemId']);
-        // */
-
         // Assemble names of the tags to attach to this Bookmark
         $tagMapper = new Model_Mapper_Tag( );
         $tagNames  = array();
@@ -470,8 +465,10 @@ class BookmarkDbTest extends DbTestCase
         // The 'updatedOn' value is dynamic (Model_Mapper_Bookmark)
         $expected['updatedOn'] = date('Y-m-d h:i:00');
 
+        /*
         Connexions::log("testBookmarkCreate: bookmark[ %s ]",
                         Connexions::varExport($bookmark->toArray()) );
+        // */
 
         // Check the database consistency
         $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
@@ -503,6 +500,11 @@ class BookmarkDbTest extends DbTestCase
         $et->setValue(5, 'taggedOn',  $expected['taggedOn']);
 
         $this->assertDataSetsEqual($es, $ds);
+
+        // Clear out identity maps so future tests have a clean slate
+        $bookmark->user->invalidate();  // or just ->unsetIdentity();
+        $bookmark->item->invalidate();  // or just ->unsetIdentity();
+        $bookmark->invalidate();        // or just ->unsetIdentity();
     }
 
     public function testBookmarkSet()
@@ -524,12 +526,39 @@ class BookmarkDbTest extends DbTestCase
             $ds);
     }
 
+    public function testBookmarkSetLimitCount()
+    {
+        $expected = 10;
+
+        $mapper    = new Model_Mapper_Bookmark( );
+        $bookmarks = $mapper->fetch(null,
+                                    array('updatedOn DESC'),    // order
+                                    $expected,                  // count
+                                    5);                         // offset
+
+        $this->assertEquals($expected, $bookmarks->count());
+        $this->assertEquals($expected, count($bookmarks));
+    }
+
+    public function testBookmarkSetLimitTotalCount()
+    {
+        $expectedCount = 10;
+        $expectedTotal = 20;
+
+        $mapper    = new Model_Mapper_Bookmark( );
+        $bookmarks = $mapper->fetch(null,
+                                    array('updatedOn DESC'),    // order
+                                    $expectedCount,             // count
+                                    5);                         // offset
+
+        $this->assertEquals($expectedTotal, $bookmarks->getTotalCount());
+    }
+
     public function testBookmarkSetLimitOrder()
     {
         $expected = array(
-            array('user'        => 2,
-                  'item'        => 7,
-                  'tags'        => null,
+            array('userId'      => 2,
+                  'itemId'      => 7,
 
                   'name'        => "nimbus: Nimbus",
                   'description' => "",
@@ -538,14 +567,9 @@ class BookmarkDbTest extends DbTestCase
                   'isPrivate'   => "0",
                   'taggedOn'    => "0000-00-00 00:00:00",
                   'updatedOn'   => "2007-03-24 11:45:44",
-                  'userItemCount'=> null,
-                  'userCount'   => null,
-                  'itemCount'   => null,
-                  'tagCount'    => null,
             ),
-            array('user'        => 2,
-                  'item'        => 14,
-                  'tags'        => null,
+            array('userId'      => 2,
+                  'itemId'      => 14,
 
                   'name'        => "Overview (Java 3D 1.5.0)",
                   'description' => "",
@@ -554,14 +578,9 @@ class BookmarkDbTest extends DbTestCase
                   'isPrivate'   => "0",
                   'taggedOn'    => "0000-00-00 00:00:00",
                   'updatedOn'   => "2007-01-24 20:22:40",
-                  'userItemCount'=> null,
-                  'userCount'   => null,
-                  'itemCount'   => null,
-                  'tagCount'    => null,
             ),
-            array('user'        => 4,
-                  'item'        => 16,
-                  'tags'        => null,
+            array('userId'      => 4,
+                  'itemId'      => 16,
 
                   'name'        => "FullBooks.com - Thousands of Full Text Free Books",
                   'description' => "",
@@ -570,14 +589,9 @@ class BookmarkDbTest extends DbTestCase
                   'isPrivate'   => "0",
                   'taggedOn'    => "0000-00-00 00:00:00",
                   'updatedOn'   => "2006-12-19 02:33:05",
-                  'userItemCount'=> null,
-                  'userCount'   => null,
-                  'itemCount'   => null,
-                  'tagCount'    => null,
             ),
-            array('user'        => 3,
-                  'item'        => 9,
-                  'tags'        => null,    // $this->_tags1,
+            array('userId'      => 3,
+                  'itemId'      => 9,
 
                   'name'        => "Home Decorators Collection: Custom framed art and wall decor for your Home Decorating solutions with a money back guarantee",
                   'description' => "",
@@ -586,14 +600,9 @@ class BookmarkDbTest extends DbTestCase
                   'isPrivate'   => "0",
                   'taggedOn'    => "2006-11-12 07:39:23",
                   'updatedOn'   => "2006-11-12 07:39:23",
-                  'userItemCount'=> null,
-                  'userCount'   => null,
-                  'itemCount'   => null,
-                  'tagCount'    => null,
             ),
-            array('user'        => 3,
-                  'item'        => 4,
-                  'tags'        => null,
+            array('userId'      => 3,
+                  'itemId'      => 4,
 
                   'name'        => "OAT Framework",
                   'description' => "",
@@ -602,14 +611,9 @@ class BookmarkDbTest extends DbTestCase
                   'isPrivate'   => "0",
                   'taggedOn'    => "0000-00-00 00:00:00",
                   'updatedOn'   => "2006-09-10 00:04:32",
-                  'userItemCount'=> null,
-                  'userCount'   => null,
-                  'itemCount'   => null,
-                  'tagCount'    => null,
             ),
-            array('user'        => 4,
-                  'item'        => 6,
-                  'tags'        => null,
+            array('userId'      => 4,
+                  'itemId'      => 6,
 
                   'name'        => "IBM doubles CPU cooling capabilities with simple manufacturing change",
                   'description' => "",
@@ -618,14 +622,9 @@ class BookmarkDbTest extends DbTestCase
                   'isPrivate'   => "0",
                   'taggedOn'    => "2006-06-30 18:21:47",
                   'updatedOn'   => "2006-06-30 18:21:47",
-                  'userItemCount'=> null,
-                  'userCount'   => null,
-                  'itemCount'   => null,
-                  'tagCount'    => null,
             ),
-            array('user'        => 2,
-                  'item'        => 13,
-                  'tags'        => null,
+            array('userId'      => 2,
+                  'itemId'      => 13,
 
                   'name'        => "TiddlyWiki Guides - TiddlyWikiGuides",
                   'description' => "",
@@ -634,14 +633,9 @@ class BookmarkDbTest extends DbTestCase
                   'isPrivate'   => "0",
                   'taggedOn'    => "0000-00-00 00:00:00",
                   'updatedOn'   => "2006-06-26 15:54:56",
-                  'userItemCount'=> null,
-                  'userCount'   => null,
-                  'itemCount'   => null,
-                  'tagCount'    => null,
             ),
-            array('user'        => 4,
-                  'item'        => 12,
-                  'tags'        => null,
+            array('userId'      => 4,
+                  'itemId'      => 12,
 
                   'name'        => "Textpattern",
                   'description' => "",
@@ -650,14 +644,9 @@ class BookmarkDbTest extends DbTestCase
                   'isPrivate'   => "0",
                   'taggedOn'    => "0000-00-00 00:00:00",
                   'updatedOn'   => "2006-05-21 06:32:33",
-                  'userItemCount'=> null,
-                  'userCount'   => null,
-                  'itemCount'   => null,
-                  'tagCount'    => null,
             ),
-            array('user'        => 3,
-                  'item'        => 6,
-                  'tags'        => null,
+            array('userId'      => 3,
+                  'itemId'      => 6,
 
                   'name'        => "IBM doubles CPU cooling capabilities with simple manufacturing change",
                   'description' => "",
@@ -666,14 +655,9 @@ class BookmarkDbTest extends DbTestCase
                   'isPrivate'   => "0",
                   'taggedOn'    => "0000-00-00 00:00:00",
                   'updatedOn'   => "2006-05-18 14:31:22",
-                  'userItemCount'=> null,
-                  'userCount'   => null,
-                  'itemCount'   => null,
-                  'tagCount'    => null,
             ),
-            array('user'        => 4,
-                  'item'        => 15,
-                  'tags'        => null,
+            array('userId'      => 4,
+                  'itemId'      => 15,
 
                   'name'        => "Ajaxian » Lily: Graphical data-flow programming environment",
                   'description' => "",
@@ -682,22 +666,32 @@ class BookmarkDbTest extends DbTestCase
                   'isPrivate'   => "0",
                   'taggedOn'    => "0000-00-00 00:00:00",
                   'updatedOn'   => "2006-05-15 20:35:14",
-                  'userItemCount'=> null,
-                  'userCount'   => null,
-                  'itemCount'   => null,
-                  'tagCount'    => null,
             ),
         );
+
+        $expectedCount = 10;
+        $expectedTotal = 20;
 
         $mapper    = new Model_Mapper_Bookmark( );
         $bookmarks = $mapper->fetch(null,
                                     array('updatedOn DESC'),    // order
-                                    10,                         // count
+                                    $expectedCount,             // count
                                     5);                         // offset
 
-        $this->assertEquals($expected,
-                            $bookmarks->toArray(Connexions_Model::DEPTH_SHALLOW,
-                                                Connexions_Model::FIELDS_ALL ));
+        $this->assertEquals($expectedCount, $bookmarks->count());
+        $this->assertEquals($expectedCount, count($bookmarks));
+        $this->assertEquals($expectedTotal, $bookmarks->getTotalCount());
+
+        $actual = $bookmarks->toArray( Connexions_Model::DEPTH_SHALLOW,
+                                       Connexions_Model::FIELDS_ALL );
+
+        /*
+        Connexions::log("testBookmarkSetLimitOrder: actual[ %s ]",
+                        Connexions::varExport($actual));
+        // */
+
+        $this->assertEquals($expected, $actual);
+
         /* Retrieve the expected set
         $ds = $this->createFlatXmlDataSet(
               dirname(__FILE__) .'/_files/bookmarkSetLimitOrderAssertion.xml');
