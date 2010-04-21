@@ -141,7 +141,20 @@ class UserAuthDbTest extends DbTestCase
         $this->assertEquals($expected, $userAuth->toArray());
     }
 
-    public function testUserAuthInsertedIntoDatabase()
+    public function testUserAuthSet()
+    {
+        $mapper   = new Model_Mapper_UserAuth( );
+
+        // Fetch all entries for user 1
+        $userAuths = $mapper->fetch( array('userId' => 1) );
+
+        $ds = $this->createFlatXmlDataSet(
+              dirname(__FILE__) .'/_files/userAuthFetchAssertion.xml');
+
+        $this->assertModelSetEquals( $ds->getTable('userAuth'), $userAuths );
+    }
+
+    public function testUserAuthDefaultTypeInsertedIntoDatabase()
     {
         $expected = array(
             'userId'        => 2,
@@ -152,7 +165,9 @@ class UserAuthDbTest extends DbTestCase
 
         $data = array('userId' => $expected['userId']);
 
-        $userAuth = new Model_UserAuth( $data );
+        $userAuth = new Model_UserAuth( array(
+                            'userId'     => $expected['userId'],
+                        ));
         $userAuth = $userAuth->save();
 
         $this->assertNotEquals(null, $userAuth);
@@ -167,9 +182,56 @@ class UserAuthDbTest extends DbTestCase
 
         $this->assertDataSetsEqual(
             $this->createFlatXmlDataSet(
-                    dirname(__FILE__) .'/_files/userAuthInsertAssertion.xml'),
+                dirname(__FILE__) .'/_files/userAuthInsertAssertion.xml'),
             $ds);
     }
+
+    public function testUserAuthOpenIdInsertedIntoDatabase()
+    {
+        $userAuth = new Model_UserAuth( array(
+                            'userId'     => 2,
+                            'authType'   => 'openid',
+                            'credential' => 'https://google.com/profile/me',
+                        ));
+
+        $userAuth = $userAuth->save();
+
+        // Check the database consistency
+        $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
+                    $this->getConnection()
+        );
+
+        $ds->addTable('userAuth', 'SELECT * FROM userAuth');
+
+        $this->assertDataSetsEqual(
+            $this->createFlatXmlDataSet(
+                dirname(__FILE__) .'/_files/userAuthInsertOpenIdAssertion.xml'),
+            $ds);
+    }
+
+    public function testUserAuthPkiInsertedIntoDatabase()
+    {
+        $userAuth = new Model_UserAuth( array(
+                            'userId'     => 2,
+                            'authType'   => 'pki',
+                            'credential' => 'CN=me',
+                        ));
+
+        $userAuth = $userAuth->save();
+
+        // Check the database consistency
+        $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
+                    $this->getConnection()
+        );
+
+        $ds->addTable('userAuth', 'SELECT * FROM userAuth');
+
+        $this->assertDataSetsEqual(
+            $this->createFlatXmlDataSet(
+                dirname(__FILE__) .'/_files/userAuthInsertPkiAssertion.xml'),
+            $ds);
+    }
+
 
     public function testUserAuthenticationInvalidUser()
     {

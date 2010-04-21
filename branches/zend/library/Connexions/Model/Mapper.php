@@ -437,7 +437,7 @@ abstract class Connexions_Model_Mapper
                     // Simply return null
                     $accessor = self::NO_INSTANCE;
 
-                    /*
+                    // /*
                     Connexions::log("Connexions_Model_Mapper::accessorFactory: "
                                     . "CANNOT locate class '%s'",
                                     $accessorName);
