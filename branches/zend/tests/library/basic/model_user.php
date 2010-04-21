@@ -4,14 +4,45 @@ require_once('./bootstrap.php');
 echo "<pre>";
 echo "<h3>Model_User tests</h3>";
 
-$rec = Model_User::find(1);
-echo "Record for 1:\n";
+/*****************************************************************************/
+$user = new Model_User(array('name'     => 'test_user',
+                             'fullName' => 'Test User',
+                             /*'tags'     => 'abc,def,hij'*/));
+echo $user->debugDump(), "\n";
 
-if ($rec instanceof Connexions_Model)
+$mapper = $user->getMapper();
+printf ("Model_User: mapper[ %s ]\n", get_class($mapper));
+echo "<hr />";
+
+/*****************************************************************************/
+try
 {
-    echo $rec->debugDump();
+    $user = new Model_User(array('name'     => 'test_user',
+                                 'fullName' => 'Test User',
+                                 'tags'     => 'abc,def,hij'));
 
-    $tags = $rec->tags;
+    echo "*** ERROR: Created a new Model_User with invalid 'tags' object\n";
+}
+catch (Exception $e)
+{
+    echo "=== SUCCESS: Cannot create a Model_User with invalid 'tags' object\n";
+}
+echo "<hr />";
+
+/*****************************************************************************/
+//$mapper = new Model_UserMapper( array('dao' => new Model_DbTable_User()) );
+//$mapper = new Model_Mapper_User();  //UserMapper( );
+
+$id   = 1;
+$user = $mapper->find( $id );
+
+printf ("User matching id '%s': ", $id);
+if ($user instanceof Connexions_Model)
+{
+    echo $user->debugDump();
+
+    /*
+    $tags = $user->tags;
     $idex = 0;
     printf ("\n%d tags; First 5: ", count($tags));
     foreach ($tags as $tag)
@@ -23,7 +54,7 @@ if ($rec instanceof Connexions_Model)
     }
     echo "\n";
 
-    $userItems = $rec->userItems;
+    $userItems = $user->userItems;
     $idex = 0;
     printf ("\n%d user-items; First 5: ", count($userItems));
     foreach ($userItems as $item)
@@ -35,35 +66,55 @@ if ($rec instanceof Connexions_Model)
                 $idex, $item->userId, $item->itemId, $item);
     }
     echo "\n";
-            
+    // */       
 }
 else
 {
     echo " *** ERROR\n";
 }
 echo "<hr />";
-unset($rec);
+unset($user);
 
 /*****************************************************************************/
-$rec = Model_User::find(array('userId' => 1));
-echo "Record for userId==1:\n";
-echo ($rec instanceof Connexions_Model ? $rec->debugDump() : " *** ERROR\n");
+$id   = array('userId' => 1);
+$user = $mapper->find( $id );
+printf ("User matching [ %s ]: %s\n",
+        Connexions::varExport($id), $user->debugDump());
 echo "<hr />";
 unset($rec);
 
 /*****************************************************************************/
-$rec = Model_User::find(array('userId' => 1, 'name' => 'dep'));
-echo "Record for userId==1, name=='dep':\n";
-echo ($rec instanceof Connexions_Model ? $rec->debugDump() : " *** ERROR\n");
+$id   = array('userId' => 1, 'name' => 'dep');
+$user = $mapper->find( $id );
+printf ("User matching [ %s ]: %s\n",
+        Connexions::varExport($id), $user->debugDump());
 echo "<hr />";
 unset($rec);
 
 /*****************************************************************************/
-$rec = Model_User::find(array('userId' => 1, 'name' => 'abcdef'));
-echo "Record for userId==1, name=='abcdef':\n";
-echo ($rec instanceof Connexions_Model ? $rec->debugDump() : " *** ERROR\n");
+$id   = array('userId' => 1, 'name' => 'abcdef');
+$user = $mapper->find( $id );
+printf ("User matching [ %s ]: %s\n",
+        Connexions::varExport($id), $user->debugDump());
 echo "<hr />";
 unset($rec);
+
+/*****************************************************************************/
+$id    = array('userId' => array(1,2,4,8,16));
+$users = $mapper->fetch( $id );
+printf ("%d Users matching [ %s ]:\n",
+        count($users), Connexions::varExport($id));
+
+foreach ($users as $idex => $user)
+{
+    printf (" #%2d: %s\n------------------\n",
+            $idex, $user->debugDump());
+}
+
+echo "<hr />";
+unset($rec);
+
+die;
 
 /*****************************************************************************/
 $rec = Model_User::find('dep');

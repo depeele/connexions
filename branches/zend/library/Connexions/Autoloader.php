@@ -89,27 +89,17 @@ class Connexions_Autoloader implements Zend_Loader_Autoloader_Interface
 
         $filePath .= $ds . implode($ds, $classParts) .'.php';
 
-        /*
-        $btStr = '';
-        $bt    = debug_backtrace();
-        foreach ($bt as $tr)
-        {
-            $btStr .= sprintf ("-- %s::%s: @%d (%s)\n",
-                                $tr['class'], $tr['function'],
-                                $tr['line'],  $tr['file']);
-        }
-        Connexions::log("Autoloader::autoload: class[ {$class} ], "
-                        .   "filePath[ {$filePath} ] -- trace:\n{$btStr}\n");
-        // */
+        $res = @include_once $filePath;
 
-        $res = @include $filePath;
-
-        if (! $res)
+        if ( (! $res) ||
+             ( (! class_exists($class)) && (! interface_exists($class)) ) )
         {
-            printf ("<pre>autoload: Cannot include '%s' for class '%s'\n",
-                    $filePath, $class);
-            debug_print_backtrace();
-            die;
+            $msg = sprintf("Connexions_Autoloader::autoload: class[ %s ], "
+                            .   "filePath[ %s ] - FAILED",
+                            $class, $filePath);
+
+            //Connexions::log( $msg );
+            throw new Exception( $msg );
         }
 
         return true;

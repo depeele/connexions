@@ -63,6 +63,18 @@ class Connexions
         self::$_log->log($message, Zend_Log::DEBUG);
     }
 
+    /** @brief  Generate a print_r of the given variable, replacing all '\n'
+     *          with ', '
+     *  @param  var     The variable to dump.
+     *
+     *  @return The string representation.
+     */
+    public static function varExport($var)
+    {
+        //return str_replace("\n", '', var_export($var, true));
+        return preg_replace('/\s*$\s+/ms', '', var_export($var, true));
+    }
+
     /** @brief  Return the current Database Adapter.
      *
      *  Note: The database adapter is established on boot via:
@@ -266,6 +278,26 @@ class Connexions
         return $str;
     }
 
+    /** @brief  Given a string, determine whether or not it APPEARS to be an
+     *          MD5 hash.
+     *  @param  str     The string to check.
+     *
+     *  @return true | false
+     */
+    public static function isMd5($str)
+    {
+        // An MD5 hash is comprised of exactly 32 hex characters.
+        if ((strlen($str) === 32) &&
+            (strspn($str, '0123456789abcdef') === 32))
+        {
+            // Appears to be an MD5 hash
+            return true;
+        }
+
+        // Doesn't appear to be an MD5 hash
+        return false;
+    }
+
     /** @brief  Given a URL string, normalize and generate an MD5 hash.
      *  @param  url     The URL string to operate on.
      *
@@ -276,8 +308,7 @@ class Connexions
         /* If this already appears to be an MD5 hash (32 hex characters), don't 
          * compute it again.
          */
-        if ((strlen($str) === 32) &&
-            (strspn($str, '0123456789abcdef') === 32))
+        if (self::isMd5($str))
         {
             // Appears to ALREADY be an MD5 hash
             return $str;

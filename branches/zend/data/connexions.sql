@@ -1,18 +1,20 @@
 CREATE TABLE user (
   userId        int(10)     unsigned    NOT NULL auto_increment,
   name          varchar(30)             NOT NULL unique default '',
-  password      varchar(64)             NOT NULL default '',
 
   fullName      varchar(255)            NOT NULL default '',
   email         varchar(63)             NOT NULL default '',
   apiKey        char(8)                 NOT NULL default '',
   pictureUrl    TEXT                    NOT NULL default '',
   profile       TEXT                    NOT NULL default '',
-  networkShared tinyint(1) unsigned     NOT NULL default 1,
 
-  -- statistics about this user (some cached from more expensive selects)
+  -- statistics about this user
   lastVisit     datetime                NOT NULL default '0000-00-00 00:00:00',
-  lastVisitFor  datetime                NOT NULL default '0000-00-00 00:00:00',
+
+  -- SELECT COUNT(DISTINCT tagId)  AS totalTags,
+  --        COUNT(DISTINCT itemId) AS totalItems
+  --    FROM  userTagItem
+  --    WHERE userId=?;
   totalTags     int(10)     unsigned    NOT NULL default 0,
   totalItems    int(10)     unsigned    NOT NULL default 0,
 
@@ -25,7 +27,12 @@ CREATE TABLE item (
   url           TEXT                    NOT NULL default '',
   urlHash       varchar(64)             NOT NULL default '',
 
-  -- statistics about this item (some cached from more expensive selects)
+  -- statistics about this item
+  --    SELECT COUNT(DISTINCT userId)                            AS userCount,
+  --           SUM(CASE WHEN rating > 0 THEN 1 ELSE 0 END)       AS ratingCount,
+  --           SUM(CASE rating WHEN null THEN 0 ELSE rating END) AS ratingSum
+  --        FROM  userItem
+  --        WHERE itemId=?;
   userCount     int(10)     unsigned    NOT NULL default 0,
   ratingCount   int(10)     unsigned    NOT NULL default 0,
   ratingSum     int(10)     unsigned    NOT NULL default 0,
@@ -34,15 +41,6 @@ CREATE TABLE item (
   KEY `i_urlHash`   (`urlHash`)
 );
 
--- NOTE: There seems to be some issue with short tags:
---          select * from tag where tag='vi'
---              returns tags 'vi' AND 'ui'
---          select * from tag where tag='svn'
---              returns tags 'svn' AND 'sun'
---
---       Seems like:
---          u === v
---          i === j
 CREATE TABLE tag (
   tagId         int(10)     unsigned    NOT NULL auto_increment,
   tag           varchar(30)             NOT NULL unique default '',
@@ -51,16 +49,21 @@ CREATE TABLE tag (
   KEY `t_tag`   (`tag`)
 );
 
-CREATE TABLE network (
-  userId        int(10)     unsigned    NOT NULL default 0,
-  memberId      int(10)     unsigned    NOT NULL default 0,
-  rating        tinyint(1)  unsigned    NOT NULL default 0,
-
-  PRIMARY KEY           (`userId`, `memberId`),
-  KEY `n_userId`        (`userId`),
-  KEY `n_memberId`      (`memberId`)
-);
-
+-- A Grouping of user, item, or tag with an associated Membership (set of users),
+-- control, and visibility settings;
+--
+--      groupType       - what type of items are being grouped (user, item, tag);
+--
+--      controlMembers  - who can add/delete Members (user or any member);
+--      controlItems    - who can add/delete Items   (user or any member);
+--
+--      visibility      - who can view Items in this group?
+--                              private == owner only,
+--                              group   == any member of the group,
+--                              public  == any user
+--
+--      canTransfer     - is the owner allowed to transfer ownership?
+--      
 CREATE TABLE memberGroup (
   groupId           int(10)     unsigned            NOT NULL auto_increment,
   name              varchar(128)                    NOT NULL unique default '',
@@ -109,28 +112,10 @@ CREATE TABLE userItem (
   FULLTEXT  `ui_fullText`   (`name`, `description`)
 );
 
-CREATE TABLE itemTag (
-  itemId        int(10)     unsigned    NOT NULL default 0,
-  tagId         int(10)     unsigned    NOT NULL default 0,
-
-  PRIMARY KEY       (`tagId`, `itemId`),
-  KEY `it_itemId`   (`itemId`),
-  KEY `it_tagId`    (`tagId`)
-);
-
-CREATE TABLE userTag (
-  userId        int(10)     unsigned    NOT NULL default 0,
-  tagId         int(10)     unsigned    NOT NULL default 0,
-
-  PRIMARY KEY       (`userId`, `tagId`),
-  KEY `ut_userId`   (`userId`),
-  KEY `ut_tagId`    (`tagId`)
-);
-
 -- Members of a memberGroup
 CREATE TABLE groupMember (
-  userId        int(10)     unsigned    NOT NULL default 0,
   groupId       int(10)     unsigned    NOT NULL default 0,
+  userId        int(10)     unsigned    NOT NULL default 0,
 
   PRIMARY KEY       (`userId`, `groupId`),
   KEY `ut_userId`   (`userId`),
@@ -138,11 +123,11 @@ CREATE TABLE groupMember (
 );
 
 -- Items within a memberGroup
---      The target table depends upon the 'groupType' of the memberGroup
---      (user, item, or tag).
+--      The table targetd by 'itemId' depends upon the 'groupType' of the
+--      memberGroup (user, item, or tag).
 CREATE TABLE groupItem (
-  itemId        int(10)     unsigned    NOT NULL default 0,
   groupId       int(10)     unsigned    NOT NULL default 0,
+  itemId        int(10)     unsigned    NOT NULL default 0,
 
   PRIMARY KEY       (`itemId`, `groupId`),
   KEY `ut_itemId`   (`itemId`),
@@ -156,6 +141,7 @@ CREATE TABLE userAuth (
 
   credential    varchar(255)            NOT NULL default '',
 
+  PRIMARY KEY           (`userId`, `authType`),
   KEY `ua_userId`       (`userId`),
   KEY `ua_credential`   (`credential`)
 );
