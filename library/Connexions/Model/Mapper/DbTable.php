@@ -126,7 +126,7 @@ abstract class Connexions_Model_Mapper_DbTable
         $accessor = $this->getAccessor();
         $id       = $domainModel->getId();
 
-        $data     = $this->filter( $domainModel->toArray( false ) );
+        $data     = $this->reduceModel( $domainModel );
         if (! $id)
         {
             // /*

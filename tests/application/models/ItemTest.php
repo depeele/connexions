@@ -8,14 +8,13 @@ class ItemTest extends BaseTestCase
             'itemId'        => null,
             'url'           => 'http://www.clipperz.com/',
             'urlHash'       => null,
-            'userCount'     => null,
-            'ratingCount'   => null,
-            'ratingSum'     => null,
 
-            'userItemCount' => null,
-            //'userCount'     => 1,
-            'itemCount'     => null,
-            'tagCount'      => null,
+            'userCount'     => 0,
+            'ratingCount'   => 0,
+            'ratingSum'     => 0,
+            'userItemCount' => 0,
+            'itemCount'     => 0,
+            'tagCount'      => 0,
     );
 
     public function testConstructorInjectionOfProperties()

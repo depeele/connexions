@@ -6,16 +6,19 @@
  */
 abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
 {
-    /** @brief  Filter out any data that isn't directly persisted, update any 
-     *          dynamic values.
-     *  @param  data    An associative array of data that is about to be 
-     *                  persisted.
+    /** @brief  Convert the incoming model into an array containing only 
+     *          data that should be directly persisted.  This method may also
+     *          be used to update dynamic values
+     *          (e.g. update date/time, last visit date/time).
+     *  @param  model   The Domain Model to reduce to an array.
      *
      *  @return A filtered associative array containing data that should 
      *          be directly persisted.
      */
-    public function filter(array $data)
+    public function reduceModel(Connexions_Model $model)
     {
+        $data = parent::reduceModel( $model );
+
         unset($data['userItemCount']);
         unset($data['userCount']);
         unset($data['itemCount']);

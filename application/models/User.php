@@ -5,7 +5,7 @@
  *
  */
 
-class Model_User extends Connexions_Model
+class Model_User extends Model_Base
                     implements  Zend_Tag_Taggable,
                                 Zend_Auth_Adapter_Interface
 {
@@ -21,16 +21,15 @@ class Model_User extends Connexions_Model
             'pictureUrl'    => '',
             'profile'       => '',
             'lastVisit'     => '',
-            'totalTags'     => '',
-            'totalItems'    => '',
 
             /* Note: these items are typically computed and may not be 
              *       persisted directly.
              */
-            'userItemCount' => null,
-            'userCount'     => null,
-            'itemCount'     => null,
-            'tagCount'      => null,
+            'totalTags'     => 0,
+            'totalItems'    => 0,
+            'userItemCount' => 0,
+            'itemCount'     => 0,
+            'tagCount'      => 0,
     );
 
     // Data that is an instance of another Model or Model_Set

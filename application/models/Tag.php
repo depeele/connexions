@@ -4,7 +4,7 @@
  *  Model for the Tag table.
  */
 
-class Model_Tag extends Connexions_Model
+class Model_Tag extends Model_Base
                 implements  Zend_Tag_Taggable
 {
     //protected   $_mapper    = 'Model_Mapper_Tag';
@@ -17,10 +17,9 @@ class Model_Tag extends Connexions_Model
             /* Note: these items are typically computed and may not be 
              *       persisted directly.
              */
-            'userItemCount' => null,
-            'userCount'     => null,
-            'itemCount'     => null,
-            'tagCount'      => null,
+            'userItemCount' => 0,
+            'userCount'     => 0,
+            'itemCount'     => 0,
     );
 
     /*************************************************************************

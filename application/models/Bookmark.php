@@ -5,7 +5,7 @@
  *
  */
 
-class Model_Bookmark extends Connexions_Model
+class Model_Bookmark extends Model_Base
 {
     //protected   $_mapper    = 'Model_BookmarkMapper';
 
@@ -18,14 +18,6 @@ class Model_Bookmark extends Connexions_Model
             'isPrivate'     => null,
             'taggedOn'      => null,
             'updatedOn'     => null,
-
-            /* Note: these items are typically computed and may not be 
-             *       persisted directly.
-             */
-            'userItemCount' => null,
-            'userCount'     => null,
-            'itemCount'     => null,
-            'tagCount'      => null,
 
             // Other Domain Models (not directly persisted).
             'user'          => null,    // Model_User instance or userId

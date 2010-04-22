@@ -13,13 +13,12 @@ class UserDbTest extends DbTestCase
                         'pictureUrl'    => '/connexions/images/User1.png',
                         'profile'       => null,
                         'lastVisit'     => '2007-04-12 12:38:02',
+
                         'totalTags'     => 24,
                         'totalItems'    => 5,
-
-                        'userItemCount' => null,
-                        'userCount'     => null,
-                        'itemCount'     => null,
-                        'tagCount'      => null,
+                        'userItemCount' => 0,
+                        'itemCount'     => 0,
+                        'tagCount'      => 0,
     );
 
     protected function getDataSet()
@@ -40,13 +39,12 @@ class UserDbTest extends DbTestCase
             'pictureUrl'    => null,
             'profile'       => null,
             'lastVisit'     => '0000-00-00 00:00:00',
+
             'totalTags'     => 0,
             'totalItems'    => 0,
-
-            'userItemCount' => null,
-            'userCount'     => null,
-            'itemCount'     => null,
-            'tagCount'      => null,
+            'userItemCount' => 0,
+            'itemCount'     => 0,
+            'tagCount'      => 0,
         );
 
         $data = array('name'        => 'test_user',
@@ -116,13 +114,12 @@ class UserDbTest extends DbTestCase
             'pictureUrl'    => null,
             'profile'       => null,
             'lastVisit'     => '0000-00-00 00:00:00',
+
             'totalTags'     => 0,
             'totalItems'    => 0,
-
-            'userItemCount' => null,
-            'userCount'     => null,
-            'itemCount'     => null,
-            'tagCount'      => null,
+            'userItemCount' => 0,
+            'itemCount'     => 0,
+            'tagCount'      => 0,
         );
 
         $data = array('name'        => 'test_user',
@@ -181,24 +178,6 @@ class UserDbTest extends DbTestCase
 
     public function testUserDeletedFromDatabase()
     {
-        $expected   = array(
-            'userId'        => null,
-            'name'          => null,
-            'fullName'      => null,
-            'email'         => null,
-            'apiKey'        => null,
-            'pictureUrl'    => null,
-            'profile'       => null,
-            'lastVisit'     => null,
-            'totalTags'     => null,
-            'totalItems'    => null,
-
-            'userItemCount' => null,
-            'userCount'     => null,
-            'itemCount'     => null,
-            'tagCount'      => null,
-        );
-
         $mapper = new Model_Mapper_User( );
         $user   = $mapper->find( 1 );
 
@@ -208,11 +187,6 @@ class UserDbTest extends DbTestCase
         $this->assertTrue( ! $user->isBacked() );
         $this->assertTrue( ! $user->isValid() );
         $this->assertTrue( ! $user->isAuthenticated() );
-
-        $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
-
 
         // Check the database consistency
         $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
@@ -238,13 +212,12 @@ class UserDbTest extends DbTestCase
             'pictureUrl'    => null,
             'profile'       => null,
             'lastVisit'     => null,
-            'totalTags'     => null,
-            'totalItems'    => null,
 
-            'userItemCount' => null,
-            'userCount'     => null,
-            'itemCount'     => null,
-            'tagCount'      => null,
+            'totalTags'     => 0,
+            'totalItems'    => 0,
+            'userItemCount' => 0,
+            'itemCount'     => 0,
+            'tagCount'      => 0,
         );
 
         $mapper = new Model_Mapper_User( );

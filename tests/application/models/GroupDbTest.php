@@ -25,13 +25,12 @@ class GroupDbTest extends DbTestCase
                         'pictureUrl'    => '/connexions/images/User1.png',
                         'profile'       => null,
                         'lastVisit'     => '2007-04-12 12:38:02',
+
                         'totalTags'     => 24,
                         'totalItems'    => 5,
-
-                        'userItemCount' => null,
-                        'userCount'     => null,
-                        'itemCount'     => null,
-                        'tagCount'      => null,
+                        'userItemCount' => 0,
+                        'itemCount'     => 0,
+                        'tagCount'      => 0,
     );
 
     protected function getDataSet()
@@ -122,24 +121,31 @@ class GroupDbTest extends DbTestCase
 
     public function testGroupMembers()
     {
-        $members =
-            Connexions_Model_Mapper::factory('Model_Mapper_User')
-                                    ->fetch( array('userId' => array(1,4)));
+        $userMapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $members    = $userMapper->fetch( array('userId' => array(1,4)));
         $this->assertEquals(2, $members->count() );
         $memberMin = array();
         foreach ($members as $member)
         {
+            //$min = $userMapper->reduceModel( $member );
+
             $min = $member->toArray(Connexions_Model::DEPTH_SHALLOW,
                                     Connexions_Model::FIELDS_ALL );
-            $min['userItemCount'] = null;
-            $min['userCount']     = null;
-            $min['itemCount']     = null;
-            $min['tagCount']      = null;
-
+            $min['userItemCount'] = 0;
+            $min['itemCount']     = 0;
+            $min['tagCount']      = 0;
+            
             array_push($memberMin, $min);
         }
         //$members->toArray( Connexions_Model::DEPTH_SHALLOW,
         //                                Connexions_Model::FIELDS_ALL );
+
+
+        /*
+        echo "\nMinimized Members:\n";
+        print_r($memberMin);
+        echo "\n\n";
+        // */
 
         $expected = $this->_group1;
         $expected['members'] = $memberMin;
@@ -152,19 +158,16 @@ class GroupDbTest extends DbTestCase
         $memberCount = $group->members;
         $this->assertNotEquals(null,   $group->members );
 
-        // /*
+        /*
         echo "\nGroup Members:\n";
         print_r($group->members->toArray( Connexions_Model::DEPTH_SHALLOW,
                                           Connexions_Model::FIELDS_ALL ) );
         // */
 
-        // /*
         $this->assertEquals($expected,
                             $group->toArray( Connexions_Model::DEPTH_SHALLOW,
                                              Connexions_Model::FIELDS_ALL ));
-        // */
     }
-
 
     public function testGroupInsertedIntoDatabase()
     {

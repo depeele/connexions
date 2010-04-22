@@ -16,11 +16,6 @@ class BookmarkTest extends BaseTestCase
             'isPrivate'     => null,
             'taggedOn'      => null,
             'updatedOn'     => null,
-
-            'userItemCount' => null,
-            'userCount'     => null,
-            'itemCount'     => null,
-            'tagCount'      => null,
     );
 
     public function testConstructorInjectionOfProperties()

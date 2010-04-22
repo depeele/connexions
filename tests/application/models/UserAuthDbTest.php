@@ -15,13 +15,12 @@ class UserAuthDbTest extends DbTestCase
                         'pictureUrl'    => '/connexions/images/User1.png',
                         'profile'       => null,
                         'lastVisit'     => '2007-04-12 12:38:02',
+
                         'totalTags'     => 24,
                         'totalItems'    => 5,
-
-                        'userItemCount' => null,
-                        'userCount'     => null,
-                        'itemCount'     => null,
-                        'tagCount'      => null,
+                        'userItemCount' => 0,
+                        'itemCount'     => 0,
+                        'tagCount'      => 0,
         ),
 
         // Expected userAuth model data (by authType)

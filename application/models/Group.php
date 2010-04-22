@@ -5,7 +5,7 @@
  *
  */
 
-class Model_Group extends Connexions_Model
+class Model_Group extends Model_Base
 {
     //protected   $_mapper    = 'Model_GroupMapper';
 
