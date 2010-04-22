@@ -7,6 +7,7 @@ class GroupTest extends BaseTestCase
     public function testConstructorInjectionOfProperties()
     {
         $expected   = array(
+            'groupId'           => null,
             'name'              => 'Group1',
             'groupType'         => 'tag',
             'controlMembers'    => 'owner',

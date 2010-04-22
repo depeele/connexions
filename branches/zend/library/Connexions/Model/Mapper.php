@@ -152,17 +152,20 @@ abstract class Connexions_Model_Mapper
         return $this->_modelSetName;
     }
 
-    /** @brief  Filter out any data that isn't directly persisted, update any 
-     *          dynamic values.
-     *  @param  data    An associative array of data that is about to be 
-     *                  persisted.
+    /** @brief  Convert the incoming model into an array containing only 
+     *          data that should be directly persisted.  This method may also
+     *          be used to update dynamic values
+     *          (e.g. update date/time, last visit date/time).
+     *  @param  model   The Domain Model to reduce to an array.
      *
      *  @return A filtered associative array containing data that should 
      *          be directly persisted.
      */
-    public function filter(array $data)
+    public function reduceModel(Connexions_Model $model)
     {
-        return $data;
+        return $model->toArray( Connexions_Model::DEPTH_SHALLOW,
+                                Connexions_Model::FIELDS_ALL );
+                                //Connexions_Model::FIELDS_PUBLIC );
     }
 
     /** @brief  Create a new instance of the Domain Model given raw data.
@@ -208,7 +211,8 @@ abstract class Connexions_Model_Mapper
     /** @brief  Save the given model instance.
      *  @param  model   The model instance to save.
      *
-     *  Note: This should invoke filter() on Model Data before it is persisted.
+     *  Note: This should invoke reduceModel() on Model Data before it is
+     *        persisted.
      *
      *  @return The updated model instance.
      */

@@ -13,13 +13,12 @@ class UserTest extends BaseTestCase
             'pictureUrl'    => 'http://gravatar.com/avatar/%md5%.jpg',
             'profile'       => 'https://google.com/profile/test.user@gmail.com',
             'lastVisit'     => null,
-            'totalTags'     => null,
-            'totalItems'    => null,
 
-            'userItemCount' => null,
-            'userCount'     => null,
-            'itemCount'     => null,
-            'tagCount'      => null,
+            'totalTags'     => 0,
+            'totalItems'    => 0,
+            'userItemCount' => 0,
+            'itemCount'     => 0,
+            'tagCount'      => 0,
     );
 
     public function testConstructorInjectionOfProperties()

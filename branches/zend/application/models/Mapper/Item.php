@@ -11,19 +11,24 @@ class Model_Mapper_Item extends Model_Mapper_Base
     //protected   $_modelName = 'Model_Item';
     //protected   $_accessor  = 'Model_DbTable_Item';
 
-    /** @brief  Filter out any data that isn't directly persisted, update any 
-     *          dynamic values.
-     *  @param  data    An associative array of data that is about to be 
-     *                  persisted.
+    /** @brief  Convert the incoming model into an array containing only 
+     *          data that should be directly persisted.  This method may also
+     *          be used to update dynamic values
+     *          (e.g. update date/time, last visit date/time).
+     *  @param  model   The Domain Model to reduce to an array.
      *
      *  @return A filtered associative array containing data that should 
      *          be directly persisted.
      */
-    public function filter(array $data)
+    public function reduceModel(Connexions_Model $model)
     {
-        unset($data['userItemCount']);
-        unset($data['itemCount']);
-        unset($data['tagCount']);
+        // Save 'userCount' -- it will be removed by Model_Mapper_Base
+        $userCount = $model->userCount;
+
+        $data = parent::reduceModel($model);
+
+        // Replace 'userCount'
+        $data['userCount']  = $userCount;
 
         return $data;
     }

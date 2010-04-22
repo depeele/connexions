@@ -5,26 +5,25 @@
  *
  */
 
-class Model_Item extends Connexions_Model
+class Model_Item extends Model_Base
 {
     //protected   $_mapper    = 'Model_Mapper_Item';
 
     // The data for this Model
     protected   $_data      = array(
             'itemId'        => null,
-            'url'           => '',
-            'urlHash'       => '',
-            'userCount'     => '',
-            'ratingCount'   => '',
-            'ratingSum'     => '',
+            'url'           => null,
+            'urlHash'       => null,
 
             /* Note: these items are typically computed and may not be 
              *       persisted directly.
              */
-            'userItemCount' => null,
-            //'userCount'     => null,
-            'itemCount'     => null,
-            'tagCount'      => null,
+            'userCount'     => 0,
+            'ratingCount'   => 0,
+            'ratingSum'     => 0,
+            'userItemCount' => 0,
+            'itemCount'     => 0,
+            'tagCount'      => 0,
     );
 
     /*************************************************************************

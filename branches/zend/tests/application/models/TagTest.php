@@ -8,10 +8,9 @@ class TagTest extends BaseTestCase
             'tagId'         => null,
             'tag'           => 'tagname',
 
-            'userItemCount' => null,
-            'userCount'     => null,
-            'itemCount'     => null,
-            'tagCount'      => null,
+            'userItemCount' => 0,
+            'userCount'     => 0,
+            'itemCount'     => 0,
     );
 
     public function testConstructorInjectionOfProperties()

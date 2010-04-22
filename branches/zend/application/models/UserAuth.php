@@ -4,8 +4,7 @@
  *  Model for the UserAuth table.
  */
 
-//class Model_User extends Connexions_Model_Cached
-class Model_UserAuth extends Connexions_Model
+class Model_UserAuth extends Model_Base
 {
     //protected   $_mapper    = 'Model_Mapper_UserAuth';
 
