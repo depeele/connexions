@@ -150,7 +150,7 @@ class UserServiceTest extends DbTestCase
      *
      */
 
-    public function testUserSet()
+    public function testRetrieveSet()
     {
         $users  = $this->_service->retrieveSet();
 
@@ -159,6 +159,41 @@ class UserServiceTest extends DbTestCase
                   dirname(__FILE__) .'/_files/userSetAssertion.xml');
 
         $this->assertModelSetEquals( $ds->getTable('user'), $users );
+    }
+
+    public function testRetrievePaginated()
+    {
+        $users  = $this->_service->retrievePaginated();
+
+        /*
+        printf ("%d users of %d, %d pages with %d per page, current page %d\n",
+                $users->getTotalItemCount(),
+                $users->getCurrentItemCount(),
+                $users->count(),
+                $users->getItemCountPerPage(),
+                $users->getCurrentPageNumber());
+        // */
+
+        $this->assertEquals(4,  $users->getTotalItemCount());
+        $this->assertEquals(10, $users->getCurrentItemCount());
+        $this->assertEquals(1,  count($users));
+
+        /*
+        foreach ($users as $idex => $item)
+        {
+            printf ("Row %2d: [ %s ]\n",
+                    $idex,
+                    Connexions::varExport( (is_object($item)
+                                                ? $item->toArray()
+                                                : $item)));
+        }
+        // */
+
+        // Retrieve the expected set
+        $ds = $this->createFlatXmlDataSet(
+                  dirname(__FILE__) .'/_files/userSetAssertion.xml');
+
+        $this->assertPaginatedSetEquals( $ds->getTable('user'), $users );
     }
 
     /*************************************************************************
