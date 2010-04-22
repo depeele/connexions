@@ -36,7 +36,7 @@ class Model_User extends Model_Base
     protected   $_tags              = null;
     protected   $_bookmarks         = null;
 
-    protected   $_authType          = 'password';
+    protected   $_authType          = Model_UserAuth::AUTH_PASSWORD;
     protected   $_credential        = null;
     protected   $_isAuthenticated   = false;
 
@@ -173,7 +173,7 @@ class Model_User extends Model_Base
     {
         $this->invalidateCache();
 
-        $this->_authType        = 'password';
+        $this->_authType        = Model_UserAuth::AUTH_PASSWORD;
         $this->_credential      = null;
         $this->_isAuthenticated = false;
 

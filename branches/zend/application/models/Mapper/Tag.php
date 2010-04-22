@@ -64,4 +64,53 @@ class Model_Mapper_Tag extends Model_Mapper_Base
     {
         throw new Exception('Not yet implemented');
     }
+
+    /*********************************************************************
+     * Protected methods
+     *
+     * Since a tag can be queried by either tagId or tag name, the identity
+     * map for this Domain Model must be a bit more "intelligent"...
+     */
+
+    /** @brief  Save a new Model instance in our identity map.
+     *  @param  id      The model instance identifier.
+     *  $param  model   The model instance.
+     *
+     *  @return The Model instance (null if not found).
+     */
+    protected function _setIdentity($id, $model)
+    {
+        /* Ignore 'id' -- it'll include either tagId, tag, or both.
+         *
+         * Add identity map entries for both tagId and tag
+         */
+        $this->_identityMap[ $model->tagId ] =& $model;
+        $this->_identityMap[ $model->tag   ] =& $model;
+
+        /*
+        Connexions::log("Model_Mapper_Tag::_setIdentity(): "
+                        .   "id[ %d ], tag[ %s ]",
+                         $model->tagId, $model->tag);
+        // */
+    }
+
+    /** @brief  Remove an identity map entry.
+     *  @param  id      The model instance identifier.
+     *  $param  model   The model instance currently mapped.
+     */
+    protected function _unsetIdentity($id, Connexions_Model $model)
+    {
+        /* Ignore 'id' -- it'll include JUST tagId.
+         *
+         * Remove the identity map entries for both tagId and tag
+         */
+        unset($this->_identityMap[ $model->tagId ]);
+        unset($this->_identityMap[ $model->tag   ]);
+
+        /*
+        Connexions::log("Model_Mapper_Tag::_unsetIdentity(): "
+                        .   "id[ %d ], tag[ %s ]",
+                         $model->tagId, $model->tag);
+        // */
+    }
 }

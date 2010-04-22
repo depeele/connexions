@@ -198,7 +198,7 @@ abstract class Connexions_Model_Mapper
      */
     public function unsetIdentity(Connexions_Model $model)
     {
-        $this->_unsetIdentity($model->getId());
+        $this->_unsetIdentity($model->getId(), $model);
 
         return $this;
     }
@@ -275,7 +275,7 @@ abstract class Connexions_Model_Mapper
     protected function _hasIdentity($id)
     {
         if (is_array($id))
-            $id = implode(':', $id);
+            $id = implode(':', array_values($id));
 
         return array_key_exists($id, $this->_identityMap);
     }
@@ -289,7 +289,7 @@ abstract class Connexions_Model_Mapper
     protected function _getIdentity($id)
     {
         if (is_array($id))
-            $id = implode(':', $id);
+            $id = implode(':', array_values($id));
 
         if (array_key_exists($id, $this->_identityMap))
         {
@@ -311,10 +311,10 @@ abstract class Connexions_Model_Mapper
      *
      *  @return The Model instance (null if not found).
      */
-    protected function _setIdentity($id, $model)
+    protected function _setIdentity($id, Connexions_Model $model)
     {
         if (is_array($id))
-            $id = implode(':', $id);
+            $id = implode(':', array_values($id));
 
         /*
         if ($this->_hasIdentity($id))
@@ -325,17 +325,20 @@ abstract class Connexions_Model_Mapper
         }
         // */
 
+        Connexions::log("Connexions_Model_Mapper::_setIdentity( %s ): %s",
+                         $id, get_class($this));
+
         $this->_identityMap[$id] = $model;
     }
 
     /** @brief  Remove an identity map entry.
      *  @param  id      The model instance identifier.
-     *
+     *  $param  model   The model instance currently mapped.
      */
-    protected function _unsetIdentity($id)
+    protected function _unsetIdentity($id, Connexions_Model $model)
     {
         if (is_array($id))
-            $id = implode(':', $id);
+            $id = implode(':', array_values($id));
 
         /*
         Connexions::log("Connexions_Model_Mapper::_unsetIdentity( %s ): %s",

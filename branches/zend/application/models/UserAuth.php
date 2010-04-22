@@ -6,12 +6,16 @@
 
 class Model_UserAuth extends Model_Base
 {
+    const   AUTH_OPENID     = 'openid';
+    const   AUTH_PASSWORD   = 'password';
+    const   AUTH_PKI        = 'pki';
+
     //protected   $_mapper    = 'Model_Mapper_UserAuth';
 
     // The data for this Model
     protected   $_data      = array(
             'userId'        => null,
-            'authType'      => 'password',
+            'authType'      => self::AUTH_PASSWORD,
             'credential'    => '',
     );
 
@@ -62,9 +66,9 @@ class Model_UserAuth extends Model_Base
         case 'authType':
             switch ($value)
             {
-            case 'password':
-            case 'openid':
-            case 'pki':
+            case self::AUTH_PASSWORD:
+            case self::AUTH_OPENID:
+            case self::AUTH_PKI:
                 break;
 
             default:
@@ -135,7 +139,7 @@ class Model_UserAuth extends Model_Base
     {
         switch ($this->authType)
         {
-        case 'password':
+        case self::AUTH_PASSWORD:
             // If the incoming credential is NOT an MD5 hash, convert it now
             if ( ! Connexions::isMd5($credential))
             {

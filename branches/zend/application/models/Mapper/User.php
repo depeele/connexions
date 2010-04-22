@@ -69,4 +69,53 @@ class Model_Mapper_User extends Model_Mapper_Base
     {
         throw new Exception('Not yet implemented');
     }
+
+    /*********************************************************************
+     * Protected methods
+     *
+     * Since a user can be queried by either userId or name, the identity
+     * map for this Domain Model must be a bit more "intelligent"...
+     */
+
+    /** @brief  Save a new Model instance in our identity map.
+     *  @param  id      The model instance identifier.
+     *  $param  model   The model instance.
+     *
+     *  @return The Model instance (null if not found).
+     */
+    protected function _setIdentity($id, $model)
+    {
+        /* Ignore 'id' -- it'll include either userId, name, or both.
+         *
+         * Add identity map entries for both userId and name
+         */
+        $this->_identityMap[ $model->userId ] =& $model;
+        $this->_identityMap[ $model->name   ] =& $model;
+
+        /*
+        Connexions::log("Model_Mapper_User::_setIdentity(): "
+                        .   "id[ %d ], name[ %s ]",
+                         $model->userId, $model->name);
+        // */
+    }
+
+    /** @brief  Remove an identity map entry.
+     *  @param  id      The model instance identifier.
+     *  $param  model   The model instance currently mapped.
+     */
+    protected function _unsetIdentity($id, Connexions_Model $model)
+    {
+        /* Ignore 'id' -- it'll include JUST userId.
+         *
+         * Remove the identity map entries for both userId and name
+         */
+        unset($this->_identityMap[ $model->userId ]);
+        unset($this->_identityMap[ $model->name   ]);
+
+        /*
+        Connexions::log("Model_Mapper_User::_unsetIdentity(): "
+                        .   "id[ %d ], name[ %s ]",
+                         $model->userId, $model->name);
+        // */
+    }
 }

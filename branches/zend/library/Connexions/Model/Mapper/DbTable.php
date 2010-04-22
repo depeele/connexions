@@ -152,7 +152,7 @@ abstract class Connexions_Model_Mapper_DbTable
         /* Ensure that the new instance replaces anything current in the
          * identity map.
          */
-        $this->_unsetIdentity($id);
+        $this->_unsetIdentity( $id, $domainModel );
 
         $newModel = $this->find( $id );
 
@@ -197,7 +197,7 @@ abstract class Connexions_Model_Mapper_DbTable
             $accessor->delete( $where );
             */
 
-            $this->_unsetIdentity( $id );
+            $this->_unsetIdentity( $id, $domainModel );
 
             $domainModel->invalidate();
         }
@@ -414,7 +414,7 @@ abstract class Connexions_Model_Mapper_DbTable
             $select->where($condition, $bindValue);
         }
 
-        /*
+        // /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::_find(%s): "
                         .   "sql[ %s ]",
                         get_class($this),
