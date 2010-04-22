@@ -103,6 +103,15 @@ class UserDbTest extends DbTestCase
         $this->assertSame  ( $user, $user2 );
     }
 
+    public function testUserIdentityMap2()
+    {
+        $mapper = new Model_Mapper_User( );
+        $user   = $mapper->find( $this->_user1['userId'] );
+        $user2  = $mapper->find( $this->_user1['name'] );
+
+        $this->assertSame  ( $user, $user2 );
+    }
+
     public function testUserInsertUpdatedIdentityMap()
     {
         $expected = array(
@@ -255,18 +264,11 @@ class UserDbTest extends DbTestCase
         $mapper = new Model_Mapper_User( );
         $users  = $mapper->fetch();
 
-        // Check the database consistency
-        $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
-                    $this->getConnection()
-        );
+        // Retrieve the expected set
+        $ds = $this->createFlatXmlDataSet(
+                  dirname(__FILE__) .'/_files/userSetAssertion.xml');
 
-        $ds->addTable('user',        'SELECT * FROM user'
-                                     .  ' ORDER BY userId ASC');
-
-        $this->assertDataSetsEqual(
-            $this->createFlatXmlDataSet(
-                      dirname(__FILE__) .'/_files/userSetAssertion.xml'),
-            $ds);
+        $this->assertModelSetEquals( $ds->getTable('user'), $users );
     }
 
     public function testUserSetCount()

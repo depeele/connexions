@@ -9,11 +9,7 @@
  *                                'results'   => $results));
  *      $paginator = new Zend_Paginator($set);
  *
- *
- *  This provides a data separation layer between the application and the Data 
- *  Access Object / Data Store / Data layer.
- *
- *  Records are retrieved either one at a time, or in a group:
+ *  Items are retrieved either one at a time, or in a group:
  *      getItems(offset, count) - Ensures that all records in the specified
  *                                range have been retrieved and returns them.
  *      offsetGet(offset),      - Retrieves the single requested row, wrapping
