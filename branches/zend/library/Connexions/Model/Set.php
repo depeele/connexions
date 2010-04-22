@@ -480,12 +480,26 @@ abstract class Connexions_Model_Set
             $itemCountPerPage = $this->count();
         }
 
+        /*
+        Connexions::log("Connexions_Model_Set::getItems(%d, %d): %d total",
+                        $offset, $itemCountPerPage, count($this->_members));
+        // */
+
         // Ensure that each item in the range is a Model instance
         $mapper = $this->getMapper();
         for ($idex = 0; $idex < $itemCountPerPage; $idex++)
         {
             $item =& $this->_members[$offset + $idex];
-            if (! $item instanceof $modelName)
+
+            /*
+            Connexions::log("Connexions_Model_Set::getItems(%d, %d): "
+                            . "item #%d, type[ %s ], class[ %s ]",
+                            $offset, $itemCountPerPage, $offset + $idex,
+                            gettype($item),
+                            (is_object($item) ? get_class($item) : ''));
+            // */
+
+            if ( is_array($item) )
             {
                 // Create a new instance of the member class using the record.
                 $this->_members[$offset + $idex] =

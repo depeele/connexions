@@ -328,7 +328,8 @@ class BookmarkDbTest extends DbTestCase
         $ds->addTable('userItem',    'SELECT * FROM userItem'
                                      .  ' ORDER BY userId,itemId ASC');
 
-        $ds->addTable('userTagItem', 'SELECT userId,itemId,tagId FROM userTagItem'
+        $ds->addTable('userTagItem', 'SELECT userId,itemId,tagId'
+                                     .  ' FROM userTagItem'
                                      .  ' ORDER BY userId,itemId,tagId ASC');
 
 
@@ -368,7 +369,8 @@ class BookmarkDbTest extends DbTestCase
         $ds->addTable('userItem',    'SELECT * FROM userItem'
                                      .  ' ORDER BY userId,itemId ASC');
 
-        $ds->addTable('userTagItem', 'SELECT userId,itemId,tagId FROM userTagItem'
+        $ds->addTable('userTagItem', 'SELECT userId,itemId,tagId'
+                                     .  ' FROM userTagItem'
                                      .  ' ORDER BY userId,itemId,tagId ASC');
 
         $this->assertDataSetsEqual(
@@ -499,7 +501,8 @@ class BookmarkDbTest extends DbTestCase
         $ds->addTable('userItem',    'SELECT * FROM userItem'
                                      .  ' ORDER BY userId,itemId ASC');
 
-        $ds->addTable('userTagItem', 'SELECT userId,itemId,tagId FROM userTagItem'
+        $ds->addTable('userTagItem', 'SELECT userId,itemId,tagId'
+                                     .  ' FROM userTagItem'
                                      .  ' ORDER BY userId,itemId,tagId ASC');
 
 
@@ -710,5 +713,158 @@ class BookmarkDbTest extends DbTestCase
 
         $this->assertModelSetEquals( $ds->getTable('userItem'), $bookmarks );
         // */
+    }
+
+    public function testBookmarkSetPaginator()
+    {
+        $expected = array(
+            array(
+                'user'          => "1",
+                'item'          => "1",
+                'tags'          => null,
+
+                'name'          => "More than a password manager | Clipperz",
+                'description'   => "Testing 1,2 3, 4...",
+                'rating'        => "1",
+                'isFavorite'    => "0",
+                'isPrivate'     => "1",
+                'taggedOn'      => "2010-04-05 17:25:19",
+                'updatedOn'     => "2010-02-22 10:00:00",
+            ),
+            array(
+                'user'          => "1",
+                'item'          => "2",
+                'tags'          => null,
+
+                'name'          => "OAT Framework",
+                'description'   => "",
+                'rating'        => "2",
+                'isFavorite'    => "1",
+                'isPrivate'     => "0",
+                'taggedOn'      => "2007-03-30 14:39:52",
+                'updatedOn'     => "2007-03-30 14:39:52",
+            ),
+            array(
+                'user'          => "1",
+                'item'          => "3",
+                'tags'          => null,
+
+                'name'          => "OAT: OpenAjax Alliance Compliant Toolkit (Live Links Version)",
+                'description'   => "",
+                'rating'        => "0",
+                'isFavorite'    => "1",
+                'isPrivate'     => "1",
+                'taggedOn'      => "2007-03-30 14:35:51",
+                'updatedOn'     => "2007-03-30 14:35:51",
+            ),
+            array(
+                'user'          => "1",
+                'item'          => "4",
+                'tags'          => null,
+
+                'name'          => "OAT Framework Demo",
+                'description'   => "",
+                'rating'        => "0",
+                'isFavorite'    => "0",
+                'isPrivate'     => "0",
+                'taggedOn'      => "2007-03-30 14:33:27",
+                'updatedOn'     => "2007-03-30 14:33:27",
+            ),
+            array(
+                'user'          => "1",
+                'item'          => "5",
+                'tags'          => null,
+
+                'name'          => "JavaScript Diagram Builder",
+                'description'   => "",
+                'rating'        => "0",
+                'isFavorite'    => "0",
+                'isPrivate'     => "0",
+                'taggedOn'      => "2007-03-30 13:11:57",
+                'updatedOn'     => "2007-03-30 13:11:57",
+            ),
+            array(
+                'user'          => "2",
+                'item'          => "6",
+                'tags'          => null,
+
+                'name'          => "IBM doubles CPU cooling capabilities with simple manufacturing change",
+                'description'   => "",
+                'rating'        => "3",
+                'isFavorite'    => "0",
+                'isPrivate'     => "0",
+                'taggedOn'      => "2006-04-09 23:59:27",
+                'updatedOn'     => "2006-04-09 23:59:27",
+            ),
+            array(
+                'user'          => "2",
+                'item'          => "7",
+                'tags'          => null,
+
+                'name'          => "nimbus: Nimbus",
+                'description'   => "",
+                'rating'        => "0",
+                'isFavorite'    => "0",
+                'isPrivate'     => "0",
+                'taggedOn'      => "0000-00-00 00:00:00",
+                'updatedOn'     => "2007-03-24 11:45:44",
+            ),
+            array(
+                'user'          => "2",
+                'item'          => "11",
+                'tags'          => null,
+
+                'name'          => "The Wii Laptop! - Engadget",
+                'description'   => "",
+                'rating'        => "3",
+                'isFavorite'    => "0",
+                'isPrivate'     => "0",
+                'taggedOn'      => "0000-00-00 00:00:00",
+                'updatedOn'     => "2006-03-30 05:48:26",
+            ),
+            array(
+                'user'          => "2",
+                'item'          => "13",
+                'tags'          => null,
+
+                'name'          => "TiddlyWiki Guides - TiddlyWikiGuides",
+                'description'   => "",
+                'rating'        => "0",
+                'isFavorite'    => "0",
+                'isPrivate'     => "0",
+                'taggedOn'      => "0000-00-00 00:00:00",
+                'updatedOn'     => "2006-06-26 15:54:56",
+            ),
+            array(
+                'user'          => "2",
+                'item'          => "14",
+                'tags'          => null,
+
+                'name'          => "Overview (Java 3D 1.5.0)",
+                'description'   => "",
+                'rating'        => "0",
+                'isFavorite'    => "1",
+                'isPrivate'     => "0",
+                'taggedOn'      => "0000-00-00 00:00:00",
+                'updatedOn'     => "2007-01-24 20:22:40",
+            ),
+        );
+        $mapper = new Model_Mapper_Bookmark( );
+        $users  = $mapper->fetch();
+
+        // Convert the Connexions_Model_Set to a Zend_Paginator
+        $paginator = new Zend_Paginator($users);
+
+        $this->assertEquals(20, $paginator->getTotalItemCount());
+        $this->assertEquals(10, $paginator->getCurrentItemCount());
+        $this->assertEquals(2, count($paginator));
+
+        foreach ($paginator as $idex => $item)
+        {
+            $this->assertEquals( $expected[$idex],
+                                 $item->toArray(
+                                       Connexions_Model::DEPTH_SHALLOW,
+                                       Connexions_Model::FIELDS_ALL ) );
+        }
     }
 }
