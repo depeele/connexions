@@ -93,6 +93,26 @@ abstract class Connexions_Model_Service
 
         return $this->getMapper()->fetch( $criteria, $order, $count, $offset );
     }
+
+    /** @brief  Retrieve a paginated set of Domain Model instances.
+     *  @param  criteria    An array of name/value pairs that represent the
+     *                      desired properties of the target Domain Model.  All
+     *                      'name's MUST be valid for the target Domain Model;
+     *  @param  order       An array of name/direction pairs representing the
+     *                      desired sorting order.  The 'name's MUST be valid
+     *                      for the target Domain Model and the directions a
+     *                      Model_Service::ORDER_* constant.  If an order is
+     *                      omitted, Model_Service::ORDER_ASC will be used
+     *                      [ no specified order ];
+     *
+     *  @return A new Connexions_Model_Set.
+     */
+    public function retrievePaginated($criteria  = array(),
+                                      $order     = null)
+    {
+        $set = $this->getMapper()->fetch( $criteria, $order );
+        return new Zend_Paginator( $set );
+    }
                                       
     /** @brief  Initiate an update of the provided Domain Model instance.
      *  @param  model   The Domain Model instance to update.
