@@ -28,12 +28,17 @@ class UserTest extends BaseTestCase
                                                md5($expected['email']),
                                                $expected['pictureUrl']);
 
-        $data = array(
+        $user = new Model_User( array(
             'name'        => $expected['name'],
             'fullName'    => $expected['fullName'],
-        );
+        ));
 
-        $user = new Model_User( $data );
+
+        // apiKey is dynamically generated if not set
+        if ( empty($expected['apiKey']))
+        {
+            $expected['apiKey'] = $user->apiKey;
+        }
 
         // Make sure we can change properties
         $user->email      = $expected['email'];
@@ -64,15 +69,20 @@ class UserTest extends BaseTestCase
         unset($expected2['userId']);
         unset($expected2['apiKey']);
 
-        $data     = array(
+        $user = new Model_User( array(
             'name'        => $expected['name'],
             'fullName'    => $expected['fullName'],
             'email'       => $expected['email'],
             'pictureUrl'  => $expected['pictureUrl'],
             'profile'     => $expected['profile'],
-        );
+        ));
 
-        $user = new Model_User( $data );
+        // apiKey is dynamically generated if not set
+        if ( empty($expected['apiKey']))
+        {
+            $expected['apiKey'] = $user->apiKey;
+        }
+
 
         $this->assertEquals($expected,
                             $user->toArray( Connexions_Model::DEPTH_SHALLOW,

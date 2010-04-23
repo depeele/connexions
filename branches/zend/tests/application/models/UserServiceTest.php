@@ -26,7 +26,7 @@ class UserServiceTest extends DbTestCase
             'name'          => 'User1',
             'fullName'      => 'Random User 1',
             'email'         => 'User1@home.com',
-            'apiKey'        => null,
+            'apiKey'        => 'edOEMfwY6d',
             'pictureUrl'    => '/connexions/images/User1.png',
             'profile'       => null,
             'lastVisit'     => '2007-04-12 12:38:02',
@@ -60,6 +60,9 @@ class UserServiceTest extends DbTestCase
             'name'        => $expected['name'],
             'fullName'    => $expected['fullName'],
         ));
+
+        // apiKey is dynamically generated
+        $expected['apiKey'] = $user->apiKey;
 
         $this->assertTrue( $user instanceof Model_User );
 
@@ -206,6 +209,9 @@ class UserServiceTest extends DbTestCase
         $credential = 'abcdefg';
         $user       = $this->_service->authenticate( $expected['name'],
                                                      $credential );
+
+        // apiKey is dynamically generated
+        $expected['apiKey'] = $user->apiKey;
 
         $this->assertFalse ( $user->isAuthenticated() );
         $this->assertEquals($expected,

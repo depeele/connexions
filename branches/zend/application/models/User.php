@@ -40,6 +40,28 @@ class Model_User extends Model_Base
     protected   $_credential        = null;
     protected   $_isAuthenticated   = false;
 
+    /** @brief  Given incoming record data, populate this model instance.
+     *  @param  data    Incoming key/value record data.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function populate($data)
+    {
+        parent::populate($data);
+
+        if (empty($this->_data['apiKey']))
+        {
+            // Generate an API key
+            $apiKey = $this->genApiKey();
+
+            $this->__set('apiKey', $apiKey);
+
+            Connexions::log("Model_User::populate(): generate API key "
+                            .   "[ %s ] [ %s ]",
+                            $this->apiKey, $apiKey);
+        }
+    }
+
     /*************************************************************************
      * Connexions_Model abstract method implementations
      *
@@ -441,7 +463,7 @@ class Model_User extends Model_Base
     public static function genApiKey($len = 10)
     {
         $chars    = array_merge(range('a','z'),range('A','Z'),range('0','9'));
-        $nChars   = count($chars);
+        $nChars   = count($chars) - 1;
         $key      = '';
 
         list($ms) = explode(' ', microtime());

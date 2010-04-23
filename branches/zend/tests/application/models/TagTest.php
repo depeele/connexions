@@ -35,7 +35,7 @@ class TagTest extends BaseTestCase
         $tag->tagCount      = $expected['tagCount'];
 
         $this->assertTrue( ! $tag->isBacked() );
-        $this->assertTrue( ! $tag->isValid() );
+        $this->assertTrue(   $tag->isValid() );
 
         $this->assertEquals($expected,
                             $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
@@ -89,6 +89,6 @@ class TagTest extends BaseTestCase
         $filter = $tag->getFilter();
 
         //$this->assertType('Model_Filter_Tag', $filter);
-        $this->assertEquals(Connexions_Model::NO_INSTANCE, $filter);
+        $this->assertNotEquals(Connexions_Model::NO_INSTANCE, $filter);
     }
 }
