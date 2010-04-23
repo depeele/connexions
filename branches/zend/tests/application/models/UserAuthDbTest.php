@@ -10,7 +10,7 @@ class UserAuthDbTest extends DbTestCase
                         'userId'        => 1,
                         'name'          => 'User1',
                         'fullName'      => 'Random User 1',
-                        'email'         => 'User1@home',
+                        'email'         => 'User1@home.com',
                         'apiKey'        => null,
                         'pictureUrl'    => '/connexions/images/User1.png',
                         'profile'       => null,
@@ -37,7 +37,7 @@ class UserAuthDbTest extends DbTestCase
         'pki'       => array(
             'userId'        => 1,
             'authType'      => 'pki',
-            'credential'    => 'C=US, ST=Maryland, L=Baltimore, O=City Government, OU=Public Works, CN=User 1/emailAddress=User1@home',
+            'credential'    => 'C=US, ST=Maryland, L=Baltimore, O=City Government, OU=Public Works, CN=User 1/emailAddress=User1@home.com',
         ),
     );
 
@@ -66,7 +66,7 @@ class UserAuthDbTest extends DbTestCase
         $this->assertEquals($expected, $userAuth->toArray());
     }
 
-    public function testGetId()
+    public function testUserAuthGetId()
     {
         $expected = array($this->_user1['password']['userId'],
                           $this->_user1['password']['authType']);

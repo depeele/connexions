@@ -4,7 +4,7 @@ require_once APPLICATION_PATH .'/models/UserAuth.php';
 
 class UserAuthTest extends BaseTestCase
 {
-    public function testConstructorInjectionOfProperties()
+    public function testUserAuthConstructorInjectionOfProperties()
     {
         $expected = array(
             'userId'        => null,
@@ -20,7 +20,7 @@ class UserAuthTest extends BaseTestCase
         $this->assertEquals($expected, $userAuth->toArray());
     }
 
-    public function testGetId()
+    public function testUserAuthGetId()
     {
         $data     = array('userId'   => 5,
                           'authType' => 'password');
@@ -31,7 +31,7 @@ class UserAuthTest extends BaseTestCase
         $this->assertEquals($expected, $userAuth->getId());
     }
 
-    public function testGetMapper()
+    public function testUserAuthGetMapper()
     {
         $userAuth = new Model_UserAuth( );
 
@@ -40,7 +40,7 @@ class UserAuthTest extends BaseTestCase
         $this->assertType('Model_Mapper_UserAuth', $mapper);
     }
 
-    public function testGetFilter()
+    public function testUserAuthGetFilter()
     {
         $userAuth = new Model_UserAuth( );
 
@@ -50,7 +50,7 @@ class UserAuthTest extends BaseTestCase
         $this->assertEquals(Connexions_Model::NO_INSTANCE, $filter);
     }
 
-    public function testSetInvalidUser()
+    public function testUserAuthSetInvalidUser()
     {
         $expected = array(
             'userId'        => null,
@@ -69,7 +69,7 @@ class UserAuthTest extends BaseTestCase
         catch (Exception $e)
         {
             /*
-            Connexions::log("testSetInvalidUser: Exception: %s",
+            Connexions::log("testUserAuthSetInvalidUser: Exception: %s",
                             $e->getMessage());
             // */
         }

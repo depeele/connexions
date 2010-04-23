@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <dataset>
  <user userId="2" name="User441"
-       fullName="Random User 441" email="User441@home" apiKey=""
+       fullName="Random User 441" email="User441@home.com" apiKey=""
        pictureUrl="" profile=""
        lastVisit="0000-00-00 00:00:00" totalTags="24" totalItems="5" />
  <user userId="3" name="User83"
-       fullName="Random User 83" email="User83@home" apiKey=""
+       fullName="Random User 83" email="User83@home.com" apiKey=""
        pictureUrl="" profile=""
        lastVisit="0000-00-00 00:00:00" totalTags="24" totalItems="5" />
  <user userId="4" name="User478"
-       fullName="Random User 478" email="User478@home" apiKey=""
+       fullName="Random User 478" email="User478@home.com" apiKey=""
        pictureUrl="" profile=""
        lastVisit="0000-00-00 00:00:00" totalTags="32" totalItems="5" />
 </dataset>

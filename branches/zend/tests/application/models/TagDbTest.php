@@ -104,7 +104,7 @@ class TagDbTest extends DbTestCase
         $this->assertSame  ( $tag, $tag2 );
     }
 
-    public function testGetId()
+    public function testTagGetId()
     {
         $expected = $this->_tag1['tagId'];
 

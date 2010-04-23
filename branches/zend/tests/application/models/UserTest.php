@@ -21,7 +21,7 @@ class UserTest extends BaseTestCase
             'tagCount'      => 0,
     );
 
-    public function testConstructorInjectionOfProperties()
+    public function testUserConstructorInjectionOfProperties()
     {
         $expected   = $this->_user1;
         $expected['pictureUrl'] = preg_replace('/%md5%/',
@@ -56,7 +56,7 @@ class UserTest extends BaseTestCase
                                             Connexions_Model::FIELDS_ALL ));
     }
 
-    public function testToArray()
+    public function testUserToArray()
     {
         $expected  = $this->_user1;
         $expected2 = $this->_user1;
@@ -82,7 +82,7 @@ class UserTest extends BaseTestCase
                                             Connexions_Model::FIELDS_PUBLIC ));
     }
 
-    public function testGetId()
+    public function testUserGetId()
     {
         $data     = array('userId'  => 1);
         $expected = null;   //$data['userId'];
@@ -92,7 +92,7 @@ class UserTest extends BaseTestCase
         $this->assertEquals($expected, $user->getId());
     }
 
-    public function testGetMapper()
+    public function testUserGetMapper()
     {
         $user = new Model_User( );
 
@@ -101,13 +101,13 @@ class UserTest extends BaseTestCase
         $this->assertType('Model_Mapper_User', $mapper);
     }
 
-    public function testGetFilter()
+    public function testUserGetFilter()
     {
         $user = new Model_User( );
 
         $filter = $user->getFilter();
 
         //$this->assertType('Model_Filter_User', $filter);
-        $this->assertEquals(Connexions_Model::NO_INSTANCE, $filter);
+        $this->assertNotEquals(Connexions_Model::NO_INSTANCE, $filter);
     }
 }

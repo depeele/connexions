@@ -20,7 +20,7 @@ class GroupDbTest extends DbTestCase
                         'userId'        => 1,
                         'name'          => 'User1',
                         'fullName'      => 'Random User 1',
-                        'email'         => 'User1@home',
+                        'email'         => 'User1@home.com',
                         'apiKey'        => null,
                         'pictureUrl'    => '/connexions/images/User1.png',
                         'profile'       => null,
@@ -72,7 +72,7 @@ class GroupDbTest extends DbTestCase
         $this->assertSame  ( $group, $group2 );
     }
 
-    public function testGetId()
+    public function testGroupGetId()
     {
         $expected = $this->_group1['groupId'];
 

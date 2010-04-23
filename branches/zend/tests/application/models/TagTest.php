@@ -13,7 +13,7 @@ class TagTest extends BaseTestCase
             'itemCount'     => 0,
     );
 
-    public function testConstructorInjectionOfProperties()
+    public function testTagConstructorInjectionOfProperties()
     {
         $expected = $this->_tag1;
         $expected['userItemCount'] = 100;
@@ -42,7 +42,7 @@ class TagTest extends BaseTestCase
                                            Connexions_Model::FIELDS_ALL ));
     }
 
-    public function testToArray()
+    public function testTagToArray()
     {
         $expected  = $this->_tag1;
         $expected2 = $this->_tag1;
@@ -63,7 +63,7 @@ class TagTest extends BaseTestCase
                                            Connexions_Model::FIELDS_PUBLIC ));
     }
 
-    public function testGetId()
+    public function testTagGetId()
     {
         $data     = array('tagId'  => 5);
         $expected = null;
@@ -73,7 +73,7 @@ class TagTest extends BaseTestCase
         $this->assertEquals($expected, $tag->getId());
     }
 
-    public function testGetMapper()
+    public function testTagGetMapper()
     {
         $tag = new Model_Tag( );
 
@@ -82,7 +82,7 @@ class TagTest extends BaseTestCase
         $this->assertType('Model_Mapper_Tag', $mapper);
     }
 
-    public function testGetFilter()
+    public function testTagGetFilter()
     {
         $tag = new Model_Tag( );
 

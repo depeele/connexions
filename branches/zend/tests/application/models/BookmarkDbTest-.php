@@ -8,7 +8,7 @@ class BookmarkDbTest extends DbTestCase
             'userId'        => 1,
             'name'          => 'User1',
             'fullName'      => 'Random User 1',
-            'email'         => 'User1@home',
+            'email'         => 'User1@home.com',
             'apiKey'        => null,
             'pictureUrl'    => '/connexions/images/User1.png',
             'profile'       => null,

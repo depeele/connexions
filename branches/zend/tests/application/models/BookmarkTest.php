@@ -18,7 +18,7 @@ class BookmarkTest extends BaseTestCase
             'updatedOn'     => null,
     );
 
-    public function testConstructorInjectionOfProperties()
+    public function testBookmarkConstructorInjectionOfProperties()
     {
         $expected   = $this->_bookmark1;
         $expected['rating']     = 4;
@@ -47,7 +47,7 @@ class BookmarkTest extends BaseTestCase
                                                 Connexions_Model::FIELDS_ALL ));
     }
 
-    public function testToArray()
+    public function testBookmarkToArray()
     {
         $expected  = $this->_bookmark1;
         $expected2 = $expected;
@@ -67,7 +67,7 @@ class BookmarkTest extends BaseTestCase
                                                Connexions_Model::FIELDS_PUBLIC ));
     }
 
-    public function testGetId()
+    public function testBookmarkGetId()
     {
         $expected = null;
 
@@ -76,7 +76,7 @@ class BookmarkTest extends BaseTestCase
         $this->assertEquals($expected, $bookmark->getId());
     }
 
-    public function testGetMapper()
+    public function testBookmarkGetMapper()
     {
         $bookmark = new Model_Bookmark( );
 
@@ -85,7 +85,7 @@ class BookmarkTest extends BaseTestCase
         $this->assertType('Model_Mapper_Bookmark', $mapper);
     }
 
-    public function testGetFilter()
+    public function testBookmarkGetFilter()
     {
         $bookmark = new Model_Bookmark( );
 

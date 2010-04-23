@@ -1,28 +1,60 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<?php
+
+// <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+//  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+?>
+<?= $this->doctype() ?>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>Zend Framework Default Application</title>
+  <?= $this->headMeta() ?>
+  <meta name="language" content="en" />
+  <title>Oops!  There's Been A Problem!</title>
+
+  <style type='text/css'>
+    h1,h2,h3,h4,h5,h6,p,blockquote { padding: 0.25em; }
+    .body, .main { display: block; }
+    .rightCol { display: none; }
+    blockquote { padding: 0.5em 2em; }
+    pre { margin: 0; padding: 0.5em; overflow: auto;
+          background-color: #fee; border: 1px dashed #bbb;}
+  </style>
 </head>
 <body>
-  <h1>An error occurred</h1>
-  <h2><?php echo $this->message ?></h2>
-
+  <h1>An Error Has Occurred</h1>
   <?php if ('development' == APPLICATION_ENV): ?>
+    <blockquote>
+      <h3><?php echo $this->message ?>:</h3>
+      <blockquote>
+        <?php echo $this->exception->getMessage() ?>
+      </blockquote>
 
-  <h3>Exception information:</h3>
-  <p>
-      <b>Message:</b> <?php echo $this->exception->getMessage() ?>
-  </p>
+      <h3>Stack trace:</h3>
+      <blockquote>
+        <pre><?php echo $this->exception->getTraceAsString() ?></pre>
+      </blockquote>
 
-  <h3>Stack trace:</h3>
-  <pre><?php echo $this->exception->getTraceAsString() ?>
-  </pre>
+      <h3>Request Parameters:</h3>
+      <blockquote>
+        <pre><?php echo var_export($this->request->getParams(), true) ?></pre>
+      </blockquote>
+    </blockquote>
 
-  <h3>Request Parameters:</h3>
-  <pre><?php echo var_export($this->request->getParams(), true) ?>
-  </pre>
-  <?php endif ?>
+  <?php else: ?>
 
+    <?php if ($this->statusCode == 500): ?>
+      <p>We're truly sorry, but we cannot complete your request at this
+      time.</p>
+
+      <p>If it's any consolation, we have scheduled a new appointment for our
+      development team leader in Torture Chamber #7 to encourage his colleagues
+      to investigate this incident.</p>
+    <?php else: ?>
+      <p>We're truly sorry, but the page you are trying to locate does not
+      exist.</p>
+
+      <p>Please double check the requested URL...</p>
+    <?php endif; ?>
+
+  <?php endif; ?>
 </body>
 </html>

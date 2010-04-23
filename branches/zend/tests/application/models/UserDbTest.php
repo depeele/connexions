@@ -8,7 +8,7 @@ class UserDbTest extends DbTestCase
                         'userId'        => 1,
                         'name'          => 'User1',
                         'fullName'      => 'Random User 1',
-                        'email'         => 'User1@home',
+                        'email'         => 'User1@home.com',
                         'apiKey'        => null,
                         'pictureUrl'    => '/connexions/images/User1.png',
                         'profile'       => null,
@@ -47,10 +47,16 @@ class UserDbTest extends DbTestCase
             'tagCount'      => 0,
         );
 
-        $data = array('name'        => 'test_user',
-                      'fullName'    => 'Test User');
+        $user = new Model_User( array(
+                        'name'      => $expected['name'],
+                        'fullName'  => $expected['fullName']));
 
-        $user = new Model_User( $data );
+
+        /*
+        echo "New User:\n";
+        echo $user->debugDump();
+        // */
+
         $user = $user->save();
 
         $this->assertEquals($expected,
@@ -84,6 +90,11 @@ class UserDbTest extends DbTestCase
 
         $mapper = new Model_Mapper_User( );
         $user   = $mapper->find( $this->_user1['userId'] );
+
+        /*
+        printf ("User by id %d:\n", $this->_user1['userid']);
+        echo $user->debugDump();
+        // */
 
         $this->assertTrue  ( $user->isBacked() );
         $this->assertTrue  ( $user->isValid() );
@@ -142,7 +153,7 @@ class UserDbTest extends DbTestCase
         $this->assertSame  ( $user, $user2 );
     }
 
-    public function testGetId()
+    public function testUserGetId()
     {
         $expected = $this->_user1['userId'];
 
@@ -191,6 +202,11 @@ class UserDbTest extends DbTestCase
         $user   = $mapper->find( 1 );
 
         $user->delete();
+
+        /*
+        echo "Deleted User:\n";
+        echo $user->debugDump();
+        // */
 
         // Make sure the user instance has been invalidated
         $this->assertTrue( ! $user->isBacked() );

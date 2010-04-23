@@ -2,19 +2,19 @@
 <dataset>
 <!-- Referenced Users -->
  <user userId="1" name="User1"
-       fullName="Random User 1" email="User1@home" apiKey=""
+       fullName="Random User 1" email="User1@home.com" apiKey=""
        pictureUrl="/connexions/images/User1.png" profile=""
        lastVisit="2007-04-12 12:38:02" totalTags="24" totalItems="5" />
  <user userId="2" name="User441"
-       fullName="Random User 441" email="User441@home" apiKey=""
+       fullName="Random User 441" email="User441@home.com" apiKey=""
        pictureUrl="" profile=""
        lastVisit="0000-00-00 00:00:00" totalTags="24" totalItems="5" />
  <user userId="3" name="User83"
-       fullName="Random User 83" email="User83@home" apiKey=""
+       fullName="Random User 83" email="User83@home.com" apiKey=""
        pictureUrl="" profile=""
        lastVisit="0000-00-00 00:00:00" totalTags="24" totalItems="5" />
  <user userId="4" name="User478"
-       fullName="Random User 478" email="User478@home" apiKey=""
+       fullName="Random User 478" email="User478@home.com" apiKey=""
        pictureUrl="" profile=""
        lastVisit="0000-00-00 00:00:00" totalTags="32" totalItems="5" />
 
@@ -187,7 +187,7 @@
  <userAuth userId="1" authType="password"
                         credential="77c3d13750c0a0a59b0a2cf1bc189f61" />
  <userAuth userId="1" authType="pki"
-                        credential="C=US, ST=Maryland, L=Baltimore, O=City Government, OU=Public Works, CN=User 1/emailAddress=User1@home" />
+                        credential="C=US, ST=Maryland, L=Baltimore, O=City Government, OU=Public Works, CN=User 1/emailAddress=User1@home.com" />
 
 <!-- userItem joins / Bookmarks -->
  <!-- Items for User 1 -->
