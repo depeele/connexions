@@ -26,6 +26,14 @@ class Model_UserAuth extends Model_Base
      * Connexions_Model abstract method implementations
      *
      */
+
+    /** @brief  Retrieve the unique identifier for this instance.  This MAY 
+     *          return an array of identifiers as key/value pairs.
+     *
+     *  This MUST return null if the model is not currently backed.
+     *
+     *  @return The unique identifier.
+     */
     public function getId()
     {
         return ( $this->isBacked()

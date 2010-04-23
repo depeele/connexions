@@ -26,6 +26,14 @@ class Model_Tag extends Model_Base
      * Connexions_Model abstract method implementations
      *
      */
+
+    /** @brief  Retrieve the unique identifier for this instance.  This MAY 
+     *          return an array of identifiers as key/value pairs.
+     *
+     *  This MUST return null if the model is not currently backed.
+     *
+     *  @return The unique identifier.
+     */
     public function getId()
     {
         return ( $this->isBacked()
@@ -61,29 +69,6 @@ class Model_Tag extends Model_Base
             return $this->tag;
 
         return parent::__toString();
-    }
-
-    /** @brief  Return an array version of this instance.
-     *  @param  deep    Should any associated models be retrieved?
-     *                      [ Connexions_Model::DEPTH_DEEP ] |
-     *                        Connexions_Model::DEPTH_SHALLOW
-     *  @param  public  Include only "public" information?
-     *                      [ Connexions_Model::FIELDS_PUBLIC ] |
-     *                        Connexions_Model::FIELDS_ALL
-     *
-     *  @return An array representation of this Domain Model.
-     */
-    public function toArray($deep   = self::DEPTH_DEEP,
-                            $public = self::FIELDS_PUBLIC)
-    {
-        $data = $this->_data;
-
-        if ($public === self::FIELDS_PUBLIC)
-        {
-            unset($data['tagId']);
-        }
-
-        return $data;
     }
 
     /*************************************************************************

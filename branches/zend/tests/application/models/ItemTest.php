@@ -25,11 +25,10 @@ class ItemTest extends BaseTestCase
         $expected['ratingCount'] = 5;
         $expected['ratingSum']   = 3.2;
 
-        $data = array(
+        $item = new Model_Item( array(
             'url'         => $expected['url'],
-        );
+        ));
 
-        $item = new Model_Item( $data );
 
         // Make sure we can change properties
         $item->userCount   = $expected['userCount'];
@@ -50,13 +49,9 @@ class ItemTest extends BaseTestCase
         $expected['urlHash'] = Connexions::md5Url($expected['url']);
         $expected2           = $expected;
 
-        unset($expected2['itemId']);
-
-        $data     = array(
+        $item = new Model_Item( array(
             'url'         => $expected['url'],
-        );
-
-        $item = new Model_Item( $data );
+        ));
 
         $this->assertEquals($expected,
                             $item->toArray( Connexions_Model::DEPTH_SHALLOW,

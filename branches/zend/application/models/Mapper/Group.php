@@ -1,4 +1,23 @@
 <?php
+/** @file
+ *
+ *  This mapper provides bi-directional access between the Domain Model and the
+ *  underlying persistent store (in this case, a Zend_Db_Table).
+ *
+ *  Note: This mapper hides a few database related details.  The 'ownerId' and
+ *        of the underlying table is presented to the Domain Model as, simply,
+ *        'owner'.  The Domain Model then uses this field to provide access to
+ *        the referenced Model_User instance when requested.
+ *
+ *        This mapper also makes three meta-data fields available:
+ *          getOwner()  - retrieves the Model_User instance represented by the
+ *                        'ownerId' for the Group;
+ *          getMembers()- retrieves the Model_Set_User instance containing all
+ *                        group members;
+ *          getItems()  - retrieves the Model_Set_User|Item|Tag|Bookmark
+ *                        instance, depending on the 'groupType', that contains
+ *                        all items associated with this group;
+ */
 class Model_Mapper_Group extends Model_Mapper_Base
 {
     protected   $_keyName   = 'groupId';
@@ -106,6 +125,38 @@ class Model_Mapper_Group extends Model_Mapper_Base
                                            'results'    => $members) );
 
         return $users;
+    }
+
+    /** @brief  Retrieve the set of items for this group.
+     *  @param  group   The Model_Group instance.
+     *
+     *  @return A Model_Set_(User|Tag|Item|Bookmark) instance.
+     */
+    public function getItems(Model_Group $group)
+    {
+        throw new Exception('Not yet implemented');
+
+        switch ($group->groupType)
+        {
+        case 'user':
+        case 'tag':
+        case 'item':
+        case 'bookmark':
+        }
+
+        /*
+        $row     = $this->_find( $group->groupId );
+        //$members = $row->findDependentRowset('Model_DbTable_GroupMember');
+
+        // This does NOT return a Zend_Db_Table_Rowset but rather a simple
+        // array of Zend_Db_Table_Row objects...
+        $members = $row->findManyToManyRowset('Model_DbTable_User',
+                                              'Model_DbTable_GroupMember');
+        $users = new Model_Set_User( array('totalCount' => count($members),
+                                           'results'    => $members) );
+
+        return $users;
+        */
     }
 
     /** @brief  Create a new instance of the Domain Model given a raw record.

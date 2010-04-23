@@ -1,4 +1,23 @@
 <?php
+/** @file
+ *
+ *  This mapper provides bi-directional access between the Domain Model and the
+ *  underlying persistent store (in this case, a Zend_Db_Table).
+ *
+ *  Note: This mapper hides a few database related details.  The 'userId' and
+ *        'itemId' of the underlying table are presented to the Domain Model
+ *        as, simply, 'user' and 'item'.  The Domain Model then uses these
+ *        fields to provide access to the referenced Model_User and Model_Item
+ *        instances when requested.
+ *
+ *        This mapper also makes three meta-data fields available:
+ *          getUser()   - retrieves the Model_User instance represented by the
+ *                        'userId' for the Bookmark;
+ *          getItem()   - retrieves the Model_Item instance represented by the
+ *                        'itemId' for the Bookmark;
+ *          getTags()   - retrieves the Model_Set_Tag instance containing all
+ *                        tags directly associated with the Bookmark;
+ */
 class Model_Mapper_Bookmark extends Model_Mapper_Base
 {
     protected   $_keyName   = array('userId', 'itemId');
@@ -104,7 +123,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
     {
         $data = parent::reduceModel($model);
 
-        /* Covert any included user/item recrod to the associated database
+        /* Covert any included user/item record to the associated database
          * identifiers (userId/itemId).
          */
         $data['userId']     = ( is_array($data['user'])
