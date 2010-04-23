@@ -6,7 +6,7 @@
  <userAuth userId="1" authType="password"
                         credential="77c3d13750c0a0a59b0a2cf1bc189f61" />
  <userAuth userId="1" authType="pki"
-                        credential="C=US, ST=Maryland, L=Baltimore, O=City Government, OU=Public Works, CN=User 1/emailAddress=User1@home" />
+                        credential="C=US, ST=Maryland, L=Baltimore, O=City Government, OU=Public Works, CN=User 1/emailAddress=User1@home.com" />
 
  <userAuth userId="2" authType="pki"
                         credential="CN=me" />

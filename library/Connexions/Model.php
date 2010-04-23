@@ -35,6 +35,7 @@ abstract class Connexions_Model
 
     /** @brief  The data of this instance. */
     protected           $_data      = array();
+    protected           $_valid     = array();
 
     /** @brief  Is the contained data directly from / saved in a persistent 
      *          backing store?
@@ -70,7 +71,8 @@ abstract class Connexions_Model
      *                                        contained within 'config' as
      *                                        key/value pairs.
      *
-     *                      isBacked    Is the data backed by persistent storage?
+     *                      isBacked    Is the data backed by persistent
+     *                                  storage?
      *                      isValid     Has this data been validated?
      *
      */
@@ -203,14 +205,27 @@ abstract class Connexions_Model
 
         // Validate the incoming value
         $filter = $this->getFilter();
-        if ( is_object($filter) && ($element = $filter->getElement($name)) )
+        if ( is_object($filter) )
         {
-            if (! $element->isValid($value))
+            $data = $this->_data; $data[$name] = $value;
+            $filter->setData( $data );
+            $this->_valid[$name] = $filter->isValid($name);
+
+            if (! $this->_valid[$name])
             {
+                // Set the entire Model to "invalid"
+                $this->setIsValid(false);
+                return $this;
+
+                /*
                 throw new Exception("Connexions_Model::__set(): "
                                     . "Invalid value for '{$name}': "
-                                    . implode(',', $element->getMessages()) );
+                                    . Connexions::varExport(
+                                                $filter->getMessages()) );
+                */
             }
+
+            $value = $filter->getUnescaped($name);
         }
 
         // Assign the new value
@@ -276,9 +291,10 @@ abstract class Connexions_Model
         // Ensure any Mapper-based identity map has been cleared.
         $this->unsetIdentity();
 
-        foreach ($this->_data as $key => $val)
+        foreach ($this->_data as $key => &$val)
         {
-            $this->__set($key, null);
+            $val = null;
+            //$this->__set($key, null);
         }
 
         $this->_isBacked  = false;
@@ -440,6 +456,18 @@ abstract class Connexions_Model
      */
     public function isValid()
     {
+        if ($this->_isValid !== true)
+        {
+            // Attempt to validate the data of this Model.
+            $filter = $this->getFilter();
+            if ( is_object($filter) )
+            {
+                $filter->setData( $this->_data );
+
+                $this->_isValid = $filter->isValid();
+            }
+        }
+
         return $this->_isValid;
     }
 
@@ -463,8 +491,11 @@ abstract class Connexions_Model
             else if ($type === 'boolean')
                 $val = ($val ? 'true' : 'false');
 
-            $str .= sprintf (" %-15s == %-15s[ %s ]\n",
-                             $key, $type, $val);
+            $str .= sprintf (" %-15s == %-15s %s [ %s ]\n",
+                             $key, $type,
+                             ($this->_valid[$key] === false
+                                ? "!" : " "),
+                             $val);
         }
 
         $str .= "\n];";
@@ -548,9 +579,21 @@ abstract class Connexions_Model
                 {
                     @Zend_Loader_Autoloader::autoload($filterName);
                     $filter  = new $filterName();
+
+                    // /*
+                    Connexions::log("Connexions_Model::filterFactory( %s ): "
+                                    . "filter loaded",
+                                    $filterName);
+                    // */
                 }
                 catch (Exception $e)
                 {
+                    // /*
+                    Connexions::log("Connexions_Model::filterFactory( %s ): "
+                                    . "CANNOT load filter",
+                                    $filterName);
+                    // */
+
                     // Return self::NO_INSTANCE
                     $filter = self::NO_INSTANCE;
                 }

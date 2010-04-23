@@ -17,7 +17,7 @@ class ItemTest extends BaseTestCase
             'tagCount'      => 0,
     );
 
-    public function testConstructorInjectionOfProperties()
+    public function testItemConstructorInjectionOfProperties()
     {
         $expected                = $this->_item1;
         $expected['urlHash']     = Connexions::md5Url($expected['url']);
@@ -44,7 +44,7 @@ class ItemTest extends BaseTestCase
                                             Connexions_Model::FIELDS_ALL ));
     }
 
-    public function testToArray()
+    public function testItemToArray()
     {
         $expected            = $this->_item1;
         $expected['urlHash'] = Connexions::md5Url($expected['url']);
@@ -66,7 +66,7 @@ class ItemTest extends BaseTestCase
                                             Connexions_Model::FIELDS_PUBLIC ));
     }
 
-    public function testGetId()
+    public function testItemGetId()
     {
         $data     = array('itemId'  => 5);
         $expected = null;
@@ -76,7 +76,7 @@ class ItemTest extends BaseTestCase
         $this->assertEquals($expected, $item->getId());
     }
 
-    public function testGetMapper()
+    public function testItemGetMapper()
     {
         $item = new Model_Item( );
 
@@ -85,7 +85,7 @@ class ItemTest extends BaseTestCase
         $this->assertType('Model_Mapper_Item', $mapper);
     }
 
-    public function testGetFilter()
+    public function testItemGetFilter()
     {
         $item = new Model_Item( );
 

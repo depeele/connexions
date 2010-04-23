@@ -16,14 +16,19 @@ abstract class Connexions_Model_Service
     const   ORDER_ASC       = 'ASC';
     const   ORDER_DESC      = 'DESC';
 
-    /** @brief  Create a new Domain Model instance.
+    /** @brief  Create a new, unbacked Domain Model instance.
      *  @param  data    An array of name/value pairs used to initialize the
      *                  Domain Model.  All 'name's MUST be valid for the target
      *                  Domain Model.
      *
      *  @return A new Domain Model instance.
+     *          Note: If the caller wishes this new instance to persist, they
+     *                must invoke either:
+     *                    $model = $model->save()
+     *                or
+     *                    $model = $this->update($model)
      */
-    public function create($data = array())
+    public function create(array $data)
     {
         $modelName = $this->_modelName;
 
@@ -124,7 +129,7 @@ abstract class Connexions_Model_Service
      */
     public function update(Connexions_Model $model)
     {
-        return $model->update();
+        return $model->save();
     }
 
     /** @brief  Initiate the deletion of the provided Domain Model instance.

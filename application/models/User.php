@@ -238,7 +238,8 @@ class Model_User extends Model_Base
      *
      *  Note: This requires AT LEAST
      *              'name' OR 'userId',
-     *              setCredential() and possible setAuthType()
+     *              setCredential() and,
+     *              unless the authentication type is 'password', setAuthType()
      *
      *  @return Zend_Auth_Result
      */
@@ -255,7 +256,7 @@ class Model_User extends Model_Base
         }
         else
         {
-            // 1b) Locate a valid user, backed user...
+            // 1b) Locate a valid, backed user...
             $mapper = $this->getMapper();
             if ($this->userId !== null)
             {
@@ -269,22 +270,17 @@ class Model_User extends Model_Base
                     $user = $matches[0];
                 }
             }
-            /* Ambiguous User...
-            else
-            {
-                throw new Exception("Requires either 'userId' or 'name'");
-            }
-             */
+            // else, Ambiguous User -- handled below...
         }
 
-        /* 2) */
+        // 2)
         if ( $user !== null )
         {
             /* 2) See if we can find a 'userAuth' record for this
              *    userId and authType
              *
              * Note: We're using the 'userId' of the located user instance and 
-             *       the 'authType' and 'credential' set on THIS instance.
+             *       the 'authType' and 'credential' of THIS instance.
              *       They MAY be different (see 1b above).
              */
             $authMapper =
@@ -333,23 +329,38 @@ class Model_User extends Model_Base
         }
         else
         {
+            /* Retrieve configuration / construction data for the
+             * identified/authenticated user.
+             */
+            $config = $user->toArray( self::DEPTH_SHALLOW,
+                                      self::FIELDS_ALL );
+
             if ($user !== $this)
             {
-                $config = $user->toArray( self::DEPTH_SHALLOW,
-                                          self::FIELDS_ALL );
-
                 // Update THIS model to match the identified/authenticated user
                 $this->populate($config);
             }
 
             $this->setAuthenticated();
 
-            // and generate a SUCCESS result
+            /* Generate a SUCCESS result using the configuration/construction
+             * data as the identification.  This will be stored by Zend_Auth
+             * and is what we will see in the session next time this user loads
+             * the page.
+             */
             $result = new Zend_Auth_Result(Zend_Auth_Result::SUCCESS,
                                            $config);
         }
 
         return $result;
+    }
+
+    /** @brief  De-authenticate this user. */
+    public function logout()
+    {
+        Zend_Auth::getInstance()->clearIdentity();
+
+        $this->setAuthenticated(false);
     }
 
     /*************************************************************************

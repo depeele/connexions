@@ -4,7 +4,7 @@ require_once APPLICATION_PATH .'/models/Group.php';
 
 class GroupTest extends BaseTestCase
 {
-    public function testConstructorInjectionOfProperties()
+    public function testGroupConstructorInjectionOfProperties()
     {
         $expected   = array(
             'groupId'           => null,
@@ -36,7 +36,7 @@ class GroupTest extends BaseTestCase
                                             Connexions_Model::FIELDS_ALL ));
     }
 
-    public function testGetMapper()
+    public function testGroupGetMapper()
     {
         $group = new Model_Group( );
 
@@ -45,7 +45,7 @@ class GroupTest extends BaseTestCase
         $this->assertType('Model_Mapper_Group', $mapper);
     }
 
-    public function testGetFilter()
+    public function testGroupGetFilter()
     {
         $group = new Model_Group( );
 
