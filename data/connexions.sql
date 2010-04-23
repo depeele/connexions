@@ -4,7 +4,7 @@ CREATE TABLE user (
 
   fullName      varchar(255)            NOT NULL default '',
   email         varchar(63)             NOT NULL default '',
-  apiKey        char(8)                 NOT NULL default '',
+  apiKey        char(10)                NOT NULL default '',
   pictureUrl    TEXT                    NOT NULL default '',
   profile       TEXT                    NOT NULL default '',
 

@@ -9,7 +9,7 @@ class UserDbTest extends DbTestCase
                         'name'          => 'User1',
                         'fullName'      => 'Random User 1',
                         'email'         => 'User1@home.com',
-                        'apiKey'        => null,
+                        'apiKey'        => 'edOEMfwY6d',
                         'pictureUrl'    => '/connexions/images/User1.png',
                         'profile'       => null,
                         'lastVisit'     => '2007-04-12 12:38:02',
@@ -51,6 +51,8 @@ class UserDbTest extends DbTestCase
                         'name'      => $expected['name'],
                         'fullName'  => $expected['fullName']));
 
+        // apiKey is dynamically generated
+        $expected['apiKey'] = $user->apiKey;
 
         /*
         echo "New User:\n";
@@ -70,10 +72,16 @@ class UserDbTest extends DbTestCase
 
         $ds->addTable('user', 'SELECT * FROM user');
 
-        $this->assertDataSetsEqual(
-            $this->createFlatXmlDataSet(
-                        dirname(__FILE__) .'/_files/userInsertAssertion.xml'),
-            $ds);
+        /*********
+         * Modify 'apiKey' in our expected set for the target row since
+         * it's dynamic...
+         */
+        $es = $this->createFlatXmlDataSet(
+                  dirname(__FILE__) .'/_files/userInsertAssertion.xml');
+        $et = $es->getTable('user');
+        $et->setValue(4, 'apiKey', $expected['apiKey']);
+
+        $this->assertDataSetsEqual( $es, $ds );
     }
 
     public function testUserRetrieveByUnknownId()
@@ -125,27 +133,10 @@ class UserDbTest extends DbTestCase
 
     public function testUserInsertUpdatedIdentityMap()
     {
-        $expected = array(
-            'userId'        => 5,
-            'name'          => 'test_user',
-            'fullName'      => 'Test User',
-            'email'         => null,
-            'apiKey'        => null,
-            'pictureUrl'    => null,
-            'profile'       => null,
-            'lastVisit'     => '0000-00-00 00:00:00',
+        $user = new Model_User( array(
+                    'name'        => 'test_user',
+                    'fullName'    => 'Test User'));
 
-            'totalTags'     => 0,
-            'totalItems'    => 0,
-            'userItemCount' => 0,
-            'itemCount'     => 0,
-            'tagCount'      => 0,
-        );
-
-        $data = array('name'        => 'test_user',
-                      'fullName'    => 'Test User');
-
-        $user = new Model_User( $data );
         $user = $user->save();
 
         $user2 = $user->getMapper()->find( $user->userId );

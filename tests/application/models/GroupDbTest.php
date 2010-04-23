@@ -21,7 +21,7 @@ class GroupDbTest extends DbTestCase
                         'name'          => 'User1',
                         'fullName'      => 'Random User 1',
                         'email'         => 'User1@home.com',
-                        'apiKey'        => null,
+                        'apiKey'        => 'edOEMfwY6d',
                         'pictureUrl'    => '/connexions/images/User1.png',
                         'profile'       => null,
                         'lastVisit'     => '2007-04-12 12:38:02',

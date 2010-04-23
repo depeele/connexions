@@ -115,12 +115,13 @@ abstract class Connexions_Model
 
                     $this->{$method}($val);
                 }
-                else if (! $populated)
-                {
-                    // ASSUME this is record data and simply set it.
-                    $this->__set($key, $val);
-                }
             }
+        }
+
+        if (! $populated)
+        {
+            // ASSUME the 'config' data IS record data and simply set it.
+            $this->populate( $config );
         }
     }
 
@@ -215,6 +216,9 @@ abstract class Connexions_Model
             {
                 // Set the entire Model to "invalid"
                 $this->setIsValid(false);
+
+                Connexions::log("Connexions_Model::__set(%s, %s): INVALID",
+                                $name, $value);
                 return $this;
 
                 /*

@@ -5,12 +5,12 @@
  *
  */
 
-const USER_FILTER_DATE_PATTERN  =
+class Model_Filter_User extends Connexions_Model_Filter
+{
+    const VALID_DATE    =
     // YYYY.mm.dd                            HH:ii:ss
     '/^[0-9]{4,}[.\-][0-9]{2,}[.\-][0-9]{2,} [0-9]{2,}:[0-9]{2,}:[0-9]{2,}$/';
 
-class Model_Filter_User extends Connexions_Model_Filter
-{
     protected $_filterRules     = array(
         'userId'        => array('int'),
         'name'          => array('stripTags', 'stringTrim',
@@ -62,11 +62,11 @@ class Model_Filter_User extends Connexions_Model_Filter
 
         // The following SHOULD NOT be set from outside the Model Layers
         'apiKey'        => array(array('regex',
-                                       'pattern' => '/^([a-z0-9]{8,8})?$/'),
+                                       'pattern' => '/^([a-z0-9]{10,})?$/i'),
                                  'allowEmpty'   => true,
         ),
         'lastVisit'     => array(array('regex',
-                                       'pattern' => USER_FILTER_DATE_PATTERN),
+                                       'pattern' => self::VALID_DATE),
                                  'default'  => '0000-00-00 00:00:00',
         ),
         'totalTags'     => array('int',
