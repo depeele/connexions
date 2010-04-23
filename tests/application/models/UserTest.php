@@ -66,7 +66,6 @@ class UserTest extends BaseTestCase
         $expected  = $this->_user1;
         $expected2 = $this->_user1;
 
-        unset($expected2['userId']);
         unset($expected2['apiKey']);
 
         $user = new Model_User( array(

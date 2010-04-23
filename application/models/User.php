@@ -56,15 +56,25 @@ class Model_User extends Model_Base
 
             $this->__set('apiKey', $apiKey);
 
+            /*
             Connexions::log("Model_User::populate(): generate API key "
                             .   "[ %s ] [ %s ]",
                             $this->apiKey, $apiKey);
+            // */
         }
     }
 
     /*************************************************************************
      * Connexions_Model abstract method implementations
      *
+     */
+
+    /** @brief  Retrieve the unique identifier for this instance.  This MAY 
+     *          return an array of identifiers as key/value pairs.
+     *
+     *  This MUST return null if the model is not currently backed.
+     *
+     *  @return The unique identifier.
      */
     public function getId()
     {
@@ -180,7 +190,6 @@ class Model_User extends Model_Base
 
         if ($public === self::FIELDS_PUBLIC)
         {
-            unset($data['userId']);
             unset($data['apiKey']);
         }
 

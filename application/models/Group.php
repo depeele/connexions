@@ -30,6 +30,14 @@ class Model_Group extends Model_Base
      * Connexions_Model abstract method implementations
      *
      */
+
+    /** @brief  Retrieve the unique identifier for this instance.  This MAY 
+     *          return an array of identifiers as key/value pairs.
+     *
+     *  This MUST return null if the model is not currently backed.
+     *
+     *  @return The unique identifier.
+     */
     public function getId()
     {
         return ( $this->isBacked()
@@ -162,19 +170,21 @@ class Model_Group extends Model_Base
         $data = $this->_data;
 
         // Owner
-        $owner = ($deep ? $this->owner
-                        : $data['owner']);
+        $owner = ($deep === self::DEPTH_DEEP
+                    ? $this->owner
+                    : $data['owner']);
         if ($owner instanceof Model_Owner)
         {
-            if ($deep)
+            if ($deep === self::DEPTH_DEEP)
                 $data['owner'] = $owner->toArray( $deep, $public );
             else
                 $data['owner'] = $owner->userId;
         }
 
         // Members
-        $members = ($deep ? $this->members
-                          : $data['members']);
+        $members = ($deep === self::DEPTH_DEEP
+                        ? $this->members
+                        : $data['members']);
         if ( ($members !== null) && ($members instanceof Model_Set_User) )
         {
             // Reduce the members...
@@ -188,8 +198,9 @@ class Model_Group extends Model_Base
         }
 
         // Items
-        $items = ($deep ? $this->items
-                        : $data['items']);
+        $items = ($deep === self::DEPTH_DEEP
+                    ? $this->items
+                    : $data['items']);
         if ( ($items !== null) && ($items instanceof Connexions_Model_Set) )
         {
             // Reduce the items...

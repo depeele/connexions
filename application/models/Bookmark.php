@@ -29,11 +29,30 @@ class Model_Bookmark extends Model_Base
      * Connexions_Model abstract method implementations
      *
      */
+
+    /** @brief  Retrieve the unique identifier for this instance.  This MAY 
+     *          return an array of identifiers as key/value pairs.
+     *
+     *  This MUST return null if the model is not currently backed.
+     *
+     *  @return The unique identifier.
+     */
     public function getId()
     {
-        return ( $this->isBacked()
-                    ? array( $this->user->userId, $this->item->itemId )
-                    : null );
+        $id = null;
+        if ($this->isBacked())
+        {
+            $userId = ($this->_data['user'] instanceof Model_User
+                        ? $this->user->userId
+                        : $this->_data['user']);
+            $itemId = ($this->_data['item'] instanceof Model_Item
+                        ? $this->item->itemId
+                        : $this->_data['item']);
+
+            $id = array( $userId, $itemId );
+        }
+        
+        return ( $id );
     }
 
     /*************************************************************************
@@ -161,30 +180,33 @@ class Model_Bookmark extends Model_Base
         $data = $this->_data;
 
         // User
-        $user = ($deep ? $this->user
-                       : $data['user']);
+        $user = ($deep === self::DEPTH_DEEP
+                    ? $this->user
+                    : $data['user']);
         if ($user instanceof Model_User)
         {
-            if ($deep)
+            if ($deep === self::DEPTH_DEEP)
                 $data['user'] = $user->toArray( $deep, $public );
             else
                 $data['user'] = $user->userId;
         }
 
         // Item
-        $item = ($deep ? $this->item
-                       : $data['item']);
+        $item = ($deep === self::DEPTH_DEEP
+                    ? $this->item
+                    : $data['item']);
         if ($item instanceof Model_Item)
         {
-            if ($deep)
+            if ($deep === self::DEPTH_DEEP)
                 $data['item'] = $item->toArray( $deep, $public );
             else
                 $data['item'] = $item->itemId;
         }
 
         // Tags
-        $tags = ($deep ? $this->tags
-                       : $data['tags']);
+        $tags = ($deep === self::DEPTH_DEEP
+                    ? $this->tags
+                    : $data['tags']);
         if ( ($tags !== null) && ($tags instanceof Model_Set_Tag) )
         {
             // Reduce the tags...

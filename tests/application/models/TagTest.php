@@ -21,12 +21,11 @@ class TagTest extends BaseTestCase
         $expected['itemCount']     = 25;
         $expected['tagCount']      = 32;
 
-        $data     = array(
+        $tag = new Model_Tag( array(
                              // Also test tag normalization
             'tag'         => strtoupper($expected['tag']),
-        );
+        ));
 
-        $tag = new Model_Tag( $data );
 
         // Make sure we can change properties
         $tag->userItemCount = $expected['userItemCount'];
@@ -47,13 +46,12 @@ class TagTest extends BaseTestCase
         $expected  = $this->_tag1;
         $expected2 = $this->_tag1;
 
-        unset($expected2['tagId']);
+        //unset($expected2['tagId']);
 
-        $data     = array(
+        $tag = new Model_Tag( array(
             'tag'         => strtoupper($expected['tag']),
-        );
+        ));
 
-        $tag = new Model_Tag( $data );
 
         $this->assertEquals($expected,
                             $tag->toArray( Connexions_Model::DEPTH_SHALLOW,

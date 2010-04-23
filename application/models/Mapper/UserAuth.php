@@ -1,4 +1,9 @@
 <?php
+/** @file
+ *
+ *  This mapper provides bi-directional access between the Domain Model and the
+ *  underlying persistent store (in this case, a Zend_Db_Table).
+ */
 class Model_Mapper_UserAuth extends Model_Mapper_Base
 {
     protected   $_keyName   = array('userId', 'authType');
