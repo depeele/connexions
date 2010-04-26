@@ -29,8 +29,9 @@ class UserTest extends BaseTestCase
                                                $expected['pictureUrl']);
 
         $user = new Model_User( array(
-            'name'        => $expected['name'],
-            'fullName'    => $expected['fullName'],
+                            // vvv test stripTags and trim filters
+            'name'        => '<a href="test.com">'. $expected['name'] .'  </a>',
+            'fullName'    => '<b>  '. $expected['fullName'],
         ));
 
 
@@ -116,7 +117,6 @@ class UserTest extends BaseTestCase
 
         $filter = $user->getFilter();
 
-        //$this->assertType('Model_Filter_User', $filter);
-        $this->assertNotEquals(Connexions_Model::NO_INSTANCE, $filter);
+        $this->assertType('Model_Filter_User', $filter);
     }
 }

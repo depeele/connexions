@@ -1,6 +1,6 @@
 <?php
 require_once TESTS_PATH .'/application/DbTestCase.php';
-require_once APPLICATION_PATH .'/models/Service/User.php';
+require_once APPLICATION_PATH .'/services/User.php';
 
 class UserServiceTest extends DbTestCase
 {
@@ -49,7 +49,21 @@ class UserServiceTest extends DbTestCase
         // PHPUnit_Extensions_Database_TestCase
         parent::setUp();
 
-        $this->_service = new Model_Service_User();
+        $this->_service = Connexions_Service::factory('Model_User');
+        //$this->_service = Connexions_Service::factory('Service_User');
+        //$this->_service = new Service_User();
+    }
+
+    public function testUserServiceFactory()
+    {
+        $service1 = Connexions_Service::factory('Model_User');
+        $this->assertTrue( $service1 instanceof Connexions_Service );
+        $this->assertTrue( $service1 instanceof Service_User );
+
+        $service2 = Connexions_Service::factory('Service_User');
+        $this->assertTrue( $service2 instanceof Connexions_Service );
+        $this->assertTrue( $service2 instanceof Service_User );
+        $this->assertSame( $service1, $service2 );
     }
 
     public function testUserServiceConstructorInjectionOfProperties()

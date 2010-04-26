@@ -119,12 +119,12 @@ abstract class Connexions_Model_Mapper
         {
             /* Use the name of the current class to construct a Model Set
              * class name:
-             *      (.*Model)_Mapper_<Class> => (.*Model)_Set_<Class>
+             *      Model_Mapper_<Class> => Model_Set_<Class>
              */
-            $modelSetName = preg_replace('/(.*?Model)_Mapper_(.*?)/',
-                                         '$1_Set_$2', get_class($this));
+            $modelSetName = str_replace('Model_Mapper_', 'Model_Set_',
+                                        get_class($this));
 
-            // /*
+            /*
             Connexions::log("Connexions_Model_Mapper::setModelSetName(%s)",
                             $modelSetName);
             // */

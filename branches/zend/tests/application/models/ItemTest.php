@@ -23,10 +23,13 @@ class ItemTest extends BaseTestCase
         $expected['urlHash']     = Connexions::md5Url($expected['url']);
         $expected['userCount']   = 1;
         $expected['ratingCount'] = 5;
-        $expected['ratingSum']   = 3.2;
+        $expected['ratingSum']   = 3;
 
         $item = new Model_Item( array(
-            'url'         => $expected['url'],
+                        // vvv should be trimmed by filter
+            'url'       => '   '. $expected['url']. '   ',
+                        // vvv should be filtered to an integer 3
+            'ratingSum' => $expected['ratingSum'] + 0.2,
         ));
 
 
@@ -36,7 +39,7 @@ class ItemTest extends BaseTestCase
         $item->ratingSum   = $expected['ratingSum'];
 
         $this->assertTrue( ! $item->isBacked() );
-        $this->assertTrue( ! $item->isValid() );
+        $this->assertTrue(   $item->isValid() );
 
         $this->assertEquals($expected,
                             $item->toArray( Connexions_Model::DEPTH_SHALLOW,
@@ -86,7 +89,6 @@ class ItemTest extends BaseTestCase
 
         $filter = $item->getFilter();
 
-        //$this->assertType('Model_Filter_Item', $filter);
-        $this->assertEquals(Connexions_Model::NO_INSTANCE, $filter);
+        $this->assertType('Model_Filter_Item', $filter);
     }
 }

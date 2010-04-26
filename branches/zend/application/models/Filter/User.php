@@ -4,9 +4,9 @@
  *  This is the input filter & validator for the User Domain Model.
  *
  */
-
 class Model_Filter_User extends Connexions_Model_Filter
 {
+    // Duplicate of Model_Filter_Bookmark::VALID_DATE
     const VALID_DATE    =
     // YYYY.mm.dd                            HH:ii:ss
     '/^[0-9]{4,}[.\-][0-9]{2,}[.\-][0-9]{2,} [0-9]{2,}:[0-9]{2,}:[0-9]{2,}$/';
@@ -26,9 +26,6 @@ class Model_Filter_User extends Connexions_Model_Filter
         // The following SHOULD NOT be set from outside the Model Layers
         'totalTags'     => array('int'),
         'totalItems'    => array('int'),
-        'userItemCount' => array('int'),
-        'itemCount'     => array('int'),
-        'tagCount'      => array('int'),
     );
     protected $_validatorRules  = array(
         'userId'        => array('int',
@@ -73,15 +70,6 @@ class Model_Filter_User extends Connexions_Model_Filter
                                  'default'  => 0,
         ),
         'totalItems'    => array('int',
-                                 'default'  => 0,
-        ),
-        'userItemCount' => array('int',
-                                 'default'  => 0,
-        ),
-        'itemCount'     => array('int',
-                                 'default'  => 0,
-        ),
-        'tagCount'      => array('int',
                                  'default'  => 0,
         ),
     );

@@ -129,12 +129,12 @@ abstract class Connexions_Model_Set
         {
             /* Use the name of the current class to construct a Mapper
              * class name:
-             *      (.*Model)_<Class> => (.*Model)_Mapper_<Class>
+             *      Model_Set_<Class> => Model_Mapper_<Class>
              */
-            $mapper = preg_replace('/(.*?Model)_Set_(.*?)/',
-                                    '$1_Mapper_$2', get_class($this));
+            $mapper = str_replace('Model_Set_', 'Model_Mapper_',
+                                  get_class($this));
 
-            /*
+            // /*
             Connexions::log("Connexions_Model::setMapper(%s)",
                             $mapper);
             // */
@@ -229,11 +229,10 @@ abstract class Connexions_Model_Set
         {
             /* Use the name of the current class to construct a Domain Model
              * class name:
-             *      (.*Model)_<Class>s   => (.*Model)_<Class>
-             *      (.*Model)_<Class>Set => (.*Model)_<Class>
+             *      Model_Set_<Class>   => Model_<Class>
              */
-            $name = preg_replace('/(.*?Model)_(.*?)(?:s|Set)/',
-                                 '$1_$2', get_class($this));
+            $name = str_replace('Model_Set_', 'Model_',
+                                get_class($this));
         }
 
         $this->_modelName = $name;

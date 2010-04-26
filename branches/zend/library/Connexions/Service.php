@@ -8,10 +8,18 @@
  *  Persistence Layer.  Users of a Service only have to deal with Domain Model
  *  abstractions.
  */
-abstract class Connexions_Model_Service
+abstract class Connexions_Service
 {
     protected   $_modelName = null;
     protected   $_mapper    = null;
+
+    /** @brief  Returned from a factory if no instance can be located or 
+     *          generated.
+     */
+    const       NO_INSTANCE             = -1;
+
+    // A cache of Data Accessor instances, by class name
+    static protected    $_instCache     = array();
 
     const   ORDER_ASC       = 'ASC';
     const   ORDER_DESC      = 'DESC';
@@ -30,7 +38,7 @@ abstract class Connexions_Model_Service
      */
     public function create(array $data)
     {
-        $modelName = $this->_modelName;
+        $modelName = $this->_getModelName();    //_modelName;
 
         return new $modelName( $data );
     }
@@ -44,7 +52,7 @@ abstract class Connexions_Model_Service
      */
     public function retrieve($criteria = array())
     {
-        return $this->getMapper()->find( $criteria );
+        return $this->_getMapper()->find( $criteria );
     }
 
     /** @brief  Retrieve a set of Domain Model instances.
@@ -54,9 +62,9 @@ abstract class Connexions_Model_Service
      *  @param  order       An array of name/direction pairs representing the
      *                      desired sorting order.  The 'name's MUST be valid
      *                      for the target Domain Model and the directions a
-     *                      Model_Service::ORDER_* constant.  If an order is
-     *                      omitted, Model_Service::ORDER_ASC will be used
-     *                      [ no specified order ];
+     *                      Connexions_Service::ORDER_* constant.  If an order
+     *                      is omitted, Connexions_Service::ORDER_ASC will be
+     *                      used [ no specified order ];
      *  @param  count       The maximum number of items from the full set of
      *                      matching items that should be returned
      *                      [ null == all ];
@@ -96,7 +104,8 @@ abstract class Connexions_Model_Service
             $order = $newOrder;
         }
 
-        return $this->getMapper()->fetch( $criteria, $order, $count, $offset );
+        return $this->_getMapper()->fetch( $criteria, $order,
+                                           $count,    $offset );
     }
 
     /** @brief  Retrieve a paginated set of Domain Model instances.
@@ -106,16 +115,16 @@ abstract class Connexions_Model_Service
      *  @param  order       An array of name/direction pairs representing the
      *                      desired sorting order.  The 'name's MUST be valid
      *                      for the target Domain Model and the directions a
-     *                      Model_Service::ORDER_* constant.  If an order is
-     *                      omitted, Model_Service::ORDER_ASC will be used
-     *                      [ no specified order ];
+     *                      Connexions_Service::ORDER_* constant.  If an order
+     *                      is omitted, Connexions_Service::ORDER_ASC will be
+     *                      used [ no specified order ];
      *
      *  @return A new Connexions_Model_Set.
      */
     public function retrievePaginated($criteria  = array(),
                                       $order     = null)
     {
-        $set = $this->getMapper()->fetch( $criteria, $order );
+        $set = $this->_getMapper()->fetch( $criteria, $order );
         return new Zend_Paginator( $set );
     }
                                       
@@ -151,25 +160,123 @@ abstract class Connexions_Model_Service
      *
      */
 
+    protected function _getModelName()
+    {
+        if (empty($this->_modelName))
+        {
+            /* Use the class name of this instance to construct a Model
+             * class name:
+             *      Service_<Class> => Model_<Class>
+             */
+            $this->_modelName = str_replace('Service_', 'Model_',
+                                            get_class($this));
+        }
+
+        return $this->_modelName;
+    }
+
     /** @brief  Retrieve the mapper for this Service.
      *
      *  @return The Connexions_Model_Mapper instance.
      */
-    protected function getMapper()
+    protected function _getMapper()
     {
-        if (is_string($this->_mapper))
+        if ( ! $this->_mapper instanceof Connexions_Model_Mapper )
         {
-            $this->_mapper =
-                Connexions_Model_Mapper::factory( $this->_mapper );
+            $mapperName = $this->_mapper;
+            if (empty($mapperName))
+            {
+                /* Use the model name to construct a Model Mapper
+                 * class name:
+                 *      Model_<Class> => Model_Mapper_<Class>
+                 */
+                $mapperName = str_replace('Model_', 'Model_Mapper_',
+                                          $this->_getModelName());
+            }
+
+            $this->_mapper = Connexions_Model_Mapper::factory( $mapperName );
 
             /*
-            Connexions::log("Connexions_Model_Service::getMapper(): "
-                            .   "mapper[ %s ]",
-                            get_class($this->_mapper));
+            Connexions::log("Connexions_Service::_getMapper(): "
+                            .   "name[ %s ], mapper[ %s ]",
+                            $mapperName, get_class($this->_mapper));
             // */
         }
 
         return $this->_mapper;
     }
-}
 
+    /*********************************************************************
+     * Static methods
+     *
+     */
+
+    /** @brief  Given a Service Class name, retrieve the associated Service
+     *          instance.
+     *  @param  service     The Service Class instance, Service Class name, or
+     *                      Domain Model name.
+     *
+     *  @return The Connexions_Service instance.
+     */
+    public static function factory($service)
+    {
+        if ($service instanceof Connexions_Service)
+        {
+            $serviceName = get_class($service);
+        }
+        else
+        {
+            // See if we have a Service instance with this name in our cache
+            if (is_object($service))
+                $serviceName = get_class($service);
+            else
+                $serviceName = $service;
+
+            // Allow the incoming name to identify the target Domain Model
+            if (strpos($serviceName, 'Model_') !== false)
+            {
+                $serviceName = str_replace('Model_', 'Service_', $serviceName);
+            }
+
+
+            if ( isset(self::$_instCache[ $serviceName ]))
+            {
+                // YES - use the existing instance
+                $service =& self::$_instCache[ $serviceName ];
+            }
+            else
+            {
+                // NO - create a new instance
+                try
+                {
+                    @Zend_Loader_Autoloader::autoload($serviceName);
+                    $service  = new $serviceName();
+                }
+                catch (Exception $e)
+                {
+                    // Simply return null
+                    $service = self::NO_INSTANCE;
+
+                    // /*
+                    Connexions::log("Connexions_Service::factory: "
+                                    . "CANNOT locate class '%s'",
+                                    $serviceName);
+                    // */
+                }
+            }
+        }
+
+        if (! isset(self::$_instCache[ $serviceName ]))
+        {
+            self::$_instCache[ $serviceName ] = $service;
+
+            /*
+            Connexions::log("Connexions_Service::factory( %s ): "
+                            . "cache this Mapper instance",
+                            $serviceName);
+            // */
+        }
+
+        return $service;
+    }
+}

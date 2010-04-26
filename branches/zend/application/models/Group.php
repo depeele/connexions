@@ -7,7 +7,8 @@
 
 class Model_Group extends Model_Base
 {
-    //protected   $_mapper    = 'Model_GroupMapper';
+    /* inferred via classname
+    protected   $_mapper    = 'Model_Mapper_Group'; */
 
     // The data for this Model
     protected   $_data      = array(
@@ -69,6 +70,9 @@ class Model_Group extends Model_Base
                                                 : gettype($value))
                                     . ')');
             }
+
+            // Direct set, no further filtering or validation
+            $this->_data[$name] = $value;
             break;
 
         case 'members':
@@ -81,6 +85,9 @@ class Model_Group extends Model_Base
                                                 : gettype($value))
                                     . ')');
             }
+
+            // Direct set, no further filtering or validation
+            $this->_data[$name] = $value;
             break;
 
         case 'items':
@@ -94,10 +101,17 @@ class Model_Group extends Model_Base
                                                 : gettype($value))
                                     . ')');
             }
+
+            // Direct set, no further filtering or validation
+            $this->_data[$name] = $value;
+            break;
+
+        default:
+            parent::__set($name, $value);
             break;
         }
 
-        parent::__set($name, $value);
+        return $this;
     }
 
     public function __get($name)

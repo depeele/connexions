@@ -86,7 +86,6 @@ class TagTest extends BaseTestCase
 
         $filter = $tag->getFilter();
 
-        //$this->assertType('Model_Filter_Tag', $filter);
-        $this->assertNotEquals(Connexions_Model::NO_INSTANCE, $filter);
+        $this->assertType('Model_Filter_Tag', $filter);
     }
 }

@@ -7,7 +7,8 @@
 
 class Model_Item extends Model_Base
 {
-    //protected   $_mapper    = 'Model_Mapper_Item';
+    /* inferred via classname
+    protected   $_mapper    = 'Model_Mapper_Item'; */
 
     // The data for this Model
     protected   $_data      = array(
