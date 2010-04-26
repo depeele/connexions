@@ -10,7 +10,8 @@ class Model_UserAuth extends Model_Base
     const   AUTH_PASSWORD   = 'password';
     const   AUTH_PKI        = 'pki';
 
-    //protected   $_mapper    = 'Model_Mapper_UserAuth';
+    /* inferred via classname
+    protected   $_mapper    = 'Model_Mapper_UserAuth'; */
 
     // The data for this Model
     protected   $_data      = array(

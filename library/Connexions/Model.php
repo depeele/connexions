@@ -217,8 +217,11 @@ abstract class Connexions_Model
                 // Set the entire Model to "invalid"
                 $this->setIsValid(false);
 
-                Connexions::log("Connexions_Model::__set(%s, %s): INVALID",
-                                $name, $value);
+                Connexions::log("Connexions_Model::__set(%s, %s): INVALID[%s]",
+                                $name, $value,
+                                ($this->_valid[$name] === false
+                                    ? 'false'
+                                    : 'true??'));
                 return $this;
 
                 /*
@@ -334,10 +337,10 @@ abstract class Connexions_Model
         {
             /* Use the name of the current class to construct a Mapper
              * class name:
-             *      (.*Model)_<Class> => (.*Model)_Mapper_<Class>
+             *      Model_<Class> => Model_Mapper_<Class>
              */
-            $mapper = preg_replace('/(.*?Model)_(.*?)/',
-                                    '$1_Mapper_$2', get_class($this));
+            $mapper = str_replace('Model_', 'Model_Mapper_',
+                                  get_class($this));
 
             /*
             Connexions::log("Connexions_Model::setMapper(%s)",
@@ -385,10 +388,10 @@ abstract class Connexions_Model
         {
             /* Use the name of the current class to construct a Filter
              * class name:
-             *      (.*Model)_<Class> => (.*Model)_Filter_<Class>
+             *      Model_<Class> => Model_Filter_<Class>
              */
-            $filter = preg_replace('/(.*?Model)_(.*?)/',
-                                   '$1_Filter_$2', get_class($this));
+            $filter = str_replace('Model_', 'Model_Filter_',
+                                  get_class($this));
         }
 
         /* Invoke the filterFactory.  If 'filter' is an incoming Filter 

@@ -7,7 +7,8 @@
 class Model_Tag extends Model_Base
                 implements  Zend_Tag_Taggable
 {
-    //protected   $_mapper    = 'Model_Mapper_Tag';
+    /* inferred via classname
+    protected   $_mapper    = 'Model_Mapper_Tag'; */
 
     // The data for this Model
     protected   $_data      = array(
@@ -45,19 +46,6 @@ class Model_Tag extends Model_Base
      * Connexions_Model overrides
      *
      */
-
-    public function __set($name, $value)
-    {
-        switch ($name)
-        {
-        case 'tag':
-            // Normalize the tag name
-            $value = strtolower($value);
-            break;
-        }
-
-        return parent::__set($name, $value);
-    }
 
     /** @brief  Return a string representation of this instance.
      *

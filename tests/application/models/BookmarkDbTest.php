@@ -143,10 +143,11 @@ class BookmarkDbTest extends DbTestCase
     public function testBookmarkRetrieveById1()
     {
         $expected  = $this->_bookmark1;
-        $expected['user'] = $this->_user1;
-        $expected['item'] = $this->_item1;
-        $expected['tags'] = $this->_tags1;
-
+        $expected['user']       = $this->_user1;
+        $expected['item']       = $this->_item1;
+        $expected['tags']       = $this->_tags1;
+        $expected['isFavorite'] = ($expected['isFavorite'] ? 1 : 0);
+        $expected['isPrivate']  = ($expected['isPrivate']  ? 1 : 0);
 
         $mapper   = new Model_Mapper_Bookmark( );
         $bookmark = $mapper->find( array( $expected['user']['userId'],

@@ -2,11 +2,27 @@
 require_once TESTS_PATH .'/application/BaseTestCase.php';
 require_once APPLICATION_PATH .'/models/Bookmark.php';
 
-class BookmarkTest extends BaseTestCase
+class BookmarkFilterTest extends BaseTestCase
 {
-    protected function _doTest($data)
+    protected function _getParsed($filter)
     {
-        $filter  = new Model_Filter_Bookmark($data);
+        $data = array(
+            'userId'      => $filter->getUnescaped('userId'),
+            'itemId'      => $filter->getUnescaped('itemId'),
+            'name'        => $filter->getUnescaped('name'),
+            'description' => $filter->getUnescaped('description'),
+            'rating'      => $filter->getUnescaped('rating'),
+            'isFavorite'  => $filter->getUnescaped('isFavorite'),
+            'isPrivate'   => $filter->getUnescaped('isPrivate'),
+            'taggedOn'    => $filter->getUnescaped('taggedOn'),
+            'updatedOn'   => $filter->getUnescaped('updatedOn'),
+        );
+
+        return $data;
+    }
+
+    protected function _outputInfo($filter, $data)
+    {
         $errors  = $filter->getErrors();
         echo "Errors:\n";
         print_r($errors);
@@ -16,25 +32,14 @@ class BookmarkTest extends BaseTestCase
         print_r($invalid);
 
         $missing = $filter->getMissing();
-        echo "Mmissing:\n";
+        echo "Missing:\n";
         print_r($missing);
 
         $unknown = $filter->getUnknown();
         echo "Unknowns:\n";
         print_r($unknown);
 
-        $parsed = array(
-            'userId'        => $filter->getUnescaped('userId'),
-            'itemId'        => $filter->getUnescaped('itemId'),
-
-            'name'          => $filter->getUnescaped('name'),
-            'description'   => $filter->getUnescaped('description'),
-            'rating'        => $filter->getUnescaped('rating'),
-            'isFavorite'    => $filter->getUnescaped('isFavorite'),
-            'isPrivate'     => $filter->getUnescaped('isPrivate'),
-            'taggedOn'      => $filter->getUnescaped('taggedOn'),
-            'updatedOn'     => $filter->getUnescaped('updatedOn'),
-        );
+        $parsed = $this->_getParsed($filter);
         echo "Parsed Data:\n";
         print_r($parsed);
 
@@ -43,7 +48,7 @@ class BookmarkTest extends BaseTestCase
 
     public function testBookmarkFilter1()
     {
-        $data   = array(
+        $data       = array(
             'userId'        => 1,
             'itemId'        => 2,
 
@@ -55,8 +60,22 @@ class BookmarkTest extends BaseTestCase
             'taggedOn'      => date('Y.m.d H:i:s'),
             'updatedOn'     => date('Y.m.d H:i:s'),
         );
+        $expected               = $data;
+        $expected['isFavorite'] = ($expected['isFavorite'] ? 1 : 0);
+        $expected['isPrivate']  = ($expected['isPrivate']  ? 1 : 0);
 
-        $this->_doTest($data);
+        $filter  = new Model_Filter_Bookmark($data);
+
+        $this->assertFalse( $filter->hasInvalid() );
+        $this->assertFalse( $filter->hasMissing() );
+        $this->assertFalse( $filter->hasUnknown() );
+
+        $this->assertTrue ( $filter->hasValid() );
+        $this->assertTrue ( $filter->isValid()  );
+
+        $this->assertEquals($expected, $this->_getParsed($filter));
+
+        //$this->_outputInfo($filter, $data);
     }
 
     public function testBookmarkFilter2()
@@ -73,13 +92,30 @@ class BookmarkTest extends BaseTestCase
             'taggedOn'      => date('Y.m.d H:i:s'),
             'updatedOn'     => date('Y.m.d H:i:s'),
         );
+        $expected                = $data;
+        $expected['description'] = trim(
+                                    strip_tags($expected['description']));
+        $expected['isFavorite']  = 1;
+        $expected['isPrivate']   = 0;
 
-        $this->_doTest($data);
+        $filter  = new Model_Filter_Bookmark($data);
+
+        $this->assertFalse( $filter->hasInvalid() );
+        $this->assertFalse( $filter->hasMissing() );
+        $this->assertFalse( $filter->hasUnknown() );
+
+        $this->assertTrue ( $filter->hasValid() );
+        $this->assertTrue ( $filter->isValid()  );
+
+        $this->assertEquals($expected, $this->_getParsed($filter));
+
+        //$this->_outputInfo($filter, $data);
     }
 
     public function testBookmarkFilterMissingUserId()
     {
         $data   = array(
+            // Missing 'userId'
             'itemId'        => 2,
 
             'name'          => 'Test Bookmark Name',
@@ -91,13 +127,23 @@ class BookmarkTest extends BaseTestCase
             'updatedOn'     => date('Y.m.d H:i:s'),
         );
 
-        $this->_doTest($data);
+        $filter  = new Model_Filter_Bookmark($data);
+
+        $this->assertFalse( $filter->hasInvalid() );
+        $this->assertTrue ( $filter->hasMissing() );
+        $this->assertFalse( $filter->hasUnknown() );
+
+        $this->assertTrue ( $filter->hasValid() );
+        $this->assertFalse( $filter->isValid()  );
+
+        //$this->_outputInfo($filter, $data);
     }
 
     public function testBookmarkFilterMissingItemId()
     {
         $data   = array(
             'userId'        => 1,
+            // Missing itemId
 
             'name'          => 'Test Bookmark Name',
             'description'   => '<p>Test Bookmark <i>Description</i></p>   ',
@@ -108,7 +154,16 @@ class BookmarkTest extends BaseTestCase
             'updatedOn'     => date('Y.m.d H:i:s'),
         );
 
-        $this->_doTest($data);
+        $filter  = new Model_Filter_Bookmark($data);
+
+        $this->assertFalse( $filter->hasInvalid() );
+        $this->assertTrue ( $filter->hasMissing() );
+        $this->assertFalse( $filter->hasUnknown() );
+
+        $this->assertTrue ( $filter->hasValid() );
+        $this->assertFalse( $filter->isValid()  );
+
+        //$this->_outputInfo($filter, $data);
     }
 
     public function testBookmarkFilterNameTooShort()
@@ -117,6 +172,7 @@ class BookmarkTest extends BaseTestCase
             'userId'        => 1,
             'itemId'        => 2,
 
+            // Name too short
             'name'          => 'T',
             'description'   => '<p>Test Bookmark <i>Description</i></p>   ',
             'rating'        => 3,
@@ -126,7 +182,16 @@ class BookmarkTest extends BaseTestCase
             'updatedOn'     => date('Y.m.d H:i:s'),
         );
 
-        $this->_doTest($data);
+        $filter  = new Model_Filter_Bookmark($data);
+
+        $this->assertTrue ( $filter->hasInvalid() );
+        $this->assertFalse( $filter->hasMissing() );
+        $this->assertFalse( $filter->hasUnknown() );
+
+        $this->assertTrue ( $filter->hasValid() );
+        $this->assertFalse( $filter->isValid()  );
+
+        //$this->_outputInfo($filter, $data);
     }
 
     public function testBookmarkFilterNameTooLong()
@@ -135,6 +200,7 @@ class BookmarkTest extends BaseTestCase
             'userId'        => 1,
             'itemId'        => 2,
 
+            // Name too long
             'name'          => 'Test Bookmark Name-'. str_repeat('.', 255),
             'description'   => '<p>Test Bookmark <i>Description</i></p>   ',
             'rating'        => 3,
@@ -144,7 +210,16 @@ class BookmarkTest extends BaseTestCase
             'updatedOn'     => date('Y.m.d H:i:s'),
         );
 
-        $this->_doTest($data);
+        $filter  = new Model_Filter_Bookmark($data);
+
+        $this->assertTrue ( $filter->hasInvalid() );
+        $this->assertFalse( $filter->hasMissing() );
+        $this->assertFalse( $filter->hasUnknown() );
+
+        $this->assertTrue ( $filter->hasValid() );
+        $this->assertFalse( $filter->isValid()  );
+
+        //$this->_outputInfo($filter, $data);
     }
 
     public function testBookmarkFilterRatingTooLow()
@@ -155,6 +230,7 @@ class BookmarkTest extends BaseTestCase
 
             'name'          => 'Test Bookmark Name',
             'description'   => '<p>Test Bookmark <i>Description</i></p>   ',
+            // Invalid rating - not between 0 and 5
             'rating'        => -1,
             'isFavorite'    => 'yes',
             'isPrivate'     => 'no',
@@ -162,7 +238,16 @@ class BookmarkTest extends BaseTestCase
             'updatedOn'     => date('Y.m.d H:i:s'),
         );
 
-        $this->_doTest($data);
+        $filter  = new Model_Filter_Bookmark($data);
+
+        $this->assertTrue ( $filter->hasInvalid() );
+        $this->assertFalse( $filter->hasMissing() );
+        $this->assertFalse( $filter->hasUnknown() );
+
+        $this->assertTrue ( $filter->hasValid() );
+        $this->assertFalse( $filter->isValid()  );
+
+        //$this->_outputInfo($filter, $data);
     }
 
     public function testBookmarkFilterRatingTooHigh()
@@ -173,6 +258,7 @@ class BookmarkTest extends BaseTestCase
 
             'name'          => 'Test Bookmark Name',
             'description'   => '<p>Test Bookmark <i>Description</i></p>   ',
+            // Invalid rating - not between 0 and 5
             'rating'        => 10,
             'isFavorite'    => 'yes',
             'isPrivate'     => 'no',
@@ -180,7 +266,16 @@ class BookmarkTest extends BaseTestCase
             'updatedOn'     => date('Y.m.d H:i:s'),
         );
 
-        $this->_doTest($data);
+        $filter  = new Model_Filter_Bookmark($data);
+
+        $this->assertTrue ( $filter->hasInvalid() );
+        $this->assertFalse( $filter->hasMissing() );
+        $this->assertFalse( $filter->hasUnknown() );
+
+        $this->assertTrue ( $filter->hasValid() );
+        $this->assertFalse( $filter->isValid()  );
+
+        //$this->_outputInfo($filter, $data);
     }
 
     public function testBookmarkFilterisFavorite2()
@@ -197,7 +292,22 @@ class BookmarkTest extends BaseTestCase
             'taggedOn'      => date('Y.m.d H:i:s'),
             'updatedOn'     => date('Y.m.d H:i:s'),
         );
+        $expected                = $data;
+        $expected['description'] = trim(
+                                    strip_tags($expected['description']));
+        $expected['isFavorite']  = 1;
+        $expected['isPrivate']   = 0;
 
-        $this->_doTest($data);
+        $filter  = new Model_Filter_Bookmark($data);
+
+        $this->assertFalse( $filter->hasInvalid() );
+        $this->assertFalse( $filter->hasMissing() );
+        $this->assertFalse( $filter->hasUnknown() );
+
+        $this->assertTrue ( $filter->hasValid() );
+        $this->assertTrue ( $filter->isValid()  );
+
+        $this->assertEquals($expected, $this->_getParsed($filter));
+        //$this->_outputInfo($filter, $data);
     }
 }

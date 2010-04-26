@@ -22,21 +22,20 @@ class BookmarkTest extends BaseTestCase
     {
         $expected   = $this->_bookmark1;
         $expected['rating']     = 4;
-        $expected['isFavorite'] = true;
-        $expected['isPrivate']  = false;
+        $expected['isFavorite'] = ($expected['isFavorite'] ? 1 : 0);
+        $expected['isPrivate']  = ($expected['isPrivate']  ? 1 : 0);
         $expected['taggedOn']   = '2010.04.15 12:37:00';
 
-        $data       = array(
+        $bookmark = new Model_Bookmark( array(
             'name'        => $expected['name'],
-            'description' => $expected['description']
-        );
+            'description' => $expected['description'],
+        ));
 
-        $bookmark = new Model_Bookmark( $data );
 
         // Make sure we can change properties
         $bookmark->rating     = $expected['rating'];
-        $bookmark->isFavorite = $expected['isFavorite'];
-        $bookmark->isPrivate  = $expected['isPrivate'];
+        $bookmark->isFavorite = ($expected['isFavorite'] ? 'yes' : false);
+        $bookmark->isPrivate  = ($expected['isPrivate']  ? true : false);
         $bookmark->taggedOn   = $expected['taggedOn'];
 
         $this->assertFalse( $bookmark->isBacked() );
@@ -91,7 +90,6 @@ class BookmarkTest extends BaseTestCase
 
         $filter = $bookmark->getFilter();
 
-        //$this->assertType('Model_Filter_Bookmark', $filter);
-        $this->assertEquals(Connexions_Model::NO_INSTANCE, $filter);
+        $this->assertType('Model_Filter_Bookmark', $filter);
     }
 }

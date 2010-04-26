@@ -3,10 +3,11 @@
  *
  *  The concrete base class providing access to Model_User.
  */
-class Model_Service_User extends Connexions_Model_Service
+class Service_User extends Connexions_Service
 {
+    /* inferred via classname
     protected   $_modelName = 'Model_User';
-    protected   $_mapper    = 'Model_Mapper_User';
+    protected   $_mapper    = 'Model_Mapper_User'; */
 
     /** @brief  Given a user identifier and/or credential, attempt to
      *          authenticate the identified user.

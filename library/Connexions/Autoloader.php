@@ -12,13 +12,16 @@ defined('APPLICATION_LIBRARY_PATH')
 defined('APPLICATION_MODEL_PATH')
     || define('APPLICATION_MODEL_PATH',
               realpath(APPLICATION_PATH . '/models'));
+defined('APPLICATION_SERVICE_PATH')
+    || define('APPLICATION_SERVICE_PATH',
+              realpath(APPLICATION_PATH . '/services'));
 defined('APPLICATION_VIEW_HELPER_PATH')
     || define('APPLICATION_VIEW_HELPER_PATH',
               realpath(APPLICATION_PATH . '/views/helpers'));
 
 /** @brief  This is the primary autoloader for Connexions.  It is capable of
- *          handling the 'Zend_', 'ZendX_', 'Connexions_', and 'Model_'
- *          namespaces.
+ *          handling the 'Zend_', 'ZendX_', 'Connexions_', 'Model_', and
+ *          'Service_' namespaces.
  *
  *
  *  This Autoloader is currently installed via:
@@ -33,11 +36,14 @@ class Connexions_Autoloader implements Zend_Loader_Autoloader_Interface
                 'Connexions_'   => array('path' => APPLICATION_LIBRARY_PATH),
                 'Model_'        => array('path' => APPLICATION_MODEL_PATH,
                                          'shift'=> 1),
+                'Service_'      => array('path' => APPLICATION_SERVICE_PATH,
+                                         'shift'=> 1),
                 /* Force the Zend_Loader to call us for any class that has
                  * no prefix -- we could use this to remove any prefix from our
                  *              model classes.
                  */
-                ''              => array('path' => APPLICATION_MODEL_PATH)
+                ''              => array('path' => APPLICATION_PATH,
+                                         'shift'=> 1),
     );
 
     /** @brief  Constructor

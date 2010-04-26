@@ -7,7 +7,8 @@
 
 class Model_Bookmark extends Model_Base
 {
-    //protected   $_mapper    = 'Model_BookmarkMapper';
+    /* inferred via classname
+    protected   $_mapper    = 'Model_Mapper_Bookmark'; */
 
     // The data for this Model
     protected   $_data      = array(
@@ -79,6 +80,9 @@ class Model_Bookmark extends Model_Base
                                                 : gettype($value))
                                     . ')');
             }
+
+            // Direct set, no further filtering nor validation
+            $this->_data[$name] = $value;
             break;
 
         case 'item':
@@ -92,22 +96,33 @@ class Model_Bookmark extends Model_Base
                                                 : gettype($value))
                                     . ')');
             }
+
+            // Direct set, no further filtering nor validation
+            $this->_data[$name] = $value;
             break;
 
         case 'tags':
             if ( (  $value !== null )             &&
                  (! $value instanceof Connexions_Model_Set) )
             {
-                throw new Exception('Tags must be a Connexons_Model_Set or null '
+                throw new Exception('Tags must be a Connexons_Model_Set '
+                                    . 'or null '
                                     . '('. (is_object($value)
                                                 ? get_class($value)
                                                 : gettype($value))
                                     . ')');
             }
+
+            // Direct set, no further filtering nor validation
+            $this->_data[$name] = $value;
+            break;
+
+        default:
+            parent::__set($name, $value);
             break;
         }
 
-        parent::__set($name, $value);
+        return $this;
     }
 
     public function __get($name)

@@ -9,7 +9,8 @@ class Model_User extends Model_Base
                     implements  Zend_Tag_Taggable,
                                 Zend_Auth_Adapter_Interface
 {
-    //protected   $_mapper    = 'Model_Mapper_User';
+    /* inferred via classname
+    protected   $_mapper    = 'Model_Mapper_User'; */
 
     // The data for this Model
     protected   $_data      = array(

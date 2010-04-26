@@ -46,10 +46,10 @@ abstract class Connexions_Model_Mapper_DbTable
         {
             /* Use the name of the current class to construct a Data Accessor
              * class name:
-             *      (.*Model)_Mapper_<Class> => (.*Model)_DbTable_<Class>
+             *      Model_Mapper_<Class> => Model_DbTable_<Class>
              */
-            $accessor = preg_replace('/(.*?Model)_Mapper_(.*?)/',
-                                     '$1_DbTable_$2', get_class($this));
+            $accessor = str_replace('Model_Mapper_', 'Model_DbTable_',
+                                    get_class($this));
 
             /*
             Connexions::log("Connexions_Model_Mapper_DbTable[%s]::"
@@ -102,10 +102,10 @@ abstract class Connexions_Model_Mapper_DbTable
         {
             /* Use the name of the current class to construct a Domain Model
              * class name:
-             *      (.*Model)_Mapper_<Class> => (.*Model)_<Class>
+             *      Model_Mapper_<Class> => Model_<Class>
              */
-            $this->_modelName = preg_replace('/(.*?Model)_Mapper_(.*?)/',
-                                             '$1_$2', get_class($this));
+            $this->_modelName = str_replace('Model_Mapper_', 'Model_',
+                                            get_class($this));
         }
 
         return $this->_modelName;

@@ -10,7 +10,12 @@ class Model_Filter_Tag extends Connexions_Model_Filter
 
     protected $_filterRules     = array(
         'tagId'         => array('int'),
-        'tag'           => array('stripTags', 'stringTrim',
+        'tag'           => array('stripTags', 'stringTrim', 'stringToLower',
+                                 // Collapse white-space
+                                 array('pregReplace',
+                                       'match'  => '/\s+/',
+                                       'replace'=> ' '),
+                                 // Remove invalid characters
                                  array('pregReplace',
                                        'match'  => self::INVALID_TAG_REGEX,
                                        'replace'=> ''),
