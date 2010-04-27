@@ -51,6 +51,12 @@ class Model_Item extends Model_Base
      *
      */
 
+    /** @brief  Set the value of the given field.
+     *  @param  name    The field name.
+     *  @param  value   The new value.
+     *
+     *  @return $this for a fluent interface.
+     */
     public function __set($name, $value)
     {
         switch ($name)

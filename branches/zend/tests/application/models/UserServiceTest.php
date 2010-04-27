@@ -6,7 +6,7 @@ class UserServiceTest extends DbTestCase
 {
     protected   $_service   = null;
     private     $_user0 = array(
-            'userId'        => null,
+            'userId'        => 0,
             'name'          => 'User0',
             'fullName'      => 'Visitor',
             'email'         => null,
@@ -75,9 +75,6 @@ class UserServiceTest extends DbTestCase
             'fullName'    => $expected['fullName'],
         ));
 
-        // apiKey is dynamically generated
-        $expected['apiKey'] = $user->apiKey;
-
         $this->assertTrue( $user instanceof Model_User );
 
         // Make sure we can change properties
@@ -86,13 +83,49 @@ class UserServiceTest extends DbTestCase
         $user->profile    = $expected['profile'];
 
         $this->assertTrue( ! $user->isBacked() );
-        $this->assertTrue( ! $user->isValid() );
+        $this->assertTrue(   $user->isValid() );
         $this->assertTrue( ! $user->isAuthenticated() );
 
+        // apiKey and lastVisit are dynamically generated
+        $expected['apiKey']    = $user->apiKey;
+        $expected['lastVisit'] = $user->lastVisit;
+
+        $this->assertEquals($user->getValidationMessages(), array() );
         $this->assertEquals($expected,
                             $user->toArray( Connexions_Model::DEPTH_SHALLOW,
                                             Connexions_Model::FIELDS_ALL ));
     }
+
+    public function testUserServiceConstructorInjectionOfPropertiesFiltered()
+    {
+        $expected = $this->_user0;
+
+        $user     = $this->_service->create( $data = array(
+            'name'        => $expected['name'],
+            'fullName'    => $expected['fullName'],
+            'email'       => $expected['email'],
+            'pictureUrl'  => $expected['pictureUrl'],
+            'profile'     => $expected['profile'],
+            'isValid'     => true,
+            'isBacked'    => true,
+        ));
+
+        $this->assertTrue( $user instanceof Model_User );
+
+        $this->assertTrue( ! $user->isBacked() );
+        $this->assertTrue(   $user->isValid() );
+        $this->assertTrue( ! $user->isAuthenticated() );
+
+        // apiKey and lastVisit are dynamically generated
+        $expected['apiKey']    = $user->apiKey;
+        $expected['lastVisit'] = $user->lastVisit;
+
+        $this->assertEquals($user->getValidationMessages(), array() );
+        $this->assertEquals($expected,
+                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
+                                            Connexions_Model::FIELDS_ALL ));
+    }
+
 
     /*************************************************************************
      * Single Instance retrieval tests
@@ -224,8 +257,9 @@ class UserServiceTest extends DbTestCase
         $user       = $this->_service->authenticate( $expected['name'],
                                                      $credential );
 
-        // apiKey is dynamically generated
-        $expected['apiKey'] = $user->apiKey;
+        // apiKey and lastVisit are dynamically generated
+        $expected['apiKey']    = $user->apiKey;
+        $expected['lastVisit'] = $user->lastVisit;
 
         $this->assertFalse ( $user->isAuthenticated() );
         $this->assertEquals($expected,

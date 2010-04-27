@@ -47,6 +47,11 @@ class Model_UserAuth extends Model_Base
      *
      */
 
+    /** @brief  Get a value of the given field.
+     *  @param  name    The field name.
+     *
+     *  @return The field value (null if invalid).
+     */
     public function __get($name)
     {
         switch ($name)
@@ -58,6 +63,12 @@ class Model_UserAuth extends Model_Base
         return $val;
     }
 
+    /** @brief  Set the value of the given field.
+     *  @param  name    The field name.
+     *  @param  value   The new value.
+     *
+     *  @return $this for a fluent interface.
+     */
     public function __set($name, $value)
     {
         switch ($name)

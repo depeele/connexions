@@ -41,30 +41,6 @@ class Model_User extends Model_Base
     protected   $_credential        = null;
     protected   $_isAuthenticated   = false;
 
-    /** @brief  Given incoming record data, populate this model instance.
-     *  @param  data    Incoming key/value record data.
-     *
-     *  @return $this for a fluent interface.
-     */
-    public function populate($data)
-    {
-        parent::populate($data);
-
-        if (empty($this->_data['apiKey']))
-        {
-            // Generate an API key
-            $apiKey = $this->genApiKey();
-
-            $this->__set('apiKey', $apiKey);
-
-            /*
-            Connexions::log("Model_User::populate(): generate API key "
-                            .   "[ %s ] [ %s ]",
-                            $this->apiKey, $apiKey);
-            // */
-        }
-    }
-
     /*************************************************************************
      * Connexions_Model abstract method implementations
      *
@@ -99,6 +75,47 @@ class Model_User extends Model_Base
      *
      */
 
+    /** @brief  Given incoming record data, populate this model instance.
+     *  @param  data    Incoming key/value record data.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function populate($data)
+    {
+        if (empty($data['apiKey']))
+        {
+            // Generate an API key
+            $data['apiKey'] = $this->genApiKey();
+        }
+
+        if (empty($data['lastVisit']))
+        {
+            // Initialize the last visit date to NOW.
+            $data['lastVisit'] = date('Y-m-d H:i:s');
+        }
+
+        parent::populate($data);
+    }
+
+    /** @brief  Save this instancne.
+     *
+     *  Override to update 'lastVisit'
+     *
+     *  @return The (updated) instance.
+     */
+    public function save()
+    {
+        // On save, modify 'lastVisit' to NOW.
+        $this->lastVisit = date('Y-m-d H:i:s');
+
+        return parent::save();
+    }
+
+    /** @brief  Get a value of the given field.
+     *  @param  name    The field name.
+     *
+     *  @return The field value (null if invalid).
+     */
     public function __get($name)
     {
         switch ($name)
@@ -114,6 +131,12 @@ class Model_User extends Model_Base
         return $val;
     }
 
+    /** @brief  Set the value of the given field.
+     *  @param  name    The field name.
+     *  @param  value   The new value.
+     *
+     *  @return $this for a fluent interface.
+     */
     public function __set($name, $value)
     {
         switch ($name)
@@ -290,7 +313,7 @@ class Model_User extends Model_Base
         {
             // 1b) Locate a valid, backed user...
             $mapper = $this->getMapper();
-            if ($this->userId !== null)
+            if ($this->userId > 0)
             {
                 $user = $mapper->find( $this->userId );
             }

@@ -46,6 +46,12 @@ abstract class Connexions_Model
      */
     protected           $_isValid   = false;
 
+    /** @brief  A flag allowing populate() to influence _set() so we can use
+     *          __set() but still delay validation until populate() is
+     *          complete.
+     */
+    protected           $_delayValidation   = false;
+
     /*************************************************************************/
 
     /** @brief  Create a new Domain Model instance.
@@ -146,6 +152,7 @@ abstract class Connexions_Model
                                 . "data MUST be an array or object");
         }
 
+        $this->_delayValidation = true;
         foreach ($data as $key => $val)
         {
             /*
@@ -158,6 +165,10 @@ abstract class Connexions_Model
 
             $this->__set($key, $val);
         }
+        $this->_delayValidation = false;
+
+        // Perform full validation of the populated data
+        $this->validate();
 
         return $this;
     }
@@ -183,62 +194,8 @@ abstract class Connexions_Model
      */
     public function __set($name, $value)
     {
-        if (! array_key_exists($name, $this->_data))
-        {
-            /*
-            Connexions::log("Connexions_Model[%s]::__set(%s, %s): "
-                            . "Invalid property",
-                            get_class($this),
-                            $name,
-                            (is_object($value)
-                                ? get_class($value)
-                                : Connexions::varExport($value)) );
-            // */
-
-            throw new Exception("Connexions_Model::__set(): "
-                                . "Invalid property '{$name}'");
-        }
-
-        /*
-        Connexions::log("Connexions_Model::__set(%s, %s)",
-                        $name, $value);
-        // */
-
-        // Validate the incoming value
-        $filter = $this->getFilter();
-        if ( is_object($filter) )
-        {
-            $data = $this->_data; $data[$name] = $value;
-            $filter->setData( $data );
-            $this->_valid[$name] = $filter->isValid($name);
-
-            if (! $this->_valid[$name])
-            {
-                // Set the entire Model to "invalid"
-                $this->setIsValid(false);
-
-                Connexions::log("Connexions_Model::__set(%s, %s): INVALID[%s]",
-                                $name, $value,
-                                ($this->_valid[$name] === false
-                                    ? 'false'
-                                    : 'true??'));
-                return $this;
-
-                /*
-                throw new Exception("Connexions_Model::__set(): "
-                                    . "Invalid value for '{$name}': "
-                                    . Connexions::varExport(
-                                                $filter->getMessages()) );
-                */
-            }
-
-            $value = $filter->getUnescaped($name);
-        }
-
-        // Assign the new value
-        $this->_data[$name] = $value;
-                    
-        return $this;
+        return $this->_set($name, $value,
+                           ($this->_delayValidation ? false : true));
     }
 
     /** @brief  Is the given field set?
@@ -454,6 +411,12 @@ abstract class Connexions_Model
     {
         $this->_isValid = (bool)$value;
 
+        $this->_valid   = array();
+        foreach ($this->_data as $fieldName => $fieldValue)
+        {
+            $this->_valid[$fieldName] = $value;
+        }
+
         return $this;
     }
 
@@ -463,19 +426,100 @@ abstract class Connexions_Model
      */
     public function isValid()
     {
-        if ($this->_isValid !== true)
-        {
-            // Attempt to validate the data of this Model.
-            $filter = $this->getFilter();
-            if ( is_object($filter) )
-            {
-                $filter->setData( $this->_data );
+        return $this->_isValid;
+    }
 
-                $this->_isValid = $filter->isValid();
+    /** @brief  Perform validation over the current model data.
+     *
+     *  Note: This will also update '_data' to contain only valid data and
+     *        update the parallel   '_valid' array to indicate which fields
+     *        are valid (true) and which are not ( validation array or unset ).
+     *
+     *  @return true (valid) or false (invalid).
+     */
+    public function validate()
+    {
+        $filter = $this->getFilter();
+        if ( is_object($filter) )
+        {
+            $filter->setData( $this->_data );
+
+            // Reset the validation status based upon the filter
+            $this->setIsValid( $filter->isValid() );
+
+            /* Now, '_data' MAY have fields that are considered 'unknown' by
+             * the filter.  If so, the filter will call the data 'invalid'.
+             *
+             * Retrieve validation information for all fields.  If there
+             * are no fields marked 'invalid' call the model valid.
+             */
+            $messages = $filter->getMessages();
+
+            $this->_isValid = true;
+            foreach ($this->_data as $fieldName => $value)
+            {
+                if ($filter->isValid($fieldName))
+                {
+                    $this->_valid[$fieldName] = true;
+                    $this->_data[$fieldName]  =
+                        $filter->getUnescaped($fieldName);
+                }
+                else if (array_key_exists($fieldName, $messages))
+                {
+                    $this->_valid[$fieldName] = $messages[$fieldName];
+                    $this->_isValid = false;
+                }
+                else
+                {
+                    // There are no validation messages for this field
+                    // so it is likely an "unknown" field.  Remove any
+                    // validity information about it.
+                    unset($this->_valid[$fieldName]);
+                }
             }
+
+            /*
+            Connexions::log("Connexions_Model::validate(): "
+                            .   "%svalid [ %s ], _valid[ %s ]",
+                            ($this->_isValid ? '' : "NOT "),
+                            $this->debugDump(),
+                            Connexions::varExport($this->_valid));
+            // */
+
+            return $this->_isValid;
+        }
+        else
+        {
+            // No filter -- call it valid.
+            $this->setIsValid( true );
         }
 
-        return $this->_isValid;
+        return $this->isValid();
+    }
+
+    /** @brief  If isValid() returns false, there SHOULD BE validation messages
+     *          available indicating why the model is not valid.  These
+     *          messages may be retrieved using this method.
+     *
+     *  Note: Validation is performed during __set() for individual fields,
+     *        populate() after all fields have been set, or on demand via
+     *        validate() for the entire model.
+     *
+     *  @return An array of validation messages
+     *          (empty if there are no validation messages)
+     */
+    public function getValidationMessages()
+    {
+        $res    = array();
+        foreach ($this->_valid as $fieldName => $validation)
+        {
+            if ($validation === true)
+                continue;
+
+            $res[$fieldName] = $validation;
+        }
+
+        return $res;
     }
 
     /** @brief  Generate a string representation of this record.
@@ -498,11 +542,19 @@ abstract class Connexions_Model
             else if ($type === 'boolean')
                 $val = ($val ? 'true' : 'false');
 
-            $str .= sprintf (" %-15s == %-15s %s [ %s ]\n",
+            $str .= sprintf (" %-15s == %-15s %s [ %s ]%s\n",
                              $key, $type,
-                             ($this->_valid[$key] === false
-                                ? "!" : " "),
-                             $val);
+                             ($this->_valid[$key] !== true
+                                ? (isset($this->_valid[$key])
+                                    ? "!"
+                                    : "?")
+                                : " "),
+                             $val,
+                             ($this->_valid[$key] !== true
+                                ? (is_array($this->_valid[$key])
+                                    ? " : ". implode(', ', $this->_valid[$key])
+                                    : $this->_valid[$key])
+                                : ''));
         }
 
         $str .= "\n];";
@@ -549,6 +601,64 @@ abstract class Connexions_Model
 
 
     /*********************************************************************
+     * Protected methods
+     *
+     */
+
+    /** @brief  Set the value of the given field.
+     *  @param  name        The field name.
+     *  @param  value       The new value.
+     *  @param  validate    Should immediate validation be performed? [ true ]
+     *
+     *  @return $this for a fluent interface.
+     */
+    protected function _set($name, $value, $validate = true)
+    {
+        if (! array_key_exists($name, $this->_data))
+        {
+            /*
+            Connexions::log("Connexions_Model[%s]::__set(%s, %s): "
+                            . "Invalid property",
+                            get_class($this),
+                            $name,
+                            (is_object($value)
+                                ? get_class($value)
+                                : Connexions::varExport($value)) );
+            // */
+
+            throw new Exception("Connexions_Model::__set(): "
+                                . "Invalid property '{$name}'");
+        }
+
+        /*
+        Connexions::log("Connexions_Model::__set(%s, %s, %s)",
+                        $name, $value,
+                        ($validate === true ? 'true' : 'false'));
+        // */
+
+        if ($validate === true)
+        {
+            // Validate the incoming value
+            $this->_data[$name] = $value;
+            $this->validate();
+        }
+        else
+        {
+            // Simply assign the new value
+            $this->_data[$name] = $value;
+
+            /*
+            Connexions::log("Connexions_Model::__set(%s, %s, %s) "
+                            .   "-- skip validation",
+                            $name, $value,
+                            ($validate === true ? 'true' : 'false'));
+            // */
+        }
+                    
+        return $this;
+    }
+
+    /*********************************************************************
      * Static methods
      *
      */
@@ -587,7 +697,7 @@ abstract class Connexions_Model
                     @Zend_Loader_Autoloader::autoload($filterName);
                     $filter  = new $filterName();
 
-                    // /*
+                    /*
                     Connexions::log("Connexions_Model::filterFactory( %s ): "
                                     . "filter loaded",
                                     $filterName);

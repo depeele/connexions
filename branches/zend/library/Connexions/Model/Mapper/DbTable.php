@@ -131,7 +131,7 @@ abstract class Connexions_Model_Mapper_DbTable
         {
             // /*
             Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
-                            . "insert new model[ %s ]",
+                            . "EMPTY id, insert new model[ %s ]",
                             get_class($this),
                             Connexions::varExport($data));
             // */
@@ -139,6 +139,13 @@ abstract class Connexions_Model_Mapper_DbTable
             // Insert new record
             $id = $accessor->insert( $data );
             $operation = 'insert';
+
+            // /*
+            Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
+                            . "insert returned[ %s ]",
+                            get_class($this),
+                            Connexions::varExport($id));
+            // */
         }
         else
         {
@@ -158,7 +165,7 @@ abstract class Connexions_Model_Mapper_DbTable
 
         /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
-                        . "%s new model[ %s ]",
+                        . "%s 'new' model[ %s ]",
                         get_class($this),
                         $operation,
                         ($newModel
@@ -360,6 +367,44 @@ abstract class Connexions_Model_Mapper_DbTable
                         Connexions::varExport($where) );
 
         return $this->fetch($where, $order, $count, $offset);
+    }
+
+    /** @brief  Convert the incoming model into an array containing only 
+     *          data that should be directly persisted.  This method may also
+     *          be used to update dynamic values
+     *          (e.g. update date/time, last visit date/time).
+     *  @param  model   The Domain Model to reduce to an array.
+     *
+     *  @return A filtered associative array containing data that should 
+     *          be directly persisted.
+     */
+    public function reduceModel(Connexions_Model $model)
+    {
+        $data = parent::reduceModel($model);
+
+        Connexions::log("Connexions_Model_Mapper_DbTable::reduceModel(): "
+                        . "data[ %s ]",
+                        Connexions::varExport($data));
+
+        // For non-backed data, key values MUST be removed
+        if (! $model->isBacked())
+        {
+            $keyNames = (is_array($this->_keyName)
+                            ? $this->_keyName
+                            : array($this->_keyName));
+
+            Connexions::log("Connexions_Model_Mapper_DbTable::reduceModel(): "
+                            . "unset key values[ %s ]",
+                            Connexions::varExport($keyNames));
+
+            foreach ($keyNames as $keyName)
+            {
+                if (empty($data[$keyName]))
+                    unset($data[$keyName]);
+            }
+        }
+
+        return $data;
     }
 
     /** @brief  Create a new instance of the Domain Model given a raw record.

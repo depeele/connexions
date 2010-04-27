@@ -145,8 +145,10 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
 
         /* Ensure that the 'updatedOn' date is the current date
          * (i.e. the actual update date).
+         *
+         * Let Model_Bookmark::populate() handle this
+        $data['updatedOn'] = date('Y-m-d h:i:s');
          */
-        $data['updatedOn'] = date('Y-m-d h:i:00');
 
         return $data;
     }
@@ -363,8 +365,8 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
 
         /* Update item-related statistics:
          *    SELECT
-         *      COUNT(DISTINCT userId)                            AS userCount,
-         *      SUM(CASE WHEN rating > 0 THEN 1 ELSE 0 END)       AS ratingCount,
+         *      COUNT(DISTINCT userId)                           AS userCount,
+         *      SUM(CASE WHEN rating > 0 THEN 1 ELSE 0 END)      AS ratingCount,
          *      SUM(CASE rating WHEN null THEN 0 ELSE rating END) AS ratingSum
          *        FROM  userItem
          *        WHERE itemId=?;
@@ -375,7 +377,8 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
                         array('COUNT(DISTINCT userId)  AS userCount',
                               'SUM(CASE WHEN rating > 0 THEN 1 ELSE 0 END) '
                                 . 'AS ratingCount',
-                              'SUM(CASE rating WHEN null THEN 0 ELSE rating END) '
+                              'SUM(CASE rating WHEN null '
+                                .   'THEN 0 ELSE rating END) '
                                 . 'AS ratingSum') )
                ->where( 'itemId=?', $item->itemId );
 

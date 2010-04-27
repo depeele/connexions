@@ -12,8 +12,8 @@ class BookmarkTest extends BaseTestCase
             'name'          => 'New Bookmark',
             'description'   => 'This is a new bookmark',
             'rating'        => null,
-            'isFavorite'    => null,
-            'isPrivate'     => null,
+            'isFavorite'    => true,
+            'isPrivate'     => true,
             'taggedOn'      => null,
             'updatedOn'     => null,
     );
@@ -34,12 +34,17 @@ class BookmarkTest extends BaseTestCase
 
         // Make sure we can change properties
         $bookmark->rating     = $expected['rating'];
-        $bookmark->isFavorite = ($expected['isFavorite'] ? 'yes' : false);
-        $bookmark->isPrivate  = ($expected['isPrivate']  ? true : false);
+        $bookmark->isFavorite = ($expected['isFavorite'] ? 'yes'  : 'no');
+        $bookmark->isPrivate  = ($expected['isPrivate']  ? 'true' : 'false');
         $bookmark->taggedOn   = $expected['taggedOn'];
 
+        //printf ("Bookmark: [ %s ]\n", $bookmark->debugDump());
+
         $this->assertFalse( $bookmark->isBacked() );
-        $this->assertFalse( $bookmark->isValid() );
+        $this->assertTrue ( $bookmark->isValid() );
+
+        // updatedOn is dynamic
+        $expected['updatedOn'] = $bookmark->updatedOn;
 
         $this->assertEquals($expected,
                             $bookmark->toArray( Connexions_Model::DEPTH_SHALLOW,
@@ -49,21 +54,32 @@ class BookmarkTest extends BaseTestCase
     public function testBookmarkToArray()
     {
         $expected  = $this->_bookmark1;
+        $expected['rating']     = (int)$expected['rating'];
+        $expected['isFavorite'] = ($expected['isFavorite'] ? 1 : 0);
+        $expected['isPrivate']  = ($expected['isPrivate']  ? 1 : 0);
+
         $expected2 = $expected;
 
         $data     = array(
             'name'        => $expected['name'],
-            'description' => $expected['description']
+            'description' => $expected['description'],
+            'rating'      => $expected['rating'],
+            'isFavorite'  => $expected['isFavorite'],
+            'isPrivate'   => $expected['isPrivate'],
         );
 
         $bookmark = new Model_Bookmark( $data );
+
+        // 'updatedOn' is dynamic (as is 'taggedOn' if not provided).
+        $expected['updatedOn'] = $expected2['updatedOn'] = $bookmark->updatedOn;
+        $expected['taggedOn']  = $expected2['taggedOn']  = $bookmark->taggedOn;
 
         $this->assertEquals($expected,
                             $bookmark->toArray(Connexions_Model::DEPTH_SHALLOW,
                                                Connexions_Model::FIELDS_ALL ));
         $this->assertEquals($expected2,
-                            $bookmark->toArray(Connexions_Model::DEPTH_SHALLOW,
-                                               Connexions_Model::FIELDS_PUBLIC ));
+                           $bookmark->toArray(Connexions_Model::DEPTH_SHALLOW,
+                                              Connexions_Model::FIELDS_PUBLIC));
     }
 
     public function testBookmarkGetId()

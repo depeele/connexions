@@ -29,7 +29,7 @@ class GroupTest extends BaseTestCase
         $group->visibility   = $expected['visibility'];
 
         $this->assertTrue( ! $group->isBacked() );
-        $this->assertTrue( ! $group->isValid() );
+        $this->assertTrue(   $group->isValid() );
 
         $this->assertEquals($expected,
                             $group->toArray(Connexions_Model::DEPTH_SHALLOW,

@@ -61,6 +61,48 @@ class Model_Bookmark extends Model_Base
      *
      */
 
+    /** @brief  Given incoming record data, populate this model instance.
+     *  @param  data    Incoming key/value record data.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function populate($data)
+    {
+        if (empty($data['taggedOn']))
+        {
+            // Initialize the taggedOn visit date to NOW.
+            $data['taggedOn'] = date('Y-m-d H:i:s');
+        }
+
+        if (empty($data['updatedOn']))
+        {
+            // Initialize the updatedOn date to NOW.
+            $data['updatedOn'] = date('Y-m-d H:i:s');
+        }
+
+        parent::populate($data);
+    }
+
+    /** @brief  Save this instancne.
+     *
+     *  Override to update 'updatedOn'
+     *
+     *  @return The (updated) instance.
+     */
+    public function save()
+    {
+        // On save, modify 'updatedOn' to NOW.
+        $this->updatedOn = date('Y-m-d H:i:s');
+
+        return parent::save();
+    }
+
+    /** @brief  Set the value of the given field.
+     *  @param  name    The field name.
+     *  @param  value   The new value.
+     *
+     *  @return $this for a fluent interface.
+     */
     public function __set($name, $value)
     {
         /* Allow fields that reference an external model to be set to either
@@ -125,6 +167,11 @@ class Model_Bookmark extends Model_Base
         return $this;
     }
 
+    /** @brief  Get a value of the given field.
+     *  @param  name    The field name.
+     *
+     *  @return The field value (null if invalid).
+     */
     public function __get($name)
     {
         switch ($name)

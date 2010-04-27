@@ -284,18 +284,20 @@ class BookmarkDbTest extends DbTestCase
         $expected['rating']      = 2;
         $expected['isFavorite']  = 1;
         $expected['isPrivate']   = 0;
-        $expected['updatedOn']   = '2010-04-15 08:15:21';
 
         $mapper   = new Model_Mapper_Bookmark( );
         $bookmark = $mapper->find( array( $expected['user'],
                                           $expected['item']) );
+
+        //printf ("Bookmark: [ %s ]\n", $bookmark->debugDump());
 
         $bookmark->name        = $expected['name'];
         $bookmark->description = $expected['description'];
         $bookmark->rating      = $expected['rating'];
         $bookmark->isFavorite  = $expected['isFavorite'];
         $bookmark->isPrivate   = $expected['isPrivate'];
-        $bookmark->updatedOn   = $expected['updatedOn'];
+
+        //printf ("Bookmark: [ %s ]\n", $bookmark->debugDump());
 
         $this->assertTrue(  $bookmark->isBacked() );
         $this->assertTrue(  $bookmark->isValid() );
@@ -305,8 +307,9 @@ class BookmarkDbTest extends DbTestCase
 
         $bookmark = $bookmark->save();
 
-        // The 'updatedOn' value is dynamic (Model_Mapper_Bookmark)
-        $expected['updatedOn'] = date('Y-m-d h:i:00');
+        // bookmkark.updatedOn and user.lastVisit are dynamically updated
+        $expected['updatedOn']         = $bookmark->updatedOn;
+        //$expected['user']['lastVisit'] = $bookmark->user->lastVisit;
 
         $this->assertEquals($expected,
                             $bookmark->toArray( Connexions_Model::DEPTH_SHALLOW,
@@ -343,6 +346,9 @@ class BookmarkDbTest extends DbTestCase
         $et = $es->getTable('userItem');
         $et->setValue(0, 'updatedOn', $expected['updatedOn']);
 
+        $et = $es->getTable('user');
+        $et->setValue(0, 'lastVisit', $bookmark->user->lastVisit);
+
         $this->assertDataSetsEqual($es, $ds);
     }
 
@@ -351,6 +357,8 @@ class BookmarkDbTest extends DbTestCase
         $mapper   = new Model_Mapper_Bookmark( );
         $bookmark = $mapper->find( array( $this->_user1['userId'],
                                           $this->_item1['itemId']) );
+        $user     = $bookmark->user;
+
         $bookmark->delete();
 
         // Check the database consistency
@@ -374,10 +382,13 @@ class BookmarkDbTest extends DbTestCase
                                      .  ' FROM userTagItem'
                                      .  ' ORDER BY userId,itemId,tagId ASC');
 
-        $this->assertDataSetsEqual(
-            $this->createFlatXmlDataSet(
-                  dirname(__FILE__) .'/_files/bookmarkDeleteFullAssertion.xml'),
-            $ds);
+        // user.lastVisit is dynamic
+        $es = $this->createFlatXmlDataSet(
+                  dirname(__FILE__) .'/_files/bookmarkDeleteFullAssertion.xml');
+        $et = $es->getTable('user');
+        $et->setValue(0, 'lastVisit', $user->lastVisit);
+
+        $this->assertDataSetsEqual($es, $ds);
     }
 
     protected   $_newBookmark = array(
@@ -477,9 +488,6 @@ class BookmarkDbTest extends DbTestCase
 
         $bookmark = $bookmark->save();
 
-        // The 'updatedOn' value is dynamic (Model_Mapper_Bookmark)
-        $expected['updatedOn'] = date('Y-m-d h:i:00');
-
         /*
         Connexions::log("testBookmarkCreate: bookmark[ %s ]",
                         Connexions::varExport($bookmark->toArray()) );
@@ -509,11 +517,17 @@ class BookmarkDbTest extends DbTestCase
 
         // Modify 'updateOn' and 'taggedOn' in our expected set for the target
         // row since it's dynamic...
+        $expected['updatedOn'] = $bookmark->updatedOn;
+
         $es = $this->createFlatXmlDataSet(
                   dirname(__FILE__) .'/_files/bookmarkInsertFullAssertion.xml');
         $et = $es->getTable('userItem');
         $et->setValue(5, 'updatedOn', $expected['updatedOn']);
         $et->setValue(5, 'taggedOn',  $expected['taggedOn']);
+
+        // user.lastVisit is also dynamic
+        $et = $es->getTable('user');
+        $et->setValue(0, 'lastVisit', $bookmark->user->lastVisit);
 
         $this->assertDataSetsEqual($es, $ds);
 

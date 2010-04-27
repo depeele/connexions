@@ -15,7 +15,7 @@ class UserAuthTest extends BaseTestCase
         $userAuth = new Model_UserAuth( );
 
         $this->assertTrue( ! $userAuth->isBacked() );
-        $this->assertTrue( ! $userAuth->isValid() );
+        $this->assertTrue(   $userAuth->isValid() );
 
         $this->assertEquals($expected, $userAuth->toArray());
     }

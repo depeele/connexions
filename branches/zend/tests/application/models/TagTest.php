@@ -5,7 +5,7 @@ require_once APPLICATION_PATH .'/models/Tag.php';
 class TagTest extends BaseTestCase
 {
     protected $_tag1    = array(
-            'tagId'         => null,
+            'tagId'         => 0,
             'tag'           => 'tagname',
 
             'userItemCount' => 0,
