@@ -275,6 +275,8 @@ class UserAuthDbTest extends DbTestCase
 
         $this->assertEquals( $expected, $user->authenticate() );
         $this->assertTrue  ( $user->isAuthenticated() );
+        $this->assertTrue  ( $user->isBacked() );
+        $this->assertTrue  ( $user->isValid() );
     }
 
     public function testUserAuthenticationPreHashedSuccess()
@@ -285,10 +287,12 @@ class UserAuthDbTest extends DbTestCase
                                 $expectedUser);
 
         $user         = new Model_User( array(
-                                'name'       => $expectedUser['name'],
-                                'credential' => '77c3d13750c0a0a59b0a2cf1bc189f61' ));
+                        'name'       => $expectedUser['name'],
+                        'credential' => '77c3d13750c0a0a59b0a2cf1bc189f61' ));
 
         $this->assertEquals( $expected, $user->authenticate() );
         $this->assertTrue  ( $user->isAuthenticated() );
+        $this->assertTrue  ( $user->isBacked() );
+        $this->assertTrue  ( $user->isValid() );
     }
 }

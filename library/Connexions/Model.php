@@ -411,6 +411,7 @@ abstract class Connexions_Model
     {
         $this->_isValid = (bool)$value;
 
+        // Mark all fields with the validation status of the model
         $this->_valid   = array();
         foreach ($this->_data as $fieldName => $fieldValue)
         {

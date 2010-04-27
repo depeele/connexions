@@ -281,11 +281,11 @@ class Model_User extends Model_Base
      *
      *  To authenticate:
      *      1) If THIS instance is backed
-     *         a) THEN use THIS instance as the validated user;
+     *         a) THEN use THIS instance as the identified user;
      *         b) ELSE locate a valid user using the 'userId' or 'name' from 
      *            THIS instance,
      *      2) Locate a Model_UserAuth instance using the 'userId' of the 
-     *         validated user as well as the 'authType' from THIS instance;
+     *         identified user as well as the 'authType' from THIS instance;
      *      3) Invoke 'compare()' on the Model_UserAuth instance passing in the 
      *         'credential' from THIS instance;
      *      4) Generate an appropriate Zend_Auth_Result;
@@ -392,8 +392,13 @@ class Model_User extends Model_Base
 
             if ($user !== $this)
             {
-                // Update THIS model to match the identified/authenticated user
-                $this->populate($config);
+                /* Update THIS model to match the identified/authenticated user
+                 *
+                 * :WARNING: We may have an Identity Map issue since we're
+                 *           basically duplicating an existing instance.
+                 */
+                $this->populate( $config );
+                $this->setIsBacked( $user->isBacked() );
             }
 
             $this->setAuthenticated();
