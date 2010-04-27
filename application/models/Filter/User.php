@@ -18,7 +18,11 @@ class Model_Filter_User extends Connexions_Model_Filter
                                        'match'  => '/[^a-zA-Z0-9\._\-]/',
                                        'replace'=> ''),
         ),
-        'fullName'      => array('stripTags', 'stringTrim'),
+        'fullName'      => array('stripTags', 'stringTrim',
+                                 array('pregReplace',
+                                       'match'  => '/\s+/',
+                                       'replace'=> ' '),
+        ),
         'email'         => array('stripTags', 'stringTrim'),
         'pictureUrl'    => array('stripTags', 'stringTrim'),
         'profile'       => array('stripTags', 'stringTrim'),
@@ -59,7 +63,7 @@ class Model_Filter_User extends Connexions_Model_Filter
 
         // The following SHOULD NOT be set from outside the Model Layers
         'apiKey'        => array(array('regex',
-                                       'pattern' => '/^([a-z0-9]{10,})?$/i'),
+                                       'pattern' => '/^([a-z0-9]{10,10})?$/i'),
                                  'allowEmpty'   => true,
         ),
         'lastVisit'     => array(array('regex',

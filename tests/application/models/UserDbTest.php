@@ -38,7 +38,7 @@ class UserDbTest extends DbTestCase
             'apiKey'        => null,
             'pictureUrl'    => null,
             'profile'       => null,
-            'lastVisit'     => '0000-00-00 00:00:00',
+            'lastVisit'     => null,
 
             'totalTags'     => 0,
             'totalItems'    => 0,
@@ -47,20 +47,27 @@ class UserDbTest extends DbTestCase
             'tagCount'      => 0,
         );
 
+        Connexions::log("testUserInsertedIntoDatabase");
+
         $user = new Model_User( array(
                         'name'      => $expected['name'],
                         'fullName'  => $expected['fullName']));
 
-        // apiKey is dynamically generated
-        $expected['apiKey'] = $user->apiKey;
+        $this->assertFalse ( $user->isBacked() );
+        $this->assertTrue  ( $user->isValid() );
 
-        /*
-        echo "New User:\n";
-        echo $user->debugDump();
-        // */
+        //printf ("User [ %s ]\n", $user->debugDump());
 
         $user = $user->save();
 
+        $this->assertTrue  ( $user->isBacked() );
+        $this->assertTrue  ( $user->isValid() );
+
+        // apiKey and lastVisit are dynamically generated
+        $expected['apiKey']    = $user->apiKey;
+        $expected['lastVisit'] = $user->lastVisit;
+
+        $this->assertEquals($user->getValidationMessages(), array() );
         $this->assertEquals($expected,
                             $user->toArray( Connexions_Model::DEPTH_SHALLOW,
                                             Connexions_Model::FIELDS_ALL ));
@@ -73,13 +80,14 @@ class UserDbTest extends DbTestCase
         $ds->addTable('user', 'SELECT * FROM user');
 
         /*********
-         * Modify 'apiKey' in our expected set for the target row since
-         * it's dynamic...
+         * Modify 'apiKey' and 'lastVisit' in our expected set for the target
+         * row since it's dynamic...
          */
         $es = $this->createFlatXmlDataSet(
                   dirname(__FILE__) .'/_files/userInsertAssertion.xml');
         $et = $es->getTable('user');
-        $et->setValue(4, 'apiKey', $expected['apiKey']);
+        $et->setValue(4, 'apiKey',    $expected['apiKey']);
+        $et->setValue(4, 'lastVisit', $expected['lastVisit']);
 
         $this->assertDataSetsEqual( $es, $ds );
     }

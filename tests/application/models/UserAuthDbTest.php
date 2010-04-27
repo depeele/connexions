@@ -257,6 +257,8 @@ class UserAuthDbTest extends DbTestCase
                                 'authType'   => 'pki',
                                 'credential' => 'abc' ));
 
+        //printf ("User[ %s ]\n", $user->debugDump());
+
         $this->assertEquals( $expected, $user->authenticate() );
     }
 

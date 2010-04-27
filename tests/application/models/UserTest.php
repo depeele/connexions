@@ -5,7 +5,7 @@ require_once APPLICATION_PATH .'/models/User.php';
 class UserTest extends BaseTestCase
 {
     protected   $_user1 = array(
-            'userId'        => null,
+            'userId'        => 0,
             'name'          => 'test_user',
             'fullName'      => 'Test User',
             'email'         => 'test.user@gmail.com',
@@ -35,12 +35,6 @@ class UserTest extends BaseTestCase
         ));
 
 
-        // apiKey is dynamically generated if not set
-        if ( empty($expected['apiKey']))
-        {
-            $expected['apiKey'] = $user->apiKey;
-        }
-
         // Make sure we can change properties
         $user->email      = $expected['email'];
         $user->pictureUrl = $expected['pictureUrl'];
@@ -54,9 +48,14 @@ class UserTest extends BaseTestCase
         // */
 
         $this->assertTrue( ! $user->isBacked() );
-        $this->assertTrue( ! $user->isValid() );
+        $this->assertTrue(   $user->isValid() );
         $this->assertTrue( ! $user->isAuthenticated() );
 
+        // apiKey and lastVisit are dynamically generated
+        $expected['apiKey']    = $user->apiKey;
+        $expected['lastVisit'] = $user->lastVisit;
+
+        $this->assertEquals($user->getValidationMessages(), array() );
         $this->assertEquals($expected,
                             $user->toArray( Connexions_Model::DEPTH_SHALLOW,
                                             Connexions_Model::FIELDS_ALL ));
@@ -77,13 +76,11 @@ class UserTest extends BaseTestCase
             'profile'     => $expected['profile'],
         ));
 
-        // apiKey is dynamically generated if not set
-        if ( empty($expected['apiKey']))
-        {
-            $expected['apiKey'] = $user->apiKey;
-        }
+        // apiKey and lastVisit are dynamically generated
+        $expected['apiKey']    = $user->apiKey;
+        $expected['lastVisit'] = $expected2['lastVisit'] = $user->lastVisit;
 
-
+        $this->assertEquals($user->getValidationMessages(), array() );
         $this->assertEquals($expected,
                             $user->toArray( Connexions_Model::DEPTH_SHALLOW,
                                             Connexions_Model::FIELDS_ALL ));
@@ -118,5 +115,277 @@ class UserTest extends BaseTestCase
         $filter = $user->getFilter();
 
         $this->assertType('Model_Filter_User', $filter);
+    }
+
+    /*************************************************************************
+     * Data validation tests
+     *
+     */
+    public function testUserFilterTooShortName()
+    {
+        $data       = array(
+            'userId'        => 1,
+            'name'          => 'T',
+            'fullName'      => '<b>Test</b>   <i>User<i>',
+            'email'         => 'test.user@gmail.com',
+            'apiKey'        => '1234567890',
+            'pictureUrl'    => 'http://gravatar.com/avatar/12345.jpg',
+            'profile'       => 'https://google.com/profile/test.user@gmail.com',
+            'lastVisit'     => date('Y.m.d H:i:s'),
+
+            'totalTags'     => 0,
+            'totalItems'    => 0,
+        );
+
+        $user  = new Model_User($data);
+
+        $this->assertFalse( $user->isValid()  );
+
+        /*
+        echo "Validation Messages:\n";
+        print_r($user->getValidationMessages());
+        printf ("User: [ %s ]\n", $user->debugDump());
+        // */
+
+        $this->assertArrayHasKey('name', $user->getValidationMessages());
+    }
+
+    public function testUserFilterTooLongName()
+    {
+        $data       = array(
+            'userId'        => 1,
+            'name'          => 'test_user'. str_repeat('_', 30),
+            'fullName'      => '<b>Test</b>   <i>User<i>',
+            'email'         => 'test.user@gmail.com',
+            'apiKey'        => '1234567890',
+            'pictureUrl'    => 'http://gravatar.com/avatar/12345.jpg',
+            'profile'       => 'https://google.com/profile/test.user@gmail.com',
+            'lastVisit'     => date('Y.m.d H:i:s'),
+
+            'totalTags'     => 0,
+            'totalItems'    => 0,
+        );
+
+        $user  = new Model_User($data);
+
+        $this->assertFalse( $user->isValid()  );
+
+        /*
+        echo "Validation Messages:\n";
+        print_r($user->getValidationMessages());
+        printf ("User: [ %s ]\n", $user->debugDump());
+        // */
+
+        $this->assertArrayHasKey('name', $user->getValidationMessages());
+    }
+
+    public function testUserFilterEmptyFullName()
+    {
+        $data       = array(
+            'userId'        => 1,
+            'name'          => 'test_user',
+            'fullName'      => null,
+            'email'         => 'test.user@gmail.com',
+            'apiKey'        => '1234567890',
+            'pictureUrl'    => 'http://gravatar.com/avatar/12345.jpg',
+            'profile'       => 'https://google.com/profile/test.user@gmail.com',
+            'lastVisit'     => date('Y.m.d H:i:s'),
+
+            'totalTags'     => 0,
+            'totalItems'    => 0,
+            'userItemCount' => 0,
+            'itemCount'     => 0,
+            'tagCount'      => 0,
+        );
+        $expected                  = $data;
+        $expected['fullName']      = trim(preg_replace('/\s+/', ' ',
+                                            strip_tags($expected['fullName'])));
+
+        $user  = new Model_User($data);
+
+        $this->assertTrue ( $user->isValid()  );
+
+        $this->assertEquals($user->getValidationMessages(), array());
+        $this->assertEquals($expected,
+                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
+                                            Connexions_Model::FIELDS_ALL ));
+    }
+
+    public function testUserFilterTooLongFullName()
+    {
+        $data       = array(
+            'userId'        => 1,
+            'name'          => 'test_user',
+            'fullName'      => '<b>Test</b>   <i>User<i>'. str_repeat('.', 255),
+            'email'         => 'test.user@gmail.com',
+            'apiKey'        => '1234567890',
+            'pictureUrl'    => 'http://gravatar.com/avatar/12345.jpg',
+            'profile'       => 'https://google.com/profile/test.user@gmail.com',
+            'lastVisit'     => date('Y.m.d H:i:s'),
+
+            'totalTags'     => 0,
+            'totalItems'    => 0,
+        );
+        $expected                  = $data;
+        $expected['fullName']      = trim(preg_replace('/\s+/', ' ',
+                                            strip_tags($expected['fullName'])));
+        $expected['userItemCount'] = 0;
+        $expected['itemCount']     = 0;
+        $expected['tagCount']      = 0;
+
+        $user  = new Model_User($data);
+
+        $this->assertFalse( $user->isValid()  );
+
+        /*
+        echo "Validation Messages:\n";
+        print_r($user->getValidationMessages());
+        printf ("User: [ %s ]\n", $user->debugDump());
+        // */
+
+        $this->assertArrayHasKey('fullName', $user->getValidationMessages());
+    }
+
+    public function testUserFilterEmptyEmail()
+    {
+        $data       = array(
+            'userId'        => 1,
+            'name'          => 'test_user',
+            'fullName'      => '<b>Test</b>   <i>User<i>',
+            'email'         => null,
+            'apiKey'        => '1234567890',
+            'pictureUrl'    => 'http://gravatar.com/avatar/12345.jpg',
+            'profile'       => 'https://google.com/profile/test.user@gmail.com',
+            'lastVisit'     => date('Y.m.d H:i:s'),
+
+            'totalTags'     => 0,
+            'totalItems'    => 0,
+        );
+
+        $user  = new Model_User($data);
+
+        $this->assertTrue ( $user->isValid()  );
+    }
+
+    public function testUserFilterInvalidEmail()
+    {
+        $data       = array(
+            'userId'        => 1,
+            'name'          => 'test_user',
+            'fullName'      => '<b>Test</b>   <i>User<i>',
+            'email'         => 'test.user@gmail.com-1234+52:http://abc.com/',
+            'apiKey'        => '1234567890',
+            'pictureUrl'    => 'http://gravatar.com/avatar/12345.jpg',
+            'profile'       => 'https://google.com/profile/test.user@gmail.com',
+            'lastVisit'     => date('Y.m.d H:i:s'),
+
+            'totalTags'     => 0,
+            'totalItems'    => 0,
+        );
+
+        $user  = new Model_User($data);
+
+        $this->assertFalse( $user->isValid()  );
+
+        /*
+        echo "Validation Messages:\n";
+        print_r($user->getValidationMessages());
+        printf ("User: [ %s ]\n", $user->debugDump());
+        // */
+
+        $this->assertArrayHasKey('email', $user->getValidationMessages());
+    }
+
+    public function testUserFilterTooShortApiKey()
+    {
+        $data       = array(
+            'userId'        => 1,
+            'name'          => 'test_user',
+            'fullName'      => '<b>Test</b>   <i>User<i>',
+            'email'         => 'test.user@gmail.com',
+            'apiKey'        => '12345',
+            'pictureUrl'    => 'http://gravatar.com/avatar/12345.jpg',
+            'profile'       => 'https://google.com/profile/test.user@gmail.com',
+            'lastVisit'     => date('Y.m.d H:i:s'),
+
+            'totalTags'     => 0,
+            'totalItems'    => 0,
+        );
+
+        $user  = new Model_User($data);
+
+        /*
+        echo "Validation Messages:\n";
+        print_r($user->getValidationMessages());
+        printf ("User: [ %s ]\n", $user->debugDump());
+        // */
+
+        $this->assertFalse( $user->isValid()  );
+
+        /*
+        echo "Validation Messages:\n";
+        print_r($user->getValidationMessages());
+        printf ("User: [ %s ]\n", $user->debugDump());
+        // */
+
+        $this->assertArrayHasKey('apiKey', $user->getValidationMessages());
+    }
+
+    public function testUserFilterTooLongApiKey()
+    {
+        $data       = array(
+            'userId'        => 1,
+            'name'          => 'test_user',
+            'fullName'      => '<b>Test</b>   <i>User<i>',
+            'email'         => 'test.user@gmail.com',
+            'apiKey'        => '1234567890bcdef',
+            'pictureUrl'    => 'http://gravatar.com/avatar/12345.jpg',
+            'profile'       => 'https://google.com/profile/test.user@gmail.com',
+            'lastVisit'     => date('Y.m.d H:i:s'),
+
+            'totalTags'     => 0,
+            'totalItems'    => 0,
+        );
+
+        $user  = new Model_User($data);
+
+        $this->assertFalse( $user->isValid()  );
+
+        /*
+        echo "Validation Messages:\n";
+        print_r($user->getValidationMessages());
+        printf ("User: [ %s ]\n", $user->debugDump());
+        // */
+
+        $this->assertArrayHasKey('apiKey', $user->getValidationMessages());
+    }
+
+    public function testUserFilterInvalidApiKey()
+    {
+        $data       = array(
+            'userId'        => 1,
+            'name'          => 'test_user',
+            'fullName'      => '<b>Test</b>   <i>User<i>',
+            'email'         => 'test.user@gmail.com',
+            'apiKey'        => 'abc[efg]ij',
+            'pictureUrl'    => 'http://gravatar.com/avatar/12345.jpg',
+            'profile'       => 'https://google.com/profile/test.user@gmail.com',
+            'lastVisit'     => date('Y.m.d H:i:s'),
+
+            'totalTags'     => 0,
+            'totalItems'    => 0,
+        );
+
+        $user  = new Model_User($data);
+
+        $this->assertFalse( $user->isValid()  );
+
+        /*
+        echo "Validation Messages:\n";
+        print_r($user->getValidationMessages());
+        printf ("User: [ %s ]\n", $user->debugDump());
+        // */
+
+        $this->assertArrayHasKey('apiKey', $user->getValidationMessages());
     }
 }

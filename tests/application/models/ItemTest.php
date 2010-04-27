@@ -5,7 +5,7 @@ require_once APPLICATION_PATH .'/models/Item.php';
 class ItemTest extends BaseTestCase
 {
     protected   $_item1 = array(
-            'itemId'        => null,
+            'itemId'        => 0,
             'url'           => 'http://www.clipperz.com/',
             'urlHash'       => null,
 

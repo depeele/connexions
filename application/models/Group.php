@@ -51,6 +51,12 @@ class Model_Group extends Model_Base
      *
      */
 
+    /** @brief  Set the value of the given field.
+     *  @param  name    The field name.
+     *  @param  value   The new value.
+     *
+     *  @return $this for a fluent interface.
+     */
     public function __set($name, $value)
     {
         /* Allow fields that reference an external model to be set to either
@@ -114,6 +120,11 @@ class Model_Group extends Model_Base
         return $this;
     }
 
+    /** @brief  Get a value of the given field.
+     *  @param  name    The field name.
+     *
+     *  @return The field value (null if invalid).
+     */
     public function __get($name)
     {
         switch ($name)

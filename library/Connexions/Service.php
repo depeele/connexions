@@ -40,6 +40,15 @@ abstract class Connexions_Service
     {
         $modelName = $this->_getModelName();    //_modelName;
 
+        // Unset any special parameters
+        if (is_array($data['data']))
+            $data = $data['data'];
+
+        unset($data['mapper']);
+        unset($data['filtier']);
+        unset($data['isBacked']);
+        unset($data['isValid']);
+
         return new $modelName( $data );
     }
 
