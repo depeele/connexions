@@ -36,7 +36,7 @@ class TagDbTest extends DbTestCase
 
         $this->assertEquals($expected,
                             $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                                           Connexions_Model::FIELDS_ALL ));
 
         // Check the database consistency
         $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
@@ -71,7 +71,7 @@ class TagDbTest extends DbTestCase
 
         $this->assertEquals($expected,
                             $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                                           Connexions_Model::FIELDS_ALL ));
     }
 
     public function testTagIdentityMap()
@@ -122,7 +122,7 @@ class TagDbTest extends DbTestCase
         $tag   = $mapper->find( array('tagId' => $expected['tagId']) );
         $this->assertEquals($expected,
                             $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                                           Connexions_Model::FIELDS_ALL ));
     }
 
     public function testTagRetrieveByName1()
@@ -133,7 +133,7 @@ class TagDbTest extends DbTestCase
         $tag   = $mapper->find( $expected['tag'] );
         $this->assertEquals($expected,
                             $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                                           Connexions_Model::FIELDS_ALL ));
     }
 
     public function testTagRetrieveByName2()
@@ -144,7 +144,7 @@ class TagDbTest extends DbTestCase
         $tag   = $mapper->find( array('tag' => $expected['tag']) );
         $this->assertEquals($expected,
                             $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                                           Connexions_Model::FIELDS_ALL ));
     }
 
     public function testTagDeletedFromDatabase()

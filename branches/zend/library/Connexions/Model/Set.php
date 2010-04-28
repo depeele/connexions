@@ -265,7 +265,7 @@ abstract class Connexions_Model_Set
      *
      *  @return An array representation of this Domain Model.
      */
-    public function toArray($deep   = Connexions_Model::DEPTH_DEEP,
+    public function toArray($deep   = Connexions_Model::DEPTH_SHALLOW,
                             $public = Connexions_Model::FIELDS_PUBLIC)
     {
         $res = array();
