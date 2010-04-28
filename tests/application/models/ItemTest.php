@@ -60,8 +60,7 @@ class ItemTest extends BaseTestCase
                             $item->toArray( Connexions_Model::DEPTH_SHALLOW,
                                             Connexions_Model::FIELDS_ALL ));
         $this->assertEquals($expected2,
-                            $item->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_PUBLIC ));
+                            $item->toArray( ));
     }
 
     public function testItemGetId()

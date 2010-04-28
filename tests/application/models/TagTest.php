@@ -57,8 +57,7 @@ class TagTest extends BaseTestCase
                             $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
                                            Connexions_Model::FIELDS_ALL ));
         $this->assertEquals($expected2,
-                            $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                           Connexions_Model::FIELDS_PUBLIC ));
+                            $tag->toArray( ));
     }
 
     public function testTagGetId()

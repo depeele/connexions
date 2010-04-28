@@ -222,7 +222,7 @@ class Model_Bookmark extends Model_Base
      *
      *  @return An array representation of this Domain Model.
      */
-    public function toArray($deep   = self::DEPTH_DEEP,
+    public function toArray($deep   = self::DEPTH_SHALLOW,
                             $public = self::FIELDS_PUBLIC)
     {
         $data = $this->_data;

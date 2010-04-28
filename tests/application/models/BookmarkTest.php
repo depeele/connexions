@@ -77,8 +77,7 @@ class BookmarkTest extends BaseTestCase
                             $bookmark->toArray(Connexions_Model::DEPTH_SHALLOW,
                                                Connexions_Model::FIELDS_ALL ));
         $this->assertEquals($expected2,
-                           $bookmark->toArray(Connexions_Model::DEPTH_SHALLOW,
-                                              Connexions_Model::FIELDS_PUBLIC));
+                            $bookmark->toArray());
     }
 
     public function testBookmarkGetId()

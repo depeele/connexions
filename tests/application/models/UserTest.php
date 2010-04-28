@@ -85,8 +85,7 @@ class UserTest extends BaseTestCase
                             $user->toArray( Connexions_Model::DEPTH_SHALLOW,
                                             Connexions_Model::FIELDS_ALL ));
         $this->assertEquals($expected2,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_PUBLIC ));
+                            $user->toArray( ));
     }
 
     public function testUserGetId()
