@@ -64,7 +64,7 @@ class TagTest extends BaseTestCase
     public function testTagGetId()
     {
         $data     = array('tagId'  => 5);
-        $expected = null;
+        $expected = $data['tagId'];
 
         $tag = new Model_Tag( $data );
 

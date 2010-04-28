@@ -116,6 +116,55 @@ abstract class Connexions_Model_Mapper_DbTable
      *
      */
 
+    /** @brief  Given either a Domain Model instance or data that will be used 
+     *          to construct a Domain Model instance, return the unique 
+     *          identifier representing the instance.
+     *
+     *  @param  model   Connexions_Model instance or an array of data to be 
+     *                  used in constructing a new Connexions_Model instance.
+     *
+     *  @return An array containing unique identifier values or null.
+     */
+    public function getId($model)
+    {
+        if ($model instanceof Connexions_Model)
+        {
+
+            if (! $model->isBacked())
+            {
+                /* MUST return null to notify save() that this is an INSERT vs 
+                 * UPDATE
+                 */
+                return null;
+            }
+
+            return $model->getId();
+        }
+
+        // Attempt to pull an id from incoming array data
+        $keyNames = (is_array($this->_keyName)
+                        ? $this->_keyName
+                        : array( $this->_keyName ));
+
+        $id       = array();
+        foreach ($keyNames as $key)
+        {
+            array_push($id, $model[$key]);
+        }
+
+        /*
+        Connexions::log("Connexions_Model_Mapper_DbTable::getId( %s ): "
+                        .   "id[ %s ]",
+                        Connexions::varExport($model),
+                        implode(':', $id));
+        // */
+
+        if (count($id) === 1)
+            $id = array_pop($id);
+
+        return $id;
+    }
+
     /** @brief  Save the given model instance.
      *  @param  model   The domain model instance to save.
      *
@@ -124,12 +173,12 @@ abstract class Connexions_Model_Mapper_DbTable
     public function save(Connexions_Model $domainModel)
     {
         $accessor = $this->getAccessor();
-        $id       = $domainModel->getId();
+        $id       = $this->getId($domainModel); //$domainModel->getId();
 
         $data     = $this->reduceModel( $domainModel );
         if (! $id)
         {
-            // /*
+            /*
             Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
                             . "EMPTY id, insert new model[ %s ]",
                             get_class($this),
@@ -140,7 +189,7 @@ abstract class Connexions_Model_Mapper_DbTable
             $id = $accessor->insert( $data );
             $operation = 'insert';
 
-            // /*
+            /*
             Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
                             . "insert returned[ %s ]",
                             get_class($this),
@@ -184,7 +233,7 @@ abstract class Connexions_Model_Mapper_DbTable
     public function delete(Connexions_Model $domainModel)
     {
         $accessor = $this->getAccessor();
-        $id       = $domainModel->getId();
+        $id       = $this->getId($domainModel); //$domainModel->getId();
         if ($id)
         {
             // Locate the Zend_Db_Table_Row instance matching the incoming model
@@ -232,11 +281,7 @@ abstract class Connexions_Model_Mapper_DbTable
         if ($accessorModel === null)
             return null;
 
-        $domainModel = $this->makeModel($accessorModel);
-
-        $this->_setIdentity($id, $domainModel);
-
-        return $domainModel;
+        return $this->makeModel($accessorModel);
     }
 
 
@@ -302,7 +347,7 @@ abstract class Connexions_Model_Mapper_DbTable
             $totalCount = count($accessorModels);
         }
 
-        // /*
+        /*
         Connexions::log("Connexions_Model_Mapper_DbTable::fetch(): "
                         .   "sql[ %s ], %d of %d rows",
                         $select->assemble(),
@@ -317,22 +362,6 @@ abstract class Connexions_Model_Mapper_DbTable
                                        'results'    => $accessorModels) );
 
         return $set;
-
-        /*
-        $domainModels  = array();
-        $modelName     = $this->getModelName();
-
-        foreach ($accessorModels as $accessorModel)
-        {
-            $domainModel = $this->makeModel($accessorModel);
-
-            $this->_setIdentity($domainModel->getId(), $domainModel);
-
-            array_push($domainModels, $domainModel);
-        }
-
-        return $domainModels;
-        */
     }
 
     /** @brief  Fetch all matching model instances by a specific field.
@@ -360,11 +389,13 @@ abstract class Connexions_Model_Mapper_DbTable
             $where = array( $field .' IN (?)' => $value );
         }
 
+        /*
         Connexions::log("Connexions_Model_Mapper_DbTable::fetchBy(%s, %s): "
                         .   "[ %s ]",
                         $field,
                         Connexions::varExport($value),
                         Connexions::varExport($where) );
+        // */
 
         return $this->fetch($where, $order, $count, $offset);
     }
@@ -373,33 +404,42 @@ abstract class Connexions_Model_Mapper_DbTable
      *          data that should be directly persisted.  This method may also
      *          be used to update dynamic values
      *          (e.g. update date/time, last visit date/time).
-     *  @param  model   The Domain Model to reduce to an array.
+     *  @param  model       The Domain Model to reduce to an array.
+     *  @param  keepKeys    If keys need to be kept, a concrete sub-class can
+     *                      override reduceModel() and invoke with 'true'.
      *
      *  @return A filtered associative array containing data that should 
      *          be directly persisted.
      */
-    public function reduceModel(Connexions_Model $model)
+    public function reduceModel(Connexions_Model $model,
+                                                 $keepKeys = false)
     {
         $data = parent::reduceModel($model);
 
+        /*
         Connexions::log("Connexions_Model_Mapper_DbTable::reduceModel(): "
-                        . "data[ %s ]",
+                        . "is %sbacked, %skeep keys: data[ %s ]",
+                        ($model->isBacked() ? '' : 'NOT '),
+                        ($keepKeys          ? '' : 'DO NOT '),
                         Connexions::varExport($data));
+        // */
 
-        // For non-backed data, key values MUST be removed
-        if (! $model->isBacked())
+        // For non-backed data, key values MUST be removed (in most cases)
+        if ( (! $keepKeys) && (! $model->isBacked()) )
         {
             $keyNames = (is_array($this->_keyName)
                             ? $this->_keyName
                             : array($this->_keyName));
 
+            /*
             Connexions::log("Connexions_Model_Mapper_DbTable::reduceModel(): "
                             . "unset key values[ %s ]",
                             Connexions::varExport($keyNames));
+            // */
 
             foreach ($keyNames as $keyName)
             {
-                if (empty($data[$keyName]))
+                if (isset($data[$keyName]))
                     unset($data[$keyName]);
             }
         }
@@ -459,7 +499,7 @@ abstract class Connexions_Model_Mapper_DbTable
             $select->where($condition, $bindValue);
         }
 
-        // /*
+        /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::_find(%s): "
                         .   "sql[ %s ]",
                         get_class($this),

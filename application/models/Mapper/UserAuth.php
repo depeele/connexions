@@ -43,6 +43,21 @@ class Model_Mapper_UserAuth extends Model_Mapper_Base
         return $model;
     }
 
+    /** @brief  Convert the incoming model into an array containing only 
+     *          data that should be directly persisted.  This method may also
+     *          be used to update dynamic values
+     *          (e.g. update date/time, last visit date/time).
+     *  @param  model   The Domain Model to reduce to an array.
+     *
+     *  @return A filtered associative array containing data that should 
+     *          be directly persisted.
+     */
+    public function reduceModel(Connexions_Model $model)
+    {
+        // Need to KEEP the "keys" for this model
+        return parent::reduceModel($model, true);
+    }
+
     /** @brief  Retrieve the user related to this userAuth.
      *  @param  userAuth    The Model_UserAuth instance.
      *

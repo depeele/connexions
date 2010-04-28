@@ -175,18 +175,32 @@ abstract class Connexions_Model_Mapper
      */
     public function makeModel($data)
     {
-        /*
-        Connexions::log("Connexions_Model_Mapper::makeModel: %s",
-                        (is_object($data)
-                            ? get_class($data)
-                            : gettype($data)) );
-        // */
-                        
+        /* First, see if there is already an Identity Map entry matching the 
+         * incoming data.
+         */
+        $id = $this->getId($data);
+        if ($this->_hasIdentity($id))
+            return $this->_getIdentity($id);
+
+        // No existing entry.  Create a new instance.
         $modelName   = $this->getModelName();
         $domainModel = new $modelName(array('mapper'    => $this,
                                             'isBacked'  => true,
                                             'isValid'   => true,
                                             'data'      => $data));
+
+        /*
+        $dId = $this->getId($domainModel);
+        if ($id != $dId)
+        {
+            throw new Exception(  'Raw ID    [ '. implode(':', $id) .' ] != '
+                                . 'Domain Id [ '. implode(':', $dId).' ]');
+        }
+         */
+
+
+        // Add this new instance to the Identity Map
+        $this->_setIdentity($id, $domainModel);
 
         return $domainModel;
     }
@@ -198,7 +212,8 @@ abstract class Connexions_Model_Mapper
      */
     public function unsetIdentity(Connexions_Model $model)
     {
-        $this->_unsetIdentity($model->getId(), $model);
+        $this->_unsetIdentity( $this->getId($model) /*$model->getId()*/,
+                               $model);
 
         return $this;
     }
@@ -207,6 +222,17 @@ abstract class Connexions_Model_Mapper
      * Abstract methods
      *
      */
+
+    /** @brief  Given either a Domain Model instance or data that will be used 
+     *          to construct a Domain Model instance, return the unique 
+     *          identifier representing the instance.
+     *
+     *  @param  model   Connexions_Model instance or an array of data to be 
+     *                  used in constructing a new Connexions_Model instance.
+     *
+     *  @return An array containing unique identifier values or null.
+     */
+    abstract public function getId($model);
 
     /** @brief  Save the given model instance.
      *  @param  model   The model instance to save.
@@ -325,8 +351,10 @@ abstract class Connexions_Model_Mapper
         }
         // */
 
+        /*
         Connexions::log("Connexions_Model_Mapper::_setIdentity( %s ): %s",
                          $id, get_class($this));
+        // */
 
         $this->_identityMap[$id] = $model;
     }

@@ -49,15 +49,11 @@ class Model_User extends Model_Base
     /** @brief  Retrieve the unique identifier for this instance.  This MAY 
      *          return an array of identifiers as key/value pairs.
      *
-     *  This MUST return null if the model is not currently backed.
-     *
      *  @return The unique identifier.
      */
     public function getId()
     {
-        return ( $this->isBacked()
-                    ? $this->userId
-                    : null );
+        return ( $this->userId );
     }
 
     public function setAuthType($authType)

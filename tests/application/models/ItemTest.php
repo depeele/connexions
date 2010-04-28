@@ -67,7 +67,7 @@ class ItemTest extends BaseTestCase
     public function testItemGetId()
     {
         $data     = array('itemId'  => 5);
-        $expected = null;
+        $expected = $data['itemId'];
 
         $item = new Model_Item( $data );
 
