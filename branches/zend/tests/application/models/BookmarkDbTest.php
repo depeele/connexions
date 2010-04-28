@@ -119,9 +119,8 @@ class BookmarkDbTest extends DbTestCase
                                          'tagCount'      => 1),
     );
     protected   $_bookmark1 = array(
-            'user'          => null,    // $this->_user1,
-            'item'          => null,    // $this->_item1,
-            'tags'          => null,    // $this->_tags1,
+            'userId'        => null,    // $this->_user1,
+            'itemId'        => null,    // $this->_item1,
 
             'name'          => 'More than a password manager | Clipperz',
             'description'   => 'Testing 1,2 3, 4...',
@@ -143,6 +142,8 @@ class BookmarkDbTest extends DbTestCase
     public function testBookmarkRetrieveById1()
     {
         $expected  = $this->_bookmark1;
+        $expected['userId']     = $this->_user1['userId'];
+        $expected['itemId']     = $this->_item1['itemId'];
         $expected['user']       = $this->_user1;
         $expected['item']       = $this->_item1;
         $expected['tags']       = $this->_tags1;
@@ -150,14 +151,12 @@ class BookmarkDbTest extends DbTestCase
         $expected['isPrivate']  = ($expected['isPrivate']  ? 1 : 0);
 
         $mapper   = new Model_Mapper_Bookmark( );
-        $bookmark = $mapper->find( array( $expected['user']['userId'],
-                                          $expected['item']['itemId']) );
+        $bookmark = $mapper->find( array( $expected['userId'],
+                                          $expected['itemId']) );
 
-        /*
+        // /*
         Connexions::log("testBookmarkRetrieveById1: bookmark[ %s ]",
-                        Connexions::varExport(
-                            $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
-                                                Connexions_Model::FIELDS_ALL )) );
+                        Connexions::varExport( $bookmark->toArray() ));
         // */
 
         $this->assertEquals($expected,
@@ -180,13 +179,13 @@ class BookmarkDbTest extends DbTestCase
     public function testBookmarkInvalidate()
     {
         $expected  = $this->_bookmark1;
-        $expected['user'] = $this->_user1['userId'];
-        $expected['item'] = $this->_item1['itemId'];
+        $expected['userId'] = $this->_user1['userId'];
+        $expected['itemId'] = $this->_item1['itemId'];
 
 
         $mapper   = new Model_Mapper_Bookmark( );
-        $bookmark = $mapper->find( array( $expected['user'],
-                                          $expected['item']) );
+        $bookmark = $mapper->find( array( $expected['userId'],
+                                          $expected['itemId']) );
 
         // Force retrievals
         $user = $bookmark->user;
@@ -277,8 +276,8 @@ class BookmarkDbTest extends DbTestCase
     public function testBookmarkUpdate()
     {
         $expected                = $this->_bookmark1;
-        $expected['user']        = $this->_user1['userId'];
-        $expected['item']        = $this->_item1['itemId'];
+        $expected['userId']      = $this->_user1['userId'];
+        $expected['itemId']      = $this->_item1['itemId'];
         $expected['name']        = 'Clipperz';
         $expected['description'] = 'More than a password manager';
         $expected['rating']      = 2;
@@ -286,8 +285,8 @@ class BookmarkDbTest extends DbTestCase
         $expected['isPrivate']   = 0;
 
         $mapper   = new Model_Mapper_Bookmark( );
-        $bookmark = $mapper->find( array( $expected['user'],
-                                          $expected['item']) );
+        $bookmark = $mapper->find( array( $expected['userId'],
+                                          $expected['itemId']) );
 
         //printf ("Bookmark: [ %s ]\n", $bookmark->debugDump());
 
@@ -392,9 +391,8 @@ class BookmarkDbTest extends DbTestCase
     }
 
     protected   $_newBookmark = array(
-            'user'          => null,
-            'item'          => null,
-            'tags'          => null,
+            'userId'        => null,
+            'itemId'        => null,
 
             'name'          => 'New Bookmark',
             'description'   => 'This is a new bookmark',
@@ -420,13 +418,13 @@ class BookmarkDbTest extends DbTestCase
     public function testBookmarkCreateNoTagsShouldFail()
     {
         $expected             = $this->_newBookmark;
-        $expected['user']     = $this->_user1['userId'];
-        $expected['item']     = $this->_item6['itemId'];
+        $expected['userId']   = $this->_user1['userId'];
+        $expected['itemId']   = $this->_item6['itemId'];
         $expected['taggedOn'] = date('Y-m-d h:i:s');
 
         $bookmark = new Model_Bookmark( array(
-            'user'        => $expected['user'],
-            'item'        => $expected['item'],
+            'userId'      => $expected['userId'],
+            'itemId'      => $expected['itemId'],
             'name'        => $expected['name'],
             'description' => $expected['description'],
             'rating'      => $expected['rating'],
@@ -452,11 +450,13 @@ class BookmarkDbTest extends DbTestCase
         }
     }
 
-    public function testBookmarkCreate()
+    public function testBookmarkCreateNew()
     {
         $expected             = $this->_newBookmark;
-        $expected['user']     = $this->_user1;  //['userId'];
-        $expected['item']     = $this->_item6;  //['itemId'];
+        $expected['userId']   = $this->_user1['userId'];
+        $expected['itemId']   = $this->_item6['itemId'];
+        $expected['user']     = $this->_user1;
+        $expected['item']     = $this->_item6;
         $expected['tags']     = $this->_tags2;
         $expected['taggedOn'] = date('Y-m-d h:i:s');
 
@@ -470,10 +470,6 @@ class BookmarkDbTest extends DbTestCase
 
         // Create the new Bookmark
         $bookmark = new Model_Bookmark( array(
-            //'user'        => $expected['user']['userId'],
-            //'item'        => $expected['item']['itemId'],
-            //'tags'        => $tagMapper->fetchBy('tag', $tagNames),
-
             'name'        => $expected['name'],
             'description' => $expected['description'],
             'rating'      => $expected['rating'],
@@ -482,9 +478,9 @@ class BookmarkDbTest extends DbTestCase
             'taggedOn'    => $expected['taggedOn'],
         ));
 
-        $bookmark->user = $expected['user']['userId'];
-        $bookmark->item = $expected['item']['itemId'];
-        $bookmark->tags = $tagMapper->fetchBy('tag', $tagNames);
+        $bookmark->userId = $expected['user']['userId'];
+        $bookmark->itemId = $expected['item']['itemId'];
+        $bookmark->tags   = $tagMapper->fetchBy('tag', $tagNames);
 
         $bookmark = $bookmark->save();
 
@@ -734,9 +730,8 @@ class BookmarkDbTest extends DbTestCase
     {
         $expected = array(
             array(
-                'user'          => "1",
-                'item'          => "1",
-                'tags'          => null,
+                'userId'        => "1",
+                'itemId'        => "1",
 
                 'name'          => "More than a password manager | Clipperz",
                 'description'   => "Testing 1,2 3, 4...",
@@ -747,9 +742,8 @@ class BookmarkDbTest extends DbTestCase
                 'updatedOn'     => "2010-02-22 10:00:00",
             ),
             array(
-                'user'          => "1",
-                'item'          => "2",
-                'tags'          => null,
+                'userId'        => "1",
+                'itemId'        => "2",
 
                 'name'          => "OAT Framework",
                 'description'   => "",
@@ -760,9 +754,8 @@ class BookmarkDbTest extends DbTestCase
                 'updatedOn'     => "2007-03-30 14:39:52",
             ),
             array(
-                'user'          => "1",
-                'item'          => "3",
-                'tags'          => null,
+                'userId'        => "1",
+                'itemId'        => "3",
 
                 'name'          => "OAT: OpenAjax Alliance Compliant Toolkit (Live Links Version)",
                 'description'   => "",
@@ -773,9 +766,8 @@ class BookmarkDbTest extends DbTestCase
                 'updatedOn'     => "2007-03-30 14:35:51",
             ),
             array(
-                'user'          => "1",
-                'item'          => "4",
-                'tags'          => null,
+                'userId'        => "1",
+                'itemId'        => "4",
 
                 'name'          => "OAT Framework Demo",
                 'description'   => "",
@@ -786,9 +778,8 @@ class BookmarkDbTest extends DbTestCase
                 'updatedOn'     => "2007-03-30 14:33:27",
             ),
             array(
-                'user'          => "1",
-                'item'          => "5",
-                'tags'          => null,
+                'userId'        => "1",
+                'itemId'        => "5",
 
                 'name'          => "JavaScript Diagram Builder",
                 'description'   => "",
@@ -799,9 +790,8 @@ class BookmarkDbTest extends DbTestCase
                 'updatedOn'     => "2007-03-30 13:11:57",
             ),
             array(
-                'user'          => "2",
-                'item'          => "6",
-                'tags'          => null,
+                'userId'        => "2",
+                'itemId'        => "6",
 
                 'name'          => "IBM doubles CPU cooling capabilities with simple manufacturing change",
                 'description'   => "",
@@ -812,9 +802,8 @@ class BookmarkDbTest extends DbTestCase
                 'updatedOn'     => "2006-04-09 23:59:27",
             ),
             array(
-                'user'          => "2",
-                'item'          => "7",
-                'tags'          => null,
+                'userId'        => "2",
+                'itemId'        => "7",
 
                 'name'          => "nimbus: Nimbus",
                 'description'   => "",
@@ -825,9 +814,8 @@ class BookmarkDbTest extends DbTestCase
                 'updatedOn'     => "2007-03-24 11:45:44",
             ),
             array(
-                'user'          => "2",
-                'item'          => "11",
-                'tags'          => null,
+                'userId'        => "2",
+                'itemId'        => "11",
 
                 'name'          => "The Wii Laptop! - Engadget",
                 'description'   => "",
@@ -838,9 +826,8 @@ class BookmarkDbTest extends DbTestCase
                 'updatedOn'     => "2006-03-30 05:48:26",
             ),
             array(
-                'user'          => "2",
-                'item'          => "13",
-                'tags'          => null,
+                'userId'        => "2",
+                'itemId'        => "13",
 
                 'name'          => "TiddlyWiki Guides - TiddlyWikiGuides",
                 'description'   => "",
@@ -851,9 +838,8 @@ class BookmarkDbTest extends DbTestCase
                 'updatedOn'     => "2006-06-26 15:54:56",
             ),
             array(
-                'user'          => "2",
-                'item'          => "14",
-                'tags'          => null,
+                'userId'        => "2",
+                'itemId'        => "14",
 
                 'name'          => "Overview (Java 3D 1.5.0)",
                 'description'   => "",

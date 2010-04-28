@@ -36,6 +36,16 @@ class GroupTest extends BaseTestCase
                                             Connexions_Model::FIELDS_ALL ));
     }
 
+    public function testGroupGetId()
+    {
+        $data     = array('groupId' => 1);
+        $expected = $data['groupId'];
+
+        $group = new Model_Group( $data );
+
+        $this->assertEquals($expected, $group->getId());
+    }
+
     public function testGroupGetMapper()
     {
         $group = new Model_Group( );

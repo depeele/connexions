@@ -4,13 +4,7 @@
  *  This mapper provides bi-directional access between the Domain Model and the
  *  underlying persistent store (in this case, a Zend_Db_Table).
  *
- *  Note: This mapper hides a few database related details.  The 'userId' and
- *        'itemId' of the underlying table are presented to the Domain Model
- *        as, simply, 'user' and 'item'.  The Domain Model then uses these
- *        fields to provide access to the referenced Model_User and Model_Item
- *        instances when requested.
- *
- *        This mapper also makes three meta-data fields available:
+ *  Note: This mapper makes three meta-data fields available:
  *          getUser()   - retrieves the Model_User instance represented by the
  *                        'userId' for the Bookmark;
  *          getItem()   - retrieves the Model_Item instance represented by the
@@ -44,7 +38,13 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         $id            = $bookmark->getId();
         $tags          = $bookmark->tags;       // Save the tags
 
-        if ( (! $tags instanceof Connexions_Model_Set) || empty($tags) )
+        /*
+        Connexions::log("Models_Mapper_Bookmark::save(%s, %s): %d tags",
+                        $bookmark->userId, $bookmark->itemId,
+                        count($tags));
+        // */
+
+        if ( (! $tags instanceof Connexions_Model_Set) || (count($tags) < 1))
             throw new Exception("Bookmarks require at least one tag");
 
         if ($id)
@@ -67,7 +67,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
 
         /*
         Connexions::log("Model_Mapper_Bookmark::save( %d, %d )",
-                        $bookmark->user->userId, $bookmark->item->itemId);
+                        $bookmark->userId, $bookmark->itemId);
         // */
 
         // Update table-based statistics:
@@ -121,27 +121,36 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
      */
     public function reduceModel(Connexions_Model $model)
     {
-        $data = parent::reduceModel($model);
+        $userId = $model->userId;
+        $itemId = $model->itemId;
+
+        /*
+        Connexions::log("Model_Mapper_Bookmark::reduceModel(%d, %d): "
+                        .   "is %sbacked, keep keys",
+                        $userId, $itemId,
+                        ($model->isBacked() ? '' : 'NOT '));
+        // */
+
+
+        // Need to KEEP the "keys" for this model
+        $data = parent::reduceModel($model, true);
+
+        /*
+        Connexions::log("Model_Mapper_Bookmark::reduceModel(%d, %d): [ %s ]",
+                        $userId, $itemId,
+                        Connexions::varExport($data));
+        // */
 
         /* Covert any included user/item record to the associated database
          * identifiers (userId/itemId).
          */
-        $data['userId']     = ( is_array($data['user'])
-                                ? $data['user']['userId']
-                                : $data['user']);
-        $data['itemId']     = ( is_array($data['item'])
-                                ? $data['item']['itemId']
-                                : $data['item']);
+        $data['userId']     = $userId;
+        $data['itemId']     = $itemId;
         $data['rating']     = ( is_numeric($data['rating'])
                                 ? $data['rating']
                                 : 0 );
         $data['isFavorite'] = (bool)($data['isFavorite']);
         $data['isPrivate']  = (bool)($data['isPrivate']);
-
-        // Remove non-persisted fields
-        unset($data['user']);
-        unset($data['item']);
-        unset($data['tags']);
 
         /* Ensure that the 'updatedOn' date is the current date
          * (i.e. the actual update date).
@@ -198,14 +207,8 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
      */
     public function getTags(Model_Bookmark $bookmark)
     {
-        $userId = $bookmark->user;
-        $itemId = $bookmark->item;
-
-        if ($userId instanceof Model_User)
-            $userId = $userId->userId;
-        if ($itemId instanceof Model_Item)
-            $itemId = $itemId->itemId;
-
+        $userId = $bookmark->userId;
+        $itemId = $bookmark->itemId;
         if ( ($userId <= 0) || ($itemId <= 0) )
             return null;
 
@@ -231,14 +234,14 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
     public function deleteTags(Model_Bookmark $bookmark)
     {
         $table = $this->getAccessor('Model_DbTable_UserTagItem');
-        $table->delete( array('userId=?' => $bookmark->user->userId,
-                              'itemId=?' => $bookmark->item->itemId) );
+        $table->delete( array('userId=?' => $bookmark->userId,
+                              'itemId=?' => $bookmark->itemId) );
 
         /*
         $db = $this->getAccessor()->getAdapter();
         $db->delete('userTagItem',
-                    array('userId=?' => $bookmark->user->userId,
-                          'itemId=?' => $bookmark->item->itemId));
+                    array('userId=?' => $bookmark->userId,
+                          'itemId=?' => $bookmark->itemId));
         */
     }
 
@@ -253,8 +256,8 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         $table = $this->getAccessor('Model_DbTable_UserTagItem');
         foreach ($tags as $tag)
         {
-            $table->insert( array('userId' => $bookmark->user->userId,
-                                  'itemId' => $bookmark->item->itemId,
+            $table->insert( array('userId' => $bookmark->userId,
+                                  'itemId' => $bookmark->itemId,
                                   'tagId'  => $tag->tagId) );
         }
 
@@ -289,16 +292,6 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
                     ? $record->toArray()
                     : $record);
 
-        // Move the database ids to the field that will hold the Domain Model
-        // instances when they are retrieved.
-        $data['user'] = $data['userId']; unset($data['userId']);
-        $data['item'] = $data['itemId']; unset($data['itemId']);
-
-        /*
-        Connexions::log("Model_Mapper_Bookmark::makeModel(): data[ %s ]",
-                        Connexions::varExport($data));
-        // */
-
         return parent::makeModel($data);
     }
 
@@ -320,8 +313,8 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
     {
         if ($id instanceof Model_Bookmark)
         {
-            $user =& $id->user;
-            $item =& $id->item;
+            $user = $id->user;
+            $item = $id->item;
         }
         else
         {
@@ -353,7 +346,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
 
         /*
         Connexions::log("Model_Mapper_Bookmark::_updateStatistics( %d, %d ): "
-                        . "row[ %s ]",
+                        . "for User: row[ %s ]",
                         $user->userId, $item->itemId,
                         Connexions::varExport($row));
         // */
@@ -386,9 +379,8 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
 
         /*
         Connexions::log("Model_Mapper_Bookmark::_updateStatistics( %d, %d ): "
-                        . "sql[ %s ], row[ %s ]",
+                        . "for Item: row[ %s ]",
                         $user->userId, $item->itemId,
-                        $select->assemble(),
                         Connexions::varExport($row));
         // */
 

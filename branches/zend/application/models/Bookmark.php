@@ -12,6 +12,9 @@ class Model_Bookmark extends Model_Base
 
     // The data for this Model
     protected   $_data      = array(
+            'userId'        => null,
+            'itemId'        => null,
+
             'name'          => null,
             'description'   => null,
             'rating'        => null,
@@ -19,12 +22,12 @@ class Model_Bookmark extends Model_Base
             'isPrivate'     => null,
             'taggedOn'      => null,
             'updatedOn'     => null,
-
-            // Other Domain Models (not directly persisted).
-            'user'          => null,    // Model_User instance or userId
-            'item'          => null,    // Model_Item instance or itemId
-            'tags'          => null,    // Model_Tag  array
     );
+
+    // Associated Domain Model instances
+    protected   $_user      = null;
+    protected   $_item      = null;
+    protected   $_tags      = null;
 
     /*************************************************************************
      * Connexions_Model abstract method implementations
@@ -34,26 +37,11 @@ class Model_Bookmark extends Model_Base
     /** @brief  Retrieve the unique identifier for this instance.  This MAY 
      *          return an array of identifiers as key/value pairs.
      *
-     *  This MUST return null if the model is not currently backed.
-     *
      *  @return The unique identifier.
      */
     public function getId()
     {
-        $id = null;
-        if ($this->isBacked())
-        {
-            $userId = ($this->_data['user'] instanceof Model_User
-                        ? $this->user->userId
-                        : $this->_data['user']);
-            $itemId = ($this->_data['item'] instanceof Model_Item
-                        ? $this->item->itemId
-                        : $this->_data['item']);
-
-            $id = array( $userId, $itemId );
-        }
-        
-        return ( $id );
+        return (array( $this->_data['userId'], $this->_data['itemId'] ));
     }
 
     /*************************************************************************
@@ -113,8 +101,7 @@ class Model_Bookmark extends Model_Base
         {
         case 'user':
             if ( (  $value !== null )             &&
-                 (! $value instanceof Model_User) &&
-                 (! is_int($value)) )
+                 (! $value instanceof Model_User) )
             {
                 throw new Exception('User must be a Model_User instance '
                                     . '('. (is_object($value)
@@ -124,13 +111,12 @@ class Model_Bookmark extends Model_Base
             }
 
             // Direct set, no further filtering nor validation
-            $this->_data[$name] = $value;
+            $this->_user = $value;
             break;
 
         case 'item':
             if ( (  $value !== null )             &&
-                 (! $value instanceof Model_Item) &&
-                 (! is_int($value)) )
+                 (! $value instanceof Model_Item) )
             {
                 throw new Exception('Item must be a Model_Item instance '
                                     . '('. (is_object($value)
@@ -140,7 +126,7 @@ class Model_Bookmark extends Model_Base
             }
 
             // Direct set, no further filtering nor validation
-            $this->_data[$name] = $value;
+            $this->_item = $value;
             break;
 
         case 'tags':
@@ -156,7 +142,7 @@ class Model_Bookmark extends Model_Base
             }
 
             // Direct set, no further filtering nor validation
-            $this->_data[$name] = $value;
+            $this->_tags = $value;
             break;
 
         default:
@@ -177,32 +163,32 @@ class Model_Bookmark extends Model_Base
         switch ($name)
         {
         case 'user':
-            $val = $this->_data['user'];
-            if ( is_int($val) )
+            $val = $this->_user;
+            if ( $val === null )
             {
                 // Load the Model_User instance now.
-                $val = $this->getMapper()->getUser( $val );
-                $this->user = $val; //$this->_data['user'] = $val;
+                $val = $this->getMapper()->getUser( $this->_data['userId'] );
+                $this->_user = $val; //$this->_data['user'] = $val;
             }
             break;
 
         case 'item':
-            $val = $this->_data['item'];
-            if ( is_int($val) )
+            $val = $this->_item;
+            if ( $val === null )
             {
                 // Load the Model_Item instance now.
-                $val = $this->getMapper()->getItem( $val );
-                $this->item = $val; //$this->_data['item'] = $val;
+                $val = $this->getMapper()->getItem( $this->_data['itemId'] );
+                $this->_item = $val; //$this->_data['item'] = $val;
             }
             break;
 
         case 'tags':
-            $val = $this->_data['tags'];
+            $val = $this->_tags;
             if ( $val === null )
             {
                 // Load the Model_Tag array now.
                 $val = $this->getMapper()->getTags( $this );
-                $this->tags = $val; //$this->_data['tags'] = $val;
+                $this->_tags = $val; //$this->_data['tags'] = $val;
             }
             break;
 
@@ -241,44 +227,28 @@ class Model_Bookmark extends Model_Base
     {
         $data = $this->_data;
 
-        // User
-        $user = ($deep === self::DEPTH_DEEP
-                    ? $this->user
-                    : $data['user']);
-        if ($user instanceof Model_User)
+        if ($deep === self::DEPTH_DEEP)
         {
-            if ($deep === self::DEPTH_DEEP)
-                $data['user'] = $user->toArray( $deep, $public );
-            else
-                $data['user'] = $user->userId;
-        }
+            // User: Force resolution via '->user' vs '->_user'
+            if ($this->user !== null)
+                $data['user'] = $this->user->toArray( $deep, $public );
 
-        // Item
-        $item = ($deep === self::DEPTH_DEEP
-                    ? $this->item
-                    : $data['item']);
-        if ($item instanceof Model_Item)
-        {
-            if ($deep === self::DEPTH_DEEP)
-                $data['item'] = $item->toArray( $deep, $public );
-            else
-                $data['item'] = $item->itemId;
-        }
+            // Item: Force resolution via '->item' vs '->_item'
+            if ($this->item !== null)
+                $data['item'] = $this->item->toArray( $deep, $public );
 
-        // Tags
-        $tags = ($deep === self::DEPTH_DEEP
-                    ? $this->tags
-                    : $data['tags']);
-        if ( ($tags !== null) && ($tags instanceof Model_Set_Tag) )
-        {
-            // Reduce the tags...
-            $reducedTags = array();
-            foreach ($tags as $idex => $tag)
+            // Tags: Force resolution via '->tags' vs '->_tags'
+            if ($this->tags !== null)
             {
-                array_push($reducedTags, $tag->toArray(  $deep, $public ));
-            }
+                // Reduce the tags...
+                $reducedTags = array();
+                foreach ($this->tags as $idex => $tag)
+                {
+                    array_push($reducedTags, $tag->toArray(  $deep, $public ));
+                }
 
-            $data['tags'] = $reducedTags;
+                $data['tags'] = $reducedTags;
+            }
         }
 
         return $data;
@@ -301,13 +271,9 @@ class Model_Bookmark extends Model_Base
      */
     public function invalidateCache()
     {
-        if ($this->_data['user'] instanceof Model_User)
-            $this->user = $this->_data['user']->getId();
-
-        if ($thie->_data['item'] instanceof Model_Item)
-            $this->item = $this->_data['item']->getId();
-
-        $this->tags = null;
+        $this->_user = null;
+        $this->_item = null;
+        $this->_tags = null;
 
         return $this;
     }

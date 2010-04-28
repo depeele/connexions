@@ -10,14 +10,17 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      *          data that should be directly persisted.  This method may also
      *          be used to update dynamic values
      *          (e.g. update date/time, last visit date/time).
-     *  @param  model   The Domain Model to reduce to an array.
+     *  @param  model       The Domain Model to reduce to an array.
+     *  @param  keepKeys    If keys need to be kept, a concrete sub-class can
+     *                      override reduceModel() and invoke with 'true'.
      *
      *  @return A filtered associative array containing data that should 
      *          be directly persisted.
      */
-    public function reduceModel(Connexions_Model $model)
+    public function reduceModel(Connexions_Model $model,
+                                                 $keepKeys = false)
     {
-        $data = parent::reduceModel( $model );
+        $data = parent::reduceModel( $model, $keepKeys );
 
         unset($data['userItemCount']);
         unset($data['userCount']);

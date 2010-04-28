@@ -5,9 +5,8 @@ require_once APPLICATION_PATH .'/models/Bookmark.php';
 class BookmarkTest extends BaseTestCase
 {
     protected   $_bookmark1 = array(
-            'user'          => null,
-            'item'          => null,
-            'tags'          => null,
+            'userId'        => 0,
+            'itemId'        => 0,
 
             'name'          => 'New Bookmark',
             'description'   => 'This is a new bookmark',
@@ -84,7 +83,7 @@ class BookmarkTest extends BaseTestCase
 
     public function testBookmarkGetId()
     {
-        $expected = null;
+        $expected = array(0, 0);
 
         $bookmark = new Model_Bookmark( );
 

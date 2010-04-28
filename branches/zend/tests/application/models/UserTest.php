@@ -92,7 +92,7 @@ class UserTest extends BaseTestCase
     public function testUserGetId()
     {
         $data     = array('userId'  => 1);
-        $expected = null;   //$data['userId'];
+        $expected = $data['userId'];
 
         $user = new Model_User( $data );
 
