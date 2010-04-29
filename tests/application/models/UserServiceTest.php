@@ -82,9 +82,9 @@ class UserServiceTest extends DbTestCase
         $user->pictureUrl = $expected['pictureUrl'];
         $user->profile    = $expected['profile'];
 
-        $this->assertTrue( ! $user->isBacked() );
+        $this->assertFalse(  $user->isBacked() );
         $this->assertTrue(   $user->isValid() );
-        $this->assertTrue( ! $user->isAuthenticated() );
+        $this->assertFalse(  $user->isAuthenticated() );
 
         // apiKey and lastVisit are dynamically generated
         $expected['apiKey']    = $user->apiKey;
@@ -96,36 +96,23 @@ class UserServiceTest extends DbTestCase
                                             Connexions_Model::FIELDS_ALL ));
     }
 
-    public function testUserServiceConstructorInjectionOfPropertiesFiltered()
+    public function testUserServiceCreateExistingReturnsBackedInstance()
     {
-        $expected = $this->_user0;
-
+        $expected = $this->_user1;
         $user     = $this->_service->create( $data = array(
             'name'        => $expected['name'],
             'fullName'    => $expected['fullName'],
-            'email'       => $expected['email'],
-            'pictureUrl'  => $expected['pictureUrl'],
-            'profile'     => $expected['profile'],
-            'isValid'     => true,
-            'isBacked'    => true,
         ));
 
-        $this->assertTrue( $user instanceof Model_User );
+        $this->assertTrue(  $user instanceof Model_User );
+        $this->assertTrue(  $user->isBacked() );
+        $this->assertTrue(  $user->isValid() );
+        $this->assertFalse( $user->isAuthenticated() );
 
-        $this->assertTrue( ! $user->isBacked() );
-        $this->assertTrue(   $user->isValid() );
-        $this->assertTrue( ! $user->isAuthenticated() );
-
-        // apiKey and lastVisit are dynamically generated
-        $expected['apiKey']    = $user->apiKey;
-        $expected['lastVisit'] = $user->lastVisit;
-
-        $this->assertEquals($user->getValidationMessages(), array() );
         $this->assertEquals($expected,
                             $user->toArray( Connexions_Model::DEPTH_SHALLOW,
                                             Connexions_Model::FIELDS_ALL ));
     }
-
 
     /*************************************************************************
      * Single Instance retrieval tests

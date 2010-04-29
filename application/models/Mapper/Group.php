@@ -41,7 +41,7 @@ class Model_Mapper_Group extends Model_Mapper_Base
         {
             $where = $id;
         }
-        else if (is_string($id) && (! is_numeric($id)) )
+        else if (is_string($id) && ( $id < 1 ))
         {
             // Lookup by group name
             $where = array('name=?' => $id);
@@ -72,12 +72,11 @@ class Model_Mapper_Group extends Model_Mapper_Base
     {
         $data = parent::reduceModel($model);
 
-        /* Covert any included user record to the associated database
-         * identifiers (userId).
-         */
-        $data['ownerId']    = ( is_array($data['owner'])
-                                ? $data['owner']['userId']
-                                : $data['owner']);
+        // /*
+        Connexions::log("Model_Mapper_Group::reduceModel(%d, %d): [ %s ]",
+                        $model->groupId, $data['groupId'],
+                        Connexions::varExport($data));
+        // */
 
         // Remove non-persisted fields
         unset($data['owner']);
@@ -159,42 +158,27 @@ class Model_Mapper_Group extends Model_Mapper_Base
         */
     }
 
-    /** @brief  Create a new instance of the Domain Model given a raw record.
-     *  @param  record  The raw record (array or Zend_Db_Table_Row).
-     *
-     *  Over-ride in order to "hide" userId/itemId in the user/item fields to
-     *  be used to locate/instantiate the associated Domain Models on-demand.
+    /** @brief  Create a new instance of the Domain Model given raw data, 
+     *          typically from a persistent store.
+     *  @param  data        The raw data.
+     *  @param  isBacked    Is the incoming data backed by persistent store?
+     *                      [ true ];
      *
      *  Note: We could also locate/instantiate NOW, but lazy-loading is
      *        typically more cost effective.
      *
-     *  @return The matching Domain Model (null if no match).
-     */
-    public function makeModel($record)
+     *  @return A matching Domain Model
+     *          (MAY be backed if a matching instance already exists).
+    public function makeModel($data, $isBacked = true)
     {
-        /* Let's be lazy ;^)
-        // Retrieve the associated User and Item
-        $userMapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $owner      = $userMapper->find( $record->ownerId );
-        */
+        $group = parent::makeModel($data, $isBacked);
 
-
-        // Construct the raw data for the new group
-        $data = ($record instanceof Zend_Db_Table_Row_Abstract
-                    ? $record->toArray()
-                    : $record);
-
-        // Move the database ids to the field that will hold the Domain Model
-        // instances when they are retrieved.
-        $data['owner'] = $data['ownerId']; unset($data['ownerId']);
-
-        /*
-        Connexions::log("Model_Mapper_Group::makeModel(): data[ %s ]",
-                        Connexions::varExport($data));
-        // */
-
-        return parent::makeModel($data);
+        // Retrieve the associated Owner, Members, and Items
+        $userMapper     = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $group->owner   = $userMapper->find( $group->ownerId );
+        //$group->members = $userMapper->find( $group->ownerId );
     }
+     */
 
     /*********************************************************************
      * Protected helpers

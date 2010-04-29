@@ -10,13 +10,12 @@ class GroupTest extends BaseTestCase
             'groupId'           => null,
             'name'              => 'Group1',
             'groupType'         => 'tag',
+            'ownerId'           => null,
+
             'controlMembers'    => 'owner',
             'controlItems'      => 'group',
             'visibility'        => 'public',
             'canTransfer'       => null,
-            'owner'             => null,
-            'items'             => null,
-            'members'           => null,
         );
         $data = array(
             'name'        => $expected['name'],

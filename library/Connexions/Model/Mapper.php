@@ -168,12 +168,16 @@ abstract class Connexions_Model_Mapper
                                 //Connexions_Model::FIELDS_PUBLIC );
     }
 
-    /** @brief  Create a new instance of the Domain Model given raw data.
-     *  @param  data    The raw data.
+    /** @brief  Create a new instance of the Domain Model given raw data, 
+     *          typically from a persistent store.
+     *  @param  data        The raw data.
+     *  @param  isBacked    Is the incoming data backed by persistent store?
+     *                      [ true ];
      *
-     *  @return The matching Domain Model (null if no match).
+     *  @return A matching Domain Model
+     *          (MAY be backed if a matching instance already exists).
      */
-    public function makeModel($data)
+    public function makeModel($data, $isBacked = true)
     {
         /* First, see if there is already an Identity Map entry matching the 
          * incoming data.
@@ -185,8 +189,8 @@ abstract class Connexions_Model_Mapper
         // No existing entry.  Create a new instance.
         $modelName   = $this->getModelName();
         $domainModel = new $modelName(array('mapper'    => $this,
-                                            'isBacked'  => true,
-                                            'isValid'   => true,
+                                            'isBacked'  => $isBacked,
+                                            'isValid'   => $isBacked,
                                             'data'      => $data));
 
         /*

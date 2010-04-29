@@ -15,17 +15,17 @@ class Model_Group extends Model_Base
             'groupId'           => null,
             'name'              => null,
             'groupType'         => 'tag',
+            'ownerId'           => null,
+
             'controlMembers'    => 'owner',
             'controlItems'      => 'owner',
             'visibility'        => 'private',
             'canTransfer'       => false,
-
-            // Other Domain Models (not directly persisted).
-            'owner'             => null, // Model_User instance or userId
-            'members'           => null, // Model_Set_User instance
-            'items'             => null, // Model_Set_(User|Item|Tag|Bookmark)
-                                         //  instance
     );
+
+    protected   $_owner     = null;
+    protected   $_members   = null;
+    protected   $_items     = null;
 
     /*************************************************************************
      * Connexions_Model abstract method implementations
@@ -63,8 +63,7 @@ class Model_Group extends Model_Base
         {
         case 'owner':
             if ( (  $value !== null )             &&
-                 (! $value instanceof Model_User) &&
-                 (! is_int($value)) )
+                 (! $value instanceof Model_User) )
             {
                 throw new Exception('Owner must be a Model_User instance '
                                     . '('. (is_object($value)
@@ -74,7 +73,7 @@ class Model_Group extends Model_Base
             }
 
             // Direct set, no further filtering or validation
-            $this->_data[$name] = $value;
+            $this->_owner = $value;
             break;
 
         case 'members':
@@ -89,7 +88,7 @@ class Model_Group extends Model_Base
             }
 
             // Direct set, no further filtering or validation
-            $this->_data[$name] = $value;
+            $this->_members = $value;
             break;
 
         case 'items':
@@ -105,7 +104,7 @@ class Model_Group extends Model_Base
             }
 
             // Direct set, no further filtering or validation
-            $this->_data[$name] = $value;
+            $this->_items = $value;
             break;
 
         default:
@@ -126,12 +125,12 @@ class Model_Group extends Model_Base
         switch ($name)
         {
         case 'owner':
-            $val = $this->_data['owner'];
-            if ( is_int($val) )
+            $val = $this->_owner;
+            if ( $val === null )
             {
                 // Load the Model_User instance now.
-                $val = $this->getMapper()->getOwner( $val );
-                $this->owner = $val; //$this->_data['owner'] = $val;
+                $val = $this->getMapper()->getOwner( $this->_data['ownerId'] );
+                $this->_owner = $val; //$this->_data['owner'] = $val;
             }
             break;
 
@@ -141,7 +140,7 @@ class Model_Group extends Model_Base
             {
                 // Load the Model_Set_User now.
                 $val = $this->getMapper()->getMembers( $this );
-                $this->members = $val; //$this->_data['members'] = $val;
+                $this->_members = $val; //$this->_data['members'] = $val;
             }
             break;
 
@@ -151,7 +150,7 @@ class Model_Group extends Model_Base
             {
                 // Load the Connexions_Model_Set now.
                 $val = $this->getMapper()->getItems( $this );
-                $this->items = $val; //$this->_data['items'] = $val;
+                $this->_items = $val; //$this->_data['items'] = $val;
             }
             break;
 
@@ -190,49 +189,41 @@ class Model_Group extends Model_Base
     {
         $data = $this->_data;
 
-        // Owner
-        $owner = ($deep === self::DEPTH_DEEP
-                    ? $this->owner
-                    : $data['owner']);
-        if ($owner instanceof Model_Owner)
+        if ($deep === self::DEPTH_DEEP)
         {
-            if ($deep === self::DEPTH_DEEP)
-                $data['owner'] = $owner->toArray( $deep, $public );
-            else
-                $data['owner'] = $owner->userId;
-        }
+            // Owner: Force resolution via '->owner' vs '->_owner'
+            if ($this->owner !== null)
+                $data['owner'] = $this->owner->toArray( $deep, $public );
 
-        // Members
-        $members = ($deep === self::DEPTH_DEEP
-                        ? $this->members
-                        : $data['members']);
-        if ( ($members !== null) && ($members instanceof Model_Set_User) )
-        {
-            // Reduce the members...
-            $reducedMembers = array();
-            foreach ($members as $idex => $tag)
+            // Members: Force resolution via '->members' vs '->_members'
+            if ($this->members !== null)
             {
-                array_push($reducedMembers, $tag->toArray(  $deep, $public ));
+                // Reduce the members...
+                $reducedMembers = array();
+                foreach ($this->members as $idex => $member)
+                {
+                    array_push($reducedMembers,
+                               $member->toArray(  $deep, $public ));
+                }
+
+                $data['members'] = $reducedMembers;
             }
 
-            $data['members'] = $reducedMembers;
-        }
-
-        // Items
-        $items = ($deep === self::DEPTH_DEEP
-                    ? $this->items
-                    : $data['items']);
-        if ( ($items !== null) && ($items instanceof Connexions_Model_Set) )
-        {
-            // Reduce the items...
-            $reducedItems = array();
-            foreach ($items as $idex => $tag)
+            // Items: Force resolution via '->items' vs '->_items'
+            if ($this->items !== null)
             {
-                array_push($reducedItems, $tag->toArray(  $deep, $public ));
-            }
+                // Reduce the items...
+                $reducedItems = array();
+                foreach ($this->items as $idex => $item)
+                {
+                    array_push($reducedItems,
+                               $item->toArray(  $deep, $public ));
+                }
 
-            $data['items'] = $reducedItems;
+                $data['items'] = $reducedItems;
+            }
         }
+
         return $data;
     }
 
@@ -253,11 +244,9 @@ class Model_Group extends Model_Base
      */
     public function invalidateCache()
     {
-        if ($this->_data['owner'] instanceof Model_User)
-            $this->user = $this->_data['owner']->getId();
-
-        $this->members = null;
-        $this->items   = null;
+        $this->_owner   = null;
+        $this->_members = null;
+        $this->_items   = null;
 
         return $this;
     }

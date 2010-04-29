@@ -121,17 +121,6 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
      */
     public function reduceModel(Connexions_Model $model)
     {
-        $userId = $model->userId;
-        $itemId = $model->itemId;
-
-        /*
-        Connexions::log("Model_Mapper_Bookmark::reduceModel(%d, %d): "
-                        .   "is %sbacked, keep keys",
-                        $userId, $itemId,
-                        ($model->isBacked() ? '' : 'NOT '));
-        // */
-
-
         // Need to KEEP the "keys" for this model
         $data = parent::reduceModel($model, true);
 
@@ -144,8 +133,6 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         /* Covert any included user/item record to the associated database
          * identifiers (userId/itemId).
          */
-        $data['userId']     = $userId;
-        $data['itemId']     = $itemId;
         $data['rating']     = ( is_numeric($data['rating'])
                                 ? $data['rating']
                                 : 0 );
@@ -264,36 +251,30 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         return $this;
     }
 
-    /** @brief  Create a new instance of the Domain Model given a raw record.
-     *  @param  record  The raw record (array or Zend_Db_Table_Row).
+    /** @brief  Create a new instance of the Domain Model given raw data, 
+     *          typically from a persistent store.
+     *  @param  data        The raw data.
+     *  @param  isBacked    Is the incoming data backed by persistent store?
+     *                      [ true ];
      *
-     *  Over-ride in order to "hide" userId/itemId in the user/item fields to
-     *  be used to locate/instantiate the associated Domain Models on-demand.
+     *  Note: We could also locate/instantiate the associated user, item, and 
+     *        tag instances NOW, but lazy-loading is typically more cost 
+     *        effective.
      *
-     *  Note: We could also locate/instantiate NOW, but lazy-loading is
-     *        typically more cost effective.
-     *
-     *  @return The matching Domain Model (null if no match).
-     */
-    public function makeModel($record)
+     *  @return A matching Domain Model
+     *          (MAY be backed if a matching instance already exists).
+    public function makeModel($data, $isBacked = true)
     {
-        /* Let's be lazy ;^)
         // Retrieve the associated User and Item
         $userMapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $user       = $userMapper->find( $record->userId );
+        $user       = $userMapper->find( $data->userId );
 
         $itemMapper = Connexions_Model_Mapper::factory('Model_Mapper_Item');
-        $item       = $itemMapper->find( $record->itemId );
-        */
+        $item       = $itemMapper->find( $data->itemId );
 
-
-        // Construct the raw data for the new bookmark
-        $data = ($record instanceof Zend_Db_Table_Row_Abstract
-                    ? $record->toArray()
-                    : $record);
-
-        return parent::makeModel($data);
+        return parent::makeModel($data, $isBacked);
     }
+     */
 
     /*********************************************************************
      * Protected helpers
