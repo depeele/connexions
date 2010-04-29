@@ -10,13 +10,15 @@ class Model_UserAuth extends Model_Base
     const   AUTH_PASSWORD   = 'password';
     const   AUTH_PKI        = 'pki';
 
+    const   AUTH_DEFAULT    = self::AUTH_PASSWORD;
+
     /* inferred via classname
     protected   $_mapper    = 'Model_Mapper_UserAuth'; */
 
     // The data for this Model
     protected   $_data      = array(
             'userId'        => null,
-            'authType'      => self::AUTH_PASSWORD,
+            'authType'      => self::AUTH_DEFAULT,
             'credential'    => '',
     );
 
@@ -39,7 +41,7 @@ class Model_UserAuth extends Model_Base
     }
 
     /*************************************************************************
-     * Connexions_Model - abstract static method implementations
+     * Connexions_Model - abstract method implementations
      *
      */
 
@@ -132,9 +134,11 @@ class Model_UserAuth extends Model_Base
     {
         $norm = $this->_normalizeCredential($credential);
 
+        // /*
         Connexions::log("Model_UserAuth::compare(%s): "
                         . "normalize[ %s ] to [ %s ]",
                         $credential, $norm, $this->credential);
+        // */
 
         return ($norm === $this->credential);
     }
@@ -183,5 +187,35 @@ class Model_UserAuth extends Model_Base
         }
 
         return $this->_user;
+    }
+
+    /*************************************************************************
+     * Static methods
+     *
+     */
+
+    /** @brief  Given an authentication type string, check if it's valid.
+     *  @param  type    The type string to check.
+     *
+     *  @return true (valid) or false (invalid)
+     */
+    public static function validateAuthType($type)
+    {
+        $validity = false;
+        switch ($type)
+        {
+        case self::AUTH_OPENID:
+        case self::AUTH_PASSWORD:
+        case self::AUTH_PKI:
+            $validity = true;
+            break;
+        }
+
+        /*
+        Connexions::log("Model_UserAuth::validateAuthType( %s ): %svalid",
+                        $type, ($validity ? '' : 'NOT '));
+        // */
+
+        return $validity;
     }
 }

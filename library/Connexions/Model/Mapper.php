@@ -397,7 +397,7 @@ abstract class Connexions_Model_Mapper
         {
             $mapperName = get_class($mapper);
         }
-        else
+        else if (is_string($mapper))
         {
             // See if we have a Mapper instance with this name in our cache
             $mapperName = $mapper;
@@ -426,6 +426,12 @@ abstract class Connexions_Model_Mapper
                     // */
                 }
             }
+        }
+        else
+        {
+            throw new Exception("Connexions_Model_Mapper::factory(): "
+                                . "requires a Connexions_Model_Mapper "
+                                . "instance or mapper name string");
         }
 
         if (! isset(self::$_instCache[ $mapperName ]))

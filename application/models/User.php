@@ -37,7 +37,7 @@ class Model_User extends Model_Base
     protected   $_tags              = null;
     protected   $_bookmarks         = null;
 
-    protected   $_authType          = Model_UserAuth::AUTH_PASSWORD;
+    protected   $_authType          = Model_UserAuth::AUTH_DEFAULT;
     protected   $_credential        = null;
     protected   $_isAuthenticated   = false;
 
@@ -56,14 +56,43 @@ class Model_User extends Model_Base
         return ( $this->userId );
     }
 
+    /** @brief  Establish the 'authType' to be used for authentication.
+     *  @param  authType    authentication type -- MUST be a valid type per
+     *                      User_AuthType.
+     *
+     *  @throws Exception('Invalid authType')
+     *  @return $this for a fluent interface.
+     */
     public function setAuthType($authType)
     {
-        $this->_authType = $authType;
+        if (Model_UserAuth::validateAuthType($authType))
+        {
+            $this->_authType = $authType;
+        }
+        else
+        {
+            throw new Exception("Invalid authType");
+        }
+
+        return $this;
     }
 
-    public function setCredential($credential)
+    /** @brief  Establish the 'credential' to be used for authentication.
+     *  @param  credential  The authentication credential;
+     *  @param  authType    OPTIONAL authentication type -- may also be set via
+     *                      setAuthType().  If NOT set, the default value will
+     *                      be used;
+     *
+     *  @throws Exception('Invalid authType')
+     *  @return $this for a fluent interface.
+     */
+    public function setCredential($credential, $authType = null)
     {
         $this->_credential = $credential;
+        if ($authType !== null)
+            $this->setAuthType($authType);
+
+        return $this;
     }
 
     /*************************************************************************
@@ -138,21 +167,15 @@ class Model_User extends Model_Base
         switch ($name)
         {
         case 'authType':
-            $this->_authType = $value;
-            return;
-
+            $this->setAuthType( $value );
             break;
 
         case 'credential':
-            $this->_credential = $value;
-            return;
-
+            $this->setCredential( $value );
             break;
 
         case 'authenticated':
-            $this->_isAuthenticated = (bool)$value;
-            return;
-
+            $this->setAuthenticated( $value );
             break;
 
         case 'tags':
@@ -162,8 +185,6 @@ class Model_User extends Model_Base
                                     . "instance of Model_Tags");
             }
             $this->_tags = $value;
-            return;
-
             break;
 
         case 'bookmarks':
@@ -173,12 +194,13 @@ class Model_User extends Model_Base
                                     . "instance of Model_Bookmarks");
             }
             $this->_bookmarks = $value;
-            return;
-
             break;
+
+        default:
+            parent::__set($name, $value);
         }
 
-        return parent::__set($name, $value);
+        return $this;
     }
 
     /** @brief  Return a string representation of this instance.
@@ -224,9 +246,8 @@ class Model_User extends Model_Base
     {
         $this->invalidateCache();
 
-        $this->_authType        = Model_UserAuth::AUTH_PASSWORD;
-        $this->_credential      = null;
-        $this->_isAuthenticated = false;
+        $this->setCredential(null, Model_UserAuth::AUTH_DEFAULT);
+        $this->setAuthenticated(false);
 
         return parent::invalidate();
     }
@@ -241,6 +262,49 @@ class Model_User extends Model_Base
         $this->_bookmarks   = null;
 
         return $this;
+    }
+
+    /** @brief  Generate a string representation of this record.
+     *
+     *  @return A string.
+     */
+    public function debugDump()
+    {
+        $str = parent::debugDump();
+
+        // Remove the trailing "\n];" (3 characters)
+        $str = substr($str, 0, -3);
+
+        // Include authentication status at the top
+        $str = preg_replace('/valid \[/', 'valid, '
+                                     . ($this->isAuthenticated() ? '' : 'NOT ')
+                                     . 'authenticated [',
+                            $str);
+
+        // Include authentication details
+        foreach (array('authType', 'credential') as $key)
+        {
+            $val  = $this->__get($key);
+            $str .= sprintf (" %-15s == %-15s %s [ %s ]%s\n",
+                             $key, gettype($val),
+                             //($this->_valid[$key] !== true
+                             //   ? (isset($this->_valid[$key])
+                             //       ? "!"
+                             //       : "?")
+                             //   : " "),
+                             '',
+                             $val,
+                             //($this->_valid[$key] !== true
+                             //   ? (is_array($this->_valid[$key])
+                             //       ? " : ". implode(', ',$this->_valid[$key])
+                             //       : $this->_valid[$key])
+                             //   : ''));
+                             '');
+        }
+
+        $str .= "\n];";
+
+        return $str;
     }
 
     /** @brief  Set the authentication state for this user.
@@ -272,101 +336,86 @@ class Model_User extends Model_Base
     /** @brief  Perform an authentication check.
      *
      *  This makes use of the current Model_User instance as the holder of 
-     *  incoming information
-     *      (i.e. 'userId' or 'name' AND 'credential' AND 'authType').
+     *  incoming information (i.e. 'credential' and 'authType').  This instance
+     *  MUST be backed and valid.  If no 'authType' has been set, the default
+     *  type will be used.
+     *
+     *  Authentication information MUST be established prior to invoking this
+     *  method:
+     *      - setAuthType()     Required iff NOT using the default
+     *                          authentication type
+     *                          (User_AuthType::AUTH_DEFAULT);
+     *      - setCredential()   REQUIRED to establish the credential to use
+     *                          when authenticating;
      *
      *  To authenticate:
-     *      1) If THIS instance is backed
-     *         a) THEN use THIS instance as the identified user;
-     *         b) ELSE locate a valid user using the 'userId' or 'name' from 
-     *            THIS instance,
-     *      2) Locate a Model_UserAuth instance using the 'userId' of the 
-     *         identified user as well as the 'authType' from THIS instance;
-     *      3) Invoke 'compare()' on the Model_UserAuth instance passing in the 
-     *         'credential' from THIS instance;
-     *      4) Generate an appropriate Zend_Auth_Result;
-     *
-     *
-     *  Note: This requires AT LEAST
-     *              'name' OR 'userId',
-     *              setCredential() and,
-     *              unless the authentication type is 'password', setAuthType()
+     *      1) If THIS instance is backed and valid:
+     *         a) Locate a Model_UserAuth instance using the 'userId' as well
+     *            as the 'authType' (if unset, Model_UserAuth will use the
+     *            default type) from THIS instance;
+     *         b) Invoke 'compare()' on the Model_UserAuth instance passing in
+     *            the 'credential' from THIS instance;
+     *      2) Generate an appropriate Zend_Auth_Result;
      *
      *  @return Zend_Auth_Result
      */
     public function authenticate()
     {
+        Connexions::log("Model_User::authenticate(): "
+                        . "is %sbacked, %svalid, userId %d, "
+                        . "authType '%s', credential '%s'",
+                        ($this->isBacked()         ? ''        : 'NOT '),
+                        ($this->isValid()          ? ''        : 'NOT '),
+                        $this->userId,
+                        $this->_authType, $this->_credential);
+
+
         // See if the user represented by this instnace can be located
         // either by userId or name
         $user = null;
         $auth = null;
-        if ($this->isBacked())
+        if ($this->isBacked() && $this->isValid())
         {
-            // 1a) Use THIS instance as the validated user;
+            // 1) THIS instance is backed and valid;
             $user =& $this;
-        }
-        else
-        {
-            // 1b) Locate a valid, backed user...
-            $mapper = $this->getMapper();
-            if ($this->userId > 0)
-            {
-                $user = $mapper->find( $this->userId );
-            }
-            else if ( ! empty($this->name) )
-            {
-                $matches = $mapper->fetch( array('name=?' => $this->name) );
-                if (! empty($matches))
-                {
-                    $user = $matches[0];
-                }
-            }
-            // else, Ambiguous User -- handled below...
-        }
 
-        // 2)
-        if ( $user !== null )
-        {
-            /* 2) See if we can find a 'userAuth' record for this
-             *    userId and authType
-             *
-             * Note: We're using the 'userId' of the located user instance and 
-             *       the 'authType' and 'credential' of THIS instance.
-             *       They MAY be different (see 1b above).
+
+            /* 1a) See if we can find a 'userAuth' record for this
+             *     userId and authType
              */
             $authMapper =
                 Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
             $auth       = $authMapper->find( array($user->userId,
-                                                   $this->_authType) );
+                                                   $user->_authType) );
             if ($auth !== null)
+            {
                 $auth->user = $user;
 
+                /*
+                Connexions::log("Model_User::authenticate(): "
+                                . "Found user '%s':%d, authType[ %s ], "
+                                . "UserAuth [ %s ]",
+                                $user->name, $user->userId, $user->_authType,
+                                (is_object($auth)
+                                    ? get_class($auth)
+                                    : gettype($auth)) );
+                // */
 
-            /*
-            Connexions::log("Model_User::authenticate(): "
-                            . "Found user '%s':%d, authType[ %s ], "
-                            . "UserAuth [ %s ]",
-                            $user->name, $user->userId, $this->_authType,
-                            (is_object($auth)
-                                ? get_class($auth)
-                                : gettype($auth)) );
-            // */
-
-            /* 3) Invoke 'compare()' on the Model_UserAuth instance passing in 
-             *    the 'credential' from THIS instance;
-             */
-            if ( (! $auth instanceof Model_UserAuth) ||
-                 (  $auth->compare($this->_credential) !== true ) )
-            {
-                // Authentication failure : Invalid Credential
-                $auth = null;
+                /* 1b) Invoke 'compare()' on the Model_UserAuth instance
+                 *     passing in the 'credential' from THIS instance;
+                 */
+                if ( $auth->compare($this->_credential) !== true )
+                {
+                    // Authentication failure : Invalid Credential
+                    $auth = null;
+                }
             }
         }
 
-
-        // 4) Generate an appropriate Zend_Auth_Result;
+        // 2) Generate an appropriate Zend_Auth_Result;
         if ($user === null)
         {
+            // This user is either non-backed or non-valid
             $result = new Zend_Auth_Result(
                             //Zend_Auth_Result::FAILURE_IDENTITY_NOT_FOUND,
                             Zend_Auth_Result::FAILURE_IDENTITY_AMBIGUOUS,
@@ -374,28 +423,20 @@ class Model_User extends Model_Base
         }
         else if ($auth === null)
         {
+            // Authentication failed -- invalid credential
             $result = new Zend_Auth_Result(
                             Zend_Auth_Result::FAILURE_CREDENTIAL_INVALID,
                             null);
         }
         else
         {
-            /* Retrieve configuration / construction data for the
+            /* Successful authentication!
+             *
+             * Retrieve configuration / construction data for the
              * identified/authenticated user.
              */
             $config = $user->toArray( self::DEPTH_SHALLOW,
                                       self::FIELDS_ALL );
-
-            if ($user !== $this)
-            {
-                /* Update THIS model to match the identified/authenticated user
-                 *
-                 * :WARNING: We may have an Identity Map issue since we're
-                 *           basically duplicating an existing instance.
-                 */
-                $this->populate( $config );
-                $this->setIsBacked( $user->isBacked() );
-            }
 
             $this->setAuthenticated();
 
@@ -411,12 +452,25 @@ class Model_User extends Model_Base
         return $result;
     }
 
+    /**********************************************
+     * Additional authentication related methods
+     *
+     */
+
     /** @brief  De-authenticate this user. */
     public function logout()
     {
         Zend_Auth::getInstance()->clearIdentity();
 
         $this->setAuthenticated(false);
+    }
+
+    public function addAuthenticator($type, $credential)
+    {
+    }
+
+    public function removeAuthenticator($type, $credential)
+    {
     }
 
     /*************************************************************************

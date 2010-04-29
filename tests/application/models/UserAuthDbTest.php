@@ -234,28 +234,59 @@ class UserAuthDbTest extends DbTestCase
 
     public function testUserAuthenticationInvalidUser()
     {
-        $expected     = new Zend_Auth_Result(
+        $expected   = new Zend_Auth_Result(
                                 Zend_Auth_Result::FAILURE_IDENTITY_AMBIGUOUS,
                                 null);
 
-        $user         = new Model_User( array(
-                                'userId'     => 32,
-                                'credential' => 'abc' ));
+        $user       = new Model_User( array(
+                                'isValid'  => true,
+                                'isBacked' => false,
+                                'data'     => array(
+                                    'userId'     => 32,
+                                    'name'       => 'User 32',
+                                    'credential' => 'abc',
+                                )
+                          ) );
 
         $this->assertEquals( $expected, $user->authenticate() );
     }
 
-    public function testUserAuthenticationInvalidCredential()
+    public function testUserAuthenticationInvalidAuthType()
     {
-        $expected     = new Zend_Auth_Result(
+        $expected   = new Zend_Auth_Result(
                                 Zend_Auth_Result::FAILURE_CREDENTIAL_INVALID,
                                 null);
-        $expectedUser = $this->_user1['model'];
+        $eUser      = $this->_user1['model'];
 
-        $user         = new Model_User( array(
-                                'name'       => $expectedUser['name'],
-                                'authType'   => 'pki',
-                                'credential' => 'abc' ));
+        $user       = new Model_User( array(
+                                'isValid'  => true,
+                                'isBacked' => true,
+                                'data'     => $eUser,
+                          ) );
+
+        try
+        {
+            $user->authType = 'invalid_auth_type';
+            $this->fail("Invalid Auth Type was permitted");
+        }
+        catch (Exception $e)
+        {
+            $this->assertEquals("Invalid authType", $e->getMessage());
+        }
+    }
+
+    public function testUserAuthenticationInvalidCredential()
+    {
+        $expected   = new Zend_Auth_Result(
+                                Zend_Auth_Result::FAILURE_CREDENTIAL_INVALID,
+                                null);
+        $eUser      = $this->_user1['model'];
+        $user       = new Model_User( array(
+                                'isValid'  => true,
+                                'isBacked' => true,
+                                'data'     => $eUser,
+                          ) );
+        $user->setCredential('abc', 'pki');
 
         //printf ("User[ %s ]\n", $user->debugDump());
 
@@ -264,14 +295,16 @@ class UserAuthDbTest extends DbTestCase
 
     public function testUserAuthenticationSuccess()
     {
-        $expectedUser = $this->_user1['model'];
-        $expected     = new Zend_Auth_Result(
+        $eUser      = $this->_user1['model'];
+        $expected   = new Zend_Auth_Result(
                                 Zend_Auth_Result::SUCCESS,
-                                $expectedUser);
-
-        $user         = new Model_User( array(
-                                'name'       => $expectedUser['name'],
-                                'credential' => 'abcdefg' ));
+                                $eUser);
+        $user       = new Model_User( array(
+                                'isValid'  => true,
+                                'isBacked' => true,
+                                'data'     => $eUser,
+                          ) );
+        $user->setCredential('abcdefg');
 
         $this->assertEquals( $expected, $user->authenticate() );
         $this->assertTrue  ( $user->isAuthenticated() );
@@ -281,14 +314,16 @@ class UserAuthDbTest extends DbTestCase
 
     public function testUserAuthenticationPreHashedSuccess()
     {
-        $expectedUser = $this->_user1['model'];
-        $expected     = new Zend_Auth_Result(
+        $eUser      = $this->_user1['model'];
+        $expected   = new Zend_Auth_Result(
                                 Zend_Auth_Result::SUCCESS,
-                                $expectedUser);
-
-        $user         = new Model_User( array(
-                        'name'       => $expectedUser['name'],
-                        'credential' => '77c3d13750c0a0a59b0a2cf1bc189f61' ));
+                                $eUser);
+        $user       = new Model_User( array(
+                                'isValid'  => true,
+                                'isBacked' => true,
+                                'data'     => $eUser,
+                          ) );
+        $user->setCredential('77c3d13750c0a0a59b0a2cf1bc189f61');
 
         $this->assertEquals( $expected, $user->authenticate() );
         $this->assertTrue  ( $user->isAuthenticated() );

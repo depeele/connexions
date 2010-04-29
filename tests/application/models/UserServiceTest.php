@@ -4,7 +4,6 @@ require_once APPLICATION_PATH .'/services/User.php';
 
 class UserServiceTest extends DbTestCase
 {
-    protected   $_service   = null;
     private     $_user0 = array(
             'userId'        => 0,
             'name'          => 'User0',
@@ -44,16 +43,6 @@ class UserServiceTest extends DbTestCase
                         dirname(__FILE__) .'/_files/5users.xml');
     }
 
-    public function setUp()
-    {
-        // PHPUnit_Extensions_Database_TestCase
-        parent::setUp();
-
-        $this->_service = Connexions_Service::factory('Model_User');
-        //$this->_service = Connexions_Service::factory('Service_User');
-        //$this->_service = new Service_User();
-    }
-
     public function testUserServiceFactory()
     {
         $service1 = Connexions_Service::factory('Model_User');
@@ -69,8 +58,9 @@ class UserServiceTest extends DbTestCase
     public function testUserServiceConstructorInjectionOfProperties()
     {
         $expected = $this->_user0;
+        $service  = Connexions_Service::factory('Model_User');
 
-        $user     = $this->_service->create( $data = array(
+        $user     = $service->create( $data = array(
             'name'        => $expected['name'],
             'fullName'    => $expected['fullName'],
         ));
@@ -99,7 +89,8 @@ class UserServiceTest extends DbTestCase
     public function testUserServiceCreateExistingReturnsBackedInstance()
     {
         $expected = $this->_user1;
-        $user     = $this->_service->create( $data = array(
+        $service  = Connexions_Service::factory('Model_User');
+        $user     = $service->create( $data = array(
             'name'        => $expected['name'],
             'fullName'    => $expected['fullName'],
         ));
@@ -121,7 +112,8 @@ class UserServiceTest extends DbTestCase
     public function testUserServiceRetrieveByUserId1()
     {
         $expected = $this->_user1;
-        $user     = $this->_service->retrieve( array(
+        $service  = Connexions_Service::factory('Model_User');
+        $user     = $service->retrieve( array(
                                         'userId'=> $expected['userId'],
                     ));
 
@@ -138,7 +130,8 @@ class UserServiceTest extends DbTestCase
     public function testUserServiceRetrieveByUserId2()
     {
         $expected = $this->_user1;
-        $user     = $this->_service->retrieve( array(
+        $service  = Connexions_Service::factory('Model_User');
+        $user     = $service->retrieve( array(
                                         'name' => $expected['name'],
                     ));
 
@@ -155,7 +148,8 @@ class UserServiceTest extends DbTestCase
     public function testUserServiceRetrieveByUserId3()
     {
         $expected = $this->_user1;
-        $user     = $this->_service->retrieve( $expected['userId'] );
+        $service  = Connexions_Service::factory('Model_User');
+        $user     = $service->retrieve( $expected['userId'] );
 
         $this->assertTrue(  $user instanceof Model_User );
         $this->assertTrue(  $user->isBacked() );
@@ -170,7 +164,8 @@ class UserServiceTest extends DbTestCase
     public function testUserServiceRetrieveByUserId4()
     {
         $expected = $this->_user1;
-        $user     = $this->_service->retrieve( $expected['name'] );
+        $service  = Connexions_Service::factory('Model_User');
+        $user     = $service->retrieve( $expected['name'] );
 
         $this->assertTrue(  $user instanceof Model_User );
         $this->assertTrue(  $user->isBacked() );
@@ -189,7 +184,8 @@ class UserServiceTest extends DbTestCase
 
     public function testUserServiceRetrieveSet()
     {
-        $users  = $this->_service->retrieveSet();
+        $service  = Connexions_Service::factory('Model_User');
+        $users    = $service->retrieveSet();
 
         // Retrieve the expected set
         $ds = $this->createFlatXmlDataSet(
@@ -200,7 +196,8 @@ class UserServiceTest extends DbTestCase
 
     public function testUserServiceRetrievePaginated()
     {
-        $users  = $this->_service->retrievePaginated();
+        $service  = Connexions_Service::factory('Model_User');
+        $users    = $service->retrievePaginated();
 
         /*
         printf ("%d users of %d, %d pages with %d per page, current page %d\n",
@@ -241,8 +238,8 @@ class UserServiceTest extends DbTestCase
     {
         $expected   = $this->_user0;
         $credential = 'abcdefg';
-        $user       = $this->_service->authenticate( $expected['name'],
-                                                     $credential );
+        $service    = Connexions_Service::factory('Model_User');
+        $user       = $service->authenticate( $expected['name'], $credential );
 
         // apiKey and lastVisit are dynamically generated
         $expected['apiKey']    = $user->apiKey;
@@ -258,8 +255,8 @@ class UserServiceTest extends DbTestCase
     {
         $expected   = $this->_user1;
         $credential = 'abc';
-        $user       = $this->_service->authenticate( $expected['name'],
-                                                     $credential );
+        $service    = Connexions_Service::factory('Model_User');
+        $user       = $service->authenticate( $expected['name'], $credential );
 
         $this->assertFalse ( $user->isAuthenticated() );
         $this->assertEquals($expected,
@@ -271,8 +268,8 @@ class UserServiceTest extends DbTestCase
     {
         $expected   = $this->_user1;
         $credential = 'abcdefg';
-        $user       = $this->_service->authenticate( $expected['name'],
-                                                     $credential );
+        $service    = Connexions_Service::factory('Model_User');
+        $user       = $service->authenticate( $expected['name'], $credential );
 
         $this->assertTrue  ( $user->isAuthenticated() );
         $this->assertEquals($expected,
@@ -282,9 +279,6 @@ class UserServiceTest extends DbTestCase
         // De-authenticate this user for the next test
         $user->logout();
         $this->assertFalse ( $user->isAuthenticated() );
-
-        // Clear out identity maps so future tests have a clean slate
-        //$user->invalidate();  // or just ->unsetIdentity();
     }
 
     public function testUserServiceAuthenticationPreHashedSuccess()
@@ -292,8 +286,8 @@ class UserServiceTest extends DbTestCase
         $expected   = $this->_user1;
                     // md5($expected['name'] .':abcdefg');
         $credential = '77c3d13750c0a0a59b0a2cf1bc189f61';
-        $user       = $this->_service->authenticate( $expected['name'],
-                                                     $credential );
+        $service    = Connexions_Service::factory('Model_User');
+        $user       = $service->authenticate( $expected['name'], $credential );
 
         $this->assertTrue  ( $user->isAuthenticated() );
         $this->assertEquals($expected,
@@ -303,17 +297,14 @@ class UserServiceTest extends DbTestCase
         // De-authenticate this user for the next test
         $user->logout();
         $this->assertFalse ( $user->isAuthenticated() );
-
-        // Clear out identity maps so future tests have a clean slate
-        //$user->invalidate();  // or just ->unsetIdentity();
     }
 
     public function testUserServiceAuthenticationPkiMismatch()
     {
         $expected   = $this->_user1;
         $credential = 'C=US, ST=Maryland, L=Baltimore, O=City Government, OU=Public Works, CN=User 1/emailAddress=User1@home.com';
-        $user       = $this->_service->authenticate( $expected['name'],
-                                                     $credential );
+        $service    = Connexions_Service::factory('Model_User');
+        $user       = $service->authenticate( $expected['name'], $credential );
 
         $this->assertFalse ( $user->isAuthenticated() );
         $this->assertEquals($expected,
@@ -323,17 +314,14 @@ class UserServiceTest extends DbTestCase
         // De-authenticate this user for the next test
         $user->logout();
         $this->assertFalse ( $user->isAuthenticated() );
-
-        // Clear out identity maps so future tests have a clean slate
-        //$user->invalidate();  // or just ->unsetIdentity();
     }
 
     public function testUserServiceAuthenticationPkiSuccess()
     {
         $expected   = $this->_user1;
         $credential = 'C=US, ST=Maryland, L=Baltimore, O=City Government, OU=Public Works, CN=User 1/emailAddress=User1@home.com';
-        $user       = $this->_service->authenticate( $expected['name'],
-                                                     $credential,
+        $service    = Connexions_Service::factory('Model_User');
+        $user       = $service->authenticate( $expected['name'], $credential,
                                                      Model_UserAuth::AUTH_PKI);
 
         $this->assertTrue  ( $user->isAuthenticated() );
@@ -344,35 +332,29 @@ class UserServiceTest extends DbTestCase
         // De-authenticate this user for the next test
         $user->logout();
         $this->assertFalse ( $user->isAuthenticated() );
-
-        // Clear out identity maps so future tests have a clean slate
-        //$user->invalidate();  // or just ->unsetIdentity();
     }
 
     public function testUserServiceAuthenticationOpenIdMismatch()
     {
         $expected   = $this->_user1;
         $credential = 'https://google.com/profile/User.1';
-        $user       = $this->_service->authenticate( $expected['name'],
-                                                     $credential );
+        $service    = Connexions_Service::factory('Model_User');
+        $user       = $service->authenticate( $expected['name'], $credential );
 
         $this->assertFalse ( $user->isAuthenticated() );
         $this->assertEquals($expected,
                             $user->toArray( Connexions_Model::DEPTH_SHALLOW,
                                             Connexions_Model::FIELDS_ALL ));
-
-        // Clear out identity maps so future tests have a clean slate
-        //$user->invalidate();  // or just ->unsetIdentity();
     }
 
     public function testUserServiceAuthenticationOpenIdSuccess()
     {
         $expected   = $this->_user1;
         $credential = 'https://google.com/profile/User.1';
-        $user       = $this->_service->authenticate(
-                                        $expected['name'],
-                                        $credential,
-                                        Model_UserAuth::AUTH_OPENID);
+        $service    = Connexions_Service::factory('Model_User');
+        $user       = $service->authenticate( $expected['name'],
+                                              $credential,
+                                              Model_UserAuth::AUTH_OPENID);
 
         $this->assertTrue  ( $user->isAuthenticated() );
         $this->assertEquals($expected,
@@ -382,8 +364,5 @@ class UserServiceTest extends DbTestCase
         // De-authenticate this user for the next test
         $user->logout();
         $this->assertFalse ( $user->isAuthenticated() );
-
-        // Clear out identity maps so future tests have a clean slate
-        //$user->invalidate();  // or just ->unsetIdentity();
     }
 }
