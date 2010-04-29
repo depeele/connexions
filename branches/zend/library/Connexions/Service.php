@@ -38,18 +38,17 @@ abstract class Connexions_Service
      */
     public function create(array $data)
     {
-        $modelName = $this->_getModelName();    //_modelName;
+        $mapper = $this->_getMapper();
 
-        // Unset any special parameters
-        if (is_array($data['data']))
-            $data = $data['data'];
+        // First, can we find a matching instance?
+        $model = $mapper->find( $data );
+        if ($model !== null)
+            return $model;
 
-        unset($data['mapper']);
-        unset($data['filtier']);
-        unset($data['isBacked']);
-        unset($data['isValid']);
-
-        return new $modelName( $data );
+        /* If we cannot find an existing instance, create an un-backed
+         * Model instance.
+         */
+        return $mapper->makeModel( $data, false );
     }
 
     /** @brief  Retrieve a single, existing Domain Model instance.

@@ -8,13 +8,12 @@ class GroupDbTest extends DbTestCase
                         'groupId'        => 1,
                         'name'           => 'Group1',
                         'groupType'      => 'tag',
+                        'ownerId'        => 1,
+
                         'controlMembers' => 'owner',
                         'controlItems'   => 'owner',
                         'visibility'     => 'private',
                         'canTransfer'    => 0,
-                        'owner'          => 1,
-                        'items'          => null,
-                        'members'        => null,
     );
     private $_user1 = array(
                         'userId'        => 1,
@@ -148,7 +147,6 @@ class GroupDbTest extends DbTestCase
         // */
 
         $expected = $this->_group1;
-        $expected['members'] = $memberMin;
 
         $mapper = new Model_Mapper_Group( );
         $group  = $mapper->find( $expected['name'] );
@@ -167,6 +165,8 @@ class GroupDbTest extends DbTestCase
         $this->assertEquals($expected,
                             $group->toArray( Connexions_Model::DEPTH_SHALLOW,
                                              Connexions_Model::FIELDS_ALL ));
+
+        $expected['members'] = $memberMin;
     }
 
     public function testGroupInsertedIntoDatabase()
@@ -175,18 +175,16 @@ class GroupDbTest extends DbTestCase
             'groupId'        => 2,
             'name'           => 'Group2',
             'groupType'      => 'tag',
+            'ownerId'        => 1,
             'controlMembers' => 'owner',
             'controlItems'   => 'owner',
             'visibility'     => 'private',
             'canTransfer'    => 0,
-            'owner'          => 1,
-            'items'          => null,
-            'members'        => null,
         );
 
         $group = new Model_Group( array(
-                        'name'  => $expected['name'],
-                        'owner' => $expected['owner'],
+                        'name'    => $expected['name'],
+                        'ownerId' => $expected['ownerId'],
                      ));
         $group = $group->save();
 

@@ -439,36 +439,35 @@ abstract class Connexions_Model_Mapper_DbTable
 
             foreach ($keyNames as $keyName)
             {
-                if (isset($data[$keyName]))
-                    unset($data[$keyName]);
+                unset($data[$keyName]);
             }
         }
 
         return $data;
     }
 
-    /** @brief  Create a new instance of the Domain Model given a raw record.
-     *  @param  record  The raw record (array or Zend_Db_Table_Row).
+    /** @brief  Create a new instance of the Domain Model given raw data, 
+     *          typically from a persistent store.
+     *  @param  data        The raw data (array or Zend_Db_Table_Row).
+     *  @param  isBacked    Is the incoming data backed by persistent store?
+     *                      [ true ];
      *
-     *  This allows our Domain Model to contain instances of other Domain
-     *  Models if desired.  Over-ride this protected method to
-     *  locate/instantiate associated models and/or establish fields to be used
-     *  to locate/instantiate on-demand.
-     *
-     *  @return The matching Domain Model (null if no match).
+     *  @return A matching Domain Model
+     *          (MAY be backed if a matching instance already exists).
      */
-    public function makeModel($record)
+    public function makeModel($data, $isBacked = true)
     {
         /*
         Connexions::log("Connexions_Model_Mapper_DbTable::makeModel: %s",
-                        (is_object($record)
-                            ? get_class($record)
-                            : gettype($record)) );
+                        (is_object($data)
+                            ? get_class($data)
+                            : gettype($data)) );
         // */
                         
-        return parent::makeModel( $record instanceof Zend_Db_Table_Row_Abstract
-                                    ? $record->toArray()
-                                    : $record );
+        return parent::makeModel( ($data instanceof Zend_Db_Table_Row_Abstract
+                                    ? $data->toArray()
+                                    : $data ),
+                                  $isBacked );
     }
 
     /*********************************************************************
