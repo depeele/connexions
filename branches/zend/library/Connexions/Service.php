@@ -221,8 +221,8 @@ abstract class Connexions_Service
 
     /** @brief  Given a Service Class name, retrieve the associated Service
      *          instance.
-     *  @param  service     The Service Class instance, Service Class name, or
-     *                      Domain Model name.
+     *  @param  service     The Service Class instance, Service Class name,
+     *                      Domain Model instance, or Domain Model name.
      *
      *  @return The Connexions_Service instance.
      */
@@ -234,11 +234,19 @@ abstract class Connexions_Service
         }
         else
         {
-            // See if we have a Service instance with this name in our cache
-            if (is_object($service))
+            if ($service instanceof Connexions_Model)
                 $serviceName = get_class($service);
-            else
+            else if (is_string($service))
                 $serviceName = $service;
+            else
+            {
+                throw new Exception("Connexions_Service::factory(): "
+                                    . "requires a "
+                                    . "Connexions_Service instance, "
+                                    . "Connexions_Model instance, "
+                                    . "or a "
+                                    . "Service or Domain Model name string");
+            }
 
             // Allow the incoming name to identify the target Domain Model
             if (strpos($serviceName, 'Model_') !== false)
@@ -247,6 +255,7 @@ abstract class Connexions_Service
             }
 
 
+            // See if we have a Service instance with this name in our cache
             if ( isset(self::$_instCache[ $serviceName ]))
             {
                 // YES - use the existing instance

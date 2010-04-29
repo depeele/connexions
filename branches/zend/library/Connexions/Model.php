@@ -252,8 +252,8 @@ abstract class Connexions_Model
      */
     public function invalidate()
     {
-        // Ensure any Mapper-based identity map has been cleared.
-        $this->unsetIdentity();
+        // Clear any Mapper-based identity map
+        $this->getMapper()->unsetIdentity( $this );
 
         foreach ($this->_data as $key => &$val)
         {
@@ -261,19 +261,8 @@ abstract class Connexions_Model
             //$this->__set($key, null);
         }
 
-        $this->_isBacked  = false;
-        $this->_isValid   = false;
-
-        return $this;
-    }
-
-    /** @brief  Remove the identity map entry for this instance.
-     *
-     *  @return $this for a fluent interface.
-     */
-    public function unsetIdentity()
-    {
-        $this->getMapper()->unsetIdentity( $this );
+        $this->setIsBacked(false);
+        $this->setIsValid( false);
 
         return $this;
     }
@@ -356,7 +345,7 @@ abstract class Connexions_Model
          * Otherwise, look in the cache for an existing instance, if not found, 
          * create and cache a new Filter instance.
          */
-        $this->_filter = self::filterFactory($filter);
+        $this->_filter = Connexions_Model_Filter::factory($filter);
 
         return $this;
     }
@@ -456,7 +445,7 @@ abstract class Connexions_Model
              */
             $messages = $filter->getMessages();
 
-            $this->_isValid = true;
+            $this->setIsValid();
             foreach ($this->_data as $fieldName => $value)
             {
                 if ($filter->isValid($fieldName))
@@ -468,7 +457,7 @@ abstract class Connexions_Model
                 else if (array_key_exists($fieldName, $messages))
                 {
                     $this->_valid[$fieldName] = $messages[$fieldName];
-                    $this->_isValid = false;
+                    $this->setIsValid(false);
                 }
                 else
                 {
@@ -482,12 +471,12 @@ abstract class Connexions_Model
             /*
             Connexions::log("Connexions_Model::validate(): "
                             .   "%svalid [ %s ], _valid[ %s ]",
-                            ($this->_isValid ? '' : "NOT "),
+                            ($this->isValid() ? '' : "NOT "),
                             $this->debugDump(),
                             Connexions::varExport($this->_valid));
             // */
 
-            return $this->_isValid;
+            return $this->isValid();
         }
         else
         {
@@ -524,11 +513,10 @@ abstract class Connexions_Model
     }
 
     /** @brief  Generate a string representation of this record.
-     *  @param  skipValidation  Skip validation of each field [false]?
      *
      *  @return A string.
      */
-    public function debugDump($skipValidation = false)
+    public function debugDump()
     {
         $str = get_class($this) .": is "
              .      ($this->isBacked() ? '' : 'NOT '). 'backed, '
@@ -657,83 +645,6 @@ abstract class Connexions_Model
         }
                     
         return $this;
-    }
-
-    /*********************************************************************
-     * Static methods
-     *
-     */
-
-    /** @brief  Given a Filter Class name, retrieve the associated Filter 
-     *          instance.
-     *  @param  filter   The Filter Class name
-     *                  (optionally, a new Filter instance to ensure is in
-     *                   our instance cache).
-     *
-     *  @return The Filter instance.
-     */
-    public static function filterFactory($filter)
-    {
-        if (is_string($filter))
-        {
-            // See if we have a Filter instance with this name in our cache
-            $filterName = $filter;
-
-            /*
-            Connexions::log("Connexions_Model::filterFactory( %s ): "
-                            . "set by name...",
-                            $filterName);
-            // */
-
-            if ( isset(self::$_instCache[ $filterName ]))
-            {
-                // YES - use the existing instance
-                $filter = self::$_instCache[ $filterName ];
-            }
-            else
-            {
-                // NO - create a new instance
-                try
-                {
-                    @Zend_Loader_Autoloader::autoload($filterName);
-                    $filter  = new $filterName();
-
-                    /*
-                    Connexions::log("Connexions_Model::filterFactory( %s ): "
-                                    . "filter loaded",
-                                    $filterName);
-                    // */
-                }
-                catch (Exception $e)
-                {
-                    // /*
-                    Connexions::log("Connexions_Model::filterFactory( %s ): "
-                                    . "CANNOT load filter",
-                                    $filterName);
-                    // */
-
-                    // Return self::NO_INSTANCE
-                    $filter = self::NO_INSTANCE;
-                }
-            }
-        }
-        else
-        {
-            $filterName = get_class($filter);
-        }
-
-        if (! isset(self::$_instCache[ $filterName ]))
-        {
-            self::$_instCache[ $filterName ] = $filter;
-
-            /*
-            Connexions::log("Connexions_Model::filterFactory( %s ): "
-                            . "cache this Filter instance",
-                            $filterName);
-            // */
-        }
-
-        return $filter;
     }
 }
 

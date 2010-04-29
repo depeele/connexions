@@ -30,20 +30,16 @@ class Service_User extends Connexions_Service
             /* Create a new un-backed user instance.  If no 'userId' is
              * provided, the "anonymous" as the user name.
              */
-            $class = $this->_modelName;
-            $user  = new $class( array('isValid'   => true,
-                                       'isBacked'  => false,
-                                       'data'      => array(
-                                            'name'  => (is_string($userId)
+            $user = $this->create( array('name'     => (is_string($userId)
                                                         ? $userId
                                                         : 'anonymous'),
-                                            'fullName'  => 'Visitor'
-                                       ),
-                                 ));
+                                         'fullName' => 'Visitor'
+                                   ));
         }
 
         if ( ! $user->isBacked())
         {
+            // Non-backed, "anonymous" user -- cannot be authenticated
             return $user;
         }
 
