@@ -328,10 +328,9 @@ class Connexions
         // decode and lower-case the incoming url
         $url = urldecode($url);
         $url = strtolower($url);
-        $url = trim(preg_replace('/\s+/', ' ', $url), ' \t');
+        $url = trim(preg_replace('/\s+/', ' ', $url), " \t");
 
         $uri = parse_url( $url );
-
 
         $scheme = null;
         $host   = null;
