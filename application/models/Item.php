@@ -101,4 +101,22 @@ class Model_Item extends Model_Base
 
         return parent::__toString();
     }
+
+    /**********************************************
+     * Statistics related methods
+     *
+     */
+
+    /** @brief  Update external-table statistics related to this Item instance:
+     *              userCount, ratingCount, ratingSum
+     *
+     *  @return $this for a fluent interface
+     */
+    public function updateStatistics()
+    {
+        $this->getMapper()->updateStatistics( $this );
+
+        return $this;
+    }
+
 }

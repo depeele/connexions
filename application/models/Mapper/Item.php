@@ -96,4 +96,65 @@ class Model_Mapper_Item extends Model_Mapper_Base
     {
         throw new Exception('Not yet implemented');
     }
+
+    /** @brief  Given an Item Domain Model (or Item identifier), update 
+     *          external-table statistics related to this item:
+     *              item - userCount, ratingCount, ratingSum
+     *  @param  id      A Model_Item instance or itemId.
+     *
+     *  @return $this for a fluent interface
+     */
+    public function updateStatistics($id)
+    {
+        if ($id instanceof Model_Item)
+        {
+            $item = $id;
+        }
+        else
+        {
+            $item = $this->find($id);
+        }
+
+        /* Update item-related statistics:
+         *    SELECT
+         *      COUNT(DISTINCT userId)                           AS userCount,
+         *      SUM(CASE WHEN rating > 0 THEN 1 ELSE 0 END)      AS ratingCount,
+         *      SUM(CASE rating WHEN null THEN 0 ELSE rating END) AS ratingSum
+         *        FROM  userItem
+         *        WHERE itemId=?;
+         */
+        $table  = $this->getAccessor('Model_DbTable_UserItem');
+        $select = $table->select();
+        $select->from( $table->info(Zend_Db_Table_Abstract::NAME),
+                        array('COUNT(DISTINCT userId)  AS userCount',
+                              'SUM(CASE WHEN rating > 0 THEN 1 ELSE 0 END) '
+                                . 'AS ratingCount',
+                              'SUM(CASE rating WHEN null '
+                                .   'THEN 0 ELSE rating END) '
+                                . 'AS ratingSum') )
+               ->where( 'itemId=?', $item->itemId );
+
+        // /*
+        Connexions::log("Model_Mapper_Item::_updateStatistics( %d ): "
+                        . "sql[ %s ]",
+                        $item->itemId,
+                        $select->assemble());
+        // */
+
+        $row = $select->query()->fetchObject();
+
+        /*
+        Connexions::log("Model_Mapper_Item::_updateStatistics( %d ): "
+                        . "for Item: row[ %s ]",
+                        $item->itemId,
+                        Connexions::varExport($row));
+        // */
+
+        $item->userCount   = $row->userCount;
+        $item->ratingCount = $row->ratingCount;
+        $item->ratingSum   = $row->ratingSum;
+        $item = $item->save();
+
+        return $this;
+    }
 }

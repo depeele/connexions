@@ -277,4 +277,25 @@ class Model_Bookmark extends Model_Base
 
         return $this;
     }
+
+    /**********************************************
+     * Statistics related methods
+     *
+     */
+
+    /** @brief  Update external-table statistics related to this Bookmark 
+     *          instance:
+     *              user - totalTags, totalItems
+     *              item - userCount, ratingCount, ratingSum
+     *
+     *  @return $this for a fluent interface
+     */
+    public function updateStatistics()
+    {
+        $this->user->updateStatistics( );
+        $this->item->updateStatistics( );
+
+        return $this;
+    }
+
 }

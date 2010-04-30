@@ -606,6 +606,103 @@ class Model_User extends Model_Base
         return $weight;
     }
 
+    /**********************************************
+     * Tag Management related methods
+     *
+     */
+
+    /** @brief  Given an array of tag rename information, rename tags for this 
+     *          user.
+     *  @param  renames     An array of tag rename information:
+     *                          { 'oldTagName' => 'newTagName',
+     *                            ... }
+     *
+     *  @return An array of status information, keyed by old tag name:
+     *              { 'oldTagName'  => true (success) |
+     *                                 String explanation of failure,
+     *                 ... }
+     */
+    public function renameTags(array $renames)
+    {
+        $status = array();
+        foreach ($renames as $old => $new)
+        {
+            /* 1) Verify that this user has 'old' tag;
+             *    a) No  - record an error in the status for this tag and skip;
+             *    b) Yes - $old is now a Model_Tag instance;
+             *
+             * 2) See if the 'new' tag exists;
+             *    a) No  - create it;
+             *    b) Yes - continue;
+             *
+             *    Either way, $new is now a Model_Tag instance;
+             *
+             * 3) Change all 'userTagItem' entries for
+             *      $this->userId, $old->tagId, <item>
+             *    to
+             *      $this->userId, $new->tagId, <item>
+             */
+        }
+
+        // 4) Update statistics;
+
+        return $status;
+    }
+
+    /** @brief  Given an Model_Set_Tag instance or a simple array of tag names,
+     *          delete all tags for the current user.  If deleting a tag will
+     *          result in an "orphened bookmark" (i.e. a bookmark with no 
+     *          tags), the delete of that tag will fail.
+     *  @param  tags        A Model_Set_Tag instance of a simple array of tag 
+     *                      names.
+     *
+     *  @return An array of status information, keyed by tag name:
+     *              { 'tagName' => true (success) |
+     *                             String explanation of failure,
+     *                 ... }
+     */
+    public function deleteTags($tags)
+    {
+        $status = array();
+        foreach ($tags as $tag)
+        {
+            /* 1) Verify that this user has 'tag';
+             *    a) No  - record an error in the status for this tag and skip;
+             *    b) Yes - $tag is now a Model_Tag instance;
+             *
+             * 2) Find all bookmaks with this tag, couting the number of unique 
+             *    tags for each;
+             *    a) If there is one or more bookmarks with a tag count of 1,
+             *       DO NOT delete the tag.  Record an error in the status for 
+             *       this tag and skip;
+             *
+             *    b) Otherwise, continue;
+             *
+             * 3) Delete all 'userTagItem' entries for
+             *      $this->userId, $tag->tagId, <item>
+             */
+        }
+
+        return $status;
+    }
+
+    /**********************************************
+     * Statistics related methods
+     *
+     */
+
+    /** @brief  Update external-table statistics related to this User instance:
+     *              totalTags, totalItems
+     *
+     *  @return $this for a fluent interface
+     */
+    public function updateStatistics()
+    {
+        $this->getMapper()->updateStatistics( $this );
+
+        return $this;
+    }
+
     /*************************************************************************
      * Protected helpers
      *
