@@ -168,6 +168,23 @@ abstract class Connexions_Model_Mapper
                                 //Connexions_Model::FIELDS_PUBLIC );
     }
 
+    /** @brief  Find a matching Domain Model or create a new one given raw
+     *          data. 
+     *  @param  data        The raw data.
+     *
+     *  @return A matching Domain Model
+     *          (MAY be backed if a matching instance already exists).
+     */
+    public function getModel($data)
+    {
+        $model = $this->find($data);
+        if ($model !== null)
+            return $model;
+
+        // Create a new, un-backed Domain Model.
+        return $this->makeModel($data, false);
+    }
+
     /** @brief  Create a new instance of the Domain Model given raw data, 
      *          typically from a persistent store.
      *  @param  data        The raw data.
@@ -221,6 +238,37 @@ abstract class Connexions_Model_Mapper
 
         return $this;
     }
+
+    /** @brief  Remove all entries from the identity map.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function flushIdentityMap()
+    {
+        foreach ($this->_identityMap as $key => $item)
+        {
+            $item->invalidate();
+        }
+
+        $this->_identityMap = array();
+
+        return $this;
+    }
+
+    /******** DEBUG vvvv { **********/
+    public function dumpIdentityMap()
+    {
+        printf ("Identity map for '%s'.  %d items:\n",
+                get_class($this), count($this->_identityMap));
+
+        $idex = 0;
+        foreach ($this->_identityMap as $key => $item)
+        {
+            printf (" %2d: %-15s, [ %s ]\n",
+                    ++$idex, $key, $item->__toString());
+        }
+    }
+    /******** DEBUG ^^^^ } **********/
 
     /*********************************************************************
      * Abstract methods
@@ -372,7 +420,7 @@ abstract class Connexions_Model_Mapper
         if (is_array($id))
             $id = implode(':', array_values($id));
 
-        /*
+        // /*
         Connexions::log("Connexions_Model_Mapper::_unsetIdentity( %s ): %s",
                         $id, get_class($this));
         // */

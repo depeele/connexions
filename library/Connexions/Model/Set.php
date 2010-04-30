@@ -113,6 +113,25 @@ abstract class Connexions_Model_Set
         }
     }
 
+    /** @brief  Delete all items in the set (and in persistent store) and then
+     *          invalidate the set.
+     */
+    public function delete()
+    {
+        Connexions::log("Connexions_Model_Set::delete(): %d items",
+                        count($this->_members));
+
+        foreach ($this->_members as $key => $item)
+        {
+            if ($item instanceof Connexions_Model)
+                $item->delete();
+
+            $this->_member[$key] = null;
+        }
+
+        $this->_members = array();
+    }
+
     /**********************************************************************
      * Setters and Getters
      *
@@ -255,6 +274,11 @@ abstract class Connexions_Model_Set
         return $this->_modelName;
     }
 
+    /*************************************************************************
+     * Conversions
+     *
+     */
+
     /** @brief  Return an array version of this instance.
      *  @param  deep    Should any associated models be retrieved?
      *                      [ Connexions_Model::DEPTH_DEEP ] |
@@ -280,6 +304,22 @@ abstract class Connexions_Model_Set
         }
 
         return $res;
+    }
+
+    /** @brief  Return an array of the Identifiers of all instances.
+     *
+     *  @return An array of all Identifiers.
+     */
+    public function idArray()
+    {
+        $ids = array();
+        foreach ($this->_members as $item)
+        {
+            if ($item instanceof Connexions_Model)
+                array_push($res, $item->getId());
+        }
+
+        return $ids;
     }
 
     /*************************************************************************

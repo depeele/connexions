@@ -36,6 +36,22 @@ class UserServiceTest extends DbTestCase
             'itemCount'     => 0,
             'tagCount'      => 0,
     );
+    private     $_user2 = array(
+            'userId'        => 2,
+            'name'          => 'User441',
+            'fullName'      => 'Random User 441',
+            'email'         => 'User441@home.com',
+            'apiKey'        => 'xvkz0j5OwR',
+            'pictureUrl'    => null,
+            'profile'       => null,
+            'lastVisit'     => '0000-00-00 00:00:00',
+
+            'totalTags'     => 24,
+            'totalItems'    => 5,
+            'userItemCount' => 0,
+            'itemCount'     => 0,
+            'tagCount'      => 0,
+    );
 
     protected function getDataSet()
     {
@@ -364,5 +380,94 @@ class UserServiceTest extends DbTestCase
         // De-authenticate this user for the next test
         $user->logout();
         $this->assertFalse ( $user->isAuthenticated() );
+    }
+
+    public function testUserServiceInvalidAddAuth1()
+    {
+        $service    = Connexions_Service::factory('Model_User');
+        $user       = $service->retrieve( $this->_user2['userId'] );
+
+        $this->assertNotEquals(null, $user);
+
+        $credential = '1234567';
+        $expected   = array('userId'     => $user->userId,
+                            'authType'   => 'invalid_auth_type',
+                            'credential' => $credential);
+
+        try
+        {
+            $auth = $user->addAuthenticator($expected['credential'],
+                                            $expected['authType']);
+            $this->fail("Invalid Auth Type was permitted");
+        }
+        catch (Exception $e)
+        {
+            $this->assertEquals('Invalid authType', $e->getMessage());
+            //$this->assertEquals(null, $auth);
+        }
+    }
+
+    public function testUserServiceAddAuth1()
+    {
+        $service    = Connexions_Service::factory('Model_User');
+        $user       = $service->retrieve( $this->_user2['userId'] );
+        $this->assertNotEquals(null, $user);
+
+        $credential = '1234567';
+        $expected   = array('userId'     => $user->userId,
+                            'authType'   => Model_UserAuth::AUTH_DEFAULT,
+                            'credential' => $credential);
+
+        $auth = $user->addAuthenticator($expected['credential']);
+        $this->assertNotEquals(null, $auth);
+
+        // A password is stored as md5( user->name .':'. credential)
+        $seed = $user->name .':'. $credential;
+        $expected['credential'] = md5($seed);
+
+        $this->assertEquals($expected,
+                            $auth->toArray( Connexions_Model::DEPTH_SHALLOW,
+                                            Connexions_Model::FIELDS_ALL ));
+
+        // Make sure we can retrieve.
+        $authSet = $user->getAuthenticator();  //$expected['authType']);
+        $this->assertEquals(array($expected),
+                            $authSet->toArray(Connexions_Model::DEPTH_SHALLOW,
+                                              Connexions_Model::FIELDS_ALL ));
+
+        // Make sure the retrieved item is exacly the same instance.
+        $this->assertSame($auth, $authSet[0]);
+
+        // Make sure we can retrieve by credential.
+        $authSet = $user->getAuthenticator(null, $expected['credential']);
+        $this->assertEquals(array($expected),
+                            $authSet->toArray(Connexions_Model::DEPTH_SHALLOW,
+                                              Connexions_Model::FIELDS_ALL ));
+    }
+
+    public function testUserServiceRemoveAuth1()
+    {
+        $service    = Connexions_Service::factory('Model_User');
+        $user       = $service->retrieve( $this->_user1['name'] );
+        $this->assertNotEquals(null, $user);
+
+        $user->removeAuthenticator( null, Model_UserAuth::AUTH_DEFAULT );
+
+        $authSet = $user->getAuthenticator( Model_UserAuth::AUTH_DEFAULT );
+        $this->assertEquals(array(),
+                            $authSet->toArray(Connexions_Model::DEPTH_SHALLOW,
+                                              Connexions_Model::FIELDS_ALL ));
+
+        // Check the database consistency
+        $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
+                    $this->getConnection()
+        );
+
+        $ds->addTable('userAuth', 'SELECT * FROM userAuth');
+
+        $this->assertDataSetsEqual(
+            $this->createFlatXmlDataSet(
+              dirname(__FILE__) .'/_files/userServiceAuthDeleteAssertion.xml'),
+            $ds);
     }
 }

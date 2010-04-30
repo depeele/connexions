@@ -129,6 +129,12 @@ abstract class Connexions_Model_Mapper_DbTable
     {
         if ($model instanceof Connexions_Model)
         {
+            /*
+            Connexions::log("Connexions_Model_Mapper_DbTable::getId( %s ): "
+                            . "is %sbacked",
+                            get_class($model),
+                            ($model->isBacked() ? '' : 'NOT '));
+            // */
 
             if (! $model->isBacked())
             {
@@ -141,15 +147,52 @@ abstract class Connexions_Model_Mapper_DbTable
             return $model->getId();
         }
 
-        // Attempt to pull an id from incoming array data
-        $keyNames = (is_array($this->_keyName)
-                        ? $this->_keyName
-                        : array( $this->_keyName ));
-
-        $id       = array();
-        foreach ($keyNames as $key)
+        /* If the incoming array keys are integers, treat it as a simply array
+         * of key values -- an instance id.
+         */
+        $keys = array_keys($model);
+        if (is_int( $keys[0] ))
         {
-            array_push($id, $model[$key]);
+            /*
+            Connexions::log("Connexions_Model_Mapper_DbTable::getId( %s ): "
+                            .   "integer keys -- treat as id",
+                            Connexions::varExport($model));
+            // */
+
+            $id = $model;
+        }
+        else
+        {
+            if (strpos($keys[0], '?') !== false)
+            {
+                // Query-like keys -- reduce them
+                $newModel = array();
+                foreach ($keys as $key)
+                {
+                    $val    = $model[$key];
+                    $newKey = preg_replace('/[\s=].*?$/', '', $key);
+                    $newModel[$newKey] = $val;
+                }
+                $model = $newModel;
+            }
+
+            // Attempt to pull an id from incoming array data
+            $keyNames = (is_array($this->_keyName)
+                            ? $this->_keyName
+                            : array( $this->_keyName ));
+
+            $id = array();
+            foreach ($keyNames as $key)
+            {
+                if (isset($model[$key]))
+                    array_push($id, $model[$key]);
+            }
+
+            if (empty($id))
+            {
+                // Including ALL values
+                $id = array_values($model);
+            }
         }
 
         /*
@@ -178,7 +221,7 @@ abstract class Connexions_Model_Mapper_DbTable
         $data     = $this->reduceModel( $domainModel );
         if (! $id)
         {
-            /*
+            // /*
             Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
                             . "EMPTY id, insert new model[ %s ]",
                             get_class($this),
@@ -201,6 +244,16 @@ abstract class Connexions_Model_Mapper_DbTable
             // Update
             $where = $this->_where($id);
 
+            // /*
+            Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
+                            . "update model[ %s ], where[ %s ], id[ %s ]",
+                            get_class($this),
+                            Connexions::varExport($data),
+                            Connexions::varExport($where),
+                            Connexions::varExport($id));
+            // */
+
+
             $accessor->update( $data, $where );
             $operation = 'update';
         }
@@ -212,7 +265,7 @@ abstract class Connexions_Model_Mapper_DbTable
 
         $newModel = $this->find( $id );
 
-        /*
+        // /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
                         . "%s 'new' model[ %s ]",
                         get_class($this),
@@ -234,6 +287,9 @@ abstract class Connexions_Model_Mapper_DbTable
     {
         $accessor = $this->getAccessor();
         $id       = $this->getId($domainModel); //$domainModel->getId();
+
+        Connexions::log("Connexions_Model_Mapper_DbTable::delete(): id[ %s ]",
+                        Connexions::varExport($id));
         if ($id)
         {
             // Locate the Zend_Db_Table_Row instance matching the incoming model
@@ -253,8 +309,9 @@ abstract class Connexions_Model_Mapper_DbTable
             $accessor->delete( $where );
             */
 
-            $this->_unsetIdentity( $id, $domainModel );
-
+            /* Invalidate this Model Instance, which will also remove it from
+             * the Identity Map.
+             */
             $domainModel->invalidate();
         }
 
@@ -274,8 +331,23 @@ abstract class Connexions_Model_Mapper_DbTable
      */
     public function find($id)
     {
-        if ($this->_hasIdentity($id))
-            return $this->_getIdentity($id);
+        $uid = $this->getId($id); //$domainModel->getId();
+        if ($this->_hasIdentity($uid))
+        {
+            Connexions::log("Connexions_Model_Mapper_DbTable::find( %s ): "
+                            .   "uid[ %s ] --- return identity map entry",
+                            Connexions::varExport($id),
+                            Connexions::varExport($uid));
+
+            return $this->_getIdentity($uid);
+        }
+
+        // /*
+        Connexions::log("Connexions_Model_Mapper_DbTable::find( %s ): "
+                        .   "uid[ %s ]",
+                        Connexions::varExport($id),
+                        Connexions::varExport($uid));
+        // */
 
         $accessorModel = $this->_find($id);
         if ($accessorModel === null)
@@ -337,6 +409,12 @@ abstract class Connexions_Model_Mapper_DbTable
             $select->limit($count, $offset);
             $totalCount = $this->_getTotalCount($select);
         }
+
+        // /*
+        Connexions::log("Connexions_Model_Mapper_DbTable::fetch(): "
+                        .   "sql[ %s ]...",
+                        $select->assemble());
+        // */
 
         $accessorModels = $select->query()->fetchAll();
 

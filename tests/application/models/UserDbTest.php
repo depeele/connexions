@@ -20,6 +20,22 @@ class UserDbTest extends DbTestCase
                         'itemCount'     => 0,
                         'tagCount'      => 0,
     );
+    private $_user5 = array(
+                        'userId'        => 5,
+                        'name'          => 'test_user',
+                        'fullName'      => 'Test User',
+                        'email'         => null,
+                        'apiKey'        => null,
+                        'pictureUrl'    => null,
+                        'profile'       => null,
+                        'lastVisit'     => null,
+
+                        'totalTags'     => 0,
+                        'totalItems'    => 0,
+                        'userItemCount' => 0,
+                        'itemCount'     => 0,
+                        'tagCount'      => 0,
+    );
 
     protected function getDataSet()
     {
@@ -28,30 +44,26 @@ class UserDbTest extends DbTestCase
                         //dirname(__FILE__) .'/_files/userSeed.xml');
     }
 
+    protected function tearDown()
+    {
+        /* Since these tests setup and teardown the database for each new test,
+         * we need to clean-up any Identity Maps that are used in order to 
+         * maintain test validity.
+         */
+        $uMapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $uMapper->flushIdentityMap();
+
+        parent::tearDown();
+    }
+
+
     public function testUserInsertedIntoDatabase()
     {
-        $expected = array(
-            'userId'        => 5,
-            'name'          => 'test_user',
-            'fullName'      => 'Test User',
-            'email'         => null,
-            'apiKey'        => null,
-            'pictureUrl'    => null,
-            'profile'       => null,
-            'lastVisit'     => null,
-
-            'totalTags'     => 0,
-            'totalItems'    => 0,
-            'userItemCount' => 0,
-            'itemCount'     => 0,
-            'tagCount'      => 0,
-        );
-
-        Connexions::log("testUserInsertedIntoDatabase");
-
-        $user = new Model_User( array(
-                        'name'      => $expected['name'],
-                        'fullName'  => $expected['fullName']));
+        $expected = $this->_user5;
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $user     = $mapper->getModel( array(
+                                'name'      => $expected['name'],
+                                'fullName'  => $expected['fullName']));
 
         $this->assertFalse ( $user->isBacked() );
         $this->assertTrue  ( $user->isValid() );
@@ -60,6 +72,7 @@ class UserDbTest extends DbTestCase
 
         $user = $user->save();
 
+        $this->assertNotEquals(null, $user);
         $this->assertTrue  ( $user->isBacked() );
         $this->assertTrue  ( $user->isValid() );
 
@@ -94,7 +107,7 @@ class UserDbTest extends DbTestCase
 
     public function testUserRetrieveByUnknownId()
     {
-        $mapper = new Model_Mapper_User( );
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
         $user   = $mapper->find( 5 );
 
         $this->assertEquals(null, $user);
@@ -104,7 +117,7 @@ class UserDbTest extends DbTestCase
     {
         $expected = $this->_user1;
 
-        $mapper = new Model_Mapper_User( );
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
         $user   = $mapper->find( $this->_user1['userId'] );
 
         /*
@@ -112,6 +125,7 @@ class UserDbTest extends DbTestCase
         echo $user->debugDump();
         // */
 
+        $this->assertNotEquals(null, $user);
         $this->assertTrue  ( $user->isBacked() );
         $this->assertTrue  ( $user->isValid() );
         $this->assertFalse ( $user->isAuthenticated() );
@@ -123,7 +137,7 @@ class UserDbTest extends DbTestCase
 
     public function testUserIdentityMap()
     {
-        $mapper = new Model_Mapper_User( );
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
         $user   = $mapper->find( $this->_user1['userId'] );
         $user2  = $mapper->find( $this->_user1['userId'] );
 
@@ -132,33 +146,72 @@ class UserDbTest extends DbTestCase
 
     public function testUserIdentityMap2()
     {
-        $mapper = new Model_Mapper_User( );
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
         $user   = $mapper->find( $this->_user1['userId'] );
         $user2  = $mapper->find( $this->_user1['name'] );
 
         $this->assertSame  ( $user, $user2 );
     }
 
-    public function testUserInsertUpdatedIdentityMap()
+    public function testUserUpdate()
     {
-        $user = new Model_User( array(
-                    'name'        => 'test_user',
-                    'fullName'    => 'Test User'));
+        $expected = $this->_user5;
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $user     = $mapper->getModel( array(
+                                'name'      => $expected['name'],
+                                'fullName'  => $expected['fullName']));
+
+        $this->assertNotEquals(null, $user);
+
+        //printf ("User [ %s ]\n", $user->debugDump());
+
+        $this->assertFalse ( $user->isBacked() );
+        $this->assertTrue  ( $user->isValid() );
 
         $user = $user->save();
+        $this->assertNotEquals(null, $user);
 
-        $user2 = $user->getMapper()->find( $user->userId );
+        $this->assertTrue  ( $user->isBacked() );
+        $this->assertTrue  ( $user->isValid() );
 
-        $this->assertSame  ( $user, $user2 );
+        // apiKey and lastVisit are dynamically generated
+        $expected['apiKey']    = $user->apiKey;
+        $expected['lastVisit'] = $user->lastVisit;
+
+        $this->assertEquals($user->getValidationMessages(), array() );
+        $this->assertEquals($expected,
+                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
+                                            Connexions_Model::FIELDS_ALL ));
+
+        // Update email
+        $expected['email'] = 'user5@gmail.com';
+        $user->email = $expected['email'];
+        $user2 = $user->save();
+        $this->assertNotEquals(null, $user2);
+
+        // The lastVisit time MAY have changed
+        $expected['lastVisit'] = $user2->lastVisit;
+
+        //printf ("User [ %s ]\n", $user2->debugDump());
+
+        $this->assertEquals($expected,
+                            $user2->toArray( Connexions_Model::DEPTH_SHALLOW,
+                                             Connexions_Model::FIELDS_ALL ));
+
+        // Verify that the identity map is updated
+        $user3 = $user->getMapper()->find( $user->userId );
+        $this->assertNotEquals(null, $user3);
+        $this->assertSame($user2, $user3);
     }
 
     public function testUserGetId()
     {
         $expected = $this->_user1['userId'];
 
-        $mapper = new Model_Mapper_User( );
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
         $user   = $mapper->find( $expected );
 
+        $this->assertNotEquals(null, $user);
         $this->assertEquals($expected, $user->getId());
     }
 
@@ -166,8 +219,9 @@ class UserDbTest extends DbTestCase
     {
         $expected = $this->_user1;
 
-        $mapper = new Model_Mapper_User( );
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
         $user   = $mapper->find( array('userId' => $expected['userId']) );
+        $this->assertNotEquals(null, $user);
         $this->assertEquals($expected,
                             $user->toArray( Connexions_Model::DEPTH_SHALLOW,
                                             Connexions_Model::FIELDS_ALL ));
@@ -177,8 +231,9 @@ class UserDbTest extends DbTestCase
     {
         $expected = $this->_user1;
 
-        $mapper = new Model_Mapper_User( );
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
         $user   = $mapper->find( $expected['name'] );
+        $this->assertNotEquals(null, $user);
         $this->assertEquals($expected,
                             $user->toArray( Connexions_Model::DEPTH_SHALLOW,
                                             Connexions_Model::FIELDS_ALL ));
@@ -188,8 +243,9 @@ class UserDbTest extends DbTestCase
     {
         $expected = $this->_user1;
 
-        $mapper = new Model_Mapper_User( );
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
         $user   = $mapper->find( array('name' => $expected['name']) );
+        $this->assertNotEquals(null, $user);
         $this->assertEquals($expected,
                             $user->toArray( Connexions_Model::DEPTH_SHALLOW,
                                             Connexions_Model::FIELDS_ALL ));
@@ -197,7 +253,7 @@ class UserDbTest extends DbTestCase
 
     public function testUserDeletedFromDatabase()
     {
-        $mapper = new Model_Mapper_User( );
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
         $user   = $mapper->find( 1 );
 
         $user->delete();
@@ -244,7 +300,7 @@ class UserDbTest extends DbTestCase
             'tagCount'      => 0,
         );
 
-        $mapper = new Model_Mapper_User( );
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
         $user   = $mapper->find( 1 );
 
         $user->delete();
@@ -276,7 +332,7 @@ class UserDbTest extends DbTestCase
 
     public function testUserSet()
     {
-        $mapper = new Model_Mapper_User( );
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
         $users  = $mapper->fetch();
 
         // Retrieve the expected set
@@ -291,16 +347,17 @@ class UserDbTest extends DbTestCase
         $expectedCount = 4; // Remember, 1 was deleted in a test above...
         $expectedTotal = 4; // Remember, 1 was deleted in a test above...
 
-        $mapper = new Model_Mapper_User( );
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
         $users  = $mapper->fetch();
 
+        $this->assertNotEquals(null, $users);
         $this->assertEquals($expectedCount, $users->count());
         $this->assertEquals($expectedTotal, $users->getTotalCount());
     }
 
     public function testUserSetLimitOrder()
     {
-        $mapper = new Model_Mapper_User( );
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
         $users  = $mapper->fetch(null,
                                  array('name ASC'), // order
                                  2,                 // count
@@ -318,12 +375,13 @@ class UserDbTest extends DbTestCase
         $expectedCount = 2;
         $expectedTotal = 4; // Remember, 1 was deleted in a test above...
 
-        $mapper = new Model_Mapper_User( );
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
         $users  = $mapper->fetch(null,
                                  array('name ASC'), // order
                                  $expectedCount,    // count
                                  1);                // offset
 
+        $this->assertNotEquals(null, $users);
         $this->assertEquals($expectedCount, $users->count());
         $this->assertEquals($expectedTotal, $users->getTotalCount());
     }

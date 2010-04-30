@@ -40,15 +40,8 @@ abstract class Connexions_Service
     {
         $mapper = $this->_getMapper();
 
-        // First, can we find a matching instance?
-        $model = $mapper->find( $data );
-        if ($model !== null)
-            return $model;
-
-        /* If we cannot find an existing instance, create an un-backed
-         * Model instance.
-         */
-        return $mapper->makeModel( $data, false );
+        // Find or create a model
+        return $mapper->getModel($data);
     }
 
     /** @brief  Retrieve a single, existing Domain Model instance.

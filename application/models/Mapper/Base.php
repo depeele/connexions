@@ -34,25 +34,28 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      *          table.
      *  @param  where   An array of field/value pairs to use in creating the
      *                  appropriate query.
-     *  @param  userIds     The array of userIds to use in the relation;
-     *  @param  itemIds     The array of itemIds to use in the relation;
-     *  @param  tagIds      The array of tagIds  to use in the relation;
-     *  @param  exactTags   If 'tagIds' is provided,  should we require a match
+     *  @param  users       The Model_Set_User instance or an array of userIds
+     *                      to use in the relation;
+     *  @param  items       The Model_Set_Item instance or an array of itemIds
+     *                      to use in the relation;
+     *  @param  tags        The Model_Set_Tag  instance or an array of tagIds
+     *                      to use in the relation;
+     *  @param  exactTags   If 'tags' is provided,  should we require a match
      *                      on ALL tags? [ true ];
      *
      *  @return A Connexions_Model_Set instance that provides access to all
      *          matching Domain Model instances.
      */
-    public function fetchRelated( $userIds   = null,
-                                  $itemIds   = null,
-                                  $tagIds    = null,
+    public function fetchRelated( $users     = null,
+                                  $items     = null,
+                                  $tags      = null,
                                   $exactTags = true)
     {
         $modelName = $this->getModelName();
 
         /* Convert the model class name to an abbreviation composed of all
          * upper-case characters following the first '_', then converted to
-         * lower-case (e.g. Model_UserTagItem == 'uti').
+         * lower-case (e.g. Model_UserAuth == 'ua').
          */
         $as       = strtolower(preg_replace('/^[^_]+_([A-Z])[a-z]+'
                                             . '(?:([A-Z])[a-z]+)?'
@@ -87,31 +90,37 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                                                 'COUNT(DISTINCT tagId)'))
                   ->group( $this->_keyName );
 
-        if (! empty($userIds))
+        if (! empty($users))
         {
-            if (is_array($userIds))
-                $subSelect->where('userId IN (?)', $userIds);
+            if ($users instanceof Model_Set_User)
+                $subSelect->where('userId IN (?)', $users->idArray());
+            else if (is_array($users))
+                $subSelect->where('userId IN (?)', $users);
             else
-                $subSelect->where('userId=?', $userIds);
+                $subSelect->where('userId=?', $users);
         }
-        if (! empty($itemIds))
+        if (! empty($items))
         {
-            if (is_array($itemIds))
-                $subSelect->where('itemId IN (?)', $itemIds);
+            if ($items instanceof Model_Set_Item)
+                $subSelect->where('itemId IN (?)', $items->idArray());
+            else if (is_array($items))
+                $subSelect->where('itemId IN (?)', $items);
             else
-                $subSelect->where('itemId=?', $itemIds);
+                $subSelect->where('itemId=?', $items);
         }
-        if (! empty($tagIds))
+        if (! empty($tags))
         {
-            if (is_array($tagIds))
-                $subSelect->where('tagId IN (?)', $tagIds);
+            if ($tags instanceof Model_Set_Tag)
+                $subSelect->where('tagId IN (?)', $tags->idArray());
+            else if (is_array($tags))
+                $subSelect->where('tagId IN (?)', $tags);
             else
-                $subSelect->where('tagId=?', $tagIds);
+                $subSelect->where('tagId=?', $tags);
 
             if ($exactTags === true)
             {
-                $nTagIds = count($tagIds);
-                $subSelect->having('tagCount='. $nTagIds);
+                $nTags = count($tags);
+                $subSelect->having('tagCount='. $nTags);
             }
         }
 
@@ -128,38 +137,5 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                       null);
          
         return $this->fetch($select);
-
-        $accessorModels = $db->query($select)->fetchAll();
-
-        /*
-        Connexions::log("Model_Mapper_Base::fetchRelated(): "
-                        . "sql[ %s ], retrieved %d items",
-                        $select->assemble(), count($accessorModels));
-        // */
-
-        $domainModels   = array();
-
-        $idex = 0;
-        foreach ($accessorModels as $accessorModel)
-        {
-            $data = (is_object($accessorModel)
-                        ? $accessorModel->toArray()
-                        : $accessorModel);
-
-            $domainModel = new $modelName(
-                                array('mapper'   => $this,
-                                      'isBacked' => true,
-                                      'isValid'  => true,
-                                      'data'     => $data));
-            array_push($domainModels, $domainModel);
-        }
-
-        /*
-        Connexions::log("Model_Mapper_Base::fetchRelated(): "
-                        . "return %d items",
-                        count($accessorModels));
-        // */
-
-        return $domainModels;
     }
 }
