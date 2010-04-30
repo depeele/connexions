@@ -1,106 +1,113 @@
 CREATE TABLE user (
-  userId        int(10)     unsigned    NOT NULL auto_increment,
-  name          varchar(30)             NOT NULL unique default '',
+  userId        INT(10)     UNSIGNED    NOT NULL AUTO_INCREMENT,
+  name          VARCHAR(30)             NOT NULL UNIQUE DEFAULT '',
 
-  fullName      varchar(255)            NOT NULL default '',
-  email         varchar(63)             NOT NULL default '',
-  apiKey        char(10)                NOT NULL default '',
-  pictureUrl    TEXT                    NOT NULL default '',
-  profile       TEXT                    NOT NULL default '',
+  fullName      VARCHAR(255)            NOT NULL DEFAULT '',
+  email         VARCHAR(63)             NOT NULL DEFAULT '',
+  apiKey        char(10)                NOT NULL DEFAULT '',
+  pictureUrl    TEXT                    NOT NULL DEFAULT '',
+  profile       TEXT                    NOT NULL DEFAULT '',
 
   -- statistics about this user
-  lastVisit     datetime                NOT NULL default '0000-00-00 00:00:00',
+  lastVisit     TIMESTAMP               NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-  -- SELECT COUNT(DISTINCT tagId)  AS totalTags,
-  --        COUNT(DISTINCT itemId) AS totalItems
-  --    FROM  userTagItem
-  --    WHERE userId=?;
-  totalTags     int(10)     unsigned    NOT NULL default 0,
-  totalItems    int(10)     unsigned    NOT NULL default 0,
+  -- Statistics about this user:
+  --     SELECT COUNT(DISTINCT tagId)  AS totalTags,
+  --            COUNT(DISTINCT itemId) AS totalItems
+  --        FROM  userTagItem
+  --        WHERE userId=?;
+  totalTags     INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
+  totalItems    INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
 
-  PRIMARY KEY       (`userId`),
-  KEY `u_userName`  (`name`)
-);
+  PRIMARY KEY       (`userId`)
+) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE TABLE item (
-  itemId        int(10)     unsigned    NOT NULL auto_increment,
-  url           TEXT                    NOT NULL default '',
-  urlHash       varchar(64)             NOT NULL default '',
+  itemId        INT(10)     UNSIGNED    NOT NULL AUTO_INCREMENT,
+  url           TEXT                    NOT NULL DEFAULT '',
+  urlHash       VARCHAR(64)             NOT NULL UNIQUE DEFAULT '',
 
-  -- statistics about this item
+  -- Statistics about this item
   --    SELECT COUNT(DISTINCT userId)                            AS userCount,
   --           SUM(CASE WHEN rating > 0 THEN 1 ELSE 0 END)       AS ratingCount,
   --           SUM(CASE rating WHEN null THEN 0 ELSE rating END) AS ratingSum
   --        FROM  userItem
   --        WHERE itemId=?;
-  userCount     int(10)     unsigned    NOT NULL default 0,
-  ratingCount   int(10)     unsigned    NOT NULL default 0,
-  ratingSum     int(10)     unsigned    NOT NULL default 0,
+  userCount     INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
+  ratingCount   INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
+  ratingSum     INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
 
   PRIMARY KEY       (`itemId`),
   KEY `i_urlHash`   (`urlHash`)
-);
+) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE TABLE tag (
-  tagId         int(10)     unsigned    NOT NULL auto_increment,
-  tag           varchar(30)             NOT NULL unique default '',
+  tagId         INT(10)     UNSIGNED    NOT NULL AUTO_INCREMENT,
+  tag           VARCHAR(30)             NOT NULL UNIQUE DEFAULT '',
 
-  PRIMARY KEY   (`tagId`),
-  KEY `t_tag`   (`tag`)
-);
+  -- Statistics about this tag:
+  --     SELECT COUNT(DISTINCT userId) AS userCount,
+  --            COUNT(DISTINCT itemId) AS itemCount
+  --        FROM  userTagItem
+  --        WHERE tagId=?;
+  PRIMARY KEY   (`tagId`)
+) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
--- A Grouping of user, item, or tag with an associated Membership (set of users),
--- control, and visibility settings;
+-- A Grouping of user, item, or tag with an associated Membership
+-- (set of users), control, and visibility settings;
 --
---      groupType       - what type of items are being grouped (user, item, tag);
+--     groupType      - what type of items are being grouped (user, item, tag);
 --
---      controlMembers  - who can add/delete Members (user or any member);
---      controlItems    - who can add/delete Items   (user or any member);
+--     controlMembers - who can add/delete Members (user or any member);
+--     controlItems   - who can add/delete Items   (user or any member);
 --
---      visibility      - who can view Items in this group?
---                              private == owner only,
---                              group   == any member of the group,
---                              public  == any user
+--     visibility     - who can view Items in this group?
+--                            private == owner only,
+--                            group   == any member of the group,
+--                            public  == any user
 --
---      canTransfer     - is the owner allowed to transfer ownership?
+--     canTransfer    - is the owner allowed to transfer ownership?
 --      
 CREATE TABLE memberGroup (
-  groupId           int(10)     unsigned            NOT NULL auto_increment,
-  name              varchar(128)                    NOT NULL unique default '',
+  groupId           INT(10)     UNSIGNED            NOT NULL AUTO_INCREMENT,
+  name              VARCHAR(128)                    NOT NULL DEFAULT '',
 
-  groupType         enum('user',  'item',  'tag')   NOT NULL default 'tag',
+  groupType         ENUM('user',  'item',  'tag')   NOT NULL DEFAULT 'tag',
 
-  controlMembers    enum('owner',  'group')         NOT NULL default 'owner',
-  controlItems      enum('owner',  'group')         NOT NULL default 'owner',
+  controlMembers    ENUM('owner',  'group')         NOT NULL DEFAULT 'owner',
+  controlItems      ENUM('owner',  'group')         NOT NULL DEFAULT 'owner',
 
-  visibility        enum('private','group',
-                         'public')                  NOT NULL default 'private',
+  visibility        ENUM('private','group',
+                         'public')                  NOT NULL DEFAULT 'private',
 
-  canTransfer       tinyint(1)  unsigned            NOT NULL default 0,
-  ownerId           int(10)     unsigned            NOT NULL default 0,
+  canTransfer       TINYINT(1)  UNSIGNED            NOT NULL DEFAULT 0,
+  ownerId           INT(10)     UNSIGNED            NOT NULL DEFAULT 0,
 
   PRIMARY KEY           (`groupId`),
   KEY `n_groupType`     (`groupType`),
   KEY `n_ownerId`       (`ownerId`)
-);
+) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- association tables
 --
 
+-- UserItem is a User's Bookmark
 CREATE TABLE userItem (
-  userId        int(10)     unsigned    NOT NULL default 0,
-  itemId        int(10)     unsigned    NOT NULL default 0,
+  userId        INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
+  itemId        INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
 
-  name          varchar(255)            NOT NULL default '',
-  description   TEXT                    NOT NULL default '',
+  name          VARCHAR(255)            NOT NULL DEFAULT '',
+  description   TEXT                    NOT NULL DEFAULT '',
 
-  rating        tinyint(1)  unsigned    NOT NULL default 0,
-  isFavorite    tinyint(1)  unsigned    NOT NULL default 0,
-  isPrivate     tinyint(1)  unsigned    NOT NULL default 0,
+  rating        TINYINT(1)  UNSIGNED    NOT NULL DEFAULT 0,
+  isFavorite    TINYINT(1)  UNSIGNED    NOT NULL DEFAULT 0,
+  isPrivate     TINYINT(1)  UNSIGNED    NOT NULL DEFAULT 0,
 
-  taggedOn      datetime                NOT NULL default '0000-00-00 00:00:00',
-  updatedOn     datetime                NOT NULL default '0000-00-00 00:00:00',
+  -- Can only have one TIMESTAMP field that uses CURRENT_TIMESTAMP
+  taggedOn      TIMESTAMP               NOT NULL DEFAULT '0000-00-00 00:00:00',
+  updatedOn     TIMESTAMP               NOT NULL DEFAULT CURRENT_TIMESTAMP
+                                               ON UPDATE CURRENT_TIMESTAMP,
 
   PRIMARY KEY               (`userId`, `itemId`),
   KEY       `ui_userId`     (`userId`),
@@ -110,50 +117,50 @@ CREATE TABLE userItem (
   KEY       `ui_taggedOn`   (`taggedOn`),
   KEY       `ui_updatedOn`  (`updatedOn`),
   FULLTEXT  `ui_fullText`   (`name`, `description`)
-);
+) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- Members of a memberGroup
 CREATE TABLE groupMember (
-  groupId       int(10)     unsigned    NOT NULL default 0,
-  userId        int(10)     unsigned    NOT NULL default 0,
+  groupId       INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
+  userId        INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
 
   PRIMARY KEY       (`userId`, `groupId`),
   KEY `ut_userId`   (`userId`),
   KEY `ut_groupId`  (`groupId`)
-);
+) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- Items within a memberGroup
 --      The table targetd by 'itemId' depends upon the 'groupType' of the
 --      memberGroup (user, item, or tag).
 CREATE TABLE groupItem (
-  groupId       int(10)     unsigned    NOT NULL default 0,
-  itemId        int(10)     unsigned    NOT NULL default 0,
+  groupId       INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
+  itemId        INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
 
   PRIMARY KEY       (`itemId`, `groupId`),
   KEY `ut_itemId`   (`itemId`),
   KEY `ut_groupId`  (`groupId`)
-);
+) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- User Authentication methods
 CREATE TABLE userAuth (
-  userId        int(10)     unsigned    NOT NULL default 0,
-  authType      varchar(30)             NOT NULL default 'password',
+  userId        INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
+  authType      VARCHAR(30)             NOT NULL DEFAULT 'password',
 
-  credential    varchar(255)            NOT NULL default '',
+  credential    VARCHAR(255)            NOT NULL DEFAULT '',
 
   PRIMARY KEY           (`userId`, `authType`),
   KEY `ua_userId`       (`userId`),
   KEY `ua_credential`   (`credential`)
-);
+) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- fact table
 --
 
 CREATE TABLE userTagItem (
-  userId        int(10)     unsigned    NOT NULL default 0,
-  tagId         int(10)     unsigned    NOT NULL default 0,
-  itemId        int(10)     unsigned    NOT NULL default 0,
+  userId        INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
+  tagId         INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
+  itemId        INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
 
   PRIMARY KEY       (`userId`, `tagId`, `itemId`),
   KEY `uti_ut`      (`userId`,`tagId`),
@@ -162,4 +169,4 @@ CREATE TABLE userTagItem (
   KEY `uti_userId`  (`userId`),
   KEY `uti_tagId`   (`tagId`),
   KEY `uti_itemId`  (`itemId`)
-);
+) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
