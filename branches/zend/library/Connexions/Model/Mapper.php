@@ -420,7 +420,7 @@ abstract class Connexions_Model_Mapper
         if (is_array($id))
             $id = implode(':', array_values($id));
 
-        // /*
+        /*
         Connexions::log("Connexions_Model_Mapper::_unsetIdentity( %s ): %s",
                         $id, get_class($this));
         // */

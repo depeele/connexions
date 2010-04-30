@@ -195,6 +195,11 @@ abstract class Connexions_Model_Set
      */
     public function setResults($results)
     {
+        /*
+        Connexions::log("Connexions_Model_Set[%s]::setResults(): %d results",
+                        get_class($this), count($results));
+        // */
+
         $this->_members = $results;
 
         return $this;
@@ -279,6 +284,15 @@ abstract class Connexions_Model_Set
      *
      */
 
+    /** @brief  Return a string representation of this instance.
+     *
+     *  @return The string-based representation.
+     */
+    public function __toString()
+    {
+        return implode(', ', $this->idArray());
+    }
+
     /** @brief  Return an array version of this instance.
      *  @param  deep    Should any associated models be retrieved?
      *                      [ Connexions_Model::DEPTH_DEEP ] |
@@ -312,11 +326,23 @@ abstract class Connexions_Model_Set
      */
     public function idArray()
     {
-        $ids = array();
+        $mapper = $this->getMapper();
+        $ids    = array();
         foreach ($this->_members as $item)
         {
-            if ($item instanceof Connexions_Model)
-                array_push($res, $item->getId());
+            /*
+            Connexions::Log("Connexions_Model_Set[%s]::idArray(): "
+                            .   "[ %s ] == [ %s ]",
+                            get_class($this),
+                            (is_object($item)
+                                ? get_class($item)
+                                : gettype($item)),
+                            (is_object($item)
+                                ? Connexions::varExport($item->getId())
+                                : Connexions::varExport($item)) );
+            // */
+
+            array_push($ids, $mapper->getId( $item ));
         }
 
         return $ids;

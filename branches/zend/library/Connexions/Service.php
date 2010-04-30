@@ -51,7 +51,7 @@ abstract class Connexions_Service
      *
      *  @return A new Connexions_Model instance.
      */
-    public function retrieve($criteria = array())
+    public function find($criteria = array())
     {
         return $this->_getMapper()->find( $criteria );
     }
@@ -74,10 +74,10 @@ abstract class Connexions_Service
      *
      *  @return A new Connexions_Model_Set.
      */
-    public function retrieveSet($criteria  = array(),
-                                $order     = null,
-                                $count     = null,
-                                $offset    = null)
+    public function fetch($criteria  = array(),
+                          $order     = null,
+                          $count     = null,
+                          $offset    = null)
     {
         if ($order !== null)
             $order = (array)$order;
@@ -122,8 +122,8 @@ abstract class Connexions_Service
      *
      *  @return A new Connexions_Model_Set.
      */
-    public function retrievePaginated($criteria  = array(),
-                                      $order     = null)
+    public function fetchPaginated($criteria  = array(),
+                                   $order     = null)
     {
         $set = $this->_getMapper()->fetch( $criteria, $order );
         return new Zend_Paginator( $set );
