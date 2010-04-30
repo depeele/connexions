@@ -48,9 +48,25 @@ class UserAuthDbTest extends DbTestCase
                         //dirname(__FILE__) .'/_files/userAuthSeed.xml');
     }
 
+    protected function tearDown()
+    {
+        /* Since these tests setup and teardown the database for each new test,
+         * we need to clean-up any Identity Maps that are used in order to 
+         * maintain test validity.
+         */
+        $uMapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $uMapper->flushIdentityMap();
+
+        $uaMapper = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
+        $uaMapper->flushIdentityMap();
+
+
+        parent::tearDown();
+    }
+
     public function testUserAuthRetrieveByUnknownId()
     {
-        $mapper   = new Model_Mapper_UserAuth( );
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
         $userAuth = $mapper->find( 5 );
 
         $this->assertEquals(null, $userAuth);
@@ -59,8 +75,7 @@ class UserAuthDbTest extends DbTestCase
     public function testUserAuthRetrieveById1()
     {
         $expected = $this->_user1['password'];
-
-        $mapper   = new Model_Mapper_UserAuth( );
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
         $userAuth = $mapper->find( array($expected['userId'],
                                          $expected['authType']) );
         $this->assertEquals($expected, $userAuth->toArray());
@@ -71,7 +86,7 @@ class UserAuthDbTest extends DbTestCase
         $expected = array($this->_user1['password']['userId'],
                           $this->_user1['password']['authType']);
 
-        $mapper   = new Model_Mapper_UserAuth( );
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
         $userAuth = $mapper->find( $expected );
 
         $this->assertEquals($expected, $userAuth->getId());
@@ -83,7 +98,7 @@ class UserAuthDbTest extends DbTestCase
         $authTarget = $this->_user1['password'];
         $expected   = $this->_user1['model'];
 
-        $mapper   = new Model_Mapper_UserAuth( );
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
         $userAuth = $mapper->find( array($authTarget['userId'],
                                          $authTarget['authType']) );
 
@@ -98,7 +113,7 @@ class UserAuthDbTest extends DbTestCase
     {
         $expected = $this->_user1['pki'];
 
-        $mapper   = new Model_Mapper_UserAuth( );
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
         $userAuth = $mapper->find( array($expected['userId'],
                                          $expected['authType']) );
         $this->assertEquals($expected, $userAuth->toArray());
@@ -108,7 +123,7 @@ class UserAuthDbTest extends DbTestCase
     {
         $expected = $this->_user1['password'];
 
-        $mapper   = new Model_Mapper_UserAuth( );
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
 
         $userAuth = $mapper->find( $expected['credential'] );
 
@@ -120,7 +135,7 @@ class UserAuthDbTest extends DbTestCase
     {
         $expected = $this->_user1['openid'];
 
-        $mapper   = new Model_Mapper_UserAuth( );
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
 
         $userAuth = $mapper->find( $expected['credential'] );
 
@@ -132,7 +147,7 @@ class UserAuthDbTest extends DbTestCase
     {
         $expected = $this->_user1['pki'];
 
-        $mapper   = new Model_Mapper_UserAuth( );
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
 
         $userAuth = $mapper->find( $expected['credential'] );
 
@@ -142,7 +157,7 @@ class UserAuthDbTest extends DbTestCase
 
     public function testUserAuthSet()
     {
-        $mapper   = new Model_Mapper_UserAuth( );
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
 
         // Fetch all entries for user 1
         $userAuths = $mapper->fetch( array('userId' => 1) );
@@ -161,15 +176,19 @@ class UserAuthDbTest extends DbTestCase
                                // md5( 'User441:' )
             'credential'    => '60766ed79ea8ac6e58c88683a62c2b9d',
         );
-
-        $data = array('userId' => $expected['userId']);
-
-        $userAuth = new Model_UserAuth( array(
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
+        $userAuth = $mapper->getModel( array(
                             'userId'     => $expected['userId'],
                         ));
+        $this->assertNotEquals(null, $userAuth);
+        $this->assertFalse($userAuth->isBacked());
+        $this->assertTrue ($userAuth->isValid());
+
         $userAuth = $userAuth->save();
 
         $this->assertNotEquals(null, $userAuth);
+        $this->assertTrue ($userAuth->isBacked());
+        $this->assertTrue ($userAuth->isValid());
         $this->assertEquals($expected, $userAuth->toArray());
 
         // Check the database consistency
@@ -183,11 +202,14 @@ class UserAuthDbTest extends DbTestCase
             $this->createFlatXmlDataSet(
                 dirname(__FILE__) .'/_files/userAuthInsertAssertion.xml'),
             $ds);
+
+        //$userAuth->delete();
     }
 
     public function testUserAuthOpenIdInsertedIntoDatabase()
     {
-        $userAuth = new Model_UserAuth( array(
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
+        $userAuth = $mapper->getModel( array(
                             'userId'     => 2,
                             'authType'   => 'openid',
                             'credential' => 'https://google.com/profile/me',
@@ -206,11 +228,14 @@ class UserAuthDbTest extends DbTestCase
             $this->createFlatXmlDataSet(
                 dirname(__FILE__) .'/_files/userAuthInsertOpenIdAssertion.xml'),
             $ds);
+
+        //$userAuth->delete();
     }
 
     public function testUserAuthPkiInsertedIntoDatabase()
     {
-        $userAuth = new Model_UserAuth( array(
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
+        $userAuth = $mapper->getModel( array(
                             'userId'     => 2,
                             'authType'   => 'pki',
                             'credential' => 'CN=me',
@@ -229,40 +254,33 @@ class UserAuthDbTest extends DbTestCase
             $this->createFlatXmlDataSet(
                 dirname(__FILE__) .'/_files/userAuthInsertPkiAssertion.xml'),
             $ds);
-    }
 
+        //$userAuth->delete();
+    }
 
     public function testUserAuthenticationInvalidUser()
     {
-        $expected   = new Zend_Auth_Result(
+        $expected = new Zend_Auth_Result(
                                 Zend_Auth_Result::FAILURE_IDENTITY_AMBIGUOUS,
                                 null);
-
-        $user       = new Model_User( array(
-                                'isValid'  => true,
-                                'isBacked' => false,
-                                'data'     => array(
-                                    'userId'     => 32,
-                                    'name'       => 'User 32',
-                                    'credential' => 'abc',
-                                )
+        $uMapper  = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $user     = $uMapper->getModel( array(
+                                'userId'     => 32,
+                                'name'       => 'User 32',
                           ) );
+        $user->credential = 'abc';
 
         $this->assertEquals( $expected, $user->authenticate() );
     }
 
     public function testUserAuthenticationInvalidAuthType()
     {
-        $expected   = new Zend_Auth_Result(
+        $expected = new Zend_Auth_Result(
                                 Zend_Auth_Result::FAILURE_CREDENTIAL_INVALID,
                                 null);
-        $eUser      = $this->_user1['model'];
-
-        $user       = new Model_User( array(
-                                'isValid'  => true,
-                                'isBacked' => true,
-                                'data'     => $eUser,
-                          ) );
+        $eUser    = $this->_user1['model'];
+        $uMapper  = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $user     = $uMapper->getModel( $eUser['userId'] );
 
         try
         {
@@ -277,15 +295,12 @@ class UserAuthDbTest extends DbTestCase
 
     public function testUserAuthenticationInvalidCredential()
     {
-        $expected   = new Zend_Auth_Result(
+        $expected = new Zend_Auth_Result(
                                 Zend_Auth_Result::FAILURE_CREDENTIAL_INVALID,
                                 null);
-        $eUser      = $this->_user1['model'];
-        $user       = new Model_User( array(
-                                'isValid'  => true,
-                                'isBacked' => true,
-                                'data'     => $eUser,
-                          ) );
+        $eUser    = $this->_user1['model'];
+        $uMapper  = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $user     = $uMapper->getModel( $eUser['userId'] );
         $user->setCredential('abc', 'pki');
 
         //printf ("User[ %s ]\n", $user->debugDump());
@@ -295,16 +310,13 @@ class UserAuthDbTest extends DbTestCase
 
     public function testUserAuthenticationSuccess()
     {
-        $eUser      = $this->_user1['model'];
-        $expected   = new Zend_Auth_Result(
+        $eUser    = $this->_user1['model'];
+        $expected = new Zend_Auth_Result(
                                 Zend_Auth_Result::SUCCESS,
                                 $eUser);
-        $user       = new Model_User( array(
-                                'isValid'  => true,
-                                'isBacked' => true,
-                                'data'     => $eUser,
-                          ) );
-        $user->setCredential('abcdefg');
+        $uMapper  = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $user     = $uMapper->getModel( $eUser['userId'] );
+        $user->setCredential('abcdefg', 'password');
 
         $this->assertEquals( $expected, $user->authenticate() );
         $this->assertTrue  ( $user->isAuthenticated() );
@@ -314,15 +326,12 @@ class UserAuthDbTest extends DbTestCase
 
     public function testUserAuthenticationPreHashedSuccess()
     {
-        $eUser      = $this->_user1['model'];
-        $expected   = new Zend_Auth_Result(
+        $eUser    = $this->_user1['model'];
+        $expected = new Zend_Auth_Result(
                                 Zend_Auth_Result::SUCCESS,
                                 $eUser);
-        $user       = new Model_User( array(
-                                'isValid'  => true,
-                                'isBacked' => true,
-                                'data'     => $eUser,
-                          ) );
+        $uMapper  = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $user     = $uMapper->getModel( $eUser['userId'] );
         $user->setCredential('77c3d13750c0a0a59b0a2cf1bc189f61');
 
         $this->assertEquals( $expected, $user->authenticate() );

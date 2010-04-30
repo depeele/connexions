@@ -56,4 +56,17 @@ class Service_User extends Connexions_Service
 
         return $user;
     }
+
+    /** @brief  Retrieve a set of users related by a set of Tags.
+     *  @param  tags    A Model_Set_Tag instance containing tags to match.
+     *
+     *  @return A new Model_Set_User instance.
+     */
+    public function retrieveByTags(Model_Set_Tag    $tags)
+    {
+        return $this->_getMapper()->fetchRelated( null,   // user restrictions
+                                                  null,   // item restrictions
+                                                  $tags); // tag restrictions
+    }
+
 }

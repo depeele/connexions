@@ -143,6 +143,16 @@ class Model_UserAuth extends Model_Base
         return ($norm === $this->credential);
     }
 
+    /** @brief  Return a string representation of this instance.
+     *
+     *  @return The string-based representation.
+     */
+    public function __toString()
+    {
+        return sprintf("%d:%s:%s",
+                       $this->userId, $this->authType, $this->credential);
+    }
+
     /*************************************************************************
      * Protected helpers
      *

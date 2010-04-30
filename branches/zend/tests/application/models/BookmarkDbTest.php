@@ -139,6 +139,29 @@ class BookmarkDbTest extends DbTestCase
                         dirname(__FILE__) .'/_files/5users.xml');
     }
 
+    protected function tearDown()
+    {
+        /* Since these tests setup and teardown the database for each new test,
+         * we need to clean-up any Identity Maps that are used in order to 
+         * maintain test validity.
+         */
+        $uMapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $uMapper->flushIdentityMap();
+
+        $iMapper = Connexions_Model_Mapper::factory('Model_Mapper_Item');
+        $iMapper->flushIdentityMap();
+
+        $tMapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
+        $tMapper->flushIdentityMap();
+
+        $bMapper = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
+        $bMapper->flushIdentityMap();
+
+
+        parent::tearDown();
+    }
+
+
     public function testBookmarkRetrieveById1()
     {
         $expected  = $this->_bookmark1;
@@ -150,7 +173,7 @@ class BookmarkDbTest extends DbTestCase
         $expected['isFavorite'] = ($expected['isFavorite'] ? 1 : 0);
         $expected['isPrivate']  = ($expected['isPrivate']  ? 1 : 0);
 
-        $mapper   = new Model_Mapper_Bookmark( );
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
         $bookmark = $mapper->find( array( $expected['userId'],
                                           $expected['itemId']) );
 
@@ -166,7 +189,7 @@ class BookmarkDbTest extends DbTestCase
 
     public function testBookmarkIdentityMap()
     {
-        $mapper = new Model_Mapper_Bookmark( );
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
         $id     = array( $this->_user1['userId'],
                          $this->_item1['itemId'] );
 
@@ -183,7 +206,7 @@ class BookmarkDbTest extends DbTestCase
         $expected['itemId'] = $this->_item1['itemId'];
 
 
-        $mapper   = new Model_Mapper_Bookmark( );
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
         $bookmark = $mapper->find( array( $expected['userId'],
                                           $expected['itemId']) );
 
@@ -220,7 +243,7 @@ class BookmarkDbTest extends DbTestCase
     {
         $expected = $this->_user1;
 
-        $mapper   = new Model_Mapper_Bookmark( );
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
         $bookmark = $mapper->find( array( $this->_user1['userId'],
                                           $this->_item1['itemId'] ) );
 
@@ -234,7 +257,7 @@ class BookmarkDbTest extends DbTestCase
     {
         $expected = $this->_item1;
 
-        $mapper   = new Model_Mapper_Bookmark( );
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
         $bookmark = $mapper->find( array( $this->_user1['userId'],
                                           $this->_item1['itemId'] ) );
 
@@ -248,7 +271,7 @@ class BookmarkDbTest extends DbTestCase
     {
         $expected = $this->_tags1;
 
-        $mapper   = new Model_Mapper_Bookmark( );
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
         $bookmark = $mapper->find( array( $this->_user1['userId'],
                                           $this->_item1['itemId'] ) );
 
@@ -284,7 +307,7 @@ class BookmarkDbTest extends DbTestCase
         $expected['isFavorite']  = 1;
         $expected['isPrivate']   = 0;
 
-        $mapper   = new Model_Mapper_Bookmark( );
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
         $bookmark = $mapper->find( array( $expected['userId'],
                                           $expected['itemId']) );
 
@@ -353,7 +376,7 @@ class BookmarkDbTest extends DbTestCase
 
     public function testBookmarkFullyDeletedFromDatabase()
     {
-        $mapper   = new Model_Mapper_Bookmark( );
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
         $bookmark = $mapper->find( array( $this->_user1['userId'],
                                           $this->_item1['itemId']) );
         $user     = $bookmark->user;
@@ -422,7 +445,8 @@ class BookmarkDbTest extends DbTestCase
         $expected['itemId']   = $this->_item6['itemId'];
         $expected['taggedOn'] = date('Y-m-d h:i:s');
 
-        $bookmark = new Model_Bookmark( array(
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
+        $bookmark = $mapper->getModel( array(
             'userId'      => $expected['userId'],
             'itemId'      => $expected['itemId'],
             'name'        => $expected['name'],
@@ -461,7 +485,7 @@ class BookmarkDbTest extends DbTestCase
         $expected['taggedOn'] = date('Y-m-d h:i:s');
 
         // Assemble names of the tags to attach to this Bookmark
-        $tagMapper = new Model_Mapper_Tag( );
+        $tagMapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
         $tagNames  = array();
         foreach ($expected['tags'] as $tag)
         {
@@ -469,7 +493,8 @@ class BookmarkDbTest extends DbTestCase
         }
 
         // Create the new Bookmark
-        $bookmark = new Model_Bookmark( array(
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
+        $bookmark = $mapper->getModel( array(
             'name'        => $expected['name'],
             'description' => $expected['description'],
             'rating'      => $expected['rating'],
@@ -535,7 +560,7 @@ class BookmarkDbTest extends DbTestCase
 
     public function testBookmarkSet()
     {
-        $mapper = new Model_Mapper_Bookmark( );
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
         $users  = $mapper->fetch();
 
         // Check the database consistency
@@ -556,7 +581,7 @@ class BookmarkDbTest extends DbTestCase
     {
         $expected = 10;
 
-        $mapper    = new Model_Mapper_Bookmark( );
+        $mapper    = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
         $bookmarks = $mapper->fetch(null,
                                     array('updatedOn DESC'),    // order
                                     $expected,                  // count
@@ -571,7 +596,7 @@ class BookmarkDbTest extends DbTestCase
         $expectedCount = 10;
         $expectedTotal = 20;
 
-        $mapper    = new Model_Mapper_Bookmark( );
+        $mapper    = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
         $bookmarks = $mapper->fetch(null,
                                     array('updatedOn DESC'),    // order
                                     $expectedCount,             // count
@@ -698,7 +723,7 @@ class BookmarkDbTest extends DbTestCase
         $expectedCount = 10;
         $expectedTotal = 20;
 
-        $mapper    = new Model_Mapper_Bookmark( );
+        $mapper    = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
         $bookmarks = $mapper->fetch(null,
                                     array('updatedOn DESC'),    // order
                                     $expectedCount,             // count
@@ -850,7 +875,7 @@ class BookmarkDbTest extends DbTestCase
                 'updatedOn'     => "2007-01-24 20:22:40",
             ),
         );
-        $mapper = new Model_Mapper_Bookmark( );
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
         $users  = $mapper->fetch();
 
         // Convert the Connexions_Model_Set to a Zend_Paginator

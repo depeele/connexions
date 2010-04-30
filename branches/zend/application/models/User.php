@@ -65,13 +65,9 @@ class Model_User extends Model_Base
      */
     public function setAuthType($authType)
     {
-        if (Model_UserAuth::validateAuthType($authType))
+        if ($this->validateAuthType($authType))
         {
             $this->_authType = $authType;
-        }
-        else
-        {
-            throw new Exception("Invalid authType");
         }
 
         return $this;
@@ -292,7 +288,7 @@ class Model_User extends Model_Base
                              //       ? "!"
                              //       : "?")
                              //   : " "),
-                             '',
+                             ' ',
                              $val,
                              //($this->_valid[$key] !== true
                              //   ? (is_array($this->_valid[$key])
@@ -361,6 +357,7 @@ class Model_User extends Model_Base
      */
     public function authenticate()
     {
+        /*
         Connexions::log("Model_User::authenticate(): "
                         . "is %sbacked, %svalid, userId %d, "
                         . "authType '%s', credential '%s'",
@@ -368,6 +365,7 @@ class Model_User extends Model_Base
                         ($this->isValid()          ? ''        : 'NOT '),
                         $this->userId,
                         $this->_authType, $this->_credential);
+        // */
 
 
         // See if the user represented by this instnace can be located
@@ -465,12 +463,106 @@ class Model_User extends Model_Base
         $this->setAuthenticated(false);
     }
 
-    public function addAuthenticator($type, $credential)
+    /** @brief  Add a new authenticator (Model_UserAuth entry) for this user.
+     *  @param  credential      The authentication credential.
+     *  @param  type            The authentication type
+     *                          [ Model_UserAuth::AUTH_DEFAULT ];
+     *
+     *  @throws Exception('Invalid authType')
+     *  @return The new Model_UserAuth instance (null on failure).
+     */
+    public function addAuthenticator($credential,
+                                     $authType = Model_UserAuth::AUTH_DEFAULT)
     {
+        if ((! $this->isBacked()) ||
+            (! $this->validateAuthType($authType)) )
+        {
+            return null;
+        }
+
+        $authMapper =
+                Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
+
+        $auth = $authMapper->makeModel(array(
+                                'userId'      => $this->userId,
+                                'authType'    => $authType,
+                                'credential'  => $credential),
+                                false); // not-yet-backed
+
+        if ($auth !== null)
+            $auth = $auth->save();
+
+        return $auth;
     }
 
-    public function removeAuthenticator($type, $credential)
+    /** @brief  Retrieve authenticator(s) (Model_UserAuth entry) for this user.
+     *  @param  type            The authentication type       [ null for all ];
+     *  @param  credential      The authentication credential [ null for all ].
+     *
+     *  @return The Model_Set_UserAuth instance containing all matching
+     *          authenticators (null if none found).
+     */
+    public function getAuthenticator($authType   = null,
+                                     $credential = null)
     {
+        if (! $this->isBacked())
+        {
+            return null;
+        }
+
+        $criteria = array('userId' => $this->userId);
+        if ($authType !== null)
+            $criteria['authType'] = $authType;
+        if ($credential !== null)
+            $criteria['credential'] = $credential;
+
+        $authMapper =
+                Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
+
+        return $authMapper->fetch( $criteria );
+    }
+
+    /** @brief  Remove one or more authenticators (Model_UserAuth entry) for
+     *          this user.
+     *  @param  credential      The authentication credential.
+     *  @param  type            The authentication type
+     *                          [ Model_UserAuth::AUTH_DEFAULT ];
+     *
+     *  @throws Exception('Invalid authType')
+     *  @return $this for a fluent interface.
+     */
+    public function removeAuthenticator($credential,
+                                        $authType =
+                                            Model_UserAuth::AUTH_DEFAULT)
+    {
+        if (! $this->isBacked())
+        {
+            return $this;
+        }
+
+        $criteria = array('userId' => $this->userId);
+        if ($authType !== null)
+        {
+            if (! $this->validateAuthType($authType))
+            {
+                return null;
+            }
+            $criteria['authType'] = $authType;
+        }
+        if ($credential !== null)
+            $criteria['credential'] = $credential;
+
+        $authMapper =
+                Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
+
+        $set = $authMapper->fetch( $criteria );
+
+        foreach ($set as $item)
+        {
+            $item->delete();
+        }
+
+        return $this;
     }
 
     /*************************************************************************
@@ -518,6 +610,24 @@ class Model_User extends Model_Base
      * Protected helpers
      *
      */
+
+    /** @brief  Validate the provided authentication type.
+     *          If validation fails, throw an exception.
+     *  @param  authType    The authentication type (Model_UserAUth::AUTH_*).
+     *
+     *  @throws Exception("Invalid authType");
+     *  @return true | false
+     */
+    protected function validateAuthType($authType)
+    {
+        if (! Model_UserAuth::validateAuthType($authType))
+        {
+            throw new Exception("Invalid authType");
+        }
+
+        return true;
+    }
+
     protected function _tags()
     {
         if ($this->_tags === null)
