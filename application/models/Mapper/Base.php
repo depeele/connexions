@@ -40,6 +40,9 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      *                      to use in the relation;
      *  @param  tags        The Model_Set_Tag  instance or an array of tagIds
      *                      to use in the relation;
+     *  @param  order       Optional ORDER clause (string, array)
+     *  @param  count       Optional LIMIT count
+     *  @param  offset      Optional LIMIT offset
      *  @param  exactTags   If 'tags' is provided,  should we require a match
      *                      on ALL tags? [ true ];
      *
@@ -49,6 +52,9 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
     public function fetchRelated( $users     = null,
                                   $items     = null,
                                   $tags      = null,
+                                  $order     = null,
+                                  $count     = null,
+                                  $offset    = null,
                                   $exactTags = true)
     {
         $modelName = $this->getModelName();
@@ -136,6 +142,6 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                       implode(' AND ', $joinCond),
                       null);
          
-        return $this->fetch($select);
+        return $this->fetch($select, $order, $count, $offset);
     }
 }

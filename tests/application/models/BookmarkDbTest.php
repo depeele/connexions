@@ -177,7 +177,7 @@ class BookmarkDbTest extends DbTestCase
         $bookmark = $mapper->find( array( $expected['userId'],
                                           $expected['itemId']) );
 
-        // /*
+        /*
         Connexions::log("testBookmarkRetrieveById1: bookmark[ %s ]",
                         Connexions::varExport( $bookmark->toArray() ));
         // */

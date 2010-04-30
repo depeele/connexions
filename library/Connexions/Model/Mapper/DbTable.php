@@ -334,17 +334,21 @@ abstract class Connexions_Model_Mapper_DbTable
         $uid = $this->getId($id); //$domainModel->getId();
         if ($this->_hasIdentity($uid))
         {
-            Connexions::log("Connexions_Model_Mapper_DbTable::find( %s ): "
+            // /*
+            Connexions::log("Connexions_Model_Mapper_DbTable[%s]::find( %s ) "
                             .   "uid[ %s ] --- return identity map entry",
+                            get_class($this),
                             Connexions::varExport($id),
                             Connexions::varExport($uid));
+            // */
 
             return $this->_getIdentity($uid);
         }
 
         // /*
-        Connexions::log("Connexions_Model_Mapper_DbTable::find( %s ): "
+        Connexions::log("Connexions_Model_Mapper_DbTable[%s]::find( %s ) "
                         .   "uid[ %s ]",
+                        get_class($this),
                         Connexions::varExport($id),
                         Connexions::varExport($uid));
         // */
@@ -410,9 +414,10 @@ abstract class Connexions_Model_Mapper_DbTable
             $totalCount = $this->_getTotalCount($select);
         }
 
-        // /*
-        Connexions::log("Connexions_Model_Mapper_DbTable::fetch(): "
-                        .   "sql[ %s ]...",
+        /*
+        Connexions::log("Connexions_Model_Mapper_DbTable[%s]::fetch() "
+                        . "sql[ %s ]...",
+                        get_class($this),
                         $select->assemble());
         // */
 
@@ -425,9 +430,10 @@ abstract class Connexions_Model_Mapper_DbTable
             $totalCount = count($accessorModels);
         }
 
-        /*
-        Connexions::log("Connexions_Model_Mapper_DbTable::fetch(): "
-                        .   "sql[ %s ], %d of %d rows",
+        // /*
+        Connexions::log("Connexions_Model_Mapper_DbTable[%s]::fetch() "
+                        . "sql[ %s ], %d of %d rows...",
+                        get_class($this),
                         $select->assemble(),
                         count($accessorModels), $totalCount);
         // */

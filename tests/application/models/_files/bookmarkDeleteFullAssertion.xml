@@ -23,26 +23,26 @@
      itemId="1"
       url="http://www.clipperz.com/"
       urlHash="383cb614a2cc9247b86cad9a315d02e3"
-      userCount="0" ratingCount="0" ratingSum="0" />
+      userCount="1" ratingCount="1" ratingSum="1" />
  <item
      itemId="2"
       url="http://oat.openlinksw.com/"
-      urlHash=""
+      urlHash="d78f0feda6386fb621bdc0ffe30c55ae"
       userCount="1" ratingCount="1" ratingSum="2" />
  <item
      itemId="3"
       url="http://demo.openlinksw.com/weblog/demo/?id=1"
-      urlHash=""
+      urlHash="052973b1ac311978abdc0413daa1d5db"
       userCount="1" ratingCount="0" ratingSum="0" />
  <item
      itemId="4"
       url="http://demo.openlinksw.com/DAV/JS/demo/index.html"
-      urlHash=""
+      urlHash="52cda3e66df5938103c48725357c59ab"
       userCount="2" ratingCount="0" ratingSum="0" />
  <item
      itemId="5"
       url="http://www.lutanho.net/diagram/"
-      urlHash=""
+      urlHash="3df00b4987258758e9921d07eace89c3"
       userCount="1" ratingCount="0" ratingSum="0" />
  <item
      itemId="6"
@@ -52,42 +52,42 @@
  <item
      itemId="7"
       url="https://nimbus.dev.java.net/"
-      urlHash=""
+      urlHash="d9b473057c0c7486538a70e7b010f853"
       userCount="2" ratingCount="0" ratingSum="0" />
  <item
      itemId="8"
       url="http://www.martinswiki.com/#MediaWikiFormatterPlugin"
-      urlHash=""
+      urlHash="b79d82b1c3c6899f8f495b33bc93e687"
       userCount="1" ratingCount="0" ratingSum="0" />
  <item
      itemId="9"
       url="http://homedecorators30.artselect.com/"
-      urlHash=""
+      urlHash="39735b7182723ad149214de14fc478d8"
       userCount="1" ratingCount="0" ratingSum="0" />
  <item
      itemId="10"
       url="http://www.airbeddiscounters.com/"
-      urlHash=""
+      urlHash="7f07e1cadb025052d6988fc87d7a351a"
       userCount="1" ratingCount="0" ratingSum="0" />
  <item
      itemId="11"
       url="http://www.engadget.com/2007/01/19/the-wii-laptop/"
-      urlHash=""
+      urlHash="f95552d896f68ce2c7dca0624ce7e29f"
       userCount="1" ratingCount="1" ratingSum="3" />
  <item
      itemId="12"
       url="http://www.textpattern.com/"
-      urlHash=""
+      urlHash="24032aec5555f2361ebf683f9214fb0f"
       userCount="1" ratingCount="0" ratingSum="0" />
  <item
      itemId="13"
       url="http://tiddlywikiguides.org/index.php?title=TiddlyWiki_Guides"
-      urlHash=""
+      urlHash="0ba1beb65991ba4d06fac047bf72df49"
       userCount="1" ratingCount="0" ratingSum="0" />
  <item
      itemId="14"
       url="http://download.java.net/media/java3d/javadoc/1.5.0/index.html"
-      urlHash=""
+      urlHash="d0fa31da9e7c76a00320cf103609dcc5"
       userCount="1" ratingCount="0" ratingSum="0" />
  <item
      itemId="15"
@@ -97,7 +97,7 @@
  <item
      itemId="16"
       url="http://www.fullbooks.com/"
-      urlHash=""
+      urlHash="c28e539f37ede603b10a279ac0b43439"
       userCount="1" ratingCount="0" ratingSum="0" />
 
 <!-- Referenced Tags -->

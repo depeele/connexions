@@ -59,6 +59,28 @@ class UserServiceTest extends DbTestCase
                         dirname(__FILE__) .'/_files/5users.xml');
     }
 
+    protected function tearDown()
+    {
+        /* Since these tests setup and teardown the database for each new test,
+         * we need to clean-up any Identity Maps that are used in order to 
+         * maintain test validity.
+         */
+        $uMapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $uMapper->flushIdentityMap();
+
+        $iMapper = Connexions_Model_Mapper::factory('Model_Mapper_Item');
+        $iMapper->flushIdentityMap();
+
+        $tMapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
+        $tMapper->flushIdentityMap();
+
+        $bMapper = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
+        $bMapper->flushIdentityMap();
+
+
+        parent::tearDown();
+    }
+
     public function testUserServiceFactory()
     {
         $service1 = Connexions_Service::factory('Model_User');
@@ -71,7 +93,7 @@ class UserServiceTest extends DbTestCase
         $this->assertSame( $service1, $service2 );
     }
 
-    public function testUserServiceConstructorInjectionOfProperties()
+    public function testUserServiceCreate()
     {
         $expected = $this->_user0;
         $service  = Connexions_Service::factory('Model_User');
@@ -125,11 +147,11 @@ class UserServiceTest extends DbTestCase
      * Single Instance retrieval tests
      *
      */
-    public function testUserServiceRetrieveByUserId1()
+    public function testUserServiceFindByUserId1()
     {
         $expected = $this->_user1;
         $service  = Connexions_Service::factory('Model_User');
-        $user     = $service->retrieve( array(
+        $user     = $service->find( array(
                                         'userId'=> $expected['userId'],
                     ));
 
@@ -143,11 +165,11 @@ class UserServiceTest extends DbTestCase
                                             Connexions_Model::FIELDS_ALL ));
     }
 
-    public function testUserServiceRetrieveByUserId2()
+    public function testUserServiceFindByUserId2()
     {
         $expected = $this->_user1;
         $service  = Connexions_Service::factory('Model_User');
-        $user     = $service->retrieve( array(
+        $user     = $service->find( array(
                                         'name' => $expected['name'],
                     ));
 
@@ -161,11 +183,11 @@ class UserServiceTest extends DbTestCase
                                             Connexions_Model::FIELDS_ALL ));
     }
 
-    public function testUserServiceRetrieveByUserId3()
+    public function testUserServiceFindByUserId3()
     {
         $expected = $this->_user1;
         $service  = Connexions_Service::factory('Model_User');
-        $user     = $service->retrieve( $expected['userId'] );
+        $user     = $service->find( $expected['userId'] );
 
         $this->assertTrue(  $user instanceof Model_User );
         $this->assertTrue(  $user->isBacked() );
@@ -177,11 +199,11 @@ class UserServiceTest extends DbTestCase
                                             Connexions_Model::FIELDS_ALL ));
     }
 
-    public function testUserServiceRetrieveByUserId4()
+    public function testUserServiceFindByUserId4()
     {
         $expected = $this->_user1;
         $service  = Connexions_Service::factory('Model_User');
-        $user     = $service->retrieve( $expected['name'] );
+        $user     = $service->find( $expected['name'] );
 
         $this->assertTrue(  $user instanceof Model_User );
         $this->assertTrue(  $user->isBacked() );
@@ -198,22 +220,22 @@ class UserServiceTest extends DbTestCase
      *
      */
 
-    public function testUserServiceRetrieveSet()
+    public function testUserServiceFetchSet()
     {
         $service  = Connexions_Service::factory('Model_User');
-        $users    = $service->retrieveSet();
+        $users    = $service->fetch();
 
-        // Retrieve the expected set
+        // Fetch the expected set
         $ds = $this->createFlatXmlDataSet(
                   dirname(__FILE__) .'/_files/userSetAssertion.xml');
 
         $this->assertModelSetEquals( $ds->getTable('user'), $users );
     }
 
-    public function testUserServiceRetrievePaginated()
+    public function testUserServiceFetchPaginated()
     {
         $service  = Connexions_Service::factory('Model_User');
-        $users    = $service->retrievePaginated();
+        $users    = $service->fetchPaginated();
 
         /*
         printf ("%d users of %d, %d pages with %d per page, current page %d\n",
@@ -239,7 +261,7 @@ class UserServiceTest extends DbTestCase
         }
         // */
 
-        // Retrieve the expected set
+        // Fetch the expected set
         $ds = $this->createFlatXmlDataSet(
                   dirname(__FILE__) .'/_files/userSetAssertion.xml');
 
@@ -385,7 +407,7 @@ class UserServiceTest extends DbTestCase
     public function testUserServiceInvalidAddAuth1()
     {
         $service    = Connexions_Service::factory('Model_User');
-        $user       = $service->retrieve( $this->_user2['userId'] );
+        $user       = $service->find( $this->_user2['userId'] );
 
         $this->assertNotEquals(null, $user);
 
@@ -410,7 +432,7 @@ class UserServiceTest extends DbTestCase
     public function testUserServiceAddAuth1()
     {
         $service    = Connexions_Service::factory('Model_User');
-        $user       = $service->retrieve( $this->_user2['userId'] );
+        $user       = $service->find( $this->_user2['userId'] );
         $this->assertNotEquals(null, $user);
 
         $credential = '1234567';
@@ -448,7 +470,7 @@ class UserServiceTest extends DbTestCase
     public function testUserServiceRemoveAuth1()
     {
         $service    = Connexions_Service::factory('Model_User');
-        $user       = $service->retrieve( $this->_user1['name'] );
+        $user       = $service->find( $this->_user1['name'] );
         $this->assertNotEquals(null, $user);
 
         $user->removeAuthenticator( null, Model_UserAuth::AUTH_DEFAULT );
@@ -469,5 +491,54 @@ class UserServiceTest extends DbTestCase
             $this->createFlatXmlDataSet(
               dirname(__FILE__) .'/_files/userServiceAuthDeleteAssertion.xml'),
             $ds);
+    }
+
+    public function testUserServiceFetchByTags()
+    {
+        //            vv ordered by 'tagCount DESC'
+        $expected   = 'User1,User83';
+        $service    = Connexions_Service::factory('Model_User');
+        $users      = $service->fetchByTags( array( 6, 12 ) );
+        $this->assertNotEquals(null, $users);
+
+        //printf ("Users: [ %s ]\n", print_r($users->toArray(), true));
+
+        $users      = $users->__toString();
+
+        //printf ("Users: [ %s ]\n", $users);
+
+        $this->assertEquals($expected, $users);
+    }
+
+    public function testUserServicecsList2set()
+    {
+        $expected   = array(1, 4, 3);
+        $names      = "user1, user478,  user83, user12345, user91828";
+        $service    = Connexions_Service::factory('Model_User');
+        $users      = $service->csList2set( $names );
+        $this->assertNotEquals(null, $users);
+
+        $ids        = $users->idArray();
+        $this->assertEquals($expected, $ids);
+
+        /*
+        printf ("Users [ %s ]: [ %s ]\n",
+                $names, print_r($users->toArray(), true) );
+
+        printf ("User Ids: [ %s ]\n", implode(', ', $ids));
+        // */
+    }
+
+    public function testUserServiceSetString()
+    {
+        $expected   = "User1,User478,User83";
+        $service    = Connexions_Service::factory('Model_User');
+        $users      = $service->csList2set( $expected );
+        $this->assertNotEquals(null, $users);
+
+        $names      = $users->__toString();
+        $this->assertEquals($expected, $names);
+
+        //printf ("User Names: [ %s ]\n", $names);
     }
 }
