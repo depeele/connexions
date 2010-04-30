@@ -71,7 +71,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         // */
 
         // Update table-based statistics:
-        $this->_updateStatistics( $bookmark );
+        $bookmark->updateStatistics();
 
         return $bookmark;
     }
@@ -96,6 +96,8 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
             Connexions::log("Model_Mapper_Bookmark::delete( %s )",
                             Connexions::varExport($id));
             // */
+            $user = $bookmark->user;
+            $item = $bookmark->item;
 
             // Delete all tags associated with this bookmark
             $this->deleteTags($bookmark);
@@ -104,7 +106,8 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
             parent::delete($bookmark);
 
             // Update table-based statistics:
-            $this->_updateStatistics( $id );
+            $user->updateStatistics();
+            $item->updateStatistics();
         }
 
         return $this;
@@ -275,107 +278,4 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         return parent::makeModel($data, $isBacked);
     }
      */
-
-    /*********************************************************************
-     * Protected helpers
-     *
-     */
-
-    /** @brief  Given a Bookmark Domain Model, update external-table statistics
-     *          related to this bookmark:
-     *              user - totalTags, totalItems
-     *              item - userCount, ratingCount, ratingSum
-     *  @param  id      An array of (userId, itemId) identifying the target
-     *                  Bookmark OR a Bookmark Domain Model instance.
-     *
-     *  @return $this for a fluent interface
-     */
-    protected function _updateStatistics($id)
-    {
-        if ($id instanceof Model_Bookmark)
-        {
-            $user = $id->user;
-            $item = $id->item;
-        }
-        else
-        {
-            $user = $this->getUser($id[0]);
-            $item = $this->getItem($id[1]);
-        }
-
-        /* Update user-related statistics:
-         *     SELECT COUNT(DISTINCT tagId)  AS totalTags,
-         *            COUNT(DISTINCT itemId) AS totalItems
-         *        FROM  userTagItem
-         *        WHERE userId=?;
-         */
-        $table  = $this->getAccessor('Model_DbTable_UserTagItem');
-        $select = $table->select();
-        $select->from( $table->info(Zend_Db_Table_Abstract::NAME),
-                        array('COUNT(DISTINCT tagId)  AS totalTags',
-                              'COUNT(DISTINCT itemId) AS totalItems') )
-               ->where( 'userId=?', $user->userId );
-
-        /*
-        Connexions::log("Model_Mapper_Bookmark::_updateStatistics( %d, %d ): "
-                        . "sql[ %s ]",
-                        $user->userId, $item->itemId,
-                        $select->assemble());
-        // */
-
-        $row = $select->query()->fetchObject();
-
-        /*
-        Connexions::log("Model_Mapper_Bookmark::_updateStatistics( %d, %d ): "
-                        . "for User: row[ %s ]",
-                        $user->userId, $item->itemId,
-                        Connexions::varExport($row));
-        // */
-
-        $user->totalTags  = $row->totalTags;
-        $user->totalItems = $row->totalItems;
-        $user = $user->save();
-
-
-        /* Update item-related statistics:
-         *    SELECT
-         *      COUNT(DISTINCT userId)                           AS userCount,
-         *      SUM(CASE WHEN rating > 0 THEN 1 ELSE 0 END)      AS ratingCount,
-         *      SUM(CASE rating WHEN null THEN 0 ELSE rating END) AS ratingSum
-         *        FROM  userItem
-         *        WHERE itemId=?;
-         */
-        $table  = $this->getAccessor('Model_DbTable_UserItem');
-        $select = $table->select();
-        $select->from( $table->info(Zend_Db_Table_Abstract::NAME),
-                        array('COUNT(DISTINCT userId)  AS userCount',
-                              'SUM(CASE WHEN rating > 0 THEN 1 ELSE 0 END) '
-                                . 'AS ratingCount',
-                              'SUM(CASE rating WHEN null '
-                                .   'THEN 0 ELSE rating END) '
-                                . 'AS ratingSum') )
-               ->where( 'itemId=?', $item->itemId );
-
-        $row = $select->query()->fetchObject();
-
-        /*
-        Connexions::log("Model_Mapper_Bookmark::_updateStatistics( %d, %d ): "
-                        . "for Item: row[ %s ]",
-                        $user->userId, $item->itemId,
-                        Connexions::varExport($row));
-        // */
-
-        $item->userCount   = $row->userCount;
-        $item->ratingCount = $row->ratingCount;
-        $item->ratingSum   = $row->ratingSum;
-        $item = $item->save();
-
-        if ($id instanceof Model_Bookmark)
-        {
-            $id->user = $user;
-            $id->item = $item;
-        }
-
-        return $this;
-    }
 }

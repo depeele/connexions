@@ -75,12 +75,67 @@ class Model_Mapper_User extends Model_Mapper_Base
         throw new Exception('Not yet implemented');
     }
 
+    /** @brief  Given a User Domain Model (or User identifier), update 
+     *          external-table statistics related to this user:
+     *              totalTags, totalItems
+     *  @param  id      A Model_User instance or userId.
+     *
+     *  @return $this for a fluent interface
+     */
+    public function updateStatistics($id)
+    {
+        if ($id instanceof Model_User)
+        {
+            $user = $id;
+        }
+        else
+        {
+            $user = $this->find($id);
+        }
+
+        /* Update user-related statistics:
+         *     SELECT COUNT(DISTINCT tagId)  AS totalTags,
+         *            COUNT(DISTINCT itemId) AS totalItems
+         *        FROM  userTagItem
+         *        WHERE userId=?;
+         */
+        $table  = $this->getAccessor('Model_DbTable_UserTagItem');
+        $select = $table->select();
+        $select->from( $table->info(Zend_Db_Table_Abstract::NAME),
+                        array('COUNT(DISTINCT tagId)  AS totalTags',
+                              'COUNT(DISTINCT itemId) AS totalItems') )
+               ->where( 'userId=?', $user->userId );
+
+        // /*
+        Connexions::log("Model_Mapper_User::_updateStatistics( %d ): "
+                        . "sql[ %s ]",
+                        $user->userId,
+                        $select->assemble());
+        // */
+
+        $row = $select->query()->fetchObject();
+
+        /*
+        Connexions::log("Model_Mapper_User::_updateStatistics( %d ): "
+                        . "for User: row[ %s ]",
+                        $user->userId,
+                        Connexions::varExport($row));
+        // */
+
+        $user->totalTags  = $row->totalTags;
+        $user->totalItems = $row->totalItems;
+        $user = $user->save();
+
+        return $this;
+    }
+
     /*********************************************************************
      * Protected methods
      *
      * Since a user can be queried by either userId or name, the identity
      * map for this Domain Model must be a bit more "intelligent"...
      */
+
 
     /** @brief  Save a new Model instance in our identity map.
      *  @param  id      The model instance identifier.

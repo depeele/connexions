@@ -324,8 +324,8 @@ class BookmarkDbTest extends DbTestCase
         $this->assertTrue(  $bookmark->isBacked() );
         $this->assertTrue(  $bookmark->isValid() );
         $this->assertEquals($expected,
-                            $bookmark->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                                Connexions_Model::FIELDS_ALL ));
+                            $bookmark->toArray(Connexions_Model::DEPTH_SHALLOW,
+                                               Connexions_Model::FIELDS_ALL ));
 
         $bookmark = $bookmark->save();
 
@@ -334,8 +334,8 @@ class BookmarkDbTest extends DbTestCase
         //$expected['user']['lastVisit'] = $bookmark->user->lastVisit;
 
         $this->assertEquals($expected,
-                            $bookmark->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                                Connexions_Model::FIELDS_ALL ));
+                            $bookmark->toArray(Connexions_Model::DEPTH_SHALLOW,
+                                               Connexions_Model::FIELDS_ALL ));
 
         // Check the database consistency
         $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(

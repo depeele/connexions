@@ -221,7 +221,7 @@ abstract class Connexions_Model_Mapper_DbTable
         $data     = $this->reduceModel( $domainModel );
         if (! $id)
         {
-            // /*
+            /*
             Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
                             . "EMPTY id, insert new model[ %s ]",
                             get_class($this),
@@ -244,7 +244,7 @@ abstract class Connexions_Model_Mapper_DbTable
             // Update
             $where = $this->_where($id);
 
-            // /*
+            /*
             Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
                             . "update model[ %s ], where[ %s ], id[ %s ]",
                             get_class($this),
