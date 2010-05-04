@@ -513,12 +513,16 @@ abstract class Connexions_Model
     }
 
     /** @brief  Generate a string representation of this record.
+     *  @param  indent      The number of spaces to indent [ 0 ];
+     *  @param  leaveOpen   Should the terminating '];\n' be excluded [ false ];
      *
      *  @return A string.
      */
-    public function debugDump()
+    public function debugDump($indent       = 0,
+                              $leaveOpen    = false)
     {
-        $str = get_class($this) .": is "
+        $str = str_repeat(' ', $indent)
+             . get_class($this) .": is "
              .      ($this->isBacked() ? '' : 'NOT '). 'backed, '
              .      ($this->isValid()  ? '' : 'NOT '). 'valid '
              .      "[\n";
@@ -531,7 +535,8 @@ abstract class Connexions_Model
             else if ($type === 'boolean')
                 $val = ($val ? 'true' : 'false');
 
-            $str .= sprintf (" %-15s == %-15s %s [ %s ]%s\n",
+            $str .= sprintf ("%s%-15s == %-15s %s [ %s ]%s\n",
+                             str_repeat(' ', $indent + 1),
                              $key, $type,
                              ($this->_valid[$key] !== true
                                 ? (isset($this->_valid[$key])
@@ -546,7 +551,8 @@ abstract class Connexions_Model
                                 : ''));
         }
 
-        $str .= "\n];";
+        if ($leaveOpen !== true)
+            $str .= str_repeat(' ', $indent) .'];';
 
         return $str;
     }

@@ -152,6 +152,78 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         return $data;
     }
 
+    /** @brief  Retrieve a set of Domain Model items via the userTagItem core
+     *          table.
+     *  @param  params  An array retrieval criteria:
+     *                      - users     The Model_Set_User instance or an array
+     *                                  of userIds to use in the relation;
+     *                      - items     The Model_Set_Item instance or an array
+     *                                  of itemIds to use in the relation;
+     *                      - tags      The Model_Set_Tag  instance or an array
+     *                                  of tagIds to use in the relation;
+     *                      - order     Optional ORDER clause (string, array);
+     *                      - count     Optional LIMIT count;
+     *                      - offset    Optional LIMIT offset;
+     *                      - exactTags If 'tags' is provided,  should we
+     *                                  require a match on ALL tags? [ true ];
+     *                      - where     Additional condition(s) [ null ];
+     *
+     *                      - privacy   Model_User to use for privacy filter
+     *                                  [ anonymous / unauthenticated ];
+     *
+     *  Override Model_Base::fetchRelated() to add a 'privacy' parameter.
+     *
+     *  @return A Connexions_Model_Set instance that provides access to all
+     *          matching Domain Model instances.
+     */
+    public function fetchRelated( array $params = array())
+    {
+        $privacy = (isset($params['privacy'])
+                        ? $params['privacy']
+                        : null);
+
+        if ($privacy !== false)
+        {
+            // Include a privacy filter
+            $where = '( (b.isPrivate=0) ';
+
+            if ( (! empty($privacy))              &&
+                 ($privacy instanceof Model_User) &&
+                 $privacy->isAuthenticated() )
+            {
+                /* Allow the authenticated user to see their own private
+                 * bookmarks.
+                 */
+                $where .= "OR (b.userId={$privacy->userId}) ";
+            }
+
+            $where .= ')';
+
+            if (isset($params['where']))
+            {
+                // Merge the privacy filter in with the incoming 'where' clause
+                $newWhere = $params['where'];
+
+                if (is_array($newWhere))
+                    array_push($newWhere, $where);
+                else
+                    $newWhere .= ' AND '. $where;
+
+                $where = $newWhere;
+            }
+
+            $params['where'] = $where;
+        }
+
+        /*
+        Connexions::log("Model_Mapper_Bookmark::fetchRelated(): "
+                        .   "params[ %s ]",
+                        Connexions::varExport($params));
+        // */
+
+        return parent::fetchRelated($params);
+    }
+
     /** @brief  Retrieve the user related to this bookmark.
      *  @param  id      The userId of the desired user.
      *
@@ -210,8 +282,11 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         // */
 
         $tagMapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
-        $tags      = $tagMapper->fetchRelated( $userId,
-                                               $itemId );
+        $tags      = $tagMapper->fetchRelated( array(
+                                        'users' => $userId,
+                                        'items' => $itemId,
+                                        'order' => 'tag ASC',
+                                    ));
 
         return $tags;
     }

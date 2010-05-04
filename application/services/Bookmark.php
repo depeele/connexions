@@ -12,6 +12,8 @@ class Service_Bookmark extends Connexions_Service
 
     /** @brief  Retrieve a set of bookmarks related by a set of Tags.
      *  @param  tags    A Model_Set_Tag instance or array of tags to match.
+     *  @param  exact   Bookmarks MUST be associated with provided tags
+     *                  [ true ];
      *  @param  order   Optional ORDER clause (string, array)
      *                      [ [ 'tagCount      DESC',
      *                          'userItemCount DESC',
@@ -22,18 +24,23 @@ class Service_Bookmark extends Connexions_Service
      *  @return A new Model_Set_Bookmark instance.
      */
     public function fetchByTags($tags,
+                                $exact   = true,
                                 $order   = array('tagCount      DESC',
                                                  'userItemCount DESC',
-                                                 'userCount     DESC'),
+                                                 'userCount     DESC',
+                                                 'taggedOn      DESC'),
                                 $count   = null,
                                 $offset  = null)
     {
-        return $this->_getMapper()->fetchRelated( null,   // user restrictions
-                                                  null,   // item restrictions
-                                                  $tags,  // tag restrictions
-                                                  $order,
-                                                  $count,
-                                                  $offset);
+        return $this->_getMapper()->fetchRelated( array(
+                                        'tags'      => $tags,
+                                        'exactTags' => $exact,
+                                        'order'     => $order,
+                                        'count'     => $count,
+                                        'offset'    => $offset,
+                                        'where'     => $where,
+                                        'privacy'   => Connexions::getUser(),
+                                    ));
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Users.
@@ -50,16 +57,18 @@ class Service_Bookmark extends Connexions_Service
     public function fetchByUsers($users,
                                  $order   = array('userCount     DESC',
                                                   'userItemCount DESC',
-                                                  'tagCount      DESC'),
+                                                  'tagCount      DESC',
+                                                  'taggedOn      DESC'),
                                  $count   = null,
                                  $offset  = null)
     {
-        return $this->_getMapper()->fetchRelated( $users, // user restrictions
-                                                  null,   // item restrictions
-                                                  null,   // tag restrictions
-                                                  $order,
-                                                  $count,
-                                                  $offset);
+        return $this->_getMapper()->fetchRelated( array(
+                                        'users'   => $users,
+                                        'order'   => $order,
+                                        'count'   => $count,
+                                        'offset'  => $offset,
+                                        'privacy' => Connexions::getUser(),
+                                    ));
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Items.
@@ -78,71 +87,92 @@ class Service_Bookmark extends Connexions_Service
                                  $order   = array('itemCount     DESC',
                                                   'userItemCount DESC',
                                                   'userCount     DESC',
-                                                  'tagCount      DESC'),
+                                                  'tagCount      DESC',
+                                                  'taggedOn      DESC'),
                                  $count   = null,
                                  $offset  = null)
     {
-        return $this->_getMapper()->fetchRelated( null,   // user restrictions
-                                                  $items, // item restrictions
-                                                  null,   // tag restrictions
-                                                  $order,
-                                                  $count,
-                                                  $offset);
+        return $this->_getMapper()->fetchRelated( array(
+                                        'items'   => $items,
+                                        'order'   => $order,
+                                        'count'   => $count,
+                                        'offset'  => $offset,
+                                        'privacy' => Connexions::getUser(),
+                                    ));
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Users and Tags.
-     *  @param  users   A Model_Set_User instance or array of users to match.
-     *  @param  tags    A Model_Set_Tag  instance or array of tags  to match.
-     *  @param  order   Optional ORDER clause (string, array)
-     *                      [ [ 'userCount     DESC',
-     *                          'tagCount      DESC',
-     *                          'userItemCount DESC' ] ];
-     *  @param  count   Optional LIMIT count
-     *  @param  offset  Optional LIMIT offset
+     *  @param  users       A Model_Set_User instance or array of users to
+     *                      match.
+     *  @param  tags        A Model_Set_Tag  instance or array of tags  to
+     *                      match.
+     *  @param  exactTags   Bookmarks MUST be associated with provided tags
+     *                      [ true ];
+     *  @param  order       Optional ORDER clause (string, array)
+     *                          [ [ 'userCount     DESC',
+     *                              'tagCount      DESC',
+     *                              'userItemCount DESC' ] ];
+     *  @param  count       Optional LIMIT count
+     *  @param  offset      Optional LIMIT offset
      *
      *  @return A new Model_Set_Bookmark instance.
      */
     public function fetchByUsersAndTags($users,
                                         $tags,
-                                        $order   = array('userCount     DESC',
-                                                         'tagCount      DESC',
-                                                         'userItemCount DESC'),
-                                        $count   = null,
-                                        $offset  = null)
+                                        $exactTags = true,
+                                        $order     = array(
+                                                        'userCount     DESC',
+                                                        'tagCount      DESC',
+                                                        'userItemCount DESC',
+                                                        'taggedOn      DESC'),
+                                        $count     = null,
+                                        $offset    = null)
     {
-        return $this->_getMapper()->fetchRelated( $users, // user restrictions
-                                                  null,   // item restrictions
-                                                  $tags,  // tag restrictions
-                                                  $order,
-                                                  $count,
-                                                  $offset);
+        return $this->_getMapper()->fetchRelated( array(
+                                        'users'     => $users,
+                                        'tags'      => $tags,
+                                        'exactTags' => $exactTags,
+                                        'order'     => $order,
+                                        'count'     => $count,
+                                        'offset'    => $offset,
+                                        'privacy'   => Connexions::getUser(),
+                                    ));
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Items and Tags.
-     *  @param  items   A Model_Set_User instance or array of items to match.
-     *  @param  tags    A Model_Set_Tag  instance or array of tags  to match.
-     *  @param  order   Optional ORDER clause (string, array)
-     *                      [ [ 'itemCount     DESC',
-     *                          'tagCount      DESC',
-     *                          'userItemCount DESC' ] ];
-     *  @param  count   Optional LIMIT count
-     *  @param  offset  Optional LIMIT offset
+     *  @param  items       A Model_Set_User instance or array of items to
+     *                      match.
+     *  @param  tags        A Model_Set_Tag  instance or array of tags  to
+     *                      match.
+     *  @param  exactTags   Bookmarks MUST be associated with provided tags
+     *                      [ true ];
+     *  @param  order       Optional ORDER clause (string, array)
+     *                          [ [ 'itemCount     DESC',
+     *                              'tagCount      DESC',
+     *                              'userItemCount DESC' ] ];
+     *  @param  count       Optional LIMIT count
+     *  @param  offset      Optional LIMIT offset
      *
      *  @return A new Model_Set_Bookmark instance.
      */
     public function fetchByItemsAndTags($items,
                                         $tags,
+                                        $exact   = true,
                                         $order   = array('itemCount     DESC',
                                                          'tagCount      DESC',
-                                                         'userItemCount DESC'),
+                                                         'userItemCount DESC',
+                                                         'taggedOn      DESC'),
                                         $count   = null,
                                         $offset  = null)
     {
-        return $this->_getMapper()->fetchRelated( null,   // user restrictions
-                                                  $items, // item restrictions
-                                                  $tags,  // tag restrictions
-                                                  $order,
-                                                  $count,
-                                                  $offset);
+        return $this->_getMapper()->fetchRelated( array(
+                                        'items'     => $items,
+                                        'tags'      => $tags,
+                                        'exactTags' => $exact,
+                                        'order'     => $order,
+                                        'count'     => $count,
+                                        'offset'    => $offset,
+                                        'privacy'   => Connexions::getUser(),
+                                    ));
     }
 }

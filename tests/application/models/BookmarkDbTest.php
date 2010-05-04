@@ -45,32 +45,20 @@ class BookmarkDbTest extends DbTestCase
             'tagCount'      => 0,
     );
     protected   $_tags1 = array(
-            array('tagId' =>        1,
-                  'tag'   => 'security',
+            array('tagId' =>       10,
+                  'tag'   => 'ajax',
                                          'userItemCount' => 1,
                                          'userCount'     => 1,
                                          'itemCount'     => 1,
                                          'tagCount'      => 1),
-            array('tagId' =>        2,
-                  'tag'   => 'passwords',
-                                         'userItemCount' => 1,
-                                         'userCount'     => 1,
-                                         'itemCount'     => 1,
-                                         'tagCount'      => 1),
-            array('tagId' =>        4,
-                  'tag'   => 'privacy',
+            array('tagId' =>       72,
+                  'tag'   => 'cryptography',
                                          'userItemCount' => 1,
                                          'userCount'     => 1,
                                          'itemCount'     => 1,
                                          'tagCount'      => 1),
             array('tagId' =>        5,
                   'tag'   => 'identity',
-                                         'userItemCount' => 1,
-                                         'userCount'     => 1,
-                                         'itemCount'     => 1,
-                                         'tagCount'      => 1),
-            array('tagId' =>        6,
-                  'tag'   => 'web2.0',
                                          'userItemCount' => 1,
                                          'userCount'     => 1,
                                          'itemCount'     => 1,
@@ -87,20 +75,26 @@ class BookmarkDbTest extends DbTestCase
                                          'userCount'     => 1,
                                          'itemCount'     => 1,
                                          'tagCount'      => 1),
+            array('tagId' =>        2,
+                  'tag'   => 'passwords',
+                                         'userItemCount' => 1,
+                                         'userCount'     => 1,
+                                         'itemCount'     => 1,
+                                         'tagCount'      => 1),
+            array('tagId' =>        4,
+                  'tag'   => 'privacy',
+                                         'userItemCount' => 1,
+                                         'userCount'     => 1,
+                                         'itemCount'     => 1,
+                                         'tagCount'      => 1),
+            array('tagId' =>        1,
+                  'tag'   => 'security',
+                                         'userItemCount' => 1,
+                                         'userCount'     => 1,
+                                         'itemCount'     => 1,
+                                         'tagCount'      => 1),
             array('tagId' =>        9,
                   'tag'   => 'storage',
-                                         'userItemCount' => 1,
-                                         'userCount'     => 1,
-                                         'itemCount'     => 1,
-                                         'tagCount'      => 1),
-            array('tagId' =>       10,
-                  'tag'   => 'ajax',
-                                         'userItemCount' => 1,
-                                         'userCount'     => 1,
-                                         'itemCount'     => 1,
-                                         'tagCount'      => 1),
-            array('tagId' =>       11,
-                  'tag'   => 'tools',
                                          'userItemCount' => 1,
                                          'userCount'     => 1,
                                          'itemCount'     => 1,
@@ -111,8 +105,14 @@ class BookmarkDbTest extends DbTestCase
                                          'userCount'     => 1,
                                          'itemCount'     => 1,
                                          'tagCount'      => 1),
-            array('tagId' =>       72,
-                  'tag'   => 'cryptography',
+            array('tagId' =>       11,
+                  'tag'   => 'tools',
+                                         'userItemCount' => 1,
+                                         'userCount'     => 1,
+                                         'itemCount'     => 1,
+                                         'tagCount'      => 1),
+            array('tagId' =>        6,
+                  'tag'   => 'web2.0',
                                          'userItemCount' => 1,
                                          'userCount'     => 1,
                                          'itemCount'     => 1,
@@ -178,8 +178,12 @@ class BookmarkDbTest extends DbTestCase
                                           $expected['itemId']) );
 
         /*
-        Connexions::log("testBookmarkRetrieveById1: bookmark[ %s ]",
-                        Connexions::varExport( $bookmark->toArray() ));
+        //Connexions::log("testBookmarkRetrieveById1: bookmark[ %s ]",
+        //                Connexions::varExport( $bookmark->toArray() ));
+
+        printf ("Bookmark( %d, %d ):\n%s\n",
+                $expected['userId'], $expected['itemId'],
+                $bookmark->debugDump());
         // */
 
         $this->assertEquals($expected,
@@ -560,21 +564,27 @@ class BookmarkDbTest extends DbTestCase
 
     public function testBookmarkSet()
     {
-        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
-        $users  = $mapper->fetch();
+        $mapper    = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
+        $bookmarks = $mapper->fetch();
 
-        // Check the database consistency
-        $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
-                    $this->getConnection()
-        );
+        // Retrieve the expected set
+        $es = $this->createFlatXmlDataSet(
+              dirname(__FILE__) .'/_files/bookmarkSetAssertion.xml');
 
-        $ds->addTable('userItem',    'SELECT * FROM userItem'
-                                     .  ' ORDER BY userId,itemId ASC');
+        $this->assertModelSetEquals( $es->getTable('userItem'), $bookmarks );
+    }
 
-        $this->assertDataSetsEqual(
-            $this->createFlatXmlDataSet(
-                      dirname(__FILE__) .'/_files/bookmarkSetAssertion.xml'),
-            $ds);
+    public function testBookmarkSetOrder()
+    {
+        $mapper    = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
+        $bookmarks = $mapper->fetch(null,
+                                    array('updatedOn DESC'));   // order
+
+        // Retrieve the expected set
+        $es = $this->createFlatXmlDataSet(
+              dirname(__FILE__) .'/_files/bookmarkSetOrderAssertion.xml');
+
+        $this->assertModelSetEquals( $es->getTable('userItem'), $bookmarks );
     }
 
     public function testBookmarkSetLimitCount()
@@ -737,13 +747,12 @@ class BookmarkDbTest extends DbTestCase
                                        Connexions_Model::FIELDS_ALL );
 
         /*
-        Connexions::log("testBookmarkSetLimitOrder: actual[ %s ]",
-                        Connexions::varExport($actual));
+        printf("testBookmarkSetLimitOrder: actual[ %s ]", $bookmarks);
         // */
 
         $this->assertEquals($expected, $actual);
 
-        /* Retrieve the expected set
+        // Retrieve the expected set
         $ds = $this->createFlatXmlDataSet(
               dirname(__FILE__) .'/_files/bookmarkSetLimitOrderAssertion.xml');
 

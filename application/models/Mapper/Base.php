@@ -32,30 +32,24 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
 
     /** @brief  Retrieve a set of Domain Model items via the userTagItem core
      *          table.
-     *  @param  where   An array of field/value pairs to use in creating the
-     *                  appropriate query.
-     *  @param  users       The Model_Set_User instance or an array of userIds
-     *                      to use in the relation;
-     *  @param  items       The Model_Set_Item instance or an array of itemIds
-     *                      to use in the relation;
-     *  @param  tags        The Model_Set_Tag  instance or an array of tagIds
-     *                      to use in the relation;
-     *  @param  order       Optional ORDER clause (string, array)
-     *  @param  count       Optional LIMIT count
-     *  @param  offset      Optional LIMIT offset
-     *  @param  exactTags   If 'tags' is provided,  should we require a match
-     *                      on ALL tags? [ true ];
+     *  @param  params  An array retrieval criteria:
+     *                      - users     The Model_Set_User instance or an array
+     *                                  of userIds to use in the relation;
+     *                      - items     The Model_Set_Item instance or an array
+     *                                  of itemIds to use in the relation;
+     *                      - tags      The Model_Set_Tag  instance or an array
+     *                                  of tagIds to use in the relation;
+     *                      - order     Optional ORDER clause (string, array);
+     *                      - count     Optional LIMIT count;
+     *                      - offset    Optional LIMIT offset;
+     *                      - exactTags If 'tags' is provided,  should we
+     *                                  require a match on ALL tags? [ true ];
+     *                      - where     Additional condition(s) [ null ];
      *
      *  @return A Connexions_Model_Set instance that provides access to all
      *          matching Domain Model instances.
      */
-    public function fetchRelated( $users     = null,
-                                  $items     = null,
-                                  $tags      = null,
-                                  $order     = null,
-                                  $count     = null,
-                                  $offset    = null,
-                                  $exactTags = true)
+    public function fetchRelated( array $params = array())
     {
         $modelName = $this->getModelName();
 
@@ -96,8 +90,10 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                                                 'COUNT(DISTINCT tagId)'))
                   ->group( $this->_keyName );
 
-        if (! empty($users))
+        if ( isset($params['users']) && (! empty($params['users'])) )
         {
+            $users =& $params['users'];
+
             if ($users instanceof Model_Set_User)
                 $subSelect->where('userId IN (?)', $users->idArray());
             else if (is_array($users))
@@ -105,8 +101,10 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
             else
                 $subSelect->where('userId=?', $users);
         }
-        if (! empty($items))
+        if ( isset($params['items']) && (! empty($params['items'])) )
         {
+            $items =& $params['items'];
+
             if ($items instanceof Model_Set_Item)
                 $subSelect->where('itemId IN (?)', $items->idArray());
             else if (is_array($items))
@@ -114,16 +112,30 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
             else
                 $subSelect->where('itemId=?', $items);
         }
-        if (! empty($tags))
+        if ( isset($params['tags']) && (! empty($params['tags'])) )
         {
+            $tags =& $params['tags'];
+
             if ($tags instanceof Model_Set_Tag)
                 $subSelect->where('tagId IN (?)', $tags->idArray());
             else if (is_array($tags))
-                $subSelect->where('tagId IN (?)', $tags);
-            else
+            {
+                if (is_int($tags[0]))
+                    $subSelect->where('tagId IN (?)', $tags);
+                else
+                    $select->where('tag IN (?)', $tags);
+            }
+            else if (is_int($tags))
+            {
                 $subSelect->where('tagId=?', $tags);
+            }
+            else
+            {
+                $select->where('tag=?', $tags);
+            }
 
-            if ($exactTags === true)
+            if ( (! isset($params['exactTags'])) ||
+                 ($params['exactTags'] !== false) )
             {
                 $nTags = count($tags);
                 $subSelect->having('tagCount='. $nTags);
@@ -141,7 +153,19 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
         $select->join(array('uti' => $subSelect),
                       implode(' AND ', $joinCond),
                       null);
+
+        if ( isset($params['where']))
+            $select->where( $params['where'] );
          
+        /*
+        Connexions::log("Model_Mapper_Base[%s]::fetchRelated(): sql[ %s ]",
+                        get_class($this),
+                        $select->assemble());
+        // */
+        $order  = (isset($params['order'])  ? $params['order']  : null);
+        $count  = (isset($params['count'])  ? $params['count']  : null);
+        $offset = (isset($params['offset']) ? $params['offset'] : null);
+
         return $this->fetch($select, $order, $count, $offset);
     }
 }

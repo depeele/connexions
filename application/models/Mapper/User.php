@@ -75,6 +75,156 @@ class Model_Mapper_User extends Model_Mapper_Base
         throw new Exception('Not yet implemented');
     }
 
+    /**********************************************
+     * Tag Management related methods
+     *
+     */
+
+    /** @brief  Rename a single tag for a specific user.
+     *  @param  user        The associated user;
+     *  @param  oldTag      The exsiting/old Model_Tag instance;
+     *  @param  newTag      The new Model_Tag instance;
+     *
+     *  @return true (success) else a failure message (string).
+     */
+    public function renameTag(Model_User    $user,
+                              Model_Tag     $oldTag,
+                              Model_Tag     $newTag)
+    {
+        /* Change all 'userTagItem' entries for
+         *      $user->userId, $oldTag->tagId, <item>
+         *    to
+         *      $user->userId, $newTag->tagId, <item>
+         *
+         *     UPDATE IGNORE userTagItem
+         *            SET tagId=$newTag->tagId
+         *        WHERE userId=? AND tagId=$oldTag;
+         *
+         * :NOTE: IGNORE is not an options with Zend...
+         */
+        $uti = $this->getAccessor('Model_DbTable_UserTagItem');
+
+        $update = array('tagId'      => $newTag->tagId);
+        $where  = array('userId = ?' => $user->userId,
+                        'tagId  = ?' => $oldTag->tagId);
+        try
+        {
+            $uti->update($update, $where);
+        }
+        catch (Exception $e)
+        {
+            /* Ignore this exception, ASSUMING that it's a
+             * 'Duplicate entry' exception, ASSUMING that everything else
+             * was properly updated (i.e. new entries are inserted BEFORE
+             * the exception is thrown).
+             *
+             * If the ASSUMPTIONS are TRUE, then the only thing we should
+             * do here is delete all remaining entries that match the
+             * update 'where' condition to clear out any extraneous entries
+             * due to the exception.
+             */
+            $uti->delete($where);
+
+
+            /* If the ASSUMPTIONS are FALSE, this renaming becomes
+             * significantly more complex/costly, involving multiple
+             * queries, updates, deletes, and insertions similar to:
+             *      1) select all userTagItem matches using the
+             *         provided userId and old tag identifiers;
+             *      2) for each row, see if a matching entry exists for
+             *         the new tag (userId, newTagId, itemId);
+             *         a) YES
+             *            i)  delete the old entry
+             *                  DELETE FROM userTagItem
+             *                      WHERE userId=<userId>   AND
+             *                             tagId=<oldTagId> AND
+             *                            itemId=<itemId>;
+             *            ii) insert the new entry
+             *                              (userId,newTagId,itemId);
+             *                  INSERT INTO userTagItem
+             *                      SET userId=<userId>,
+             *                           tagId=<newTagId>,
+             *                          itemId=<itemId>;
+             *         b) NO
+             *              Perform an update to change the old tagId
+             *              to the new tagId;
+             *                  UPDATE userTagItem
+             *                      SET   tagId=<newTagId>
+             *                      WHERE userId=<userId> AND
+             *                             tagId=<oldTagId> AND
+             *                            itemId=<itemId>;
+             */
+        }
+
+        return true;
+    }
+
+    /** @brief  Delete the given users use of the provided tag.  If deleting a
+     *          tag will result in one or more "orphaned bookmarks"
+     *          (i.e. a bookmark with no tags), deletion of the tag will fail.
+     *  @param  user        The associated user;
+     *  @param  tag         A Model_Tag instance;
+     *
+     *  @return true (success) else a failure message (string).
+     */
+    public function deleteTag(Model_User $user,
+                              Model_Tag  $tag)
+    {
+        /* See if there are any bookmarks for this user that use ONLY the given
+         * tag.  These will be "orphaned bookmarks" if we delete this tag.
+         */
+        $bmMapper   = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
+        $bookmarks  = $bmMapper->fetchRelated( array(
+                                    'users'     => array($user->userId),
+                                    'where'     => "((tagId={$tag->tagId}) "
+                                                .  'AND (tagCount < 2))',
+                                    'privacy'   => false,
+                                ));
+
+        $numOrphans = $bookmarks->count();
+
+        // /*
+        Connexions::log("Model_Mapper_User::deleteTag( %d ): "
+                        .   "tag[ %d:%s ], %d orphan(s)",
+                        $user->userId,
+                        $tag->tagId, $tag->tag,
+                        $numOrphans);
+        // */
+
+        if ($numOrphans > 0)
+        {
+            /* There will be one or more "orphaned bookmarks" if we delete this
+             * tag.
+             */
+            $status = 'Deleting this tag will orphan '
+                    . $numOrphans
+                    . ' bookmark'
+                    .    ($numOrphans === 1
+                            ? ''
+                            : 's');
+        }
+        else
+        {
+            // All bookmarks have additional tags.  Delete this tag.
+            $uti   = $this->getAccessor('Model_DbTable_UserTagItem');
+
+            $where = array('userId = ?' => $user->userId,
+                           'tagId  = ?' => $tag->tagId);
+            $count = $uti->delete($where);
+
+            if ($count > 0)
+            {
+                $status = true;
+            }
+            else
+            {
+                $status = 'No entries deleted -- Expected one or more???';
+            }
+        }
+
+        return $status;
+    }
+
     /** @brief  Given a User Domain Model (or User identifier), update 
      *          external-table statistics related to this user:
      *              totalTags, totalItems
@@ -106,7 +256,7 @@ class Model_Mapper_User extends Model_Mapper_Base
                               'COUNT(DISTINCT itemId) AS totalItems') )
                ->where( 'userId=?', $user->userId );
 
-        // /*
+        /*
         Connexions::log("Model_Mapper_User::_updateStatistics( %d ): "
                         . "sql[ %s ]",
                         $user->userId,

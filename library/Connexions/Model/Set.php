@@ -153,8 +153,8 @@ abstract class Connexions_Model_Set
             $mapper = str_replace('Model_Set_', 'Model_Mapper_',
                                   get_class($this));
 
-            // /*
-            Connexions::log("Connexions_Model::setMapper(%s)",
+            /*
+            Connexions::log("Connexions_Model_Set::setMapper(%s)",
                             $mapper);
             // */
         }
@@ -346,6 +346,58 @@ abstract class Connexions_Model_Set
         }
 
         return $ids;
+    }
+
+    /** @brief  Generate a string representation of this record.
+     *  @param  indent      The number of spaces to indent [ 0 ];
+     *  @param  leaveOpen   Should the terminating '];\n' be excluded [ false ];
+     *
+     *  @return A string.
+     */
+    public function debugDump($indent       = 0,
+                              $leaveOpen    = false)
+    {
+        $count = $this->count();
+        $str   = str_repeat(' ', $indent)
+               . get_class($this) .": "
+               .    $count
+               .    ' member'. ($count === 1 ? '' : 's')
+               .      " : [\n";
+
+        $memberStrs = array();
+        foreach ($this as $member)
+        {
+            if ($member instanceof Connexions_Model)
+            {
+                array_push($memberStrs,
+                           $member->debugDump($indent + 2, true));
+            }
+            else if (is_array($member))
+            {
+                $memberStr = '';
+                foreach ($member as  $key => $val)
+                {
+                    $memberStr .= sprintf("%s%-15s == %-15s %s [ %s ]\n",
+                                          str_repeat(' ', $indent + 1),
+                                          $key, gettype($key),
+                                          " ",
+                                          $val);
+                }
+                array_push($memberStrs, $memberStr);
+            }
+            else
+            {
+                array_push($memberStrs, Connexions::varExport($member));
+            }
+        }
+
+        $str .= implode(str_repeat(' ', $indent + 2) ."],[\n",
+                        $memberStrs);
+
+        if ($leaveOpen !== true)
+            $str .= str_repeat(' ', $indent) .'];';
+
+        return $str;
     }
 
     /*************************************************************************

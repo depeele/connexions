@@ -156,7 +156,7 @@ class UserDbTest extends DbTestCase
     public function testUserUpdate()
     {
         $expected = $this->_user5;
-        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $mapper   = new Model_Mapper_User( );
         $user     = $mapper->getModel( array(
                                 'name'      => $expected['name'],
                                 'fullName'  => $expected['fullName']));
@@ -263,7 +263,7 @@ class UserDbTest extends DbTestCase
         echo $user->debugDump();
         // */
 
-        // Make sure the user instance has been invalidated
+        // Make sure the user instance has been deleted
         $this->assertTrue( ! $user->isBacked() );
         $this->assertTrue( ! $user->isValid() );
         $this->assertTrue( ! $user->isAuthenticated() );
@@ -384,5 +384,116 @@ class UserDbTest extends DbTestCase
         $this->assertNotEquals(null, $users);
         $this->assertEquals($expectedCount, $users->count());
         $this->assertEquals($expectedTotal, $users->getTotalCount());
+    }
+
+    public function testUserTagRename()
+    {
+        //$rename = array(5, 10, 15);
+        $expected = array('identity' => true,       // 5
+                          'ajax'     => true,       // 10
+                          'oat'      => true,       // 15
+                          'cooling'  => 'unused',   // 31
+                          'invalid'  => 'unused',   // 31
+                    );
+        $renames  = array('identity' => 'personal.identity', // new
+                          'ajax'     => 'ajaj',              // new
+                          'oat'      => 'widgets',           // existing
+                          'cooling'  => 'heating',           // no userTagItems
+                          'invalid'  => 'what',              // no userTagItems
+                    );
+
+        // Retrieve the target user
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $user   = $mapper->find( 1 );
+        $this->assertNotEquals(null, $user);
+
+        $res    = $user->renameTags($renames);
+        $this->assertEquals($expected, $res);
+
+        // Check the database consistency
+        $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
+                    $this->getConnection()
+        );
+
+        $ds->addTable('user',        'SELECT * FROM user '
+                                     .  'ORDER BY userId ASC');
+        $ds->addTable('item',        'SELECT * FROM item '
+                                     .  'ORDER BY itemId ASC');
+        $ds->addTable('tag',         'SELECT * FROM tag '
+                                     .  'ORDER BY tagId ASC');
+
+        $ds->addTable('userAuth',    'SELECT * FROM userAuth '
+                                     .  'ORDER BY userId,authType ASC');
+        $ds->addTable('userItem',    'SELECT * FROM userItem '
+                                     .  'ORDER BY userId,itemId ASC');
+        $ds->addTable('userTagItem', 'SELECT userId,itemId,tagId '
+                                     .  'FROM userTagItem '
+                                     .  'ORDER BY userId,itemId,tagId ASC');
+
+        /*********
+         * Modify 'lastVisit' in the expected set for the user row since it's
+         * dynamic...
+         */
+        $es = $this->createFlatXmlDataSet(
+               dirname(__FILE__) .'/_files/userTagRenameAssertion.xml');
+        $et = $es->getTable('user');
+        $et->setValue(0, 'lastVisit', $user->lastVisit);
+
+        $this->assertDataSetsEqual( $es, $ds );
+    }
+
+    public function testUserTagDelete()
+    {
+        //$rename = array(5, 10, 15);
+        // 6, 10, 12, 13, 15, 16, 17   -- will orphan Bookmark 1,4
+        $expected = array('ajax'        => true,    // 10
+                          'demo'        => true,    // 17
+                          'framework'   => true,    // 13
+                          'javascript'  => true,    // 12
+                          'library'     => true,    // 14
+                          'oat'         => true,    // 15
+                          'web2.0'      =>          // 6
+                            'Deleting this tag will orphan 1 bookmark',
+                          'widgets'     => true,    // 16
+                    );
+        $tags     = array_keys($expected);
+
+        // Retrieve the target user
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $user   = $mapper->find( 1 );
+        $this->assertNotEquals(null, $user);
+
+        $res    = $user->deleteTags($tags);
+        $this->assertEquals($expected, $res);
+
+        // Check the database consistency
+        $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
+                    $this->getConnection()
+        );
+
+        $ds->addTable('user',        'SELECT * FROM user '
+                                     .  'ORDER BY userId ASC');
+        $ds->addTable('item',        'SELECT * FROM item '
+                                     .  'ORDER BY itemId ASC');
+        $ds->addTable('tag',         'SELECT * FROM tag '
+                                     .  'ORDER BY tagId ASC');
+
+        $ds->addTable('userAuth',    'SELECT * FROM userAuth '
+                                     .  'ORDER BY userId,authType ASC');
+        $ds->addTable('userItem',    'SELECT * FROM userItem '
+                                     .  'ORDER BY userId,itemId ASC');
+        $ds->addTable('userTagItem', 'SELECT userId,itemId,tagId '
+                                     .  'FROM userTagItem '
+                                     .  'ORDER BY userId,itemId,tagId ASC');
+
+        // *******************************************************************
+        // Modify 'lastVisit' in the expected set for the user row since it's
+        // dynamic...
+        $es = $this->createFlatXmlDataSet(
+               dirname(__FILE__) .'/_files/userTagDeleteAssertion.xml');
+        $et = $es->getTable('user');
+        $et->setValue(0, 'lastVisit', $user->lastVisit);
+
+        $this->assertDataSetsEqual( $es, $ds );
     }
 }

@@ -72,6 +72,7 @@ class Service_User extends Connexions_Service
 
     /** @brief  Retrieve a set of users related by a set of Tags.
      *  @param  tags    A Model_Set_Tag instance or array of tags to match.
+     *  @param  exact   Users MUST be associated with provided tags [ true ];
      *  @param  order   Optional ORDER clause (string, array)
      *                      [ 'tagCount DESC' ];
      *  @param  count   Optional LIMIT count
@@ -80,16 +81,69 @@ class Service_User extends Connexions_Service
      *  @return A new Model_Set_User instance.
      */
     public function fetchByTags($tags,
+                                $exact   = true,
                                 $order   = 'tagCount DESC',
                                 $count   = null,
                                 $offset  = null)
     {
-        return $this->_getMapper()->fetchRelated( null,   // user restrictions
-                                                  null,   // item restrictions
-                                                  $tags,  // tag restrictions
-                                                  $order,
-                                                  $count,
-                                                  $offset);
+        return $this->_getMapper()->fetchRelated( array(
+                                        'tags'      => $tags,
+                                        'exactTags' => $exact,
+                                        'order'     => $order,
+                                        'count'     => $count,
+                                        'offset'    => $offset,
+                                    ));
     }
 
+    /** @brief  Given an array of tag rename information, rename tags for the
+     *          provided user iff 'user' is authenticated.
+     *  @param  user        The Model_User instance for which renaming should
+     *                      be performed (MUST be authenticated);
+     *  @param  renames     An array of tag rename information:
+     *                          { 'oldTagName' => 'newTagName',
+     *                            ... }
+     *
+     *  @throws Exception('Operation prohibited...')
+     *  @return An array of status information, keyed by old tag name:
+     *              { 'oldTagName'  => true (success) |
+     *                                 String explanation of failure,
+     *                 ... }
+     */
+    public function renameTags(Model_User   $user,
+                               array        $renames)
+    {
+        if (! $user->isAuthenticated())
+        {
+            throw new Exception('Operation prohibited for an '
+                                .   'unauthenticated user.');
+        }
+
+        return $user->renameTags($renames);
+    }
+
+    /** @brief  Given a simple array of tag names, delete all tags for the
+     *          currently authenticated user.  If deleting a tag will result in
+     *          an "orphaned bookmark" (i.e. a bookmark with no tags), the
+     *          delete of that tag will fail.
+     *  @param  user        The Model_User instance for which tag deletion
+     *                      should be performed (MUST be authenticated);
+     *  @param  tags        A Model_Set_Tag instance or a simple array of tag 
+     *                      names.
+     *
+     *  @return An array of status information, keyed by tag name:
+     *              { 'tagName' => true (success) |
+     *                             String explanation of failure,
+     *                 ... }
+     */
+    public function deleteTags(Model_User   $user,
+                                            $tags)
+    {
+        if (! $user->isAuthenticated())
+        {
+            throw new Exception('Operation prohibited for an '
+                                .   'unauthenticated user.');
+        }
+
+        return $user->deleteTags($tags);
+    }
 }

@@ -104,6 +104,14 @@ class Connexions
         return self::$_db;
     }
 
+    /** @brief  Clear the currently authenticated user.
+     *
+     */
+    public static function clearUser()
+    {
+        self::$_user = null;
+    }
+
     /** @brief  Return the currently authenticated user.
      *
      *  @return The currently authenticated user (false if none).
@@ -118,6 +126,9 @@ class Connexions
             }
             catch (Zend_Exception $e)
             {
+                /* :XXX: Should we create an 'anonymous', non-backed,
+                 *       unauthenticated user in this case??
+                 */
                 self::$_user = false;
             }
         }
