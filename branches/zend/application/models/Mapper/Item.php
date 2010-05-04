@@ -134,7 +134,7 @@ class Model_Mapper_Item extends Model_Mapper_Base
                                 . 'AS ratingSum') )
                ->where( 'itemId=?', $item->itemId );
 
-        // /*
+        /*
         Connexions::log("Model_Mapper_Item::_updateStatistics( %d ): "
                         . "sql[ %s ]",
                         $item->itemId,

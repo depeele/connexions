@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <dataset>
- <!-- Before Offset
  <userItem
       userId="1" itemId="1"
       name="More than a password manager | Clipperz"
@@ -32,7 +31,6 @@
       rating="0" isFavorite="0" isPrivate="0"
       taggedOn="2007-03-30 13:11:57" updatedOn="2007-03-30 13:11:57" />
 
-  -->
  <userItem
       userId="2" itemId="7"
       name="nimbus: Nimbus"
@@ -94,7 +92,6 @@
       rating="0" isFavorite="0" isPrivate="0"
       taggedOn="0000-00-00 00:00:00" updatedOn="2006-05-15 20:35:14" />
 
- <!-- Beyond Limit
  <userItem
       userId="3" itemId="8"
       name="Martin's wiki - Martin Budden's plugins and extensions for TiddlyWiki"
@@ -125,6 +122,4 @@
       description=""
       rating="0" isFavorite="0" isPrivate="0"
       taggedOn="0000-00-00 00:00:00" updatedOn="2006-03-21 22:16:08" />
-
-  -->
 </dataset>

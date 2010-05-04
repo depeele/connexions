@@ -278,6 +278,42 @@ class Model_Bookmark extends Model_Base
         return $this;
     }
 
+    /** @brief  Generate a string representation of this record.
+     *  @param  indent      The number of spaces to indent [ 0 ];
+     *  @param  leaveOpen   Should the terminating '];\n' be excluded [ false ];
+     *
+     *  @return A string.
+     */
+    public function debugDump($indent       = 0,
+                              $leaveOpen    = false)
+    {
+        $str = parent::debugDump($indent, true);
+
+        //if ($this->_credential !== null)
+        {
+            // Include user and tag information
+            $user = $this->user;
+            $tags = $this->tags;
+
+            $str .= sprintf ("%s%-15s == %-15s %s [\n%s%s]\n",
+                             str_repeat(' ', $indent + 1),
+                             'user', get_class($user),
+                             ' ',
+                             $user->debugDump($indent + 2, true),
+                             str_repeat(' ', $indent + 1))
+                 .  sprintf ("%s%-15s == %-15s %s [ %s ]\n",
+                             str_repeat(' ', $indent + 1),
+                             'tags', get_class($tags),
+                             ' ',
+                             $tags->debugDump($indent + 2, true));
+
+            if ($leaveOpen !== true)
+                $str .= str_repeat(' ', $indent) .'];';
+        }
+
+        return $str;
+    }
+
     /**********************************************
      * Statistics related methods
      *

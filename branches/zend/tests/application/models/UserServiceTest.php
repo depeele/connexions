@@ -493,7 +493,24 @@ class UserServiceTest extends DbTestCase
             $ds);
     }
 
-    public function testUserServiceFetchByTags()
+    public function testUserServiceFetchByTagsAny()
+    {
+        //            vv ordered by 'tagCount DESC'
+        $expected   = 'User1,User83,User478';
+        $service    = Connexions_Service::factory('Model_User');
+        $users      = $service->fetchByTags( array( 6, 12 ), false );
+        $this->assertNotEquals(null, $users);
+
+        //printf ("Users: [ %s ]\n", print_r($users->toArray(), true));
+
+        $users      = $users->__toString();
+
+        //printf ("Users: [ %s ]\n", $users);
+
+        $this->assertEquals($expected, $users);
+    }
+
+    public function testUserServiceFetchByTagsExact()
     {
         //            vv ordered by 'tagCount DESC'
         $expected   = 'User1,User83';
@@ -540,5 +557,233 @@ class UserServiceTest extends DbTestCase
         $this->assertEquals($expected, $names);
 
         //printf ("User Names: [ %s ]\n", $names);
+    }
+
+    public function testUserServiceTagRenameUnauthenticatedFailure()
+    {
+        $renames  = array('identity' => 'personal.identity', // new
+                          'ajax'     => 'ajaj',              // new
+                          'oat'      => 'widgets',           // existing
+                          'cooling'  => 'heating',           // no userTagItems
+                          'invalid'  => 'what',              // no userTagItems
+                    );
+        // Retrieve the target user.
+        $service  = Connexions_Service::factory('Model_User');
+        $user     = $service->find( 1 );
+        $this->assertNotEquals(null, $user);
+
+        try
+        {
+            $res = $service->renameTags($user, $renames);
+
+            $this->fail("Should throw an authentication exception");
+        }
+        catch (Exception $e)
+        {
+            // SUCCESS
+        }
+
+        // Make sure nothing was changed in the database consistency
+        $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
+                    $this->getConnection()
+        );
+
+        $ds->addTable('user',        'SELECT * FROM user '
+                                     .  'ORDER BY userId ASC');
+        $ds->addTable('item',        'SELECT * FROM item '
+                                     .  'ORDER BY itemId ASC');
+        $ds->addTable('tag',         'SELECT * FROM tag '
+                                     .  'ORDER BY tagId ASC');
+
+        $ds->addTable('userAuth',    'SELECT * FROM userAuth '
+                                     .  'ORDER BY userId,authType ASC');
+        $ds->addTable('userItem',    'SELECT * FROM userItem '
+                                     .  'ORDER BY userId,itemId ASC');
+        $ds->addTable('userTagItem', 'SELECT userId,itemId,tagId '
+                                     .  'FROM userTagItem '
+                                     .  'ORDER BY userId,itemId,tagId ASC');
+
+        $es = $this->createFlatXmlDataSet(
+               dirname(__FILE__) .'/_files/5users.xml');
+
+        $this->assertDataSetsEqual( $es, $ds );
+    }
+
+    public function testUserServiceTagRenameSuccess()
+    {
+        $expected = array('identity' => true,       // 5
+                          'ajax'     => true,       // 10
+                          'oat'      => true,       // 15
+                          'cooling'  => 'unused',   // 31
+                          'invalid'  => 'unused',   // 31
+                    );
+        $renames  = array('identity' => 'personal.identity', // new
+                          'ajax'     => 'ajaj',              // new
+                          'oat'      => 'widgets',           // existing
+                          'cooling'  => 'heating',           // no userTagItems
+                          'invalid'  => 'what',              // no userTagItems
+                    );
+
+        // Retrieve the target user.
+        $service  = Connexions_Service::factory('Model_User');
+        $user     = $service->find( 1 );
+        $this->assertNotEquals(null, $user);
+
+        // Mark the user as 'authenticated'
+        $user->setAuthenticated();
+        $this->assertTrue ($user->isAuthenticated());
+
+        // Rename tags
+        $res      = $service->renameTags($user, $renames);
+        $this->assertEquals($expected, $res);
+
+        // Check the database consistency
+        $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
+                    $this->getConnection()
+        );
+
+        $ds->addTable('user',        'SELECT * FROM user '
+                                     .  'ORDER BY userId ASC');
+        $ds->addTable('item',        'SELECT * FROM item '
+                                     .  'ORDER BY itemId ASC');
+        $ds->addTable('tag',         'SELECT * FROM tag '
+                                     .  'ORDER BY tagId ASC');
+
+        $ds->addTable('userAuth',    'SELECT * FROM userAuth '
+                                     .  'ORDER BY userId,authType ASC');
+        $ds->addTable('userItem',    'SELECT * FROM userItem '
+                                     .  'ORDER BY userId,itemId ASC');
+        $ds->addTable('userTagItem', 'SELECT userId,itemId,tagId '
+                                     .  'FROM userTagItem '
+                                     .  'ORDER BY userId,itemId,tagId ASC');
+
+        /*********
+         * Modify 'lastVisit' in the expected set for the user row since it's
+         * dynamic...
+         */
+        $es = $this->createFlatXmlDataSet(
+               dirname(__FILE__) .'/_files/userTagRenameAssertion.xml');
+        $et = $es->getTable('user');
+        $et->setValue(0, 'lastVisit', $user->lastVisit);
+
+        $this->assertDataSetsEqual( $es, $ds );
+    }
+
+    public function testUserServiceTagDeleteUnauthenticatedFailure()
+    {
+        //$rename = array(5, 10, 15);
+        // 6, 10, 12, 13, 15, 16, 17   -- will orphan Bookmark 1,4
+        $expected = array('ajax'        => true,    // 10
+                          'demo'        => true,    // 17
+                          'framework'   => true,    // 13
+                          'javascript'  => true,    // 12
+                          'library'     => true,    // 14
+                          'oat'         => true,    // 15
+                          'web2.0'      =>          // 6
+                            'Deleting this tag will orphan 1 bookmark',
+                          'widgets'     => true,    // 16
+                    );
+        $tags     = array_keys($expected);
+
+        // Retrieve the target user
+        $service  = Connexions_Service::factory('Model_User');
+        $user     = $service->find( array('userId'=> $this->_user1['userId']));
+        $this->assertNotEquals(null, $user);
+
+        try
+        {
+            $res  = $service->deleteTags($user, $tags);
+
+            $this->fail("Should throw an authentication exception");
+        }
+        catch (Exception $e)
+        {
+            // SUCCESS
+        }
+
+        // Make sure nothing was changed in the database consistency
+        $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
+                    $this->getConnection()
+        );
+
+        $ds->addTable('user',        'SELECT * FROM user '
+                                     .  'ORDER BY userId ASC');
+        $ds->addTable('item',        'SELECT * FROM item '
+                                     .  'ORDER BY itemId ASC');
+        $ds->addTable('tag',         'SELECT * FROM tag '
+                                     .  'ORDER BY tagId ASC');
+
+        $ds->addTable('userAuth',    'SELECT * FROM userAuth '
+                                     .  'ORDER BY userId,authType ASC');
+        $ds->addTable('userItem',    'SELECT * FROM userItem '
+                                     .  'ORDER BY userId,itemId ASC');
+        $ds->addTable('userTagItem', 'SELECT userId,itemId,tagId '
+                                     .  'FROM userTagItem '
+                                     .  'ORDER BY userId,itemId,tagId ASC');
+
+        $es = $this->createFlatXmlDataSet(
+               dirname(__FILE__) .'/_files/5users.xml');
+
+        $this->assertDataSetsEqual( $es, $ds );
+    }
+
+    public function testUserTagDeleteSuccess()
+    {
+        //$rename = array(5, 10, 15);
+        // 6, 10, 12, 13, 15, 16, 17   -- will orphan Bookmark 1,4
+        $expected = array('ajax'        => true,    // 10
+                          'demo'        => true,    // 17
+                          'framework'   => true,    // 13
+                          'javascript'  => true,    // 12
+                          'library'     => true,    // 14
+                          'oat'         => true,    // 15
+                          'web2.0'      =>          // 6
+                            'Deleting this tag will orphan 1 bookmark',
+                          'widgets'     => true,    // 16
+                    );
+        $tags     = array_keys($expected);
+
+        // Retrieve the target user
+        $service  = Connexions_Service::factory('Model_User');
+        $user     = $service->find( array('userId'=> $this->_user1['userId']));
+        $this->assertNotEquals(null, $user);
+
+        // Mark the user as 'authenticated'
+        $user->setAuthenticated();
+        $this->assertTrue ($user->isAuthenticated());
+
+        // Delete the tags.
+        $res      = $service->deleteTags($user, $tags);
+        $this->assertEquals($expected, $res);
+
+        // Check the database consistency
+        $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
+                    $this->getConnection()
+        );
+
+        $ds->addTable('user',        'SELECT * FROM user '
+                                     .  'ORDER BY userId ASC');
+        $ds->addTable('item',        'SELECT * FROM item '
+                                     .  'ORDER BY itemId ASC');
+        $ds->addTable('tag',         'SELECT * FROM tag '
+                                     .  'ORDER BY tagId ASC');
+
+        $ds->addTable('userAuth',    'SELECT * FROM userAuth '
+                                     .  'ORDER BY userId,authType ASC');
+        $ds->addTable('userItem',    'SELECT * FROM userItem '
+                                     .  'ORDER BY userId,itemId ASC');
+        $ds->addTable('userTagItem', 'SELECT userId,itemId,tagId '
+                                     .  'FROM userTagItem '
+                                     .  'ORDER BY userId,itemId,tagId ASC');
+
+        // *******************************************************************
+        // Modify 'lastVisit' in the expected set for the user row since it's
+        // dynamic...
+        $es = $this->createFlatXmlDataSet(
+               dirname(__FILE__) .'/_files/userTagDeleteAssertion.xml');
+        $et = $es->getTable('user');
+        $et->setValue(0, 'lastVisit', $user->lastVisit);
+
+        $this->assertDataSetsEqual( $es, $ds );
     }
 }

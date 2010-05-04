@@ -33,19 +33,24 @@ class Service_Item extends Connexions_Service
      */
     public function fetchByUsers($users,
                                  $order   = 'uti.userCount DESC',
+                                 $order   = array('uti.userCount     DESC',
+                                                  'uti.tagCount      DESC',
+                                                  'uti.userItemCount DESC',
+                                                  'i.urlHash         ASC'),
                                  $count   = null,
                                  $offset  = null)
     {
-        return $this->_getMapper()->fetchRelated( $users, // user restrictions
-                                                  null,   // item restrictions
-                                                  null,   // tag restrictions
-                                                  $order,
-                                                  $count,
-                                                  $offset);
+        return $this->_getMapper()->fetchRelated( array(
+                                        'users'  => $users,
+                                        'order'  => $order,
+                                        'count'  => $count,
+                                        'offset' => $offset,
+                                    ));
     }
 
     /** @brief  Retrieve a set of items related by a set of Tags.
      *  @param  tags    A Model_Set_Tag instance or array of tags to match.
+     *  @param  exact   Items MUST be associated with provided tags [ true ];
      *  @param  order   Optional ORDER clause (string, array)
      *                      [ 'tagCount DESC' ];
      *  @param  count   Optional LIMIT count
@@ -54,15 +59,20 @@ class Service_Item extends Connexions_Service
      *  @return A new Model_Set_Item instance.
      */
     public function fetchByTags($tags,
-                                $order   = 'tagCount DESC',
+                                $exact   = true,
+                                $order   = array('uti.tagCount      DESC',
+                                                 'uti.userCount     DESC',
+                                                 'uti.userItemCount DESC',
+                                                 'i.urlHash         ASC'),
                                 $count   = null,
                                 $offset  = null)
     {
-        return $this->_getMapper()->fetchRelated( null,   // user restrictions
-                                                  null,   // item restrictions
-                                                  $tags,  // tag restrictions
-                                                  $order,
-                                                  $count,
-                                                  $offset);
+        return $this->_getMapper()->fetchRelated( array(
+                                        'tags'      => $tags,
+                                        'exactTags' => $exact,
+                                        'order'     => $order,
+                                        'count'     => $count,
+                                        'offset'    => $offset,
+                                    ));
     }
 }

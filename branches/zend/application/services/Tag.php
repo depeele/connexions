@@ -36,12 +36,12 @@ class Service_Tag extends Connexions_Service
                                  $count   = null,
                                  $offset  = null)
     {
-        return $this->_getMapper()->fetchRelated( $users, // user restrictions
-                                                  null,   // item restrictions
-                                                  null,   // tag restrictions
-                                                  $order,
-                                                  $count,
-                                                  $offset);
+        return $this->_getMapper()->fetchRelated( array(
+                                        'users'  => $users,
+                                        'order'  => $order,
+                                        'count'  => $count,
+                                        'offset' => $offset,
+                                    ));
     }
 
     /** @brief  Retrieve a set of tags related by a set of Items.
@@ -58,12 +58,12 @@ class Service_Tag extends Connexions_Service
                                  $count   = null,
                                  $offset  = null)
     {
-        return $this->_getMapper()->fetchRelated( null,   // user restrictions
-                                                  $items, // item restrictions
-                                                  null,   // tag restrictions
-                                                  $order,
-                                                  $count,
-                                                  $offset);
+        return $this->_getMapper()->fetchRelated( array(
+                                        'items'  => $items,
+                                        'order'  => $order,
+                                        'count'  => $count,
+                                        'offset' => $offset,
+                                    ));
     }
 
     /** @brief  Retrieve a set of tags related by a set of Bookmarks
@@ -104,11 +104,12 @@ class Service_Tag extends Connexions_Service
                             implode(', ', $items));
         }
 
-        return $this->_getMapper()->fetchRelated( $users, // user restrictions
-                                                  $items, // item restrictions
-                                                  null,   // tag restrictions
-                                                  $order,
-                                                  $count,
-                                                  $offset);
+        return $this->_getMapper()->fetchRelated( array(
+                                        'users'  => $users,
+                                        'items'  => $items,
+                                        'order'  => $order,
+                                        'count'  => $count,
+                                        'offset' => $offset,
+                                    ));
     }
 }

@@ -265,7 +265,7 @@ abstract class Connexions_Model_Mapper_DbTable
 
         $newModel = $this->find( $id );
 
-        // /*
+        /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
                         . "%s 'new' model[ %s ]",
                         get_class($this),
@@ -288,8 +288,11 @@ abstract class Connexions_Model_Mapper_DbTable
         $accessor = $this->getAccessor();
         $id       = $this->getId($domainModel); //$domainModel->getId();
 
+        /*
         Connexions::log("Connexions_Model_Mapper_DbTable::delete(): id[ %s ]",
                         Connexions::varExport($id));
+        // */
+        
         if ($id)
         {
             // Locate the Zend_Db_Table_Row instance matching the incoming model
@@ -334,7 +337,7 @@ abstract class Connexions_Model_Mapper_DbTable
         $uid = $this->getId($id); //$domainModel->getId();
         if ($this->_hasIdentity($uid))
         {
-            // /*
+            /*
             Connexions::log("Connexions_Model_Mapper_DbTable[%s]::find( %s ) "
                             .   "uid[ %s ] --- return identity map entry",
                             get_class($this),
@@ -345,7 +348,7 @@ abstract class Connexions_Model_Mapper_DbTable
             return $this->_getIdentity($uid);
         }
 
-        // /*
+        /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::find( %s ) "
                         .   "uid[ %s ]",
                         get_class($this),
@@ -430,7 +433,7 @@ abstract class Connexions_Model_Mapper_DbTable
             $totalCount = count($accessorModels);
         }
 
-        // /*
+        /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::fetch() "
                         . "sql[ %s ], %d of %d rows...",
                         get_class($this),

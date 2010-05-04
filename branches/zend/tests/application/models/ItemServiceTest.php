@@ -284,18 +284,18 @@ class ItemServiceTest extends DbTestCase
     public function testItemServiceFetchByUsers()
     {
                     // vv ordered by 'userCount DESC'
-        $expected   = 'ba7215776973fafa3f5b0bfd263e3ec2,'
-                    . '52cda3e66df5938103c48725357c59ab,'
-                    . '7f07e1cadb025052d6988fc87d7a351a,'
-                    . '3df00b4987258758e9921d07eace89c3,'
-                    . 'f95552d896f68ce2c7dca0624ce7e29f,'
+        $expected   = '52cda3e66df5938103c48725357c59ab,'
+                    . 'ba7215776973fafa3f5b0bfd263e3ec2,'
                     . '383cb614a2cc9247b86cad9a315d02e3,'
+                    . '3df00b4987258758e9921d07eace89c3,'
                     . '0ba1beb65991ba4d06fac047bf72df49,'
-                    . 'd9b473057c0c7486538a70e7b010f853,'
-                    . 'd78f0feda6386fb621bdc0ffe30c55ae,'
-                    . 'd0fa31da9e7c76a00320cf103609dcc5,'
-                    . 'b79d82b1c3c6899f8f495b33bc93e687,'
                     . '052973b1ac311978abdc0413daa1d5db,'
+                    . 'd78f0feda6386fb621bdc0ffe30c55ae,'
+                    . 'b79d82b1c3c6899f8f495b33bc93e687,'
+                    . 'd0fa31da9e7c76a00320cf103609dcc5,'
+                    . '7f07e1cadb025052d6988fc87d7a351a,'
+                    . 'd9b473057c0c7486538a70e7b010f853,'
+                    . 'f95552d896f68ce2c7dca0624ce7e29f,'
                     . '39735b7182723ad149214de14fc478d8';
 
         $users      = array(1, 2, 3);
@@ -310,12 +310,35 @@ class ItemServiceTest extends DbTestCase
         $this->assertEquals($expected, $items);
     }
 
-    public function testItemServiceFetchByTags()
+    public function testItemServiceFetchByTagsAny()
     {
         //            vv ordered by 'tagCount DESC'
-        $expected   = 'd78f0feda6386fb621bdc0ffe30c55ae,'
+        $expected   = '52cda3e66df5938103c48725357c59ab,'
                     . '052973b1ac311978abdc0413daa1d5db,'
-                    . '52cda3e66df5938103c48725357c59ab';
+                    . 'd78f0feda6386fb621bdc0ffe30c55ae,'
+                    . '383cb614a2cc9247b86cad9a315d02e3,'
+                    . '3df00b4987258758e9921d07eace89c3,'
+                    . 'f6cbe8f4ff12275e776a401cf2679469';
+        $tags       = array(6, 12);
+        $service    = Connexions_Service::factory('Model_Item');
+        $items      = $service->fetchByTags( $tags, false );
+        $this->assertNotEquals(null, $items);
+
+        //printf ("Items: [ %s ]\n", print_r($items->toArray(), true));
+
+        $items      = $items->__toString();
+
+        //printf ("Items: [ %s ]\n", $items);
+
+        $this->assertEquals($expected, $items);
+    }
+
+    public function testItemServiceFetchByTagsExact()
+    {
+        //            vv ordered by 'tagCount DESC'
+        $expected   = '52cda3e66df5938103c48725357c59ab,'
+                    . '052973b1ac311978abdc0413daa1d5db,'
+                    . 'd78f0feda6386fb621bdc0ffe30c55ae';
         $tags       = array(6, 12);
         $service    = Connexions_Service::factory('Model_Item');
         $items      = $service->fetchByTags( $tags );

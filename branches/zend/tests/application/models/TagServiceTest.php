@@ -270,21 +270,14 @@ class TagServiceTest extends DbTestCase
     public function testTagServiceFetchByUsers()
     {
         //            vv ordered by 'userCount DESC'
-        $expected   = 'widgets,'            . 'ibm,'
-                    . 'web2.0,'             . 'demo,'
-                    . 'cpu,'                . 'javascript,'
-                    . 'processor,'          . 'framework,'
+        $expected   = 'processor,'          . 'framework,'
                     . 'cooling,'            . 'tiddlywiki,'
                     . 'chip,'               . 'hardware,'
                     . 'for:dep,'            . 'oat,'
                     . 'technology,'         . 'ajax,'
-                    . 'wiki,'               . 'tools,'
-                    . 'for:busbeytheelder,' . 'swing,'
-                    . 'generator,'          . 'desktop,'
-                    . 'documentation,'      . 'java3d,'
-                    . 'api,'                . 'nimbus,'
-                    . 'online,'             . 'php,'
-                    . 'furniture,'          . 'test,'
+                    . 'widgets,'            . 'ibm,'
+                    . 'web2.0,'             . 'demo,'
+                    . 'cpu,'                . 'javascript,'
                     . 'security,'           . 'graph,'
                     . 'howto,'              . 'wii,'
                     . 'password,'           . 'bed,'
@@ -297,7 +290,17 @@ class TagServiceTest extends DbTestCase
                     . 'guide,'              . 'portable,'
                     . 'mediawiki,'          . 'java,'
                     . 'identity,'           . 'graphics,'
-                    . 'decoration,'         . 'manual';
+                    . 'decoration,'         . 'manual,'
+                    . 'wiki,'               . 'tools,'
+                    . 'for:busbeytheelder,' . 'swing,'
+                    . 'generator,'          . 'desktop,'
+                    . 'documentation,'      . 'java3d,'
+                    . 'api,'                . 'nimbus,'
+                    . 'online,'             . 'php,'
+                    . 'furniture,test';
+
+
+
         $users      = array(1, 2, 3);
         $service    = Connexions_Service::factory('Model_Tag');
         $tags       = $service->fetchByUsers( $users /*, 'userCount DESC'*/ );
@@ -315,19 +318,20 @@ class TagServiceTest extends DbTestCase
     public function testTagServiceFetchByItems()
     {
         //            vv ordered by 'itemCount DESC'
-        $expected   = 'technology,'     . 'tools,'
-                    . 'web2.0,'         . 'blog,'
-                    . 'ibm,'            . 'php,'
-                    . 'online,'         . 'mysql,'
-                    . 'security,'       . 'cpu,'
-                    . 'software,'       . 'password,'
-                    . 'test,'           . 'passwords,'
-                    . 'processor,'      . 'cooling,'
-                    . 'storage,'        . 'cryptography,'
-                    . 'privacy,'        . 'chip,'
-                    . 'hardware,'       . 'ajax,'
-                    . 'for:dep,'        . 'identity,'
-                    . 'cms';
+        $expected   = 'security,'               . 'cpu,'
+                    . 'software,'               . 'password,'
+                    . 'test,'               . 'passwords,'
+                    . 'processor,'              . 'cooling,'
+                    . 'storage,'                . 'cryptography,'
+                    . 'privacy,'                . 'chip,'
+                    . 'hardware,'               . 'ajax,'
+                    . 'for:dep,'                . 'identity,'
+                    . 'cms,'                . 'technology,'
+                    . 'tools,'              . 'web2.0,'
+                    . 'blog,'               . 'ibm,'
+                    . 'php,'                . 'online,'
+                    . 'mysql';
+
         $items      = array(1, 6, 12);
         $service    = Connexions_Service::factory('Model_Tag');
         $tags       = $service->fetchByItems( $items /*, 'itemCount DESC'*/ );
@@ -345,20 +349,19 @@ class TagServiceTest extends DbTestCase
     public function testTagServiceFetchByBookmarks()
     {
         //            vv ordered by 'userItemCount DESC'
-        $expected   = 'technology,'     . 'ibm,'
-                    . 'cpu,'            . 'processor,'
+        $expected   = 'cpu,'            . 'processor,'
                     . 'cooling,'        . 'chip,'
-                    . 'hardware,'       . 'tools,'
-                    . 'web2.0,'         . 'blog,'
-                    . 'php,'            . 'online,'
-                    . 'mysql,'          . 'security,'
+                    . 'hardware,'       . 'technology,'
+                    . 'ibm,'            . 'security,'
                     . 'software,'       . 'password,'
                     . 'test,'           . 'passwords,'
                     . 'storage,'        . 'cryptography,'
                     . 'privacy,'        . 'ajax,'
-                    . 'identity,'       . 'cms';
+                    . 'identity,'       . 'cms,'
+                    . 'tools,'          . 'web2.0,'
+                    . 'blog,'           . 'php,'
+                    . 'online,'         . 'mysql';
 
-                    //        userId,itemId
         $bookmarks  = array( array(1,1), array(3,6), array(4,12));
         $service    = Connexions_Service::factory('Model_Tag');
         $tags       = $service->fetchByBookmarks( $bookmarks /*,
@@ -378,26 +381,17 @@ class TagServiceTest extends DbTestCase
     {
         //            vv ordered by 'userItemCount DESC'
         $expected   = 'for:dep,'            . 'javascript,'
-                    . 'web2.0,'             . 'ajax,'
+                    . 'ajax,'               . 'web2.0,'
                     . 'framework,'          . 'oat,'
+                    . 'ibm,'                . 'cpu,'
+                    . 'library,'            . 'processor,'
+                    . 'cooling,'            . 'chip,'
                     . 'widgets,'            . 'hardware,'
-                    . 'technology,'         . 'ibm,'
-                    . 'cpu,'                . 'library,'
-                    . 'processor,'          . 'cooling,'
-                    . 'chip,'               . 'demo,'
-                    . 'java,'               . 'php,'
-                    . 'swing,'              . 'desktop,'
-                    . 'nimbus,'             . 'tiddlywiki,'
-                    . 'reference,'          . 'synth,'
-                    . 'visual,'             . 'tools,'
-                    . 'tiddlywikiplugin,'   . 'mattress,'
-                    . 'guide,'              . 'generator,'
-                    . 'art,'                . 'mysql,'
-                    . 'literature,'         . 'wii,'
-                    . 'reading,'            . 'mediawiki,'
-                    . 'manual,'             . 'online,'
-                    . 'decoration,'         . 'wiki,'
-                    . 'test,'               . 'security,'
+                    . 'technology,'         . 'swing,'
+                    . 'desktop,'            . 'nimbus,'
+                    . 'tiddlywiki,'         . 'reference,'
+                    . 'demo,'               . 'java,'
+                    . 'php,'                . 'security,'
                     . 'graph,'              . 'hacks,'
                     . 'collection,'         . 'for:busbeytheelder,'
                     . 'documentation,'      . 'password,'
@@ -412,10 +406,17 @@ class TagServiceTest extends DbTestCase
                     . 'cms,'                . 'ebooks,'
                     . 'lily,'               . 'bed,'
                     . 'identity,'           . 'graphics,'
-                    . 'blog,'               . 'free';
+                    . 'blog,'               . 'free,'
+                    . 'synth,'              . 'visual,'
+                    . 'tools,'              . 'tiddlywikiplugin,'
+                    . 'mattress,'           . 'guide,'
+                    . 'generator,'          . 'art,'
+                    . 'mysql,'              . 'literature,'
+                    . 'wii,'                . 'reading,'
+                    . 'mediawiki,'          . 'manual,'
+                    . 'online,'             . 'decoration,'
+                    . 'wiki,'               . 'test';
 
-
-                    //        userId,itemId
         $service    = Connexions_Service::factory('Model_Tag');
         $tags       = $service->fetchByBookmarks( );
         $this->assertNotEquals(null, $tags);

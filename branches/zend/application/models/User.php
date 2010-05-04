@@ -261,44 +261,40 @@ class Model_User extends Model_Base
     }
 
     /** @brief  Generate a string representation of this record.
+     *  @param  indent      The number of spaces to indent [ 0 ];
+     *  @param  leaveOpen   Should the terminating '];\n' be excluded [ false ];
      *
      *  @return A string.
      */
-    public function debugDump()
+    public function debugDump($indent       = 0,
+                              $leaveOpen    = false)
     {
-        $str = parent::debugDump();
-
-        // Remove the trailing "\n];" (3 characters)
-        $str = substr($str, 0, -3);
+        $str = parent::debugDump($indent, true);
 
         // Include authentication status at the top
-        $str = preg_replace('/valid \[/', 'valid, '
-                                     . ($this->isAuthenticated() ? '' : 'NOT ')
-                                     . 'authenticated [',
+        $str = preg_replace('/valid \[/',
+                            'valid, '
+                            . ($this->isAuthenticated() ? '' : 'NOT ')
+                            . 'authenticated [',
                             $str);
 
-        // Include authentication details
-        foreach (array('authType', 'credential') as $key)
+        if ($this->_credential !== null)
         {
-            $val  = $this->__get($key);
-            $str .= sprintf (" %-15s == %-15s %s [ %s ]%s\n",
-                             $key, gettype($val),
-                             //($this->_valid[$key] !== true
-                             //   ? (isset($this->_valid[$key])
-                             //       ? "!"
-                             //       : "?")
-                             //   : " "),
-                             ' ',
-                             $val,
-                             //($this->_valid[$key] !== true
-                             //   ? (is_array($this->_valid[$key])
-                             //       ? " : ". implode(', ',$this->_valid[$key])
-                             //       : $this->_valid[$key])
-                             //   : ''));
-                             '');
+            // Include authentication details
+            foreach (array('authType', 'credential') as $key)
+            {
+                $val  = $this->__get($key);
+                $str .= sprintf ("%s%-15s == %-15s %s [ %s ]%s\n",
+                                 str_repeat(' ', $indent + 1),
+                                 $key, gettype($val),
+                                 ' ',
+                                 $val,
+                                 '');
+            }
         }
 
-        $str .= "\n];";
+        if ($leaveOpen !== true)
+            $str .= "\n];";
 
         return $str;
     }
@@ -357,19 +353,9 @@ class Model_User extends Model_Base
      */
     public function authenticate()
     {
-        /*
-        Connexions::log("Model_User::authenticate(): "
-                        . "is %sbacked, %svalid, userId %d, "
-                        . "authType '%s', credential '%s'",
-                        ($this->isBacked()         ? ''        : 'NOT '),
-                        ($this->isValid()          ? ''        : 'NOT '),
-                        $this->userId,
-                        $this->_authType, $this->_credential);
-        // */
-
-
-        // See if the user represented by this instnace can be located
-        // either by userId or name
+        /* See if the user represented by this instnace can be located
+         * either by userId or name
+         */
         $user = null;
         $auth = null;
         if ($this->isBacked() && $this->isValid())
@@ -388,16 +374,6 @@ class Model_User extends Model_Base
             if ($auth !== null)
             {
                 $auth->user = $user;
-
-                /*
-                Connexions::log("Model_User::authenticate(): "
-                                . "Found user '%s':%d, authType[ %s ], "
-                                . "UserAuth [ %s ]",
-                                $user->name, $user->userId, $user->_authType,
-                                (is_object($auth)
-                                    ? get_class($auth)
-                                    : gettype($auth)) );
-                // */
 
                 /* 1b) Invoke 'compare()' on the Model_UserAuth instance
                  *     passing in the 'credential' from THIS instance;
@@ -512,7 +488,13 @@ class Model_User extends Model_Base
 
         $criteria = array('userId' => $this->userId);
         if ($authType !== null)
+        {
+            if (! $this->validateAuthType($authType))
+            {
+                return null;
+            }
             $criteria['authType'] = $authType;
+        }
         if ($credential !== null)
             $criteria['credential'] = $credential;
 
@@ -535,31 +517,13 @@ class Model_User extends Model_Base
                                         $authType =
                                             Model_UserAuth::AUTH_DEFAULT)
     {
-        if (! $this->isBacked())
+        $set = $this->getAuthenticator($authType, $credential);
+        if ($set !== null)
         {
-            return $this;
-        }
-
-        $criteria = array('userId' => $this->userId);
-        if ($authType !== null)
-        {
-            if (! $this->validateAuthType($authType))
+            foreach ($set as $item)
             {
-                return null;
+                $item->delete();
             }
-            $criteria['authType'] = $authType;
-        }
-        if ($credential !== null)
-            $criteria['credential'] = $credential;
-
-        $authMapper =
-                Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
-
-        $set = $authMapper->fetch( $criteria );
-
-        foreach ($set as $item)
-        {
-            $item->delete();
         }
 
         return $this;
@@ -611,8 +575,8 @@ class Model_User extends Model_Base
      *
      */
 
-    /** @brief  Given an array of tag rename information, rename tags for this 
-     *          user.
+    /** @brief  Given an array of tag rename information, rename tags for the
+     *          provided user.
      *  @param  renames     An array of tag rename information:
      *                          { 'oldTagName' => 'newTagName',
      *                            ... }
@@ -622,31 +586,55 @@ class Model_User extends Model_Base
      *                                 String explanation of failure,
      *                 ... }
      */
-    public function renameTags(array $renames)
+    public function renameTags(array    $renames)
     {
-        $status = array();
-        foreach ($renames as $old => $new)
+        $status    = array();
+        $tagMapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
+        foreach ($renames as $oldName => $newName)
         {
-            /* 1) Verify that this user has 'old' tag;
-             *    a) No  - record an error in the status for this tag and skip;
-             *    b) Yes - $old is now a Model_Tag instance;
-             *
-             * 2) See if the 'new' tag exists;
-             *    a) No  - create it;
-             *    b) Yes - continue;
-             *
-             *    Either way, $new is now a Model_Tag instance;
-             *
-             * 3) Change all 'userTagItem' entries for
-             *      $this->userId, $old->tagId, <item>
-             *    to
-             *      $this->userId, $new->tagId, <item>
-             */
+            $oldTags = $tagMapper->fetchRelated( array(
+                                        'users' => array($this->userId),
+                                        'tags'  => array('tag' => $oldName)
+                                    ));
+            if ( ($oldTags === null) || ($oldTags->count() < 1) )
+            {
+                $status[$oldName] = 'unused';
+                continue;
+            }
+
+            $status[$oldName] = $this->renameTag($oldTags[0], $newName);
         }
 
-        // 4) Update statistics;
+        $this->updateStatistics();
 
         return $status;
+    }
+    
+    /** @brief  Rename a single tag for this user.
+     *  @param  oldTag      The exsiting/old Model_Tag instance;
+     *  @param  newTag      The new tag (string name or Model_Tag instance);
+     *
+     *  @return true (success) else a failure message (string).
+     */
+    public function renameTag(Model_Tag     $oldTag,
+                                            $newTag)
+    {
+        // See if there is an exsiting Model_Tag matching 'newTag';
+        $tagMapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
+        if (! $newTag instanceof Model_Tag)
+        {
+            $newTag = $tagMapper->getModel( array('tag' => $newTag) );
+            if ($newTag === null)
+                return 'invalid new tag';
+        }
+
+        if (! $newTag->isBacked())
+        {
+            // This is a brand new tag -- save it;
+            $newTag = $newTag->save();
+        }
+
+        return $this->getMapper()->renameTag($this, $oldTag, $newTag);
     }
 
     /** @brief  Given an Model_Set_Tag instance or a simple array of tag names,
@@ -663,27 +651,33 @@ class Model_User extends Model_Base
      */
     public function deleteTags($tags)
     {
+        if (! $tags instanceof Model_Set_Tag)
+        {
+            // Convert the incoming array to a Model_Set_tag
+            $tagMapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
+            $tags      = $tagMapper->fetchBy('tag', $tags);
+        }
+
+        Connexions::log("Model_User::deleteTags( %s )", $tags);
         $status = array();
         foreach ($tags as $tag)
         {
-            /* 1) Verify that this user has 'tag';
-             *    a) No  - record an error in the status for this tag and skip;
-             *    b) Yes - $tag is now a Model_Tag instance;
-             *
-             * 2) Find all bookmaks with this tag, couting the number of unique 
-             *    tags for each;
-             *    a) If there is one or more bookmarks with a tag count of 1,
-             *       DO NOT delete the tag.  Record an error in the status for 
-             *       this tag and skip;
-             *
-             *    b) Otherwise, continue;
-             *
-             * 3) Delete all 'userTagItem' entries for
-             *      $this->userId, $tag->tagId, <item>
-             */
+            $status[$tag->tag] = $this->deleteTag($tag);
         }
 
+        $this->updateStatistics();
+
         return $status;
+    }
+
+    /** @brief  Delete a single tag for this user.
+     *  @param  tag     The Model_Tag instance;
+     *
+     *  @return true (success) else a failure message (string).
+     */
+    public function deleteTag(Model_Tag $tag)
+    {
+        return $this->getMapper()->deleteTag($this, $tag);
     }
 
     /**********************************************
