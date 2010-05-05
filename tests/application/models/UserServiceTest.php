@@ -6,8 +6,8 @@ class UserServiceTest extends DbTestCase
 {
     private     $_user0 = array(
             'userId'        => 0,
-            'name'          => 'User0',
-            'fullName'      => 'Visitor',
+            'name'          => 'anonymous',
+            'fullName'      => 'Guest',
             'email'         => null,
             'apiKey'        => null,
             'pictureUrl'    => null,
@@ -275,11 +275,16 @@ class UserServiceTest extends DbTestCase
     public function testUserServiceAuthenticationInvalidUser()
     {
         $expected   = $this->_user0;
-        $credential = 'abcdefg';
-        $service    = Connexions_Service::factory('Model_User');
-        $user       = $service->authenticate( $expected['name'], $credential );
 
-        // apiKey and lastVisit are dynamically generated
+        // Password authentication
+        $authType          = Model_UserAuth::AUTH_PASSWORD;
+        $_POST['username'] = $expected['name'];
+        $_POST['password'] = 'abcdefg';
+
+        $service           = Connexions_Service::factory('Model_User');
+        $user              = $service->authenticate( $authType );
+
+        // Dynamic values
         $expected['apiKey']    = $user->apiKey;
         $expected['lastVisit'] = $user->lastVisit;
 
@@ -291,10 +296,19 @@ class UserServiceTest extends DbTestCase
 
     public function testUserServiceAuthenticationInvalidCredential()
     {
-        $expected   = $this->_user1;
-        $credential = 'abc';
-        $service    = Connexions_Service::factory('Model_User');
-        $user       = $service->authenticate( $expected['name'], $credential );
+        $expected   = $this->_user0;
+
+        // Password authentication
+        $authType          = Model_UserAuth::AUTH_PASSWORD;
+        $_POST['username'] = $this->_user1['name'];
+        $_POST['password'] = 'abc';
+
+        $service           = Connexions_Service::factory('Model_User');
+        $user              = $service->authenticate( $authType );
+
+        // Dynamic values
+        $expected['apiKey']    = $user->apiKey;
+        $expected['lastVisit'] = $user->lastVisit;
 
         $this->assertFalse ( $user->isAuthenticated() );
         $this->assertEquals($expected,
@@ -305,9 +319,18 @@ class UserServiceTest extends DbTestCase
     public function testUserServiceAuthenticationSuccess()
     {
         $expected   = $this->_user1;
-        $credential = 'abcdefg';
-        $service    = Connexions_Service::factory('Model_User');
-        $user       = $service->authenticate( $expected['name'], $credential );
+
+        // Password authentication
+        $authType          = Model_UserAuth::AUTH_PASSWORD;
+        $_POST['username'] = $expected['name'];
+        $_POST['password'] = 'abcdefg';
+
+        $service           = Connexions_Service::factory('Model_User');
+        $user              = $service->authenticate( $authType );
+
+        // Dynamic values
+        $expected['apiKey']    = $user->apiKey;
+        $expected['lastVisit'] = $user->lastVisit;
 
         $this->assertTrue  ( $user->isAuthenticated() );
         $this->assertEquals($expected,
@@ -322,10 +345,19 @@ class UserServiceTest extends DbTestCase
     public function testUserServiceAuthenticationPreHashedSuccess()
     {
         $expected   = $this->_user1;
-                    // md5($expected['name'] .':abcdefg');
-        $credential = '77c3d13750c0a0a59b0a2cf1bc189f61';
-        $service    = Connexions_Service::factory('Model_User');
-        $user       = $service->authenticate( $expected['name'], $credential );
+
+        // Password authentication
+        $authType          = Model_UserAuth::AUTH_PASSWORD;
+        $_POST['username'] = $expected['name'];
+                             // md5($expected['name'] .':abcdefg');
+        $_POST['password'] = '77c3d13750c0a0a59b0a2cf1bc189f61';
+
+        $service           = Connexions_Service::factory('Model_User');
+        $user              = $service->authenticate( $authType );
+
+        // Dynamic values
+        $expected['apiKey']    = $user->apiKey;
+        $expected['lastVisit'] = $user->lastVisit;
 
         $this->assertTrue  ( $user->isAuthenticated() );
         $this->assertEquals($expected,
@@ -339,28 +371,43 @@ class UserServiceTest extends DbTestCase
 
     public function testUserServiceAuthenticationPkiMismatch()
     {
-        $expected   = $this->_user1;
-        $credential = 'C=US, ST=Maryland, L=Baltimore, O=City Government, OU=Public Works, CN=User 1/emailAddress=User1@home.com';
-        $service    = Connexions_Service::factory('Model_User');
-        $user       = $service->authenticate( $expected['name'], $credential );
+        $expected   = $this->_user0;
 
-        $this->assertFalse ( $user->isAuthenticated() );
+        // PKI authentication
+        $authType                     = Model_UserAuth::AUTH_PKI;
+        $_SERVER['SSL_CLIENT_VERIFY'] = 'SUCCESS';
+        $_SERVER['SSL_CLIENT_I_DN']   = 'not.empty';
+        $_SERVER['SSL_CLIENT_S_DN']   = 'C=US, ST=Maryland, L=Baltimore, O=City Government, OU=Public Works, CN=User 52/emailAddress=User52@home.com';
+
+        $service           = Connexions_Service::factory('Model_User');
+        $user              = $service->authenticate( $authType );
+
+        // Dynamic values
+        $expected['apiKey']    = $user->apiKey;
+        $expected['lastVisit'] = $user->lastVisit;
+
+        $this->assertTrue  (! $user->isAuthenticated() );
         $this->assertEquals($expected,
                             $user->toArray( Connexions_Model::DEPTH_SHALLOW,
                                             Connexions_Model::FIELDS_ALL ));
-
-        // De-authenticate this user for the next test
-        $user->logout();
-        $this->assertFalse ( $user->isAuthenticated() );
     }
 
     public function testUserServiceAuthenticationPkiSuccess()
     {
         $expected   = $this->_user1;
-        $credential = 'C=US, ST=Maryland, L=Baltimore, O=City Government, OU=Public Works, CN=User 1/emailAddress=User1@home.com';
-        $service    = Connexions_Service::factory('Model_User');
-        $user       = $service->authenticate( $expected['name'], $credential,
-                                                     Model_UserAuth::AUTH_PKI);
+
+        // PKI authentication
+        $authType                     = Model_UserAuth::AUTH_PKI;
+        $_SERVER['SSL_CLIENT_VERIFY'] = 'SUCCESS';
+        $_SERVER['SSL_CLIENT_I_DN']   = 'not.empty';
+        $_SERVER['SSL_CLIENT_S_DN']   = 'C=US, ST=Maryland, L=Baltimore, O=City Government, OU=Public Works, CN=User 1/emailAddress=User1@home.com';
+
+        $service           = Connexions_Service::factory('Model_User');
+        $user              = $service->authenticate( $authType );
+
+        // Dynamic values
+        $expected['apiKey']    = $user->apiKey;
+        $expected['lastVisit'] = $user->lastVisit;
 
         $this->assertTrue  ( $user->isAuthenticated() );
         $this->assertEquals($expected,
@@ -374,10 +421,18 @@ class UserServiceTest extends DbTestCase
 
     public function testUserServiceAuthenticationOpenIdMismatch()
     {
-        $expected   = $this->_user1;
-        $credential = 'https://google.com/profile/User.1';
+        $expected   = $this->_user0;
+
+        // OpenId authentication
+        $authType   = Model_UserAuth::AUTH_OPENID;
+        $credential = 'https://google.com/profile/User.52';
+
         $service    = Connexions_Service::factory('Model_User');
-        $user       = $service->authenticate( $expected['name'], $credential );
+        $user       = $service->authenticate( $authType, $credential );
+
+        // Dynamic values
+        $expected['apiKey']    = $user->apiKey;
+        $expected['lastVisit'] = $user->lastVisit;
 
         $this->assertFalse ( $user->isAuthenticated() );
         $this->assertEquals($expected,
@@ -385,14 +440,23 @@ class UserServiceTest extends DbTestCase
                                             Connexions_Model::FIELDS_ALL ));
     }
 
+    /* Can't really test an OpenId success since it requires a multi-way
+     * conversation with the OpenId server.
+     *
     public function testUserServiceAuthenticationOpenIdSuccess()
     {
-        $expected   = $this->_user1;
+        $expected   = $this->_user0;
+
+        // OpenId authentication
+        $authType   = Model_UserAuth::AUTH_OPENID;
         $credential = 'https://google.com/profile/User.1';
+
         $service    = Connexions_Service::factory('Model_User');
-        $user       = $service->authenticate( $expected['name'],
-                                              $credential,
-                                              Model_UserAuth::AUTH_OPENID);
+        $user       = $service->authenticate( $authType, $credential );
+
+        // Dynamic values
+        $expected['apiKey']    = $user->apiKey;
+        $expected['lastVisit'] = $user->lastVisit;
 
         $this->assertTrue  ( $user->isAuthenticated() );
         $this->assertEquals($expected,
@@ -403,6 +467,7 @@ class UserServiceTest extends DbTestCase
         $user->logout();
         $this->assertFalse ( $user->isAuthenticated() );
     }
+    */ 
 
     public function testUserServiceInvalidAddAuth1()
     {

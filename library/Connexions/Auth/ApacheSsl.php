@@ -20,13 +20,9 @@
  */
 class Connexions_Auth_ApacheSsl extends Connexions_Auth_Abstract
 {
-    protected   $_issuer    = null;
+    protected   $_authType  = 'pki';    // Model_UserAuth::AUTH_PKI
 
-    /** @brief  Return the authentication type of the concreted instance. */
-    public function getAuthType()
-    {
-        return 'pki';
-    }
+    protected   $_issuer    = null;
 
     /** @brief  Retrieve the authenticated issuer.
      *
@@ -114,33 +110,16 @@ class Connexions_Auth_ApacheSsl extends Connexions_Auth_Abstract
 
             return $this;
         }
-        $identity   = $_SERVER['SSL_CLIENT_S_DN'];
-        $credential = $identity;
+        $credential = $_SERVER['SSL_CLIENT_S_DN'];
 
 
         /* We have an authenticated Issuer and Client Distinguished Name,
          * see if we can locate the user that is associated with this
-         * Client Distinguished Name.
+         * Client Distinguished Name.  This also sets the authentication
+         * results.
          */
-        if (! $this->_matchUser($identity, $credential))
-        {
-            // Error set by _matchUser
-            return $this;
-        }
+        $this->_matchAndCompare($credential);
 
-        /*****************************************************************
-         * Success!
-         *
-         */
-        $this->_setResult(self::SUCCESS, $identity);
-
-        /*
-        Connexions::log("Connexions_Auth_ApacheSsl::authenticate: "
-                        . "User authenticated:%s\n",
-                        $this->_user->debugDump());
-        // */
-
-
-        return $this->_matchUser();
+        return $this;
     }
 }

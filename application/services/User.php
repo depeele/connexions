@@ -9,52 +9,73 @@ class Service_User extends Connexions_Service
     protected   $_modelName = 'Model_User';
     protected   $_mapper    = 'Model_Mapper_User'; */
 
+    protected   $_authResult    = null;
+
     /** @brief  Given a user identifier and/or credential, attempt to
      *          authenticate the identified user.
-     *  @param  userId      The user identifier.
-     *  @param  credential  The user credential, possibly authenticated
-     *                      (i.e. OpenId, PKI).
      *  @param  authType    The type of authentication to perform
      *                      (Model_UserAuth::AUTH_*)
+     *  @param  credential  Any initial user credential
+     *                      (e.g. OpenId endpoint).
      *
      *  @return A Model_User instance with isAuthenticated() set accordingly.
      */
-    public function authenticate($userId,
-                                 $credential,
-                                 $authType   = Model_UserAuth::AUTH_PASSWORD)
+    public function authenticate($authType   = Model_UserAuth::AUTH_PASSWORD,
+                                 $credential = null)
     {
-        // First, see if 'userId' identifies a valid user.
-        $user = $this->find( $userId );
-        if ($user === null)
+        $auth        = Zend_Auth::getInstance();
+        $authAdapter = null;
+        switch ($authType)
         {
-            /* Create a new un-backed user instance.  If no 'userId' is
-             * provided, the "anonymous" as the user name.
+        case Model_UserAuth::AUTH_OPENID:
+            $authAdapter = new Connexions_Auth_OpenId( $credential );
+            break;
+
+        case Model_UserAuth::AUTH_PKI:
+            $authAdapter = new Connexions_Auth_ApacheSsl();
+            break;
+
+        case Model_UserAuth::AUTH_PASSWORD:
+        default:
+            $authAdapter = new Connexions_Auth_UserPassword();
+            break;
+        }
+
+        /*
+        Connexions::log("Service_User::authenticate(): "
+                        .   "authType[ %s ], authAdapter[ %s ]",
+                        $authType,
+                        (is_object($authAdapter)
+                            ? get_class($authAdapter)
+                            : gettype($authAdapter)));
+        // */
+
+        $this->_authResult = $auth->authenticate( $authAdapter );
+        if ($this->_authResult->isValid())
+        {
+            // Retrieve the authenticated Model_User instance
+            $user = $this->_authResult->getUser();
+        }
+        else
+        {
+            /* Create a non-backed, unauthenticated 'anonymous' Model_User
+             * instance
              */
-            $user = $this->create( array('name'     => (is_string($userId)
-                                                        ? $userId
-                                                        : 'anonymous'),
-                                         'fullName' => 'Visitor'
-                                   ));
+            $user = $this->create( array('name'     => 'anonymous',
+                                         'fullName' => 'Guest') );
         }
-
-        if ( ! $user->isBacked())
-        {
-            // Non-backed, "anonymous" user -- cannot be authenticated
-            return $user;
-        }
-
-        // Include the incoming authentication information
-        $user->authType   = $authType;
-        $user->credential = $credential;
-
-        // Attempt to authenticate this user
-        $user->authenticate();
-
-        // Remove the authentication information
-        unset($user->authType);
-        unset($user->credential);
 
         return $user;
+    }
+
+    /** @brief  Retrieve the authentication result from the last authentcate()
+     *          call.
+     *
+     *  @return Zend_Auth_Result (or null if authenticate() was not invoked).
+     */
+    public function getAuthResult()
+    {
+        return $this->_authResult;
     }
 
     /** @brief  Convert a comma-separated list of user names to a 

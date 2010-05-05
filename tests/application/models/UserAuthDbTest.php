@@ -258,21 +258,6 @@ class UserAuthDbTest extends DbTestCase
         //$userAuth->delete();
     }
 
-    public function testUserAuthenticationInvalidUser()
-    {
-        $expected = new Zend_Auth_Result(
-                                Zend_Auth_Result::FAILURE_IDENTITY_AMBIGUOUS,
-                                null);
-        $uMapper  = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $user     = $uMapper->getModel( array(
-                                'userId'     => 32,
-                                'name'       => 'User 32',
-                          ) );
-        $user->credential = 'abc';
-
-        $this->assertEquals( $expected, $user->authenticate() );
-    }
-
     public function testUserAuthenticationInvalidAuthType()
     {
         $expected = new Zend_Auth_Result(
@@ -291,6 +276,108 @@ class UserAuthDbTest extends DbTestCase
         {
             $this->assertEquals("Invalid authType", $e->getMessage());
         }
+    }
+
+    public function testUserAuthenticationComparePasswordInvalidCredential()
+    {
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
+        $userAuth = $mapper->getModel( array(
+                            'userId'     => $this->_user1['model']['userId'],
+                            'authType'   => 'password',
+                        ));
+        $cred     = $this->_user1['password']['credential'] .'?bad';
+
+        Connexions::log("Compare1: [ %s ]", $userAuth->user->debugDump());
+
+        $this->assertFalse( $userAuth->compare( $cred ) );
+    }
+
+    public function testUserAuthenticationComparePasswordSuccessRaw()
+    {
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
+        $userAuth = $mapper->getModel( array(
+                            'userId'     => $this->_user1['model']['userId'],
+                            'authType'   => 'password',
+                        ));
+        $cred     = 'abcdefg';
+
+        $this->assertTrue( $userAuth->compare( $cred ) );
+    }
+
+    public function testUserAuthenticationComparePasswordSuccess()
+    {
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
+        $userAuth = $mapper->getModel( array(
+                            'userId'     => $this->_user1['model']['userId'],
+                            'authType'   => 'password',
+                        ));
+        $cred     = $this->_user1['password']['credential'];
+
+        $this->assertTrue( $userAuth->compare( $cred ) );
+    }
+
+    public function testUserAuthenticationComparePkiInvalidCredential()
+    {
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
+        $userAuth = $mapper->getModel( array(
+                            'userId'     => $this->_user1['model']['userId'],
+                            'authType'   => 'pki',
+                        ));
+        $cred     = $this->_user1['pki']['credential'] .'?bad';
+
+        $this->assertFalse( $userAuth->compare( $cred ) );
+    }
+
+    public function testUserAuthenticationComparePkiSuccess()
+    {
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
+        $userAuth = $mapper->getModel( array(
+                            'userId'     => $this->_user1['model']['userId'],
+                            'authType'   => 'pki',
+                        ));
+        $cred     = $this->_user1['pki']['credential'];
+
+        $this->assertTrue( $userAuth->compare( $cred ) );
+    }
+
+    public function testUserAuthenticationCompareOpenIdInvalidCredential()
+    {
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
+        $userAuth = $mapper->getModel( array(
+                            'userId'     => $this->_user1['model']['userId'],
+                            'authType'   => 'openid',
+                        ));
+        $cred     = $this->_user1['openid']['credential']. '?bad';
+
+        $this->assertFalse( $userAuth->compare( $cred ) );
+    }
+
+    public function testUserAuthenticationCompareOpenIdSuccess()
+    {
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
+        $userAuth = $mapper->getModel( array(
+                            'userId'     => $this->_user1['model']['userId'],
+                            'authType'   => 'openid',
+                        ));
+        $cred     = $this->_user1['openid']['credential'];
+
+        $this->assertTrue( $userAuth->compare( $cred ) );
+    }
+
+    /*
+    public function testUserAuthenticationInvalidUser()
+    {
+        $expected = new Zend_Auth_Result(
+                                Zend_Auth_Result::FAILURE_IDENTITY_AMBIGUOUS,
+                                null);
+        $uMapper  = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $user     = $uMapper->getModel( array(
+                                'userId'     => 32,
+                                'name'       => 'User 32',
+                          ) );
+        $user->credential = 'abc';
+
+        $this->assertEquals( $expected, $user->authenticate() );
     }
 
     public function testUserAuthenticationInvalidCredential()
@@ -339,4 +426,5 @@ class UserAuthDbTest extends DbTestCase
         $this->assertTrue  ( $user->isBacked() );
         $this->assertTrue  ( $user->isValid() );
     }
+    */
 }

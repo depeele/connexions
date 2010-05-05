@@ -6,8 +6,7 @@
  */
 
 class Model_User extends Model_Base
-                    implements  Zend_Tag_Taggable,
-                                Zend_Auth_Adapter_Interface
+                    implements  Zend_Tag_Taggable
 {
     /* inferred via classname
     protected   $_mapper    = 'Model_Mapper_User'; */
@@ -318,112 +317,6 @@ class Model_User extends Model_Base
     public function isAuthenticated()
     {
         return $this->_isAuthenticated;
-    }
-
-    /*************************************************************************
-     * Zend_Auth_Adapter_Interface
-     *
-     */
-
-    /** @brief  Perform an authentication check.
-     *
-     *  This makes use of the current Model_User instance as the holder of 
-     *  incoming information (i.e. 'credential' and 'authType').  This instance
-     *  MUST be backed and valid.  If no 'authType' has been set, the default
-     *  type will be used.
-     *
-     *  Authentication information MUST be established prior to invoking this
-     *  method:
-     *      - setAuthType()     Required iff NOT using the default
-     *                          authentication type
-     *                          (User_AuthType::AUTH_DEFAULT);
-     *      - setCredential()   REQUIRED to establish the credential to use
-     *                          when authenticating;
-     *
-     *  To authenticate:
-     *      1) If THIS instance is backed and valid:
-     *         a) Locate a Model_UserAuth instance using the 'userId' as well
-     *            as the 'authType' (if unset, Model_UserAuth will use the
-     *            default type) from THIS instance;
-     *         b) Invoke 'compare()' on the Model_UserAuth instance passing in
-     *            the 'credential' from THIS instance;
-     *      2) Generate an appropriate Zend_Auth_Result;
-     *
-     *  @return Zend_Auth_Result
-     */
-    public function authenticate()
-    {
-        /* See if the user represented by this instnace can be located
-         * either by userId or name
-         */
-        $user = null;
-        $auth = null;
-        if ($this->isBacked() && $this->isValid())
-        {
-            // 1) THIS instance is backed and valid;
-            $user =& $this;
-
-
-            /* 1a) See if we can find a 'userAuth' record for this
-             *     userId and authType
-             */
-            $authMapper =
-                Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
-            $auth       = $authMapper->find( array($user->userId,
-                                                   $user->_authType) );
-            if ($auth !== null)
-            {
-                $auth->user = $user;
-
-                /* 1b) Invoke 'compare()' on the Model_UserAuth instance
-                 *     passing in the 'credential' from THIS instance;
-                 */
-                if ( $auth->compare($this->_credential) !== true )
-                {
-                    // Authentication failure : Invalid Credential
-                    $auth = null;
-                }
-            }
-        }
-
-        // 2) Generate an appropriate Zend_Auth_Result;
-        if ($user === null)
-        {
-            // This user is either non-backed or non-valid
-            $result = new Zend_Auth_Result(
-                            //Zend_Auth_Result::FAILURE_IDENTITY_NOT_FOUND,
-                            Zend_Auth_Result::FAILURE_IDENTITY_AMBIGUOUS,
-                            null);
-        }
-        else if ($auth === null)
-        {
-            // Authentication failed -- invalid credential
-            $result = new Zend_Auth_Result(
-                            Zend_Auth_Result::FAILURE_CREDENTIAL_INVALID,
-                            null);
-        }
-        else
-        {
-            /* Successful authentication!
-             *
-             * Retrieve configuration / construction data for the
-             * identified/authenticated user.
-             */
-            $config = $user->toArray( self::DEPTH_SHALLOW,
-                                      self::FIELDS_ALL );
-
-            $this->setAuthenticated();
-
-            /* Generate a SUCCESS result using the configuration/construction
-             * data as the identification.  This will be stored by Zend_Auth
-             * and is what we will see in the session next time this user loads
-             * the page.
-             */
-            $result = new Zend_Auth_Result(Zend_Auth_Result::SUCCESS,
-                                           $config);
-        }
-
-        return $result;
     }
 
     /**********************************************

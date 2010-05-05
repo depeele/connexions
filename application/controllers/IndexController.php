@@ -6,21 +6,13 @@
  *      /[ (<user> | bookmarks) [/<tag list>]]
  */
 
-class IndexController extends Zend_Controller_Action
+class IndexController extends Connexions_Controller_Action
 {
     // Tell Connexions_Controller_Action_Helper_ResourceInjector which
     // Bootstrap resources to make directly available
     public  $dependencies = array('db','layout');
 
-    const   CRUD_SUCCESS            = 0;
-    const   CRUD_UNAUTHENTICATED    = 1;
-    const   CRUD_INVALID_DATA       = 2;
-    const   CRUD_BACKEND_FAILURE    = 3;
-
-
-    protected   $_request   = null;
     protected   $_url       = null;
-    protected   $_viewer    = null;
     protected   $_owner     = null;
     protected   $_tagInfo   = null;
     protected   $_userItems = null;
@@ -38,16 +30,11 @@ class IndexController extends Zend_Controller_Action
 
     public function init()
     {
-        /* Initialize action controller here */
-        $this->_viewer  =& Zend_Registry::get('user');
-
-        //$this->_forward('index');
+        parent::init();
 
         // Initialize context switching
         $cs = $this->_helper->contextSwitch();
         $cs->initContext();
-
-        $this->_request =& $this->getRequest();
 
         /*
         $cs = $this->getHelper('contextSwitch');
@@ -131,6 +118,7 @@ class IndexController extends Zend_Controller_Action
             }
         }
 
+        $this->_tags = $this->service('Tag')->csList2set($reqTags)
         // Parse the incoming request tags
         $this->_tagInfo = new Connexions_Set_Info($reqTags, 'Model_Tag');
         if ($this->_tagInfo->hasInvalidItems())
@@ -309,7 +297,9 @@ class IndexController extends Zend_Controller_Action
             }
             else
             {
-                $ownerInst = Model_User::find(array('name' => $name));
+                //$ownerInst = Model_User::find(array('name' => $name));
+                $ownerInst = this->service('User')
+                                    ->find(array('name' => $name));
             }
 
             // Have we located a valid, backed user?
