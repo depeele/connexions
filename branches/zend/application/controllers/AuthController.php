@@ -9,7 +9,7 @@
  *      /auth/checkuser?format=json&userName=<name>
  */
 
-class AuthController extends Zend_Controller_Action
+class AuthController extends Connexions_Controller_Action
 {
     // Pre-defined openid endpoints: method = 'openid.<name>';
     static public   $openid_endpoints   = array(
@@ -27,15 +27,15 @@ class AuthController extends Zend_Controller_Action
 
     public function signinAction()
     {
-        $request     = $this->getRequest();
-
-        $auth        = Zend_Auth::getInstance();
-        $authAdapter = null;
+        $uService = $this->service('User');
+        $request  = $this->getRequest();
+        $authType = null;
         if ($request->isPost())
         {
             /* This is a POST request -- Perform authentication based upon the
              * specified method
              */
+            $id = null;
             list($method, $name) = explode('.',
                                            $request->getParam('method', ''));
 
@@ -45,10 +45,13 @@ class AuthController extends Zend_Controller_Action
             switch ($method)
             {
             case 'apachessl':
-                $authAdapter = new Connexions_Auth_ApacheSsl();
+                $authType    = Model_UserAuth::AUTH_PKI;
+
+                //$authAdapter = new Connexions_Auth_ApacheSsl();
                 break;
 
             case 'openid':
+                $authType = Model_UserAuth::AUTH_OPENID;
                 if ((! empty($name)) && isset(self::$openid_endpoints[$name]))
                     $id = self::$openid_endpoints[$name];
                 else
@@ -57,13 +60,15 @@ class AuthController extends Zend_Controller_Action
                 Connexions::log("AuthController: "
                                 .   "OpenId, endpoint[ {$id} ]");
 
-                $authAdapter = new Connexions_Auth_OpenId($id);
+                //$authAdapter = new Connexions_Auth_OpenId($id);
                 break;
 
             case 'userpassword':
             default:
-                $authAdapter = new Connexions_Auth_UserPassword();
-                $this->view->username = $authAdapter->getIdentity();
+                $authType = Model_UserAuth::AUTH_PASSWORD;
+
+                //$authAdapter = new Connexions_Auth_UserPassword();
+                //$this->view->username = $authAdapter->getIdentity();
                 break;
             }
         }
@@ -73,10 +78,11 @@ class AuthController extends Zend_Controller_Action
             Connexions::log("AuthController: Handle OpenId response: "
                             .   "mode [ {$request->openid_mode} ]");
 
-            $authAdapter = new Connexions_Auth_OpenId();
+            $authType    = Model_UserAuth::AUTH_OPENID;
+            //$authAdapter = new Connexions_Auth_OpenId();
         }
 
-        if (! $authAdapter instanceof Zend_Auth_Adapter_Interface)
+        if ($authType === null)
         {
             // No authentication yet attempted -- present the auth form
             $this->_helper->layout->setLayout('auth');
@@ -87,7 +93,8 @@ class AuthController extends Zend_Controller_Action
          * Attempt authentication
          *
          */
-        $authResult = $auth->authenticate($authAdapter);
+        $user       = $uService->authenticate($authType, $id);
+        $authResult = $uService->getAuthResult();
 
         $messages = $authResult->getMessages();
         $messages = (is_array($messages)
@@ -99,26 +106,13 @@ class AuthController extends Zend_Controller_Action
                         .   "messages[ {$messages} ], "
                         .   "identity[ {$authResult->getIdentity()} ]");
 
-        if (! $authResult->isValid())
+        if (! $user->isAuthenticated())
         {
             /* Unsuccessful authentication -- present the authentcation
              * form
              */
             $this->view->error = $messages;
             $this->_helper->layout->setLayout('auth');
-            return;
-        }
-
-        $user = $authResult->getUser();
-        if ( (! $user instanceof Model_User) || (! $user->isAuthenticated()) )
-        {
-            // Authentication failure
-            $response = $this->getResponse();
-            $response->setHttpResponseCode(401);
-
-            $this->view->error = "Invalid identity returned from "
-                               .    "Authentication Adapter "
-                               .    "(! Model_User or ! Authenticated)";
             return;
         }
 

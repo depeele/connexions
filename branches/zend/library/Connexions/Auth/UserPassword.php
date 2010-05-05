@@ -3,15 +3,14 @@
  *
  *  A username/password authentication adapter for Connexions.
  *
+ *  The "Sign-In" form MUST be submitted via POST and MUST include:
+ *      - username
+ *      - password
  */
 
 class Connexions_Auth_UserPassword extends Connexions_Auth_Abstract
 {
-    /** @brief  Return the authentication type of the concreted instance. */
-    public function getAuthType()
-    {
-        return 'password';
-    }
+    protected   $_authType  = 'password';   // Model_UserAuth::AUTH_PASSWORD
 
     /** @brief  Perform an authentication attempt.
      *
@@ -30,7 +29,13 @@ class Connexions_Auth_UserPassword extends Connexions_Auth_Abstract
     {
         // Reset our result state
         $this->_setResult();
-        $$userName = null;
+        $userName = null;
+
+        /*
+        Connexions::log("Connexions_Auth_UserPassword::authenticate: "
+                        . "_POST: username[ %s ], password[ %s ]",
+                        $_POST['username'], $_POST['password']);
+        // */
 
         if (@empty($_POST['username']))
         {
@@ -50,42 +55,11 @@ class Connexions_Auth_UserPassword extends Connexions_Auth_Abstract
         }
         $password = $_POST['password'];
 
-        /* See if we can find a credential that matches, along with a valid
-         * user
+
+        /* Match and Compare the identity and credential.  This also sets the
+         * authentication results.
          */
-        if (! $this->_matchUser($userName, md5($userName .':'. $password)))
-        {
-            // Error set by _matchUser
-            return $this;
-        }
-
-        if ($this->_user->name !== $userName)
-        {
-            // Invalid password -- at least for THIS user...
-            $this->_setResult(self::FAILURE_CREDENTIAL_INVALID,
-                              $userName,
-                              "Invalid password");
-
-            /*
-            Connexions::log("Connexions_Auth_UserPassword::authenticate: "
-                            . "Mis-matched user name: [ %s ] !== [ %s ]",
-                            $this->_user->name, $userName);
-            // */
-            return $this;
-        }
-
-
-        /*****************************************************************
-         * Success!
-         *
-         */
-        $this->_setResult(self::SUCCESS, $userName);
-
-        /*
-        Connexions::log("Connexions_Auth_UserPassword::authenticate: "
-                        . "User authenticated:%s\n",
-                        $this->_user->debugDump());
-        // */
+        $this->_matchAndCompare($password, $userName);
 
         return $this;
     }

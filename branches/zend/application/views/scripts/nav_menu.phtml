@@ -25,7 +25,7 @@ else
     $searchContexts = array();
 }
 
-renderMenu($this->navigation()->menu(), $this->container);
+renderMenu($this);
 renderSearch($request, $searchContexts);
 
 /** @brief  Given a previous depth and current depth, close all open li/ul tags
@@ -67,10 +67,13 @@ function closeTags($indent, $prevDepth, $depth, $includeCorners = true)
  *  @param  container   The container to render.
  *  @param  ulClass     The CSS class for the top-level ul
  */
-function renderMenu($helper, $container, $ulClass = 'nav')
+function renderMenu($view, $ulClass = 'nav')
 {
-    $uri      = Connexions::getRequestUri();
-    $iterator = new RecursiveIteratorIterator($container,
+    $nav       = $view->navigation();
+    $menu      = $nav->menu();
+
+    $uri       = Connexions::getRequestUri();
+    $iterator  = new RecursiveIteratorIterator($nav->getContainer(),
                         RecursiveIteratorIterator::SELF_FIRST);
 
     /* Attempt to simplify the current request uri by stripping off any query
@@ -83,13 +86,26 @@ function renderMenu($helper, $container, $ulClass = 'nav')
      */
     foreach ($iterator as $page)
     {
-        if (! $helper->accept($page))
+        if (! $menu->accept($page))
         {
+            /*
+            Connexions::log("nav_menu::renderMenu(): uri[ %s ], page[ %s ] "
+                            . "NOT accepted",
+                            $uri, $page->getHref());
+            // */
+
             // NOT accepted by ACL or visibility
             continue;
         }
 
         $href = $page->getHref();
+
+        /*
+        Connexions::log("nav_menu::renderMenu(): uri[ %s ], page[ %s ] "
+                        . "ACCEPTED",
+                        $uri, $page->getHref());
+        // */
+
 
         //$isActive = preg_match('#^'.$href.'$#', $uri);
         $isActive = preg_match('#^'.$href.'#', $uri);
@@ -100,11 +116,17 @@ function renderMenu($helper, $container, $ulClass = 'nav')
     }
     $iterator->rewind();
 
+    /*
+    Connexions::log("nav_menu::renderMenu(): uri[ %s ]"
+                    . "completed checks",
+                    $uri);
+    // */
+
     $prevDepth = -1;
     $liFirst   = false;
     foreach ($iterator as $page)
     {
-        if (! $helper->accept($page))
+        if (! $menu->accept($page))
         {
             // NOT accepted by ACL or visibility
             continue;
@@ -117,6 +139,17 @@ function renderMenu($helper, $container, $ulClass = 'nav')
                         //? preg_match('#^'.$href.'$#', $uri)
                         ? preg_match('#^'.$href.'#', $uri)
                         : $page->isActive(true));
+
+        /*
+        Connexions::log("nav_menu::renderMenu():%s [ %s.%s ], [ %s ] "
+                        .   "is %sactive (%s)",
+                        str_repeat('.', $depth),
+                        $page->getLabel(), $page->getClass(),
+                        $href,
+                        ($isActive ? '' : 'NOT '),
+                        ($page->isActive(true) ? 'is' : 'NOT'));
+        // */
+
 
         if ($depth > $prevDepth)
         {

@@ -93,8 +93,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         if (isset($options['resources']['view']))
         {
             $optsView =& $options['resources']['view'];
-            $view     =  new Zend_View($optsView);
-
             if (isset($optsView['doctype']))
                 $view->doctype($optsView['doctype']);
 
@@ -111,12 +109,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
                 $view->headTitle()
                         ->setSeparator(
                             $optsView['titleSeparator'] );
-        }
-        else
-        {
-            $optsView = null;
-
-            $view = new Zend_View();
         }
 
         /*******************************************************************
@@ -161,6 +153,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
                                 APPLICATION_PATH .'/configs/navigation.xml',
                                 'nav');
 
+        /*
+        Connexions::log("_initView: nav config[ %s ]",
+                        print_r($config->toArray(), true));
+        // */
+
         $nav    = new Zend_Navigation($config);
         $this->setResource('navigation', $nav);
 
@@ -176,9 +173,19 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         }
 
         /*
-        Connexions::log("Bootstrap::_initView: role[ "
-                        .   $view->navigation()->getRole()
-                        .       " ]");
+        //Connexions::log("Bootstrap::_initView: role[ "
+        //                .   $view->navigation()->getRole()
+        //                .       " ]");
+
+        $it = new RecursiveIteratorIterator(
+                        $view->navigation()->getContainer(),    //$nav,
+                        RecursiveIteratorIterator::SELF_FIRST);
+        foreach ($it as $idex => $page)
+        {
+            Connexions::log("_initView: nav page #%d: %s %s [ %s ]",
+                            $idex, str_repeat('.', $it->getDepth()),
+                            $page->label, $page->getHref());
+        }
         // */
 
         Connexions_Profile::checkpoint('Connexions',
@@ -373,14 +380,21 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
     /** @brief  Initialize authentication. */
     protected function _commonAuth()
     {
+        $uService = Connexions_Service::factory('Service_User');
+
         // Initialize authentication to use session-based storage
         $auth = Zend_Auth::getInstance();
         $auth->setStorage(new Zend_Auth_Storage_Session('connexions', 'user'));
 
+        /* AuthController::signinAction() is where non-transport-level
+         * authentication actually occurs.  This is just checking to see if
+         * that has already happend, which would result in the session-based
+         * storage containing an Identity that we can retrieve here.
+         */
         if  ($auth->hasIdentity())
         {
             Connexions::log("Bootstrap::_commonAuth: Auth has identity...");
-            $user = new Model_User( $auth->getIdentity() );
+            $user = $uService->find( $auth->getIdentity() );
             $user->setAuthenticated();
         }
 
@@ -396,19 +410,23 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
              *              Zend_Auth::getInstance()->setIdentity( $id );
              *
              *  Example:
-             *      $res = $auth->authenticate(new Connexions_Auth_ApacheSsl());
-             *      if ($res->isValid())
-             *          $user = $res->getUser();
-             *      else
-             *          Create an 'anonymous', unauthenticated user
+             *      $uService = Connexions_Service::factory('Service_User');
+             *      $user     = $uService->authenticate(
+             *                                  Model_UserAuth::AUTH_PKI);
+             *
+             *      $user will now be one of:
+             *          - authenticated user;
+             *          - non-backed, unauthenticated anonymous user;
              */
 
-            //Connexions::log("Bootstrap::_commonAuth: create an anonymous user");
+            /*
+            Connexions::log("Bootstrap::_commonAuth: create an anonymous user");
+            // */
 
             // Create an 'anonymous', unauthenticated user
-            $user = new Model_User(array('name'      => 'anonymous',
-                                         'fullName'  => 'Anonymous'
-                                   ));
+            $user = $uService->create( array('name'      => 'anonymous',
+                                             'fullName'  => 'Visitor'
+                                       ));
         }
 
         //Connexions::log("Bootstrap::_commonAuth: Add 'user' to registry");
@@ -427,12 +445,14 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         Zend_Registry::set('user', $user);
         $this->setResource('user', $user);
 
+        // /*
         Connexions_Profile::checkpoint('Connexions',
                                        "Bootstrap::_commonAuth complete: "
                                        .    "user[ %s ], %sauthenticated",
                                        $user->name,
                                        ($user->isAuthenticated()
                                             ? '' : 'NOT '));
+        // */
 
         return $this;
     }

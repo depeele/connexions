@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config>
  <nav>
-  <!-- Navigation menu ***************************** -->
-  <nav_menu>
-   <label>nav_menu</label>
-   <controller>index</controller>
-   <action>index</action>
-
-   <pages>
+  <!-- Navigation menu { ***************************** -->
     <!-- Authenticated Users -->
     <userInfo>
      <label>%user.name%</label>
@@ -164,10 +158,6 @@
       </about>
      </pages>
     </help>
-  
-   </pages>
-  </nav_menu>
-
+  <!-- Navigation menu } ***************************** -->
  </nav>
-
 </config>

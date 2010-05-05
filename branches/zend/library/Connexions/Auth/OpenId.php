@@ -7,50 +7,52 @@
 
 class Connexions_Auth_OpenId extends Connexions_Auth_Abstract
 {
+    protected   $_authType      = 'openid'; // Model_UserAuth::AUTH_OPENID
+
     /** @brief  URL of the identification endpoint.
      *  @var    string
      */
-    protected   $_endpoint      = null;
+    protected   $_endpoint          = null;
 
     /** @brief  Reference to an implementation of a storage object
      *  @var    Zend_OpenId_Consumer_Storage
      */
-    private $_storage           = null;
+    private     $_storage           = null;
 
     /** @brief  The URL to redirect response from server to
      *  @var    string
      */
-    private $_returnTo          = null;
+    private     $_returnTo          = null;
 
     /** @brief  The HTTP URL to identify consumer on server
      *  @var    string
      */
-    private $_root              = null;
+    private     $_root              = null;
 
     /** @brief  Extension object or array of extensions objects
      *  @var    string
      */
-    private $_extensions        = null;
+    private     $_extensions        = null;
 
     /** @brief  The response object to perform HTTP or HTML form redirection
      *  @var    Zend_Controller_Response_Abstract
      */
-    private $_response          = null;
+    private     $_response          = null;
 
     /** @brief  Enables or disables interaction with user during authentication
      *          on OpenID provider.
      *  @var    bool
      */
-    private $_check_immediate   = false;
+    private     $_check_immediate   = false;
 
     /** @brief  HTTP client to make HTTP requests
      *  @var    Zend_Http_Client $_httpClient
      */
-    private $_httpClient        = null;
+    private     $_httpClient        = null;
 
     /** @brief  SReg extension values (on successful authentication) */
-    protected   $_nickname      = null;
-    protected   $_fullname      = null;
+    protected   $_nickname          = null;
+    protected   $_fullname          = null;
 
 
     /** @brief  Construct a new instatnce.
@@ -63,12 +65,6 @@ class Connexions_Auth_OpenId extends Connexions_Auth_Abstract
         $this->_extensions = $extensions;
 
         parent::__construct(self::FAILURE, null);
-    }
-
-    /** @brief  Return the authentication type of the concreted instance. */
-    public function getAuthType()
-    {
-        return 'openid';
     }
 
     public function getNickname()
@@ -209,10 +205,27 @@ class Connexions_Auth_OpenId extends Connexions_Auth_Abstract
         $endpoint = $this->_endpoint;
         if (!empty($endpoint))
         {
+            /* FIRST, verify that we have a user matching the endpoint, which
+             * in this case is the credential.
+             */
+            if (! $this->_matchAndCompare($endpoint))
+            {
+                /* There is no user with this credential -- _matchAndCompare()
+                 * will have set the appropriate error.
+                 */
+
+                /*
+                Connexions::log("Connexions_Auth_OpenId::authenticate(): "
+                                . "no user match for endpoint [ %s ]: [ %s ]",
+                                $endpoint,
+                                $this);
+                // */
+                return $this;
+            }
+
             $consumer = new Zend_OpenId_Consumer($this->_storage);
             $consumer->setHttpClient($this->_httpClient);
 
-            /* login() is never returns on success */
             if (!$this->_check_immediate)
             {
                 /*
@@ -220,6 +233,7 @@ class Connexions_Auth_OpenId extends Connexions_Auth_Abstract
                                 . "login...");
                 // */
 
+                // login() never returns on success
                 if (!$consumer->login($endpoint,
                                       $this->_returnTo,
                                       $this->_root,
@@ -278,12 +292,18 @@ class Connexions_Auth_OpenId extends Connexions_Auth_Abstract
                  * authenticated endpoint?
                  */
                 $this->_endpoint = $endpoint;
-                $identity   = $endpoint;
-                $credential = $identity;
+                $credential = $endpoint;
 
-                if (! $this->_matchUser($identity, $credential))
+                if (! $this->_matchAndCompare($credential))
                 {
                     // Error set by _matchUser
+
+                    /*
+                    Connexions::log("Connexions_Auth_OpenId::authenticate(): "
+                                    . "match user failure: %s",
+                                    $this);
+                    // */
+
                     return $this;
                 }
 
@@ -297,18 +317,6 @@ class Connexions_Auth_OpenId extends Connexions_Auth_Abstract
                                             ? $data['fullname']
                                             : null);
                 }
-
-                /*************************************************************
-                 * Success!
-                 *
-                 */
-                $this->_setResult(self::SUCCESS, $identity);
-
-                /*
-                Connexions::log("Connexions_Auth_OpenId::authenticate: "
-                                . "User authenticated:%s\n",
-                                $this->_user->debugDump());
-                // */
             }
             else
             {

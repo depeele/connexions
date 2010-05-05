@@ -6,9 +6,9 @@
 
 class Model_UserAuth extends Model_Base
 {
-    const   AUTH_OPENID     = 'openid';
-    const   AUTH_PASSWORD   = 'password';
-    const   AUTH_PKI        = 'pki';
+    const   AUTH_OPENID     = 'openid';         // Connexions_Auth_OpenId
+    const   AUTH_PASSWORD   = 'password';       // Connexions_Auth_UserPassword
+    const   AUTH_PKI        = 'pki';            // Connexions_Auth_ApacheSsl
 
     const   AUTH_DEFAULT    = self::AUTH_PASSWORD;
 

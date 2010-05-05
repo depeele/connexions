@@ -32,13 +32,40 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
         return $this->_user;
     }
 
-    /** @brief  Return the authentication type of the concreted instance. */
-    abstract public function getAuthType();
+    /** @brief  Return the authentication type of the concrete instance. */
+    public function getAuthType()
+    {
+        // :NOTE: The concrete classes MUST have an _authType member.
+        return $this->_authType;
+    }
+
+    public function __toString()
+    {
+        return sprintf ("{ code: %d, identity: '%s', messages: [ %s ] }",
+                        $this->_code,
+                        $this->_identity,
+                        (is_array($this->_messages)
+                            ? implode(', ', $this->_messages)
+                            : ''));
+    }
+
+    public function toArray()
+    {
+        return array('code'     => $this->_code,
+                     'identity' => $this->_identity,
+                     'messages' => $this->_messages);
+    }
+
+    /*************************************************************************
+     * Protected Methods
+     *
+     */
 
     /** @brief  Set / initialize the Zend_Auth_Result portion.
-     *  @param  code        The authentication status code.
-     *  @param  identity    The current identity (MAY be a Model_User instance).
-     *  @param  messages    An array of messages, or single string message.
+     *  @param  code        The authentication status code;
+     *  @param  identity    The current identity
+     *                      (MAY be a Model_User instance);
+     *  @param  messages    An array of messages, or single string message;
      *
      *  @return Connexions_Auth_Abstract for a fluent interface.
      */
@@ -65,53 +92,80 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
             {
                 $this->_user = $identity;
             }
+
             $this->_user->setAuthenticated();
         }
 
         return $this;
     }
 
-    /** @brief  Given a credential, see if there is a userAuth record for the
-     *          credential/authentication type pair.
-     *  @param  identity        The incoming user identity.
-     *  @param  credential      The credential to match.
+    /** @brief  Given a user identity and/or credential, see if there is a
+     *          userAuth record for the credential/authentication type pair.
+     *  @param  credential      The credential to match;
+     *  @param  identity        The incoming user identity [ null ];
      *
      *  @return true | false
      */
-    protected function _matchUser($identity, $credential)
+    protected function _matchAndCompare($credential, $identity = null)
     {
-        // Locate the authentication record matching the provided credential
-        $userAuth = new Model_UserAuth(array(
-                            'authType'   => $this->getAuthType(),
-                            'credential' => $credential));
-        if (! $userAuth->isBacked())
+        $uaMapper = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = null;
+        $userAuth = null;
+
+        // Locate the matching Model_UserAuth instance...
+        if ($identity !== null)
+        {
+            // See if there is a Model_User instance matching the provided
+            // 'identity'
+            $user = $uService->find( $identity );
+            if ($user === null)
+            {
+                $this->_setResult(self::FAILURE_IDENTITY_NOT_FOUND,
+                                  $identity,
+                                  "Unmatched identity");
+                return false;
+            }
+
+            // Attempt to locate the Model_UserAuth instance matching 'user'
+            $userAuth = $uaMapper->find( array(
+                            'userId'    => $user->userId,
+                            'authType'  => $this->getAuthType(),
+                        ));
+        }
+        else
+        {
+            // We weren't given an identity, so perform a lookup by credential
+            $userAuth = $uaMapper->find( array(
+                                'authType'   => $this->getAuthType(),
+                                'credential' => $credential));
+        }
+
+
+        if ($userAuth === null)
         {
             // CANNOT FIND a matching authentication record.
+            if (! empty($identity))
+                $id = $identity;
+            else
+                $id = $credential;
+
             $this->_setResult(self::FAILURE,
-                              $identity,
+                              $id,
                               "Authentication failure. "
-                              . "Unmapped Credential for user "
-                              .   "'{$identity}'");
+                              . "No authenticator for identity.");
             return false;
         }
 
-        /*
-        Connexions::log("Connexions_Auth_Abstract::_matchUser(%s, %s): "
-                        . "found Model_UserAuth for user %d",
-                        $identity, $credential, $userAuth->userId);
-        // */
-
-        // Retrieve the identified user
-        $user = new Model_User( $userAuth->userId );
-        if ( ! $user->isBacked() )
+        if ($user === null)
         {
-            // FAILURE -- actually, an internal database consistency error.
-            $this->_setResult(self::FAILURE,
-                              $identity,
-                              "Authentication failure. "
-                              . "Internal consistenty error for user "
-                              .   "'{$identity}'");
-            return false;
+            // Now, retrieve the matching Model_User instance
+            $user = $userAuth->user;
+        }
+        else
+        {
+            // Make sure userAuth has the same user instance.
+            $userAuth->user = $user;
         }
 
         /*
@@ -120,10 +174,28 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
                         $identity, $credential, $user->userId, $user->name);
         // */
 
+        /**********************************************************
+         * Compare the incoming credential against the
+         * authentic credential.
+         *
+         */
+        if (! $userAuth->compare($credential))
+        {
+            // Invalid credential
+            $this->_setResult(self::FAILURE_CREDENTIAL_INVALID,
+                              $user->name,
+                              "Invalid credential");
+            return false;
+        }
 
-        // We've retrieve a Model_UserAuth and matching Model_User
+        /**********************************************************
+         * Valid identity AND credential -- authentication success
+         *
+         */
         $this->_user     = $user;
         $this->_userAuth = $userAuth;
+
+        $this->_setResult(self::SUCCESS);
 
         return true;
     }
