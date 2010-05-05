@@ -15,7 +15,7 @@ ALTER TABLE user MODIFY COLUMN apiKey CHAR(10) NOT NULL DEFAULT '';
 
 ALTER TABLE userAuth ADD PRIMARY KEY (userId,authType);
 
-DROP  TABLE userTag,itemTag;
+DROP  TABLE userTag,itemTag,network;
 
 
 -- Alter collation to allow case-insensitive matches
