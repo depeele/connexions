@@ -56,7 +56,6 @@ class IndexController extends Connexions_Controller_Action
         Connexions::log("IndexController::indexAction");
 
         $request  =& $this->_request;
-
         $reqOwner =  $request->getParam('owner', null);
 
         /* If this is a user/"owned" area (e.g. /<userName> [/ <tags ...>]),
@@ -118,8 +117,10 @@ class IndexController extends Connexions_Controller_Action
             }
         }
 
-        $this->_tags = $this->service('Tag')->csList2set($reqTags)
         // Parse the incoming request tags
+        $this->_tags = $this->service('Tag')->csList2set($reqTags);
+
+        /*
         $this->_tagInfo = new Connexions_Set_Info($reqTags, 'Model_Tag');
         if ($this->_tagInfo->hasInvalidItems())
         {
@@ -132,6 +133,7 @@ class IndexController extends Connexions_Controller_Action
         {
             $tagIds = $this->_tagInfo->validIds;
         }
+        // */
 
         /***************************************************************
          * We now have a valid 'owner' (ownerIds) and 'tags' ($tagIds)
@@ -142,16 +144,17 @@ class IndexController extends Connexions_Controller_Action
                     . ($this->_owner instanceof Model_User
                         ? '/'. $this->_owner->name
                         : '')
-                    . ($this->_tagInfo->hasValidItems()
-                        ? '/'. $this->_tagInfo->validItems
+                    . (count($this->_tags) > 0
+                        ? '/'. $this->_tags
                         : '')
                     . '/';
 
         /* Create the userItem set, scoped by any valid tags and possibly the
          * owner of the area.
          */
-        $this->_userItems = new Model_UserItemSet($tagIds, $ownerIds);
-
+        $this->_userItems = $this->service('Bookmark')
+                                    ->fetchByUsersAndTags($ownerIds,
+                                                          $this->_tags);
 
         // Set the view variables required for all views/layouts.
         if ($this->_owner !== '*')
@@ -298,7 +301,7 @@ class IndexController extends Connexions_Controller_Action
             else
             {
                 //$ownerInst = Model_User::find(array('name' => $name));
-                $ownerInst = this->service('User')
+                $ownerInst = $this->service('User')
                                     ->find(array('name' => $name));
             }
 
@@ -428,42 +431,21 @@ class IndexController extends Connexions_Controller_Action
             return;
         }
 
-        /* VALID -- attempt to create the userItem / Bookmark.
-         *
-         *  1) See if an item exists for the given URL;
-         *     a) NO  - create one;
-         *     b) YES - use it;
-         *  2) Fill in 'userId' and 'itemId' and create the userItem;
-         *  3) Associate all tags with this userItem;
-         *  4) Update statistics:
-         *     a) item  userCount, ratingCount, ratingSum;
-         *     b) user  totalItems, totalTags
-         */
+        // Retrieve the Model_Set_Tag instance representing the incoming tags.
 
-        // 1) Find / Create the item
-        $item = new Model_Item( $itemInfo['url'] );
-        if (! $item->isBacked())
-        {
-            // Save this new item.
-            $item->save();
-        }
 
-        // 2) Find / Create the userItem
-        $userItem = new Model_UserItem( array(
-                            'userId' => $this->_viewer->userId,
-                            'itemId' => $item->itemId) );
-        if ($userItem->isBacked())
-        {
-            // The userItem / Bookmark already exists!  Update??
-            $rpc->setError('Bookmark already exists.');
-            return;
-        }
+        // VALID -- create and save the Bookmark.
+        $bookmark = $this->service('Bookmark')
+                            ->create( array(
+                                'user'      => $this->_viewer,
+                                'itemUrl'   => $itemInfo['url'],
+                            ));
 
-        // Save this new userItem.
-        $userItem->save();
-
-        // 3) Add tags to this userItem
+        // Add tags to this userItem
         $userItem->tagsAdd($itemInfo['tags']);
+
+        // Save this (new) Bookmark.
+        $userItem->save();
 
         // 4) Update statistics
         //    a) item  userCount, ratingCount, ratingSum;
@@ -708,6 +690,8 @@ class IndexController extends Connexions_Controller_Action
      */
     protected function _jsonContent()
     {
+        $request =& $this->_request;
+
         if ($request->isPost())
         {
             // Create a new userItem / Bookmark

@@ -11,15 +11,66 @@ class Service_Tag extends Connexions_Service
 
     /** @brief  Convert a comma-separated list of tags to a 
      *          Model_Set_Tag instance.
-     *  @param  csList  The comma-separated list of tags.
+     *  @param  csList  The comma-separated list of tags;
+     *  @param  create  Should any non-existing tags be created? [ false ];
      *
      *  @return Model_Set_Uset
      */
-    public function csList2set($csList)
+    public function csList2set($csList, $create = false)
     {
-        $names = preg_split('/\s*,\s*/', $csList);
+        $names = preg_split('/\s*,\s*/', strtolower($csList));
 
-        return $this->_getMapper()->fetchBy('tag', $names, 'tag ASC');
+        /*
+        Connexions::log("Service_Tag::csList2set( [ %s ], %screate ): "
+                        .   "names[ %s ]",
+                        $csList, ($create ? '' : 'DO_NOT '),
+                        implode(', ', $names));
+        // */
+
+        $set = $this->_getMapper()->fetchBy('tag', $names, 'tag ASC');
+        if ($create)
+        {
+            /* See if any of the request tags we not found...
+             *
+             * First, flip the array so it's keyed by tagName.
+             */
+            $names = array_flip($names);
+
+            // Remove all tags that we successfully retrieved
+            foreach ($set as $tag)
+            {
+                unset($names[ $tag->tag ]);
+            }
+
+            if (count($names) > 0)
+            {
+                /*
+                Connexions::log("Service_Tag::csList2set(): "
+                                .   "create %d tags [ %s ]",
+                                count($names),
+                                implode(', ', array_keys($names)));
+                // */
+
+                /* There is one or more tag that does not yet exist.
+                 *
+                 * Create all that are missing, adding them to the set.
+                 */
+                $tMapper = $this->_getMapper('Model_Mapper_Tag');
+                foreach ($names as $tagName => $idex)
+                {
+                    $tag = $tMapper->getModel( array('tag' => $tagName) );
+                    if ($tag !== null)
+                    {
+                        $tag = $tag->save();
+                        $set->append($tag);
+                    }
+                }
+
+                $set->usort('Service_Tag::sort_by_tag');
+            }
+        }
+
+        return $set;
     }
 
     /** @brief  Retrieve a set of tags related by a set of Users.
@@ -98,10 +149,12 @@ class Service_Tag extends Connexions_Service
                 array_push($items, $id[1]);
             }
 
+            /*
             Connexions::log("Service_Tag::fetchByBookmarks(): "
                             .   "users[ %s ], items[ %s ]",
                             implode(', ', $users),
                             implode(', ', $items));
+            // */
         }
 
         return $this->_getMapper()->fetchRelated( array(
@@ -111,5 +164,28 @@ class Service_Tag extends Connexions_Service
                                         'count'  => $count,
                                         'offset' => $offset,
                                     ));
+    }
+
+    /*********************************************************************
+     * Static methods
+     *
+     */
+
+    /** @brief  A sort callback to sort tags by tag name
+     *  @param  a   First  tag;
+     *  @param  b   Second tag;
+     *
+     *  @return A comparison value (-1, 0, 1).
+     */
+    static public function sort_by_tag($a, $b)
+    {
+        $aName = ($a instanceof Model_Tag
+                    ? $a->tag
+                    : $a['tag']);
+        $bName = ($b instanceof Model_Tag
+                    ? $b->tag
+                    : $b['tag']);
+
+        return strcasecmp($aName, $bName);
     }
 }

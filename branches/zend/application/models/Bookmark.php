@@ -82,7 +82,24 @@ class Model_Bookmark extends Model_Base
         // On save, modify 'updatedOn' to NOW.
         $this->updatedOn = date('Y-m-d H:i:s');
 
-        return parent::save();
+        $tags = $this->_tags;
+        if ($this->_tags !== null)
+        {
+            // Also save tags -- this will only save un-backed instances.
+            $this->_tags = $this->_tags->save();
+        }
+
+        $bookmark = parent::save();
+
+        if ($tags !== null)
+        {
+            /* Invalidate the tags so they will be re-retrieved to reflect
+             * updated statistics.
+             */
+            $tags->invalidate();
+        }
+
+        return $bookmark;
     }
 
     /** @brief  Set the value of the given field.
@@ -293,6 +310,7 @@ class Model_Bookmark extends Model_Base
         {
             // Include user and tag information
             $user = $this->user;
+            $item = $this->item;
             $tags = $this->tags;
 
             $str .= sprintf ("%s%-15s == %-15s %s [\n%s%s]\n",
@@ -301,6 +319,11 @@ class Model_Bookmark extends Model_Base
                              ' ',
                              $user->debugDump($indent + 2, true),
                              str_repeat(' ', $indent + 1))
+                 .  sprintf ("%s%-15s == %-15s %s [ %s ]\n",
+                             str_repeat(' ', $indent + 1),
+                             'item', get_class($item),
+                             ' ',
+                             $item->debugDump($indent + 2, true))
                  .  sprintf ("%s%-15s == %-15s %s [ %s ]\n",
                              str_repeat(' ', $indent + 1),
                              'tags', get_class($tags),
