@@ -45,6 +45,8 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      *                      - exactTags If 'tags' is provided,  should we
      *                                  require a match on ALL tags? [ true ];
      *                      - where     Additional condition(s) [ null ];
+     *                      - paginate  Return a Zend_Paginator instead of
+     *                                  a Connexions_Model_Set.
      *
      *  @return A Connexions_Model_Set instance that provides access to all
      *          matching Domain Model instances.
@@ -166,6 +168,17 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
         $count  = (isset($params['count'])  ? $params['count']  : null);
         $offset = (isset($params['offset']) ? $params['offset'] : null);
 
-        return $this->fetch($select, $order, $count, $offset);
+        $set    = $this->fetch($select, $order, $count, $offset);
+
+        if ( isset($params['paginate']) && ($params['paginate'] !== false) )
+        {
+            $result = new Zend_Paginator($set);
+        }
+        else
+        {
+            $result =& $set;
+        }
+
+        return $result;
     }
 }

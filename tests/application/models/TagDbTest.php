@@ -224,18 +224,11 @@ class TagDbTest extends DbTestCase
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
         $tags   = $mapper->fetch();
 
-        // Check the database consistency
-        $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
-                    $this->getConnection()
-        );
+        // Fetch the expected set
+        $ds = $this->createFlatXmlDataSet(
+                  dirname(__FILE__) .'/_files/tagSetAssertion.xml');
 
-        $ds->addTable('tag',        'SELECT * FROM tag'
-                                     .  ' ORDER BY tagId ASC');
-
-        $this->assertDataSetsEqual(
-            $this->createFlatXmlDataSet(
-                      dirname(__FILE__) .'/_files/tagSetAssertion.xml'),
-            $ds);
+        $this->assertModelSetEquals( $ds->getTable('tag'), $tags );
     }
 
     public function testTagSetCount()
@@ -281,4 +274,103 @@ class TagDbTest extends DbTestCase
         $this->assertEquals($expectedTotal, $tags->getTotalCount());
     }
     */
+
+    public function testTagSetUnset()
+    {
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
+        $tags   = $mapper->fetch();
+
+        //$this->_printTags($tags);   echo "\n";
+
+        // Attempt to unset a few tags.
+        unset($tags[15]);
+        //$this->_printTags($tags);   echo "\n";
+
+        unset($tags[20]);
+        //$this->_printTags($tags);   echo "\n";
+
+        unset($tags[25]);
+        //$this->_printTags($tags);   echo "\n";
+
+        // Fetch the expected set
+        $ds = $this->createFlatXmlDataSet(
+                  dirname(__FILE__) .'/_files/tagSetUnsetAssertion.xml');
+
+        $this->assertModelSetEquals( $ds->getTable('tag'), $tags );
+    }
+
+    public function testTagSetPush()
+    {
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
+        $tags   = $mapper->fetch();
+
+        //$this->_printTags($tags);   echo "\n";
+
+        // Attempt to add a few tags -- raw and instance.
+        $tags->append( array('tag' => 'New Tag 1') );
+        //$this->_printTags($tags);   echo "\n";
+
+        $newTag = $mapper->getModel( array('tag' => 'New Tag 2') );
+        $tags->append( $newTag );
+
+        /*
+        printf ("new Tag { %s }\n", $newTag->debugDump());
+        $this->_printTags($tags);   echo "\n";
+        // */
+
+        // Save any unsaved tags from this set
+        $tags->save();
+
+        //echo $tags->debugDump();
+
+        // Fetch the expected set
+        $ds = $this->createFlatXmlDataSet(
+                  dirname(__FILE__) .'/_files/tagSetAppendAssertion.xml');
+
+        $this->assertModelSetEquals( $ds->getTable('tag'), $tags );
+    }
+
+    public function testTagSetSort()
+    {
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
+        $tags   = $mapper->fetch();
+
+        function __sort_by_tag($a, $b)
+        {
+            $aName = ($a instanceof Model_Tag
+                        ? $a->tag
+                        : $a['tag']);
+            $bName = ($b instanceof Model_Tag
+                        ? $b->tag
+                        : $b['tag']);
+
+            return strcasecmp($aName, $bName);
+        }
+
+        //$this->_printTags($tags);   echo "\n";
+
+        // We could also use 'Service_Tag::sort_by_tag'
+        $tags->usort('__sort_by_tag');
+
+        /*
+        echo "Sorted by tag:\n";
+        $this->_printTags($tags);   echo "\n";
+        // */
+
+        // Fetch the expected set
+        $ds = $this->createFlatXmlDataSet(
+                  dirname(__FILE__) .'/_files/tagSetSortAssertion.xml');
+
+        $this->assertModelSetEquals( $ds->getTable('tag'), $tags );
+    }
+
+    protected function _printTags(Model_Set_Tag $tags)
+    {
+        printf ("%d tags: [ ", count($tags));
+        foreach ($tags as $idex => $tag)
+        {
+            printf ("%s%02d:%s", ($idex > 0 ? ', ' : ''), $idex, $tag->tag);
+        }
+        echo " ]\n";
+    }
 }

@@ -25,7 +25,7 @@ class Model_Set_Tag extends Connexions_Model_Set
         foreach ($this->_members as $tag)
         {
             if (is_object($tag))
-                $name = $tag->name;
+                $name = $tag->tag;
             else
                 $name = $tag['tag'];
 

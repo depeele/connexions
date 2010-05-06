@@ -105,7 +105,7 @@ abstract class Connexions_Model_Set
             if (method_exists( $this, $method ))
             {
                 /*
-                Connexions::log("Connexions_Model:: %s...", $method);
+                Connexions::log("Connexions_Model_Set:: %s...", $method);
                 // */
 
                 $this->{$method}($val);
@@ -121,7 +121,7 @@ abstract class Connexions_Model_Set
         Connexions::log("Connexions_Model_Set::delete(): %d items",
                         count($this->_members));
 
-        foreach ($this->_members as $key => $item)
+        foreach ($this as $key => $item)
         {
             if ($item instanceof Connexions_Model)
                 $item->delete();
@@ -130,6 +130,42 @@ abstract class Connexions_Model_Set
         }
 
         $this->_members = array();
+    }
+
+    /** @brief  Save any items that are non yet backed.
+     */
+    public function save()
+    {
+        /*
+        Connexions::log("Connexions_Model_Set::save(): %d items",
+                        count($this->_members));
+        // */
+
+        foreach ($this as $key => $item)
+        {
+            if (! $item->isBacked())
+                $this->_members[$key] = $item->save();
+        }
+
+        return $this;
+    }
+
+    /** @brief  Invalidate the data contained in this model instances within
+     *          this set.
+     *
+     *  This is primarily to ensure that identity map entries are cleared to
+     *  allow changes in the underlying data to be reflected.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function invalidate()
+    {
+        foreach ($this as $key => $item)
+        {
+            $item->invalidate();
+        }
+
+        return $this;
     }
 
     /**********************************************************************
@@ -463,7 +499,7 @@ abstract class Connexions_Model_Set
         return $this->current();
     }
 
-    /** @brief  Does nothing
+    /** @brief  Set the given offset to the provided value.
      *  @param  offset
      *  @param  value
      *
@@ -471,17 +507,32 @@ abstract class Connexions_Model_Set
      */
     public function offsetSet($offset, $value)
     {
-        // Disallow...
+        if (! $value instanceof Connexions_Model)
+        {
+            /* For newly inserted data, find/create a representative instance
+             * (in case it's not backed data).  If we leave it as raw data,
+             * then iteration will be messed up since we assume in getItem()
+             * that all raw data is from the database.
+             */
+            $value = $this->getMapper()->getModel( $value );
+        }
+
+        $this->_members[ $offset ] = $value;
+
+        $this->_count = count( $this->_members );
     }
 
-    /** @brief  Does nothing
+    /** @brief  Remove the value at the specified offset from this set.
      *  @param  offset
      *
      *  Required by the ArrayAccess implementation
      */
     public function offsetUnset($offset)
     {
-        // Disallow...
+        array_splice($this->_members, $offset, 1);
+        //unset( $this->_members[ $offset ] );
+
+        $this->_count = count( $this->_members );
     }
 
     /*************************************************************************
@@ -614,7 +665,11 @@ abstract class Connexions_Model_Set
 
             if ( is_array($item) )
             {
-                // Create a new instance of the member class using the record.
+                /* Create a new instance of the member class using the record.
+                 *
+                 * Note: This ASSUMES that all raw data is from the database,
+                 *       hence the missing second parameter to makeModel().
+                 */
                 $this->_members[$offset + $idex] =
                         $mapper->makeModel( $item );
             }
@@ -641,13 +696,14 @@ abstract class Connexions_Model_Set
         $modelName = $this->getModelName();
         $item      = $this->_members[$offset];
 
-        if (! $item instanceof $modelName)
+        if ( ($item !== null) && (! $item instanceof $modelName) )
         {
             /* Access the raw record data, ensuring that it is marked as a
              * database-backed record.
+             *
+             * Note: This ASSUMES that all raw data is from the database,
+             *       hence the missing second parameter to makeModel().
              */
-
-            // Create a new instance of the member class using the record.
             $item = $this->getMapper()->makeModel( $item );
 
             $this->_members[$offset] = $item;
@@ -656,4 +712,42 @@ abstract class Connexions_Model_Set
         // Return the Domain Model instance
         return $item;
     }
+
+    /*************************************************************************
+     * ArrayIterator overrides :: append and sorting
+     *
+     */
+
+    /** @brief  Append a new item to the set.
+     *  @param  $item   The new Connexions_Model instance or data for the
+     *                  creation of a new instance.
+     *
+     *  @return $this for a fluent interface
+     */
+    public function append($item)
+    {
+        if (! $item instanceof Connexions_Model)
+        {
+            /* For newly appended data, find/create a representative instance
+             * (in case it's not backed data).  If we leave it as raw data,
+             * then iteration will be messed up since we assume in getItem()
+             * that all raw data is from the database.
+             */
+            $item = $this->getMapper()->getModel( $item );
+        }
+
+        array_push($this->_members, $item);
+
+        $this->_count = count( $this->_members );
+
+        return $this;
+    }
+
+    public function asort()         { return asort($this->_members); }
+    public function ksort()         { return ksort($this->_members); }
+    public function natcasesort()   { return natcasesort($this->_members); }
+    public function natsort()       { return natsort($this->_members); }
+    public function usort($cmp)     { return usort($this->_members, $cmp); }
+    public function uasort($cmp)    { return uasort($this->_members, $cmp); }
+    public function uksort($cmp)    { return uksort($this->_members, $cmp); }
 }

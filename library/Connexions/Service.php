@@ -177,34 +177,56 @@ abstract class Connexions_Service
     }
 
     /** @brief  Retrieve the mapper for this Service.
+     *  @param  mapperName  The specific mapper to retrieve.  If not provided,
+     *                      retrieve the mapper for THIS service [ null ];
      *
      *  @return The Connexions_Model_Mapper instance.
      */
-    protected function _getMapper()
+    protected function _getMapper($mapperName = null)
     {
-        if ( ! $this->_mapper instanceof Connexions_Model_Mapper )
+        if ( ($mapperName !== null) ||
+             (! $this->_mapper instanceof Connexions_Model_Mapper ) )
         {
-            $mapperName = $this->_mapper;
-            if (empty($mapperName))
+            if ($mapperName !== null)
             {
-                /* Use the model name to construct a Model Mapper
-                 * class name:
-                 *      Model_<Class> => Model_Mapper_<Class>
-                 */
-                $mapperName = str_replace('Model_', 'Model_Mapper_',
-                                          $this->_getModelName());
+                // Locate a specific mapper
+                if (strpos($mapperName, 'Model_Mapper_') === false)
+                    $name = str_replace('Model_', 'Model_Mapper_', $mapperName);
+                else
+                    $name = $mapperName;
+            }
+            else
+            {
+                // Locate the mapper for THIS service.
+                $name = $this->_mapper;
+                if (empty($name))
+                {
+                    /* Use the model name to construct a Model Mapper
+                     * class name:
+                     *      Model_<Class> => Model_Mapper_<Class>
+                     */
+                    $name = str_replace('Model_', 'Model_Mapper_',
+                                              $this->_getModelName());
+                }
             }
 
-            $this->_mapper = Connexions_Model_Mapper::factory( $mapperName );
+            $mapper = Connexions_Model_Mapper::factory( $name );
 
             /*
             Connexions::log("Connexions_Service::_getMapper(): "
                             .   "name[ %s ], mapper[ %s ]",
-                            $mapperName, get_class($this->_mapper));
+                            $name, get_class($mapper));
             // */
+
+            if ($mapperName === null)
+                $this->_mapper = $mapper;
+        }
+        else
+        {
+            $mapper = $this->_mapper;
         }
 
-        return $this->_mapper;
+        return $mapper;
     }
 
     /*********************************************************************

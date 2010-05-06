@@ -32,6 +32,18 @@ class BookmarkServiceTest extends DbTestCase
             'itemCount'     => 0,
             'tagCount'      => 0,
     );
+    protected   $_item12 = array(
+            'itemId'        => 12,
+            'url'           => 'http://www.textpattern.com/',
+            'urlHash'       => '24032aec5555f2361ebf683f9214fb0f',
+
+            'userCount'     => 1,
+            'ratingCount'   => 0,
+            'ratingSum'     => 0,
+            'userItemCount' => 0,
+            'itemCount'     => 0,
+            'tagCount'      => 0,
+    );
     protected   $_tags1 = array(
             array('tagId' =>       10,
                   'tag'   => 'ajax',
@@ -101,6 +113,20 @@ class BookmarkServiceTest extends DbTestCase
                                          'tagCount'      => 1),
             array('tagId' =>        6,
                   'tag'   => 'web2.0',
+                                         'userItemCount' => 1,
+                                         'userCount'     => 1,
+                                         'itemCount'     => 1,
+                                         'tagCount'      => 1),
+    );
+    protected   $_tagsNew = array(
+            array('tagId' =>       74,
+                  'tag'   => 'test tag 1',
+                                         'userItemCount' => 1,
+                                         'userCount'     => 1,
+                                         'itemCount'     => 1,
+                                         'tagCount'      => 1),
+            array('tagId' =>       75,
+                  'tag'   => 'test tag 2',
                                          'userItemCount' => 1,
                                          'userCount'     => 1,
                                          'itemCount'     => 1,
@@ -544,5 +570,294 @@ class BookmarkServiceTest extends DbTestCase
 
         // De-Establish User1 as the authenticated, visiting user.
         $this->_unsetAuthenticatedUser();
+    }
+
+    public function testBookmarkServiceCreateBookmark1()
+    {
+        $user = $this->_user1;
+        $item = $this->_item12;
+        $tags = $this->_tags1;
+        $tagNames = array();
+        foreach ($tags as $tag)
+        {
+            array_push($tagNames, $tag['tag']);
+        }
+
+        $user['totalTags']    =  24;
+        $user['totalItems']   +=  1;
+        $item['userCount']    +=  1;
+        $item['ratingCount']  +=  1;
+        $item['ratingSum']    +=  1;    // $expected['rating']
+
+        $expected   = array(
+            'name'          => 'TextPattern -- ideas??',
+            'description'   => 'Information about text patterns.',
+            'rating'        => 1,
+            'isFavorite'    => 0,
+            'isPrivate'     => 0,
+            'taggedOn'      => '2010-04-05 17:25:19',
+            'updatedOn'     => '2010-02-22 10:00:00',
+            'userId'        => $user['userId'],
+            'itemId'        => $item['itemId'],
+
+            'user'          => $user,
+            'item'          => $item,
+            'tags'          => $tags,
+        );
+
+        // Create a template data array for the new Bookmark
+        $template = $expected;
+        $template['tags'] = implode(', ', $tagNames);
+        unset($template['user']);
+        unset($template['item']);
+        unset($template['taggedOn']);
+        unset($template['updatedOn']);
+
+        /* Normal userId, itemId, tags settings:
+         *  userId  == userId
+         *  itemId  == itemId
+         *  tags    == comma-separated string of tags.
+         *
+         * Create the new bookmark and save it.
+         */
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $bookmark = $service->create( $template );
+        $bookmark = $bookmark->save();
+
+        //echo "Bookmark:\n", $bookmark->debugDump(), "\n";
+
+        // Adjust the dynamic values in our expected results
+        $expected['taggedOn']          = $bookmark->taggedOn;
+        $expected['updatedOn']         = $bookmark->updatedOn;
+        $expected['user']['lastVisit'] = $bookmark->user->lastVisit;
+
+        $actual = $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
+                                      Connexions_Model::FIELDS_ALL );
+
+        //echo "Expected:\n", print_r($expected, true), "\n\n";
+        //echo "Actual:\n",   print_r($actual,   true), "\n\n";
+
+        $this->assertEquals($expected, $actual );
+    }
+
+    public function testBookmarkServiceCreateBookmark2()
+    {
+        $user = $this->_user1;
+        $item = $this->_item12;
+        $tags = $this->_tags1;
+        $tagNames = array();
+        foreach ($tags as $tag)
+        {
+            array_push($tagNames, $tag['tag']);
+        }
+
+        $user['totalTags']    =  24;
+        $user['totalItems']   +=  1;
+        $item['userCount']    +=  1;
+        $item['ratingCount']  +=  1;
+        $item['ratingSum']    +=  1;    // $expected['rating']
+
+        $expected   = array(
+            'name'          => 'TextPattern -- ideas??',
+            'description'   => 'Information about text patterns.',
+            'rating'        => 1,
+            'isFavorite'    => 0,
+            'isPrivate'     => 0,
+            'taggedOn'      => '2010-04-05 17:25:19',
+            'updatedOn'     => '2010-02-22 10:00:00',
+            'userId'        => $user['userId'],
+            'itemId'        => $item['itemId'],
+
+            'user'          => $user,
+            'item'          => $item,
+            'tags'          => $tags,
+        );
+
+        // Create a template data array for the new Bookmark
+        $template = $expected;
+        $template['userId'] = $user['name'];
+        $template['itemId'] = $item['urlHash'];
+        $template['tags']   = implode(', ', $tagNames);
+        unset($template['user']);
+        unset($template['item']);
+        unset($template['taggedOn']);
+        unset($template['updatedOn']);
+
+        /*  userId  == user-name
+         *  itemId  == urlHash
+         *  tags    == comma-separated string of tags.
+         *
+         * Create the new bookmark and save it.
+         */
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $bookmark = $service->create( $template );
+        $bookmark = $bookmark->save();
+
+        //echo "Bookmark:\n", $bookmark->debugDump(), "\n";
+
+        // Adjust the dynamic values in our expected results
+        $expected['taggedOn']          = $bookmark->taggedOn;
+        $expected['updatedOn']         = $bookmark->updatedOn;
+        $expected['user']['lastVisit'] = $bookmark->user->lastVisit;
+
+        $actual = $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
+                                      Connexions_Model::FIELDS_ALL );
+
+        //echo "Expected:\n", print_r($expected, true), "\n\n";
+        //echo "Actual:\n",   print_r($actual,   true), "\n\n";
+
+        $this->assertEquals($expected, $actual );
+    }
+
+    public function testBookmarkServiceCreateBookmark3()
+    {
+        $user = $this->_user1;
+        $item = $this->_item12;
+        $tags = $this->_tags1;
+        $tagNames = array();
+        foreach ($tags as $tag)
+        {
+            array_push($tagNames, $tag['tag']);
+        }
+
+        $user['totalTags']    =  24;
+        $user['totalItems']   +=  1;
+        $item['userCount']    +=  1;
+        $item['ratingCount']  +=  1;
+        $item['ratingSum']    +=  1;    // $expected['rating']
+
+        $expected   = array(
+            'name'          => 'TextPattern -- ideas??',
+            'description'   => 'Information about text patterns.',
+            'rating'        => 1,
+            'isFavorite'    => 0,
+            'isPrivate'     => 0,
+            'taggedOn'      => '2010-04-05 17:25:19',
+            'updatedOn'     => '2010-02-22 10:00:00',
+            'userId'        => $user['userId'],
+            'itemId'        => $item['itemId'],
+
+            'user'          => $user,
+            'item'          => $item,
+            'tags'          => $tags,
+        );
+
+        // Create a template data array for the new Bookmark
+        $template = $expected;
+        $template['userId']  = $user['name'];
+        $template['itemUrl'] = $item['url'];
+        $template['tags']    = implode(', ', $tagNames);
+        unset($template['itemId']);
+        unset($template['user']);
+        unset($template['item']);
+        unset($template['taggedOn']);
+        unset($template['updatedOn']);
+
+        /*  userId  == user-name
+         *  itemId  == <unset>
+         *  itemUrl == item-url
+         *  tags    == comma-separated string of tags.
+         *
+         * Create the new bookmark and save it.
+         */
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $bookmark = $service->create( $template );
+        $bookmark = $bookmark->save();
+
+        //echo "Bookmark:\n", $bookmark->debugDump(), "\n";
+
+        // Adjust the dynamic values in our expected results
+        $expected['taggedOn']          = $bookmark->taggedOn;
+        $expected['updatedOn']         = $bookmark->updatedOn;
+        $expected['user']['lastVisit'] = $bookmark->user->lastVisit;
+
+        $actual = $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
+                                      Connexions_Model::FIELDS_ALL );
+
+        //echo "Expected:\n", print_r($expected, true), "\n\n";
+        //echo "Actual:\n",   print_r($actual,   true), "\n\n";
+
+        $this->assertEquals($expected, $actual );
+    }
+
+    public function testBookmarkServiceCreateBookmark4()
+    {
+        // Sort 'tags' by tag name
+        function sort_tags_by_name($a, $b)
+        {
+            return strcasecmp($a['tag'], $b['tag']);
+        }
+
+        $user = $this->_user1;
+        $item = $this->_item12;
+        $tags = array_merge($this->_tags1, $this->_tagsNew);
+        usort($tags, 'sort_tags_by_name');
+
+        $tagNames = array();
+        foreach ($tags as $tag)
+        {
+            array_push($tagNames, $tag['tag']);
+        }
+
+        $user['totalTags']    =  26;
+        $user['totalItems']   +=  1;
+        $item['userCount']    +=  1;
+        $item['ratingCount']  +=  1;
+        $item['ratingSum']    +=  1;    // $expected['rating']
+
+        $expected   = array(
+            'name'          => 'TextPattern -- ideas??',
+            'description'   => 'Information about text patterns.',
+            'rating'        => 1,
+            'isFavorite'    => 0,
+            'isPrivate'     => 0,
+            'taggedOn'      => '2010-04-05 17:25:19',
+            'updatedOn'     => '2010-02-22 10:00:00',
+            'userId'        => $user['userId'],
+            'itemId'        => $item['itemId'],
+
+            'user'          => $user,
+            'item'          => $item,
+            'tags'          => $tags,
+        );
+
+        // Create a template data array for the new Bookmark
+        $template = $expected;
+        $template['tags'] = implode(', ', $tagNames);
+        unset($template['user']);
+        unset($template['item']);
+        unset($template['taggedOn']);
+        unset($template['updatedOn']);
+
+        /*
+        printf ("%d incoming tags[ %s ]\n",
+                count($tags), $template['tags']);
+        // */
+
+        /* Normal userId, itemId, tags settings:
+         *  userId  == userId
+         *  itemId  == itemId
+         *  tags    == comma-separated string of tags.
+         *
+         * Create the new bookmark and save it.
+         */
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $bookmark = $service->create( $template );
+        $bookmark = $bookmark->save();
+
+        //echo "Bookmark:\n", $bookmark->debugDump(), "\n";
+
+        // Adjust the dynamic values in our expected results
+        $expected['taggedOn']          = $bookmark->taggedOn;
+        $expected['updatedOn']         = $bookmark->updatedOn;
+        $expected['user']['lastVisit'] = $bookmark->user->lastVisit;
+
+        $actual = $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
+                                      Connexions_Model::FIELDS_ALL );
+
+        //echo "Expected:\n", print_r($expected, true), "\n\n";
+        //echo "Actual:\n",   print_r($actual,   true), "\n\n";
+
+        $this->assertEquals($expected, $actual );
     }
 }
