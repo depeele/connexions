@@ -87,13 +87,18 @@ class Service_Bookmark extends Connexions_Service
      */
     public function fetchByTags($tags,
                                 $exact   = true,
-                                $order   = array('tagCount      DESC',
-                                                 'userItemCount DESC',
-                                                 'userCount     DESC',
-                                                 'taggedOn      DESC'),
+                                $order   = null,
                                 $count   = null,
                                 $offset  = null)
     {
+        if ($order === null)
+        {
+            $order   = array('tagCount      DESC',
+                             'userItemCount DESC',
+                             'userCount     DESC',
+                             'taggedOn      DESC');
+        }
+
         return $this->_getMapper()->fetchRelated( array(
                                         'tags'      => $tags,
                                         'exactTags' => $exact,
@@ -117,13 +122,18 @@ class Service_Bookmark extends Connexions_Service
      *  @return A new Model_Set_Bookmark instance.
      */
     public function fetchByUsers($users,
-                                 $order   = array('userCount     DESC',
-                                                  'userItemCount DESC',
-                                                  'tagCount      DESC',
-                                                  'taggedOn      DESC'),
+                                 $order   = null,
                                  $count   = null,
                                  $offset  = null)
     {
+        if ($order === null)
+        {
+            $order   = array('userCount     DESC',
+                             'userItemCount DESC',
+                             'tagCount      DESC',
+                             'taggedOn      DESC');
+        }
+
         return $this->_getMapper()->fetchRelated( array(
                                         'users'   => $users,
                                         'order'   => $order,
@@ -146,14 +156,19 @@ class Service_Bookmark extends Connexions_Service
      *  @return A new Model_Set_Bookmark instance.
      */
     public function fetchByItems($items,
-                                 $order   = array('itemCount     DESC',
-                                                  'userItemCount DESC',
-                                                  'userCount     DESC',
-                                                  'tagCount      DESC',
-                                                  'taggedOn      DESC'),
+                                 $order   = null,
                                  $count   = null,
                                  $offset  = null)
     {
+        if ($order === null)
+        {
+            $order   = array('itemCount     DESC',
+                             'userItemCount DESC',
+                             'userCount     DESC',
+                             'tagCount      DESC',
+                             'taggedOn      DESC');
+        }
+
         return $this->_getMapper()->fetchRelated( array(
                                         'items'   => $items,
                                         'order'   => $order,
@@ -182,14 +197,18 @@ class Service_Bookmark extends Connexions_Service
     public function fetchByUsersAndTags($users,
                                         $tags,
                                         $exactTags = true,
-                                        $order     = array(
-                                                        'userCount     DESC',
-                                                        'tagCount      DESC',
-                                                        'userItemCount DESC',
-                                                        'taggedOn      DESC'),
+                                        $order     = null,
                                         $count     = null,
                                         $offset    = null)
     {
+        if ($order === null)
+        {
+            $order     = array('userCount     DESC',
+                               'tagCount      DESC',
+                               'userItemCount DESC',
+                               'taggedOn      DESC');
+        }
+
         return $this->_getMapper()->fetchRelated( array(
                                         'users'     => $users,
                                         'tags'      => $tags,
@@ -220,13 +239,18 @@ class Service_Bookmark extends Connexions_Service
     public function fetchByItemsAndTags($items,
                                         $tags,
                                         $exact   = true,
-                                        $order   = array('itemCount     DESC',
-                                                         'tagCount      DESC',
-                                                         'userItemCount DESC',
-                                                         'taggedOn      DESC'),
+                                        $order   = null,
                                         $count   = null,
                                         $offset  = null)
     {
+        if ($order === null)
+        {
+            $order   = array('itemCount     DESC',
+                             'tagCount      DESC',
+                             'userItemCount DESC',
+                             'taggedOn      DESC');
+        }
+
         return $this->_getMapper()->fetchRelated( array(
                                         'items'     => $items,
                                         'tags'      => $tags,

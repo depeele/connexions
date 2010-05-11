@@ -3,7 +3,7 @@
  *
  *  View helper to render database profiling information in HTML.
  */
-class Connexions_View_Helper_HtmlDbProfile extends Zend_View_Helper_Abstract
+class View_Helper_HtmlDbProfile extends Zend_View_Helper_Abstract
 {
     /** @brief  Render an HTML version of database profile information.
      *

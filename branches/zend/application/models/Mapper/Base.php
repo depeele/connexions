@@ -97,35 +97,68 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
             $users =& $params['users'];
 
             if ($users instanceof Model_Set_User)
-                $subSelect->where('userId IN (?)', $users->idArray());
+            {
+                if (count($users) > 0)
+                {
+                    $subSelect->where('userId IN (?)', $users->idArray());
+                }
+            }
             else if (is_array($users))
-                $subSelect->where('userId IN (?)', $users);
+            {
+                if (count($users) > 0)
+                {
+                    $subSelect->where('userId IN (?)', $users);
+                }
+            }
             else
+            {
                 $subSelect->where('userId=?', $users);
+            }
         }
         if ( isset($params['items']) && (! empty($params['items'])) )
         {
             $items =& $params['items'];
 
             if ($items instanceof Model_Set_Item)
-                $subSelect->where('itemId IN (?)', $items->idArray());
+            {
+                if (count($items) > 0)
+                {
+                    $subSelect->where('itemId IN (?)', $items->idArray());
+                }
+            }
             else if (is_array($items))
-                $subSelect->where('itemId IN (?)', $items);
+            {
+                if (count($items) > 0)
+                {
+                    $subSelect->where('itemId IN (?)', $items);
+                }
+            }
             else
+            {
                 $subSelect->where('itemId=?', $items);
+            }
         }
         if ( isset($params['tags']) && (! empty($params['tags'])) )
         {
             $tags =& $params['tags'];
 
             if ($tags instanceof Model_Set_Tag)
-                $subSelect->where('tagId IN (?)', $tags->idArray());
+            {
+                if (count($tags) > 0)
+                {
+                    $subSelect->where('tagId IN (?)', $tags->idArray());
+                }
+            }
             else if (is_array($tags))
             {
                 if (is_int($tags[0]))
+                {
                     $subSelect->where('tagId IN (?)', $tags);
-                else
+                }
+                else if (count($tags) > 0)
+                {
                     $select->where('tag IN (?)', $tags);
+                }
             }
             else if (is_int($tags))
             {
@@ -140,7 +173,8 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                  ($params['exactTags'] !== false) )
             {
                 $nTags = count($tags);
-                $subSelect->having('tagCount='. $nTags);
+                if ($nTags > 1)
+                    $subSelect->having('tagCount='. $nTags);
             }
         }
 
@@ -159,20 +193,51 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
         if ( isset($params['where']))
             $select->where( $params['where'] );
          
-        /*
-        Connexions::log("Model_Mapper_Base[%s]::fetchRelated(): sql[ %s ]",
-                        get_class($this),
-                        $select->assemble());
-        // */
         $order  = (isset($params['order'])  ? $params['order']  : null);
         $count  = (isset($params['count'])  ? $params['count']  : null);
         $offset = (isset($params['offset']) ? $params['offset'] : null);
+
+
+        if (($count !== null) || ($offset !== null))
+        {
+            /* Connexions_Model_Mapper_DbTable will automatically generate a
+             * 'totalCount' value numbering the entire set without limits.
+             *
+             *
+             * :TODO: Optimize the count query, postpone the setting of
+             *        'totalCount' in Connexions_Model_Mapper_DbTable, and
+             *        set the 'totalCount' here.
+             */
+
+            if (count($subSelect->getPart( Zend_Db_Select::WHERE )) < 1)
+            {
+                /* Since there are no WHERE conditions in the sub-select.  It
+                 * is purly for statistics gathering and thus not needed for
+                 * counting the full result set.
+                 *
+                 * :TODO: Grab a clone of $select above, before the subSelect
+                 *        is joined to it, remove all columns, limits,
+                 *        ordering, etc., and include a simple 'COUNT(1)' to
+                 *        count the full result set.
+                 */
+            }
+        }
+
+        /*
+        Connexions::log("Model_Mapper_Base[%s]::fetchRelated(): "
+                        .   "sql[ %s ], order[ %s ], count[ %s ], offset[ %s ]",
+                        get_class($this),
+                        $select->assemble(),
+                        ($order  ? Connexions::varExport($order)  : 'null'),
+                        ($count  ? $count  : 'null'),
+                        ($offset ? $offset : 'null'));
+        // */
 
         $set    = $this->fetch($select, $order, $count, $offset);
 
         if ( isset($params['paginate']) && ($params['paginate'] !== false) )
         {
-            $result = new Zend_Paginator($set);
+            $result = new Zend_Paginator( $set->getPaginatorAdapter() );
         }
         else
         {

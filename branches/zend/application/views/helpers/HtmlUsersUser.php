@@ -4,7 +4,7 @@
  *  View helper to render a single User Item / Bookmark in HTML.
  *
  */
-class Connexions_View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
+class View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
 {
     /** @brief  Generate an HTML view of a single User Item / Bookmark.
      *  @param  user        The Model_User instance to present.

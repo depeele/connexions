@@ -5,49 +5,49 @@
  *  Item / Bookmark.
  *
  */
-class Connexions_View_Helper_FeedUserItem
-                                extends Connexions_View_Helper_UserItem
+class View_Helper_FeedBookmark
+                                extends View_Helper_Bookmark
 {
     /** @brief  Generate an Zend_Feed-compatible version of a single
      *          User Item / Bookmark.
-     *  @param  userItem    The Model_UserItem instance to present.
+     *  @param  bookmark    The Model_Bookmark instance to present.
      *
      *  @return The Zend_Feed-compatible associative array of Builder Entry
      *          information.
      */
-    public function feedUserItem(Model_UserItem $userItem)
+    public function feedBookmark(Model_Bookmark $bookmark)
     {
-        $updated    = $this->_date2time(empty($userItem->updatedOn)
-                                            ? $userItem->taggedOn
-                                            : $userItem->updatedOn);
+        $updated    = $this->_date2time(empty($bookmark->updatedOn)
+                                            ? $bookmark->taggedOn
+                                            : $bookmark->updatedOn);
         $authorLink = sprintf("<a href='%s'>%s</a>",
                               $this->_url(array('action' =>
-                                                      $userItem->user->name)),
-                              $userItem->user->fullName);
+                                                      $bookmark->user->name)),
+                              $bookmark->user->fullName);
         $localUrl  = $this->_url(array('action'  => 'url',
-                                       'urlHash' => $userItem->item->urlHash));
+                                       'urlHash' => $bookmark->item->urlHash));
 
         /* Since DOMDocument::createElement seems to insist on encoding '&',
          * and doing so incorrectly, handle it here.
          */
-        $itemUrl = htmlspecialchars(urldecode($userItem->item->url));
-        $title   = htmlentities( stripslashes($userItem->name));
+        $itemUrl = htmlspecialchars(urldecode($bookmark->item->url));
+        $title   = htmlentities( stripslashes($bookmark->name));
 
         /*
-        Connexions::log("Connexions_View_Helper_FeedUserItem:feedUserItem: "
-                        . "url[ {$userItem->item->url} ], [ {$localUrl} ]");
-        Connexions::log("Connexions_View_Helper_FeedUserItem:feedUserItem: "
+        Connexions::log("View_Helper_FeedBookmark:feedBookmark: "
+                        . "url[ {$bookmark->item->url} ], [ {$localUrl} ]");
+        Connexions::log("View_Helper_FeedBookmark:feedBookmark: "
                         . "title[ {$title} ]");
         // */
 
         $entryInfo = array(
             'title'         => $title,
             'link'          => $itemUrl,
-            'description'   => $this->getSummary($userItem->description),
+            'description'   => $this->getSummary($bookmark->description),
 
-            'author'        => $userItem->user->fullName,
+            'author'        => $bookmark->user->fullName,
             'guid'          => $localUrl,
-            'content'       => $userItem->description,
+            'content'       => $bookmark->description,
             'lastUpdate'    => $updated,
             'pubDate'       => $updated,
 
@@ -60,27 +60,27 @@ class Connexions_View_Helper_FeedUserItem
 
             // itunes
             'owner'         => array(
-                'name'  => $userItem->user->fullName,
-                'email' => $userItem->user->email,
+                'name'  => $bookmark->user->fullName,
+                'email' => $bookmark->user->email,
             ),
         );
 
         // Append additional information to the end of 'content'
         $entryInfo['content'] .= '<br />'
                               .  "Owner: {$authorEl}<br />"
-                              .  ($userItem->isPrivate  ? '' : 'Not ')
+                              .  ($bookmark->isPrivate  ? '' : 'Not ')
                               .     'Private, '
-                              .  ($userItem->isFavorite ? '' : 'Not ')
+                              .  ($bookmark->isFavorite ? '' : 'Not ')
                               .     'Favorite, '
-                              .  ($userItem->rating > 0
-                                      ? $userItem->rating
+                              .  ($bookmark->rating > 0
+                                      ? $bookmark->rating
                                       : "No")
                               .     ' Rating<br />'
                               .  'Originally tagged on: '
-                              .     $userItem->taggedOn;
+                              .     $bookmark->taggedOn;
 
         // Add each tag as a category
-        foreach ($userItem->tags as $tag)
+        foreach ($bookmark->tags as $tag)
         {
             array_push($entryInfo['category'], array('term' => $tag->tag));
         }

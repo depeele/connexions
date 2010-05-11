@@ -5,7 +5,7 @@
  *  name), sub-section name, scope items (e.g. tags), scope entry, item count
  *  all in HTML.
  */
-class Connexions_View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
+class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
 {
     /** @brief  Set-able parameters . */
     protected       $_namespace         = null;     /* To allow render() to
@@ -26,7 +26,7 @@ class Connexions_View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
     /** @brief  Render an HTML version of Item Scope.
      *  @param  paginator   The Zend_Paginator representing the items to be
      *                      presented;
-     *  @param  scopeInfo   A Connexions_Set_Info instance containing
+     *  @param  scopeInfo   A Connexions_Model_Set instance containing
      *                      information about the requested scope items
      *                      (e.g.  tags, user);
      *  @param  inputLabel  The text to present when the input box is empty;
@@ -42,7 +42,7 @@ class Connexions_View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
      *  @return The HTML representation of the Item Scope.
      */
     public function htmlItemScope(Zend_Paginator        $paginator  = null,
-                                  Connexions_Set_Info   $scopeInfo  = null,
+                                  Connexions_Model_Set  $scopeInfo  = null,
                                                         $inputLabel = '',
                                                         $inputName  = '',
                                                         $path       = null,
@@ -60,12 +60,12 @@ class Connexions_View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
      *  @param  force       Should initialization be forced even if the
      *                      auto-completion url has not yet been set? [ false ]
      *
-     *  @return Connexions_View_Helper_HtmlItemScope for a fluent interface.
+     *  @return View_Helper_HtmlItemScope for a fluent interface.
      */
     public function setNamespace($namespace, $force = false)
     {
         /*
-        Connexions::log("Connexions_View_Helper_HtmlItemScope::"
+        Connexions::log("View_Helper_HtmlItemScope::"
                             .   "setNamespace( {$namespace} )");
         // */
 
@@ -202,7 +202,7 @@ function init_<?= $namespace ?>ItemScope()
     /** @brief  Render an HTML version of Item Scope.
      *  @param  paginator   The Zend_Paginator representing the items to be
      *                      presented -- used to present the item count;
-     *  @param  scopeInfo   A Connexions_Set_Info instance containing
+     *  @param  scopeInfo   A Connexions_Model_Set instance containing
      *                      information about the requested scope items
      *                      (e.g.  tags, user);
      *  @param  inputLabel  The text to present when the input box is empty;
@@ -218,7 +218,7 @@ function init_<?= $namespace ?>ItemScope()
      *  @return The HTML representation of the Item Scope.
      */
     public function render(Zend_Paginator       $paginator,
-                           Connexions_Set_Info  $scopeInfo,
+                           Connexions_Model_Set $scopeInfo  = null,
                                                 $inputLabel = '',
                                                 $inputName  = '',
                                                 $path       = null,
@@ -268,7 +268,7 @@ function init_<?= $namespace ?>ItemScope()
         }
 
         $curScope = array();
-        if ( $scopeInfo->hasValidItems())
+        if ( $scopeInfo && (count($scopeInfo) > 0))
         {
             //$html .= "<li class='scopeItems'>"
             //      .   "<ul>";
@@ -282,11 +282,12 @@ function init_<?= $namespace ?>ItemScope()
                       // collapse white-space
             $reqUrl = preg_replace('/\s\s+/',    ' ', $reqUrl);
             $reqUrl = rtrim($reqUrl, " \t\n\r\0\x0B/");
-            $reqUrl = str_replace('/'. $scopeInfo->reqStr, '', $reqUrl);
+            $reqUrl = str_replace('/'. $scopeInfo->getSource(), '', $reqUrl);
         
             //Connexions::log("ItemScope: reqUrl[ {$reqUrl} ]");
         
-            foreach ($scopeInfo->valid as $name => $id)
+            $validList = preg_split('/\s*,\s*/', $scopeInfo->__toString());
+            foreach ($validList as $idex => $name)
             {
                 if (in_array($name, $this->_hiddenItems))
                     continue;
@@ -295,7 +296,7 @@ function init_<?= $namespace ?>ItemScope()
                  * the current) and use it to construct the URL to use for
                  * removing this item from the scope.
                  */
-                $others = array_diff($scopeInfo->validList, array($name));
+                $others = array_diff($validList, array($name));
                 $remUrl = $reqUrl .'/'. implode(',', $others);
         
                 /*
@@ -350,7 +351,7 @@ function init_<?= $namespace ?>ItemScope()
     /** @brief  Set the input label.
      *  @param  inputLabel  The label string.
      *
-     *  @return Connexions_View_Helper_HtmlItemScope for a fluent interface.
+     *  @return View_Helper_HtmlItemScope for a fluent interface.
      */
     public function setInputLabel($inputLabel)
     {
@@ -371,7 +372,7 @@ function init_<?= $namespace ?>ItemScope()
     /** @brief  Set the input field-name.
      *  @param  inputName   The name string.
      *
-     *  @return Connexions_View_Helper_HtmlItemScope for a fluent interface.
+     *  @return View_Helper_HtmlItemScope for a fluent interface.
      */
     public function setInputName($inputName)
     {
@@ -392,7 +393,7 @@ function init_<?= $namespace ?>ItemScope()
     /** @brief  Set the current "path".
      *  @param  path    An array of path information.
      *
-     *  @return Connexions_View_Helper_HtmlItemScope for a fluent interface.
+     *  @return View_Helper_HtmlItemScope for a fluent interface.
      */
     public function setPath($path)
     {
@@ -413,7 +414,7 @@ function init_<?= $namespace ?>ItemScope()
     /** @brief  Set the auto-completion URL.
      *  @param  url     The url string.
      *
-     *  @return Connexions_View_Helper_HtmlItemScope for a fluent interface.
+     *  @return View_Helper_HtmlItemScope for a fluent interface.
      */
     public function setAutoCompleteUrl($url)
     {
@@ -434,7 +435,7 @@ function init_<?= $namespace ?>ItemScope()
     /** @brief  Add a scope item that should be hidden.
      *  @param  str     The scope item (name).
      *
-     *  @return Connexions_View_Helper_HtmlItemScope for a fluent interface.
+     *  @return View_Helper_HtmlItemScope for a fluent interface.
      */
     public function addHiddenItem($str)
     {

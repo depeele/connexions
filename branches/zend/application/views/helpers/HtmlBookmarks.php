@@ -3,8 +3,7 @@
  *
  *  View helper to render a paginated set of User Items / Bookmarks in HTML.
  */
-class Connexions_View_Helper_HtmlUserItems
-                            extends Connexions_View_Helper_UserItems
+class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 {
     static public   $numericGrouping    = 10;
 
@@ -125,47 +124,45 @@ class Connexions_View_Helper_HtmlUserItems
      *                          be presented.
      *  @param  viewer          A Model_User instance representing the
      *                          current viewer;
-     *  @param  tagInfo         A Connexions_Set_Info instance containing
+     *  @param  tags            A Connexions_Model_Set instance containing
      *                          information about the requested tags;
      *  @param  style           The style to use for each item
-     *                          (Connexions_View_Helper_HtmlUserItems::
-     *                                                          STYLE_*);
+     *                          (View_Helper_HtmlBookmarks::STYLE_*);
      *  @param  sortBy          The field used to sort the items
-     *                          (Connexions_View_Helper_HtmlUserItems::
-     *                                                      SORT_BY_*);
+     *                          (View_Helper_HtmlBookmarks::SORT_BY_*);
      *  @param  sortOrder       The sort order
-     *                          (Model_UserItemSet::SORT_ORDER_ASC |
-     *                           Model_UserItemSet::SORT_ORDER_DESC)
+     *                          (Connexions_Service::SORT_DIR_ASC |
+     *                           Connexions_Service::SORT_DIR_DESC)
      *
      *  @return The HTML representation of the user items.
      */
-    public function htmlUserItems($paginator    = null,
+    public function htmlBookmarks($paginator    = null,
                                   $viewer       = null,
-                                  $tagInfo      = null,
+                                  $tags         = null,
                                   $style        = null,
                                   $sortBy       = null,
                                   $sortOrder    = null)
     {
         if ((! $paginator instanceof Zend_Paginator)                         ||
             (! $viewer    instanceof Model_User)                             ||
-            (! $tagInfo   instanceof Connexions_Set_Info))
+            (! $tags      instanceof Connexions_Model_Set))
         {
             return $this;
         }
 
-        return $this->render($paginator, $viewer, $tagInfo,
+        return $this->render($paginator, $viewer, $tags,
                              $style, $sortBy, $sortOrder);
     }
 
     /** @brief  Set the namespace, primarily for forms and cookies.
      *  @param  namespace   A string namespace.
      *
-     *  @return Connexions_View_Helper_HtmlUserItems for a fluent interface.
+     *  @return View_Helper_HtmlBookmarks for a fluent interface.
      */
     public function setNamespace($namespace)
     {
         /*
-        Connexions::log("Connexions_View_Helper_HtmlUserItems::"
+        Connexions::log("View_Helper_HtmlBookmarks::"
                             .   "setNamespace( {$namespace} )");
         // */
 
@@ -212,13 +209,13 @@ function init_GroupHeader(namespace)
  * Initialize ui elements.
  *
  */
-function init_UserItems(namespace)
+function init_Bookmarks(namespace)
 {
     var $list       = $('#'+ namespace +'List');
-    var $userItems  = $list.find('form.userItem');
+    var $bookmarks  = $list.find('form.bookmark');
 
     // Favorite
-    $userItems.find('input[name=isFavorite]').checkbox({
+    $bookmarks.find('input[name=isFavorite]').checkbox({
         css:        'connexions_sprites',
         cssOn:      'star_fill',
         cssOff:     'star_empty',
@@ -229,7 +226,7 @@ function init_UserItems(namespace)
     });
 
     // Privacy
-    $userItems.find('input[name=isPrivate]').checkbox({
+    $bookmarks.find('input[name=isPrivate]').checkbox({
         css:        'connexions_sprites',
         cssOn:      'lock_fill',
         cssOff:     'lock_empty',
@@ -240,8 +237,8 @@ function init_UserItems(namespace)
     });
 
     // Rating - average and user
-    //$userItems.find('.rating .stars .average').stars({split:2});
-    $userItems.find('.rating .stars .owner').stars();
+    //$bookmarks.find('.rating .stars .average').stars({split:2});
+    $bookmarks.find('.rating .stars .owner').stars();
 
     // Initialize any group headers
     init_GroupHeader(namespace);
@@ -275,25 +272,43 @@ function init_UserItems(namespace)
             }
 
             // Include required jQuery
-            $view->jQuery()->addOnLoad("init_UserItems('{$namespace}');");
+            $view->jQuery()->addOnLoad("init_Bookmarks('{$namespace}');");
         }
 
         return $this;
     }
 
     /** @brief  Set the current style.
-     *  @param  style   A style value (self::STYLE_*)
+     *  @param  style   A style value (self::STYLE_*) -- if an array if
+     *                  provided, it will be used as 'values' and the style
+     *                  will be set to self::STYLE_CUSTOM;
      *  @param  values  If provided, an array of field values for this style.
      *
-     *  @return Connexions_View_Helper_HtmlUserItems for a fluent interface.
+     *  @return View_Helper_HtmlBookmarks for a fluent interface.
      */
     public function setStyle($style, array $values = null)
     {
-        if ($values !== null)
+        if (is_array($style))
+        {
+            $values = $style;
+            $style  = self::STYLE_CUSTOM;
+        }
+
+        /*
+        Connexions::log("View_Helper_HtmlBookmarks::setStyle( %s, { %s } )",
+                        $style, var_export($values, true));
+        // */
+
+
+        /*
+        if (($values !== null) && (! empty($values)) )
         {
             $this->_displayOptions->setGroupValues($values);
+            if ($style === self::STYLE_CUSTOM)
+                $this->_displayOptions->setGroup($style);
         }
         else
+        */
         {
             switch ($style)
             {
@@ -308,11 +323,11 @@ function init_UserItems(namespace)
                 break;
             }
 
-            $this->_displayOptions->setGroup($style);
+            $this->_displayOptions->setGroup($style, $values);
         }
 
-        /*
-        Connexions::log('Connexions_View_Helper_HtmlUserItems::'
+        // /*
+        Connexions::log('View_Helper_HtmlBookmarks::'
                             . "setStyle({$style}) == [ "
                             .   $this->_displayOptions->getGroup() ." ]");
         // */
@@ -336,15 +351,8 @@ function init_UserItems(namespace)
      */
     public function getShowMeta()
     {
-        if (! $this->_multipleUsers)
+        if (! $this->multipleUsers)
         {
-            if (! $this->_displayOptions instanceof
-                            Connexions_View_Helper_HtmlDisplayOptions)
-            {
-                echo "<pre>\n";
-                debug_print_backtrace();
-            }
-
             /* If we're only showing information for a single user, mark 
              * 'userId' as 'hide' (not true nor false).
              */
@@ -356,7 +364,7 @@ function init_UserItems(namespace)
         $val = $this->_displayOptions->getGroupValues();
 
         /*
-        Connexions::log("Connexions_View_Helper_HtmlUserItems::"
+        Connexions::log("View_Helper_HtmlBookmarks::"
                             . "getShowMeta(): "
                             . "[ ". print_r($val, true) ." ]");
         // */
@@ -373,7 +381,7 @@ function init_UserItems(namespace)
         }
 
         /*
-        Connexions::log('Connexions_View_Helper_HtmlUserItems::'
+        Connexions::log('View_Helper_HtmlBookmarks::'
                             . 'getShowMeta(): return[ '
                             .       print_r($val, true) .' ]');
         // */
@@ -386,58 +394,56 @@ function init_UserItems(namespace)
      *                          be presented.
      *  @param  viewer          A Model_User instance representing the
      *                          current viewer;
-     *  @param  tagInfo         A Connexions_Set_Info instance containing
+     *  @param  tags            A Connexions_Model_Set instance containing
      *                          information about the requested tags;
      *  @param  style           The style to use for each item
-     *                          (Connexions_View_Helper_HtmlUserItems::
-     *                                                          STYLE_*);
+     *                          (View_Helper_HtmlBookmarks::STYLE_*);
      *  @param  sortBy          The field used to sort the items
-     *                          (Connexions_View_Helper_HtmlUserItems::
-     *                                                      SORT_BY_*);
+     *                          (View_Helper_HtmlBookmarks::SORT_BY_*);
      *  @param  sortOrder       The sort order
-     *                          (Model_UserItemSet::SORT_ORDER_ASC |
-     *                           Model_UserItemSet::SORT_ORDER_DESC)
+     *                          (Connexions_Service::SORT_DIR_ASC |
+     *                           Connexions_Service::SORT_DIR_DESC)
      *
      *  @return The HTML representation of the user items.
      */
     public function render(Zend_Paginator            $paginator,
                            Model_User                $viewer,
-                           Connexions_Set_Info       $tagInfo,
+                           Connexions_Model_Set      $tags,
                            $style        = null,
                            $sortBy       = null,
                            $sortOrder    = null)
     {
         /*
-        Connexions::log("Connexions_View_Helper_HtmlUserItems: "
+        Connexions::log("View_Helper_HtmlBookmarks: "
                             . "style[ {$style} ], "
                             . "sortBy[ {$sortBy} ], "
                             . "sortOrder[ {$sortOrder} ]");
         // */
 
-        if ($style     !== null)    $this->setStyle($style);
+        if ($style     !== null)    $this->setStyle($style );
         if ($sortBy    !== null)    $this->setSortBy($sortBy);
         if ($sortOrder !== null)    $this->setSortOrder($sortOrder);
 
         /*
-        Connexions::log("Connexions_View_Helper_HtmlUserItems: "
+        Connexions::log("View_Helper_HtmlBookmarks: "
                             . "validated to: "
                             . "style[ {$this->getStyle()} ], "
-                            . "sortBy[ {$this->_sortBy} ], "
+                            . "sortBy[ {$this->sortBy} ], "
                             . "sortByTitle[ "
-                            .       self::$sortTitles[$this->_sortBy]." ], "
-                            . "sortOrder[ {$this->_sortOrder} ], "
+                            .       self::$sortTitles[$this->sortBy]." ], "
+                            . "sortOrder[ {$this->sortOrder} ], "
                             . "sortOrderTitle[ "
-                            .       self::$orderTitles[$this->_sortOrder]." ]");
+                            .       self::$orderTitles[$this->sortOrder]." ]");
         // */
 
         $html         = "";
         $showMeta     = $this->getShowMeta();
 
         $uiPagination = $this->view->htmlPaginationControl();
-        $uiPagination->setNamespace($this->_namespace)
+        $uiPagination->setNamespace($this->namespace)
                      ->setPerPageChoices(self::$perPageChoices);
 
-        $html .= "<div id='{$this->_namespace}List'>"   // List {
+        $html .= "<div id='{$this->namespace}List'>"   // List {
               .   $uiPagination->render($paginator, 'pagination-top', true)
               .   $this->_renderDisplayOptions($paginator);
 
@@ -445,28 +451,37 @@ function init_UserItems(namespace)
         if ($nPages > 0)
         {
             /*
-            Connexions::log("Connexions_View_Helper_HtmlUserItems: "
+            Connexions::log("View_Helper_HtmlBookmarks: "
                             . "render page %d",
                             $paginator->getCurrentPageNumber());
             // */
 
-            $html .= "<ul class='{$this->_namespace}'>";
+            $html .= "<ul class='{$this->namespace}'>";
 
-            // Group by the field identified in $this->_sortBy
+            // Group by the field identified in $this->sortBy
             $lastGroup = null;
-            foreach ($paginator as $idex => $userItem)
+            foreach ($paginator as $idex => $bookmark)
             {
-                $groupVal = $userItem->{$this->_sortBy};
-                $newGroup = $this->_groupValue($this->_sortBy, $groupVal);
+                if ($bookmark === null)
+                {
+                    /* Paginator items that aren't avaialble (i.e. beyond the
+                     * end of the paginated set) are returned as null.
+                     * Therefore, the first null item indicates end-of-set.
+                     */
+                    break;
+                }
+
+                $groupVal = $bookmark->{$this->sortBy};
+                $newGroup = $this->_groupValue($this->sortBy, $groupVal);
 
                 if ($newGroup !== $lastGroup)
                 {
-                    $html      .= $this->_renderGroupHeader($this->_sortBy,
+                    $html      .= $this->_renderGroupHeader($this->sortBy,
                                                             $newGroup);
                     $lastGroup  = $newGroup;
                 }
 
-                $html .= $this->view->htmlUserItem($userItem,
+                $html .= $this->view->htmlBookmark($bookmark,
                                                    $viewer,
                                                    $showMeta,
                                                    $idex);
@@ -531,7 +546,7 @@ function init_UserItems(namespace)
 
         /*
         Connexions::log(
-            sprintf("HtmlUserItems::_groupValue(%s, %s:%s) == [ %s ]",
+            sprintf("HtmlBookmarks::_groupValue(%s, %s:%s) == [ %s ]",
                     $groupBy, $orig, gettype($orig),
                     $value));
         // */
@@ -616,7 +631,7 @@ function init_UserItems(namespace)
      */
     protected function _renderDisplayOptions($paginator)
     {
-        $namespace        = $this->_namespace;
+        $namespace        = $this->namespace;
         $itemCountPerPage = $paginator->getItemCountPerPage();
 
 
@@ -627,12 +642,16 @@ function init_UserItems(namespace)
         $html =  "<label   for='{$namespace}SortBy'>Sorted by</label>"
               .  "<select name='{$namespace}SortBy' "
               .            "id='{$namespace}SortBy' "
-              .         "class='sort-by sort-by-{$this->_sortBy} "
+              .         "class='sort-by sort-by-{$this->sortBy} "
               .                 "ui-input ui-state-default ui-corner-all'>";
+
+        Connexions::log('View_Helper_HtmlBookmarks::_renderDisplayOptions(): '
+                        .   '_sortBy[ %s ], sortOrder[ %s ]',
+                        $this->sortBy, $this->sortOrder);
 
         foreach (self::$sortTitles as $key => $title)
         {
-            $isOn = ($key == $this->_sortBy);
+            $isOn = ($key == $this->sortBy);
             $css  = 'ui-corner-all';
 
             if ($isOn)  $css .= ' option-on';
@@ -664,7 +683,7 @@ function init_UserItems(namespace)
                   .   "<input type='radio' name='{$namespace}SortOrder' "
                   .                         "id='{$namespace}SortOrder-{$key}' "
                   .                      "value='{$key}'"
-                  .          ($key == $this->_sortOrder
+                  .          ($key == $this->sortOrder
                                  ? " checked='true'" : "" ). " />"
                   .   "<label for='{$namespace}SortOrder-{$key}'>"
                   .    $title

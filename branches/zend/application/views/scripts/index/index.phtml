@@ -3,7 +3,7 @@
  *
  *  View script for IndexController::index to render the main content.
  *
- *  The Connexions_View_Helper_HtmlUserItems helper MUST be initialized
+ *  The Connexions_View_Helper_HtmlBookmarks helper MUST be initialized
  *  before this view is rendered.
  *
  *  Incoming members:
@@ -11,18 +11,64 @@
  *                          string or a Model_User instance;
  *      viewer              The Model_User instance representing the current
  *                          viewer;
- *      tagInfo             A Connexions_Set_Info instance containing
- *                          information about the requested tags;
- *
+ *      tags                A Model_Set_Tag instance containing
+ *                          information about any requested tags;
  *      paginator           A Zend_Paginator instance established for the
- *                          presentation of the current Model_UserItemSet;
+ *                          presentation of the current Model_Set_Bookmark;
+ *
+ *      namespace           The cookie/parameters/settings namespace;
+ *      style               Indicates the current presentation style -- if this
+ *                          is an array, the style is 'custom';
+ *      sortBy              Indicates the sort field used to retrieve the
+ *                          current bookmark set;
+ *      sortOrder           Indicates the sort order used to retrieve the
+ *                          current bookmark set;
  */
+
+// Prepare the HTML Bookmarks and Item Scope helpers
+$htmlBookmarks = $this->htmlBookmarks();
+$htmlBookmarks->setNamespace($this->namespace)
+              //->setPerPage($this->paginator->getItemCountPerPage());
+              ->setStyle($this->style)
+              ->setSortBy($this->sortBy)
+              ->setSortOrder($this->sortOrder);
+
+if ($this->owner === '*')
+{
+    $htmlBookmarks->setMultipleUsers();
+    $scopePath = array('Bookmarks' => $this->baseurl('/bookmarks'));
+}
+else
+{
+    $ownerStr = $this->owner->name;
+
+    $htmlBookmarks->setSingleUser();
+    $scopePath = array($ownerStr => $this->baseurl($ownerStr));
+}
+
+// And now the Item Scope helper
+$scopeQuery = array('format=json',
+                    'method=autocomplete');
+if (count($this->tags) > 0)
+{
+    array_push($scopeQuery, 'tags='. $this->tags);
+}
+
+$htmlItemScope = $this->htmlItemScope();
+$htmlItemScope->setNamespace($this->namespace)
+              ->setInputLabel('Tags')
+              ->setInputName('Tags')
+              ->setPath( $scopePath )
+              ->setAutoCompleteUrl( $this->url()
+                                    .'?'. implode('&', $scopeQuery));
+
+
 //Connexions_Profile::checkpoint('Connexions', 'IndexView begin');
 
 $baseUrl = $this->baseUrl('/'); //Connexions::url('/');
 
 $links = $this->headLink();
-$links->appendStylesheet($baseUrl .'css/userItems.css');
+$links->appendStylesheet($baseUrl .'css/bookmarks.css');
 
 ?>
 <div class='columnHeader'>
@@ -42,8 +88,8 @@ $links->appendStylesheet($baseUrl .'css/userItems.css');
     ?>
     <br />
   <?php
-    if ( $this->tagInfo->hasValidItems())
-        printf ("with tags '%s'.", $this->tagInfo->validItems);
+    if ( count($this->tags) > 0)
+        printf ("with tags '%s'.", $this->tags);
     else
         printf ("NO tags.");
   ?>
@@ -53,14 +99,19 @@ $links->appendStylesheet($baseUrl .'css/userItems.css');
 <?php
 //Connexions_Profile::checkpoint('Connexions', 'IndexView render scope');
 
-echo $this->htmlItemScope($this->paginator,
-                          $this->tagInfo);
+echo $htmlItemScope->render($this->paginator,
+                            $this->tags);
 
 //Connexions_Profile::checkpoint('Connexions', 'IndexView render items');
 
-echo $this->htmlUserItems($this->paginator,
-                          $this->viewer,
-                          $this->tagInfo);
+echo $htmlBookmarks->render($this->paginator,
+                            $this->viewer,
+                            $this->tags);
+                            /*
+                            $this->style,
+                            $this->sortBy,
+                            $this->sortOrder);
+                            */
 ?>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

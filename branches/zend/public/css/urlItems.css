@@ -64,7 +64,7 @@
 .ui-stars-wrapper .ui-stars-cancel-disabled a { background-image: none; }
 .ui-stars-wrapper .ui-stars-star-disabled, .ui-stars-wrapper .ui-stars-cancel-disabled { cursor: default; }
 
-/* ****** userItem.sass ****** */
+/* ****** bookmark.sass ****** */
 #itemsList .items, #itemsList .inboxItems, #itemsList .urlItems, #inboxItemsList .items, #inboxItemsList .inboxItems, #inboxItemsList .urlItems, #urlItemsList .items, #urlItemsList .inboxItems, #urlItemsList .urlItems { clear: both; padding-top: 2em; border-bottom: 1px solid #cccccc; }
 #itemsList .items .groupHeader, #itemsList .inboxItems .groupHeader, #itemsList .urlItems .groupHeader, #inboxItemsList .items .groupHeader, #inboxItemsList .inboxItems .groupHeader, #inboxItemsList .urlItems .groupHeader, #urlItemsList .items .groupHeader, #urlItemsList .inboxItems .groupHeader, #urlItemsList .urlItems .groupHeader { position: relative; background-color: #eeeeff; border-bottom: 1px solid #cccccc; color: #999999; height: 20px; left: -15px; }
 #itemsList .items .groupHeader .group, #itemsList .inboxItems .groupHeader .group, #itemsList .urlItems .groupHeader .group, #inboxItemsList .items .groupHeader .group, #inboxItemsList .inboxItems .groupHeader .group, #inboxItemsList .urlItems .groupHeader .group, #urlItemsList .items .groupHeader .group, #urlItemsList .inboxItems .groupHeader .group, #urlItemsList .urlItems .groupHeader .group { position: relative; background-color: #eeeeff; height: 20px; right: -20px; }

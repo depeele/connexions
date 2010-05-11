@@ -10,12 +10,12 @@
  *                          information about the requested tags;
  *
  *      paginator           A Zend_Paginator instance established for the
- *                          presentation of the current Model_UserItemSet;
+ *                          presentation of the current Model_Set_Bookmark;
  */
 $baseUrl = $this->baseUrl('/'); //Connexions::url('/');
 
 $links = $this->headLink();
-$links->appendStylesheet($baseUrl .'css/userItems.css')
+$links->appendStylesheet($baseUrl .'css/bookmarks.css')
       ->appendStylesheet($baseUrl .'css/inbox.css');
 
 $this->headTitle('inbox')
@@ -49,7 +49,7 @@ $this->headTitle('inbox')
 <?= $this->htmlItemScope($this->paginator,
                          $this->tagInfo) ?>
 
-<?= $this->htmlUserItems($this->paginator,
+<?= $this->htmlBookmarks($this->paginator,
                          $this->viewer,
                          $this->tagInfo) ?>
 

@@ -1,12 +1,12 @@
 YUI_COMP	= yuicompressor
 
 
-all: connexions.min.css userItems.min.css users.min.css 	\
+all: connexions.min.css bookmarks.min.css users.min.css 	\
 	urlItems.min.css inbox.min.css				\
  	validationForm.min.css post.min.css auth.min.css 	\
 	inbox.min.css
 
-#all: connexions.css userItems.css users.css urlItems.css inbox.css	\
+#all: connexions.css bookmarks.css users.css urlItems.css inbox.css	\
 # 	validationForm.css post.css auth.css inbox.css
 
 connexions.css: main.sass		\
@@ -26,14 +26,14 @@ connexions.css: main.sass		\
 		themes/default/jquery-ui.css
 	sass -t compact main.sass connexions.css
 
-userItems.css: mixins.sass userItems.sass userItem.sass uiStars.sass \
+bookmarks.css: mixins.sass bookmarks.sass bookmark.sass uiStars.sass \
 		colors.sass sizes.sass
-	sass -t compact userItems.sass userItems.css
+	sass -t compact bookmarks.sass bookmarks.css
 
 users.css: mixins.sass users.sass colors.sass sizes.sass
 	sass -t compact users.sass users.css
 
-urlItems.css: mixins.sass urlItems.sass userItem.sass uiStars.sass \
+urlItems.css: mixins.sass urlItems.sass bookmark.sass uiStars.sass \
 		colors.sass sizes.sass urls.sass
 	sass -t compact urlItems.sass urlItems.css
 

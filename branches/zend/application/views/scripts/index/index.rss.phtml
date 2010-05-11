@@ -13,8 +13,8 @@
 Connexions_Profile::checkpoint('Connexions',
                                'IndexView RSS rendering beginning');
 
-// Use the application/views/helpers/FeedUserItems.php view helper...
-$this->feed = $this->feedUserItems($this->paginator, 'Rss');
+// Use the application/views/helpers/FeedBookmarks.php view helper...
+$this->feed = $this->feedBookmarks($this->paginator, 'Rss');
 
 Connexions_Profile::checkpoint('Connexions',
                                'IndexView RSS rendering COMPLETE, '

@@ -1,7 +1,7 @@
 <?php
 /** @file
  *
- *  This controller controls access to UserItems / Bookmarks and is accessed
+ *  This controller controls access to Bookmarks and is accessed
  *  via the url/routes:
  *      /[ (<user> | bookmarks) [/<tag list>]]
  */
@@ -14,12 +14,10 @@ class IndexController extends Connexions_Controller_Action
 
     protected   $_url       = null;
     protected   $_owner     = null;
-    protected   $_tagInfo   = null;
-    protected   $_userItems = null;
-    protected   $_paginator = null;
+    protected   $_bookmarks = null;
 
-    protected   $_page      = null;
-    protected   $_perPage   = null;
+    protected   $_offset    = 0;
+    protected   $_count     = null;
     protected   $_sortBy    = null;
     protected   $_sortOrder = null;
 
@@ -45,7 +43,7 @@ class IndexController extends Connexions_Controller_Action
 
     /** @brief  Index/Get/Read/View action.
      *
-     *  Retrieve a set of userItems / Bookmarks based upon the requested
+     *  Retrieve a set of Bookmarks based upon the requested
      *  'owner' and/or 'tags'.
      *
      *  Once retrieved, perform further setup based upon the current
@@ -53,10 +51,14 @@ class IndexController extends Connexions_Controller_Action
      */
     public function indexAction()
     {
-        Connexions::log("IndexController::indexAction");
-
         $request  =& $this->_request;
-        $reqOwner =  $request->getParam('owner', null);
+
+        /***************************************************************
+         * Process the requested 'owner' and 'tags'
+         *
+         */
+        $reqOwner = $request->getParam('owner', null);
+        $reqTags  = $request->getParam('tags', null);
 
         /* If this is a user/"owned" area (e.g. /<userName> [/ <tags ...>]),
          * verify the validity of the requested user.
@@ -75,14 +77,6 @@ class IndexController extends Connexions_Controller_Action
             return $this->_helper->redirector($this->_viewer->name);
         }
 
-        /***************************************************************
-         * Process the requested 'owner' and 'tags'
-         *
-         */
-        $reqTags  = $request->getParam('tags', null);
-
-        $ownerIds = null;
-        $tagIds   = null;
         if ($reqOwner === '*')
         {
             $this->_owner = $reqOwner;
@@ -96,7 +90,6 @@ class IndexController extends Connexions_Controller_Action
             {
                 // A valid user
                 $this->_owner = $user;
-                $ownerIds     = array($this->_owner->userId);
             }
             // 'owner' is NOT a valid user.
             else if (empty($reqTags))   // If 'tags' are empty, user 'owner'
@@ -117,26 +110,15 @@ class IndexController extends Connexions_Controller_Action
             }
         }
 
+        Connexions::log("IndexController::indexAction: reqTags[ %s ]",
+                        $reqTags);
+
         // Parse the incoming request tags
         $this->_tags = $this->service('Tag')->csList2set($reqTags);
 
-        /*
-        $this->_tagInfo = new Connexions_Set_Info($reqTags, 'Model_Tag');
-        if ($this->_tagInfo->hasInvalidItems())
-        {
-            if (! empty($this->view->error))
-                $this->view->error .= '<br />';
-            $this->view->error .=
-                        "Invalid tag(s) [ {$this->_tagInfo->invalidItems} ]";
-        }
-        else
-        {
-            $tagIds = $this->_tagInfo->validIds;
-        }
-        // */
-
         /***************************************************************
-         * We now have a valid 'owner' (ownerIds) and 'tags' ($tagIds)
+         * We now have a valid 'owner' ($this->_owner) and
+         * 'tags' ($this->_tags)
          *
          * Adjust the URL to reflect the validated 'owner' and 'tags'
          */
@@ -149,24 +131,19 @@ class IndexController extends Connexions_Controller_Action
                         : '')
                     . '/';
 
-        /* Create the userItem set, scoped by any valid tags and possibly the
-         * owner of the area.
+        /***************************************************************
+         * Set the view variables required for all views/layouts.
+         *
          */
-        $this->_userItems = $this->service('Bookmark')
-                                    ->fetchByUsersAndTags($ownerIds,
-                                                          $this->_tags);
-
-        // Set the view variables required for all views/layouts.
         if ($this->_owner !== '*')
-            $this->view->headTitle($this->owner ."'s Bookmarks");
+            $this->view->headTitle($this->_owner ."'s Bookmarks");
         else
             $this->view->headTitle('Bookmarks');
 
         $this->view->url       = $this->_url;
         $this->view->owner     = $this->_owner;
         $this->view->viewer    = $this->_viewer;
-        $this->view->tagInfo   = $this->_tagInfo;
-        $this->view->userItems = $this->_userItems;
+        $this->view->tags      = $this->_tags;
 
         // Handle this request based on the current context / format
         $this->_handleFormat();
@@ -225,15 +202,12 @@ class IndexController extends Connexions_Controller_Action
         if (empty($format))
             $format = $this->_request->getParam('format', 'html');
 
-        /*
-        Connexions::log("IndexController::_handleFormat(): "
-                        . "format[ {$format} ]");
-        // */
+        Connexions::log("IndexController::_handleFormat: [ %s ]", $format);
 
         switch ($format)
         {
         case 'partial':
-            /* Render just PART of the page and MAY not require the userItem
+            /* Render just PART of the page and MAY not require the bookmark
              * paginator.
              *
              *  part=(content | sidebar([.:-](tags | people))? )
@@ -270,10 +244,8 @@ class IndexController extends Connexions_Controller_Action
 
         case 'rss':
         case 'atom':
-            $this->_createPaginator($this->_request);
-
             // Additional view variables for the alternate views.
-            $this->view->paginator = $this->_paginator;
+            $this->view->paginator = $this->_createPaginator($this->_request);
             $this->render('index');
 
             break;
@@ -306,7 +278,7 @@ class IndexController extends Connexions_Controller_Action
             }
 
             // Have we located a valid, backed user?
-            if ($ownerInst->isBacked())
+            if ($ownerInst !== null)
             {
                 // YES -- we've located an existing user.
 
@@ -318,52 +290,88 @@ class IndexController extends Connexions_Controller_Action
     }
 
     /** @brief  Create a paginator ($this->_paginator) for the current
-     *          userItem / Bookmark set.
-     *  @param  req         The request to retrieve parameters from.
+     *          Bookmark set.
+     *  @param  request     The request to retrieve parameters from.
      *  @param  namespace   The namespace.
      *
-     *  This will ALSO adjust the sort order for _userItems and fill in the
-     *  following members:
-     *      _paginator
-     *      _page
-     *      _perPage
-     *      _sortBy
-     *      _sortOrder
+     *  :Note: This also initializes _sortBy and _sortOrder
      *
      *  @return void
      */
-    protected function _createPaginator($req, $namespace = '')
+    protected function _createPaginator($request, $namespace = '')
     {
-        /*
+        // /*
         Connexions_Profile::checkpoint('Connexions',
                                        'IndexController::_createPaginator: '
                                        . '%s: begin',
                                        $namespace);
         // */
 
-        /* Retrieve any sort and paging parameters from the RPC request,
+        /***************************************************************
+         * Retrieve any sort and paging parameters from the RPC request,
          * falling back to helper-controlled defaults.
+         *
          */
-        $this->_page      = $req->getParam($namespace ."Page",    1);
-        $this->_perPage   = $req->getParam($namespace ."PerPage",
-                                    Connexions_View_Helper_UserItems::
-                                                $defaults['perPage']);
-        $this->_sortBy    = $req->getParam($namespace ."SortBy",
-                                    Connexions_View_Helper_UserItems::
-                                                $defaults['sortBy']);
-        $this->_sortOrder = $req->getParam($namespace ."SortOrder",
-                                    Connexions_View_Helper_UserItems::
-                                                $defaults['sortOrder']);
+        $page      = $request->getParam($namespace ."Page",    1);
+        $perPage   = $request->getParam($namespace ."PerPage");
+        $sortBy    = $request->getParam($namespace ."SortBy",
+                                        View_Helper_Bookmarks::
+                                                        $defaults['sortBy']);
+        $sortOrder = $request->getParam($namespace ."SortOrder",
+                                        View_Helper_Bookmarks::
+                                                        $defaults['sortOrder']);
 
-        /* Ensure that the final sort information is properly reflected in
-         * the source set.
-         */
-        $this->_userItems->setOrder( $this->_sortBy .' '. $this->_sortOrder );
+        if ($perPage < 1)
+            $perPage = View_Helper_Bookmarks::$defaults['perPage'];
+
+        $count   = $perPage;
+        $offset  = $count * ($page > 0 ? $page - 1 : 0);
+
+        $fetchOrder = array($sortBy .' '. $sortOrder);
+        $ownerId    = ($this->_owner === '*'
+                        ? null
+                        : $this->_owner->userId);
+
+        $this->_sortBy    = $sortBy;
+        $this->_sortOrder = $sortOrder;
+
+
+        // /*
+        Connexions::log("IndexController::_createPaginator: "
+                        .   "owner[ %s:%d ], "
+                        .   "%d tags[ %s ], "
+                        .   "page[ %d ], perPage[ %d ], "
+                        .   "offset[ %d ], count[ %d ], "
+                        .   "sortBy[ %s ], sortOrder[ %s ], "
+                        .   "fetchOrder[ %s ]",
+                        $this->_owner, $ownerId,
+                        count($this->_tags), $this->_tags,
+                        $page,   $perPage,
+                        $offset, $count,
+                        $sortBy, $sortOrder,
+                        Connexions::varExport($fetchOrder));
+        // */
+
+
+        // Grab the owner/tag related bookmarks
+        $bookmarks = $this->service('Bookmark')
+                            ->fetchByUsersAndTags($ownerId,
+                                                  $this->_tags,
+                                                  true, // exactTags
+                                                  $fetchOrder,
+                                                  $count,
+                                                  $offset);
+
+        /*
+        Connexions::log("IndexController::_createPaginator: %d/%d bookmarks",
+                        count($bookmarks), $bookmarks->getTotalCount());
+        // */
 
         // Create a paginator
-        $this->_paginator = $this->_helper->Pager($this->_userItems,
-                                                  $this->_page,
-                                                  $this->_perPage);
+        $paginator = new Zend_Paginator( $bookmarks->getPaginatorAdapter() );
+
+        $paginator->setItemCountPerPage( $perPage );
+        $paginator->setCurrentPageNumber($page );
 
         // /*
         Connexions_Profile::checkpoint('Connexions',
@@ -371,21 +379,24 @@ class IndexController extends Connexions_Controller_Action
                                        . '%s: page %d, perPage %d, '
                                        . '%d pages, %d/%d items: end',
                                        $namespace,
-                                       $this->_page, $this->_perPage,
-                                       count($this->_paginator),
-                                       $this->_paginator->getCurrentItemCount(),
-                                       count($this->_userItems));
+                                       $paginator->getCurrentPageNumber(),
+                                       $paginator->getItemCountPerPage(),
+                                       count($paginator),
+                                       $paginator->getCurrentItemCount(),
+                                       $bookmarks->getTotalCount());
         // */
+
+        return $paginator;
     }
 
     /*****************************************************
-     * Json-RPC CRUD operations for userItems / Bookmarks
+     * Json-RPC CRUD operations for Bookmarks
      *
      */
 
-    /** @brief  Given an incoming request with userItem / Bookmark creation
+    /** @brief  Given an incoming request with Bookmark creation
      *          data, validate the request and, if valid, attempt to create a
-     *          new userItem / Bookmark.
+     *          new Bookmark.
      *  @param  rpc     The incoming JsonRpc.
      *
      *  On failure/error, the rpc will have the appropriate error set.
@@ -431,43 +442,22 @@ class IndexController extends Connexions_Controller_Action
             return;
         }
 
-        // Retrieve the Model_Set_Tag instance representing the incoming tags.
-
-
         // VALID -- create and save the Bookmark.
         $bookmark = $this->service('Bookmark')
                             ->create( array(
                                 'user'      => $this->_viewer,
                                 'itemUrl'   => $itemInfo['url'],
+                                'tags'      => $itemInfo['tags'],
                             ));
 
-        // Add tags to this userItem
-        $userItem->tagsAdd($itemInfo['tags']);
-
         // Save this (new) Bookmark.
-        $userItem->save();
-
-        // 4) Update statistics
-        //    a) item  userCount, ratingCount, ratingSum;
-        $item->userCount += 1;
-        if ($userItem->rating > 0)
-        {
-            $item->ratingCount++;
-            $item->ratingSum += $useritem->rating;
-        }
-        $item->save();
-
-        // 4.b) user  totalItems, totalTags
-        $this->_viewer->totalItems++;
-        $this->_viewer->totalTags = count($this->_viewer->invalidateCache()
-                                                        ->tags);
-        $this->_viewer->save();
+        $bookmark->save();
 
         $rpc->setResult('Bookmark created.');
     }
 
-    /** @brief  Given an incoming request with userItem / Bookmark
-     *          identification data, retrieve the matching userItem / Bookmark
+    /** @brief  Given an incoming request with Bookmark
+     *          identification data, retrieve the matching Bookmark
      *          and return it.
      *  @param  rpc     The incoming JsonRpc.
      *
@@ -477,16 +467,14 @@ class IndexController extends Connexions_Controller_Action
      */
     protected function _read(Connexions_JsonRpc $rpc)
     {
-        $this->_createPaginator($rpc);
-
-        $this->view->paginator = $this->_paginator;
+        $this->view->paginator = $this->_createPaginator($rpc);
 
         $this->render('index');
     }
 
-    /** @brief  Given an incoming request with userItem / Bookmark update
+    /** @brief  Given an incoming request with Bookmark update
      *          data, validate the request and, if valid, attempt to update an
-     *          existing userItem / Bookmark.
+     *          existing Bookmark.
      *  @param  rpc     The incoming JsonRpc.
      *
      *  On failure/error, the rpc will have the appropriate error set.
@@ -506,13 +494,13 @@ class IndexController extends Connexions_Controller_Action
         }
 
         $itemInfo = array(
-            // item identifier: userItem == $this->_viewer->userId, itemId
+            // item identifier: bookmark == $this->_viewer->userId, itemId
             'itemId'        => $rpc->getParam('itemId',      null),
 
             // New item information
             'url'           => $rpc->getParam('url',         null),
 
-            // New userItem information
+            // New bookmark information
             'name'          => $rpc->getParam('name',        null),
             'description'   => $rpc->getParam('description', null),
             'tags'          => $rpc->getParam('tags',        null),
@@ -521,18 +509,20 @@ class IndexController extends Connexions_Controller_Action
             'isPrivate'     => $rpc->getParam('isPrivate',   false)
         );
 
-        // Validate and, if valid, attempt to update the usetItem / Bookmark.
+        // Validate and, if valid, attempt to update the Bookmark.
         if ($itemInfo['itemId'] === null)
         {
             $rpc->setError('Missing item identifier.');
             return;
         }
 
-        // Find the existing userItem / Bookmark
-        $userItem = new Model_UserItem( array(
-                            'userId' => $this->_viewer->userId,
-                            'itemId' => $itemInfo['itemId']) );
-        if (! $userItem->isBacked())
+        // Find the existing Bookmark
+        $bookmark = $this->service('Bookmark')
+                            ->find( array(
+                                'userId' => $this->_viewer->userId,
+                                'itemId' => $itemInfo['itemId']
+                              ));
+        if ( $bookmark === null )
         {
             // NOT found -- create instead??
             $rpc->setError('No matching bookmark found.');
@@ -547,34 +537,37 @@ class IndexController extends Connexions_Controller_Action
 
         // For all others, missing information defaults to the current value
         if (empty($itemInfo['url']))
-            $itemInfo['url'] = $userItem->item->url;
+            $itemInfo['url'] = $bookmark->item->url;
         if (empty($itemInfo['name']))
             $itemInfo['name'] = $uesrItem->name;
 
-        // Compute the normalized has for the incoming URL
+        // Compute the normalized hash for the incoming URL
         $itemInfo['urlHash'] = Connexions::md5Url($itemInfo['url']);
 
-        /* VALID -- attempt to update an existing userItem / Bookmark...
+        /*** :XXX: ***
+
+        /* VALID -- attempt to update an existing Bookmark...
          *
          *  1) Find the current item as well as the item associated with the 
          *     incoming URL;
          *  2) See if the item is changing:
          *     i)  YES - the item has changed;
-         *         a) Remove all current tags from this userItem / Bookmark;
+         *         a) Remove all current tags from this Bookmark;
          *         b) Change the itemId to the identifier of the new item;
          *     ii) No change
          *         a) Change the current set of tags for this
-         *            userItem / Bookmark;
+         *            Bookmark;
          *
-         *  3) Update full userItem / Bookmark based upon incoming data and 
+         *  3) Update full Bookmark based upon incoming data and 
          *     save it;
          */
 
         /* 1) Find the current item as well as the item associated with the 
          *    incoming URL;
          */
-        $curItem = $userItem->item;
-        $newItem = new Model_Item( $itemInfo['url'] );
+        $curItem = $bookmark->item;
+        $newItem = $this->service('Item')
+                            ->find( $itemInfo['urlHash'] );
 
         // 2) See if the item is changing...
         if ($curItem->itemId !== $newItem->itemId)
@@ -582,39 +575,39 @@ class IndexController extends Connexions_Controller_Action
             /* 2.i.a) YES - the item has changed, remove all tags associated 
              *              with the current item
              */
-            $userItem->tagsDelete();
+            $bookmark->tagsDelete();
 
             if (! $newItem->isBacked())
                 // Save the new item
                 $newItem->save();
 
             // 2.i.b) Change the itemId to the identifier of the new item;
-            $userItem->itemId = $newItem->itemId;
+            $bookmark->itemId = $newItem->itemId;
         }
         else
         {
             /* 2.ii.a) NO - the item is unchanged, change the current set of 
              *              tags for this
              */
-            $userItem->tagsUpdate($itemInfo['tags']);
+            $bookmark->tagsUpdate($itemInfo['tags']);
         }
 
-        // 3) Update full userItem / Bookmark based upon incoming data and save 
+        // 3) Update full Bookmark based upon incoming data and save 
         //    it;
-        $userItem->name        = $itemInfo['name'];
-        $userItem->description = $itemInfo['description'];
-        $userItem->rating      = $itemInfo['rating'];
-        $userItem->isFavorite  = $itemInfo['isFavorite'];
-        $userItem->isPrivate   = $itemInfo['isPrivate'];
+        $bookmark->name        = $itemInfo['name'];
+        $bookmark->description = $itemInfo['description'];
+        $bookmark->rating      = $itemInfo['rating'];
+        $bookmark->isFavorite  = $itemInfo['isFavorite'];
+        $bookmark->isPrivate   = $itemInfo['isPrivate'];
 
-        $userItem->save();
+        $bookmark->save();
 
         $rpc->setResult('Bookmark Updated');
     }
 
-    /** @brief  Given incoming userItem / Bookmark identification information,
+    /** @brief  Given incoming Bookmark identification information,
      *          validate the request and, if valid, attempt to delete an
-     *          existing userItem / Bookmark.
+     *          existing bookmark.
      *  @param  rpc     The incoming JsonRpc.
      *
      *  On failure/error, the rpc will have the appropriate error set.
@@ -635,40 +628,40 @@ class IndexController extends Connexions_Controller_Action
 
         $itemId = $rpc->getParam('itemId',      null);
 
-        // Validate and, if valid, attempt to delete the userItem / Bookmar.
+        // Validate and, if valid, attempt to delete the bookmark / Bookmar.
         if (empty($itemInfo['itemId']))
         {
             $rpc->setError('Missing item identifier.');
             return;
         }
 
-        // Find the existing userItem / Bookmark
-        $userItem = new Model_UserItem( array(
+        // Find the existing Bookmark
+        $bookmark = new Model_Bookmark( array(
                             'userId' => $this->_viewer->userId,
                             'itemId' => $itemInfo['itemId']) );
-        if (! $userItem->isBacked())
+        if (! $bookmark->isBacked())
         {
             // NOT found
             $rpc->setError('No matching bookmark found.');
             return;
         }
 
-        /* VALID -- attempt to delete this existing userItem / Bookmark...
+        /* VALID -- attempt to delete this existing Bookmark...
          *
-         *  1) Remove all current tags from this userItem / Bookmark;
-         *  2) Delete the useritem / Bookmark;
+         *  1) Remove all current tags from this Bookmark;
+         *  2) Delete the Bookmark;
          *  3) Notify related models of this update;
          */
-        $rating  = $userItem->rating;
-        $curItem = $userItem->item;
+        $rating  = $bookmark->rating;
+        $curItem = $bookmark->item;
 
-        // 1) Remove all current tags from this userItem / Bookmark;
-        $userItem->tagsDelete();
+        // 1) Remove all current tags from this Bookmark;
+        $bookmark->tagsDelete();
 
-        // 2) Delete the useritem / Bookmark;
-        if (! $userItem->delete())
+        // 2) Delete the Bookmark;
+        if (! $bookmark->delete())
         {
-            $rpc->setError( $userItem->getError() );
+            $rpc->setError( $bookmark->getError() );
             return;
         }
 
@@ -694,22 +687,22 @@ class IndexController extends Connexions_Controller_Action
 
         if ($request->isPost())
         {
-            // Create a new userItem / Bookmark
+            // Create a new Bookmark
             $defMethod = 'create';
         }
         else if ($request->isPut())
         {
-            // Update an existing userItem / Bookmark
+            // Update an existing Bookmark
             $defMethod = 'update';
         }
         else if ($request->isDelete())
         {
-            // Delete an existing userItem / Bookmark
+            // Delete an existing Bookmark
             $defMethod = 'delete';
         }
         else // $request->isGet()
         {
-            // Read an existing userItem / Bookmark
+            // Read an existing Bookmark
             $defMethod = 'read';
         }
 
@@ -748,10 +741,10 @@ class IndexController extends Connexions_Controller_Action
         case 'autocomplete':
             /* Autocompletion callback for tag entry
              *
-             * Locate all tags associated with the current userItems that
+             * Locate all tags associated with the current bookmarks that
              * also match the beginning of the completion string.
              */
-            $tagSet = $this->_userItems->getRelatedSet('tags');
+            $tagSet = $this->_bookmarks->getRelatedSet('tags');
 
             // Retrieve the term we're supposed to match
             $like = $rpc->getParam('term', $rpc->getParam('q', null));
@@ -786,9 +779,9 @@ class IndexController extends Connexions_Controller_Action
     /** @brief  Generate HTML for the primary body/content based upon the
      *          incoming request.
      *
-     *  This will create a 'paginator' for the previously created _userItems
-     *  set, initialize the Connexions_View_Helper_HtmlUserItems and
-     *  Connexions_View_Helper_HtmlItemScope view helpers, and populate any
+     *  This will create a 'paginator' for the previously created _bookmarks
+     *  set, initialize the View_Helper_HtmlBookmarks and
+     *  View_Helper_HtmlItemScope view helpers, and populate any
      *  additional view variables all based upon the incoming request.
      */
     protected function _htmlContent()
@@ -797,7 +790,7 @@ class IndexController extends Connexions_Controller_Action
 
         /* Prepare for rendering the main view.
          *
-         * Notify the HtmlUserItems View Helper (used to render the main view)
+         * Notify the HtmlBookmarks View Helper (used to render the main view)
          * of any incoming settings, allowing it establish any required
          * defaults.
          */
@@ -806,82 +799,19 @@ class IndexController extends Connexions_Controller_Action
         $itemsStyleCustom = $request->getParam($prefix."OptionGroups_option",
                                                                         null);
 
+        /*
+        Connexions::log('IndexController::_htmlContent(): '
+                        .   'itemsStyle[ %s ], options[ %s ]',
+                        $itemsStyle, Connexions::varExport($itemsStyleCustom));
+        // */
+
+        if ( ($itemsStyle === 'custom') && (is_array($itemsStyleCustom)) )
+            $itemsStyle = $itemsStyleCustom;
+
         /* Generate a paginator for the requested item set.  This will also
-         * initialize '_page, '_perPage', '_sortBy', and '_sortOrder'
+         * initialize '_page, '_perPage', and '_sortOrder'
          */
-        $this->_createPaginator($request, $prefix);
-
-        /*
-        Connexions::log('IndexController::'
-                            . 'prefix [ '. $prefix .' ], '
-                            . "    PerPage        [ {$this->_perPage} ],\n"
-                            . "    Page           [ {$this->_page} ],\n"
-                            . "    SortBy         [ {$this->_sortBy} ],\n"
-                            . "    SortOrder      [ {$this->_sortOrder} ],\n"
-                            . "    Style          [ {$itemsStyle} ],\n"
-                            . "    StyleCustom    [ "
-                            .           print_r($itemsStyleCustom, true) .' ]');
-        // */
-
-        // Initialize the Connexions_View_Helper_HtmlUserItems helper...
-        $uiHelper = $this->view->htmlUserItems();
-        $uiHelper->setNamespace($prefix)
-                 ->setPerPage($this->_perPage)
-                 ->setSortBy($this->_sortBy)
-                 ->setSortOrder($this->_sortOrder);
-        if (is_array($itemsStyleCustom))
-            $uiHelper->setStyle(Connexions_View_Helper_HtmlUserItems
-                                                            ::STYLE_CUSTOM,
-                                $itemsStyleCustom);
-        else
-            $uiHelper->setStyle($itemsStyle);
-
-        /*
-        Connexions_Profile::checkpoint('Connexions',
-                                       'IndexController::_htmlContent: '
-                                       . 'HtmlUserItems helper initialized');
-        // */
-
-        /**************************************************/
-
-
-        // Set Scope information
-        $scopeParts  = array('format=json',
-                             'method=autocomplete');
-        $scopePath   = array();
-        if ($this->_owner === '*')
-        {
-            // Multiple / all users
-            $uiHelper->setMultipleUsers();
-
-            $scopePath = array('Bookmarks' =>
-                                    $this->view->baseUrl('/bookmarks'));
-        }
-        else
-        {
-            // Single user
-            $ownerStr = (String)$this->_owner;
-
-            $uiHelper->setSingleUser();
-
-            $scopePath = array($ownerStr => $this->view->baseUrl($ownerStr));
-
-            array_push($scopeParts, 'owner='. $ownerStr);
-        }
-
-        if ($this->_tagInfo->hasValidItems())
-        {
-            array_push($scopeParts, 'tags='. $this->_tagInfo->validItems);
-        }
-
-        $scopeCbUrl  = $this->view->url() .'?'. implode('&', $scopeParts);
-
-        $scopeHelper = $this->view->htmlItemScope();
-        $scopeHelper->setNamespace($prefix)
-                    ->setInputLabel('Tags')
-                    ->setInputName( 'tags')
-                    ->setPath( $scopePath )
-                    ->setAutoCompleteUrl( $scopeCbUrl );
+        $paginator = $this->_createPaginator($request, $prefix);
 
         /*
         Connexions_Profile::checkpoint('Connexions',
@@ -891,12 +821,16 @@ class IndexController extends Connexions_Controller_Action
 
 
         // Additional view variables for the HTML view.
-        $this->view->paginator = $this->_paginator;
+        $this->view->namespace    = $prefix;
+        $this->view->style        = $itemsStyle;
+        $this->view->sortBy       = $this->_sortBy;
+        $this->view->sortOrder    = $this->_sortOrder;
+        $this->view->paginator    = $paginator;
 
         /* The default view script (views/scripts/index/index.phtml) will
          * render this main view
          */
-        /*
+        // /*
         Connexions_Profile::checkpoint('Connexions',
                                        'IndexController::_htmlContent: '
                                        . 'view initialized and '
@@ -916,6 +850,8 @@ class IndexController extends Connexions_Controller_Action
     protected function _htmlSidebar($usePlaceholder = true,
                                     $part           = null)
     {
+        return;
+
         if (($part === null) || ($part === 'tags'))
         {
             $this->_htmlSidebar_prepareTags();
@@ -954,8 +890,8 @@ class IndexController extends Connexions_Controller_Action
 
     }
 
-    /** @brief  Create a set of tags related to the current userItems and
-     *          prepare the Connexions_View_Helper_HtmlItemCloud view helper to
+    /** @brief  Create a set of tags related to the current bookmarks and
+     *          prepare the View_Helper_HtmlItemCloud view helper to
      *          render them.
      */
     protected function _htmlSidebar_prepareTags()
@@ -964,13 +900,13 @@ class IndexController extends Connexions_Controller_Action
 
         /* Create the tagSet that will be presented in the side-bar:
          *      All tags used by all users/items contained in the current
-         *      userItem / bookmark set.
+         *      bookmark / bookmark set.
          *
          *  $tagSet = new Model_TagSet( $this->_userSet->userIds(),
          *                              $this->_userSet->itemIds() );
          */
-        $tagSet = $this->_userItems
-                            ->getRelatedSet(Connexions_Set::RELATED_TAGS);
+        $this->_tags = $this->service('Tag')->csList2set($reqTags);
+        $tagSet = $this->service('Tag')->fetchByBookmarks($this->_bookmarks);
         if ($this->_owner === '*')
             $tagSet->withAnyUser();
 
@@ -990,18 +926,18 @@ class IndexController extends Connexions_Controller_Action
         $tagsSortOrder      = $request->getParam($prefix."SortOrder",   null);
         $tagsStyle          = $request->getParam($prefix."OptionGroup", null);
 
-        // Initialize the Connexions_View_Helper_HtmlItemCloud helper...
+        // Initialize the View_Helper_HtmlItemCloud helper...
         $cloudHelper = $this->view->htmlItemCloud();
         $cloudHelper->setNamespace($prefix)
                     ->setStyle($tagsStyle)
-                    ->setItemType(Connexions_View_Helper_HtmlItemCloud::
+                    ->setItemType(View_Helper_HtmlItemCloud::
                                                             ITEM_TYPE_TAG)
                     ->setSortBy($tagsSortBy)
                     ->setSortOrder($tagsSortOrder)
                     ->setPerPage($tagsPerPage)
                     ->setHighlightCount($tagsHighlightCount)
                     ->setItemSet($tagSet)
-                    ->setItemSetInfo($this->_tagInfo)
+                    ->setItemSetInfo($this->_tags)
                     ->setItemBaseUrl( ($this->_owner !== '*'
                                         ? null
                                         : '/bookmarks'));

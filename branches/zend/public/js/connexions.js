@@ -8,10 +8,25 @@
 (function($) {
     function init_log()
     {
+        $.log = function(fmt) {
+            if ((window.console !== undefined) &&
+                $.isFunction(window.console.log))
+            {
+                var msg = fmt;
+                for (var idex = 1; idex < arguments.length; idex++)
+                {
+                    msg = msg.replace(/%s/, arguments[idex]);
+                }
+                window.console.log(msg);
+            }
+        };
+
+        /*
         $.log = ((window.console !== undefined) &&
                  $.isFunction(window.console.log)
                     ?  window.console.log
                     : function() {});
+        */
 
         $.log("Logging enabled");
     }

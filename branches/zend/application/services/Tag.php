@@ -18,55 +18,67 @@ class Service_Tag extends Connexions_Service
      */
     public function csList2set($csList, $create = false)
     {
-        $names = preg_split('/\s*,\s*/', strtolower($csList));
+        $names = (empty($csList)
+                    ? array()
+                    : preg_split('/\s*,\s*/', strtolower($csList)) );
 
-        /*
+        // /*
         Connexions::log("Service_Tag::csList2set( [ %s ], %screate ): "
-                        .   "names[ %s ]",
+                        .   "%snames[ %s ]",
                         $csList, ($create ? '' : 'DO_NOT '),
+                        (empty($names) ? "empty " : count($names) .' '),
                         implode(', ', $names));
         // */
 
-        $set = $this->_getMapper()->fetchBy('tag', $names, 'tag ASC');
-        if ($create)
+        if (empty($names))
         {
-            /* See if any of the request tags we not found...
-             *
-             * First, flip the array so it's keyed by tagName.
-             */
-            $names = array_flip($names);
+            $set = $this->_getMapper()->makeEmptySet();
+        }
+        else
+        {
+            $set = $this->_getMapper()->fetchBy('tag', $names, 'tag ASC');
+            $set->setSource($csList);
 
-            // Remove all tags that we successfully retrieved
-            foreach ($set as $tag)
+            if ($create)
             {
-                unset($names[ $tag->tag ]);
-            }
-
-            if (count($names) > 0)
-            {
-                /*
-                Connexions::log("Service_Tag::csList2set(): "
-                                .   "create %d tags [ %s ]",
-                                count($names),
-                                implode(', ', array_keys($names)));
-                // */
-
-                /* There is one or more tag that does not yet exist.
+                /* See if any of the request tags we not found...
                  *
-                 * Create all that are missing, adding them to the set.
+                 * First, flip the array so it's keyed by tagName.
                  */
-                $tMapper = $this->_getMapper('Model_Mapper_Tag');
-                foreach ($names as $tagName => $idex)
+                $names = array_flip($names);
+
+                // Remove all tags that we successfully retrieved
+                foreach ($set as $tag)
                 {
-                    $tag = $tMapper->getModel( array('tag' => $tagName) );
-                    if ($tag !== null)
-                    {
-                        $tag = $tag->save();
-                        $set->append($tag);
-                    }
+                    unset($names[ $tag->tag ]);
                 }
 
-                $set->usort('Service_Tag::sort_by_tag');
+                if (count($names) > 0)
+                {
+                    /*
+                    Connexions::log("Service_Tag::csList2set(): "
+                                    .   "create %d tags [ %s ]",
+                                    count($names),
+                                    implode(', ', array_keys($names)));
+                    // */
+
+                    /* There is one or more tag that does not yet exist.
+                     *
+                     * Create all that are missing, adding them to the set.
+                     */
+                    $tMapper = $this->_getMapper('Model_Mapper_Tag');
+                    foreach ($names as $tagName => $idex)
+                    {
+                        $tag = $tMapper->getModel( array('tag' => $tagName) );
+                        if ($tag !== null)
+                        {
+                            $tag = $tag->save();
+                            $set->append($tag);
+                        }
+                    }
+
+                    $set->usort('Service_Tag::sort_by_tag');
+                }
             }
         }
 

@@ -38,16 +38,13 @@
  *                                                            ArrayAccess,
  *                                                            SeekableIterator
  *
- *  Zend_Paginator_Adapter_Interface                        : Countable
- *                      getItems
- *
  */
 abstract class Connexions_Model_Set
                             extends    ArrayIterator
                             implements Countable,
                                        ArrayAccess,
                                        SeekableIterator,
-                                       Zend_Paginator_Adapter_Interface
+                                       Zend_Paginator_AdapterAggregate
 {
     /** @brief  The name of the Model class for members of this set. */
     protected   $_modelName         = null;
@@ -57,6 +54,13 @@ abstract class Connexions_Model_Set
 
     /** @brief  Total number of records. */
     protected   $_count             = null;
+    protected   $_totalCount        = null; // If this is only PART of the set
+    protected   $_offset            = 0;    // If this is only PART of the set
+
+    /** @brief  If this set was generated from a source (string), the original
+     *          source may be set via setSource() and will be stored here.
+     */
+    protected   $_source            = null;
 
     /** @brief  Begins as the raw data for each row, when retrieved, intantiate
      *          a Model instance to replace the raw row data entry.
@@ -90,6 +94,10 @@ abstract class Connexions_Model_Set
      *                                  This may differ from $this->count() if
      *                                  a limit was specified on fetch that
      *                                  retrieve the underlying data;
+     *
+     *                      offset      The offset within the total set of
+     *                                  matching records that this (sub)set
+     *                                  begins [ 0 ];
      *
      *                      results     The array of raw data, one entry per
      *                                  member;
@@ -277,6 +285,29 @@ abstract class Connexions_Model_Set
         return $this->_totalCount;
     }
 
+    /** @brief  Set the offset within the total set of matching records that
+     *          this (sub)set begins.
+     *  @param  offset      The offset.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function setOffset($offset)
+    {
+        $this->_offset = $offset;
+
+        return $this;
+    }
+
+    /** @brief  Retrieve the offset of this (sub)set from within the total set
+     *          of matching records.
+     *
+     *  @return The offset.
+     */
+    public function getOffset()
+    {
+        return $this->_offset;
+    }
+
     /** @brief  Set the name of the Domain Model class instantiated for each 
      *          returned member of this set.
      *  @param  name    The mane of the Domain Model class.
@@ -313,6 +344,27 @@ abstract class Connexions_Model_Set
         }
 
         return $this->_modelName;
+    }
+
+    /** @brief  Establish the source (string) used to generate this set.
+     *  @param  source  The source (string).
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function setSource($source)
+    {
+        $this->_source = $source;
+
+        return $this;
+    }
+
+    /** @brief  Retrieve any source (string) for this set.
+     *
+     *  @return The source string (null if none).
+     */
+    public function getSource()
+    {
+        return $this->_source;
     }
 
     /*************************************************************************
@@ -626,7 +678,21 @@ abstract class Connexions_Model_Set
     }
 
     /*************************************************************************
-     * Zend_Paginator_Adapter_Interface (extends Countable)
+     * Zend_Paginator_AdapterAggregate Interface
+     *
+     */
+
+    /** @brief  Retrieve a Zend_Paginator adapter for this set.
+     *  
+     *  @return Connexions_Model_Set_Adapter_Paginator
+     */
+    public function getPaginatorAdapter()
+    {
+        return new Connexions_Model_Set_Adapter_Paginator( $this );
+    }
+
+    /*************************************************************************
+     * Support Zend_Paginator_Adapter_Interface
      *
      */
 

@@ -170,8 +170,9 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
 
         /*
         Connexions::log("Connexions_Auth_Abstract::_matchUser(%s, %s): "
-                        . "found Model_User: useId[ %d ], name[%s ]",
-                        $identity, $credential, $user->userId, $user->name);
+                        . "found Model_User: useId[ %d ], name[%s ], [ %s ]",
+                        $identity, $credential, $user->userId, $user->name,
+                        $user->debugDump());
         // */
 
         /**********************************************************
@@ -195,7 +196,7 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
         $this->_user     = $user;
         $this->_userAuth = $userAuth;
 
-        $this->_setResult(self::SUCCESS);
+        $this->_setResult(self::SUCCESS, $user);
 
         return true;
     }

@@ -21,8 +21,8 @@ abstract class Connexions_Service
     // A cache of Data Accessor instances, by class name
     static protected    $_instCache     = array();
 
-    const   ORDER_ASC       = 'ASC';
-    const   ORDER_DESC      = 'DESC';
+    const   SORT_DIR_ASC    = 'ASC';
+    const   SORT_DIR_DESC   = 'DESC';
 
     /** @brief  Create a new, unbacked Domain Model instance.
      *  @param  data    An array of name/value pairs used to initialize the
@@ -63,9 +63,9 @@ abstract class Connexions_Service
      *  @param  order       An array of name/direction pairs representing the
      *                      desired sorting order.  The 'name's MUST be valid
      *                      for the target Domain Model and the directions a
-     *                      Connexions_Service::ORDER_* constant.  If an order
-     *                      is omitted, Connexions_Service::ORDER_ASC will be
-     *                      used [ no specified order ];
+     *                      Connexions_Service::SORT_DIR_* constant.  If an
+     *                      order is omitted, Connexions_Service::SORT_DIR_ASC
+     *                      will be used [ no specified order ];
      *  @param  count       The maximum number of items from the full set of
      *                      matching items that should be returned
      *                      [ null == all ];
@@ -91,12 +91,12 @@ abstract class Connexions_Service
                 if (is_int($name))
                 {
                     $name      = $direction;
-                    $direction = self::ORDER_ASC;
+                    $direction = self::SORT_DIR_ASC;
                 }
                 else
                 {
-                    if ($direction !== self::ORDER_DESC)
-                        $direction = self::ORDER_ASC;
+                    if ($direction !== self::SORT_DIR_DESC)
+                        $direction = self::SORT_DIR_ASC;
                 }
 
                 $newOrder[$name] = $direction;
@@ -116,9 +116,9 @@ abstract class Connexions_Service
      *  @param  order       An array of name/direction pairs representing the
      *                      desired sorting order.  The 'name's MUST be valid
      *                      for the target Domain Model and the directions a
-     *                      Connexions_Service::ORDER_* constant.  If an order
-     *                      is omitted, Connexions_Service::ORDER_ASC will be
-     *                      used [ no specified order ];
+     *                      Connexions_Service::SORT_DIR_* constant.  If an
+     *                      order is omitted, Connexions_Service::SORT_DIR_ASC
+     *                      will be used [ no specified order ];
      *
      *  @return A new Connexions_Model_Set.
      */
@@ -126,7 +126,7 @@ abstract class Connexions_Service
                                    $order     = null)
     {
         $set = $this->_getMapper()->fetch( $criteria, $order );
-        return new Zend_Paginator( $set );
+        return new Zend_Paginator( $set->getPaginatorAdapter() );
     }
                                       
     /** @brief  Initiate an update of the provided Domain Model instance.

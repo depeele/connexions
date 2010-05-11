@@ -4,7 +4,7 @@
  *  View helper to generae a Zend_Feed for a set of User Items / Bookmarks.
  *
  */
-class Connexions_View_Helper_FeedUserItems
+class View_Helper_FeedBookmarks
                                 extends Zend_View_Helper_Abstract
 {
     /** @brief  Generate a Zend_Feed version of a paginated set of User Items
@@ -16,11 +16,11 @@ class Connexions_View_Helper_FeedUserItems
      *
      *  @return The Zend_Feed representation of the user items, or $this.
      */
-    public function feedUserItems(Zend_Paginator    $paginator  = null,
+    public function feedBookmarks(Zend_Paginator    $paginator  = null,
                                                     $type       = 'Atom')
     {
         /*
-        Connexions::log("Connexions_View_Helper_FeedUserItems::feedUserItems: "
+        Connexions::log("View_Helper_FeedBookmarks::feedBookmarks: "
                         . "type[ {$type} ]");
         // */
 
@@ -61,7 +61,7 @@ class Connexions_View_Helper_FeedUserItems
         );
 
         /*
-        Connexions::log("Connexions_View_Helper_FeedUserItems::_genFeed: "
+        Connexions::log("View_Helper_FeedBookmarks::_genFeed: "
                         . "type[ {$type} ], "
                         .   "main info[ ". print_r($feedInfo, true) ." ]");
         // */
@@ -69,7 +69,7 @@ class Connexions_View_Helper_FeedUserItems
         foreach ($paginator as $item)
         {
             array_push($feedInfo['entries'],
-                       $view->feedUserItem($item));
+                       $view->feedBookmark($item));
         }
 
         $feed = Zend_Feed::importArray($feedInfo, $type);
