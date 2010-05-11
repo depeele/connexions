@@ -3,7 +3,7 @@
  *
  *  View helper to render a paginated set of User Items / Bookmarks in HTML.
  */
-class Connexions_View_Helper_HtmlPaginationControl
+class View_Helper_HtmlPaginationControl
                                     extends Zend_View_Helper_Abstract
 {
     public static   $marker             = array(
@@ -32,13 +32,13 @@ class Connexions_View_Helper_HtmlPaginationControl
     /** @brief  Set the namespace, primarily for forms and cookies.
      *  @param  namespace   A string prefix.
      *
-     *  @return Connexions_View_Helper_HtmlPaginationControl
+     *  @return View_Helper_HtmlPaginationControl
      *              for a fluent interface.
      */
     public function setNamespace($namespace)
     {
         /*
-        Connexions::log("Connexions_View_Helper_HtmlPaginationControl::"
+        Connexions::log("View_Helper_HtmlPaginationControl::"
                             . "setNamespace( {$namespace} )");
         // */
 
@@ -135,7 +135,7 @@ function init_<?= $namespace ?>PaginationControls()
      *  @param  excludeInfo     Should paging information be excluded [false].
      *
      *  @return The HTML representation of the pagination control or
-     *          Connexions_View_Helper_HtmlPaginationControl.
+     *          View_Helper_HtmlPaginationControl.
      */
     public function htmlPaginationControl(Zend_Paginator    $paginator  = null,
                                           $cssClassExtra    = null,
@@ -144,7 +144,7 @@ function init_<?= $namespace ?>PaginationControls()
         if ($paginator === null)    //! $paginator instanceof Zend_Paginator )
         {
             /*
-            Connexions::log("Connexions_View_Helper_HtmlPaginationControl:: "
+            Connexions::log("View_Helper_HtmlPaginationControl:: "
                                 . "return instance");
             // */
 

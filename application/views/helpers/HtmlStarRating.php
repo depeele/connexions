@@ -7,7 +7,7 @@
  *      count       [ 5 ]
  *      starWidth   [ 16 ]
  */
-class Connexions_View_Helper_HtmlStarRating extends Zend_View_Helper_Abstract
+class View_Helper_HtmlStarRating extends Zend_View_Helper_Abstract
 {
     public static   $ratingTitles   = array('Terrible',
                                             'Fair',
@@ -56,7 +56,7 @@ class Connexions_View_Helper_HtmlStarRating extends Zend_View_Helper_Abstract
         }
 
         /*
-        Connexions::log("Connexions_View_Helper_HtmlStarRating: "
+        Connexions::log("View_Helper_HtmlStarRating: "
                         . "rating[ %f ], onCount[ %d ], "
                         . "useSplits[ %s ], readOnly[ %s ] -->",
                         $rating, $onCount,
@@ -77,7 +77,7 @@ class Connexions_View_Helper_HtmlStarRating extends Zend_View_Helper_Abstract
         if (! $readOnly)
         {
             /*
-            Connexions::log("Connexions_View_Helper_HtmlStarRating: "
+            Connexions::log("View_Helper_HtmlStarRating: "
                             . "render cancel");
             // */
 
@@ -101,7 +101,7 @@ class Connexions_View_Helper_HtmlStarRating extends Zend_View_Helper_Abstract
                         : $containerTitle); //($rdex + 1) );
 
             /*
-            Connexions::log("Connexions_View_Helper_HtmlStarRating: "
+            Connexions::log("View_Helper_HtmlStarRating: "
                             . "render on #{$rdex}, title[ {$title} ]");
             // */
 
@@ -125,7 +125,7 @@ class Connexions_View_Helper_HtmlStarRating extends Zend_View_Helper_Abstract
             $onOffset  = $onCount * $split;
 
             /*
-            Connexions::log("Connexions_View_Helper_HtmlStarRating: "
+            Connexions::log("View_Helper_HtmlStarRating: "
                             . "render split [ {$sRating} ]");
             // */
 
@@ -161,7 +161,7 @@ class Connexions_View_Helper_HtmlStarRating extends Zend_View_Helper_Abstract
                         : $containerTitle); //($rdex + 1) );
 
             /*
-            Connexions::log("Connexions_View_Helper_HtmlStarRating: "
+            Connexions::log("View_Helper_HtmlStarRating: "
                             . "render off #{$rdex}, title[ {$title} ]");
             // */
 

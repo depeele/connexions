@@ -3,7 +3,7 @@
  *
  *  View helper to render a single User within an HTML item cloud.
  */
-class Connexions_View_Helper_HtmlItemCloudUser
+class View_Helper_HtmlItemCloudUser
                     extends Zend_Tag_Cloud_Decorator_HtmlTag
 {
     /** @brief  Render an HTML version of a single user item.
@@ -14,7 +14,7 @@ class Connexions_View_Helper_HtmlItemCloudUser
      */
     public function render(Zend_Tag_ItemList $users)
     {
-        //Connexions::log("Connexions_View_Helper_HtmlItemCloudUser:"
+        //Connexions::log("View_Helper_HtmlItemCloudUser:"
         //                          . "render...");
 
         if (($weightValues = $this->getClassList()) === null)
@@ -37,7 +37,7 @@ class Connexions_View_Helper_HtmlItemCloudUser
             $attribute  = '';
 
             /*
-            Connexions::log('Connexions_View_Helper_HtmlItemCloudUser:'
+            Connexions::log('View_Helper_HtmlItemCloudUser:'
                             . 'user[ %s ], %sselected',
                             $user->getTitle(),
                             ($isSelected ? '' : 'NOT '));

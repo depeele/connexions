@@ -1,17 +1,17 @@
 <?php
 /** @file
  *
- *  View helper to render a paginated set of Url Items -- UserItems for a
+ *  View helper to render a paginated set of Url Items -- Bookmarks for a
  *  specific URL.
  */
-class Connexions_View_Helper_HtmlUrlItems extends Zend_View_Helper_Abstract
+class View_Helper_HtmlUrlItems extends Zend_View_Helper_Abstract
 {
     static public   $numericGrouping    = 10;
     static public   $perPageChoices     = array(10, 25, 50, 100);
 
     static public   $defaults               = array(
         'sortBy'            => self::SORT_BY_DATE_TAGGED,
-        'sortOrder'         => Model_UserItemSet::SORT_ORDER_ASC,
+        'sortOrder'         => Model_Set_Bookmark::SORT_ORDER_ASC,
 
         'perPage'           => 50,
 
@@ -118,8 +118,8 @@ class Connexions_View_Helper_HtmlUrlItems extends Zend_View_Helper_Abstract
                 );
 
     static public   $orderTitles    = array(
-                    Model_UserItemSet::SORT_ORDER_ASC   => 'Ascending',
-                    Model_UserItemSet::SORT_ORDER_DESC  => 'Descending'
+                    Model_Set_Bookmark::SORT_ORDER_ASC   => 'Ascending',
+                    Model_Set_Bookmark::SORT_ORDER_DESC  => 'Descending'
                 );
 
 
@@ -142,14 +142,14 @@ class Connexions_View_Helper_HtmlUrlItems extends Zend_View_Helper_Abstract
      *  @param  tagInfo         A Connexions_Set_Info instance containing
      *                          information about the requested tags;
      *  @param  style           The style to use for each item
-     *                          (Connexions_View_Helper_HtmlUrlItems::
+     *                          (View_Helper_HtmlUrlItems::
      *                                                          STYLE_*);
      *  @param  sortBy          The field used to sort the items
-     *                          (Connexions_View_Helper_HtmlUrlItems::
+     *                          (View_Helper_HtmlUrlItems::
      *                                                      SORT_BY_*);
      *  @param  sortOrder       The sort order
-     *                          (Model_UserItemSet::SORT_ORDER_ASC |
-     *                           Model_UserItemSet::SORT_ORDER_DESC)
+     *                          (Model_Set_Bookmark::SORT_ORDER_ASC |
+     *                           Model_Set_Bookmark::SORT_ORDER_DESC)
      *
      *  @return The HTML representation of the user items.
      */
@@ -174,12 +174,12 @@ class Connexions_View_Helper_HtmlUrlItems extends Zend_View_Helper_Abstract
     /** @brief  Set the namespace, primarily for forms and cookies.
      *  @param  namespace   A string namespace.
      *
-     *  @return Connexions_View_Helper_HtmlUrlItems for a fluent interface.
+     *  @return View_Helper_HtmlUrlItems for a fluent interface.
      */
     public function setNamespace($namespace)
     {
         /*
-        Connexions::log("Connexions_View_Helper_HtmlUrlItems::"
+        Connexions::log("View_Helper_HtmlUrlItems::"
                             .   "setNamespace( {$namespace} )");
         // */
 
@@ -229,10 +229,10 @@ function init_GroupHeader(namespace)
 function init_UrlItems(namespace)
 {
     var $list       = $('#'+ namespace +'List');
-    var $userItems  = $list.find('form.userItem');
+    var $bookmarks  = $list.find('form.bookmark');
 
     // Favorite
-    $userItems.find('input[name=isFavorite]').checkbox({
+    $bookmarks.find('input[name=isFavorite]').checkbox({
         css:        'connexions_sprites',
         cssOn:      'star_fill',
         cssOff:     'star_empty',
@@ -243,7 +243,7 @@ function init_UrlItems(namespace)
     });
 
     // Privacy
-    $userItems.find('input[name=isPrivate]').checkbox({
+    $bookmarks.find('input[name=isPrivate]').checkbox({
         css:        'connexions_sprites',
         cssOn:      'lock_fill',
         cssOff:     'lock_empty',
@@ -254,8 +254,8 @@ function init_UrlItems(namespace)
     });
 
     // Rating - average and user
-    //$userItems.find('.rating .stars .average').stars({split:2});
-    $userItems.find('.rating .stars .owner').stars();
+    //$bookmarks.find('.rating .stars .average').stars({split:2});
+    $bookmarks.find('.rating .stars .owner').stars();
 
     // Initialize any group headers
     init_GroupHeader(namespace);
@@ -308,7 +308,7 @@ function init_UrlItems(namespace)
      *  @param  style   A style value (self::STYLE_*)
      *  @param  values  If provided, an array of field values for this style.
      *
-     *  @return Connexions_View_Helper_HtmlUrlItems for a fluent interface.
+     *  @return View_Helper_HtmlUrlItems for a fluent interface.
      */
     public function setStyle($style, array $values = null)
     {
@@ -335,7 +335,7 @@ function init_UrlItems(namespace)
         }
 
         /*
-        Connexions::log('Connexions_View_Helper_HtmlUrlItems::'
+        Connexions::log('View_Helper_HtmlUrlItems::'
                             . "setStyle({$style}) == [ "
                             .   $this->_displayOptions->getGroup() ." ]");
         // */
@@ -356,7 +356,7 @@ function init_UrlItems(namespace)
     /** @brief  Set the current sortBy.
      *  @param  sortBy  A sortBy value (self::SORT_BY_*)
      *
-     *  @return Connexions_View_Helper_HtmlUrlItems for a fluent interface.
+     *  @return View_Helper_HtmlUrlItems for a fluent interface.
      */
     public function setSortBy($sortBy)
     {
@@ -377,7 +377,7 @@ function init_UrlItems(namespace)
         }
 
         /*
-        Connexions::log('Connexions_View_Helper_HtmlUrlItems::'
+        Connexions::log('View_Helper_HtmlUrlItems::'
                             . "setSortBy({$orig}) == [ {$sortBy} ]");
         // */
 
@@ -396,9 +396,9 @@ function init_UrlItems(namespace)
     }
 
     /** @brief  Set the current sortOrder.
-     *  @param  sortOrder   A sortOrder value (Model_UserItemSet::SORT_ORDER_*)
+     *  @param  sortOrder   A sortOrder value (Model_Set_Bookmark::SORT_ORDER_*)
      *
-     *  @return Connexions_View_Helper_HtmlUrlItems for a fluent interface.
+     *  @return View_Helper_HtmlUrlItems for a fluent interface.
      */
     public function setSortOrder($sortOrder)
     {
@@ -407,8 +407,8 @@ function init_UrlItems(namespace)
         $sortOrder = strtoupper($sortOrder);
         switch ($sortOrder)
         {
-        case Model_UserItemSet::SORT_ORDER_ASC:
-        case Model_UserItemSet::SORT_ORDER_DESC:
+        case Model_Set_Bookmark::SORT_ORDER_ASC:
+        case Model_Set_Bookmark::SORT_ORDER_DESC:
             break;
 
         default:
@@ -417,7 +417,7 @@ function init_UrlItems(namespace)
         }
 
         /*
-        Connexions::log('Connexions_View_Helper_HtmlUrlItems::'
+        Connexions::log('View_Helper_HtmlUrlItems::'
                             . "setSortOrder({$orig}) == [ {$sortOrder} ]");
         // */
     
@@ -428,7 +428,7 @@ function init_UrlItems(namespace)
 
     /** @brief  Get the current sortOrder value.
      *
-     *  @return The sortOrder value (Model_UserItemSet::SORT_ORDER_*).
+     *  @return The sortOrder value (Model_Set_Bookmark::SORT_ORDER_*).
      */
     public function getSortOrder()
     {
@@ -444,7 +444,7 @@ function init_UrlItems(namespace)
         $val = $this->_displayOptions->getGroupValues();
 
         /*
-        Connexions::log("Connexions_View_Helper_HtmlUrlItems::"
+        Connexions::log("View_Helper_HtmlUrlItems::"
                             . "getShowMeta(): "
                             . "[ ". print_r($val, true) ." ]");
         // */
@@ -461,7 +461,7 @@ function init_UrlItems(namespace)
         }
 
         /*
-        Connexions::log('Connexions_View_Helper_HtmlUrlItems::'
+        Connexions::log('View_Helper_HtmlUrlItems::'
                             . 'getShowMeta(): return[ '
                             .       print_r($val, true) .' ]');
         // */
@@ -477,14 +477,14 @@ function init_UrlItems(namespace)
      *  @param  tagInfo         A Connexions_Set_Info instance containing
      *                          information about the requested tags;
      *  @param  style           The style to use for each item
-     *                          (Connexions_View_Helper_HtmlUrlItems::
+     *                          (View_Helper_HtmlUrlItems::
      *                                                          STYLE_*);
      *  @param  sortBy          The field used to sort the items
-     *                          (Connexions_View_Helper_HtmlUrlItems::
+     *                          (View_Helper_HtmlUrlItems::
      *                                                      SORT_BY_*);
      *  @param  sortOrder       The sort order
-     *                          (Model_UserItemSet::SORT_ORDER_ASC |
-     *                           Model_UserItemSet::SORT_ORDER_DESC)
+     *                          (Model_Set_Bookmark::SORT_ORDER_ASC |
+     *                           Model_Set_Bookmark::SORT_ORDER_DESC)
      *
      *  @return The HTML representation of the user items.
      */
@@ -496,7 +496,7 @@ function init_UrlItems(namespace)
                            $sortOrder    = null)
     {
         /*
-        Connexions::log("Connexions_View_Helper_HtmlUrlItems: "
+        Connexions::log("View_Helper_HtmlUrlItems: "
                             . "style[ {$style} ], "
                             . "sortBy[ {$sortBy} ], "
                             . "sortOrder[ {$sortOrder} ]");
@@ -507,7 +507,7 @@ function init_UrlItems(namespace)
         if ($sortOrder !== null)    $this->setSortOrder($sortOrder);
 
         /*
-        Connexions::log("Connexions_View_Helper_HtmlUrlItems: "
+        Connexions::log("View_Helper_HtmlUrlItems: "
                             . "validated to: "
                             . "style[ {$this->getStyle()} ], "
                             . "sortBy[ {$this->_sortBy} ], "
@@ -537,9 +537,9 @@ function init_UrlItems(namespace)
 
             // Group by the field identified in $this->_sortBy
             $lastGroup = null;
-            foreach ($paginator as $idex => $userItem)
+            foreach ($paginator as $idex => $bookmark)
             {
-                $groupVal = $userItem->{$this->_sortBy};
+                $groupVal = $bookmark->{$this->_sortBy};
                 $newGroup = $this->_groupValue($this->_sortBy, $groupVal);
 
                 if ($newGroup !== $lastGroup)
@@ -549,7 +549,7 @@ function init_UrlItems(namespace)
                     $lastGroup  = $newGroup;
                 }
 
-                $html .= $this->view->htmlUserItem($userItem,
+                $html .= $this->view->htmlBookmark($bookmark,
                                                    $viewer,
                                                    $showMeta,
                                                    $idex);

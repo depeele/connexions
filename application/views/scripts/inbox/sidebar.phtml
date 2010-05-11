@@ -10,13 +10,13 @@
  *      senderSet           The Connexions_Set instance established for the
  *                          presentation of users who have tagged items for
  *                          this user (i.e. all users related to the current
- *                                          ModeL_UserItemSet);
+ *                                          ModeL_Set_Bookmark);
  */
 
 $showAvatar = true;
-if ( isset($this->htmlUserItems))
+if ( isset($this->htmlBookmarks))
 {
-    $itemMeta   = $this->htmlUserItems()->getShowMeta();
+    $itemMeta   = $this->htmlBookmarks()->getShowMeta();
     $showAvatar = $itemMeta['item:data:userId:avatar'];
 }
 

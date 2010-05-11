@@ -62,9 +62,14 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
         // Add our view helpers as well as the ZendX JQuery view helper.
         $view->addHelperPath(APPLICATION_PATH .'/views/helpers',
-                                'Connexions_View_Helper')
+                                'View_Helper')
              ->addHelperPath("ZendX/JQuery/View/Helper",
                                 "ZendX_JQuery_View_Helper");
+
+        /*
+        Connexions::log("_initMinimalView: Helper Paths[ %s ]",
+                        Connexions::varExport($view->getHelperPaths()) );
+        // */
 
         return $view;
     }

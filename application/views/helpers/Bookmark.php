@@ -7,7 +7,7 @@
  *  Primarily offers descrption summarization.
  *
  */
-class Connexions_View_Helper_UserItem extends Zend_View_Helper_Abstract
+class View_Helper_Bookmark extends Zend_View_Helper_Abstract
 {
     /** @brief  The maximum number of characters to include in a summary,
      *          particularly a summary of a description.

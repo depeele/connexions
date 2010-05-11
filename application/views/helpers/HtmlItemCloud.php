@@ -4,7 +4,7 @@
  *  View helper to render an Item Cloud, possibly paginated, in HTML.
  *
  */
-class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
+class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 {
     static public   $perPageChoices         = array(50, 100, 250, 500);
     static public   $highlightCountChoices  = array(0,  5,   10);
@@ -163,7 +163,7 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         {
             // Remove any tags that are to be hidden
             /*
-            Connexions::log("Connexions_View_Helper_HtmlItemCloud:: "
+            Connexions::log("View_Helper_HtmlItemCloud:: "
                                 . "filter out tags [ "
                                 .   implode(", ", $this->_hiddenItems) ." ]");
             // */
@@ -173,7 +173,7 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                 if (in_array($item->getTitle(), $this->_hiddenItems))
                 {
                     /*
-                    Connexions::log("Connexions_View_Helper_HtmlItemCloud:: "
+                    Connexions::log("View_Helper_HtmlItemCloud:: "
                                     . "remove tag [{$item->getTitle()}]");
                     // */
 
@@ -192,7 +192,7 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
             $cloudConfig = array(
                 // Make helpers in 'application/views/helpers' available.
                 'prefixPath'            => array(
-                    'prefix'    => 'Connexions_View_Helper',
+                    'prefix'    => 'View_Helper',
                     'path'      => APPLICATION_PATH .'/views/helpers/'
                  ),
                 'ItemList'              => $sortedList,
@@ -215,7 +215,7 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
             {
             case self::ITEM_TYPE_TAG:
                 /* Use our cloud item decorator:
-                 *      Connexions_View_Helper_HtmlItemCloudTag
+                 *      View_Helper_HtmlItemCloudTag
                  */
                 $cloudConfig['TagDecorator'] = array(
                     'decorator'         => 'htmlItemCloudTag',
@@ -235,7 +235,7 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
             case self::ITEM_TYPE_USER:
                 /* Use our cloud item decorator:
-                 *      Connexions_View_Helper_HtmlItemCloudUser
+                 *      View_Helper_HtmlItemCloudUser
                  */
                 $cloudConfig['TagDecorator'] = array(
                     'decorator'         => 'htmlItemCloudUser',
@@ -296,12 +296,12 @@ class Connexions_View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
     /** @brief  Set the namespace, primarily for forms and cookies.
      *  @param  namespace   A string prefix.
      *
-     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
+     *  @return View_Helper_HtmlItemCloud for a fluent interface.
      */
     public function setNamespace($namespace)
     {
         /*
-        Connexions::log("Connexions_View_Helper_HtmlItemCloud::"
+        Connexions::log("View_Helper_HtmlItemCloud::"
                             .   "setNamespace( {$namespace} )");
         // */
 
@@ -370,7 +370,7 @@ function init_ItemCloud(namespace)
     /** @brief  Set whether or not the "relation" indicator is presented.
      *  @param  show    A boolean.
      *
-     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
+     *  @return View_Helper_HtmlItemCloud for a fluent interface.
      */
     public function setShowRelation($show)
     {
@@ -392,7 +392,7 @@ function init_ItemCloud(namespace)
      *  @param  itemSet     A Connexions_Set | Zend_Paginator instance
      *                      representing the items to be presented;
      *
-     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
+     *  @return View_Helper_HtmlItemCloud for a fluent interface.
      */
     public function setItemSet($itemSet)
     {
@@ -452,7 +452,7 @@ function init_ItemCloud(namespace)
         }
         else
         {
-            Connexions::log("Connexions_View_Helper_HtmlItemCloud::setItemSet: "
+            Connexions::log("View_Helper_HtmlItemCloud::setItemSet: "
                                 . "Invalid class [ "
                                 .       get_class($itemSet) ." ]");
         }
@@ -477,7 +477,7 @@ function init_ItemCloud(namespace)
      *  @param  url         The base url for items
      *                      (defaults to the request URL).
      *
-     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
+     *  @return View_Helper_HtmlItemCloud for a fluent interface.
      */
     public function setItemSetInfo(Connexions_Set_Info $itemSetInfo)
     {
@@ -498,7 +498,7 @@ function init_ItemCloud(namespace)
     /** @brief  Establish the baseUrl for items.
      *  @param  url         The base url for items.
      *
-     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
+     *  @return View_Helper_HtmlItemCloud for a fluent interface.
      */
     public function setItemBaseUrl($url)
     {
@@ -519,7 +519,7 @@ function init_ItemCloud(namespace)
     /** @brief  Set the cloud item type.
      *  @param  itemType    A item type value (self::ITEM_TYPE_*)
      *
-     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
+     *  @return View_Helper_HtmlItemCloud for a fluent interface.
      */
     public function setItemType($itemType)
     {
@@ -537,7 +537,7 @@ function init_ItemCloud(namespace)
         }
 
         /*
-        Connexions::log('Connexions_View_Helper_HtmlItemCloud::'
+        Connexions::log('View_Helper_HtmlItemCloud::'
                             . "setType({$orig}) == [ {$itemType} ]");
         // */
     
@@ -559,7 +559,7 @@ function init_ItemCloud(namespace)
      *  @param  style   A style value (self::STYLE_*)
      *  @param  values  If provided, an array of field values for this style.
      *
-     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
+     *  @return View_Helper_HtmlItemCloud for a fluent interface.
      */
     public function setStyle($style, array $values = null)
     {
@@ -584,7 +584,7 @@ function init_ItemCloud(namespace)
         }
 
         /*
-        Connexions::log('Connexions_View_Helper_HtmlItemCloud::'
+        Connexions::log('View_Helper_HtmlItemCloud::'
                             . "setStyle({$style}) == [ "
                             .   $this->_displayOptions->getGroup() ." ]");
         // */
@@ -604,7 +604,7 @@ function init_ItemCloud(namespace)
     /** @brief  Set the current sortBy.
      *  @param  sortBy  A sortBy value (self::SORT_BY_*)
      *
-     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
+     *  @return View_Helper_HtmlItemCloud for a fluent interface.
      */
     public function setSortBy($sortBy)
     {
@@ -622,7 +622,7 @@ function init_ItemCloud(namespace)
         }
 
         /*
-        Connexions::log('Connexions_View_Helper_HtmlItemCloud::'
+        Connexions::log('View_Helper_HtmlItemCloud::'
                             . "setSortBy({$orig}) == [ {$sortBy} ]");
         // */
 
@@ -643,7 +643,7 @@ function init_ItemCloud(namespace)
     /** @brief  Set the current sortOrder.
      *  @param  sortOrder   A sortOrder value (Connexions_Set::SORT_ORDER_*)
      *
-     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
+     *  @return View_Helper_HtmlItemCloud for a fluent interface.
      */
     public function setSortOrder($sortOrder)
     {
@@ -662,7 +662,7 @@ function init_ItemCloud(namespace)
         }
 
         /*
-        Connexions::log('Connexions_View_Helper_HtmlItemCloud::'
+        Connexions::log('View_Helper_HtmlItemCloud::'
                             . "setSortOrder({$orig}) == [ {$sortOrder} ]");
         // */
     
@@ -684,7 +684,7 @@ function init_ItemCloud(namespace)
      *  @param  perPage The number of items per page
                                 (self::$perPageChoices).
      *
-     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
+     *  @return View_Helper_HtmlItemCloud for a fluent interface.
      */
     public function setPerPage($perPage)
     {
@@ -715,7 +715,7 @@ function init_ItemCloud(namespace)
      *  @param  highlightCount  The number of items to highlight
      *                          (self::$highlightCountChoices).
      *
-     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
+     *  @return View_Helper_HtmlItemCloud for a fluent interface.
      */
     public function setHighlightCount($highlightCount)
     {
@@ -745,7 +745,7 @@ function init_ItemCloud(namespace)
     /** @brief  Add a tag that should NOT be included in the context URL.
      *  @param  str     The tag (name).
      *
-     *  @return Connexions_View_Helper_HtmlItemCloud for a fluent interface.
+     *  @return View_Helper_HtmlItemCloud for a fluent interface.
      */
     public function addHiddenItem($str)
     {

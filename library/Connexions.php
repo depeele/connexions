@@ -491,6 +491,34 @@ class Connexions
         return $normUrl;
     }
 
+    /** @brief  Generate a "summary" of provided text.  This simply shortens
+     *          the text to the last full word before the 'maxChars'th
+     *          character.
+     *  @param  text        The text to "summarieze";
+     *  @param  maxChars    The maximum number of characters [ 40 ];
+     *
+     *  @return The summary string.
+     */
+    public static function getSummary($text,
+                                      $maxChars = 40)
+    {
+        $summary = html_entity_decode($text, ENT_QUOTES);
+        if (strlen($summary) > $maxChars)
+        {
+            // Shorten to no more than 'maxChars' characters
+            $summary = substr($summary, 0, $maxChars);
+            $summary = substr($summary, 0, strrpos($summary, " "));
+
+            // Trim any white-space or punctuation from the end
+            $summary = rtrim($summary, " \t\n\r.!?:;,-");
+
+            $summary .= '...';
+        }
+        $summary = htmlentities($summary, ENT_QUOTES);
+
+        return $summary;
+    }
+
     /** @brief  Search for 'needle' in 'haystack' including any sub-arrays
      *          within 'haystack'.
      *  @param  needle      The item to locate (mixed).

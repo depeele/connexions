@@ -17,9 +17,22 @@ class Service_Item extends Connexions_Service
      */
     public function csList2set($csList)
     {
-        $hashes = preg_split('/\s*,\s*/', $csList);
+        $hashes = (empty($csList)
+                    ? array()
+                    : preg_split('/\s*,\s*/', strtolower($csList)) );
 
-        return $this->_getMapper()->fetchBy('urlHash', $hashes, 'urlHash ASC');
+        if (empty($hashes))
+        {
+            $set = $this->_getMapper()->makeEmptySet();
+        }
+        else
+        {
+            $set = $this->_getMapper()->fetchBy('urlHash', $hashes,
+                                                'urlHash ASC');
+            $set->setSource($csList);
+        }
+
+        return $set;
     }
 
     /** @brief  Retrieve a set of items related by a set of Users.

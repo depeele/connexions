@@ -888,7 +888,7 @@ class BookmarkDbTest extends DbTestCase
         $users  = $mapper->fetch();
 
         // Convert the Connexions_Model_Set to a Zend_Paginator
-        $paginator = new Zend_Paginator($users);
+        $paginator = new Zend_Paginator( $users->getPaginatorAdapter() );
 
         $this->assertEquals(20, $paginator->getTotalItemCount());
         $this->assertEquals(10, $paginator->getCurrentItemCount());

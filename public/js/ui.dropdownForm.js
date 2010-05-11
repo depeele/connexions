@@ -136,6 +136,7 @@ $.widget("ui.dropdownForm", {
         var _form_submit        = function(e) {
             // Serialize all form values to an array...
             var settings    = $form.serializeArray();
+            e.preventDefault();
 
             /* ...and set a cookie for each
              *      namespace +'SortBy'
@@ -151,16 +152,10 @@ $.widget("ui.dropdownForm", {
                 $.cookie(this.name, this.value);
             });
 
-            /* Finally, disable ALL inputs so our URL will have no
-             * parameters since we've stored them all in cookies.
+            /* Reload so our URL won't be polluted with form variables that
+             * we've just placed into cookies.
              */
-            self.disable();
-            //$form.find('input,select').attr('disabled', true);
-
-            //self.element.trigger('apply.uidropdownform');
-            //$form.trigger('apply.uidropdownform');
-
-            // let the form be submitted
+            window.location.reload();
         };
 
 
@@ -178,8 +173,10 @@ $.widget("ui.dropdownForm", {
                 .bind('mouseleave.uidroppdownform', _mouse_leave)
                 .bind('click.uidropdownform', _control_click);
 
-        $form.bind('change.uidropdownform', _form_change)
-             .bind('submit.uidropdownform', _form_submit);
+        $form.bind('change.uidropdownform', _form_change);
+             //.bind('submit.uidropdownform', _form_submit);
+
+        $submit.bind('click.uidropdownform', _form_submit);
     },
 
     /************************

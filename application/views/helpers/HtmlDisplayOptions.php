@@ -7,9 +7,9 @@
  *  option checkboxes along with one or more pre-defined option groups.
  *
  *  Available display style options are defined via an associative array passed 
- *  to setDefinition().  The keys colon-separated strings that define the field 
- *  name as well as the CSS heirarchy to use when rendering.   The values
- *  values can be any combination of simple strings and/or arrays:
+ *  to setDefinition().  The keys are colon-separated strings that define the
+ *  field name as well as the CSS heirarchy to use when rendering.   The values
+ *  can be any combination of simple strings and/or arrays:
  *      - A simple string value defines the label to be presented for the 
  *        identified option;
  *
@@ -45,7 +45,7 @@
  *      );
  *
  *
- *  Pre-defined groups can be defined via either a string or array:
+ *  Pre-defined groups can be specified via either a string or array:
  *      - string:   a comma-separated string of field names; each must match 
  *                  one of the options in the definition of this display
  *                  style.  In this case, the name used for this group will be 
@@ -58,8 +58,7 @@
  *                      'options'   eiter a comma-separated string of field 
  *                                  names OR an array of field names.
  */
-class Connexions_View_Helper_HtmlDisplayOptions
-                                    extends Zend_View_Helper_Abstract
+class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
 {
     /** @brief  Namespace initialization indicators. */
     static protected    $_initialized   = array();
@@ -73,65 +72,6 @@ class Connexions_View_Helper_HtmlDisplayOptions
     protected           $_groups        = array();
 
     protected           $_currentGroup  = null;
-
-    /** @brief  Set the View object
-     *  @param  view    The view object
-     *
-     *  @return $this
-     */
-    public function setView(Zend_View_Interface $view)
-    {
-        /*
-        Connexions::log(
-                "Connexions_View_Helper_HtmlDisplayOptions::"
-                . "setView()");
-        // */
-
-        parent::setView($view);
-
-        if (@isset(self::$_initialized['__global__']))
-            return $this;
-
-        // Include general, required view information
-        $view   = $this->view;
-        $jQuery = $view->jQuery();
-
-        $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.min.js'))
-               ->addJavascriptFile($view->baseUrl('js/ui.optionGroups.js'))
-               ->addJavascriptFile($view->baseUrl('js/ui.dropdownForm.min.js'))
-               ->javascriptCaptureStart();
-        ?>
-
-/************************************************
- * Initialize display options.
- *
- */
-function init_DisplayOptions(opts)
-{
-    var $displayOptions = $('.'+ opts.namespace +'-displayOptions');
-    if ( $displayOptions.length > 0 )
-    {
-        // Initialize the display options control
-        //opts.form = $form;
-        $displayOptions.dropdownForm( opts );
-    }
-
-    return;
-}
-
-        <?php
-        $jQuery->javascriptCaptureEnd();
-
-        self::$_initialized['__global__'] = true;
-
-        /*
-        Connexions::log(
-                "Connexions_View_Helper_HtmlDisplayOptions::"
-                . "setView(): COMPLETE");
-        // */
-
-        return $this;
-    }
 
     /** @brief  Retrieve the HtmlDisplayOptions instance.
      *  @param  config  An associative array of configuration information that
@@ -156,7 +96,7 @@ function init_DisplayOptions(opts)
 
             /*
             Connexions::log(
-                    "Connexions_View_Helper_HtmlDisplayOptions::"
+                    "View_Helper_HtmlDisplayOptions::"
                     . "htmlDisplayOptions(): identified  "
                     . "namespace [ {$namespace} ]");
             // */
@@ -169,7 +109,7 @@ function init_DisplayOptions(opts)
                 {
                     /*
                     Connexions::log(
-                            "Connexions_View_Helper_HtmlDisplayOptions::"
+                            "View_Helper_HtmlDisplayOptions::"
                             . "htmlDisplayOptions(): auto-switch "
                             . "namespaces: '{$this->_namespace}' -> "
                             .             "'{$namespace}'");
@@ -187,7 +127,7 @@ function init_DisplayOptions(opts)
                 {
                     /*
                     Connexions::log(
-                            "Connexions_View_Helper_HtmlDisplayOptions::"
+                            "View_Helper_HtmlDisplayOptions::"
                             . "htmlDisplayOptions(): new namespace: "
                             .   " old[ {$this->_namespace} ], "
                             .   " config[ "
@@ -217,6 +157,77 @@ function init_DisplayOptions(opts)
 
         if (isset($config['namespace']))
             $this->setNamespace($config['namespace']);
+
+        /*
+        Connexions::log('View_Helper_HtmlDisplayOptions:'
+                            . 'fieldMap [ %s ]',
+                            var_export($this->_fieldMap, true));
+        Connexions::log('View_Helper_HtmlDisplayOptions:'
+                            . 'definition [ %s ]',
+                            var_export($this->_definition, true));
+        Connexions::log('View_Helper_HtmlDisplayOptions:'
+                            . 'groups [ %s ]',
+                            var_export($this->_groups, true));
+        // */
+
+        return $this;
+    }
+
+    /** @brief  Set the View object
+     *  @param  view    The view object
+     *
+     *  @return $this
+     */
+    public function setView(Zend_View_Interface $view)
+    {
+        /*
+        Connexions::log(
+                "View_Helper_HtmlDisplayOptions::"
+                . "setView()");
+        // */
+
+        parent::setView($view);
+
+        if (@isset(self::$_initialized['__global__']))
+            return $this;
+
+        // Include general, required view information
+        $view   = $this->view;
+        $jQuery = $view->jQuery();
+
+        $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.js'))
+               ->addJavascriptFile($view->baseUrl('js/ui.optionGroups.js'))
+               ->addJavascriptFile($view->baseUrl('js/ui.dropdownForm.js'))
+               ->javascriptCaptureStart();
+        ?>
+
+/************************************************
+ * Initialize display options.
+ *
+ */
+function init_DisplayOptions(opts)
+{
+    var $displayOptions = $('.'+ opts.namespace +'-displayOptions');
+    if ( $displayOptions.length > 0 )
+    {
+        // Initialize the display options control
+        //opts.form = $form;
+        $displayOptions.dropdownForm( opts );
+    }
+
+    return;
+}
+
+        <?php
+        $jQuery->javascriptCaptureEnd();
+
+        self::$_initialized['__global__'] = true;
+
+        /*
+        Connexions::log(
+                "View_Helper_HtmlDisplayOptions::"
+                . "setView(): COMPLETE");
+        // */
 
         return $this;
     }
@@ -323,16 +334,32 @@ function init_DisplayOptions(opts)
      */
     public function getBestGroupMatch()
     {
-        $bestMatch = null;
-        $bestCount = 0;
+        $bestMatch  = null;
+        $bestCount  = 0;
+        $exactMatch = false;
+        $custom     = null;
         foreach ($this->_groups as $name => $group)
         {
+            if ($group['isCustom'])
+            {
+                $custom = $name;
+                continue;
+            }
+
             $isMatch    = true;
             $matchCount = 0;
             foreach ($group['options'] as $fieldName => $data)
             {
                 if ($data['isSet'] !== true)
                 {
+                    /*
+                    Connexions::log("View_Helper_HtmlDisplayOptions::"
+                                    .   "getBestGroupMatch(): "
+                                    .   "group[ %s ] MISSED due to missing "
+                                    .   "field [ %s ]",
+                                    $name, $fieldName);
+                    // */
+
                     $isMatch = false;
                     break;
                 }
@@ -344,11 +371,18 @@ function init_DisplayOptions(opts)
             {
                 if ($matchCount > $bestCount)
                 {
-                    $bestMatch = $name;
-                    $bestCount = $matchCount;
+                    $bestMatch  = $name;
+                    $bestCount  = $matchCount;
+                    $exactMatch = ($matchCount == count($group['options']));
                 }
             }
         }
+
+        /*
+        Connexions::log("View_Helper_HtmlDisplayOptions::getBestGroupMatch(): "
+                        .   "best match[ %s ], is %sexact",
+                        $bestMatch, ($exactMatch ? '' : 'NOT '));
+        // */
 
         return $bestMatch;
     }
@@ -421,12 +455,22 @@ function init_DisplayOptions(opts)
      */
 
     /** @brief  Set field values by an established group.
-     *  @param  groupName   The name of the desired group.
+     *  @param  groupName       The name of the desired group.
+     *  @param  customValues    If 'groupName' identifies the "custom" group,
+     *                          the set of values may be provided here.
+     *
      *
      *  @return $this (null if 'groupName' is not a valid group).
      */
-    public function setGroup($groupName)
+    public function setGroup($groupName, array $customValues = null)
     {
+        /*
+        Connexions::log("View_Helper_HtmlDisplayOptions::setGroup( %s ): "
+                        .   "is %svalid",
+                        $groupName,
+                        (isset($this->_groups[$groupName]) ? '' : 'NOT '));
+        // */
+
         if (! isset($this->_groups[$groupName]))
             return null;
 
@@ -439,10 +483,36 @@ function init_DisplayOptions(opts)
         }
 
         // Now, set all values of the named group.
-        foreach ($this->_groups[$groupName]['options'] as $fieldName => $data)
+        $setFields = array();
+
+        if (($this->_groups[$groupName]['isCustom']) &&
+            (! empty($customValues)))
         {
-            $this->_fieldMap[$fieldName]['isSet'] = true;
+            foreach ($customValues as $fieldName => $value)
+            {
+                if (! isset($this->_fieldMap[$fieldName]))
+                    continue;
+
+                $this->_fieldMap[$fieldName]['isSet'] = true;
+                array_push($setFields, $fieldName);
+            }
         }
+        else
+        {
+            foreach ($this->_groups[$groupName]['options'] as
+                                                    $fieldName => $data)
+            {
+                $this->_fieldMap[$fieldName]['isSet'] = true;
+                array_push($setFields, $fieldName);
+            }
+        }
+
+        /*
+        Connexions::log("View_Helper_HtmlDisplayOptions::setGroup( %s ): "
+                        .   "set fields[ %s ]",
+                        $groupName,
+                        implode(', ', $setFields));
+        // */
 
         return $this;
     }
@@ -456,7 +526,7 @@ function init_DisplayOptions(opts)
     public function setGroupValues($vals = array())
     {
         /*
-        Connexions::log("Connexions_View_Helper_HtmlDisplayOptions:"
+        Connexions::log("View_Helper_HtmlDisplayOptions:"
                             . "setGroupValues: "
                             .   "in [ ". print_r($vals, true) ." ]");
         // */
@@ -490,7 +560,7 @@ function init_DisplayOptions(opts)
             if (! isset($this->_fieldMap[$name]))
             {
                 // /*
-                Connexions::log("Connexions_View_Helper_HtmlDisplayOptions:"
+                Connexions::log("View_Helper_HtmlDisplayOptions:"
                                     . "setGroupValues: "
                                     .   "Unmatched form value: "
                                     .       "'{$name}' == '{$val}'");
@@ -501,7 +571,7 @@ function init_DisplayOptions(opts)
         $this->_currentGroup = $this->getBestGroupMatch();
 
         /*
-        Connexions::log("Connexions_View_Helper_HtmlDisplayOptions:"
+        Connexions::log("View_Helper_HtmlDisplayOptions:"
                             . "setGroupValues: "
                             .   "group [ {$this->_currentGroup} ], "
                             .   "final [ ". print_r($this->_fieldMap, true)
@@ -569,7 +639,7 @@ function init_DisplayOptions(opts)
 
         $html .= "<div class='displayOptions "              // displayOptions {
               .              "{$namespace}-displayOptions'>"
-              .   "<form "                                          // form {
+              .   "<form method='GET' "                             // form {
               .         "class='ui-state-active ui-corner-all'>";
 
         // Include all form fields (added via addFormField()).
@@ -620,6 +690,15 @@ function init_DisplayOptions(opts)
 
         foreach ($this->_groups as $key => $info)
         {
+            /*
+            Connexions::log('View_Helper_HtmlDisplayOptions::'
+                            .   'renderDisplayStyle(): '
+                            .   'currentGroup[ %s ] %s== [ %s ]',
+                            $this->_currentGroup,
+                            ($this->_currentGroup === $key ? '=' : '!'),
+                            $key);
+            // */
+
             $html .= "<li class='field"
                   .     ($info['isCustom']
                             ? " isCustom"
@@ -637,13 +716,18 @@ function init_DisplayOptions(opts)
         $html .=    "<br class='clear' />"
               .    "</ul>";                     // groups }
 
-
         if (! empty($this->_definition))
         {
             $html .= "<fieldset class='options {$namespace}'>";
 
             foreach ($this->_definition as $name => $val)
             {
+                /*
+                Connexions::log("View_Helper_HtmlDisplayOptions::"
+                                .   "renderDisplayStyle(): '%s' == [ %s ]",
+                                $name, var_export($val, true));
+                // */
+
                 $html .= $this->_renderOptionGroupsElement($name, $val);
             }
 
@@ -668,7 +752,7 @@ function init_DisplayOptions(opts)
     public function setNamespace($namespace)
     {
         /*
-        Connexions::log("Connexions_View_Helper_HtmlDisplayOptions::"
+        Connexions::log("View_Helper_HtmlDisplayOptions::"
                             .   "setNamespace( {$namespace} )");
         // */
 
@@ -684,7 +768,7 @@ function init_DisplayOptions(opts)
                           'groups'    => $this->getGroupsMap());
 
             /*
-            Connexions::log("Connexions_View_Helper_HtmlDisplayOptions::"
+            Connexions::log("View_Helper_HtmlDisplayOptions::"
                                 .   "opts[ ". print_r($opts, true) ." ]");
             // */
 
@@ -707,7 +791,7 @@ function init_DisplayOptions(opts)
     public function setDefinition(array $definition)
     {
         /*
-        Connexions::log('Connexions_View_Helper_HtmlDisplayOptions:'
+        Connexions::log('View_Helper_HtmlDisplayOptions:'
                             . 'setDefinition: [ '
                             .   var_export($definition, true)
                             .       ' ]');
@@ -754,7 +838,7 @@ function init_DisplayOptions(opts)
                 $dir['isSet'] = true;
 
             /*
-            Connexions::log('Connexions::View_Helper_HtmlDisplayOptions:"
+            Connexions::log('View_Helper_HtmlDisplayOptions:"
                                 . 'setDefinition: '
                                 .   'field [ '. $dir['fieldName'] .' ]');
             // */
@@ -763,7 +847,7 @@ function init_DisplayOptions(opts)
         }
 
         /*
-        Connexions::log('Connexions::View_Helper_HtmlDisplayOptions:'
+        Connexions::log('View_Helper_HtmlDisplayOptions:'
                             . 'setDefinition: fieldMap [ '
                             .   var_export($this->_fieldMap, true)
                             .       ' ]');
@@ -789,7 +873,7 @@ function init_DisplayOptions(opts)
     public function setGroups(array $options)
     {
         /*
-        Connexions::log("Connexions_View_Helper_HtmlDisplayOptions::"
+        Connexions::log("View_Helper_HtmlDisplayOptions::"
                             .   "setGroups: "
                             .       "options[ ". print_r($options, true) ." ]");
         // */
@@ -807,7 +891,7 @@ function init_DisplayOptions(opts)
                     // We already have 'custom' set...
                     /*
                     Connexions::log(
-                            "Connexions_View_Helper_HtmlDisplayOptions::"
+                            "View_Helper_HtmlDisplayOptions::"
                             .   "setGroups: "
                             .       "disallow second 'custom' group");
                     // */
@@ -829,9 +913,9 @@ function init_DisplayOptions(opts)
                           'isCustom' => true,
                           'options'  => array_keys($this->_fieldMap));
 
-            // /*
+            /*
             Connexions::log(
-                    "Connexions_View_Helper_HtmlDisplayOptions::"
+                    "View_Helper_HtmlDisplayOptions::"
                     .   "setGroups: No 'custom' option defined, create an "
                     .       "additional, custom group [ "
                     .           print_r($opts, true) . " ]");
@@ -871,7 +955,7 @@ function init_DisplayOptions(opts)
         $name = strtolower($name);
 
         /*
-        Connexions::log("Connexions_View_Helper_HtmlDisplayOptions::"
+        Connexions::log("View_Helper_HtmlDisplayOptions::"
                             .   "defineGroup: '{$name}', in:"
                             .       "[ ". print_r($options, true) ." ]");
         // */
@@ -909,7 +993,7 @@ function init_DisplayOptions(opts)
             if (! isset($this->_fieldMap[$fieldName]))
             {
                 // /*
-                Connexions::log("Connexions_View_Helper_HtmlDisplayOptions:"
+                Connexions::log("View_Helper_HtmlDisplayOptions:"
                                     . "defineGroup: "
                                     .   "Unmatched field[ {$fieldName} ]");
                 // */
@@ -924,7 +1008,7 @@ function init_DisplayOptions(opts)
         }
 
         /*
-        Connexions::log("Connexions_View_Helper_HtmlDisplayOptions::"
+        Connexions::log("View_Helper_HtmlDisplayOptions::"
                             .   "defineGroup: '{$name}', final:"
                             .       "[ ". print_r($group, true) ." ]");
         // */
@@ -987,7 +1071,7 @@ function init_DisplayOptions(opts)
                 }
 
                 /*
-                Connexions::log("Connexions_View_Helper_HtmlDisplayOptions:"
+                Connexions::log("View_Helper_HtmlDisplayOptions:"
                             . "_renderOptionGroupsElement: "
                             .   "field [ ". print_r($val, true) ." ]");
                 // */

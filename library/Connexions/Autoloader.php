@@ -34,6 +34,9 @@ class Connexions_Autoloader implements Zend_Loader_Autoloader_Interface
                 'Zend_'         => array('path' => APPLICATION_LIBRARY_PATH),
                 'ZendX_'        => array('path' => APPLICATION_LIBRARY_PATH),
                 'Connexions_'   => array('path' => APPLICATION_LIBRARY_PATH),
+                'View_'         => array('path' =>
+                                            APPLICATION_VIEW_HELPER_PATH,
+                                         'shift'=> 2),
                 'Model_'        => array('path' => APPLICATION_MODEL_PATH,
                                          'shift'=> 1),
                 'Service_'      => array('path' => APPLICATION_SERVICE_PATH,
@@ -101,10 +104,15 @@ class Connexions_Autoloader implements Zend_Loader_Autoloader_Interface
              ( (! class_exists($class)) && (! interface_exists($class)) ) )
         {
             $msg = sprintf("Connexions_Autoloader::autoload: class[ %s ], "
-                            .   "filePath[ %s ] - FAILED",
-                            $class, $filePath);
+                            .   "filePath[ %s ] - FAILED: "
+                            .   "res[ %s ], "
+                            .   "class_exists[ %s ], "
+                            .   "interface_exists[ %s ]",
+                            $class, $filePath,
+                            var_export($res, true),
+                            (class_exists($class)     ? 'true' : 'false'),
+                            (interface_exists($class) ? 'true' : 'false'));
 
-            //Connexions::log( $msg );
             throw new Exception( $msg );
         }
 

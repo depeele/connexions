@@ -65,6 +65,16 @@ class Service_User extends Connexions_Service
                                          'fullName' => 'Guest') );
         }
 
+        // /*
+        Connexions::log("Service_User::authenticate(): "
+                        .   "authType[ %s ], authAdapter[ %s ], user[ %s ]",
+                        $authType,
+                        (is_object($authAdapter)
+                            ? get_class($authAdapter)
+                            : gettype($authAdapter)),
+                        $user->debugDump());
+        // */
+
         return $user;
     }
 
@@ -86,9 +96,21 @@ class Service_User extends Connexions_Service
      */
     public function csList2set($csList)
     {
-        $names = preg_split('/\s*,\s*/', $csList);
+        $names = (empty($csList)
+                    ? array()
+                    : preg_split('/\s*,\s*/', strtolower($csList)) );
 
-        return $this->_getMapper()->fetchBy('name', $names, 'name ASC');
+        if (empty($names))
+        {
+            $set = $this->_getMapper()->makeEmptySet();
+        }
+        else
+        {
+            $set = $this->_getMapper()->fetchBy('name', $names, 'name ASC');
+            $set->setSource($csList);
+        }
+
+        return $set;
     }
 
     /** @brief  Retrieve a set of users related by a set of Tags.

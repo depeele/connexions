@@ -3,7 +3,7 @@
  *
  *  View helper to render a paginated set of Users in HTML.
  */
-class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
+class View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
 {
     static public   $numericGrouping    = 10;
     static public   $perPageChoices     = array(10, 25, 50, 100);
@@ -137,10 +137,10 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
      *  @param  tagInfo         A Connexions_Set_Info instance containing
      *                          information about the requested tags;
      *  @param  style           The style to use for each item
-     *                          (Connexions_View_Helper_HtmlUsers::
+     *                          (View_Helper_HtmlUsers::
      *                                                          STYLE_*);
      *  @param  sortBy          The field used to sort the items
-     *                          (Connexions_View_Helper_HtmlUsers::
+     *                          (View_Helper_HtmlUsers::
      *                                                      SORT_BY_*);
      *  @param  sortOrder       The sort order
      *                          (Model_UserSet::SORT_ORDER_ASC |
@@ -169,12 +169,12 @@ class Connexions_View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
     /** @brief  Set the namespace, primarily for forms and cookies.
      *  @param  namespace   A string namespace.
      *
-     *  @return Connexions_View_Helper_HtmlUsers for a fluent interface.
+     *  @return View_Helper_HtmlUsers for a fluent interface.
      */
     public function setNamespace($namespace)
     {
         /*
-        Connexions::log("Connexions_View_Helper_HtmlUsers::"
+        Connexions::log("View_Helper_HtmlUsers::"
                             .   "setNamespace( {$namespace} )");
         // */
 
@@ -273,7 +273,7 @@ function init_UsersList(namespace)
      *  @param  style   A style value (self::STYLE_*)
      *  @param  values  If provided, an array of field values for this style.
      *
-     *  @return Connexions_View_Helper_HtmlUsers for a fluent interface.
+     *  @return View_Helper_HtmlUsers for a fluent interface.
      */
     public function setStyle($style, array $values = null)
     {
@@ -299,7 +299,7 @@ function init_UsersList(namespace)
         }
 
         /*
-        Connexions::log('Connexions_View_Helper_HtmlUsers::'
+        Connexions::log('View_Helper_HtmlUsers::'
                             . "setStyle({$style}) == [ "
                             .   $this->_displayOptions->getGroup() ." ]");
         // */
@@ -320,7 +320,7 @@ function init_UsersList(namespace)
     /** @brief  Set the current sortBy.
      *  @param  sortBy  A sortBy value (self::SORT_BY_*)
      *
-     *  @return Connexions_View_Helper_HtmlUsers for a fluent interface.
+     *  @return View_Helper_HtmlUsers for a fluent interface.
      */
     public function setSortBy($sortBy)
     {
@@ -342,7 +342,7 @@ function init_UsersList(namespace)
         }
 
         /*
-        Connexions::log('Connexions_View_Helper_HtmlUsers::'
+        Connexions::log('View_Helper_HtmlUsers::'
                             . "setSortBy({$orig}) == [ {$sortBy} ]");
         // */
 
@@ -363,7 +363,7 @@ function init_UsersList(namespace)
     /** @brief  Set the current sortOrder.
      *  @param  sortOrder   A sortOrder value (Model_UserSet::SORT_ORDER_*)
      *
-     *  @return Connexions_View_Helper_HtmlUsers for a fluent interface.
+     *  @return View_Helper_HtmlUsers for a fluent interface.
      */
     public function setSortOrder($sortOrder)
     {
@@ -382,7 +382,7 @@ function init_UsersList(namespace)
         }
 
         /*
-        Connexions::log('Connexions_View_Helper_HtmlUsers::'
+        Connexions::log('View_Helper_HtmlUsers::'
                             . "setSortOrder({$orig}) == [ {$sortOrder} ]");
         // */
     
@@ -418,7 +418,7 @@ function init_UsersList(namespace)
         }
 
         /*
-        Connexions::log('Connexions_View_Helper_HtmlUsers::'
+        Connexions::log('View_Helper_HtmlUsers::'
                             . 'getShowMeta(): return[ '
                             .       print_r($val, true) .' ]');
         // */
@@ -434,10 +434,10 @@ function init_UsersList(namespace)
      *  @param  tagInfo         A Connexions_Set_Info instance containing
      *                          information about the requested tags;
      *  @param  style           The style to use for each item
-     *                          (Connexions_View_Helper_HtmlUsers::
+     *                          (View_Helper_HtmlUsers::
      *                                                          STYLE_*);
      *  @param  sortBy          The field used to sort the items
-     *                          (Connexions_View_Helper_HtmlUsers::
+     *                          (View_Helper_HtmlUsers::
      *                                                      SORT_BY_*);
      *  @param  sortOrder       The sort order
      *                          (Model_UserSet::SORT_ORDER_ASC |
@@ -453,7 +453,7 @@ function init_UsersList(namespace)
                            $sortOrder    = null)
     {
         /*
-        Connexions::log("Connexions_View_Helper_HtmlUsers: "
+        Connexions::log("View_Helper_HtmlUsers: "
                             . "style[ {$style} ], "
                             . "sortBy[ {$sortBy} ], "
                             . "sortOrder[ {$sortOrder} ]");
@@ -464,7 +464,7 @@ function init_UsersList(namespace)
         if ($sortOrder !== null)    $this->setSortOrder($sortOrder);
 
         /*
-        Connexions::log("Connexions_View_Helper_HtmlUsers: "
+        Connexions::log("View_Helper_HtmlUsers: "
                             . "validated to: "
                             . "style[ {$this->getStyle()} ], "
                             . "sortBy[ {$this->_sortBy} ], "

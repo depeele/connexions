@@ -226,6 +226,17 @@ abstract class Connexions_Model_Mapper
         return $domainModel;
     }
 
+    /** @brief  Construct an empty Model_Set_* instance. */
+    public function makeEmptySet()
+    {
+        $setName = $this->getModelSetName();
+        $set     = new $setName(array('mapper'      => $this,
+                                      'modelName'   => $this->getModelName(),
+                                      'totalCount'  => 0));
+
+        return $set;
+    }
+
     /** @brief  Remove the given model instance from the identity map.
      *  @param  model   The model instance.
      *

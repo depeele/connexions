@@ -446,6 +446,7 @@ abstract class Connexions_Model_Mapper_DbTable
         $set     = new $setName( array('mapper'     => $this,
                                       #'modelName'  => $this->getModelName(),
                                        'totalCount' => $totalCount,
+                                       'offset'     => $offset,
                                        'results'    => $accessorModels) );
 
         return $set;
@@ -723,7 +724,8 @@ abstract class Connexions_Model_Mapper_DbTable
 
         // Default count column expression and name
         $countPart   = 'COUNT(1) AS ';
-        $countColumn = $db->quoteIdentifier(self::ROW_COUNT_COLUMN);
+        $countColumn = $db->quoteIdentifier(
+                                $db->foldCase(self::ROW_COUNT_COLUMN));
         $union       = $selectCount->getPart(Zend_Db_Select::UNION);
 
         /* If we're dealing with a UNION query, execute the UNION as a subquery
@@ -749,7 +751,7 @@ abstract class Connexions_Model_Mapper_DbTable
              * the COUNT query.
              */
             if ( ($isDistinct && (count($columns) > 1)) ||
-                  (count($groups) > 1)                   ||
+                  (count($groups) > 1)                  ||
                   (! @empty($having)) )
             {
                 $selectCount = $db->select()->from( $selectCount );
@@ -782,18 +784,6 @@ abstract class Connexions_Model_Mapper_DbTable
             {
                 $groupPart = $db->quoteIdentifier($groups[0], true);
 
-                /* Grouping can consist of multiple group identifiers, which
-                 * MUST all be included here in order to properly count unique
-                 * items.
-                $parts = array();
-                foreach ($groups as $group)
-                {
-                    array_push($parts, $db->quoteIdentifier($group, true));
-                }
-
-                $groupPart = implode(',', $parts);
-                 */
-
                 /*
                 Connexions::log("Connexions_Model_Mapper_DbTable::"
                                 .   "_select_forCount: "
@@ -814,6 +804,7 @@ abstract class Connexions_Model_Mapper_DbTable
 
             $selectCount->reset(Zend_Db_Select::COLUMNS)
                         ->reset(Zend_Db_Select::ORDER)
+                        ->reset(Zend_Db_Select::LIMIT_OFFSET)
                         ->reset(Zend_Db_Select::LIMIT_OFFSET)
                         ->reset(Zend_Db_Select::GROUP)
                         ->reset(Zend_Db_Select::DISTINCT)
