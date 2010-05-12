@@ -232,17 +232,25 @@ class BookmarkServiceTest extends DbTestCase
     {
         //            vv ordered by 'tagCount DESC'
         $expected   = '1:2,1:4,3:4,1:5,4:15';
+        $expectedAr = array( array(1,2),
+                             array(1,4),
+                             array(3,4),
+                             array(1,5),
+                             array(4,15)
+                      );
         $service    = Connexions_Service::factory('Model_Bookmark');
         $bookmarks  = $service->fetchByTags( array( 6, 12 ), false );
         $this->assertNotEquals(null, $bookmarks);
 
         //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
 
+        $ids        = $bookmarks->idArray();
         $bookmarks  = $bookmarks->__toString();
 
         //printf ("Bookmarks: [ %s ]\n", $bookmarks);
 
-        $this->assertEquals($expected, $bookmarks);
+        $this->assertEquals($expected,   $bookmarks);
+        $this->assertEquals($expectedAr, $ids);
     }
 
     public function testBookmarkServiceFetchByTagsAnyAuthenticated()
@@ -477,7 +485,7 @@ class BookmarkServiceTest extends DbTestCase
     public function testBookmarkServiceFetchByItemsAndTagsExact()
     {
         //            vv ordered by 'itemCount,tagCount DESC'
-        $expected   = '3:4,4:15';
+        $expected   = '4:15,3:4';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $bookmarks  = $service->fetchByItemsAndTags(
                                     // items
@@ -501,7 +509,7 @@ class BookmarkServiceTest extends DbTestCase
         $this->_setAuthenticatedUser(1);
 
         //            vv ordered by 'itemCount,tagCount DESC'
-        $expected   = '3:4,4:15';
+        $expected   = '4:15,3:4';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $bookmarks  = $service->fetchByItemsAndTags(
                                     // items
@@ -525,7 +533,7 @@ class BookmarkServiceTest extends DbTestCase
     public function testBookmarkServiceFetchByItemsAndTagsAny()
     {
         //            vv ordered by 'itemCount,tagCount DESC'
-        $expected   = '3:4,1:4,3:9,2:6,2:7,2:11,2:13,3:8,3:10,4:15';
+        $expected   = '3:4,1:4,3:9,2:6,3:10,4:15,3:8,2:7,2:11,2:13';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $bookmarks  = $service->fetchByItemsAndTags(
                                     // items
@@ -550,7 +558,7 @@ class BookmarkServiceTest extends DbTestCase
         $this->_setAuthenticatedUser(1);
 
         //            vv ordered by 'itemCount,tagCount DESC'
-        $expected   = '3:4,1:3,1:4,3:9,2:6,2:7,2:11,2:13,3:8,3:10,4:15';
+        $expected   = '3:4,1:3,1:4,3:9,2:6,3:10,4:15,3:8,2:7,2:11,2:13';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $bookmarks  = $service->fetchByItemsAndTags(
                                     // items

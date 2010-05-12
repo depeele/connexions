@@ -5,12 +5,10 @@
  */
 class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 {
-    static public   $numericGrouping    = 10;
-
     static public   $defaults           = array(
-        'displayStyle'      => self::STYLE_REGULAR
+        'displayStyle'      => self::STYLE_REGULAR,
+        'numericGrouping'   => 10,
     );
-
 
     const STYLE_TITLE                   = 'title';
     const STYLE_REGULAR                 = 'regular';
@@ -112,46 +110,42 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 
     static protected $_initialized  = array();
 
-    public function __construct()
+    /** @brief  Construct a new HTML Bookmarks helper.
+     *  @param  config  A configuration array that may include, in addition to
+     *                  what our parent accepts:
+     *                      - displayStyle      Desired display style
+     *                                          (if an array, STYLE_CUSTOM)
+     *                                          [ STYLE_REGULAR ];
+     *                      - numericGrouping   When sorting numerically, the
+     *                                          number of items per group
+     *                                          [ 10 ];
+     */
+    public function __construct(array $config = array())
     {
         // Add extra class-specific defaults
-        self::$defaults['displayStyle'] = self::STYLE_REGULAR;
+        foreach (self::$defaults as $key => $value)
+        {
+            $this->_params[$key] = $value;
+        }
+
+        parent::__construct($config);
     }
 
     /** @brief  Render an HTML version of a paginated set of User Items or,
      *          if no arguments, this helper instance.
-     *  @param  paginator       The Zend_Paginator representing the items to
-     *                          be presented.
-     *  @param  viewer          A Model_User instance representing the
-     *                          current viewer;
-     *  @param  tags            A Connexions_Model_Set instance containing
-     *                          information about the requested tags;
-     *  @param  style           The style to use for each item
-     *                          (View_Helper_HtmlBookmarks::STYLE_*);
-     *  @param  sortBy          The field used to sort the items
-     *                          (View_Helper_HtmlBookmarks::SORT_BY_*);
-     *  @param  sortOrder       The sort order
-     *                          (Connexions_Service::SORT_DIR_ASC |
-     *                           Connexions_Service::SORT_DIR_DESC)
+     *  @param  config  A configuration array (see populate());
      *
-     *  @return The HTML representation of the user items.
+     *  @return A configured instance of $this (if $config is provided),
+     *          otherwise, the HTML representation of the bookmarks.
      */
-    public function htmlBookmarks($paginator    = null,
-                                  $viewer       = null,
-                                  $tags         = null,
-                                  $style        = null,
-                                  $sortBy       = null,
-                                  $sortOrder    = null)
+    public function htmlBookmarks(array $config = array())
     {
-        if ((! $paginator instanceof Zend_Paginator)                         ||
-            (! $viewer    instanceof Model_User)                             ||
-            (! $tags      instanceof Connexions_Model_Set))
+        if (! empty($config))
         {
-            return $this;
+            return $this->populate($config);
         }
 
-        return $this->render($paginator, $viewer, $tags,
-                             $style, $sortBy, $sortOrder);
+        return $this->render();
     }
 
     /** @brief  Set the namespace, primarily for forms and cookies.
@@ -286,7 +280,7 @@ function init_Bookmarks(namespace)
      *
      *  @return View_Helper_HtmlBookmarks for a fluent interface.
      */
-    public function setStyle($style, array $values = null)
+    public function setDisplayStyle($style, array $values = null)
     {
         if (is_array($style))
         {
@@ -294,52 +288,35 @@ function init_Bookmarks(namespace)
             $style  = self::STYLE_CUSTOM;
         }
 
-        /*
-        Connexions::log("View_Helper_HtmlBookmarks::setStyle( %s, { %s } )",
-                        $style, var_export($values, true));
-        // */
-
-
-        /*
-        if (($values !== null) && (! empty($values)) )
+        switch ($style)
         {
-            $this->_displayOptions->setGroupValues($values);
-            if ($style === self::STYLE_CUSTOM)
-                $this->_displayOptions->setGroup($style);
-        }
-        else
-        */
-        {
-            switch ($style)
-            {
-            case self::STYLE_TITLE:
-            case self::STYLE_REGULAR:
-            case self::STYLE_FULL:
-            case self::STYLE_CUSTOM:
-                break;
+        case self::STYLE_TITLE:
+        case self::STYLE_REGULAR:
+        case self::STYLE_FULL:
+        case self::STYLE_CUSTOM:
+            break;
 
-            default:
-                $style = self::$defaults['displayStyle'];
-                break;
-            }
-
-            $this->_displayOptions->setGroup($style, $values);
+        default:
+            $style = self::$defaults['displayStyle'];
+            break;
         }
+
+        $this->_displayOptions->setGroup($style, $values);
 
         // /*
         Connexions::log('View_Helper_HtmlBookmarks::'
-                            . "setStyle({$style}) == [ "
+                            . "setDisplayStyle({$style}) == [ "
                             .   $this->_displayOptions->getGroup() ." ]");
         // */
     
         return $this;
     }
 
-    /** @brief  Get the current style value.
+    /** @brief  Get the current display style value.
      *
      *  @return The style value (self::STYLE_*).
      */
-    public function getStyle()
+    public function getDisplayStyle()
     {
         return $this->_displayOptions->getGroup();
     }
@@ -390,51 +367,13 @@ function init_Bookmarks(namespace)
     }
 
     /** @brief  Render an HTML version of a paginated set of User Items.
-     *  @param  paginator       The Zend_Paginator representing the items to
-     *                          be presented.
-     *  @param  viewer          A Model_User instance representing the
-     *                          current viewer;
-     *  @param  tags            A Connexions_Model_Set instance containing
-     *                          information about the requested tags;
-     *  @param  style           The style to use for each item
-     *                          (View_Helper_HtmlBookmarks::STYLE_*);
-     *  @param  sortBy          The field used to sort the items
-     *                          (View_Helper_HtmlBookmarks::SORT_BY_*);
-     *  @param  sortOrder       The sort order
-     *                          (Connexions_Service::SORT_DIR_ASC |
-     *                           Connexions_Service::SORT_DIR_DESC)
      *
      *  @return The HTML representation of the user items.
      */
-    public function render(Zend_Paginator            $paginator,
-                           Model_User                $viewer,
-                           Connexions_Model_Set      $tags,
-                           $style        = null,
-                           $sortBy       = null,
-                           $sortOrder    = null)
+    public function render()
     {
-        /*
-        Connexions::log("View_Helper_HtmlBookmarks: "
-                            . "style[ {$style} ], "
-                            . "sortBy[ {$sortBy} ], "
-                            . "sortOrder[ {$sortOrder} ]");
-        // */
-
-        if ($style     !== null)    $this->setStyle($style );
-        if ($sortBy    !== null)    $this->setSortBy($sortBy);
-        if ($sortOrder !== null)    $this->setSortOrder($sortOrder);
-
-        /*
-        Connexions::log("View_Helper_HtmlBookmarks: "
-                            . "validated to: "
-                            . "style[ {$this->getStyle()} ], "
-                            . "sortBy[ {$this->sortBy} ], "
-                            . "sortByTitle[ "
-                            .       self::$sortTitles[$this->sortBy]." ], "
-                            . "sortOrder[ {$this->sortOrder} ], "
-                            . "sortOrderTitle[ "
-                            .       self::$orderTitles[$this->sortOrder]." ]");
-        // */
+        $paginator    = $this->paginator;
+        $viewer       = $this->viewer;
 
         $html         = "";
         $showMeta     = $this->getShowMeta();
@@ -537,10 +476,10 @@ function init_Bookmarks(namespace)
         case self::SORT_BY_RATING_COUNT:      // 'ratingCount'
         case self::SORT_BY_USER_COUNT:        // 'userCount'
             /* We'll do numeric grouping in groups of:
-             *      self::$numericGrouping [ 10 ]
+             *      $this->numericGrouping [ 10 ]
              */
-            $value = floor($value / self::$numericGrouping) *
-                                                    self::$numericGrouping;
+            $value = floor($value / $this->numericGrouping) *
+                                                    $this->numericGrouping;
             break;
         }
 

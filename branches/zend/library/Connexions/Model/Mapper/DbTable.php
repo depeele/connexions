@@ -363,6 +363,10 @@ abstract class Connexions_Model_Mapper_DbTable
         return $this->makeModel($accessorModel);
     }
 
+    /************************************
+     * Support for Connexions_Model_Set
+     *
+     */
 
     /** @brief  Fetch all matching model instances.
      *  @param  where   Optional WHERE clause (string, array, Zend_Db_Select)
@@ -396,7 +400,6 @@ abstract class Connexions_Model_Mapper_DbTable
         }
         else
         {
-            $totalCount = null;
             $accessor   = $this->getAccessor();
             $select     = $accessor->select();
 
@@ -414,7 +417,6 @@ abstract class Connexions_Model_Mapper_DbTable
         if (($count !== null) || ($offset !== null))
         {
             $select->limit($count, $offset);
-            $totalCount = $this->_getTotalCount($select);
         }
 
         /*
@@ -426,27 +428,19 @@ abstract class Connexions_Model_Mapper_DbTable
 
         $accessorModels = $select->query()->fetchAll();
 
-        if ( $totalCount === null )
-        {
-            // There was no limit so the count is simple the number of returned
-            // records.
-            $totalCount = count($accessorModels);
-        }
-
         /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::fetch() "
-                        . "sql[ %s ], %d of %d rows...",
+                        . "sql[ %s ], %d rows...",
                         get_class($this),
                         $select->assemble(),
-                        count($accessorModels), $totalCount);
+                        count($accessorModels));
         // */
 
         // Create a Connexions_Model_Set to contain these results
         $setName = $this->getModelSetName();
         $set     = new $setName( array('mapper'     => $this,
                                       #'modelName'  => $this->getModelName(),
-                                       'totalCount' => $totalCount,
-                                       'offset'     => $offset,
+                                       'context'    => $select,
                                        'results'    => $accessorModels) );
 
         return $set;
@@ -487,6 +481,176 @@ abstract class Connexions_Model_Mapper_DbTable
 
         return $this->fetch($where, $order, $count, $offset);
     }
+
+    /** @brief  In support of lazy-evaluation, this method retrieves the
+     *          specified range of values for an existing set.
+     *  @param  set     Connexions_Model_Set instance.
+     *  @param  offset  The beginning offset.
+     *  @param  count   The number of items.
+     *
+     *  @return An array containing the raw data required to construct
+     *          Connexions_Model instances for each item in the specified
+     *          range.
+     */
+    public function fillItems(Connexions_Model_Set  $set,
+                              $offset, $count)
+    {
+        $select = $set->getContext();
+        if (! $select instanceof Zend_Db_Select)
+            throw new Exception("Invalid context!  Not Zend_Db_Select.");
+
+        $select->limit($count, $offset);
+
+        /*
+        Connexions::log("Connexions_Model_Mapper_DbTable::fillItems(%d..%d): "
+                        .   "totalCount[ %d ], sql[ %s ]",
+                        $offset, $offset+$count,
+                        $set->getTotalCount(),
+                        $select->assemble());
+        // */
+
+        return $select->query()->fetchAll();
+    }
+
+    /** @brief  Return an array of the Identifiers of all items in this set,
+     *          regardless of offset or limit restrictions.
+     *
+     *  @return An array of all Identifiers.
+     */
+    public function getIds(Connexions_Model_Set   $set)
+    {
+        $select = $set->getContext();
+        if (! $select instanceof Zend_Db_Select)
+            throw new Exception("Invalid context!  Not Zend_Db_Select.");
+
+        $selectIds = clone $select;
+        $selectIds->__toString();    // ZF-3719 workaround
+
+        // /*
+        Connexions::log("Connexions_Model_Mapper_DbTable[%s]::getIds(%s): "
+                        .   "initial select[ %s ]",
+                        get_class($this),
+                        get_class($set),
+                        $selectIds->assemble());
+        // */
+
+        $keyNames = (is_array($this->_keyName)
+                        ? $this->_keyName
+                        : array($this->_keyName));
+
+        $selectIds->reset(Zend_Db_Select::COLUMNS)
+                  //->reset(Zend_Db_Select::ORDER)
+                  ->reset(Zend_Db_Select::LIMIT_OFFSET)
+                  ->reset(Zend_Db_Select::LIMIT_COUNT)
+                  ->reset(Zend_Db_Select::GROUP)
+                  ->reset(Zend_Db_Select::DISTINCT)
+                  ->reset(Zend_Db_Select::HAVING)
+                  ->columns($keyNames);
+
+        // /*
+        Connexions::log("Connexions_Model_Mapper_DbTable[%s]::getIds(): "
+                        .   "keyNames[ %s ], sql[ %s ]",
+                        get_class($this),
+                        implode(', ', $keyNames),
+                        $selectIds->assemble());
+        // */
+
+        $rows  = $selectIds->query(Zend_Db::FETCH_ASSOC)
+                           ->fetchAll();
+
+        /*
+        Connexions::log("Connexions_Model_Mapper_DbTable::getIds(): "
+                        .   "keyNames[ %s ], sql[ %s ]: %d rows, [ %s ]",
+                        implode(', ', $keyNames),
+                        $selectIds->assemble(),
+                        count($rows),
+                        Connexions::varExport($rows));
+        // */
+
+        $ids   = array();
+        foreach ($rows as $row)
+        {
+            /*
+            Connexions::log("Connexions_Model_Mapper_DbTable::getIds(): "
+                            .   "row[ %s ]",
+                            Connexions::varExport($row));
+            // */
+
+            if (is_array($this->_keyName))
+            {
+                $id = array_values($row);
+            }
+            else
+            {
+                $id = $row[$this->_keyName];
+            }
+
+            array_push($ids, $id);
+        }
+
+        /*
+        Connexions::log("Connexions_Model_Mapper_DbTable::getIds(): "
+                        .   "ids[ %s ]",
+                        Connexions::varExport($ids));
+        // */
+
+        return $ids;
+    }
+
+    /** @brief  Get the total count for the given Model Set.
+     *  @param  set     Connexions_Model_Set instance.
+     *  @param  force   Force a count, event if there are no limits? [ false ];
+     *
+     *  @return The total count (null if there are no limits in place).
+     */
+    public function getTotalCount(Connexions_Model_Set $set,
+                                                       $force   = false)
+    {
+        $select = $set->getContext();
+        if (! $select instanceof Zend_Db_Select)
+            throw new Exception("Invalid context!  Not Zend_Db_Select.");
+
+        $offset = (int) $select->getPart(Zend_Db_Select::LIMIT_OFFSET);
+        $count  = (int) $select->getPart(Zend_Db_Select::LIMIT_COUNT);
+        if ( $force || ($offset > 0) || ($count > 0) )
+        {
+            /*
+            Connexions::log("Connexions_Model_Mapper_DbTable::getTotalCount(): "
+                            .   "Perform a query to establish the total count");
+            // */
+
+            return $this->_getTotalCount($select);
+        }
+
+        /*
+        Connexions::log("Connexions_Model_Mapper_DbTable::getTotalCount(): "
+                        .   "No limits are in place: count() === totalCount");
+        // */
+
+        return null;
+    }
+
+    /** @brief  Get the starting offset of the given Model Set.
+     *  @param  set     Connexions_Model_Set instance.
+     *
+     *  @return The starting offset.
+     */
+    public function getOffset(Connexions_Model_Set $set)
+    {
+        $select = $set->getContext();
+        if (! $select instanceof Zend_Db_Select)
+            throw new Exception("Invalid context!  Not Zend_Db_Select.");
+
+        $offset = (int) $select->getPart(Zend_Db_Select::LIMIT_OFFSET);
+        //$count  = (int) $select->getPart(Zend_Db_Select::LIMIT_COUNT);
+
+        return $offset;
+    }
+
+    /************************************
+     * Overrides
+     *
+     */
 
     /** @brief  Convert the incoming model into an array containing only 
      *          data that should be directly persisted.  This method may also
@@ -805,7 +969,7 @@ abstract class Connexions_Model_Mapper_DbTable
             $selectCount->reset(Zend_Db_Select::COLUMNS)
                         ->reset(Zend_Db_Select::ORDER)
                         ->reset(Zend_Db_Select::LIMIT_OFFSET)
-                        ->reset(Zend_Db_Select::LIMIT_OFFSET)
+                        ->reset(Zend_Db_Select::LIMIT_COUNT)
                         ->reset(Zend_Db_Select::GROUP)
                         ->reset(Zend_Db_Select::DISTINCT)
                         ->reset(Zend_Db_Select::HAVING)

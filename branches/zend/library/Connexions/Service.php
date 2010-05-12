@@ -74,7 +74,7 @@ abstract class Connexions_Service
      *
      *  @return A new Connexions_Model_Set.
      */
-    public function fetch($criteria  = array(),
+    public function fetch($criteria  = null,
                           $order     = null,
                           $count     = null,
                           $offset    = null)
@@ -84,7 +84,7 @@ abstract class Connexions_Service
 
         if (is_array($order))
         {
-            // Ensure that we have all nave/direction pairs
+            // Ensure that we have all name/direction pairs
             $newOrder = array();
             foreach ($newOrder as $name => $direction)
             {

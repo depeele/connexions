@@ -32,9 +32,11 @@ class Connexions_Model_Set_Adapter_Paginator
      */
     public function getItems($offset, $itemCountPerPage)
     {
+        /*
         Connexions::log("Connexions_Model_Set_Adapter_Paginator::"
                         .   "getItems(%d, %d): _offset[ %d ]",
                         $offset, $itemCountPerPage, $this->_offset);
+        // */
 
         return $this->_set->getItems($offset - $this->_offset,
                                      $itemCountPerPage);

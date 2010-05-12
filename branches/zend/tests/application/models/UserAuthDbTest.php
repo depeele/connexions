@@ -287,8 +287,6 @@ class UserAuthDbTest extends DbTestCase
                         ));
         $cred     = $this->_user1['password']['credential'] .'?bad';
 
-        Connexions::log("Compare1: [ %s ]", $userAuth->user->debugDump());
-
         $this->assertFalse( $userAuth->compare( $cred ) );
     }
 

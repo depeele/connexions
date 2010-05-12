@@ -80,6 +80,13 @@ class Service_Tag extends Connexions_Service
                     $set->usort('Service_Tag::sort_by_tag');
                 }
             }
+
+            // /*
+            Connexions::log("Service_Tag::csList2set( [ %s ] ): "
+                            .   "%d tags[ %s ]",
+                            $csList,
+                            count($set), $set);
+            // */
         }
 
         return $set;
@@ -88,17 +95,26 @@ class Service_Tag extends Connexions_Service
     /** @brief  Retrieve a set of tags related by a set of Users.
      *  @param  users   A Model_Set_User instance or array of users to match.
      *  @param  order   Optional ORDER clause (string, array)
-     *                      [ 'userCount DESC' ];
+     *                      [ 'userCount     DESC',
+     *                        'userItemCount DESC',
+     *                        'tag           ASC' ];
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
      *
      *  @return A new Model_Set_Tag instance.
      */
     public function fetchByUsers($users,
-                                 $order   = 'userCount DESC',
+                                 $order   = null,
                                  $count   = null,
                                  $offset  = null)
     {
+        if ($order === null)
+        {
+            $order = array('userCount     DESC',
+                           'userItemCount DESC',
+                           'tag           ASC');
+        }
+
         return $this->_getMapper()->fetchRelated( array(
                                         'users'  => $users,
                                         'order'  => $order,
@@ -110,17 +126,26 @@ class Service_Tag extends Connexions_Service
     /** @brief  Retrieve a set of tags related by a set of Items.
      *  @param  items   A Model_Set_Item instance or array of items to match.
      *  @param  order   Optional ORDER clause (string, array)
-     *                      [ 'itemCount DESC' ];
+     *                      [ 'itemCount     DESC',
+     *                        'userItemCount DESC',
+     *                        'tag           ASC' ];
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
      *
      *  @return A new Model_Set_Tag instance.
      */
     public function fetchByItems($items,
-                                 $order   = 'itemCount DESC',
+                                 $order   = null,
                                  $count   = null,
                                  $offset  = null)
     {
+        if ($order === null)
+        {
+            $order = array('itemCount     DESC',
+                           'userItemCount DESC',
+                           'tag           ASC');
+        }
+
         return $this->_getMapper()->fetchRelated( array(
                                         'items'  => $items,
                                         'order'  => $order,
@@ -135,17 +160,26 @@ class Service_Tag extends Connexions_Service
      *  @param  bookmarks   A Model_Set_Bookmark instance or array of bookmark 
      *                      identifiers to match.
      *  @param  order       Optional ORDER clause (string, array)
-     *                          [ 'userItemCount DESC' ];
+     *                          [ 'userItemCount DESC',
+     *                            'userCount     DESC',
+     *                            'tag           ASC' ];
      *  @param  count       Optional LIMIT count
      *  @param  offset      Optional LIMIT offset
      *
      *  @return A new Model_Set_Tag instance.
      */
     public function fetchByBookmarks($bookmarks = null,
-                                     $order     = 'userItemCount DESC',
+                                     $order     = null,
                                      $count     = null,
                                      $offset    = null)
     {
+        if ($order === null)
+        {
+            $order = array('userItemCount DESC',
+                           'userCount     DESC',
+                           'tag           ASC');
+        }
+
         $users = null;
         $items = null;
         if (! empty($bookmarks))
@@ -161,7 +195,7 @@ class Service_Tag extends Connexions_Service
                 array_push($items, $id[1]);
             }
 
-            /*
+            // /*
             Connexions::log("Service_Tag::fetchByBookmarks(): "
                             .   "users[ %s ], items[ %s ]",
                             implode(', ', $users),

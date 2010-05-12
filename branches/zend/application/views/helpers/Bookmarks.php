@@ -16,9 +16,16 @@ class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
 
     static public   $defaults       = array(
         'namespace'                 => '',
+        'viewer'                    => null,
+        'users'                     => null,
+        'tags'                      => null,
+
+        'page'                      => 1,
+        'perPage'                   => 50,
+
         'sortBy'                    => self::SORT_BY_DATE_TAGGED,
         'sortOrder'                 => Connexions_Service::SORT_DIR_DESC,
-        'perPage'                   => 50,
+
         'multipleUsers'             => true,
     );
 
@@ -41,14 +48,74 @@ class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
      */
     protected   $_params            = array();
 
-    public function __construct()
+    /** @brief  Construct a new Bookmarks helper.
+     *  @param  config  A configuration array (see populate());
+     */
+    public function __construct(array $config = array())
     {
         //Connexions::log("View_Helper_Bookmarks::__construct()");
 
-        foreach (self::$defaults as $key => $val)
+        foreach (self::$defaults as $key => $value)
         {
-            $this->_params[$key] = $val;
+            $this->_params[$key] = $value;
         }
+
+        if (! empty($config))
+            $this->populate($config);
+    }
+
+    /** @brief  Given an array of configuration data, populate the parameter of
+     *          this instance.
+     *  @param  config  A configuration array that may include:
+     *                      - namespace     The namespace to use for all
+     *                                      cookies/parameters/settings
+     *                                      [ '' ];
+     *                      - viewer        A Model_User instance identifying
+     *                                      the current viewer;
+     *                      - users         A Model_Set_User or Model_User
+     *                                      instance, or null for all users
+     *                                      [ null ];
+     *                      - tags          A Model_Set_Tag instance or null
+     *                                      for all tags
+     *                                      [ null ];
+     *                      - page          The page to present [ 1 ];
+     *                      - perPage       The number of items per page
+     *                                      [ 50 ];
+     *                      - sortBy        The Bookmark field to sort by
+     *                                      [ self::SORT_BY_DATE_TAGGED ];
+     *                      - sortOrder     The sort order
+     *                                      [Connexions_Service::SORT_DIR_DESC]
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function populate(array $config)
+    {
+        foreach ($config as $key => $value)
+        {
+            $this->__set($key, $value);
+            //$this->_params[$key] = $value;
+        }
+
+        // Initialize 'multipleUsers' based upon the value of 'users'
+        if (($this->_params['users'] === null) ||
+            (($this->_params['users'] instanceof Model_Set_User) &&
+             (count($this->_params['users']) != 1)) )
+        {
+            $this->_params['multipleUsers'] = true;
+        }
+
+
+        /*
+        $viewer = $this->_params['viewer']; unset($this->_params['viewer']);
+
+        $this->_params['viewer'] = $viewer->name;
+        Connexions::log("View_Helper_Bookmarks::populate(): params[ %s ]",
+                        print_r($this->_params, true));
+
+        $this->_params['viewer'] = $viewer;
+        // */
+
+        return $this;
     }
 
     public function setNamespace($namespace)
@@ -80,8 +147,10 @@ class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
 
         $this->_params['sortBy'] = $value;
 
+        /*
         Connexions::log("View_Helper_Bookmarks::setSortBy( %s ) == '%s'",
                         $orig, $value);
+        // */
 
         return $this;
     }
@@ -102,8 +171,20 @@ class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
         }
         $this->_params['sortOrder'] = $value;
 
+        /*
         Connexions::log("View_Helper_Bookmarks::setSortOrder( %s ) == '%s'",
                         $orig, $value);
+        // */
+
+        return $this;
+    }
+
+    public function setPage($value)
+    {
+        if ($value < 1)
+            $value = self::$defaults['page'];
+
+        $this->_params['page'] = $value;
 
         return $this;
     }
@@ -134,27 +215,82 @@ class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
 
     public function __set($key, $value)
     {
+        /*
         if (! isset($this->_params[$key]))
             throw new Exception("Unknown parameter key [{$key}]");
+        */
 
-        switch ($key)
+        $method = 'set'. ucfirst($key);
+        if (method_exists($this, $method))
         {
-        case 'sortBy':
-            $this->setSortBy($value);
-            break;
-
-        case 'sortOrder':
-            $this->setSortOrder($value);
-            break;
-
-        case 'perPage':
-            $this->setPerPage($value);
-            break;
+            $this->{$method}($value);
+        }
+        else
+        {
+            $this->_params[$key] = $value;
         }
     }
 
     public function __get($key)
     {
+        switch ($key)
+        {
+        case 'bookmarks':
+            if (! @isset($this->_params[$key]))
+            {
+                $fetchOrder = $this->sortBy .' '. $this->sortOrder;
+                $perPage    = $this->perPage;
+                $page       = $this->page;
+                if ($page < 1)
+                    $page = 1;
+
+                $count      = $perPage;
+                $offset     = ($page - 1) * $perPage;
+
+                if ($this->users instanceof Model_User)
+                    $users = $this->users->userId;
+                else
+                    $users =& $this->users;
+
+                /*
+                Connexions::log("View_Helper_Bookmarks::__get( %s ): "
+                                . "Retrieve bookmarks: "
+                                . "order[ %s ], count[ %d ], offset[ %d ]",
+                                $key, $fetchOrder, $count, $offset);
+                // */
+
+                $bookmarks = Connexions_Service::factory('Model_Bookmark')
+                                    ->fetchByUsersAndTags($users,
+                                                          $this->tags,
+                                                          true,
+                                                          $fetchOrder,
+                                                          $count,
+                                                          $offset);
+                $this->_params[$key] = $bookmarks;
+            }
+            break;
+
+        case 'paginator':
+            if (! isset($this->_params[$key]))
+            {
+                $paginator = new Zend_Paginator(
+                                    $this->bookmarks->getPaginatorAdapter() );
+
+                /*
+                Connexions::log("View_Helper_Bookmarks::__get( %s ): "
+                                . "Retrieve paginator: "
+                                . "perPage[ %d ], page[ %d ]",
+                                $key, $this->perPage, $this->page);
+                // */
+
+                $paginator->setItemCountPerPage(  $this->perPage );
+                $paginator->setCurrentPageNumber( $this->page );
+
+                $this->_params[$key] = $paginator;
+            }
+            break;
+        }
+
         return (isset($this->_params[$key])
                     ? $this->_params[$key]
                     : null);
