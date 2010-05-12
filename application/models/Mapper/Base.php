@@ -33,12 +33,15 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
     /** @brief  Retrieve a set of Domain Model items via the userTagItem core
      *          table.
      *  @param  params  An array retrieval criteria:
-     *                      - users     The Model_Set_User instance or an array
-     *                                  of userIds to use in the relation;
-     *                      - items     The Model_Set_Item instance or an array
-     *                                  of itemIds to use in the relation;
-     *                      - tags      The Model_Set_Tag  instance or an array
-     *                                  of tagIds to use in the relation;
+     *                      - users     The Model_Set_User or Model_User
+     *                                  instance, or an array of userIds to use
+     *                                  in the relation;
+     *                      - items     The Model_Set_Item or Model_Item
+     *                                  instance or an array of itemIds to use
+     *                                  in the relation;
+     *                      - tags      The Model_Set_Tag or Model_Tag
+     *                                  instance or an array of tagIds to use
+     *                                  in the relation;
      *                      - order     Optional ORDER clause (string, array);
      *                      - count     Optional LIMIT count;
      *                      - offset    Optional LIMIT offset;
@@ -100,7 +103,8 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
             {
                 if (count($users) > 0)
                 {
-                    $subSelect->where('userId IN (?)', $users->idArray());
+                    $subSelect->where('userId IN (?)',
+                                      $users->idArray());
                 }
             }
             else if (is_array($users))
@@ -109,6 +113,10 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                 {
                     $subSelect->where('userId IN (?)', $users);
                 }
+            }
+            else if ($users instanceof Model_User)
+            {
+                $subSelect->where('userId=?', $users->userId);
             }
             else
             {
@@ -123,7 +131,8 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
             {
                 if (count($items) > 0)
                 {
-                    $subSelect->where('itemId IN (?)', $items->idArray());
+                    $subSelect->where('itemId IN (?)',
+                                      $items->idArray());
                 }
             }
             else if (is_array($items))
@@ -132,6 +141,10 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                 {
                     $subSelect->where('itemId IN (?)', $items);
                 }
+            }
+            else if ($items instanceof Model_Item)
+            {
+                $subSelect->where('itemId=?', $items->itemId);
             }
             else
             {
@@ -146,7 +159,8 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
             {
                 if (count($tags) > 0)
                 {
-                    $subSelect->where('tagId IN (?)', $tags->idArray());
+                    $subSelect->where('tagId IN (?)',
+                                      $tags->idArray());
                 }
             }
             else if (is_array($tags))
@@ -163,6 +177,10 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
             else if (is_int($tags))
             {
                 $subSelect->where('tagId=?', $tags);
+            }
+            else if ($tags instanceof Model_Tag)
+            {
+                $subSelect->where('tagId=?', $tags->tagId);
             }
             else
             {

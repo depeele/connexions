@@ -65,7 +65,7 @@ class Service_User extends Connexions_Service
                                          'fullName' => 'Guest') );
         }
 
-        // /*
+        /*
         Connexions::log("Service_User::authenticate(): "
                         .   "authType[ %s ], authAdapter[ %s ], user[ %s ]",
                         $authType,
@@ -125,10 +125,13 @@ class Service_User extends Connexions_Service
      */
     public function fetchByTags($tags,
                                 $exact   = true,
-                                $order   = 'tagCount DESC',
+                                $order   = null,
                                 $count   = null,
                                 $offset  = null)
     {
+        if ($order === null)
+            $order = 'tagCount DESC';
+
         return $this->_getMapper()->fetchRelated( array(
                                         'tags'      => $tags,
                                         'exactTags' => $exact,

@@ -51,6 +51,7 @@ abstract class Connexions_Model_Set
 
     /** @brief  The Data Mapper for member instances. */
     protected   $_mapper            = null;
+    protected   $_context           = null; // Mapper-specific retrieval context
 
     /** @brief  Total number of records. */
     protected   $_count             = null;
@@ -81,6 +82,7 @@ abstract class Connexions_Model_Set
      *                                  If not provided, a default will be 
      *                                  located when needed.  This will be 
      *                                  based upon the name of this class.
+     *                      context     Mapper-specific retrieval context.
      *
      *                      modelName   The name of a Domain Model class to 
      *                                  instantiate for each member of this 
@@ -232,6 +234,27 @@ abstract class Connexions_Model_Set
         return $this->_mapper;
     }
 
+    /** @brief  Set the Mapper-specific retrieval context for this set.
+     *  @param  context     The mapper-specific retrieval context.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function setContext($context)
+    {
+        $this->_context = $context;
+
+        return $this;
+    }
+
+    /** @brief  Retrieve the mapper-specific retrieval context for this set.
+     *
+     *  @return The context for this set.
+     */
+    public function getContext()
+    {
+        return $this->_context;
+    }
+
     /** @brief  Set the underlying result set for this model set.
      *  @param  results     The underlying result set.
      *
@@ -282,6 +305,18 @@ abstract class Connexions_Model_Set
      */
     public function getTotalCount()
     {
+        if ($this->_totalCount === null)
+        {
+            $this->_totalCount = $this->getMapper()->getTotalCount( $this );
+            if ($this->_totalCount === null)
+            {
+                /* The mapper is telling us that there are no limits in place
+                 * (i.e. _count === _totalCount)
+                 */
+                $this->_totalCount = $this->count();
+            }
+        }
+
         return $this->_totalCount;
     }
 
@@ -305,6 +340,11 @@ abstract class Connexions_Model_Set
      */
     public function getOffset()
     {
+        if ($this->_offset === null)
+        {
+            $this->_offset = $this->getMapper()->getOffset( $this );
+        }
+
         return $this->_offset;
     }
 
@@ -395,8 +435,16 @@ abstract class Connexions_Model_Set
                             $public = Connexions_Model::FIELDS_PUBLIC)
     {
         $res = array();
-        foreach ($this->_members as $item)
+        foreach ($this->_members as $idex => $item)
         {
+            if ($item === null)
+            {
+                // One or more members are missing...
+                $this->_fillMembers($idex, $this->getCount());
+
+                $item =& $this->_members[$idex];
+            }
+
             if ($item instanceof Connexions_Model)
                 array_push($res, $item->toArray($deep, $public));
             else if (is_object($item) && method_exists($item, 'toArray'))
@@ -408,16 +456,32 @@ abstract class Connexions_Model_Set
         return $res;
     }
 
-    /** @brief  Return an array of the Identifiers of all instances.
+    /** @brief  Return an array of the Identifiers of all items in this set,
+     *          regardless of offset or limit restrictions.
      *
      *  @return An array of all Identifiers.
      */
     public function idArray()
     {
+        if ( ($this->getOffset() > 0) ||
+            ($this->getTotalCount() > $this->count()) )
+        {
+            // We have a limited sub-set.  Use our Mapper to retrieve ALL ids
+            return $this->getMapper()->getIds( $this );
+        }
+
         $mapper = $this->getMapper();
         $ids    = array();
-        foreach ($this->_members as $item)
+        foreach ($this->_members as $idex => $item)
         {
+            if ($item === null)
+            {
+                // One or more members are missing...
+                $this->_fillMembers($idex, $this->getCount());
+
+                $item =& $this->_members[$idex];
+            }
+
             /*
             Connexions::Log("Connexions_Model_Set[%s]::idArray(): "
                             .   "[ %s ] == [ %s ]",
@@ -700,7 +764,7 @@ abstract class Connexions_Model_Set
      *  @param  offset              The page offset.
      *  @param  itemCountPerPage    The number of items per page.
      *
-     *  @return A Connexions_Model_Set for the records in the given range.
+     *  @return An array of items for the records in the given range.
      */
     public function getItems($offset, $itemCountPerPage)
     {
@@ -710,6 +774,19 @@ abstract class Connexions_Model_Set
             $itemCountPerPage = $this->count();
         }
 
+        $count = $this->count();
+        if ($offset > $count)
+            return array();
+
+        if ( ($offset + $itemCountPerPage) > $count)
+        {
+            $numItems = $count - $offset;
+        }
+        else
+        {
+            $numItems = $itemCountPerPage;
+        }
+
         /*
         Connexions::log("Connexions_Model_Set::getItems(%d, %d): %d total",
                         $offset, $itemCountPerPage, count($this->_members));
@@ -717,17 +794,26 @@ abstract class Connexions_Model_Set
 
         // Ensure that each item in the range is a Model instance
         $mapper = $this->getMapper();
-        for ($idex = 0; $idex < $itemCountPerPage; $idex++)
+        $last   = $this->getOffset() + $this->count();
+        for ($idex = 0; $idex < $numItems; $idex++)
         {
             $item =& $this->_members[$offset + $idex];
 
             /*
             Connexions::log("Connexions_Model_Set::getItems(%d, %d): "
                             . "item #%d, type[ %s ], class[ %s ]",
-                            $offset, $itemCountPerPage, $offset + $idex,
+                            $offset, $numItems, $offset + $idex,
                             gettype($item),
                             (is_object($item) ? get_class($item) : ''));
             // */
+
+            if ( $item === null )
+            {
+                // One or more members are missing...
+                $this->_fillMembers($offset + $idex, $numItems);
+
+                $item =& $this->_members[$offset + $idex];
+            }
 
             if ( is_array($item) )
             {
@@ -741,7 +827,7 @@ abstract class Connexions_Model_Set
             }
         }
 
-        return array_slice($this->_members, $offset, $itemCountPerPage);
+        return array_slice($this->_members, $offset, $numItems);
     }
 
     /** @brief  Get the member for the given offset
@@ -761,6 +847,20 @@ abstract class Connexions_Model_Set
 
         $modelName = $this->getModelName();
         $item      = $this->_members[$offset];
+
+        if ($item === null)
+        {
+            /* This member appears to be missing.  See if the mapper can
+             * retrieve it now.
+             */
+            $items = $mapper->getItems($this, $offset, 1);
+            $item  = $items[0];
+
+            /*
+            $this->_members[$offset] = $items[0];
+            $item  = $this->_members[$offset];
+            */
+        }
 
         if ( ($item !== null) && (! $item instanceof $modelName) )
         {
@@ -816,4 +916,32 @@ abstract class Connexions_Model_Set
     public function usort($cmp)     { return usort($this->_members, $cmp); }
     public function uasort($cmp)    { return uasort($this->_members, $cmp); }
     public function uksort($cmp)    { return uksort($this->_members, $cmp); }
+
+    /*************************************************************************
+     * Protected Helpers
+     *
+     */
+
+    /** @brief  Given an offset to a missing member along with a maximum number
+     *          of members to retrieve, look forward to find out how many are
+     *          missing and invoke the mapper to fill them in.
+     *  @param  offset  The offset to the first missing member
+     *                  ($this->_member[$offset] === null);
+     *  @param  count   The maximum number of members to retrieve;
+     */
+    protected function _fillMembers($offset, $count)
+    {
+        for ($idex = $offset + 1; $idex < $count; $idex++)
+        {
+            if ($this->_members[$idex] !== null)
+                break;
+        }
+
+        // All items between $offset and $jdex-1 are missing.
+        $items = $this->getMapper()->fillItems($this,
+                                               $offset,
+                                               ($idex - $offset));
+
+        array_splice($this->_members, $offset, ($idex - $offset), $items);
+    }
 }

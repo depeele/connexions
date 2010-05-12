@@ -38,21 +38,24 @@ class Service_Item extends Connexions_Service
     /** @brief  Retrieve a set of items related by a set of Users.
      *  @param  users   A Model_Set_User instance or array of users to match.
      *  @param  order   Optional ORDER clause (string, array)
-     *                      [ 'userCount DESC' ];
+     *                      [ 'userCount DESC, tagCount DESC,
+     *                         userItemCount DESC, urlHash ASC' ];
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
      *
      *  @return A new Model_Set_Item instance.
      */
     public function fetchByUsers($users,
-                                 $order   = 'uti.userCount DESC',
-                                 $order   = array('uti.userCount     DESC',
-                                                  'uti.tagCount      DESC',
-                                                  'uti.userItemCount DESC',
-                                                  'i.urlHash         ASC'),
+                                 $order   = null,
                                  $count   = null,
                                  $offset  = null)
     {
+        if ($order === null)
+            $order = array('uti.userCount     DESC',
+                           'uti.tagCount      DESC',
+                           'uti.userItemCount DESC',
+                           'i.urlHash         ASC');
+
         return $this->_getMapper()->fetchRelated( array(
                                         'users'  => $users,
                                         'order'  => $order,
@@ -65,7 +68,8 @@ class Service_Item extends Connexions_Service
      *  @param  tags    A Model_Set_Tag instance or array of tags to match.
      *  @param  exact   Items MUST be associated with provided tags [ true ];
      *  @param  order   Optional ORDER clause (string, array)
-     *                      [ 'tagCount DESC' ];
+     *                      [ 'tagCount DESC, userCount DESC, 
+     *                         userItemCount DESC, urlHash ASC' ];
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
      *
@@ -73,13 +77,16 @@ class Service_Item extends Connexions_Service
      */
     public function fetchByTags($tags,
                                 $exact   = true,
-                                $order   = array('uti.tagCount      DESC',
-                                                 'uti.userCount     DESC',
-                                                 'uti.userItemCount DESC',
-                                                 'i.urlHash         ASC'),
+                                $order   = null,
                                 $count   = null,
                                 $offset  = null)
     {
+        if ($order === null)
+            $order = array('uti.tagCount      DESC',
+                           'uti.userCount     DESC',
+                           'uti.userItemCount DESC',
+                           'i.urlHash         ASC');
+
         return $this->_getMapper()->fetchRelated( array(
                                         'tags'      => $tags,
                                         'exactTags' => $exact,

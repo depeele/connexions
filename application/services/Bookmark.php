@@ -79,7 +79,9 @@ class Service_Bookmark extends Connexions_Service
      *  @param  order   Optional ORDER clause (string, array)
      *                      [ [ 'tagCount      DESC',
      *                          'userItemCount DESC',
-     *                          'userCount     DESC' ] ];
+     *                          'userCount     DESC',
+     *                          'taggedOn      DESC',
+     *                          'name          ASC'  ] ];
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
      *
@@ -96,7 +98,8 @@ class Service_Bookmark extends Connexions_Service
             $order   = array('tagCount      DESC',
                              'userItemCount DESC',
                              'userCount     DESC',
-                             'taggedOn      DESC');
+                             'taggedOn      DESC',
+                             'name          ASC');
         }
 
         return $this->_getMapper()->fetchRelated( array(
@@ -115,7 +118,9 @@ class Service_Bookmark extends Connexions_Service
      *  @param  order   Optional ORDER clause (string, array)
      *                      [ [ 'userCount     DESC',
      *                          'userItemCount DESC',
-     *                          'tagCount      DESC' ] ];
+     *                          'tagCount      DESC',
+     *                          'taggedOn      DESC',
+     *                          'name          ASC'  ] ];
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
      *
@@ -131,7 +136,8 @@ class Service_Bookmark extends Connexions_Service
             $order   = array('userCount     DESC',
                              'userItemCount DESC',
                              'tagCount      DESC',
-                             'taggedOn      DESC');
+                             'taggedOn      DESC',
+                             'name          ASC');
         }
 
         return $this->_getMapper()->fetchRelated( array(
@@ -146,10 +152,11 @@ class Service_Bookmark extends Connexions_Service
     /** @brief  Retrieve a set of bookmarks related by a set of Items.
      *  @param  items   A Model_Set_Item instance or array of items to match.
      *  @param  order   Optional ORDER clause (string, array)
-     *                      [ [ 'itemCount     DESC',
-     *                          'userItemCount DESC',
+     *                      [ [ 'userItemCount DESC',
      *                          'userCount     DESC',
-     *                          'tagCount      DESC' ] ];
+     *                          'tagCount      DESC',
+     *                          'taggedOn      DESC',
+     *                          'name          ASC'  ] ];
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
      *
@@ -162,11 +169,11 @@ class Service_Bookmark extends Connexions_Service
     {
         if ($order === null)
         {
-            $order   = array('itemCount     DESC',
-                             'userItemCount DESC',
+            $order   = array('userItemCount DESC',
                              'userCount     DESC',
                              'tagCount      DESC',
-                             'taggedOn      DESC');
+                             'taggedOn      DESC',
+                             'name          ASC');
         }
 
         return $this->_getMapper()->fetchRelated( array(
@@ -188,7 +195,9 @@ class Service_Bookmark extends Connexions_Service
      *  @param  order       Optional ORDER clause (string, array)
      *                          [ [ 'userCount     DESC',
      *                              'tagCount      DESC',
-     *                              'userItemCount DESC' ] ];
+     *                              'userItemCount DESC',
+     *                              'taggedOn      DESC',
+     *                              'name          ASC'  ] ];
      *  @param  count       Optional LIMIT count
      *  @param  offset      Optional LIMIT offset
      *
@@ -206,7 +215,8 @@ class Service_Bookmark extends Connexions_Service
             $order     = array('userCount     DESC',
                                'tagCount      DESC',
                                'userItemCount DESC',
-                               'taggedOn      DESC');
+                               'taggedOn      DESC',
+                               'name          ASC');
         }
 
         return $this->_getMapper()->fetchRelated( array(
@@ -230,7 +240,9 @@ class Service_Bookmark extends Connexions_Service
      *  @param  order       Optional ORDER clause (string, array)
      *                          [ [ 'itemCount     DESC',
      *                              'tagCount      DESC',
-     *                              'userItemCount DESC' ] ];
+     *                              'userItemCount DESC',
+     *                              'taggedOn      DESC',
+     *                              'name          ASC'  ] ];
      *  @param  count       Optional LIMIT count
      *  @param  offset      Optional LIMIT offset
      *
@@ -248,7 +260,8 @@ class Service_Bookmark extends Connexions_Service
             $order   = array('itemCount     DESC',
                              'tagCount      DESC',
                              'userItemCount DESC',
-                             'taggedOn      DESC');
+                             'taggedOn      DESC',
+                             'name          ASC' );
         }
 
         return $this->_getMapper()->fetchRelated( array(

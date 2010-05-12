@@ -7,46 +7,57 @@
  *  before this view is rendered.
  *
  *  Incoming members:
- *      owner               The owner of the current item set -- either a
- *                          string or a Model_User instance;
- *      viewer              The Model_User instance representing the current
- *                          viewer;
- *      tags                A Model_Set_Tag instance containing
- *                          information about any requested tags;
- *      paginator           A Zend_Paginator instance established for the
- *                          presentation of the current Model_Set_Bookmark;
+ *      owner           The owner of the current item set -- either a string or
+ *                      a Model_User instance;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags;
  *
- *      namespace           The cookie/parameters/settings namespace;
- *      style               Indicates the current presentation style -- if this
+ *      main            An array of settings for the main body:
+ *          namespace       The cookie/parameters/settings namespace for the
+ *                          main body;
+ *          viewer          The Model_User instance representing the current
+ *                          view (typically a reference to $view->viewer);
+ *          users           The Model_User or Model_Set_User instance
+ *                          representing the user(s) that partially define the
+ *                          scope of this view
+ *                          (typically a reference to $view->owner);
+ *          tags            The Model_Tag or Model_Set_Tag instance  
+ *                          representing the tag(s) that partially define the
+ *                          scope of this view
+ *                          (typically a reference to $view->tags);
+ *          displayStyle    Indicates the current presentation style -- if this
  *                          is an array, the style is 'custom';
- *      sortBy              Indicates the sort field used to retrieve the
+ *          perPage         The number of results on a single page;
+ *          page            The desired page of results;
+ *          sortBy          Indicates the sort field used to retrieve the
  *                          current bookmark set;
- *      sortOrder           Indicates the sort order used to retrieve the
+ *          sortOrder       Indicates the sort order used to retrieve the
  *                          current bookmark set;
+ *
+ *
+ *      sidebar         An array of settings for the sidebar:
+ *          namespace       The cookie/parameters/settings namespace for the
+ *                          sidebar;
  */
 
-// Prepare the HTML Bookmarks and Item Scope helpers
-$htmlBookmarks = $this->htmlBookmarks();
-$htmlBookmarks->setNamespace($this->namespace)
-              //->setPerPage($this->paginator->getItemCountPerPage());
-              ->setStyle($this->style)
-              ->setSortBy($this->sortBy)
-              ->setSortOrder($this->sortOrder);
+// Prepare the HTML Bookmarks helper
+$htmlBookmarks = $this->htmlBookmarks( $this->main );
 
+
+// Prepare the Html Item Scope helper
 if ($this->owner === '*')
 {
-    $htmlBookmarks->setMultipleUsers();
     $scopePath = array('Bookmarks' => $this->baseurl('/bookmarks'));
 }
 else
 {
     $ownerStr = $this->owner->name;
 
-    $htmlBookmarks->setSingleUser();
     $scopePath = array($ownerStr => $this->baseurl($ownerStr));
 }
 
-// And now the Item Scope helper
 $scopeQuery = array('format=json',
                     'method=autocomplete');
 if (count($this->tags) > 0)
@@ -54,14 +65,16 @@ if (count($this->tags) > 0)
     array_push($scopeQuery, 'tags='. $this->tags);
 }
 
-$htmlItemScope = $this->htmlItemScope();
-$htmlItemScope->setNamespace($this->namespace)
-              ->setInputLabel('Tags')
-              ->setInputName('Tags')
-              ->setPath( $scopePath )
-              ->setAutoCompleteUrl( $this->url()
-                                    .'?'. implode('&', $scopeQuery));
-
+$htmlItemScope = $this->htmlItemScope( array(
+                    'namespace'         => $this->namespace,
+                    'items'             => $htmlBookmarks->paginator,
+                    'scope'             => $htmlBookmarks->tags,
+                    'inputLabel'        => 'Tags',
+                    'inputName'         => 'Tags',
+                    'path'              => $scopePath,
+                    'autoCompleteUrl'   => $this->url()
+                                            .'?'. implode('&', $scopeQuery),
+                 ));
 
 //Connexions_Profile::checkpoint('Connexions', 'IndexView begin');
 
@@ -99,19 +112,11 @@ $links->appendStylesheet($baseUrl .'css/bookmarks.css');
 <?php
 //Connexions_Profile::checkpoint('Connexions', 'IndexView render scope');
 
-echo $htmlItemScope->render($this->paginator,
-                            $this->tags);
+echo $htmlItemScope->render();
 
 //Connexions_Profile::checkpoint('Connexions', 'IndexView render items');
 
-echo $htmlBookmarks->render($this->paginator,
-                            $this->viewer,
-                            $this->tags);
-                            /*
-                            $this->style,
-                            $this->sortBy,
-                            $this->sortOrder);
-                            */
+echo $htmlBookmarks->render();
 ?>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

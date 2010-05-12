@@ -321,6 +321,11 @@ abstract class Connexions_Model_Mapper
      */
     abstract public function find($id);
 
+    /************************************
+     * Support for Connexions_Model_Set
+     *
+     */
+
     /** @brief  Fetch all matching model instances.
      *  @param  where   Optional WHERE clause (string, array, Zend_Db_Select)
      *  @param  order   Optional ORDER clause (string, array)
@@ -350,6 +355,39 @@ abstract class Connexions_Model_Mapper
                                      $order   = null,
                                      $count   = null,
                                      $offset  = null);
+
+    /** @brief  In support of lazy-evaluation, this method retrieves the
+     *          specified range of values for an existing set.
+     *  @param  set     Connexions_Model_Set instance.
+     *  @param  offset  The beginning offset.
+     *  @param  count   The number of items.
+     *
+     *  @return An array containing Connexions_Model instances for each item in
+     *          the specified range.
+     */
+    abstract public function fillItems(Connexions_Model_Set  $set,
+                                       $offset, $count);
+
+    /** @brief  Return an array of the Identifiers of all items in this set,
+     *          regardless of offset or limit restrictions.
+     *
+     *  @return An array of all Identifiers.
+     */
+    abstract public function getIds(Connexions_Model_Set   $set);
+
+    /** @brief  Get the total count for the given Model Set.
+     *  @param  set     Connexions_Model_Set instance.
+     *
+     *  @return The total count.
+     */
+    abstract public function getTotalCount(Connexions_Model_Set $set);
+
+    /** @brief  Get the starting offset of the given Model Set.
+     *  @param  set     Connexions_Model_Set instance.
+     *
+     *  @return The starting offset.
+     */
+    abstract public function getOffset(Connexions_Model_Set $set);
 
     /*********************************************************************
      * Protected methods

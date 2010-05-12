@@ -247,7 +247,7 @@ class UserServiceTest extends DbTestCase
         // */
 
         $this->assertEquals(4,  $users->getTotalItemCount());
-        $this->assertEquals(10, $users->getCurrentItemCount());
+        $this->assertEquals(4,  $users->getCurrentItemCount());
         $this->assertEquals(1,  count($users));
 
         /*

@@ -10,15 +10,15 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
     static public   $highlightCountChoices  = array(0,  5,   10);
 
     static public   $defaults               = array(
-                        'itemType'          => self::ITEM_TYPE_TAG,
+        'itemType'          => self::ITEM_TYPE_TAG,
 
-                        'sortBy'            => self::SORT_BY_TITLE,
-                        'sortOrder'         => Connexions_Set::SORT_ORDER_ASC,
+        'sortBy'            => self::SORT_BY_TITLE,
+        'sortOrder'         => Connexions_Set::SORT_ORDER_ASC,
 
-                        'perPage'           => 100,
-                        'highlightCount'    => 5,
+        'perPage'           => 100,
+        'highlightCount'    => 5,
 
-                        'displayStyle'      => self::STYLE_CLOUD
+        'displayStyle'      => self::STYLE_CLOUD,
     );
 
     /** @brief  Cloud Item type -- determines the item decorator

@@ -8,51 +8,91 @@
 class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
 {
     /** @brief  Set-able parameters . */
-    protected       $_namespace         = null;     /* To allow render() to
-                                                     * initialize if the
-                                                     * namespace has not yet
-                                                     * been set.
-                                                     */
-    protected       $_inputLabel        = 'Items';
-    protected       $_inputName         = 'items';
-    protected       $_path              = null;
-    protected       $_autoCompleteUrl   = null;
+    protected   $_params    = array(
+        'namespace'         => null,
+
+        'inputLabel'        => 'Items', /* The text to present when the
+                                         * input box is empty;
+                                         */
+
+        'inputName'         => 'items', // The form-name for the input box;
+
+        'path'              => null,    /*  A simple array containing the names
+                                         *  and urls of the path items to the
+                                         *  current scope:
+                                         *      array(root-name => root-url,
+                                         *            item-name => item-url,
+                                         *            ...)
+                                         */
+
+        'autoCompleteUrl'   => null,    /*  The URL to use to retrieve scope
+                                         *  items for scope entry
+                                         *  auto-completion.
+                                         */
+
+        'items'             => null,    /* The set of items to be presented
+                                         *  MUST implement the
+                                         *      getTotalItemCount() method
+                                         */
+        'scope'             => null,    /* A Connexions_Model_Set of items that
+                                         * define the current scope.  MUST
+                                         * implement the 
+                                         *      getSource() method
+                                         */
+    );
+
     protected       $_hiddenItems       = array();
 
     /** @brief  Variable Namespace/Prefix initialization indicators. */
     static protected $_initialized  = array();
 
-
-    /** @brief  Render an HTML version of Item Scope.
-     *  @param  paginator   The Zend_Paginator representing the items to be
-     *                      presented;
-     *  @param  scopeInfo   A Connexions_Model_Set instance containing
-     *                      information about the requested scope items
-     *                      (e.g.  tags, user);
-     *  @param  inputLabel  The text to present when the input box is empty;
-     *  @param  inputName   The form-name for the input box;
-     *  @param  path        A simple array containing the names and urls of the
-     *                      path items to the current scope:
-     *                          array(root-name => root-url,
-     *                                item-name => item-url,
-     *                                ...)
-     *  @param  scopeCbUrl  The URL to use to retrieve scope items for scope 
-     *                      entry auto-completion.
-     *
-     *  @return The HTML representation of the Item Scope.
+    /** @brief  Construct a new Bookmarks helper.
+     *  @param  config  A configuration array (see populate());
      */
-    public function htmlItemScope(Zend_Paginator        $paginator  = null,
-                                  Connexions_Model_Set  $scopeInfo  = null,
-                                                        $inputLabel = '',
-                                                        $inputName  = '',
-                                                        $path       = null,
-                                                        $scopeCbUrl = null)
+    public function __construct(array $config = array())
     {
-        if ($paginator === null)
-            return $this;
+        //Connexions::log("View_Helper_HtmlItemScope::__construct()");
+        if (! empty($config))
+            $this->populate($config);
+    }
 
-        return $this->render($paginator, $scopeInfo,
-                             $inputLabel, $inputName, $path, $scopeCbUrl);
+    /** @brief  Given an array of configuration data, populate the parameter of
+     *          this instance.
+     *  @param  config  A configuration array that may include:
+     *                      - namespace         The namespace to use for all
+     *                                          cookies/parameters/settings
+     *                                          [ '' ];
+     *                      - inputLabel        The text to present when the
+     *                                          input box is empty [ 'Items' ];
+     *                      - inputName         The form-name for the input box
+     *                                          [ 'items' ];
+     *                      - path              A simple array containing the
+     *                                          names and urls of the path
+     *                                          items to the current scope:
+     *                                            array(root-name => root-url,
+     *                                                  item-name => item-url,
+     *                                                  ...)
+     *                      - autoCompleteUrl   The URL to use to retrieve
+     *                                          scope items for scope entry
+     *                                          auto-completion.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function populate(array $config)
+    {
+        foreach ($config as $key => $value)
+        {
+            $this->__set($key, $value);
+            //$this->_params[$key] = $value;
+        }
+
+        /*
+        Connexions::log("View_Helper_HtmlItemScope::populate(): params[ %s ]",
+                        print_r($this->_params, true));
+
+        // */
+
+        return $this;
     }
 
     /** @brief  Set the namespace, primarily for forms and cookies.
@@ -60,7 +100,7 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
      *  @param  force       Should initialization be forced even if the
      *                      auto-completion url has not yet been set? [ false ]
      *
-     *  @return View_Helper_HtmlItemScope for a fluent interface.
+     *  @return $this for a fluent interface.
      */
     public function setNamespace($namespace, $force = false)
     {
@@ -190,61 +230,102 @@ function init_<?= $namespace ?>ItemScope()
         return $this;
     }
 
-    /** @brief  Get the current namespace.
+    /** @brief  Establish the set of items being presented within this scope.
+     *  @param  items   The set of items to be presented
+     *                  (MUST implement the getTotalItemCount() method).
      *
-     *  @return The string namespace.
+     *  @return $this for a fluent interface.
      */
-    public function getNamespace()
+    public function setItems($items)
     {
-        return $this->_namespace;
+        $this->_params['items'] = $items;
+
+        return $this;
+    }
+
+    /** @brief  Establish the set of items that define the scope.
+     *  @param  scope   The Connexions_Model_Set instance containing the set of
+     *                  items that define the scope.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function setScope(Connexions_Model_Set $scope)
+    {
+        $this->_params['scope'] = $scope;
+
+        return $this;
+    }
+
+    /** @brief  Add a scope item that should be hidden.
+     *  @param  str     The scope item (name).
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function addHiddenItem($str)
+    {
+        array_push($this->_hiddenItems, $str);
+    }
+
+    public function __set($key, $value)
+    {
+        $method = 'set'. ucfirst($key);
+        if (method_exists($this, $method))
+        {
+            $this->{$method}($value);
+        }
+        else
+        {
+            $this->_params[$key] = $value;
+        }
+    }
+
+    public function __get($key)
+    {
+        return (isset($this->_params[$key])
+                    ? $this->_params[$key]
+                    : null);
+    }
+
+
+    /** @brief  Render an HTML version of Item Scope.
+     *  @param  config  A configuration array (see populate());
+     *
+     *  @return A configured instance of $this (if $config is provided),
+     *          otherwise, the HTML representation of the Item Scope.
+     */
+    public function htmlItemScope(array $config = array())
+    {
+        if (! empty($config))
+        {
+            return $this->populate($config);
+        }
+
+        return $this->render();
     }
 
     /** @brief  Render an HTML version of Item Scope.
-     *  @param  paginator   The Zend_Paginator representing the items to be
-     *                      presented -- used to present the item count;
-     *  @param  scopeInfo   A Connexions_Model_Set instance containing
-     *                      information about the requested scope items
-     *                      (e.g.  tags, user);
-     *  @param  inputLabel  The text to present when the input box is empty;
-     *  @param  inputName   The form-name for the input box;
-     *  @param  path        A simple array containing the names and urls of the
-     *                      path items to the current scope:
-     *                          array(root-name => root-url,
-     *                                item-name => item-url,
-     *                                ...)
-     *  @param  scopeCbUrl  The URL to use to retrieve scope items for scope 
-     *                      entry auto-completion.
      *
      *  @return The HTML representation of the Item Scope.
      */
-    public function render(Zend_Paginator       $paginator,
-                           Connexions_Model_Set $scopeInfo  = null,
-                                                $inputLabel = '',
-                                                $inputName  = '',
-                                                $path       = null,
-                                                $scopeCbUrl = null)
+    public function render()
     {
-        if (! empty($inputLabel))   $this->setInputLabel($inputLabel);
-        if (! empty($inputName))    $this->setInputName($inputName);
-        if ($path       !== null)   $this->setPath($path);
-        if ($scopeCbUrl !== null)   $this->setAutoCompleteUrl($scopeCbUrl);
-
-        if ($this->_namespace === null)
+        $namespace = $this->namespace;
+        if ($namespace === null)
             $this->setNamespace('');
 
-        if (! @isset(self::$_initialized[$this->_namespace]))
+        if (! @isset(self::$_initialized[$namespace]))
         {
             // Initialization has been postponed.  Force it.
-            $this->setNamespace($this->_namespace, true);
+            $this->setNamespace($namespace, true);
         }
 
         $url    = '';
         $action = '';
         $html   = '<ul class="ui-corner-top">';
-        if ( @is_array($this->_path))
+        if ( @is_array($this->path))
         {
             $cssClass = 'root ui-corner-tl';
-            foreach ($this->_path as $pathName => $pathUrl)
+            foreach ($this->path as $pathName => $pathUrl)
             {
                 $html .= sprintf(  "<li class='%s'>"
                                  .  "<a href='%s'>%s</a>"
@@ -268,7 +349,8 @@ function init_<?= $namespace ?>ItemScope()
         }
 
         $curScope = array();
-        if ( $scopeInfo && (count($scopeInfo) > 0))
+        $scope    = $this->scope;
+        if ( $scope && (count($scope) > 0))
         {
             //$html .= "<li class='scopeItems'>"
             //      .   "<ul>";
@@ -282,11 +364,11 @@ function init_<?= $namespace ?>ItemScope()
                       // collapse white-space
             $reqUrl = preg_replace('/\s\s+/',    ' ', $reqUrl);
             $reqUrl = rtrim($reqUrl, " \t\n\r\0\x0B/");
-            $reqUrl = str_replace('/'. $scopeInfo->getSource(), '', $reqUrl);
+            $reqUrl = str_replace('/'. $scope->getSource(), '', $reqUrl);
         
             //Connexions::log("ItemScope: reqUrl[ {$reqUrl} ]");
         
-            $validList = preg_split('/\s*,\s*/', $scopeInfo->__toString());
+            $validList = preg_split('/\s*,\s*/', $scope->__toString());
             foreach ($validList as $idex => $name)
             {
                 if (in_array($name, $this->_hiddenItems))
@@ -323,13 +405,13 @@ function init_<?= $namespace ?>ItemScope()
         }
         
         $html .=  "<li class='scopeEntry'>"
-              .    "<input     name='{$this->_inputName}' "
-              .          "emptyText='{$this->_inputLabel}' "
+              .    "<input     name='{$this->inputName}' "
+              .          "emptyText='{$this->inputLabel}' "
               .              "class='ui-input ui-corner-all "
               .                     "ui-state-default ui-state-empty' />"
               .   "</li>"
               .   "<li class='itemCount ui-corner-tr'>"
-              .    number_format($paginator->getTotalItemCount())
+              .    number_format($this->items->getTotalItemCount())
               .   "</li>"
               .   "<br class='clear' />"
               .  "</ul>";
@@ -338,7 +420,7 @@ function init_<?= $namespace ?>ItemScope()
 
         // Finalize the HTML
         $html = "<form action='{$action}' "
-              .        "class='itemScope {$this->_namespace}ItemScope'>"
+              .        "class='itemScope {$this->namespace}ItemScope'>"
               .  "<input type='hidden' name='scopeCurrent' "
               .        "value='". implode(',', $curScope) ."'>"
               .  $html
@@ -346,99 +428,5 @@ function init_<?= $namespace ?>ItemScope()
 
         
         return $html;
-    }
-
-    /** @brief  Set the input label.
-     *  @param  inputLabel  The label string.
-     *
-     *  @return View_Helper_HtmlItemScope for a fluent interface.
-     */
-    public function setInputLabel($inputLabel)
-    {
-        $this->_inputLabel = $inputLabel;
-
-        return $this;
-    }
-
-    /** @brief  Get the current input label.
-     *
-     *  @return  The label string.
-     */
-    public function getInputLabel()
-    {
-        return $this->_inputLabel;
-    }
-
-    /** @brief  Set the input field-name.
-     *  @param  inputName   The name string.
-     *
-     *  @return View_Helper_HtmlItemScope for a fluent interface.
-     */
-    public function setInputName($inputName)
-    {
-        $this->_inputName = $inputName;
-
-        return $this;
-    }
-
-    /** @brief  Get the current input field-name.
-     *
-     *  @return  The name string.
-     */
-    public function getInputName()
-    {
-        return $this->_inputName;
-    }
-
-    /** @brief  Set the current "path".
-     *  @param  path    An array of path information.
-     *
-     *  @return View_Helper_HtmlItemScope for a fluent interface.
-     */
-    public function setPath($path)
-    {
-        $this->_path = $path;
-
-        return $this;
-    }
-
-    /** @brief  Get the current path.
-     *
-     *  @return  The path.
-     */
-    public function getPath()
-    {
-        return $this->_path;
-    }
-
-    /** @brief  Set the auto-completion URL.
-     *  @param  url     The url string.
-     *
-     *  @return View_Helper_HtmlItemScope for a fluent interface.
-     */
-    public function setAutoCompleteUrl($url)
-    {
-        $this->_autoCompleteUrl = $url;
-
-        return $this;
-    }
-
-    /** @brief  Get the current auto-completion URL.
-     *
-     *  @return  The url string.
-     */
-    public function getAutoCompleteUrl()
-    {
-        return $this->_autoCompleteUrl;
-    }
-
-    /** @brief  Add a scope item that should be hidden.
-     *  @param  str     The scope item (name).
-     *
-     *  @return View_Helper_HtmlItemScope for a fluent interface.
-     */
-    public function addHiddenItem($str)
-    {
-        array_push($this->_hiddenItems, $str);
     }
 }
