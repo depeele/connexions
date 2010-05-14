@@ -105,9 +105,6 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
     /** @brief  Set-able parameters. */
     protected       $_displayOptions    = null;
 
-    // Over-ride the default _namespace
-    protected       $_namespace         ='items';
-
     static protected $_initialized  = array();
 
     /** @brief  Construct a new HTML Bookmarks helper.
@@ -122,6 +119,9 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
      */
     public function __construct(array $config = array())
     {
+        // Over-ride the default _namespace
+        parent::$defaults['namespace'] = 'items';
+
         // Add extra class-specific defaults
         foreach (self::$defaults as $key => $value)
         {
@@ -131,12 +131,13 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         parent::__construct($config);
     }
 
-    /** @brief  Render an HTML version of a paginated set of User Items or,
-     *          if no arguments, this helper instance.
+    /** @brief  Configure and retrive this helper instance OR, if no
+     *          configuration is provided, perform a render.
      *  @param  config  A configuration array (see populate());
      *
-     *  @return A configured instance of $this (if $config is provided),
-     *          otherwise, the HTML representation of the bookmarks.
+     *  @return A (partially) configured instance of $this OR, if no
+     *          configuration is provided, the HTML rendering of the configured
+     *          bookmarks.
      */
     public function htmlBookmarks(array $config = array())
     {
@@ -303,7 +304,7 @@ function init_Bookmarks(namespace)
 
         $this->_displayOptions->setGroup($style, $values);
 
-        // /*
+        /*
         Connexions::log('View_Helper_HtmlBookmarks::'
                             . "setDisplayStyle({$style}) == [ "
                             .   $this->_displayOptions->getGroup() ." ]");
@@ -584,9 +585,11 @@ function init_Bookmarks(namespace)
               .         "class='sort-by sort-by-{$this->sortBy} "
               .                 "ui-input ui-state-default ui-corner-all'>";
 
+        /*
         Connexions::log('View_Helper_HtmlBookmarks::_renderDisplayOptions(): '
                         .   '_sortBy[ %s ], sortOrder[ %s ]',
                         $this->sortBy, $this->sortOrder);
+        // */
 
         foreach (self::$sortTitles as $key => $title)
         {

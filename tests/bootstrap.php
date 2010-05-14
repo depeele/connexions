@@ -4,7 +4,9 @@ ini_set('display_startup_errors', 1);
 ini_set('display_errors',         1);
 date_default_timezone_set('UTC');
 
-define('APPLICATION_ENV', 'unitTests');
+defined('APPLICATION_ENV')
+    || define('APPLICATION_ENV', 'unitTests');
+
 define('TESTS_PATH',       realpath(dirname(__FILE__)));
 define('APPLICATION_PATH', realpath(TESTS_PATH .'/../application'));
 define('LIBRARY_PATH',     realpath(TESTS_PATH .'/../library'));

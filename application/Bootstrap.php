@@ -339,6 +339,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         }
 
         $config = $this->getPluginResource('db');
+
+        /* Zend_Application_Resource_Db
+        Connexions::log("bootstrap::_commonDb: config.params[ %s ]",
+                        print_r($config->getParams(), true));
+        // */
+
         $db     = $config->getDbAdapter();
 
         try

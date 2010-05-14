@@ -15,7 +15,8 @@ $.widget("ui.dropdownForm", {
         // Defaults
         namespace:  null,   // Form/cookie namespace
         form:       null,   // Our parent/controlling form
-        groups:     null    // Display style groups.
+        groups:     null,   // Display style groups.
+        submitCb:   null    // Submit callback
     },
 
     /** @brief  Initialize a new instance.
@@ -152,10 +153,17 @@ $.widget("ui.dropdownForm", {
                 $.cookie(this.name, this.value);
             });
 
-            /* Reload so our URL won't be polluted with form variables that
-             * we've just placed into cookies.
-             */
-            window.location.reload();
+            if (self.options.submitCb !== null)
+            {
+                self.options.submitCb(e, self);
+            }
+            else
+            {
+                /* Reload so our URL won't be polluted with form variables that
+                 * we've just placed into cookies.
+                 */
+                window.location.reload();
+            }
         };
 
 
@@ -196,6 +204,10 @@ $.widget("ui.dropdownForm", {
     getGroupInfo: function() {
         return this.element.find('.displayStyle')
                             .optionGroups( 'getGroupInfo' );
+    },
+
+    setSubmitCb: function(cb) {
+        this.options.submitCb = cb;
     },
 
     open: function() {

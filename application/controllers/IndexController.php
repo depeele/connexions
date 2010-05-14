@@ -123,13 +123,12 @@ class IndexController extends Connexions_Controller_Action
          * Adjust the URL to reflect the validated 'owner' and 'tags'
          */
         $this->_url = $request->getBasePath()
-                    . ($this->_owner instanceof Model_User
-                        ? '/'. $this->_owner->name
-                        : '')
-                    . (count($this->_tags) > 0
-                        ? '/'. $this->_tags
-                        : '')
-                    . '/';
+                    . '/' .($this->_owner instanceof Model_User
+                            ? $this->_owner->name
+                            : 'bookmarks')
+                    . '/' .(count($this->_tags) > 0
+                            ? '/'. $this->_tags .'/'
+                            : '');
 
         /***************************************************************
          * Set the view variables required for all views/layouts.
@@ -147,45 +146,7 @@ class IndexController extends Connexions_Controller_Action
         $this->view->tags      = $this->_tags;
 
 
-        /* Prepare for rendering the main view, regardless of format
-         *
-         * Notify the HtmlBookmarks View Helper (used to render the main view)
-         * of any incoming settings, allowing it establish any required
-         * defaults.
-         */
-        $prefix           = 'items';
-        $itemsStyle       = $request->getParam($prefix."OptionGroup");
-        $itemsStyleCustom = $request->getParam($prefix."OptionGroups_option");
-
-        $perPage          = $request->getParam($namespace ."PerPage");
-        $page             = $request->getParam($namespace ."Page");
-        $sortBy           = $request->getParam($namespace ."SortBy");
-        $sortOrder        = $request->getParam($namespace ."SortOrder");
-
-        /*
-        Connexions::log('IndexController::_htmlContent(): '
-                        .   'itemsStyle[ %s ], options[ %s ]',
-                        $itemsStyle, Connexions::varExport($itemsStyleCustom));
-        // */
-
-        if ( ($itemsStyle === 'custom') && (is_array($itemsStyleCustom)) )
-            $itemsStyle = $itemsStyleCustom;
-
-        // Additional view variables for the HTML view.
-        $this->view->main = array(
-            'namespace'     => $prefix,
-            'viewer'        => &$this->_viewer,
-            'users'         => ($this->_owner !== '*'
-                                ? $this->_owner
-                                : null),
-            'tags'          => &$this->_tags,
-            'displayStyle'  => $itemsStyle,
-            'perPage'       => $perPage,
-            'page'          => $page,
-            'sortBy'        => $sortBy,
-            'sortOrder'     => $sortOrder,
-        );
-
+        $this->_prepareMain();
 
         // Handle this request based on the current context / format
         $this->_handleFormat();
@@ -269,14 +230,16 @@ class IndexController extends Connexions_Controller_Action
 
             case 'content':
             default:
-                $this->_htmlContent();
+                /* Fall through to perform normal rendering of
+                 *      application/views/scripts/index/index.phtml
+                 */
                 break;
             }
             break;
 
         case 'html':
-            // Normal HTML rendering
-            $this->_htmlContent();
+            // Normal HTML rendering includes the sidebar
+            $this->render('index');
             $this->_htmlSidebar();
             break;
 
@@ -287,7 +250,7 @@ class IndexController extends Connexions_Controller_Action
         case 'rss':
         case 'atom':
             // Additional view variables for the alternate views.
-            $this->view->paginator = $this->_createPaginator($this->_request);
+            //$this->view->paginator = $this->_createPaginator($this->_request);
             $this->render('index');
 
             break;
@@ -331,104 +294,117 @@ class IndexController extends Connexions_Controller_Action
         return $res;
     }
 
-    /** @brief  Create a paginator ($this->_paginator) for the current
-     *          Bookmark set.
-     *  @param  request     The request to retrieve parameters from.
-     *  @param  namespace   The namespace.
+    /** @brief  Prepare for rendering the main view, regardless of format.
      *
-     *  :Note: This also initializes _sortBy and _sortOrder
-     *
-     *  @return void
+     *  This will collect the variables needed to render the main view, placing
+     *  them in $view->main as a configuration array.
      */
-    protected function _createPaginator($request, $namespace = '')
+    protected function _prepareMain()
     {
-        // /*
-        Connexions_Profile::checkpoint('Connexions',
-                                       'IndexController::_createPaginator: '
-                                       . '%s: begin',
-                                       $namespace);
-        // */
+        $request          =& $this->_request;
 
-        /***************************************************************
-         * Retrieve any sort and paging parameters from the RPC request,
-         * falling back to helper-controlled defaults.
-         *
-         */
-        $page      = $request->getParam($namespace ."Page",    1);
-        $perPage   = $request->getParam($namespace ."PerPage");
-        $sortBy    = $request->getParam($namespace ."SortBy",
-                                        View_Helper_Bookmarks::
-                                                        $defaults['sortBy']);
-        $sortOrder = $request->getParam($namespace ."SortOrder",
-                                        View_Helper_Bookmarks::
-                                                        $defaults['sortOrder']);
+        $prefix           = 'items';
+        $itemsStyle       = $request->getParam($prefix."OptionGroup");
+        $itemsStyleCustom = $request->getParam($prefix."OptionGroups_option");
 
-        if ($perPage < 1)
-            $perPage = View_Helper_Bookmarks::$defaults['perPage'];
-
-        $count   = $perPage;
-        $offset  = $count * ($page > 0 ? $page - 1 : 0);
-
-        $fetchOrder = array($sortBy .' '. $sortOrder);
-        $ownerId    = ($this->_owner === '*'
-                        ? null
-                        : $this->_owner->userId);
-
-        $this->_sortBy    = $sortBy;
-        $this->_sortOrder = $sortOrder;
-
-
-        // /*
-        Connexions::log("IndexController::_createPaginator: "
-                        .   "owner[ %s:%d ], "
-                        .   "%d tags[ %s ], "
-                        .   "page[ %d ], perPage[ %d ], "
-                        .   "offset[ %d ], count[ %d ], "
-                        .   "sortBy[ %s ], sortOrder[ %s ], "
-                        .   "fetchOrder[ %s ]",
-                        $this->_owner, $ownerId,
-                        count($this->_tags), $this->_tags,
-                        $page,   $perPage,
-                        $offset, $count,
-                        $sortBy, $sortOrder,
-                        Connexions::varExport($fetchOrder));
-        // */
-
-
-        // Grab the owner/tag related bookmarks
-        $bookmarks = $this->service('Bookmark')
-                            ->fetchByUsersAndTags($ownerId,
-                                                  $this->_tags,
-                                                  true, // exactTags
-                                                  $fetchOrder,
-                                                  $count,
-                                                  $offset);
+        $perPage          = $request->getParam($prefix ."PerPage");
+        $page             = $request->getParam($prefix ."Page");
+        $sortBy           = $request->getParam($prefix ."SortBy");
+        $sortOrder        = $request->getParam($prefix ."SortOrder");
 
         /*
-        Connexions::log("IndexController::_createPaginator: %d/%d bookmarks",
-                        count($bookmarks), $bookmarks->getTotalCount());
+        Connexions::log('IndexController::_perpareMain(): '
+                        .   'itemsStyle[ %s ], options[ %s ]',
+                        $itemsStyle, Connexions::varExport($itemsStyleCustom));
         // */
 
-        // Create a paginator
-        $paginator = new Zend_Paginator( $bookmarks->getPaginatorAdapter() );
+        if ( ($itemsStyle === 'custom') && (is_array($itemsStyleCustom)) )
+            $itemsStyle = $itemsStyleCustom;
 
-        $paginator->setItemCountPerPage( $perPage );
-        $paginator->setCurrentPageNumber($page );
+        // Additional view variables for the HTML view.
+        $this->view->main = array(
+            'namespace'     => $prefix,
+            'viewer'        => &$this->_viewer,
+            'users'         => ($this->_owner !== '*'
+                                ? $this->_owner
+                                : null),
+            'tags'          => &$this->_tags,
+            'displayStyle'  => $itemsStyle,
+            'perPage'       => $perPage,
+            'page'          => $page,
+            'sortBy'        => $sortBy,
+            'sortOrder'     => $sortOrder,
+        );
+    }
 
-        // /*
-        Connexions_Profile::checkpoint('Connexions',
-                                       'IndexController::_createPaginator: '
-                                       . '%s: page %d, perPage %d, '
-                                       . '%d pages, %d/%d items: end',
-                                       $namespace,
-                                       $paginator->getCurrentPageNumber(),
-                                       $paginator->getItemCountPerPage(),
-                                       count($paginator),
-                                       $paginator->getCurrentItemCount(),
-                                       $bookmarks->getTotalCount());
-        // */
+    /** @brief  Prepare for rendering the sidebar view.
+     *  @param  async   Should we setup to do an asynchronous render
+     *                  (i.e. tab callbacks will request tab pane contents when 
+     *                        needed)?
+     *
+     *  This will collect the variables needed to render the sidebar view,
+     *  placing them in $view->sidebar as a configuration array.
+     *
+     *  Note: The main index view script
+     *        (application/views/scripts/index/index.phtml) will also add
+     *        sidebar-related rendering information to the sidbar helper.  In
+     *        particular, it will notify the sidbar helper of the items that
+     *        are being presented in the main view.
+     */
+    protected function _prepareSidebar($async = false)
+    {
+        $request            =& $this->_request;
 
-        return $paginator;
+        $tagsStyle       = $request->getParam("sbTagsOptionGroup");
+        $tagsStyleCustom = $request->getParam("sbTagsOptionGroups_option");
+        if ( ($tagsStyle === 'custom') && (is_array($tagsStyleCustom)) )
+            $tagsStyle = $tagsStyleCustom;
+
+        $sidebar = array(
+            'namespace' => 'sidebar-tab',
+            'async'     => $async,
+            'viewer'    => &$this->_viewer,
+            'users'     => ($this->_owner !== '*'
+                            ? $this->_owner
+                            : null),
+            'tags'      => &$this->_tags,
+            // 'items'   will be set by the sidebar-tags view renderer
+
+            'panes'     => array(
+                /* Used by:
+                 *      application/views/scripts/index/sidebar-tags.phtml
+                 *          and from there by
+                 *      application/views/helpers/HtmlItemCloud.php
+                 */
+                'tags'    => array(
+                    'namespace'     => 'sbTags',
+                    'title'         => 'Tags',
+
+                    'itemType'      => View_Helper_HtmlItemCloud::ITEM_TYPE_TAG,
+
+                    // 'related' will be set by the main view renderer
+                    // 'selected'      => $this->_tags,
+                    'itemBaseUrl'   => $this->_url,
+
+                    'sortBy'        => $request->getParam("sbTagsSortBy"),
+                    'sortOrder'     => $request->getParam("sbTagsSortOrder"),
+
+                    'page'          => $request->getParam("sbTagsPage"),
+                    'perPage'       => $request->getParam("sbTagsPerPage"),
+                    'highlightCount'=> $request->getParam(
+                                                    "sbTagsHighlightCount"),
+
+                    'displayStyle'  => $tagsStyle,
+                ),
+
+                'people'  => array(
+                    'namespace'     => 'sbPeople',
+                    'title'         => 'People',
+                ),
+            ),
+        );
+
+        $this->view->sidebar = $sidebar;
     }
 
     /*****************************************************
@@ -509,7 +485,7 @@ class IndexController extends Connexions_Controller_Action
      */
     protected function _read(Connexions_JsonRpc $rpc)
     {
-        $this->view->paginator = $this->_createPaginator($rpc);
+        //$this->view->paginator = $this->_createPaginator($rpc);
 
         $this->render('index');
     }
@@ -818,71 +794,6 @@ class IndexController extends Connexions_Controller_Action
         }
     }
 
-    /** @brief  Generate HTML for the primary body/content based upon the
-     *          incoming request.
-     *
-     *  This will create a 'paginator' for the previously created _bookmarks
-     *  set, initialize the View_Helper_HtmlBookmarks and
-     *  View_Helper_HtmlItemScope view helpers, and populate any
-     *  additional view variables all based upon the incoming request.
-     */
-    protected function _htmlContent()
-    {
-        return;
-
-        $request =& $this->_request;
-
-        /* Prepare for rendering the main view.
-         *
-         * Notify the HtmlBookmarks View Helper (used to render the main view)
-         * of any incoming settings, allowing it establish any required
-         * defaults.
-         */
-        $prefix           = 'items';
-        $itemsStyle       = $request->getParam($prefix."OptionGroup");
-        $itemsStyleCustom = $request->getParam($prefix."OptionGroups_option");
-
-        $perPage          = $request->getParam($namespace ."PerPage");
-        $page             = $request->getParam($namespace ."Page");
-        $sortBy           = $request->getParam($namespace ."SortBy");
-        $sortOrder        = $request->getParam($namespace ."SortOrder");
-
-        /*
-        Connexions::log('IndexController::_htmlContent(): '
-                        .   'itemsStyle[ %s ], options[ %s ]',
-                        $itemsStyle, Connexions::varExport($itemsStyleCustom));
-        // */
-
-        if ( ($itemsStyle === 'custom') && (is_array($itemsStyleCustom)) )
-            $itemsStyle = $itemsStyleCustom;
-
-        /* Generate a paginator for the requested item set.  This will also
-         * initialize '_page, '_perPage', and '_sortOrder'
-        $paginator = $this->_createPaginator($request, $prefix);
-         */
-
-        /*
-        Connexions_Profile::checkpoint('Connexions',
-                                       'IndexController::_htmlContent: '
-                                       . 'HtmlItemScope Helper initialized');
-        // */
-
-
-        // Additional view variables for the HTML view.
-        $this->view->main = array(
-            'namespace'     => $prefix,
-            'displayStyle'  => $itemsStyle,
-            'perPage'       => $perPage,
-            'page'          => $page,
-            'sortBy'        => $sortBy,
-            'sortOrder'     => $sortOrder,
-        );
-
-        /* The default view script (views/scripts/index/index.phtml) will
-         * render this main view
-         */
-    }
-
     /** @brief  Generate HTML for the sidebar based upon the incoming request.
      *  @param  usePlaceholder      Should the rendering be performed
      *                              immediately into a placeholder?
@@ -895,24 +806,17 @@ class IndexController extends Connexions_Controller_Action
     protected function _htmlSidebar($usePlaceholder = true,
                                     $part           = null)
     {
-        return;
+        //return;
 
-        if (($part === null) || ($part === 'tags'))
+        $this->_prepareSidebar( $usePlaceholder );
+
+        if ($part !== null)
         {
-            $this->_htmlSidebar_prepareTags();
+            // Render just the requested part
+            $this->render('sidebar-'. $part);
         }
-
-        switch ($part)
+        else
         {
-        case 'tags':
-            $this->render('sidebar-tags');
-            break;
-
-        case 'people':
-            $this->render('sidebar-people');
-            break;
-
-        default:
             // Render the entire sidebar
             if ($usePlaceholder === true)
             {
@@ -920,7 +824,7 @@ class IndexController extends Connexions_Controller_Action
                 $this->view->renderToPlaceholder('index/sidebar.phtml',
                                                  'right');
 
-                /*
+                // /*
                 Connexions_Profile::checkpoint('Connexions',
                                                'IndexController::_htmlSidebar: '
                                                . 'rendered to placeholder');
@@ -928,108 +832,8 @@ class IndexController extends Connexions_Controller_Action
             }
             else
             {
-                    $this->render('sidebar');
-            }
-            break;
-        }
-
-    }
-
-    /** @brief  Create a set of tags related to the current bookmarks and
-     *          prepare the View_Helper_HtmlItemCloud view helper to
-     *          render them.
-     */
-    protected function _htmlSidebar_prepareTags()
-    {
-        $request =& $this->_request;
-
-        $prefix             = 'sbTags';
-        $tagsPerPage        = $request->getParam($prefix."PerPage",     100);
-        $tagsPage           = $request->getParam($prefix."Page",        1);
-        $tagsHighlightCount = $request->getParam($prefix."HighlightCount",
-                                                                        null);
-        $tagsSortBy         = $request->getParam($prefix."SortBy",      'tag');
-        $tagsSortOrder      = $request->getParam($prefix."SortOrder",   null);
-        $tagsStyle          = $request->getParam($prefix."OptionGroup", null);
-
-        /* Order for limited retrieval should user the default sort order.
-         *
-         * Once the limited set if retrieved, THEN apply
-         * $tagsSortBy/$tagsSortOrder
-         */
-        $fetchOrder = null;
-        $count      = $tagsPerPage;
-        $offset     = ($tagsPage > 0
-                        ? ($tagsPage - 1) * $tagsPerPage
-                        : 0);
-
-        /* Create the tagSet that will be presented in the side-bar:
-         *      All tags used by all users/items contained in the current
-         *      bookmark set.
-         *
-         *  $tagSet = new Model_TagSet( $this->_userSet->userIds(),
-         *                              $this->_userSet->itemIds() );
-         */
-        if (count($this->_tags) < 1)
-        {
-            /* There were no requested tags that limited the bookmark
-             * retrieval, so for the sidebar, retrieve ALL tags...
-             */
-            if ($this->_owner === '*')
-            {
-                // ... of ALL users
-                $tagSet = $this->service('Tag')->fetch(null,    // no criteria
-                                                       $fetchOrder,
-                                                       $count,
-                                                       $offset);
-            }
-            else
-            {
-                // ... of a single user
-                $tagSet = $this->service('Tag')
-                                    ->fetchByUsers( $this->_owner,
-                                                    $fetchOrder,
-                                                    $count,
-                                                    $offset );
+                $this->render('sidebar');
             }
         }
-        else
-        {
-            // Tags related to the given bookmarks
-            $tagSet = $this->service('Tag')
-                                ->fetchByBookmarks( $this->_bookmarks,
-                                                    $fetchOrder,
-                                                    $count,
-                                                    $offset );
-        }
-
-        /*
-        $tagSet = $this->service('Tag')->fetchByBookmarks($this->_bookmarks);
-        if ($this->_owner === '*')
-            $tagSet->withAnyUser();
-         */
-
-
-        /* Prepare to render the tags in the sidebar.
-         *
-         * Notify the HtmlItemCloud View Helper
-         * (used to render the right column) of any incoming settings, allowing
-         * it establish any required defaults.
-         */
-
-        // Initialize the View_Helper_HtmlItemCloud helper...
-        $cloudHelper = $this->view->htmlItemCloud();
-        $cloudHelper->setNamespace($prefix)
-                    ->setStyle($tagsStyle)
-                    ->setItemType(View_Helper_HtmlItemCloud::ITEM_TYPE_TAG)
-                    ->setSortBy($tagsSortBy)
-                    ->setSortOrder($tagsSortOrder)
-                    ->setPerPage($tagsPerPage)
-                    ->setHighlightCount($tagsHighlightCount)
-                    ->setItemSet($tagSet)
-                    ->setItemSetInfo($this->_tags)
-                    ->setItemBaseUrl( ($this->_owner !== '*'
-                                        ? null
-                                        : '/bookmarks'));
     }
 }

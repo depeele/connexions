@@ -128,8 +128,10 @@ abstract class Connexions_Model_Set
      */
     public function delete()
     {
+        /*
         Connexions::log("Connexions_Model_Set::delete(): %d items",
                         count($this->_members));
+        // */
 
         foreach ($this as $key => $item)
         {
@@ -793,40 +795,9 @@ abstract class Connexions_Model_Set
         // */
 
         // Ensure that each item in the range is a Model instance
-        $mapper = $this->getMapper();
-        $last   = $this->getOffset() + $this->count();
-        for ($idex = 0; $idex < $numItems; $idex++)
-        {
-            $item =& $this->_members[$offset + $idex];
+        $this->_makeMembers($offset, $numItems);
 
-            /*
-            Connexions::log("Connexions_Model_Set::getItems(%d, %d): "
-                            . "item #%d, type[ %s ], class[ %s ]",
-                            $offset, $numItems, $offset + $idex,
-                            gettype($item),
-                            (is_object($item) ? get_class($item) : ''));
-            // */
-
-            if ( $item === null )
-            {
-                // One or more members are missing...
-                $this->_fillMembers($offset + $idex, $numItems);
-
-                $item =& $this->_members[$offset + $idex];
-            }
-
-            if ( is_array($item) )
-            {
-                /* Create a new instance of the member class using the record.
-                 *
-                 * Note: This ASSUMES that all raw data is from the database,
-                 *       hence the missing second parameter to makeModel().
-                 */
-                $this->_members[$offset + $idex] =
-                        $mapper->makeModel( $item );
-            }
-        }
-
+        // Return the requested (sub)set
         return array_slice($this->_members, $offset, $numItems);
     }
 
@@ -853,7 +824,14 @@ abstract class Connexions_Model_Set
             /* This member appears to be missing.  See if the mapper can
              * retrieve it now.
              */
-            $items = $mapper->getItems($this, $offset, 1);
+
+            /*
+            Connexions::log("Connexions_Model_Set[%s]::getItem( %d ): "
+                            . "Missing item.  Retrieve it now...",
+                            get_class($this), $offset);
+            // */
+
+            $items = $this->getItems($this, $offset, 1);
             $item  = $items[0];
 
             /*
@@ -909,18 +887,108 @@ abstract class Connexions_Model_Set
         return $this;
     }
 
-    public function asort()         { return asort($this->_members); }
-    public function ksort()         { return ksort($this->_members); }
-    public function natcasesort()   { return natcasesort($this->_members); }
-    public function natsort()       { return natsort($this->_members); }
-    public function usort($cmp)     { return usort($this->_members, $cmp); }
-    public function uasort($cmp)    { return uasort($this->_members, $cmp); }
-    public function uksort($cmp)    { return uksort($this->_members, $cmp); }
+    public function asort()
+    {
+        $this->_prepareSort();
+        return asort($this->_members);
+    }
+    public function ksort()
+    {
+        $this->_prepareSort();
+        return ksort($this->_members);
+    }
+    public function natcasesort()
+    {
+        $this->_prepareSort();
+        return natcasesort($this->_members);
+    }
+    public function natsort()
+    {
+        $this->_prepareSort();
+        return natsort($this->_members);
+    }
+    public function usort($cmp)
+    {
+        $this->_prepareSort();
+        return usort($this->_members, $cmp);
+    }
+    public function uasort($cmp)
+    {
+        $this->_prepareSort();
+        return uasort($this->_members, $cmp);
+    }
+    public function uksort($cmp)
+    {
+        $this->_prepareSort();
+        return uksort($this->_members, $cmp);
+    }
 
     /*************************************************************************
      * Protected Helpers
      *
      */
+
+    /** @brief  Prepare for a sort by ensure that all items are Model 
+     *          instances.
+     *  
+     *  @return $this for a fluent interface.
+     */
+    protected function _prepareSort()
+    {
+        return $this->_makeMembers(0, $this->count());
+    }
+
+    /** @brief  Ensure that each item in the given range is a Model instance.
+     *  @param  offset      The beginning offset.
+     *  @param  count       The number of items to process.
+     *
+     *  @return $this for a fluent interface.
+     */
+    protected function _makeMembers($offset, $count)
+    {
+        /*
+        Connexions::log("Connexions_Model_Set::_makeMembers(%d, %d)",
+                        $offset, $count);
+        // */
+        if (($offset + $count) > $this->count())
+            $count = $this->count() - $offset;
+
+        $mapper = $this->getMapper();
+        for ($idex = $offset; $idex < $count; $idex++)
+        {
+            $item =& $this->_members[$idex];
+
+            /*
+            Connexions::log("Connexions_Model_Set::_makeMembers(%d, %d): "
+                            . "item #%d, type[ %s ], class[ %s ]",
+                            $offset, $count,
+                            $$idex,
+                            gettype($item),
+                            (is_object($item) ? get_class($item) : ''));
+            // */
+
+            if ( $item === null )
+            {
+                // One or more members are missing...
+                $this->_fillMembers($idex, $numItems);
+
+                $item =& $this->_members[$idex];
+            }
+
+            if ( is_array($item) )
+            {
+                /* Create a new instance of the member class using the record.
+                 *
+                 * Note: This ASSUMES that all raw data is from the database,
+                 *       hence the missing second parameter to makeModel().
+                 */
+                $this->_members[$idex] =
+                        $mapper->makeModel( $item );
+            }
+        }
+
+        return $this;
+    }
 
     /** @brief  Given an offset to a missing member along with a maximum number
      *          of members to retrieve, look forward to find out how many are
@@ -928,6 +996,8 @@ abstract class Connexions_Model_Set
      *  @param  offset  The offset to the first missing member
      *                  ($this->_member[$offset] === null);
      *  @param  count   The maximum number of members to retrieve;
+     *
+     *  @return $this for a fluent interface.
      */
     protected function _fillMembers($offset, $count)
     {
@@ -943,5 +1013,7 @@ abstract class Connexions_Model_Set
                                                ($idex - $offset));
 
         array_splice($this->_members, $offset, ($idex - $offset), $items);
+
+        return $this;
     }
 }
