@@ -7,18 +7,19 @@
  *  before this view is rendered.
  *
  *  Incoming members:
+ *      url             The full url for the main controller of this page;
  *      owner           The owner of the current item set -- either a string or
  *                      a Model_User instance;
  *      viewer          The Model_User instance representing the current
  *                      viewer;
  *      tags            A Model_Set_Tag instance containing information about
- *                      any requested tags;
+ *                      any requested tags (i.e. tag restrictions);
  *
  *      main            An array of settings for the main body:
  *          namespace       The cookie/parameters/settings namespace for the
  *                          main body;
  *          viewer          The Model_User instance representing the current
- *                          view (typically a reference to $view->viewer);
+ *                          viewer (typically a reference to $view->viewer);
  *          users           The Model_User or Model_Set_User instance
  *                          representing the user(s) that partially define the
  *                          scope of this view
@@ -27,6 +28,7 @@
  *                          representing the tag(s) that partially define the
  *                          scope of this view
  *                          (typically a reference to $view->tags);
+ *
  *          displayStyle    Indicates the current presentation style -- if this
  *                          is an array, the style is 'custom';
  *          perPage         The number of results on a single page;
@@ -35,16 +37,18 @@
  *                          current bookmark set;
  *          sortOrder       Indicates the sort order used to retrieve the
  *                          current bookmark set;
- *
- *
- *      sidebar         An array of settings for the sidebar:
- *          namespace       The cookie/parameters/settings namespace for the
- *                          sidebar;
  */
 
 // Prepare the HTML Bookmarks helper
 $htmlBookmarks = $this->htmlBookmarks( $this->main );
 
+
+// Let the side-bar helper know about the bookmarks being presented.
+$bookmarks = $htmlBookmarks->bookmarks;
+
+Connexions::log("index.phtml: Notify sidebar of %d bookmarks",
+                count($bookmarks));
+$this->htmlSidebar(array('items' => $bookmarks));
 
 // Prepare the Html Item Scope helper
 if ($this->owner === '*')

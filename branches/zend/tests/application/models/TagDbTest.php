@@ -335,19 +335,15 @@ class TagDbTest extends DbTestCase
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
         $tags   = $mapper->fetch();
 
-        function __sort_by_tag($a, $b)
+        function __sort_by_tag($item1, $item2)
         {
-            $aName = ($a instanceof Model_Tag
-                        ? $a->tag
-                        : $a['tag']);
-            $bName = ($b instanceof Model_Tag
-                        ? $b->tag
-                        : $b['tag']);
-
-            return strcasecmp($aName, $bName);
+            // Incoming items SHOULD be Connexions_Model instances
+            return strcasecmp($item1->tag, $item2->tag);
         }
 
-        //$this->_printTags($tags);   echo "\n";
+        /*
+        $this->_printTags($tags);   echo "\n";
+        // */
 
         // We could also use 'Service_Tag::sort_by_tag'
         $tags->usort('__sort_by_tag');

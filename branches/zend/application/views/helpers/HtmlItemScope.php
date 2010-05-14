@@ -109,7 +109,7 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
                             .   "setNamespace( {$namespace} )");
         // */
 
-        $this->_namespace = $namespace;
+        $this->_params['namespace'] = $namespace;
 
         if (! @isset(self::$_initialized[$namespace]))
         {

@@ -107,12 +107,25 @@ class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
 
         /*
         $viewer = $this->_params['viewer']; unset($this->_params['viewer']);
+        $users  = $this->_params['users'];  unset($this->_params['users']);
+        $tags   = $this->_params['tags'];   unset($this->_params['tags']);
 
         $this->_params['viewer'] = $viewer->name;
+        $this->_params['users']  = ($this->_params['users'] === null
+                                        ? ''
+                                        : $this->_params['users']
+                                                            ->__toString());
+        $this->_params['tags']   = ($this->_params['tags'] === null
+                                        ? ''
+                                        : $this->_params['tags']
+                                                            ->__toString());
+
         Connexions::log("View_Helper_Bookmarks::populate(): params[ %s ]",
                         print_r($this->_params, true));
 
         $this->_params['viewer'] = $viewer;
+        $this->_params['users']  = $users;
+        $this->_params['tags']   = $tags;
         // */
 
         return $this;
@@ -252,7 +265,7 @@ class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
                 else
                     $users =& $this->users;
 
-                /*
+                // /*
                 Connexions::log("View_Helper_Bookmarks::__get( %s ): "
                                 . "Retrieve bookmarks: "
                                 . "order[ %s ], count[ %d ], offset[ %d ]",

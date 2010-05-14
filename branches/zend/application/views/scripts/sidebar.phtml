@@ -5,6 +5,13 @@
  *
  *  Adds an 'init_sidebar()' on-load script to initialize the '#sidebar-tabs'
  *  DOM element as a ui.tabs widget.
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      sidebar         An array of settings for the sidebar:
+ *          namespace       The cookie/parameters/settings namespace for the
+ *                          sidebar [ 'sidebarTab' ];
+ *          async           Should panes be populated asynchronously?
  */
 
 $jQuery = $this->jQuery();
@@ -13,20 +20,55 @@ $jQuery->addOnLoad("init_sidebar();")
        ->javascriptCaptureStart();
 ?>
 
+
+/************************************************
+ * If this is an asynchronous sidebar,
+ * handle the squelching of submit button
+ * in any displayOptions forms
+ *
+ */
+function sidebar_bindSubmits($tabs)
+{
+    <?php
+    if ($this->sidebar['async'] !== false)
+    {
+        ?>
+
+    /* For any displayOptions form that is placed in the sidebar,
+     * establish a 'submit' callback with the dropdownForm instance.
+     *
+     * When it fires, the ui.optionsGroups class controling the options should
+     * already have set the proper cookie values.  Stop the event and perform a
+     * reload of the containing tag.  This should trigger an asynchronous
+     * retrieval of the new content.
+     */
+    $tabs.find('.displayOptions').dropdownForm('setSubmitCb', function(e) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Re-load the tab contents
+        $tabs.tabs('load', $tabs.tabs('option', 'selected'));
+    });
+    <?php
+    }
+    ?>
+}
+
 /************************************************
  * Initialize the sidebar tab control
  *
  */
 function init_sidebar()
 {
-    /* Convert the '#sidebar-tabs' DOM element to a ui.tabs widget that will
+    /* Convert the sidebar DOM element to a ui.tabs widget that will
      * automatically mask the tab panel when performing an AJAX load.
      */
-    var $tabs   = $('#sidebar-tabs');
+    var $tabs   = $('#<?= $this->sidebar['namespace'] ?>');
     var $tab    = null;
     $tabs.tabs({
         cache:      true,
-        cookie:     'sidebarTab',
+        cookie:     '<?= $this->sidebar['namespace'] ?>',
         ajaxOptions:{
             beforeSend: function() {
                 // Mask the tab panel area...
@@ -37,10 +79,13 @@ function init_sidebar()
             },
             complete: function() {
                 // Unmask the tab panel area...
+                sidebar_bindSubmits($tabs);
                 $tab.unmask();
             }
         }
     } );
+
+    sidebar_bindSubmits($tabs);
 }
 <?php
 $jQuery->javascriptCaptureEnd();
