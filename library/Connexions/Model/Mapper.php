@@ -201,7 +201,15 @@ abstract class Connexions_Model_Mapper
          */
         $id = $this->getId($data);
         if ($this->_hasIdentity($id))
-            return $this->_getIdentity($id);
+        {
+            $domainModel = $this->_getIdentity($id);
+
+            /* Refresh this instance with the incoming data.  This is to ensure 
+             * that any updates are reflected, primarily for things like 
+             * statistics and counts.
+             */
+            return $domainModel->populate($data);
+        }
 
         // No existing entry.  Create a new instance.
         $modelName   = $this->getModelName();
