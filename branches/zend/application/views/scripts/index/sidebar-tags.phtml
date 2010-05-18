@@ -79,14 +79,41 @@
          */
         if ($items === null)
         {
+            /* Yuck.  We're gonna have to use the View_Helper_HtmlBookmarks
+             * view helper in order to establish context.  This will add
+             * inappropriate on-load actions that we need to exclude.
+             */
+            $jQuery = $this->jQuery();
+            $sbLoad = $jQuery->getOnLoadActions();
+
             $htmlBookmarks = $this->htmlBookmarks( $this->main );
             $items         = $htmlBookmarks->bookmarks;
 
             $htmlSidebar->items = $items;
+
+            /*
+            Connexions::log("sidebar-tags.phtml: Clear on-load actions "
+                            .   "added by View_Helper_Bookmarks");
+            // */
+
+            $jQuery->clearOnLoadActions();
+            foreach ($sbLoad as $action)
+            {
+                /*
+                Connexions::log("sidebar-tags.phtml: "
+                                .   "Re-add on-load action [ %s ]",
+                                $action);
+                // */
+
+                $jQuery->addOnloadAction($action);
+            }
         }
 
+        /*
         Connexions::log("sidebar-tags.phtml: bookmarks-related [%d..%d]",
                         $offset, $offset+$count);
+        // */
+
         $tagSet = $service->fetchByBookmarks( $items,
                                               $fetchOrder,
                                               $count,
