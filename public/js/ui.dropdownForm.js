@@ -128,6 +128,8 @@ $.widget("ui.dropdownForm", {
             self.element.data('changed.uidropdownform', changed);
             */
 
+            //$.log("ui.dropdownForm::caught 'form:change'");
+
             // Any change within the form should enable the submit button
             $submit.removeClass('ui-state-disabled')
                    .removeAttr('disabled')
@@ -148,8 +150,10 @@ $.widget("ui.dropdownForm", {
              *          namespace +'StyleCustom[ ... ]'
              */
             $(settings).each(function() {
+                /*
                 $.log("Add Cookie: name[%s], value[%s]",
                       this.name, this.value);
+                // */
                 $.cookie(this.name, this.value);
             });
 
@@ -166,6 +170,12 @@ $.widget("ui.dropdownForm", {
             }
         };
 
+        var _form_clickSubmit   = function(e) {
+            e.preventDefault();
+
+            // Trigger the 'submit' event on the form
+            $form.trigger('submit');
+        };
 
         /**********************************************************************
          * bind events
@@ -181,10 +191,11 @@ $.widget("ui.dropdownForm", {
                 .bind('mouseleave.uidroppdownform', _mouse_leave)
                 .bind('click.uidropdownform', _control_click);
 
-        $form.bind('change.uidropdownform', _form_change);
-             //.bind('submit.uidropdownform', _form_submit);
+        $form.bind('change.uidropdownform', _form_change)
+             .bind('submit.uidropdownform', _form_submit);
 
-        $submit.bind('click.uidropdownform', _form_submit);
+        $submit.bind('click.uidropdownform', _form_clickSubmit);
+
     },
 
     /************************

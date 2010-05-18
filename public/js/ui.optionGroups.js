@@ -71,7 +71,8 @@ $.widget("ui.optionGroups", {
      *      groups      An object of group-name => CSS selector;
      *
      *  @triggers:
-     *      'change.optionGroup'    when the option group is changed, passing
+     *      'change'    on the controlling form when the option group is
+     *                  changed, passing
      *                              data:
      *                                  {'group':    groupName,
      *                                   'selector': selector for all fields}
@@ -249,8 +250,10 @@ $.widget("ui.optionGroups", {
              * them all and then add in the ones that are explicitly selected.
              */
             $groupFieldset.find(':checkbox').each(function() {
+                /*
                 $.log("Remove Cookie: name[ %s ] / [ %s ]",
                         this.name, $(this).attr('name'));
+                // */
 
                 $.cookie( $(this).attr('name'), null );
             });
@@ -381,11 +384,16 @@ $.widget("ui.optionGroups", {
          * group and an array of CSS selectors that will match all items NOT of
          * the group.
          */
+        //$.log("ui.optionGroups: trigger 'form:change'");
         self.options.form.trigger('change', groupInfo);
     },
 
     getGroupInfo: function() {
         return this.element.data('groupInfo');
+    },
+
+    getForm: function() {
+        return this.options.form;
     },
 
     enable: function() {
