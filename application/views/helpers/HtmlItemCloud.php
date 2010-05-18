@@ -829,7 +829,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         $idex = 0;
         foreach ($itemList as $item)
         {
-            if ($idex++ > $this->highlightCount)
+            if (++$idex > $this->highlightCount)
                 break;
 
             $html .= "<li>";
