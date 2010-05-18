@@ -54,7 +54,6 @@ class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
     public function __construct(array $config = array())
     {
         //Connexions::log("View_Helper_Bookmarks::__construct()");
-
         foreach (self::$defaults as $key => $value)
         {
             $this->_params[$key] = $value;
@@ -95,15 +94,6 @@ class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
             $this->__set($key, $value);
             //$this->_params[$key] = $value;
         }
-
-        // Initialize 'multipleUsers' based upon the value of 'users'
-        if (($this->_params['users'] === null) ||
-            (($this->_params['users'] instanceof Model_Set_User) &&
-             (count($this->_params['users']) != 1)) )
-        {
-            $this->_params['multipleUsers'] = true;
-        }
-
 
         /*
         $viewer = $this->_params['viewer']; unset($this->_params['viewer']);
@@ -232,6 +222,40 @@ class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
         if (! isset($this->_params[$key]))
             throw new Exception("Unknown parameter key [{$key}]");
         */
+        /*
+        Connexions::log("View_Helper_Bookmarks::__set(%s, %s)",
+                        $key, $value);
+        // */
+
+        if ($key === 'users')
+        {
+            // Also set 'multipleUsers' based upon the value of 'users'
+            if (($value !== null) &&
+                ( (($value instanceof Model_Set_User) &&
+                  (count($value) == 1)) ||
+                  ($value instanceof Model_User) ) )
+            {
+                $this->_params['multipleUsers'] = false;
+            }
+            else
+            {
+                $this->_params['multipleUsers'] = true;
+            }
+
+            /*
+            Connexions::log("View_Helper_Bookmarks::__set(%s): "
+                            . "users set [ %s ], multipleUsers:%s",
+                            $key,
+                            ($value === null
+                                ? 'null'
+                                : ($value instanceof Model_Set_User
+                                    ? 'Model_Set_User:'. count($value)
+                                    : '! Model_Set_User')),
+                            ($this->_params['multipleUsers']
+                                ? 'true'
+                                : 'false'));
+            // */
+        }
 
         $method = 'set'. ucfirst($key);
         if (method_exists($this, $method))
@@ -265,7 +289,7 @@ class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
                 else
                     $users =& $this->users;
 
-                // /*
+                /*
                 Connexions::log("View_Helper_Bookmarks::__get( %s ): "
                                 . "Retrieve bookmarks: "
                                 . "order[ %s ], count[ %d ], offset[ %d ]",

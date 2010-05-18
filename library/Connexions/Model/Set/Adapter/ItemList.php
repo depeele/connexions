@@ -21,15 +21,20 @@ class Connexions_Model_Set_Adapter_ItemList extends Zend_Tag_ItemList
                                                         $baseUrl)
     {
         $this->_selectedStr = $selected->__toString();
-        $this->_selected    = explode(',', $this->_selectedStr);
-                                //$selected->toArray();
+        $this->_selected    = array();
 
-        // Remove the source string from the base url
-        $url = str_replace($selected->source, '', $baseUrl);
+        $url = $baseUrl;
+        if (! empty($this->_selectedStr))
+        {
+            $this->_selected = explode(',', $this->_selectedStr);
+
+            // Remove the source string from the base url
+            $url = str_replace($selected->getSource() .'/', '', $url);
+        }
 
         Connexions::log("Connexions_Model_Set_Adapter_ItemList:: "
-                        . "selectedStr[ %s ], url[ %s ]",
-                        $this->_selectedStr, $url);
+                        . "source[ %s ], selectedStr[ %s ], url[ %s ]",
+                        $selected->getSource(), $this->_selectedStr, $url);
 
         // Fill _items from the incoming set.
         foreach ($set as $item)
@@ -88,7 +93,7 @@ class Connexions_Model_Set_Adapter_ItemList extends Zend_Tag_ItemList
         {
             $item->setParam('selected', false);
 
-            $itemList = array( $title );
+            array_push( $itemList, $title );    //$itemList = array( $title );
         }
 
         /*
