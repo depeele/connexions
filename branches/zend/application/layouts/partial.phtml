@@ -7,10 +7,17 @@
 $jQuery  = $this->jQuery();
 $actions = $jQuery->getOnLoadActions();
 
+/*
+$js = $jQuery->getJavascript();
+
+Connexions::log("layouts/partial.phtml: Clear %d jQuery/Javascript statements",
+                count($js));
+
 // Clear any existing Javascript
 $jQuery->clearJavascript();
+*/
 
-// "Move" the onLoad actions to straight Javascript calls
+// "Move" onLoad actions to straight Javascript calls
 foreach ($actions as $action)
 {
     $jQuery->addJavascript($action);

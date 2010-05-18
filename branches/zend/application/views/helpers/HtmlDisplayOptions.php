@@ -188,6 +188,15 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
 
         parent::setView($view);
 
+        if ($view->isPartial === true)
+        {
+            /* For a partial (asynchronously loaded portion of a full page),
+             * ASSUME that this view helper was invoked for the main view
+             * and has already inserted the init_DisplayOptions() script.
+             */
+            self::$_initialized['__global__'] = true;
+        }
+
         if (@isset(self::$_initialized['__global__']))
             return $this;
 
@@ -199,6 +208,7 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
                ->addJavascriptFile($view->baseUrl('js/ui.optionGroups.js'))
                ->addJavascriptFile($view->baseUrl('js/ui.dropdownForm.js'))
                ->javascriptCaptureStart();
+                // {
         ?>
 
 /************************************************
@@ -219,6 +229,7 @@ function init_DisplayOptions(opts)
 }
 
         <?php
+                // }
         $jQuery->javascriptCaptureEnd();
 
         self::$_initialized['__global__'] = true;

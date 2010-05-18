@@ -218,6 +218,11 @@ class IndexController extends Connexions_Controller_Action
             //$this->_helper->layout->setLayout('partial');
             $this->layout->setLayout('partial');
 
+            /* Notify view scripts that we are rendering a partial
+             * (asynchronously loaded portion of a full page).
+             */
+            $this->view->isPartial = true;
+
             $parts = preg_split('/\s*[\.:\-]\s*/',
                                 $this->_request->getParam('part', 'content'));
             switch ($parts[0])
@@ -356,9 +361,14 @@ class IndexController extends Connexions_Controller_Action
         $request            =& $this->_request;
 
         $tagsStyle       = $request->getParam("sbTagsOptionGroup");
+        /*
         $tagsStyleCustom = $request->getParam("sbTagsOptionGroups_option");
         if ( ($tagsStyle === 'custom') && (is_array($tagsStyleCustom)) )
             $tagsStyle = $tagsStyleCustom;
+        */
+
+        Connexions::log("IndexController::_prepareSidebar(): tagsStyle[ %s ]",
+                        $tagsStyle);
 
         $sidebar = array(
             'namespace' => 'sidebar-tab',

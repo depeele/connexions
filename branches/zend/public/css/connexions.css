@@ -419,9 +419,11 @@ cite { display: block; text-align: right; padding-top: 10px; }
 #tagItems .displayOptions form .itemCounts, #bookmarks .displayOptions form .itemCounts { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
 #tagItems .displayOptions form .itemCounts .field, #bookmarks .displayOptions form .itemCounts .field { display: inline; }
 #tagItems .displayOptions form .itemCounts .field label, #bookmarks .displayOptions form .itemCounts .field label { width: 2.5em; }
-#tagItems .displayOptions form .itemCounts .field select, #bookmarks .displayOptions form .itemCounts .field select { width: 4em; }
+#tagItems .displayOptions form .itemCounts .field select, #bookmarks .displayOptions form .itemCounts .field select { width: 4.5em; }
 #tagItems .displayOptions form .itemCounts .field label, #tagItems .displayOptions form .itemCounts .field select, #tagItems .displayOptions form .itemCounts .field .label, #bookmarks .displayOptions form .itemCounts .field label, #bookmarks .displayOptions form .itemCounts .field select, #bookmarks .displayOptions form .itemCounts .field .label { float: left; margin-bottom: 0.25em; }
 #tagItems .displayOptions form .itemCounts .field label, #tagItems .displayOptions form .itemCounts .field .label, #bookmarks .displayOptions form .itemCounts .field label, #bookmarks .displayOptions form .itemCounts .field .label { padding: 0 0.25em; }
+#tagItems .displayOptions form .itemCounts .highlightCount, #bookmarks .displayOptions form .itemCounts .highlightCount { float: right; display: block; }
+#tagItems .displayOptions form .itemCounts .highlightCount label.above, #bookmarks .displayOptions form .itemCounts .highlightCount label.above { width: auto; }
 #tagItems .displayOptions form .displayStyle, #bookmarks .displayOptions form .displayStyle { display: block; position: relative; width: auto; text-align: left; padding-top: 1em; }
 #tagItems .displayOptions form .displayStyle a, #bookmarks .displayOptions form .displayStyle a { font-weight: normal; }
 #tagItems .displayOptions form .displayStyle .option-selected, #bookmarks .displayOptions form .displayStyle .option-selected { font-weight: bold; }
@@ -554,7 +556,8 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .displayOptions .displayStyle ul.groups li.toggle { border: none; }
 .displayOptions .displayStyle ul.groups .comma { padding-right: 0.25em; }
 .displayOptions .displayStyle fieldset.options { padding-top: 0.5em; border: none; }
-.displayOptions form { z-index: 4; position: absolute; top: 2.1em; right: 0; padding: 0.5em; }
+.displayOptions form { z-index: 4; position: absolute; top: 2.0em; right: 0; padding: 0.5em; }
+.displayOptions form select { font-size: 0.9em; }
 
 .ui-widget { font-size: 1em; font-family: Arial, Helvetica, sans-serif; }
 

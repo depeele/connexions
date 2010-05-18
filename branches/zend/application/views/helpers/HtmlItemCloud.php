@@ -202,10 +202,16 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     public function render()
     {
+        /*
         Connexions::log("View_Helper_HtmlItemCloud::render(): "
-                        .   "namespace[ %s ], %d items",
+                        .   "namespace[ %s ], %d items, "
+                        .   "sortBy[ %s ], sortOrder[ %s ], style[ %s ]",
                         $this->namespace,
-                        $this->items->count());
+                        $this->items->count(),
+                        $this->sortBy, $this->sortOrder,
+                        $this->getDisplayStyle());
+        // */
+
 
         // (Re)sort the items according to the requested ordering
         $this->items->usort( array($this, 'sortCb') );
@@ -402,13 +408,78 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
     {
         $this->_params['namespace'] = $namespace;
 
-        Connexions::log("View_Helper_HemlItemClout::setNamespace( %s )",
+        Connexions::log("View_Helper_HtmlItemCloud::setNamespace( %s )",
                         $namespace);
+
+        $view   = $this->view;
+        $jQuery = $view->jQuery();
+
+        if (! @isset(self::$_initialized['__global__']))
+        {
+            Connexions::log("View_Helper_HtmlItemCloud::setNamespace( %s ): "
+                            .   "include init_CloudOptions()",
+                            $namespace);
+
+            $jQuery->javascriptCaptureStart();
+                // {
+            ?>
+
+/************************************************
+ * Initialize cloud display options
+ *
+ */
+function init_CloudOptions(namespace)
+{
+    var $cloudOptions = $('.'+ namespace +'-displayOptions');
+    if ( $cloudOptions.length > 0 )
+    {
+        /* On Display Style change, toggle the state of 'highlightCount'
+         *
+         * Note: The ui.optionsGroup widget is established, and attached to the
+         *       ui-optionsGroup DOM element,  by ui.dropdownForm when it is
+         *       initialized.  When the options change, ui.optionsGroup will
+         *       trigger the 'change' event on the displayOptions form with
+         *       information about the selected display group.
+         */
+        var form    = $cloudOptions.find('form');
+
+        form.bind('change.optionGroup',
+                  function(e, info) {
+                    var $field  = $(this).find('.field.highlightCount');
+
+                    /*
+                    $.log("change.optionGroup: group[ "+ info.group +" ], "
+                          + $field.length +' fields');
+                    // */
+
+                    if (info.group === 'cloud')
+                    {
+                        // enable the 'highlightCount'
+                        $field.removeClass('ui-state-disabled');
+                        $field.find('select').removeAttr('disabled');
+                    }
+                    else
+                    {
+                        // disable the 'highlightCount'
+                        $field.addClass('ui-state-disabled');
+                        $field.find('select').attr('disabled', true);
+                    }
+
+                  });
+    }
+
+    return;
+}
+
+            <?php
+                // }
+            $jQuery->javascriptCaptureEnd();
+
+            self::$_initialized['__global__'] = true;
+        }
 
         if (! @isset(self::$_initialized[$namespace]))
         {
-            $view = $this->view;
-
             // Set / Update our displayOptions namespace.
             if ($this->_displayOptions === null)
             {
@@ -423,6 +494,10 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
             {
                 $this->_displayOptions->setNamespace($namespace);
             }
+
+            $jQuery->addOnLoad("init_CloudOptions('{$namespace}');");
+
+            self::$_initialized[$namespace] = true;
         }
 
         return $this;
@@ -493,6 +568,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     public function setDisplayStyle($style, array $values = null)
     {
+        $reqStyle = $style;
         if ($values !== null)
         {
             $this->_displayOptions->setGroupValues($values);
@@ -513,9 +589,9 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
             $this->_displayOptions->setGroup($style);
         }
 
-        /*
+        // /*
         Connexions::log('View_Helper_HtmlItemCloud::'
-                            . "setDisplayStyle({$style}) == [ "
+                            . "setDisplayStyle({$reqStyle}) == [ "
                             .   $this->_displayOptions->getGroup() ." ]");
         // */
     
@@ -950,12 +1026,26 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         }
     
         $html .=    "</select>"
-              .     "<span class='label'>highlighting the</span>"
-              .    "</div>"                             // perPage }
-              .    "<div class='field highlightCount'>" // highlightCount {
+              .    "</div>";                            // perPage }
+
+
+        $hlClasses = 'field highlightCount';
+        $formState = '';
+        if ($this->getDisplayStyle() !== self::STYLE_CLOUD)
+        {
+            // Disable the highlightCount
+            $formState  = ' disabled=true';
+            $hlClasses .= ' ui-state-disabled';
+        }
+
+        $html .=   "<div class='{$hlClasses}'>" // highlightCount {
+              .     "<label for='{$namespace}HighlightCount' class='above'>"
+              .       "highlighting the"
+              .     "</label>"
               .     "<label for='{$namespace}HighlightCount'>top</label>"
               .     "<select class='ui-input ui-state-default ui-corner-all "
-              .                   "count' name='{$namespace}HighlightCount'>";
+              .                   "count' name='{$namespace}HighlightCount' "
+              .                   "{$formState}>";
 
         foreach (self::$highlightCountChoices as $countOption)
         {

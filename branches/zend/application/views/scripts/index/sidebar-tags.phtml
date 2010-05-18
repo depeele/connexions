@@ -83,19 +83,25 @@
              * view helper in order to establish context.  This will add
              * inappropriate on-load actions that we need to exclude.
              */
-            $jQuery = $this->jQuery();
-            $sbLoad = $jQuery->getOnLoadActions();
+            $jQuery   = $this->jQuery();
+            $sbLoad   = $jQuery->getOnLoadActions();
+            $sbScript = $jQuery->getJavascript();
 
             $htmlBookmarks = $this->htmlBookmarks( $this->main );
             $items         = $htmlBookmarks->bookmarks;
 
             $htmlSidebar->items = $items;
 
-            /*
+            // /*
             Connexions::log("sidebar-tags.phtml: Clear on-load actions "
-                            .   "added by View_Helper_Bookmarks");
+                            .   "added by View_Helper_Bookmarks, "
+                            .   "then re-add %d sidebar-related actions and "
+                            .   "%d script statements.",
+                            count($sbLoad),
+                            count($sbScript));
             // */
 
+            $jQuery->clearJavascript();
             $jQuery->clearOnLoadActions();
             foreach ($sbLoad as $action)
             {
@@ -106,6 +112,11 @@
                 // */
 
                 $jQuery->addOnloadAction($action);
+            }
+
+            foreach ($sbScript as $statement)
+            {
+                $jQuery->addJavascript($statement);
             }
         }
 
