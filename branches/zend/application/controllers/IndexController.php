@@ -127,7 +127,7 @@ class IndexController extends Connexions_Controller_Action
                             ? $this->_owner->name
                             : 'bookmarks')
                     . '/' .(count($this->_tags) > 0
-                            ? '/'. $this->_tags .'/'
+                            ? $this->_tags .'/'
                             : '');
 
         /***************************************************************
