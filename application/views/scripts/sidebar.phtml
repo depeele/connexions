@@ -42,7 +42,7 @@ function sidebar_bindSubmits($tabs)
      * reload of the containing tag.  This should trigger an asynchronous
      * retrieval of the new content.
      */
-    $tabs.find('.displayOptions').dropdownForm('setSubmitCb', function(e) {
+    $tabs.find('.displayOptions').dropdownForm('setApplyCb', function(e) {
         e.stopImmediatePropagation();
         e.preventDefault();
         e.stopPropagation();

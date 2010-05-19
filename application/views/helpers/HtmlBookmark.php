@@ -49,6 +49,7 @@ class View_Helper_HtmlBookmark extends View_Helper_Bookmark
         $html .= "<li class='item "             // item {
               .             implode(' ', $itemClasses) . "'>"
               .   "<form class='bookmark'>"     // bookmark {
+              .    $this->_renderHiddenData()
               .    $this->_renderStatus()
               .    $this->_renderStats()
               .    "<div class='data'>";    // data {
@@ -91,6 +92,16 @@ class View_Helper_HtmlBookmark extends View_Helper_Bookmark
      * Protected helpers
      *
      */
+    protected function _renderHiddenData()
+    {
+        $html = sprintf( "<input type='hidden' name='userId' value='%s' />"
+                        ."<input type='hidden' name='itemId' value='%s' />",
+                        $this->_bookmark->user->userId,
+                        $this->_bookmark->itemId);
+
+        return $html;
+    }
+
     protected function _renderStatus()
     {
         $html =    "<div class='status'>";
