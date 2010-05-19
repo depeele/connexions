@@ -11,6 +11,14 @@
 
 $.widget("ui.checkbox", {
     version: "0.1.1",
+
+    /* Remove the strange ui.widget._trigger() class name prefix for events.
+     *
+     * If you need to know which widget the event was triggered from, either
+     * bind directly to the widget or look at the event object.
+     */
+    widgetEventPrefix:    '',
+
     options: {
         // Defaults
         css:        'checkbox',             // General CSS class
@@ -98,9 +106,8 @@ $.widget("ui.checkbox", {
                             ? opts.titleOn
                             : opts.titleOff);
 
-        // Create a new element that will be place just after the current
-        self.$orig   = self.element;
-        self.element = $(  '<span class="checkbox">'
+        // Create a new element that will be placed just after the current
+        self.$el     = $(  '<span class="checkbox">'
                           + '<div '
                           +    'class="'+ opts.css
                           +      (opts.enabled ? ' '   : ' diabled ')
@@ -112,18 +119,13 @@ $.widget("ui.checkbox", {
                                     : '')
                           +   '>&nbsp;</div>'
                           +'</span>');
-        self.img      = self.element.find('div');
+        self.img      = self.$el.find('div');
 
         // Insert the new element after the existing and remove the existing.
-        self.element.insertAfter(self.$orig);
+        self.$el.insertAfter(self.element);
 
-        /* Removing the original element will trigger a call to our destroy()
-         * method.  Since we're not really destroying this widget, we need to
-         * protect against pre-mature destruction with '_isInit'.
-         */
-        self._isInit = true;
-            self.$orig.remove();
-        self._isInit = false;
+        // Hide the original element.
+        self.element.hide();
 
         // Create a new hidden input to represent the final value.
         self.$value = $('<input type="hidden" '
@@ -131,7 +133,7 @@ $.widget("ui.checkbox", {
                                         : '')
                     +          'name="'+ name +'" />');
         self.$value.attr('value', opts.checked);
-        self.$value.insertBefore(self.element);
+        self.$value.insertBefore(self.$el);
 
 
         if (self.$label && (self.$label.length > 0))
@@ -149,7 +151,7 @@ $.widget("ui.checkbox", {
                     e.preventDefault();
                     e.stopPropagation();
 
-                    self.element.trigger('click',[e]);
+                    self.$el.trigger('click',[e]);
                     return false;
                 });
             }
@@ -169,31 +171,30 @@ $.widget("ui.checkbox", {
         var _mouseenter = function(e) {
             if (self.options.enabled === true)
             {
-                self.element.addClass('ui-state-hover');
+                self.$el.addClass('ui-state-hover');
             }
         };
 
         var _mouseleave = function(e) {
-            self.element.removeClass('ui-state-hover');
+            self.$el.removeClass('ui-state-hover');
         };
 
         var _focus      = function(e) {
             if (self.options.enabled === true)
             {
-                self.element.addClass('ui-state-focus');
+                self.$el.addClass('ui-state-focus');
             }
         };
 
         var _blur       = function(e) {
-            self.element.removeClass('ui-state-focus');
+            self.$el.removeClass('ui-state-focus');
         };
 
         var _click      = function(e) {
             self.toggle();
         };
 
-        self.element
-                .bind('mouseenter.uicheckbox', _mouseenter)
+        self.$el.bind('mouseenter.uicheckbox', _mouseenter)
                 .bind('mouseleave.uicheckbox', _mouseleave)
                 .bind('focus.uicheckbox',      _focus)
                 .bind('blur.uicheckbox',       _blur)
@@ -216,8 +217,9 @@ $.widget("ui.checkbox", {
         if (! this.options.enabled)
         {
             this.options.enabled = true;
-            this.element.removeClass('ui-state-disabled');
-            this.element.trigger('enabled.uicheckbox');
+            this.$el.removeClass('ui-state-disabled');
+
+            this._trigger('enabled');
         }
     },
 
@@ -226,8 +228,9 @@ $.widget("ui.checkbox", {
         if (this.options.enabled)
         {
             this.options.enabled = false;
-            this.element.addClass('ui-state-disabled');
-            this.element.trigger('disabled.uicheckbox');
+            this.$el.addClass('ui-state-disabled');
+
+            this._trigger('disabled');
         }
     },
 
@@ -260,7 +263,8 @@ $.widget("ui.checkbox", {
                     .addClass(this.options.cssOn)
                     .attr('title', this.options.title + this.options.titleOn);
 
-            this.element.trigger('checked.uicheckbox');
+            //this.element.click();
+            this._trigger('change', null, 'check');
         }
     },
 
@@ -276,29 +280,23 @@ $.widget("ui.checkbox", {
                     .addClass(this.options.cssOff)
                     .attr('title', this.options.title + this.options.titleOff);
 
-            this.element.trigger('unchecked.uicheckbox');
+            //this.element.click();
+            this._trigger('change', null, 'uncheck');
         }
     },
 
     destroy: function() {
-        /* Since we replace the original element, destroy() will be invoked
-         * during initialization.  When that happens, simply return.
-         */
-        if (this._isInit === true)
-        {
-            return;
-        }
-
-        this.$orig.insertAfter(this.element);
-
         if (this.$label)
         {
             this.$label.show();
         }
 
-        this.$value.remove();
+        this.$el.unbind('.uicheckbox');
 
-        this.element.unbind('.uicheckbox');
+        this.$value.remove();
+        this.$el.remove();
+
+        this.element.show();
     }
 });
 

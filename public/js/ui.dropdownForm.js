@@ -6,17 +6,24 @@
  *      ui.core.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
-/*global jQuery:false */
+/*global jQuery:false, window:false */
 (function($) {
 
 $.widget("ui.dropdownForm", {
     version: "0.1.1",
+
+    /* Remove the strange ui.widget._trigger() class name prefix for events.
+     *
+     * If you need to know which widget the event was triggered from, either
+     * bind directly to the widget or look at the event object.
+     */
+    widgetEventPrefix:    '',
+
     options: {
         // Defaults
         namespace:  null,   // Form/cookie namespace
         form:       null,   // Our parent/controlling form
-        groups:     null,   // Display style groups.
-        submitCb:   null    // Submit callback
+        groups:     null    // Display style groups.
     },
 
     /** @brief  Initialize a new instance.
@@ -79,7 +86,9 @@ $.widget("ui.dropdownForm", {
                  * mouseleave
                  */
                 $control.trigger('click');
-                self.element.trigger('mouseleave');
+
+                self._trigger('mouseleave', e);
+                //self.element.trigger('mouseleave');
             }
         };
 
@@ -139,7 +148,7 @@ $.widget("ui.dropdownForm", {
         var _form_submit        = function(e) {
             // Serialize all form values to an array...
             var settings    = $form.serializeArray();
-            e.preventDefault();
+            //e.preventDefault();
 
             /* ...and set a cookie for each
              *      namespace +'SortBy'
@@ -157,17 +166,28 @@ $.widget("ui.dropdownForm", {
                 $.cookie(this.name, this.value);
             });
 
-            if (self.options.submitCb !== null)
+            if (! self._trigger('apply', e))
             {
-                self.options.submitCb(e, self);
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+
+            /*
+            var callback    = self.options.apply;
+            if ($.isFunction(callback))
+            {
+                callback.call( self.element[0], e);
+                //self.options.submitCb(e, self);
             }
             else
             {
-                /* Reload so our URL won't be polluted with form variables that
-                 * we've just placed into cookies.
-                 */
+                // Reload so our URL won't be polluted with form variables that
+                // we've just placed into cookies.
                 window.location.reload();
             }
+            */
         };
 
         var _form_clickSubmit   = function(e) {
@@ -189,7 +209,7 @@ $.widget("ui.dropdownForm", {
         // Add an opacity hover effect to the displayOptions
         $control.bind('mouseenter.uidroppdownform', _mouse_enter)
                 .bind('mouseleave.uidroppdownform', _mouse_leave)
-                .bind('click.uidropdownform', _control_click);
+                .bind('click.uidropdownform',       _control_click);
 
         $form.bind('change.uidropdownform', _form_change)
              .bind('submit.uidropdownform', _form_submit);
@@ -217,8 +237,8 @@ $.widget("ui.dropdownForm", {
                             .optionGroups( 'getGroupInfo' );
     },
 
-    setSubmitCb: function(cb) {
-        this.options.submitCb = cb;
+    setApplyCb: function(cb) {
+        this.options.apply = cb;
     },
 
     open: function() {

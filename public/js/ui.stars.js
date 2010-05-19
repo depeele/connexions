@@ -28,7 +28,15 @@
 (function($) {
 
 $.widget("ui.stars", {
-  version: "2.1.1a",
+  version: "2.1.1b",
+
+  /* Remove the strange ui.widget._trigger() class name prefix for events.
+   *
+   * If you need to know which widget the event was triggered from, either
+   * bind directly to the widget or look at the event object.
+   */
+  widgetEventPrefix:    '',
+
   options: {
     // Defaults
     inputType: "div", // radio|select
@@ -133,6 +141,8 @@ $.widget("ui.stars", {
       self._disableCancel();
 
       !o.forceSelect && self.callback(e, "star");
+
+      self._trigger('change', null, o.value);
     })
     .bind("mouseover.stars", function() {
       if(o.disabled) {
