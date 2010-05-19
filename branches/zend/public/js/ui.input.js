@@ -11,6 +11,14 @@
 
 $.widget("ui.input", {
     version: "0.1.1",
+
+    /* Remove the strange ui.widget._trigger() class name prefix for events.
+     *
+     * If you need to know which widget the event was triggered from, either
+     * bind directly to the widget or look at the event object.
+     */
+    widgetEventPrefix:    '',
+
     options: {
         // Defaults
         priority:       'normal',
@@ -46,9 +54,9 @@ $.widget("ui.input", {
      *                              string      invalid, error message
      *
      *  @triggers:
-     *      'validationChanged.uiinput' when the validaton state has changed;
-     *      'enabled.uiinput'           when element is enabled;
-     *      'disabled.uiinput'          when element is disabled.
+     *      'validationChanged' when the validaton state has changed;
+     *      'enabled'           when element is enabled;
+     *      'disabled'          when element is disabled.
      */
     _create: function() {
         var self    = this;
@@ -272,7 +280,8 @@ $.widget("ui.input", {
             this.element.removeClass('ui-state-disabled')
                         .removeAttr('disabled');
 
-            this.element.trigger('enabled.uiinput');
+            //this.element.trigger('enabled.uiinput');
+            this._trigger('enabled');
         }
     },
 
@@ -284,7 +293,8 @@ $.widget("ui.input", {
             this.element.attr('disabled', true)
                         .addClass('ui-state-disabled');
 
-            this.element.trigger('disabled.uiinput');
+            //this.element.trigger('disabled.uiinput');
+            this._trigger('disabled');
         }
     },
 
@@ -336,7 +346,8 @@ $.widget("ui.input", {
         this.options.valid = state;
 
         // Let everyone know that the validation state has changed.
-        this.element.trigger('validationChanged.uiinput');
+        //this.element.trigger('validationChanged.uiinput');
+        this._trigger('validationChanged');
     },
 
     getEmptyText: function()
