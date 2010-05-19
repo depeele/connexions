@@ -169,78 +169,26 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
             $view   = $this->view;
             $jQuery =  $view->jQuery();
 
-            $jQuery->addJavascriptFile($view->baseUrl('js/ui.stars.min.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.checkbox.min.js'))
+            $jQuery->addJavascriptFile($view->baseUrl('js/ui.stars.js'))
+                   ->addJavascriptFile($view->baseUrl('js/ui.checkbox.js'))
                    ->addJavascriptFile($view->baseUrl('js/ui.button.min.js'))
                    ->addJavascriptFile($view->baseUrl('js/ui.input.min.js'))
+                   ->addJavascriptFile($view->baseUrl('js/ui.bookmark.js'))
+                   ->addJavascriptFile($view->baseUrl('js/ui.bookmarkList.js'));
+
+            /*
                    ->javascriptCaptureStart();
             ?>
 
-/************************************************
- * Initialize group header options.
- *
- */
-function init_GroupHeader(namespace)
-{
-    var $headers    = $('#'+ namespace +'List .groupHeader .groupType');
-    var dimOpacity  = 0.5;
-
-    $headers
-        .fadeTo(100, dimOpacity)
-        .hover(
-            // in
-            function() {
-                $(this).fadeTo(100, 1.0);
-            },
-
-            // out
-            function() {
-                $(this).fadeTo(100, dimOpacity);
-            }
-        );
-}
-
-/************************************************
- * Initialize ui elements.
- *
- */
 function init_Bookmarks(namespace)
 {
-    var $list       = $('#'+ namespace +'List');
-    var $bookmarks  = $list.find('form.bookmark');
-
-    // Favorite
-    $bookmarks.find('input[name=isFavorite]').checkbox({
-        css:        'connexions_sprites',
-        cssOn:      'star_fill',
-        cssOff:     'star_empty',
-        titleOn:    'Favorite: click to remove from Favorites',
-        titleOff:   'Click to add to Favorites',
-        useElTitle: false,
-        hideLabel:  true
-    });
-
-    // Privacy
-    $bookmarks.find('input[name=isPrivate]').checkbox({
-        css:        'connexions_sprites',
-        cssOn:      'lock_fill',
-        cssOff:     'lock_empty',
-        titleOn:    'Private: click to share',
-        titleOff:   'Public: click to mark as private',
-        useElTitle: false,
-        hideLabel:  true
-    });
-
-    // Rating - average and user
-    //$bookmarks.find('.rating .stars .average').stars({split:2});
-    $bookmarks.find('.rating .stars .owner').stars();
-
-    // Initialize any group headers
-    init_GroupHeader(namespace);
+    var $list       = $('#'+ namespace +'List').bookmarkList({
+                                                    namespace: namespace});
 }
 
             <?php
             $jQuery->javascriptCaptureEnd();
+            */
 
             self::$_initialized['__global__'] = true;
         }
@@ -267,7 +215,10 @@ function init_Bookmarks(namespace)
             }
 
             // Include required jQuery
-            $view->jQuery()->addOnLoad("init_Bookmarks('{$namespace}');");
+            //$view->jQuery()->addOnLoad("init_Bookmarks('{$namespace}');");
+            $call   = "$('#{$namespace}List').bookmarkList("
+                    .           "{namespace: '{$namespace}'});";
+            $view->jQuery()->addOnLoad($call);
         }
 
         return $this;

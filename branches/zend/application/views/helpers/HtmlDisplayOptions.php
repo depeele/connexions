@@ -222,6 +222,15 @@ function init_DisplayOptions(opts)
     {
         // Initialize the display options control
         //opts.form = $form;
+        opts.apply = function(e) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Re-load the window to apply cookie values
+            window.location.reload();
+        };
+
         $displayOptions.dropdownForm( opts );
     }
 
@@ -650,7 +659,7 @@ function init_DisplayOptions(opts)
 
         $html .= "<div class='displayOptions "              // displayOptions {
               .              "{$namespace}-displayOptions'>"
-              .   "<form method='GET' "                             // form {
+              .   "<form method='POST' "                            // form {
               .         "class='ui-state-active ui-corner-all'>";
 
         // Include all form fields (added via addFormField()).
