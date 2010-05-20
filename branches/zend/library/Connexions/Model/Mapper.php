@@ -25,6 +25,9 @@ abstract class Connexions_Model_Mapper
      */
     protected           $_accessor      = null;
 
+    // The name of the Model class this mapper is associated with.
+    protected           $_modelName     = null;
+
     // The name of the Model Set class to use when retrieving multiple items.
     protected           $_modelSetName  = null;
 
@@ -34,6 +37,8 @@ abstract class Connexions_Model_Mapper
      *                                      or the Data Accessor Object
      *                                      instance to use
      *                                      (e.g.  Model_Mapper_*)
+     *                      modelName       The name of the domain model
+     *                                      [ $this->_modelName ];
      *                      modelSetName    The name of the Data Set class to
      *                                      use when retrieving multiple items
      *                                      (by default, this will be
@@ -105,6 +110,36 @@ abstract class Connexions_Model_Mapper
         }
 
         return $this->_accessor;
+    }
+
+    /** @brief  Set the name of the domain model.
+     *  @param  name    The name of the domain model.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function setModelName($name)
+    {
+        $this->_modelName = $name;
+        return $this;
+    }
+
+    /** @brief  Get the name of the domain model.
+     *
+     *  @return The name of the domain model.
+     */
+    public function getModelName()
+    {
+        if ($this->_modelName === null)
+        {
+            /* Use the name of the current class to construct a Domain Model
+             * class name:
+             *      Model_Mapper_<Class> => Model_<Class>
+             */
+            $this->_modelName = str_replace('Model_Mapper_', 'Model_',
+                                            get_class($this));
+        }
+
+        return $this->_modelName;
     }
 
     /** @brief  Set the name of the Model Set class to use when retrieving

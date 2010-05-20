@@ -24,7 +24,12 @@ abstract class Model_Base extends Connexions_Model
         case 'userCount':
         case 'itemCount':
         case 'tagCount':
+        case 'ratingCount':
             $this->_data[$name] = (int)$value;
+            break;
+
+        case 'ratingAvg':
+            $this->_data[$name] = (float)$value;
             break;
 
         default:
