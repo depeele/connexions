@@ -228,15 +228,34 @@ class IndexController extends Connexions_Controller_Action
             switch ($parts[0])
             {
             case 'sidebar':
+                /* Render JUST the sidebar, or a single pane of the sidebar
+                 *      application/views/scripts/index/sidebar.phtml
+                 *      application/views/scripts/index/sidebar-tags.phtml
+                 *      application/views/scripts/index/sidebar-people.phtml
+                 *      application/views/scripts/index/sidebar-items.phtml
+                 */
                 $this->_htmlSidebar(false, (count($parts) > 1
                                                 ? $parts[1]
                                                 : null));
                 break;
 
+            case 'main':
+                /* Render JUST the main pane
+                 *      application/views/scripts/index/main.phtml
+                 */
+                $this->render('main');
+                break;
+
             case 'content':
             default:
-                /* Fall through to perform normal rendering of
+                /* Render JUST the main content section, that includes
+                 * the main pane.
+                 *
+                 * through to perform normal rendering of
                  *      application/views/scripts/index/index.phtml
+                 *
+                 * This will render the primary content section, that includes
+                 * the main pane.
                  */
                 break;
             }
@@ -410,6 +429,11 @@ class IndexController extends Connexions_Controller_Action
                 'people'  => array(
                     'namespace'     => 'sbPeople',
                     'title'         => 'People',
+                ),
+
+                'items'   => array(
+                    'namespace'     => 'sbItems',
+                    'title'         => 'Items',
                 ),
             ),
         );

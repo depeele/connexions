@@ -8,6 +8,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
     static public   $defaults           = array(
         'displayStyle'      => self::STYLE_REGULAR,
         'numericGrouping'   => 10,
+        'includeScript'     => true,
     );
 
     const STYLE_TITLE                   = 'title';
@@ -116,6 +117,9 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
      *                      - numericGrouping   When sorting numerically, the
      *                                          number of items per group
      *                                          [ 10 ];
+     *                      - includeScript     Should Javascript related to
+     *                                          bookmark presentation be
+     *                                          included?  [ true ];
      */
     public function __construct(array $config = array())
     {
@@ -163,6 +167,9 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 
         parent::setNamespace($namespace);
 
+        if ($this->includeScript !== true)
+            return $this;
+
         if (! @isset(self::$_initialized['__global__']))
         {
             // Include required jQuery
@@ -175,20 +182,6 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
                    ->addJavascriptFile($view->baseUrl('js/ui.input.min.js'))
                    ->addJavascriptFile($view->baseUrl('js/ui.bookmark.js'))
                    ->addJavascriptFile($view->baseUrl('js/ui.bookmarkList.js'));
-
-            /*
-                   ->javascriptCaptureStart();
-            ?>
-
-function init_Bookmarks(namespace)
-{
-    var $list       = $('#'+ namespace +'List').bookmarkList({
-                                                    namespace: namespace});
-}
-
-            <?php
-            $jQuery->javascriptCaptureEnd();
-            */
 
             self::$_initialized['__global__'] = true;
         }

@@ -39,16 +39,11 @@
  *                          current bookmark set;
  */
 
-// Prepare the HTML Bookmarks helper
+/* Prepare the HTML Bookmarks helper (required here because the Scope Helper
+ * needs access to the bookmarks for count)
+ */
 $htmlBookmarks = $this->htmlBookmarks( $this->main );
 
-
-// Let the side-bar helper know about the bookmarks being presented.
-$bookmarks = $htmlBookmarks->bookmarks;
-
-Connexions::log("index.phtml: Notify sidebar of %d bookmarks",
-                count($bookmarks));
-$this->htmlSidebar(array('items' => $bookmarks));
 
 // Prepare the Html Item Scope helper
 if ($this->owner === '*')
@@ -79,8 +74,6 @@ $htmlItemScope = $this->htmlItemScope( array(
                     'autoCompleteUrl'   => $this->url()
                                             .'?'. implode('&', $scopeQuery),
                  ));
-
-//Connexions_Profile::checkpoint('Connexions', 'IndexView begin');
 
 $baseUrl = $this->baseUrl('/'); //Connexions::url('/');
 
@@ -120,7 +113,7 @@ echo $htmlItemScope->render();
 
 //Connexions_Profile::checkpoint('Connexions', 'IndexView render items');
 
-echo $htmlBookmarks->render();
+echo $this->render('index/main.phtml');
 ?>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

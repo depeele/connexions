@@ -298,7 +298,9 @@ cite { display: block; text-align: right; padding-top: 10px; }
 
 .inbox_bg { background-position: -150px -160px; width: 48px; height: 48px; }
 
-.relation_ltr { background-position: -102px -210px; width: 20px; height: 20px; }
+.item_bg { background-position: -100px -210px; width: 48px; height: 48px; }
+
+.relation_ltr { background-position: 0px -240px; width: 20px; height: 20px; }
 
 .search_bg { width: 173px; height: 23px; background-position: 0    -87px; }
 
@@ -308,11 +310,11 @@ cite { display: block; text-align: right; padding-top: 10px; }
 
 .welcome_gradient { background-position: -110px -110px; }
 
-.scope_root { height: 24px; width: 16px; background-position: -189px -210px; }
+.scope_root { height: 24px; width: 16px; background-position: -24px -240px; }
 
-.scope_go { height: 24px; width: 16px; background-position: -189px -236px; }
+.scope_go { height: 24px; width: 16px; background-position: -44px -240px; }
 
-.scope_root_item { height: 24px; width: 16px; background-position: -189px -262px; }
+.scope_root_item { height: 24px; width: 16px; background-position: -64px -240px; }
 
 /* smallIcons.gif 15x44 */
 .smallIcon_bookmark { background: url('sprites/smallIcons.gif') no-repeat scroll 3px 0px transparent; }
