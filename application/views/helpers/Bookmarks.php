@@ -9,8 +9,9 @@ class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
     const SORT_BY_DATE_UPDATED      = 'updatedOn';
     const SORT_BY_NAME              = 'name';
     const SORT_BY_RATING            = 'rating';
-    const SORT_BY_RATING_COUNT      = 'item_ratingCount';
-    const SORT_BY_USER_COUNT        = 'item_userCount';
+    const SORT_BY_RATING_COUNT      = 'item:ratingCount';
+    const SORT_BY_RATING_AVERAGE    = 'item:ratingAvg';
+    const SORT_BY_USER_COUNT        = 'item:userCount';
 
     static public   $perPageChoices = array(10, 25, 50, 100);
 
@@ -35,6 +36,7 @@ class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
         self::SORT_BY_NAME          => 'Title',
         self::SORT_BY_RATING        => 'Rating',
         self::SORT_BY_RATING_COUNT  => 'Rating Count',
+        self::SORT_BY_RATING_AVERAGE=> 'Average Rating',
         self::SORT_BY_USER_COUNT    => 'User Count'
     );
 
@@ -140,6 +142,7 @@ class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
         case self::SORT_BY_NAME:
         case self::SORT_BY_RATING:
         case self::SORT_BY_RATING_COUNT:
+        case self::SORT_BY_RATING_AVERAGE:
         case self::SORT_BY_USER_COUNT:
             break;
 

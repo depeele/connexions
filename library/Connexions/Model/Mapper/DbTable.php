@@ -17,15 +17,12 @@ abstract class Connexions_Model_Mapper_DbTable
     const       ROW_COUNT_COLUMN    = 'connexions_set_row_count';
 
     protected   $_keyName   = null; // MAY be an array for multi-field keys
-    protected   $_modelName = null;
 
     /** @brief  Create a new mapper.
      *  @param  config  Configuration, supports additional options due to the
      *                  additional get/set methods in this class:
      *                      keyName     The name of the primary key
      *                                  [ $this->_keyName ];
-     *                      modelName   The name of the domain model
-     *                                  [ $this->_modelName ];
     public function __construct(array $config = array())
     {
         parent::__construct($config);
@@ -79,36 +76,6 @@ abstract class Connexions_Model_Mapper_DbTable
     public function getKeyName()
     {
         return $this->_keyName;
-    }
-
-    /** @brief  Set the name of the domain model.
-     *  @param  name    The name of the domain model.
-     *
-     *  @return $this for a fluent interface.
-     */
-    public function setModelName($name)
-    {
-        $this->_modelName = $name;
-        return $this;
-    }
-
-    /** @brief  Get the name of the domain model.
-     *
-     *  @return The name of the domain model.
-     */
-    public function getModelName()
-    {
-        if ($this->_modelName === null)
-        {
-            /* Use the name of the current class to construct a Domain Model
-             * class name:
-             *      Model_Mapper_<Class> => Model_<Class>
-             */
-            $this->_modelName = str_replace('Model_Mapper_', 'Model_',
-                                            get_class($this));
-        }
-
-        return $this->_modelName;
     }
 
     /*************************************************************************
