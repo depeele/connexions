@@ -114,7 +114,7 @@ class Model_User extends Model_Base
             $data['lastVisit'] = date('Y-m-d H:i:s');
         }
 
-        parent::populate($data);
+        return parent::populate($data);
     }
 
     /** @brief  Save this instancne.

@@ -6,9 +6,14 @@
  *
  *  Incoming members:
  *      url             The full url for the main controller of this page;
+ *      owner           The owner of the current item set -- either a string or
+ *                      a Model_User instance;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
+ *      main            An array of settings for the main content panel:
  *      sidebar         An array of settings for the sidebar:
- *          namespace       The cookie/parameters/settings namespace for the
- *                          sidebar [ 'sidebarTab' ];
  */
 
 ?>

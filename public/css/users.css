@@ -1,4 +1,8 @@
 /* ****** users.sass ****** */
+.rightCol #usersList .users { padding: 0 0 0 0.5em; border: none; }
+.rightCol #usersList .users .user .stats { width: 48px; }
+.rightCol #usersList .users .user .data { border: none; }
+
 #usersList .displayOptions form { width: 22em; }
 #usersList .displayOptions form .displayStyle .users, #usersList .displayOptions form .displayStyle fieldset.options { border-bottom: none; padding-top: 1em; }
 #usersList .displayOptions form .displayStyle .users .user, #usersList .displayOptions form .displayStyle fieldset.options .user { border: 1px solid #cccccc; padding: 0 0.1em 0.1em 0.2em; }

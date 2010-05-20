@@ -1,12 +1,12 @@
 <?php
 /** @file
  *
- *  View helper to render a single User Item / Bookmark in HTML.
+ *  View helper to render a single User in HTML.
  *
  */
 class View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
 {
-    /** @brief  Generate an HTML view of a single User Item / Bookmark.
+    /** @brief  Generate an HTML view of a single User.
      *  @param  user        The Model_User instance to present.
      *  @param  viewer      The Model_User instance of the current viewer
      *  @param  showParts   The parts to present.
@@ -31,7 +31,9 @@ class View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
 
         $html .= "<li class='person "           // person {
               .             implode(' ', $itemClasses) . "'>\n"
-              .   "<form class='user'>";        // user {
+              .   "<form class='user'>"         // user {
+              .    "<input type='hidden' name='userId' "
+              .                        "value='{$user->userId}' />";
 
         /*****************
          * stats
@@ -42,7 +44,9 @@ class View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
             $html .=   "<div class='stats ui-corner-bottom'>";  // stats {
             if ($showParts['user:stats:countItems'] === true)
             {
-                $count = $user->getWeight();    // $user->totalItems;
+                $count = $user->getWeight();
+                if ($count < 1)
+                    $count = $user->totalItems;
 
                 $html .= sprintf ("<a class='countItems' "
                                   .   "href='%s' "

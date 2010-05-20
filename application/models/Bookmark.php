@@ -68,7 +68,7 @@ class Model_Bookmark extends Model_Base
             $data['updatedOn'] = date('Y-m-d H:i:s');
         }
 
-        parent::populate($data);
+        return parent::populate($data);
     }
 
     /** @brief  Save this instancne.

@@ -485,7 +485,7 @@ abstract class Connexions_Model_Set
             }
 
             /*
-            Connexions::Log("Connexions_Model_Set[%s]::idArray(): "
+            Connexions::log("Connexions_Model_Set[%s]::idArray(): "
                             .   "[ %s ] == [ %s ]",
                             get_class($this),
                             (is_object($item)
@@ -824,13 +824,6 @@ abstract class Connexions_Model_Set
             /* This member appears to be missing.  See if the mapper can
              * retrieve it now.
              */
-
-            /*
-            Connexions::log("Connexions_Model_Set[%s]::getItem( %d ): "
-                            . "Missing item.  Retrieve it now...",
-                            get_class($this), $offset);
-            // */
-
             $items = $this->getItems($this, $offset, 1);
             $item  = $items[0];
 
