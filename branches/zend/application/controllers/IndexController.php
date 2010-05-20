@@ -377,17 +377,7 @@ class IndexController extends Connexions_Controller_Action
      */
     protected function _prepareSidebar($async = false)
     {
-        $request            =& $this->_request;
-
-        $tagsStyle       = $request->getParam("sbTagsOptionGroup");
-        /*
-        $tagsStyleCustom = $request->getParam("sbTagsOptionGroups_option");
-        if ( ($tagsStyle === 'custom') && (is_array($tagsStyleCustom)) )
-            $tagsStyle = $tagsStyleCustom;
-        */
-
-        Connexions::log("IndexController::_prepareSidebar(): tagsStyle[ %s ]",
-                        $tagsStyle);
+        $request =& $this->_request;
 
         $sidebar = array(
             'namespace' => 'sidebar-tab',
@@ -409,10 +399,9 @@ class IndexController extends Connexions_Controller_Action
                     'namespace'     => 'sbTags',
                     'title'         => 'Tags',
 
-                    'itemType'      => View_Helper_HtmlItemCloud::ITEM_TYPE_TAG,
-
                     // 'related' will be set by the main view renderer
                     // 'selected'      => $this->_tags,
+                    'itemType'      => View_Helper_HtmlItemCloud::ITEM_TYPE_TAG,
                     'itemBaseUrl'   => $this->_url,
 
                     'sortBy'        => $request->getParam("sbTagsSortBy"),
@@ -423,17 +412,49 @@ class IndexController extends Connexions_Controller_Action
                     'highlightCount'=> $request->getParam(
                                                     "sbTagsHighlightCount"),
 
-                    'displayStyle'  => $tagsStyle,
+                    'displayStyle'  => $request->getParam("sbTagsOptionGroup"),
                 ),
 
                 'people'  => array(
                     'namespace'     => 'sbPeople',
                     'title'         => 'People',
+
+                    // 'related' will be set by the main view renderer
+                    // 'selected'      => $this->_owner,
+                    'itemType'      =>
+                                View_Helper_HtmlItemCloud::ITEM_TYPE_USER,
+                    'itemBaseUrl'   => Connexions::url('/'),    // $this->_url,
+
+                    'sortBy'        => $request->getParam("sbPeopleSortBy"),
+                    'sortOrder'     => $request->getParam("sbPeopleSortOrder"),
+
+                    'page'          => $request->getParam("sbPeoplePage"),
+                    'perPage'       => $request->getParam("sbPeoplePerPage"),
+                    'highlightCount'=> $request->getParam(
+                                                    "sbPeopleHighlightCount"),
+
+                    'displayStyle'  => $request->getParam(
+                                                    "sbPeopleOptionGroup"),
                 ),
 
                 'items'   => array(
                     'namespace'     => 'sbItems',
                     'title'         => 'Items',
+
+                    // 'related' will be set by the main view renderer
+                    // 'selected'      => $this->_owner,
+                    'itemBaseUrl'   => $this->_url,
+
+                    'sortBy'        => $request->getParam("sbItemsSortBy"),
+                    'sortOrder'     => $request->getParam("sbItemsSortOrder"),
+
+                    'page'          => $request->getParam("sbItemsPage"),
+                    'perPage'       => $request->getParam("sbItemsPerPage"),
+                    'highlightCount'=> $request->getParam(
+                                                    "sbItemsHighlightCount"),
+
+                    'displayStyle'  => $request->getParam(
+                                                    "sbItemsOptionGroup"),
                 ),
             ),
         );

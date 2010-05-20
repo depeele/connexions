@@ -11,16 +11,19 @@ class Connexions_Model_Set_Adapter_ItemList extends Zend_Tag_ItemList
 
     /** @brief  Constructor
      *  @param  set         The Connexions_Model_Set instance to adapt.
-     *  @param  selected    The Connexions_MOdel_Set instance representing
-     *                      those items that are currently selected;
+     *  @param  selected    The Connexions_Model_Set instance representing
+     *                      those items that are currently selected
+     *                      (or null if nothing selected);
      *  @param  baseUrl     The baseUrl to use for item completion;
      *
      */
     public function __construct(Connexions_Model_Set    $set,
-                                Connexions_Model_Set    $selected,
+                                                        $selected,
                                                         $baseUrl)
     {
-        $this->_selectedStr = $selected->__toString();
+        $this->_selectedStr = ($selected instanceof Connexions_Model_Set
+                                ?  $selected->__toString()
+                                : '');
         $this->_selected    = array();
 
         $url = $baseUrl;
@@ -34,7 +37,10 @@ class Connexions_Model_Set_Adapter_ItemList extends Zend_Tag_ItemList
 
         Connexions::log("Connexions_Model_Set_Adapter_ItemList:: "
                         . "source[ %s ], selectedStr[ %s ], url[ %s ]",
-                        $selected->getSource(), $this->_selectedStr, $url);
+                        ($selected !== null
+                            ? $selected->getSource()
+                            : ''),
+                        $this->_selectedStr, $url);
 
         // Fill _items from the incoming set.
         foreach ($set as $item)

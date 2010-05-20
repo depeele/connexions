@@ -1,0 +1,34 @@
+<?php
+/** @file
+ *
+ *  Generic user view script.
+ *
+ *  Incoming members:
+ *      user            The Model_User instance to render.
+ *      viewer          The Model_User instance to render.
+ */
+$baseUrl = $this->baseUrl('/'); //Connexions::url('/');
+$links   = $this->headLink();
+$links->appendStylesheet($baseUrl .'css/users.css');
+
+// The portions of the user information to present
+$showMeta = array(
+    'user:stats'                => true,
+    'user:stats:countItems'     => true,
+    'user:stats:countTags'      => true,
+    'user:data:avatar'          => true,
+    'user:data:userId'          => true,
+    'user:data:fullName'        => true,
+    'user:data:email'           => true,
+    'user:data:tags'            => false,
+    'user:data:dates'           => true,
+    'user:data:dates:lastVisit' => true,
+);
+
+?>
+<div id='usersList'>
+  <ul class='users'>
+    <?= $this->htmlUsersUser($this->user, $this->viewer, $showMeta) ?>
+    <br class='clear' />
+  </ul>
+</div>
