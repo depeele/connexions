@@ -48,3 +48,31 @@ ALTER TABLE groupItem   CONVERT TO CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 ALTER TABLE userAuth    CONVERT TO CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 ALTER TABLE userTagItem CONVERT TO CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 
+-- ---------------------------------------------------------------------------
+-- NOT YET
+--
+-- -- Add a auto-update key to userItem
+-- ALTER TABLE userItem DROP PRIMARY KEY;
+-- ALTER TABLE userItem ADD 
+--   userItemId    INT(10)     UNSIGNED    NOT NULL AUTO_INCREMENT
+--   FIRST;
+-- ALTER TABLE userItem ADD
+--     KEY       `ui_userItemId`  (`userId`, `itemId`);
+-- ALTER TABLE userItem ADD
+--     PRIMARY KEY                (`useritemId`);
+-- 
+-- ALTER TABLE userTagItem DROP PRIMARY KEY;
+-- ALTER TABLE userTagItem ADD
+--   userItemId    INT(10)     UNSIGNED    NOT NULL DEFAULT 0
+--   FIRST;
+-- 
+-- ALTER TABLE userTagItem ADD
+--   KEY `uti_uti`     (`userId`, `tagId`, `itemId`);
+-- 
+-- UPDATE userTagItem AS uti, userItem AS ui
+--   SET uti.userItemId=ui.userItemId
+--   WHERE uti.userId=ui.userId AND uti.itemId=ui.itemId;
+-- 
+-- 
+-- ALTER TABLE userTagItem ADD
+--   PRIMARY KEY       (`userItemId`, `tagId`);

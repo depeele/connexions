@@ -11,7 +11,7 @@ class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
     const SORT_BY_RATING            = 'rating';
     const SORT_BY_RATING_COUNT      = 'item:ratingCount';
     const SORT_BY_RATING_AVERAGE    = 'item:ratingAvg';
-    const SORT_BY_USER_COUNT        = 'item:userCount';
+    const SORT_BY_USER_COUNT        = 'userCount';
 
     static public   $perPageChoices = array(10, 25, 50, 100);
 
