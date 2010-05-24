@@ -47,6 +47,31 @@ class Model_Item extends Model_Base
      *
      */
 
+    /** @brief  Get a value of the given field.
+     *  @param  name    The field name.
+     *
+     *  @return The field value (null if invalid).
+    public function __get($name)
+    {
+        if (array_key_exists($name, $this->_data))
+            return parent::__get($name);
+
+        if ($name === 'ratingAvg')
+        {
+            $sum   = $this->ratingSum;
+            $count = $this->ratingCount;
+            if ($count > 0)
+                $val = $sum / $count;
+            else
+                $val = 0;
+
+            return $val;
+        }
+
+        // return null;
+    }
+     */
+
     /** @brief  Set the value of the given field.
      *  @param  name    The field name.
      *  @param  value   The new value.
