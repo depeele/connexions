@@ -306,6 +306,16 @@ class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
                                                           $fetchOrder,
                                                           $count,
                                                           $offset);
+
+                /*
+                Connexions::log("View_Helper_Bookmarks::__get( %s ): "
+                                . "Retrieved %d bookmarks: "
+                                . "order[ %s ], count[ %d ], offset[ %d ]",
+                                $key,
+                                count($bookmarks),
+                                $fetchOrder, $count, $offset);
+                // */
+
                 $this->_params[$key] = $bookmarks;
             }
             break;

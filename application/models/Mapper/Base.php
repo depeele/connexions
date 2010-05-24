@@ -68,10 +68,6 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                                             . '(?:([A-Z])[a-z]+)?'
                                             . '(?:([A-Z])[a-z]+)?$/',
                                             '$1$2$3', $modelName));
-        $subKeys  = (is_array($this->_keyName)
-                        ? $this->_keyName
-                        : array( $this->_keyName ));
-
         $accessor = $this->getAccessor();
         $db       = $accessor->getAdapter();
 
@@ -90,8 +86,16 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
 
         $secSelect = $this->_generateSecondarySelect($select, $params);
 
+        /*
+        Connexions::log("Model_Mapper_Base[%s]::fetchRelated(): "
+                        . "group by [ %s ]",
+                        get_class($this),
+                        Connexions::varExport(
+                            $secSelect->getPart(Zend_Db_Select::GROUP)) );
+        // */
+
         $joinCond = array();
-        foreach ($subKeys as $name)
+        foreach ($secSelect->getPart(Zend_Db_Select::GROUP) as $idex => $name)
         {
             array_push($joinCond, "{$as}.{$name}=uti.{$name}");
         }
@@ -121,8 +125,6 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
         $select->join(array('uti' => $secSelect),
                       implode(' AND ', $joinCond),
                       null);
-
-
 
         if ( isset($params['where']))
             $select->where( $params['where'] );
@@ -382,6 +384,34 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
     protected function _generateSecondarySelect(Zend_Db_Select  $select,
                                                 array           $params)
     {
+        /* Group-by here is a little convoluted due to an inter-relation
+         * between Model_Bookmark and any statistics-based ordering.
+         *
+         * Since Model_Bookmark has a 2-part key (userId, itemId), if the
+         * request is to order by statistics of either 'userCount' or
+         * 'itemCount', we need to adjust the grouping to exclude the
+         * referenced column/id or all statistics for that column/id will be 1.
+         *      - If ordering by 'userCount', group by 'itemId';
+         *      - If ordering by 'itemCount', group by 'userId';
+         *      - else, group by the keys of the $select table;
+         */
+        $orderBy = (isset($params['order'])
+                        ? (is_array($params['order'])
+                            ? $params['order']
+                            : array($params['order']))
+                        : array());
+        $groupBy = $this->_keyName;
+
+        if (strpos($orderBy[0], 'userCount') !== false)
+        {
+            $groupBy = 'itemId';
+        }
+        else if (strpos($orderBy[0], 'itemCount') !== false)
+        {
+            $groupBy = 'userId';
+        }
+
+
         $db        = $select->getAdapter();
         $secSelect = $db->select();
         $secSelect->from(array('uti' => 'userTagItem'),
@@ -405,8 +435,7 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                                                 'COUNT(DISTINCT tagId)',
                                 */
                          ))
-                  ->group( 'uti.itemId' );
-                  //->group( $this->_keyName );
+                  ->group( $groupBy );
 
         // include any limiters in the sub-select
         if ( isset($params['users']) && (! empty($params['users'])) )
