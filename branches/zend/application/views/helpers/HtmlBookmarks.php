@@ -342,8 +342,26 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 
             $html .= "<ul class='{$this->namespace}'>";
 
-            // Group by the field identified in $this->sortBy
-            $lastGroup = null;
+            /* Group by the field identified in $this->sortBy
+             *
+             * This grouping MAY be a "special field", indicated by the
+             * presence of one (or potentially more) ':' characters
+             *  (see Model_Mapper_Base::_getSpecialFields())
+             *
+             * If so, we ASSUME that the final field has been promoted to a
+             * pseudo-field of Bookmark.
+             */
+            $lastGroup  = null;
+            $groupBy    = explode(':', $this->sortBy);
+            $groupByCnt = count($groupBy);
+            $groupByLst = $groupBy[ $groupByCnt - 1];
+
+            /*
+            Connexions::log("View_Helper_HtmlBookmarks::render(): "
+                            . "sortBy[ %s ], groupBy[ %s ]",
+                            $this->sortBy, implode(', ', $groupBy));
+            // */
+
             foreach ($paginator as $idex => $bookmark)
             {
                 if ($bookmark === null)
@@ -355,7 +373,16 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
                     break;
                 }
 
-                $groupVal = $bookmark->{$this->sortBy};
+                // Retrieve the indicated grouping field value
+                $groupVal = $bookmark->{$groupByLst};
+
+                /*
+                Connexions::log("View_Helper_HtmlBookmarks::render(): "
+                                . "groupBy[ %s ], bookmark[ %s ]",
+                                implode(', ', $groupBy),
+                                $bookmark->debugDump());
+                // */
+
                 $newGroup = $this->_groupValue($this->sortBy, $groupVal);
 
                 if ($newGroup !== $lastGroup)
@@ -415,6 +442,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
             break;
 
         case self::SORT_BY_RATING:            // 'rating'
+        case self::SORT_BY_RATING_AVERAGE:    // 'ratingAvg'
             $value = floor($value);
             break;
 
@@ -428,7 +456,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
             break;
         }
 
-        /*
+        // /*
         Connexions::log(
             sprintf("HtmlBookmarks::_groupValue(%s, %s:%s) == [ %s ]",
                     $groupBy, $orig, gettype($orig),
@@ -492,6 +520,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
             break;
 
         case self::SORT_BY_RATING:            // 'rating'
+        case self::SORT_BY_RATING_AVERAGE:    // 'ratingAvg'
         case self::SORT_BY_RATING_COUNT:      // 'ratingCount'
         case self::SORT_BY_USER_COUNT:        // 'userCount'
             $html .= "<div class='groupType numeric'>"
