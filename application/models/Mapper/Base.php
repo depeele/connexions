@@ -405,7 +405,8 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                                                 'COUNT(DISTINCT tagId)',
                                 */
                          ))
-                  ->group( $this->_keyName );
+                  ->group( 'uti.itemId' );
+                  //->group( $this->_keyName );
 
         // include any limiters in the sub-select
         if ( isset($params['users']) && (! empty($params['users'])) )
