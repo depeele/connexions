@@ -37,7 +37,7 @@ SELECT b.*,
        uti.userCount,
        uti.itemCount,
        uti.tagCount,
-	   i.ratingAvg
+       i.ratingAvg
   FROM userItem AS b
     INNER JOIN (
         SELECT userTagItem.*,
@@ -156,7 +156,7 @@ SELECT b.*,
                COUNT(DISTINCT uti.itemId) AS itemCount,
                COUNT(DISTINCT userId,itemId) AS userItemCount, i.ratingAvg FROM userTagItem AS uti
  INNER JOIN (SELECT item.itemId, (CASE WHEN ratingCount > 0 THEN ratingSum / ratingCount ELSE 0 END) AS ratingAvg FROM item) AS i ON i.itemId=uti.itemId GROUP BY userId,
-	itemId) AS uti ON b.userId=uti.userId AND b.itemId=uti.itemId WHERE (( (b.isPrivate=0) OR (b.userId=1) ))
+    itemId) AS uti ON b.userId=uti.userId AND b.itemId=uti.itemId WHERE (( (b.isPrivate=0) OR (b.userId=1) ))
 
 -- WORKS
 SELECT b.*,
@@ -194,16 +194,16 @@ SELECT t.*,
        uti.userCount,
        uti.tagCount
   FROM tag as t
-  	INNER JOIN (
-		SELECT tagId,
+    INNER JOIN (
+        SELECT tagId,
                 COUNT(DISTINCT itemId, userId) AS userItemCount,
                 COUNT(DISTINCT itemId)         AS itemCount,
                 COUNT(DISTINCT userId)         AS userCount,
                 COUNT(DISTINCT tagId)          AS tagCount
-			FROM userTagItem
-			WHERE userId IN (1, 2, 3, 4)
-			GROUP BY tagId) uti
-	ON t.tagId=uti.tagId
+            FROM userTagItem
+            WHERE userId IN (1, 2, 3, 4)
+            GROUP BY tagId) uti
+    ON t.tagId=uti.tagId
  ORDER BY uti.userItemCount DESC
  LIMIT 50;
 
@@ -214,16 +214,16 @@ SELECT t.*,
        uti.userCount,
        uti.tagCount
   FROM tag as t
-  	INNER JOIN (
-		SELECT tagId,
+    INNER JOIN (
+        SELECT tagId,
                 COUNT(DISTINCT itemId, userId) AS userItemCount,
                 COUNT(DISTINCT itemId)         AS itemCount,
                 COUNT(DISTINCT userId)         AS userCount,
                 COUNT(DISTINCT tagId)          AS tagCount
-			FROM userTagItem
-			WHERE itemId IN (1, 2, 3, 4)
-			GROUP BY tagId) uti
-	ON t.tagId=uti.tagId
+            FROM userTagItem
+            WHERE itemId IN (1, 2, 3, 4)
+            GROUP BY tagId) uti
+    ON t.tagId=uti.tagId
  ORDER BY uti.userItemCount DESC
  LIMIT 50;
 
@@ -234,16 +234,16 @@ SELECT t.*,
        uti.userCount,
        uti.tagCount
   FROM tag as t
-  	INNER JOIN (
-		SELECT tagId,
+    INNER JOIN (
+        SELECT tagId,
                 COUNT(DISTINCT itemId, userId) AS userItemCount,
                 COUNT(DISTINCT itemId)         AS itemCount,
                 COUNT(DISTINCT userId)         AS userCount,
                 COUNT(DISTINCT tagId)          AS tagCount
-			FROM userTagItem
-			WHERE userId=1 AND itemId=1
-			GROUP BY tagId) uti
-	ON t.tagId=uti.tagId
+            FROM userTagItem
+            WHERE userId=1 AND itemId=1
+            GROUP BY tagId) uti
+    ON t.tagId=uti.tagId
  ORDER BY uti.userItemCount DESC
  LIMIT 50;
 
@@ -257,16 +257,16 @@ SELECT u.*,
        uti.userCount,
        uti.tagCount
   FROM user as u
-  	INNER JOIN (
-		SELECT userId,
+    INNER JOIN (
+        SELECT userId,
                 COUNT(DISTINCT itemId, userId) AS userItemCount,
                 COUNT(DISTINCT itemId)         AS itemCount,
                 COUNT(DISTINCT userId)         AS userCount,
                 COUNT(DISTINCT tagId)          AS tagCount
-			FROM userTagItem
-			WHERE tagId IN (1, 2, 3, 4)
-			GROUP BY userId) uti
-	ON u.userId=uti.userId
+            FROM userTagItem
+            WHERE tagId IN (1, 2, 3, 4)
+            GROUP BY userId) uti
+    ON u.userId=uti.userId
  ORDER BY uti.userItemCount DESC
  LIMIT 50;
 
@@ -277,16 +277,16 @@ SELECT u.*,
        uti.userCount,
        uti.tagCount
   FROM user as u
-  	INNER JOIN (
-		SELECT userId,
+    INNER JOIN (
+        SELECT userId,
                 COUNT(DISTINCT itemId, userId) AS userItemCount,
                 COUNT(DISTINCT itemId)         AS itemCount,
                 COUNT(DISTINCT userId)         AS userCount,
                 COUNT(DISTINCT tagId)          AS tagCount
-			FROM userTagItem
-			WHERE itemId IN (1, 2, 3, 4)
-			GROUP BY userId) uti
-	ON u.userId=uti.userId
+            FROM userTagItem
+            WHERE itemId IN (1, 2, 3, 4)
+            GROUP BY userId) uti
+    ON u.userId=uti.userId
  ORDER BY uti.userItemCount DESC
  LIMIT 50;
 
@@ -297,16 +297,16 @@ SELECT u.*,
        uti.userCount,
        uti.tagCount
   FROM user as u
-  	INNER JOIN (
-		SELECT userId,
+    INNER JOIN (
+        SELECT userId,
                 COUNT(DISTINCT itemId, userId) AS userItemCount,
                 COUNT(DISTINCT itemId)         AS itemCount,
                 COUNT(DISTINCT userId)         AS userCount,
                 COUNT(DISTINCT tagId)          AS tagCount
-			FROM userTagItem
-			WHERE userId=1 OR itemId=1
-			GROUP BY userId) uti
-	ON u.userId=uti.userId
+            FROM userTagItem
+            WHERE userId=1 OR itemId=1
+            GROUP BY userId) uti
+    ON u.userId=uti.userId
  ORDER BY uti.userItemCount DESC
  LIMIT 50;
 
@@ -322,14 +322,14 @@ SELECT i.*,
              THEN ui.ratingSum / ui.ratingCount
              ELSE 0 END) as ratingAvg
   FROM item as i
-  	INNER JOIN (
-		SELECT itemId,
+    INNER JOIN (
+        SELECT itemId,
                 SUM(CASE WHEN rating>0 THEN 1      ELSE 0 END) AS ratingCount,
                 SUM(CASE WHEN rating>0 THEN rating ELSE 0 END) AS ratingSum,
                 COUNT(DISTINCT userId)                         AS userCount
-			FROM userItem
-			GROUP BY itemId) ui
-	ON i.itemId=ui.itemId
+            FROM userItem
+            GROUP BY itemId) ui
+    ON i.itemId=ui.itemId
   ORDER BY ui.ratingCount DESC
   LIMIT 50;
 
@@ -340,16 +340,16 @@ SELECT i.*,
        uti.userCount,
        uti.tagCount
   FROM item as i
-  	INNER JOIN (
-		SELECT itemId,
+    INNER JOIN (
+        SELECT itemId,
                 COUNT(DISTINCT itemId, userId) AS userItemCount,
                 COUNT(DISTINCT itemId)         AS itemCount,
                 COUNT(DISTINCT userId)         AS userCount,
                 COUNT(DISTINCT tagId)          AS tagCount
-			FROM userTagItem
-			WHERE userId IN (1, 2, 3, 4)
-			GROUP BY itemId) uti
-	ON i.itemId=uti.itemId
+            FROM userTagItem
+            WHERE userId IN (1, 2, 3, 4)
+            GROUP BY itemId) uti
+    ON i.itemId=uti.itemId
  ORDER BY uti.userItemCount DESC
  LIMIT 50;
 
@@ -360,16 +360,16 @@ SELECT i.*,
        uti.userCount,
        uti.tagCount
   FROM item as i
-  	INNER JOIN (
-		SELECT itemId,
+    INNER JOIN (
+        SELECT itemId,
                 COUNT(DISTINCT itemId, userId) AS userItemCount,
                 COUNT(DISTINCT itemId)         AS itemCount,
                 COUNT(DISTINCT userId)         AS userCount,
                 COUNT(DISTINCT tagId)          AS tagCount
-			FROM userTagItem
-			WHERE tagId IN (1, 2, 3, 4)
-			GROUP BY itemId) uti
-	ON i.itemId=uti.itemId
+            FROM userTagItem
+            WHERE tagId IN (1, 2, 3, 4)
+            GROUP BY itemId) uti
+    ON i.itemId=uti.itemId
  ORDER BY uti.userItemCount DESC
  LIMIT 50;
 
@@ -380,16 +380,16 @@ SELECT i.*,
        uti.userCount,
        uti.tagCount
   FROM item as i
-  	INNER JOIN (
-		SELECT itemId,
+    INNER JOIN (
+        SELECT itemId,
                 COUNT(DISTINCT itemId, userId) AS userItemCount,
                 COUNT(DISTINCT itemId)         AS itemCount,
                 COUNT(DISTINCT userId)         AS userCount,
                 COUNT(DISTINCT tagId)          AS tagCount
-			FROM userTagItem
-			WHERE userId=1 OR itemId=1
-			GROUP BY itemId) uti
-	ON i.itemId=uti.itemId
+            FROM userTagItem
+            WHERE userId=1 OR itemId=1
+            GROUP BY itemId) uti
+    ON i.itemId=uti.itemId
  ORDER BY uti.userItemCount DESC
  LIMIT 50;
 
@@ -403,16 +403,16 @@ SELECT ui.*,
        uti.userCount,
        uti.tagCount
   FROM userItem as ui
-  	INNER JOIN (
-		SELECT userId,itemId,
+    INNER JOIN (
+        SELECT userId,itemId,
                 COUNT(DISTINCT itemId, userId) AS userItemCount,
                 COUNT(DISTINCT itemId)         AS itemCount,
                 COUNT(DISTINCT userId)         AS userCount,
                 COUNT(DISTINCT tagId)          AS tagCount
-			FROM userTagItem
-			WHERE tagId IN (1, 2, 3, 4)
-			GROUP BY userId,itemId) uti
-	ON ui.userId=uti.userId AND ui.itemId=uti.itemId
+            FROM userTagItem
+            WHERE tagId IN (1, 2, 3, 4)
+            GROUP BY userId,itemId) uti
+    ON ui.userId=uti.userId AND ui.itemId=uti.itemId
  ORDER BY uti.userItemCount DESC
  LIMIT 50;
 
@@ -429,23 +429,23 @@ SELECT ui.*,
              THEN i.ratingSum / i.ratingCount
              ELSE 0 END) as ratingAvg
   FROM userItem as ui
-  	INNER JOIN (
-		SELECT userId,itemId,
+    INNER JOIN (
+        SELECT userId,itemId,
                 COUNT(DISTINCT itemId, userId) AS userItemCount,
                 COUNT(DISTINCT itemId)         AS itemCount,
                 COUNT(DISTINCT userId)         AS userCount,
                 COUNT(DISTINCT tagId)          AS tagCount
-			FROM userTagItem
-			GROUP BY userId,itemId) uti
-	ON ui.userId=uti.userId AND ui.itemId=uti.itemId
-  	INNER JOIN (
-		SELECT itemId,
+            FROM userTagItem
+            GROUP BY userId,itemId) uti
+    ON ui.userId=uti.userId AND ui.itemId=uti.itemId
+    INNER JOIN (
+        SELECT itemId,
                 SUM(CASE WHEN rating>0 THEN 1      ELSE 0 END) AS ratingCount,
                 SUM(CASE WHEN rating>0 THEN rating ELSE 0 END) AS ratingSum,
                 COUNT(DISTINCT userId)                         AS userCount
-			FROM userItem
-			GROUP BY itemId) i
-	ON ui.itemId=i.itemId
+            FROM userItem
+            GROUP BY itemId) i
+    ON ui.itemId=i.itemId
  ORDER BY i.userCount DESC
  LIMIT 50;
 
@@ -462,25 +462,47 @@ SELECT ui.*,
              THEN i.ratingSum / i.ratingCount
              ELSE 0 END) as ratingAvg
   FROM userItem as ui
-  	INNER JOIN (
-		SELECT userId,itemId,
+    INNER JOIN (
+        SELECT userId,itemId,
                 COUNT(DISTINCT itemId, userId) AS userItemCount,
                 COUNT(DISTINCT itemId)         AS itemCount,
                 COUNT(DISTINCT userId)         AS userCount,
                 COUNT(DISTINCT tagId)          AS tagCount
-			FROM userTagItem
-			WHERE tagId IN (1, 2, 3, 4)
-			GROUP BY userId,itemId) uti
-	ON ui.userId=uti.userId AND ui.itemId=uti.itemId
-  	INNER JOIN (
-		SELECT itemId,
+            FROM userTagItem
+            WHERE tagId IN (1, 2, 3, 4)
+            GROUP BY userId,itemId) uti
+    ON ui.userId=uti.userId AND ui.itemId=uti.itemId
+    INNER JOIN (
+        SELECT itemId,
                 SUM(CASE WHEN rating>0 THEN 1      ELSE 0 END) AS ratingCount,
                 SUM(CASE WHEN rating>0 THEN rating ELSE 0 END) AS ratingSum,
                 COUNT(DISTINCT userId)                         AS userCount
-			FROM userItem
-			GROUP BY itemId) i
-	ON ui.itemId=i.itemId
+            FROM userItem
+            GROUP BY itemId) i
+    ON ui.itemId=i.itemId
  ORDER BY i.userCount DESC
  LIMIT 50;
 
 -- **************************************************************************
+-- Statistics
+
+-- Proper 'userCount'
+SELECT uti.userId,
+       uti.itemId,
+       COUNT(DISTINCT uti.userId) AS userCount
+  FROM userTagItem AS uti
+    GROUP BY uti.itemId
+    ORDER BY userCount DESC
+    LIMIT 50;
+
+-- Proper 'itemCount'
+SELECT uti.userId,
+       uti.itemId,
+       COUNT(DISTINCT uti.itemId) AS itemCount
+  FROM userTagItem AS uti
+    GROUP BY uti.userId
+    ORDER BY itemCount DESC
+    LIMIT 50;
+
+
+

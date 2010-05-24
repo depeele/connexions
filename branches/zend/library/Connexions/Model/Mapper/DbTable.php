@@ -408,6 +408,7 @@ abstract class Connexions_Model_Mapper_DbTable
         $set     = new $setName( array('mapper'     => $this,
                                       #'modelName'  => $this->getModelName(),
                                        'context'    => $select,
+                                       'offset'     => $offset,
                                        'results'    => $accessorModels) );
 
         return $set;
