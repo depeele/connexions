@@ -54,7 +54,7 @@ $.widget("ui.input", {
      *                              string      invalid, error message
      *
      *  @triggers:
-     *      'validationChanged' when the validaton state has changed;
+     *      'validation_change' when the validaton state has changed;
      *      'enabled'           when element is enabled;
      *      'disabled'          when element is disabled.
      */
@@ -346,8 +346,8 @@ $.widget("ui.input", {
         this.options.valid = state;
 
         // Let everyone know that the validation state has changed.
-        //this.element.trigger('validationChanged.uiinput');
-        this._trigger('validationChanged');
+        //this.element.trigger('validation_change.uiinput');
+        this._trigger('validation_change');
     },
 
     getEmptyText: function()
