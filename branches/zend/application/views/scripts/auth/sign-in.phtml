@@ -32,7 +32,7 @@ function authSignin_onLoad()
 
     // Style all remaining input[type=text] / textarea controls with ui.input
     $('#auth input[type=text],#auth input[type=password],textarea')
-            .bind('validationChanged.uiinput', function() {
+            .bind('validation_change', function() {
                     validate_form();
                   })
             .input();

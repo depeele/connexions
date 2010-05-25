@@ -50,13 +50,13 @@ function authRegister_onLoad()
      */
     $('#auth input[name=user]').input({ validation: validate_user });
 
-    // Bind to the 'validationChanged.uiinput' event for all inputs.
+    // Bind to the 'validation_change' event for all inputs.
     $('#auth input[type=text],#auth input[type=password],textarea')
          .input()
-         .bind('validationChanged.uiinput', function() { validate_form(); });
+         .bind('validation_change', function() { validate_form(); });
 
     $('#auth input[name=user]')
-            .bind('validationChanged.uiinput', function() {
+            .bind('validation_change', function() {
              });
 
     $form.show();

@@ -32,7 +32,7 @@ function post_onLoad()
     $form.addClass('ui-form');
 
     // For any input with the 'click-to-edit' class, add a validation listener
-    $form.find('.click-to-edit').bind('validationChanged', function() {
+    $form.find('.click-to-edit').bind('validation_change', function() {
         // On ANY validation change, remove the 'click-to-edit' class and
         // unbind this listener.
         var $el = $(this);
@@ -97,7 +97,7 @@ function post_onLoad()
 
     // Style all remaining input[type=text] / textarea controls with ui.input
     $('#post input[type=text],#post input[type=password],textarea')
-            .bind('validationChanged.uiinput', function() {
+            .bind('validation_change', function() {
                     validate_form();
                   })
             .input();
