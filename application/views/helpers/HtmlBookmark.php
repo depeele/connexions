@@ -133,15 +133,20 @@ class View_Helper_HtmlBookmark extends View_Helper_Bookmark
             return $html;
 
         $html .=   "<div class='stats'>";
-        if ($this->_showParts['item:stats:countTaggers'] === true)
+        if ($this->_showParts['item:stats:count'] === true)
         {
-           $html .= sprintf (  "<a class='countTaggers ui-corner-bottom' "
+            $countValue = $this->_bookmark->item->userCount;
+            $countTitle = "user". ($count !== 0 ? 's' : '');
+
+            $html .= sprintf(  "<a class='count ui-corner-bottom' "
+                             .    "title='%s' "
                              .     "href='%s'>%d</a>",
+                             $countTitle,
                              $this->view->url(array(
                                      'action'   => 'url',
                                      'urlHash'  =>
                                         $this->_bookmark->item->urlHash)),
-                             $this->_bookmark->item->userCount);
+                             $countValue);
         }
 
         /*

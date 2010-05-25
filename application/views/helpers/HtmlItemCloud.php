@@ -26,6 +26,10 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                                              * completed items
                                              */
 
+        'weightName'        => null,        /* The name of the field/member
+                                             * to use for weight.
+                                             */
+
 
         'sortBy'            => self::SORT_BY_TITLE,
         'sortOrder'         => Connexions_Service::SORT_DIR_ASC,
@@ -264,7 +268,8 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         $itemList = new Connexions_Model_Set_Adapter_ItemList(
                                     $this->items,
                                     $this->selected,
-                                    $this->itemBaseUrl);
+                                    $this->itemBaseUrl,
+                                    $this->weightName);
 
         if (! empty($this->_hiddenItems))
         {

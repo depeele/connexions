@@ -99,6 +99,15 @@ class View_Helper_HtmlItemCloudUser
                                     $avatar,
                                     htmlSpecialChars($user->getTitle()));
 
+            /*
+            Connexions::log("View_Helper_HtmlItemCloudUser::render() [%s]: "
+                            . "title[ %s ], weight[ %s ], weight title[ %s ]",
+                            get_class($user),
+                            $user->getTitle(),
+                            $user->getWeight(),
+                            $weight);
+            // */
+
             foreach ($this->getHtmlTags() as $key => $data)
             {
                 if (is_array($data))

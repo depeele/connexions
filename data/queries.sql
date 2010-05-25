@@ -158,7 +158,7 @@ SELECT b.*,
  INNER JOIN (SELECT item.itemId, (CASE WHEN ratingCount > 0 THEN ratingSum / ratingCount ELSE 0 END) AS ratingAvg FROM item) AS i ON i.itemId=uti.itemId GROUP BY userId,
     itemId) AS uti ON b.userId=uti.userId AND b.itemId=uti.itemId WHERE (( (b.isPrivate=0) OR (b.userId=1) ))
 
--- WORKS
+-- WORKS, BUT userCount is corrupted by 'GROUP BY userId, itemId'
 SELECT b.*,
        uti.userItemCount,
        uti.userCount,
@@ -178,9 +178,93 @@ SELECT b.*,
                        (CASE WHEN i.ratingCount > 0
                              THEN i.ratingSum / i.ratingCount
                              ELSE 0 END) AS ratingAvg
-                  FROM item AS i) AS i
-              ON i.itemId=uti.itemId GROUP BY userId, itemId) AS uti
+                  FROM item AS i
+            ) AS i
+            ON i.itemId=uti.itemId
+            GROUP BY userId, itemId
+      ) AS uti
       ON b.userId=uti.userId AND b.itemId=uti.itemId
+  WHERE (( (b.isPrivate=0) ))
+  ORDER BY uti.ratingAvg DESC LIMIT 50;
+
+-- 0.92 sec
+SELECT b.*,
+       uti.userItemCount,
+       uti.userCount,
+       uti.itemCount,
+       uti.tagCount
+ FROM userItem AS b
+    INNER JOIN (
+        SELECT uti.*,
+               -- If we collect 'userCount' here, it will be "corrupted" by
+               -- the 'userId' in the GROUP BY, reducing all counts to 1
+               COUNT(DISTINCT uti.tagId) AS tagCount,
+               COUNT(DISTINCT uti.itemId) AS itemCount,
+               COUNT(DISTINCT uti.userId,uti.itemId) AS userItemCount,
+               i.userCount,
+               i.ratingAvg
+          FROM userTagItem AS uti
+            INNER JOIN (
+                -- Item-related statistics
+                SELECT i.itemId,
+                       (CASE WHEN i.ratingCount > 0
+                             THEN i.ratingSum / i.ratingCount
+                             ELSE 0 END) AS ratingAvg,
+                       utiP.userCount
+                  FROM item AS i
+                    INNER JOIN (
+                        -- Perform a 'userCount' here WITHOUT including
+                        -- 'userId' in the GROUP BY.  This maintains
+                        -- 'userCount' as "The total number of users for a
+                        -- given item.", which is then passed up.
+                        SELECT utiP.itemId,
+                               COUNT(DISTINCT utiP.userId) AS userCount
+                          FROM userTagItem AS utiP
+                          GROUP BY utiP.itemId
+                    ) AS utiP ON utiP.itemId=i.itemId
+
+                  GROUP BY i.itemId
+            ) AS i ON i.itemId=uti.itemId
+
+          GROUP BY userId, itemId
+      ) AS uti ON b.userId=uti.userId AND b.itemId=uti.itemId
+  WHERE (( (b.isPrivate=0) ))
+  ORDER BY uti.ratingAvg DESC LIMIT 50;
+
+-- 0.86 sec
+SELECT b.*,
+       uti.userItemCount,
+       uti.userCount,
+       uti.itemCount,
+       uti.tagCount,
+       uti.ratingCount,
+       uti.ratingSum,
+       uti.ratingAvg
+ FROM userItem AS b
+    INNER JOIN (
+        SELECT uti.*,
+               -- If we collect 'userCount' here, it will be "corrupted" by
+               -- the 'userId' in the GROUP BY, reducing all counts to 1
+               COUNT(DISTINCT uti.tagId) AS tagCount,
+               COUNT(DISTINCT uti.itemId) AS itemCount,
+               COUNT(DISTINCT uti.userId,uti.itemId) AS userItemCount,
+               i.userCount,
+               i.ratingCount,
+               i.ratingSum,
+               i.ratingAvg
+          FROM userTagItem AS uti
+            INNER JOIN (
+                -- Item-related statistics
+                SELECT i.*,
+                       (CASE WHEN i.ratingCount > 0
+                             THEN i.ratingSum / i.ratingCount
+                             ELSE 0 END) AS ratingAvg
+                  FROM item AS i
+                  GROUP BY i.itemId
+            ) AS i ON i.itemId=uti.itemId
+
+          GROUP BY userId, itemId
+      ) AS uti ON b.userId=uti.userId AND b.itemId=uti.itemId
   WHERE (( (b.isPrivate=0) ))
   ORDER BY uti.ratingAvg DESC LIMIT 50;
 
@@ -504,5 +588,50 @@ SELECT uti.userId,
     ORDER BY itemCount DESC
     LIMIT 50;
 
+
+
+-- Bookmark-related tags (no limiting user nor tag)
+SELECT `u`.*,
+       `uti`.`userItemCount`,
+       `uti`.`userCount`,
+       `uti`.`itemCount`,
+       `uti`.`tagCount`
+  FROM `user` AS `u`
+    INNER JOIN (
+        SELECT `uti`.*,
+               COUNT(DISTINCT uti.userId) AS `userCount`,
+               COUNT(DISTINCT uti.tagId) AS `tagCount`,
+               COUNT(DISTINCT uti.itemId) AS `itemCount`,
+               COUNT(DISTINCT uti.userId,uti.itemId) AS `userItemCount`
+          FROM `userTagItem` AS `uti`
+          GROUP BY `userId`
+    ) AS `uti` ON u.userId=uti.userId
+          
+  ORDER BY userItemCount DESC, userCount DESC,
+           itemCount DESC, name ASC
+  LIMIT 100;
+
+
+-- Bookmark-related tags (no limiting user, 'javascript' tag == tagId 12)
+SELECT `u`.*,
+       `uti`.`userItemCount`,
+       `uti`.`userCount`,
+       `uti`.`itemCount`,
+       `uti`.`tagCount`
+  FROM `user` AS `u`
+    INNER JOIN (
+        SELECT `uti`.*,
+               COUNT(DISTINCT uti.userId) AS `userCount`,
+               COUNT(DISTINCT uti.tagId) AS `tagCount`,
+               COUNT(DISTINCT uti.itemId) AS `itemCount`,
+               COUNT(DISTINCT uti.userId,uti.itemId) AS `userItemCount`
+          FROM `userTagItem` AS `uti`
+          WHERE (tagId IN (12))
+          GROUP BY `userId`
+    ) AS `uti` ON u.userId=uti.userId
+
+  ORDER BY userItemCount DESC, userCount DESC,
+  itemCount DESC, name ASC
+  LIMIT 100;
 
 

@@ -398,6 +398,7 @@ class IndexController extends Connexions_Controller_Action
                 'tags'    => array(
                     'namespace'     => 'sbTags',
                     'title'         => 'Tags',
+                    'weightName'    => 'userItemCount',
 
                     // 'related' will be set by the main view renderer
                     // 'selected'      => $this->_tags,
@@ -418,6 +419,7 @@ class IndexController extends Connexions_Controller_Action
                 'people'  => array(
                     'namespace'     => 'sbPeople',
                     'title'         => 'People',
+                    'weightName'    => 'userItemCount',
 
                     // 'related' will be set by the main view renderer
                     // 'selected'      => $this->_owner,
