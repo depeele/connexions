@@ -15,11 +15,14 @@ class Connexions_Model_Set_Adapter_ItemList extends Zend_Tag_ItemList
      *                      those items that are currently selected
      *                      (or null if nothing selected);
      *  @param  baseUrl     The baseUrl to use for item completion;
+     *  @param  weightName  The name of the field/member to use for weight
+     *                      [ null / best guess ];
      *
      */
     public function __construct(Connexions_Model_Set    $set,
                                                         $selected,
-                                                        $baseUrl)
+                                                        $baseUrl,
+                                                        $weightName = null)
     {
         $this->_selectedStr = ($selected instanceof Connexions_Model_Set
                                 ?  $selected->__toString()
@@ -45,7 +48,9 @@ class Connexions_Model_Set_Adapter_ItemList extends Zend_Tag_ItemList
         // Fill _items from the incoming set.
         foreach ($set as $item)
         {
-            array_push($this->_items, $this->_completeItem($item, $url));
+            array_push($this->_items, $this->_completeItem($item,
+                                                           $url,
+                                                           $weightName));
         }
     }
 
@@ -74,11 +79,13 @@ class Connexions_Model_Set_Adapter_ItemList extends Zend_Tag_ItemList
      *  @param  baseUrl     The baseurl to use for item completion
      *                      (minus the source string that caused the creation
      *                       of the selected item set);
+     *  @param  weightName  The name of the field/member to use for weight;
      *
      *  @return The completed item.
      */
     protected function _completeItem(Zend_Tag_Taggable  $item,
-                                                        $baseUrl)
+                                                        $baseUrl,
+                                                        $weightName)
     {
         /* Include additional parameters for this item:
          *      selected    boolean indicating whether or not this item is in
@@ -112,6 +119,31 @@ class Connexions_Model_Set_Adapter_ItemList extends Zend_Tag_ItemList
         $url = $baseUrl . implode(',', $itemList);
 
         $item->setParam('url', $url);
+
+        if ($weightName !== null)
+        {
+            try
+            {
+                $val = $item->__get($weightName);
+
+                $item->setWeight($val);
+            }
+            catch (Exception $e)
+            {
+                // Ignore 'weightName'
+            }
+        }
+
+        /*
+        Connexions::log("Connexions_Model_Set_Adapter_ItemList::_completeItem()"
+                        . ": title[ %s ], weight[ %s ], "
+                        .   "selected[ %s ], url[ %s ]",
+                        $title, $item->getWeight(),
+                        ($item->getParam('selected')
+                            ? 'true'
+                            : 'false'),
+                        $item->getParam('url') );
+        // */
 
         return $item;
     }

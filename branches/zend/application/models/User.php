@@ -430,7 +430,7 @@ class Model_User extends Model_Base
 
     public function getParam($name)
     {
-        // weightValue, url, selected
+        // weight, weightValue, url, selected
         $val = (@isset($this->_params[$name])
                     ? $this->_params[$name]
                     : null);
@@ -439,7 +439,7 @@ class Model_User extends Model_Base
 
     public function setParam($name, $value)
     {
-        // weightValue, url, selected
+        // weight, weightValue, url, selected
         $this->_params[$name] = $value;
     }
 
@@ -452,15 +452,35 @@ class Model_User extends Model_Base
 
     public function getWeight()
     {
-        $weight = 0;
-        if (isset($this->weight))
-            $weight = (Float)($this->weight);
-        else if (isset($this->tagCount))
-            $weight = (Float)($this->tagCount);
-        else if (isset($this->totalItems))
-            $weight = (Float)($this->totalItems);
+        $weight = $this->getParam('weight');
 
-        return $weight;
+        if ($weight === null)
+        {
+            // Best guess depending on what values are set
+           $weight = 0;
+           if (isset($this->weight))
+               $weight = $this->weight;
+           else if (isset($this->tagCount))
+               $weight = $this->tagCount;
+           else if (isset($this->totalItems))
+               $weight = $this->totalItems;
+
+            $this->setWeight($weight);
+        }
+
+        return (Float)$weight;
+    }
+
+    /** @brief  Set the 'weight' Zend_Tag_Taggable parameter.
+     *  @param  weight  The new weight.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function setWeight($weight)
+    {
+        $this->setParam('weight', $weight);
+
+        return $this;
     }
 
     /**********************************************

@@ -33,8 +33,8 @@
  *       <!-- Stats: item:stats -->
  *       <div class='stats'>
  *
- *         <!-- item:stats:countTaggers -->
- *         <a class='countTaggers' ...> count </a>
+ *         <!-- item:stats:count -->
+ *         <a class='count' ...> count </a>
  *
  *         <!-- item:stats:rating -->
  *         <div class='rating'>

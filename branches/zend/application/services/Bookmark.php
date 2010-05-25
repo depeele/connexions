@@ -78,10 +78,9 @@ class Service_Bookmark extends Connexions_Service
      *                  [ true ];
      *  @param  order   Optional ORDER clause (string, array)
      *                      [ [ 'tagCount      DESC',
-     *                          'userItemCount DESC',
-     *                          'userCount     DESC',
      *                          'taggedOn      DESC',
-     *                          'name          ASC'  ] ];
+     *                          'name          ASC',
+     *                          'userCount     DESC' ] ]
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
      *
@@ -95,11 +94,16 @@ class Service_Bookmark extends Connexions_Service
     {
         if ($order === null)
         {
-            $order   = array('tagCount      DESC',
-                             'userItemCount DESC',
-                             'userCount     DESC',
+            $order   = array(
+                             'tagCount      DESC',
                              'taggedOn      DESC',
-                             'name          ASC');
+                             'name          ASC',
+                             'userCount     DESC',
+                       );
+        }
+        else
+        {
+            $order = $this->_extraOrder($order);
         }
 
         return $this->_getMapper()->fetchRelated( array(
@@ -116,11 +120,10 @@ class Service_Bookmark extends Connexions_Service
     /** @brief  Retrieve a set of bookmarks related by a set of Users.
      *  @param  users   A Model_Set_User instance or array of users to match.
      *  @param  order   Optional ORDER clause (string, array)
-     *                      [ [ 'userCount     DESC',
-     *                          'userItemCount DESC',
-     *                          'tagCount      DESC',
-     *                          'taggedOn      DESC',
-     *                          'name          ASC'  ] ];
+     *                      [ [ 'taggedOn      DESC',
+     *                          'name          ASC',
+     *                          'userCount     DESC',
+     *                          'tagCount      DESC' ] ]
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
      *
@@ -133,11 +136,16 @@ class Service_Bookmark extends Connexions_Service
     {
         if ($order === null)
         {
-            $order   = array('userCount     DESC',
-                             'userItemCount DESC',
-                             'tagCount      DESC',
+            $order   = array(
                              'taggedOn      DESC',
-                             'name          ASC');
+                             'name          ASC',
+                             'userCount     DESC',
+                             'tagCount      DESC',
+                       );
+        }
+        else
+        {
+            $order = $this->_extraOrder($order);
         }
 
         return $this->_getMapper()->fetchRelated( array(
@@ -152,11 +160,10 @@ class Service_Bookmark extends Connexions_Service
     /** @brief  Retrieve a set of bookmarks related by a set of Items.
      *  @param  items   A Model_Set_Item instance or array of items to match.
      *  @param  order   Optional ORDER clause (string, array)
-     *                      [ [ 'userItemCount DESC',
+     *                      [ [ 'taggedOn      DESC',
+     *                          'name          ASC',
      *                          'userCount     DESC',
-     *                          'tagCount      DESC',
-     *                          'taggedOn      DESC',
-     *                          'name          ASC'  ] ];
+     *                          'tagCount      DESC' ] ]
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
      *
@@ -169,11 +176,16 @@ class Service_Bookmark extends Connexions_Service
     {
         if ($order === null)
         {
-            $order   = array('userItemCount DESC',
+            $order   = array(
+                             'taggedOn      DESC',
+                             'name          ASC',
                              'userCount     DESC',
                              'tagCount      DESC',
-                             'taggedOn      DESC',
-                             'name          ASC');
+                       );
+        }
+        else
+        {
+            $order = $this->_extraOrder($order);
         }
 
         return $this->_getMapper()->fetchRelated( array(
@@ -193,11 +205,10 @@ class Service_Bookmark extends Connexions_Service
      *  @param  exactTags   Bookmarks MUST be associated with provided tags
      *                      [ true ];
      *  @param  order       Optional ORDER clause (string, array)
-     *                          [ [ 'userCount     DESC',
-     *                              'tagCount      DESC',
-     *                              'userItemCount DESC',
-     *                              'taggedOn      DESC',
-     *                              'name          ASC'  ] ];
+     *                      [ [ 'taggedOn      DESC',
+     *                          'name          ASC',
+     *                          'userCount     DESC',
+     *                          'tagCount      DESC' ] ]
      *  @param  count       Optional LIMIT count
      *  @param  offset      Optional LIMIT offset
      *
@@ -212,11 +223,16 @@ class Service_Bookmark extends Connexions_Service
     {
         if ($order === null)
         {
-            $order     = array('userCount     DESC',
-                               'tagCount      DESC',
-                               'userItemCount DESC',
-                               'taggedOn      DESC',
-                               'name          ASC');
+            $order   = array(
+                             'taggedOn      DESC',
+                             'name          ASC',
+                             'userCount     DESC',
+                             'tagCount      DESC',
+                       );
+        }
+        else
+        {
+            $order = $this->_extraOrder($order);
         }
 
         return $this->_getMapper()->fetchRelated( array(
@@ -238,11 +254,10 @@ class Service_Bookmark extends Connexions_Service
      *  @param  exactTags   Bookmarks MUST be associated with provided tags
      *                      [ true ];
      *  @param  order       Optional ORDER clause (string, array)
-     *                          [ [ 'itemCount     DESC',
-     *                              'tagCount      DESC',
-     *                              'userItemCount DESC',
-     *                              'taggedOn      DESC',
-     *                              'name          ASC'  ] ];
+     *                      [ [ 'taggedOn      DESC',
+     *                          'name          ASC',
+     *                          'userCount     DESC',
+     *                          'tagCount      DESC' ] ]
      *  @param  count       Optional LIMIT count
      *  @param  offset      Optional LIMIT offset
      *
@@ -257,11 +272,16 @@ class Service_Bookmark extends Connexions_Service
     {
         if ($order === null)
         {
-            $order   = array('itemCount     DESC',
-                             'tagCount      DESC',
-                             'userItemCount DESC',
+            $order   = array(
                              'taggedOn      DESC',
-                             'name          ASC' );
+                             'name          ASC',
+                             'userCount     DESC',
+                             'tagCount      DESC',
+                       );
+        }
+        else
+        {
+            $order = $this->_extraOrder($order);
         }
 
         return $this->_getMapper()->fetchRelated( array(
@@ -279,6 +299,48 @@ class Service_Bookmark extends Connexions_Service
      * Protected helpers
      *
      */
+
+    /** @brief  Given an ordering, include additional ordering criteria that
+     *          will help make result sets consistent.
+     *  @param  order   The incoming order criteria.
+     *
+     *  @return A new order criteria array.
+     */
+    protected function _extraOrder($order)
+    {
+        $newOrder = (is_array($order)
+                        ? $order
+                        : (is_string($order)
+                            ? array($order)
+                            : array()));
+
+        $orderMap = array();
+        foreach ($newOrder as $ord)
+        {
+            list($by, $dir) = preg_split('/\s+/', $ord);
+            $orderMap[$by] = $dir;
+        }
+
+        /* Include additional, distiguishing order:
+         *      taggedOn  DESC
+         *      name      ASC
+         *      userCount DESC
+         *      tagCount  DESC
+         */
+        if (! isset($orderMap['taggedOn']))
+            array_push($newOrder, 'taggedOn DESC');
+
+        if (! isset($orderMap['name']))
+            array_push($newOrder, 'name ASC');
+
+        if (! isset($orderMap['userCount']))
+            array_push($newOrder, 'userCount DESC');
+
+        if (! isset($orderMap['tagCount']))
+            array_push($newOrder, 'tagCount DESC');
+
+        return $newOrder;
+    }
 
     /** @brief  Given an array of name/value pairs to be used in creating a new
      *          Bookmark, see if there is a valid Model_User identified.

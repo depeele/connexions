@@ -27,13 +27,19 @@ class Model_Mapper_Item extends Model_Mapper_Base
      */
     public function reduceModel(Connexions_Model $model)
     {
-        // Save 'userCount' -- it will be removed by Model_Mapper_Base
-        $userCount = $model->userCount;
+        /* Save our statistics fields -- they will be removed by
+         * Model_Mapper_Base
+         */
+        $userCount   = $model->userCount;
+        $ratingCount = $model->ratingCount;
+        $ratingSum   = $model->ratingSum;
 
         $data = parent::reduceModel($model);
 
-        // Replace 'userCount'
-        $data['userCount']  = $userCount;
+        // Replace 'userCount' and 'ratingCount'
+        $data['userCount']   = $userCount;
+        $data['ratingCount'] = $ratingCount;
+        $data['ratingSum']   = $ratingSum;
 
         return $data;
     }
@@ -117,9 +123,13 @@ class Model_Mapper_Item extends Model_Mapper_Base
 
         /* Update item-related statistics:
          *    SELECT
-         *      COUNT(DISTINCT userId)                           AS userCount,
-         *      SUM(CASE WHEN rating > 0 THEN 1 ELSE 0 END)      AS ratingCount,
-         *      SUM(CASE rating WHEN null THEN 0 ELSE rating END) AS ratingSum
+         *      COUNT(DISTINCT userId)      AS userCount,
+         *      SUM(CASE WHEN rating > 0
+         *               THEN 1
+         *               ELSE 0 END)        AS ratingCount,
+         *      SUM(CASE rating WHEN null
+         *               THEN 0
+         *               ELSE rating END)   AS ratingSum
          *        FROM  userItem
          *        WHERE itemId=?;
          */
@@ -150,9 +160,17 @@ class Model_Mapper_Item extends Model_Mapper_Base
                         Connexions::varExport($row));
         // */
 
-        $item->userCount   = $row->userCount;
-        $item->ratingCount = $row->ratingCount;
-        $item->ratingSum   = $row->ratingSum;
+        $item->userCount   = (int)$row->userCount;
+        $item->ratingCount = (int)$row->ratingCount;
+        $item->ratingSum   = (int)$row->ratingSum;
+
+        /*
+        Connexions::log("Model_Mapper_Item::_updateStatistics( %d ): "
+                        . "Save Item[ %s ]",
+                        $item->itemId,
+                        $item->debugDump());
+        // */
+
         $item = $item->save();
 
         return $this;

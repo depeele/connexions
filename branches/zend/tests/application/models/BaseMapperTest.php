@@ -40,6 +40,8 @@ class BaseMapperDbTest extends DbTestCase
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
 
         $set = $mapper->fetchRelated(array(//'users' => array('1'),
-                                           'order' => 'item:ratingAvg'));
+                                           'order' => 'ratingAvg'));
+
+        //echo $set->debugDump(), "\n";
     }
 }

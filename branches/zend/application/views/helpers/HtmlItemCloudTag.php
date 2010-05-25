@@ -77,6 +77,14 @@ class View_Helper_HtmlItemCloudTag
                                     $attribute,
                                     htmlSpecialChars($tag->getTitle()));
 
+            /*
+            Connexions::log("View_Helper_HtmlItemCloudTag::render() "
+                            . "title[ %s ], weight[ %s ], weight title[ %s ]",
+                            $tag->getTitle(),
+                            $tag->getWeight(),
+                            $weight);
+            // */
+
             foreach ($this->getHtmlTags() as $key => $data)
             {
                 if (is_array($data))

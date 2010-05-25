@@ -18,7 +18,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 
     /** @brief  Display style definition */
     static protected $displayStyles     = array(
-        'item:stats:countTaggers'           => array(
+        'item:stats:count'                  => array(
             'label'         => 'user count',
             'containerCss'  => 'ui-corner-bottom'
         ),
@@ -55,7 +55,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
     static public   $styleGroups        = array(
         self::STYLE_TITLE   => array(
             'label'     => 'Title',
-            'options'   => array('item:stats:countTaggers',
+            'options'   => array('item:stats:count',
                                  'item:data:itemName',
                                  'item:data:description:summary',
                                  'item:data:userId:avatar',
@@ -64,7 +64,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         ),
         self::STYLE_REGULAR => array(
             'label'     => 'Regular',
-            'options'   => array('item:stats:countTaggers',
+            'options'   => array('item:stats:count',
                                  'item:stats:rating:stars',
                                  'item:data:itemName',
                                  'item:data:description:summary',
@@ -76,7 +76,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         ),
         self::STYLE_FULL    => array(
             'label'     => 'Full',
-            'options'   => array('item:stats:countTaggers',
+            'options'   => array('item:stats:count',
                                  'item:stats:rating:stars',
                                  'item:stats:rating:info',
                                  'item:data:itemName',
@@ -92,7 +92,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         self::STYLE_CUSTOM  => array(
             'label'     => 'Custom',
             'isCustom'  => true,
-            'options'   => array('item:stats:countTaggers',
+            'options'   => array('item:stats:count',
                                  'item:data:itemName',
                                  'item:data:description:summary',
                                  'item:data:userId:avatar',

@@ -5,12 +5,15 @@
  */
 class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
 {
+    /* Additional, statistics fields are established via
+     *  Model_Mapper_Bookmark::_includeStatistics
+     */
     const SORT_BY_DATE_TAGGED       = 'taggedOn';
     const SORT_BY_DATE_UPDATED      = 'updatedOn';
     const SORT_BY_NAME              = 'name';
     const SORT_BY_RATING            = 'rating';
-    const SORT_BY_RATING_COUNT      = 'item:ratingCount';
-    const SORT_BY_RATING_AVERAGE    = 'item:ratingAvg';
+    const SORT_BY_RATING_COUNT      = 'ratingCount';
+    const SORT_BY_RATING_AVERAGE    = 'ratingAvg';
     const SORT_BY_USER_COUNT        = 'userCount';
 
     static public   $perPageChoices = array(10, 25, 50, 100);

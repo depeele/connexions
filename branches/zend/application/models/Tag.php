@@ -63,16 +63,23 @@ class Model_Tag extends Model_Base
 
     public function getParam($name)
     {
-        // weightValue, url, selected
+        // weight, weightValue, url, selected
         $val = (@isset($this->_params[$name])
                     ? $this->_params[$name]
                     : null);
+
+        /*
+        Connexions::log("Model_Tag::getParam( %s ): "
+                        . "val[ %s ]",
+                        $name, $val);
+        // */
+
         return $val;
     }
 
     public function setParam($name, $value)
     {
-        // weightValue, url, selected
+        // weight, weightValue, url, selected
         $this->_params[$name] = $value;
     }
 
@@ -85,21 +92,39 @@ class Model_Tag extends Model_Base
 
     public function getWeight()
     {
-        if (@isset($this->weight))
-            $weight = (Float)($this->weight);
-        else
-            $weight = (Float)($this->userItemCount);
+        $weight = $this->getParam('weight');
+
+        if ($weight === null)
+        {
+            if (@isset($this->weight))
+                $weight = (Float)($this->weight);
+            else
+                $weight = (Float)($this->userItemCount);
+
+            $this->setWeight($weight);
+        }
 
         /*
-        Connexions::log(
-                sprintf("Model_Tag::getWeight: "
-                            . "weight[ %s ], "
-                            . "userItemCount[ %s ] == [ %s ]",
-                                $this->weight,
-                                $this->userItemCount,
-                                $weight));
+        Connexions::log("Model_Tag::getWeight: "
+                        . "weight[ %s ], "
+                        . "userItemCount[ %s ] == [ %s ]",
+                        $this->weight,
+                        $this->userItemCount,
+                        $weight);
         // */
 
-        return $weight;
+        return (Float)$weight;
+    }
+
+    /** @brief  Set the 'weight' Zend_Tag_Taggable parameter.
+     *  @param  weight  The new weight.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function setWeight($weight)
+    {
+        $this->setParam('weight', (Float)$weight);
+
+        return $this;
     }
 }

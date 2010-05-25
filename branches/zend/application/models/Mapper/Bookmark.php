@@ -353,4 +353,62 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         return parent::makeModel($data, $isBacked);
     }
      */
+
+    /************************************************************************
+     * Protected helpers
+     *
+     */
+
+    /** @brief  Include statistics-related informatioin in the
+     *          select/sub-select
+     *  @param  select      The primary   Zend_Db_Select instance;
+     *  @param  secSelect   The secondary Zend_Db_Select instance;
+     *  @param  secAs       The alias used for 'secSelect';
+     *  @param  params      An array retrieval criteria;
+     *
+     *  Override Mapper_Base::_includeStatistics() in order to include
+     *  Bookmark-specific statistics.
+     *
+     *  @return $this for a fluent interface.
+     */
+    protected function _includeStatistics(Zend_Db_Select    $select,
+                                          Zend_Db_Select    $secSelect,
+                                                            $secAs,
+                                          array             $params)
+    {
+        $db        = $secSelect->getAdapter();
+
+        // The alias of the tertiary select that we will add below
+        $terAs     = 'i';
+
+        // Include the statistics in the column list of the primary select
+        $select->columns(array("{$secAs}.userCount",
+                               "{$secAs}.tagCount",
+                               "{$secAs}.ratingCount",
+                               "{$secAs}.ratingSum",
+                               "{$secAs}.ratingAvg"));
+
+        // Generate SOME statistics in the secondary select
+        $secSelect->columns(array(
+                                $this->_fieldExpression('userTagItem',
+                                                        'tagCount',
+                                                        $secAs)));
+
+        // Create a tertiary select to pull item-related statistics
+        $terSelect = $db->select();
+        $terSelect->from(array($terAs => 'item'),
+                         array("{$terAs}.*",
+                               $this->_fieldExpression('item', 'ratingAvg',
+                                                       $terAs)) )
+                  ->group("{$terAs}.itemId");
+                               
+
+        $secSelect->columns(array("{$terAs}.userCount",
+                                  "{$terAs}.ratingCount",
+                                  "{$terAs}.ratingSum",
+                                  "{$terAs}.ratingAvg"))
+                  ->join(array($terAs => $terSelect),
+                         "{$secAs}.itemId = {$terAs}.itemId",
+                         null);
+    }
 }

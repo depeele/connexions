@@ -37,7 +37,7 @@
  *
  *  An example definition:
  *      array(
- *          'item:stats:countTaggers'   => array(
+ *          'item:stats:count'          => array(
  *              'label'         => 'user count',
  *              'containerCss'  => 'ui-corner-bottom'
  *          ),

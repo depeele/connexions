@@ -25,6 +25,7 @@ abstract class Model_Base extends Connexions_Model
         case 'itemCount':
         case 'tagCount':
         case 'ratingCount':
+        case 'ratingSum':
             $this->_data[$name] = (int)$value;
             break;
 
