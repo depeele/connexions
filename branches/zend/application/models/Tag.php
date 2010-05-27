@@ -4,8 +4,7 @@
  *  Model for the Tag table.
  */
 
-class Model_Tag extends Model_Base
-                implements  Zend_Tag_Taggable
+class Model_Tag extends Model_Taggable
 {
     /* inferred via classname
     protected   $_mapper    = 'Model_Mapper_Tag'; */
@@ -56,33 +55,9 @@ class Model_Tag extends Model_Base
     }
 
     /*************************************************************************
-     * Zend_Tag_Taggable Interface
+     * Zend_Tag_Taggable Interface (via Model_Taggable)
      *
      */
-    protected       $_params    = array();
-
-    public function getParam($name)
-    {
-        // weight, weightValue, url, selected
-        $val = (@isset($this->_params[$name])
-                    ? $this->_params[$name]
-                    : null);
-
-        /*
-        Connexions::log("Model_Tag::getParam( %s ): "
-                        . "val[ %s ]",
-                        $name, $val);
-        // */
-
-        return $val;
-    }
-
-    public function setParam($name, $value)
-    {
-        // weight, weightValue, url, selected
-        $this->_params[$name] = $value;
-    }
-
     public function getTitle()
     {
         $title = (String)($this->tag);
@@ -114,17 +89,5 @@ class Model_Tag extends Model_Base
         // */
 
         return (Float)$weight;
-    }
-
-    /** @brief  Set the 'weight' Zend_Tag_Taggable parameter.
-     *  @param  weight  The new weight.
-     *
-     *  @return $this for a fluent interface.
-     */
-    public function setWeight($weight)
-    {
-        $this->setParam('weight', (Float)$weight);
-
-        return $this;
     }
 }

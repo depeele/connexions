@@ -1,20 +1,22 @@
 <?php
 /** @file
  *
- *  View helper to render a single Tag within an HTML item cloud.
+ *  View helper to render a single Item within an HTML item cloud.
  */
-class View_Helper_HtmlItemCloudTag
+class View_Helper_HtmlItemCloudItem
                     extends Zend_Tag_Cloud_Decorator_HtmlTag
 {
-    /** @brief  Render an HTML version of a single tag item.
-     *  @param  tags    A Zend_Tag_ItemList / Connexions_Set_ItemList instance
-     *                  representing the tags to be presented.
+    /** @brief  Render an HTML version of a single Item.
      *
-     *  @return The HTML representation of a tag cloud.
+     *  Note: This helper makes use of several 'view' variables:
+     *  @param  items   A Zend_Tag_ItemList / Connexions_Set_ItemList instance
+     *                  representing the items to be presented.
+     *
+     *  @return The HTML representation of an item cloud.
      */
-    public function render(Zend_Tag_ItemList $tags)
+    public function render(Zend_Tag_ItemList $items)
     {
-        //Connexions::log("View_Helper_HtmlItemCloudTag::render...");
+        //Connexions::log("View_Helper_HtmlItemCloudItem::render...");
 
         if (($weightValues = $this->getClassList()) === null)
         {
@@ -22,23 +24,23 @@ class View_Helper_HtmlItemCloudTag
                                   $this->getMaxFontSize());
         }
 
-        $tags->spreadWeightValues($weightValues);
+        $items->spreadWeightValues($weightValues);
 
         $result = array();
 
-        foreach ($tags as $tag)
+        foreach ($items as $item)
         {
-            $isSelected = ($tag->getParam('selected') === true);
+            $isSelected = ($item->getParam('selected') === true);
             $cssClass   = ($isSelected
                                 ? 'selected ui-corner-all ui-state-highlight '
                                 : '');
-            $weightVal  = $tag->getParam('weightValue');
+            $weightVal  = $item->getParam('weightValue');
             $attribute  = '';
 
             /*
-            Connexions::log('View_Helper_HtmlItemCloudTag: '
-                            . 'tag[ %s ], %sselected',
-                            $tag->getTitle(),
+            Connexions::log('View_Helper_HtmlItemCloudItem: '
+                            . 'item[ %s ], %sselected',
+                            $item->getTitle(),
                             ($isSelected ? '' : 'NOT '));
             // */
 
@@ -56,27 +58,27 @@ class View_Helper_HtmlItemCloudTag
             if (! empty($cssClass))
                 $cssClass = ' class="'. $cssClass .'"';
 
-            $url    = $tag->getParam('url');
-            $weight = number_format($tag->getWeight());
+            $url    = $item->getParam('url');
+            $weight = number_format($item->getWeight());
             if (empty($url))
-                $tagHtml = sprintf('<span title="%s" %s%s>%s</span>',
+                $itemHtml = sprintf('<span title="%s" %s%s>%s</span>',
                                     $weight,
                                     $cssClass,
                                     $attribute,
-                                    htmlSpecialChars($tag->getTitle()));
+                                    htmlSpecialChars($item->getTitle()));
             else
-                $tagHtml = sprintf('<a href="%s" title="%s" %s%s>%s</a>',
+                $itemHtml = sprintf('<a href="%s" title="%s" %s%s>%s</a>',
                                     htmlSpecialChars($url),
                                     $weight,
                                     $cssClass,
                                     $attribute,
-                                    htmlSpecialChars($tag->getTitle()));
+                                    htmlSpecialChars($item->getTitle()));
 
             /*
-            Connexions::log("View_Helper_HtmlItemCloudTag::render() "
+            Connexions::log("View_Helper_HtmlItemCloudItem::render() "
                             . "title[ %s ], weight[ %s ], weight title[ %s ]",
-                            $tag->getTitle(),
-                            $tag->getWeight(),
+                            $item->getTitle(),
+                            $item->getWeight(),
                             $weight);
             // */
 
@@ -100,11 +102,11 @@ class View_Helper_HtmlItemCloudTag
                     $attributes = '';
                 }
 
-                $tagHtml = sprintf('<%1$s%3$s>%2$s</%1$s>',
-                                   $htmlTag, $tagHtml, $attributes);
+                $itemHtml = sprintf('<%1$s%3$s>%2$s</%1$s>',
+                                   $htmlTag, $itemHtml, $attributes);
             }
 
-            $result[] = $tagHtml;
+            $result[] = $itemHtml;
         }
 
         return $result;

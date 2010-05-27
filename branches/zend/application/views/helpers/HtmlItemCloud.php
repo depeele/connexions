@@ -45,6 +45,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     const ITEM_TYPE_TAG                     = 'tag';
     const ITEM_TYPE_USER                    = 'user';
+    const ITEM_TYPE_ITEM                    = 'item';
 
     /** @brief  Cloud Presentation style. */
     const STYLE_LIST                        = 'list';
@@ -363,6 +364,26 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                     )
                 );
                 break;
+
+            case self::ITEM_TYPE_ITEM:
+                /* Use our cloud item decorator:
+                 *      View_Helper_HtmlItemCloudItem
+                 */
+                $cloudConfig['TagDecorator'] = array(
+                    'decorator'         => 'htmlItemCloudItem',
+                    'options'           => array(
+                        'HtmlTags'      => array(
+                            'li'        => array(
+                                'class'=>'user'
+                            )
+                        ),
+                        'ClassList'     => array(
+                            'size0', 'size1', 'size2', 'size3',
+                            'size4', 'size5', 'size6'
+                        )
+                    )
+                );
+                break;
             }
 
 
@@ -548,6 +569,7 @@ function init_CloudOptions(namespace)
         {
         case self::ITEM_TYPE_TAG:
         case self::ITEM_TYPE_USER:
+        case self::ITEM_TYPE_ITEM:
             break;
 
         default:

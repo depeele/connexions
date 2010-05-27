@@ -10,6 +10,52 @@
    <div class='context-bg connexions_sprites item_bg ui-corner-left'>
     &nbsp;
    </div>
-   <p>Item information...</p>
+   <p>Items related to these bookmarks.</p>
   </div>
+  <?php
 
+    $htmlSidebar = $this->htmlSidebar( $this->sidebar );
+    $config      = $htmlSidebar->getPane('items');
+
+    /*
+    Connexions::log("index/sidebar-items.phtml: config[ %s ]",
+                    print_r($config, true));
+    // */
+
+    $service = Connexions_Service::factory('Model_Item');
+
+    $perPage    = $config['perPage'];
+    $page       = $config['page'];
+    if ($perPage < 1)   $perPage = 100;
+    if ($page    < 1)   $page    = 1;
+
+    $count      = $perPage;
+    $offset     = ($page - 1) * $perPage;
+
+    /* Order by userItem/Bookmark count here so the most used will be in the
+     * limited set.  User-requested sorting will be performed later
+     * (in View_Helper_HtmlItemCloud) before the cloud is rendered.
+     */
+    $fetchOrder = array('uti.userItemCount DESC',
+                        'ratingCount       DESC',
+                        'url               ASC');
+
+    /* Items related to the given bookmarks -- actually, related to the
+     * identified 'owner' and any specified tags.
+     */
+    $itemSet = $service->fetchByUsersAndTags(($this->owner === '*'
+                                                ? null          // ALL users
+                                                : $this->owner),// ONE user
+                                             $this->tags,
+                                             true,          // exact
+                                             $fetchOrder,
+                                             $count,
+                                             $offset );
+
+    $config['items']       =& $itemSet;
+    $config['itemBaseUrl'] = $this->baseUrl('/url/');
+    $config['itemType']    =  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
+
+    $htmlItemCloud         = $this->htmlItemCloud($config);
+
+    echo $htmlItemCloud->render();
