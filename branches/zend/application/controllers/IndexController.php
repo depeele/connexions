@@ -402,7 +402,8 @@ class IndexController extends Connexions_Controller_Action
 
                     // 'related' will be set by the main view renderer
                     // 'selected'      => $this->_tags,
-                    'itemType'      => View_Helper_HtmlItemCloud::ITEM_TYPE_TAG,
+                    'itemType'      =>
+                                View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM,
                     'itemBaseUrl'   => $this->_url,
 
                     'sortBy'        => $request->getParam("sbTagsSortBy"),

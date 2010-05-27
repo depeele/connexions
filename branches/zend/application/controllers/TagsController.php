@@ -119,7 +119,7 @@ class TagsController extends Zend_Controller_Action
                     ->setShowRelation( false )
                     ->setStyle($tagsStyle)
                     ->setItemType(Connexions_View_Helper_HtmlItemCloud::
-                                                            ITEM_TYPE_TAG)
+                                                            ITEM_TYPE_ITEM)
                     ->setItemBaseUrl( '/bookmarks' )
                     ->setSortBy($tagsSortBy)
                     ->setSortOrder($tagsSortOrder)
