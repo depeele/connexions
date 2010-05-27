@@ -5,7 +5,7 @@
  *
  */
 
-class Model_Item extends Model_Base
+class Model_Item extends Model_Taggable
 {
     /* inferred via classname
     protected   $_mapper    = 'Model_Mapper_Item'; */
@@ -107,6 +107,9 @@ class Model_Item extends Model_Base
                     $value = $newValue;
                 }
             }
+
+            // ALSO set the Zend_Tag_Taggable parameter 'urlId'
+            $this->setParam('urlId', $value);
             break;
         }
 
@@ -144,4 +147,44 @@ class Model_Item extends Model_Base
         return $this;
     }
 
+    /*************************************************************************
+     * Zend_Tag_Taggable Interface (via Model_Taggable)
+     *
+     */
+    public function getTitle()
+    {
+        $title = (String)($this->url);
+
+        /* Since a url is typically a LARGE, contiguous string, url decode it,
+         * and add white-space around every [/.,&=?_-].
+         */
+        $title = preg_replace('/([\/\.,\&=\?_\-])/', '$1 ', urldecode($title));
+
+        return $title;
+    }
+
+    public function getWeight()
+    {
+        $weight = $this->getParam('weight');
+
+        if ($weight === null)
+        {
+            // Best guess depending on what values are set
+           $weight = 0;
+           if (isset($this->weight))
+               $weight = $this->weight;
+           else if ($this->ratingCount > 0)
+           {
+               $weight = $this->ratingSum / $this->ratingCount;
+           }
+           else if (isset($this->userItemCount))
+               $weight = $this->userItemCount;
+           else if (isset($this->userCount))
+               $weight = $this->userCount;
+
+            $this->setWeight($weight);
+        }
+
+        return (Float)$weight;
+    }
 }

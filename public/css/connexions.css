@@ -413,32 +413,34 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .ui-form .ui-dropDown:hover ul { display: block; }
 
 /* ****** tagCloud.sass ****** */
-.rightCol #tagItems, .rightCol #bookmarks, .rightCol #userItems { padding: 0 0.25em 0 0; border-top: 3px solid #eeeeee; }
-.rightCol #tagItems .cloudRelation, .rightCol #bookmarks .cloudRelation, .rightCol #userItems .cloudRelation { position: absolute; top: -2px; left: -19px; }
+.rightCol #tagItems, .rightCol #bookmarks, .rightCol #userItems, .rightCol #itemItems { padding: 0 0.25em 0 0; border-top: 3px solid #eeeeee; }
+.rightCol #tagItems .cloudRelation, .rightCol #bookmarks .cloudRelation, .rightCol #userItems .cloudRelation, .rightCol #itemItems .cloudRelation { position: absolute; top: -2px; left: -19px; }
 
-#tagItems .displayOptions form, #bookmarks .displayOptions form, #userItems .displayOptions form { width: 18em; }
-#tagItems .displayOptions form .field label, #bookmarks .displayOptions form .field label, #userItems .displayOptions form .field label { width: 5.5em; }
-#tagItems .displayOptions form .itemCounts, #bookmarks .displayOptions form .itemCounts, #userItems .displayOptions form .itemCounts { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
-#tagItems .displayOptions form .itemCounts .field, #bookmarks .displayOptions form .itemCounts .field, #userItems .displayOptions form .itemCounts .field { display: inline; }
-#tagItems .displayOptions form .itemCounts .field label, #bookmarks .displayOptions form .itemCounts .field label, #userItems .displayOptions form .itemCounts .field label { width: 2.5em; }
-#tagItems .displayOptions form .itemCounts .field select, #bookmarks .displayOptions form .itemCounts .field select, #userItems .displayOptions form .itemCounts .field select { width: 4.5em; }
-#tagItems .displayOptions form .itemCounts .field label, #tagItems .displayOptions form .itemCounts .field select, #tagItems .displayOptions form .itemCounts .field .label, #bookmarks .displayOptions form .itemCounts .field label, #bookmarks .displayOptions form .itemCounts .field select, #bookmarks .displayOptions form .itemCounts .field .label, #userItems .displayOptions form .itemCounts .field label, #userItems .displayOptions form .itemCounts .field select, #userItems .displayOptions form .itemCounts .field .label { float: left; margin-bottom: 0.25em; }
-#tagItems .displayOptions form .itemCounts .field label, #tagItems .displayOptions form .itemCounts .field .label, #bookmarks .displayOptions form .itemCounts .field label, #bookmarks .displayOptions form .itemCounts .field .label, #userItems .displayOptions form .itemCounts .field label, #userItems .displayOptions form .itemCounts .field .label { padding: 0 0.25em; }
-#tagItems .displayOptions form .itemCounts .highlightCount, #bookmarks .displayOptions form .itemCounts .highlightCount, #userItems .displayOptions form .itemCounts .highlightCount { float: right; display: block; }
-#tagItems .displayOptions form .itemCounts .highlightCount label.above, #bookmarks .displayOptions form .itemCounts .highlightCount label.above, #userItems .displayOptions form .itemCounts .highlightCount label.above { width: auto; }
-#tagItems .displayOptions form .displayStyle, #bookmarks .displayOptions form .displayStyle, #userItems .displayOptions form .displayStyle { display: block; position: relative; width: auto; text-align: left; padding-top: 1em; }
-#tagItems .displayOptions form .displayStyle a, #bookmarks .displayOptions form .displayStyle a, #userItems .displayOptions form .displayStyle a { font-weight: normal; }
-#tagItems .displayOptions form .displayStyle .option-selected, #bookmarks .displayOptions form .displayStyle .option-selected, #userItems .displayOptions form .displayStyle .option-selected { font-weight: bold; }
-#tagItems .displayOptions form .displayStyle .option, #tagItems .displayOptions form .displayStyle .comma, #bookmarks .displayOptions form .displayStyle .option, #bookmarks .displayOptions form .displayStyle .comma, #userItems .displayOptions form .displayStyle .option, #userItems .displayOptions form .displayStyle .comma { display: block; float: left; }
-#tagItems .displayOptions form .displayStyle .option.control, #bookmarks .displayOptions form .displayStyle .option.control, #userItems .displayOptions form .displayStyle .option.control { position: relative; top: -0.25em; }
-#tagItems .displayOptions form .displayStyle .comma, #bookmarks .displayOptions form .displayStyle .comma, #userItems .displayOptions form .displayStyle .comma { padding-right: 0.5em; }
+#tagItems .displayOptions form, #bookmarks .displayOptions form, #userItems .displayOptions form, #itemItems .displayOptions form { width: 18em; }
+#tagItems .displayOptions form .field label, #bookmarks .displayOptions form .field label, #userItems .displayOptions form .field label, #itemItems .displayOptions form .field label { width: 5.5em; }
+#tagItems .displayOptions form .itemCounts, #bookmarks .displayOptions form .itemCounts, #userItems .displayOptions form .itemCounts, #itemItems .displayOptions form .itemCounts { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
+#tagItems .displayOptions form .itemCounts .field, #bookmarks .displayOptions form .itemCounts .field, #userItems .displayOptions form .itemCounts .field, #itemItems .displayOptions form .itemCounts .field { display: inline; }
+#tagItems .displayOptions form .itemCounts .field label, #bookmarks .displayOptions form .itemCounts .field label, #userItems .displayOptions form .itemCounts .field label, #itemItems .displayOptions form .itemCounts .field label { width: 2.5em; }
+#tagItems .displayOptions form .itemCounts .field select, #bookmarks .displayOptions form .itemCounts .field select, #userItems .displayOptions form .itemCounts .field select, #itemItems .displayOptions form .itemCounts .field select { width: 4.5em; }
+#tagItems .displayOptions form .itemCounts .field label, #tagItems .displayOptions form .itemCounts .field select, #tagItems .displayOptions form .itemCounts .field .label, #bookmarks .displayOptions form .itemCounts .field label, #bookmarks .displayOptions form .itemCounts .field select, #bookmarks .displayOptions form .itemCounts .field .label, #userItems .displayOptions form .itemCounts .field label, #userItems .displayOptions form .itemCounts .field select, #userItems .displayOptions form .itemCounts .field .label, #itemItems .displayOptions form .itemCounts .field label, #itemItems .displayOptions form .itemCounts .field select, #itemItems .displayOptions form .itemCounts .field .label { float: left; margin-bottom: 0.25em; }
+#tagItems .displayOptions form .itemCounts .field label, #tagItems .displayOptions form .itemCounts .field .label, #bookmarks .displayOptions form .itemCounts .field label, #bookmarks .displayOptions form .itemCounts .field .label, #userItems .displayOptions form .itemCounts .field label, #userItems .displayOptions form .itemCounts .field .label, #itemItems .displayOptions form .itemCounts .field label, #itemItems .displayOptions form .itemCounts .field .label { padding: 0 0.25em; }
+#tagItems .displayOptions form .itemCounts .highlightCount, #bookmarks .displayOptions form .itemCounts .highlightCount, #userItems .displayOptions form .itemCounts .highlightCount, #itemItems .displayOptions form .itemCounts .highlightCount { float: right; display: block; }
+#tagItems .displayOptions form .itemCounts .highlightCount label.above, #bookmarks .displayOptions form .itemCounts .highlightCount label.above, #userItems .displayOptions form .itemCounts .highlightCount label.above, #itemItems .displayOptions form .itemCounts .highlightCount label.above { width: auto; }
+#tagItems .displayOptions form .displayStyle, #bookmarks .displayOptions form .displayStyle, #userItems .displayOptions form .displayStyle, #itemItems .displayOptions form .displayStyle { display: block; position: relative; width: auto; text-align: left; padding-top: 1em; }
+#tagItems .displayOptions form .displayStyle a, #bookmarks .displayOptions form .displayStyle a, #userItems .displayOptions form .displayStyle a, #itemItems .displayOptions form .displayStyle a { font-weight: normal; }
+#tagItems .displayOptions form .displayStyle .option-selected, #bookmarks .displayOptions form .displayStyle .option-selected, #userItems .displayOptions form .displayStyle .option-selected, #itemItems .displayOptions form .displayStyle .option-selected { font-weight: bold; }
+#tagItems .displayOptions form .displayStyle .option, #tagItems .displayOptions form .displayStyle .comma, #bookmarks .displayOptions form .displayStyle .option, #bookmarks .displayOptions form .displayStyle .comma, #userItems .displayOptions form .displayStyle .option, #userItems .displayOptions form .displayStyle .comma, #itemItems .displayOptions form .displayStyle .option, #itemItems .displayOptions form .displayStyle .comma { display: block; float: left; }
+#tagItems .displayOptions form .displayStyle .option.control, #bookmarks .displayOptions form .displayStyle .option.control, #userItems .displayOptions form .displayStyle .option.control, #itemItems .displayOptions form .displayStyle .option.control { position: relative; top: -0.25em; }
+#tagItems .displayOptions form .displayStyle .comma, #bookmarks .displayOptions form .displayStyle .comma, #userItems .displayOptions form .displayStyle .comma, #itemItems .displayOptions form .displayStyle .comma { padding-right: 0.5em; }
 
 .cloud { padding: 1em 0 2em 0.25em; clear: both; }
 .cloud .highlights { float: right; border: 1px solid #cccccc; background-color: #f3f3ff; padding: 0.25em; margin: 0 0 0.25em 1em; font-size: 0.9em; z-index: 1; }
 .cloud .highlights h4 { font-size: 1em; font-weight: bold; padding: 0; text-align: center; color: #172322; }
 .cloud ul { padding: 0; }
-.cloud ul .item { display: block; float: left; font-weight: normal; color: #2786c2; }
-.cloud ul .itemCount { display: block; float: right; padding: 0.15em 0 0.15em 0.5em; color: #999999; font-size: 0.8em; }
+.cloud ul .item { display: block; float: left; font-weight: normal; color: #2786c2; margin-right: 3em; }
+.cloud ul .itemCount { display: block; position: absolute; right: 0; padding: 0.15em 0 0.15em; color: #999999; font-size: 0.8em; }
+
+#itemItems .cloud ul .item { padding-bottom: 0.5em; }
 
 .Tag_Cloud, .User_Cloud { list-style: none; text-align: justify; padding: 0; }
 .Tag_Cloud .tag , .Tag_Cloud .user, .User_Cloud .tag , .User_Cloud .user { display: inline; font-size: 100%; margin: 0.25em; }

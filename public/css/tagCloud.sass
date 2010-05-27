@@ -1,5 +1,5 @@
 /******* tagCloud.sass *******/
-.rightCol #tagItems, .rightCol #bookmarks, .rightCol #userItems
+.rightCol #tagItems, .rightCol #bookmarks, .rightCol #userItems, .rightCol #itemItems
   padding:              0 0.25em 0 0
   border-top =          "3px solid" !columnHeaderBorderColor
   //border-left =         "2px solid" !borderColor
@@ -11,7 +11,7 @@
     top:                -2px
     left:               -19px
 
-#tagItems, #bookmarks, #userItems
+#tagItems, #bookmarks, #userItems, #itemItems
   .displayOptions
     form
       width:              18em
@@ -91,12 +91,20 @@
       float:          left
       font-weight:    normal
       color =         !highlightTopTagColor
+      margin-right:   3em
     .itemCount
       display:        block
-      float:          right
-      padding:        0.15em 0 0.15em 0.5em
+      position:       absolute
+      right:          0
+      padding:        0.15em 0 0.15em
       color =         !highlightTopTagCountColor
       font-size:      0.8em
+
+#itemItems
+  .cloud
+    ul
+      .item
+        padding-bottom: 0.5em
 
 .Tag_Cloud,.User_Cloud
   list-style: none

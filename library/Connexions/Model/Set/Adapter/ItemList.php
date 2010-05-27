@@ -38,12 +38,14 @@ class Connexions_Model_Set_Adapter_ItemList extends Zend_Tag_ItemList
             $url = str_replace($selected->getSource() .'/', '', $url);
         }
 
+        /*
         Connexions::log("Connexions_Model_Set_Adapter_ItemList:: "
                         . "source[ %s ], selectedStr[ %s ], url[ %s ]",
                         ($selected !== null
                             ? $selected->getSource()
                             : ''),
                         $this->_selectedStr, $url);
+        // */
 
         // Fill _items from the incoming set.
         foreach ($set as $item)
@@ -93,20 +95,24 @@ class Connexions_Model_Set_Adapter_ItemList extends Zend_Tag_ItemList
          *      url         The url to visit if this item is clicked;
          */
         $title    = $item->getTitle();
+        $urlId    = $item->getParam('urlId');
         $itemList = $this->_selected;
+
+        if ($urlId === null)
+            $urlId = $title;
 
         if (in_array($title, $itemList))
         {
             // Remove this item from the new item list.
             $item->setParam('selected', true);
 
-            $itemList = array_diff($itemList, array($title));
+            $itemList = array_diff($itemList, array($urlId));
         }
         else
         {
             $item->setParam('selected', false);
 
-            array_push( $itemList, $title );    //$itemList = array( $title );
+            array_push( $itemList, $urlId );
         }
 
         /*
