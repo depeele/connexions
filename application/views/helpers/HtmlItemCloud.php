@@ -12,7 +12,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
     static public   $defaults               = array(
         'namespace'         => 'tags',
         'showRelation'      => true,
-        'itemType'          => self::ITEM_TYPE_TAG,
+        'itemType'          => self::ITEM_TYPE_ITEM,
         'items'             => null,        /* A Connexions_Model_Set
                                              * containing the items to present
                                              */
@@ -43,7 +43,6 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
     /** @brief  Cloud Item type -- determines the item decorator
      */
-    const ITEM_TYPE_TAG                     = 'tag';
     const ITEM_TYPE_USER                    = 'user';
     const ITEM_TYPE_ITEM                    = 'item';
 
@@ -125,7 +124,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      *  @param  config  A configuration array that may include:
      *                      namespace       [tags];
      *                      showRelation    [true];
-     *                      itemType        [self::ITEM_TYPE_TAG];
+     *                      itemType        [self::ITEM_TYPE_ITEM];
      *                      items           The Connexions_Model_Set containing
      *                                      the items to present;
      *                      selected        The Connexions_Model_Set containing
@@ -325,16 +324,16 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
             switch ($this->itemType)
             {
-            case self::ITEM_TYPE_TAG:
+            case self::ITEM_TYPE_ITEM:
                 /* Use our cloud item decorator:
-                 *      View_Helper_HtmlItemCloudTag
+                 *      View_Helper_HtmlItemCloudItem
                  */
                 $cloudConfig['TagDecorator'] = array(
-                    'decorator'         => 'htmlItemCloudTag',
+                    'decorator'         => 'htmlItemCloudItem',
                     'options'           => array(
                         'HtmlTags'      => array(
                             'li'        => array(
-                                'class'=>'tag'
+                                'class'=>'user'
                             )
                         ),
                         'ClassList'     => array(
@@ -351,26 +350,6 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                  */
                 $cloudConfig['TagDecorator'] = array(
                     'decorator'         => 'htmlItemCloudUser',
-                    'options'           => array(
-                        'HtmlTags'      => array(
-                            'li'        => array(
-                                'class'=>'user'
-                            )
-                        ),
-                        'ClassList'     => array(
-                            'size0', 'size1', 'size2', 'size3',
-                            'size4', 'size5', 'size6'
-                        )
-                    )
-                );
-                break;
-
-            case self::ITEM_TYPE_ITEM:
-                /* Use our cloud item decorator:
-                 *      View_Helper_HtmlItemCloudItem
-                 */
-                $cloudConfig['TagDecorator'] = array(
-                    'decorator'         => 'htmlItemCloudItem',
                     'options'           => array(
                         'HtmlTags'      => array(
                             'li'        => array(
@@ -567,9 +546,8 @@ function init_CloudOptions(namespace)
 
         switch ($itemType)
         {
-        case self::ITEM_TYPE_TAG:
-        case self::ITEM_TYPE_USER:
         case self::ITEM_TYPE_ITEM:
+        case self::ITEM_TYPE_USER:
             break;
 
         default:

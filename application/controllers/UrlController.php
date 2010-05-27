@@ -252,7 +252,7 @@ class UrlController extends Zend_Controller_Action
         $cloudHelper->setNamespace($prefix)
                     ->setStyle($tagsStyle)
                     ->setItemType(Connexions_View_Helper_HtmlItemCloud::
-                                                            ITEM_TYPE_TAG)
+                                                            ITEM_TYPE_ITEM)
                     ->setSortBy($tagsSortBy)
                     ->setSortOrder($tagsSortOrder)
                     ->setPerPage($tagsPerPage)
