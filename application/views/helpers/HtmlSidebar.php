@@ -163,6 +163,10 @@ class View_Helper_HtmlSidebar extends Zend_View_Helper_Abstract
      */
     public function render($path    = '')
     {
+        // Include jQuery to initialize the sidebar
+        $jQuery   = $this->view->jQuery();
+        $jQuery->addOnLoad("$('#{$this->namespace}').sidebar();");
+
         $html     =  "<div id='{$this->namespace}'>\n"
                   .   "<ul>\n";
         $paneHtml = '';
