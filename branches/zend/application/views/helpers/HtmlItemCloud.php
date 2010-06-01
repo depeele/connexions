@@ -231,7 +231,8 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         // */
 
 
-        $html = "<div id='{$this->itemType}Items'>";  // <itemType>Items {
+        $html = "<div id='{$this->namespace}Cloud' "
+              .   "class='{$this->itemType}Items pane'>";  // <itemType>Items {
 
         if ($this->showRelation)
         {
@@ -252,7 +253,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
             $uiPagination->setNamespace($this->namespace);
 
             $html .= $uiPagination->render($this->items,
-                                           'pagination-top', true);
+                                           'paginator-top', true);
         }
 
         if ($hideOptions !== true)
@@ -315,11 +316,26 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                     'options'           => array(
                         'HtmlTags'      => array(
                             'ul'        => array(
-                                'class' =>'Tag_Cloud'
+                                'class' =>'Item_Cloud'
                             )
                         )
                     )
-                )
+                ),
+                // Shared configuration for the tag decorators
+                'TagDecorator'          => array(
+                    //'decorator'         => 'htmlItemCloudItem',
+                    'options'           => array(
+                        'HtmlTags'      => array(
+                            'li'        => array(
+                                'class'=>'cloudItem'
+                            )
+                        ),
+                        'ClassList'     => array(
+                            'size0', 'size1', 'size2', 'size3',
+                            'size4', 'size5', 'size6'
+                        )
+                    )
+                ),
             );
 
             switch ($this->itemType)
@@ -328,40 +344,25 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                 /* Use our cloud item decorator:
                  *      View_Helper_HtmlItemCloudItem
                  */
-                $cloudConfig['TagDecorator'] = array(
-                    'decorator'         => 'htmlItemCloudItem',
-                    'options'           => array(
-                        'HtmlTags'      => array(
-                            'li'        => array(
-                                'class'=>'user'
-                            )
-                        ),
-                        'ClassList'     => array(
-                            'size0', 'size1', 'size2', 'size3',
-                            'size4', 'size5', 'size6'
-                        )
-                    )
-                );
+                $cloudConfig['TagDecorator']['decorator'] =
+                                                        'htmlItemCloudItem';
+
                 break;
 
             case self::ITEM_TYPE_USER:
                 /* Use our cloud item decorator:
                  *      View_Helper_HtmlItemCloudUser
+                 *
+                 *      and include 'user' in the CSS class for the <li> around
+                 *      each "tag".
                  */
-                $cloudConfig['TagDecorator'] = array(
-                    'decorator'         => 'htmlItemCloudUser',
-                    'options'           => array(
-                        'HtmlTags'      => array(
-                            'li'        => array(
-                                'class'=>'user'
-                            )
-                        ),
-                        'ClassList'     => array(
-                            'size0', 'size1', 'size2', 'size3',
-                            'size4', 'size5', 'size6'
-                        )
-                    )
-                );
+                $cloudConfig['TagDecorator']['decorator'] =
+                                                        'htmlItemCloudItem';
+                $cloudConfig['TagDecorator']
+                                ['options']
+                                    ['HtmlTags']
+                                        ['li']
+                                            ['class']    .= ' user';
                 break;
             }
 
@@ -857,11 +858,12 @@ function init_CloudOptions(namespace)
     protected function _renderList(Connexions_Model_Set_Adapter_ItemList
                                                                     $itemList)
     {
-        $html .= "<ul>";
+        $html .= "<ul class='Item_List'>";
 
         foreach ($itemList as $idex => $item)
         {
-            $html .= "<li>";
+            $oddEven = ($idex % 2 ? 'odd' : 'even');
+            $html   .= "<li class='{$oddEven}'>";
 
             $url    = $item->getParam('url');
             $weight = number_format($item->getWeight());
@@ -905,7 +907,7 @@ function init_CloudOptions(namespace)
          */
         $html .= "<div class='highlights ui-corner-all'>"
               .   "<h4>Top {$this->highlightCount}</h4>"
-              .   "<ul>";
+              .   "<ul class='Item_List'>";
 
         $idex = 0;
         foreach ($itemList as $item)
@@ -913,7 +915,8 @@ function init_CloudOptions(namespace)
             if (++$idex > $this->highlightCount)
                 break;
 
-            $html .= "<li>";
+            $oddEven = ($idex % 2 ? 'odd' : 'even');
+            $html   .= "<li class='{$oddEven}'>";
 
             $url    = $item->getParam('url');
             $weight = number_format($item->getWeight());
@@ -1054,11 +1057,15 @@ function init_CloudOptions(namespace)
 
         foreach (self::$highlightCountChoices as $countOption)
         {
+            $countTitle = ($countOption === 0
+                            ? 'none'
+                            : $countOption);
+
             $html .= "<option value='{$countOption}'"
                   .           ($countOption == $this->highlightCount
                                  ? ' selected'
                                  : '')
-                  .                     ">{$countOption}</option>";
+                  .                     ">{$countTitle}</option>";
         }
     
         $html .=    "</select>"

@@ -1,0 +1,44 @@
+@mixin corners($tl, $tr: $tl, $br: $tr, $bl: $tl) {
+  -moz-border-radius: $tl $tr $br $bl;
+  -webkit-border-radius: $tl $tr $br $bl;
+  border-radius: $tl $tr $br $bl;
+}
+
+$ms_filter_base: unquote("progid:DXImageTransform.Microsoft.");
+
+// 10% opcatiy: +opacity(10)
+@mixin opacity($pct) {
+  opacity: $pct / 100;
+  // IE5-7
+  filter: unquote("alpha(opacity=#{$pct})");
+  // IE8
+  -ms-filter: unquote("'#{$ms_filter_base}Alpha(Opacity=#{$pct})'");
+}
+
+@mixin rotate($deg) {
+  display: block;
+  -webkit-transform: unquote("rotate(") $deg unquote(")");
+  -moz-transform: unquote("rotate(") $deg unquote(")");
+  // 0=0deg, 1=90deg, 2=180deg, 3=270deg
+  @if $deg == 0deg {
+    filter: unquote("#{$ms_filter_base}BasicImage(rotation=0)");
+  }
+  @if $deg == 90deg {
+    filter: unquote("#{$ms_filter_base}BasicImage(rotation=1)");
+  }
+  @if $deg == -90deg {
+    filter: unquote("#{$ms_filter_base}BasicImage(rotation=-1)");
+  }
+  @if $deg == 180deg {
+    filter: unquote("#{$ms_filter_base}BasicImage(rotation=2)");
+  }
+  @if $deg == -180deg {
+    filter: unquote("#{$ms_filter_base}BasicImage(rotation=-2)");
+  }
+  @if $deg == 270deg {
+    filter: unquote("#{$ms_filter_base}BasicImage(rotation=3)");
+  }
+  @if $deg == -270deg {
+    filter: unquote("#{$ms_filter_base}BasicImage(rotation=-3)");
+  }
+}

@@ -1,4 +1,4 @@
-/* ****** inbox.sass ****** */
+/****** inbox.sass ****** */
 .rightCol #sendersList { padding: 0 0.25em 0 0; border-top: 3px solid #eeeeee; }
 .rightCol #sendersList .listRelation { position: absolute; top: -2px; left: -19px; }
 .rightCol #sendersList .users { padding: 1em 0 0 1.25em; clear: both; }

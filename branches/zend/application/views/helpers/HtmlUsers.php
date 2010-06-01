@@ -486,7 +486,7 @@ function init_UsersList(namespace)
 
 
         $html .= "<div id='{$this->_namespace}List'>"   // List {
-              .   $uiPagination->render($paginator, 'pagination-top', true)
+              .   $uiPagination->render($paginator, 'paginator-top', true)
               .   $this->_renderDisplayOptions($paginator);
 
         if (count($paginator))

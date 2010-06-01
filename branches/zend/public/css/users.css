@@ -1,4 +1,4 @@
-/* ****** users.sass ****** */
+/****** users.sass ****** */
 .rightCol #usersList .users { padding: 0 0 0 0.5em; border: none; }
 .rightCol #usersList .users .user .stats { width: 48px; }
 .rightCol #usersList .users .user .data { border: none; }
@@ -11,7 +11,7 @@
 #usersList .displayOptions form .displayStyle .users .user .data, #usersList .displayOptions form .displayStyle fieldset.options .user .data { padding-left: 24px; }
 #usersList .displayOptions form .displayStyle .users .user .data .avatar, #usersList .displayOptions form .displayStyle fieldset.options .user .data .avatar { border: 1px solid #cccccc; height: 32px; width: 18px; margin-top: 0.2em; padding: 0 2px; }
 #usersList .displayOptions form .displayStyle .users .user .data .avatar label, #usersList .displayOptions form .displayStyle fieldset.options .user .data .avatar label { display: none; }
-#usersList .displayOptions form .displayStyle .users .user .data .userId, #usersList .displayOptions form .displayStyle fieldset.options .user .data .userId { font-size: 1.0em; }
+#usersList .displayOptions form .displayStyle .users .user .data .userId, #usersList .displayOptions form .displayStyle fieldset.options .user .data .userId { font-size: 1em; }
 #usersList .displayOptions form .displayStyle .users .user .data .fullName, #usersList .displayOptions form .displayStyle .users .user .data .email, #usersList .displayOptions form .displayStyle fieldset.options .user .data .fullName, #usersList .displayOptions form .displayStyle fieldset.options .user .data .email { display: inline; font-size: 0.9em; padding: 0.25em 0; }
 #usersList .displayOptions form .displayStyle .users .user .data .email, #usersList .displayOptions form .displayStyle fieldset.options .user .data .email { padding-right: 0.5em; }
 #usersList .displayOptions form .displayStyle .users .user .data .fullName, #usersList .displayOptions form .displayStyle fieldset.options .user .data .fullName { float: none; }

@@ -1,0 +1,320 @@
+/****** tabs.sass ****** */
+/* Alternative Tab styling using no background image but rather border-radius.
+ * Requires a change to application/configs/navigation.xml
+ * to remove 'connexions_sprites welcome_bg' from the 'class' of <userInfo>
+ *       and 'connexions_sprites join_bg'    from the 'class' of <register>
+ *
+ * This will show square tabs in browsers that don't support border-radius
+ * and likely won't work at all in IE6. */
+
+$tabWidth: 750px;
+$tabHeight: 2em;
+
+$navWidth: 560px;
+
+// Sign-Out, Bookmarks, People, Tags, Help
+$navNumItems: 5;
+
+$navWidthFirst: 110px;
+
+//  90px                = (560px     - 110px         ) / 5
+$navWidthItem: ($navWidth - $navWidthFirst) / $navNumItems;
+
+// 190px                = 750px     - 560px
+$navWidthSearch: $tabWidth - $navWidth;
+
+$navPadItem: 0.1em;
+$navPadSubItem_tb: 0.25em;
+$navPadSubItem_lr: 1em;
+
+//  48px                = 64px       - (8px         * 2)    *2 for top and bottom
+$navTopSub: $tabHeight;
+
+$searchPad_r: 0.5em;
+
+$searchBgWidth: 173px;
+$searchMagWidth: 23px;
+$searchInputPad: 2px;
+
+$searchInputInputPadLeft: 2px;
+$searchInputInputPadRght: $searchMagWidth;
+$searchInputInputWidth: 145px;
+
+// 174px                = 145px                  + 2px                      + 23px                     + (2               *2)
+$searchInputWidth: $searchInputInputWidth + $searchInputInputPadLeft + $searchInputInputPadRght + $searchInputPad * 2;
+
+// 150px                = 174px             - 23px            - 1
+$searchMagLeft: $searchInputWidth - $searchMagWidth - 1;
+
+$navWidthSub: 120px;
+
+$navBorder: unquote("1px dotted") $navColorBorder;
+
+/* Tabs / Navigation */
+#pageHeader {
+  border-top: unquote("0.25em solid") $navColorBackground;
+  // Outer curve connecting the tabs with the top border
+  .tabs_outer_curve {
+    position: absolute;
+    right: $tabWidth;
+  }
+  // Top navigation tabs
+  .tabs {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0;
+    width: $tabWidth;
+    //height =  !tabHeight
+    padding: 0;
+    background-color: transparent;
+    a {
+      padding: 2px;
+      color: $navColor;
+      font-weight: normal;
+      text-decoration: none;
+    }
+    li.active a, a:hover {
+      color: $navColorHover;
+    }
+  }
+  .nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 0;
+    width: $navWidth;
+    *width: $navWidth + 1;
+    li {
+      float: left;
+      width: $navWidthItem;
+      text-align: center;
+      padding: $navPadSubItem_tb unquote("0");
+      background-color: $navColorBackground;
+      height: $tabHeight;
+      // IE7 fix
+      *height: $tabHeight - 0.4em;
+    }
+  }
+  /* Sub-menu */
+  ul.sub {
+    display: none;
+    position: absolute;
+    top: $navTopSub;
+    left: 2px;
+    color: $navColor;
+    padding: 0;
+    margin: 0;
+  }
+  li:hover ul.sub {
+    display: block;
+  }
+}
+
+#pageHeader ul.sub li,
+#search ul.sub li {
+  background-color: $navColorBackground;
+  width: $navWidthSub;
+  height: auto;
+  padding: unquote("0") $navPadSubItem_lr;
+  float: left;
+  margin: 0;
+  cursor: pointer;
+  text-align: left;
+  /* IE Fix */
+  *width: $navWidthItem;
+}
+
+#pageHeader ul.sub li.last a,
+#search ul.sub li.last a,
+#search ul.sub li.last span {
+  padding-bottom: 0;
+}
+
+#pageHeader ul.sub li a:hover,
+#search ul.sub li a:hover,
+#search ul.sub li:hover span {
+  color: $navColorSubHover;
+}
+
+#pageHeader ul.sub li.outter,
+#search ul.sub li.outter {
+  background: none repeat scroll 0 0 transparent;
+  padding: 0 13px;
+}
+
+#pageHeader ul.sub .corner_inner_left,
+#search ul.sub .corner_inner_left {
+  position: absolute;
+  top: 0;
+  left: -12px;
+}
+
+#pageHeader ul.sub .corner_inner_right,
+#search ul.sub .corner_inner_right {
+  position: absolute;
+  top: 0;
+  right: -12px;
+}
+
+#pageHeader ul.sub .corner_outter_left,
+#search ul.sub .corner_outter_left {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+#pageHeader ul.sub .corner_outter_middle,
+#search ul.sub .corner_outter_middle {
+  background-color: $navColorBackground;
+}
+
+#pageHeader ul.sub .corner_outter_right,
+#search ul.sub .corner_outter_right {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+//#pageHeader ul.sub li
+
+#pageHeader .nav ul.sub li a,
+#search .choices ul.sub li a,
+#search .choices ul.sub li span {
+  display: block;
+  padding: 0.5em 0;
+  color: $navColorSub;
+  font-weight: normal;
+  border-top: $navBorder;
+}
+
+/* If only IE6 suppported the child selector, we could
+ * change
+ *   '#pageHeader .tabs li.active a'
+ *   '#pageHeader .tabs li.active>a'
+ *
+ * and completely omit these next rules */
+#pageHeader .nav ul.sub li.active a,
+#search .choices ul.sub li.active a,
+#search .choices ul.sub li.active span {
+  color: $navColorSelected;
+}
+
+#pageHeader .nav ul.sub li a:hover,
+#search .choices ul.sub li a:hover,
+#search .choices ul.sub li:hover span {
+  color: $navColorSubHover;
+}
+
+/************************************************* */
+#pageHeader ul.sub li.first a,
+#search ul.sub li.first a,
+#search ul.sub li.first span {
+  padding-top: $navPadSubItem_tb * 4;
+  border-top: 0;
+}
+
+#pageHeader ul.sub li.last a,
+#search ul.sub li.last a,
+#search ul.sub li.last span {
+  padding-bottom: 0;
+}
+
+/* Welcome / Join -- first tab item */
+#pageHeader .tabs li.welcome,
+#pageHeader .tabs li.join {
+  width: $navWidthFirst;
+  border-right: $navBorder;
+  @include corners(0, 0, 0, 20px);
+}
+
+#pageHeader .tabs {
+  li.welcome {
+    //background-color =    !navColorWelcomeBackground
+    background: url("sprites/welcome_bg_gradient.gif") repeat-x scroll 0 0 transparent;
+    ul.sub {
+      left: 0;
+    }
+    ul.sub li {
+      width: 100px;
+    }
+    ul.sub .corner_inner_left {
+      display: none;
+    }
+    &:hover {
+      @include corners(0, 0, 0, 0);
+    }
+  }
+  li.join {
+    background-color: $navColorJoinBackground;
+    a {
+      color: $navColor;
+      &:hover {
+        color: $navColorSub;
+      }
+    }
+  }
+}
+
+/* Search */
+#search {
+  position: absolute;
+  top: 0;
+  right: 0;
+  //padding =         !navPadItem !searchPad_r !navPadItem "0"
+  padding: $navPadItem $searchPad_r unquote("0 0");
+  width: $navWidthSearch;
+  height: $tabHeight;
+  background-color: $navColorBackground;
+  .searchBox {
+    float: right;
+  }
+  /* Search Input / Choices */
+  .searchInput {
+    border: 0;
+    color: #999999;
+    input {
+      border: none;
+      //color:        #aaa
+      height: 1.5em;
+      margin: 0;
+      padding: unquote("0") $searchInputInputPadRght unquote("0") $searchInputInputPadLeft;
+      width: $searchInputInputWidth;
+      font-weight: normal;
+    }
+  }
+  .focus {
+    color: black;
+  }
+  .submit {
+    display: block;
+    position: absolute;
+    top: 0.25em;
+    left: $searchMagLeft;
+    width: $searchMagWidth;
+    padding: 0;
+    border: 0;
+    border-left: 1px dotted #999999;
+    background-color: transparent;
+    cursor: pointer;
+    z-index: 101;
+    *background-color: white;
+  }
+  /* Search Context choices */
+  .choices {
+    .list {
+      top: $tabHeight - $navPadItem;
+      left: -30px;
+      // IE fix
+      *top: $tabHeight;
+      li {
+        width: 180px;
+        /* IE Fix */
+        *width: $searchInputInputWidth;
+      }
+    }
+  }
+  &:hover .list {
+    display: block;
+  }
+}
