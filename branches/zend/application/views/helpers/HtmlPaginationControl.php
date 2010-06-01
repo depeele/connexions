@@ -44,21 +44,6 @@ class View_Helper_HtmlPaginationControl
 
         $this->_namespace = $namespace;
 
-        if (! @isset(self::$_initialized[$namespace]))
-        {
-            /*
-            $view   = $this->view;
-            $jQuery =  $view->jQuery();
-
-            $call   = '$("form.paginator").paginator({'
-                    .       'namespace: "'. $namespace .'"});';
-            $jQuery->addJavascriptFile($view->baseUrl('js/ui.paginator.js'))
-                   ->addOnLoad($call);
-            */
-
-            self::$_initialized[$namespace] = true;
-        }
-
         return $this;
     }
 

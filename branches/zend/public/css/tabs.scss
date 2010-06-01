@@ -303,7 +303,7 @@ $navBorder: unquote("1px dotted") $navColorBorder;
   /* Search Context choices */
   .choices {
     .list {
-      top: $tabHeight - $navPadItem;
+      top: $tabHeight - ($navPadItem / 2);
       left: -30px;
       // IE fix
       *top: $tabHeight;
