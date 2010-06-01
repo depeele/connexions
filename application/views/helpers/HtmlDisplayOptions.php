@@ -738,7 +738,7 @@ function init_DisplayOptions(opts)
 
         if (! empty($this->_definition))
         {
-            $html .= "<fieldset class='options {$namespace}'>";
+            $html .= "<fieldset class='options'>";
 
             foreach ($this->_definition as $name => $val)
             {

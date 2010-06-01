@@ -1,7 +1,7 @@
 .ui-stars-wrapper { display: block; width: 96px; overflow: hidden; }
 .ui-stars-wrapper input.ui-stars-rating { width: 0; height: 0; padding: 0; margin: 0; }
 .ui-stars-wrapper .ui-stars { display: block; float: left; overflow: hidden; text-indent: 999em; }
-.ui-stars-wrapper .ui-stars a { background: url('sprites/connexions.gif') no-repeat scroll 0 0; display: block; width: 16px; height: 16px; }
+.ui-stars-wrapper .ui-stars a { background: url("sprites/connexions.gif") no-repeat scroll 0 0; display: block; width: 16px; height: 16px; }
 .ui-stars-wrapper .ui-stars-star-off a, .ui-stars-wrapper .ui-stars-star a, .ui-stars-wrapper .ui-stars-star-disabled a { background-position: -72px -58px; }
 .ui-stars-wrapper .ui-stars-star { cursor: pointer; }
 .ui-stars-wrapper .ui-stars-star a { cursor: pointer; }
@@ -13,7 +13,7 @@
 .ui-stars-wrapper .ui-stars-cancel-disabled a { background-image: none; }
 .ui-stars-wrapper .ui-stars-star-disabled, .ui-stars-wrapper .ui-stars-cancel-disabled { cursor: default; }
 
-/* ****** post.sass ****** */
+/****** post.sass ****** */
 .line { padding: 1em; }
 
 .ui-validation-form { padding: 0 0 0 0.5em; float: left; width: auto; background-color: white; border: 2px solid #cccccc; -moz-border-radius: 10px 10px 10px 10px; -webkit-border-radius: 10px 10px 10px 10px; border-radius: 10px 10px 10px 10px; }

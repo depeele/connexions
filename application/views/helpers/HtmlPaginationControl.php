@@ -12,7 +12,7 @@ class View_Helper_HtmlPaginationControl
                         'next'  => '&rsaquo;',  //'&#x203a',    //'&rsaquo;',
                         'last'  => '&raquo;'    //'&#x00bb',    //'&raquo;',
     );
-    public static   $cssClassForm       = 'pagination';
+    public static   $cssClassForm       = 'paginator';
     public static   $cssClassButton     = 'ui-corner-all';
 
 
@@ -46,71 +46,15 @@ class View_Helper_HtmlPaginationControl
 
         if (! @isset(self::$_initialized[$namespace]))
         {
+            /*
             $view   = $this->view;
             $jQuery =  $view->jQuery();
 
-            $jQuery->addOnLoad("init_{$namespace}PaginationControls();")
-                   ->javascriptCaptureStart();
-
-            ?>
-
-/************************************************
- * Initialize display options, as well as the
- * PerPage selector in the bottom paginator.
- *
- */
-function init_<?= $namespace ?>PaginationControls()
-{
-    var $controls = $('form.pagination');
-
-    // Add an opacity hover effect to the pagination controls
-    $controls.filter(':first')
-             .fadeTo(100, 0.5)
-             .hover(    function() {    // in
-                            $(this).fadeTo(100, 1.0);
-                        },
-                        function() {    // out
-                            $(this).fadeTo(100, 0.5);
-                        }
-             );
-
-    // Attach to any PerPage selection box in pagination forms.
-    $controls.filter(':has(select[name=<?= $namespace ?>PerPage])')
-                .each(function() {
-                        var $cForm  = $(this);
-
-                        $cForm.submit(function() {
-                            // Serialize all form values to an array...
-                            var settings    = $cForm.serializeArray();
-
-                            /* ...and set a cookie for each:
-                             *      <?= $namespace ?>PerPage
-                             */
-                            $(settings).each(function() {
-                                $.log("Add Cookie: name[%s], value[%s]",
-                                    this.name, this.value);
-                                $.cookie(this.name, this.value);
-                            });
-
-                            /* Finally, disable ALL inputs so our URL will have
-                             * no parameters since we've stored them all in
-                             * cookies.
-                             */
-                            $cForm.find('input,select').attr('disabled', true);
-                        });
-
-        $cForm.find('select[name=<?= $namespace ?>PerPage]')
-                .change(function() {
-                    // On change of the select item, submit the pagination form.
-                    $cForm.submit();
-                });
-    });
-
-    return;
-}
-
-            <?php
-            $jQuery->javascriptCaptureEnd();
+            $call   = '$("form.paginator").paginator({'
+                    .       'namespace: "'. $namespace .'"});';
+            $jQuery->addJavascriptFile($view->baseUrl('js/ui.paginator.js'))
+                   ->addOnLoad($call);
+            */
 
             self::$_initialized[$namespace] = true;
         }

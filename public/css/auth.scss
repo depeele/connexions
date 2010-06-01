@@ -1,0 +1,50 @@
+@import "sizes";
+@import "colors";
+@import "mixins";
+
+/****** auth.sass ****** */
+// Styling for registration / login
+#auth {
+  padding: 2em 3em;
+  background-color: $formBackgroundColor;
+  @include corners(10px, 10px, 10px, 10px);
+  .legend {
+    text-align: right;
+    padding-right: 2em;
+    width: 10em;
+    h1 {
+      padding: 0;
+    }
+    p {
+      padding: 0;
+    }
+  }
+  form {
+    .field {
+      padding-bottom: 1em;
+      input.text {
+        width: 12em;
+      }
+      .ui-field-status {
+        position: absolute;
+        top: 1.2em;
+        right: -18em;
+        width: 16em;
+      }
+    }
+    .buttons {
+      text-align: right;
+    }
+    input.button {
+      background-color: #59a5d1;
+      border-color: #408bb6;
+      color: white;
+      cursor: pointer;
+    }
+  }
+  .formError {
+    padding: 1em 0;
+    font-weight: bold;
+    text-align: center;
+  }
+}

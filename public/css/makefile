@@ -1,3 +1,6 @@
+#
+# NOTE: This requires sass >= 3.0
+#
 YUI_COMP	= yuicompressor
 
 
@@ -9,49 +12,56 @@ all: connexions.min.css bookmarks.min.css users.min.css 	\
 #all: connexions.css bookmarks.css users.css urlItems.css inbox.css	\
 # 	validationForm.css post.css auth.css inbox.css
 
-connexions.css: main.sass		\
-    		mixins.sass		\
-		colors.sass		\
-		sizes.sass		\
-		content.sass		\
-		grids.sass		\
-		libraries.sass		\
-		pagination.sass		\
-		itemScope.sass		\
-		sprites.sass		\
-		tabs.sass		\
-		tagCloud.sass		\
-		template.sass		\
-		ui-form.sass		\
+connexions.css: main.scss		\
+    		mixins.scss		\
+		colors.scss		\
+		sizes.scss		\
+		content.scss		\
+		grids.scss		\
+		libraries.scss		\
+		pagination.scss		\
+		itemScope.scss		\
+		displayOptions.scss	\
+		sprites.scss		\
+		tabs.scss		\
+		tagCloud.scss		\
+		template.scss		\
+		ui-form.scss		\
 		themes/default/jquery-ui.css
-	sass -t compact main.sass connexions.css
+	sass -t compact main.scss:connexions.css
 
-bookmarks.css: mixins.sass bookmarks.sass bookmark.sass uiStars.sass \
-		colors.sass sizes.sass
-	sass -t compact bookmarks.sass bookmarks.css
+bookmarks.css: mixins.scss bookmarks.scss bookmark.scss \
+		uiStars.scss colors.scss sizes.scss
+	sass -t compact bookmarks.scss:bookmarks.css
 
-users.css: mixins.sass users.sass colors.sass sizes.sass
-	sass -t compact users.sass users.css
+users.css: mixins.scss users.scss colors.scss sizes.scss
+	sass -t compact users.scss:users.css
 
-urlItems.css: mixins.sass urlItems.sass bookmark.sass uiStars.sass \
-		colors.sass sizes.sass urls.sass
-	sass -t compact urlItems.sass urlItems.css
+urlItems.css: mixins.scss urlItems.scss bookmark.scss \
+		uiStars.scss colors.scss sizes.scss urls.scss
+	sass -t compact urlItems.scss:urlItems.css
 
-inbox.css: mixins.sass inbox.sass colors.sass sizes.sass
-	sass -t compact inbox.sass inbox.css
+inbox.css: mixins.scss inbox.scss colors.scss sizes.scss
+	sass -t compact inbox.scss:inbox.css
 
-validationForm.css: mixins.sass validationForm.sass colors.sass uiStars.sass
-	sass -t compact validationForm.sass validationForm.css
+validationForm.css: mixins.scss validationForm.scss colors.scss uiStars.scss
+	sass -t compact validationForm.scss:validationForm.css
 
-post.css: mixins.sass post.sass colors.sass
-	sass -t compact post.sass post.css
+post.css: mixins.scss post.scss colors.scss
+	sass -t compact post.scss:post.css
 
-auth.css: mixins.sass auth.sass colors.sass
-	sass -t compact auth.sass auth.css
+auth.css: mixins.scss auth.scss colors.scss
+	sass -t compact auth.scss:auth.css
 
-sprites.sass:	urls.sass
+sprites.scss:	urls.scss
 
 #----------------------------------------------------------------------------
+clean:
+	rm -f connexions.css bookmarks.css users.css urlItems.css 	\
+	      inbox.css validationForm.css post.css auth.css
+
+%.css : %.scss
+	sass -t compact $<:$@
 
 %.min.css : %.css
 	$(YUI_COMP) $<

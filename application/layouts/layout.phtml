@@ -12,6 +12,14 @@ echo $this->render('header.phtml');
     <?= $this->layout()->content ?>
    </div><!-- main } -->
   </div><!-- body } -->
+  <div id="notifications">
+    <!-- Default notification template -->
+    <div id="default">
+      <a class="ui-notify-close ui-notify-cross" href="#">x</a>
+      <h1>#{title}</h1>
+      <p>#{text}</p>
+    </div>
+  </div>
 
 <?php
 echo $this->render('footer.phtml');

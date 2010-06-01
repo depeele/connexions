@@ -1,0 +1,220 @@
+/****** tagCloud.sass ****** */
+.rightCol .itemItems, .rightCol .userItems {
+  padding: 0 0.25em 0 0;
+  border-top: unquote("3px solid") $columnHeaderBorderColor;
+  //border-left =         "2px solid" !borderColor
+  //border-bottom =       "2px solid" !borderColor
+  //+corners(10px, 0, 0, 10px)
+  .cloudRelation {
+    position: absolute;
+    top: -2px;
+    left: -19px;
+  }
+}
+
+.itemItems, .userItems {
+  .displayOptions {
+    form {
+      width: 18em;
+      .field {
+        label {
+          width: 5.5em;
+        }
+      }
+      .itemCounts {
+        padding-top: 0.5em;
+        padding-bottom: 0.5em;
+        border-bottom: unquote("1px dotted") $borderColor;
+        .field {
+          display: inline;
+          label {
+            width: 2.5em;
+          }
+          select {
+            width: 4.5em;
+          }
+          label, select, .label {
+            float: left;
+            margin-bottom: 0.25em;
+          }
+          label, .label {
+            padding: 0 0.25em;
+          }
+        }
+        .highlightCount {
+          float: right;
+          display: block;
+          label.above {
+            width: auto;
+          }
+        }
+      }
+      .displayStyle {
+        display: block;
+        position: relative;
+        width: auto;
+        text-align: left;
+        padding-top: 1em;
+        a {
+          font-weight: normal;
+        }
+        .option-selected {
+          font-weight: bold;
+        }
+        .option, .comma {
+          display: block;
+          float: left;
+        }
+        .option.control {
+          position: relative;
+          top: -0.25em;
+        }
+        .comma {
+          padding-right: 0.5em;
+        }
+      }
+    }
+  }
+}
+
+.cloud {
+  padding: 1em 0 2em 0.25em;
+  clear: both;
+  .highlights {
+    float: right;
+    border: unquote("1px solid") $borderColor;
+    background-color: $highlightTopColorBackground;
+    padding: 0.25em;
+    margin: 0 0 0.25em 1em;
+    font-size: 0.9em;
+    z-index: 1;
+    h4 {
+      font-size: 1em;
+      font-weight: bold;
+      padding: 0;
+      text-align: center;
+      color: $highlightTopHeaderColor;
+    }
+  }
+}
+
+.Item_List {
+  padding: 0;
+  li.odd {
+    background-color: $li_oddColor;
+  }
+  li.even {
+    background-color: $li_evenColor;
+  }
+  .item {
+    display: block;
+    float: left;
+    font-weight: normal;
+    color: $highlightTopTagColor;
+    margin-right: 3em;
+  }
+  .itemCount {
+    display: block;
+    position: absolute;
+    right: 0;
+    padding: 0.15em 0 0.15em;
+    color: $highlightTopTagCountColor;
+    font-size: 0.8em;
+  }
+}
+
+#sbItemsCloud {
+  .Item_List {
+    .item {
+      padding-bottom: 0.5em;
+    }
+  }
+}
+
+.Item_Cloud {
+  list-style: none;
+  text-align: justify;
+  padding: 0;
+  .cloudItem {
+    display: inline;
+    //line-height:  1.25em
+    font-size: 100%;
+    margin: 0.25em;
+    a {
+      display: inline-block;
+      vertical-align: middle;
+      padding: 0 0.2em;
+      &:hover {
+        text-decoration: none;
+        background-color: $linkColor;
+        color: $pageColorBackground;
+      }
+    }
+    .avatar {
+      display: inline-block;
+      vertical-align: middle;
+      margin: 2px;
+      border: none;
+      img {
+        width: 16px;
+        height: 16px;
+      }
+    }
+    .name {
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .size0 {
+      font-size: 0.5em;
+      font-weight: normal;
+      color: black;
+    }
+    .size1 {
+      font-size: 0.7em;
+      font-weight: normal;
+      color: #23598c;
+    }
+    .size2 {
+      font-size: 0.9em;
+      font-weight: normal;
+      color: #23598d;
+    }
+    .size3 {
+      font-size: 1.125em;
+      font-weight: normal;
+      color: #235992;
+    }
+    .size4 {
+      font-size: 1.333em;
+      font-weight: normal;
+      color: #235994;
+    }
+    .size5 {
+      font-size: 1.542em;
+      font-weight: normal;
+      color: #2359aa;
+    }
+    .size6 {
+      font-size: 1.75em;
+      font-weight: normal;
+      color: #2359ff;
+    }
+    .selected {
+      //background-color: #ddd
+      color: black;
+    }
+    a.selected {
+      background-image: none;
+      background-color: $linkColor;
+      color: $pageColorBackground;
+      &:hover {
+        color: $linkColor;
+        background-color: $pageColorBackground;
+      }
+    }
+  }
+}
+
+//#sidebar-tabs
+//  .cloud
+//    padding-left: 1.25em

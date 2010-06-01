@@ -1,0 +1,37 @@
+@import "colors";
+
+.displayOptions {
+  // To have the control appear as a tab when opened
+  //form
+  //  top:                1.87em
+  //.control.ui-state-active
+  //  border-bottom-color = !pageColorBackground
+  form {
+    width: 22em;
+    //background-color =  !pageColorBackground
+    //border =            "1px solid" !borderColor
+  }
+  .displayStyle {
+    fieldset.options {
+      border-bottom: none;
+      padding-top: 1em;
+      .item {
+        border: unquote("1px solid") $borderColor;
+        padding: 0 0 0.1em 0.2em;
+        label {
+          display: inline;
+          float: none;
+          width: auto;
+          padding-left: 0.25em;
+        }
+        .data {
+          padding-left: 0;
+          padding-right: 0.1em;
+          .itemName {
+            padding-bottom: 0.5em;
+          }
+        }
+      }
+    }
+  }
+}

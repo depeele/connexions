@@ -1,0 +1,48 @@
+@import "colors";
+
+/****** ui-form.sass ****** */
+/* ====== Forms ====== */
+.ui-form {
+  label {
+    display: block;
+    font-size: 0.8em;
+    font-weight: normal;
+  }
+  input,
+  select,
+  textarea,
+  .ui-button {
+    /* Also requires ui-state-* to provide the border */
+    padding: 0.3em;
+  }
+  .ui-button {
+    cursor: pointer;
+  }
+  .ui-state-valid {
+    color: $validationValidColor;
+  }
+  .ui-state-invalid {
+    color: $errorColor;
+  }
+  .ui-dropDown {
+    position: relative;
+    padding-right: 16px;
+    ul {
+      display: none;
+      position: absolute;
+      top: 1.5em;
+      right: 0;
+      padding: 2px;
+      z-index: 10;
+      li {
+        padding: 2px;
+        display: block;
+      }
+    }
+    &:hover {
+      ul {
+        display: block;
+      }
+    }
+  }
+}

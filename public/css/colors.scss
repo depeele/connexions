@@ -1,0 +1,55 @@
+$pageColorBackground: white;
+
+$linkColor: #0066cc;
+$linkColorVisited: #005a9c;
+$controlColor: #999999;
+$borderColor: #cccccc;
+
+// From css/themes/base/jquery-ui.css : .ui-state-error
+$errorColor: #cd0a0a;
+$successColor: #667e32;
+
+$navColorBackground: #172322;
+$navColorWelcomeBackground: #142940;
+$navColorJoinBackground: #9fc54e;
+$navColor: white;
+$navColorHover: #b0d730;
+$navColorSelected: #b0d730;
+$navColorSub: #2786c2;
+$navColorSubHover: #7fcdfe;
+$navColorBorder: #666666;
+
+$groupHeaderColorBackground: #eeeeff;
+$groupHeaderColor: $controlColor;
+$groupHeaderYearColor: $groupHeaderColorBackground - #111100;
+$groupHeaderAlphaColor: $groupHeaderColorBackground - #333300;
+
+$privateColorBackground: #ffeeee;
+$privateColorBorder: #ff3333;
+
+$tagsHeaderColorBackground: $borderColor;
+$tagsHeaderActiveColorBackground: #7c7c7c;
+
+$tagColorBackground: #eeeeee;
+$tagColor: $navColorBackground;
+
+$highlightTopColorBackground: #f3f3ff;
+$highlightTopHeaderColor: $navColorBackground;
+$highlightTopTagColor: $navColorSub;
+$highlightTopTagCountColor: $controlColor;
+
+$validationInputColor: #aaaaaa;
+$validationFocusColor: black;
+$validationFocusBorderColor: $validationInputColor;
+$validationValidColor: $successColor;
+
+//!fieldInfoColor             = !validationInputColor
+$fieldInfoColor: #666666;
+$formBackgroundColor: #86c9ef;
+
+$columnHeaderBorderColor: #eeeeee;
+
+$contextColorBackground: #3d7cc2;
+
+$li_oddColor: $highlightTopColorBackground;
+$li_evenColor: none;

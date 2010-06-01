@@ -36,6 +36,7 @@ $links->prependStylesheet($baseUrl .'css/themes/default/jquery-ui.css');
 
 $jQuery->addJavascriptFile($this->baseurl('js/connexions.js'));
 $jQuery->addJavascriptFile($this->baseurl('js/jquery.pngFix.js'));
+$jQuery->addJavascriptFile($this->baseurl('js/ui.notify.min.js'));
 $jQuery->addJavascriptFile($this->baseurl('js/ui.input.min.js'));
 
 /*
@@ -120,6 +121,11 @@ function doc_pngFix()
  */
 function body_initHandlers()
 {
+    // Create a ui.notify widget
+    $.notify = function(vars, opts, template) {
+        $('#notifications').notify('create', template, vars, opts);
+    };
+    $('#notifications').notify();
 
     if (true)
     {

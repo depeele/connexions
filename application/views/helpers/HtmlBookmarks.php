@@ -181,7 +181,10 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
                    ->addJavascriptFile($view->baseUrl('js/ui.button.min.js'))
                    ->addJavascriptFile($view->baseUrl('js/ui.input.min.js'))
                    ->addJavascriptFile($view->baseUrl('js/ui.bookmark.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.bookmarkList.js'));
+                   ->addJavascriptFile($view->baseUrl('js/ui.bookmarkList.js'))
+                   ->addJavascriptFile($view->baseUrl('js/ui.pane.js'))
+                   ->addJavascriptFile($view->baseUrl('js/ui.paginator.js'))
+                   ->addJavascriptFile($view->baseUrl('js/ui.bookmarksPane.js'));
 
             self::$_initialized['__global__'] = true;
         }
@@ -209,8 +212,10 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 
             // Include required jQuery
             //$view->jQuery()->addOnLoad("init_Bookmarks('{$namespace}');");
-            $call   = "$('#{$namespace}List').bookmarkList("
-                    .           "{namespace: '{$namespace}'});";
+            //$call   = "$('#{$namespace}List').bookmarkList("
+            //        .           "{namespace: '{$namespace}'});";
+            $call   = "$('#{$namespace}List').bookmarksPane("
+                    .           "{namespace: '{$namespace}',partial:'main'});";
             $view->jQuery()->addOnLoad($call);
         }
 
@@ -327,8 +332,8 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         $uiPagination->setNamespace($this->namespace)
                      ->setPerPageChoices(self::$perPageChoices);
 
-        $html .= "<div id='{$this->namespace}List'>"   // List {
-              .   $uiPagination->render($paginator, 'pagination-top', true)
+        $html .= "<div id='{$this->namespace}List' class='pane'>"   // List {
+              .   $uiPagination->render($paginator, 'paginator-top', true)
               .   $this->_renderDisplayOptions($paginator);
 
         $nPages = count($paginator);
@@ -340,7 +345,8 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
                             $paginator->getCurrentPageNumber());
             // */
 
-            $html .= "<ul class='{$this->namespace}'>";
+            //$html .= "<ul class='{$this->namespace}'>";
+            $html .= "<ul class='bookmarks'>";
 
             /* Group by the field identified in $this->sortBy
              *
