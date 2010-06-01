@@ -420,80 +420,16 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         $view   = $this->view;
         $jQuery = $view->jQuery();
 
-        if (! @isset(self::$_initialized['__global__']))
-        {
-            Connexions::log("View_Helper_HtmlItemCloud::setNamespace( %s ): "
-                            .   "include init_CloudOptions()",
-                            $namespace);
-
-            $jQuery->javascriptCaptureStart();
-                // {
-            ?>
-
-/************************************************
- * Initialize cloud display options
- *
- */
-function init_CloudOptions(namespace)
-{
-    var $cloudOptions = $('.'+ namespace +'-displayOptions');
-    if ( $cloudOptions.length > 0 )
-    {
-        /* On Display Style change, toggle the state of 'highlightCount'
-         *
-         * Note: The ui.optionsGroup widget is established, and attached to the
-         *       ui-optionsGroup DOM element,  by ui.dropdownForm when it is
-         *       initialized.  When the options change, ui.optionsGroup will
-         *       trigger the 'change' event on the displayOptions form with
-         *       information about the selected display group.
-         */
-        var form    = $cloudOptions.find('form');
-
-        form.bind('change.optionGroup',
-                  function(e, info) {
-                    var $field  = $(this).find('.field.highlightCount');
-
-                    /*
-                    $.log("change.optionGroup: group[ "+ info.group +" ], "
-                          + $field.length +' fields');
-                    // */
-
-                    if (info.group === 'cloud')
-                    {
-                        // enable the 'highlightCount'
-                        $field.removeClass('ui-state-disabled');
-                        $field.find('select').removeAttr('disabled');
-                    }
-                    else
-                    {
-                        // disable the 'highlightCount'
-                        $field.addClass('ui-state-disabled');
-                        $field.find('select').attr('disabled', true);
-                    }
-
-                  });
-    }
-
-    return;
-}
-
-            <?php
-                // }
-            $jQuery->javascriptCaptureEnd();
-
-            self::$_initialized['__global__'] = true;
-        }
-
         if (! @isset(self::$_initialized[$namespace]))
         {
             // Set / Update our displayOptions namespace.
+            $dsConfig = array(
+                            'namespace' => $namespace,
+                            'groups'    => self::$styleGroups,
+                        );
+
             if ($this->_displayOptions === null)
             {
-                $dsConfig = array(
-                                'namespace' => $namespace,
-                                'groups'    => self::$styleGroups,
-                            );
-
                 $this->_displayOptions = $view->htmlDisplayOptions($dsConfig);
             }
             else
@@ -501,7 +437,15 @@ function init_CloudOptions(namespace)
                 $this->_displayOptions->setNamespace($namespace);
             }
 
-            $jQuery->addOnLoad("init_CloudOptions('{$namespace}');");
+            $config = array('namespace'         => $namespace,
+                            //'partial'           => 'main',
+                            'displayOptions'    => $dsConfig,
+                      );
+            $call   = "$('#{$namespace}Cloud').cloudPane("
+                    .               Zend_Json::encode($config) .");";
+            $jQuery->addOnLoad($call);
+
+            //$jQuery->addOnLoad("init_CloudOptions('{$namespace}');");
 
             self::$_initialized[$namespace] = true;
         }

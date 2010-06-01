@@ -127,15 +127,19 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
             $jQuery = $view->jQuery();
 
             $baseUrl = $view->baseUrl('/');
-            if (empty($this->_autoCompleteUrl))
-                $jQuery->addJavascriptFile($baseUrl.'js/ui.input.min.js');
-            else
+            if (! empty($this->_autoCompleteUrl))
             {
+                /* Now done in application/layouts/header.phtml
                 $jQuery->addJavascriptFile($baseUrl.'js/jquery.autosuggest.js');
+                */
 
                 list($scopeCbUrl, $scopeCbParams)
                                 = explode('?', $this->_autoCompleteUrl);
             }
+            /* Now done in application/layouts/header.phtml
+            else
+                $jQuery->addJavascriptFile($baseUrl.'js/ui.input.min.js');
+             */
 
             $jQuery->addOnLoad("init_{$namespace}ItemScope();")
                    ->javascriptCaptureStart();  // jQuery {

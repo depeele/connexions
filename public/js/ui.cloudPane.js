@@ -30,7 +30,7 @@ $.widget("ui.cloudPane", $.ui.pane, {
         var self        = this;
         var opts        = self.options;
 
-        self._init_cloud();
+        //self._init_cloud();
         self._paneInit();
 
         self.$optionsForm = self.element.find('.displayOptions form');

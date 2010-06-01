@@ -176,7 +176,9 @@ class View_Helper_HtmlSidebar extends Zend_View_Helper_Abstract
 
         // For async loading
         if ($this->_params['async'] === true)
+        {
             $paneUrl = $this->view->url . '?format=partial&part=sidebar-';
+        }
         else
             $paneUrl = '#sidebar-';
 

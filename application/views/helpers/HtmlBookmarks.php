@@ -170,39 +170,19 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         if ($this->includeScript !== true)
             return $this;
 
-        if (! @isset(self::$_initialized['__global__']))
-        {
-            // Include required jQuery
-            $view   = $this->view;
-            $jQuery =  $view->jQuery();
-
-            $jQuery->addJavascriptFile($view->baseUrl('js/ui.stars.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.checkbox.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.button.min.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.input.min.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.bookmark.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.bookmarkList.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.pane.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.paginator.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.bookmarksPane.js'));
-
-            self::$_initialized['__global__'] = true;
-        }
-
-
         if (! @isset(self::$_initialized[$namespace]))
         {
-            $view   = $this->view;
+            $view       = $this->view;
+            $dsConfig   = array(
+                                'namespace'     => $namespace,
+                                'definition'    => self::$displayStyles,
+                                'groups'        => self::$styleGroups
+                          );
+
 
             // Set / Update our displayOptions namespace.
             if ($this->_displayOptions === null)
             {
-                $dsConfig = array(
-                                'namespace'     => $namespace,
-                                'definition'    => self::$displayStyles,
-                                'groups'        => self::$styleGroups
-                            );
-
                 $this->_displayOptions = $view->htmlDisplayOptions($dsConfig);
             }
             else
@@ -211,11 +191,13 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
             }
 
             // Include required jQuery
-            //$view->jQuery()->addOnLoad("init_Bookmarks('{$namespace}');");
-            //$call   = "$('#{$namespace}List').bookmarkList("
-            //        .           "{namespace: '{$namespace}'});";
+            $config = array('namespace'         => $namespace,
+                            'partial'           => 'main',
+                            'displayOptions'    => $dsConfig,
+                      );
+
             $call   = "$('#{$namespace}List').bookmarksPane("
-                    .           "{namespace: '{$namespace}',partial:'main'});";
+                    .               Zend_Json::encode($config) .");";
             $view->jQuery()->addOnLoad($call);
         }
 

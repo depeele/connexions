@@ -173,85 +173,6 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
         return $this;
     }
 
-    /** @brief  Set the View object
-     *  @param  view    The view object
-     *
-     *  @return $this
-     */
-    public function setView(Zend_View_Interface $view)
-    {
-        /*
-        Connexions::log(
-                "View_Helper_HtmlDisplayOptions::"
-                . "setView()");
-        // */
-
-        parent::setView($view);
-
-        if ($view->isPartial === true)
-        {
-            /* For a partial (asynchronously loaded portion of a full page),
-             * ASSUME that this view helper was invoked for the main view
-             * and has already inserted the init_DisplayOptions() script.
-             */
-            self::$_initialized['__global__'] = true;
-        }
-
-        if (@isset(self::$_initialized['__global__']))
-            return $this;
-
-        // Include general, required view information
-        $view   = $this->view;
-        $jQuery = $view->jQuery();
-
-        $jQuery->addJavascriptFile($view->baseUrl('js/jquery.cookie.js'))
-               ->addJavascriptFile($view->baseUrl('js/ui.optionGroups.js'))
-               ->addJavascriptFile($view->baseUrl('js/ui.dropdownForm.js'))
-               ->javascriptCaptureStart();
-                // {
-        ?>
-
-/************************************************
- * Initialize display options.
- *
- */
-function init_DisplayOptions(opts)
-{
-    var $displayOptions = $('.'+ opts.namespace +'-displayOptions');
-    if ( $displayOptions.length > 0 )
-    {
-        // Initialize the display options control
-        //opts.form = $form;
-        opts.apply = function(e) {
-            e.stopImmediatePropagation();
-            e.preventDefault();
-            e.stopPropagation();
-
-            // Re-load the window to apply cookie values
-            window.location.reload();
-        };
-
-        $displayOptions.dropdownForm( opts );
-    }
-
-    return;
-}
-
-        <?php
-                // }
-        $jQuery->javascriptCaptureEnd();
-
-        self::$_initialized['__global__'] = true;
-
-        /*
-        Connexions::log(
-                "View_Helper_HtmlDisplayOptions::"
-                . "setView(): COMPLETE");
-        // */
-
-        return $this;
-    }
-
     /**************************************************************************
      * Primary use methods
      *
@@ -777,25 +698,6 @@ function init_DisplayOptions(opts)
         // */
 
         $this->_namespace = $namespace;
-
-        if (! @isset(self::$_initialized[$namespace]))
-        {
-            // Include namespace-specific view information
-            $view   = $this->view;
-            $jQuery = $view->jQuery();
-
-            $opts = array('namespace' => $namespace,
-                          'groups'    => $this->getGroupsMap());
-
-            /*
-            Connexions::log("View_Helper_HtmlDisplayOptions::"
-                                .   "opts[ ". print_r($opts, true) ." ]");
-            // */
-
-            $jQuery->addOnLoad("init_DisplayOptions(".json_encode($opts).");");
-
-            self::$_initialized[$namespace] = $this;
-        }
 
         return $this;
     }

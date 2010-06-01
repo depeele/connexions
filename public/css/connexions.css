@@ -397,7 +397,7 @@ cite { display: block; text-align: right; padding-top: 10px; }
 #search .searchInput input { border: none; height: 1.5em; margin: 0; padding: 0 23px 0 2px; width: 145px; font-weight: normal; }
 #search .focus { color: black; }
 #search .submit { display: block; position: absolute; top: 0.25em; left: 150px; width: 23px; padding: 0; border: 0; border-left: 1px dotted #999999; background-color: transparent; cursor: pointer; z-index: 101; *background-color: white; }
-#search .choices .list { top: 1.9em; left: -30px; *top: 2em; }
+#search .choices .list { top: 1.95em; left: -30px; *top: 2em; }
 #search .choices .list li { width: 180px; /* IE Fix */ *width: 145px; }
 #search:hover .list { display: block; }
 
