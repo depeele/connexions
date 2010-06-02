@@ -20,7 +20,8 @@
  *  </div>
  *
  * Depends:
- *  ui.core.js
+ *      ui.core.js
+ *      ui.widget.js
  *
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
