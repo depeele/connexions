@@ -11,7 +11,8 @@
  * $Build: 32 (2009-06-12)
  *
  * Depends:
- *  ui.core.js
+ *      ui.core.js
+ *      ui.widget.js
  *
  */
 /*jslint nomen: false, laxbreak: true */

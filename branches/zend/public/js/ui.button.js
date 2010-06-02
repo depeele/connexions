@@ -4,6 +4,7 @@
  *
  *  Requires:
  *      ui.core.js
+ *      ui.widget.js
  */
 /*jslint nomen: false, laxbreak: true, white: false, onevar: false */
 /*global jQuery:false */

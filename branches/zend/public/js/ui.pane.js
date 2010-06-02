@@ -23,6 +23,7 @@
  *
  *  Requires:
  *      ui.core.js
+ *      ui.widget.js
  *      ui.dropdownForm.js
  *      ui.paginator.js
  */

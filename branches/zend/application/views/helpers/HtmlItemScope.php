@@ -121,11 +121,23 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
 
             $view   =& $this->view;
 
+            /*
             $view->headLink()
                     ->appendStylesheet($view->baseUrl('css/autoSuggest.css'));
+             */
 
             $jQuery = $view->jQuery();
 
+            /* Now done in application/layouts/header.phtml
+            else
+                $jQuery->addJavascriptFile($baseUrl.'js/ui.input.min.js');
+             */
+            $jQuery->addOnLoad("$('.{$namespace}ItemScope').itemScope({"
+                                .    "autocompleteSrc:"
+                                .       "'{$this->_autoCompleteUrl}'});");
+
+            if (false)
+            {
             $baseUrl = $view->baseUrl('/');
             if (! empty($this->_autoCompleteUrl))
             {
@@ -136,11 +148,6 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
                 list($scopeCbUrl, $scopeCbParams)
                                 = explode('?', $this->_autoCompleteUrl);
             }
-            /* Now done in application/layouts/header.phtml
-            else
-                $jQuery->addJavascriptFile($baseUrl.'js/ui.input.min.js');
-             */
-
             $jQuery->addOnLoad("init_{$namespace}ItemScope();")
                    ->javascriptCaptureStart();  // jQuery {
             ?>
@@ -227,6 +234,7 @@ function init_<?= $namespace ?>ItemScope()
 }
             <?php
             $jQuery->javascriptCaptureEnd();    // jQuery }
+            }
 
             self::$_initialized[$namespace] = true;
         }
@@ -413,6 +421,7 @@ function init_<?= $namespace ?>ItemScope()
               .          "emptyText='{$this->inputLabel}' "
               .              "class='ui-input ui-corner-all "
               .                     "ui-state-default ui-state-empty' />"
+              .    "<button type='submit'>&gt;</button>"
               .   "</li>"
               .   "<li class='itemCount ui-corner-tr'>"
               .    number_format($this->items->getTotalItemCount())

@@ -21,6 +21,7 @@
  *
  *  Requires:
  *      ui.core.js
+ *      ui.widget.js
  *      ui.bookmark.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */

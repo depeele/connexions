@@ -180,6 +180,10 @@ function body_initHandlers()
  */
 function search_initHandlers()
 {
+    $('#search').search();
+
+    return;
+
     var $form           = $('#search');
     var $input          = $form.find('input[name=q]');
     var $submit         = $form.find('button:first');

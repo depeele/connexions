@@ -4,6 +4,7 @@
  *
  *  Requires:
  *      ui.core.js
+ *      ui.widget.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false, window:false, clearTimeout:false, setTimeout:false */
@@ -395,6 +396,7 @@ $.widget("ui.input", {
                 }
             }
 
+            // :XXX: Error with ':focus' :XXX:
             //if ( (force === true) || (this.val().length < 1) )
             if ( ((force === true) || (! this.element.is(':focus')) ) &&
                 (this.val().length < 1) )

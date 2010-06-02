@@ -8,6 +8,8 @@
  *  View_Helper_Html_HtmlItemCloud.
  *
  *  Requires:
+ *      ui.core.js
+ *      ui.widget.js
  *      ui.pane.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
