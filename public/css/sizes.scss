@@ -9,3 +9,45 @@ $controlBoxWidth: 20px;
 //  we include '!baseFontSize * 1' to account for the 1em of left-padding on
 //  the url-box (bookmarks.sass: .items .item .data .url).
 $urlBoxWidth: $minPageWidth - $rightColumnWidth + $countBoxWidth + $controlBoxWidth + $baseFontSize * 1;
+
+// Navigation tabs
+$tabWidth: 750px;
+$tabHeight: 2em;
+
+$navWidth: 560px;
+
+// Sign-Out, Bookmarks, People, Tags, Help
+$navNumItems: 5;
+
+$navWidthFirst: 110px;
+
+//  90px                = (560px     - 110px         ) / 5
+$navWidthItem: ($navWidth - $navWidthFirst) / $navNumItems;
+
+// 190px                = 750px     - 560px
+$navWidthSearch: $tabWidth - $navWidth;
+
+$navPadItem: 0.1em;
+$navPadSubItem_tb: 0.25em;
+$navPadSubItem_lr: 1em;
+
+//  48px                = 64px       - (8px         * 2)    *2 for top and bottom
+$navTopSub: $tabHeight;
+
+$searchPad_r: 0.5em;
+
+$searchBgWidth: 173px;
+$searchMagWidth: 23px;
+$searchInputPad: 2px;
+
+$searchInputInputPadLeft: 2px;
+$searchInputInputPadRght: $searchMagWidth;
+$searchInputInputWidth: 145px;
+
+// 174px                = 145px                  + 2px                      + 23px                     + (2               *2)
+$searchInputWidth: $searchInputInputWidth + $searchInputInputPadLeft + $searchInputInputPadRght + $searchInputPad * 2;
+
+// 150px                = 174px             - 23px            - 1
+$searchMagLeft: $searchInputWidth - $searchMagWidth - 1;
+
+$navWidthSub: 120px;

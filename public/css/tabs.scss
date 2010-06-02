@@ -1,4 +1,4 @@
-/****** tabs.sass ****** */
+/****** tabs.scss ****** */
 /* Alternative Tab styling using no background image but rather border-radius.
  * Requires a change to application/configs/navigation.xml
  * to remove 'connexions_sprites welcome_bg' from the 'class' of <userInfo>
@@ -7,46 +7,8 @@
  * This will show square tabs in browsers that don't support border-radius
  * and likely won't work at all in IE6. */
 
-$tabWidth: 750px;
-$tabHeight: 2em;
-
-$navWidth: 560px;
-
-// Sign-Out, Bookmarks, People, Tags, Help
-$navNumItems: 5;
-
-$navWidthFirst: 110px;
-
-//  90px                = (560px     - 110px         ) / 5
-$navWidthItem: ($navWidth - $navWidthFirst) / $navNumItems;
-
-// 190px                = 750px     - 560px
-$navWidthSearch: $tabWidth - $navWidth;
-
-$navPadItem: 0.1em;
-$navPadSubItem_tb: 0.25em;
-$navPadSubItem_lr: 1em;
-
-//  48px                = 64px       - (8px         * 2)    *2 for top and bottom
-$navTopSub: $tabHeight;
-
-$searchPad_r: 0.5em;
-
-$searchBgWidth: 173px;
-$searchMagWidth: 23px;
-$searchInputPad: 2px;
-
-$searchInputInputPadLeft: 2px;
-$searchInputInputPadRght: $searchMagWidth;
-$searchInputInputWidth: 145px;
-
-// 174px                = 145px                  + 2px                      + 23px                     + (2               *2)
-$searchInputWidth: $searchInputInputWidth + $searchInputInputPadLeft + $searchInputInputPadRght + $searchInputPad * 2;
-
-// 150px                = 174px             - 23px            - 1
-$searchMagLeft: $searchInputWidth - $searchMagWidth - 1;
-
-$navWidthSub: 120px;
+@import "colors";
+@import "sizes";
 
 $navBorder: unquote("1px dotted") $navColorBorder;
 
@@ -92,8 +54,6 @@ $navBorder: unquote("1px dotted") $navColorBorder;
       padding: $navPadSubItem_tb unquote("0");
       background-color: $navColorBackground;
       height: $tabHeight;
-      // IE7 fix
-      *height: $tabHeight - 0.4em;
     }
   }
   /* Sub-menu */
@@ -121,8 +81,6 @@ $navBorder: unquote("1px dotted") $navColorBorder;
   margin: 0;
   cursor: pointer;
   text-align: left;
-  /* IE Fix */
-  *width: $navWidthItem;
 }
 
 #pageHeader ul.sub li.last a,
@@ -298,19 +256,14 @@ $navBorder: unquote("1px dotted") $navColorBorder;
     background-color: transparent;
     cursor: pointer;
     z-index: 101;
-    *background-color: white;
   }
   /* Search Context choices */
   .choices {
     .list {
       top: $tabHeight - ($navPadItem / 2);
       left: -30px;
-      // IE fix
-      *top: $tabHeight;
       li {
         width: 180px;
-        /* IE Fix */
-        *width: $searchInputInputWidth;
       }
     }
   }

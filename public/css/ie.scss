@@ -1,0 +1,92 @@
+@import "sizes";
+@import "colors";
+
+// For libraries.scss
+.clearfix {
+  display:  inline-block;
+  zoom:     1;
+  display:  block;
+}
+
+// For main.scss
+.pane {
+  zoom:   1;
+}
+
+// For tabs.scss
+#pageHeader {
+  .nav {
+    li {
+      height: $tabHeight - 0.35em;
+    }
+  }
+  ul.sub {
+    top:  $navTopSub + 0.1em;
+  }
+  .tabs {
+    li.welcome {
+      background-image: none;
+      background-color: $contextColorBackground;
+    }
+  }
+}
+
+#pageHeader ul.sub li,
+#search ul.sub li {
+  width:  $navWidthItem;
+}
+
+#search {
+  .submit {
+    left: $searchMagLeft - 2px;
+  }
+  .choices {
+    .list {
+      top:  $tabHeight - $navPadItem;
+      li {
+        width:  $searchInputInputWidth;
+      }
+    }
+  }
+}
+
+// <= IE7 fixes
+*:first-child+html, * html {
+  #search .choices .list {
+      top:  $navTopSub;
+  }
+}
+
+// For itemScope.scss
+.itemScope {
+  zoom:   1;
+}
+
+// For bookmarks.scss
+.bookmarks, .pane .displayStyle fieldset.options {
+  .item {
+    .data {
+      .url {
+        width:  $urlBoxWidth;
+      }
+    }
+  }
+}
+
+// For users.scss
+#usersList {
+  .users {
+    .user {
+      .data {
+        .email {
+          width:  $urlBoxWidth;
+        }
+      }
+    }
+  }
+}
+
+// For displayOptions.scss
+.displayOptions {
+  width:  9em;
+}

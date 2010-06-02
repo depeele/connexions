@@ -412,7 +412,7 @@ $.widget("ui.input", {
         if (newVal === undefined)
         {
             // Value retrieval
-            ret = self.element.val().trim();
+            ret = $.trim(self.element.val());
 
             if ((self.options.emptyText !== null) &&
                 (ret === self.options.emptyText))

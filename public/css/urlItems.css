@@ -22,9 +22,9 @@
 
 #urlChooser { background-color: #0066cc; color: white; padding: 0; }
 #urlChooser label, #urlChooser input, #urlChooser button { background-color: transparent; display: block; float: left; padding: 0.1em; }
-#urlChooser label { padding: 0 2em 0 1em; background: url('sprites/connexions.gif') no-repeat scroll right -210px transparent; height: 24px; line-height: 24px; overflow: hidden; }
+#urlChooser label { padding: 0 2em 0 1em; background: url("sprites/connexions.gif") no-repeat scroll right -210px transparent; height: 24px; line-height: 24px; overflow: hidden; }
 #urlChooser input { margin: 0.1em 0.5em; padding: 0.1em 0.1em 0.1em 0.25em; height: 1.2em; width: 40em; }
-#urlChooser button { border: none; background: url('sprites/connexions.gif') no-repeat scroll right -236px transparent; height: 24px; line-height: 24px; width: 16px; cursor: pointer; }
+#urlChooser button { border: none; background: url("sprites/connexions.gif") no-repeat scroll right -236px transparent; height: 24px; line-height: 24px; width: 16px; cursor: pointer; }
 #urlChooser button span { display: none; }
 
 #urlItemsList .displayOptions form { width: 22em; }
@@ -64,7 +64,7 @@
 .ui-stars-wrapper .ui-stars-cancel-disabled a { background-image: none; }
 .ui-stars-wrapper .ui-stars-star-disabled, .ui-stars-wrapper .ui-stars-cancel-disabled { cursor: default; }
 
-/****** bookmark.sass ****** */
+/****** bookmark.scss ****** */
 .bookmarks { clear: both; padding-top: 2em; border-bottom: 1px solid #cccccc; }
 
 .bookmarks .item { position: relative; z-index: 1; margin-bottom: 1em; border-top: 1px solid #cccccc; }
@@ -92,7 +92,7 @@
 .bookmarks .item .data, .pane .displayStyle fieldset.options .item .data { position: relative; padding: 0.25em 0 0 32px; z-index: 1; }
 .bookmarks .item .data .itemName, .pane .displayStyle fieldset.options .item .data .itemName { padding: 0; }
 .bookmarks .item .data .itemName a, .pane .displayStyle fieldset.options .item .data .itemName a { display: inline; font-weight: bold; }
-.bookmarks .item .data .url, .pane .displayStyle fieldset.options .item .data .url { padding: 0 0 0 1em; max-width: 526px; *width: 526px; }
+.bookmarks .item .data .url, .pane .displayStyle fieldset.options .item .data .url { padding: 0 0 0 1em; max-width: 794px; }
 .bookmarks .item .data .url a, .pane .displayStyle fieldset.options .item .data .url a { display: inline; font-weight: normal; }
 .bookmarks .item .data .description, .pane .displayStyle fieldset.options .item .data .description { display: block; padding: 0 0 0 1em; margin: 0 175px 0 0; color: #999999; }
 .bookmarks .item .data .description .full, .bookmarks .item .data .description .summary, .pane .displayStyle fieldset.options .item .data .description .full, .pane .displayStyle fieldset.options .item .data .description .summary { display: block; }

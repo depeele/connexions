@@ -5,7 +5,7 @@
 
 $displaySortOffset: 5px;
 
-/****** bookmark.sass ****** */
+/****** bookmark.scss ****** */
 // Styling for a single Bookmark
 // Used by bookmarks.sass as well as urlItems.sass
 
@@ -137,8 +137,6 @@ $displaySortOffset: 5px;
       .url {
         padding: 0 0 0 1em;
         max-width: $urlBoxWidth;
-        // IE6 fix
-        *width: $urlBoxWidth;
         a {
           display: inline;
           font-weight: normal;

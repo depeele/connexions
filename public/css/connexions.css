@@ -1,4 +1,4 @@
-/****** libraries.sass ****** */
+/****** libraries.scss ****** */
 /* Copyright (c) 2008, Yahoo! Inc. All rights reserved. Code licensed under the BSD License: http://developer.yahoo.net/yui/license.txt version: 3.0.0pr2 */
 /* reset */
 html { color: black; background: white; }
@@ -48,9 +48,6 @@ html, body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form
 
 /* float clearfix */
 .clearfix:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
-
-/* IE fixes */
-.clearfix { display: inline-block; _zoom: 1; _display: block; }
 
 /****** template.sass ****** */
 /* ====== Page Head, Body, and Foot ====== */
@@ -335,7 +332,7 @@ cite { display: block; text-align: right; padding-top: 10px; }
 
 .arrow_down8 { background: url("sprites/arrows.gif") no-repeat scroll 15px -514px transparent; }
 
-/****** tabs.sass ****** */
+/****** tabs.scss ****** */
 /* Alternative Tab styling using no background image but rather border-radius. Requires a change to application/configs/navigation.xml to remove 'connexions_sprites welcome_bg' from the 'class' of <userInfo> and 'connexions_sprites join_bg'    from the 'class' of <register>  This will show square tabs in browsers that don't support border-radius and likely won't work at all in IE6. */
 /* Tabs / Navigation */
 #pageHeader { border-top: 0.25em solid #172322; /* Sub-menu */ }
@@ -344,11 +341,11 @@ cite { display: block; text-align: right; padding-top: 10px; }
 #pageHeader .tabs a { padding: 2px; color: white; font-weight: normal; text-decoration: none; }
 #pageHeader .tabs li.active a, #pageHeader .tabs a:hover { color: #b0d730; }
 #pageHeader .nav { position: absolute; top: 0; left: 0; padding: 0; width: 560px; *width: 561px; }
-#pageHeader .nav li { float: left; width: 90px; text-align: center; padding: 0.25em 0; background-color: #172322; height: 2em; *height: 1.6em; }
+#pageHeader .nav li { float: left; width: 90px; text-align: center; padding: 0.25em 0; background-color: #172322; height: 2em; }
 #pageHeader ul.sub { display: none; position: absolute; top: 2em; left: 2px; color: white; padding: 0; margin: 0; }
 #pageHeader li:hover ul.sub { display: block; }
 
-#pageHeader ul.sub li, #search ul.sub li { background-color: #172322; width: 120px; height: auto; padding: 0 1em; float: left; margin: 0; cursor: pointer; text-align: left; /* IE Fix */ *width: 90px; }
+#pageHeader ul.sub li, #search ul.sub li { background-color: #172322; width: 120px; height: auto; padding: 0 1em; float: left; margin: 0; cursor: pointer; text-align: left; }
 
 #pageHeader ul.sub li.last a, #search ul.sub li.last a, #search ul.sub li.last span { padding-bottom: 0; }
 
@@ -379,13 +376,13 @@ cite { display: block; text-align: right; padding-top: 10px; }
 #pageHeader ul.sub li.last a, #search ul.sub li.last a, #search ul.sub li.last span { padding-bottom: 0; }
 
 /* Welcome / Join -- first tab item */
-#pageHeader .tabs li.welcome, #pageHeader .tabs li.join { width: 110px; border-right: 1px dotted #666666; -moz-border-radius: 0 0 0 20px; -webkit-border-radius: 0 0 0 20px; border-radius: 0 0 0 20px; }
+#pageHeader .tabs li.welcome, #pageHeader .tabs li.join { width: 110px; border-right: 1px dotted #666666; -moz-border-radius: 0 0 0 20px; -webkit-border-radius: 0 0 0 20px; -ms-border-radius: 0 0 0 20px; border-radius: 0 0 0 20px; }
 
 #pageHeader .tabs li.welcome { background: url("sprites/welcome_bg_gradient.gif") repeat-x scroll 0 0 transparent; }
 #pageHeader .tabs li.welcome ul.sub { left: 0; }
 #pageHeader .tabs li.welcome ul.sub li { width: 100px; }
 #pageHeader .tabs li.welcome ul.sub .corner_inner_left { display: none; }
-#pageHeader .tabs li.welcome:hover { -moz-border-radius: 0 0 0 0; -webkit-border-radius: 0 0 0 0; border-radius: 0 0 0 0; }
+#pageHeader .tabs li.welcome:hover { -moz-border-radius: 0 0 0 0; -webkit-border-radius: 0 0 0 0; -ms-border-radius: 0 0 0 0; border-radius: 0 0 0 0; }
 #pageHeader .tabs li.join { background-color: #9fc54e; }
 #pageHeader .tabs li.join a { color: white; }
 #pageHeader .tabs li.join a:hover { color: #2786c2; }
@@ -396,9 +393,9 @@ cite { display: block; text-align: right; padding-top: 10px; }
 #search .searchInput { border: 0; color: #999999; }
 #search .searchInput input { border: none; height: 1.5em; margin: 0; padding: 0 23px 0 2px; width: 145px; font-weight: normal; }
 #search .focus { color: black; }
-#search .submit { display: block; position: absolute; top: 0.25em; left: 150px; width: 23px; padding: 0; border: 0; border-left: 1px dotted #999999; background-color: transparent; cursor: pointer; z-index: 101; *background-color: white; }
-#search .choices .list { top: 1.95em; left: -30px; *top: 2em; }
-#search .choices .list li { width: 180px; /* IE Fix */ *width: 145px; }
+#search .submit { display: block; position: absolute; top: 0.25em; left: 150px; width: 23px; padding: 0; border: 0; border-left: 1px dotted #999999; background-color: transparent; cursor: pointer; z-index: 101; }
+#search .choices .list { top: 1.95em; left: -30px; }
+#search .choices .list li { width: 180px; }
 #search:hover .list { display: block; }
 
 /****** ui-form.sass ****** */
@@ -464,7 +461,7 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .Item_Cloud .cloudItem a.selected { background-image: none; background-color: #0066cc; color: white; }
 .Item_Cloud .cloudItem a.selected:hover { color: #0066cc; background-color: white; }
 
-/* ****** itemScope.sass ****** */
+/* ****** itemScope.scss ****** */
 .itemScope a { color: white; }
 .itemScope ul { background-color: #cccccc; padding: 0.1em; padding-right: 112px; }
 .itemScope ul li { background-color: transparent; float: left; border-right: 1px dotted #cccccc; }
@@ -477,7 +474,7 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .itemScope .scopeEntry ul.as-selections li.as-original { margin: 0; }
 .itemScope .scopeEntry ul.as-selections li.as-original input.as-input { font-size: 1em; height: 1.25em; margin: 0; padding: 0; width: 9em; }
 .itemScope .scopeEntry ul.as-selections li.as-original input.as-values { display: none; }
-.itemScope .scopeEntry ul.as-selections li.as-selection-item { font-size: 0.9; font-family: inherit; padding: 0 0.25em 0.1em 0.5em; background-color: #eeeeee; color: #172322; box-shadow: none; -webkit-box-shadow: none; -moz-box-shadow: none; text-shadow: none; margin-right: 0.1em; -moz-border-radius: 0.5em 0.5em 0.5em 0.5em; -webkit-border-radius: 0.5em 0.5em 0.5em 0.5em; border-radius: 0.5em 0.5em 0.5em 0.5em; }
+.itemScope .scopeEntry ul.as-selections li.as-selection-item { font-size: 0.9; font-family: inherit; padding: 0 0.25em 0.1em 0.5em; background-color: #eeeeee; color: #172322; box-shadow: none; -webkit-box-shadow: none; -moz-box-shadow: none; text-shadow: none; margin-right: 0.1em; -moz-border-radius: 0.5em 0.5em 0.5em 0.5em; -webkit-border-radius: 0.5em 0.5em 0.5em 0.5em; -ms-border-radius: 0.5em 0.5em 0.5em 0.5em; border-radius: 0.5em 0.5em 0.5em 0.5em; }
 .itemScope .scopeEntry ul.as-selections li.as-selection-item a.as-close { font-family: inherit; font-size: 1em; text-shadow: none; }
 .itemScope .scopeEntry ul.as-selections li.selected { color: #eeeeee; background-color: #172322; }
 .itemScope .scopeEntry .as-results { display: block; }
@@ -519,7 +516,7 @@ cite { display: block; text-align: right; padding-top: 10px; }
 
 .ui-notify { width: 350px; position: absolute; top: 10px; right: 10px; }
 
-.ui-notify-message { padding: 10px; margin-bottom: 15px; background: #000; background: rgba(0, 0, 0, 0.8); -moz-border-radius: 8px 8px 8px 8px; -webkit-border-radius: 8px 8px 8px 8px; border-radius: 8px 8px 8px 8px; -moz-box-shadow: 0 0 6px #000; -webkit-box-shadow: 0 0 6px #000; box-shadow: 0 0 6px #000; }
+.ui-notify-message { padding: 10px; margin-bottom: 15px; background: #000; background: rgba(0, 0, 0, 0.8); -moz-border-radius: 8px 8px 8px 8px; -webkit-border-radius: 8px 8px 8px 8px; -ms-border-radius: 8px 8px 8px 8px; border-radius: 8px 8px 8px 8px; -moz-box-shadow: 0 0 6px #000; -webkit-box-shadow: 0 0 6px #000; box-shadow: 0 0 6px #000; }
 .ui-notify-message:last-child { margin-bottom: 0; }
 .ui-notify-message h1 { color: #fff; font-size: 14px; font-weight: bold; margin: 0; padding: 0; }
 .ui-notify-message p { color: #fff; margin: 3px 0; padding: 0; line-height: 18px; }
@@ -532,7 +529,7 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .ui-notify-cross:hover { color: #ffffab; }
 .ui-notify-cross:active { position: relative; top: 1px; }
 
-/****** main.sass ****** */
+/****** main.scss ****** */
 /* Page Header */
 #pageHeader { height: 3.5em; z-index: 100; }
 #pageHeader h1#siteName { position: absolute; top: 0; left: 0; color: black; font-weight: bold; font-size: 26px; padding-top: 5px; height: 45px; width: 200px; }
@@ -606,5 +603,5 @@ cite { display: block; text-align: right; padding-top: 10px; }
 .ui-widget-content a { color: #0066cc; }
 .ui-widget-content a:visited { color: #005a9c; }
 
-.rightCol .ui-tabs { border-right: none; -moz-border-radius: 4px 0 0 4px; -webkit-border-radius: 4px 0 0 4px; border-radius: 4px 0 0 4px; }
+.rightCol .ui-tabs { border-right: none; -moz-border-radius: 4px 0 0 4px; -webkit-border-radius: 4px 0 0 4px; -ms-border-radius: 4px 0 0 4px; border-radius: 4px 0 0 4px; }
 .rightCol .ui-tabs .ui-tabs-panel { padding: 1em 0.25em 1em 0; }

@@ -1,6 +1,7 @@
 @mixin corners($tl, $tr: $tl, $br: $tr, $bl: $tl) {
   -moz-border-radius: $tl $tr $br $bl;
   -webkit-border-radius: $tl $tr $br $bl;
+  -ms-border-radius: $tl $tr $br $bl;
   border-radius: $tl $tr $br $bl;
 }
 
@@ -19,6 +20,7 @@ $ms_filter_base: unquote("progid:DXImageTransform.Microsoft.");
   display: block;
   -webkit-transform: unquote("rotate(") $deg unquote(")");
   -moz-transform: unquote("rotate(") $deg unquote(")");
+  -ms-transform: unquote("rotate(") $deg unquote(")");
   // 0=0deg, 1=90deg, 2=180deg, 3=270deg
   @if $deg == 0deg {
     filter: unquote("#{$ms_filter_base}BasicImage(rotation=0)");
