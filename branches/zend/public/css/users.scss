@@ -4,7 +4,7 @@
 
 $displaySortOffset: 5px;
 
-/****** users.sass ****** */
+/****** users.scss ****** */
 // Styling for users
 
 .rightCol {
@@ -270,8 +270,6 @@ $displaySortOffset: 5px;
           padding: 0.25em;
           border: none;
           max-width: $urlBoxWidth;
-          // IE6 fix
-          *width: $urlBoxWidth;
           a {
             display: inline;
             font-weight: normal;

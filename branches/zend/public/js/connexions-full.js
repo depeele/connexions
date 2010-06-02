@@ -1,0 +1,3971 @@
+/** @file
+ *
+ *  Provide global Javascript functionality for Connexions.
+ *
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false, document:false, setTimeout:false */
+(function($) {
+    function init_log()
+    {
+        $.log = function(fmt) {
+            if ((window.console !== undefined) &&
+                $.isFunction(window.console.log))
+            {
+                var msg = fmt;
+                for (var idex = 1; idex < arguments.length; idex++)
+                {
+                    msg = msg.replace(/%s/, arguments[idex]);
+                }
+                window.console.log(msg);
+            }
+        };
+
+        /*
+        $.log = ((window.console !== undefined) &&
+                 $.isFunction(window.console.log)
+                    ?  window.console.log
+                    : function() {});
+        */
+
+        $.log("Logging enabled");
+    }
+
+    if ( (window.console === undefined) || (! $.isFunction(window.console.log)))
+    {
+        $(document).ready(init_log);
+    }
+    else
+    {
+        init_log();
+    }
+
+    /* IE6 Background Image Fix
+     *  Thanks to http://www.visualjquery.com/rating/rating_redux.html
+     */
+    if ($.browser.msie)
+    {
+        try { document.execCommand("BackgroundImageCache", false, true); }
+        catch(e) { }
+    }
+
+    /*************************************************************************
+     * Dynamic script inclusion -- Based upon jquery-include.js
+     *
+     * Note: This modifies jQuery.ready to wait for any scripts that have been
+     *       queued for dynamic loading.
+     */
+
+    if (false) {
+    /* Overload jQuery's onDomReady
+     *
+     * Note: This MUST be BEFORE we redefine $.ready() so we can remove the
+     *       current jQuery.ready event listener.
+     */
+    if ($.browser.mozilla || $.browser.opera)
+    {
+        document.removeEventListener('DOMContentLoaded', $.ready, false);
+        document.addEventListener('DOMContentLoaded', function(){ $.ready(); },
+                                  false);
+    }
+    $.event.remove(window, 'load', $.ready);
+    $.event.add(window, 'load', function(){ $.ready(); });
+
+    function scriptLoaded(script, url)
+    {
+        $.includeScripts[url] = true;
+
+        // Invoke all callbacks that we have queued for this script
+        $.each($.includeCallbacks[url], function(idex, onload) {
+            onload.call(script);
+        });
+    }
+
+    $.extend({
+        includeScripts:     {}, // by url: false | $(script)
+        includeCallbacks:   {}, // by url: array( onload callbacks )
+        includeTimer:       null,
+        include: function(url, onload) {
+            if ($.includeScripts[url] !== undefined)
+            {
+                if (typeof onload === 'function')
+                {
+                    if ($.includeScripts[url] !== false)
+                    {
+                        // Already loaded, invoke the callback immediately
+                        onload($.includeScripts[url]);
+                    }
+                    else
+                    {
+                        // Not yet loaded, push the callback on our list
+                        $.includeCallbacks[url].push(onload);
+                    }
+                }
+                return;
+            }
+
+            var script                = document.createElement('script');
+            script.type               = 'text/javascript';
+            script.onload             = function() {
+                scriptLoaded(script, url);
+            };
+            script.onreadystatechange = function() {
+                if ( (script.readyState !== 'complete') &&
+                     (script.readyState !== 'loaded') )
+                {
+                    return;
+                }
+
+                scriptLoaded(script, url);
+            };
+            script.src                = url;
+
+            // Mark this script as not-yet-loaded
+            $.includeScripts[url]     = false;
+            $.includeCallbacks[url] = [];
+            if (typeof onload === 'function')
+            {
+                $.includeCallbacks[url].push(onload);
+            }
+
+            // Put the script into the DOM -- loading begins now
+            document.getElementsByTagName('head')[0].appendChild(script);
+        },
+
+        /* Replace jQuery.ready to wait for included scripts to be loaded */
+        _ready: $.ready,
+        ready: function() {
+            var isReady = true;
+
+            // See if all included scripts have loaded
+            $.each($.includeScripts, function(url, state) {
+                if (state === false)
+                {
+                    return (isReady = false); // Stop traversal
+                }
+            });
+
+            if (isReady)
+            {
+                /* All included scripts have loaded, invoke the original
+                 * jQuery.ready()
+                 */
+                $._ready.apply($, arguments);
+            }
+            else
+            {
+                // NOT all included script are loaded, wait a bit...
+                setTimeout($.ready, 10);
+            }
+        }
+    });
+
+    }
+    /*************************************************************************/
+
+    /*************************************************************************
+     * Overlay any element.
+     *
+     */
+    $.fn.mask = function() {
+        return this.each(function() {
+            var $spin       = $('#pageHeader h1 a img');
+            var $el         = $(this);
+            var zIndex      = $el.css('z-index');
+            if (zIndex === 'auto')
+            {
+                zIndex = 99999;
+            }
+            else
+            {
+                zIndex++;
+            }
+
+            var $overlay    = $('<div></div>')
+                                    .addClass('ui-widget-overlay')
+                                    .appendTo($el)
+                                    .css({width:    $el.width(),
+                                          height:   $el.height(),
+                                          'z-index':zIndex});
+
+            var url = $spin.attr('src');
+            $spin.attr('src', url.replace('.gif', '-spinner.gif') );
+
+            if ($.fn.bgiframe)
+            {
+                $overlay.bgiframe();
+            }
+        });
+    };
+
+    $.fn.unmask = function() {
+        return this.each(function() {
+            var $spin       = $('#pageHeader h1 a img');
+            var $el         = $(this);
+            var $overlay    = $el.find('ui-widget-overlay');
+
+            $overlay.remove();
+
+            var url = $spin.attr('src');
+            $spin.attr('src', url.replace('-spinner.gif', '.gif') );
+        });
+    };
+
+ }(jQuery));
+// Inspired by base2 and Prototype
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global xyz:false */
+(function(){
+  var initializing  = false,
+      fnTest        = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/;
+
+  // The base Class implementation (does nothing)
+  var Class = function(){};
+ 
+  // Create a new Class that inherits from this class
+  Class.extend = function(prop) {
+    var _super = this.prototype;
+   
+    // Instantiate a base class (but only create the instance,
+    // don't run the init constructor)
+    initializing = true;
+    var prototype = new this();
+    initializing = false;
+   
+    // Copy the properties over onto the new prototype
+    for (var name in prop) {
+      // Check if we're overwriting an existing function
+      prototype[name] = typeof prop[name]   === "function" &&
+                        typeof _super[name] === "function" &&
+                        fnTest.test(prop[name])
+        ? (function(name, fn){
+              return function() {
+                var tmp = this._super;
+           
+                // Add a new ._super() method that is the same method
+                // but on the super-class
+                this._super = _super[name];
+           
+                // The method only need to be bound temporarily, so we
+                // remove it when we're done executing
+                var ret = fn.apply(this, arguments);       
+                this._super = tmp;
+           
+                return ret;
+              };
+            }(name, prop[name]))
+        : prop[name];
+    }
+   
+    // The dummy class constructor
+    function Class() {
+      // All construction is actually done in the init method
+      if ( !initializing && this.init )
+      {
+        this.init.apply(this, arguments);
+      }
+    }
+   
+    // Populate our constructed prototype object
+    Class.prototype = prototype;
+   
+    // Enforce the constructor to be what we expect
+    Class.constructor = Class;
+
+    // And make this class extendable
+    Class.extend = arguments.callee;
+   
+    return Class;
+  };
+}());
+/**
+ * Cookie plugin
+ *
+ * Copyright (c) 2006 Klaus Hartl (stilbuero.de)
+ * Dual licensed under the MIT and GPL licenses:
+ * http://www.opensource.org/licenses/mit-license.php
+ * http://www.gnu.org/licenses/gpl.html
+ *
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, document:false */
+
+/**
+ * Create a cookie with the given name and value and other optional parameters.
+ *
+ * @example $.cookie('the_cookie', 'the_value');
+ * @desc Set the value of a cookie.
+ * @example $.cookie('the_cookie', 'the_value', { expires: 7, path: '/', domain: 'jquery.com', secure: true });
+ * @desc Create a cookie with all available options.
+ * @example $.cookie('the_cookie', 'the_value');
+ * @desc Create a session cookie.
+ * @example $.cookie('the_cookie', null);
+ * @desc Delete a cookie by passing null as value. Keep in mind that you have to use the same path and domain
+ *       used when the cookie was set.
+ *
+ * @param String name The name of the cookie.
+ * @param String value The value of the cookie.
+ * @param Object options An object literal containing key/value pairs to provide optional cookie attributes.
+ * @option Number|Date expires Either an integer specifying the expiration date from now on in days or a Date object.
+ *                             If a negative value is specified (e.g. a date in the past), the cookie will be deleted.
+ *                             If set to null or omitted, the cookie will be a session cookie and will not be retained
+ *                             when the the browser exits.
+ * @option String path The value of the path atribute of the cookie (default: path of page that created the cookie).
+ * @option String domain The value of the domain attribute of the cookie (default: domain of page that created the cookie).
+ * @option Boolean secure If true, the secure attribute of the cookie will be set and the cookie transmission will
+ *                        require a secure protocol (like HTTPS).
+ * @type undefined
+ *
+ * @name $.cookie
+ * @cat Plugins/Cookie
+ * @author Klaus Hartl/klaus.hartl@stilbuero.de
+ */
+
+/**
+ * Get the value of a cookie with the given name.
+ *
+ * @example $.cookie('the_cookie');
+ * @desc Get the value of a cookie.
+ *
+ * @param String name The name of the cookie.
+ * @return The value of the cookie.
+ * @type String
+ *
+ * @name $.cookie
+ * @cat Plugins/Cookie
+ * @author Klaus Hartl/klaus.hartl@stilbuero.de
+ */
+jQuery.cookie = function(name, value, options) {
+    if (typeof value !== 'undefined') { // name and value given, set cookie
+        options = options || {};
+        if (value === null) {
+            value = '';
+            options.expires = -1;
+        }
+        var expires = '';
+        if (options.expires &&
+            (typeof options.expires === 'number' ||
+             options.expires.toUTCString)) {
+            var date;
+            if (typeof options.expires === 'number') {
+                date = new Date();
+                date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
+            } else {
+                date = options.expires;
+            }
+            expires = '; expires=' + date.toUTCString(); // use expires attribute, max-age is not supported by IE
+        }
+        // CAUTION: Needed to parenthesize options.path and options.domain
+        // in the following expressions, otherwise they evaluate to undefined
+        // in the packed version for some reason...
+        var path = options.path ? '; path=' + (options.path) : '';
+        var domain = options.domain ? '; domain=' + (options.domain) : '';
+        var secure = options.secure ? '; secure' : '';
+        document.cookie = [name, '=', encodeURIComponent(value), expires, path, domain, secure].join('');
+    } else { // only name given, get cookie
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+};
+/**
+ * --------------------------------------------------------------------
+ * jQuery-Plugin "pngFix"
+ * Version: 1.2, 09.03.2009
+ * by Andreas Eberhard, andreas.eberhard@gmail.com
+ *                      http://jquery.andreaseberhard.de/
+ *
+ * Copyright (c) 2007 Andreas Eberhard
+ * Licensed under GPL (http://www.opensource.org/licenses/gpl-license.php)
+ *
+ * Changelog:
+ *    09.03.2009 Version 1.2
+ *    - Update for jQuery 1.3.x, removed @ from selectors
+ *    11.09.2007 Version 1.1
+ *    - removed noConflict
+ *    - added png-support for input type=image
+ *    - 01.08.2007 CSS background-image support extension added by Scott Jehl, scott@filamentgroup.com, http://www.filamentgroup.com
+ *    31.05.2007 initial Version 1.0
+ * --------------------------------------------------------------------
+ * @example $(function(){$(document).pngFix();});
+ * @desc Fixes all PNG's in the document on document.ready
+ *
+ * jQuery(function(){jQuery(document).pngFix();});
+ * @desc Fixes all PNG's in the document on document.ready when using noConflict
+ *
+ * @example $(function(){$('div.examples').pngFix();});
+ * @desc Fixes all PNG's within div with class examples
+ *
+ * @example $(function(){$('div.examples').pngFix( { blankgif:'ext.gif' } );});
+ * @desc Fixes all PNG's within div with class examples, provides blank gif for input with png
+ * --------------------------------------------------------------------
+ */
+/*jslint nomen: false, laxbreak: true */
+
+(function($) {
+
+jQuery.fn.pngFix = function(settings) {
+
+	// Settings
+	settings = jQuery.extend({
+		blankgif: 'blank.gif'
+	}, settings);
+
+	var ie55 = (navigator.appName == "Microsoft Internet Explorer" && parseInt(navigator.appVersion) == 4 && navigator.appVersion.indexOf("MSIE 5.5") != -1);
+	var ie6 = (navigator.appName == "Microsoft Internet Explorer" && parseInt(navigator.appVersion) == 4 && navigator.appVersion.indexOf("MSIE 6.0") != -1);
+
+	if (jQuery.browser.msie && (ie55 || ie6)) {
+
+		//fix images with png-source
+		jQuery(this).find("img[src$=.png]").each(function() {
+
+			jQuery(this).attr('width',jQuery(this).width());
+			jQuery(this).attr('height',jQuery(this).height());
+
+			var prevStyle = '';
+			var strNewHTML = '';
+			var imgId = (jQuery(this).attr('id')) ? 'id="' + jQuery(this).attr('id') + '" ' : '';
+			var imgClass = (jQuery(this).attr('class')) ? 'class="' + jQuery(this).attr('class') + '" ' : '';
+			var imgTitle = (jQuery(this).attr('title')) ? 'title="' + jQuery(this).attr('title') + '" ' : '';
+			var imgAlt = (jQuery(this).attr('alt')) ? 'alt="' + jQuery(this).attr('alt') + '" ' : '';
+			var imgAlign = (jQuery(this).attr('align')) ? 'float:' + jQuery(this).attr('align') + ';' : '';
+			var imgHand = (jQuery(this).parent().attr('href')) ? 'cursor:hand;' : '';
+			if (this.style.border) {
+				prevStyle += 'border:'+this.style.border+';';
+				this.style.border = '';
+			}
+			if (this.style.padding) {
+				prevStyle += 'padding:'+this.style.padding+';';
+				this.style.padding = '';
+			}
+			if (this.style.margin) {
+				prevStyle += 'margin:'+this.style.margin+';';
+				this.style.margin = '';
+			}
+			var imgStyle = (this.style.cssText);
+
+			strNewHTML += '<span '+imgId+imgClass+imgTitle+imgAlt;
+			strNewHTML += 'style="position:relative;white-space:pre-line;display:inline-block;background:transparent;'+imgAlign+imgHand;
+			strNewHTML += 'width:' + jQuery(this).width() + 'px;' + 'height:' + jQuery(this).height() + 'px;';
+			strNewHTML += 'filter:progid:DXImageTransform.Microsoft.AlphaImageLoader' + '(src=\'' + jQuery(this).attr('src') + '\', sizingMethod=\'scale\');';
+			strNewHTML += imgStyle+'"></span>';
+			if (prevStyle != ''){
+				strNewHTML = '<span style="position:relative;display:inline-block;'+prevStyle+imgHand+'width:' + jQuery(this).width() + 'px;' + 'height:' + jQuery(this).height() + 'px;'+'">' + strNewHTML + '</span>';
+			}
+
+			jQuery(this).hide();
+			jQuery(this).after(strNewHTML);
+
+		});
+
+		// fix css background pngs
+		jQuery(this).find("*").each(function(){
+			var bgIMG = jQuery(this).css('background-image');
+			if(bgIMG.indexOf(".png")!=-1){
+				var iebg = bgIMG.split('url("')[1].split('")')[0];
+				jQuery(this).css('background-image', 'none');
+				jQuery(this).get(0).runtimeStyle.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" + iebg + "',sizingMethod='scale')";
+			}
+		});
+		
+		//fix input with png-source
+		jQuery(this).find("input[src$=.png]").each(function() {
+			var bgIMG = jQuery(this).attr('src');
+			jQuery(this).get(0).runtimeStyle.filter = 'progid:DXImageTransform.Microsoft.AlphaImageLoader' + '(src=\'' + bgIMG + '\', sizingMethod=\'scale\');';
+   		jQuery(this).attr('src', settings.blankgif)
+		});
+	
+	}
+	
+	return jQuery;
+
+};
+
+})(jQuery);
+/** @file
+ *
+ *  Provide a ui-styled button.
+ *
+ *  Requires:
+ *      ui.core.js
+ */
+/*jslint nomen: false, laxbreak: true, white: false, onevar: false */
+/*global jQuery:false */
+(function($) {
+
+$.widget("ui.button", {
+    version: "0.1.1",
+    options: {
+        // Defaults
+        priority:   'normal'
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  Valid options:
+     *      priority        The priority of this field
+     *                      ( ['normal'], 'primary', 'secondary');
+     *
+     *  @triggers:
+     *      'enabled.uibutton'  when element is enabled;
+     *      'disabled.uibutton' when element is disabled.
+     */
+    _create: function() {
+        var self    = this;
+        var opts    = this.options;
+
+        if (opts.enabled !== false)
+        {
+            opts.enabled = self.element.attr('disabled')
+                                ? false
+                                : true;
+        }
+
+        self.element.addClass( 'ui-button '
+                              +'ui-state-default '
+                              +'ui-corner-all ');
+
+        if (opts.priority === 'primary')
+        {
+            self.element.addClass('ui-priority-primary');
+        }
+        else if (opts.priority === 'secondary')
+        {
+            self.element.addClass('ui-priority-secondary');
+        }
+
+        if (opts.enabled)
+        {
+            self.enable();
+        }
+        else
+        {
+            self.disable();
+        }
+
+        // Interaction events
+        self._bindEvents();
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _bindEvents: function() {
+        var self    = this;
+
+        var _mouseenter = function(e) {
+            /*
+            var el  = $(this);
+            if (el.input('option', 'enabled') === true)
+                el.addClass('ui-state-hover');
+            // */
+
+            if (self.options.enabled === true)
+            {
+                self.element.addClass('ui-state-hover');
+            }
+        };
+
+        var _mouseleave = function(e) {
+            /*
+            var el  = $(this);
+            el.removeClass('ui-state-hover');
+            // */
+
+            self.element.removeClass('ui-state-hover');
+        };
+
+        var _focus      = function(e) {
+            /*
+            var el  = $(this);
+            if (el.input('option', 'enabled') === true)
+                el.addClass('ui-state-focus');
+            // */
+
+            if (self.options.enabled === true)
+            {
+                self.element.addClass('ui-state-focus');
+            }
+        };
+
+        var _blur       = function(e) {
+            self.element.removeClass('ui-state-focus');
+        };
+
+        self.element
+                .bind('mouseenter.uibutton', _mouseenter)
+                .bind('mouseleave.uibutton', _mouseleave)
+                .bind('focus.uibutton',      _focus)
+                .bind('blur.uibutton',       _blur);
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    isEnabled: function() {
+        return this.options.enabled;
+    },
+
+    enable: function()
+    {
+        var wasEnabled  = (this.options.enabled === true);
+
+        this.element.removeClass('ui-state-disabled')
+                    .removeAttr('disabled');
+
+        if (! wasEnabled)
+        {
+            this.element.trigger('enabled.uibutton');
+        }
+
+        this.options.enabled = true;
+    },
+
+    disable: function()
+    {
+        var wasEnabled  = (this.options.enabled === true);
+
+        this.options.enabled = false;
+        this.element.attr('disabled', true)
+                    .addClass(   'ui-state-disabled');
+
+        if (wasEnabled)
+        {
+            this.element.trigger('disabled.uibutton');
+        }
+    },
+
+    destroy: function() {
+        this.element
+                .removeClass( 'ui-state-default '
+                             +'ui-state-disabled '
+                             +'ui-state-hover '
+                             +'ui-state-focus '
+                             +'ui-priority-primary '
+                             +'ui-priority-secondary '
+                             +'ui-corner-all ')
+                .unbind('.uibutton');
+    }
+});
+
+}(jQuery));
+
+/** @file
+ *
+ *  Provide a sprite-based checkbox.
+ *
+ *  Requires:
+ *      ui.core.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false */
+(function($) {
+
+$.widget("ui.checkbox", {
+    version: "0.1.1",
+
+    /* Remove the strange ui.widget._trigger() class name prefix for events.
+     *
+     * If you need to know which widget the event was triggered from, either
+     * bind directly to the widget or look at the event object.
+     */
+    widgetEventPrefix:    '',
+
+    options: {
+        // Defaults
+        css:        'checkbox',             // General CSS class
+        cssOn:      'on',                   // CSS class when    checked
+        cssOff:     'off',                  // CSS class when un-checked
+        titleOn:    'click to turn off',    // Title when    checked
+        titleOff:   'click to turn on',     // Title when un-checked
+
+        useElTitle: true,                   // Include the title of the source
+                                            // element (or it's associated
+                                            // label) in the title of this
+                                            // checkbox.
+
+        hideLabel:  false                   // Hide the associated label?  If
+                                            // not, clicking on the title will
+                                            // be the same as clicking on the
+                                            // checkbox.
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  Valid options are:
+     *      css         General space-separated CSS class(es) for the checkbox
+     *                  [ 'checkbox' ];
+     *      cssOn       Space-separated CSS class(es) when checked
+     *                  [ 'on' ];
+     *      cssOff      Space-separated CSS class(es) when un-checked
+     *                  [ 'off' ];
+     *      titleOn     Title when checked
+     *                  [ 'click to turn off' ];
+     *      titleOff    Title when un-checked
+     *                  [ 'click to turn on' ];
+     *
+     *      useElTitle  Include the title of the source element (or it's
+     *                  associated label) in the title of this checkbox (as a
+     *                  prefix to 'titleOn' or 'titleOff')
+     *                  [ true ];
+     *
+     *      hideLabel   Hide the associated label?  If not, clicking on the
+     *                  title will be the same as clicking on the checkbox
+     *                  [ false ].
+     *
+     *  @triggers:
+     *      'enabled.uicheckbox'    when element is enabled;
+     *      'disabled.uicheckbox'   when element is disabled;
+     *      'checked.uicheckbox'    when element is checked;
+     *      'unchecked.uicheckbox'  when element is unchecked.
+     */
+    _create: function() {
+        var self    = this;
+        var opts    = this.options;
+
+        opts.enabled = self.element.attr('disabled') ? false : true;
+        opts.checked = self.element.attr('checked')  ? true  : false;
+        opts.title   = '';
+
+        var name     = self.element.attr('name');
+        var id       = self.element.attr('id');
+
+        // Try to locate the associated label
+        self.$label  = false;
+
+        if (id)
+        {
+            self.$label = $('label[for='+ id +']');
+        }
+        if ((! self.$label) && name)
+        {
+            self.$label = $('label[for='+ name +']');
+        }
+
+        if (opts.useElTitle === true)
+        {
+            opts.title = self.element.attr('title');
+            if ( ((! opts.title) || (opts.title.length < 1)) &&
+                 (self.$label.length > 0) )
+            {
+                // The element has no 'title', use the text of the label.
+                opts.title = self.$label.text();
+            }
+        }
+
+        var title   = opts.title
+                    + (opts.checked
+                            ? opts.titleOn
+                            : opts.titleOff);
+
+        // Create a new element that will be placed just after the current
+        self.$el     = $(  '<span class="checkbox">'
+                          + '<div '
+                          +    'class="'+ opts.css
+                          +      (opts.enabled ? ' '   : ' diabled ')
+                          +      (opts.checked
+                                    ? opts.cssOn
+                                    : opts.cssOff) +'"'
+                          +     (title && title.length > 0
+                                    ? ' title="'+ title +'"'
+                                    : '')
+                          +   '>&nbsp;</div>'
+                          +'</span>');
+        self.img      = self.$el.find('div');
+
+        // Insert the new element after the existing and remove the existing.
+        self.$el.insertAfter(self.element);
+
+        // Hide the original element.
+        self.element.hide();
+
+        // Create a new hidden input to represent the final value.
+        self.$value = $('<input type="hidden" '
+                    +               (id ? 'id="'+ id +'" '
+                                        : '')
+                    +          'name="'+ name +'" />');
+        self.$value.attr('value', opts.checked);
+        self.$value.insertBefore(self.$el);
+
+
+        if (self.$label && (self.$label.length > 0))
+        {
+            // We have a label for this field.
+            if (opts.hideLabel === true)
+            {
+                // Hide it.
+                self.$label.hide();
+            }
+            else
+            {
+                // Treat a click on the label as a click on the item.
+                self.$label.click(function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    self.$el.trigger('click',[e]);
+                    return false;
+                });
+            }
+        }
+
+        // Interaction events
+        self._bindEvents();
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _bindEvents: function() {
+        var self    = this;
+
+        var _mouseenter = function(e) {
+            if (self.options.enabled === true)
+            {
+                self.$el.addClass('ui-state-hover');
+            }
+        };
+
+        var _mouseleave = function(e) {
+            self.$el.removeClass('ui-state-hover');
+        };
+
+        var _focus      = function(e) {
+            if (self.options.enabled === true)
+            {
+                self.$el.addClass('ui-state-focus');
+            }
+        };
+
+        var _blur       = function(e) {
+            self.$el.removeClass('ui-state-focus');
+        };
+
+        var _click      = function(e) {
+            self.toggle();
+        };
+
+        self.$el.bind('mouseenter.uicheckbox', _mouseenter)
+                .bind('mouseleave.uicheckbox', _mouseleave)
+                .bind('focus.uicheckbox',      _focus)
+                .bind('blur.uicheckbox',       _blur)
+                .bind('click.uicheckbox',      _click);
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    isChecked: function() {
+        return this.options.checked;
+    },
+    isEnabled: function() {
+        return this.options.enabled;
+    },
+
+    enable: function()
+    {
+        if (! this.options.enabled)
+        {
+            this.options.enabled = true;
+            this.$el.removeClass('ui-state-disabled');
+
+            this._trigger('enabled');
+        }
+    },
+
+    disable: function()
+    {
+        if (this.options.enabled)
+        {
+            this.options.enabled = false;
+            this.$el.addClass('ui-state-disabled');
+
+            this._trigger('disabled');
+        }
+    },
+
+    toggle: function()
+    {
+        if (! this.options.enabled)
+        {
+            return;
+        }
+
+        if (this.options.checked)
+        {
+            this.uncheck();
+        }
+        else
+        {
+            this.check();
+        }
+    },
+
+    check: function()
+    {
+        if (this.options.enabled && (! this.options.checked))
+        {
+            this.options.checked = true;
+
+            this.$value.attr('value', this.options.checked);
+
+            this.img.removeClass(this.options.cssOff)
+                    .addClass(this.options.cssOn)
+                    .attr('title', this.options.title + this.options.titleOn);
+
+            //this.element.click();
+            this._trigger('change', null, 'check');
+        }
+    },
+
+    uncheck: function()
+    {
+        if (this.options.enabled && this.options.checked)
+        {
+            this.options.checked = false;
+
+            this.$value.attr('value', this.options.checked);
+
+            this.img.removeClass(this.options.cssOn)
+                    .addClass(this.options.cssOff)
+                    .attr('title', this.options.title + this.options.titleOff);
+
+            //this.element.click();
+            this._trigger('change', null, 'uncheck');
+        }
+    },
+
+    destroy: function() {
+        if (this.$label)
+        {
+            this.$label.show();
+        }
+
+        this.$el.unbind('.uicheckbox');
+
+        this.$value.remove();
+        this.$el.remove();
+
+        this.element.show();
+    }
+});
+
+
+}(jQuery));
+/** @file
+ *
+ *  Provide option groups for a set of checkbox options.
+ *
+ *  Requires:
+ *      ui.core.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false */
+(function($) {
+
+$.widget("ui.dropdownForm", {
+    version: "0.1.1",
+
+    /* Remove the strange ui.widget._trigger() class name prefix for events.
+     *
+     * If you need to know which widget the event was triggered from, either
+     * bind directly to the widget or look at the event object.
+     */
+    widgetEventPrefix:    '',
+
+    options: {
+        // Defaults
+        namespace:  null,   // Form/cookie namespace
+        form:       null,   // Our parent/controlling form
+        groups:     null    // Display style groups.
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  Valid options are:
+     *      namespace   The form / cookie namespace [ '' ];
+     *      groups      An object of style-name => CSS selector;
+     *
+     *  @triggers:
+     *      'apply.uidropdownform'  when the form is submitted;
+     */
+    _create: function() {
+        var self        = this;
+        var opts        = self.options;
+        var $form       = self.element.find('form:first');
+        var $submit     = self.element.find(':submit');
+
+        // Add a toggle control button
+        var $control    = 
+                $(  "<div class='control ui-corner-all ui-state-default'>"
+                  +  "<span>Display Options</span>"
+                  +  "<div class='ui-icon ui-icon-triangle-1-s'>"
+                  +   "&nbsp;"
+                  +  "</div>"
+                  + "</div>");
+
+        $control.prependTo(self.element);
+
+        $control.fadeTo(100, 0.5);
+
+        /* Activate a ui.optionGroups handler for any container/div in this
+         * form with a CSS class of 'ui-optionGroups'.
+         * ui.optionGroups handler for them.
+         */
+        self.element.find('.ui-optionGroups').optionGroups();
+
+
+        $form.hide();
+
+        self._bindEvents();
+
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _bindEvents: function() {
+        var self        = this;
+        var $control    = self.element.find('.control:first');
+        var $form       = self.element.find('form:first');
+        var $submit     = self.element.find(':submit');
+        
+
+        // Handle a click outside of the display options form.
+        var _body_click     = function(e) {
+            if ($form.is(':visible') && (! $.contains($form[0], e.target)) )
+            {
+                /* Hide the form by triggering $control.click and then
+                 * mouseleave
+                 */
+                $control.trigger('click');
+
+                self._trigger('mouseleave', e);
+                //self.element.trigger('mouseleave');
+            }
+        };
+
+        // Opacity hover effects
+        var _mouse_enter    = function(e) {
+            $control.fadeTo(100, 1.0);
+        };
+
+        var _mouse_leave    = function(e) {
+            if ($form.is(':visible'))
+            {
+                // Don't fade if the form is currently visible
+                return;
+            }
+
+            $control.fadeTo(100, 0.5);
+        };
+
+        var _control_click  = function(e) {
+            // Toggle the displayOptions pane
+            e.preventDefault();
+            e.stopPropagation();
+
+            $form.toggle();
+            $control.toggleClass('ui-state-active');
+
+            return false;
+        };
+
+        var _prevent_default    = function(e) {
+            // Prevent the browser default, but let the event bubble up
+            e.preventDefault();
+        };
+
+        var _form_change        = function(e) {
+            /*
+            // Remember which fields have changed
+            var changed = self.element.data('changed.uidropdownform');
+
+            if (! $.isArray(changed))
+            {
+                changed = [];
+            }
+            changed.push(e.target);
+
+            self.element.data('changed.uidropdownform', changed);
+            */
+
+            //$.log("ui.dropdownForm::caught 'form:change'");
+
+            // Any change within the form should enable the submit button
+            $submit.removeClass('ui-state-disabled')
+                   .removeAttr('disabled')
+                   .addClass('ui-state-default');
+        };
+
+        var _form_submit        = function(e) {
+            // Serialize all form values to an array...
+            var settings    = $form.serializeArray();
+            //e.preventDefault();
+
+            /* ...and set a cookie for each
+             *      namespace +'SortBy'
+             *      namespace +'SortOrder'
+             *      namespace +'PerPage'
+             *      namespace +'Style'
+             *      and possibly
+             *          namespace +'StyleCustom[ ... ]'
+             */
+            $(settings).each(function() {
+                /*
+                $.log("Add Cookie: name[%s], value[%s]",
+                      this.name, this.value);
+                // */
+                $.cookie(this.name, this.value);
+            });
+
+            if (! self._trigger('apply', e))
+            {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+
+            /*
+            var callback    = self.options.apply;
+            if ($.isFunction(callback))
+            {
+                callback.call( self.element[0], e);
+                //self.options.submitCb(e, self);
+            }
+            else
+            {
+                // Reload so our URL won't be polluted with form variables that
+                // we've just placed into cookies.
+                window.location.reload();
+            }
+            */
+        };
+
+        var _form_clickSubmit   = function(e) {
+            e.preventDefault();
+
+            // Trigger the 'submit' event on the form
+            $form.trigger('submit');
+        };
+
+        /**********************************************************************
+         * bind events
+         *
+         */
+
+        // Handle a click outside of the display options form.
+        $('body')
+                .bind('click.uidropdownform', _body_click);
+
+        // Add an opacity hover effect to the displayOptions
+        $control.bind('mouseenter.uidroppdownform', _mouse_enter)
+                .bind('mouseleave.uidroppdownform', _mouse_leave)
+                .bind('click.uidropdownform',       _control_click);
+
+        $form.bind('change.uidropdownform', _form_change)
+             .bind('submit.uidropdownform', _form_submit);
+
+        $submit.bind('click.uidropdownform', _form_clickSubmit);
+
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    getGroup: function() {
+        return this.element.find('.displayStyle')
+                            .optionGroups( 'getGroup' );
+    },
+
+    setGroup: function(style) {
+        return this.element.find('.displayStyle')
+                            .optionGroups( 'setGroup', style );
+    },
+
+    getGroupInfo: function() {
+        return this.element.find('.displayStyle')
+                            .optionGroups( 'getGroupInfo' );
+    },
+
+    setApplyCb: function(cb) {
+        this.options.apply = cb;
+    },
+
+    open: function() {
+        if (this.element.find('form:first').is(':visible'))
+        {
+            // Already opened
+            return;
+        }
+
+        this.element.find('.control:first').click();
+    },
+
+    close: function() {
+        if (! this.element.find('form:first').is(':visible'))
+        {
+            // Already closed
+            return;
+        }
+
+        this.element.find('.control:first').click();
+    },
+
+    enable: function(enableSubmit) {
+        var $form       = this.element.find('form:first');
+        var $submit     = this.element.find(':submit');
+
+        $form.find('input,select').removeAttr('disabled');
+
+        if (enableSubmit !== true)
+        {
+            // Any change within the form should enable the submit button
+            $submit.removeClass('ui-state-default ui-state-highlight')
+                   .addClass('ui-state-disabled')
+                   .attr('disabled', true);
+        }
+        else
+        {
+            $submit.removeClass('ui-state-disabled')
+                   .removeAttr('disabled')
+                   .addClass('ui-state-default');
+        }
+    },
+
+    disable: function() {
+        var $form       = this.element.find('form:first');
+        var $submit     = this.element.find(':submit');
+
+        $form.find('input,select').attr('disabled', true);
+
+        // Any change within the form should enable the submit button
+        $submit.removeClass('ui-state-default ui-state-highlight')
+               .addClass('ui-state-disabled')
+               .attr('disabled', true);
+    },
+
+    destroy: function() {
+        var self        = this;
+        var $control    = self.element.find('.control:first');
+        var $form       = self.element.find('form:first');
+        var $submit     = self.element.find(':submit');
+
+        // Unbind events
+        $('body')
+                .unbind('.uidropdownform');
+
+        $control.unbind('.uidropdownform');
+        $control.find('a:first, .ui-icon:first')
+                .unbind('.uidropdownform');
+
+        $form.unbind('.uidropdownform');
+
+        // Remove added elements
+        $control.remove();
+
+        self.element.find('.displayStyle').optionGroups( 'destroy' );
+    }
+});
+
+
+}(jQuery));
+/** @file
+ *
+ *  Provide a ui-styled input / text input area that supports validation.
+ *
+ *  Requires:
+ *      ui.core.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false, clearTimeout:false, setTimeout:false */
+(function($) {
+
+$.widget("ui.input", {
+    version: "0.1.1",
+
+    /* Remove the strange ui.widget._trigger() class name prefix for events.
+     *
+     * If you need to know which widget the event was triggered from, either
+     * bind directly to the widget or look at the event object.
+     */
+    widgetEventPrefix:    '',
+
+    options: {
+        // Defaults
+        priority:       'normal',
+        emptyText:      null,
+        validationEl:   null,       // The element to present validation
+                                    // information in [:sibling
+                                    //                  .ui-field-status]
+        validation:     null        /* The validation criteria
+                                     *      '!empty'
+                                     *      function(value)
+                                     *          returns {isValid:  true|false,
+                                     *                   message: string};
+                                     */
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  Valid options:
+     *      priority        The priority of this field
+     *                      ( ['normal'], 'primary', 'secondary');
+     *      emptyText       Text to present when the field is empty;
+     *      validationEl:   The element to present validation information in
+     *                      [ parent().find('.ui-field-status:first) ]
+     *      hideLabel:      Hide any label associated with this input?
+     *                          [ true if 'emptyText' is provided,
+     *                            false otherwise ];
+     *      validation:     The validation criteria:
+     *                          '!empty'
+     *                          function(value) that returns:
+     *                              undefined   undetermined
+     *                              true        valid
+     *                              false       invalid
+     *                              string      invalid, error message
+     *
+     *  @triggers:
+     *      'validation_change' when the validaton state has changed;
+     *      'enabled'           when element is enabled;
+     *      'disabled'          when element is disabled.
+     */
+    _create: function() {
+        var self    = this;
+        var opts    = this.options;
+
+        opts.enabled = self.element.attr('disabled') ? false : true;
+
+        if (opts.validationEl)
+        {
+            if (opts.validationEl.jquery === undefined)
+            {
+                opts.validationEl = $(opts.validationEl);
+            }
+        }
+        else
+        {
+            /* We ASSUME that the form element is contained within a div along
+             * with any  associated validation status element.
+             *
+             * Use the first child of our parent that has the CSS class
+             *  'ui-field-status'
+             */
+            opts.validationEl = self.element
+                                        .parent()
+                                            .find('.ui-field-status:first');
+        }
+
+        if ( (! opts.validation) && (self.element.hasClass('required')) )
+        {
+            // Use a default validation of '!empty'
+            opts.validation = '!empty';
+        }
+
+        self.element.addClass( 'ui-input '
+                              +'ui-corner-all ');
+        self.keyTimer = null;
+
+        if (opts.priority === 'primary')
+        {
+            self.element.addClass('ui-priority-primary');
+        }
+        else if (opts.priority === 'secondary')
+        {
+            self.element.addClass('ui-priority-secondary');
+        }
+
+        self.element.addClass('ui-state-default');
+        if (! opts.enabled)
+        {
+            self.element.addClass('ui-state-disabled');
+        }
+
+        if (opts.emptyText === null)
+        {
+            // See if there is an 'emptyText' attribute
+            var empty   = self.element.attr('emptyText');
+            if ((empty !== undefined) && (empty.length > 0))
+            {
+                opts.emptyText = empty;
+            }
+
+        }
+
+        if ((opts.emptyText === null) && (! self.element.is(':password')) )
+        {
+            // See if there is a label associated with this field
+            if (opts.hideLabel !== false)
+            {
+                // Attempt to locate the label associated with this field...
+                var id      = self.element.attr('id');
+                var $label  = null;
+                if ((id === undefined) || (id.length < 1))
+                {
+                    id = self.element.attr('name');
+                }
+
+                if ((id !== undefined) && (id.length > 0))
+                {
+                    $label  = self.element
+                                        .parent()
+                                            .find('label[for='+ id +']');
+                }
+
+                if (($label !== null) && ($label.length > 0))
+                {
+                    /* We've found the label!  Use it's text as the 'emptyText'
+                     * and set 'hideLabel' to true.
+                     */
+                
+                    opts.emptyText = $label.text();
+                    opts.hideLabel = true;
+                }
+            }
+        }
+
+        self.setEmptyText(opts.emptyText, true);
+
+        // Interaction events
+        self._bindEvents();
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _bindEvents: function() {
+        var self    = this;
+
+        var _mouseenter = function(e) {
+            /*
+            var el  = $(this);
+            if (el.input('option', 'enabled') === true)
+                el.addClass('ui-state-hover');
+            // */
+
+            if (self.options.enabled === true)
+            {
+                self.element.addClass('ui-state-hover');
+            }
+        };
+
+        var _mouseleave = function(e) {
+            var el  = $(this);
+            el.removeClass('ui-state-hover');
+        };
+
+        var _keydown   = function(e) {
+            /*
+            var el  = $(this);
+            if (el.input('option', 'enabled') === true)
+                el.input('validate');
+            // */
+            if (self.options.enabled !== true)
+            {
+                return;
+            }
+
+            if (self.keyTimer !== null)
+            {
+                clearTimeout(self.keyTimer);
+            }
+
+            if (e.keyCode === 9)    // tab
+            {
+                // let '_blur' handle leaving this field.
+                return;
+            }
+
+            // Clear the current validation information
+            self.valid(undefined);
+
+            /* Set a timer that needs to expire BEFORE we fire the validation
+             * check
+             */
+            self.keyTimer = setTimeout(function(){self.validate();}, 1000);
+        };
+
+        var _focus      = function(e) {
+            if (self.options.enabled === true)
+            {
+                if ((self.options.emptyText !== null) &&
+                    (self.val().length < 1))
+                {
+                    self.element.val('');
+                }
+
+                self.element.removeClass('ui-state-empty')
+                            .addClass('ui-state-focus ui-state-active');
+            }
+        };
+
+        var _blur       = function(e) {
+            self.element.removeClass('ui-state-focus ui-state-active');
+            if (! self.element.hasClass('ui-state-valid'))
+            {
+                self.validate();
+            }
+
+            if (self.val().length < 1)
+            {
+                self.element.addClass('ui-state-empty');
+
+                if (self.options.emptyText !== null)
+                {
+                    self.element.val(self.options.emptyText);
+                }
+            }
+        };
+
+        self.element
+                .bind('mouseenter.uiinput', _mouseenter)
+                .bind('mouseleave.uiinput', _mouseleave)
+                .bind('keydown.uiinput',    _keydown)
+                .bind('focus.uiinput',      _focus)
+                .bind('blur.uiinput',       _blur);
+
+        if (this.val().length > 0)
+        {
+            // Perform an initial validation
+            self.validate();
+        }
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    isEnabled: function() {
+        return this.options.enabled;
+    },
+
+    isValid: function() {
+        return this.options.valid;
+    },
+
+    enable: function()
+    {
+        if (! this.options.enabled)
+        {
+            this.options.enabled = true;
+            this.element.removeClass('ui-state-disabled')
+                        .removeAttr('disabled');
+
+            //this.element.trigger('enabled.uiinput');
+            this._trigger('enabled');
+        }
+    },
+
+    disable: function()
+    {
+        if (this.options.enabled)
+        {
+            this.options.enabled = false;
+            this.element.attr('disabled', true)
+                        .addClass('ui-state-disabled');
+
+            //this.element.trigger('disabled.uiinput');
+            this._trigger('disabled');
+        }
+    },
+
+    /** @brief  Set the current validation state.
+     *  @param  state   The new state:
+     *                      undefined   undetermined
+     *                      true        valid
+     *                      false       invalid
+     *                      string      invalid, error message
+     */
+    valid: function(state)
+    {
+        if (state === this.options.valid)
+        {
+            return;
+        }
+
+        // Clear out validation information
+        this.element
+                .removeClass('ui-state-error ui-state-valid');
+
+        this.options.validationEl
+                .empty()
+                .removeClass('ui-state-invalid ui-state-valid');
+
+        if (state === true)
+        {
+            // Valid
+            this.element.addClass(   'ui-state-valid');
+
+            this.options.validationEl
+                        .addClass(   'ui-state-valid');
+        }
+        else if (state !== undefined)
+        {
+            // Invalid, possibly with an error message
+            this.element.addClass(   'ui-state-error');
+
+            this.options.validationEl
+                        .addClass(   'ui-state-invalid');
+
+            if (typeof state === 'string')
+            {
+                this.options.validationEl
+                            .html(state);
+            }
+        }
+
+        this.options.valid = state;
+
+        // Let everyone know that the validation state has changed.
+        //this.element.trigger('validation_change.uiinput');
+        this._trigger('validation_change');
+    },
+
+    getEmptyText: function()
+    {
+        return this.options.emptyText;
+    },
+
+    setEmptyText: function(str, force)
+    {
+        if (this.element.is(':password'))
+        {
+            this.options.hideLabel = false;
+            this.options.emptyText = null;
+            return;
+        }
+
+        if ((this.options.emptyText !== null) &&
+            (this.val() === this.options.emptyText))
+        {
+            this.element.val('');
+        }
+
+        this.options.emptyText = str;
+
+        if (this.options.emptyText !== null)
+        {
+            if (this.options.hideLabel !== false)
+            {
+                this.options.hideLabel = true;
+
+                // Attempt to locate the label associated with this field...
+                var id      = this.element.attr('id');
+                if ((id === undefined) || (id.length < 1))
+                {
+                    id = this.element.attr('name');
+                }
+
+                if ((id !== undefined) && (id.length > 0))
+                {
+                    var $label  = this.element
+                                        .parent()
+                                            .find('label[for='+ id +']');
+                
+                    $label.hide();
+                }
+            }
+
+            //if ( (force === true) || (this.val().length < 1) )
+            if ( ((force === true) || (! this.element.is(':focus')) ) &&
+                (this.val().length < 1) )
+            {
+                this.element.val(this.options.emptyText);
+            }
+        }
+    },
+
+    val: function(newVal)
+    {
+        var self    = this;
+        var ret     = null;
+
+        if (newVal === undefined)
+        {
+            // Value retrieval
+            ret = $.trim(self.element.val());
+
+            if ((self.options.emptyText !== null) &&
+                (ret === self.options.emptyText))
+            {
+                ret = '';
+            }
+        }
+        else
+        {
+            ret = self.element.val(newVal);
+            self.validate();
+        }
+
+        return ret;
+    },
+
+    validate: function()
+    {
+        var msg         = [];
+        var newState;
+
+        if ($.isFunction(this.options.validation))
+        {
+            var ret = this.options.validation.apply(this.element,
+                                                    [this.val()]);
+            if (typeof ret === 'string')
+            {
+                // Invalid with a message
+                newState = false;
+                msg.push(ret);
+            }
+            else
+            {
+                // true | false | undefined
+                newState = ret;
+            }
+        }
+        else if (this.options.validation === '!empty')
+        {
+            newState = ((this.val().length > 0)
+                                    ? true
+                                    : false);
+            msg.push('Cannot be empty');
+        }
+
+        // Set the new state
+        this.valid( ((newState === false) && (msg.length > 0)
+                                    ? msg.join('<br />')
+                                    : newState) );
+    },
+
+    destroy: function() {
+        this.options.validationEl
+                .removeClass( 'ui-state-valid '
+                             +'ui-state-invalid ');
+
+        this.element
+                .removeClass( 'ui-state-default '
+                             +'ui-state-disabled '
+                             +'ui-state-hover '
+                             +'ui-state-valid '
+                             +'ui-state-error '
+                             +'ui-state-focus '
+                             +'ui-state-active '
+                             +'ui-priority-primary '
+                             +'ui-priority-secondary ')
+                .unbind('.uiinput');
+    }
+});
+
+
+}(jQuery));
+/** @file
+ *
+ *  Provide option groups for a set of checkbox options.  These must have the
+ *  following HTML structure:
+ *
+ *      <div class='_NS_OptionGroups'>      // _NS_ defines the namespace
+ *        ...
+ *        <ul class='groups'>               // define groups
+ *         <li [ class='isCustom' ] >       // 'isCustom' iff this group
+ *                                          // represents the "custom" group
+ *                                          // to allow the user to select
+ *                                          // any desired options as opposed
+ *                                          // to those associated with a
+ *                                          // particular pre-defined group.
+ *          <input type='radio'
+ *              [ class='is
+ *                 name='_NS_OptionGroup'
+ *                value='GROUP-NAME'        // define GROUP-NAME
+ *
+ *                 [ checked='checked' if this group is selected ] />
+ *
+ *          <label  for='_NS_OptionGroup'>
+ *           GROUP-LABEL                    // define GROUP-LABEL / title
+ *          </label>
+ *         </li>
+ *         ...
+ *        </ul>
+ *        <fieldset class='options'>        // define groupable options
+ *         ...
+ *         <div class='option'>
+ *          <input type='checkbox'
+ *                class='inGroup-GROUP-NAME ...'   // One 'inGroup-*' class
+ *                                                  // for each group this
+ *                                                  // option is part of
+ *
+ *                                          // define a colon-separated
+ *                                          // option name that mirrors the
+ *                                          // CSS selector to this point
+ *                 name='_NS_OptionGroups_option[OPTION-NAME]'
+ *
+ *                 [ checked='checked' if this option is selected ] />
+ *
+ *          <label for='_NS_OptionGroups_option[OPTION-NAME]'>
+ *           OPTION-LABEL                   // define OPTION-LABEL / title
+ *          </label>
+ *         </div>
+ *         ...
+ *        </fieldset>
+ *      </div>
+ *
+ *  Requires:
+ *      ui.core.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, document:false */
+
+(function($) {
+
+$.widget("ui.optionGroups", {
+    version: "0.1.1",
+    options: {
+        // Defaults
+        namespace:  null,   // Form/cookie namespace
+        form:       null    // Our parent/controlling form
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  Valid options are:
+     *      namespace   The form / cookie namespace [ '' ];
+     *      groups      An object of group-name => CSS selector;
+     *
+     *  @triggers:
+     *      'change'    on the controlling form when the option group is
+     *                  changed, passing
+     *                              data:
+     *                                  {'group':    groupName,
+     *                                   'selector': selector for all fields}
+     */
+    _create: function() {
+        var self        = this;
+        var opts        = this.options;
+
+        if (opts.namespace === null)
+        {
+            // See if the DOM element has a 'namespace' data item
+            var ns  = self.element.data('namespace');
+            if (ns !== undefined)
+            {
+                opts.namespace = ns;
+            }
+            else
+            {
+                /* Attempt to retrieve the namespace from the CSS class
+                 * '_NS_OptionGroups'
+                 */
+                var css = self.element.attr('class');
+
+                ns = css.replace(/^(?:.* )?(.*?)OptionGroups(?: .*)?$/,
+                                      '$1');
+
+                if ((ns !== undefined) && (ns.length > 0))
+                {
+                    opts.namespace = ns;
+                }
+            }
+
+        }
+        if (opts.form === null)
+        {
+            // See if the DOM element has a 'form' data item
+            var fm  = self.element.data('form');
+            if (fm !== undefined)
+            {
+                opts.form = fm;
+            }
+            else
+            {
+                // Choose the closest form
+                opts.form = self.element.closest('form');
+            }
+        }
+
+        /* The currently selected group:
+         *  self.element.find('ul.groups :checked').val();
+         *
+         * Prepare the presentation:
+         *  - Remove the CSS class 'ui-state-active' from all 'li' elements;
+         *  - Add the CSS class 'ui-state-active' to the 'li' element
+         *    containing the currently selected group;
+         *  - Hide and disable all group radio buttons;
+         *  - Add the 'toggle'  class to any group NOT marked 'isCustom';
+         *  - Add the 'control' class to any group marked 'isCustom';
+         *  - Add a down-arrow icon to the 'isCustom' control
+         *  - Append '<span class='comma'>,</span>' after all but the last 'li'
+         *    element;
+         *  - For all input elements, add the classes:
+         *      'ui-corner-all ui-state-default'
+         */
+        var $groups     = self.element.find('ul.groups');
+
+        $groups.find('li').removeClass('ui-state-active');
+        $groups.find(':checked').parent().addClass('ui-state-active');
+        $groups.find(':radio').hide();
+        $groups.find('li:not(.isCustom)')
+                    .addClass('toggle');
+        $groups.find('li.isCustom')
+                    .addClass('control ui-corner-all ui-state-default')
+                    .append(  "<div class='ui-icon ui-icon-triangle-1-s'>"
+                            +  "&nbsp;"
+                            + "</div>");
+
+        $groups.find('li:not(:last)')
+                    .after("<span class='comma'>,</span>");
+
+        self.element.find('input')
+                    .addClass('ui-corner-all ui-state-default');
+
+
+        /* Add a new hidden input to represent the group radio buttons that
+         * we've hidden.
+        $groups.append("<input type='hidden' "
+                            + "name='"+  $groups.find(':radio:first')
+                                                    .attr('name') +"' "
+                            + "value='"+ $groups.find(':checked')
+                                                    .val() +"' />");
+         */
+
+
+        /* Now, the currently selected group can be found via:
+         *  self.element.find('ul.groups :checked').val();
+         *  self.element.find('ul.groups li.ui-state-active :radio').val();
+         *  -- self.element.find('ul.groups input[type=hidden]').val();
+         */
+
+        // Interaction events
+        self._bindEvents();
+
+
+        /* If the currently selected group is NOT the 'isCustom' group, toggle
+         * the fieldset control closed.
+         */
+        if (! $groups.find('li.ui-state-active').hasClass('isCustom'))
+        {
+            self.toggleFieldset();
+        }
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _bindEvents: function() {
+        var self            = this;
+        var $groups         = self.element.find('ul.groups');
+        var $groupFieldset  = self.element.find('fieldset:first');
+        var $groupControl   = $groups.find('.control:first');
+
+        var _prevent_default        = function(e) {
+            e.preventDefault();
+        };
+
+        var _groupControl_click     = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            self.toggleFieldset();
+        };
+
+        var _groupFieldset_change   = function(e) {
+            /* The fieldset has changed so change the current group to
+             * the 'isCustom' / 'control' group.
+             *
+             * Don't allow propagation -- we will directly trigger any events
+             *                            that need to be passed on.
+             */
+            e.preventDefault();
+            e.stopPropagation();
+
+            var $group  = $groupControl.find(':radio');
+
+            // Activate this group
+            self.setGroup( $group.val() );
+
+            return false;
+        };
+
+        var _group_select    = function(e) {
+            /*
+            if ($(e.target).is(':radio'))
+                // Avoid infinite event loops ;^)
+                return;
+            */
+
+            // Allow only one display group to be selected at a time
+            e.preventDefault();
+            e.stopPropagation();
+
+            var $group  = $(this).find(':radio');
+
+            // Activate this group
+            self.setGroup( $group.val() );
+        };
+
+        // Bind to submit.
+        var _form_submit        = function(e) {
+            /* Remove all cookies directly identifying options.  This is
+             * because, when an option is NOT selected, it is not included so,
+             * to remove a previously selected options, we must first remove
+             * them all and then add in the ones that are explicitly selected.
+             */
+            $groupFieldset.find(':checkbox').each(function() {
+                /*
+                $.log("Remove Cookie: name[ %s ] / [ %s ]",
+                        this.name, $(this).attr('name'));
+                // */
+
+                $.cookie( $(this).attr('name'), null );
+            });
+
+            /* If the selected display group is NOT 'custom', disable
+             * all the 'display custom' pane/field-set inputs so they
+             * will not be included in the serialization of form
+             * values.
+             */
+            if (! $groups.find('li.ui-state-active').hasClass('isCustom'))
+            {
+                // Disable all custom field values
+                $groupFieldset.find(':checkbox').attr('disabled', true);
+            }
+
+            // let the form be submitted
+        };
+
+
+        /**********************************************************************
+         * bind events
+         *
+         */
+
+        /* Toggle the display group area.
+         * the display group to 'custom', de-selecting the others.
+         */
+        $groupControl
+                .bind('click.uioptiongroups', _groupControl_click);
+
+        /* When something in the group fieldset changes, set the display group
+         * to 'custom', de-selecting the others.
+         */
+        $groupFieldset
+                .bind('change.uioptiongroups', _groupFieldset_change);
+
+        // Allow only one display group to be selected at a time
+        $groups.find('li:not(.control)')    // ('li.toggle')
+                .bind('change.uioptiongroups', _group_select)
+                .bind('click.uioptiongroups',  _group_select);
+
+        // Bind to submit.
+        self.options.form
+                .bind('submit.uioptiongroups', _form_submit);
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    getGroup: function() {
+        /* Now, the currently selected group can be found in three ways:
+         *  this.element.find('ul.groups :checked').val();
+         *  this.element.find('ul.groups li.ui-state-active :radio').val();
+         *  -- this.element.find('ul.groups input[type=hidden]').val();
+         */
+        return this.element.find('ul.groups :checked').val();
+    },
+
+    setGroup: function(group) {
+        /* Now, the currently selected group can be found in three ways:
+         *  this.element.find('ul.groups :checked').val();
+         *  this.element.find('ul.groups li.ui-state-active :radio').val();
+         *  -- this.element.find('ul.groups input[type=hidden]').val();
+         */
+        var self            = this;
+        var $groups         = self.element.find('ul.groups');
+        var $groupFieldset  = self.element.find('fieldset:first');
+        var $newGroup       = $groups.find(':radio[value='+group+']');
+        if ($newGroup.length !== 1)
+        {
+            return;
+        }
+
+        // Select the new radio button
+        $groups.find(':checked').attr('checked', false)
+                                .removeAttr('checked');
+        $newGroup.attr('checked', 'checked');
+
+        /* Remove 'ui-state-active' from all groups and add it JUST to the new
+         * one
+         */
+        $groups.find('li.ui-state-active').removeClass('ui-state-active');
+        $newGroup.parent().addClass('ui-state-active');
+
+        // Set the hidden input value
+        // $groups.find('input[type=hidden]').val(group);
+
+        if (! $newGroup.parent().hasClass('control'))
+        {
+            // Turn OFF all items in the group fieldset...
+            $groupFieldset.find('input').removeAttr('checked');
+
+            // Turn ON  the items for this new display group.
+            $groupFieldset.find('.inGroup-'+ group)
+                           .attr('checked', 'checked');
+        }
+
+        /* Gather the set of selected AND deselected options.  For each,
+         * retrieve its name (e.g. 'sel1:sel2:sel3') and convert it to a CSS
+         * selector.
+         *
+         * Generate an array of CSS selectors that will choose all selected
+         * options and a second that will choose all de-selected options.
+         */
+        var selected    = [];
+        var deSelected  = [];
+        $groupFieldset.find('input:checked').each(function() {
+            selected.push( '.' + $(this).attr('name')
+                                            .replace(/^.*?\[(.*?)\]$/, '$1')
+                                            .replace(/:/g, ' .') );
+        });
+
+        $groupFieldset.find('input:not(:checked)').each(function() {
+            deSelected.push( '.' + $(this).attr('name')
+                                            .replace(/^.*?\[(.*?)\]$/, '$1')
+                                            .replace(/:/g, ' .') );
+        });
+
+        var groupInfo   = {'group'      : group,
+                           'selected'   : selected,
+                           'deSelected' : deSelected};
+
+        self.element.data('groupInfo', groupInfo);
+
+        /* Trigger the 'change' event passing the name of the new group along
+         * with an array of CSS selectors that will match all items of the
+         * group and an array of CSS selectors that will match all items NOT of
+         * the group.
+         */
+        //$.log("ui.optionGroups: trigger 'form:change'");
+        self.options.form.trigger('change', groupInfo);
+    },
+
+    getGroupInfo: function() {
+        return this.element.data('groupInfo');
+    },
+
+    getForm: function() {
+        return this.options.form;
+    },
+
+    enable: function() {
+        this.find(':input').removeAttr('disabled');
+    },
+
+    disable: function() {
+        this.find(':input').attr('disabled', true);
+    },
+
+    toggleFieldset: function()
+    {
+        this.element.find('fieldset:first')
+                                .toggleClass('ui-state-active')
+                                .toggle();
+    },
+
+    destroy: function() {
+        var self    = this;
+
+        // Remove data
+        self.element.find('a.option,div.option a:first')
+                .removeData('group');
+
+        // Unbind events
+        var $groupControl   = self.element.find('.control:first');
+        var $itemsGroup     = self.element.find('input[name='
+                            +                       self.options.namespace
+                            +                                   'Group]');
+
+        /* Toggle the display group area.
+         * the display group to 'custom', de-selecting the others.
+         */
+        $groupControl
+                .unbind('.uioptiongroups');
+
+        /* For all anchors within the control button, disable the default
+         * browser action but allow the event to bubble up to any parent click
+         * handlers (e.g. _groupControl_click).
+         */
+        $groupControl.find('> a, .control > a, .control > .ui-icon')
+                .unbind('.uioptiongroups');
+
+        /* When something in the group fieldset changes, set the display group
+         * to 'custom', de-selecting the others.
+         */
+        self.element.find('fieldset:first')
+                .unbind('.uioptiongroups');
+
+        // Allow only one display group to be selected at a time
+        self.element.find('a.option')
+                .unbind('.uioptiongroups');
+
+        // Bind to submit.
+        self.options.form
+                .unbind('.uioptiongroups');
+    }
+});
+
+
+}(jQuery));
+/*!
+ * jQuery UI Stars v2.1.1
+ * http://plugins.jquery.com/project/Star_Rating_widget
+ *
+ * Copyright (c) 2009 Orkan (orkans@gmail.com)
+ * Dual licensed under the MIT and GPL licenses.
+ * http://docs.jquery.com/License
+ *
+ * $Rev: 114 $
+ * $Date:: 2009-06-12 #$
+ * $Build: 32 (2009-06-12)
+ *
+ * Take control of pre-assembled HTML:
+ *  <div >
+ *    <input class='ui-stars-rating' type='hidden' name='rating' value='...' />
+ *    <div class='ui-stars ui-stars-cancel ...'><a ..></a></div>
+ *    <div class='ui-stars ui-stars-star ...'><a ..></a></div>
+ *    <div class='ui-stars ui-stars-star ...'><a ..></a></div>
+ *    ...
+ *  </div>
+ *
+ * Depends:
+ *  ui.core.js
+ *
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false */
+(function($) {
+
+$.widget("ui.stars", {
+  version: "2.1.1b",
+
+  /* Remove the strange ui.widget._trigger() class name prefix for events.
+   *
+   * If you need to know which widget the event was triggered from, either
+   * bind directly to the widget or look at the event object.
+   */
+  widgetEventPrefix:    '',
+
+  options: {
+    // Defaults
+    inputType: "div", // radio|select
+    split: 0,
+    disabled: false,
+    cancelTitle: "Cancel Rating",
+    cancelValue: 0,
+    cancelShow: true,
+    oneVoteOnly: false,
+    showTitles: false,
+    captionEl: null,
+    callback: null, // function(ui, type, value, event)
+
+    /*
+     * CSS classes
+     */
+    starWidth: 16,
+    baseClass:   'ui-stars',            // Included for all star/cancel items
+    cancelClass: 'ui-stars-cancel',
+    starClass: 'ui-stars-star',
+    starOnClass: 'ui-stars-star-on',
+    starHoverClass: 'ui-stars-star-hover',
+    starDisabledClass: 'ui-stars-star-disabled',
+    cancelHoverClass: 'ui-stars-cancel-hover',
+    cancelDisabledClass: 'ui-stars-cancel-disabled'
+  },
+
+  _create: function() {
+    var self = this, o = this.options, id = 0;
+
+    //this.$stars  = $('.'+o.baseClass,   this.element);
+    this.$stars  = $('.'+o.starClass,   this.element);
+    this.$cancel = $('.'+o.cancelClass, this.element);
+    this.$input  = $('input[type=hidden]:first', this.element);
+
+    // How many Stars and how many are 'on'?
+    o.items = this.$stars.filter('.'+o.starClass).length;
+    o.value = this.$stars.filter('.'+o.starOnClass).length; // - 1;
+    if (o.value > 0) {
+        o.checked = o.defaultValue = o.value;
+    } else {
+        o.value = o.cancelValue;
+    }
+
+    if (o.disabled) {
+        this.$cancel.addClass(o.cancelDisabledClass);
+    }
+
+    //o.cancelShow &= !o.disabled && !o.oneVoteOnly;
+    o.cancelShow &= !o.oneVoteOnly;
+    //o.cancelShow && this.element.append(this.$cancel);
+
+    /*
+     * Star selection helpers
+     */
+    function fillNone() {
+      self.$stars.removeClass(o.starOnClass + " " + o.starHoverClass);
+      self._showCap("");
+    }
+
+    function fillTo(index, hover) {
+      if(index >= 0) {
+        var addClass = hover ? o.starHoverClass : o.starOnClass;
+        var remClass = hover ? o.starOnClass    : o.starHoverClass;
+
+        self.$stars.eq(index)
+                      .removeClass(remClass)
+                      .addClass(addClass)
+                    .prevAll("." + o.starClass)
+                      .removeClass(remClass)
+                      .addClass(addClass);
+        //             .end()
+        //            .end()
+        self.$stars.eq(index)
+                    .nextAll("." + o.starClass)
+                     .removeClass(o.starHoverClass + " " + o.starOnClass);
+
+        self._showCap(self.$stars.eq(index).find('a').attr('title'));
+      }
+      else {
+          fillNone();
+      }
+    }
+
+
+    /*
+     * Attach stars event handler
+     */
+    this.$stars.bind("click.stars", function(e) {
+      if(!o.forceSelect && o.disabled) {
+        return false;
+      }
+
+      var i = self.$stars.index(this);
+      o.checked = i;
+      o.value   = i + 1;
+      o.title   = $(this).find('a').attr('title');
+
+      self.$input.val(o.value);
+
+      fillTo(o.checked, false);
+      self._disableCancel();
+
+      !o.forceSelect && self.callback(e, "star");
+
+      self._trigger('change', null, o.value);
+    })
+    .bind("mouseover.stars", function() {
+      if(o.disabled) {
+        return false;
+      }
+      var i = self.$stars.index(this);
+      fillTo(i, true);
+    })
+    .bind("mouseout.stars", function() {
+      if(o.disabled) {
+        return false;
+      }
+      fillTo(o.checked, false);
+    });
+
+
+    /*
+     * Attach cancel event handler
+     */
+    this.$cancel.bind("click.stars", function(e) {
+      if(!o.forceSelect && (o.disabled || o.value === o.cancelValue))
+      {
+        return false;
+      }
+
+      o.checked = -1;
+      o.value   = o.cancelValue;
+
+      self.$input.val(o.cancelValue);
+
+      fillNone();
+      self._disableCancel();
+
+      !o.forceSelect && self.callback(e, "cancel");
+    })
+    .bind("mouseover.stars", function() {
+      if(self._disableCancel()) {
+        return false;
+      }
+      self.$cancel.addClass(o.cancelHoverClass);
+      fillNone();
+      self._showCap(o.cancelTitle);
+    })
+    .bind("mouseout.stars", function() {
+      if(self._disableCancel()) {
+        return false;
+      }
+      self.$cancel.removeClass(o.cancelHoverClass);
+      self.$stars.triggerHandler("mouseout.stars");
+    });
+
+    /*
+     * Clean up to avoid memory leaks in certain versions of IE 6
+     */
+    $(window).unload(function(){
+      self.$cancel.unbind(".stars");
+      self.$stars.unbind(".stars");
+      self.$stars = self.$cancel = null;
+    });
+
+
+
+    /*
+     * Finally, set up the Stars
+     */
+    this.select(o.value);
+    o.disabled && this.disable();
+
+  },
+
+  /*
+   * Private functions
+   */
+  _disableCancel: function() {
+    var o        = this.options,
+        disabled = o.disabled || o.oneVoteOnly || (o.value === o.cancelValue);
+
+    if(disabled) {
+        this.$cancel.removeClass(o.cancelHoverClass)
+                    .addClass(o.cancelDisabledClass);
+    }
+    else {
+        this.$cancel.removeClass(o.cancelDisabledClass);
+    }
+
+    this.$cancel.css("opacity", disabled ? 0.5 : 1);
+    return disabled;
+  },
+  _disableAll: function() {
+    var o = this.options;
+    this._disableCancel();
+    if(o.disabled) {this.$stars.filter("div").addClass(o.starDisabledClass);}
+    else           {this.$stars.filter("div").removeClass(o.starDisabledClass);}
+  },
+  _showCap: function(s) {
+    var o = this.options;
+    if(o.captionEl) {o.captionEl.text(s);}
+  },
+
+  /*
+   * Public functions
+   */
+  value: function() {
+    return this.options.value;
+  },
+  select: function(val) {
+    var o = this.options,
+        e = (val === o.cancelValue)
+                ? this.$cancel : this.$stars.eq(val - 1);
+
+    o.forceSelect = true;
+    e.triggerHandler("click.stars");
+    o.forceSelect = false;
+  },
+  selectID: function(id) {
+    var o = this.options, e = (id === -1) ? this.$cancel : this.$stars.eq(id);
+    o.forceSelect = true;
+    e.triggerHandler("click.stars");
+    o.forceSelect = false;
+  },
+  enable: function() {
+    this.options.disabled = false;
+    this._disableAll();
+  },
+  disable: function() {
+    this.options.disabled = true;
+    this._disableAll();
+  },
+  destroy: function() {
+    this.$cancel.unbind(".stars");
+    this.$stars.unbind(".stars");
+    this.element.unbind(".stars").removeData("stars");
+  },
+  callback: function(e, type) {
+    var o = this.options;
+    o.callback && o.callback(this, type, o.value, e);
+    o.oneVoteOnly && !o.disabled && this.disable();
+  }
+});
+
+}(jQuery));
+/** @file
+ *
+ *  Javascript interface/wrapper for the presentation of a single bookmark.
+ *
+ *  This is primarily a class to provide unobtrusive activation of a
+ *  pre-rendered bookmark item (View_Helper_HtmlBookmark):
+ *      - convert (optional Favorite and Privacy checkboxes into image-based
+ *        hover buttons;
+ *      - convert any (optional) star rating presentation to an active ui.stars
+ *        widget;
+ *      - allow in-line, on demand editing of the bookmark if it has a
+ *        '.control .item-edit' link;
+ *      - allow in-line, on demand deletion of the bookmark if it has a
+ *        '.control .item-delete' link;
+ *      - allow in-line, on demand saving of the bookmark if it has a
+ *        '.control .item-save' link;
+ *
+ *  View_Helper_HtmlBookmark will generate HTML for a bookmark similar to:
+ *     <form class='bookmark'>
+ *       <input type='hidden' name='userId' value='...' />
+ *       <input type='hidden' name='itemId' value='...' />
+ *
+ *       <!-- Status -->
+ *       <div class='status'>
+ *         <div class='favorite'>
+ *           <input type='checkbox' name='isFavorite' value='...' />
+ *         </div>
+ *         <div class='private'>
+ *           <input type='checkbox' name='isPrivate' value='...' />
+ *         </div>
+ *       </div>
+ *
+ *       <!-- Stats: item:stats -->
+ *       <div class='stats'>
+ *
+ *         <!-- item:stats:count -->
+ *         <a class='count' ...> count </a>
+ *
+ *         <!-- item:stats:rating -->
+ *         <div class='rating'>
+ *           <div class='stars'>
+ *
+ *             <!-- item:stats:rating:stars -->
+ *             <div class='ui-stars-wrapper'> ... </div>
+ *           </div>
+ *
+ *           <!-- item:stats:rating:info -->
+ *           <div class='info'>
+ *             <span class='count'> count </span> raters,
+ *             <span class='average'> average </span> avg.
+ *           </div>
+ *         </div>
+ *       </div>
+ *
+ *       <!-- Bookmark Data: item:data -->
+ *       <div class='data'>
+ *
+ *         <!-- User Identification: item:data:userId -->
+ *         <div class='userId'>
+ *           <a ...>
+ *
+ *             <!-- item:data:userId:avatar -->
+ *             <div class='img'>
+ *               <img ... avatar image ... />
+ *             </div>
+ *
+ *             <!-- item:data:userId:id -->
+ *             <span class='name'> userName </span>
+ *           </a>
+ *         </div>
+ *
+ *         <!-- Owner controls -->
+ *         <div class='control'>
+ *           <a class='item-edit' ...>EDIT</a> |
+ *           <a class='item-delete' ...>DELETE</a>
+ *
+ *           <a class='item-save' ...>SAVE</a>
+ *         </div class='control'>
+ *
+ *         <!-- Item Name: item:data:itemName -->
+ *         <h4 class='itemName'> <a ...> title </a> </h4>
+ *
+ *         <!-- Item Url: item:data:url -->
+ *         <div class='url'><a ..> url </a></div>
+ *
+ *         <!-- Item Description: item:data:description -->
+ *         <div class='description'>
+ *
+ *           <!-- Item Description: item:data:description:summary -->
+ *           <div class='summary'> description summary </div>
+ *
+ *           <!-- Item Description: item:data:description:full -->
+ *           <div class='full'> description full </div>
+ *         </div class='description'>
+ *
+ *         <!-- Item Tags: item:data:tags -->
+ *         <ul class='tags'>
+ *           <li class='tag'><a ...> tag </a></li>
+ *           ...
+ *         </ul>
+ *
+ *         <!-- Item Dates: item:data:dates -->
+ *         <div class='dates'>
+ *
+ *           <!-- item:data:dates:tagged -->
+ *           <div class='tagged'> tagged date </div>
+ *
+ *           <!-- item:data:dates:updated -->
+ *           <div class='updated'> updated date </div>
+ *         </div>
+ *       </div>
+ *     </form>
+ *
+ *  Requires:
+ *      ui.core.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false */
+(function($) {
+
+$.widget("ui.bookmark", {
+    version: "0.0.1",
+
+    /* Remove the strange ui.widget._trigger() class name prefix for events.
+     *
+     * If you need to know which widget the event was triggered from, either
+     * bind directly to the widget or look at the event object.
+     */
+    widgetEventPrefix:    '',
+
+    options: {
+        // Widget state (mirrors Model_Bookmark)
+        userId:     null,
+        itemId:     null,
+        name:       null,
+        description:null,
+        rating:     null,
+        isFavorite: null,
+        isPrivate:  null,
+
+        url:        null,
+
+        // taggedOn and updateOn are not user editable
+
+        /* A change callback
+         *      function(data)
+         *          return true  to allow the change
+         *          return false to abort the change
+         */
+        change:     null,
+
+        // Widget state
+        enabled:    true
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  @triggers:
+     *      'enabled.bookmark'
+     *      'disabled.bookmark'
+     */
+    _create: function()
+    {
+        var self        = this;
+        var opts        = self.options;
+
+        /********************************
+         * Locate the pieces
+         *
+         */
+        self.$userId      = self.element.find('input[name=userId]');
+        self.$itemId      = self.element.find('input[name=itemId]');
+        self.$name        = self.element.find('.itemName a');
+        self.$description = self.element.find('.description');
+
+        self.$rating      = self.element.find('.rating .stars .owner');
+        self.$favorite    = self.element.find('input[name=isFavorite]');
+        self.$private     = self.element.find('input[name=isPrivate]');
+
+        self.$edit        = self.element.find('.control .item-edit');
+        self.$delete      = self.element.find('.control .item-delete');
+        self.$save        = self.element.find('.control .item-save');
+
+        self.$url         = self.element.find('.itemName a,.url a');
+
+        /********************************
+         * Instantiate our sub-widgets
+         *
+         */
+
+        // Status - Favorite
+        self.$favorite.checkbox({
+            css:        'connexions_sprites',
+            cssOn:      'star_fill',
+            cssOff:     'star_empty',
+            titleOn:    'Favorite: click to remove from Favorites',
+            titleOff:   'Click to add to Favorites',
+            useElTitle: false,
+            hideLabel:  true
+        });
+
+        // Status - Private
+        self.$private.checkbox({
+            css:        'connexions_sprites',
+            cssOn:      'lock_fill',
+            cssOff:     'lock_empty',
+            titleOn:    'Private: click to share',
+            titleOff:   'Public: click to mark as private',
+            useElTitle: false,
+            hideLabel:  true
+        });
+
+        // Rating - average and user
+        self.$rating.stars({
+            //split:    2
+        });
+
+
+        /********************************
+         * Initialize our state and bind
+         * to interesting events.
+         *
+         */
+        self._setState();
+        self._bindEvents();
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _bindEvents: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        self._squelch = false;
+
+        // Handle a direct click on one of the status indicators
+        var _update_item      = function(e, data) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            e.stopPropagation();
+
+            $.log('ui.bookmark::_update_item('+ data +')');
+
+            if ((self.options.enabled !== true) || (self._squelch === true))
+            {
+                return;
+            }
+
+            // Gather the current data about this item.
+            var data    = {
+                userId:     opts.userId,
+                itemId:     opts.itemId,
+                isFavorite: self.$favorite.checkbox('isChecked'),
+                isPrivate:  self.$private.checkbox('isChecked')
+            };
+
+            if (self.$name.length > 0)
+            {
+                data.name = self.$name.text();
+            }
+
+            if (self.$description.length > 0)
+            {
+                data.description = self.$description.text();
+            }
+
+            if (self.$rating.length > 0)
+            {
+                data.rating = self.$rating.stars('value');
+            }
+
+            /* If there is a 'change' callback, invoke it.
+             *
+             * If it returns false, terminate the change.
+             */
+            if ($.isFunction(self.options.change))
+            {
+                if (! self.options.change(data))
+                {
+                    // Rollback state.
+                    self._resetState();
+
+                    return;
+                }
+            }
+
+
+            /* Perform an AJAJ call to update this item
+            $.ajax({
+                url:        '/api/v1/bookmark/update.json',
+                type:       'POST',
+                dataType:   'json',
+                data:       data,
+                success:    function(data, textStatus, req) {
+                    // set state
+                    self._setState();
+                },
+                error:      function(req, textStatus, err) {
+                    // rollback state
+                    self._resetState();
+                },
+                complete:   function(req, textStatus) {
+                }
+             });
+             */
+        };
+
+        // Handle item-edit
+        var _edit_click  = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (self.options.enabled !== true)
+            {
+                return;
+            }
+        };
+
+        // Handle item-delete
+        var _delete_click  = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (self.options.enabled !== true)
+            {
+                return;
+            }
+        };
+
+        // Handle save-delete
+        var _save_click  = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (self.options.enabled !== true)
+            {
+                return;
+            }
+        };
+
+        /**********************************************************************
+         * bind events
+         *
+         */
+
+        /*
+        self.$favorite.bind('click.bookmark', _update_item);
+        self.$private.bind('click.bookmark',  _update_item);
+        self.$rating.bind('click.bookmark',          _update_item);
+        */
+
+        self.element.bind('change.bookmark',    _update_item);
+
+        self.$edit.bind('click.bookmark',       _edit_click);
+        self.$delete.bind('click.bookmark',     _delete_click);
+        self.$save.bind('click.bookmark',       _save_click);
+    },
+
+    _setState: function()
+    {
+        // Set the current widget state to the values of it's sub-components
+        var self    = this;
+        var opts    = self.options;
+
+        opts.userId      = self.$userId.val();
+        opts.itemId      = self.$itemId.val();
+        opts.name        = self.$name.text();
+        opts.description = self.$description.text();
+
+        if (self.$rating.length > 0)
+        {
+            opts.rating  = self.$rating.stars('value');
+        }
+
+        opts.isFavorite  = self.$favorite.checkbox('isChecked');
+        opts.isPrivate   = self.$private.checkbox('isChecked');
+
+        opts.url         = self.$url.attr('href');
+    },
+
+    _resetState: function()
+    {
+        // Reset the values of the sub-components to the current widget state
+        var self    = this;
+        var opts    = self.options;
+
+        // Squelch change-triggered item updates.
+        self._squelch = true;
+
+        self.$name.text(opts.name);
+        self.$description.text(opts.description);
+
+        if (self.$rating.length > 0)
+        {
+            self.$rating.stars('select', opts.rating);
+        }
+
+        if (opts.isFavorite)
+        {
+            self.$favorite.checkbox('check');
+        }
+        else
+        {
+            self.$favorite.checkbox('uncheck');
+        }
+
+        if (opts.isPrivate)
+        {
+            self.$private.checkbox('check');
+        }
+        else
+        {
+            self.$private.checkbox('uncheck');
+        }
+
+        self.$url.attr('href', opts.url);
+
+        self._squelch = false;
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    isEnabled: function()
+    {
+        return this.options.enabled;
+    },
+
+    enable: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        if (! self.options.enabled)
+        {
+            self.options.enabled = true;
+            self.element.removeClass('ui-state-disabled');
+
+            self.$favorite.checkbox('enable');
+            self.$private.checkbox('enable');
+            self.$rating.stars('enable');
+
+            self._trigger('enabled', null, true);
+        }
+    },
+
+    disable: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        if (self.options.enabled)
+        {
+            self.options.enabled = false;
+            self.element.addClass('ui-state-disabled');
+
+            self.$favorite.checkbox('disable');
+            self.$private.checkbox('disable');
+            self.$rating.stars('disable');
+
+            self._trigger('disabled', null, true);
+        }
+    },
+
+    destroy: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        // Unbind events
+        self.$favorite.unbind('.bookmark');
+        self.$private.unbind('.bookmark');
+        self.$rating.unbind('.bookmark');
+        self.$edit.unbind('.bookmark');
+        self.$delete.unbind('.bookmark');
+        self.$save.unbind('.bookmark');
+
+        // Remove added elements
+        self.$favorite.checkbox('destroy');
+        self.$private.checkbox('destroy');
+        self.$rating.stars('destroy');
+    }
+});
+
+
+}(jQuery));
+
+/** @file
+ *
+ *  Javascript interface/wrapper for the presentation of multiple bookmarks.
+ *
+ *  This is primarily a class to provide unobtrusive activation of a
+ *  pre-rendered list of bookmark items (View_Helper_HtmlBookmarks), each of
+ *  which will become a ui.bookmark instance.
+ *
+ *  This class also handles:
+ *      - hover effects for .groupHeader DOM items;
+ *      - conversion of all form.bookmark DOM items to ui.bookmark instances;
+ *
+ *  View_Helper_HtmlBookmarks will generate HTML for a bookmark list similar
+ *  to:
+ *      <div id='<ns>List'>
+ *        <ul class='<ns>'>
+ *          <li><form class='bookmark'> ... </form></li>
+ *          ...
+ *        </ul>
+ *      </div>
+ *
+ *  Requires:
+ *      ui.core.js
+ *      ui.bookmark.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false */
+(function($) {
+
+$.widget("ui.bookmarkList", {
+    version: "0.0.1",
+
+    /* Remove the strange ui.widget._trigger() class name prefix for events.
+     *
+     * If you need to know which widget the event was triggered from, either
+     * bind directly to the widget or look at the event object.
+     */
+    widgetEventPrefix:    '',
+
+    options: {
+        // Defaults
+        namespace:  '',
+        dimOpacity: 0.5
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  @triggers:
+     *      'change.bookmark'  when something about the bookmark is changed;
+     */
+    _create: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        // Bookmarks
+        self.$bookmarks = self.element.find('form.bookmark');
+
+        // Group Headers
+        self.$headers = self.element.find('.groupHeader .groupType');
+
+
+        self.$bookmarks.bookmark();
+
+        self.$headers
+                .fadeTo(100, opts.dimOpacity)
+                .hover( function() {    // in
+                            self.$headers.fadeTo(100, 1.0);
+                        },
+                        function() {    // out
+                            self.$headers.fadeTo(100, opts.dimOpacity);
+                        }
+                );
+
+        self._bindEvents();
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _bindEvents: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    destroy: function() {
+        var self        = this;
+
+        // Unbind events
+        self.$headers.unbind('hover');
+
+        // Remove added elements
+        self.$bookmarks.bookmark('destroy');
+    }
+});
+
+
+}(jQuery));
+
+
+/** @file
+ *
+ *  Javascript interface/wrapper for the presentation of a configurable pane.
+ *
+ *  This is primarily a class to provide unobtrusive activation of a
+ *  pre-rendered view / pane:
+ *      - conversion of any (optional) paginator markup (form.paginator),
+ *        generated via View_Helper_HtmlPaginationControl, to ui.paginator
+ *        instance(s);
+ *      - conversion of any (optional) display options markup
+ *        (.displayOptions), generated via View_Helper_HtmlDisplayOptions, to a
+ *        ui.dropdownForm instance;
+ *
+ *  The pre-rendered HTML must have a form similar to:
+ *      <div class='pane' ...>
+ *        [ top paginator ]
+ *        [ display options ]
+ *
+ *        content
+ *
+ *        [ bottom paginator ]
+ *      </div>
+ *
+ *  Requires:
+ *      ui.core.js
+ *      ui.dropdownForm.js
+ *      ui.paginator.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false */
+(function($) {
+
+$.widget("ui.pane", {
+    version: "0.0.1",
+    options: {
+        // Defaults
+        namespace:      '',     // Cookie/parameter namespace
+        partial:        null,   // The name of the 'partial' if asynchronous
+                                // reloads are to be used on pagination or
+                                // displayOption changes.
+
+        // Information via the ui.pagination widget(s)
+        pageCur:        null,   // The current page number
+        pageVar:        null,   // The page number URL variable name
+        page:           null,   // The target  page number
+
+
+        /* Configuration for any <form class='pagination'> element that 
+         * will be controlled by a ui.pagination widget.
+         */
+        paginator:      {},
+
+        /* Configuration for any <div class='displayOptions'> element that 
+         * will be controlled by a ui.dropdownForm widget.
+         */
+        displayOptions: {}
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  @triggers:
+     *      'change.bookmark'  when something about the bookmark is changed;
+     */
+    _create: function() {
+        this._paneInit();
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _paneInit: function() {
+        this._init_paginators();
+        this._init_displayOptions();
+    },
+
+    _init_paginators: function() {
+        var self        = this;
+        var opts        = self.options;
+
+        self.$paginators    = self.element.find('form.paginator');
+
+        self.$paginators.each(function(idex) {
+            var $pForm  = $(this);
+
+            $pForm.paginator({namespace:    opts.namespace,
+                              form:         $pForm,
+                              disableHover: (idex !== 0)
+                              });
+
+            if (opts.page === null)
+            {
+                opts.pageCur = $pForm.paginator('getPage');
+                opts.pageVar = $pForm.paginator('getPageVar');
+            }
+        });
+
+        self.$paginators.bind('submit.uipane', function(e) {
+            e.preventDefault(true);
+            e.stopPropagation(true);
+            e.stopImmediatePropagation(true);
+
+            // Set the target page number
+            opts.page = $(this).paginator('getPage');
+
+            // reload
+            self.reload();
+        });
+    },
+
+    _init_displayOptions: function() {
+        var self                = this;
+        self.$displayOptions    = self.element.find('div.displayOptions');
+
+        if (self.$displayOptions.length < 1)
+        {
+            return;
+        }
+
+        var opts    = self.options;
+        var uiOpts  = (opts.displayOptions === undefined
+                        ? {}
+                        : opts.displayOptions);
+
+        if (uiOpts.namespace === undefined)
+        {
+            uiOpts.namespace = opts.namespace;
+        }
+
+        if (! $.isFunction(uiOpts.apply))
+        {
+            uiOpts.apply = function(e) {
+                /* dropdownForm sets cookies for any form values, so we can
+                 * simplify the form submission process (ensuring a clean url)
+                 * by simply re-loading the window.  The reload will cause the
+                 * new cookie values to be applied.
+                 */
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                e.stopPropagation();
+
+                self.reload();
+            };
+        }
+
+        // Instantiate the ui.dropdownForm widget
+        self.$displayOptions.dropdownForm(uiOpts);
+    },
+    _paneDestroy: function() {
+        var self    = this;
+
+        // Remove added elements
+        self.$paginators.paginator('destroy');
+        self.$displayOptions.dropdownForm('destroy');
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    reload: function(page) {
+        var self    = this;
+        var opts    = self.options;
+        var re      = new RegExp(opts.pageVar +'='+ opts.pageCur);
+        var rep     = opts.pageVar +'='+ opts.page;
+        var loc     = window.location;
+        var url     = loc.toString();
+
+        if (loc.search.length === 0)
+        {
+            url += '?'+ rep;
+        }
+        else if (! url.match(re))
+        {
+            url += '&'+ rep;
+        }
+        else
+        {
+            url = url.replace(re, rep);
+        }
+
+        if (opts.partial !== null)
+        {
+            // AJAX reload of just this pane...
+            url += '&format=partial&part='+ opts.partial;
+
+            $.ajax({url:        url,
+                    dataType:   'html',
+                    beforeSend: function() {
+                        self.element.mask();
+                    },
+                    error:      function(req, txtStatus, err) {
+                        $.notify({
+                            title:'Reload pane "'+ opts.partial +'" failed',
+                            text: '<p class="error">'+ txtStatus +'</p>'});
+                    },
+                    success:    function(data, txtStatus, req) {
+                        // Out with the old...
+                        self.destroy();
+
+                        // In with the new.
+                        self.element.html(data);
+                        self._create();
+                    },
+                    complete:   function() {
+                        self.element.unmask();
+                    }
+            });
+        }
+        else
+        {
+            // Perform a full, synchronous reload...
+            window.location.assign(url);
+        }
+    },
+
+    destroy: function() {
+        this._paneDestroy();
+    }
+});
+
+
+}(jQuery));
+
+
+
+/** @file
+ *
+ *  Javascript interface/wrapper for the presentation of a configurable pane
+ *  which contains a bookmark list.
+ *
+ *  This is class extends ui.pane to include unobtrusive activation of any
+ *  contained, pre-rendered ul.bookmarkList generated via
+ *  View_Helper_HtmlBookmarks.
+ *
+ *  Requires:
+ *      ui.pane.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false */
+(function($) {
+
+$.widget("ui.bookmarksPane", $.ui.pane, {
+    version: "0.0.1",
+    options: {
+        // Defaults
+        namespace:  ''
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  @triggers:
+     *      'change.bookmark'  when something about the bookmark is changed;
+     */
+    _create: function() {
+        var self        = this;
+        var opts        = self.options;
+
+        self._init_bookmarkList();
+
+        self._paneInit();
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _init_bookmarkList: function() {
+        var self            = this;
+        self.$bookmarkList  = self.element.find('ul.bookmarks');
+
+        if (self.$bookmarkList.length < 1)
+        {
+            return;
+        }
+
+        var opts    = self.options;
+        var uiOpts  = (opts.bookmarkList === undefined
+                        ? {}
+                        : opts.bookmarkList);
+
+        if (uiOpts.namespace === undefined)
+        {
+            uiOpts.namespace = opts.namespace;
+        }
+
+        // Instantiate the ui.bookmarkList widget
+        self.$bookmarkList.bookmarkList(uiOpts);
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    destroy: function() {
+        var self    = this;
+
+        // Remove added elements
+        self.$bookmarkList.bookmarkList('destroy');
+
+        self._paneDestroy();
+    }
+});
+
+
+}(jQuery));
+
+
+
+/** @file
+ *
+ *  Javascript interface/wrapper for the presentation of a configurable pane
+ *  which contains a bookmark list.
+ *
+ *  This is class extends ui.pane to include unobtrusive activation of any
+ *  contained, pre-rendered ul.cloud generated via
+ *  View_Helper_Html_HtmlItemCloud.
+ *
+ *  Requires:
+ *      ui.pane.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false */
+(function($) {
+
+$.widget("ui.cloudPane", $.ui.pane, {
+    version: "0.0.1",
+    options: {
+        // Defaults
+        namespace:  ''
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  @triggers:
+     *      'change.bookmark'  when something about the bookmark is changed;
+     */
+    _create: function() {
+        var self        = this;
+        var opts        = self.options;
+
+        //self._init_cloud();
+        self._paneInit();
+
+        self.$optionsForm = self.element.find('.displayOptions form');
+
+        self._bindEvents();
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _bindEvents: function() {
+        /* On Display style change, toggle the state of 'highlightCount'
+         *
+         * Note: The ui.dropdownForm widget that controls the display options
+         *       DOM element attached a ui.optionsGroups instance to any
+         *       contained displayOptions element.  This widget will trigger
+         *       the 'change' event on the displayOptions form with information
+         *       about the selected display group when a change is made.
+         */
+        this.$optionsForm.bind('change.cloudPane',
+                function(e, info) {
+                    var $field  = $(this).find('.field.highlightCount');
+
+                    if (info.group === 'cloud')
+                    {
+                        // Enable the 'highlightCount'
+                        $field.removeClass('ui-state-disabled');
+                        $field.find('select').removeAttr('disabled');
+                    }
+                    else
+                    {
+                        // Disable the 'highlightCount'
+                        $field.addClass('ui-state-disabled');
+                        $field.find('select').attr('disabled', true);
+                    }
+                });
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    destroy: function() {
+        var self    = this;
+
+        // Unbind events
+        self.$optionsForm.unbind('.cloudPane');
+
+        self._paneDestroy();
+    }
+});
+
+
+}(jQuery));
+
+
+
+/** @file
+ *
+ *  Javascript interface/wrapper for the presentation of a pagination control.
+ *
+ *  This is primarily a class to provide unobtrusive activation of a
+ *  pre-rendered pagination control, generate via Zend_Paginator.
+ *
+ *  The paginator has the following HTML structure:
+ *
+ *      <form class='paginator'>
+ *        <div class='pager'>
+ *          <button type='submit' ... value='page#'>page#</button>
+ *          ...
+ *        </div>
+ *
+ *        <!-- and optionally -->
+ *        <div class='info'>
+ *          <div class='perPage'>
+ *            <div class='itemCount'>count#</div>
+ *              items with
+ *            <select name='%ns%PerPage'>...</select>
+ *              items per page.
+ *          </div>
+ *          <div class='itemRange'>
+ *            Currently viewing items
+ *            <div class='count'>1 - 50</div>
+ *             .
+ *          </div>
+ *        </div>
+ *      </form>
+ *
+ *  Requires:
+ *      ui.core.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false */
+
+(function($) {
+
+$.widget("ui.paginator", {
+    version: "0.1.1",
+    options: {
+        // Defaults
+        namespace:      '',     // Form/cookie namespace
+        disableHover:   false,
+        page:           1,
+        pageVar:        'Page'
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  Valid options are:
+     *      namespace   The form / cookie namespace [ '' ];
+     *
+     *  @triggers:
+     *      'submit'    on the controlling form when 'PerPage' select element
+     *                  is changed.
+     */
+    _create: function() {
+        var self        = this;
+        var opts        = self.options;
+
+        if (opts.form === null)
+        {
+            // See if the DOM element has a 'form' data item
+            var fm  = self.element.data('form');
+            if (fm !== undefined)
+            {
+                opts.form = fm;
+            }
+            else
+            {
+                // Choose the closest form
+                opts.form = self.element.closest('form');
+            }
+        }
+
+        // Which page is currently selected/active?
+        opts.page    = self.element.find('button.ui-state-active').text();
+        opts.pageVar = self.element.find('button:submit:first').attr('name');
+
+        // Interaction events
+        self._bindEvents();
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _bindEvents: function() {
+        var self    = this;
+        var opts    = self.options;
+
+        // Add an opacity hover effect
+        if (! opts.disableHover)
+        {
+            self.element
+                .fadeTo(100, 0.5)
+                .hover( function() {    // in
+                            $(this).fadeTo(100, 1.0);
+                        },
+                        function() {    // out
+                            $(this).fadeTo(100, 0.5);
+                        }
+                );
+        }
+
+        // Attach to any PerPage selection box
+        self.element.find('select[name='+ opts.namespace +'PerPage]')
+                .bind('change.paginator', function(e) {
+                        /* On change of the PerPage select, trigger 'submit' on
+                         * the pagination form.
+                         */
+                        self.element.submit();
+                      }
+                );
+
+        // Attach to all 'submit' buttons to remember which page
+        self.element.find(':submit')
+                .bind('click.paginator', function(e) {
+                            opts.page = $(this).val();
+
+                            // Allow the event to bubble
+                        }
+                );
+
+        // Attach to any 'submit' event on the top-level form.
+        self.element
+                .bind('submit.paginator', function(e) {
+                        // Serialize all form values to an array...
+                        var settings    = self.element.serializeArray();
+
+                        /* ...and set a cookie for each:
+                         *      %ns%PerPage
+                         */
+                        $(settings).each(function() {
+                            $.log("Add Cookie: name[%s], value[%s]",
+                                  this.name, this.value);
+                            $.cookie(this.name, this.value);
+                        });
+
+                        /* Finally, since we've set all parameters as
+                         * cookies, we don't need to actually SUBMIT this
+                         * form.  Disable the event and reload the window.
+                        e.stopImmediatePropagation();
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        window.location.reload();
+                         */
+                      }
+                );
+
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    getPage: function() {
+        return this.options.page;
+    },
+    getPageVar: function() {
+        return this.options.pageVar;
+    },
+
+    getForm: function() {
+        return this.options.form;
+    },
+
+    enable: function() {
+        this.find(':button').removeAttr('disabled');
+    },
+
+    disable: function() {
+        this.find(':button').attr('disabled', true);
+    },
+
+    destroy: function() {
+    }
+});
+
+
+}(jQuery));
+/*
+ * jQuery Notify UI Widget 1.2.2
+ * Copyright (c) 2010 Eric Hynds
+ *
+ * http://www.erichynds.com/jquery/a-jquery-ui-growl-ubuntu-notification-widget/
+ *
+ * Depends:
+ *   - jQuery 1.4
+ *   - jQuery UI 1.8 widget factory
+ *
+ * Dual licensed under the MIT and GPL licenses:
+ *   http://www.opensource.org/licenses/mit-license.php
+ *   http://www.gnu.org/licenses/gpl.html
+ *
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false */
+(function($){
+
+$.widget("ui.notify", {
+	options: {
+		speed: 500,
+		expires: 5000,
+		stack: 'below'
+	},
+	_create: function(){
+		var self = this;
+		this.templates = {};
+		this.keys = [];
+		
+		// build and save templates
+		this.element.addClass("ui-notify").children().addClass("ui-notify-message").each(function(i){
+			var key = this.id || i;
+			self.keys.push(key);
+			self.templates[key] = $(this).removeAttr("id").wrap("<div></div>").parent().html(); // because $(this).andSelf().html() no workie
+		}).end().empty();
+		
+	},
+	create: function(template, msg, opts){
+		if(typeof template === "object"){
+			opts = msg;
+			msg = template;
+			template = null;
+		}
+		
+		// return a new notification instance
+		return new $.ui.notify.instance(this)._create(msg, $.extend({}, this.options, opts), this.templates[ template || this.keys[0]]);
+	}
+});
+
+// instance constructor
+$.extend($.ui.notify, {
+	instance: function(widget){
+		this.parent = widget;
+		this.isOpen = false;
+	}
+});
+
+// instance methods
+$.extend($.ui.notify.instance.prototype, {
+	_create: function(params, options, template){
+		this.options = options;
+		
+		var self = this,
+			
+			// build html template
+			html = template.replace(/#(?:\{|%7B)(.*?)(?:\}|%7D)/g,
+                                    function($1, $2){
+				                        return ($2 in params)
+                                                ? params[$2]
+                                                : '';
+			                        }),
+			
+			// the actual message
+			m = (this.element = $(html)),
+			
+			// close link
+			closelink = m.find("a.ui-notify-close");
+		
+		// fire beforeopen event
+		if(this._trigger("beforeopen") === false){
+			return;
+		}
+
+		// clickable?
+		if(typeof this.options.click === "function"){
+			m.addClass("ui-notify-click").bind("click", function(e){
+				self._trigger("click", e, self);
+			});
+		}
+		
+		// show close link?
+		if(closelink.length && !!options.expires){
+			closelink.remove();
+		} else if(closelink.length){
+			closelink.bind("click", function(){
+				self.close();
+				return false;
+			});
+		}
+		
+		this.open();
+		
+		// auto expire?
+		if(typeof options.expires === "number"){
+			window.setTimeout(function(){
+				self.close();
+			}, options.expires);
+		}
+		
+		return this;
+	},
+	close: function(){
+		var self = this, speed = this.options.speed;
+		this.isOpen = false;
+		
+		this.element.fadeTo(speed, 0).slideUp(speed, function(){
+			self._trigger("close");
+		});
+		
+		return this;
+	},
+	open: function(){
+		if(this.isOpen){
+			return this;
+		}
+		
+		var self = this;
+		this.isOpen = true;
+		
+		this.element[this.options.stack === 'above'
+                        ? 'prependTo'
+                        : 'appendTo'](this.parent.element)
+                .css({ display:"none", opacity:"" })
+                .fadeIn(this.options.speed, function(){
+			        self._trigger("open");
+		        });
+		
+		return this;
+	},
+	widget: function(){
+		return this.element;
+	},
+	_trigger: function(type, e, instance){
+		return this.parent._trigger.call( this, type, e, instance );
+	}
+});
+
+}(jQuery));
+/** @file
+ *
+ *  Javascript interface/wrapper for the presentation of a configurable
+ *  sidebar.
+ *
+ *  This is primarily a class to provide unobtrusive activation of a
+ *  pre-rendered sidebar:
+ *      - conversion of markup generated via View_Helper_HtmlSidebar, to
+ *        ui.tabs instance(s);
+ *      - possible asynchronous loading of tab panes with masking of the tab
+ *        widget during load;
+ *
+ *  The pre-rendered HTML must have a form similar to:
+ *      <div id='%namespace%'>
+ *        <ul>
+ *          <li>
+ *            <a href='%paneUrl%'>
+ *              <span>Pane Title</span>
+ *            </a>
+ *          </li>
+ *          ...
+ *        </ul>
+ *        
+ *        <!-- If these are synchronous panes, the content is here -->
+ *        <div id='%paneId%'>
+ *          Pane content
+ *        </div>
+ *        ...
+ *      </div>
+ *
+ *  Requires:
+ *      ui.core.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false */
+(function($) {
+
+$.widget("ui.sidebar", {
+    version: "0.0.1",
+    options: {
+        // Defaults
+        namespace:      ''      // Cookie/parameter namespace
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  @triggers:
+     *      'change.bookmark'  when something about the bookmark is changed;
+     */
+    _create: function() {
+        var self    = this;
+        var opts    = self.options;
+
+        opts.namespace = self.element.attr('id');
+
+        self.element.tabs({
+            cache:      true,
+            cookie:     opts.namespace,
+            ajaxOptions:{
+                beforeSend: function() {
+                    // Mask the tab panel area...
+                    var sel = self.element.tabs('option', 'selected');
+                    self.$tab = self.element.find('.ui-tabs-panel').eq(sel);
+
+                    self.$tab.mask();
+                },
+                complete: function() {
+                    // Bind any new displayOptions forms
+                    self._bindReload(self.$tab);
+
+                    // Unmask the tab panel area...
+                    self.$tab.unmask();
+                }
+            }
+        });
+
+        // For each asynchronous tab, bind reload events
+        self.element.find('ul:first li a:first').each(function(idex) {
+            var url = $.data(this, 'load.tabs');
+            if (url)
+            {
+                var $tab = self.element.find('.ui-tabs-panel').eq(idex);
+                self._bindReload($tab);
+            }
+        });
+
+        self._bindReload(self.element);
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _bindReload: function(context) {
+        var self    = this;
+
+        context.find('.displayOptions')
+                .dropdownForm('setApplyCb', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+
+                    // Reload the tab contents
+                    self.element.tabs('load',
+                                      self.element.tabs('option', 'selected'));
+                });
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    destroy: function() {
+        this.element.tabs('destroy');
+    }
+});
+
+
+}(jQuery));
+
+
+

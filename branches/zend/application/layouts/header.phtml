@@ -34,7 +34,7 @@ $links->prependStylesheet($baseUrl .'css/connexions.css');
 $links->prependStylesheet($baseUrl .'css/themes/default/jquery-ui.css');
 //$links->prependStylesheet($baseUrl .'css/themes/base/jquery.ui.all.css');
 
-$jQuery->addJavascriptFile($this->baseurl('js/connexions-full.min.js'));
+$jQuery->addJavascriptFile($this->baseurl('js/connexions-full.js'));
 //$jQuery->addJavascriptFile($this->baseurl('js/jquery.pngFix.js'));
 //$jQuery->addJavascriptFile($this->baseurl('js/ui.notify.min.js'));
 //$jQuery->addJavascriptFile($this->baseurl('js/ui.input.min.js'));
@@ -45,9 +45,11 @@ $links->appendStylesheet($baseUrl .'css/screen.css', 'screen,projection');
 $links->appendStylesheet($baseUrl .'css/sprites.css','screen,projection');
 $links->appendStylesheet($baseUrl .'css/screen.css', 'print');
 
-$links->appendStylesheet($baseUrl .'css/ie.css',     'screen,projection',
-                         true, array('conditional'  => 'lt IE 8'));
 */
+$links->appendStylesheet($baseUrl .'css/ie.min.css',  'screen,projection',
+                         'lt IE 8');
+$links->appendStylesheet($baseUrl .'css/ie8.min.css', 'screen,projection',
+                         'IE 8');
 
 
 if ( @isset($config->cdn) && $config->cdn->use )

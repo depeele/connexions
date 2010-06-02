@@ -1,4 +1,4 @@
-/****** users.sass ****** */
+/****** users.scss ****** */
 .rightCol #usersList .users { padding: 0 0 0 0.5em; border: none; }
 .rightCol #usersList .users .user .stats { width: 48px; }
 .rightCol #usersList .users .user .data { border: none; }
@@ -46,7 +46,7 @@
 #usersList .users .user .data .userId a { display: inline; font-weight: bold; }
 #usersList .users .user .data .fullName { float: left; padding: 0.25em; }
 #usersList .users .user .data .fullName a { display: inline; font-weight: bold; }
-#usersList .users .user .data .email { float: right; padding: 0.25em; border: none; max-width: 526px; *width: 526px; }
+#usersList .users .user .data .email { float: right; padding: 0.25em; border: none; max-width: 794px; }
 #usersList .users .user .data .email a { display: inline; font-weight: normal; }
 #usersList .users .user .data .email .icon { position: relative; float: left; }
 #usersList .users .user .data .tags { clear: right; display: block; float: right; font-size: 0.9em; padding: 0.5em 0 0; margin: 0; text-align: right; }
