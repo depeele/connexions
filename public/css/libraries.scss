@@ -5,19 +5,52 @@
  * version: 3.0.0pr2 */
 /* reset */
 html {
-  color: black;
+  color:      black;
   background: white;
 }
 
 body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,textarea,p,blockquote,th,td {
-  position: relative;
-  margin: 0;
-  padding: 0;
+  position:       relative;
+  margin:         0;
+  padding:        0;
+  border:         0;
+  outline:        0;
+  font-size:      100%;
+  vertical-align: baseline;
+  background:     transparent;
+
+  /* Make the box models nearly match across browsers */
+  box-sizing:         border-box;
+  -moz-box-sizing:    border-box;
+  -webkit-box-sizing: border-box;
+  -ms-box-sizing:     border-box;
+}
+
+body {
+  line-height:  1;
+}
+
+ol, li {
+  list-style: none;
+}
+
+blockquote, q {
+  quotes:     none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+  content:    '';
+  content:    none;
+}
+
+/* Remember to define focus styles */
+:focus {
+  outline:    0;
 }
 
 table {
-  border-collapse: collapse;
-  border-spacing: 0;
+  border-collapse:  collapse;
+  border-spacing:   0;
 }
 
 fieldset,img {
@@ -25,25 +58,17 @@ fieldset,img {
 }
 
 address,caption,cite,code,dfn,em,strong,th,var {
-  font-style: normal;
-  font-weight: normal;
-}
-
-li {
-  list-style: none;
+  font-style:   normal;
+  font-weight:  normal;
 }
 
 caption,th {
-  text-align: left;
+  text-align:   left;
 }
 
 h1,h2,h3,h4,h5,h6 {
-  font-size: 100%;
-  font-weight: normal;
-}
-
-q:before,q:after {
-  content: "";
+  font-size:    100%;
+  font-weight:  normal;
 }
 
 abbr,acronym {
@@ -60,12 +85,9 @@ sub {
 }
 
 input,textarea,select {
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-}
-
-input,textarea,select {
+  font-family:  inherit;
+  font-size:    inherit;
+  font-weight:  inherit;
   *font-size: 100%;
 }
 
@@ -86,23 +108,14 @@ select,input,button,textarea {
 }
 
 table {
-  font-size: inherit;
-  font: 100%;
+  font-size:  inherit;
+  font:       100%;
 }
 
 pre,code,kbd,samp,tt {
-  font-family: monospace;
-  *font-size: 108%;
-  line-height: 100%;
-}
-
-/* box model normalization */
-html,body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,p,blockquote,table,thead,tbody,tfoot,tr,th,td {
-  /* Make the box models nearly match across browsers */
-  box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  -ms-box-sizing: border-box;
+  font-family:  monospace;
+  line-height:  100%;
+  *font-size:   108%;
 }
 
 /* float clear */

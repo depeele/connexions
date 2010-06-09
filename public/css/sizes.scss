@@ -42,12 +42,12 @@ $searchInputPad: 2px;
 
 $searchInputInputPadLeft: 2px;
 $searchInputInputPadRght: $searchMagWidth;
-$searchInputInputWidth: 145px;
+$searchInputInputWidth: 170px;
 
-// 174px                = 145px                  + 2px                      + 23px                     + (2               *2)
+// 199px           = 170px                + 2px                      + 23px                     + (2               *2)
 $searchInputWidth: $searchInputInputWidth + $searchInputInputPadLeft + $searchInputInputPadRght + $searchInputPad * 2;
 
-// 150px                = 174px             - 23px            - 1
-$searchMagLeft: $searchInputWidth - $searchMagWidth - 1;
+// 150px      = 170px                  - 23px            + 2
+$searchMagLeft: $searchInputInputWidth - $searchMagWidth + 2;
 
 $navWidthSub: 120px;

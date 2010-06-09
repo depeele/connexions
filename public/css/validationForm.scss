@@ -41,16 +41,16 @@
         width: 30em;
       }
       .ui-field-info {
-        height: 1.25em;
-        font-size: 0.9em;
-        padding-left: 2em;
+        height:       1.25em;
+        font-size:    0.9em;
+        padding-left: 1.25em;
         @include opacity(50);
         .ui-field-status {
-          float: left;
+          float:      left;
         }
         .ui-field-requirements {
-          float: right;
-          color: $fieldInfoColor;
+          float:      right;
+          color:      $fieldInfoColor;
           text-align: right;
         }
       }

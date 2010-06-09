@@ -60,7 +60,7 @@
 .bookmarks .item .stats .rating .stars .average .ui-stars-star, .pane .displayStyle fieldset.options .item .stats .rating .stars .average .ui-stars-star { cursor: default; }
 .bookmarks .item .stats .rating .stars .average .ui-stars-star a, .pane .displayStyle fieldset.options .item .stats .rating .stars .average .ui-stars-star a { cursor: default; }
 .bookmarks .item .stats .rating .stars .average .ui-stars-star-disabled, .pane .displayStyle fieldset.options .item .stats .rating .stars .average .ui-stars-star-disabled { visibility: hidden; }
-.bookmarks .item .stats .rating .stars .average-owner, .pane .displayStyle fieldset.options .item .stats .rating .stars .average-owner { position: absolute; top: 3px; left: 1px; opacity: 0.7; filter: alpha(opacity=70); -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=70)'; }
+.bookmarks .item .stats .rating .stars .average-owner, .pane .displayStyle fieldset.options .item .stats .rating .stars .average-owner { position: absolute; top: 3px; left: 1px; opacity: 0.7; filter: alpha(opacity=70); -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=70)'; -khtml-opacity: 0.7; -moz-opacity: 0.7; }
 .bookmarks .item .stats .rating .stars .average-owner .ui-stars-star-disabled, .pane .displayStyle fieldset.options .item .stats .rating .stars .average-owner .ui-stars-star-disabled { visibility: hidden; }
 .bookmarks .item .stats .rating .stars .owner .ui-stars-star-disabled, .bookmarks .item .stats .rating .stars .owner .ui-stars-cancel, .pane .displayStyle fieldset.options .item .stats .rating .stars .owner .ui-stars-star-disabled, .pane .displayStyle fieldset.options .item .stats .rating .stars .owner .ui-stars-cancel { visibility: hidden; }
 .bookmarks .item .stats .rating .info, .pane .displayStyle fieldset.options .item .stats .rating .info { clear: left; color: #999999; font-size: 0.75em; }
@@ -78,7 +78,7 @@
 .bookmarks .item .data .userId a .img .ui-icon, .pane .displayStyle fieldset.options .item .data .userId a .img .ui-icon { position: relative; top: -2px; }
 .bookmarks .item .data .userId a .name, .pane .displayStyle fieldset.options .item .data .userId a .name { display: inline; font-size: 0.9em; padding-left: 0.25em; }
 .bookmarks .item .data .tags, .pane .displayStyle fieldset.options .item .data .tags { display: block; clear: right; float: right; font-size: 0.9em; padding: 0.5em 0; margin: 0; text-align: right; }
-.bookmarks .item .data .tags .tag, .bookmarks .item .data .tags .tag:hover, .pane .displayStyle fieldset.options .item .data .tags .tag, .pane .displayStyle fieldset.options .item .data .tags .tag:hover { display: block; float: left; padding: 0.2em; margin: 0.1em; background-color: #eeeeee; color: #172322; }
+.bookmarks .item .data .tags .tag, .bookmarks .item .data .tags .tag:hover, .pane .displayStyle fieldset.options .item .data .tags .tag, .pane .displayStyle fieldset.options .item .data .tags .tag:hover { display: block; float: left; background-color: #eeeeee; color: #172322; -moz-border-radius: 1em 0 0 1em; -webkit-border-radius: 1em 0 0 1em; -ms-border-radius: 1em 0 0 1em; -khtml-border-radius: 1em 0 0 1em; border-radius: 1em 0 0 1em; margin: 0.1em 0.1em 0.1em -0.5em; padding: 0.2em 0.75em 0.2em 0.5em; }
 .bookmarks .item .data .tags .tag a, .bookmarks .item .data .tags .tag a:hover, .bookmarks .item .data .tags .tag a:visited, .bookmarks .item .data .tags .tag a:focus, .bookmarks .item .data .tags .tag:hover a, .bookmarks .item .data .tags .tag:hover a:hover, .bookmarks .item .data .tags .tag:hover a:visited, .bookmarks .item .data .tags .tag:hover a:focus, .pane .displayStyle fieldset.options .item .data .tags .tag a, .pane .displayStyle fieldset.options .item .data .tags .tag a:hover, .pane .displayStyle fieldset.options .item .data .tags .tag a:visited, .pane .displayStyle fieldset.options .item .data .tags .tag a:focus, .pane .displayStyle fieldset.options .item .data .tags .tag:hover a, .pane .displayStyle fieldset.options .item .data .tags .tag:hover a:hover, .pane .displayStyle fieldset.options .item .data .tags .tag:hover a:visited, .pane .displayStyle fieldset.options .item .data .tags .tag:hover a:focus { display: inline; font-weight: normal; text-decoration: none; color: #172322; }
 .bookmarks .item .data .tags .tag:hover, .pane .displayStyle fieldset.options .item .data .tags .tag:hover { background-color: #172322; color: #eeeeee; }
 .bookmarks .item .data .tags .tag:hover a, .bookmarks .item .data .tags .tag:hover a:hover, .bookmarks .item .data .tags .tag:hover a:visited, .bookmarks .item .data .tags .tag:hover a:focus, .pane .displayStyle fieldset.options .item .data .tags .tag:hover a, .pane .displayStyle fieldset.options .item .data .tags .tag:hover a:hover, .pane .displayStyle fieldset.options .item .data .tags .tag:hover a:visited, .pane .displayStyle fieldset.options .item .data .tags .tag:hover a:focus { color: #eeeeee; }
@@ -112,20 +112,3 @@
 .bookmarks .mine.no-userId .status .favorite, .bookmarks .no-userId .status .favorite, .pane .displayStyle fieldset.options .mine.no-userId .status .favorite, .pane .displayStyle fieldset.options .no-userId .status .favorite { top: 4px; }
 .bookmarks .mine.no-userId .status .private, .bookmarks .no-userId .status .private, .pane .displayStyle fieldset.options .mine.no-userId .status .private, .pane .displayStyle fieldset.options .no-userId .status .private { top: 24px; }
 .bookmarks .mine.no-userId .data, .bookmarks .no-userId .data, .pane .displayStyle fieldset.options .mine.no-userId .data, .pane .displayStyle fieldset.options .no-userId .data { margin-left: 0; padding-left: 32px; }
-
-.pane .displayStyle fieldset.options .item .stats { font-weight: normal; padding: 0; }
-.pane .displayStyle fieldset.options .item .stats .rating { padding: 0.25em 0.1em 0.25em 0.5em; text-align: left; }
-.pane .displayStyle fieldset.options .item .stats .rating .info { text-align: left; float: none; padding: 0; }
-.pane .displayStyle fieldset.options .item .data { padding-left: 0; padding-right: 0.1em; }
-.pane .displayStyle fieldset.options .item .data .url, .pane .displayStyle fieldset.options .item .data .description, .pane .displayStyle fieldset.options .item .data .description .full, .pane .displayStyle fieldset.options .item .data .description .summary { margin: 0; }
-.pane .displayStyle fieldset.options .item .data .description { padding-bottom: 0.5em; }
-.pane .displayStyle fieldset.options .item .data .description .full, .pane .displayStyle fieldset.options .item .data .description .summary { padding: 0; }
-.pane .displayStyle fieldset.options .item .data .userId { white-space: normal; padding: 0 0 0 1em; font-size: 0.8em; }
-.pane .displayStyle fieldset.options .item .data .userId label { padding-left: 0; }
-.pane .displayStyle fieldset.options .item .data .userId .avatar { position: relative; float: left; padding: 0 0.75em 0 0.25em; }
-.pane .displayStyle fieldset.options .item .data .userId .avatar label { padding-left: 8px; }
-.pane .displayStyle fieldset.options .item .data .userId .avatar .img { position: absolute; left: 14px; top: 0; }
-.pane .displayStyle fieldset.options .item .data .userId .id { display: inline; }
-.pane .displayStyle fieldset.options .item .data .tags { width: auto; text-align: left; padding: 0 0 1em 0; }
-.pane .displayStyle fieldset.options .item .data .tags label, .pane .displayStyle fieldset.options .item .data .tags .tag { display: inline; float: none; font-size: 0.8em; }
-.pane .displayStyle fieldset.options .item .data .dates .updated { width: auto; }

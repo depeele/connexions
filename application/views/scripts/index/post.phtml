@@ -8,12 +8,6 @@ if (! @is_array($this->postInfo))
 $jQuery = $this->jQuery();
 $jQuery->addStylesheet($this->baseUrl('css/post.css'))
        ->addStylesheet($this->baseUrl('css/validationForm.css'))
-       /*
-       ->addJavascriptFile($this->baseUrl('js/ui.stars.min.js'))
-       ->addJavascriptFile($this->baseUrl('js/ui.checkbox.min.js'))
-       ->addJavascriptFile($this->baseUrl('js/ui.button.min.js'))
-       ->addJavascriptFile($this->baseUrl('js/ui.input.min.js'))
-       */
        ->addOnLoad('post_onLoad();')
        ->javascriptCaptureStart();
 ?>
@@ -51,8 +45,8 @@ function post_onLoad()
     $status = $('#post .status');
     $submit = $('#post button[name=submit]');
 
-    $submit.button({ priority:'primary', enabled:false});
-    $('#post button[name=cancel]').button({ priority:'secondary'});
+    $submit.button({ disabled:true});
+    $('#post button[name=cancel]').button();
 
     // Rating
     $('#post .stars-wrapper').stars({
@@ -258,8 +252,10 @@ $jQuery->javascriptCaptureEnd();
             type='checkbox' value='true'
             <?= ($this->postInfo['isPrivate'] ? ' checked' : '') ?> />
      </div>
-     <button name='submit' tabindex='5'>Save</button>
-     <button name='cancel' tabindex='6'>Cancel</button>
+     <button name='submit' tabindex='5'
+            class='ui-priority-primary'>Save</button>
+     <button name='cancel' tabindex='6'
+            class='ui-priority-secondary'>Cancel</button>
      <br class='clear' />
     </div>
    </form>

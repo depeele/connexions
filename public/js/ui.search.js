@@ -51,12 +51,11 @@ $.widget("ui.search", {
         self.$submit.addClass('ui-state-disabled')
                     .attr('disabled', true);
 
-        /* Attach a ui.input widget to the input field with defined 'emptyText'
-         * and a validation callback to enable/disable the submit button based
-         * upon whether or not there is text in the search box.
+        /* Attach a ui.input widget to the input field with defined validation
+         * callback to enable/disable the submit button based upon whether or
+         * not there is text in the search box.
          */
         self.$input.input({
-            emptyText:  self.contextLabel,
             validation: function(val) {
                 if (val.length > 0)
                 {
@@ -73,6 +72,8 @@ $.widget("ui.search", {
                 return true;
             }
         });
+        self.$input.input('setLabel', self.contextLabel);
+
         self._bindEvents();
 	},
 
@@ -83,14 +84,14 @@ $.widget("ui.search", {
         // Activate our search choice selections
         self.$choices.find('li')
                 .bind('mousedown.search', function(e) {
-                    /* We're changing the empty text so, before 'blur' is
-                     * fired, remove the existing empty text.
+                    /* We're changing the label text so, before 'blur' is
+                     * fired, remove the existing label text.
                      *
-                     * This fixes a flicker issue where the old empty text
+                     * This fixes a flicker issue where the old label text
                      * would be placed in the input field only to be removed
                      * when we re-focus on that field.
                      */
-                    self.$input.input('setEmptyText', null);
+                    self.$input.input('setLabel', null);
                 })
                 .bind('click.search', function(e) {
                     var $li         = $(this);
@@ -98,9 +99,11 @@ $.widget("ui.search", {
                     // Grab the new context value from li.id
                     var newChoice   = $li.attr('id').replace(/search-choice-/,
                                                              '');
+
+                    // Set the new context value
                     self.$context.val(newChoice);
 
-                    // Set the current value in the query input box
+                    // Grab the new label value for the query input box
                     self.contextLabel = $li.text();
 
                     // Remove the 'active' class from all siblings...
@@ -109,12 +112,14 @@ $.widget("ui.search", {
                     // Add the 'active' class to THIS element.
                     $li.addClass('active');
 
-                    // Set the new empty text and focus on the input field.
-                    self.$input.input('setEmptyText', self.contextLabel);
+                    // Set the new label text and focus on the input field.
+                    self.$input.input('setLabel', self.contextLabel);
+                    /*
                     if ($.isFunction(self.$input.focus))
                     {
                         self.$input.focus();
                     }
+                    */
                 });
     },
 

@@ -140,33 +140,26 @@ $.widget("ui.optionGroups", {
          */
         var $groups     = self.element.find('ul.groups');
 
-        $groups.find('li').removeClass('ui-state-active');
-        $groups.find(':checked').parent().addClass('ui-state-active');
-        $groups.find(':radio').hide();
-        $groups.find('li:not(.isCustom)')
-                    .addClass('toggle');
+        $groups.find('li')
+                .removeClass('ui-state-active')
+                .addClass('ui-state-default')
+                .filter(':first')
+                    .addClass('ui-corner-left')
+                .end()
+                .find(':radio')
+                    .hide();
+        $groups.find(':checked')
+                .parent()
+                    .addClass('ui-state-active');
         $groups.find('li.isCustom')
-                    .addClass('control ui-corner-all ui-state-default')
-                    .append(  "<div class='ui-icon ui-icon-triangle-1-s'>"
-                            +  "&nbsp;"
-                            + "</div>");
-
-        $groups.find('li:not(:last)')
-                    .after("<span class='comma'>,</span>");
-
-        self.element.find('input')
-                    .addClass('ui-corner-all ui-state-default');
-
-
-        /* Add a new hidden input to represent the group radio buttons that
-         * we've hidden.
-        $groups.append("<input type='hidden' "
-                            + "name='"+  $groups.find(':radio:first')
-                                                    .attr('name') +"' "
-                            + "value='"+ $groups.find(':checked')
-                                                    .val() +"' />");
-         */
-
+                .addClass('control')
+                .button({
+                    icons: {
+                        secondary:  'ui-icon-triangle-1-s'
+                    }
+                })
+                .removeClass('ui-corner-all')
+                .addClass('ui-corner-right');
 
         /* Now, the currently selected group can be found via:
          *  self.element.find('ul.groups :checked').val();
@@ -338,12 +331,14 @@ $.widget("ui.optionGroups", {
          * one
          */
         $groups.find('li.ui-state-active').removeClass('ui-state-active');
-        $newGroup.parent().addClass('ui-state-active');
+
+        var $li = $newGroup.parents('li:first');
+        $li.addClass('ui-state-active');
 
         // Set the hidden input value
         // $groups.find('input[type=hidden]').val(group);
 
-        if (! $newGroup.parent().hasClass('control'))
+        if (! $li.hasClass('control'))
         {
             // Turn OFF all items in the group fieldset...
             $groupFieldset.find('input').removeAttr('checked');

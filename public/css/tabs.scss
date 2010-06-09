@@ -39,6 +39,39 @@ $navBorder: unquote("1px dotted") $navColorBorder;
     li.active a, a:hover {
       color: $navColorHover;
     }
+
+    // Welcome / Join -- first tab item
+    li.welcome, li.join {
+      width: $navWidthFirst;
+      border-right: $navBorder;
+      @include corners(0, 0, 0, 20px);
+    }
+
+    li.welcome {
+      //background-color =    !navColorWelcomeBackground
+      background: url("sprites/welcome_bg_gradient.gif") repeat-x scroll 0 0 transparent;
+      ul.sub {
+        left: 0;
+      }
+      ul.sub li {
+        width: 100px;
+      }
+      ul.sub .corner_inner_left {
+        display: none;
+      }
+      &:hover {
+        @include corners(0, 0, 0, 0);
+      }
+    }
+    li.join {
+      background-color: $navColorJoinBackground;
+      a {
+        color: $navColor;
+        &:hover {
+          color: $navColorBackground;
+        }
+      }
+    }
   }
   .nav {
     position: absolute;
@@ -71,149 +104,70 @@ $navBorder: unquote("1px dotted") $navColorBorder;
   }
 }
 
-#pageHeader ul.sub li,
-#search ul.sub li {
-  background-color: $navColorBackground;
-  width: $navWidthSub;
-  height: auto;
-  padding: unquote("0") $navPadSubItem_lr;
-  float: left;
-  margin: 0;
-  cursor: pointer;
-  text-align: left;
-}
+#pageHeader, #search {
+  ul.sub {
+    li {
+      background-color: $navColorBackground;
+      width: $navWidthSub;
+      height: auto;
+      padding: unquote("0") $navPadSubItem_lr;
+      float: left;
+      margin: 0;
+      cursor: pointer;
+      text-align: left;
 
-#pageHeader ul.sub li.last a,
-#search ul.sub li.last a,
-#search ul.sub li.last span {
-  padding-bottom: 0;
-}
-
-#pageHeader ul.sub li a:hover,
-#search ul.sub li a:hover,
-#search ul.sub li:hover span {
-  color: $navColorSubHover;
-}
-
-#pageHeader ul.sub li.outter,
-#search ul.sub li.outter {
-  background: none repeat scroll 0 0 transparent;
-  padding: 0 13px;
-}
-
-#pageHeader ul.sub .corner_inner_left,
-#search ul.sub .corner_inner_left {
-  position: absolute;
-  top: 0;
-  left: -12px;
-}
-
-#pageHeader ul.sub .corner_inner_right,
-#search ul.sub .corner_inner_right {
-  position: absolute;
-  top: 0;
-  right: -12px;
-}
-
-#pageHeader ul.sub .corner_outter_left,
-#search ul.sub .corner_outter_left {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-#pageHeader ul.sub .corner_outter_middle,
-#search ul.sub .corner_outter_middle {
-  background-color: $navColorBackground;
-}
-
-#pageHeader ul.sub .corner_outter_right,
-#search ul.sub .corner_outter_right {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
-//#pageHeader ul.sub li
-
-#pageHeader .nav ul.sub li a,
-#search .choices ul.sub li a,
-#search .choices ul.sub li span {
-  display: block;
-  padding: 0.5em 0;
-  color: $navColorSub;
-  font-weight: normal;
-  border-top: $navBorder;
-}
-
-/* If only IE6 suppported the child selector, we could
- * change
- *   '#pageHeader .tabs li.active a'
- *   '#pageHeader .tabs li.active>a'
- *
- * and completely omit these next rules */
-#pageHeader .nav ul.sub li.active a,
-#search .choices ul.sub li.active a,
-#search .choices ul.sub li.active span {
-  color: $navColorSelected;
-}
-
-#pageHeader .nav ul.sub li a:hover,
-#search .choices ul.sub li a:hover,
-#search .choices ul.sub li:hover span {
-  color: $navColorSubHover;
-}
-
-/************************************************* */
-#pageHeader ul.sub li.first a,
-#search ul.sub li.first a,
-#search ul.sub li.first span {
-  padding-top: $navPadSubItem_tb * 4;
-  border-top: 0;
-}
-
-#pageHeader ul.sub li.last a,
-#search ul.sub li.last a,
-#search ul.sub li.last span {
-  padding-bottom: 0;
-}
-
-/* Welcome / Join -- first tab item */
-#pageHeader .tabs li.welcome,
-#pageHeader .tabs li.join {
-  width: $navWidthFirst;
-  border-right: $navBorder;
-  @include corners(0, 0, 0, 20px);
-}
-
-#pageHeader .tabs {
-  li.welcome {
-    //background-color =    !navColorWelcomeBackground
-    background: url("sprites/welcome_bg_gradient.gif") repeat-x scroll 0 0 transparent;
-    ul.sub {
-      left: 0;
     }
-    ul.sub li {
-      width: 100px;
+    li a:hover, li:hover span {
+      color: $navColorSubHover;
     }
-    ul.sub .corner_inner_left {
-      display: none;
+
+    .corner_inner_left, .corner_inner_right, .corner_outter_left, .corner_outter_right {
+      position: absolute;
+      top: 0;
     }
-    &:hover {
-      @include corners(0, 0, 0, 0);
+    .corner_inner_left {
+      left: -12px;
+    }
+    .corner_inner_right {
+      right: -12px;
+    }
+
+    li.first {
+      a, span {
+        padding-top: $navPadSubItem_tb * 4;
+        border-top: 0;
+      }
+    }
+    li.last {
+      @include corners(0, 0, 16px, 16px);
+      padding-bottom:   0.25em;
     }
   }
-  li.join {
-    background-color: $navColorJoinBackground;
-    a {
-      color: $navColor;
-      &:hover {
-        color: $navColorSub;
+
+  .nav, .choices {
+    ul.sub {
+      li {
+        a, span {
+          display: block;
+          padding: 0.5em 0;
+          color: $navColorSub;
+          font-weight: normal;
+          border-top: $navBorder;
+        }
+      }
+      li.active {
+        a, span {
+          color: $navColorSelected;
+        }
+      }
+      li:hover span, li a:hover {
+        color: $navColorSubHover;
       }
     }
   }
 }
 
+/************************************************* */
 /* Search */
 #search {
   position: absolute;
@@ -240,6 +194,9 @@ $navBorder: unquote("1px dotted") $navColorBorder;
       width: $searchInputInputWidth;
       font-weight: normal;
     }
+    input.ui-state-valid,input.ui-state-invalid {
+      color:  $fieldTextColor;
+    }
   }
   .focus {
     color: black;
@@ -260,8 +217,8 @@ $navBorder: unquote("1px dotted") $navColorBorder;
   /* Search Context choices */
   .choices {
     .list {
-      top: $tabHeight - ($navPadItem / 2);
-      left: -30px;
+      top: $tabHeight - ($navPadItem / 1.5);
+      left: -15px;
       li {
         width: 180px;
       }

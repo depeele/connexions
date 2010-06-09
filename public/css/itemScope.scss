@@ -7,7 +7,7 @@ $itemCountWidth: $countBoxWidth + 10px;
   }
   ul {
     background-color: $borderColor;
-    padding: 0.1em;
+    padding: 0;
     padding-right: $itemCountWidth + 2px;
     li {
       background-color: transparent;
@@ -36,7 +36,15 @@ $itemCountWidth: $countBoxWidth + 10px;
     input {
       margin: 0;
       padding: 0.1em;
-      height: 1.2em;
+    }
+    button {
+      border:           0;
+      color:            $navColor;
+      background-color: $borderColor;
+      padding:          0.1em;
+      margin:           0;
+      cursor:           pointer;
+      float:            left;
     }
     // jquery.autosuggest
     ul.as-selections {

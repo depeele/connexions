@@ -1,5 +1,5 @@
 /****** auth.sass ****** */
-#auth { padding: 2em 3em; background-color: #86c9ef; -moz-border-radius: 10px 10px 10px 10px; -webkit-border-radius: 10px 10px 10px 10px; -ms-border-radius: 10px 10px 10px 10px; border-radius: 10px 10px 10px 10px; }
+#auth { padding: 2em 3em; background-color: #86c9ef; -moz-border-radius: 10px 10px 10px 10px; -webkit-border-radius: 10px 10px 10px 10px; -ms-border-radius: 10px 10px 10px 10px; -khtml-border-radius: 10px 10px 10px 10px; border-radius: 10px 10px 10px 10px; }
 #auth .legend { text-align: right; padding-right: 2em; width: 10em; }
 #auth .legend h1 { padding: 0; }
 #auth .legend p { padding: 0; }

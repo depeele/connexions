@@ -1,55 +1,56 @@
-$pageColorBackground: white;
+$pageColorBackground: #fff;
 
-$linkColor: #0066cc;
-$linkColorVisited: #005a9c;
-$controlColor: #999999;
-$borderColor: #cccccc;
+$linkColor:           #06c;
+$linkColorVisited:    #005a9c;
+$controlColor:        #999;
+$borderColor:         #ccc;
 
 // From css/themes/base/jquery-ui.css : .ui-state-error
-$errorColor: #cd0a0a;
-$successColor: #667e32;
+$errorColor:                  #cd0a0a;
+$successColor:                #667e32;
 
-$navColorBackground: #172322;
-$navColorWelcomeBackground: #142940;
-$navColorJoinBackground: #9fc54e;
-$navColor: white;
-$navColorHover: #b0d730;
-$navColorSelected: #b0d730;
-$navColorSub: #2786c2;
-$navColorSubHover: #7fcdfe;
-$navColorBorder: #666666;
+$navColorBackground:          #172322;
+$navColorWelcomeBackground:   #142940;
+$navColorJoinBackground:      #9fc54e;
+$navColor:                    #fff;
+$navColorHover:               #b0d730;
+$navColorSelected:            #b0d730;
+$navColorSub:                 #2786c2;
+$navColorSubHover:            #7fcdfe;
+$navColorBorder:              #666;
 
-$groupHeaderColorBackground: #eeeeff;
-$groupHeaderColor: $controlColor;
-$groupHeaderYearColor: $groupHeaderColorBackground - #111100;
-$groupHeaderAlphaColor: $groupHeaderColorBackground - #333300;
+$groupHeaderColorBackground:  #eef;
+$groupHeaderColor:            $controlColor;
+$groupHeaderYearColor:        $groupHeaderColorBackground - #111100;
+$groupHeaderAlphaColor:       $groupHeaderColorBackground - #333300;
 
-$privateColorBackground: #ffeeee;
-$privateColorBorder: #ff3333;
+$privateColorBackground:  #fee;
+$privateColorBorder:      #f33;
 
-$tagsHeaderColorBackground: $borderColor;
+$tagsHeaderColorBackground:       $borderColor;
 $tagsHeaderActiveColorBackground: #7c7c7c;
 
-$tagColorBackground: #eeeeee;
-$tagColor: $navColorBackground;
+$tagColorBackground:  #eee;
+$tagColor:            $navColorBackground;
 
 $highlightTopColorBackground: #f3f3ff;
-$highlightTopHeaderColor: $navColorBackground;
-$highlightTopTagColor: $navColorSub;
-$highlightTopTagCountColor: $controlColor;
+$highlightTopHeaderColor:     $navColorBackground;
+$highlightTopTagColor:        $navColorSub;
+$highlightTopTagCountColor:   $controlColor;
 
-$validationInputColor: #aaaaaa;
-$validationFocusColor: black;
-$validationFocusBorderColor: $validationInputColor;
-$validationValidColor: $successColor;
+$validationInputColor:        #aaa;
+$validationFocusColor:        #000;
+$validationFocusBorderColor:  $validationInputColor;
+$validationValidColor:        $successColor;
 
 //!fieldInfoColor             = !validationInputColor
-$fieldInfoColor: #666666;
+$fieldInfoColor:      $controlColor;
+$fieldTextColor:      #555;
 $formBackgroundColor: #86c9ef;
 
-$columnHeaderBorderColor: #eeeeee;
+$columnHeaderBorderColor: #eee;
 
-$contextColorBackground: #3d7cc2;
+$contextColorBackground:  #3d7cc2;
 
-$li_oddColor: $highlightTopColorBackground;
-$li_evenColor: none;
+$li_oddColor:   $highlightTopColorBackground;
+$li_evenColor:  none;

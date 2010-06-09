@@ -18,6 +18,8 @@
  *        the following additional properties:
  *          'label'         REQUIRED -- the label for the form field 
  *                          representing this item;
+ *          'labelCss'      any specific CSS class to be used for the DOM
+ *                          label;
  *          'extraPre'      a string of HTML that is to be included within the 
  *                          DOM container for this item BEFORE the form 
  *                          elements of the item itself;
@@ -579,7 +581,7 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
         $html      = '';
 
         $html .= "<div class='displayOptions "              // displayOptions {
-              .              "{$namespace}-displayOptions'>"
+              .              "ui-form {$namespace}-displayOptions'>"
               .   "<form method='POST' "                            // form {
               .         "class='ui-state-active ui-corner-all'>";
 
@@ -745,6 +747,7 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
                  *      'pre'
                  *      'post'
                  *
+                 *      'labelCss'
                  *      'containerPre'
                  *      'containerPost'
                  *      'containerCss'
@@ -1008,7 +1011,10 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
                       .                     ($val['isSet'] === true
                                                 ? " checked='checked'"
                                                 : "") ." />\n"
-                      .  $inStr." <label for='{$fId}'>"
+                      .  $inStr." <label for='{$fId}'"
+                      .     (isset($val['labelCss'])
+                              ? " class='{$val['labelCss']}'"
+                              : ''). ">"
                       .            $val['label']
                       .          "</label>\n";
 
