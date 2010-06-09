@@ -197,10 +197,14 @@ $displaySortOffset: 5px;
         .tag,.tag:hover {
           display: block;
           float: left;
-          padding: 0.2em;
-          margin: 0.1em;
           background-color: $tagColorBackground;
           color: $tagColor;
+          @include corners(1em, 0, 0, 1em);
+
+          // Make nested, rouned boxes
+          margin:   0.1em 0.1em 0.1em -0.5em;
+          padding:  0.2em 0.75em 0.2em 0.5em;
+
           a,a:hover,a:visited,a:focus {
             display: inline;
             font-weight: normal;
@@ -364,77 +368,6 @@ $displaySortOffset: 5px;
     .data {
       margin-left: 0;
       padding-left: $controlBoxWidth + 12px;
-    }
-  }
-}
-
-// Override item-related displayStyle elements to fit with displayOptions
-.pane .displayStyle fieldset.options {
-  .item {
-    .stats {
-      font-weight: normal;
-      padding: 0;
-      .rating {
-        padding: 0.25em 0.1em 0.25em 0.5em;
-        text-align: left;
-        .info {
-          text-align: left;
-          float: none;
-          padding: 0;
-        }
-      }
-    }
-    .data {
-      padding-left: 0;
-      padding-right: 0.1em;
-      .url, .description, .description .full, .description .summary {
-        margin: 0;
-      }
-      .description {
-        padding-bottom: 0.5em;
-        .full, .summary {
-          padding: 0;
-        }
-      }
-      .userId {
-        white-space: normal;
-        padding: 0 0 0 1em;
-        font-size: 0.8em;
-        label {
-          padding-left: 0;
-        }
-        .avatar {
-          position: relative;
-          float: left;
-          padding: 0 0.75em 0 0.25em;
-          label {
-            padding-left: 8px;
-          }
-          .img {
-            position: absolute;
-            left: 14px;
-            top: 0;
-          }
-        }
-        .id {
-          display: inline;
-        }
-      }
-      .tags {
-        width: auto;
-        text-align: left;
-        padding: 0 0 1em 0;
-        label,.tag {
-          display: inline;
-          float: none;
-          font-size: 0.8em;
-        }
-      }
-      .dates {
-        .updated {
-          width: auto;
-        }
-      }
     }
   }
 }

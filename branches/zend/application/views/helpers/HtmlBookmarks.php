@@ -41,6 +41,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         'item:data:userId:id'               => 'User Id',
         'item:data:tags'                    => array(
             'label'         => 'tags',
+            'labelCss'      => 'tag',
             'extraPost'     => "<label class='tag'>...</label><label class='tag'>...</label><label class='tag'>...</label><label class='tag'>...</label>",
             'containerPost' => "<br class='clear' />"
         ),

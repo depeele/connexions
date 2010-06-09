@@ -494,180 +494,11 @@ jQuery.fn.pngFix = function(settings) {
 })(jQuery);
 /** @file
  *
- *  Provide a ui-styled button.
- *
- *  Requires:
- *      ui.core.js
- */
-/*jslint nomen: false, laxbreak: true, white: false, onevar: false */
-/*global jQuery:false */
-(function($) {
-
-$.widget("ui.button", {
-    version: "0.1.1",
-    options: {
-        // Defaults
-        priority:   'normal'
-    },
-
-    /** @brief  Initialize a new instance.
-     *
-     *  Valid options:
-     *      priority        The priority of this field
-     *                      ( ['normal'], 'primary', 'secondary');
-     *
-     *  @triggers:
-     *      'enabled.uibutton'  when element is enabled;
-     *      'disabled.uibutton' when element is disabled.
-     */
-    _create: function() {
-        var self    = this;
-        var opts    = this.options;
-
-        if (opts.enabled !== false)
-        {
-            opts.enabled = self.element.attr('disabled')
-                                ? false
-                                : true;
-        }
-
-        self.element.addClass( 'ui-button '
-                              +'ui-state-default '
-                              +'ui-corner-all ');
-
-        if (opts.priority === 'primary')
-        {
-            self.element.addClass('ui-priority-primary');
-        }
-        else if (opts.priority === 'secondary')
-        {
-            self.element.addClass('ui-priority-secondary');
-        }
-
-        if (opts.enabled)
-        {
-            self.enable();
-        }
-        else
-        {
-            self.disable();
-        }
-
-        // Interaction events
-        self._bindEvents();
-    },
-
-    /************************
-     * Private methods
-     *
-     */
-    _bindEvents: function() {
-        var self    = this;
-
-        var _mouseenter = function(e) {
-            /*
-            var el  = $(this);
-            if (el.input('option', 'enabled') === true)
-                el.addClass('ui-state-hover');
-            // */
-
-            if (self.options.enabled === true)
-            {
-                self.element.addClass('ui-state-hover');
-            }
-        };
-
-        var _mouseleave = function(e) {
-            /*
-            var el  = $(this);
-            el.removeClass('ui-state-hover');
-            // */
-
-            self.element.removeClass('ui-state-hover');
-        };
-
-        var _focus      = function(e) {
-            /*
-            var el  = $(this);
-            if (el.input('option', 'enabled') === true)
-                el.addClass('ui-state-focus');
-            // */
-
-            if (self.options.enabled === true)
-            {
-                self.element.addClass('ui-state-focus');
-            }
-        };
-
-        var _blur       = function(e) {
-            self.element.removeClass('ui-state-focus');
-        };
-
-        self.element
-                .bind('mouseenter.uibutton', _mouseenter)
-                .bind('mouseleave.uibutton', _mouseleave)
-                .bind('focus.uibutton',      _focus)
-                .bind('blur.uibutton',       _blur);
-    },
-
-    /************************
-     * Public methods
-     *
-     */
-    isEnabled: function() {
-        return this.options.enabled;
-    },
-
-    enable: function()
-    {
-        var wasEnabled  = (this.options.enabled === true);
-
-        this.element.removeClass('ui-state-disabled')
-                    .removeAttr('disabled');
-
-        if (! wasEnabled)
-        {
-            this.element.trigger('enabled.uibutton');
-        }
-
-        this.options.enabled = true;
-    },
-
-    disable: function()
-    {
-        var wasEnabled  = (this.options.enabled === true);
-
-        this.options.enabled = false;
-        this.element.attr('disabled', true)
-                    .addClass(   'ui-state-disabled');
-
-        if (wasEnabled)
-        {
-            this.element.trigger('disabled.uibutton');
-        }
-    },
-
-    destroy: function() {
-        this.element
-                .removeClass( 'ui-state-default '
-                             +'ui-state-disabled '
-                             +'ui-state-hover '
-                             +'ui-state-focus '
-                             +'ui-priority-primary '
-                             +'ui-priority-secondary '
-                             +'ui-corner-all ')
-                .unbind('.uibutton');
-    }
-});
-
-}(jQuery));
-
-/** @file
- *
  *  Provide a sprite-based checkbox.
  *
  *  Requires:
  *      ui.core.js
+ *      ui.widget.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false */
@@ -972,6 +803,7 @@ $.widget("ui.checkbox", {
  *
  *  Requires:
  *      ui.core.js
+ *      ui.widget.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false, window:false */
@@ -1006,21 +838,30 @@ $.widget("ui.dropdownForm", {
     _create: function() {
         var self        = this;
         var opts        = self.options;
-        var $form       = self.element.find('form:first');
-        var $submit     = self.element.find(':submit');
+
+        self.$form      = self.element.find('form:first');
+        self.$submit    = self.element.find(':submit');
+
+        /* Convert selects to buttons
+        self.$form.find('.field select')
+                .button();
+        */
 
         // Add a toggle control button
-        var $control    = 
-                $(  "<div class='control ui-corner-all ui-state-default'>"
-                  +  "<span>Display Options</span>"
-                  +  "<div class='ui-icon ui-icon-triangle-1-s'>"
-                  +   "&nbsp;"
-                  +  "</div>"
+        self.$control   = 
+                $(  "<div class='control'>"
+                  +  "<button>Display Options</button>"
                   + "</div>");
 
-        $control.prependTo(self.element);
+        self.$control.prependTo(self.element);
 
-        $control.fadeTo(100, 0.5);
+        self.$button = self.$control.find('button');
+        self.$button.button({
+            icons: {
+                secondary:  'ui-icon-triangle-1-s'
+            }
+        });
+        self.$control.fadeTo(100, 0.5);
 
         /* Activate a ui.optionGroups handler for any container/div in this
          * form with a CSS class of 'ui-optionGroups'.
@@ -1028,11 +869,9 @@ $.widget("ui.dropdownForm", {
          */
         self.element.find('.ui-optionGroups').optionGroups();
 
-
-        $form.hide();
+        self.$form.hide();
 
         self._bindEvents();
-
     },
 
     /************************
@@ -1041,19 +880,17 @@ $.widget("ui.dropdownForm", {
      */
     _bindEvents: function() {
         var self        = this;
-        var $control    = self.element.find('.control:first');
-        var $form       = self.element.find('form:first');
-        var $submit     = self.element.find(':submit');
         
 
         // Handle a click outside of the display options form.
         var _body_click     = function(e) {
-            if ($form.is(':visible') && (! $.contains($form[0], e.target)) )
+            if (self.$form.is(':visible') &&
+                (! $.contains(self.$form[0], e.target)) )
             {
-                /* Hide the form by triggering $control.click and then
+                /* Hide the form by triggering self.$control.click and then
                  * mouseleave
                  */
-                $control.trigger('click');
+                self.$control.trigger('click');
 
                 self._trigger('mouseleave', e);
                 //self.element.trigger('mouseleave');
@@ -1062,17 +899,17 @@ $.widget("ui.dropdownForm", {
 
         // Opacity hover effects
         var _mouse_enter    = function(e) {
-            $control.fadeTo(100, 1.0);
+            self.$control.fadeTo(100, 1.0);
         };
 
         var _mouse_leave    = function(e) {
-            if ($form.is(':visible'))
+            if (self.$form.is(':visible'))
             {
                 // Don't fade if the form is currently visible
                 return;
             }
 
-            $control.fadeTo(100, 0.5);
+            self.$control.fadeTo(100, 0.5);
         };
 
         var _control_click  = function(e) {
@@ -1080,8 +917,8 @@ $.widget("ui.dropdownForm", {
             e.preventDefault();
             e.stopPropagation();
 
-            $form.toggle();
-            $control.toggleClass('ui-state-active');
+            self.$form.toggle();
+            self.$button.toggleClass('ui-state-active');
 
             return false;
         };
@@ -1108,14 +945,15 @@ $.widget("ui.dropdownForm", {
             //$.log("ui.dropdownForm::caught 'form:change'");
 
             // Any change within the form should enable the submit button
-            $submit.removeClass('ui-state-disabled')
-                   .removeAttr('disabled')
-                   .addClass('ui-state-default');
+            self.$submit
+                    .removeClass('ui-state-disabled')
+                    .removeAttr('disabled')
+                    .addClass('ui-state-default');
         };
 
         var _form_submit        = function(e) {
             // Serialize all form values to an array...
-            var settings    = $form.serializeArray();
+            var settings    = self.$form.serializeArray();
             //e.preventDefault();
 
             /* ...and set a cookie for each
@@ -1162,7 +1000,7 @@ $.widget("ui.dropdownForm", {
             e.preventDefault();
 
             // Trigger the 'submit' event on the form
-            $form.trigger('submit');
+            self.$form.trigger('submit');
         };
 
         /**********************************************************************
@@ -1175,14 +1013,17 @@ $.widget("ui.dropdownForm", {
                 .bind('click.uidropdownform', _body_click);
 
         // Add an opacity hover effect to the displayOptions
-        $control.bind('mouseenter.uidroppdownform', _mouse_enter)
+        self.$control
+                .bind('mouseenter.uidroppdownform', _mouse_enter)
                 .bind('mouseleave.uidroppdownform', _mouse_leave)
                 .bind('click.uidropdownform',       _control_click);
 
-        $form.bind('change.uidropdownform', _form_change)
-             .bind('submit.uidropdownform', _form_submit);
+        self.$form
+                .bind('change.uidropdownform', _form_change)
+                .bind('submit.uidropdownform', _form_submit);
 
-        $submit.bind('click.uidropdownform', _form_clickSubmit);
+        self.$submit
+                .bind('click.uidropdownform', _form_clickSubmit);
 
     },
 
@@ -1230,56 +1071,52 @@ $.widget("ui.dropdownForm", {
     },
 
     enable: function(enableSubmit) {
-        var $form       = this.element.find('form:first');
-        var $submit     = this.element.find(':submit');
 
-        $form.find('input,select').removeAttr('disabled');
+        self.$form.find('input,select').removeAttr('disabled');
 
         if (enableSubmit !== true)
         {
             // Any change within the form should enable the submit button
-            $submit.removeClass('ui-state-default ui-state-highlight')
-                   .addClass('ui-state-disabled')
-                   .attr('disabled', true);
+            self.$submit
+                    .removeClass('ui-state-default ui-state-highlight')
+                    .addClass('ui-state-disabled')
+                    .attr('disabled', true);
         }
         else
         {
-            $submit.removeClass('ui-state-disabled')
-                   .removeAttr('disabled')
-                   .addClass('ui-state-default');
+            self.$submit
+                    .removeClass('ui-state-disabled')
+                    .removeAttr('disabled')
+                    .addClass('ui-state-default');
         }
     },
 
     disable: function() {
-        var $form       = this.element.find('form:first');
-        var $submit     = this.element.find(':submit');
-
-        $form.find('input,select').attr('disabled', true);
+        self.$form.find('input,select').attr('disabled', true);
 
         // Any change within the form should enable the submit button
-        $submit.removeClass('ui-state-default ui-state-highlight')
-               .addClass('ui-state-disabled')
-               .attr('disabled', true);
+        self.$submit
+                .removeClass('ui-state-default ui-state-highlight')
+                .addClass('ui-state-disabled')
+                .attr('disabled', true);
     },
 
     destroy: function() {
         var self        = this;
-        var $control    = self.element.find('.control:first');
-        var $form       = self.element.find('form:first');
-        var $submit     = self.element.find(':submit');
 
         // Unbind events
         $('body')
                 .unbind('.uidropdownform');
 
-        $control.unbind('.uidropdownform');
-        $control.find('a:first, .ui-icon:first')
-                .unbind('.uidropdownform');
+        self.$control.unbind('.uidropdownform');
+        self.$control.find('a:first, .ui-icon:first')
+                     .unbind('.uidropdownform');
 
-        $form.unbind('.uidropdownform');
+        self.$form.unbind('.uidropdownform');
 
         // Remove added elements
-        $control.remove();
+        self.$button.button('destroy');
+        self.$control.remove();
 
         self.element.find('.displayStyle').optionGroups( 'destroy' );
     }
@@ -1293,6 +1130,7 @@ $.widget("ui.dropdownForm", {
  *
  *  Requires:
  *      ui.core.js
+ *      ui.widget.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false, window:false, clearTimeout:false, setTimeout:false */
@@ -1311,11 +1149,12 @@ $.widget("ui.input", {
     options: {
         // Defaults
         priority:       'normal',
-        emptyText:      null,
-        validationEl:   null,       // The element to present validation
-                                    // information in [:sibling
-                                    //                  .ui-field-status]
-        validation:     null        /* The validation criteria
+        $label:         null,       // The field label element.
+        $validation:    null,       /* The element to present validation
+                                     * information in [:sibling
+                                     *                  .ui-field-status]
+                                     */
+        validation:     null,       /* The validation criteria
                                      *      '!empty'
                                      *      function(value)
                                      *          returns {isValid:  true|false,
@@ -1328,12 +1167,9 @@ $.widget("ui.input", {
      *  Valid options:
      *      priority        The priority of this field
      *                      ( ['normal'], 'primary', 'secondary');
-     *      emptyText       Text to present when the field is empty;
-     *      validationEl:   The element to present validation information in
+     *      $label:         The field label element.
+     *      $validation:    The element to present validation information in
      *                      [ parent().find('.ui-field-status:first) ]
-     *      hideLabel:      Hide any label associated with this input?
-     *                          [ true if 'emptyText' is provided,
-     *                            false otherwise ];
      *      validation:     The validation criteria:
      *                          '!empty'
      *                          function(value) that returns:
@@ -1347,17 +1183,18 @@ $.widget("ui.input", {
      *      'enabled'           when element is enabled;
      *      'disabled'          when element is disabled.
      */
-    _create: function() {
+    _create: function()
+    {
         var self    = this;
         var opts    = this.options;
 
         opts.enabled = self.element.attr('disabled') ? false : true;
 
-        if (opts.validationEl)
+        if (opts.$validation)
         {
-            if (opts.validationEl.jquery === undefined)
+            if (opts.$validation.jquery === undefined)
             {
-                opts.validationEl = $(opts.validationEl);
+                opts.$validation = $(opts.$validation);
             }
         }
         else
@@ -1368,7 +1205,7 @@ $.widget("ui.input", {
              * Use the first child of our parent that has the CSS class
              *  'ui-field-status'
              */
-            opts.validationEl = self.element
+            opts.$validation = self.element
                                         .parent()
                                             .find('.ui-field-status:first');
         }
@@ -1398,61 +1235,33 @@ $.widget("ui.input", {
             self.element.addClass('ui-state-disabled');
         }
 
-        if (opts.emptyText === null)
+        var id  = self.element.attr('id');
+        if ((id === undefined) || (id.length < 1))
         {
-            // See if there is an 'emptyText' attribute
-            var empty   = self.element.attr('emptyText');
-            if ((empty !== undefined) && (empty.length > 0))
-            {
-                opts.emptyText = empty;
-            }
-
+            id = self.element.attr('name');
         }
 
-        if ((opts.emptyText === null) && (! self.element.is(':password')) )
+        if ((id !== undefined) && (id.length > 0))
         {
-            // See if there is a label associated with this field
-            if (opts.hideLabel !== false)
-            {
-                // Attempt to locate the label associated with this field...
-                var id      = self.element.attr('id');
-                var $label  = null;
-                if ((id === undefined) || (id.length < 1))
-                {
-                    id = self.element.attr('name');
-                }
-
-                if ((id !== undefined) && (id.length > 0))
-                {
-                    $label  = self.element
-                                        .parent()
-                                            .find('label[for='+ id +']');
-                }
-
-                if (($label !== null) && ($label.length > 0))
-                {
-                    /* We've found the label!  Use it's text as the 'emptyText'
-                     * and set 'hideLabel' to true.
-                     */
-                
-                    opts.emptyText = $label.text();
-                    opts.hideLabel = true;
-                }
-            }
+            opts.$label  = self.element
+                                .parent()
+                                    .find('label[for='+ id +']');
+        }
+        else
+        {
+            opts.$label = self.element.closest('label');
         }
 
-        self.setEmptyText(opts.emptyText, true);
+        opts.$label.addClass('ui-input-over')
+                   .hide();
 
-        // Interaction events
         self._bindEvents();
     },
 
-    /************************
-     * Private methods
-     *
-     */
-    _bindEvents: function() {
+    _bindEvents: function()
+    {
         var self    = this;
+        var opts    = self.options;
 
         var _mouseenter = function(e) {
             /*
@@ -1506,11 +1315,7 @@ $.widget("ui.input", {
         var _focus      = function(e) {
             if (self.options.enabled === true)
             {
-                if ((self.options.emptyText !== null) &&
-                    (self.val().length < 1))
-                {
-                    self.element.val('');
-                }
+                opts.$label.hide();
 
                 self.element.removeClass('ui-state-empty')
                             .addClass('ui-state-focus ui-state-active');
@@ -1524,14 +1329,11 @@ $.widget("ui.input", {
                 self.validate();
             }
 
-            if (self.val().length < 1)
+            if ($.trim(self.val()) === '')
             {
                 self.element.addClass('ui-state-empty');
 
-                if (self.options.emptyText !== null)
-                {
-                    self.element.val(self.options.emptyText);
-                }
+                opts.$label.show();
             }
         };
 
@@ -1542,10 +1344,17 @@ $.widget("ui.input", {
                 .bind('focus.uiinput',      _focus)
                 .bind('blur.uiinput',       _blur);
 
-        if (this.val().length > 0)
+        opts.$label
+                .bind('click.uiinput', function() { self.element.focus(); });
+
+        if ($.trim(self.val()) !== '')
         {
             // Perform an initial validation
             self.validate();
+        }
+        else
+        {
+            opts.$label.show();
         }
     },
 
@@ -1568,6 +1377,9 @@ $.widget("ui.input", {
             this.options.enabled = true;
             this.element.removeClass('ui-state-disabled')
                         .removeAttr('disabled');
+            this.options.$label
+                        .removeClass('ui-state-disabled')
+                        .removeAttr('disabled');
 
             //this.element.trigger('enabled.uiinput');
             this._trigger('enabled');
@@ -1580,6 +1392,9 @@ $.widget("ui.input", {
         {
             this.options.enabled = false;
             this.element.attr('disabled', true)
+                        .addClass('ui-state-disabled');
+            this.options.$label
+                        .attr('disabled', true)
                         .addClass('ui-state-disabled');
 
             //this.element.trigger('disabled.uiinput');
@@ -1605,8 +1420,8 @@ $.widget("ui.input", {
         this.element
                 .removeClass('ui-state-error ui-state-valid');
 
-        this.options.validationEl
-                .empty()
+        this.options.$validation
+                .html('&nbsp;')
                 .removeClass('ui-state-invalid ui-state-valid');
 
         if (state === true)
@@ -1614,7 +1429,7 @@ $.widget("ui.input", {
             // Valid
             this.element.addClass(   'ui-state-valid');
 
-            this.options.validationEl
+            this.options.$validation
                         .addClass(   'ui-state-valid');
         }
         else if (state !== undefined)
@@ -1622,12 +1437,12 @@ $.widget("ui.input", {
             // Invalid, possibly with an error message
             this.element.addClass(   'ui-state-error');
 
-            this.options.validationEl
+            this.options.$validation
                         .addClass(   'ui-state-invalid');
 
             if (typeof state === 'string')
             {
-                this.options.validationEl
+                this.options.$validation
                             .html(state);
             }
         }
@@ -1636,92 +1451,33 @@ $.widget("ui.input", {
 
         // Let everyone know that the validation state has changed.
         //this.element.trigger('validation_change.uiinput');
-        this._trigger('validation_change');
+        this._trigger('validation_change', null, [state]);
     },
 
-    getEmptyText: function()
+    getLabel: function()
     {
-        return this.options.emptyText;
+        return this.options.$label.text();
     },
 
-    setEmptyText: function(str, force)
+    setLabel: function(str)
     {
-        if (this.element.is(':password'))
-        {
-            this.options.hideLabel = false;
-            this.options.emptyText = null;
-            return;
-        }
-
-        if ((this.options.emptyText !== null) &&
-            (this.val() === this.options.emptyText))
-        {
-            this.element.val('');
-        }
-
-        this.options.emptyText = str;
-
-        if (this.options.emptyText !== null)
-        {
-            if (this.options.hideLabel !== false)
-            {
-                this.options.hideLabel = true;
-
-                // Attempt to locate the label associated with this field...
-                var id      = this.element.attr('id');
-                if ((id === undefined) || (id.length < 1))
-                {
-                    id = this.element.attr('name');
-                }
-
-                if ((id !== undefined) && (id.length > 0))
-                {
-                    var $label  = this.element
-                                        .parent()
-                                            .find('label[for='+ id +']');
-                
-                    $label.hide();
-                }
-            }
-
-            //if ( (force === true) || (this.val().length < 1) )
-            if ( ((force === true) || (! this.element.is(':focus')) ) &&
-                (this.val().length < 1) )
-            {
-                this.element.val(this.options.emptyText);
-            }
-        }
+        this.options.$label.text(str);
     },
 
     val: function(newVal)
     {
-        var self    = this;
-        var ret     = null;
-
-        if (newVal === undefined)
-        {
-            // Value retrieval
-            ret = $.trim(self.element.val());
-
-            if ((self.options.emptyText !== null) &&
-                (ret === self.options.emptyText))
-            {
-                ret = '';
-            }
-        }
-        else
-        {
-            ret = self.element.val(newVal);
-            self.validate();
-        }
-
-        return ret;
+        return this.element.val();
     },
 
     validate: function()
     {
         var msg         = [];
         var newState;
+
+        if (this.options.validation === null)
+        {
+            return;
+        }
 
         if ($.isFunction(this.options.validation))
         {
@@ -1754,9 +1510,11 @@ $.widget("ui.input", {
     },
 
     destroy: function() {
-        this.options.validationEl
+        this.options.$validation
                 .removeClass( 'ui-state-valid '
                              +'ui-state-invalid ');
+        this.options.$label
+                .unbind('.uiinput');
 
         this.element
                 .removeClass( 'ui-state-default '
@@ -1826,6 +1584,7 @@ $.widget("ui.input", {
  *
  *  Requires:
  *      ui.core.js
+ *      ui.widget.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false, document:false */
@@ -1915,33 +1674,26 @@ $.widget("ui.optionGroups", {
          */
         var $groups     = self.element.find('ul.groups');
 
-        $groups.find('li').removeClass('ui-state-active');
-        $groups.find(':checked').parent().addClass('ui-state-active');
-        $groups.find(':radio').hide();
-        $groups.find('li:not(.isCustom)')
-                    .addClass('toggle');
+        $groups.find('li')
+                .removeClass('ui-state-active')
+                .addClass('ui-state-default')
+                .filter(':first')
+                    .addClass('ui-corner-left')
+                .end()
+                .find(':radio')
+                    .hide();
+        $groups.find(':checked')
+                .parent()
+                    .addClass('ui-state-active');
         $groups.find('li.isCustom')
-                    .addClass('control ui-corner-all ui-state-default')
-                    .append(  "<div class='ui-icon ui-icon-triangle-1-s'>"
-                            +  "&nbsp;"
-                            + "</div>");
-
-        $groups.find('li:not(:last)')
-                    .after("<span class='comma'>,</span>");
-
-        self.element.find('input')
-                    .addClass('ui-corner-all ui-state-default');
-
-
-        /* Add a new hidden input to represent the group radio buttons that
-         * we've hidden.
-        $groups.append("<input type='hidden' "
-                            + "name='"+  $groups.find(':radio:first')
-                                                    .attr('name') +"' "
-                            + "value='"+ $groups.find(':checked')
-                                                    .val() +"' />");
-         */
-
+                .addClass('control')
+                .button({
+                    icons: {
+                        secondary:  'ui-icon-triangle-1-s'
+                    }
+                })
+                .removeClass('ui-corner-all')
+                .addClass('ui-corner-right');
 
         /* Now, the currently selected group can be found via:
          *  self.element.find('ul.groups :checked').val();
@@ -2113,12 +1865,14 @@ $.widget("ui.optionGroups", {
          * one
          */
         $groups.find('li.ui-state-active').removeClass('ui-state-active');
-        $newGroup.parent().addClass('ui-state-active');
+
+        var $li = $newGroup.parents('li:first');
+        $li.addClass('ui-state-active');
 
         // Set the hidden input value
         // $groups.find('input[type=hidden]').val(group);
 
-        if (! $newGroup.parent().hasClass('control'))
+        if (! $li.hasClass('control'))
         {
             // Turn OFF all items in the group fieldset...
             $groupFieldset.find('input').removeAttr('checked');
@@ -2253,7 +2007,8 @@ $.widget("ui.optionGroups", {
  *  </div>
  *
  * Depends:
- *  ui.core.js
+ *      ui.core.js
+ *      ui.widget.js
  *
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
@@ -2632,6 +2387,7 @@ $.widget("ui.stars", {
  *
  *  Requires:
  *      ui.core.js
+ *      ui.widget.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false */
@@ -3031,6 +2787,7 @@ $.widget("ui.bookmark", {
  *
  *  Requires:
  *      ui.core.js
+ *      ui.widget.js
  *      ui.bookmark.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
@@ -3139,6 +2896,7 @@ $.widget("ui.bookmarkList", {
  *
  *  Requires:
  *      ui.core.js
+ *      ui.widget.js
  *      ui.dropdownForm.js
  *      ui.paginator.js
  */
@@ -3350,6 +3108,8 @@ $.widget("ui.pane", {
  *  View_Helper_HtmlBookmarks.
  *
  *  Requires:
+ *      ui.core.js
+ *      ui.widget.js
  *      ui.pane.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
@@ -3433,6 +3193,8 @@ $.widget("ui.bookmarksPane", $.ui.pane, {
  *  View_Helper_Html_HtmlItemCloud.
  *
  *  Requires:
+ *      ui.core.js
+ *      ui.widget.js
  *      ui.pane.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
@@ -3547,6 +3309,7 @@ $.widget("ui.cloudPane", $.ui.pane, {
  *
  *  Requires:
  *      ui.core.js
+ *      ui.widget.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false, window:false */
@@ -3879,6 +3642,7 @@ $.extend($.ui.notify.instance.prototype, {
  *
  *  Requires:
  *      ui.core.js
+ *      ui.widget.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false, window:false */
@@ -3969,3 +3733,311 @@ $.widget("ui.sidebar", {
 
 
 
+/** @file
+ *
+ *  Javascript interface/wrapper for the presentation of an item scope
+ *  display/input area.
+ *
+ *  This is primarily a class to provide unobtrusive activation of a
+ *  pre-rendered area generate by View_Helper_HtmlItemScope:
+ *      - conversion of the input area to either a ui.input or ui.autocomplete
+ *        instance;
+ *
+ *  The pre-rendered HTML must have a form similar to:
+ *      <form class='itemScope'>
+ *        <input type='hidden' name='scopeCurrent' ... />
+ *        <ul>
+ *          <li class='root'>
+ *            <a href='%url with no items%'> %Root Label% </a>
+ *          </li>
+ *
+ *          <!-- For each item currently defining the scope -->
+ *          <li class='scopeItem deletable'>
+ *            <a href='%url with item%'> %Scope Label% </a>
+ *            <a href='%url w/o  item%' class='delete'>x</a>
+ *          </li>
+ *
+ *          <li class='scopeEntry'>
+ *            <input name=' %inputName% ' value=' %inputLabel ' /> 
+ *            <button type='submit'>&gt;</button>
+ *          </li>
+ *
+ *          <li class='itemCount'> %item Count% </li>
+ *        </ul>
+ *      </form>
+ *
+ *  Requires:
+ *      ui.core.js
+ *      ui.widget.js
+ *      ui.input.js  OR ui.autocomplete.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false */
+(function($){
+
+$.widget("ui.itemScope", {
+	options: {
+        namespace:          '',     // Cookie/parameter namespace
+		autocompleteSrc:    null,   // The source of auto-completion data
+                                    // (if non-null, passed to ui.autocomplete)
+	},
+	_create: function(){
+		var self    = this;
+        var opts    = self.options;
+
+        self.$input    = self.element.find('.scopeEntry input');
+        self.$current  = self.element.find('input[name=scopeCurrent]');
+        self.$curItems = self.element.find('.scopeItem');
+        self.$submit   = self.element.find('.scopeEntry :submit');
+
+        self.$input.input();
+
+        if (opts.autocompleteSrc !== null)
+        {
+            /*
+            var parts   = opts.autocompleteSrc.split('?');
+            var baseUrl = parts.shift();
+            var params  = parts.join('?');
+            */
+
+            self.$input.autocomplete({
+                source:     opts.autocompleteSrc,
+                delay:      200,
+                minLength:  2
+            });
+        }
+
+        self._bindEvents();
+	},
+
+    _bindEvents: function() {
+        var self    = this;
+        var opts    = self.options;
+
+        // Attach a hover effect for deletables
+        var $deletables = self.element.find('.deletable a.delete');
+        $deletables
+                .bind('mouseenter.itemScope', function(e) {
+                    $(this).css('opacity', 1.0)
+                           .addClass('ui-icon-circle-close')
+                           .removeClass('ui-icon-close');
+                })
+                .bind('mouseleave.itemScope', function(e) {
+                    $(this).css('opacity', 0.25)
+                           .addClass('ui-icon-close')
+                           .removeClass('ui-icon-circle-close');
+                })
+                .trigger('mouseleave');
+
+        // Attach a click handler to the submit button
+        self.$submit
+                .bind('click.itemScope', function(e) {
+                    // Force the 'submit' event on our form
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+
+                    self.element.submit();
+                });
+
+        // Attach a 'submit' handler to the itemScope form item
+        self.element
+                .bind('submit.itemScope', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+
+                    // Changing scope -- adjust the form's action
+                    var loc     = window.location;
+                    var url     = loc.toString();
+                    var scope   = self.$input.val();
+                    /*
+                    var current = self.$current.val();
+                    var action  = self.element.attr('action') +'/'
+                                + self.$current.val();
+                    */
+
+                    if (scope.length > 0)
+                    {
+                        // Include the new scope item(s)
+                        if (self.$curItems.length > 0)
+                        {
+                            url += ',';
+                        }
+                        url += scope;
+                    }
+
+                    // Simply change the browsers URL
+                    window.location.assign(url);
+
+                    // Allow form submission to continue
+                });
+    },
+
+    /*************************
+     * Public methods
+     *
+     */
+    destroy: function() {
+        var self    = this;
+        var opts    = self.options;
+
+        // Destroy widgets
+        if (opts.autocompleteSrc !== null)
+        {
+            self.$input.autocomplete('destroy');
+        }
+        else
+        {
+            self.$input.input('destroy');
+        }
+
+        // Unbind events
+        self.element.find('.deletable a.delete').unbind('.itemScope');
+        self.$submit.unbind('.itemScope');
+        self.element.unbind('.itemScope');
+    }
+});
+
+}(jQuery));
+/** @file
+ *
+ *  Javascript interface/wrapper for the presentation of a search box with
+ *  drop down context selection.
+ *
+ *  This is primarily a class to provide unobtrusive activation of a
+ *  pre-rendered area generate by view/scripts/nav_menu.phtml:
+ *      - conversion of the input area to a ui.input instance;
+ *
+ *  The pre-rendered HTML must have a form similar to:
+ *      <form id='search'>
+ *        <div class='searchBox'>
+ *          <div class='searchInput'>
+ *            <div class='choices'>
+ *              <input type='hidden' name='searchContext' ... />
+ *              <ul class='sub list'>
+ *                <li id='search-choice-%name%'> %title% </li>
+ *                ...
+ *              </ul>
+ *            </div>
+ *            
+ *            <input type='text' name='q' class='input' ... />
+ *          </div>
+ *          <button class='submit' ...>&nbsp;</button>
+ *        </div>
+ *      </form>
+ *
+ *  Requires:
+ *      ui.core.js
+ *      ui.widget.js
+ *      ui.input.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false */
+(function($){
+
+$.widget("ui.search", {
+	options: {
+	},
+	_create: function(){
+		var self    = this;
+        var opts    = self.options;
+
+        self.$input         = self.element.find('input[name=q]');
+        self.$submit        = self.element.find('button.submit');
+        self.$context       = self.element.find('input[name=searchContext]');
+        self.$choices       = self.element.find('.choices .list');
+        self.contextLabel   = self.$choices.find('li.active').text();
+
+        // Initially disable the submit button
+        self.$submit.addClass('ui-state-disabled')
+                    .attr('disabled', true);
+
+        /* Attach a ui.input widget to the input field with defined validation
+         * callback to enable/disable the submit button based upon whether or
+         * not there is text in the search box.
+         */
+        self.$input.input({
+            validation: function(val) {
+                if (val.length > 0)
+                {
+                    self.$submit.removeClass('ui-state-disabled')
+                                .removeAttr('disabled');
+                }
+                else
+                {
+                    self.$submit.addClass('ui-state-disabled')
+                                .attr('disabled', true);
+                }
+
+                // ALWAYS return true.  There really in no "invalid" search
+                return true;
+            }
+        });
+        self.$input.input('setLabel', self.contextLabel);
+
+        self._bindEvents();
+	},
+
+    _bindEvents: function() {
+        var self    = this;
+        var opts    = self.options;
+
+        // Activate our search choice selections
+        self.$choices.find('li')
+                .bind('mousedown.search', function(e) {
+                    /* We're changing the label text so, before 'blur' is
+                     * fired, remove the existing label text.
+                     *
+                     * This fixes a flicker issue where the old label text
+                     * would be placed in the input field only to be removed
+                     * when we re-focus on that field.
+                     */
+                    self.$input.input('setLabel', null);
+                })
+                .bind('click.search', function(e) {
+                    var $li         = $(this);
+
+                    // Grab the new context value from li.id
+                    var newChoice   = $li.attr('id').replace(/search-choice-/,
+                                                             '');
+
+                    // Set the new context value
+                    self.$context.val(newChoice);
+
+                    // Grab the new label value for the query input box
+                    self.contextLabel = $li.text();
+
+                    // Remove the 'active' class from all siblings...
+                    $li.siblings('.active').removeClass('active');
+
+                    // Add the 'active' class to THIS element.
+                    $li.addClass('active');
+
+                    // Set the new label text and focus on the input field.
+                    self.$input.input('setLabel', self.contextLabel);
+                    /*
+                    if ($.isFunction(self.$input.focus))
+                    {
+                        self.$input.focus();
+                    }
+                    */
+                });
+    },
+
+    /*************************
+     * Public methods
+     *
+     */
+    destroy: function() {
+        var self    = this;
+
+        // Destroy widgets
+        self.$input.input('destroy');
+
+        // Unbind events
+        self.$choices.find('li').unbind('.search');
+    }
+});
+
+}(jQuery));

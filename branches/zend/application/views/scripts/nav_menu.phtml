@@ -32,9 +32,8 @@ renderSearch($request, $searchContexts);
  *  @param  indent          The indent for the current depth.
  *  @param  prevDepth       The previous depth.
  *  @param  depth           The current depth
- *  @param  includeCorners  Should outter corners be include?
  */
-function closeTags($indent, $prevDepth, $depth, $includeCorners = true)
+function closeTags($indent, $prevDepth, $depth = 0)
 {
     // Close li/ul tags until we're at current depth
     for ($idex = $prevDepth; $idex > $depth; $idex--)
@@ -44,19 +43,6 @@ function closeTags($indent, $prevDepth, $depth, $includeCorners = true)
 
         $ind = $indent . str_repeat(' ', $idex);
         echo $ind, " </li>\n";
-
-        if ( ($idex > ($depth + 1)) || $includeCorners)
-        {
-            // Add one final 'li.outter' with outter corners
-            echo $ind, " <li class='outter'>\n",
-                 $ind, "  <div class='connexions_sprites corner_outter_left'>",
-                         "</div>\n",
-                 $ind, "  <div class='corner_outter_middle'>",
-                         "</div>\n",
-                 $ind, "  <div class='connexions_sprites corner_outter_right'>",
-                         "</div>",
-                 $ind, " </li>\n";
-        }
 
         echo $ind, "</ul>\n";
     }
@@ -230,7 +216,7 @@ function renderMenu($view, $ulClass = 'nav')
 
     // Finished iterating -- close all open li/ul tags
 printf ("<!-- depth: %d -->\n", $depth);
-    closeTags($indent, $depth+1, 0, false);
+    closeTags($indent, $depth+1);
 
     return;
 }
@@ -246,7 +232,8 @@ function renderSearch($request, array $searchContexts)
     $searchContext  = $request->getParam('searchContext', 'all');
 
     ?>
-    <form id='search' action='<?= Connexions::url('/search') ?>' method='post'>
+    <form id='search' action='<?= Connexions::url('/search') ?>' method='post'
+          class='ui-form'>
      <div class='searchBox'><!-- searchBox { -->
       <div class='searchInput'><!-- searchInput { -->
        <div class='choices'>
@@ -306,21 +293,11 @@ function renderSearch($request, array $searchContexts)
                 echo "</li>\n";
                 $idex++;
             }
-
-            // Add one final 'li.outter' with outter corners
-            echo $ind, " <li class='outter'>\n",
-                 $ind, "  <div class='connexions_sprites corner_outter_left'>",
-                         "</div>\n",
-                 $ind, "  <div class='corner_outter_middle'>",
-                         "</div>\n",
-                 $ind, "  <div class='connexions_sprites corner_outter_right'>",
-                         "</div>",
-                 $ind, " </li>\n";
          ?>
         </ul>
        </div>
-       <input name='q'       type='text' class='input ui-corner-all'
-             value="<?= (@empty($searchTerm) ? $contextText : $searchTerm) ?>"
+       <label  for='q'></label>
+       <input name='q'       type='text' class='input'
               autocomplete='off' maxlength='255' size='30' />
       </div><!-- searchInput } -->
       <button class='submit connexions_sprites magnifier_small'>&nbsp;</button>

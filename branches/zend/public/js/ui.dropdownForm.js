@@ -39,21 +39,30 @@ $.widget("ui.dropdownForm", {
     _create: function() {
         var self        = this;
         var opts        = self.options;
-        var $form       = self.element.find('form:first');
-        var $submit     = self.element.find(':submit');
+
+        self.$form      = self.element.find('form:first');
+        self.$submit    = self.element.find(':submit');
+
+        /* Convert selects to buttons
+        self.$form.find('.field select')
+                .button();
+        */
 
         // Add a toggle control button
-        var $control    = 
-                $(  "<div class='control ui-corner-all ui-state-default'>"
-                  +  "<span>Display Options</span>"
-                  +  "<div class='ui-icon ui-icon-triangle-1-s'>"
-                  +   "&nbsp;"
-                  +  "</div>"
+        self.$control   = 
+                $(  "<div class='control'>"
+                  +  "<button>Display Options</button>"
                   + "</div>");
 
-        $control.prependTo(self.element);
+        self.$control.prependTo(self.element);
 
-        $control.fadeTo(100, 0.5);
+        self.$button = self.$control.find('button');
+        self.$button.button({
+            icons: {
+                secondary:  'ui-icon-triangle-1-s'
+            }
+        });
+        self.$control.fadeTo(100, 0.5);
 
         /* Activate a ui.optionGroups handler for any container/div in this
          * form with a CSS class of 'ui-optionGroups'.
@@ -61,11 +70,9 @@ $.widget("ui.dropdownForm", {
          */
         self.element.find('.ui-optionGroups').optionGroups();
 
-
-        $form.hide();
+        self.$form.hide();
 
         self._bindEvents();
-
     },
 
     /************************
@@ -74,19 +81,17 @@ $.widget("ui.dropdownForm", {
      */
     _bindEvents: function() {
         var self        = this;
-        var $control    = self.element.find('.control:first');
-        var $form       = self.element.find('form:first');
-        var $submit     = self.element.find(':submit');
         
 
         // Handle a click outside of the display options form.
         var _body_click     = function(e) {
-            if ($form.is(':visible') && (! $.contains($form[0], e.target)) )
+            if (self.$form.is(':visible') &&
+                (! $.contains(self.$form[0], e.target)) )
             {
-                /* Hide the form by triggering $control.click and then
+                /* Hide the form by triggering self.$control.click and then
                  * mouseleave
                  */
-                $control.trigger('click');
+                self.$control.trigger('click');
 
                 self._trigger('mouseleave', e);
                 //self.element.trigger('mouseleave');
@@ -95,17 +100,17 @@ $.widget("ui.dropdownForm", {
 
         // Opacity hover effects
         var _mouse_enter    = function(e) {
-            $control.fadeTo(100, 1.0);
+            self.$control.fadeTo(100, 1.0);
         };
 
         var _mouse_leave    = function(e) {
-            if ($form.is(':visible'))
+            if (self.$form.is(':visible'))
             {
                 // Don't fade if the form is currently visible
                 return;
             }
 
-            $control.fadeTo(100, 0.5);
+            self.$control.fadeTo(100, 0.5);
         };
 
         var _control_click  = function(e) {
@@ -113,8 +118,8 @@ $.widget("ui.dropdownForm", {
             e.preventDefault();
             e.stopPropagation();
 
-            $form.toggle();
-            $control.toggleClass('ui-state-active');
+            self.$form.toggle();
+            self.$button.toggleClass('ui-state-active');
 
             return false;
         };
@@ -141,14 +146,15 @@ $.widget("ui.dropdownForm", {
             //$.log("ui.dropdownForm::caught 'form:change'");
 
             // Any change within the form should enable the submit button
-            $submit.removeClass('ui-state-disabled')
-                   .removeAttr('disabled')
-                   .addClass('ui-state-default');
+            self.$submit
+                    .removeClass('ui-state-disabled')
+                    .removeAttr('disabled')
+                    .addClass('ui-state-default');
         };
 
         var _form_submit        = function(e) {
             // Serialize all form values to an array...
-            var settings    = $form.serializeArray();
+            var settings    = self.$form.serializeArray();
             //e.preventDefault();
 
             /* ...and set a cookie for each
@@ -195,7 +201,7 @@ $.widget("ui.dropdownForm", {
             e.preventDefault();
 
             // Trigger the 'submit' event on the form
-            $form.trigger('submit');
+            self.$form.trigger('submit');
         };
 
         /**********************************************************************
@@ -208,14 +214,17 @@ $.widget("ui.dropdownForm", {
                 .bind('click.uidropdownform', _body_click);
 
         // Add an opacity hover effect to the displayOptions
-        $control.bind('mouseenter.uidroppdownform', _mouse_enter)
+        self.$control
+                .bind('mouseenter.uidroppdownform', _mouse_enter)
                 .bind('mouseleave.uidroppdownform', _mouse_leave)
                 .bind('click.uidropdownform',       _control_click);
 
-        $form.bind('change.uidropdownform', _form_change)
-             .bind('submit.uidropdownform', _form_submit);
+        self.$form
+                .bind('change.uidropdownform', _form_change)
+                .bind('submit.uidropdownform', _form_submit);
 
-        $submit.bind('click.uidropdownform', _form_clickSubmit);
+        self.$submit
+                .bind('click.uidropdownform', _form_clickSubmit);
 
     },
 
@@ -263,56 +272,52 @@ $.widget("ui.dropdownForm", {
     },
 
     enable: function(enableSubmit) {
-        var $form       = this.element.find('form:first');
-        var $submit     = this.element.find(':submit');
 
-        $form.find('input,select').removeAttr('disabled');
+        self.$form.find('input,select').removeAttr('disabled');
 
         if (enableSubmit !== true)
         {
             // Any change within the form should enable the submit button
-            $submit.removeClass('ui-state-default ui-state-highlight')
-                   .addClass('ui-state-disabled')
-                   .attr('disabled', true);
+            self.$submit
+                    .removeClass('ui-state-default ui-state-highlight')
+                    .addClass('ui-state-disabled')
+                    .attr('disabled', true);
         }
         else
         {
-            $submit.removeClass('ui-state-disabled')
-                   .removeAttr('disabled')
-                   .addClass('ui-state-default');
+            self.$submit
+                    .removeClass('ui-state-disabled')
+                    .removeAttr('disabled')
+                    .addClass('ui-state-default');
         }
     },
 
     disable: function() {
-        var $form       = this.element.find('form:first');
-        var $submit     = this.element.find(':submit');
-
-        $form.find('input,select').attr('disabled', true);
+        self.$form.find('input,select').attr('disabled', true);
 
         // Any change within the form should enable the submit button
-        $submit.removeClass('ui-state-default ui-state-highlight')
-               .addClass('ui-state-disabled')
-               .attr('disabled', true);
+        self.$submit
+                .removeClass('ui-state-default ui-state-highlight')
+                .addClass('ui-state-disabled')
+                .attr('disabled', true);
     },
 
     destroy: function() {
         var self        = this;
-        var $control    = self.element.find('.control:first');
-        var $form       = self.element.find('form:first');
-        var $submit     = self.element.find(':submit');
 
         // Unbind events
         $('body')
                 .unbind('.uidropdownform');
 
-        $control.unbind('.uidropdownform');
-        $control.find('a:first, .ui-icon:first')
-                .unbind('.uidropdownform');
+        self.$control.unbind('.uidropdownform');
+        self.$control.find('a:first, .ui-icon:first')
+                     .unbind('.uidropdownform');
 
-        $form.unbind('.uidropdownform');
+        self.$form.unbind('.uidropdownform');
 
         // Remove added elements
-        $control.remove();
+        self.$button.button('destroy');
+        self.$control.remove();
 
         self.element.find('.displayStyle').optionGroups( 'destroy' );
     }

@@ -27,7 +27,7 @@
        <label>Settings</label>
        <controller>settings</controller>
        <resource>member</resource>
-       <class>local</class>
+       <class>local last</class>
       </settings>
      </pages>
     </userInfo>

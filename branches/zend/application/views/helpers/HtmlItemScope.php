@@ -170,10 +170,12 @@ function init_<?= $namespace ?>ItemScope()
     }
     else
     {
+        var $label  = $input.parent().find('label');
+
         // queryParam, extraParams
         // Attach autoSuggest to our input box
         $input.autoSuggest(scopeCbUrl,
-                           {startText:   $input.attr('emptyText'),
+                           {startText:   $label.text(),
                             extraParams: '&<?= $scopeCbParams ?>',
                             minChars:    2,
                             keyDelay:    200,
@@ -184,6 +186,7 @@ function init_<?= $namespace ?>ItemScope()
                             }});
 
         $input = $itemScope.find('.scopeEntry input.as-values');
+        $label.hide();
     }
 
 
@@ -417,10 +420,10 @@ function init_<?= $namespace ?>ItemScope()
         }
         
         $html .=  "<li class='scopeEntry'>"
-              .    "<input     name='{$this->inputName}' "
-              .          "emptyText='{$this->inputLabel}' "
-              .              "class='ui-input ui-corner-all "
-              .                     "ui-state-default ui-state-empty' />"
+              .    "<label  for='{$this->inputName}'>"
+              .     $this->inputLabel
+              .    "</label>"
+              .    "<input name='{$this->inputName}' />"
               .    "<button type='submit'>&gt;</button>"
               .   "</li>"
               .   "<li class='itemCount ui-corner-tr'>"
@@ -433,7 +436,7 @@ function init_<?= $namespace ?>ItemScope()
 
         // Finalize the HTML
         $html = "<form action='{$action}' "
-              .        "class='itemScope {$this->namespace}ItemScope'>"
+              .        "class='itemScope {$this->namespace}ItemScope ui-form'>"
               .  "<input type='hidden' name='scopeCurrent' "
               .        "value='". implode(',', $curScope) ."'>"
               .  $html

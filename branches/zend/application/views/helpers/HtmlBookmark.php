@@ -355,8 +355,8 @@ class View_Helper_HtmlBookmark extends View_Helper_Bookmark
                   .    $this->_bookmark->updatedOn
                   .  "</div>";
 
-        $html .= "</div>"
-              .  "<br class='clear' />";
+        $html .=  "<br class='clear' />"
+              .  "</div>";
 
         $this->_clearFloats = false;
 

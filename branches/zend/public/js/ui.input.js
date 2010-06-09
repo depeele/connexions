@@ -23,11 +23,12 @@ $.widget("ui.input", {
     options: {
         // Defaults
         priority:       'normal',
-        emptyText:      null,
-        validationEl:   null,       // The element to present validation
-                                    // information in [:sibling
-                                    //                  .ui-field-status]
-        validation:     null        /* The validation criteria
+        $label:         null,       // The field label element.
+        $validation:    null,       /* The element to present validation
+                                     * information in [:sibling
+                                     *                  .ui-field-status]
+                                     */
+        validation:     null,       /* The validation criteria
                                      *      '!empty'
                                      *      function(value)
                                      *          returns {isValid:  true|false,
@@ -40,12 +41,9 @@ $.widget("ui.input", {
      *  Valid options:
      *      priority        The priority of this field
      *                      ( ['normal'], 'primary', 'secondary');
-     *      emptyText       Text to present when the field is empty;
-     *      validationEl:   The element to present validation information in
+     *      $label:         The field label element.
+     *      $validation:    The element to present validation information in
      *                      [ parent().find('.ui-field-status:first) ]
-     *      hideLabel:      Hide any label associated with this input?
-     *                          [ true if 'emptyText' is provided,
-     *                            false otherwise ];
      *      validation:     The validation criteria:
      *                          '!empty'
      *                          function(value) that returns:
@@ -59,17 +57,18 @@ $.widget("ui.input", {
      *      'enabled'           when element is enabled;
      *      'disabled'          when element is disabled.
      */
-    _create: function() {
+    _create: function()
+    {
         var self    = this;
         var opts    = this.options;
 
         opts.enabled = self.element.attr('disabled') ? false : true;
 
-        if (opts.validationEl)
+        if (opts.$validation)
         {
-            if (opts.validationEl.jquery === undefined)
+            if (opts.$validation.jquery === undefined)
             {
-                opts.validationEl = $(opts.validationEl);
+                opts.$validation = $(opts.$validation);
             }
         }
         else
@@ -80,7 +79,7 @@ $.widget("ui.input", {
              * Use the first child of our parent that has the CSS class
              *  'ui-field-status'
              */
-            opts.validationEl = self.element
+            opts.$validation = self.element
                                         .parent()
                                             .find('.ui-field-status:first');
         }
@@ -110,61 +109,33 @@ $.widget("ui.input", {
             self.element.addClass('ui-state-disabled');
         }
 
-        if (opts.emptyText === null)
+        var id  = self.element.attr('id');
+        if ((id === undefined) || (id.length < 1))
         {
-            // See if there is an 'emptyText' attribute
-            var empty   = self.element.attr('emptyText');
-            if ((empty !== undefined) && (empty.length > 0))
-            {
-                opts.emptyText = empty;
-            }
-
+            id = self.element.attr('name');
         }
 
-        if ((opts.emptyText === null) && (! self.element.is(':password')) )
+        if ((id !== undefined) && (id.length > 0))
         {
-            // See if there is a label associated with this field
-            if (opts.hideLabel !== false)
-            {
-                // Attempt to locate the label associated with this field...
-                var id      = self.element.attr('id');
-                var $label  = null;
-                if ((id === undefined) || (id.length < 1))
-                {
-                    id = self.element.attr('name');
-                }
-
-                if ((id !== undefined) && (id.length > 0))
-                {
-                    $label  = self.element
-                                        .parent()
-                                            .find('label[for='+ id +']');
-                }
-
-                if (($label !== null) && ($label.length > 0))
-                {
-                    /* We've found the label!  Use it's text as the 'emptyText'
-                     * and set 'hideLabel' to true.
-                     */
-                
-                    opts.emptyText = $label.text();
-                    opts.hideLabel = true;
-                }
-            }
+            opts.$label  = self.element
+                                .parent()
+                                    .find('label[for='+ id +']');
+        }
+        else
+        {
+            opts.$label = self.element.closest('label');
         }
 
-        self.setEmptyText(opts.emptyText, true);
+        opts.$label.addClass('ui-input-over')
+                   .hide();
 
-        // Interaction events
         self._bindEvents();
     },
 
-    /************************
-     * Private methods
-     *
-     */
-    _bindEvents: function() {
+    _bindEvents: function()
+    {
         var self    = this;
+        var opts    = self.options;
 
         var _mouseenter = function(e) {
             /*
@@ -218,11 +189,7 @@ $.widget("ui.input", {
         var _focus      = function(e) {
             if (self.options.enabled === true)
             {
-                if ((self.options.emptyText !== null) &&
-                    (self.val().length < 1))
-                {
-                    self.element.val('');
-                }
+                opts.$label.hide();
 
                 self.element.removeClass('ui-state-empty')
                             .addClass('ui-state-focus ui-state-active');
@@ -236,14 +203,11 @@ $.widget("ui.input", {
                 self.validate();
             }
 
-            if (self.val().length < 1)
+            if ($.trim(self.val()) === '')
             {
                 self.element.addClass('ui-state-empty');
 
-                if (self.options.emptyText !== null)
-                {
-                    self.element.val(self.options.emptyText);
-                }
+                opts.$label.show();
             }
         };
 
@@ -254,10 +218,17 @@ $.widget("ui.input", {
                 .bind('focus.uiinput',      _focus)
                 .bind('blur.uiinput',       _blur);
 
-        if (this.val().length > 0)
+        opts.$label
+                .bind('click.uiinput', function() { self.element.focus(); });
+
+        if ($.trim(self.val()) !== '')
         {
             // Perform an initial validation
             self.validate();
+        }
+        else
+        {
+            opts.$label.show();
         }
     },
 
@@ -280,6 +251,9 @@ $.widget("ui.input", {
             this.options.enabled = true;
             this.element.removeClass('ui-state-disabled')
                         .removeAttr('disabled');
+            this.options.$label
+                        .removeClass('ui-state-disabled')
+                        .removeAttr('disabled');
 
             //this.element.trigger('enabled.uiinput');
             this._trigger('enabled');
@@ -292,6 +266,9 @@ $.widget("ui.input", {
         {
             this.options.enabled = false;
             this.element.attr('disabled', true)
+                        .addClass('ui-state-disabled');
+            this.options.$label
+                        .attr('disabled', true)
                         .addClass('ui-state-disabled');
 
             //this.element.trigger('disabled.uiinput');
@@ -317,8 +294,8 @@ $.widget("ui.input", {
         this.element
                 .removeClass('ui-state-error ui-state-valid');
 
-        this.options.validationEl
-                .empty()
+        this.options.$validation
+                .html('&nbsp;')
                 .removeClass('ui-state-invalid ui-state-valid');
 
         if (state === true)
@@ -326,7 +303,7 @@ $.widget("ui.input", {
             // Valid
             this.element.addClass(   'ui-state-valid');
 
-            this.options.validationEl
+            this.options.$validation
                         .addClass(   'ui-state-valid');
         }
         else if (state !== undefined)
@@ -334,12 +311,12 @@ $.widget("ui.input", {
             // Invalid, possibly with an error message
             this.element.addClass(   'ui-state-error');
 
-            this.options.validationEl
+            this.options.$validation
                         .addClass(   'ui-state-invalid');
 
             if (typeof state === 'string')
             {
-                this.options.validationEl
+                this.options.$validation
                             .html(state);
             }
         }
@@ -348,93 +325,33 @@ $.widget("ui.input", {
 
         // Let everyone know that the validation state has changed.
         //this.element.trigger('validation_change.uiinput');
-        this._trigger('validation_change');
+        this._trigger('validation_change', null, [state]);
     },
 
-    getEmptyText: function()
+    getLabel: function()
     {
-        return this.options.emptyText;
+        return this.options.$label.text();
     },
 
-    setEmptyText: function(str, force)
+    setLabel: function(str)
     {
-        if (this.element.is(':password'))
-        {
-            this.options.hideLabel = false;
-            this.options.emptyText = null;
-            return;
-        }
-
-        if ((this.options.emptyText !== null) &&
-            (this.val() === this.options.emptyText))
-        {
-            this.element.val('');
-        }
-
-        this.options.emptyText = str;
-
-        if (this.options.emptyText !== null)
-        {
-            if (this.options.hideLabel !== false)
-            {
-                this.options.hideLabel = true;
-
-                // Attempt to locate the label associated with this field...
-                var id      = this.element.attr('id');
-                if ((id === undefined) || (id.length < 1))
-                {
-                    id = this.element.attr('name');
-                }
-
-                if ((id !== undefined) && (id.length > 0))
-                {
-                    var $label  = this.element
-                                        .parent()
-                                            .find('label[for='+ id +']');
-                
-                    $label.hide();
-                }
-            }
-
-            // :XXX: Error with ':focus' :XXX:
-            //if ( (force === true) || (this.val().length < 1) )
-            if ( ((force === true) || (! this.element.is(':focus')) ) &&
-                (this.val().length < 1) )
-            {
-                this.element.val(this.options.emptyText);
-            }
-        }
+        this.options.$label.text(str);
     },
 
     val: function(newVal)
     {
-        var self    = this;
-        var ret     = null;
-
-        if (newVal === undefined)
-        {
-            // Value retrieval
-            ret = $.trim(self.element.val());
-
-            if ((self.options.emptyText !== null) &&
-                (ret === self.options.emptyText))
-            {
-                ret = '';
-            }
-        }
-        else
-        {
-            ret = self.element.val(newVal);
-            self.validate();
-        }
-
-        return ret;
+        return this.element.val();
     },
 
     validate: function()
     {
         var msg         = [];
         var newState;
+
+        if (this.options.validation === null)
+        {
+            return;
+        }
 
         if ($.isFunction(this.options.validation))
         {
@@ -467,9 +384,11 @@ $.widget("ui.input", {
     },
 
     destroy: function() {
-        this.options.validationEl
+        this.options.$validation
                 .removeClass( 'ui-state-valid '
                              +'ui-state-invalid ');
+        this.options.$label
+                .unbind('.uiinput');
 
         this.element
                 .removeClass( 'ui-state-default '

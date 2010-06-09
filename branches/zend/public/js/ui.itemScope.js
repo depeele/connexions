@@ -23,7 +23,7 @@
  *          </li>
  *
  *          <li class='scopeEntry'>
- *            <input name=' %inputName% ' emptyText=' %inputLabel ' /> 
+ *            <input name=' %inputName% ' value=' %inputLabel ' /> 
  *            <button type='submit'>&gt;</button>
  *          </li>
  *
@@ -45,7 +45,6 @@ $.widget("ui.itemScope", {
         namespace:          '',     // Cookie/parameter namespace
 		autocompleteSrc:    null,   // The source of auto-completion data
                                     // (if non-null, passed to ui.autocomplete)
-        emptyText:          null    // Text to display when the field is empty
 	},
 	_create: function(){
 		var self    = this;
@@ -56,7 +55,7 @@ $.widget("ui.itemScope", {
         self.$curItems = self.element.find('.scopeItem');
         self.$submit   = self.element.find('.scopeEntry :submit');
 
-        self.$input.input({emptyText: opts.emptyText});
+        self.$input.input();
 
         if (opts.autocompleteSrc !== null)
         {
