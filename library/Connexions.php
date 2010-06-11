@@ -7,9 +7,10 @@
  */
 class Connexions
 {
-    protected static    $_user  = null;
-    protected static    $_db    = null;
-    protected static    $_log   = null;
+    protected static    $_user      = null;
+    protected static    $_db        = null;
+    protected static    $_log       = null;
+    protected static    $_request   = null;
 
     /** @brief  Provide a general logging mechanism.
      *  @param  fmt     The sprintf-like format string
@@ -142,7 +143,25 @@ class Connexions
      */
     public static function getRequest()
     {
-        return Zend_Controller_Front::getInstance()->getRequest();
+        if (self::$_request === null)
+        {
+            /* By default, retrieve the request associated with the front
+             * controller.  This will only work if we're using controllers
+             * (e.g. MVC).
+             */
+            self::setRequest(Zend_Controller_Front::getInstance()
+                                                        ->getRequest());
+        }
+
+        return self::$_request;
+    }
+
+    /** @brief  Set the globally accessible request object.
+     *  @param  request     The request object.
+     */
+    public static function setRequest($request)
+    {
+        self::$_request = $request;
     }
 
     /** @brief  Retrieve the URL of the current request.

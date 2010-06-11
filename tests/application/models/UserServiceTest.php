@@ -93,12 +93,12 @@ class UserServiceTest extends DbTestCase
         $this->assertSame( $service1, $service2 );
     }
 
-    public function testUserServiceCreate()
+    public function testUserServiceGet()
     {
         $expected = $this->_user0;
         $service  = Connexions_Service::factory('Model_User');
 
-        $user     = $service->create( $data = array(
+        $user     = $service->get( $data = array(
             'name'        => $expected['name'],
             'fullName'    => $expected['fullName'],
         ));
@@ -128,7 +128,7 @@ class UserServiceTest extends DbTestCase
     {
         $expected = $this->_user1;
         $service  = Connexions_Service::factory('Model_User');
-        $user     = $service->create( $data = array(
+        $user     = $service->get( $data = array(
             'name'        => $expected['name'],
             'fullName'    => $expected['fullName'],
         ));
@@ -322,8 +322,12 @@ class UserServiceTest extends DbTestCase
 
         // Password authentication
         $authType          = Model_UserAuth::AUTH_PASSWORD;
-        $_POST['username'] = $expected['name'];
-        $_POST['password'] = 'abcdefg';
+
+        // Establish the request parameters
+        $request = new Zend_Controller_Request_Simple();
+        $request->setParam('username', $expected['name']);
+        $request->setParam('password', 'abcdefg');
+        Connexions::setRequest($request);
 
         $service           = Connexions_Service::factory('Model_User');
         $user              = $service->authenticate( $authType );
@@ -340,6 +344,8 @@ class UserServiceTest extends DbTestCase
         // De-authenticate this user for the next test
         $user->logout();
         $this->assertFalse ( $user->isAuthenticated() );
+
+        Connexions::setRequest(null);
     }
 
     public function testUserServiceAuthenticationPreHashedSuccess()
@@ -348,9 +354,13 @@ class UserServiceTest extends DbTestCase
 
         // Password authentication
         $authType          = Model_UserAuth::AUTH_PASSWORD;
-        $_POST['username'] = $expected['name'];
-                             // md5($expected['name'] .':abcdefg');
-        $_POST['password'] = '77c3d13750c0a0a59b0a2cf1bc189f61';
+
+        // Establish the request parameters
+        $request = new Zend_Controller_Request_Simple();
+        $request->setParam('username', $expected['name']);
+                                       // md5($expected['name'] .':abcdefg');
+        $request->setParam('password', '77c3d13750c0a0a59b0a2cf1bc189f61');
+        Connexions::setRequest($request);
 
         $service           = Connexions_Service::factory('Model_User');
         $user              = $service->authenticate( $authType );
@@ -367,6 +377,7 @@ class UserServiceTest extends DbTestCase
         // De-authenticate this user for the next test
         $user->logout();
         $this->assertFalse ( $user->isAuthenticated() );
+        Connexions::setRequest(null);
     }
 
     public function testUserServiceAuthenticationPkiMismatch()
@@ -695,7 +706,7 @@ class UserServiceTest extends DbTestCase
         $this->assertNotEquals(null, $user);
 
         // Mark the user as 'authenticated'
-        $user->setAuthenticated();
+        $this->_setAuthenticatedUser($user);
         $this->assertTrue ($user->isAuthenticated());
 
         // Rename tags
@@ -732,6 +743,9 @@ class UserServiceTest extends DbTestCase
         $et->setValue(0, 'lastVisit', $user->lastVisit);
 
         $this->assertDataSetsEqual( $es, $ds );
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
     public function testUserServiceTagDeleteUnauthenticatedFailure()
@@ -814,7 +828,7 @@ class UserServiceTest extends DbTestCase
         $this->assertNotEquals(null, $user);
 
         // Mark the user as 'authenticated'
-        $user->setAuthenticated();
+        $this->_setAuthenticatedUser($user);
         $this->assertTrue ($user->isAuthenticated());
 
         // Delete the tags.
@@ -850,5 +864,8 @@ class UserServiceTest extends DbTestCase
         $et->setValue(0, 'lastVisit', $user->lastVisit);
 
         $this->assertDataSetsEqual( $es, $ds );
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 }

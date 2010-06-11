@@ -69,12 +69,12 @@ class TagServiceTest extends DbTestCase
         $this->assertSame( $service1, $service2 );
     }
 
-    public function testTagServiceCreate()
+    public function testTagServiceGet()
     {
         $expected = $this->_tag0;
         $service  = Connexions_Service::factory('Model_Tag');
 
-        $tag     = $service->create( $data = array(
+        $tag     = $service->get( $data = array(
             'tag'         => $expected['tag'],
         ));
 
@@ -96,7 +96,7 @@ class TagServiceTest extends DbTestCase
     {
         $expected = $this->_tag1;
         $service  = Connexions_Service::factory('Model_Tag');
-        $tag     = $service->create( $data = array(
+        $tag     = $service->get( $data = array(
             'tag'         => $expected['tag'],
         ));
 

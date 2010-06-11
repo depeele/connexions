@@ -457,7 +457,8 @@ abstract class Connexions_Model
                 else if (array_key_exists($fieldName, $messages))
                 {
                     $this->_valid[$fieldName] = $messages[$fieldName];
-                    $this->setIsValid(false);
+
+                    $this->_isValid = false;
                 }
                 else
                 {
@@ -538,16 +539,19 @@ abstract class Connexions_Model
             $str .= sprintf ("%s%-15s == %-15s %s [ %s ]%s\n",
                              str_repeat(' ', $indent + 1),
                              $key, $type,
-                             ($this->_valid[$key] !== true
-                                ? (isset($this->_valid[$key])
+                             (isset($this->_valid[$key])
+                                ? ($this->_valid[$key] !== true
                                     ? "!"
-                                    : "?")
-                                : " "),
+                                    : " ")
+                                : "?"),
                              $val,
-                             ($this->_valid[$key] !== true
-                                ? (is_array($this->_valid[$key])
-                                    ? " : ". implode(', ', $this->_valid[$key])
-                                    : $this->_valid[$key])
+                             (isset($this->_valid[$key])
+                                ? ($this->_valid[$key] !== true
+                                    ? (is_array($this->_valid[$key])
+                                        ? " : ".
+                                            implode(', ', $this->_valid[$key])
+                                        : $this->_valid[$key])
+                                    : '')
                                 : ''));
         }
 

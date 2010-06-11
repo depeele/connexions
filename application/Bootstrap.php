@@ -33,9 +33,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
              ->_commonAutoload()
              ->_commonLogging()
              ->_commonDb()
-             ->_commonAuth()
-             ->_commonRequest()
-             ->_commonPlugins();
+             ->_commonAuth();
 
         // /*
         Connexions_Profile::checkpoint('Connexions',
@@ -52,7 +50,9 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
          * Perform minimal view initialization
          *
          */
-        $this->_viewContext()
+        $this->_controllerRequest()
+             ->_controllerPlugins()
+             ->_viewContext()
              ->_viewAcl()
              ->_viewRoute();
 
@@ -392,6 +392,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
     protected function _commonAuth()
     {
         $uService = Connexions_Service::factory('Service_User');
+        $user     = null;
 
         // Initialize authentication to use session-based storage
         $auth = Zend_Auth::getInstance();
@@ -406,7 +407,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         {
             Connexions::log("Bootstrap::_commonAuth: Auth has identity...");
             $user = $uService->find( $auth->getIdentity() );
-            $user->setAuthenticated();
+            if ($user !== null)
+            {
+                // Create a Zend_Auth_Result that indicates success
+                $result = new Connexions_Auth_Pre($user);
+                $user->setAuthenticated($result);
+            }
         }
 
         /*
@@ -434,10 +440,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             Connexions::log("Bootstrap::_commonAuth: create an anonymous user");
             // */
 
-            // Create an 'anonymous', unauthenticated user
-            $user = $uService->create( array('name'      => 'anonymous',
-                                             'fullName'  => 'Visitor'
-                                       ));
+            // Find/Make an 'anonymous', unauthenticated user
+            $user = $uService->get( array('name'      => 'anonymous',
+                                          'fullName'  => 'Visitor'
+                                    ));
         }
 
         //Connexions::log("Bootstrap::_commonAuth: Add 'user' to registry");
@@ -468,13 +474,22 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         return $this;
     }
 
+    /*******************************************
+     * For Views
+     *
+     */
+
     /** @brief  Initialize the incoming request, assigning it to the front
      *          controller.
      */
-    protected function _commonRequest()
+    protected function _controllerRequest()
     {
         $front   = Zend_Controller_Front::getInstance();
+        $request = Connexions::getRequest();
+
+        /*
         $request = $front->getRequest();
+        */
         if ($request === null)
         {
             /* We don't already have a request assigned so create one ASSUMING
@@ -482,6 +497,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
              */
             $request = new Zend_Controller_Request_Http();
             $front->setRequest($request);
+
+            Connexions::setRequest($request);
         }
 
         // Make the request available as a Bootstrap Resource
@@ -491,16 +508,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
     }
 
     /** @brief  Initialize common, pre-view plugins and helpers. */
-    protected function _commonPlugins()
+    protected function _controllerPlugins()
     {
-        /*
-        $front = Zend_Controller_Front::getInstance();
-
-        // Register our authentication plugin (performs
-        // identification/authentication during dispatchLoopStartup().
-        $front->registerPlugin(new Connexions_Controller_Plugin_Auth());
-        */
-
         /* Register our Controller Action Helpers Prefix.
          *
          * This will make available all helpers in:
@@ -513,13 +522,13 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         Zend_Controller_Action_HelperBroker::addHelper(
                 new Connexions_Controller_Action_Helper_ResourceInjector());
 
+        /* Content-Type parameter helper: $view->_helper->params();
+        Zend_Controller_Action_HelperBroker::addHelper(
+                new Connexions_Controller_Action_Helper_Params());
+        // */
+
         return $this;
     }
-
-    /*******************************************
-     * For Views
-     *
-     */
 
     /** @brief  Initialize available render contexts.
      *

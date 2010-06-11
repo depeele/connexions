@@ -19,17 +19,29 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
     protected   $_user          = null; // Model_User     instance
     protected   $_userAuth      = null; // Model_UserAuth instance
 
-    /** @brief  Construct a new instatnce.
+    /** @brief  Construct a new authentication adapter / result.
+     *  @param  code        Initialization status code;
+     *  @param  identity    Initialization identity value;
+     *  @param  messages    Initialization messages;
      *
+     *  @return void
      */
-    public function __construct()
+    public function __construct(      $code     = self::FAILURE,
+                                      $identity = null,
+                                array $messages = array())
     {
-        parent::__construct(self::FAILURE, null);
+        parent::__construct($code, $identity, $messages);
     }
 
     public function getUser()
     {
         return $this->_user;
+    }
+
+    public function getRequest()
+    {
+        // Retrieve the registered request
+        return Connexions::getRequest();
     }
 
     /** @brief  Return the authentication type of the concrete instance. */
@@ -93,7 +105,7 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
                 $this->_user = $identity;
             }
 
-            $this->_user->setAuthenticated();
+            $this->_user->setAuthenticated($this);
         }
 
         return $this;

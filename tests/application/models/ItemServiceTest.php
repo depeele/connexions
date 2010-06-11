@@ -76,7 +76,7 @@ class ItemServiceTest extends DbTestCase
         $expected = $this->_item0;
         $service  = Connexions_Service::factory('Model_Item');
 
-        $item    = $service->create( $data = array(
+        $item    = $service->get( $data = array(
             'url'         => $expected['url'],
         ));
 
@@ -95,7 +95,7 @@ class ItemServiceTest extends DbTestCase
     {
         $expected = $this->_item1;
         $service  = Connexions_Service::factory('Model_Item');
-        $item     = $service->create( $data = array(
+        $item     = $service->get( $data = array(
             'url'         => $expected['url'],
         ));
 
