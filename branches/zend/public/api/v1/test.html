@@ -1,0 +1,66 @@
+<html>
+ <head>
+  <title>Json-Rpc tester</title>
+  <script type='text/javascript' src='../../js/jquery.js'></script>
+  <script type='text/javascript' src='../../js/json2.js'></script>
+  <script type='text/javascript'>
+    (function($) {
+        $(document).ready(function() {
+            var $form   = $('form');
+            var rpcId   = 1;
+            $form.bind('submit', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+
+                var url = document.location.href;
+                
+                url = url.substr(0, url.lastIndexOf('/')+1)
+                    + $form.attr('action');
+                var rpc = {
+                    version: 2.0,
+                    method:  'user.authenticate',
+                    id:      rpcId++,
+                    params:  {
+                        username: $form.find('input[name=username]').val(),
+                        password: $form.find('input[name=password]').val()
+                    }
+                };
+
+                $.ajax({
+                    type:     'POST',
+                    url:      $form.attr('action'),
+                    data:     JSON.stringify(rpc),
+                    dataType: 'json',
+                    success: function(data, txtStatus, req) {
+                        $('#result').html(  '<pre class="status">'
+                                          +  txtStatus
+                                          + '</pre>'
+                                          + '<pre>'
+                                          +  JSON.stringify(data)
+                                          + '</pre>');
+                    },
+                    error: function(req, txtStatus, e) {
+                        $('#result').html(  '<pre class="error">'
+                                          +  txtStatus
+                                          + '</pre>');
+                    }
+                });
+            });
+        });
+    }(jQuery));
+  </script>
+ </head>
+ <body>
+  <form method='POST' action='json-rpc.php'>
+   <label  for='username'>username</label>
+   <input name='username' type='text' />
+
+   <label  for='password'>password</label>
+   <input name='password' type='password' />
+
+   <input type='submit' />
+  </form>
+  <div id='result'></div>
+ </body>
+</html>

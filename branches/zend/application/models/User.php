@@ -37,7 +37,7 @@ class Model_User extends Model_Taggable
 
     protected   $_authType          = Model_UserAuth::AUTH_DEFAULT;
     protected   $_credential        = null;
-    protected   $_isAuthenticated   = false;
+    protected   $_authResult        = null;
 
     /*************************************************************************
      * Connexions_Model abstract method implementations
@@ -141,7 +141,6 @@ class Model_User extends Model_Taggable
         {
         case 'authType':      $val = $this->_authType;        break;
         case 'credential':    $val = $this->_credential;      break;
-        case 'authenticated': $val = $this->_isAuthenticated; break;
         case 'tags':          $val = $this->_tags();          break;
         case 'bookmarks':     $val = $this->_bookmarks();     break;
         default:              $val = parent::__get($name);    break;
@@ -166,10 +165,6 @@ class Model_User extends Model_Taggable
 
         case 'credential':
             $this->setCredential( $value );
-            break;
-
-        case 'authenticated':
-            $this->setAuthenticated( $value );
             break;
 
         case 'tags':
@@ -298,15 +293,29 @@ class Model_User extends Model_Taggable
     }
 
     /** @brief  Set the authentication state for this user.
-     *  @param  val     The new state (true | false).
+     *  @param  result  The Zend_Auth_Result representing the authentication
+     *                  state (anything else will force to un-authenticated);
      *
      *  @return $this for a fluent interface.
      */
-    public function setAuthenticated($state = true)
+    public function setAuthenticated($result)
     {
-        $this->_isAuthenticated = (bool)$state;
+        if ($result instanceof Zend_Auth_Result)
+            $this->_authResult = $result;
+        else
+            $this->_authResult = null;
 
         return $this;
+    }
+
+    /** @brief  Get the authentication results for this user.
+     *  
+     *  @return The Zend_Auth_Result representing the authentication
+     *          state (null if authentication has not been attempted).
+     */
+    public function getAuthResult()
+    {
+        return $this->_authResult;
     }
 
     /** @brief  Retrieve the authentication state for this user.
@@ -315,7 +324,9 @@ class Model_User extends Model_Taggable
      */
     public function isAuthenticated()
     {
-        return $this->_isAuthenticated;
+        return ($this->_authResult !== null
+                    ? $this->_authResult->isValid()
+                    : false);
     }
 
     /**********************************************

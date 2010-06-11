@@ -93,24 +93,24 @@ class AuthController extends Connexions_Controller_Action
          * Attempt authentication
          *
          */
-        $user       = $uService->authenticate($authType, $id);
-        $authResult = $uService->getAuthResult();
-
-        $messages = $authResult->getMessages();
-        $messages = (is_array($messages)
-                        ? implode('; ', $authResult->getMessages())
-                        : '');
-
-        Connexions::log("AuthController: Authentication Results: "
-                        .   "code[ {$authResult->getCode()} ], "
-                        .   "messages[ {$messages} ], "
-                        .   "identity[ {$authResult->getIdentity()} ]");
+        $user = $uService->authenticate($authType, $id);
 
         if (! $user->isAuthenticated())
         {
             /* Unsuccessful authentication -- present the authentcation
              * form
              */
+            $authResult = $user->getAuthResult();
+            $messages   = $authResult->getMessages();
+            $messages   = (is_array($messages)
+                            ? implode('; ', $authResult->getMessages())
+                            : '');
+
+            Connexions::log("AuthController: Authentication Results: "
+                            .   "code[ {$authResult->getCode()} ], "
+                            .   "messages[ {$messages} ], "
+                            .   "identity[ {$authResult->getIdentity()} ]");
+
             $this->view->error = $messages;
             $this->_helper->layout->setLayout('auth');
             return;

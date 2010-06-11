@@ -9,8 +9,6 @@ class Service_User extends Connexions_Service
     protected   $_modelName = 'Model_User';
     protected   $_mapper    = 'Model_Mapper_User'; */
 
-    protected   $_authResult    = null;
-
     /** @brief  Given a user identifier and/or credential, attempt to
      *          authenticate the identified user.
      *  @param  authType    The type of authentication to perform
@@ -50,19 +48,19 @@ class Service_User extends Connexions_Service
                             : gettype($authAdapter)));
         // */
 
-        $this->_authResult = $auth->authenticate( $authAdapter );
-        if ($this->_authResult->isValid())
+        $authResult = $auth->authenticate( $authAdapter );
+        if ($authResult->isValid())
         {
             // Retrieve the authenticated Model_User instance
-            $user = $this->_authResult->getUser();
+            $user = $authResult->getUser();
         }
         else
         {
-            /* Create a non-backed, unauthenticated 'anonymous' Model_User
-             * instance
+            /* Get an 'anonymous' Model_User instance and do NOT mark it
+             * authenticated.
              */
-            $user = $this->create( array('name'     => 'anonymous',
-                                         'fullName' => 'Guest') );
+            $user = $this->get( array('name'     => 'anonymous',
+                                      'fullName' => 'Guest') );
         }
 
         /*
@@ -78,21 +76,11 @@ class Service_User extends Connexions_Service
         return $user;
     }
 
-    /** @brief  Retrieve the authentication result from the last authentcate()
-     *          call.
-     *
-     *  @return Zend_Auth_Result (or null if authenticate() was not invoked).
-     */
-    public function getAuthResult()
-    {
-        return $this->_authResult;
-    }
-
     /** @brief  Convert a comma-separated list of user names to a 
      *          Model_Set_User instance.
      *  @param  csList  The comma-separated list of user names.
      *
-     *  @return Model_Set_Uset
+     *  @return Model_Set_User
      */
     public function csList2set($csList)
     {

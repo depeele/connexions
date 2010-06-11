@@ -39,9 +39,9 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         $tags          = $bookmark->tags;       // Save the tags
 
         /*
-        Connexions::log("Models_Mapper_Bookmark::save(%s, %s): %d tags",
+        Connexions::log("Models_Mapper_Bookmark::save(%s, %s): [ %s ]",
                         $bookmark->userId, $bookmark->itemId,
-                        count($tags));
+                        $bookmark->debugDump());
         // */
 
         if ( (! $tags instanceof Connexions_Model_Set) || (count($tags) < 1))

@@ -761,6 +761,15 @@ class Zend_OpenId_Consumer
                 $r)) {
             $version = 1.1;
             $server = $r[2];
+        /* Based upon OpenId-2.0 patch:
+         *  http://framework.zend.com/issues/browse/ZF-6905 {
+         */
+        } else if (preg_match('/<URI>([^<]+)<\/URI>/i', $response, $r)) {
+            $version = 2.0;
+            $server = $r[1];
+        /* Based upon OpenId-2.0 patch:
+         *  http://framework.zend.com/issues/browse/ZF-6905 }
+         */
         } else {
             return false;
         }
@@ -848,6 +857,17 @@ class Zend_OpenId_Consumer
         if ($version >= 2.0) {
             $params['openid.ns'] = Zend_OpenId::NS_2_0;
         }
+        /* Based upon OpenId-2.0 patch:
+         *  http://framework.zend.com/issues/browse/ZF-6905 {
+         */
+        if (($version <= 2.0) &&
+            ($server == 'https://www.google.com/accounts/o8/ud')) {
+            $id        = 'http://specs.openid.net/auth/2.0/identifier_select';
+            $claimedId = $id;
+        }
+        /* Based upon OpenId-2.0 patch:
+         *  http://framework.zend.com/issues/browse/ZF-6905 }
+         */
 
         $params['openid.mode'] = $immediate ?
             'checkid_immediate' : 'checkid_setup';

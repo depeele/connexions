@@ -45,7 +45,7 @@ class Model_Mapper_Item extends Model_Mapper_Base
     }
 
     /** @brief  Retrieve a single item.
-     *  @param  id      The item identifier (itemId or urlHash)
+     *  @param  id      The item identifier (itemId, url, or urlHash)
      *
      *  @return A Model_Item instance.
      */
@@ -57,6 +57,10 @@ class Model_Mapper_Item extends Model_Mapper_Base
         }
         else if (is_string($id) && (! is_numeric($id)) )
         {
+            if (! Connexions::isMd5($id))
+                // Convert a URL string to an MD5 hash.
+                $id = Connexions::md5Url($id);
+
             // Lookup by item urlHash
             $where = array('urlHash=?' => $id);
         }

@@ -170,15 +170,62 @@ class IndexController extends Connexions_Controller_Action
         //$this->_helper->layout->setLayout('post');
 
         $request  =& $this->_request;
-        $postInfo = array(
-            'name'          => $request->getParam('name',        null),
-            'url'           => $request->getParam('url',         null),
-            'description'   => $request->getParam('description', null),
-            'tags'          => $request->getParam('tags',        null),
-            'rating'        => $request->getParam('rating',      null),
-            'isFavorite'    => $request->getParam('isFavorite',  false),
-            'isPrivate'     => $request->getParam('isPrivate',   false)
+        $bookmark =  null;
+        $postInfo =  array(
+            'url'           => trim($request->getParam('url',         null)),
+            'name'          => trim($request->getParam('name',        null)),
+            'description'   => trim($request->getParam('description', null)),
+            'rating'        => $request->getParam('rating',           null),
+            'isFavorite'    => $request->getParam('isFavorite',       null),
+            'isPrivate'     => $request->getParam('isPrivate',        null),
+            'tags'          => trim($request->getParam('tags',        null)),
         );
+
+        // Retrieve any existing bookmark for the given URL by the current user
+        if (! empty($postInfo['url']))
+        {
+            $bookmark = $this->service('Bookmark')
+                                ->find( array(
+                                    'user'      => $this->_viewer,
+                                    'itemUrl'   => $postInfo['url'],
+                                ));
+            if ($bookmark !== null)
+            {
+                /* The user has an existing bookmark.  Fill in any data that
+                 * was NOT provided directly.
+                 */
+                if (empty($postInfo['name']))
+                    $postInfo['name'] = $bookmark->name;
+
+                if (empty($postInfo['description']))
+                    $postInfo['description'] = $bookmark->description;
+
+                if ($postInfo['rating'] === null)
+                    $postInfo['rating'] = $bookmark->rating;
+
+                if ($postInfo['isFavorite'] === null)
+                    $postInfo['isFavorite'] = $bookmark->isFavorite;
+
+                if ($postInfo['isPrivate'] === null)
+                    $postInfo['isPrivate'] = $bookmark->isPrivate;
+
+                if (empty($postInfo['tags']))
+                    $postInfo['tags'] = $bookmark->tags->__toString();
+            }
+        }
+        if ($postInfo['isFavorite'] === null)
+            $postInfo['isFavorite'] = false;
+
+        if ($postInfo['isPrivate'] === null)
+            $postInfo['isPrivate'] = false;
+
+        if ($request->isPost())
+        {
+            // Create/Update the bookmark
+            if ($bookmark === null)
+            {
+            }
+        }
 
         $this->view->headTitle('Save a Bookmark');
 
@@ -518,9 +565,9 @@ class IndexController extends Connexions_Controller_Action
             return;
         }
 
-        // VALID -- create and save the Bookmark.
+        // VALID -- find/create and save the Bookmark.
         $bookmark = $this->service('Bookmark')
-                            ->create( array(
+                            ->get( array(
                                 'user'      => $this->_viewer,
                                 'itemUrl'   => $itemInfo['url'],
                                 'tags'      => $itemInfo['tags'],
@@ -643,7 +690,7 @@ class IndexController extends Connexions_Controller_Action
          */
         $curItem = $bookmark->item;
         $newItem = $this->service('Item')
-                            ->find( $itemInfo['urlHash'] );
+                            ->get( $itemInfo['urlHash'] );
 
         // 2) See if the item is changing...
         if ($curItem->itemId !== $newItem->itemId)

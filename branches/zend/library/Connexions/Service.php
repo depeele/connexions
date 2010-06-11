@@ -24,7 +24,8 @@ abstract class Connexions_Service
     const   SORT_DIR_ASC    = 'ASC';
     const   SORT_DIR_DESC   = 'DESC';
 
-    /** @brief  Create a new, unbacked Domain Model instance.
+    /** @brief  Find an existing Domain Model instance, or Create a new Domain
+     *          Model instance, initializing it with the provided data.
      *  @param  data    An array of name/value pairs used to initialize the
      *                  Domain Model.  All 'name's MUST be valid for the target
      *                  Domain Model.
@@ -36,12 +37,9 @@ abstract class Connexions_Service
      *                or
      *                    $model = $this->update($model)
      */
-    public function create(array $data)
+    public function get(array $data)
     {
-        $mapper = $this->_getMapper();
-
-        // Find or create a model
-        return $mapper->getModel($data);
+        return $this->_getMapper()->getModel($data);
     }
 
     /** @brief  Retrieve a single, existing Domain Model instance.
@@ -129,33 +127,6 @@ abstract class Connexions_Service
         return new Zend_Paginator( $set->getPaginatorAdapter() );
     }
                                       
-    /** @brief  Initiate an update of the provided Domain Model instance.
-     *  @param  model   The Domain Model instance to update.
-     *
-     *  Note: For simple Domain Models, this can also be accomplished
-     *        directly via the Domain Model (e.g. $model->save() ).
-     *
-     *  @return The updated Domain Model instance.
-     */
-    public function update(Connexions_Model $model)
-    {
-        return $model->save();
-    }
-
-    /** @brief  Initiate the deletion of the provided Domain Model instance.
-     *  @param  model   The Domain Model instance to delete.
-     *
-     *  Note: For simple Domain Models, this can also be accomplished
-     *        directly via the Domain Model (e.g. $model->delete() ).
-     *
-     *  @return void
-     */
-    public function delete(Connexions_Model $model)
-    {
-        $model->delete();
-    }
-
-
     /*********************************************************************
      * Protected methods
      *

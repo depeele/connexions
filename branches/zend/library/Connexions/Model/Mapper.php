@@ -309,7 +309,7 @@ abstract class Connexions_Model_Mapper
         return $this;
     }
 
-    /******** DEBUG vvvv { **********/
+    /******** DEBUG vvvv { **********
     public function dumpIdentityMap()
     {
         printf ("Identity map for '%s'.  %d items:\n",
@@ -322,7 +322,7 @@ abstract class Connexions_Model_Mapper
                     ++$idex, $key, $item->__toString());
         }
     }
-    /******** DEBUG ^^^^ } **********/
+     ******** DEBUG ^^^^ } **********/
 
     /*********************************************************************
      * Abstract methods

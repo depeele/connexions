@@ -29,31 +29,40 @@ class Connexions_Auth_UserPassword extends Connexions_Auth_Abstract
     {
         // Reset our result state
         $this->_setResult();
-        $userName = null;
 
-        /*
+        // Retrieve the request
+        $request = $this->getRequest();
+        if ($request === null)
+        {
+            // There is not request so we cannot authenticate...
+            return $this;
+        }
+
+        $userName = $request->getParam('username', null);
+        $password = $request->getParam('password', null);
+
+        // /*
+
         Connexions::log("Connexions_Auth_UserPassword::authenticate: "
-                        . "_POST: username[ %s ], password[ %s ]",
-                        $_POST['username'], $_POST['password']);
+                        . "username[ %s ], password[ %s ]",
+                        $userName, $password);
         // */
 
-        if (@empty($_POST['username']))
+        if (@empty($userName))
         {
             $this->_setResult(self::FAILURE_IDENTITY_AMBIGUOUS,
                               $userName,
                               "Missing user name");
             return $this;
         }
-        $userName = $_POST['username'];
 
-        if (! isset($_POST['password']))
+        if ($password === null)
         {
             $this->_setResult(self::FAILURE_CREDENTIAL_INVALID,
                               $userName,
                               "Missing password");
             return $this;
         }
-        $password = $_POST['password'];
 
 
         /* Match and Compare the identity and credential.  This also sets the

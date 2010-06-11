@@ -139,4 +139,47 @@ abstract class DbTestCase extends Zend_Test_PHPUnit_DatabaseTestCase
             }
         }
     }
+
+    /***********************************************************************
+     * Simple authentication
+     *
+     */
+    protected   $_curUser   = null;
+    protected   $_oldUser   = null;
+    protected function _setAuthenticatedUser($user)
+    {
+        if (! $user instanceof Model_User)
+        {
+            // Attempt to locate the given user...
+            $uService = Connexions_Service::factory('Model_User');
+            $user     = $uService->find( $user );
+            $this->assertNotEquals(null, $user);
+        }
+
+        $result = new Zend_Auth_Result(Zend_Auth_Result::SUCCESS,
+                                       $user->userId);
+
+        $user->setAuthenticated($result);
+
+        $this->_curUser = $user;
+        $this->_oldUser = Zend_Registry::get('user');
+
+        // Set the global, authenticated user
+        Zend_Registry::set('user', $user);
+
+        // So next Connexions::getUser() call will re-get from the registry
+        Connexions::clearUser();
+    }
+
+    protected function _unsetAuthenticatedUser()
+    {
+        // De-Establish $user as the authenticated, visiting user.
+        $this->_curUser->setAuthenticated(false);
+
+        // Restore the previous user.
+        Zend_Registry::set('user', $this->_oldUser);
+
+        // So next Connexions::getUser() call will re-get from the registry
+        Connexions::clearUser();
+    }
 }

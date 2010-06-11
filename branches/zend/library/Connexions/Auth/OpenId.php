@@ -276,8 +276,20 @@ class Connexions_Auth_OpenId extends Connexions_Auth_Abstract
             Connexions::log("Connexions_Auth_OpenId::authenticate: "
                             . "non-POST, auth response?");
             // */
+
+            // Retrieve the request
+            $request = $this->getRequest();
+            if ($request === null)
+            {
+                // There is not request so we cannot authenticate...
+                return $this;
+            }
+
+            $params = $request->getParams();
+            /*
             $params = (isset($_SERVER['REQUEST_METHOD']) &&
                        $_SERVER['REQUEST_METHOD']=='POST') ? $_POST: $_GET;
+            // */
 
             $consumer = new Zend_OpenId_Consumer($this->_storage);
             $consumer->setHttpClient($this->_httpClient);

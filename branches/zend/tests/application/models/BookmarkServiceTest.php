@@ -173,29 +173,6 @@ class BookmarkServiceTest extends DbTestCase
         parent::tearDown();
     }
 
-    protected   $_curUser   = null;
-    protected   $_oldUser   = null;
-    protected function _setAuthenticatedUser($userId)
-    {
-        // Establish User1 as the authenticated, visiting user.
-        $uService       = Connexions_Service::factory('Model_User');
-        $this->_curUser = $uService->find( $userId );
-        $this->assertNotEquals(null, $this->_curUser);
-
-        $this->_curUser->setAuthenticated();
-        $this->_oldUser = Zend_Registry::get('user');
-        Zend_Registry::set('user', $this->_curUser);
-        Connexions::clearUser();
-    }
-
-    protected function _unsetAuthenticatedUser()
-    {
-        // De-Establish User1 as the authenticated, visiting user.
-        $this->_curUser->setAuthenticated(false);
-        Zend_Registry::set('user', $this->_oldUser);
-        Connexions::clearUser();
-    }
-
     public function testBookmarkServiceFactory()
     {
         $service1 = Connexions_Service::factory('Model_Bookmark');
@@ -222,6 +199,70 @@ class BookmarkServiceTest extends DbTestCase
         $service  = Connexions_Service::factory('Model_Bookmark');
         $bookmark = $service->find( array( $expected['userId'],
                                            $expected['itemId']) );
+
+        $this->assertEquals($expected,
+                            $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
+                                                Connexions_Model::FIELDS_ALL ));
+    }
+
+    public function testBookmarkRetrieveById2()
+    {
+        $expected               = $this->_bookmark1;
+        $expected['userId']     = $this->_user1['userId'];
+        $expected['itemId']     = $this->_item1['itemId'];
+        $expected['user']       = $this->_user1;
+        $expected['item']       = $this->_item1;
+        $expected['tags']       = $this->_tags1;
+        $expected['isFavorite'] = ($expected['isFavorite'] ? 1 : 0);
+        $expected['isPrivate']  = ($expected['isPrivate']  ? 1 : 0);
+
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $bookmark = $service->find( array(
+                                        'userId' => $expected['userId'],
+                                        'itemId' => $expected['itemId']) );
+
+        $this->assertEquals($expected,
+                            $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
+                                                Connexions_Model::FIELDS_ALL ));
+    }
+
+    public function testBookmarkRetrieveById3()
+    {
+        $expected               = $this->_bookmark1;
+        $expected['userId']     = $this->_user1['userId'];
+        $expected['itemId']     = $this->_item1['itemId'];
+        $expected['user']       = $this->_user1;
+        $expected['item']       = $this->_item1;
+        $expected['tags']       = $this->_tags1;
+        $expected['isFavorite'] = ($expected['isFavorite'] ? 1 : 0);
+        $expected['isPrivate']  = ($expected['isPrivate']  ? 1 : 0);
+
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $bookmark = $service->find( array(
+                                        'userId'  => $expected['userId'],
+                                        'itemUrl' => $this->_item1['url']) );
+
+        $this->assertEquals($expected,
+                            $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
+                                                Connexions_Model::FIELDS_ALL ));
+    }
+
+    public function testBookmarkRetrieveById4()
+    {
+        $expected               = $this->_bookmark1;
+        $expected['userId']     = $this->_user1['userId'];
+        $expected['itemId']     = $this->_item1['itemId'];
+        $expected['user']       = $this->_user1;
+        $expected['item']       = $this->_item1;
+        $expected['tags']       = $this->_tags1;
+        $expected['isFavorite'] = ($expected['isFavorite'] ? 1 : 0);
+        $expected['isPrivate']  = ($expected['isPrivate']  ? 1 : 0);
+
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $bookmark = $service->find( array(
+                                        'userId'      => $expected['userId'],
+                                        'itemUrlHash' =>
+                                                $this->_item1['urlHash']));
 
         $this->assertEquals($expected,
                             $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
@@ -613,7 +654,7 @@ class BookmarkServiceTest extends DbTestCase
          * Create the new bookmark and save it.
          */
         $service  = Connexions_Service::factory('Model_Bookmark');
-        $bookmark = $service->create( $template );
+        $bookmark = $service->get( $template );
         $bookmark = $bookmark->save();
 
         //echo "Bookmark:\n", $bookmark->debugDump(), "\n";
@@ -643,7 +684,7 @@ class BookmarkServiceTest extends DbTestCase
             array_push($tagNames, $tag['tag']);
         }
 
-        $user['totalTags']    =  24;
+        $user['totalTags']     = 24;
         $user['totalItems']   +=  1;
         $item['userCount']    +=  1;
         $item['ratingCount']  +=  1;
@@ -682,7 +723,7 @@ class BookmarkServiceTest extends DbTestCase
          * Create the new bookmark and save it.
          */
         $service  = Connexions_Service::factory('Model_Bookmark');
-        $bookmark = $service->create( $template );
+        $bookmark = $service->get( $template );
         $bookmark = $bookmark->save();
 
         //echo "Bookmark:\n", $bookmark->debugDump(), "\n";
@@ -753,7 +794,7 @@ class BookmarkServiceTest extends DbTestCase
          * Create the new bookmark and save it.
          */
         $service  = Connexions_Service::factory('Model_Bookmark');
-        $bookmark = $service->create( $template );
+        $bookmark = $service->get( $template );
         $bookmark = $bookmark->save();
 
         //echo "Bookmark:\n", $bookmark->debugDump(), "\n";
@@ -834,7 +875,7 @@ class BookmarkServiceTest extends DbTestCase
          * Create the new bookmark and save it.
          */
         $service  = Connexions_Service::factory('Model_Bookmark');
-        $bookmark = $service->create( $template );
+        $bookmark = $service->get( $template );
         $bookmark = $bookmark->save();
 
         //echo "Bookmark:\n", $bookmark->debugDump(), "\n";
