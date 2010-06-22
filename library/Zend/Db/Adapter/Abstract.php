@@ -843,7 +843,17 @@ abstract class Zend_Db_Adapter_Abstract
             foreach ($value as &$val) {
                 $val = $this->quote($val, $type);
             }
-            return implode(', ', $value);
+            // :XXX: patch: Enclose any imploded array in parenthesis. {
+            //       This allows multi-key values that should be formatted as:
+            //          ((a,b,...), (c,d,...), (e,f,...), ...)
+            //
+            //       Note: This requires an SQL syntax of
+            //                  ' IN ?'   instead of
+            //                  ' IN (?)'
+            //
+            return '('. implode(', ', $value) .')';
+            //return implode(', ', $value);
+            // :XXX: patch: }
         }
 
         if ($type !== null && array_key_exists($type = strtoupper($type), $this->_numericDataTypes)) {

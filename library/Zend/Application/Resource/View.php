@@ -52,13 +52,9 @@ class Zend_Application_Resource_View extends Zend_Application_Resource_ResourceA
     {
         $view = $this->getView();
 
-        /* :XXX: Propsed patch for Bug #ZF-9465
         $viewRenderer = new Zend_Controller_Action_Helper_ViewRenderer();
         $viewRenderer->setView($view);
         Zend_Controller_Action_HelperBroker::addHelper($viewRenderer);
-        return $view;
-        */
-        Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer')->setView($view);
         return $view;
     }
 
