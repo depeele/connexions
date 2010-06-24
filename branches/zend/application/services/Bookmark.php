@@ -162,6 +162,63 @@ class Service_Bookmark extends Connexions_Service
                             ));
     }
 
+    /** @brief  Retrieve a set of Domain Model instances.
+     *  @param  id      Identification value(s), null to retrieve all.
+     *                  MAY be an associative array that specifically
+     *                  identifies attribute/value(s) pairs.
+     *  @param  order   An array of name/direction pairs representing the
+     *                  desired sorting order.  The 'name's MUST be valid for
+     *                  the target Domain Model and the directions a
+     *                  Connexions_Service::SORT_DIR_* constant.  If an order
+     *                  is omitted, Connexions_Service::SORT_DIR_ASC will be
+     *                  used [ no specified order ];
+     *  @param  count   The maximum number of items from the full set of
+     *                  matching items that should be returned
+     *                  [ null == all ];
+     *  @param  offset  The starting offset in the full set of matching items
+     *                  [ null == 0 ].
+     *
+     *  @return A new Connexions_Model_Set.
+     */
+    public function fetch($id       = null,
+                          $order    = null,
+                          $count    = null,
+                          $offset   = null)
+    {
+        $ids     = $this->_csList2array($id);
+        $normIds = $id; //$this->_mapper->normalizeIds($ids);
+        $order   = $this->_csOrder2array($order);
+
+        return $this->_mapper->fetch( $normIds,
+                                      $order,
+                                      $count,
+                                      $offset );
+
+    }
+
+    /** @brief  Retrieve a paginated set of Domain Model instances.
+     *  @param  id      An array of 'property/value' pairs identifying the
+     *                  desired model(s), or null to retrieve all.
+     *  @param  order   An array of name/direction pairs representing the
+     *                  desired sorting order.  The 'name's MUST be valid for
+     *                  the target Domain Model and the directions a
+     *                  Connexions_Service::SORT_DIR_* constant.  If an order
+     *                  is omitted, Connexions_Service::SORT_DIR_ASC will be
+     *                  used [ no specified order ];
+     *
+     *  @return A new Connexions_Model_Set.
+     */
+    public function fetchPaginated($id      = null,
+                                   $order   = null)
+    {
+        $ids     = $this->_csList2array($id);
+        $normIds = $ids;    //$this->_mapper->normalizeIds($ids);
+        $order   = $this->_csOrder2array($order);
+
+        $set = $this->_mapper->fetch( $normIds, $order );
+        return new Zend_Paginator( $set->getPaginatorAdapter() );
+    }
+                                      
     /** @brief  Retrieve a set of bookmarks related by a set of Tags.
      *  @param  tags    A Model_Set_Tag instance or array of tags to match.
      *  @param  exact   Bookmarks MUST be associated with provided tags

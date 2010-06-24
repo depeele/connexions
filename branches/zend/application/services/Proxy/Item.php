@@ -1,7 +1,7 @@
 <?php
 /** @file
  *
- *  A Proxy for Service_User that exposes only publicly callable methods.
+ *  A Proxy for Service_Item that exposes only publicly callable methods.
  */
 class Service_Proxy_Item extends Connexions_Service_Proxy
 {
