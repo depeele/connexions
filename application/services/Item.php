@@ -9,33 +9,9 @@ class Service_Item extends Connexions_Service
     protected   $_modelName = 'Model_Item';
     protected   $_mapper    = 'Model_Mapper_Item'; */
 
-    /** @brief  Convert a comma-separated list of urlHashes to a 
-     *          Model_Set_Item instance.
-     *  @param  csList  The comma-separated list of urlHashes.
-     *
-     *  @return Model_Set_Uset
-     */
-    public function csList2set($csList)
-    {
-        $hashes = (empty($csList)
-                    ? array()
-                    : preg_split('/\s*,\s*/', strtolower($csList)) );
-
-        if (empty($hashes))
-        {
-            $set = $this->_mapper->makeEmptySet();
-        }
-        else
-        {
-            $set = $this->_mapper->fetchBy('urlHash', $hashes, 'urlHash ASC');
-            $set->setSource($csList);
-        }
-
-        return $set;
-    }
-
     /** @brief  Retrieve a set of items related by a set of Users.
-     *  @param  users   A Model_Set_User instance or array of users to match.
+     *  @param  users   A Model_Set_User instance, array, or comma-separated
+     *                  string of users to match.
      *  @param  order   Optional ORDER clause (string, array)
      *                      [ 'userCount DESC, tagCount DESC,
      *                         userItemCount DESC, urlHash ASC' ];
@@ -49,6 +25,9 @@ class Service_Item extends Connexions_Service
                                  $count   = null,
                                  $offset  = null)
     {
+        // Rely on Service_User to properly interpret 'users'
+        $users = $this->factory('Service_User')->csList2set($users);
+
         if ($order === null)
             $order = array('uti.userCount     DESC',
                            'uti.tagCount      DESC',
@@ -81,6 +60,9 @@ class Service_Item extends Connexions_Service
                                 $count   = null,
                                 $offset  = null)
     {
+        // Rely on Service_Tag to properly interpret 'tags'
+        $tags = $this->factory('Service_Tag')->csList2set($tags);
+
         if ($order === null)
             $order = array('uti.tagCount      DESC',
                            'uti.userCount     DESC',
@@ -117,6 +99,12 @@ class Service_Item extends Connexions_Service
                                         $count   = null,
                                         $offset  = null)
     {
+        /* Rely on Service_User and Service_Tag to properly interpret 'users'
+         * and 'tags'
+         */
+        $users = $this->factory('Service_User')->csList2set($users);
+        $tags  = $this->factory('Service_Tag')->csList2set($tags);
+
         if ($order === null)
             $order = array('uti.userItemCount DESC',
                            'uti.userCount     DESC',
