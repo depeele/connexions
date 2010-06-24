@@ -108,7 +108,7 @@ class UserDbTest extends DbTestCase
     public function testUserRetrieveByUnknownId()
     {
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $user   = $mapper->find( 5 );
+        $user   = $mapper->find( array('userId' => 5 ));
 
         $this->assertEquals(null, $user);
     }
@@ -118,7 +118,7 @@ class UserDbTest extends DbTestCase
         $expected = $this->_user1;
 
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $user   = $mapper->find( $this->_user1['userId'] );
+        $user   = $mapper->find( array('userId' => $this->_user1['userId'] ));
 
         /*
         printf ("User by id %d:\n", $this->_user1['userid']);
@@ -138,8 +138,8 @@ class UserDbTest extends DbTestCase
     public function testUserIdentityMap()
     {
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $user   = $mapper->find( $this->_user1['userId'] );
-        $user2  = $mapper->find( $this->_user1['userId'] );
+        $user   = $mapper->find( array('userId' => $this->_user1['userId'] ));
+        $user2  = $mapper->find( array('userId' => $this->_user1['userId'] ));
 
         $this->assertSame  ( $user, $user2 );
     }
@@ -147,8 +147,8 @@ class UserDbTest extends DbTestCase
     public function testUserIdentityMap2()
     {
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $user   = $mapper->find( $this->_user1['userId'] );
-        $user2  = $mapper->find( $this->_user1['name'] );
+        $user   = $mapper->find( array('userId' => $this->_user1['userId'] ));
+        $user2  = $mapper->find( array('name'   => $this->_user1['name'] ));
 
         $this->assertSame  ( $user, $user2 );
     }
@@ -163,13 +163,15 @@ class UserDbTest extends DbTestCase
 
         $this->assertNotEquals(null, $user);
 
-        //printf ("User [ %s ]\n", $user->debugDump());
+        //printf ("User new:     [ %s ]\n", $user->debugDump());
 
         $this->assertFalse ( $user->isBacked() );
         $this->assertTrue  ( $user->isValid() );
 
         $user = $user->save();
         $this->assertNotEquals(null, $user);
+
+        //printf ("User saved:   [ %s ]\n", $user->debugDump());
 
         $this->assertTrue  ( $user->isBacked() );
         $this->assertTrue  ( $user->isValid() );
@@ -183,10 +185,16 @@ class UserDbTest extends DbTestCase
                             $user->toArray( Connexions_Model::DEPTH_SHALLOW,
                                             Connexions_Model::FIELDS_ALL ));
 
+        //Connexions::log('--------------------------------------------------');
         // Update email
         $expected['email'] = 'user5@gmail.com';
-        $user->email = $expected['email'];
+        $user->email       = $expected['email'];
+
+        //printf ("User updated: [ %s ]\n", $user->debugDump());
+        //printf ("User [ %s ]\n", $user->debugDump());
         $user2 = $user->save();
+
+        //printf ("User saved2:  [ %s ]\n", $user->debugDump());
         $this->assertNotEquals(null, $user2);
 
         // The lastVisit time MAY have changed
@@ -199,7 +207,7 @@ class UserDbTest extends DbTestCase
                                              Connexions_Model::FIELDS_ALL ));
 
         // Verify that the identity map is updated
-        $user3 = $user->getMapper()->find( $user->userId );
+        $user3 = $user->getMapper()->find( array('userId' => $user->userId ));
         $this->assertNotEquals(null, $user3);
         $this->assertSame($user2, $user3);
     }
@@ -209,7 +217,7 @@ class UserDbTest extends DbTestCase
         $expected = $this->_user1['userId'];
 
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $user   = $mapper->find( $expected );
+        $user   = $mapper->find( array('userId' => $expected ));
 
         $this->assertNotEquals(null, $user);
         $this->assertEquals($expected, $user->getId());
@@ -221,6 +229,7 @@ class UserDbTest extends DbTestCase
 
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
         $user   = $mapper->find( array('userId' => $expected['userId']) );
+
         $this->assertNotEquals(null, $user);
         $this->assertEquals($expected,
                             $user->toArray( Connexions_Model::DEPTH_SHALLOW,
@@ -232,19 +241,7 @@ class UserDbTest extends DbTestCase
         $expected = $this->_user1;
 
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $user   = $mapper->find( $expected['name'] );
-        $this->assertNotEquals(null, $user);
-        $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
-    }
-
-    public function testUserRetrieveByName2()
-    {
-        $expected = $this->_user1;
-
-        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $user   = $mapper->find( array('name' => $expected['name']) );
+        $user   = $mapper->find( array('name' => $expected['name'] ));
         $this->assertNotEquals(null, $user);
         $this->assertEquals($expected,
                             $user->toArray( Connexions_Model::DEPTH_SHALLOW,
@@ -254,7 +251,7 @@ class UserDbTest extends DbTestCase
     public function testUserDeletedFromDatabase()
     {
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $user   = $mapper->find( 1 );
+        $user   = $mapper->find( array('userId' => 1 ));
 
         $user->delete();
 
@@ -301,7 +298,7 @@ class UserDbTest extends DbTestCase
         );
 
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $user   = $mapper->find( 1 );
+        $user   = $mapper->find( array('userId' => 1 ));
 
         $user->delete();
 
@@ -404,7 +401,7 @@ class UserDbTest extends DbTestCase
 
         // Retrieve the target user
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $user   = $mapper->find( 1 );
+        $user   = $mapper->find( array('userId' => 1 ));
         $this->assertNotEquals(null, $user);
 
         $res    = $user->renameTags($renames);
@@ -460,7 +457,7 @@ class UserDbTest extends DbTestCase
 
         // Retrieve the target user
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $user   = $mapper->find( 1 );
+        $user   = $mapper->find( array('userId' => 1 ));
         $this->assertNotEquals(null, $user);
 
         $res    = $user->deleteTags($tags);

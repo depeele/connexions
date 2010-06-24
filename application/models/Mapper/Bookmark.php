@@ -14,7 +14,7 @@
  */
 class Model_Mapper_Bookmark extends Model_Mapper_Base
 {
-    protected   $_keyName   = array('userId', 'itemId');
+    protected   $_keyNames  = array('userId', 'itemId');
 
     // If not provided, the following will be generated from our class name:
     //      <Prefix>_Mapper_<Name>                     == Model_Mapper_Bookmark
@@ -23,6 +23,61 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
     //
     //protected   $_modelName = 'Model_Bookmark';
     protected   $_accessor  = 'Model_DbTable_UserItem';
+
+    /** @brief  Given identification value(s) that will be used for retrieval,
+     *          normalize them to an array of attribute/value(s) pairs.
+     *  @param  id      Identification value(s) (string, integer, array).
+     *                  MAY be an associative array that specifically
+     *                  identifies attribute/value pairs.
+     *
+     *  Note: This a support method for Services and
+     *        Connexions_Model_Mapper::normalizeIds()
+     *
+     *  Bookmark has a multi-value key -- allow multiple values to be specified 
+     *  in a string, separated by ':'.
+     *
+     *  @return An array containing attribute/value(s) pairs suitable for
+     *          retrieval.
+     */
+    public function normalizeId($id)
+    {
+        if (is_string($id))
+        {
+            list($userId, $itemId)  = preg_split('/\s*:\s*/', $id, 2);
+
+            $userId = $this->_normalizeUserId( $userId );
+            $itemId = $this->_normalizeItemId( $itemId );
+        }
+        else
+        {
+            // See if we can find user and item information directly in 'id'
+            $userId = $this->_normalizeUserId( $id );
+            $itemId = $this->_normalizeItemId( $id );
+        }
+
+        $normId = array('userId'    => (isset($userId['userId'])
+                                            ? $userId['userId']
+                                            : $userId),
+                        'itemId'    => (isset($itemId['itemId'])
+                                            ? $itemId['itemId']
+                                            : $itemId),
+                  );
+
+        /*
+        Connexions::log("Model_Mapper_Bookmark::normalizedId( %s ): "
+                        . "userId[ %s ], itemId[ %s ]",
+                        Connexions::varExport($id),
+                        Connexions::varExport($userId),
+                        Connexions::varExport($itemId));
+
+        Connexions::log("Model_Mapper_Bookmark::normalizedId( %s ): "
+                        . "normId[ %s ]",
+                        Connexions::varExport($id),
+                        Connexions::varExport($normId));
+        // */
+
+        return $normId;
+    }
 
     /** @brief  Save the given model instance.
      *  @param  bookmark    The bookmark Domain Model instance to save.
@@ -61,6 +116,13 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
          */
         if ( $tags instanceof Connexions_Model_Set )
         {
+            /*
+            Connexions::log("Models_Mapper_Bookmark::save(%s, %s): "
+                            .   "(re)add tags [ %s ]",
+                            $bookmark->userId, $bookmark->itemId,
+                            Connexions::varExport($tags->toArray()) );
+            // */
+
             // Persist all tags
             $this->addTags($bookmark, $tags);
         }
@@ -232,7 +294,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
     public function getUser( $id )
     {
         $userMapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $user       = $userMapper->find( $id ); //$bookmark->user );
+        $user       = $userMapper->find( array('userId' => $id) );
 
         /*
         Connexions::log("Model_Mapper_Bookmark::getUser(): "
@@ -251,7 +313,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
     public function getItem( $id )
     {
         $itemMapper = Connexions_Model_Mapper::factory('Model_Mapper_Item');
-        $item       = $itemMapper->find( $id );
+        $item       = $itemMapper->find( array('itemId' => $id) );
 
         /*
         Connexions::log("Model_Mapper_Bookmark::getItem(): "
@@ -299,8 +361,14 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
     public function deleteTags(Model_Bookmark $bookmark)
     {
         $table = $this->getAccessor('Model_DbTable_UserTagItem');
-        $table->delete( array('userId=?' => $bookmark->userId,
-                              'itemId=?' => $bookmark->itemId) );
+        $cnt   = $table->delete( array('userId=?' => $bookmark->userId,
+                                       'itemId=?' => $bookmark->itemId) );
+
+        /*
+        Connexions::log("Model_Mapper_Bookmark::deleteTags(): "
+                        .   "deleted %d tags from (%d, %d)",
+                        $cnt, $bookmark->userId, $bookmark->itemId);
+        // */
 
         /*
         $db = $this->getAccessor()->getAdapter();
@@ -318,6 +386,12 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
      */
     public function addTags(Model_Bookmark $bookmark, Model_Set_Tag $tags)
     {
+        /*
+        Connexions::log("Model_Mapper_Bookmark::addTags(): "
+                        .   "add %d tags to (%d, %d)",
+                        count($tags), $bookmark->userId, $bookmark->itemId);
+        // */
+
         $table = $this->getAccessor('Model_DbTable_UserTagItem');
         foreach ($tags as $tag)
         {
@@ -345,10 +419,10 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
     {
         // Retrieve the associated User and Item
         $userMapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $user       = $userMapper->find( $data->userId );
+        $user       = $userMapper->find( array('userId' => $data->userId) );
 
         $itemMapper = Connexions_Model_Mapper::factory('Model_Mapper_Item');
-        $item       = $itemMapper->find( $data->itemId );
+        $item       = $itemMapper->find( array('itemId' => $data->itemId) );
 
         return parent::makeModel($data, $isBacked);
     }
@@ -358,6 +432,145 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
      * Protected helpers
      *
      */
+
+    /** @brief  Given identification value(s) that will be used for retrieval,
+     *          normalize the values for 'user'.
+     *  @param  id      Identification value(s) (string, integer, array).
+     *                  MAY be an associative array that specifically
+     *                  identifies attribute/value pairs.
+     *
+     *  @return An array containing attribute/value(s) pairs suitable for
+     *          retrieval.
+     */
+    protected function _normalizeUserId($id)
+    {
+        // Employ Model_Mapper_User to interpret 'userId'
+        $uMapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $user    = null;
+        $userId  = null;
+
+        if (! is_array($id))
+        {
+            $userId = $uMapper->normalizeId($id);
+        }
+        else if ( isset($id['user']) && ($id['user'] instanceof Model_User) )
+        {
+            $user = $id['user'];
+        }
+        else if ( isset($id['userId']) )
+        {
+            // Find the target User by id
+            $userId = $uMapper->normalizeId($id['userId']);
+            //$userId = $id['userId'];
+        }
+        else
+        {
+            $keys = array_keys($id);
+            if (is_int($keys[0]))
+            {
+                /* ASSUME this is a simple array and the first item is the
+                 * userId.
+                 */
+                $userId = $uMapper->normalizeId($id[$keys[0]]);
+            }
+        }
+
+        if ( ($user === null) && (! empty($userId)) )
+        {
+            // See if there is an existing user with the given id.
+            $user = $uMapper->find( $userId );
+        }
+
+
+        if ($user === null)
+        {
+            /* No matching user found!
+             *
+             * Fall-back: keep whatever was deciphered for 'userId'
+             */
+            $normId = $userId;
+        }
+        else
+        {
+            // we found a metching user -- grab the user's userId
+            /*
+            $normId = array('userId' => $user->userId,
+                            'user'   => $user);
+            */
+            $normId = array('userId' => $user->userId);
+        }
+
+        return $normId;
+    }
+
+    /** @brief  Given identification value(s) that will be used for retrieval,
+     *          normalize the values for 'item'.
+     *  @param  id      Identification value(s) (string, integer, array).
+     *                  MAY be an associative array that specifically
+     *                  identifies attribute/value pairs.
+     *
+     *  @return An array containing attribute/value(s) pairs suitable for
+     *          retrieval.
+     */
+    protected function _normalizeItemId($id)
+    {
+        // Employ Model_Mapper_Item to interpret 'itemId'
+        $iMapper = Connexions_Model_Mapper::factory('Model_Mapper_Item');
+        $item    = null;
+        $itemId  = null;
+
+        if (! is_array($id))
+        {
+            $itemId = $iMapper->normalizeId($id);
+        }
+        else if ( isset($id['item']) && ($id['item'] instanceof Model_Item) )
+        {
+            $item = $id['item'];
+        }
+        else if ( isset($id['itemId']) )
+        {
+            // Find the target item by id
+            $itemId = $iMapper->normalizeId($id['itemId']);
+            //$itemId = $id['itemId'];
+        }
+        else
+        {
+            $keys = array_keys($id);
+            if (is_int($keys[0]))
+            {
+                /* ASSUME this is a simple array and the second item is the
+                 * itemId.
+                 */
+                $itemId = $iMapper->normalizeId($id[$keys[1]]);
+            }
+        }
+
+        if ( ($item === null) && (! empty($itemId)) )
+        {
+            $item = $iMapper->find( $itemId );
+        }
+
+
+        if ($item === null)
+        {
+            /* No matching item found!
+             *
+             * Fall-back: keep whatever was deciphered for 'itemId'
+             */
+            $normId = $itemId;
+        }
+        else
+        {
+            // we found a metching item -- grab the item's itemId
+            /*
+            $normId = array('itemId' => $item->itemId,
+                            'item'   => $item);
+            */
+            $normId = array('itemId' => $item->itemId);
+        }
+
+        return $normId;
+    }
 
     /** @brief  Include statistics-related informatioin in the
      *          select/sub-select

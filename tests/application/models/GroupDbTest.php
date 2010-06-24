@@ -57,7 +57,7 @@ class GroupDbTest extends DbTestCase
     public function testGroupRetrieveByUnknownId()
     {
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
-        $group  = $mapper->find( 5 );
+        $group  = $mapper->find( array('groupId' => 5) );
 
         $this->assertEquals(null, $group);
     }
@@ -67,7 +67,8 @@ class GroupDbTest extends DbTestCase
         $expected = $this->_group1;
 
         $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Group');
-        $group    = $mapper->find( $this->_group1['groupId'] );
+        $group    = $mapper->find( array('groupId' =>
+                                            $this->_group1['groupId'] ));
 
         $this->assertNotEquals(null,  $group );
         $this->assertTrue  ( $group->isBacked() );
@@ -81,8 +82,10 @@ class GroupDbTest extends DbTestCase
     public function testGroupIdentityMap()
     {
         $mapper  = Connexions_Model_Mapper::factory('Model_Mapper_Group');
-        $group   = $mapper->find( $this->_group1['groupId'] );
-        $group2  = $mapper->find( $this->_group1['groupId'] );
+        $group   = $mapper->find( array('groupId' =>
+                                            $this->_group1['groupId'] ));
+        $group2  = $mapper->find( array('groupId' =>
+                                            $this->_group1['groupId'] ));
 
         $this->assertSame  ( $group, $group2 );
     }
@@ -92,7 +95,7 @@ class GroupDbTest extends DbTestCase
         $expected = $this->_group1['groupId'];
 
         $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Group');
-        $group    = $mapper->find( $expected );
+        $group    = $mapper->find( array('groupId' => $expected ));
 
         $this->assertNotEquals(null,   $group );
         $this->assertEquals($expected, $group->getId());
@@ -103,7 +106,7 @@ class GroupDbTest extends DbTestCase
         $expected = $this->_group1;
 
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
-        $group  = $mapper->find( $expected['name'] );
+        $group  = $mapper->find( array('name' => $expected['name'] ));
 
         $this->assertNotEquals(null,   $group );
         $this->assertEquals($expected,
@@ -116,7 +119,7 @@ class GroupDbTest extends DbTestCase
         $expected = $this->_user1;
 
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
-        $group  = $mapper->find( $this->_group1['name'] );
+        $group  = $mapper->find( array('name' => $this->_group1['name'] ));
 
         $this->assertNotEquals(null, $group );
         $this->assertNotEquals(null, $group->owner );
@@ -165,7 +168,7 @@ class GroupDbTest extends DbTestCase
         $expected = $this->_group1;
 
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
-        $group  = $mapper->find( $expected['name'] );
+        $group  = $mapper->find( array('name' => $expected['name'] ));
 
         $this->assertNotEquals(null,   $group );
 

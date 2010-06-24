@@ -59,8 +59,7 @@ class Service_User extends Connexions_Service
             /* Get an 'anonymous' Model_User instance and do NOT mark it
              * authenticated.
              */
-            $user = $this->get( array('name'     => 'anonymous',
-                                      'fullName' => 'Guest') );
+            $user = $this->getAnonymous();
         }
 
         /*
@@ -76,29 +75,17 @@ class Service_User extends Connexions_Service
         return $user;
     }
 
-    /** @brief  Convert a comma-separated list of user names to a 
-     *          Model_Set_User instance.
-     *  @param  csList  The comma-separated list of user names.
+    /** @brief  Create a new, anonymous user -- unauthenticated and unbacked.
+     *  @param  .
      *
-     *  @return Model_Set_User
+     *  @return A Model_User instance (unauthenticated and unbacked).
      */
-    public function csList2set($csList)
+    public function getAnonymous()
     {
-        $names = (empty($csList)
-                    ? array()
-                    : preg_split('/\s*,\s*/', strtolower($csList)) );
-
-        if (empty($names))
-        {
-            $set = $this->_getMapper()->makeEmptySet();
-        }
-        else
-        {
-            $set = $this->_getMapper()->fetchBy('name', $names, 'name ASC');
-            $set->setSource($csList);
-        }
-
-        return $set;
+        return $this->_mapper->makeModel(array('userId'   => 0,
+                                               'name'     => 'anonymous',
+                                               'fullName' => 'Visitor'
+                                         ), false);
     }
 
     /** @brief  Retrieve a set of users related by a set of Tags.
@@ -120,7 +107,7 @@ class Service_User extends Connexions_Service
         if ($order === null)
             $order = 'tagCount DESC';
 
-        return $this->_getMapper()->fetchRelated( array(
+        return $this->_mapper->fetchRelated( array(
                                         'tags'      => $tags,
                                         'exactTags' => $exact,
                                         'order'     => $order,

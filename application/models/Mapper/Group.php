@@ -20,7 +20,7 @@
  */
 class Model_Mapper_Group extends Model_Mapper_Base
 {
-    protected   $_keyName   = 'groupId';
+    protected   $_keyNames  = array('groupId');
 
     // If not provided, the following will be generated from our class name:
     //      <Prefix>_Mapper_<Name>                     == Model_Mapper_Group
@@ -30,33 +30,34 @@ class Model_Mapper_Group extends Model_Mapper_Base
     //protected   $_modelName = 'Model_Group';
     protected   $_accessor  = 'Model_DbTable_MemberGroup';
 
-    /** @brief  Retrieve a single group.
-     *  @param  id      The group identifier (groupId or name)
+    /** @brief  Given identification value(s) that will be used for retrieval,
+     *          normalize them to an array of attribute/value(s) pairs.
+     *  @param  id      Identification value(s) (string, integer, array).
+     *                  MAY be an associative array that specifically
+     *                  identifies attribute/value pairs.
      *
-     *  @return A Model_Group instance.
+     *  Note: This a support method for Services and
+     *        Connexions_Model_Mapper::normalizeIds()
+     *
+     *  @return An array containing attribute/value(s) pairs suitable for
+     *          retrieval.
      */
-    public function find($id)
+    public function normalizeId($id)
     {
-        if (is_array($id))
+        if (is_int($id) || is_numeric($id))
         {
-            $where = $id;
+            $id = array('groupId' => $id);
         }
-        else if (is_string($id) && ( $id < 1 ))
+        else if (is_string($id))
         {
-            // Lookup by group name
-            $where = array('name=?' => $id);
+            $id = array('name' => $id);
         }
         else
         {
-            $where = array('groupId=?' => $id);
+            $id = parent::normalizeId($id);
         }
 
-        /*
-        Connexions::log("Model_Mapper_Group: where[ %s ]",
-                        Connexions::varExport($where));
-        // */
-
-        return parent::find( $where );
+        return $id;
     }
 
     /** @brief  Convert the incoming model into an array containing only 
@@ -94,7 +95,7 @@ class Model_Mapper_Group extends Model_Mapper_Base
     public function getOwner( $id )
     {
         $userMapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $user       = $userMapper->find( $id ); //$group->user );
+        $user       = $userMapper->find( array('userId' => $id) );
 
         /*
         Connexions::log("Model_Mapper_Group::getUser(): "
@@ -112,7 +113,7 @@ class Model_Mapper_Group extends Model_Mapper_Base
      */
     public function getMembers(Model_Group $group)
     {
-        $row     = $this->_find( $group->groupId );
+        $row     = $this->_find( array('groupId' => $group->groupId) );
         //$members = $row->findDependentRowset('Model_DbTable_GroupMember');
 
         /* This does NOT return a Zend_Db_Table_Rowset but rather a simple
@@ -144,7 +145,7 @@ class Model_Mapper_Group extends Model_Mapper_Base
         }
 
         /*
-        $row     = $this->_find( $group->groupId );
+        $row     = $this->_find( array('groupId' => $group->groupId) );
         //$members = $row->findDependentRowset('Model_DbTable_GroupMember');
 
         // This does NOT return a Zend_Db_Table_Rowset but rather a simple
@@ -175,8 +176,10 @@ class Model_Mapper_Group extends Model_Mapper_Base
 
         // Retrieve the associated Owner, Members, and Items
         $userMapper     = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $group->owner   = $userMapper->find( $group->ownerId );
-        //$group->members = $userMapper->find( $group->ownerId );
+        $group->owner   = $userMapper->find( array('userId' =>
+                                                        $group->ownerId) );
+        //$group->members = $userMapper->find( array('userId' =>
+        //                                              $group->ownerId );
     }
      */
 

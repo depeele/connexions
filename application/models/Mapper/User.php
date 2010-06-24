@@ -6,7 +6,7 @@
  */
 class Model_Mapper_User extends Model_Mapper_Base
 {
-    protected   $_keyName   = 'userId';
+    protected   $_keyNames  = array('userId');
 
     // If not provided, the following will be generated from our class name:
     //      <Prefix>_Mapper_<Name>                      == Model_Mapper_User
@@ -16,33 +16,30 @@ class Model_Mapper_User extends Model_Mapper_Base
     //protected   $_modelName = 'Model_User';
     //protected   $_accessor  = 'Model_DbTable_User';
 
-    /** @brief  Retrieve a single user.
-     *  @param  id      The user identifier (userId or name)
+    /** @brief  Given identification value(s) that will be used for retrieval,
+     *          normalize them to an array of attribute/value(s) pairs.
+     *  @param  id      Identification value(s) (string, integer, array).
+     *                  MAY be an associative array that specifically
+     *                  identifies attribute/value pairs.
      *
-     *  @return A Model_User instance.
+     *  Note: This a support method for Services and
+     *        Connexions_Model_Mapper::normalizeIds()
+     *
+     *  @return An array containing attribute/value(s) pairs suitable for
+     *          retrieval.
      */
-    public function find($id)
+    public function normalizeId($id)
     {
-        if (is_array($id))
+        if (is_int($id) || is_numeric($id))
         {
-            $where = $id;
+            $id = array('userId' => $id);
         }
-        else if (is_string($id) && (! is_numeric($id)) )
+        else if (is_string($id))
         {
-            // Lookup by user name
-            $where = array('name=?' => $id);
-        }
-        else
-        {
-            $where = array('userId=?' => $id);
+            $id = array('name'   => $id);
         }
 
-        /*
-        Connexions::log("Model_Mapper_User: where[ %s ]",
-                        Connexions::varExport($where));
-        // */
-
-        return parent::find( $where );
+        return $id;
     }
 
     /** @brief  Retrieve a set of user-related tags
@@ -240,7 +237,7 @@ class Model_Mapper_User extends Model_Mapper_Base
         }
         else
         {
-            $user = $this->find($id);
+            $user = $this->find( array('userId' => $id));
         }
 
         /* Update user-related statistics:
@@ -267,7 +264,11 @@ class Model_Mapper_User extends Model_Mapper_Base
 
         /*
         Connexions::log("Model_Mapper_User::_updateStatistics( %d ): "
-                        . "for User: row[ %s ]",
+                        . "sql[ %s ]",
+                        $user->userId,
+                        $select->assemble());
+        Connexions::log("Model_Mapper_User::_updateStatistics( %d ): "
+                        . "row[ %s ]",
                         $user->userId,
                         Connexions::varExport($row));
         // */
@@ -291,7 +292,6 @@ class Model_Mapper_User extends Model_Mapper_Base
      *  @param  id      The model instance identifier.
      *  $param  model   The model instance.
      *
-     *  @return The Model instance (null if not found).
      */
     protected function _setIdentity($id, $model)
     {
@@ -299,8 +299,8 @@ class Model_Mapper_User extends Model_Mapper_Base
          *
          * Add identity map entries for both userId and name
          */
-        $this->_identityMap[ $model->userId ] =& $model;
-        $this->_identityMap[ $model->name   ] =& $model;
+        parent::_setIdentity($model->userId, $model);
+        parent::_setIdentity($model->name,   $model);
 
         /*
         Connexions::log("Model_Mapper_User::_setIdentity(): "

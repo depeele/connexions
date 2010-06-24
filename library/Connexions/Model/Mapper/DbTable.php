@@ -16,19 +16,6 @@ abstract class Connexions_Model_Mapper_DbTable
     /** @brief  The name to use as the row count column. */
     const       ROW_COUNT_COLUMN    = 'connexions_set_row_count';
 
-    protected   $_keyName   = null; // MAY be an array for multi-field keys
-
-    /** @brief  Create a new mapper.
-     *  @param  config  Configuration, supports additional options due to the
-     *                  additional get/set methods in this class:
-     *                      keyName     The name of the primary key
-     *                                  [ $this->_keyName ];
-    public function __construct(array $config = array())
-    {
-        parent::__construct($config);
-    }
-     */
-
     /** @brief  Set the current Data Access Object instance.
      *  @param  accessor    The new Data Access Object instance.
      *
@@ -58,122 +45,12 @@ abstract class Connexions_Model_Mapper_DbTable
         return parent::setAccessor($accessor);
     }
 
-    /** @brief  Set the name of the primary key.
-     *  @param  name    The name of the primary key.
-     *
-     *  @return $this for a fluent interface.
-     */
-    public function setKeyName($name)
-    {
-        $this->_keyName = $name;
-        return $this;
-    }
-
-    /** @brief  Get the name of the primary key.
-     *
-     *  @return The name of the primary key.
-     */
-    public function getKeyName()
-    {
-        return $this->_keyName;
-    }
-
     /*************************************************************************
-     * Generic Zend_Db_Table / Zend_Db_Select based operations.
+     * Connexions_Model_Mapper abstract method implementations.
+     *
+     *      Generic Zend_Db_Table / Zend_Db_Select based operations.
      *
      */
-
-    /** @brief  Given either a Domain Model instance or data that will be used 
-     *          to construct a Domain Model instance, return the unique 
-     *          identifier representing the instance.
-     *
-     *  @param  model   Connexions_Model instance or an array of data to be 
-     *                  used in constructing a new Connexions_Model instance.
-     *
-     *  @return An array containing unique identifier values or null.
-     */
-    public function getId($model)
-    {
-        if ($model instanceof Connexions_Model)
-        {
-            /*
-            Connexions::log("Connexions_Model_Mapper_DbTable::getId( %s ): "
-                            . "is %sbacked",
-                            get_class($model),
-                            ($model->isBacked() ? '' : 'NOT '));
-            // */
-
-            if (! $model->isBacked())
-            {
-                /* MUST return null to notify save() that this is an INSERT vs 
-                 * UPDATE
-                 */
-                return null;
-            }
-
-            return $model->getId();
-        }
-
-        /* If the incoming array keys are integers, treat it as a simply array
-         * of key values -- an instance id.
-         */
-        $keys = array_keys($model);
-        if (is_int( $keys[0] ))
-        {
-            /*
-            Connexions::log("Connexions_Model_Mapper_DbTable::getId( %s ): "
-                            .   "integer keys -- treat as id",
-                            Connexions::varExport($model));
-            // */
-
-            $id = $model;
-        }
-        else
-        {
-            if (strpos($keys[0], '?') !== false)
-            {
-                // Query-like keys -- reduce them
-                $newModel = array();
-                foreach ($keys as $key)
-                {
-                    $val    = $model[$key];
-                    $newKey = preg_replace('/[\s=].*?$/', '', $key);
-                    $newModel[$newKey] = $val;
-                }
-                $model = $newModel;
-            }
-
-            // Attempt to pull an id from incoming array data
-            $keyNames = (is_array($this->_keyName)
-                            ? $this->_keyName
-                            : array( $this->_keyName ));
-
-            $id = array();
-            foreach ($keyNames as $key)
-            {
-                if (isset($model[$key]))
-                    array_push($id, $model[$key]);
-            }
-
-            if (empty($id))
-            {
-                // Including ALL values
-                $id = array_values($model);
-            }
-        }
-
-        /*
-        Connexions::log("Connexions_Model_Mapper_DbTable::getId( %s ): "
-                        .   "id[ %s ]",
-                        Connexions::varExport($model),
-                        implode(':', $id));
-        // */
-
-        if (count($id) === 1)
-            $id = array_pop($id);
-
-        return $id;
-    }
 
     /** @brief  Save the given model instance.
      *  @param  model   The domain model instance to save.
@@ -183,10 +60,16 @@ abstract class Connexions_Model_Mapper_DbTable
     public function save(Connexions_Model $domainModel)
     {
         $accessor = $this->getAccessor();
-        $id       = $this->getId($domainModel); //$domainModel->getId();
-
         $data     = $this->reduceModel( $domainModel );
-        if (! $id)
+
+        // /*
+        Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
+                        . "reduced[ %s ]",
+                        get_class($this),
+                        Connexions::varExport($data));
+        // */
+
+        if (! $domainModel->isBacked())
         {
             /*
             Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
@@ -196,10 +79,12 @@ abstract class Connexions_Model_Mapper_DbTable
             // */
 
             // Insert new record
-            $id = $accessor->insert( $data );
+            $id        = $accessor->insert( $data );
             $operation = 'insert';
 
-            /*
+            $id        = array_combine($this->_keyNames, (array)$id);
+
+            // /*
             Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
                             . "insert returned[ %s ]",
                             get_class($this),
@@ -209,6 +94,8 @@ abstract class Connexions_Model_Mapper_DbTable
         else
         {
             // Update
+            $id    = array_combine($this->_keyNames,
+                                   $this->getId($domainModel));
             $where = $this->_where($id);
 
             /*
@@ -234,12 +121,13 @@ abstract class Connexions_Model_Mapper_DbTable
 
         /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
-                        . "%s 'new' model[ %s ]",
+                        . "%s 'new' model[ %s ]: id[ %s ]",
                         get_class($this),
                         $operation,
                         ($newModel
                             ? $newModel->debugDump()
-                            : 'null'));
+                            : 'null'),
+                        Connexions::varExport($id));
         // */
 
         return $newModel;
@@ -252,56 +140,46 @@ abstract class Connexions_Model_Mapper_DbTable
      */
     public function delete(Connexions_Model $domainModel)
     {
-        $accessor = $this->getAccessor();
-        $id       = $this->getId($domainModel); //$domainModel->getId();
-
-        /*
-        Connexions::log("Connexions_Model_Mapper_DbTable::delete(): id[ %s ]",
-                        Connexions::varExport($id));
-        // */
-        
-        if ($id)
+        if ($domainModel->isBacked())
         {
+            $accessor = $this->getAccessor();
+            $id       = array_combine($this->_keyNames,
+                                      $this->getId($domainModel));
+
+            // /*
+            Connexions::log("Connexions_Model_Mapper_DbTable::delete(): "
+                            .   "id[ %s ]",
+                            Connexions::varExport($id));
+            // */
+        
             // Locate the Zend_Db_Table_Row instance matching the incoming model
             $row = $this->_find( $id );
             $row->delete();
-
-            /* Using the database adapter directly
-            $where = array();
-            $db    = $accessor->getAdapter();
-            foreach ($this->_where($id) as $condition => $bindValue)
-            {
-                array_push($where, $db->quoteInto($condition, $bindValue));
-            }
-            $where = '('. implode(' AND ', $where) .')';
-
-            // Delete
-            $accessor->delete( $where );
-            */
-
-            /* Invalidate this Model Instance, which will also remove it from
-             * the Identity Map.
-             */
-            $domainModel->invalidate();
         }
+
+        /* Invalidate this Model Instance, which will also remove it from
+         * the Identity Map.
+         */
+        $domainModel->invalidate();
 
         return $this;
     }
 
     /** @brief  Retrieve the model instance with the given id.
-     *  @param  id      An entry id (integer, string, array).
-     *
-     *  Note: If 'id' is a simple array of values or a single value, this
-     *        method will only match those id(s) against primary key(s).
-     *
-     *        To match against another field, 'id' MUST be an associative array
-     *        of condition/value pairs.
+     *  @param  id      An array of 'property/value' pairs identifying the
+     *                  desired model.
      *
      *  @return The matching domain model instance (null if no match).
      */
     public function find($id)
     {
-        $uid = $this->getId($id); //$domainModel->getId();
+        /*
+        Connexions::log("Connexions_Model_Mapper_DbTable[%s]::find( %s )",
+                        get_class($this),
+                        Connexions::varExport($id));
+        // */
+
+        $uid = $this->getId($id);
         if ($this->_hasIdentity($uid))
         {
             /*
@@ -336,45 +214,54 @@ abstract class Connexions_Model_Mapper_DbTable
      */
 
     /** @brief  Fetch all matching model instances.
-     *  @param  where   Optional WHERE clause (string, array, Zend_Db_Select)
+     *  @param  id      An array of 'property/value' pairs OR a Zend_Db_Select
+     *                  identifying the desired models.
      *  @param  order   Optional ORDER clause (string, array)
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
      *
-     *  Note: If 'where' is a simple array of values or a single value, this
-     *        method (via _where) will only match the value(s) against primary
-     *        key(s).
+     *  Note: 'id' can contain properties prefixed with '|' to indicate 'OR' 
+     *        verses 'AND'.
      *
-     *        To match against another field, 'where' MUST be an associative
-     *        array of condition/value pairs.
      *
      *  @return A Connexions_Model_Set instance that provides access to all
      *          matching Domain Model instances.
      */
-    public function fetch($where   = null,
+    public function fetch($id      = null,
                           $order   = null,
                           $count   = null,
                           $offset  = null)
     {
-        if ($where !== null)
+        if ( $id instanceof Zend_Db_Select )
         {
-            $where = $this->_where($where);
-        }
-
-        if ( $where instanceof Zend_Db_Select )
-        {
-            $select =& $where;
+            $select =& $id;
         }
         else
         {
             $accessor   = $this->getAccessor();
             $select     = $accessor->select();
 
-            if (is_array($where))
+            if ($id !== null)
             {
+                if (! is_array($id))
+                    throw(new Exception ("id MUST be Zend_Db_Select, "
+                                          .             "null, or array"));
+
+                $where  = $this->_where($id, false);
+
                 foreach ($where as $condition => $bindValue)
                 {
-                    $select->where($condition, $bindValue);
+                    if ($condition[0] === '|')
+                    {
+                        // OR
+                        $condition = substr($condition, 1);
+                        $select->orWhere($condition, $bindValue);
+                    }
+                    else
+                    {
+                        // AND
+                        $select->where($condition, $bindValue);
+                    }
                 }
             }
         }
@@ -386,16 +273,16 @@ abstract class Connexions_Model_Mapper_DbTable
             $select->limit($count, $offset);
         }
 
-        /*
+        // /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::fetch() "
-                        . "sql[ %s ]...",
+                        . "sql[ %s ]",
                         get_class($this),
                         $select->assemble());
         // */
 
         $accessorModels = $select->query()->fetchAll();
 
-        /*
+        // /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::fetch() "
                         . "sql[ %s ], %d rows...",
                         get_class($this),
@@ -412,42 +299,6 @@ abstract class Connexions_Model_Mapper_DbTable
                                        'results'    => $accessorModels) );
 
         return $set;
-    }
-
-    /** @brief  Fetch all matching model instances by a specific field.
-     *  @param  field   The field to match on;
-     *  @param  value   A single value or array of values to match;
-     *  @param  order   Optional ORDER clause (string, array)
-     *  @param  count   Optional LIMIT count
-     *  @param  offset  Optional LIMIT offset
-     *
-     *  @return A Connexions_Model_Set instance that provides access to all
-     *          matching Domain Model instances.
-     */
-    public function fetchBy($field,
-                            $value,
-                            $order   = null,
-                            $count   = null,
-                            $offset  = null)
-    {
-        if (! is_array($value))
-        {
-            $where = array( $field .'=?' => $value );
-        }
-        else
-        {
-            $where = array( $field .' IN (?)' => $value );
-        }
-
-        /*
-        Connexions::log("Connexions_Model_Mapper_DbTable::fetchBy(%s, %s): "
-                        .   "[ %s ]",
-                        $field,
-                        Connexions::varExport($value),
-                        Connexions::varExport($where) );
-        // */
-
-        return $this->fetch($where, $order, $count, $offset);
     }
 
     /** @brief  In support of lazy-evaluation, this method retrieves the
@@ -494,17 +345,13 @@ abstract class Connexions_Model_Mapper_DbTable
         $selectIds = clone $select;
         $selectIds->__toString();    // ZF-3719 workaround
 
-        // /*
+        /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::getIds(%s): "
                         .   "initial select[ %s ]",
                         get_class($this),
                         get_class($set),
                         $selectIds->assemble());
         // */
-
-        $keyNames = (is_array($this->_keyName)
-                        ? $this->_keyName
-                        : array($this->_keyName));
 
         $selectIds->reset(Zend_Db_Select::COLUMNS)
                   //->reset(Zend_Db_Select::ORDER)
@@ -513,13 +360,13 @@ abstract class Connexions_Model_Mapper_DbTable
                   ->reset(Zend_Db_Select::GROUP)
                   ->reset(Zend_Db_Select::DISTINCT)
                   ->reset(Zend_Db_Select::HAVING)
-                  ->columns($keyNames);
+                  ->columns($this->_keyNames);
 
-        // /*
+        /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::getIds(): "
                         .   "keyNames[ %s ], sql[ %s ]",
                         get_class($this),
-                        implode(', ', $keyNames),
+                        implode(', ', $this->_keyNames),
                         $selectIds->assemble());
         // */
 
@@ -529,12 +376,13 @@ abstract class Connexions_Model_Mapper_DbTable
         /*
         Connexions::log("Connexions_Model_Mapper_DbTable::getIds(): "
                         .   "keyNames[ %s ], sql[ %s ]: %d rows, [ %s ]",
-                        implode(', ', $keyNames),
+                        implode(', ', $this->_keyNames),
                         $selectIds->assemble(),
                         count($rows),
                         Connexions::varExport($rows));
         // */
 
+        $nKeys = count($this->_keyNames);
         $ids   = array();
         foreach ($rows as $row)
         {
@@ -544,14 +392,9 @@ abstract class Connexions_Model_Mapper_DbTable
                             Connexions::varExport($row));
             // */
 
-            if (is_array($this->_keyName))
-            {
-                $id = array_values($row);
-            }
-            else
-            {
-                $id = $row[$this->_keyName];
-            }
+            $id = array_values($row);
+            if ($nKeys === 1)
+                $id = $row[0];
 
             array_push($ids, $id);
         }
@@ -647,17 +490,13 @@ abstract class Connexions_Model_Mapper_DbTable
         // For non-backed data, key values MUST be removed (in most cases)
         if ( (! $keepKeys) && (! $model->isBacked()) )
         {
-            $keyNames = (is_array($this->_keyName)
-                            ? $this->_keyName
-                            : array($this->_keyName));
-
             /*
             Connexions::log("Connexions_Model_Mapper_DbTable::reduceModel(): "
                             . "unset key values[ %s ]",
-                            Connexions::varExport($keyNames));
+                            Connexions::varExport($this->_keyNames));
             // */
 
-            foreach ($keyNames as $keyName)
+            foreach ($this->_keyNames as $keyName)
             {
                 unset($data[$keyName]);
             }
@@ -683,7 +522,7 @@ abstract class Connexions_Model_Mapper_DbTable
                             ? get_class($data)
                             : gettype($data)) );
         // */
-                        
+
         return parent::makeModel( ($data instanceof Zend_Db_Table_Row_Abstract
                                     ? $data->toArray()
                                     : $data ),
@@ -696,33 +535,26 @@ abstract class Connexions_Model_Mapper_DbTable
      */
 
     /** @brief  Retrieve the Accessor Model for the given id.
-     *  @param  id      An entry id (integer, string, array).
-     *
-     *  Note: If 'id' is a simple array of values or a single value, this
-     *        method will only match those id(s) against primary key(s).
-     *
-     *        To match against another field, 'id' MUST be an associative array
-     *        of condition/value pairs.
+     *  @param  id      An array of 'property/value' pairs identifying the
+     *                  desired model.
      *
      *  @return The matching Accessor Model (null if no match).
      */
     public function _find($id)
     {
-        $where = $this->_where($id);
-
         $accessor = $this->getAccessor();
         $select   = $accessor->select();
+        $where    = $this->_where($id);
 
         foreach ($where as $condition => $bindValue)
         {
             $select->where($condition, $bindValue);
         }
 
-        /*
-        Connexions::log("Connexions_Model_Mapper_DbTable[%s]::_find(%s): "
+        // /*
+        Connexions::log("Connexions_Model_Mapper_DbTable[%s]::_find(): "
                         .   "sql[ %s ]",
                         get_class($this),
-                        Connexions::varExport($id),
                         $select->assemble());
         // */
 
@@ -756,77 +588,44 @@ abstract class Connexions_Model_Mapper_DbTable
     }
 
     /** @brief  Given an entry 'id', generate a matching WHERE clause.
-     *  @param  id      An entry id (integer, string, array).
-     *
-     *  Note: If 'id' is a simple array of values or a single value, this
-     *        method will only match those id(s) against primary key(s).
-     *
-     *        To match against another field, 'id' MUST be an associative array
-     *        of condition/value pairs.
+     *  @param  id          An array of 'property/value' pairs identifying the
+     *                      desired model(s).
+     *  @param  nonEmpty    Is a non-empty clause required?
      *
      *  @return An array contining one or more WHERE clauses.
      */
-    protected function _where($id)
+    protected function _where(array $id, $nonEmpty = true)
     {
-        if ($id instanceof Zend_Db_Select)
-            return $id;
-
-        if (is_array($id))
+        $where = array();
+        foreach ($id as $key => $value)
         {
-            // Ensure that each condition is bindable (i.e. has '?').
-            $where = array();
-            foreach ($id as $condition => $bindValue)
+            $condition = $key;
+
+            if (is_array($value))
             {
-                if (is_int($condition))
-                {
-                    if ($condition > count($this->_keyName))
-                    {
-                        throw new Exception("Connexions_Model_Mapper_DbTable::"
-                                            . "_where(): Too many conditions "
-                                            . "for the number of keys "
-                                            . "( ". $condition ." > "
-                                            . count($this->_keyName) ." )");
-                    }
-
-                    $condition = $this->_keyName[$condition];
-                }
-
-                if (strpos($condition, '?') === false)
-                {
-                    if (is_array($bindValue))
-                        $condition .= ' IN (?)';
-                    else
-                        $condition .= '=?';
-                }
-
-                $where[ $condition] = $bindValue;
-
-                /*
-                Connexions::log("Connexions_Model_Mapper_DbTable[%s]::"
-                                . "_where(): add where [ %s, %s ]",
-                                get_class($this),
-                                $condition, $bindValue);
-                // */
+                $condition .= ' IN ?';
             }
+            else
+                $condition .= '=?';
+
+            $where[ $condition ] = $value;
         }
-        else
-        {
-            if (is_array($this->_keyName))
-            {
-                throw new Exception(
-                            "Connexions_Model_Mapper_DbTable::_where(): "
-                            . "model [ ". get_class($this) ." ]: "
-                            . "mismatch between key count and id count: "
-                            . count($this->_keyName) ." != 1");
-            }
 
-            $where[ $this->_keyName .'=?' ] = $id;
+        if ( ($nonEmpty !== false) && empty($where) )
+        {
+            throw new Exception(
+                        "Cannot generate a non-empty WHERE clause for "
+                        . "model [ ". get_class($this) ." ] "
+                        . "from data "
+                        . "[ ". Connexions::varExport($id) ." ]");
         }
 
         /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::"
-                        . "_where(): where [ %s ]",
+                        . "_where(%s, %sempty): where [ %s ]",
                         get_class($this),
+                        Connexions::varExport($id),
+                        ($nonEmpty ? 'non-' : ''),
                         Connexions::varExport($where));
         // */
 

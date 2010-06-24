@@ -6,7 +6,7 @@
  */
 class Model_Mapper_Tag extends Model_Mapper_Base
 {
-    protected   $_keyName   = 'tagId';
+    protected   $_keyNames  = array('tagId');
 
     // If not provided, the following will be generated from our class name:
     //      <Prefix>_Mapper_<Name>                      == Model_Mapper_Tag
@@ -16,28 +16,30 @@ class Model_Mapper_Tag extends Model_Mapper_Base
     //protected   $_modelName = 'Model_Tag';
     //protected   $_accessor  = 'Model_DbTable_Tag';
 
-    /** @brief  Retrieve a single tag.
-     *  @param  id      The tag identifier (tagId or tag name)
+    /** @brief  Given identification value(s) that will be used for retrieval,
+     *          normalize them to an array of attribute/value(s) pairs.
+     *  @param  id      Identification value(s) (string, integer, array).
+     *                  MAY be an associative array that specifically
+     *                  identifies attribute/value pairs.
      *
-     *  @return A Model_Tag instance.
+     *  Note: This a support method for Services and
+     *        Connexions_Model_Mapper::normalizeIds()
+     *
+     *  @return An array containing attribute/value(s) pairs suitable for
+     *          retrieval.
      */
-    public function find($id)
+    public function normalizeId($id)
     {
-        if (is_array($id))
+        if (is_int($id) || is_numeric($id))
         {
-            $where = $id;
+            $id = array('tagId' => $id);
         }
-        else if (is_string($id) && (! is_numeric($id)) )
+        else if (is_string($id))
         {
-            // Lookup by tag name
-            $where = array('tag=?' => $id);
-        }
-        else
-        {
-            $where = array('tagId=?' => $id);
+            $id = array('tag'   => $id);
         }
 
-        return parent::find( $where );
+        return $id;
     }
 
     /** @brief  Retrieve a set of tag-related users
@@ -81,7 +83,6 @@ class Model_Mapper_Tag extends Model_Mapper_Base
      *  @param  id      The model instance identifier.
      *  $param  model   The model instance.
      *
-     *  @return The Model instance (null if not found).
      */
     protected function _setIdentity($id, $model)
     {
@@ -89,8 +90,8 @@ class Model_Mapper_Tag extends Model_Mapper_Base
          *
          * Add identity map entries for both tagId and tag
          */
-        $this->_identityMap[ $model->tagId ] =& $model;
-        $this->_identityMap[ $model->tag   ] =& $model;
+        parent::_setIdentity($model->tagId, $model);
+        parent::_setIdentity($model->tag,   $model);
 
         /*
         Connexions::log("Model_Mapper_Tag::_setIdentity(): "

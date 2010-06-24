@@ -46,8 +46,10 @@ class TagDbTest extends DbTestCase
 
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
         $tag    = $mapper->getModel( array( 'tag' => $expected['tag'] ) );
-        $tag    = $tag->save();
+        $this->assertTrue  ($tag instanceof Model_Tag);
 
+        $tag    = $tag->save();
+        $this->assertTrue  ($tag instanceof Model_Tag);
         $this->assertEquals($expected,
                             $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
                                            Connexions_Model::FIELDS_ALL ));
@@ -68,7 +70,7 @@ class TagDbTest extends DbTestCase
     public function testTagRetrieveByUnknownId()
     {
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
-        $tag    = $mapper->find( 80 );
+        $tag    = $mapper->find( array('tagId' => 80) );
 
         $this->assertEquals(null, $tag);
     }
@@ -78,7 +80,7 @@ class TagDbTest extends DbTestCase
         $expected = $this->_tag1;
 
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
-        $tag    = $mapper->find( $this->_tag1['tagId'] );
+        $tag    = $mapper->find( array('tagId' => $this->_tag1['tagId']) );
 
         $this->assertTrue  ( $tag->isBacked() );
         $this->assertTrue  ( $tag->isValid() );
@@ -91,8 +93,8 @@ class TagDbTest extends DbTestCase
     public function testTagIdentityMap()
     {
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
-        $tag    = $mapper->find( $this->_tag1['tagId'] );
-        $tag2   = $mapper->find( $this->_tag1['tagId'] );
+        $tag    = $mapper->find( array('tagId' => $this->_tag1['tagId']) );
+        $tag2   = $mapper->find( array('tagId' => $this->_tag1['tagId']) );
 
         $this->assertSame  ( $tag, $tag2 );
     }
@@ -100,8 +102,8 @@ class TagDbTest extends DbTestCase
     public function testTagIdentityMap2()
     {
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
-        $tag    = $mapper->find( $this->_tag1['tagId'] );
-        $tag2   = $mapper->find( $this->_tag1['tag'] );
+        $tag    = $mapper->find( array('tagId' => $this->_tag1['tagId'] ));
+        $tag2   = $mapper->find( array('tagId' => $this->_tag1['tag'] ));
 
         $this->assertSame  ( $tag, $tag2 );
     }
@@ -114,7 +116,7 @@ class TagDbTest extends DbTestCase
         $tag    = $mapper->getModel( array( 'tag' => $expected['tag'] ) );
         $tag    = $tag->save();
 
-        $tag2   = $tag->getMapper()->find( $tag->tagId );
+        $tag2   = $tag->getMapper()->find( array('tagId' => $tag->tagId ));
 
         $this->assertSame  ( $tag, $tag2 );
     }
@@ -124,7 +126,7 @@ class TagDbTest extends DbTestCase
         $expected = $this->_tag1['tagId'];
 
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
-        $tag    = $mapper->find( $expected );
+        $tag    = $mapper->find( array('tagId' => $expected ));
 
         $this->assertEquals($expected, $tag->getId());
     }
@@ -145,7 +147,7 @@ class TagDbTest extends DbTestCase
         $expected = $this->_tag1;
 
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
-        $tag    = $mapper->find( $expected['tag'] );
+        $tag    = $mapper->find( array('tag' => $expected['tag'] ));
         $this->assertEquals($expected,
                             $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
                                            Connexions_Model::FIELDS_ALL ));
@@ -165,13 +167,15 @@ class TagDbTest extends DbTestCase
     public function testTagDeletedFromDatabase()
     {
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
-        $tag    = $mapper->find( 1 );
+        $tag    = $mapper->find( array('tagId' => 1 ));
+        $this->assertTrue ( $tag->isBacked() );
+        $this->assertTrue ( $tag->isValid() );
 
         $tag->delete();
 
         // Make sure the tag instance has been invalidated
-        $this->assertTrue( ! $tag->isBacked() );
-        $this->assertTrue( ! $tag->isValid() );
+        $this->assertFalse( $tag->isBacked() );
+        $this->assertFalse( $tag->isValid() );
 
         // Check the database consistency
         $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
@@ -189,7 +193,7 @@ class TagDbTest extends DbTestCase
     public function testTagFullyDeletedFromDatabase()
     {
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
-        $tag    = $mapper->find( 1 );
+        $tag    = $mapper->find( array('tagId' => 1 ));
 
         $tag->delete();
 
@@ -304,14 +308,15 @@ class TagDbTest extends DbTestCase
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
         $tags   = $mapper->fetch();
 
-        //$this->_printTags($tags);   echo "\n";
+        //Connexions::log("testTagSetPush: 1: tags[ %s ]", $tags->debugDump());
 
         // Attempt to add a few tags -- raw and instance.
         $tags->append( array('tag' => 'New Tag 1') );
-        //$this->_printTags($tags);   echo "\n";
+        //Connexions::log("testTagSetPush: 2: tags[ %s ]", $tags->debugDump());
 
         $newTag = $mapper->getModel( array('tag' => 'New Tag 2') );
         $tags->append( $newTag );
+        //Connexions::log("testTagSetPush: 3: tags[ %s ]", $tags->debugDump());
 
         /*
         printf ("new Tag { %s }\n", $newTag->debugDump());

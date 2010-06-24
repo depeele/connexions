@@ -11,6 +11,7 @@ abstract class Connexions_Model_Mapper
      */
     const       NO_INSTANCE             = -1;
 
+
     // A cache of Data Accessor instances, by class name
     static protected    $_instCache     = array();
 
@@ -19,6 +20,9 @@ abstract class Connexions_Model_Mapper
      */
     protected           $_identityMap   = array();
 
+
+    // An array of one or more key names.
+    protected   $_keyNames  = null;
 
     /* Data Accessor (e.g. Table Data Gateway / Zend_Db_Table_Abstract) for
      * this mapper.
@@ -187,22 +191,6 @@ abstract class Connexions_Model_Mapper
         return $this->_modelSetName;
     }
 
-    /** @brief  Convert the incoming model into an array containing only 
-     *          data that should be directly persisted.  This method may also
-     *          be used to update dynamic values
-     *          (e.g. update date/time, last visit date/time).
-     *  @param  model   The Domain Model to reduce to an array.
-     *
-     *  @return A filtered associative array containing data that should 
-     *          be directly persisted.
-     */
-    public function reduceModel(Connexions_Model $model)
-    {
-        return $model->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                Connexions_Model::FIELDS_ALL );
-                                //Connexions_Model::FIELDS_PUBLIC );
-    }
-
     /** @brief  Find a matching Domain Model or create a new one given raw
      *          data. 
      *  @param  data        The raw data.
@@ -269,16 +257,146 @@ abstract class Connexions_Model_Mapper
         return $domainModel;
     }
 
-    /** @brief  Construct an empty Model_Set_* instance. */
-    public function makeEmptySet()
+    /** @brief  Convert the incoming model into an array containing only 
+     *          data that should be directly persisted.  This method may also
+     *          be used to update dynamic values
+     *          (e.g. update date/time, last visit date/time).
+     *  @param  model   The Domain Model to reduce to an array.
+     *
+     *  @return A filtered associative array containing data that should 
+     *          be directly persisted.
+     */
+    public function reduceModel(Connexions_Model $model)
     {
-        $setName = $this->getModelSetName();
-        $set     = new $setName(array('mapper'      => $this,
-                                      'modelName'   => $this->getModelName(),
-                                      'totalCount'  => 0));
-
-        return $set;
+        return $model->toArray( Connexions_Model::DEPTH_SHALLOW,
+                                Connexions_Model::FIELDS_ALL );
+                                //Connexions_Model::FIELDS_PUBLIC );
     }
+
+    /** @brief  Given identification value(s) that will be used for retrieval,
+     *          normalize them to an array of attribute/value(s) pairs.
+     *  @param  id      Identification value(s) (string, integer, array).
+     *                  MAY be an associative array that specifically
+     *                  identifies attribute/value pairs.
+     *
+     *  Note: This a support method for Services and
+     *        Connexions_Model_Mapper::normalizeIds()
+     *
+     *  @return An array containing attribute/value(s) pairs suitable for
+     *          retrieval.
+     */
+    public function normalizeId($id)
+    {
+        if (is_array($id))
+        {
+            $nKeys      = count($this->_keyNames);
+            $nKeysUsed  = 0;
+            $normalized = array();
+
+            // Walk through all specified values...
+            foreach ($id as $key => $val)
+            {
+                /* If this array entry has an integer index/key:
+                 *      ASSUME a 1-to-1 match with the valid keys for this
+                 *      Model;
+                 * Else ASSUME it is a valid field for this model.
+                 *
+                 *      Note: Connexions_Model_Mapper_DbTable COULD override 
+                 *      this method and validate the field via:
+                 *              $accessor = $this->getAccessor();
+                 *              $fields   = $accessor->info(
+                 *                              Zend_Db_Table_Abstract::COLS);
+                 *
+                 *              // and use $fields to validate, remembering to
+                 *              // normalize field names between the two...
+                 */
+                if (is_int($key))
+                {
+                    if ($nKeysUsed >= $nKeys)
+                    {
+                        throw new Exception("Too many unnamed values for "
+                                            . "the number of keys "
+                                            . '('. $nKeys .')');
+                    }
+
+                    // Use the next available key name.
+                    $key = $this->_keyNames[ $nKeysUsed++ ];
+                }
+
+                /* ASSUME the caller will NOT mix indexed fields, which map to
+                 * key names, with named fields that map to the same key names.
+                 * If they do, only the last one will survive.
+                 */
+                $normalized[$key] = $val;
+
+                /* If we want to support mixing indexed fields with named
+                 * fields that map to the same key names...
+                 *
+                if (isset($normalized[$key]))
+                {
+                    $normalized[$key] = (array)$normalized[$key];
+                    array_push($normalized[$key], $val);
+                }
+                else
+                {
+                    $normalized[$key] = $val;
+                }
+                */
+            }
+            $id = $normalized;
+        }
+        else
+        {
+            // Use the first key to construct the normalized id.
+            $id = array($this->_keyNames[0] => $id);
+        }
+
+        return $id;
+    }
+
+    /** @brief  Given either a Domain Model instance or data that will be used 
+     *          to construct a Domain Model instance, return the unique 
+     *          identifier representing the instance.
+     *
+     *  @param  model   Connexions_Model instance or an array of data to be 
+     *                  used in constructing a new Connexions_Model instance.
+     *
+     *  Note: There MUST be a 1-to-1 mapping between _keyNames and the array of
+     *        values returned.
+     *
+     *  @return An array containing unique identifier values.
+     */
+    public function getId($model)
+    {
+        if ($model instanceof Connexions_Model)
+        {
+            return (array)$model->getId();
+        }
+
+        /*****************************************************
+         * March through the keys for this class and
+         * generate an array containing the values of those
+         * keys from 'model'.  For missing items, use 0.
+         */
+        $uid      = array();
+        foreach ($this->_keyNames as $key)
+        {
+            if (isset($model[$key]))
+                array_push($uid, $model[$key]);
+            else
+                array_push($uid, 0);
+        }
+
+        /*
+        Connexions::log("Connexions_Model_Mapper[%s]::getId(): "
+                        .   "uid[ %s ]",
+                        get_class($this),
+                        Connexions::varExport($uid));
+        // */
+
+        return $uid;
+    }
+
 
     /** @brief  Remove the given model instance from the identity map.
      *  @param  model   The model instance.
@@ -324,21 +442,151 @@ abstract class Connexions_Model_Mapper
     }
      ******** DEBUG ^^^^ } **********/
 
+    /************************************
+     * Support for Connexions_Model_Set
+     *
+     */
+
+    /** @brief  Construct an empty Model_Set_* instance. */
+    public function makeEmptySet()
+    {
+        $setName = $this->getModelSetName();
+        $set     = new $setName(array('mapper'      => $this,
+                                      'modelName'   => $this->getModelName(),
+                                      'totalCount'  => 0));
+
+        return $set;
+    }
+
+    /** @brief  Fetch all matching model instances by a specific field.
+     *  @param  field   The field to match on;
+     *  @param  value   A single value or array of values to match;
+     *  @param  order   Optional ORDER clause (string, array)
+     *  @param  count   Optional LIMIT count
+     *  @param  offset  Optional LIMIT offset
+     *
+     *  @return A Connexions_Model_Set instance that provides access to all
+     *          matching Domain Model instances.
+     */
+    public function fetchBy($field,
+                            $value,
+                            $order   = null,
+                            $count   = null,
+                            $offset  = null)
+    {
+        $id = array( $field => $value );
+
+        /*
+        Connexions::log("Connexions_Model_Mapper::fetchBy(%s, %s): "
+                        .   "[ %s ]",
+                        $field, Connexions::varExport($value),
+                        Connexions::varExport($id) );
+        // */
+
+        return $this->fetch($id, $order, $count, $offset);
+    }
+
+    /** @brief  Given an array of identification value(s) that will be used to
+     *          retrieve a set of model instances (via fetch()), normalize them 
+     *          to an array of attribute/value(s) pairs.
+     *  @param  ids     An array of identification value(s) (string, integer, 
+     *                  array).  Each identification value MAY be an 
+     *                  associative array that specifically identifies 
+     *                  attribute/value pairs.
+     *
+     *  @return An array containing arrays of attribute/value(s) pairs suitable 
+     *          for retrieval.
+     */
+    public function normalizeIds($ids)
+    {
+        /*
+        Connexions::log("Connexions_Model_Mapper::normalizeIds( %s )",
+                        Connexions::varExport($ids));
+        // */
+
+        if ( (! is_array($ids)) ||
+             ( ($keys = array_keys($ids)) && (! is_int($keys[0]))) )
+        {
+            /* Non-integer keys == named keys.  Treat this as an identifier
+             * that can be handled by normalizeId() -- of the form:
+             *
+             *      { 'key' => id value(s), ... }
+             */
+            return $this->normalizeId($ids);
+        }
+
+        /* Numeric keys indicate an array of identifiers.
+         *
+         * The key mapping is performed via normalizeId() on the first item
+         * and then applied to all items.
+         *
+         * Simple transformations:
+         *  [1,2,3,4]           => { 'key1':        [1,2,3,4] }
+         *
+         *  ['a','b','c','d']   => { 'key3':        ['a','b','c','d'] }
+         *
+         *  {'key1': [1,2,3,4],
+         *   'key3': ['a','b']} => { 'key1':        [1,2,3,4],
+         *                           'key3':        ['a','b'] }
+         *
+         *
+         * More Complex transformations:
+         *  [ [1,2], [3,4] ]    => { '(key1,key2)': [ [1,2], [3,4] ] }
+         *
+         *  [ { 'key1': 1,
+         *      'key2': 2,
+         *    },
+         *    { 'key1': 3,
+         *      'key2': 4,
+         *    }
+         *  ]                   => { '(key1,key2)': [ [1,2], [3,4] ] }
+         *
+         */
+        $newIds     = array();
+        $isMultiKey = -1;
+        foreach ($ids as $id)
+        {
+            $norm = $this->normalizeId($id);
+            if ($isMultiKey < 0)
+            {
+                $keys = array_keys($norm);
+                if (count($keys) === 1)
+                {
+                    // Simple { 'key': [1,2,3,4, ...] }
+                    $newIds = array( $keys[0] => $ids );
+                    break;
+                }
+
+                // Complex { '(key1,key2)': [ [1,2], [3,4], ... ] }
+                $isMultiKey = true;
+            }
+
+            foreach ($keys as $key)
+            {
+                if (! is_array($newIds[$key]))
+                    $newIds[$key] = array();
+
+                if (isset($norm[$key]))
+                    array_push($newIds[$key], $norm[$key]);
+                else
+                    throw new Exception("Mixed keys");
+            }
+        }
+
+        /*
+        Connexions::log("Connexions_Model_Mapper::normalizeIds( %s ) "
+                        .   "== [ %s ]",
+                        Connexions::varExport($ids),
+                        Connexions::varExport($newIds));
+        // */
+
+        return $newIds;
+    }
+
     /*********************************************************************
      * Abstract methods
      *
      */
-
-    /** @brief  Given either a Domain Model instance or data that will be used 
-     *          to construct a Domain Model instance, return the unique 
-     *          identifier representing the instance.
-     *
-     *  @param  model   Connexions_Model instance or an array of data to be 
-     *                  used in constructing a new Connexions_Model instance.
-     *
-     *  @return An array containing unique identifier values or null.
-     */
-    abstract public function getId($model);
 
     /** @brief  Save the given model instance.
      *  @param  model   The model instance to save.
@@ -358,7 +606,8 @@ abstract class Connexions_Model_Mapper
     abstract public function delete(Connexions_Model $model);
 
     /** @brief  Retrieve the model instance with the given id.
-     *  @param  id      The model instance identifier.
+     *  @param  id      An array of 'property/value' pairs identifying the
+     *                  desired model.
      *
      *  @return The matching model instance (null if no match).
      */
@@ -370,7 +619,8 @@ abstract class Connexions_Model_Mapper
      */
 
     /** @brief  Fetch all matching model instances.
-     *  @param  where   Optional WHERE clause (string, array, Zend_Db_Select)
+     *  @param  id      An array of 'property/value' pairs identifying the
+     *                  desired models, or null to retrieve all.
      *  @param  order   Optional ORDER clause (string, array)
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
@@ -378,26 +628,10 @@ abstract class Connexions_Model_Mapper
      *  @return A Connexions_Model_Set instance that provides access to all
      *          matching Domain Model instances.
      */
-    abstract public function fetch($where   = null,
+    abstract public function fetch($id      = null,
                                    $order   = null,
                                    $count   = null,
                                    $offset  = null);
-
-    /** @brief  Fetch all matching model instances by a specific field.
-     *  @param  field   The field to match on;
-     *  @param  value   A single value or array of values to match;
-     *  @param  order   Optional ORDER clause (string, array)
-     *  @param  count   Optional LIMIT count
-     *  @param  offset  Optional LIMIT offset
-     *
-     *  @return A Connexions_Model_Set instance that provides access to all
-     *          matching Domain Model instances.
-     */
-    abstract public function fetchBy($field,
-                                     $value,
-                                     $order   = null,
-                                     $count   = null,
-                                     $offset  = null);
 
     /** @brief  In support of lazy-evaluation, this method retrieves the
      *          specified range of values for an existing set.
@@ -479,12 +713,15 @@ abstract class Connexions_Model_Mapper
      *  @param  id      The model instance identifier.
      *  $param  model   The model instance.
      *
-     *  @return The Model instance (null if not found).
      */
     protected function _setIdentity($id, Connexions_Model $model)
     {
         if (is_array($id))
             $id = implode(':', array_values($id));
+
+        if (empty($id))
+            // An entry with no unique id should NOT be in the map!
+            return;
 
         /*
         if ($this->_hasIdentity($id))

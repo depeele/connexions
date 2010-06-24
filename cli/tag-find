@@ -3,12 +3,16 @@
 define('CLI_DIR', realpath(dirname(__FILE__)));
 
 require_once(CLI_DIR. '/bootstrap.php');
-$prog = array_shift($argv);
 
+$prog = array_shift($argv);
 $svc = Connexions_Service::factory('Service_Tag');
+
+printf ("Service Tag...\n");
 foreach ($argv as $tagId)
 {
+    printf ("Service_Tag::find( %s )\n", $tagId);
     $tag = $svc->find($tagId);
+
     printf ("tagId[ %s ]: %s\n",
             $tagId,
             ($tag instanceof Model_Tag

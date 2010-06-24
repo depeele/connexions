@@ -6,7 +6,7 @@
  */
 class Model_Mapper_UserAuth extends Model_Mapper_Base
 {
-    protected   $_keyName   = array('userId', 'authType');
+    protected   $_keyNames  = array('userId', 'authType', 'credential');
 
     // If not provided, the following will be generated from our class name:
     //      <Prefix>_Mapper_<Name>                     == Model_Mapper_UserAuth
@@ -16,31 +16,77 @@ class Model_Mapper_UserAuth extends Model_Mapper_Base
     //protected   $_modelName = 'Model_UserAuth';
     //protected   $_accessor  = 'Model_DbTable_UserAuth';
 
-    /** @brief  Retrieve a single userAuth.
-     *  @param  id      The userAuth identifier ( [userId, authType],
-     *                                            credential)
+    /** @brief  Given identification value(s) that will be used for retrieval,
+     *          normalize them to an array of attribute/value(s) pairs.
+     *  @param  id      Identification value(s) (string, integer, array).
+     *                  MAY be an associative array that specifically
+     *                  identifies attribute/value pairs.
      *
-     *  @return A Model_UserAuth instance.
+     *  Note: This a support method for Services and
+     *        Connexions_Model_Mapper::normalizeIds()
+     *
+     *  UserAuth has a multi-value key -- allow multiple values to be specified 
+     *  in a string, separated by '::'.
+     *
+     *  @return An array containing attribute/value(s) pairs suitable for
+     *          retrieval.
      */
-    public function find($id)
+    public function normalizeId($id)
     {
-        // Use 'fetch()' since this table has no clear keys...
-
-        if ( is_array($id) )
+        if (is_string($id))
         {
-            $model = parent::find($id);
+            list($userId, $authType, $credential)   =
+                                preg_split('/\s*::\s*/', $id);
+            $normId                                 = array();
+
+            // Employ Model_Mapper_User to properly interpret 'userId'
+            $uMapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
+            $userId = $uMapper->normalizeId($userId);
+            if (isset($userId['userId']))
+                $normId['userId'] = $userId['userId'];
+            else
+            {
+                // Perform a full find with 'userId'
+                $user = $uMapper->find($userId);
+                if ($user === null)
+                {
+                    /* No matching user found!
+                     *
+                     * Fall-back: keep whatever was provided for 'userId'
+                     */
+                    $normId = array_merge($normId, $userId);
+                }
+                else
+                {
+                    $normId['userId'] = $user->userId;
+                }
+            }
+
+            // Normalize 'authType'
+            $authType = strtolower($authType);
+            switch ($authType)
+            {
+            case Model_UserAuth::AUTH_OPENID:
+            case Model_UserAuth::AUTH_PASSWORD:
+            case Model_UserAuth::AUTH_PKI:
+                break;
+
+            default:
+                $authType = Model_UserAuth::AUTH_DEFAULT;
+            }
+
+            if (empty($credential))
+                $credential = '';
+
+            // We should now have a valid, new identifier.
+            $id = $normId;
         }
         else
         {
-            // ASSUME this should be a match on credential
-            $models = parent::fetch( array('credential' => $id), null, 1 );
-            if ($models instanceof Connexions_Model_Set)
-                $model = $models[0];
-            else
-                $model = null;
+            $id = parent::normalizeId($id);
         }
 
-        return $model;
+        return $id;
     }
 
     /** @brief  Convert the incoming model into an array containing only 
@@ -66,7 +112,7 @@ class Model_Mapper_UserAuth extends Model_Mapper_Base
     public function getUser(Model_UserAuth $userAuth)
     {
         $userMapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $user       = $userMapper->find( $userAuth->userId );
+        $user       = $userMapper->find( array('userId' => $userAuth->userId));
 
         /*
         Connexions::log("Model_Mapper_UserAuth::getUser(): "

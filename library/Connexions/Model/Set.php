@@ -420,7 +420,7 @@ abstract class Connexions_Model_Set
      */
     public function __toString()
     {
-        return implode(', ', $this->idArray());
+        return implode(', ', $this->getIds());
     }
 
     /** @brief  Return an array version of this instance.
@@ -463,7 +463,7 @@ abstract class Connexions_Model_Set
      *
      *  @return An array of all Identifiers.
      */
-    public function idArray()
+    public function getIds()
     {
         if ( ($this->getOffset() > 0) ||
             ($this->getTotalCount() > $this->count()) )
@@ -485,7 +485,7 @@ abstract class Connexions_Model_Set
             }
 
             /*
-            Connexions::log("Connexions_Model_Set[%s]::idArray(): "
+            Connexions::log("Connexions_Model_Set[%s]::getIds(): "
                             .   "[ %s ] == [ %s ]",
                             get_class($this),
                             (is_object($item)
@@ -496,7 +496,11 @@ abstract class Connexions_Model_Set
                                 : Connexions::varExport($item)) );
             // */
 
-            array_push($ids, $mapper->getId( $item ));
+            $id = $mapper->getId( $item );
+            if (count($id) == 1)
+                $id = $id[0];
+
+            array_push($ids, $id);
         }
 
         return $ids;
@@ -872,6 +876,10 @@ abstract class Connexions_Model_Set
              */
             $item = $this->getMapper()->getModel( $item );
         }
+
+        // If the incoming item is not yet backed, save it now.
+        if (! $item->isBacked())
+            $item = $item->save();
 
         array_push($this->_members, $item);
 

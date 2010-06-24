@@ -117,9 +117,9 @@ class TagServiceTest extends DbTestCase
     {
         $expected = $this->_tag1;
         $service  = Connexions_Service::factory('Model_Tag');
-        $tag     = $service->find( array(
-                                        'tagId'=> $expected['tagId'],
-                    ));
+        $id       = array( 'tagId'  => $expected['tagId']);
+
+        $tag      = $service->find( $id );
 
         $this->assertTrue(  $tag instanceof Model_Tag );
         $this->assertTrue(  $tag->isBacked() );
@@ -134,9 +134,9 @@ class TagServiceTest extends DbTestCase
     {
         $expected = $this->_tag1;
         $service  = Connexions_Service::factory('Model_Tag');
-        $tag     = $service->find( array(
-                                        'tag' => $expected['tag'],
-                    ));
+        $id       = array( 'tag'    => $expected['tag']);
+
+        $tag      = $service->find( $id );
 
         $this->assertTrue(  $tag instanceof Model_Tag );
         $this->assertTrue(  $tag->isBacked() );
@@ -151,7 +151,9 @@ class TagServiceTest extends DbTestCase
     {
         $expected = $this->_tag1;
         $service  = Connexions_Service::factory('Model_Tag');
-        $tag     = $service->find( $expected['tagId'] );
+        $id       = $expected['tagId'];
+
+        $tag      = $service->find( $id );
 
         $this->assertTrue(  $tag instanceof Model_Tag );
         $this->assertTrue(  $tag->isBacked() );
@@ -166,7 +168,9 @@ class TagServiceTest extends DbTestCase
     {
         $expected = $this->_tag1;
         $service  = Connexions_Service::factory('Model_Tag');
-        $tag     = $service->find( $expected['tag'] );
+        $id       = $expected['tag'];
+
+        $tag      = $service->find( $id );
 
         $this->assertTrue(  $tag instanceof Model_Tag );
         $this->assertTrue(  $tag->isBacked() );
@@ -239,7 +243,7 @@ class TagServiceTest extends DbTestCase
         $tags      = $service->csList2set( $tags );
         $this->assertNotEquals(null, $tags);
 
-        $ids        = $tags->idArray();
+        $ids        = $tags->getIds();
 
         /*
         printf ("Tags [ %s ]: [ %s ]\n",
