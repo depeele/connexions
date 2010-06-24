@@ -117,7 +117,7 @@ abstract class Connexions_Service
                           $offset   = null)
     {
         $ids     = $this->_csList2array($id);
-        $normIds = $ids;    //$this->_mapper->normalizeIds($ids);
+        $normIds = $this->_mapper->normalizeIds($ids);
         $order   = $this->_csOrder2array($order);
 
         return $this->_mapper->fetch( $normIds,
@@ -143,7 +143,7 @@ abstract class Connexions_Service
                                    $order   = null)
     {
         $ids     = $this->_csList2array($id);
-        $normIds = $ids;    //$this->_mapper->normalizeIds($ids);
+        $normIds = $this->_mapper->normalizeIds($ids);
         $order   = $this->_csOrder2array($order);
 
         $set = $this->_mapper->fetch( $normIds, $order );
