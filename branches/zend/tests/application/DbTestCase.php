@@ -162,7 +162,14 @@ abstract class DbTestCase extends Zend_Test_PHPUnit_DatabaseTestCase
         $user->setAuthenticated($result);
 
         $this->_curUser = $user;
-        $this->_oldUser = Zend_Registry::get('user');
+        try
+        {
+            $this->_oldUser = Zend_Registry::get('user');
+        }
+        catch (Exception $e)
+        {
+            $this->_oldUser = null;
+        }
 
         // Set the global, authenticated user
         Zend_Registry::set('user', $user);

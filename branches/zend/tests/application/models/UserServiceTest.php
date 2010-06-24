@@ -7,7 +7,7 @@ class UserServiceTest extends DbTestCase
     private     $_user0 = array(
             'userId'        => 0,
             'name'          => 'anonymous',
-            'fullName'      => 'Guest',
+            'fullName'      => 'Visitor',
             'email'         => null,
             'apiKey'        => null,
             'pictureUrl'    => null,
@@ -151,9 +151,9 @@ class UserServiceTest extends DbTestCase
     {
         $expected = $this->_user1;
         $service  = Connexions_Service::factory('Model_User');
-        $user     = $service->find( array(
-                                        'userId'=> $expected['userId'],
-                    ));
+        $id       = array( 'userId' => $expected['userId']);
+
+        $user     = $service->find( $id );
 
         $this->assertTrue(  $user instanceof Model_User );
         $this->assertTrue(  $user->isBacked() );
@@ -169,9 +169,9 @@ class UserServiceTest extends DbTestCase
     {
         $expected = $this->_user1;
         $service  = Connexions_Service::factory('Model_User');
-        $user     = $service->find( array(
-                                        'name' => $expected['name'],
-                    ));
+        $id       = array( 'name'   => $expected['name']);
+
+        $user     = $service->find( $id );
 
         $this->assertTrue(  $user instanceof Model_User );
         $this->assertTrue(  $user->isBacked() );
@@ -187,7 +187,9 @@ class UserServiceTest extends DbTestCase
     {
         $expected = $this->_user1;
         $service  = Connexions_Service::factory('Model_User');
-        $user     = $service->find( $expected['userId'] );
+        $id       = $expected['userId'];
+
+        $user     = $service->find( $id );
 
         $this->assertTrue(  $user instanceof Model_User );
         $this->assertTrue(  $user->isBacked() );
@@ -203,7 +205,9 @@ class UserServiceTest extends DbTestCase
     {
         $expected = $this->_user1;
         $service  = Connexions_Service::factory('Model_User');
-        $user     = $service->find( $expected['name'] );
+        $id       = $expected['name'];
+
+        $user     = $service->find( $id );
 
         $this->assertTrue(  $user instanceof Model_User );
         $this->assertTrue(  $user->isBacked() );
@@ -605,13 +609,13 @@ class UserServiceTest extends DbTestCase
 
     public function testUserServicecsList2set()
     {
-        $expected   = array(1, 4, 3);
+        $expected   = array(1, 3, 4);
         $names      = "user1, user478,  user83, user12345, user91828";
         $service    = Connexions_Service::factory('Model_User');
         $users      = $service->csList2set( $names );
         $this->assertNotEquals(null, $users);
 
-        $ids        = $users->idArray();
+        $ids        = $users->getIds();
         $this->assertEquals($expected, $ids);
 
         /*
@@ -624,7 +628,7 @@ class UserServiceTest extends DbTestCase
 
     public function testUserServiceSetString()
     {
-        $expected   = "User1,User478,User83";
+        $expected   = "User1,User83,User478";
         $service    = Connexions_Service::factory('Model_User');
         $users      = $service->csList2set( $expected );
         $this->assertNotEquals(null, $users);

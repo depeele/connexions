@@ -195,11 +195,13 @@ class BookmarkServiceTest extends DbTestCase
         $expected['tags']       = $this->_tags1;
         $expected['isFavorite'] = ($expected['isFavorite'] ? 1 : 0);
         $expected['isPrivate']  = ($expected['isPrivate']  ? 1 : 0);
+        $id                     = array( $expected['userId'],
+                                         $expected['itemId']);
 
         $service  = Connexions_Service::factory('Model_Bookmark');
-        $bookmark = $service->find( array( $expected['userId'],
-                                           $expected['itemId']) );
+        $bookmark = $service->find( $id );
 
+        $this->assertNotEquals(null, $bookmark);
         $this->assertEquals($expected,
                             $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
                                                 Connexions_Model::FIELDS_ALL ));
@@ -215,12 +217,13 @@ class BookmarkServiceTest extends DbTestCase
         $expected['tags']       = $this->_tags1;
         $expected['isFavorite'] = ($expected['isFavorite'] ? 1 : 0);
         $expected['isPrivate']  = ($expected['isPrivate']  ? 1 : 0);
+        $id                     = array( 'userId' => $expected['userId'],
+                                         'itemId' => $expected['itemId']);
 
         $service  = Connexions_Service::factory('Model_Bookmark');
-        $bookmark = $service->find( array(
-                                        'userId' => $expected['userId'],
-                                        'itemId' => $expected['itemId']) );
+        $bookmark = $service->find( $id );
 
+        $this->assertNotEquals(null, $bookmark);
         $this->assertEquals($expected,
                             $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
                                                 Connexions_Model::FIELDS_ALL ));
@@ -236,40 +239,98 @@ class BookmarkServiceTest extends DbTestCase
         $expected['tags']       = $this->_tags1;
         $expected['isFavorite'] = ($expected['isFavorite'] ? 1 : 0);
         $expected['isPrivate']  = ($expected['isPrivate']  ? 1 : 0);
+        $id                     = $expected['userId']
+                                .  ':'
+                                . $expected['itemId'];
 
         $service  = Connexions_Service::factory('Model_Bookmark');
-        $bookmark = $service->find( array(
-                                        'userId'  => $expected['userId'],
-                                        'itemUrl' => $this->_item1['url']) );
+        $bookmark = $service->find( $id );
 
+        $this->assertNotEquals(null, $bookmark);
         $this->assertEquals($expected,
                             $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
                                                 Connexions_Model::FIELDS_ALL ));
     }
 
-    public function testBookmarkRetrieveById4()
+    public function testBookmarkServiceFetch1()
     {
-        $expected               = $this->_bookmark1;
-        $expected['userId']     = $this->_user1['userId'];
-        $expected['itemId']     = $this->_item1['itemId'];
-        $expected['user']       = $this->_user1;
-        $expected['item']       = $this->_item1;
-        $expected['tags']       = $this->_tags1;
-        $expected['isFavorite'] = ($expected['isFavorite'] ? 1 : 0);
-        $expected['isPrivate']  = ($expected['isPrivate']  ? 1 : 0);
+        /* Note:
+         *  For this test to succeed, Zend_Db_Adapter_Abstract::quote()
+         *  MUST be patched.  In the 'if (is_array($value))' body,
+         *  change:
+         *      return implode(', ', $value);
+         *
+         *  to:
+         *      return '('. implode(', ', $value) .')';
+         *
+         * and ensure that Connexions_Model_Mapper_DbTable::_where() has, for
+         * the body of its 'if (is_array($value))':
+         *      $condition .= ' IN ?';
+         *
+         * and NOT:
+         *      $condition .= ' IN (?)';
+         *
+         * and ensure that Model_Mapper_Base::_includeSecondarySelect() also
+         * uses ' IN ?' instead of ' IN (?)';
+         *
+         *
+         */
+        $expected   = '1:2,1:4,1:5,3:4,4:15';
+        $expectedAr = array(array(1,2),
+                            array(1,4),
+                            array(1,5),
+                            array(3,4),
+                            array(4,15),
+                      );
+        $fetchAr    = array( '(userId,itemId)' => $expectedAr );
 
-        $service  = Connexions_Service::factory('Model_Bookmark');
-        $bookmark = $service->find( array(
-                                        'userId'      => $expected['userId'],
-                                        'itemUrlHash' =>
-                                                $this->_item1['urlHash']));
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $bookmarks  = $service->fetch( $fetchAr, 'updatedOn DESC' );
 
-        $this->assertEquals($expected,
-                            $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
-                                                Connexions_Model::FIELDS_ALL ));
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $ids        = $bookmarks->getIds();
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected,   $bookmarks);
+        $this->assertEquals($expectedAr, $ids);
     }
 
-    public function testBookmarkServiceFetchByTagsAny()
+    public function testBookmarkServiceFetch2()
+    {
+        $expected   = '1:2,1:4,1:5,3:4,4:15';
+        $expectedAr = array(array(1,2),
+                            array(1,4),
+                            array(1,5),
+                            array(3,4),
+                            array(4,15),
+                      );
+        $fetchAr    = array( 'userId' => array(1,3,4),
+                             'itemId' => array(2,4,5,15) );
+
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $bookmarks  = $service->fetch( $fetchAr,
+                                       array('updatedOn' => 'DESC' ));
+
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $ids        = $bookmarks->getIds();
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected,   $bookmarks);
+        $this->assertEquals($expectedAr, $ids);
+    }
+
+
+    public function testBookmarkServiceFetchByTagsAny1()
     {
         $expected   = '1:2,1:4,3:4,1:5,4:15';
         $expectedAr = array( array(1,2),
@@ -279,12 +340,66 @@ class BookmarkServiceTest extends DbTestCase
                              array(4,15)
                       );
         $service    = Connexions_Service::factory('Model_Bookmark');
-        $bookmarks  = $service->fetchByTags( array( 6, 12 ), false );
+        $ids        = array( 6, 12 );
+
+        $bookmarks  = $service->fetchByTags( $ids, false );
         $this->assertNotEquals(null, $bookmarks);
 
         //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
 
-        $ids        = $bookmarks->idArray();
+        $ids        = $bookmarks->getIds();
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected,   $bookmarks);
+        $this->assertEquals($expectedAr, $ids);
+    }
+
+    public function testBookmarkServiceFetchByTagsAny2()
+    {
+        $expected   = '1:2,1:4,3:4,1:5,4:15';
+        $expectedAr = array( array(1,2),
+                             array(1,4),
+                             array(3,4),
+                             array(1,5),
+                             array(4,15)
+                      );
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $ids        = array( 'web2.0', 'javascript' );
+
+        $bookmarks  = $service->fetchByTags( $ids, false );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $ids        = $bookmarks->getIds();
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected,   $bookmarks);
+        $this->assertEquals($expectedAr, $ids);
+    }
+
+    public function testBookmarkServiceFetchByTagsAny3()
+    {
+        $expected   = '1:2,1:4,3:4,1:5,4:15';
+        $expectedAr = array( array(1,2),
+                             array(1,4),
+                             array(3,4),
+                             array(1,5),
+                             array(4,15)
+                      );
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $ids        = 'web2.0,javascript';
+
+        $bookmarks  = $service->fetchByTags( $ids, false );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $ids        = $bookmarks->getIds();
         $bookmarks  = $bookmarks->__toString();
 
         //printf ("Bookmarks: [ %s ]\n", $bookmarks);
@@ -778,9 +893,9 @@ class BookmarkServiceTest extends DbTestCase
         // Create a template data array for the new Bookmark
         $template = $expected;
         $template['userId']  = $user['name'];
-        $template['itemUrl'] = $item['url'];
+        $template['itemId']  = $item['url'];
         $template['tags']    = implode(', ', $tagNames);
-        unset($template['itemId']);
+        //unset($template['itemId']);
         unset($template['user']);
         unset($template['item']);
         unset($template['taggedOn']);

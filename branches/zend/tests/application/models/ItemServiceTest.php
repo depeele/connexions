@@ -116,7 +116,9 @@ class ItemServiceTest extends DbTestCase
     {
         $expected = $this->_item1;
         $service  = Connexions_Service::factory('Model_Item');
-        $item     = $service->find( array('itemId'=> $expected['itemId']));
+        $id       = array( 'itemId' => $expected['itemId']);
+
+        $item     = $service->find( $id );
 
         $this->assertTrue(  $item instanceof Model_Item );
         $this->assertTrue(  $item->isBacked() );
@@ -131,7 +133,9 @@ class ItemServiceTest extends DbTestCase
     {
         $expected = $this->_item1;
         $service  = Connexions_Service::factory('Model_Item');
-        $item     = $service->find( array('url' => $expected['url']));
+        $id       = array( 'url'    => $expected['url']);
+
+        $item     = $service->find( $id );
 
         $this->assertTrue(  $item instanceof Model_Item );
         $this->assertTrue(  $item->isBacked() );
@@ -146,7 +150,9 @@ class ItemServiceTest extends DbTestCase
     {
         $expected = $this->_item1;
         $service  = Connexions_Service::factory('Model_Item');
-        $item     = $service->find( array('urlHash' => $expected['urlHash']));
+        $id       = array( 'urlHash' => $expected['urlHash']);
+
+        $item     = $service->find( $id );
 
         $this->assertTrue(  $item instanceof Model_Item );
         $this->assertTrue(  $item->isBacked() );
@@ -161,7 +167,9 @@ class ItemServiceTest extends DbTestCase
     {
         $expected = $this->_item1;
         $service  = Connexions_Service::factory('Model_Item');
-        $item     = $service->find( $expected['itemId'] );
+        $id       = $expected['itemId'];
+
+        $item     = $service->find( $id );
 
         $this->assertTrue(  $item instanceof Model_Item );
         $this->assertTrue(  $item->isBacked() );
@@ -176,7 +184,26 @@ class ItemServiceTest extends DbTestCase
     {
         $expected = $this->_item1;
         $service  = Connexions_Service::factory('Model_Item');
-        $item     = $service->find( $expected['urlHash'] );
+        $id       = $expected['url'];
+
+        $item     = $service->find( $id );
+
+        $this->assertTrue(  $item instanceof Model_Item );
+        $this->assertTrue(  $item->isBacked() );
+        $this->assertTrue(  $item->isValid() );
+
+        $this->assertEquals($expected,
+                            $item->toArray( Connexions_Model::DEPTH_SHALLOW,
+                                            Connexions_Model::FIELDS_ALL ));
+    }
+
+    public function testItemServiceFind6()
+    {
+        $expected = $this->_item1;
+        $service  = Connexions_Service::factory('Model_Item');
+        $id       = $expected['urlHash'];
+
+        $item     = $service->find( $id );
 
         $this->assertTrue(  $item instanceof Model_Item );
         $this->assertTrue(  $item->isBacked() );
@@ -252,7 +279,7 @@ class ItemServiceTest extends DbTestCase
         $items      = $service->csList2set( $hashes );
         $this->assertNotEquals(null, $items);
 
-        $ids        = $items->idArray();
+        $ids        = $items->getIds();
 
         /*
         printf ("Items [ %s ]: [ %s ]\n",

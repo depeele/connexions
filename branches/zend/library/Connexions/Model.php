@@ -227,7 +227,13 @@ abstract class Connexions_Model
      */
     public function __toString()
     {
-        return (String)($this->getId());
+        $id = $this->getId();
+        if (is_array($id))
+            $str = implode(',', $id);
+        else
+            $str = (String)$id;
+
+        return $str;
     }
 
     /** @brief  Return an array version of this instance.
@@ -592,8 +598,6 @@ abstract class Connexions_Model
     /** @brief  Retrieve the unique identifier for this instance.  This MAY 
      *          return an array of identifiers as key/value pairs.
      *
-     *  This MUST return null if the model is not currently backed.
-     *
      *  @return The unique identifier.
      */
     abstract public function getId();
@@ -657,4 +661,3 @@ abstract class Connexions_Model
         return $this;
     }
 }
-

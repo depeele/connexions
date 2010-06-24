@@ -174,8 +174,8 @@ class BookmarkDbTest extends DbTestCase
         $expected['isPrivate']  = ($expected['isPrivate']  ? 1 : 0);
 
         $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
-        $bookmark = $mapper->find( array( $expected['userId'],
-                                          $expected['itemId']) );
+        $bookmark = $mapper->find( array( 'userId' => $expected['userId'],
+                                          'itemId' => $expected['itemId']) );
 
         /*
         //Connexions::log("testBookmarkRetrieveById1: bookmark[ %s ]",
@@ -194,8 +194,8 @@ class BookmarkDbTest extends DbTestCase
     public function testBookmarkIdentityMap()
     {
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
-        $id     = array( $this->_user1['userId'],
-                         $this->_item1['itemId'] );
+        $id     = array( 'userId' => $this->_user1['userId'],
+                         'itemId' => $this->_item1['itemId'] );
 
         $bookmark  = $mapper->find( $id );
         $bookmark2 = $mapper->find( $id );
@@ -211,8 +211,8 @@ class BookmarkDbTest extends DbTestCase
 
 
         $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
-        $bookmark = $mapper->find( array( $expected['userId'],
-                                          $expected['itemId']) );
+        $bookmark = $mapper->find( array( 'userId' => $expected['userId'],
+                                          'itemId' => $expected['itemId']) );
 
         // Force retrievals
         $user = $bookmark->user;
@@ -248,8 +248,8 @@ class BookmarkDbTest extends DbTestCase
         $expected = $this->_user1;
 
         $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
-        $bookmark = $mapper->find( array( $this->_user1['userId'],
-                                          $this->_item1['itemId'] ) );
+        $bookmark = $mapper->find( array( 'userId' => $this->_user1['userId'],
+                                          'itemId' => $this->_item1['itemId'] ) );
 
         $user = $bookmark->user;
         $this->assertEquals($expected,
@@ -262,8 +262,8 @@ class BookmarkDbTest extends DbTestCase
         $expected = $this->_item1;
 
         $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
-        $bookmark = $mapper->find( array( $this->_user1['userId'],
-                                          $this->_item1['itemId'] ) );
+        $bookmark = $mapper->find( array( 'userId' => $this->_user1['userId'],
+                                          'itemId' => $this->_item1['itemId'] ) );
 
         $item = $bookmark->item;
         $this->assertEquals($expected,
@@ -276,8 +276,8 @@ class BookmarkDbTest extends DbTestCase
         $expected = $this->_tags1;
 
         $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
-        $bookmark = $mapper->find( array( $this->_user1['userId'],
-                                          $this->_item1['itemId'] ) );
+        $bookmark = $mapper->find( array( 'userId' => $this->_user1['userId'],
+                                          'itemId' => $this->_item1['itemId'] ) );
 
         $tags = $bookmark->tags;
 
@@ -312,8 +312,8 @@ class BookmarkDbTest extends DbTestCase
         $expected['isPrivate']   = 0;
 
         $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
-        $bookmark = $mapper->find( array( $expected['userId'],
-                                          $expected['itemId']) );
+        $bookmark = $mapper->find( array( 'userId' => $expected['userId'],
+                                          'itemId' => $expected['itemId']) );
 
         //printf ("Bookmark: [ %s ]\n", $bookmark->debugDump());
 
@@ -381,8 +381,8 @@ class BookmarkDbTest extends DbTestCase
     public function testBookmarkFullyDeletedFromDatabase()
     {
         $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
-        $bookmark = $mapper->find( array( $this->_user1['userId'],
-                                          $this->_item1['itemId']) );
+        $bookmark = $mapper->find( array( 'userId' => $this->_user1['userId'],
+                                          'itemId' => $this->_item1['itemId']));
         $user     = $bookmark->user;
 
         $bookmark->delete();

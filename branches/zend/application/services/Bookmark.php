@@ -13,72 +13,116 @@ class Service_Bookmark extends Connexions_Service
     /** @brief  Find an existing Domain Model instance, updating it with the
      *          provided data, or Create a new Domain Model instance,
      *          initializing it with the provided data.
-     *  @param  data    An array of name/value pairs used to initialize the
-     *                  Domain Model.  All 'name's MUST be valid for the target
-     *                  Domain Model.  For a new Model_Bookmark, there are a
-     *                  few special exceptions.
+     *  @param  id      Identification value(s) (string, integer, array).
+     *                  MAY be an associative array that specifically
+     *                  identifies attribute/value pairs.
+     *                  For a Model_Bookmark, there are a few special
+     *                  attributes supported:
      *                      1) The user/owner may be identified in one of three
      *                         ways:
-     *                          - 'user'   as a  Model_User instance;
-     *                          - 'userId' as an integer identifier;
-     *                          - 'userId' as a  string user-name;
+     *                          - 'userId'  as an integer identifier;
+     *                          - 'userId'  as a  string user-name;
      *
      *                      2) The referenced Item may be identified in one of
      *                         seven ways:
-     *                          - 'item'        as a  Model_Item instance;
-     *                          - 'itemId'      as an integer identifier;
-     *                          - 'itemId'      as a  string url-hash;
-     *                          - 'itemUrlHash' as a  string url-hash;
-     *                          - 'urlHash'     as a  string url-hash;
-     *                          - 'itemUrl'     as a  string url;
-     *                          - 'url'         as a  string url;
+     *                          - 'itemId'  as an integer identifier;
+     *                          - 'itemId'  as a  string url;
+     *                          - 'itemId'  as a  string url-hash;
      *
      *                      3) Tags may be identified in one of two ways:
-     *                          - 'tags' as a Model_Set_Tag instance;
-     *                          - 'tags' as a comma-separated string;
+     *                          - 'tags'    as a Model_Set_Tag instance;
+     *                          - 'tags'    as a comma-separated string;
      *
      *  @return A (possibly new) Domain Model instance.
      *          Note: If the returned instance is new or modified, and the
      *                caller wishes the instance to persist, they must invoke:
      *                    $model = $model->save()
      */
-    public function get(array $data)
+    public function get($id)
     {
-        $data = $this->_prepareUserId($data);
-        $data = $this->_prepareItemId($data, true);
-        $data = $this->_prepareTags($data);
+        $normId = $this->_mapper->normalizeId($id);
+        if (! isset($normId['itemId']))
+        {
+            // No existing item was found.  Can we create one now?
+            if ( empty($normId['url']) )
+            {
+                throw new Exception("Cannot create the missing item from "
+                                    . "[ "
+                                    .   Connexions::varExport($normId)
+                                    . " ]");
+            }
 
-        // Pull 'tags' out -- we'll add them once the Bookmark is created.
-        $tags = $data['tags'];
-        unset($data['tags']);
+            // Create a NEW item!
+            $iService = $this->factory('Service_Item');
+            $item     = $iService->get( array('url' => $normId['url'] ));
+            if (! $item->isBacked())
+                $item = $item->save();
 
-        // Does a matching bookmark already exists?
-        $boomkark = parent::find( array(
-                                    'userId' => $data['userId'],
-                                    'itemId' => $data['itemId'],
+            unset($id['url']);
+            unset($normId['url']);
+
+            $normId['itemId'] = $item->itemId;
+        }
+
+        if (is_array($id))
+        {
+            // Extract any specified tags, creating any that aren't found...
+            $tags = $this->_prepareTags($id, true);
+            unset($id['tags']);
+        }
+
+        /************************************************************
+         * Does a matching bookmark already exists?
+         *
+         */
+        $bookmark = parent::find( array(
+                                    'userId' => $normId['userId'],
+                                    'itemId' => $normId['itemId'],
                                   ));
         if ($bookmark !== null)
         {
             // Update this bookmark with any new, incoming data.
-            $bookmark->populate($data);
+            if (is_array($id))
+                $bookmark->populate($id);
         }
         else
         {
-            // Rely on our parent to create the new instance
-            $bookmark = parent::get($data);
+            // When creating a bookmark, there MUST be tags.
+            if (empty($tags))
+            {
+                throw new Exception("No tags provided.");
+            }
+
+            /* Merge the normalized id information back into the original,
+             * incoming id data.
+             */
+            if (! is_array($id))
+                $id = array();
+            $id = array_merge($id, $normId);
+
+
+            // Create a new instance.
+            $bookmark = $this->_mapper->getModel($id);
         }
 
-        // Add the tags back to the final instance.
-        $bookmark->tags = $tags;
+        if (! empty($tags))
+        {
+            /* Add the specified set of tags to the bookmark.
+             * For an existing bookmark, this will remove any previous tags and 
+             * add the tags in the new set.
+             */
+            $bookmark->tags = $tags;
+        }
 
         return $bookmark;
     }
 
     /** @brief  Find an existing Domain Model instance.
-     *  @param  data    An array of name/value pairs used identifying a Domain
-     *                  Model.  All 'name's MUST be valid for the target Domain
-     *                  Model.  For a new Model_Bookmark, there are a few
-     *                  special exceptions.
+     *  @param  id      Identification value(s) (string, integer, array).
+     *                  MAY be an associative array that specifically
+     *                  identifies attribute/value pairs.
+     *                  For a Model_Bookmark, there are a few special
+     *                  attributes supported:
      *                      1) The user/owner may be identified in one of three
      *                         ways:
      *                          - 'user'   as a  Model_User instance;
@@ -97,14 +141,24 @@ class Service_Bookmark extends Connexions_Service
      *
      *  @return A Domain Model instance, or null if not found.
      */
-    public function find(array $data)
+    public function find($id)
     {
-        $data = $this->_prepareUserId($data);
-        $data = $this->_prepareItemId($data);
+        $normId = $this->_mapper->normalizeId($id);
+
+        /*
+        Connexions::log("Service_Bookmark::find( %s ): normalized id[ %s ]",
+                        Connexions::varExport($id),
+                        Connexions::varExport($normId));
+        // */
+
+        if ( empty($normId['userId']) || empty($normId['itemId']) )
+        {
+            return null;
+        }
 
         return parent::find(array(
-                                'userId' => $data['userId'],
-                                'itemId' => $data['itemId'],
+                                'userId' => $normId['userId'],
+                                'itemId' => $normId['itemId'],
                             ));
     }
 
@@ -142,14 +196,16 @@ class Service_Bookmark extends Connexions_Service
             $order = $this->_extraOrder($order);
         }
 
-        return $this->_getMapper()->fetchRelated( array(
+        $tags = $this->_prepareTags( array('tags' => $tags) );
+
+        return $this->_mapper->fetchRelated( array(
                                         'tags'      => $tags,
                                         'exactTags' => $exact,
                                         'order'     => $order,
                                         'count'     => $count,
                                         'offset'    => $offset,
                                         'where'     => $where,
-                                        'privacy'   => Connexions::getUser(),
+                                        'privacy'   => $this->_curUser(),
                                     ));
     }
 
@@ -184,12 +240,12 @@ class Service_Bookmark extends Connexions_Service
             $order = $this->_extraOrder($order);
         }
 
-        return $this->_getMapper()->fetchRelated( array(
+        return $this->_mapper->fetchRelated( array(
                                         'users'   => $users,
                                         'order'   => $order,
                                         'count'   => $count,
                                         'offset'  => $offset,
-                                        'privacy' => Connexions::getUser(),
+                                        'privacy' => $this->_curUser(),
                                     ));
     }
 
@@ -224,12 +280,12 @@ class Service_Bookmark extends Connexions_Service
             $order = $this->_extraOrder($order);
         }
 
-        return $this->_getMapper()->fetchRelated( array(
+        return $this->_mapper->fetchRelated( array(
                                         'items'   => $items,
                                         'order'   => $order,
                                         'count'   => $count,
                                         'offset'  => $offset,
-                                        'privacy' => Connexions::getUser(),
+                                        'privacy' => $this->_curUser(),
                                     ));
     }
 
@@ -271,14 +327,14 @@ class Service_Bookmark extends Connexions_Service
             $order = $this->_extraOrder($order);
         }
 
-        return $this->_getMapper()->fetchRelated( array(
+        return $this->_mapper->fetchRelated( array(
                                         'users'     => $users,
                                         'tags'      => $tags,
                                         'exactTags' => $exactTags,
                                         'order'     => $order,
                                         'count'     => $count,
                                         'offset'    => $offset,
-                                        'privacy'   => Connexions::getUser(),
+                                        'privacy'   => $this->_curUser(),
                                     ));
     }
 
@@ -320,14 +376,14 @@ class Service_Bookmark extends Connexions_Service
             $order = $this->_extraOrder($order);
         }
 
-        return $this->_getMapper()->fetchRelated( array(
+        return $this->_mapper->fetchRelated( array(
                                         'items'     => $items,
                                         'tags'      => $tags,
                                         'exactTags' => $exact,
                                         'order'     => $order,
                                         'count'     => $count,
                                         'offset'    => $offset,
-                                        'privacy'   => Connexions::getUser(),
+                                        'privacy'   => $this->_curUser(),
                                     ));
     }
 
@@ -379,201 +435,17 @@ class Service_Bookmark extends Connexions_Service
     }
 
     /** @brief  Given an array of name/value pairs to be used in creating a new
-     *          Bookmark, see if there is a valid Model_User identified.
-     *  @param  data    An array of name/value pairs to be used to initialize
-     *                  a new Model_Bookmark instance.  The referenced User may
-     *                  be identified in one of three ways:
-     *                          - 'user'   as a  Model_User instance;
-     *                          - 'userId' as an integer identifier;
-     *                          - 'userId' as a  string user-name;
-     *
-     *  @throw  Exception("Cannot locate User by id...");
-     *          Exception("No valid user identified...");
-     *
-     *  @return A new 'data' array, cleaned of extraneous User identification
-     *          information (i.e. 'user'), leaving simply 'userId'.
-     */
-    protected function _prepareUserId(array $data)
-    {
-        $uMapper = $this->_getMapper('Model_Mapper_User');
-        $user    = null;
-        if ( isset($data['user']) && ($data['user'] instanceof Model_User) )
-        {
-            $user = $data['user'];
-        }
-        else if ( isset($data['userId']) )
-        {
-            // Find the target User by id
-            $user = $uMapper->find( $data['userId'] );
-        }
-        else
-        {
-            $keys = array_keys($data);
-            if (is_int($keys[0]))
-            {
-                /* ASSUME this is a simple array and the first item is the
-                 * userId.
-                 */
-                $data['userId'] = $data[$keys[0]];
-                unset($data[$keys[0]]);
-
-                $user = $uMapper->find( $data['userId'] );
-            }
-        }
-
-        if ($user === null)
-        {
-            throw new Exception("No User identified.  "
-                                .   "Please identify the target User via "
-                                .   "instance or userId.");
-        }
-
-        /* We should now have a Model_User instance representing the
-         * desired user.
-         *
-         * Remove all other identification options
-         */
-        unset($data['user']);
-
-        $data['userId'] = $user->userId;
-
-        return $data;
-    }
-
-    /** @brief  Given an array of name/value pairs to be used in creating a new
-     *          Bookmark, see if there is a valid Model_Item identified.
-     *  @param  data        An array of name/value pairs to be used to
-     *                      initialize a new Model_Bookmark instance.  The
-     *                      referenced Item may be identified in one of seven
-     *                      ways:
-     *                          - 'item'        as a  Model_Item instance;
-     *                          - 'itemId'      as an integer identifier;
-     *                          - 'itemId'      as a  string url-hash;
-     *                          - 'itemUrlHash' as a  string url-hash;
-     *                          - 'urlHash'     as a  string url-hash;
-     *                          - 'itemUrl'     as a  string url;
-     *                          - 'url'         as a  string url;
-     *  @param  createItem  Should the item be created if it doesn't already
-     *                      exist? [ false ];
-     *
-     *
-     *  @throw  Exception("Cannot locate Item by id...");
-     *          Exception("No valid item identified...");
-     *
-     *  @return A new 'data' array, cleaned of extraneous Item identification
-     *          information (i.e. 'item', 'itemUrl', 'itemUrlHash'), leaving
-     *          simply 'itemId'.
-     */
-    protected function _prepareItemId(array $data, $createItem = false)
-    {
-        $iMapper = $this->_getMapper('Model_Mapper_Item');
-        if ( isset($data['item']) && ($data['item'] instanceof Model_Item) )
-        {
-            $item = $data['item'];
-        }
-        else if ( isset($data['itemId']) )
-        {
-            // Find the target Item by id
-            $item = $iMapper->find( $data['itemId'] );
-            if ($item === null)
-            {
-                // Cannot locate the specified Item by Id...
-                throw new Exception("Cannot locate Item by "
-                                    .   "id[ {$data['itemId']} ]");
-            }
-        }
-        else
-        {
-            $template = array();
-            if ( isset($data['itemUrl']) )
-            {
-                $template['url'] = $data['itemUrl'];
-            }
-            else if ( isset($data['url']) )
-            {
-                $template['url'] = $data['url'];
-            }
-            else if ( isset($data['itemUrlHash']) )
-            {
-                $template['urlHash'] = $data['itemUrlHash'];
-            }
-            else if ( isset($data['urlHash']) )
-            {
-                $template['urlHash'] = $data['urlHash'];
-            }
-            else
-            {
-                /* Is this a simple array, with integer keys?
-                 *
-                 * Note: If 'data' was a simple array with
-                 *       (userId, itemId), the userId was removed in
-                 *       _prepareUserId(), leaving itemId as the only remaining
-                 *       element.
-                 */
-                $keys = array_keys($data);
-                if (is_int($keys[0]))
-                {
-                    $data['itemId'] = $data[$keys[0]];
-                    unset($data[$keys[0]]);
-
-                    $template['itemId'] = $data['itemId'];
-                }
-            }
-
-            if ( (! isset($template['urlHash'])) &&
-                 (! empty($template['url'])) )
-            {
-                $template['urlHash'] =
-                    Connexions::md5Url($template['url']);
-            }
-
-            if ((! isset($template['itemId'])) &&
-                empty($template['urlHash']))
-            {
-                throw new Exception("No valid item identifier provided.  "
-                                    .   "Please identify the target Item via "
-                                    .   "instance, itemId, itemUrl, "
-                                    .   "itemUrlHash, url, or urlHash.");
-            }
-
-            if (! $createItem)
-            {
-                $item = $iMapper->find( $template );
-            }
-            else
-            {
-                $item = $iMapper->getModel( $template );
-
-                if (! $item->isBacked())
-                    $item = $item->save();
-            }
-        }
-
-        /* We should now have a Model_Item instance representing the
-         * desired URL
-         *
-         * Remove all other identification options
-         */
-        unset($data['itemUrl']);
-        unset($data['itemUrlHash']);
-        unset($data['item']);
-
-        $data['itemId'] = $item->itemId;
-
-        return $data;
-    }
-
-    /** @brief  Given an array of name/value pairs to be used in creating a new
      *          Bookmark, see if there is a valid Model_Set_Tag identified.
      *  @param  data    An array of name/value pairs to be used to initialize
      *                  a new Model_Bookmark instance.  The referenced
      *                  Model_Set_Tag may be identified in one of two ways:
      *                          - 'tags' as a Model_Set_Tag instance;
      *                          - 'tags' as a comma-separated string;
+     *  @param  create  Should tags that aren't found be created?
      *
-     *  @return A new 'data' array that includes 'tags'.
+     *  @return A Model_Set_Tag instance of resolved tags, null if none found.
      */
-    protected function _prepareTags(array $data)
+    protected function _prepareTags(array $data, $create = false)
     {
         $tags = null;
         if ( isset($data['tags']))
@@ -582,24 +454,44 @@ class Service_Bookmark extends Connexions_Service
             {
                 $tags = $data['tags'];
             }
-            else if (is_string($data['tags']))
+            else if (is_array($data['tags']))
+            {
+                $data['tags'] = implode(',', $data['tags']);
+            }
+
+            if (is_string($data['tags']))
             {
                 /* ASSUME that this is a comma-separated list of tags, telling
                  * csList2set() to create any tags that don't already exist.
                  */
                 $tService = Connexions_Service::factory('Service_Tag');
-                $tags     = $tService->csList2set($data['tags'], true);
+                $tags     = $tService->csList2set($data['tags'], null, $create);
             }
         }
 
+        if (empty($tags))
+            $tags = null;
+
+        /*
         if ( ($tags === null) || empty($tags) )
         {
             throw new Exception("No tags provided.");
         }
+         */
 
-        // Save the resolved tag set
-        $data['tags'] = $tags;
+        return $tags;
+    }
 
-        return $data;
+    /** @brief  Retrieve the currently identified user.
+     *
+     *  @return A Model_User instance or null if none.
+     */
+    protected function _curUser()
+    {
+        $user = Connexions::getUser();
+        if ($user === false)
+            $user = null;
+
+        return $user;
     }
 }

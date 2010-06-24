@@ -1,0 +1,106 @@
+Item (single-part key) Service Retrieval Scenarios:
+    id == itemId   --------------------------------------------+ Non-array
+       or url                                                  | keys
+       or urlHash  --------------------------------------------+
+       or array( 'itemId'  => itemId  ) -----------------------+ Array with
+       or array( 'url"     => url     )                        | named keys
+       or array( 'urlHash' => urlHash ) -----------------------+
+
+            'id' Normalized to array( 'key' => val(s), ... )
+
+    find( id );
+
+    fetch( array(id, id, id, id) );
+
+
+Bookmark (multi-part key) Service Retrieval Scenarios:
+    id == array( userId, itemId  )  ---------------------------+ Array with
+       or array( userId, url     )                             | numeric keys
+       or array( userId, urlHash )                             |
+       or array( name,   itemId  )                             |
+       or array( name,   url     )                             |
+       or array( name,   urlHash )  ---------------------------+
+       or array( 'userId' => userId, 'itemId'  => itemId )  ---+ Array with
+       or array( 'userId' => userId, 'url'     => url )        | named keys
+       or array( 'userId' => userId, 'urlHash' => urlHash )    |
+       or array( 'name'   => name,   'itemId'  => itemId )     |
+       or array( 'name'   => name,   'url'     => url )        |
+       or array( 'name'   => name,   'urlHash' => urlHash ) ---+
+       or single-part key id (for non-key-based retrieval)
+
+            'id' Normalized to array( 'key' => val(s), ... )
+
+                  where 'key' MAY be 'key1,key2' (e.g. 'userId,itemId')
+
+    find( id );
+
+    fetch( array(id, id, id, id) );
+
+
+===============================================================================
+
+    If 'id' is a non-array or array with numeric keys, directly match table
+    key(s) to the provided values.  Multiple keys == 'key1,key2'
+
+
+===============================================================================
+Single-part key:
+
+    find( id ) where 'id' may be:
+
+     - array( 'key1' => val1 );
+
+            === where     (key1, key2) = (val1,val2);
+
+     - array( 'key1' => val1,
+              'key2' => val2 );
+
+            === where     key1 = val1
+                      AND key2 = val2;
+
+
+    fetch( array( id, ...) ) where 'id' may be:
+
+      - array( 'key1' => array( val1, val2, ...) );
+
+            === where     key1 IN (val1,val2);
+
+      - array( 'key1' => array( val1, val2, ...),
+               'key2' => val3;
+
+            === where     key1 IN (val1,val2)
+                      AND key2 =   val3;
+
+
+Multi-part key:
+
+    find
+
+      - array( 'key1, key2' => array(val1, val2) );
+
+            === where     (key1, key2) = (val1,val2);
+
+      - array( 'key1, key2' => array(val1, val2),
+               'key3'       => val3,
+               'key4'       => val4 );
+
+            === where     (key1, key2) = (val1,val2);
+                      AND key3         =  val3
+                      AND key4         =  val4;
+        
+
+    fetch
+
+      - array( 'key1, key2' => array( (val1,val2), (val3,val4), ...),
+               'key3'       => val5,
+               'key4'       => array( val6, val7, ...),
+               ...
+        );
+
+            === where     (key1, key2) IN ( (val2,val2), (val3,val4), ... )
+                      AND key3         =    val5
+                      AND key4         IN ( val6, val7, ... );
+
+
+
+

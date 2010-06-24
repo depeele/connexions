@@ -4,12 +4,12 @@
 //ini_set('display_errors',         1);
 //date_default_timezone_set('UTC');
 
-define('APPLICATION_ENV', 'development');
-//define('APPLICATION_ENV', 'production');
+define('APPLICATION_ENV', 'cliTest');
+//define('APPLICATION_ENV', 'cli');
 defined('APPLICATION_ENV')
     || define('APPLICATION_ENV', (getenv('APPLICATION_ENV')
                                     ? getenv('APPLICATION_ENV')
-                                    : 'production'));
+                                    : 'cli'));
 
 define('CLI_PATH',         realpath(dirname(__FILE__)));
 define('APPLICATION_PATH', realpath(CLI_PATH         .'/../application'));

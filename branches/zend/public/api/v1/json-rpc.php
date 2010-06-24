@@ -12,20 +12,22 @@ Connexions::log("json-rpc: begin: method[ %s ], request[ %s ], json[ %s ]",
 // */
 
 $server = new Zend_Json_Server();
-$server->setClass('Service_User',     'user')
-       ->setClass('Service_Item',     'item')
-       ->setClass('Service_Tag',      'tag')
-       ->setClass('Service_Bookmark', 'bookmark');
+$server->setClass('Service_Proxy_User', 'user')
+       ->setClass('Service_Item',       'item')
+       ->setClass('Service_Tag',        'tag')
+       ->setClass('Service_Bookmark',   'bookmark');
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET')
 {
     $server->setTarget(Connexions::url('/api/v1/json-rpc'))
            ->setEnvelope(Zend_Json_Server_Smd::ENV_JSONRPC_2);
 
+    /*
     echo "<pre>";
     print_r($server->getServiceMap()->toArray());
     echo "</pre>\n";
     return;
+    // */
 
     header('Content-Type: application/json');
     echo $server->getServiceMap();

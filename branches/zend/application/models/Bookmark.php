@@ -129,6 +129,12 @@ class Model_Bookmark extends Model_Base
 
             // Direct set, no further filtering nor validation
             $this->_user = $value;
+
+            if ($this->_user !== null)
+            {
+                // Ensure that the userId matches
+                $this->_data['userId'] = $this->_user->userId;
+            }
             break;
 
         case 'item':
@@ -144,6 +150,12 @@ class Model_Bookmark extends Model_Base
 
             // Direct set, no further filtering nor validation
             $this->_item = $value;
+
+            if ($this->_item !== null)
+            {
+                // Ensure that the itemId matches
+                $this->_data['itemId'] = $this->_item->itemId;
+            }
             break;
 
         case 'tags':
@@ -351,6 +363,11 @@ class Model_Bookmark extends Model_Base
      */
     public function updateStatistics()
     {
+        if (! $this->user instanceof Model_User)
+            throw new Exception("Missing Model_User");
+        if (! $this->item instanceof Model_Item)
+            throw new Exception("Missing Model_Item");
+
         $this->user->updateStatistics( );
         $this->item->updateStatistics( );
 

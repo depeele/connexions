@@ -6,7 +6,7 @@ SELECT t.*,
  FROM tag AS t
     LEFT JOIN userTagItem AS uti
     ON t.tagId=uti.tagId
- GROUP BY `t`.`tagId`
+ GROUP BY t.tagId
  ORDER BY userItemCount DESC
  LIMIT 50;
 

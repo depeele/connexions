@@ -11,82 +11,88 @@ class Service_Tag extends Connexions_Service
 
     /** @brief  Convert a comma-separated list of tags to a 
      *          Model_Set_Tag instance.
-     *  @param  csList  The comma-separated list of tags;
+     *  @param  csList  The comma-separated list of tag identifiers;
+     *  @param  order   An ordering string/array.
      *  @param  create  Should any non-existing tags be created? [ false ];
      *
-     *  @return Model_Set_Uset
+     *  @return Model_Set_Tag
      */
-    public function csList2set($csList, $create = false)
+    public function csList2set($csList, $order = null, $create = false)
     {
-        $names = (empty($csList)
-                    ? array()
-                    : preg_split('/\s*,\s*/', strtolower($csList)) );
+        // Parse the comma-separated-list directly -- we'll use it later.
+        $ids = $this->_csList2array($csList);
 
-        // /*
-        Connexions::log("Service_Tag::csList2set( [ %s ], %screate ): "
-                        .   "%snames[ %s ]",
-                        $csList, ($create ? '' : 'DO_NOT '),
-                        (empty($names) ? "empty " : count($names) .' '),
-                        implode(', ', $names));
-        // */
+        Connexions::log("Service_Tag::csList2set( %s ): [ %s ]",
+                        Connexions::varExport($csList),
+                        Connexions::varExport($ids));
 
-        if (empty($names))
+        // Generate the set of all matches
+        $set = parent::csList2set($ids, $order);
+        if ( ($set->count() > 0) && $create )
         {
-            $set = $this->_getMapper()->makeEmptySet();
-        }
-        else
-        {
-            $set = $this->_getMapper()->fetchBy('tag', $names, 'tag ASC');
-            $set->setSource($csList);
-
-            if ($create)
+            /* See if there are any tags that we need to create.  This can only
+             * succeed if the list we have represents tag names as opposed to
+             * tagIds.  Look through the list to see if at least one is
+             * non-numeric.
+             */
+            $by  = 'tagId';
+            foreach ($ids as $val)
             {
-                /* See if any of the request tags we not found...
-                 *
-                 * First, flip the array so it's keyed by tagName.
-                 */
-                $names = array_flip($names);
-
-                // Remove all tags that we successfully retrieved
-                foreach ($set as $tag)
+                if (! is_numeric($val))
                 {
-                    unset($names[ $tag->tag ]);
-                }
-
-                if (count($names) > 0)
-                {
-                    /*
-                    Connexions::log("Service_Tag::csList2set(): "
-                                    .   "create %d tags [ %s ]",
-                                    count($names),
-                                    implode(', ', array_keys($names)));
-                    // */
-
-                    /* There is one or more tag that does not yet exist.
-                     *
-                     * Create all that are missing, adding them to the set.
-                     */
-                    $tMapper = $this->_getMapper('Model_Mapper_Tag');
-                    foreach ($names as $tagName => $idex)
-                    {
-                        $tag = $tMapper->getModel( array('tag' => $tagName) );
-                        if ($tag !== null)
-                        {
-                            $tag = $tag->save();
-                            $set->append($tag);
-                        }
-                    }
-
-                    $set->usort('Service_Tag::sort_by_tag');
+                    $by = 'tag';
+                    break;
                 }
             }
 
-            // /*
-            Connexions::log("Service_Tag::csList2set( [ %s ] ): "
-                            .   "%d tags[ %s ]",
-                            $csList,
-                            count($set), $set);
-            // */
+            /* If 'by' is NOT 'tag', then we appear to have a list of tag
+             * identifiers.  Creation doesn't make sense.
+             */
+            if ($by !== 'tag')
+            {
+                throw new Exception('Cannot create when providing tagIds');
+            }
+
+            /* See if any of the requested tags were not found...
+             *
+             * First, flip the array so it's keyed by tagName.
+             */
+            $ids = array_flip($ids);
+
+            // Remove all tags that we successfully retrieved
+            foreach ($set as $tag)
+            {
+                unset($ids[ $tag->tag ]);
+            }
+
+            if (count($ids) > 0)
+            {
+                /* There is one or more tag that does not yet exist.
+                 *
+                 * Create all that are missing, adding them to the set.
+                 */
+
+                /*
+                Connexions::log("Service_Tag::csList2set(): "
+                                .   "create %d tags [ %s ]",
+                                count($ids),
+                                implode(', ', array_keys($ids)));
+                // */
+
+                $tMapper = $this->_getMapper('Model_Mapper_Tag');
+                foreach ($ids as $tagName => $idex)
+                {
+                    $tag = $tMapper->getModel( array('tag' => $tagName) );
+                    if ($tag !== null)
+                    {
+                        $tag = $tag->save();
+                        $set->append($tag);
+                    }
+                }
+
+                // Sort the final set by tag.
+                $set->usort('Service_Tag::sort_by_tag');
+            }
         }
 
         return $set;
@@ -115,7 +121,7 @@ class Service_Tag extends Connexions_Service
                            'tag           ASC');
         }
 
-        return $this->_getMapper()->fetchRelated( array(
+        return $this->_mapper->fetchRelated( array(
                                         'users'  => $users,
                                         'order'  => $order,
                                         'count'  => $count,
@@ -146,7 +152,7 @@ class Service_Tag extends Connexions_Service
                            'tag           ASC');
         }
 
-        return $this->_getMapper()->fetchRelated( array(
+        return $this->_mapper->fetchRelated( array(
                                         'items'  => $items,
                                         'order'  => $order,
                                         'count'  => $count,
@@ -186,7 +192,7 @@ class Service_Tag extends Connexions_Service
         {
             $ids   = (is_array($bookmarks)
                         ? $bookmarks
-                        : $bookmarks->idArray());
+                        : $bookmarks->getIds());
             $users = array();
             $items = array();
             foreach ($ids as $id)
@@ -203,7 +209,7 @@ class Service_Tag extends Connexions_Service
             // */
         }
 
-        return $this->_getMapper()->fetchRelated( array(
+        return $this->_mapper->fetchRelated( array(
                                         'users'  => $users,
                                         'items'  => $items,
                                         'order'  => $order,

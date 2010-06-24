@@ -24,116 +24,9 @@ abstract class Connexions_Service
     const   SORT_DIR_ASC    = 'ASC';
     const   SORT_DIR_DESC   = 'DESC';
 
-    /** @brief  Find an existing Domain Model instance, or Create a new Domain
-     *          Model instance, initializing it with the provided data.
-     *  @param  data    An array of name/value pairs used to initialize the
-     *                  Domain Model.  All 'name's MUST be valid for the target
-     *                  Domain Model.
-     *
-     *  @return A new Domain Model instance.
-     *          Note: If the caller wishes this new instance to persist, they
-     *                must invoke either:
-     *                    $model = $model->save()
-     *                or
-     *                    $model = $this->update($model)
-     */
-    public function get(array $data)
+    public function __construct()
     {
-        return $this->_getMapper()->getModel($data);
-    }
-
-    /** @brief  Retrieve a single, existing Domain Model instance.
-     *  @param  criteria    An array of name/value pairs that represent the
-     *                      desired properties of the target Domain Model.  All
-     *                      'name's MUST be valid for the target Domain Model.
-     *
-     *  @return A new Connexions_Model instance.
-     */
-    public function find($criteria = array())
-    {
-        return $this->_getMapper()->find( $criteria );
-    }
-
-    /** @brief  Retrieve a set of Domain Model instances.
-     *  @param  criteria    An array of name/value pairs that represent the
-     *                      desired properties of the target Domain Model.  All
-     *                      'name's MUST be valid for the target Domain Model;
-     *  @param  order       An array of name/direction pairs representing the
-     *                      desired sorting order.  The 'name's MUST be valid
-     *                      for the target Domain Model and the directions a
-     *                      Connexions_Service::SORT_DIR_* constant.  If an
-     *                      order is omitted, Connexions_Service::SORT_DIR_ASC
-     *                      will be used [ no specified order ];
-     *  @param  count       The maximum number of items from the full set of
-     *                      matching items that should be returned
-     *                      [ null == all ];
-     *  @param  offset      The starting offset in the full set of matching
-     *                      items [ null == 0 ].
-     *
-     *  @return A new Connexions_Model_Set.
-     */
-    public function fetch($criteria  = null,
-                          $order     = null,
-                          $count     = null,
-                          $offset    = null)
-    {
-        if ($order !== null)
-            $order = (array)$order;
-
-        if (is_array($order))
-        {
-            // Ensure that we have all name/direction pairs
-            $newOrder = array();
-            foreach ($newOrder as $name => $direction)
-            {
-                if (is_int($name))
-                {
-                    $name      = $direction;
-                    $direction = self::SORT_DIR_ASC;
-                }
-                else
-                {
-                    if ($direction !== self::SORT_DIR_DESC)
-                        $direction = self::SORT_DIR_ASC;
-                }
-
-                $newOrder[$name] = $direction;
-            }
-
-            $order = $newOrder;
-        }
-
-        return $this->_getMapper()->fetch( $criteria, $order,
-                                           $count,    $offset );
-    }
-
-    /** @brief  Retrieve a paginated set of Domain Model instances.
-     *  @param  criteria    An array of name/value pairs that represent the
-     *                      desired properties of the target Domain Model.  All
-     *                      'name's MUST be valid for the target Domain Model;
-     *  @param  order       An array of name/direction pairs representing the
-     *                      desired sorting order.  The 'name's MUST be valid
-     *                      for the target Domain Model and the directions a
-     *                      Connexions_Service::SORT_DIR_* constant.  If an
-     *                      order is omitted, Connexions_Service::SORT_DIR_ASC
-     *                      will be used [ no specified order ];
-     *
-     *  @return A new Connexions_Model_Set.
-     */
-    public function fetchPaginated($criteria  = array(),
-                                   $order     = null)
-    {
-        $set = $this->_getMapper()->fetch( $criteria, $order );
-        return new Zend_Paginator( $set->getPaginatorAdapter() );
-    }
-                                      
-    /*********************************************************************
-     * Protected methods
-     *
-     */
-
-    protected function _getModelName()
-    {
+        // Resolve our model name
         if (empty($this->_modelName))
         {
             /* Use the class name of this instance to construct a Model
@@ -144,58 +37,272 @@ abstract class Connexions_Service
                                             get_class($this));
         }
 
-        return $this->_modelName;
+        // Resolve our mapper
+        $mapperName = $this->_mapper;
+        if (empty($mapperName))
+        {
+            /* Use the model name to construct a Model Mapper
+             * class name:
+             *      Model_<Class> => Model_Mapper_<Class>
+             */
+            $mapperName = str_replace('Model_', 'Model_Mapper_',
+                                      $this->_modelName);
+        }
+
+        $this->_mapper = $this->_getMapper($mapperName);
     }
 
-    /** @brief  Retrieve the mapper for this Service.
-     *  @param  mapperName  The specific mapper to retrieve.  If not provided,
-     *                      retrieve the mapper for THIS service [ null ];
+    /** @brief  Find an existing Domain Model instance, or Create a new Domain
+     *          Model instance, initializing it with the provided
+     *          identification data.
+     *  @param  id      Identification value(s) (string, integer, array).
+     *                  MAY be an associative array that specifically
+     *                  identifies attribute/value pairs.
      *
-     *  @return The Connexions_Model_Mapper instance.
+     *  @return A new Domain Model instance.
+     *          Note: If the caller wishes this new instance to persist, they
+     *                must invoke either:
+     *                    $model = $model->save()
+     *                or
+     *                    $model = $this->update($model)
      */
-    protected function _getMapper($mapperName = null)
+    public function get($id)
     {
-        if ( ($mapperName !== null) ||
-             (! $this->_mapper instanceof Connexions_Model_Mapper ) )
+        return $this->_mapper->getModel( $this->_mapper->normalizeId($id) );
+    }
+
+    /** @brief  Retrieve a single, existing Domain Model instance.
+     *  @param  id      Identification value(s) (string, integer, array).
+     *                  MAY be an associative array that specifically
+     *                  identifies attribute/value pairs.
+     *
+     *  @return A new Connexions_Model instance.
+     */
+    public function find($id)
+    {
+        $normId = $this->_mapper->normalizeId($id);
+
+        /*
+        Connexions::log("Connexions_Service[%s]::find( %s ): "
+                        .   "normalized[ %s ]",
+                        get_class($this),
+                        Connexions::varExport($id),
+                        Connexions::varExport($normId));
+        // */
+
+        return $this->_mapper->find( $normId );
+    }
+
+    /** @brief  Retrieve a set of Domain Model instances.
+     *  @param  id      Identification value(s), null to retrieve all.
+     *                  MAY be an associative array that specifically
+     *                  identifies attribute/value(s) pairs.
+     *  @param  order   An array of name/direction pairs representing the
+     *                  desired sorting order.  The 'name's MUST be valid for
+     *                  the target Domain Model and the directions a
+     *                  Connexions_Service::SORT_DIR_* constant.  If an order
+     *                  is omitted, Connexions_Service::SORT_DIR_ASC will be
+     *                  used [ no specified order ];
+     *  @param  count   The maximum number of items from the full set of
+     *                  matching items that should be returned
+     *                  [ null == all ];
+     *  @param  offset  The starting offset in the full set of matching items
+     *                  [ null == 0 ].
+     *
+     *  @return A new Connexions_Model_Set.
+     */
+    public function fetch($id       = null,
+                          $order    = null,
+                          $count    = null,
+                          $offset   = null)
+    {
+        $ids     = $this->_csList2array($id);
+        $normIds = $ids;    //$this->_mapper->normalizeIds($ids);
+        $order   = $this->_csOrder2array($order);
+
+        return $this->_mapper->fetch( $normIds,
+                                      $order,
+                                      $count,
+                                      $offset );
+
+    }
+
+    /** @brief  Retrieve a paginated set of Domain Model instances.
+     *  @param  id      An array of 'property/value' pairs identifying the
+     *                  desired model(s), or null to retrieve all.
+     *  @param  order   An array of name/direction pairs representing the
+     *                  desired sorting order.  The 'name's MUST be valid for
+     *                  the target Domain Model and the directions a
+     *                  Connexions_Service::SORT_DIR_* constant.  If an order
+     *                  is omitted, Connexions_Service::SORT_DIR_ASC will be
+     *                  used [ no specified order ];
+     *
+     *  @return A new Connexions_Model_Set.
+     */
+    public function fetchPaginated($id      = null,
+                                   $order   = null)
+    {
+        $ids     = $this->_csList2array($id);
+        $normIds = $ids;    //$this->_mapper->normalizeIds($ids);
+        $order   = $this->_csOrder2array($order);
+
+        $set = $this->_mapper->fetch( $normIds, $order );
+        return new Zend_Paginator( $set->getPaginatorAdapter() );
+    }
+                                      
+    /** @brief  Convert a comma-separated list of item identifiers to a
+     *          Connexions_Model_Set instance.
+     *  @param  csList  The comma-separated list of identifiers
+     *                  (MUST ALL target the same model field);
+     *  @param  order   An ordering string/array.
+     *
+     *  @return Connexions_Model_Set
+     */
+    public function csList2set($csList, $order = null)
+    {
+        $ids = $this->_csList2array($csList);
+        if ( (! is_array($ids)) || empty($ids) )
         {
-            if ($mapperName !== null)
-            {
-                // Locate a specific mapper
-                if (strpos($mapperName, 'Model_Mapper_') === false)
-                    $name = str_replace('Model_', 'Model_Mapper_', $mapperName);
-                else
-                    $name = $mapperName;
-            }
-            else
-            {
-                // Locate the mapper for THIS service.
-                $name = $this->_mapper;
-                if (empty($name))
-                {
-                    /* Use the model name to construct a Model Mapper
-                     * class name:
-                     *      Model_<Class> => Model_Mapper_<Class>
-                     */
-                    $name = str_replace('Model_', 'Model_Mapper_',
-                                              $this->_getModelName());
-                }
-            }
-
-            $mapper = Connexions_Model_Mapper::factory( $name );
-
-            /*
-            Connexions::log("Connexions_Service::_getMapper(): "
-                            .   "name[ %s ], mapper[ %s ]",
-                            $name, get_class($mapper));
-            // */
-
-            if ($mapperName === null)
-                $this->_mapper = $mapper;
+            $set = $this->_mapper->makeEmptySet();
         }
         else
         {
-            $mapper = $this->_mapper;
+            $normIds = $this->_mapper->normalizeIds($ids);
+            $order   = $this->_csOrder2array($order);
+
+            /*
+            Connexions::log("Connexions_Service::csList2set(): "
+                            . "normIds[ %s ]",
+                            Connexions::varExport($normIds));
+            Connexions::log("Connexions_Service::csList2set(): "
+                            . "order[ %s ]",
+                            Connexions::varExport($order));
+            // */
+
+            $set     = $this->_mapper->fetch($normIds, $order);
+            $set->setSource($csList);
         }
+
+        /*
+        Connexions::log("Connexions_Service::csList2set( %s ): "
+                        .   "[ %s ] == [ %s ] %s:%s",
+                        $csList,
+                        Connexions::varExport($ids),
+                        $set,
+                        gettype($set),
+                        (is_object($set)
+                            ? get_class($set)
+                            : ''));
+        // */
+
+        return $set;
+    }
+
+    /*********************************************************************
+     * Protected methods
+     *
+     */
+
+    /** @brief  Convert a comma-separated string into an array.
+     *  @param  str     The comma-separated string.
+     *
+     *  @return A matching array.
+     */
+    protected function _csList2array($str)
+    {
+        if (! is_string($str))
+            return $str;
+
+        $str  = trim($str);
+        $list = (empty($str)
+                    ? array()
+                    : preg_split('/\s*,\s*/', $str));
+
+        /*
+        Connexions::log("Connexions_Service::_csList2array( %s ): "
+                        . "[ %s ]",
+                        $str,
+                        Connexions::varExport($list));
+        // */
+
+        return $list;
+    }
+
+    /** @brief  Convert a comma-separated string or order criterian into an
+     *          order array acceptable to Connexions_Service::fetch().
+     *  @param  order   The order value (comma-separated string or array).
+     *
+     *  @return A matching array.
+     */
+    protected function _csOrder2array($order)
+    {
+        if (! is_array($order))
+        {
+            // Convert any comma-separated string into an array.
+            $orderAr = $this->_csList2array($order, false);
+            if (! is_array($orderAr))
+                return $order;
+        }
+        else
+        {
+            $orderAr = $order;
+        }
+
+        /*
+        Connexions::log("Connexions_Service_Proxy::_csOrder2array( %s ): "
+                        . "array[ %s ]",
+                        $order,
+                        Connexions::varExport($orderAr));
+        // */
+
+
+        // Ensure that we have all name/direction pairs
+        $newOrder = array();
+        foreach ($orderAr as $name => $dir)
+        {
+            if (is_int($name))
+            {
+                list($name, $dir) = preg_split('/\s+/', $dir, 2);
+            }
+            $dir = strtoupper($dir);
+
+            if ($dir !== self::SORT_DIR_DESC)
+                $dir = self::SORT_DIR_ASC;
+
+            array_push($newOrder, $name .' '. $dir);
+        }
+
+        /*
+        Connexions::log("Connexions_Service_Proxy::_csOrder2array( %s ): "
+                        . "order[ %s ]",
+                        $order,
+                        Connexions::varExport($newOrder));
+        // */
+
+        return $newOrder;
+    }
+
+    /** @brief  Retrieve an instance of the named mapper.
+     *  @param  mapperName  The specific mapper to retrieve
+     *                      (MAY be the name of the Model handled by the
+     *                       desired mapper).
+     *
+     *  @return The Connexions_Model_Mapper instance.
+     */
+    protected function _getMapper($mapperName)
+    {
+        // Locate a specific mapper
+        $name = ( (strpos($mapperName, 'Model_Mapper_') === false)
+                    ? str_replace('Model_', 'Model_Mapper_', $mapperName)
+                    : $mapperName );
+
+        $mapper = Connexions_Model_Mapper::factory( $name );
+
+        /*
+        Connexions::log("Connexions_Service::_getMapper(): "
+                        .   "name[ %s ], mapper[ %s ]",
+                        $name, get_class($mapper));
+        // */
 
         return $mapper;
     }

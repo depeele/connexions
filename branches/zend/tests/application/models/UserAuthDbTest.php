@@ -67,7 +67,7 @@ class UserAuthDbTest extends DbTestCase
     public function testUserAuthRetrieveByUnknownId()
     {
         $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
-        $userAuth = $mapper->find( 5 );
+        $userAuth = $mapper->find( array('userId' => 5) );
 
         $this->assertEquals(null, $userAuth);
     }
@@ -76,19 +76,23 @@ class UserAuthDbTest extends DbTestCase
     {
         $expected = $this->_user1['password'];
         $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
-        $userAuth = $mapper->find( array($expected['userId'],
-                                         $expected['authType']) );
+        $userAuth = $mapper->find( array('userId'   => $expected['userId'],
+                                         'authType' => $expected['authType']) );
+        $this->assertTrue  ($userAuth instanceof Model_UserAuth);
         $this->assertEquals($expected, $userAuth->toArray());
     }
 
     public function testUserAuthGetId()
     {
         $expected = array($this->_user1['password']['userId'],
-                          $this->_user1['password']['authType']);
+                          $this->_user1['password']['authType'],
+                          $this->_user1['password']['credential']);
 
         $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
-        $userAuth = $mapper->find( $expected );
+        $userAuth = $mapper->find( array('userId'   => $expected[0],
+                                         'authType' => $expected[1]) );
 
+        $this->assertTrue  ($userAuth instanceof Model_UserAuth);
         $this->assertEquals($expected, $userAuth->getId());
     }
 
@@ -99,8 +103,9 @@ class UserAuthDbTest extends DbTestCase
         $expected   = $this->_user1['model'];
 
         $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
-        $userAuth = $mapper->find( array($authTarget['userId'],
-                                         $authTarget['authType']) );
+        $userAuth = $mapper->find( array('userId'   => $authTarget['userId'],
+                                         'authType' => $authTarget['authType']) );
+        $this->assertTrue  ($userAuth instanceof Model_UserAuth);
 
         $user = $userAuth->user;
 
@@ -114,8 +119,10 @@ class UserAuthDbTest extends DbTestCase
         $expected = $this->_user1['pki'];
 
         $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
-        $userAuth = $mapper->find( array($expected['userId'],
-                                         $expected['authType']) );
+        $userAuth = $mapper->find( array('userId'   => $expected['userId'],
+                                         'authType' =>
+                                                $expected['authType']) );
+        $this->assertTrue  ($userAuth instanceof Model_UserAuth);
         $this->assertEquals($expected, $userAuth->toArray());
     }
 
@@ -125,9 +132,11 @@ class UserAuthDbTest extends DbTestCase
 
         $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
 
-        $userAuth = $mapper->find( $expected['credential'] );
+        $userAuth = $mapper->find( array('credential' =>
+                                                $expected['credential']) );
 
         $this->assertNotEquals(null, $userAuth);
+        $this->assertTrue  ($userAuth instanceof Model_UserAuth);
         $this->assertEquals($expected, $userAuth->toArray());
     }
 
@@ -137,9 +146,11 @@ class UserAuthDbTest extends DbTestCase
 
         $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
 
-        $userAuth = $mapper->find( $expected['credential'] );
+        $userAuth = $mapper->find( array('credential' =>
+                                                $expected['credential'] ));
 
         $this->assertNotEquals(null, $userAuth);
+        $this->assertTrue  ($userAuth instanceof Model_UserAuth);
         $this->assertEquals($expected, $userAuth->toArray());
     }
 
@@ -149,9 +160,11 @@ class UserAuthDbTest extends DbTestCase
 
         $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
 
-        $userAuth = $mapper->find( $expected['credential'] );
+        $userAuth = $mapper->find( array('credential' =>
+                                                $expected['credential'] ));
 
         $this->assertNotEquals(null, $userAuth);
+        $this->assertTrue  ($userAuth instanceof Model_UserAuth);
         $this->assertEquals($expected, $userAuth->toArray());
     }
 
@@ -181,12 +194,14 @@ class UserAuthDbTest extends DbTestCase
                             'userId'     => $expected['userId'],
                         ));
         $this->assertNotEquals(null, $userAuth);
+        $this->assertTrue  ($userAuth instanceof Model_UserAuth);
         $this->assertFalse($userAuth->isBacked());
         $this->assertTrue ($userAuth->isValid());
 
         $userAuth = $userAuth->save();
 
         $this->assertNotEquals(null, $userAuth);
+        $this->assertTrue  ($userAuth instanceof Model_UserAuth);
         $this->assertTrue ($userAuth->isBacked());
         $this->assertTrue ($userAuth->isValid());
         $this->assertEquals($expected, $userAuth->toArray());
@@ -214,8 +229,10 @@ class UserAuthDbTest extends DbTestCase
                             'authType'   => 'openid',
                             'credential' => 'https://google.com/profile/me',
                         ));
+        $this->assertTrue  ($userAuth instanceof Model_UserAuth);
 
         $userAuth = $userAuth->save();
+        $this->assertTrue  ($userAuth instanceof Model_UserAuth);
 
         // Check the database consistency
         $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
@@ -265,7 +282,7 @@ class UserAuthDbTest extends DbTestCase
                                 null);
         $eUser    = $this->_user1['model'];
         $uMapper  = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $user     = $uMapper->getModel( $eUser['userId'] );
+        $user     = $uMapper->getModel( array('userId' => $eUser['userId']) );
 
         try
         {

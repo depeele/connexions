@@ -91,7 +91,7 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
         $count  = (isset($params['count'])  ? $params['count']  : null);
         $offset = (isset($params['offset']) ? $params['offset'] : null);
 
-        // /*
+        /*
         Connexions::log("Model_Mapper_Base[%s]::fetchRelated(): "
                         .   "sql[ %s ], order[ %s ], count[ %s ], offset[ %s ]",
                         get_class($this),
@@ -260,7 +260,7 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                             ? $params['order']
                             : array($params['order']))
                         : array());
-        $groupBy   = $this->_keyName;
+        $groupBy   = $this->_keyNames;
 
         $db        = $select->getAdapter();
         $secSelect = $db->select();
@@ -301,15 +301,15 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
             {
                 if (count($users) > 0)
                 {
-                    $secSelect->where('userId IN (?)',
-                                      $users->idArray());
+                    $secSelect->where('userId IN ?',
+                                      $users->getIds());
                 }
             }
             else if (is_array($users))
             {
                 if (count($users) > 0)
                 {
-                    $secSelect->where('userId IN (?)', $users);
+                    $secSelect->where('userId IN ?', $users);
                 }
             }
             else if ($users instanceof Model_User)
@@ -329,15 +329,15 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
             {
                 if (count($items) > 0)
                 {
-                    $secSelect->where("{$as}.itemId IN (?)",
-                                      $items->idArray());
+                    $secSelect->where("{$as}.itemId IN ?",
+                                      $items->getIds());
                 }
             }
             else if (is_array($items))
             {
                 if (count($items) > 0)
                 {
-                    $secSelect->where("{$as}.itemId IN (?)", $items);
+                    $secSelect->where("{$as}.itemId IN ?", $items);
                 }
             }
             else if ($items instanceof Model_Item)
@@ -357,20 +357,20 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
             {
                 if (count($tags) > 0)
                 {
-                    $secSelect->where('tagId IN (?)',
-                                      $tags->idArray());
+                    $secSelect->where('tagId IN ?',
+                                      $tags->getIds());
                 }
             }
             else if (is_array($tags))
             {
                 if (is_int($tags[0]))
                 {
-                    $secSelect->where('tagId IN (?)', $tags);
+                    $secSelect->where('tagId IN ?', $tags);
                 }
                 else if (count($tags) > 0)
                 {
                     // :NOTE: The primary table MUST have a 'tag' field
-                    $select->where('tag IN (?)', $tags);
+                    $select->where('tag IN ?', $tags);
                 }
             }
             else if (is_int($tags))

@@ -2,6 +2,9 @@
 
 //error_reporting(E_ALL);
 
+require_once('Zend/Session.php');
+require_once('Zend/Loader/Autoloader.php');
+
 require_once('Connexions.php');
 require_once('Connexions/Autoloader.php');
 
@@ -436,17 +439,15 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
              *          - non-backed, unauthenticated anonymous user;
              */
 
-            /*
+            // /*
             Connexions::log("Bootstrap::_commonAuth: create an anonymous user");
             // */
 
             // Find/Make an 'anonymous', unauthenticated user
-            $user = $uService->get( array('name'      => 'anonymous',
-                                          'fullName'  => 'Visitor'
-                                    ));
+            $user = $uService->getAnonymous();
         }
 
-        //Connexions::log("Bootstrap::_commonAuth: Add 'user' to registry");
+        Connexions::log("Bootstrap::_commonAuth: Add 'user' to registry");
 
         /* Make this available via the global Registry and as a Bootstrap
          * Resource.

@@ -37,7 +37,7 @@ class Model_UserAuth extends Model_Base
      */
     public function getId()
     {
-        return ( array( $this->userId, $this->authType ) );
+        return ( array( $this->userId, $this->authType, $this->credential ) );
     }
 
     /*************************************************************************

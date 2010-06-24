@@ -129,6 +129,7 @@ class Connexions
             {
                 /* :XXX: Should we create an 'anonymous', non-backed,
                  *       unauthenticated user in this case??
+                 *       Currently handled in application/Bootstrap.php
                  */
                 self::$_user = false;
             }
@@ -211,14 +212,23 @@ class Connexions
      */
     public static function url($url)
     {
-        $front  =& Zend_Controller_Front::getInstance();
-
         if (@is_string($url))
         {
             if ($url[0] == '/')
             {
                 // Convert to a site-absolute URL
-                $baseUrl = $front->getBaseUrl();
+                // $front  =& Zend_Controller_Front::getInstance();
+                // $baseUrl = $front->getBaseUrl();
+                try
+                {
+                    $baseUrl = Zend_Registry::get('config')
+                                                ->get('urls')
+                                                    ->get('base');
+                }
+                catch (Exception $e)
+                {
+                    $baseUrl = '';
+                }
 
                 if (strpos($url, $baseUrl) !== 0)
                     $url = $baseUrl . $url;
@@ -227,7 +237,7 @@ class Connexions
         }
         else if (@is_array($url))
         {
-            $router =& $front->getRouter();
+            $router =& Zend_Controller_Front::getInstance()->getRouter();
             $url    =  $router->assemble(array(), $url);
         }
 

@@ -25,6 +25,7 @@ class UserAuthTest extends BaseTestCase
         $data     = array('userId'   => 5,
                           'authType' => 'password');
         $expected = array_values($data);
+        array_push($expected, '');
 
         $userAuth = new Model_UserAuth( $data );
 

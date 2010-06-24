@@ -148,7 +148,7 @@ CREATE TABLE userAuth (
 
   credential    VARCHAR(255)            NOT NULL DEFAULT '',
 
-  PRIMARY KEY           (`userId`, `authType`),
+  PRIMARY KEY           (`userId`, `authType`, `credential`),
   KEY `ua_userId`       (`userId`),
   KEY `ua_credential`   (`credential`)
 ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;

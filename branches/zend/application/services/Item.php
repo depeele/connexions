@@ -23,12 +23,11 @@ class Service_Item extends Connexions_Service
 
         if (empty($hashes))
         {
-            $set = $this->_getMapper()->makeEmptySet();
+            $set = $this->_mapper->makeEmptySet();
         }
         else
         {
-            $set = $this->_getMapper()->fetchBy('urlHash', $hashes,
-                                                'urlHash ASC');
+            $set = $this->_mapper->fetchBy('urlHash', $hashes, 'urlHash ASC');
             $set->setSource($csList);
         }
 
@@ -56,7 +55,7 @@ class Service_Item extends Connexions_Service
                            'uti.userItemCount DESC',
                            'i.urlHash         ASC');
 
-        return $this->_getMapper()->fetchRelated( array(
+        return $this->_mapper->fetchRelated( array(
                                         'users'  => $users,
                                         'order'  => $order,
                                         'count'  => $count,
@@ -88,7 +87,7 @@ class Service_Item extends Connexions_Service
                            'uti.userItemCount DESC',
                            'i.urlHash         ASC');
 
-        return $this->_getMapper()->fetchRelated( array(
+        return $this->_mapper->fetchRelated( array(
                                         'tags'      => $tags,
                                         'exactTags' => $exact,
                                         'order'     => $order,
@@ -124,7 +123,7 @@ class Service_Item extends Connexions_Service
                            'uti.tagCount      DESC',
                            'i.urlHash         ASC');
 
-        return $this->_getMapper()->fetchRelated( array(
+        return $this->_mapper->fetchRelated( array(
                                         'users'     => $users,
                                         'tags'      => $tags,
                                         'exactTags' => $exact,

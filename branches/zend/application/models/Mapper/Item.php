@@ -6,7 +6,7 @@
  */
 class Model_Mapper_Item extends Model_Mapper_Base
 {
-    protected   $_keyName   = 'itemId';
+    protected   $_keyNames  = array('itemId');
 
     // If not provided, the following will be generated from our class name:
     //      <Prefix>_Mapper_<Name>                      == Model_Mapper_Item
@@ -15,6 +15,43 @@ class Model_Mapper_Item extends Model_Mapper_Base
     //
     //protected   $_modelName = 'Model_Item';
     //protected   $_accessor  = 'Model_DbTable_Item';
+
+    /** @brief  Given identification value(s) that will be used for retrieval,
+     *          normalize them to an array of attribute/value(s) pairs.
+     *  @param  id      Identification value(s) (string, integer, array).
+     *                  MAY be an associative array that specifically
+     *                  identifies attribute/value pairs.
+     *
+     *  Note: This a support method for Services and
+     *        Connexions_Model_Mapper::normalizeIds()
+     *
+     *  @return An array containing attribute/value(s) pairs suitable for
+     *          retrieval.
+     */
+    public function normalizeId($id)
+    {
+        if (is_int($id) || is_numeric($id))
+        {
+            $id = array('itemId' => $id);
+        }
+        else if (is_string($id))
+        {
+            /* Normalize to a 'urlHash' but if 'url' was provided, keep it in 
+             * case the item is not found and we need to create it.
+             */
+            $newId = array();
+            if (! Connexions::isMd5($id))
+            {
+                $newId['url'] = $id;
+                $id           = Connexions::md5Url($id);
+            }
+
+            $newId['urlHash'] = $id;
+            $id               = $newId;
+        }
+
+        return $id;
+    }
 
     /** @brief  Convert the incoming model into an array containing only 
      *          data that should be directly persisted.  This method may also
@@ -42,39 +79,6 @@ class Model_Mapper_Item extends Model_Mapper_Base
         $data['ratingSum']   = $ratingSum;
 
         return $data;
-    }
-
-    /** @brief  Retrieve a single item.
-     *  @param  id      The item identifier (itemId, url, or urlHash)
-     *
-     *  @return A Model_Item instance.
-     */
-    public function find($id)
-    {
-        if (is_array($id))
-        {
-            $where = $id;
-        }
-        else if (is_string($id) && (! is_numeric($id)) )
-        {
-            if (! Connexions::isMd5($id))
-                // Convert a URL string to an MD5 hash.
-                $id = Connexions::md5Url($id);
-
-            // Lookup by item urlHash
-            $where = array('urlHash=?' => $id);
-        }
-        else
-        {
-            $where = array('itemId=?' => $id);
-        }
-
-        /*
-        Connexions::log("Model_Mapper_Item: where[ %s ]",
-                        Connexions::varExport($where));
-        // */
-
-        return parent::find( $where );
     }
 
     /** @brief  Retrieve a set of item-related users
@@ -122,7 +126,7 @@ class Model_Mapper_Item extends Model_Mapper_Base
         }
         else
         {
-            $item = $this->find($id);
+            $item = $this->find( array('itemId' => $id));
         }
 
         /* Update item-related statistics:
