@@ -36,22 +36,6 @@ class Service_Proxy_User extends Connexions_Service_Proxy
                                 $count   = null,
                                 $offset  = null)
     {
-        if (is_string($tags))
-        {
-            /* ASSUME this is a comma-separated string and convert it to a
-             * Model_Set_Tag instance.
-             */
-            $tagSet = Connexions_Service::factory('Service_Tag')
-                            ->csList2set($tags);
-
-            // /*
-            Connexions::log("Service_Proxy_User::fetchByTags(): "
-                            .   "tag string[ %s ] == [ %s ]",
-                            $tags, $tagSet);
-            // */
-            $tags = $tagSet;
-        }
-
         return $this->_service->fetchByTags($tags,
                                             $exact,
                                             $order,
@@ -72,23 +56,7 @@ class Service_Proxy_User extends Connexions_Service_Proxy
      */
     public function renameTags($renames)
     {
-        if (is_string($renames))
-        {
-            $ar = $this->_csList2array($renames);
-
-            if (! empty($ar))
-            {
-                $renames = array();
-                foreach ($ar as $item)
-                {
-                    list($old,$new) = split('::', $item);
-                    $renames[$old] = $new;
-                }
-            }
-        }
-
-        return $this->_service->renameTags(Connexions::getUser(),
-                                           $renames);
+        return $this->_service->renameTags(Connexions::getUser(), $renames);
     }
 
     /** @brief  Given a comma-separated list of tag names, delete all tags for
@@ -104,12 +72,6 @@ class Service_Proxy_User extends Connexions_Service_Proxy
      */
     public function deleteTags($tags)
     {
-        if (is_string($tags))
-        {
-            $tags = $this->_csList2array($tags);
-        }
-
-        return $this->_service->deleteTags(Connexions::getUser(),
-                                           $tags);
+        return $this->_service->deleteTags(Connexions::getUser(), $tags);
     }
 }

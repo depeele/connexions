@@ -15,6 +15,8 @@ class Service_Tag extends Connexions_Service
      *  @param  order   An ordering string/array.
      *  @param  create  Should any non-existing tags be created? [ false ];
      *
+     *  Override to allow the creation of tags that don't currently exist.
+     *
      *  @return Model_Set_Tag
      */
     public function csList2set($csList, $order = null, $create = false)

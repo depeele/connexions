@@ -124,6 +124,28 @@ class UserServiceTest extends DbTestCase
                                             Connexions_Model::FIELDS_ALL ));
     }
 
+    public function testUserServiceGetAnonymous()
+    {
+        $expected = $this->_user0;
+        $service  = Connexions_Service::factory('Model_User');
+
+        $user     = $service->getAnonymous();
+
+        $this->assertTrue(  $user instanceof Model_User );
+        $this->assertFalse( $user->isBacked() );
+        $this->assertTrue(  $user->isValid() );
+        $this->assertFalse( $user->isAuthenticated() );
+
+        // apiKey and lastVisit are dynamically generated
+        $expected['apiKey']    = $user->apiKey;
+        $expected['lastVisit'] = $user->lastVisit;
+
+        $this->assertEquals($user->getValidationMessages(), array() );
+        $this->assertEquals($expected,
+                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
+                                            Connexions_Model::FIELDS_ALL ));
+    }
+
     public function testUserServiceCreateExistingReturnsBackedInstance()
     {
         $expected = $this->_user1;
@@ -573,12 +595,64 @@ class UserServiceTest extends DbTestCase
             $ds);
     }
 
-    public function testUserServiceFetchByTagsAny()
+    public function testUserServiceFetchByTagsAny1()
+    {
+        //            vv ordered by 'tagCount DESC'
+        $expected   = 'User1,User83,User478';
+        $service    = Connexions_Service::factory('Model_User');
+        $users      = $service->fetchByTags( array( 'web2.0', 'javascript' ),
+                                             false );
+        $this->assertNotEquals(null, $users);
+
+        //printf ("Users: [ %s ]\n", print_r($users->toArray(), true));
+
+        $users      = $users->__toString();
+
+        //printf ("Users: [ %s ]\n", $users);
+
+        $this->assertEquals($expected, $users);
+    }
+
+    public function testUserServiceFetchByTagsAny2()
+    {
+        //            vv ordered by 'tagCount DESC'
+        $expected   = 'User1,User83,User478';
+        $service    = Connexions_Service::factory('Model_User');
+        $users      = $service->fetchByTags( "web2.0,javascript", false );
+        $this->assertNotEquals(null, $users);
+
+        //printf ("Users: [ %s ]\n", print_r($users->toArray(), true));
+
+        $users      = $users->__toString();
+
+        //printf ("Users: [ %s ]\n", $users);
+
+        $this->assertEquals($expected, $users);
+    }
+
+    public function testUserServiceFetchByTagsAny3()
     {
         //            vv ordered by 'tagCount DESC'
         $expected   = 'User1,User83,User478';
         $service    = Connexions_Service::factory('Model_User');
         $users      = $service->fetchByTags( array( 6, 12 ), false );
+        $this->assertNotEquals(null, $users);
+
+        //printf ("Users: [ %s ]\n", print_r($users->toArray(), true));
+
+        $users      = $users->__toString();
+
+        //printf ("Users: [ %s ]\n", $users);
+
+        $this->assertEquals($expected, $users);
+    }
+
+    public function testUserServiceFetchByTagsAny4()
+    {
+        //            vv ordered by 'tagCount DESC'
+        $expected   = 'User1,User83,User478';
+        $service    = Connexions_Service::factory('Model_User');
+        $users      = $service->fetchByTags( "6,12", false );
         $this->assertNotEquals(null, $users);
 
         //printf ("Users: [ %s ]\n", print_r($users->toArray(), true));
@@ -689,7 +763,7 @@ class UserServiceTest extends DbTestCase
         $this->assertDataSetsEqual( $es, $ds );
     }
 
-    public function testUserServiceTagRenameSuccess()
+    public function testUserServiceTagRenameSuccess1()
     {
         $expected = array('identity' => true,       // 5
                           'ajax'     => true,       // 10
@@ -752,6 +826,35 @@ class UserServiceTest extends DbTestCase
         $this->_unsetAuthenticatedUser($user);
     }
 
+    public function testUserServiceTagRenameSuccess2()
+    {
+        $expected = array('identity' => true,       // 5
+                          'ajax'     => true,       // 10
+                          'oat'      => true,       // 15
+                          'cooling'  => 'unused',   // 31
+                          'invalid'  => 'unused',   // 31
+                    );
+        $renames  = 'identity:personal.identity,'   // new
+                  . 'ajax    :  ajaj,'              // new
+                  . 'oat:       widgets,'           // existing
+                  . 'cooling :heating,'             // no userTagItems
+                  . 'invalid : what';               // no userTagItems
+
+        // Retrieve the target user.
+        $service  = Connexions_Service::factory('Model_User');
+        $user     = $service->find( 1 );
+        $this->assertNotEquals(null, $user);
+
+        // Mark the user as 'authenticated'
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue ($user->isAuthenticated());
+
+        // Rename tags
+        $res      = $service->renameTags($user, $renames);
+        $this->assertEquals($expected, $res);
+    }
+
+
     public function testUserServiceTagDeleteUnauthenticatedFailure()
     {
         //$rename = array(5, 10, 15);
@@ -810,7 +913,7 @@ class UserServiceTest extends DbTestCase
         $this->assertDataSetsEqual( $es, $ds );
     }
 
-    public function testUserTagDeleteSuccess()
+    public function testUserServiceTagDeleteSuccess1()
     {
         //$rename = array(5, 10, 15);
         // 6, 10, 12, 13, 15, 16, 17   -- will orphan Bookmark 1,4
@@ -871,5 +974,35 @@ class UserServiceTest extends DbTestCase
 
         // De-authenticate $user
         $this->_unsetAuthenticatedUser($user);
+    }
+
+    public function testUserServiceTagDeleteSuccess2()
+    {
+        //$rename = array(5, 10, 15);
+        // 6, 10, 12, 13, 15, 16, 17   -- will orphan Bookmark 1,4
+        $expected = array('ajax'        => true,    // 10
+                          'demo'        => true,    // 17
+                          'framework'   => true,    // 13
+                          'javascript'  => true,    // 12
+                          'library'     => true,    // 14
+                          'oat'         => true,    // 15
+                          'web2.0'      =>          // 6
+                            'Deleting this tag will orphan 1 bookmark',
+                          'widgets'     => true,    // 16
+                    );
+        $tags     = implode(', ', array_keys($expected));
+
+        // Retrieve the target user
+        $service  = Connexions_Service::factory('Model_User');
+        $user     = $service->find( array('userId'=> $this->_user1['userId']));
+        $this->assertNotEquals(null, $user);
+
+        // Mark the user as 'authenticated'
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue ($user->isAuthenticated());
+
+        // Delete the tags.
+        $res      = $service->deleteTags($user, $tags);
+        $this->assertEquals($expected, $res);
     }
 }

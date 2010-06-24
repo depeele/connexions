@@ -89,7 +89,8 @@ class Service_User extends Connexions_Service
     }
 
     /** @brief  Retrieve a set of users related by a set of Tags.
-     *  @param  tags    A Model_Set_Tag instance or array of tags to match.
+     *  @param  tags    A Model_Set_Tag instance, array, or comma-separated
+     *                  string of tags to match.
      *  @param  exact   Users MUST be associated with provided tags [ true ];
      *  @param  order   Optional ORDER clause (string, array)
      *                      [ 'tagCount DESC' ];
@@ -104,6 +105,16 @@ class Service_User extends Connexions_Service
                                 $count   = null,
                                 $offset  = null)
     {
+        // Rely on Service_Tag to properly interpret 'tags'
+        $tagSet = $this->factory('Service_Tag')->csList2set($tags);
+
+        // /*
+        Connexions::log("Service_User::fetchByTags(): "
+                        .   "tags[ %s ] == [ %s ]",
+                        Connexions::varExport($tags), $tagSet);
+        // */
+        $tags   = $tagSet;
+
         if ($order === null)
             $order = 'tagCount DESC';
 
@@ -123,6 +134,9 @@ class Service_User extends Connexions_Service
      *  @param  renames     An array of tag rename information:
      *                          { 'oldTagName' => 'newTagName',
      *                            ... }
+     *                      or a comma-separated string of tag name information
+     *                      of the form:
+     *                          'oldTag:newTag, ...'
      *
      *  @throws Exception('Operation prohibited...')
      *  @return An array of status information, keyed by old tag name:
@@ -131,12 +145,26 @@ class Service_User extends Connexions_Service
      *                 ... }
      */
     public function renameTags(Model_User   $user,
-                               array        $renames)
+                                            $renames)
     {
         if (! $user->isAuthenticated())
         {
             throw new Exception('Operation prohibited for an '
                                 .   'unauthenticated user.');
+        }
+
+        if (is_string($renames))
+        {
+            $ar = $this->_csList2array($renames);
+            if (! empty($ar))
+            {
+                $renames = array();
+                foreach ($ar as $item)
+                {
+                    list($old, $new) = preg_split('/\s*:\s*/', $item, 2);
+                    $renames[$old]   = $new;
+                }
+            }
         }
 
         return $user->renameTags($renames);
@@ -148,8 +176,9 @@ class Service_User extends Connexions_Service
      *          delete of that tag will fail.
      *  @param  user        The Model_User instance for which tag deletion
      *                      should be performed (MUST be authenticated);
-     *  @param  tags        A Model_Set_Tag instance or a simple array of tag 
-     *                      names.
+     *  @param  tags        A Model_Set_Tag instance, simple array of tag
+     *                      identifiers, or comma-separated list of tag
+     *                      identifiers.
      *
      *  @return An array of status information, keyed by tag name:
      *              { 'tagName' => true (success) |
@@ -164,6 +193,9 @@ class Service_User extends Connexions_Service
             throw new Exception('Operation prohibited for an '
                                 .   'unauthenticated user.');
         }
+
+        // Rely on Service_Tag to properly interpret 'tags'
+        $tags = $this->factory('Service_Tag')->csList2set($tags);
 
         return $user->deleteTags($tags);
     }
