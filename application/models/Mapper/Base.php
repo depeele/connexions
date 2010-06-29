@@ -36,6 +36,10 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
     /** @brief  Retrieve a set of Domain Model items via the userTagItem core
      *          table.
      *  @param  params  An array retrieval criteria:
+     *                      - bookmarks The Model_Set_Bookmark or
+     *                                  Model_Bookmark, or an array of
+     *                                  (userId,itemId) items to use
+     *                                  in the relation;
      *                      - users     The Model_Set_User or Model_User
      *                                  instance, or an array of userIds to use
      *                                  in the relation;
@@ -293,6 +297,36 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
          * include any limiters in the sub-select
          *
          */
+        if ( isset($params['bookmarks']) && (! empty($params['bookmarks'])) )
+        {
+            $bookmarks =& $params['bookmarks'];
+
+            if ($bookmarks instanceof Model_Set_Bookmark)
+            {
+                if (count($bookmarks) > 0)
+                {
+                    $secSelect->where('(userId,itemId) IN ?',
+                                      $bookmarks->getIds());
+                }
+            }
+            else if (is_array($bookmarks))
+            {
+                if (count($bookmarks) > 0)
+                {
+                    $secSelect->where('(userId,itemId) IN ?', $bookmarks);
+                }
+            }
+            else if ($bookmarks instanceof Model_Bookmark)
+            {
+                $secSelect->where('(userId,itemId)=?',
+                                   array($bookmarks->userId,
+                                         $bookmarks->itemId));
+            }
+            else
+            {
+                $secSelect->where('(userId,itemId)=?', $bookmarks);
+            }
+        }
         if ( isset($params['users']) && (! empty($params['users'])) )
         {
             $users =& $params['users'];

@@ -350,23 +350,36 @@ class TagServiceTest extends DbTestCase
     public function testTagServiceFetchByBookmarks()
     {
         //            vv ordered by 'userItemCount DESC'
-        $expected   = 'chip,'           . 'cooling,'
-                    . 'cpu,'            . 'hardware,'
-                    . 'ibm,'            . 'processor,'
-                    . 'technology,'     . 'ajax,'
-                    . 'blog,'           . 'cms,'
-                    . 'cryptography,'   . 'identity,'
-                    . 'mysql,'          . 'online,'
-                    . 'password,'       . 'passwords,'
-                    . 'php,'            . 'privacy,'
-                    . 'security,'       . 'software,'
-                    . 'storage,'        . 'test,'
-                    . 'tools,'          . 'web2.0';
+        $expected   = ''
+                    . 'ajax,'
+                    . 'blog,'
+                    . 'chip,'
+                    . 'cms,'
+                    . 'cooling,'
+                    . 'cpu,'
+                    . 'cryptography,'
+                    . 'hardware,'
+                    . 'ibm,'
+                    . 'identity,'
+                    . 'mysql,'
+                    . 'online,'
+                    . 'password,'
+                    . 'passwords,'
+                    . 'php,'
+                    . 'privacy,'
+                    . 'processor,'
+                    . 'security,'
+                    . 'software,'
+                    . 'storage,'
+                    . 'technology,'
+                    . 'test,'
+                    . 'tools,'
+                    . 'web2.0';
 
         $bookmarks  = array( array(1,1), array(3,6), array(4,12));
         $service    = Connexions_Service::factory('Model_Tag');
-        $tags       = $service->fetchByBookmarks( $bookmarks /*,
-                                                  'userItemCount DESC'*/ );
+        $tags       = $service->fetchByBookmarks( $bookmarks,
+                                                  'tag ASC' );
         $this->assertNotEquals(null, $tags);
 
         //printf ("Tags: [ %s ]\n", print_r($tags->toArray(), true));

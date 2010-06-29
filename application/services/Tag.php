@@ -116,6 +116,9 @@ class Service_Tag extends Connexions_Service
                                  $count   = null,
                                  $offset  = null)
     {
+        // Rely on Service_User to properly interpret 'users'
+        $users = $this->factory('Service_User')->csList2set($users);
+
         if ($order === null)
         {
             $order = array('userCount     DESC',
@@ -147,6 +150,9 @@ class Service_Tag extends Connexions_Service
                                  $count   = null,
                                  $offset  = null)
     {
+        // Rely on Service_Item to properly interpret 'items'
+        $items = $this->factory('Service_Item')->csList2set($items);
+
         if ($order === null)
         {
             $order = array('itemCount     DESC',
@@ -181,6 +187,9 @@ class Service_Tag extends Connexions_Service
                                      $count     = null,
                                      $offset    = null)
     {
+        // Rely on Service_Bookmark to properly interpret 'bookmarks'
+        $bookmarks = $this->factory('Service_Bookmark')->csList2set($bookmarks);
+
         if ($order === null)
         {
             $order = array('userItemCount DESC',
@@ -188,6 +197,12 @@ class Service_Tag extends Connexions_Service
                            'tag           ASC');
         }
 
+        $ids = ( (! empty($bookmarks)) &&
+                 ($bookmarks instanceof Model_Set_Bookmark)
+                    ? $bookmarks->getIds()
+                    : $bookmarks);
+
+        /*
         $users = null;
         $items = null;
         if (! empty($bookmarks))
@@ -202,13 +217,6 @@ class Service_Tag extends Connexions_Service
                 array_push($users, $id[0]);
                 array_push($items, $id[1]);
             }
-
-            // /*
-            Connexions::log("Service_Tag::fetchByBookmarks(): "
-                            .   "users[ %s ], items[ %s ]",
-                            implode(', ', $users),
-                            implode(', ', $items));
-            // */
         }
 
         return $this->_mapper->fetchRelated( array(
@@ -217,6 +225,13 @@ class Service_Tag extends Connexions_Service
                                         'order'  => $order,
                                         'count'  => $count,
                                         'offset' => $offset,
+                                    ));
+        // */
+        return $this->_mapper->fetchRelated( array(
+                                        'bookmarks' => $ids,
+                                        'order'     => $order,
+                                        'count'     => $count,
+                                        'offset'    => $offset,
                                     ));
     }
 

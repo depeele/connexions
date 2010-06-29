@@ -79,6 +79,47 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         return $normId;
     }
 
+    /** @brief  Given an array of identification value(s) that will be used to
+     *          retrieve a set of model instances (via fetch()), normalize them 
+     *          to an array of attribute/value(s) pairs.
+     *  @param  ids     An array of identification value(s) (string, integer, 
+     *                  array).  Each identification value MAY be an 
+     *                  associative array that specifically identifies 
+     *                  attribute/value pairs.
+     *
+     *  Bookmark has a multi-part key.
+     *
+     *  @return An array containing arrays of attribute/value(s) pairs suitable 
+     *          for retrieval.
+     */
+    public function normalizeIds($ids)
+    {
+        if (! is_array($ids))
+        {
+            $normIds = parent::normalizeIds($ids);
+        }
+        else if (isset($ids['userId']) && isset($ids['itemId']))
+        {
+            $normIds = $ids;
+        }
+        else
+        {
+            $normIds = array();
+            foreach ($ids as $key => $id)
+            {
+                $normId = $this->normalizeId($id);
+
+                array_push($normIds,
+                           array($normId['userId'], $normId['itemId']));
+            }
+
+            $normIds = array('(userId,itemId)' => $normIds);
+        }
+
+        return $normIds;
+    }
+
+
     /** @brief  Save the given model instance.
      *  @param  bookmark    The bookmark Domain Model instance to save.
      *

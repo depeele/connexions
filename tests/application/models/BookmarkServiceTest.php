@@ -282,7 +282,7 @@ class BookmarkServiceTest extends DbTestCase
                             array(3,4),
                             array(4,15),
                       );
-        $fetchAr    = array( '(userId,itemId)' => $expectedAr );
+        $fetchAr    = $expectedAr;
 
         $service    = Connexions_Service::factory('Model_Bookmark');
         $bookmarks  = $service->fetch( $fetchAr, 'updatedOn DESC' );

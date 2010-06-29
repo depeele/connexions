@@ -186,7 +186,7 @@ class Service_Bookmark extends Connexions_Service
                           $offset   = null)
     {
         $ids     = $this->_csList2array($id);
-        $normIds = $id; //$this->_mapper->normalizeIds($ids);
+        $normIds = $this->_mapper->normalizeIds($ids);
         $order   = $this->_csOrder2array($order);
 
         return $this->_mapper->fetch( $normIds,
@@ -239,6 +239,9 @@ class Service_Bookmark extends Connexions_Service
                                 $count   = null,
                                 $offset  = null)
     {
+        // Rely on Service_Tag to properly interpret 'tags'
+        $tags = $this->factory('Service_Tag')->csList2set($tags);
+
         if ($order === null)
         {
             $order   = array(
@@ -283,6 +286,9 @@ class Service_Bookmark extends Connexions_Service
                                  $count   = null,
                                  $offset  = null)
     {
+        // Rely on Service_User to properly interpret 'users'
+        $users = $this->factory('Service_User')->csList2set($users);
+
         if ($order === null)
         {
             $order   = array(
@@ -323,6 +329,9 @@ class Service_Bookmark extends Connexions_Service
                                  $count   = null,
                                  $offset  = null)
     {
+        // Rely on Service_Item to properly interpret 'items'
+        $items = $this->factory('Service_Item')->csList2set($items);
+
         if ($order === null)
         {
             $order   = array(
@@ -370,6 +379,12 @@ class Service_Bookmark extends Connexions_Service
                                         $count     = null,
                                         $offset    = null)
     {
+        /* Rely on Service_User/Service_Tag to properly interpret 'users' and
+         * 'tags'
+         */
+        $users = $this->factory('Service_User')->csList2set($users);
+        $tags  = $this->factory('Service_Tag')->csList2set($tags);
+
         if ($order === null)
         {
             $order   = array(
@@ -419,6 +434,12 @@ class Service_Bookmark extends Connexions_Service
                                         $count   = null,
                                         $offset  = null)
     {
+        /* Rely on Service_Item/Service_Tag to properly interpret 'items' and
+         * 'tags'
+         */
+        $items = $this->factory('Service_Item')->csList2set($items);
+        $tags  = $this->factory('Service_Tag')->csList2set($tags);
+
         if ($order === null)
         {
             $order   = array(
