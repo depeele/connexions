@@ -1,0 +1,52 @@
+<?php
+/** @file
+ *
+ *  View script for IndexController::index to render an Atom version of the
+ *  main content.
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      owner           The owner of the current item set -- either a string or
+ *                      a Model_User instance;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
+ *
+ *      main            An array of settings for the main body:
+ *          namespace       The cookie/parameters/settings namespace for the
+ *                          main body;
+ *          viewer          The Model_User instance representing the current
+ *                          viewer (typically a reference to $view->viewer);
+ *          users           The Model_User or Model_Set_User instance
+ *                          representing the user(s) that partially define the
+ *                          scope of this view
+ *                          (typically a reference to $view->owner);
+ *          tags            The Model_Tag or Model_Set_Tag instance  
+ *                          representing the tag(s) that partially define the
+ *                          scope of this view
+ *                          (typically a reference to $view->tags);
+ *
+ *          displayStyle    Indicates the current presentation style -- if this
+ *                          is an array, the style is 'custom';
+ *          perPage         The number of results on a single page;
+ *          page            The desired page of results;
+ *          sortBy          Indicates the sort field used to retrieve the
+ *                          current bookmark set;
+ *          sortOrder       Indicates the sort order used to retrieve the
+ *                          current bookmark set;
+ *
+ *  Sets the 'feed' item of the view for use by Bootstrap::feed_post in final
+ *  rendering.
+ */
+Connexions_Profile::checkpoint('Connexions',
+                               'IndexView Atom rendering beginning');
+
+//$this->main['feedType'] = 'Atom';
+$this->main['feedType'] = View_Helper_FeedBookmarks::TYPE_ATOM;
+
+// Use the application/views/helpers/FeedBookmarks.php view helper...
+$this->feed = $this->feedBookmarks($this->main)->render();
+
+Connexions_Profile::checkpoint('Connexions',
+                               'IndexView Atom rendering COMPLETE');

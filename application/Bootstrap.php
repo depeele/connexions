@@ -415,6 +415,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
                 // Create a Zend_Auth_Result that indicates success
                 $result = new Connexions_Auth_Pre($user);
                 $user->setAuthenticated($result);
+
+                // Save in order to update the 'lastVisit' time
+                Connexions::log("Bootstrap::_commonAuth: Update lastVisit...");
+                $user->save();
             }
         }
 
@@ -658,6 +662,13 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
           Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer');
 
         $view = $viewRenderer->view;
+
+        // /*
+        Connexions::log("jsonp_post: data %spresent, rpc %spresent",
+                        (isset($view->data) ? '' : 'NOT '),
+                        (isset($view->rpc)  ? '' : 'NOT '));
+        // */
+
         if ((! $view instanceof Zend_View_Interface) ||
             ( (! isset($view->data)) &&
              ((! isset($view->rpc)) ||

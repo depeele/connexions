@@ -4,43 +4,94 @@
  *  View helper to generae a Zend_Feed for a set of User Items / Bookmarks.
  *
  */
-class View_Helper_FeedBookmarks
-                                extends Zend_View_Helper_Abstract
+class View_Helper_FeedBookmarks extends View_Helper_Bookmarks
 {
-    /** @brief  Generate a Zend_Feed version of a paginated set of User Items
-     *          or, if no arguments, return this helper instance.
-     *  @param  paginator   The Zend_Paginator representing the items to be
-     *                      presented.
-     *  @param  type        The type of feed to generate
-     *                      ('Atom', 'Rss', 'Pubsubhubbub')
-     *
-     *  @return The Zend_Feed representation of the user items, or $this.
+    static public   $defaults           = array(
+        'feedType'          => self::TYPE_ATOM,
+    );
+
+    const TYPE_RSS          = 'Rss';
+    const TYPE_ATOM         = 'Atom';
+
+    /** @brief  Construct a new HTML Bookmarks helper.
+     *  @param  config  A configuration array that may include, in addition to
+     *                  what our parent accepts:
+     *                      - feedType          Desired feed type style
+     *                                          [ TYPE_ATOM ];
      */
-    public function feedBookmarks(Zend_Paginator    $paginator  = null,
-                                                    $type       = 'Atom')
+    public function __construct(array $config = array())
     {
-        /*
-        Connexions::log("View_Helper_FeedBookmarks::feedBookmarks: "
-                        . "type[ {$type} ]");
-        // */
+        // Over-ride the default _namespace
+        parent::$defaults['namespace'] = 'items';
 
-        if ($paginator === null)
-            return $this;
+        // Add extra class-specific defaults
+        foreach (self::$defaults as $key => $value)
+        {
+            $this->_params[$key] = $value;
+        }
 
-        return $this->render($paginator, $type);
+        parent::__construct($config);
+    }
+
+    /** @brief  Configure and retrive this helper instance OR, if no
+     *          configuration is provided, perform a render.
+     *  @param  config  A configuration array (see populate());
+     *
+     *  @return A (partially) configured instance of $this OR, if no
+     *          configuration is provided, the HTML rendering of the configured
+     *          bookmarks.
+     */
+    public function feedBookmarks(array $config = array())
+    {
+        if (! empty($config))
+        {
+            return $this->populate($config);
+        }
+
+        return $this->render();
+    }
+
+    /** @brief  Set the current feed type.
+     *  @param  type    A feed type value (self::TYPE_*)
+     *                  [ self::TYPE_ATOM ];
+     *
+     *  @return View_Helper_FeedBookmarks for a fluent interface.
+     */
+    public function setFeedType($type)
+    {
+        switch (ucfirst(strtolower($type)))
+        {
+        case self::TYPE_RSS:
+            $value = self::TYPE_RSS;
+            break;
+
+        case self::TYPE_ATOM:
+        default:
+            $value = self::TYPE_RSS;
+            break;
+        }
+
+        $this->_params['feedType'] = $value;
+
+        return $this;
+    }
+
+    /** @brief  Get the current feed type.
+     *
+     *  @return The current feed type (self::TYPE_*).
+     */
+    public function getFeedType()
+    {
+        return $this->_params['feedType'];
     }
 
     /** @brief  Generate a Zend_Feed version of a paginated set of User Items.
-     *  @param  paginator   The Zend_Paginator representing the items to be
-     *                      presented.
-     *  @param  type        The type of feed to generate
-     *                      ('Atom', 'Rss', 'Pubsubhubbub')
      *
      *  @return The Zend_Feed representation of the user items.
      */
-    public function render(Zend_Paginator   $paginator,
-                                            $type)
+    public function render()
     {
+        $type     = $this->getFeedType();
         $view     = $this->view;
         $title    = htmlspecialchars_decode(strip_tags($view->headTitle()));
 
@@ -66,7 +117,7 @@ class View_Helper_FeedBookmarks
                         .   "main info[ ". print_r($feedInfo, true) ." ]");
         // */
 
-        foreach ($paginator as $item)
+        foreach ($this->paginator as $item)
         {
             array_push($feedInfo['entries'],
                        $view->feedBookmark($item));

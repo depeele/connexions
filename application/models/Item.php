@@ -80,6 +80,7 @@ class Model_Item extends Model_Taggable
      */
     public function __set($name, $value)
     {
+        $needSave = false;
         switch ($name)
         {
         case 'url':
@@ -105,6 +106,9 @@ class Model_Item extends Model_Taggable
                                     . "'%s' to match the existing URL",
                                     $name, $value, $newValue);
                     $value = $newValue;
+
+                    if ($this->isBacked())
+                        $needSave = true;
                 }
             }
 
@@ -113,7 +117,11 @@ class Model_Item extends Model_Taggable
             break;
         }
 
-        return parent::__set($name, $value);
+        parent::__set($name, $value);
+        if ($needSave)
+            $this->save();
+
+        return $this;
     }
 
     /** @brief  Return a string representation of this instance.

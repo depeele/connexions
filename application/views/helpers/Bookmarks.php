@@ -58,7 +58,14 @@ class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
      */
     public function __construct(array $config = array())
     {
-        //Connexions::log("View_Helper_Bookmarks::__construct()");
+        $this->bookmarks($config);
+    }
+
+    /** @brief  Immediate...
+     *  @param  config  A configuration array (see populate());
+     */
+    public function bookmarks(array $config = array())
+    {
         foreach (self::$defaults as $key => $value)
         {
             $this->_params[$key] = $value;
@@ -66,6 +73,8 @@ class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
 
         if (! empty($config))
             $this->populate($config);
+
+        return $this;
     }
 
     /** @brief  Given an array of configuration data, populate the parameter of
@@ -329,7 +338,7 @@ class View_Helper_Bookmarks extends Zend_View_Helper_Abstract
                 $paginator = new Zend_Paginator(
                                     $this->bookmarks->getPaginatorAdapter() );
 
-                /*
+                // /*
                 Connexions::log("View_Helper_Bookmarks::__get( %s ): "
                                 . "Retrieve paginator: "
                                 . "perPage[ %d ], page[ %d ]",

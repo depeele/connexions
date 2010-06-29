@@ -5,8 +5,7 @@
  *  Item / Bookmark.
  *
  */
-class View_Helper_FeedBookmark
-                                extends View_Helper_Bookmark
+class View_Helper_FeedBookmark extends View_Helper_Bookmark
 {
     /** @brief  Generate an Zend_Feed-compatible version of a single
      *          User Item / Bookmark.
@@ -31,7 +30,13 @@ class View_Helper_FeedBookmark
          * and doing so incorrectly, handle it here.
          */
         $itemUrl = htmlspecialchars(urldecode($bookmark->item->url));
-        $title   = htmlentities( stripslashes($bookmark->name));
+        //$title   = htmlentities( stripslashes($bookmark->name));
+        $title   = stripslashes($bookmark->name);
+        $title   = html_entity_decode( $title, ENT_COMPAT, 'UTF-8');
+        $title   = htmlspecialchars( $title );
+
+        $descr   = stripslashes($bookmark->description);
+        $descr   = html_entity_decode( $descr, ENT_COMPAT, 'UTF-8');
 
         /*
         Connexions::log("View_Helper_FeedBookmark:feedBookmark: "
@@ -43,11 +48,11 @@ class View_Helper_FeedBookmark
         $entryInfo = array(
             'title'         => $title,
             'link'          => $itemUrl,
-            'description'   => $this->getSummary($bookmark->description),
+            'description'   => $this->getSummary( $descr ),
 
             'author'        => $bookmark->user->fullName,
             'guid'          => $localUrl,
-            'content'       => $bookmark->description,
+            'content'       => $descr,
             'lastUpdate'    => $updated,
             'pubDate'       => $updated,
 
