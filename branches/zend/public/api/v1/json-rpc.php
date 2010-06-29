@@ -12,10 +12,10 @@ Connexions::log("json-rpc: begin: method[ %s ], request[ %s ], json[ %s ]",
 // */
 
 $server = new Zend_Json_Server();
-$server->setClass('Service_Proxy_User', 'user')
-       ->setClass('Service_Proxy_Item', 'item')
-       ->setClass('Service_Tag',        'tag')
-       ->setClass('Service_Bookmark',   'bookmark');
+$server->setClass('Service_Proxy_User',     'user')
+       ->setClass('Service_Proxy_Item',     'item')
+       ->setClass('Service_Proxy_Tag',      'tag')
+       ->setClass('Service_Proxy_Bookmark', 'bookmark');
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET')
 {

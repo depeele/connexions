@@ -172,6 +172,9 @@ abstract class Connexions_Service
 
             /*
             Connexions::log("Connexions_Service::csList2set(): "
+                            . "ids[ %s ]",
+                            Connexions::varExport($ids));
+            Connexions::log("Connexions_Service::csList2set(): "
                             . "normIds[ %s ]",
                             Connexions::varExport($normIds));
             Connexions::log("Connexions_Service::csList2set(): "
