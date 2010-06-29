@@ -275,7 +275,7 @@ abstract class Connexions_Model_Mapper_DbTable
 
         $accessorModels = $select->query()->fetchAll();
 
-        // /*
+        /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::fetch() "
                         . "sql[ %s ], %d rows...",
                         get_class($this),
@@ -544,7 +544,7 @@ abstract class Connexions_Model_Mapper_DbTable
             $select->where($condition, $bindValue);
         }
 
-        // /*
+        /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::_find(): "
                         .   "sql[ %s ]",
                         get_class($this),

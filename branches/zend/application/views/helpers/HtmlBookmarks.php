@@ -445,7 +445,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
             break;
         }
 
-        // /*
+        /*
         Connexions::log(
             sprintf("HtmlBookmarks::_groupValue(%s, %s:%s) == [ %s ]",
                     $groupBy, $orig, gettype($orig),

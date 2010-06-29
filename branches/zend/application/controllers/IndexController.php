@@ -249,6 +249,9 @@ class IndexController extends Connexions_Controller_Action
     protected function _handleFormat()
     {
         $format =  $this->_helper->contextSwitch()->getCurrentContext();
+        Connexions::log("IndexController::_handleFormat: context [ %s ]",
+                        $format);
+
         if (empty($format))
             $format = $this->_request->getParam('format', 'html');
 
@@ -315,15 +318,32 @@ class IndexController extends Connexions_Controller_Action
             break;
 
         case 'json':
-            $this->_jsonContent();
-            break;
-
         case 'rss':
         case 'atom':
-            // Additional view variables for the alternate views.
-            //$this->view->paginator = $this->_createPaginator($this->_request);
-            $this->render('index');
+        default:
+            if ($format === 'rss')
+            {
+                $this->view->main['feedType'] =
+                                    View_Helper_FeedBookmarks::TYPE_RSS;
+                $format = 'feed';
+            }
+            else if ($format === 'atom')
+            {
+                $this->view->main['feedType'] =
+                                    View_Helper_FeedBookmarks::TYPE_ATOM;
+                $format = 'feed';
+            }
 
+            Connexions::log("IndexController::_handleFormat: "
+                            .   "render 'index-%s'",
+                            $format);
+
+            $this->render('index-'. $format);
+
+
+            Connexions::log("IndexController::_handleFormat: "
+                            .   "render 'index.%s' COMPLETE",
+                            $format);
             break;
         }
     }
@@ -510,393 +530,6 @@ class IndexController extends Connexions_Controller_Action
         );
 
         $this->view->sidebar = $sidebar;
-    }
-
-    /*****************************************************
-     * Json-RPC CRUD operations for Bookmarks
-     *
-     */
-
-    /** @brief  Given an incoming request with Bookmark creation
-     *          data, validate the request and, if valid, attempt to create a
-     *          new Bookmark.
-     *  @param  rpc     The incoming JsonRpc.
-     *
-     *  On failure/error, the rpc will have the appropriate error set.
-     *
-     *  @return void
-     */
-    protected function _create(Connexions_JsonRpc $rpc)
-    {
-        Connexions::log("IndexController::_create");
-
-        if ( (! $this->_viewer instanceof Model_User) ||
-             (! $this->_viewer->isAuthenticated()) )
-        {
-            // Unauthenticated user
-            $rpc->setError('Unauthenticated.  Sign In to create bookmarks.');
-            return;
-        }
-
-        $itemInfo = array(
-            'name'          => $rpc->getParam('name',        null),
-            'url'           => $rpc->getParam('url',         null),
-            'description'   => $rpc->getParam('description', null),
-            'tags'          => $rpc->getParam('tags',        null),
-            'rating'        => $rpc->getParam('rating',      null),
-            'isFavorite'    => $rpc->getParam('isFavorite',  false),
-            'isPrivate'     => $rpc->getParam('isPrivate',   false)
-        );
-
-        // Validate and, if valid, attempt to create this new item.
-        if (empty($itemInfo['name']))
-        {
-            $rpc->setError('The Bookmark name / title is required.');
-            return;
-        }
-        if (empty($itemInfo['url']))
-        {
-            $rpc->setError('The URL to Bookmark is required.');
-            return;
-        }
-        if (empty($itemInfo['tags']))
-        {
-            $rpc->setError('One or more tags are required.');
-            return;
-        }
-
-        // VALID -- find/create and save the Bookmark.
-        $bookmark = $this->service('Bookmark')
-                            ->get( array(
-                                'user'      => $this->_viewer,
-                                'itemUrl'   => $itemInfo['url'],
-                                'tags'      => $itemInfo['tags'],
-                            ));
-
-        // Save this (new) Bookmark.
-        $bookmark->save();
-
-        $rpc->setResult('Bookmark created.');
-    }
-
-    /** @brief  Given an incoming request with Bookmark
-     *          identification data, retrieve the matching Bookmark
-     *          and return it.
-     *  @param  rpc     The incoming JsonRpc.
-     *
-     *  On failure/error, the rpc will have the appropriate error set.
-     *
-     *  @return void
-     */
-    protected function _read(Connexions_JsonRpc $rpc)
-    {
-        //$this->view->paginator = $this->_createPaginator($rpc);
-
-        $this->render('index');
-    }
-
-    /** @brief  Given an incoming request with Bookmark update
-     *          data, validate the request and, if valid, attempt to update an
-     *          existing Bookmark.
-     *  @param  rpc     The incoming JsonRpc.
-     *
-     *  On failure/error, the rpc will have the appropriate error set.
-     *
-     *  @return void
-     */
-    protected function _update(Connexions_JsonRpc $rpc)
-    {
-        Connexions::log("IndexController::_update");
-
-        if ( (! $this->_viewer instanceof Model_User) ||
-             (! $this->_viewer->isAuthenticated()) )
-        {
-            // Unauthenticated user
-            $rpc->setError('Unauthenticated.  Sign In to update bookmarks.');
-            return;
-        }
-
-        $itemInfo = array(
-            // item identifier: bookmark == $this->_viewer->userId, itemId
-            'itemId'        => $rpc->getParam('itemId',      null),
-
-            // New item information
-            'url'           => $rpc->getParam('url',         null),
-
-            // New bookmark information
-            'name'          => $rpc->getParam('name',        null),
-            'description'   => $rpc->getParam('description', null),
-            'tags'          => $rpc->getParam('tags',        null),
-            'rating'        => $rpc->getParam('rating',      null),
-            'isFavorite'    => $rpc->getParam('isFavorite',  false),
-            'isPrivate'     => $rpc->getParam('isPrivate',   false)
-        );
-
-        // Validate and, if valid, attempt to update the Bookmark.
-        if ($itemInfo['itemId'] === null)
-        {
-            $rpc->setError('Missing item identifier.');
-            return;
-        }
-
-        // Find the existing Bookmark
-        $bookmark = $this->service('Bookmark')
-                            ->find( array(
-                                'userId' => $this->_viewer->userId,
-                                'itemId' => $itemInfo['itemId']
-                              ));
-        if ( $bookmark === null )
-        {
-            // NOT found -- create instead??
-            $rpc->setError('No matching bookmark found.');
-            return;
-        }
-
-        if (empty($itemInfo['tags']))
-        {
-            $rpc->setError('One or more tags are required.');
-            return;
-        }
-
-        // For all others, missing information defaults to the current value
-        if (empty($itemInfo['url']))
-            $itemInfo['url'] = $bookmark->item->url;
-        if (empty($itemInfo['name']))
-            $itemInfo['name'] = $uesrItem->name;
-
-        // Compute the normalized hash for the incoming URL
-        $itemInfo['urlHash'] = Connexions::md5Url($itemInfo['url']);
-
-        /*** :XXX: ***
-
-        /* VALID -- attempt to update an existing Bookmark...
-         *
-         *  1) Find the current item as well as the item associated with the 
-         *     incoming URL;
-         *  2) See if the item is changing:
-         *     i)  YES - the item has changed;
-         *         a) Remove all current tags from this Bookmark;
-         *         b) Change the itemId to the identifier of the new item;
-         *     ii) No change
-         *         a) Change the current set of tags for this
-         *            Bookmark;
-         *
-         *  3) Update full Bookmark based upon incoming data and 
-         *     save it;
-         */
-
-        /* 1) Find the current item as well as the item associated with the 
-         *    incoming URL;
-         */
-        $curItem = $bookmark->item;
-        $newItem = $this->service('Item')
-                            ->get( $itemInfo['urlHash'] );
-
-        // 2) See if the item is changing...
-        if ($curItem->itemId !== $newItem->itemId)
-        {
-            /* 2.i.a) YES - the item has changed, remove all tags associated 
-             *              with the current item
-             */
-            $bookmark->tagsDelete();
-
-            if (! $newItem->isBacked())
-                // Save the new item
-                $newItem->save();
-
-            // 2.i.b) Change the itemId to the identifier of the new item;
-            $bookmark->itemId = $newItem->itemId;
-        }
-        else
-        {
-            /* 2.ii.a) NO - the item is unchanged, change the current set of 
-             *              tags for this
-             */
-            $bookmark->tagsUpdate($itemInfo['tags']);
-        }
-
-        // 3) Update full Bookmark based upon incoming data and save 
-        //    it;
-        $bookmark->name        = $itemInfo['name'];
-        $bookmark->description = $itemInfo['description'];
-        $bookmark->rating      = $itemInfo['rating'];
-        $bookmark->isFavorite  = $itemInfo['isFavorite'];
-        $bookmark->isPrivate   = $itemInfo['isPrivate'];
-
-        $bookmark->save();
-
-        $rpc->setResult('Bookmark Updated');
-    }
-
-    /** @brief  Given incoming Bookmark identification information,
-     *          validate the request and, if valid, attempt to delete an
-     *          existing bookmark.
-     *  @param  rpc     The incoming JsonRpc.
-     *
-     *  On failure/error, the rpc will have the appropriate error set.
-     *
-     *  @return void
-     */
-    protected function _delete(Connexions_JsonRpc $rpc)
-    {
-        Connexions::log("IndexController::_delete");
-
-        if ( (! $this->_viewer instanceof Model_User) ||
-             (! $this->_viewer->isAuthenticated()) )
-        {
-            // Unauthenticated user
-            $rpc->setError('Unauthenticated.  Sign In to delete bookmarks.');
-            return;
-        }
-
-        $itemId = $rpc->getParam('itemId',      null);
-
-        // Validate and, if valid, attempt to delete the bookmark.
-        if (empty($itemInfo['itemId']))
-        {
-            $rpc->setError('Missing item identifier.');
-            return;
-        }
-
-        // Find the existing Bookmark
-        $bookmark = new Model_Bookmark( array(
-                            'userId' => $this->_viewer->userId,
-                            'itemId' => $itemInfo['itemId']) );
-        if (! $bookmark->isBacked())
-        {
-            // NOT found
-            $rpc->setError('No matching bookmark found.');
-            return;
-        }
-
-        /* VALID -- attempt to delete this existing Bookmark...
-         *
-         *  1) Remove all current tags from this Bookmark;
-         *  2) Delete the Bookmark;
-         *  3) Notify related models of this update;
-         */
-        $rating  = $bookmark->rating;
-        $curItem = $bookmark->item;
-
-        // 1) Remove all current tags from this Bookmark;
-        $bookmark->tagsDelete();
-
-        // 2) Delete the Bookmark;
-        if (! $bookmark->delete())
-        {
-            $rpc->setError( $bookmark->getError() );
-            return;
-        }
-
-        // 3) Notify related models of this update
-
-        $rpc->setResult('Bookmark Deleted');
-    }
-
-    /*************************************************************************
-     * Context-specific view initialization and invocation
-     *
-     */
-
-    /** @brief  Generate a JsonRPC from the incoming request, using a default
-     *          method of 'read' and then perform any requested action.
-     *
-     *  This will populate $this->view->rpc for use in Bootstrap::jsonp_post()
-     *  for final output.
-     */
-    protected function _jsonContent()
-    {
-        $request =& $this->_request;
-
-        if ($request->isPost())
-        {
-            // Create a new Bookmark
-            $defMethod = 'create';
-        }
-        else if ($request->isPut())
-        {
-            // Update an existing Bookmark
-            $defMethod = 'update';
-        }
-        else if ($request->isDelete())
-        {
-            // Delete an existing Bookmark
-            $defMethod = 'delete';
-        }
-        else // $request->isGet()
-        {
-            // Read an existing Bookmark
-            $defMethod = 'read';
-        }
-
-        $rpc = new Connexions_JsonRpc($this->_request, $defMethod);
-        $this->view->rpc = $rpc;
-
-        if (! $rpc->isValid())
-            return;
-
-        $method = strtolower($rpc->getMethod());
-
-        /*
-        Connexions_Profile::checkpoint('Connexions',
-                                       'IndexController::_jsonContent: '
-                                       . "method[ {$method} ]");
-        // */
-
-        switch ($method)
-        {
-        case 'create':
-            $this->_create($rpc);
-            break;
-
-        case 'read':
-            $this->_read($rpc);
-            break;
-
-        case 'update':
-            $this->_update($rpc);
-            break;
-
-        case 'delete':
-            $this->_delete($rpc);
-            break;
-
-        case 'autocomplete':
-            /* Autocompletion callback for tag entry
-             *
-             * Locate all tags associated with the current bookmarks that
-             * also match the beginning of the completion string.
-             */
-            $tagSet = $this->_bookmarks->getRelatedSet('tags');
-
-            // Retrieve the term we're supposed to match
-            $like = $rpc->getParam('term', $rpc->getParam('q', null));
-            if (empty($like))
-            {
-                // No term was provided -- limit to 500 entries
-                $tagSet->limit(500);
-            }
-            else
-            {
-                // Limit to tags that look like the requested term
-                $tagSet->like($like);
-            }
-
-            $tags = array();
-            foreach ($tagSet as $tag)
-            {
-                array_push($tags, $tag->tag);
-            }
-
-            $rpc->setResult( $tags );
-            break;
-
-        default:
-            // Unhandled JSON-RPC method
-            $rpc->setError("Unknown method '{}'",
-                           Zend_Json_Server_Error::ERROR_INVALID_METHOD);
-            break;
-        }
     }
 
     /** @brief  Generate HTML for the sidebar based upon the incoming request.
