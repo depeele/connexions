@@ -5,31 +5,43 @@
 /****** auth.sass ****** */
 // Styling for registration / login
 #auth {
-  padding: 2em 3em;
-  background-color: $formBackgroundColor;
-  @include corners(10px, 10px, 10px, 10px);
+  padding: 0;
+  .context-ribbon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 48px;
+    height: 100%;
+    background-color: $contextColorBackground;
+    @include corners(8px, 0, 0, 8px);
+  }
   .legend {
-    text-align: right;
-    padding-right: 2em;
-    width: 10em;
+    margin-left: 48px;
+    padding-right: 0;
+    text-align: left;
+    .context-bg {
+      position: absolute;
+      left: -48px;
+      @include corners(8px, 0, 0, 0);
+    }
     h1 {
-      padding: 0;
+      padding: 0 2em 0 0.2em;
     }
     p {
-      padding: 0;
+      padding: 0 0 0 0.5em;
+    }
+    .ui-field-status {
+      margin-top: 5em;
+      padding: 0.5em;
+      text-align: center;
+      color: #999999;
     }
   }
   form {
     .field {
       padding-bottom: 1em;
       input.text {
-        width: 12em;
-      }
-      .ui-field-status {
-        position: absolute;
-        top: 1.2em;
-        right: -18em;
-        width: 16em;
+        width: 15em;
       }
     }
     .buttons {

@@ -4,7 +4,8 @@
 $this->headTitle('Join');
 
 $jQuery = $this->jQuery();
-$jQuery->addStylesheet($this->baseUrl('css/validationForm.css'))
+$jQuery->addStylesheet($this->baseUrl('css/auth.css'))
+       ->addStylesheet($this->baseUrl('css/validationForm.css'))
        /*
        ->addJavascriptFile($this->baseUrl('js/ui.button.min.js'))
        ->addJavascriptFile($this->baseUrl('js/ui.input.min.js'))
@@ -172,6 +173,7 @@ $jQuery->javascriptCaptureEnd();
 ?>
 <div class="line"><!-- { -->
  <div id="auth" class='ui-validation-form'>
+  <div class='context-ribbon'>&nbsp;</div>
   <div class="legend unit"><!-- { -->
    <h1>Join</h1>
    <p>
