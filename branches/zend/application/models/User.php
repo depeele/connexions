@@ -89,6 +89,17 @@ class Model_User extends Model_Taggable
         return $this;
     }
 
+    /** @brief  Update the last visit date of this model instance to NOW.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function updateLastVisit()
+    {
+        $this->__set('lastVisit', date('Y-m-d H:i:s'));
+
+        return $this;
+    }
+
     /*************************************************************************
      * Connexions_Model overrides
      *
@@ -101,33 +112,25 @@ class Model_User extends Model_Taggable
      */
     public function populate($data)
     {
-        if (empty($data['apiKey']))
+        if (! $this->isBacked())
         {
-            // Generate an API key
-            $data['apiKey'] = $this->genApiKey();
+            /* For a new, un-backed model instance, ensure that 'apiKey' and 
+             * 'lastVisit' are initialized.
+             */
+            if (empty($data['apiKey']))
+            {
+                // Generate an API key
+                $data['apiKey'] = $this->genApiKey();
+            }
+
+            if (empty($data['lastVisit']))
+            {
+                $data['lastVisit'] = date('Y-m-d H:i:s');
+            }
         }
 
-        if (empty($data['lastVisit']))
-        {
-            // Initialize the last visit date to NOW.
-            $data['lastVisit'] = date('Y-m-d H:i:s');
-        }
 
         return parent::populate($data);
-    }
-
-    /** @brief  Save this instancne.
-     *
-     *  Override to update 'lastVisit'
-     *
-     *  @return The (updated) instance.
-     */
-    public function save()
-    {
-        // On save, modify 'lastVisit' to NOW.
-        $this->lastVisit = date('Y-m-d H:i:s');
-
-        return parent::save();
     }
 
     /** @brief  Get a value of the given field.

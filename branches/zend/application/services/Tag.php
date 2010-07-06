@@ -179,16 +179,32 @@ class Service_Tag extends Connexions_Service
      *                            'tag           ASC' ];
      *  @param  count       Optional LIMIT count
      *  @param  offset      Optional LIMIT offset
+     *  @param  where       Additional condition(s) [ null ];
      *
      *  @return A new Model_Set_Tag instance.
      */
     public function fetchByBookmarks($bookmarks = null,
                                      $order     = null,
                                      $count     = null,
-                                     $offset    = null)
+                                     $offset    = null,
+                                     $where     = null)
     {
+        /*
+        Connexions::log("Service_Tag::fetchByBookmarks(): "
+                        .   "bookmarks[ %s ], where[ %s ]",
+                        $bookmarks,
+                        Connexions::varExport($where) );
+        // */
+
         // Rely on Service_Bookmark to properly interpret 'bookmarks'
         $bookmarks = $this->factory('Service_Bookmark')->csList2set($bookmarks);
+
+        /*
+        Connexions::log("Service_Tag::fetchByBookmarks(): "
+                        .   "bookmarks2[ %s ]",
+                        $bookmarks );
+        // */
+
 
         if ($order === null)
         {
@@ -201,6 +217,21 @@ class Service_Tag extends Connexions_Service
                  ($bookmarks instanceof Model_Set_Bookmark)
                     ? $bookmarks->getIds()
                     : $bookmarks);
+
+        /*
+        Connexions::log("Service_Tag::fetchByBookmarks(): "
+                        .   "bookmarks[ %s ], where[ %s ]",
+                        Connexions::varExport($ids),
+                        Connexions::varExport($where) );
+        // */
+
+        return $this->_mapper->fetchRelated( array(
+                                        'bookmarks' => $ids,
+                                        'order'     => $order,
+                                        'count'     => $count,
+                                        'offset'    => $offset,
+                                        'where'     => $where,
+                                    ));
 
         /*
         $users = null;
@@ -227,12 +258,7 @@ class Service_Tag extends Connexions_Service
                                         'offset' => $offset,
                                     ));
         // */
-        return $this->_mapper->fetchRelated( array(
-                                        'bookmarks' => $ids,
-                                        'order'     => $order,
-                                        'count'     => $count,
-                                        'offset'    => $offset,
-                                    ));
+
     }
 
     /*********************************************************************

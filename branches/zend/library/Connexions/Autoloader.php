@@ -98,6 +98,20 @@ class Connexions_Autoloader implements Zend_Loader_Autoloader_Interface
 
         $filePath .= $ds . implode($ds, $classParts) .'.php';
 
+        /*
+        try
+        {
+            $log = Zend_Registry::get('log');
+
+            Connexions::log("Connexions_Autoloader::autoload( %s ): "
+                            . "filePath [ %s ]",
+                            $class, $filePath);
+
+        }
+        catch (Zend_Exception $e)
+        { }
+        // */
+
         $res = @include_once $filePath;
 
         if ( (! $res) ||

@@ -386,7 +386,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         Zend_Registry::set('db', $db);
         $this->setResource('db', $db);
 
-        //Connexions::log('Bootstrap::Database initialized');
+        Connexions::log('Bootstrap::Database initialized');
 
         return $this;
     }
@@ -416,13 +416,15 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
                 $result = new Connexions_Auth_Pre($user);
                 $user->setAuthenticated($result);
 
-                // Save in order to update the 'lastVisit' time
+                // Update the 'lastVisit' time for this user.
                 Connexions::log("Bootstrap::_commonAuth: Update lastVisit...");
+
+                $user->updateLastVisit();
                 $user->save();
             }
         }
 
-        /*
+        // /*
         Connexions::log("Bootstrap::_commonAuth: user is %sNULL",
                         ($user === null ? '' : 'NOT '));
         // */

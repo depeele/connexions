@@ -194,6 +194,12 @@ $displaySortOffset: 5px;
         margin: 0;
         text-align: right;
         // Individual tag
+        .tag {
+          border:   1px solid #fff;
+        }
+        .tag:hover {
+          border-color: $tagColor;
+        }
         .tag,.tag:hover {
           display: block;
           float: left;

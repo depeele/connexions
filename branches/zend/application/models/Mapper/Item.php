@@ -163,10 +163,19 @@ class Model_Mapper_Item extends Model_Mapper_Base
 
         /*
         Connexions::log("Model_Mapper_Item::_updateStatistics( %d ): "
-                        . "for Item: row[ %s ]",
+                        . "sql[ %s ]",
+                        $item->itemId,
+                        $select->assemble());
+        Connexions::log("Model_Mapper_Item::_updateStatistics( %d ): "
+                        . "row[ %s ]",
                         $item->itemId,
                         Connexions::varExport($row));
+        Connexions::log("Model_Mapper_Item::_updateStatistics( %d ): "
+                        . "current[ %s ]",
+                        $item->itemId,
+                        $item->debugDump());
         // */
+
 
         $item->userCount   = (int)$row->userCount;
         $item->ratingCount = (int)$row->ratingCount;

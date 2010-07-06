@@ -1008,4 +1008,41 @@ class BookmarkServiceTest extends DbTestCase
 
         $this->assertEquals($expected, $actual );
     }
+
+    public function testBookmarkServiceAutocompleteTag1()
+    {
+        $expected = 'tiddlywiki,tiddlywikiplugin';
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $tags     = $service->autocompleteTag('ti');
+
+        $this->assertEquals($expected, $tags->__toString() );
+    }
+
+    public function testBookmarkServiceAutocompleteTag2()
+    {
+        $expected = 'manual,mediawiki';
+        $curTags  = 'tiddlywiki,shared';    // 26*,27,28,29,55,57,58,59,60,73*
+        //$curItems = array(8,13);
+
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $tags     = $service->autocompleteTag('m',
+                                              $curTags);
+
+        $this->assertEquals($expected, $tags->__toString() );
+    }
+
+    public function testBookmarkServiceAutocompleteTag3()
+    {
+        $expected = 'java,java3d,javascript';
+        $curTags  = 'shared';       // 26*,27,28,29,55,57,58,59,60,73*
+        $curUsers = '2,3';
+        //$curItems = array(8,13);
+
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $tags     = $service->autocompleteTag('java',
+                                              $curTags,
+                                              $curUsers);
+
+        $this->assertEquals($expected, $tags->__toString() );
+    }
 }

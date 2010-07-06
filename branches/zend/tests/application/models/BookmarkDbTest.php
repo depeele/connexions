@@ -372,8 +372,10 @@ class BookmarkDbTest extends DbTestCase
         $et = $es->getTable('userItem');
         $et->setValue(0, 'updatedOn', $expected['updatedOn']);
 
+        /*
         $et = $es->getTable('user');
         $et->setValue(0, 'lastVisit', $bookmark->user->lastVisit);
+        // */
 
         $this->assertDataSetsEqual($es, $ds);
     }
@@ -411,8 +413,10 @@ class BookmarkDbTest extends DbTestCase
         // user.lastVisit is dynamic
         $es = $this->createFlatXmlDataSet(
                   dirname(__FILE__) .'/_files/bookmarkDeleteFullAssertion.xml');
+        /*
         $et = $es->getTable('user');
         $et->setValue(0, 'lastVisit', $user->lastVisit);
+        // */
 
         $this->assertDataSetsEqual($es, $ds);
     }
@@ -550,9 +554,11 @@ class BookmarkDbTest extends DbTestCase
         $et->setValue(5, 'updatedOn', $expected['updatedOn']);
         $et->setValue(5, 'taggedOn',  $expected['taggedOn']);
 
+        /*
         // user.lastVisit is also dynamic
         $et = $es->getTable('user');
         $et->setValue(0, 'lastVisit', $bookmark->user->lastVisit);
+        // */
 
         $this->assertDataSetsEqual($es, $ds);
 
