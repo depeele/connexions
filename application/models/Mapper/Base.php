@@ -88,8 +88,20 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
         $this->_includeSecondarySelect($select, $as, $params);
 
 
-        if ( isset($params['where']))
-            $select->where( $params['where'] );
+        if ( isset($params['where']) && (! empty($params['where'])) )
+        {
+            $where = $this->_where( (array)$params['where'] );
+
+            /*
+            Connexions::log("Model_Mapper_Base[%s]::fetchRelated(): "
+                            .   "where[ %s ] == [ %s ]",
+                            get_class($this),
+                            Connexions::varExport($params['where']),
+                            Connexions::varExport($where));
+            // */
+
+            $this->_addWhere($select, $where);
+        }
          
         $order  = (isset($params['order'])  ? $params['order']  : null);
         $count  = (isset($params['count'])  ? $params['count']  : null);

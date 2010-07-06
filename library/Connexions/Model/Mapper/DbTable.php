@@ -62,7 +62,7 @@ abstract class Connexions_Model_Mapper_DbTable
         $accessor = $this->getAccessor();
         $data     = $this->reduceModel( $domainModel );
 
-        // /*
+        /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
                         . "reduced[ %s ]",
                         get_class($this),
@@ -100,13 +100,32 @@ abstract class Connexions_Model_Mapper_DbTable
 
             /*
             Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
-                            . "update model[ %s ], where[ %s ], id[ %s ]",
+                            . "update model[ %s ]",
                             get_class($this),
-                            Connexions::varExport($data),
-                            Connexions::varExport($where),
+                            Connexions::varExport($data));
+            Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
+                            . "update where[ %s ]",
+                            get_class($this),
+                            Connexions::varExport($where));
+            Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
+                            . "update id[ %s ]",
+                            get_class($this),
                             Connexions::varExport($id));
             // */
 
+            // Remove keys from the update data
+            $data = array_diff_assoc($data, $id);
+
+            /*
+            Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
+                            . "update new Model[ %s ]",
+                            get_class($this),
+                            Connexions::varExport($data));
+            Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
+                            . "update where2[ %s ]",
+                            get_class($this),
+                            Connexions::varExport($where));
+            // */
 
             $accessor->update( $data, $where );
             $operation = 'update';
@@ -249,20 +268,7 @@ abstract class Connexions_Model_Mapper_DbTable
 
                 $where  = $this->_where($id, false);
 
-                foreach ($where as $condition => $bindValue)
-                {
-                    if ($condition[0] === '|')
-                    {
-                        // OR
-                        $condition = substr($condition, 1);
-                        $select->orWhere($condition, $bindValue);
-                    }
-                    else
-                    {
-                        // AND
-                        $select->where($condition, $bindValue);
-                    }
-                }
+                $this->_addWhere($select, $where);
             }
         }
 
@@ -275,7 +281,7 @@ abstract class Connexions_Model_Mapper_DbTable
 
         $accessorModels = $select->query()->fetchAll();
 
-        /*
+        // /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::fetch() "
                         . "sql[ %s ], %d rows...",
                         get_class($this),
@@ -539,10 +545,7 @@ abstract class Connexions_Model_Mapper_DbTable
         $select   = $accessor->select();
         $where    = $this->_where($id);
 
-        foreach ($where as $condition => $bindValue)
-        {
-            $select->where($condition, $bindValue);
-        }
+        $this->_addWhere($select, $where);
 
         /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::_find(): "
@@ -585,21 +588,159 @@ abstract class Connexions_Model_Mapper_DbTable
      *                      desired model(s).
      *  @param  nonEmpty    Is a non-empty clause required?
      *
+     *  Within 'id', 'property' values may include the following, optional 
+     *  prefix to adjust the matching condition:
+     *      |   - this is an 'OR' condition as opposed to the normal 'AND' and
+     *            may preceed any of the following;
+     *
+     *  'property' values may also include the following postfix values to 
+     *  represent the match operation:
+     *      =   - [default] equivalence match;
+     *      !=  - NOT equal;
+     *      >   - greater than;
+     *      >=  - greater than or equal to;
+     *      <   - less than;
+     *      <=  - less than or equal to;
+     *
+     *  If 'value' is a string, additional valid postfix values are:
+     *      =*  - contains 'value';
+     *      =^  - begins with 'value';
+     *      =$  - end with 'value;
+     *
+     *  If 'value' is an array, the only valid operators are:
+     *      =   - match any entry in 'value';
+     *      !=  - does NOT match any entry in 'value';
+     *
      *  @return An array contining one or more WHERE clauses.
      */
     protected function _where(array $id, $nonEmpty = true)
     {
+        /*
+        Connexions::log("Connexions_Model_Mapper_DbTable[%s]::"
+                        . "_where(%s, %sempty):",
+                        get_class($this),
+                        Connexions::varExport($id),
+                        ($nonEmpty ? 'non-' : ''));
+        // */
+
         $where = array();
-        foreach ($id as $key => $value)
+        foreach ($id as $condition => $value)
         {
-            $condition = $key;
+            if (is_int($condition))
+            {
+                /* 'condition' is an integer, meaning this is a non-associative 
+                 * member where 'value' is actually the condition.
+                 */
+                $where[ $value ] = null;
+
+                //array_push($where, $value);
+                continue;
+            }
 
             if (is_array($value))
             {
-                $condition .= ' IN ?';
+                if (preg_match('/^\s*(\|)?\s*(.*?)\s*(!?=)?\s*$/',
+                               $condition, $match))
+                {
+                    /* match[1] == empty or '|'
+                     * match[2] == field name
+                     * match[3] == condition operator '=' or '!='
+                     */
+                    $condition = $match[1] . $match[2];
+                    if ($match[3] === '!=')
+                        $condition .= ' NOT(IN ?)';
+                    else
+                        $condition .= ' IN ?';
+                }
+                else
+                {
+                    // else, skip it (or throw an error)...
+                    continue;
+                }
             }
             else
-                $condition .= '=?';
+            {
+                /*
+                Connexions::log("Connexions_Model_Mapper_DbTable[%s]::"
+                                . "_where():1 condition[ %s ], value[ %s ]",
+                                get_class($this),
+                                $condition, $value);
+                // */
+
+                if (preg_match(
+                        '/^\s*(\|)?\s*(.*?)\s*(!=|[<>]=?|=[\^*$]?)?\s*$/',
+                        $condition, $match))
+                {
+                    /* match[1] == empty or '|'
+                     * match[2] == field name
+                     * match[3] == condition operator
+                     */
+
+                    /*
+                    Connexions::log("Connexions_Model_Mapper_DbTable[%s]::"
+                                    . "_where():2 1[ %s ], 2[ %s ], 3[ %s ]",
+                                    get_class($this),
+                                    $match[1], $match[2], $match[3]);
+                    // */
+
+                    $condition = $match[1] . $match[2];
+                    switch ($match[3])
+                    {
+                    case '=':
+                    case '!=':
+                    case '<=':
+                    case '>=':
+                    case '<':
+                    case '>':
+                        $condition .= ' '. $match[3] .' ?';
+                        break;
+
+                    case '=^':
+                        if (! is_string($value))
+                            continue;
+
+                        $condition .= ' LIKE ?';
+                        $value      = $value .'%';
+                        break;
+
+                    case '=*':
+                        if (! is_string($value))
+                            continue;
+
+                        $condition .= ' LIKE ?';
+                        $value      = '%'. $value .'%';
+                        break;
+
+                    case '=$':
+                        if (! is_string($value))
+                            continue;
+
+                        $condition .= ' LIKE ?';
+                        $value      = '%'. $value;
+                        break;
+
+                    default:
+                        $condition .= ' = ?';
+                        break;
+                    }
+                }
+                else
+                {
+                    // else, skip it (or throw an error)...
+                    continue;
+                }
+
+                /*
+                Connexions::log("Connexions_Model_Mapper_DbTable[%s]::"
+                                . "_where(%s, %sempty):3 "
+                                . "condition[ %s ], value[ %s ]",
+                                get_class($this),
+                                Connexions::varExport($id),
+                                ($nonEmpty ? 'non-' : ''),
+                                $condition, $value);
+                // */
+
+            }
 
             $where[ $condition ] = $value;
         }
@@ -615,14 +756,42 @@ abstract class Connexions_Model_Mapper_DbTable
 
         /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::"
-                        . "_where(%s, %sempty): where [ %s ]",
+                        . "_where(): where [ %s ]",
                         get_class($this),
-                        Connexions::varExport($id),
-                        ($nonEmpty ? 'non-' : ''),
                         Connexions::varExport($where));
         // */
 
         return $where;
+    }
+
+    /** @brief  Given a Zend_Db_Select instance along with a 'where' condition 
+     *          (generated via _where()), add the appropriate SQL WHERE 
+     *          condition(s) to the select.
+     *  @param  select      The Zend_Db_Select to count.
+     *  @param  where       An associative array of
+     *                          { 'condition' => value(s), ...}
+     *
+     *  @return Zend_Db_Select
+     */
+    protected function _addWhere(Zend_Db_Select $select,
+                                 array          $where)
+    {
+        foreach ($where as $condition => $bindValue)
+        {
+            if ($condition[0] === '|')
+            {
+                // OR
+                $condition = substr($condition, 1);
+                $select->orWhere($condition, $bindValue);
+            }
+            else
+            {
+                // AND
+                $select->where($condition, $bindValue);
+            }
+        }
+
+        return $select;
     }
 
     /** @brief  Generate a Zend_Db_Select instance representing the COUNT for

@@ -214,7 +214,17 @@ abstract class Connexions_Service
     protected function _csList2array($str)
     {
         if (! is_string($str))
-            return $str;
+        {
+            if (is_object($str))
+            {
+                if (method_exists($str, 'getIds'))
+                    return $str->getIds();
+                else if (method_exists($str, 'toArray'))
+                    return $str->toArray();
+            }
+
+            return (array)$str;
+        }
 
         $str  = trim($str);
         $list = (empty($str)
@@ -350,7 +360,6 @@ abstract class Connexions_Service
                 $serviceName = str_replace('Model_', 'Service_', $serviceName);
             }
 
-
             // See if we have a Service instance with this name in our cache
             if ( isset(self::$_instCache[ $serviceName ]))
             {
@@ -359,11 +368,23 @@ abstract class Connexions_Service
             }
             else
             {
+                /*
+                Connexions::log("Connexions_Service::factory(): "
+                                . "autoload '%s'",
+                                $serviceName);
+                // */
+
                 // NO - create a new instance
                 try
                 {
                     @Zend_Loader_Autoloader::autoload($serviceName);
                     $service  = new $serviceName();
+
+                    /*
+                    Connexions::log("Connexions_Service::factory(): "
+                                    . "service '%s' autoloaded...",
+                                    $serviceName);
+                    // */
                 }
                 catch (Exception $e)
                 {

@@ -29,7 +29,7 @@
  <tag tagId="26" tag="tiddlywiki" />
  <tag tagId="27" tag="tiddlywikiplugin" />
  <tag tagId="28" tag="mediawiki" />
- <tag tagId="29" tag="for:busbeytheelder" />
+ <tag tagId="29" tag="friend" />
 
  <tag tagId="30" tag="api" />
  <tag tagId="31" tag="cooling" />
@@ -78,5 +78,5 @@
  <tag tagId="70" tag="literature" />
  <tag tagId="71" tag="test" />
  <tag tagId="72" tag="cryptography" />
- <tag tagId="73" tag="for:dep" />
+ <tag tagId="73" tag="shared" />
 </dataset>

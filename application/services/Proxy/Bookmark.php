@@ -141,5 +141,26 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
                                                     $count,
                                                     $offset);
     }
-}
 
+    /** @brief  Perform tag autocompletion within the given context.
+     *  @param  term        The string to autocomplete.
+     *  @param  tags        A Model_Set_Tag instance, array, or comma-separated
+     *                      string of tags that restrict the bookmarks that
+     *                      should be used to select related tags -- one
+     *                      component of 'context';
+     *  @param  users       A Model_Set_User instance, array, or
+     *                      comma-separated string of users that restrict the
+     *                      bookmarks that should be used to select related
+     *                      tags -- a second component of 'context';
+     *  @param  limit       The maximum number of tags to return;
+     *
+     *  @return Model_Set_Tag
+     */
+    public function autocompleteTag($str,
+                                    $tags   = null,
+                                    $users  = null,
+                                    $limit  = 50)
+    {
+        return $this->_service->autocompleteTag($str, $tags, $users, $limit);
+    }
+}

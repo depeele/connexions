@@ -220,7 +220,8 @@ class Service_Bookmark extends Connexions_Service
     }
                                       
     /** @brief  Retrieve a set of bookmarks related by a set of Tags.
-     *  @param  tags    A Model_Set_Tag instance or array of tags to match.
+     *  @param  tags    A Model_Set_Tag instance, array, or comma-separated
+     *                  string of tags to match.
      *  @param  exact   Bookmarks MUST be associated with provided tags
      *                  [ true ];
      *  @param  order   Optional ORDER clause (string, array)
@@ -270,7 +271,8 @@ class Service_Bookmark extends Connexions_Service
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Users.
-     *  @param  users   A Model_Set_User instance or array of users to match.
+     *  @param  users   A Model_Set_User instance, array, or comma-separated
+     *                  string of users to match.
      *  @param  order   Optional ORDER clause (string, array)
      *                      [ [ 'taggedOn      DESC',
      *                          'name          ASC',
@@ -313,7 +315,8 @@ class Service_Bookmark extends Connexions_Service
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Items.
-     *  @param  items   A Model_Set_Item instance or array of items to match.
+     *  @param  items   A Model_Set_Item instance, array, or comma-separated
+     *                  string of items to match.
      *  @param  order   Optional ORDER clause (string, array)
      *                      [ [ 'taggedOn      DESC',
      *                          'name          ASC',
@@ -356,10 +359,10 @@ class Service_Bookmark extends Connexions_Service
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Users and Tags.
-     *  @param  users       A Model_Set_User instance or array of users to
-     *                      match.
-     *  @param  tags        A Model_Set_Tag  instance or array of tags  to
-     *                      match.
+     *  @param  users       A Model_Set_User instance, array, or
+     *                      comma-separated string of users to match.
+     *  @param  tags        A Model_Set_Tag instance, array, or comma-separated
+     *                      string of tags to match.
      *  @param  exactTags   Bookmarks MUST be associated with provided tags
      *                      [ true ];
      *  @param  order       Optional ORDER clause (string, array)
@@ -411,10 +414,10 @@ class Service_Bookmark extends Connexions_Service
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Items and Tags.
-     *  @param  items       A Model_Set_User instance or array of items to
-     *                      match.
-     *  @param  tags        A Model_Set_Tag  instance or array of tags  to
-     *                      match.
+     *  @param  items       A Model_Set_Item instance, array, or
+     *                      comma-separated string of items to match.
+     *  @param  tags        A Model_Set_Tag instance, array, or comma-separated
+     *                      string of tags to match.
      *  @param  exactTags   Bookmarks MUST be associated with provided tags
      *                      [ true ];
      *  @param  order       Optional ORDER clause (string, array)
@@ -463,6 +466,59 @@ class Service_Bookmark extends Connexions_Service
                                         'offset'    => $offset,
                                         'privacy'   => $this->_curUser(),
                                     ));
+    }
+
+    /** @brief  Perform tag autocompletion within the given context.
+     *  @param  term        The string to autocomplete.
+     *  @param  tags        A Model_Set_Tag instance, array, or comma-separated
+     *                      string of tags that restrict the bookmarks that
+     *                      should be used to select related tags -- one
+     *                      component of 'context';
+     *  @param  users       A Model_Set_User instance, array, or
+     *                      comma-separated string of users that restrict the
+     *                      bookmarks that should be used to select related
+     *                      tags -- a second component of 'context';
+     *  @param  limit       The maximum number of tags to return;
+     *
+     *  @return Model_Set_Tag
+     */
+    public function autocompleteTag($str,
+                                    $tags   = null,
+                                    $users  = null,
+                                    $limit  = 50)
+    {
+        /*
+        Connexions::log("Service_Bookmark::autocompleteTag(): "
+                        .   "str[ %s ], tags[ %s ], users[ %s ], limit[ %d ]",
+                        $str, $tags, $users, $limit);
+        // */
+
+        /* Rely on Service_Tag/Service_User to properly interpret 'tags' and
+         * 'users'
+         */
+        $tService = $this->factory('Service_Tag');
+
+        if ( (! empty($tags)) || (! empty($users)) )
+        {
+            // Retrieve the set of bookmarks that we need related tags for
+            $bookmarks = $this->fetchByUsersAndTags($users, $tags);
+        }
+        else
+        {
+            $bookmarks = null;
+        }
+
+        /*
+        Connexions::log("Service_Bookmark::autocompleteTag(): "
+                        .   "bookmarks[ %s ]",
+                        $bookmarks);
+        // */
+
+        return $tService->fetchByBookmarks($bookmarks,
+                                           null,        // default order
+                                           $limit,
+                                           null,        // default offset
+                                           array('tag=^' => $str));
     }
 
     /*************************************************************************

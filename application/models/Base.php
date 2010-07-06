@@ -26,16 +26,25 @@ abstract class Model_Base extends Connexions_Model
         case 'tagCount':
         case 'ratingCount':
         case 'ratingSum':
-            $this->_data[$name] = (int)$value;
+            $value = (int)$value;
             break;
 
         case 'ratingAvg':
-            $this->_data[$name] = (float)$value;
+            $value = (float)$value;
             break;
+        }
 
-        default:
+        if (! array_key_exists($name, $this->_data))
+        {
+            // Directly set this pseudo-field
+            $this->_data[$name] = $value;
+        }
+        else
+        {
+            /* Invoke __set() to ensure the '_dirty' indicator is set if 
+             * needed.
+             */
             parent::__set($name, $value);
-            break;
         }
 
         return $this;

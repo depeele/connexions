@@ -273,7 +273,7 @@ class TagServiceTest extends DbTestCase
 
     public function testTagServiceFetchByUsers()
     {
-        $expected   = 'for:dep,'            . 'ajax,'
+        $expected   = 'shared,'             . 'ajax,'
                     . 'javascript,'         . 'web2.0,'
                     . 'framework,'          . 'oat,'
                     . 'widgets,'            . 'chip,'
@@ -286,7 +286,7 @@ class TagServiceTest extends DbTestCase
                     . 'chart,'              . 'cryptography,'
                     . 'decoration,'         . 'desktop,'
                     . 'diagram,'            . 'documentation,'
-                    . 'for:busbeytheelder,' . 'furniture,'
+                    . 'friend,'             . 'furniture,'
                     . 'generator,'          . 'graph,'
                     . 'graphics,'           . 'guide,'
                     . 'hacks,'              . 'howto,'
@@ -324,11 +324,12 @@ class TagServiceTest extends DbTestCase
                     . 'ibm,'            . 'processor,'
                     . 'technology,'     . 'ajax,'
                     . 'blog,'           . 'cms,'
-                    . 'cryptography,'   . 'for:dep,'
+                    . 'cryptography,'
                     . 'identity,'       . 'mysql,'
                     . 'online,'         . 'password,'
                     . 'passwords,'      . 'php,'
                     . 'privacy,'        . 'security,'
+                    . 'shared,'
                     . 'software,'       . 'storage,'
                     . 'test,'           . 'tools,'
                     . 'web2.0';
@@ -394,7 +395,7 @@ class TagServiceTest extends DbTestCase
     public function testTagServiceFetchByBookmarksAll()
     {
         //            vv ordered by 'userItemCount DESC'
-        $expected   = 'for:dep,'            . 'javascript,'
+        $expected   = 'shared,'             . 'javascript,'
                     . 'ajax,'               . 'web2.0,'
                     . 'framework,'          . 'oat,'
                     . 'chip,'               . 'cooling,'
@@ -412,7 +413,7 @@ class TagServiceTest extends DbTestCase
                     . 'collection,'         . 'cryptography,'
                     . 'decoration,'         . 'diagram,'
                     . 'documentation,'      . 'ebooks,'
-                    . 'for:busbeytheelder,' . 'free,'
+                    . 'free,'               . 'friend,'
                     . 'furniture,'          . 'generator,'
                     . 'graph,'              . 'graphics,'
                     . 'guide,'              . 'hacks,'

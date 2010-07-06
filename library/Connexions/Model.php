@@ -36,6 +36,7 @@ abstract class Connexions_Model
     /** @brief  The data of this instance. */
     protected           $_data      = array();
     protected           $_valid     = array();
+    protected           $_dirty     = array();
 
     /** @brief  Is the contained data directly from / saved in a persistent 
      *          backing store?
@@ -166,6 +167,12 @@ abstract class Connexions_Model
             $this->__set($key, $val);
         }
         $this->_delayValidation = false;
+
+        if ($this->isBacked())
+        {
+            // This is a backed model so no fields are dirty
+            $this->_dirty = array();
+        }
 
         // Perform full validation of the populated data
         $this->validate();
@@ -519,6 +526,15 @@ abstract class Connexions_Model
         return $res;
     }
 
+    /** @brief  Retrieve the 'isDirty' indicator
+     *
+     *  Should we name this getIsDirty() instead??
+     */
+    public function isDirty()
+    {
+        return (! empty($this->_dirty));
+    }
+
     /** @brief  Generate a string representation of this record.
      *  @param  indent      The number of spaces to indent [ 0 ];
      *  @param  leaveOpen   Should the terminating '];\n' be excluded [ false ];
@@ -531,7 +547,8 @@ abstract class Connexions_Model
         $str = str_repeat(' ', $indent)
              . get_class($this) .": is "
              .      ($this->isBacked() ? '' : 'NOT '). 'backed, '
-             .      ($this->isValid()  ? '' : 'NOT '). 'valid '
+             .      ($this->isValid()  ? '' : 'NOT '). 'valid, '
+             .      ($this->isDirty()  ? '' : 'NOT '). 'dirty '
              .      "[\n";
 
         foreach ($this->_data as  $key => $val)
@@ -542,9 +559,14 @@ abstract class Connexions_Model
             else if ($type === 'boolean')
                 $val = ($val ? 'true' : 'false');
 
-            $str .= sprintf ("%s%-15s == %-15s %s [ %s ]%s\n",
+            $str .= sprintf ("%s%-15s == %-15s %s%s [ %s ]%s\n",
                              str_repeat(' ', $indent + 1),
                              $key, $type,
+                             (isset($this->_dirty[$key])
+                                ? ($this->_dirty[$key] === true
+                                    ? "*"
+                                    : " ")
+                                : " "),
                              (isset($this->_valid[$key])
                                 ? ($this->_valid[$key] !== true
                                     ? "!"
@@ -578,7 +600,17 @@ abstract class Connexions_Model
      */
     public function save()
     {
-        return $this->getMapper()->save( $this );
+        /*
+        Connexions::log("Connexions_Model[%s]::save(): %s",
+                        get_class($this),
+                        $this->debugDump());
+        // */
+
+        $res = $this;
+        if (! empty($this->_dirty))
+            $res = $this->getMapper()->save( $this );
+
+        return $res;
     }
 
     /** @brief  Delete this instance.
@@ -639,23 +671,16 @@ abstract class Connexions_Model
                         ($validate === true ? 'true' : 'false'));
         // */
 
+        if ($this->_data[$name] !== $value)
+            $this->_dirty[$name] = true;
+
+        // Assign the new value
+        $this->_data[$name] = $value;
+
         if ($validate === true)
         {
             // Validate the incoming value
-            $this->_data[$name] = $value;
             $this->validate();
-        }
-        else
-        {
-            // Simply assign the new value
-            $this->_data[$name] = $value;
-
-            /*
-            Connexions::log("Connexions_Model::__set(%s, %s, %s) "
-                            .   "-- skip validation",
-                            $name, $value,
-                            ($validate === true ? 'true' : 'false'));
-            // */
         }
                     
         return $this;

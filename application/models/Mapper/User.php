@@ -173,8 +173,14 @@ class Model_Mapper_User extends Model_Mapper_Base
         $bmMapper   = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
         $bookmarks  = $bmMapper->fetchRelated( array(
                                     'users'     => array($user->userId),
+                                    'where'     => array(
+                                                    'tagId'     => $tag->tagId,
+                                                    'tagCount<' => 2,
+                                    ),
+                                    /*
                                     'where'     => "((tagId={$tag->tagId}) "
                                                 .  'AND (tagCount < 2))',
+                                    */
                                     'privacy'   => false,
                                 ));
 
@@ -271,6 +277,10 @@ class Model_Mapper_User extends Model_Mapper_Base
                         . "row[ %s ]",
                         $user->userId,
                         Connexions::varExport($row));
+        Connexions::log("Model_Mapper_User::_updateStatistics( %d ): "
+                        . "current[ %s ]",
+                        $user->userId,
+                        $user->debugDump());
         // */
 
         $user->totalTags  = $row->totalTags;

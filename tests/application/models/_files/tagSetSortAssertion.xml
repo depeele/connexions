@@ -19,10 +19,9 @@
  <tag tagId="20" tag="diagram" />
  <tag tagId="61" tag="documentation" />
  <tag tagId="68" tag="ebooks" />
- <tag tagId="29" tag="for:busbeytheelder" />
- <tag tagId="73" tag="for:dep" />
  <tag tagId="13" tag="framework" />
  <tag tagId="69" tag="free" />
+ <tag tagId="29" tag="friend" />
  <tag tagId="41" tag="furniture" />
  <tag tagId="22" tag="generator" />
  <tag tagId="18" tag="graph" />
@@ -58,6 +57,7 @@
  <tag tagId="65" tag="reading" />
  <tag tagId="58" tag="reference" />
  <tag tagId="1"  tag="security" />
+ <tag tagId="73" tag="shared" />
  <tag tagId="25" tag="software" />
  <tag tagId="9"  tag="storage" />
  <tag tagId="45" tag="swing" />
