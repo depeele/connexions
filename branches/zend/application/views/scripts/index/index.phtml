@@ -46,6 +46,7 @@ $htmlBookmarks = $this->htmlBookmarks( $this->main );
 
 
 // Prepare the Html Item Scope helper
+
 if ($this->owner === '*')
 {
     $scopePath = array('Bookmarks' => $this->baseurl('/bookmarks'));
@@ -57,22 +58,46 @@ else
     $scopePath = array($ownerStr => $this->baseurl($ownerStr));
 }
 
+/*
 $scopeQuery = array('format=json',
                     'method=autocomplete');
 if (count($this->tags) > 0)
 {
     array_push($scopeQuery, 'tags='. $this->tags);
 }
+*/
 
 $htmlItemScope = $this->htmlItemScope( array(
                     'namespace'         => $this->namespace,
                     'items'             => $htmlBookmarks->paginator,
-                    'scope'             => $htmlBookmarks->tags,
+                    'scope'             => $this->tags, //$htmlBookmarks->tags,
                     'inputLabel'        => 'Tags',
                     'inputName'         => 'Tags',
                     'path'              => $scopePath,
+                    'jsonRpc'           => array(
+                        // SMD
+                        'target'        => $this->baseurl('/api/v1/json-rpc'),
+                        'envelope'      => 'JSON-RPC-2.0',
+                        'contentType'   => 'application/json',
+                        'transport'     => 'POST',
+
+                        'service'       => array(
+                            // Json-RPC
+                            'method'    => 'bookmark.autocompleteTag',
+                            'params'    => array(
+                                'tags'  => (count($this->tags) < 1
+                                                ? null
+                                                : $this->tags->__toString()),
+                                'users' => ($this->owner === '*'
+                                                ? null
+                                                : $this->owner->name),
+                            ),
+                        ),
+                    ),
+                    /*
                     'autoCompleteUrl'   => $this->url()
                                             .'?'. implode('&', $scopeQuery),
+                    */
                  ));
 
 $baseUrl = $this->baseUrl('/'); //Connexions::url('/');

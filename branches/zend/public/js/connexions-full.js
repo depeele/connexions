@@ -3778,34 +3778,153 @@ $.widget("ui.sidebar", {
 $.widget("ui.itemScope", {
 	options: {
         namespace:          '',     // Cookie/parameter namespace
-		autocompleteSrc:    null,   // The source of auto-completion data
+		autocompleteSrc:    null    // The source of auto-completion data
                                     // (if non-null, passed to ui.autocomplete)
 	},
+    /*
+            var rpcId = 1;
+
+            //  @brief  On form submission, generate and initiate a Json-RPC.
+            //  @param  e   The form submit event.
+            //
+            //  Usage: $('form').bind('submit', rpc_submit)
+            //                  .bind('success',
+            //                        function(e, data, txtStatus, req) ... )
+            //                  .bind('error',
+            //                        function(e, txtStatus, req) ... );
+            //
+            //  By default, result data will be presented in the div with
+            //  id 'result'
+            // 
+            function rpc_submit(e)
+            {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+
+                var $form   = $(e.target);
+                var url     = document.location.href;
+                
+                url = url.substr(0, url.lastIndexOf('/')+1)
+                    + $form.attr('action');
+
+                // Assemble the Json-RPC structure
+                var id  = rpcId++;
+                var rpc = {
+                    version: 2.0,
+                    method:  $form.find('input[name=method]').val(),
+                    id:      id,
+                    params:  {
+                    }
+                };
+
+                // Include all parameters
+                $form.find('input:not(:hidden,:submit)').each(function() {
+                    var $field  = $(this);
+
+                    switch ($field.attr('type'))
+                    {
+                    case 'checkbox':
+                    case 'radio':
+                        rpc.params[ $field.attr('name') ] =
+                                                    $field.attr('checked');
+                        break;
+
+                    default:
+                        rpc.params[ $field.attr('name') ] = $field.val();
+                        break;
+                    }
+                });
+
+                // Invoke the Json-RPC
+                $.ajax({
+                    type:     $form.attr('method'),
+                    url:      $form.attr('action'),
+                    data:     JSON.stringify(rpc),
+                    dataType: 'json',
+                    success: function(data, txtStatus, req) {
+                        $form.trigger('success', [data, txtStatus, req]);
+
+                        // Results are in data.result
+                        //      iff ( (data.error == null) &&
+                        //            (data.id    == id) )
+                    },
+                    error: function(req, txtStatus, e) {
+                        $form.trigger('error', [txtStatus, req]);
+                    }
+                });
+            }
+
+            function bindForms()
+            {
+                $('#services form')
+                    .bind('submit.rpc',  rpc_submit);
+            }
+     */
 	_create: function(){
 		var self    = this;
         var opts    = self.options;
 
-        self.$input    = self.element.find('.scopeEntry input');
-        self.$current  = self.element.find('input[name=scopeCurrent]');
+        self.$input    = self.element.find('.scopeEntry :text');
         self.$curItems = self.element.find('.scopeItem');
         self.$submit   = self.element.find('.scopeEntry :submit');
 
         self.$input.input();
 
+        var source  = null;
         if (opts.autocompleteSrc !== null)
         {
-            /*
-            var parts   = opts.autocompleteSrc.split('?');
-            var baseUrl = parts.shift();
-            var params  = parts.join('?');
-            */
-
-            self.$input.autocomplete({
-                source:     opts.autocompleteSrc,
-                delay:      200,
-                minLength:  2
-            });
+            source = opts.autocompleteSrc;
         }
+        else if (opts.jsonRpc !== undefined)
+        {
+            var rpcId   = 1;
+
+            // Default source
+            source = function(request, response) {
+                        var id      = rpcId++;
+                        var data    = {
+                            version:    '2.0',
+                            id:         id
+                        };
+
+                        data = $.extend(data, opts.jsonRpc.service);
+                        data.params.str = request.term;
+
+				        $.ajax({
+                            type:       opts.jsonRpc.transport,
+					        url:        opts.jsonRpc.target,
+					        dataType:   "json",
+                            data:       JSON.stringify(data),
+                            success:    function(ret, txtStatus, req){
+                                response(
+                                    $.map(ret.result,
+                                          function(item) {
+                                            return {
+                                                label: item.tag +': '+
+                                                       item.itemCount,
+                                                value: item.tag
+                                            };
+                                          }));
+                                self.element.trigger('success',
+                                                     [ret,
+                                                      txtStatus,
+                                                      req]);
+                            },
+                            error:      function(req, txtStatus, e) {
+                                self.element.trigger('error',
+                                                     [txtStatus,
+                                                      req]);
+                            }
+                        });
+            };
+        }
+
+        self.$input.autocomplete({
+            source:     source,
+            delay:      200,
+            minLength:  2
+        });
 
         self._bindEvents();
 	},
@@ -3851,11 +3970,6 @@ $.widget("ui.itemScope", {
                     var loc     = window.location;
                     var url     = loc.toString();
                     var scope   = self.$input.val();
-                    /*
-                    var current = self.$current.val();
-                    var action  = self.element.attr('action') +'/'
-                                + self.$current.val();
-                    */
 
                     if (scope.length > 0)
                     {
