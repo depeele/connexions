@@ -25,10 +25,7 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
                                          *            ...)
                                          */
 
-        'autoCompleteUrl'   => null,    /*  The URL to use to retrieve scope
-                                         *  items for scope entry
-                                         *  auto-completion.
-                                         */
+        'jsonRpc'           => null,    //  Json-Rpc call data;
 
         'items'             => null,    /* The set of items to be presented
                                          *  MUST implement the
@@ -72,9 +69,7 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
      *                                            array(root-name => root-url,
      *                                                  item-name => item-url,
      *                                                  ...)
-     *                      - autoCompleteUrl   The URL to use to retrieve
-     *                                          scope items for scope entry
-     *                                          auto-completion.
+     *                      - jsonRpc           Json-Rpc call data;
      *
      *  @return $this for a fluent interface.
      */
@@ -113,8 +108,8 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
 
         if (! @isset(self::$_initialized[$namespace]))
         {
-            if ( ($this->_autoCompleteUrl === null) && ($force !== true) )
-                /* Postpone initialization to see if the _autoCompleteUrl is
+            if ( ($this->_params['jsonRpc'] === null) && ($force !== true) )
+                /* Postpone initialization to see if the 'jsonRpc' is
                  * set before we render.
                  */
                 return $this;
@@ -132,112 +127,8 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
             else
                 $jQuery->addJavascriptFile($baseUrl.'js/ui.input.min.js');
              */
-            $jQuery->addOnLoad("$('.{$namespace}ItemScope').itemScope({"
-                                .    "autocompleteSrc:"
-                                .       "'{$this->_autoCompleteUrl}'});");
-
-            if (false)
-            {
-            $baseUrl = $view->baseUrl('/');
-            if (! empty($this->_autoCompleteUrl))
-            {
-                /* Now done in application/layouts/header.phtml
-                $jQuery->addJavascriptFile($baseUrl.'js/jquery.autosuggest.js');
-                */
-
-                list($scopeCbUrl, $scopeCbParams)
-                                = explode('?', $this->_autoCompleteUrl);
-            }
-            $jQuery->addOnLoad("init_{$namespace}ItemScope();")
-                   ->javascriptCaptureStart();  // jQuery {
-            ?>
-
-/************************************************
- * Initialize display options.
- *
- */
-function init_<?= $namespace ?>ItemScope()
-{
-    var $itemScope  = $('.<?= $namespace ?>ItemScope');
-    var $input      = $itemScope.find('.scopeEntry input');
-    var scopeCbUrl  = <?= ($scopeCbUrl !== null
-                                ? "'". $scopeCbUrl ."'"
-                                : 'null') ?>;
-
-    if (scopeCbUrl === null)
-    {
-        $input.input();
-    }
-    else
-    {
-        var $label  = $input.parent().find('label');
-
-        // queryParam, extraParams
-        // Attach autoSuggest to our input box
-        $input.autoSuggest(scopeCbUrl,
-                           {startText:   $label.text(),
-                            extraParams: '&<?= $scopeCbParams ?>',
-                            minChars:    2,
-                            keyDelay:    200,
-                            retrieveComplete: function(data) {
-                                // JSON-RPC return
-                                if (data.result)
-                                    return data.result;
-                            }});
-
-        $input = $itemScope.find('.scopeEntry input.as-values');
-        $label.hide();
-    }
-
-
-    // Attach a hover effect for deletables
-    $itemScope.find('.deletable a.delete')
-                .css('opacity', 0.25)
-                .hover(
-        // in
-        function() {
-            $(this).css('opacity', 1.0)
-                   .addClass('ui-icon-circle-close')
-                   .removeClass('ui-icon-close');
-        },
-        // out
-        function() {
-            $(this).addClass('ui-icon-close')
-                   .removeClass('ui-icon-circle-close')
-                   .css('opacity', 0.25);
-        }
-    );
-
-    var $pForm  = $itemScope.closest('form');
-
-    // Add an on-submit handler to our parent form
-    $pForm.submit(function() {
-        // Changing scope - adjust the form...
-        var scope   = (scopeData === null
-                        ? $input.input('val')
-                        : $input.val().replace(/,$/, ''));
-        var current = $pForm.find('input[name=scopeCurrent]').val();
-        var action  = $pForm.attr('action') +'/'+ current;
-
-        if (scope.length > 0)
-        {
-            // Change the form action to include the new scope
-            if (current.length > 0)
-                action += ',';
-            action += scope;
-        }
-        $pForm.attr('action', action);
-
-        // Disable scope -- this removes these items from form serialization.
-        $input.attr('disabled', true);
-
-        var ser = $pForm.serialize();
-        var a   = 1;
-    });
-}
-            <?php
-            $jQuery->javascriptCaptureEnd();    // jQuery }
-            }
+            $jQuery->addOnLoad("$('.{$namespace}ItemScope').itemScope("
+                                .    json_encode($this->_params) .');');
 
             self::$_initialized[$namespace] = true;
         }
