@@ -24,12 +24,16 @@ class Service_Tag extends Connexions_Service
         // Parse the comma-separated-list directly -- we'll use it later.
         $ids = $this->_csList2array($csList);
 
+        /*
         Connexions::log("Service_Tag::csList2set( %s ): [ %s ]",
                         Connexions::varExport($csList),
                         Connexions::varExport($ids));
+        // */
 
         // Generate the set of all matches
         $set = parent::csList2set($ids, $order);
+        $set->setSource($csList);
+
         if ( ($set->count() > 0) && $create )
         {
             /* See if there are any tags that we need to create.  This can only

@@ -81,21 +81,21 @@
   border-top: unquote("1px solid") $borderColor;
   padding: 0.5em;
   z-index: 1;
-  .db-profile {
-    background-color: $borderColor;
-    padding: 0.25em;
-    ul {
-      padding: 0 1em;
-      li {
-        padding: 0;
-        dl {
+}
+.db-profile {
+  background-color: $borderColor;
+  padding: 0.25em;
+  ul {
+    padding: 0 1em;
+    li {
+      padding: 0;
+      dl {
+        padding: 0 1em;
+        dt {
+          font-weight: bold;
+        }
+        dd {
           padding: 0 1em;
-          dt {
-            font-weight: bold;
-          }
-          dd {
-            padding: 0 1em;
-          }
         }
       }
     }

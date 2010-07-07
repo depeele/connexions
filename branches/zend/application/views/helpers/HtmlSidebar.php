@@ -83,8 +83,10 @@ class View_Helper_HtmlSidebar extends Zend_View_Helper_Abstract
                                             . $items->__toString() .' ]');
         $this->_params['panes']  = array_keys($panes);
 
+        /*
         Connexions::log("View_Helper_HtmlSidebar::populate(): params[ %s ]",
                         print_r($this->_params, true));
+        // */
 
         $this->_params['viewer'] = $viewer;
         $this->_params['users']  = $users;
@@ -202,9 +204,11 @@ class View_Helper_HtmlSidebar extends Zend_View_Helper_Abstract
             {
                 $script = "{$path}sidebar-{$id}.phtml";
 
+                /*
                 Connexions::log("View_Helper_HtmlSidebar::render() "
                                 . "render script[ %s ]",
                                 $script);
+                // */
 
                 $paneHtml .= "<div id='sidebar-{$id}'>"
                           .    $this->view->render($script)

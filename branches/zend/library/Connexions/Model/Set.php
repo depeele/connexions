@@ -395,6 +395,26 @@ abstract class Connexions_Model_Set
      */
     public function setSource($source)
     {
+        if (! is_string($source))
+        {
+            $newSource = (is_array($source)
+                            ? implode(',', $source)
+                            : strval($source));
+
+            /*
+            Connexions::log("Connexions_Model_Set[%s]::setSource(): "
+                            . "Non-string source [ %s ] == '%s'",
+                            get_class($this),
+                            (is_object($source)
+                                ? get_class($source)
+                                : gettype($source)),
+                            $newSource);
+            // */
+
+            $source = $newSource;
+            //throw new Exception('Source MUST be a string');
+        }
+
         $this->_source = $source;
 
         return $this;
