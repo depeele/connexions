@@ -3776,93 +3776,14 @@ $.widget("ui.sidebar", {
 (function($){
 
 $.widget("ui.itemScope", {
-	options: {
+    options: {
         namespace:          '',     // Cookie/parameter namespace
-		autocompleteSrc:    null    // The source of auto-completion data
+        autocompleteSrc:    null,   // The source of auto-completion data
                                     // (if non-null, passed to ui.autocomplete)
-	},
-    /*
-            var rpcId = 1;
-
-            //  @brief  On form submission, generate and initiate a Json-RPC.
-            //  @param  e   The form submit event.
-            //
-            //  Usage: $('form').bind('submit', rpc_submit)
-            //                  .bind('success',
-            //                        function(e, data, txtStatus, req) ... )
-            //                  .bind('error',
-            //                        function(e, txtStatus, req) ... );
-            //
-            //  By default, result data will be presented in the div with
-            //  id 'result'
-            // 
-            function rpc_submit(e)
-            {
-                e.preventDefault();
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-
-                var $form   = $(e.target);
-                var url     = document.location.href;
-                
-                url = url.substr(0, url.lastIndexOf('/')+1)
-                    + $form.attr('action');
-
-                // Assemble the Json-RPC structure
-                var id  = rpcId++;
-                var rpc = {
-                    version: 2.0,
-                    method:  $form.find('input[name=method]').val(),
-                    id:      id,
-                    params:  {
-                    }
-                };
-
-                // Include all parameters
-                $form.find('input:not(:hidden,:submit)').each(function() {
-                    var $field  = $(this);
-
-                    switch ($field.attr('type'))
-                    {
-                    case 'checkbox':
-                    case 'radio':
-                        rpc.params[ $field.attr('name') ] =
-                                                    $field.attr('checked');
-                        break;
-
-                    default:
-                        rpc.params[ $field.attr('name') ] = $field.val();
-                        break;
-                    }
-                });
-
-                // Invoke the Json-RPC
-                $.ajax({
-                    type:     $form.attr('method'),
-                    url:      $form.attr('action'),
-                    data:     JSON.stringify(rpc),
-                    dataType: 'json',
-                    success: function(data, txtStatus, req) {
-                        $form.trigger('success', [data, txtStatus, req]);
-
-                        // Results are in data.result
-                        //      iff ( (data.error == null) &&
-                        //            (data.id    == id) )
-                    },
-                    error: function(req, txtStatus, e) {
-                        $form.trigger('error', [txtStatus, req]);
-                    }
-                });
-            }
-
-            function bindForms()
-            {
-                $('#services form')
-                    .bind('submit.rpc',  rpc_submit);
-            }
-     */
-	_create: function(){
-		var self    = this;
+        rpcId:              1       // The initial RPC identifier
+    },
+    _create: function(){
+        var self    = this;
         var opts    = self.options;
 
         self.$input    = self.element.find('.scopeEntry :text');
@@ -3878,46 +3799,8 @@ $.widget("ui.itemScope", {
         }
         else if (opts.jsonRpc !== undefined)
         {
-            var rpcId   = 1;
-
             // Default source
-            source = function(request, response) {
-                        var id      = rpcId++;
-                        var data    = {
-                            version:    '2.0',
-                            id:         id
-                        };
-
-                        data = $.extend(data, opts.jsonRpc.service);
-                        data.params.str = request.term;
-
-				        $.ajax({
-                            type:       opts.jsonRpc.transport,
-					        url:        opts.jsonRpc.target,
-					        dataType:   "json",
-                            data:       JSON.stringify(data),
-                            success:    function(ret, txtStatus, req){
-                                response(
-                                    $.map(ret.result,
-                                          function(item) {
-                                            return {
-                                                label: item.tag +': '+
-                                                       item.itemCount,
-                                                value: item.tag
-                                            };
-                                          }));
-                                self.element.trigger('success',
-                                                     [ret,
-                                                      txtStatus,
-                                                      req]);
-                            },
-                            error:      function(req, txtStatus, e) {
-                                self.element.trigger('error',
-                                                     [txtStatus,
-                                                      req]);
-                            }
-                        });
-            };
+            source = self._jsonRpc;
         }
 
         self.$input.autocomplete({
@@ -3927,7 +3810,48 @@ $.widget("ui.itemScope", {
         });
 
         self._bindEvents();
-	},
+    },
+
+    _jsonRpc: function(request, response) {
+        var self    = this;
+        var opts    = self.options;
+        var id      = opts.rpcId++;
+        var data    = {
+            version:    '2.0',
+            id:         id,
+            method:     opts.jsonRpc.method,
+            params:     opts.jsonRpc.params
+        };
+
+        data.params.str = request.term;
+
+        $.ajax({
+            type:       opts.jsonRpc.transport,
+            url:        opts.jsonRpc.target,
+            dataType:   "json",
+            data:       JSON.stringify(data),
+            success:    function(ret, txtStatus, req){
+                response(
+                    $.map(ret.result,
+                          function(item) {
+                            return {
+                                label: item.tag +': '+
+                                       item.itemCount,
+                                value: item.tag
+                            };
+                          }));
+                self.element.trigger('success',
+                                     [ret,
+                                      txtStatus,
+                                      req]);
+            },
+            error:      function(req, txtStatus, e) {
+                self.element.trigger('error',
+                                     [txtStatus,
+                                      req]);
+            }
+        });
+    },
 
     _bindEvents: function() {
         var self    = this;
