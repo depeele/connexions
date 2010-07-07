@@ -1,1 +1,1 @@
-jquery-ui-1.8.js
+jquery-ui-1.8.2.js
