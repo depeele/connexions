@@ -3772,15 +3772,25 @@ $.widget("ui.sidebar", {
  *      ui.input.js  OR ui.autocomplete.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
-/*global jQuery:false, window:false */
+/*global jQuery:false, window:false, document:false */
 (function($){
 
 $.widget("ui.itemScope", {
     options: {
         namespace:          '',     // Cookie/parameter namespace
-        autocompleteSrc:    null,   // The source of auto-completion data
-                                    // (if non-null, passed to ui.autocomplete)
-        rpcId:              1       // The initial RPC identifier
+        jsonRpc:            null,   /* Json-RPC information:
+                                     *  { transport:    'POST' | 'GET',
+                                     *    target:       RPC URL,
+                                     *    method:       RPC method name,
+                                     *    params:       {
+                                     *      key/value parameter pairs
+                                     *    }
+                                     *  }
+                                     */
+        rpcId:              1,      // The initial RPC identifier
+
+        separator:          ',',    // The term separator
+        minLength:          2       // Minimum term length
     },
     _create: function(){
         var self    = this;
@@ -3791,23 +3801,37 @@ $.widget("ui.itemScope", {
         self.$submit   = self.element.find('.scopeEntry :submit');
 
         self.$input.input();
-
-        var source  = null;
-        if (opts.autocompleteSrc !== null)
+        if (opts.jsonRpc !== null)
         {
-            source = opts.autocompleteSrc;
-        }
-        else if (opts.jsonRpc !== undefined)
-        {
-            // Default source
-            source = self._jsonRpc;
-        }
+            self.$input.autocomplete({
+                source:     function(request, response) {
+                    return self._jsonRpc(request,response);
+                },
+                search:     function() {
+                    var term    = self._curTerm();
+                    if (term.length < opts.minLength)
+                    {
+                        return false;
+                    }
+                },
+                focus:      function() {
+                    // prevent insertion on focus
+                    return false;
+                },
+                select:     function(event, ui) {
+                    var val = opts.val.substring(0, opts.start)
+                            + ui.item.value
+                            + opts.val.substring(opts.end)
+                            + opts.separator
+                            + ' ';
 
-        self.$input.autocomplete({
-            source:     source,
-            delay:      200,
-            minLength:  2
-        });
+                    this.value = val;
+                    return false;
+                },
+                delay:      200,
+                minLength:  opts.minLength
+            });
+        }
 
         self._bindEvents();
     },
@@ -3823,7 +3847,7 @@ $.widget("ui.itemScope", {
             params:     opts.jsonRpc.params
         };
 
-        data.params.str = request.term;
+        data.params.str = opts.term;    //self._curTerm();  //request.term;
 
         $.ajax({
             type:       opts.jsonRpc.transport,
@@ -3851,6 +3875,91 @@ $.widget("ui.itemScope", {
                                       req]);
             }
         });
+    },
+
+    _curTerm: function() {
+        var self    = this;
+        var opts    = self.options;
+
+        opts.start  = self._selectionStart();
+        opts.end    = self._selectionEnd();
+        opts.val    = self.$input.val();
+        if (opts.start === opts.end)
+        {
+            /* Current term is NOT selected.  Look backward from 'start' to
+             * find the previous separator, and forward from 'end' to the next
+             * separator.
+             */
+            opts.end    = opts.val.indexOf(opts.separator, opts.start);
+            if (opts.end < 0)
+            {
+                opts.end = opts.val.length;
+            }
+
+            var sep     = opts.val.indexOf(opts.separator, 0);
+            var newSt   = 0;
+            while ((sep >= 0) && (sep < opts.start))
+            {
+                while ( (sep < opts.end) &&
+                        (opts.val.substr(++sep,1).match(/\s/)) )
+                {
+                }
+
+                newSt = sep;
+                sep   = opts.val.indexOf(opts.separator, sep);
+            }
+
+            opts.start = newSt;
+        }
+
+        opts.term = opts.val.substring(opts.start, opts.end);
+
+        return opts.term;
+    },
+
+    _selectionStart: function() {
+        var self    = this;
+        var val     = 0;
+        if (self.$input[0].createTextRange)
+        {
+            // IE
+            var range   = document.selection.createRange().duplicate();
+            var ival    = self.$input.val();
+            range.moveEnd('character', ival.length);
+            if (range.text === '')
+            {
+                val = ival.length;
+            }
+            else
+            {
+                val = ival.lastIndexOf(range.text);
+            }
+        }
+        else
+        {
+            val = self.$input.attr('selectionStart');
+        }
+
+        return val;
+    },
+
+    _selectionEnd: function() {
+        var self    = this;
+        var val     = 0;
+        if (self.$input[0].createTextRange)
+        {
+            // IE
+            var range   = document.selection.createRange().duplicate();
+            var ival    = self.$input.val();
+            range.moveEnd('character', -(ival.length));
+            val = range.text.length;
+        }
+        else
+        {
+            val = self.$input.attr('selectionEnd');
+        }
+
+        return val;
     },
 
     _bindEvents: function() {
@@ -3893,7 +4002,12 @@ $.widget("ui.itemScope", {
                     // Changing scope -- adjust the form's action
                     var loc     = window.location;
                     var url     = loc.toString();
-                    var scope   = self.$input.val();
+                    var scope   = self.$input.val().replace(/\s*,\s*/g, ',')
+                                                   .replace(/,$/, '');
+                    if (url[url.length-1] !== '/')
+                    {
+                        url += '/';
+                    }
 
                     if (scope.length > 0)
                     {
@@ -3921,14 +4035,11 @@ $.widget("ui.itemScope", {
         var opts    = self.options;
 
         // Destroy widgets
-        if (opts.autocompleteSrc !== null)
+        if (opts.jsonRpc !== null)
         {
             self.$input.autocomplete('destroy');
         }
-        else
-        {
-            self.$input.input('destroy');
-        }
+        self.$input.input('destroy');
 
         // Unbind events
         self.element.find('.deletable a.delete').unbind('.itemScope');

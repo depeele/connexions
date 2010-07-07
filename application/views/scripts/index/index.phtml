@@ -75,23 +75,19 @@ $htmlItemScope = $this->htmlItemScope( array(
                     'inputName'         => 'Tags',
                     'path'              => $scopePath,
                     'jsonRpc'           => array(
-                        // SMD
-                        'target'        => $this->baseurl('/api/v1/json-rpc'),
-                        'envelope'      => 'JSON-RPC-2.0',
-                        'contentType'   => 'application/json',
+                        'target'        =>
+                                    $this->baseurl('/api/v1/json-rpc.php'),
                         'transport'     => 'POST',
 
-                        'service'       => array(
-                            // Json-RPC
-                            'method'    => 'bookmark.autocompleteTag',
-                            'params'    => array(
-                                'tags'  => (count($this->tags) < 1
-                                                ? null
-                                                : $this->tags->__toString()),
-                                'users' => ($this->owner === '*'
-                                                ? null
-                                                : $this->owner->name),
-                            ),
+                        // Json-RPC
+                        'method'        => 'bookmark.autocompleteTag',
+                        'params'        => array(
+                            'tags'      => (count($this->tags) < 1
+                                            ? null
+                                            : $this->tags->__toString()),
+                            'users'     => ($this->owner === '*'
+                                            ? null
+                                            : $this->owner->name),
                         ),
                     ),
                     /*
