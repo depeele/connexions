@@ -486,12 +486,13 @@ a:visited { color: #005a9c; }
 
 /* Page Footer */
 #pageFooter { clear: both; margin-top: 1em; border-top: 1px solid #cccccc; padding: 0.5em; z-index: 1; }
-#pageFooter .db-profile { background-color: #cccccc; padding: 0.25em; }
-#pageFooter .db-profile ul { padding: 0 1em; }
-#pageFooter .db-profile ul li { padding: 0; }
-#pageFooter .db-profile ul li dl { padding: 0 1em; }
-#pageFooter .db-profile ul li dl dt { font-weight: bold; }
-#pageFooter .db-profile ul li dl dd { padding: 0 1em; }
+
+.db-profile { background-color: #cccccc; padding: 0.25em; }
+.db-profile ul { padding: 0 1em; }
+.db-profile ul li { padding: 0; }
+.db-profile ul li dl { padding: 0 1em; }
+.db-profile ul li dl dt { font-weight: bold; }
+.db-profile ul li dl dd { padding: 0 1em; }
 
 /* Columns */
 .columnHeader { height: 3em; }

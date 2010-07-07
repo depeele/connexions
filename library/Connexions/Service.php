@@ -160,6 +160,27 @@ abstract class Connexions_Service
      */
     public function csList2set($csList, $order = null)
     {
+        if (is_object($csList))
+        {
+            /* Handle the case where we're passed a Connexions_Model_Set or
+             * Connexions_Model
+             */
+            if ($csList instanceof Connexions_Model_Set)
+                return $csList;
+
+            if ($csList instanceof Connexions_Model)
+            {
+                /* Create an empty set and add this Connexions_Model instance
+                 * as its only member.
+                 */
+                $mapper = $csList->getMapper();
+                $set    = $mapper->makeEmptySet();
+                $set->setResults(array($csList));
+
+                return $set;
+            }
+        }
+
         $ids = $this->_csList2array($csList);
         if ( (! is_array($ids)) || empty($ids) )
         {
@@ -171,6 +192,9 @@ abstract class Connexions_Service
             $order   = $this->_csOrder2array($order);
 
             /*
+            Connexions::log("Connexions_Service::csList2set(): "
+                            . "csList[ %s ]",
+                            Connexions::varExport($csList));
             Connexions::log("Connexions_Service::csList2set(): "
                             . "ids[ %s ]",
                             Connexions::varExport($ids));

@@ -25,7 +25,16 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
                                          *            ...)
                                          */
 
-        'jsonRpc'           => null,    //  Json-Rpc call data;
+        'jsonRpc'           => null,    /*  Json-Rpc call data of the form:
+                                         *      {target:    % RPC URL %,
+                                         *       transport: % POST | GET %,
+                                         *       method:    % RPC method %,
+                                         *       params:    {
+                                         *          rpc parameter(s)
+                                         *       }
+                                         *      }
+                                         */
+
 
         'items'             => null,    /* The set of items to be presented
                                          *  MUST implement the
@@ -69,7 +78,14 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
      *                                            array(root-name => root-url,
      *                                                  item-name => item-url,
      *                                                  ...)
-     *                      - jsonRpc           Json-Rpc call data;
+     *                      - jsonRpc           Json-Rpc call data of the form:
+     *                                              {target:    % RPC URL %,
+     *                                               transport: % POST | GET %,
+     *                                               method:    % RPC method %,
+     *                                               params:    {
+     *                                                  rpc parameter(s)
+     *                                               }
+     *                                              }
      *
      *  @return $this for a fluent interface.
      */
@@ -264,15 +280,26 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
             // Grab the original request URL and clean it up.
             $reqUrl = Connexions::getRequestUri();
 
+            $src    = $scope->getSource();
+            /*
+            Connexions::log("HtmlItemScope: reqUrl[ %s ], "
+                            .   "scope source[ %s ]",
+                            $reqUrl, $src);
+            // */
+
                       // remove the query/fragment
             $reqUrl = preg_replace('/[\?#].*$/', '',  $reqUrl);
             $reqUrl = urldecode($reqUrl);
                       // collapse white-space
             $reqUrl = preg_replace('/\s\s+/',    ' ', $reqUrl);
             $reqUrl = rtrim($reqUrl, " \t\n\r\0\x0B/");
-            $reqUrl = str_replace('/'. $scope->getSource(), '', $reqUrl);
+            $reqUrl = str_replace('/'. $src, '', $reqUrl);
         
-            //Connexions::log("ItemScope: reqUrl[ {$reqUrl} ]");
+            /*
+            Connexions::log("HtmlItemScope: Adjusted reqUrl[ %s ]",
+                            $reqUrl);
+            // */
+
         
             $validList = preg_split('/\s*,\s*/', $scope->__toString());
             foreach ($validList as $idex => $name)
