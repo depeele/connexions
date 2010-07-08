@@ -330,20 +330,37 @@ class Model_Bookmark extends Model_Base
 
             $str .= sprintf ("%s%-15s == %-15s %s [\n%s%s]\n",
                              str_repeat(' ', $indent + 1),
-                             'user', get_class($user),
+                             'user',
+                             (is_object($user)
+                                ? get_class($user)
+                                : gettype($user)),
                              ' ',
-                             $user->debugDump($indent + 2, true),
-                             str_repeat(' ', $indent + 1))
-                 .  sprintf ("%s%-15s == %-15s %s [ %s ]\n",
+                             (is_object($user)
+                                ? $user->debugDump($indent + 2, true)
+                                : ''),
+                             str_repeat(' ', $indent + 1));
+
+            $str .= sprintf ("%s%-15s == %-15s %s [ %s ]\n",
                              str_repeat(' ', $indent + 1),
-                             'item', get_class($item),
+                             'item',
+                             (is_object($item)
+                                ? get_class($item)
+                                : gettype($item)),
                              ' ',
-                             $item->debugDump($indent + 2, true))
-                 .  sprintf ("%s%-15s == %-15s %s [ %s ]\n",
+                             (is_object($item)
+                                ?  $item->debugDump($indent + 2, true)
+                                : ''));
+
+            $str .= sprintf ("%s%-15s == %-15s %s [ %s ]\n",
                              str_repeat(' ', $indent + 1),
-                             'tags', get_class($tags),
+                             'tags',
+                             (is_object($tags)
+                                ? get_class($tags)
+                                : gettype($tags)),
                              ' ',
-                             $tags->debugDump($indent + 2, true));
+                             (is_object($tags)
+                                ? $tags->debugDump($indent + 2, true)
+                                : ''));
 
             if ($leaveOpen !== true)
                 $str .= str_repeat(' ', $indent) .'];';
