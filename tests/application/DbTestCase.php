@@ -3,6 +3,17 @@ abstract class DbTestCase extends Zend_Test_PHPUnit_DatabaseTestCase
 {
     private $_connectionMock    = null;
 
+    protected static    $toArray_deep_all       = array(
+        'deep'      => true,
+        'public'    => false,
+        'dirty'     => false,
+    );
+    protected static    $toArray_shallow_all    = array(
+        'deep'      => false,
+        'public'    => false,
+        'dirty'     => false,
+    );
+
     protected function getConnection()
     {
         if ($this->_connectionMock === null)

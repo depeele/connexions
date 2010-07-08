@@ -444,17 +444,20 @@ abstract class Connexions_Model_Set
     }
 
     /** @brief  Return an array version of this instance.
-     *  @param  deep    Should any associated models be retrieved?
-     *                      [ Connexions_Model::DEPTH_DEEP ] |
-     *                        Connexions_Model::DEPTH_SHALLOW
-     *  @param  public  Include only "public" information?
-     *                      [ Connexions_Model::FIELDS_PUBLIC ] |
-     *                        Connexions_Model::FIELDS_ALL
+     *  @param  props   Generation properties:
+     *                      - deep      Deep traversal (true)
+     *                                    or   shallow (false)
+     *                                    [true];
+     *                      - public    Include only public fields (true)
+     *                                    or  also include private (false)
+     *                                    [true];
+     *                      - dirty     Include only dirty fields (true)
+     *                                    or           all fields (false);
+     *                                    [false];
      *
      *  @return An array representation of this Domain Model.
      */
-    public function toArray($deep   = Connexions_Model::DEPTH_SHALLOW,
-                            $public = Connexions_Model::FIELDS_PUBLIC)
+    public function toArray(array $props    = array())
     {
         $res = array();
         foreach ($this->_members as $idex => $item)
@@ -468,7 +471,7 @@ abstract class Connexions_Model_Set
             }
 
             if ($item instanceof Connexions_Model)
-                array_push($res, $item->toArray($deep, $public));
+                array_push($res, $item->toArray( $props ));
             else if (is_object($item) && method_exists($item, 'toArray'))
                 array_push($res, $item->toArray());
             else if (is_array($item))

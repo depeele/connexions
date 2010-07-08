@@ -76,6 +76,32 @@ class Connexions
         return preg_replace('/\s*$\s+/ms', '', var_export($var, true));
     }
 
+    /** @brief  Generate a backtrace without an overwhelming amount a detailed
+     *          object data.
+     *  @param  return      Return the backtrace as a string (false) or print
+     *                      it out directly (true)   [ false ].
+     *
+     *  @return The backtrace as a string if 'return' is true.
+     */
+    public static function backtrace($return = false)
+    {
+        $bt = debug_backtrace();
+
+        $ret = '';
+        array_shift($bt);
+        foreach ($bt as $item)
+        {
+            $str = self::_sprint_backtrace($item);
+            if ($return)
+                $ret .= $str;
+            else
+                echo $str;
+        }
+
+        if ($return)
+            return ($ret);
+    }
+
     /** @brief  Return the current Database Adapter.
      *
      *  Note: The database adapter is established on boot via:
@@ -570,6 +596,56 @@ class Connexions
         }
 
         return false;
+    }
+
+    /*************************************************************************
+     * Protected helpers
+     *
+     */
+
+    /** @brief  Generate a string representation of a backtrace item.
+     *  @param  item    The backtrace item.
+     *
+     *  @return A string representation.
+     */
+    protected static function _sprint_backtrace($item)
+    {
+        $str = sprintf ("%s line %d: %s%s(",
+                        $item['file'], $item['line'],
+                        (! empty($item['class'])
+                            ? $item['class'] .'::'
+                            : ''),
+                        $item['function']);
+
+        foreach ($item['args'] as $idex => $arg)
+        {
+            switch (gettype($arg))
+            {
+            case 'boolean':
+                $type = 'boolean';
+                $val  = ($arg ? 'true' : 'false');
+                break;
+            case 'object':
+                $type = get_class($arg);
+                if (! method_exists($arg, '__toString'))
+                {
+                    $val = 'Object';
+                    break;
+                }
+                // fall through
+
+            default:
+                $val = strval($arg);
+                break;
+            }
+
+            $str .= sprintf ("%s%s[%s]",
+                             ($idex > 0 ? ', ' : ''),
+                             $type, $val);
+        }
+        $str .= ")\n";
+
+        return $str;
     }
 
 }

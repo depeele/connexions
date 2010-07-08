@@ -184,6 +184,12 @@ class Model_UserAuth extends Model_Base
                 $credential = $mdVal;
             }
             break;
+
+        case self::AUTH_OPENID:
+        case self::AUTH_PKI:
+        default:
+            // by default, do nothing
+            break;
         }
 
         return $credential;

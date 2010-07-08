@@ -242,29 +242,32 @@ class Model_Bookmark extends Model_Base
     }
 
     /** @brief  Return an array version of this instance.
-     *  @param  deep    Should any associated models be retrieved?
-     *                      [ Connexions_Model::DEPTH_DEEP ] |
-     *                        Connexions_Model::DEPTH_SHALLOW
-     *  @param  public  Include only "public" information?
-     *                      [ Connexions_Model::FIELDS_PUBLIC ] |
-     *                        Connexions_Model::FIELDS_ALL
+     *  @param  props   Generation properties:
+     *                      - deep      Deep traversal (true)
+     *                                    or   shallow (false)
+     *                                    [true];
+     *                      - public    Include only public fields (true)
+     *                                    or  also include private (false)
+     *                                    [true];
+     *                      - dirty     Include only dirty fields (true)
+     *                                    or           all fields (false);
+     *                                    [false];
      *
      *  @return An array representation of this Domain Model.
      */
-    public function toArray($deep   = self::DEPTH_SHALLOW,
-                            $public = self::FIELDS_PUBLIC)
+    public function toArray(array $props    = array())
     {
-        $data = $this->_data;
+        $data = parent::toArray($props);
 
-        if ($deep === self::DEPTH_DEEP)
+        if ($props['deep'] !== false)
         {
             // User: Force resolution via '->user' vs '->_user'
             if ($this->user !== null)
-                $data['user'] = $this->user->toArray( $deep, $public );
+                $data['user'] = $this->user->toArray( $props );
 
             // Item: Force resolution via '->item' vs '->_item'
             if ($this->item !== null)
-                $data['item'] = $this->item->toArray( $deep, $public );
+                $data['item'] = $this->item->toArray( $props );
 
             // Tags: Force resolution via '->tags' vs '->_tags'
             if ($this->tags !== null)
@@ -273,7 +276,7 @@ class Model_Bookmark extends Model_Base
                 $reducedTags = array();
                 foreach ($this->tags as $idex => $tag)
                 {
-                    array_push($reducedTags, $tag->toArray(  $deep, $public ));
+                    array_push($reducedTags, $tag->toArray(  $props ));
                 }
 
                 $data['tags'] = $reducedTags;

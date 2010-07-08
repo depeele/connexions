@@ -161,7 +161,6 @@ class BookmarkDbTest extends DbTestCase
         parent::tearDown();
     }
 
-
     public function testBookmarkRetrieveById1()
     {
         $expected  = $this->_bookmark1;
@@ -187,8 +186,7 @@ class BookmarkDbTest extends DbTestCase
         // */
 
         $this->assertEquals($expected,
-                            $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
-                                                Connexions_Model::FIELDS_ALL ));
+                            $bookmark->toArray(self::$toArray_deep_all));
     }
 
     public function testBookmarkIdentityMap()
@@ -217,21 +215,18 @@ class BookmarkDbTest extends DbTestCase
         // Force retrievals
         $user = $bookmark->user;
         $this->assertEquals($this->_user1,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
 
         $item = $bookmark->item;
         $this->assertEquals($this->_item1,
-                            $item->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $item->toArray(self::$toArray_shallow_all));
 
         $tags = $bookmark->tags;
         $tags2 = array();
         foreach ($tags as $idex => $tag)
         {
             array_push($tags2,
-                       $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                      Connexions_Model::FIELDS_ALL ));
+                       $tag->toArray(self::$toArray_shallow_all));
         }
         $this->assertEquals($this->_tags1, $tags2);
 
@@ -239,8 +234,7 @@ class BookmarkDbTest extends DbTestCase
         $bookmark->invalidateCache();
 
         $this->assertEquals($expected,
-                            $bookmark->toArray(Connexions_Model::DEPTH_SHALLOW,
-                                               Connexions_Model::FIELDS_ALL ));
+                            $bookmark->toArray(self::$toArray_shallow_all));
     }
 
     public function testBookmarkUser()
@@ -253,8 +247,7 @@ class BookmarkDbTest extends DbTestCase
 
         $user = $bookmark->user;
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
     }
 
     public function testBookmarkItem()
@@ -267,8 +260,7 @@ class BookmarkDbTest extends DbTestCase
 
         $item = $bookmark->item;
         $this->assertEquals($expected,
-                            $item->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $item->toArray(self::$toArray_shallow_all));
     }
 
     public function testBookmarkTags()
@@ -295,8 +287,7 @@ class BookmarkDbTest extends DbTestCase
             // */
 
             $this->assertEquals($expected[$idex],
-                                $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                               Connexions_Model::FIELDS_ALL ));
+                                $tag->toArray(self::$toArray_shallow_all));
         }
     }
 
@@ -328,8 +319,7 @@ class BookmarkDbTest extends DbTestCase
         $this->assertTrue(  $bookmark->isBacked() );
         $this->assertTrue(  $bookmark->isValid() );
         $this->assertEquals($expected,
-                            $bookmark->toArray(Connexions_Model::DEPTH_SHALLOW,
-                                               Connexions_Model::FIELDS_ALL ));
+                            $bookmark->toArray(self::$toArray_shallow_all));
 
         $bookmark = $bookmark->save();
 
@@ -338,8 +328,7 @@ class BookmarkDbTest extends DbTestCase
         //$expected['user']['lastVisit'] = $bookmark->user->lastVisit;
 
         $this->assertEquals($expected,
-                            $bookmark->toArray(Connexions_Model::DEPTH_SHALLOW,
-                                               Connexions_Model::FIELDS_ALL ));
+                            $bookmark->toArray(self::$toArray_shallow_all));
 
         // Check the database consistency
         $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
@@ -468,8 +457,7 @@ class BookmarkDbTest extends DbTestCase
 
         /*
         $this->assertEquals($expected,
-                            $bookmark->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                                Connexions_Model::FIELDS_ALL ));
+                            $bookmark->toArray(self::$toArray_shallow_all));
         */
         try
         {
@@ -749,8 +737,7 @@ class BookmarkDbTest extends DbTestCase
         $this->assertEquals($expectedCount, count($bookmarks));
         $this->assertEquals($expectedTotal, $bookmarks->getTotalCount());
 
-        $actual = $bookmarks->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                       Connexions_Model::FIELDS_ALL );
+        $actual = $bookmarks->toArray(self::$toArray_shallow_all);
 
         /*
         printf("testBookmarkSetLimitOrder: actual[ %s ]", $bookmarks);
@@ -903,9 +890,7 @@ class BookmarkDbTest extends DbTestCase
         foreach ($paginator as $idex => $item)
         {
             $this->assertEquals( $expected[$idex],
-                                 $item->toArray(
-                                       Connexions_Model::DEPTH_SHALLOW,
-                                       Connexions_Model::FIELDS_ALL ) );
+                                 $item->toArray(self::$toArray_shallow_all));
         }
     }
 }

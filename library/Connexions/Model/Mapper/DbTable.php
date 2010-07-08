@@ -62,23 +62,16 @@ abstract class Connexions_Model_Mapper_DbTable
         $accessor = $this->getAccessor();
         $data     = $this->reduceModel( $domainModel );
 
-        /*
-        Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
-                        . "reduced[ %s ]",
-                        get_class($this),
-                        Connexions::varExport($data));
-        // */
-
         if (! $domainModel->isBacked())
         {
-            /*
+            // Insert new record
+            // /*
             Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
                             . "EMPTY id, insert new model[ %s ]",
                             get_class($this),
                             Connexions::varExport($data));
             // */
 
-            // Insert new record
             $id        = $accessor->insert( $data );
             $operation = 'insert';
 
@@ -98,33 +91,18 @@ abstract class Connexions_Model_Mapper_DbTable
                                    $this->getId($domainModel));
             $where = $this->_where($id);
 
-            /*
+            // /*
             Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
-                            . "update model[ %s ]",
+                            . "update model[ %s ], where[ %s ]",
                             get_class($this),
-                            Connexions::varExport($data));
-            Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
-                            . "update where[ %s ]",
-                            get_class($this),
+                            Connexions::varExport($data),
                             Connexions::varExport($where));
+            // */
+            /*
             Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
                             . "update id[ %s ]",
                             get_class($this),
                             Connexions::varExport($id));
-            // */
-
-            // Remove keys from the update data
-            $data = array_diff_assoc($data, $id);
-
-            /*
-            Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
-                            . "update new Model[ %s ]",
-                            get_class($this),
-                            Connexions::varExport($data));
-            Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
-                            . "update where2[ %s ]",
-                            get_class($this),
-                            Connexions::varExport($where));
             // */
 
             $accessor->update( $data, $where );
@@ -481,8 +459,8 @@ abstract class Connexions_Model_Mapper_DbTable
         /*
         Connexions::log("Connexions_Model_Mapper_DbTable::reduceModel(): "
                         . "is %sbacked, %skeep keys: data[ %s ]",
-                        ($model->isBacked() ? '' : 'NOT '),
-                        ($keepKeys          ? '' : 'DO NOT '),
+                        ($model->isBacked()    ? '' : 'NOT '),
+                        ( ($keepKeys === true) ? '' : 'DO NOT '),
                         Connexions::varExport($data));
         // */
 

@@ -14,14 +14,6 @@ abstract class Connexions_Model
      */
     const       NO_INSTANCE         = -1;
 
-    /** @brief  Constants For toArray() */
-    const       DEPTH_DEEP          = true;
-    const       DEPTH_SHALLOW       = false;
-
-    const       FIELDS_PUBLIC       = true;
-    const       FIELDS_ALL          = false;
-
-
     /** @brief  A cache of instances, by class name */
     static protected    $_instCache = array();
 
@@ -244,19 +236,38 @@ abstract class Connexions_Model
     }
 
     /** @brief  Return an array version of this instance.
-     *  @param  deep    Should any associated models be retrieved?
-     *                      [ Connexions_Model::DEPTH_DEEP ] |
-     *                        Connexions_Model::DEPTH_SHALLOW
-     *  @param  public  Include only "public" information?
-     *                      [ Connexions_Model::FIELDS_PUBLIC ] |
-     *                        Connexions_Model::FIELDS_ALL
+     *  @param  props   Generation properties:
+     *                      - deep      Deep traversal (true)
+     *                                    or   shallow (false)
+     *                                    [true];
+     *                      - public    Include only public fields (true)
+     *                                    or  also include private (false)
+     *                                    [true];
+     *                      - dirty     Include only dirty fields (true)
+     *                                    or           all fields (false);
+     *                                    [false];
      *
      *  @return An array representation of this Domain Model.
      */
-    public function toArray($deep   = self::DEPTH_SHALLOW,
-                            $public = self::FIELDS_PUBLIC)
+    public function toArray(array $props    = array())
     {
-        return $this->_data;
+        if ( $props['dirty'] === true )
+        {
+            $ret = array();
+            foreach ($this->_data as $key => $val)
+            {
+                if ( isset($this->_dirty[$key]))
+                {
+                    $ret[$key] = $val;
+                }
+            }
+        }
+        else
+        {
+            $ret = $this->_data;
+        }
+
+        return $ret;
     }
 
     /** @brief  Invalidate the data contained in this model instance.

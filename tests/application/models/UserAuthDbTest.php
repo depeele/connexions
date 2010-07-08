@@ -110,8 +110,7 @@ class UserAuthDbTest extends DbTestCase
         $user = $userAuth->user;
 
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
     }
 
     public function testUserAuthRetrieveById2()

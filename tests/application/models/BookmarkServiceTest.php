@@ -203,8 +203,7 @@ class BookmarkServiceTest extends DbTestCase
 
         $this->assertNotEquals(null, $bookmark);
         $this->assertEquals($expected,
-                            $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
-                                                Connexions_Model::FIELDS_ALL ));
+                            $bookmark->toArray(self::$toArray_deep_all));
     }
 
     public function testBookmarkRetrieveById2()
@@ -225,8 +224,7 @@ class BookmarkServiceTest extends DbTestCase
 
         $this->assertNotEquals(null, $bookmark);
         $this->assertEquals($expected,
-                            $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
-                                                Connexions_Model::FIELDS_ALL ));
+                            $bookmark->toArray(self::$toArray_deep_all));
     }
 
     public function testBookmarkRetrieveById3()
@@ -248,8 +246,7 @@ class BookmarkServiceTest extends DbTestCase
 
         $this->assertNotEquals(null, $bookmark);
         $this->assertEquals($expected,
-                            $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
-                                                Connexions_Model::FIELDS_ALL ));
+                            $bookmark->toArray(self::$toArray_deep_all));
     }
 
     public function testBookmarkServiceFetch1()
@@ -779,8 +776,7 @@ class BookmarkServiceTest extends DbTestCase
         $expected['updatedOn']         = $bookmark->updatedOn;
         $expected['user']['lastVisit'] = $bookmark->user->lastVisit;
 
-        $actual = $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
-                                      Connexions_Model::FIELDS_ALL );
+        $actual = $bookmark->toArray(self::$toArray_deep_all);
 
         //echo "Expected:\n", print_r($expected, true), "\n\n";
         //echo "Actual:\n",   print_r($actual,   true), "\n\n";
@@ -848,8 +844,7 @@ class BookmarkServiceTest extends DbTestCase
         $expected['updatedOn']         = $bookmark->updatedOn;
         $expected['user']['lastVisit'] = $bookmark->user->lastVisit;
 
-        $actual = $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
-                                      Connexions_Model::FIELDS_ALL );
+        $actual = $bookmark->toArray(self::$toArray_deep_all);
 
         //echo "Expected:\n", print_r($expected, true), "\n\n";
         //echo "Actual:\n",   print_r($actual,   true), "\n\n";
@@ -919,8 +914,7 @@ class BookmarkServiceTest extends DbTestCase
         $expected['updatedOn']         = $bookmark->updatedOn;
         $expected['user']['lastVisit'] = $bookmark->user->lastVisit;
 
-        $actual = $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
-                                      Connexions_Model::FIELDS_ALL );
+        $actual = $bookmark->toArray(self::$toArray_deep_all);
 
         //echo "Expected:\n", print_r($expected, true), "\n\n";
         //echo "Actual:\n",   print_r($actual,   true), "\n\n";
@@ -1000,8 +994,7 @@ class BookmarkServiceTest extends DbTestCase
         $expected['updatedOn']         = $bookmark->updatedOn;
         $expected['user']['lastVisit'] = $bookmark->user->lastVisit;
 
-        $actual = $bookmark->toArray( Connexions_Model::DEPTH_DEEP,
-                                      Connexions_Model::FIELDS_ALL );
+        $actual = $bookmark->toArray(self::$toArray_deep_all);
 
         //echo "Expected:\n", print_r($expected, true), "\n\n";
         //echo "Actual:\n",   print_r($actual,   true), "\n\n";

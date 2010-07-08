@@ -208,21 +208,24 @@ class Model_User extends Model_Taggable
     }
 
     /** @brief  Return an array version of this instance.
-     *  @param  deep    Should any associated models be retrieved?
-     *                      [ Connexions_Model::DEPTH_DEEP ] |
-     *                        Connexions_Model::DEPTH_SHALLOW
-     *  @param  public  Include only "public" information?
-     *                      [ Connexions_Model::FIELDS_PUBLIC ] |
-     *                        Connexions_Model::FIELDS_ALL
+     *  @param  props   Generation properties:
+     *                      - deep      Deep traversal (true)
+     *                                    or   shallow (false)
+     *                                    [true];
+     *                      - public    Include only public fields (true)
+     *                                    or  also include private (false)
+     *                                    [true];
+     *                      - dirty     Include only dirty fields (true)
+     *                                    or           all fields (false);
+     *                                    [false];
      *
      *  @return An array representation of this Domain Model.
      */
-    public function toArray($deep   = self::DEPTH_SHALLOW,
-                            $public = self::FIELDS_PUBLIC)
+    public function toArray(array $props    = array())
     {
-        $data = $this->_data;
+        $data = parent::toArray($props);
 
-        if ($public === self::FIELDS_PUBLIC)
+        if ($props['public'] !== false)
         {
             unset($data['apiKey']);
         }
