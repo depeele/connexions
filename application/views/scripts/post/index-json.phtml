@@ -1,0 +1,32 @@
+<?php
+/** @file
+ *
+ *  View script for PostController::index rendered as JSON.
+ *  
+ *  Incoming members:
+ *     viewer       The Model_User instance representing the current viewer
+ *                  (posting user);
+ *     postInfo     The data of the new post;
+ *     bookmark     The bookmark that matches the postInfo
+ *                  (on GET,  represents any bookmark that matches initial
+ *                   on POST, represents the new/updated bookmark data);
+ *     error        If set, and non-empty, indicates an error;
+ */
+if (! @is_array($this->postInfo))
+    $this->postInfo = array();
+
+
+$res = array();
+if (empty($this->error))
+{
+    $res = array('results'  => ($bookmark === null
+                                    ? $this->postInfo
+                                    : $bookmark->toArray()),
+                 'error'    => null);
+}
+else
+{
+    $res = array('error'    => $this->error);
+}
+
+$this->data = $res;

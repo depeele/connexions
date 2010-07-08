@@ -16,16 +16,19 @@
     @include corners(8px, 0, 0, 8px);
   }
   .legend {
-    margin-left: 48px;
-    padding-right: 0;
-    text-align: left;
+    margin-left:    48px;
+    padding-right:  0;
+    text-align:     left;
+    width:          8em;
     .context-bg {
       position: absolute;
       left: -48px;
       @include corners(8px, 0, 0, 0);
     }
     h1 {
-      padding: 0 2em 0 0.2em;
+      padding:      0 2em 0 0.2em;
+      font-size:    1.25em;
+      font-weight:  bold;
     }
     p {
       padding: 0 0 0 0.5em;

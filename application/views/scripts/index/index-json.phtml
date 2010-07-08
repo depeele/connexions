@@ -48,7 +48,10 @@ $paginator = $bookmarks->paginator;
 $items = array();
 foreach ($bookmarks->paginator as $item)
 {
-    array_push($items, $item->toArray(true));
+    //array_push($items, $item->toArray( ));
+    array_push($items, $item->toArray( array('deep'     => false,
+                                             'public'   => true,
+                                             'dirty'    => false)) );
 }
 
 $this->data = $items;

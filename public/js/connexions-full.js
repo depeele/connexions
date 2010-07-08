@@ -202,7 +202,7 @@
         return this.each(function() {
             var $spin       = $('#pageHeader h1 a img');
             var $el         = $(this);
-            var $overlay    = $el.find('ui-widget-overlay');
+            var $overlay    = $el.find('.ui-widget-overlay');
 
             $overlay.remove();
 

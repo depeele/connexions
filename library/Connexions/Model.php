@@ -122,6 +122,12 @@ abstract class Connexions_Model
             // ASSUME the 'config' data IS record data and simply set it.
             $this->populate( $config );
         }
+
+        if ($this->isBacked())
+        {
+            // This is a backed model so no fields are dirty
+            $this->_dirty = array();
+        }
     }
 
     /** @brief  Given incoming record data, populate this model instance.
@@ -159,12 +165,6 @@ abstract class Connexions_Model
             $this->__set($key, $val);
         }
         $this->_delayValidation = false;
-
-        if ($this->isBacked())
-        {
-            // This is a backed model so no fields are dirty
-            $this->_dirty = array();
-        }
 
         // Perform full validation of the populated data
         $this->validate();

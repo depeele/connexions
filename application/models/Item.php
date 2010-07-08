@@ -131,9 +131,9 @@ class Model_Item extends Model_Taggable
     public function __toString()
     {
         if (! empty($this->url))
-            return $this->_record['url'];
+            return $this->_data['url'];
         else if (! empty($this->urlHash))
-            return $this->_record['urlHash'];
+            return $this->_data['urlHash'];
 
         return parent::__toString();
     }
