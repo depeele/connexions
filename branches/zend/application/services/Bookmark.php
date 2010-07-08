@@ -41,6 +41,14 @@ class Service_Bookmark extends Connexions_Service
     public function get($id)
     {
         $normId = $this->_mapper->normalizeId($id);
+
+        /*
+        Connexions::log("Service_Bookmark::get(): "
+                        . "id[ %s ] == normalized[ %s ]",
+                        Connexions::varExport($id),
+                        Connexions::varExport($normId));
+        // */
+
         if (! isset($normId['itemId']))
         {
             // No existing item was found.  Can we create one now?
@@ -51,6 +59,12 @@ class Service_Bookmark extends Connexions_Service
                                     .   Connexions::varExport($normId)
                                     . " ]");
             }
+
+            /*
+            Connexions::log("Service_Bookmark::get(): "
+                            . "create new item using [ %s ]",
+                            $normId['url']);
+            // */
 
             // Create a NEW item!
             $iService = $this->factory('Service_Item');
@@ -81,12 +95,29 @@ class Service_Bookmark extends Connexions_Service
                                   ));
         if ($bookmark !== null)
         {
+            /*
+            Connexions::log("Service_Bookmark::get(): "
+                            . "found bookmark[ %s ]",
+                            $bookmark->debugDump());
+            // */
+
             // Update this bookmark with any new, incoming data.
             if (is_array($id))
+            {
+                // Make sure we don't over-ride any of the keys...
+                unset($id['userId']);
+                unset($id['itemId']);
+
                 $bookmark->populate($id);
+            }
         }
         else
         {
+            /*
+            Connexions::log("Service_Bookmark::get(): "
+                            . "create new bookmark...");
+            // */
+
             // When creating a bookmark, there MUST be tags.
             if (empty($tags))
             {
@@ -146,8 +177,7 @@ class Service_Bookmark extends Connexions_Service
         $normId = $this->_mapper->normalizeId($id);
 
         /*
-        Connexions::log("Service_Bookmark::find( %s ): normalized id[ %s ]",
-                        Connexions::varExport($id),
+        Connexions::log("Service_Bookmark::find(): normalized id[ %s ]",
                         Connexions::varExport($normId));
         // */
 

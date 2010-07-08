@@ -103,19 +103,40 @@ function post_onLoad()
         e.preventDefault();
         e.stopPropagation();
 
-        var rpc = {jsonrpc: '2.0',
-                   method:  'create',
-                   params:  $form.serializeArray(),
-                   id:      getTime()};
-
         $form.mask();
-        $.ajax({url:      "<?= $this->url() ?>",
+        $.ajax({url:      "<?= $this->baseurl('/post') ?>",
                 type:     "POST",
                 dataType: "json",
-                data:     rpc,
+                data:     $form.serializeArray(),
                 error:    function(req, stat, err) {
+                    err = err.replace(/&/g, '&amp;')
+                             .replace(/</g, '&lt;')
+                             .replace(/>/g, '&gt;');
+
+                    $status.html(err)
+                           .removeClass('success')
+                           .addClass('error');
                 },
                 success:  function(data) {
+                    if (data.error !== null)
+                    {
+                        var err = data.error;
+
+                        err = err.replace(/&/g, '&amp;')
+                                 .replace(/</g, '&lt;')
+                                 .replace(/>/g, '&gt;')
+                                 .replace(/\n/g, '<br />');
+
+                        $status.html(data.error.replace(/\n/g, '<br />'))
+                               .removeClass('success')
+                               .addClass('error');
+                    }
+                    else
+                    {
+                        $status.removeClass('error')
+                               .addClass('success')
+                               .text('Bookmark '+ data.results.method);
+                    }
                 },
                 complete: function(req, stat) {
                     $form.unmask();
@@ -199,9 +220,7 @@ $jQuery->javascriptCaptureEnd();
      <label for='description'>Description / Notes for this bookmark</label>
      <textarea class='text'
                 name='description'
-            tabindex='3'>
-      <?= $this->postInfo['description'] ?>
-     </textarea>
+            tabindex='3'><?= $this->postInfo['description'] ?></textarea>
     </div>
     <div class='field'>
      <label for='tags'>Tags</label>

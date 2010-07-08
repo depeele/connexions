@@ -85,11 +85,13 @@ class Connexions_Controller_Route
                                     )
                            ),
   
-        //'post'          => array(':params'  => false),
+        'post'          => array(':params'  => false),
+        /*
         'post'          => array(':controller'  => 'index',
                                  ':action'      => 'post',
                                  ':params'      => false,
                            ),
+        */
   
         'search'        => array(':context' => array(
                                     ':terms'   => false)

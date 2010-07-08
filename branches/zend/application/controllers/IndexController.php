@@ -30,15 +30,9 @@ class IndexController extends Connexions_Controller_Action
     {
         parent::init();
 
-        // Initialize context switching
+        // Initialize context switching (via $this->contexts)
         $cs = $this->_helper->contextSwitch();
         $cs->initContext();
-
-        /*
-        $cs = $this->getHelper('contextSwitch');
-        $cs->addActionContext('index', array('partial', 'json', 'rss', 'atom'))
-           ->initContext();
-        */
     }
 
     /** @brief  Index/Get/Read/View action.
@@ -170,6 +164,7 @@ class IndexController extends Connexions_Controller_Action
         //$this->_helper->layout->setLayout('post');
 
         $request  =& $this->_request;
+        $bService = $this->service('Bookmark');
         $bookmark =  null;
         $postInfo =  array(
             'url'           => trim($request->getParam('url',         null)),
@@ -181,50 +176,108 @@ class IndexController extends Connexions_Controller_Action
             'tags'          => trim($request->getParam('tags',        null)),
         );
 
-        // Retrieve any existing bookmark for the given URL by the current user
-        if (! empty($postInfo['url']))
-        {
-            $bookmark = $this->service('Bookmark')
-                                ->find( array(
-                                    'user'      => $this->_viewer,
-                                    'itemUrl'   => $postInfo['url'],
-                                ));
-            if ($bookmark !== null)
-            {
-                /* The user has an existing bookmark.  Fill in any data that
-                 * was NOT provided directly.
-                 */
-                if (empty($postInfo['name']))
-                    $postInfo['name'] = $bookmark->name;
+        /*
+        Connexions::log("IndexController::postAction: "
+                        . "postInfo [ %s ]",
+                        Connexions::varExport($postInfo));
+        // */
 
-                if (empty($postInfo['description']))
-                    $postInfo['description'] = $bookmark->description;
-
-                if ($postInfo['rating'] === null)
-                    $postInfo['rating'] = $bookmark->rating;
-
-                if ($postInfo['isFavorite'] === null)
-                    $postInfo['isFavorite'] = $bookmark->isFavorite;
-
-                if ($postInfo['isPrivate'] === null)
-                    $postInfo['isPrivate'] = $bookmark->isPrivate;
-
-                if (empty($postInfo['tags']))
-                    $postInfo['tags'] = $bookmark->tags->__toString();
-            }
-        }
-        if ($postInfo['isFavorite'] === null)
-            $postInfo['isFavorite'] = false;
-
-        if ($postInfo['isPrivate'] === null)
-            $postInfo['isPrivate'] = false;
 
         if ($request->isPost())
         {
-            // Create/Update the bookmark
-            if ($bookmark === null)
+            // This is a POST -- attempt to create/update a bookmark
+            if ($postInfo['isFavorite'] === null)
+                $postInfo['isFavorite'] = false;
+
+            if ($postInfo['isPrivate'] === null)
+                $postInfo['isPrivate'] = false;
+
+            $error = null;
+            try
             {
+                $bookmark = $bService->get($postInfo);
+                if ($bookmark === null)
+                {
+                    $error = "Cannot create new bookmark (internal error)";
+                }
+                else if (! $bookmark->isValid())
+                {
+                    $messages = $bookmark->getValidationMessages();
+                    $errors   = array();
+                    foreach ($messages as $field => $message)
+                    {
+                        array_push($errors,
+                                   sprintf("%s: %s", $field, $message));
+                    }
+
+                    $error = implode(', ', $errors);
+                }
+                else
+                {
+                    /* Attempt to save this bookmark.  This should either
+                     * update or create
+                     */
+                    $bookmark = $bookmark->save();
+                }
             }
+            catch (Exception $e)
+            {
+                $error = $e->getMessage();
+            }
+
+            if ($error !== null)
+                $this->view->error = $error;
+        }
+        else
+        {
+            /* Initial presentation of posting form.
+             *
+             * Retrieve any existing bookmark for the given URL by the current
+             * user.
+             */
+            if (! empty($postInfo['url']))
+            {
+                $bookmark = $bService->find( array(
+                                                'user'   => $this->_viewer,
+                                                'itemId' => $postInfo['url'],
+                                             ));
+
+                if ($bookmark !== null)
+                {
+                    /*
+                    Connexions::log("IndexController::postAction: "
+                                    . "existing bookmark information [ %s ]",
+                                    Connexions::varExport(
+                                                    $bookmark->toArray()) );
+                    // */
+
+                    /* The user has an existing bookmark.  Fill in any data
+                     * that was NOT provided directly.
+                     */
+                    if (empty($postInfo['name']))
+                        $postInfo['name'] = $bookmark->name;
+
+                    if (empty($postInfo['description']))
+                        $postInfo['description'] = $bookmark->description;
+
+                    if ($postInfo['rating'] === null)
+                        $postInfo['rating'] = $bookmark->rating;
+
+                    if ($postInfo['isFavorite'] === null)
+                        $postInfo['isFavorite'] = $bookmark->isFavorite;
+
+                    if ($postInfo['isPrivate'] === null)
+                        $postInfo['isPrivate'] = $bookmark->isPrivate;
+
+                    if (empty($postInfo['tags']))
+                        $postInfo['tags'] = $bookmark->tags->__toString();
+                }
+            }
+            if ($postInfo['isFavorite'] === null)
+                $postInfo['isFavorite'] = false;
+
+            if ($postInfo['isPrivate'] === null)
+                $postInfo['isPrivate'] = false;
         }
 
         $this->view->headTitle('Save a Bookmark');

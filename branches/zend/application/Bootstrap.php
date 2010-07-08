@@ -577,6 +577,21 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             ),
         ));
 
+        // Perform header detection to determine context
+        $request = $this->getResource('request');
+        $header  = $request->getHeader('Accept');
+        if (strstr($header, 'application/json'))
+        {
+            $request->setParam('format', 'json');
+        }
+        /*
+        else if ( strstr($header, 'application/xml') &&
+                  (! strstr($header, 'html')) )
+        {
+            $request->setParam('format', 'xml');
+        }
+        */
+
         return $this;
     }
 

@@ -64,6 +64,8 @@ class Connexions
         self::$_log->log($message, Zend_Log::DEBUG);
     }
 
+    protected static $_varExport_Stack  = array();
+
     /** @brief  Generate a print_r of the given variable, replacing all '\n'
      *          with ', '
      *  @param  var     The variable to dump.
@@ -72,8 +74,77 @@ class Connexions
      */
     public static function varExport($var)
     {
+        foreach (self::$_varExport_Stack as $item)
+        {
+            if ($var === $item)
+                return ("*recursion*");
+        }
+
+        array_push(self::$_varExport_Stack, $var);
+
+        if (is_object($var))
+        {
+            $str = get_class($var) .'[ ';
+
+            if (method_exists($var, '__toString'))
+                $str .= strval($var);
+            else if (method_exists($var, 'toArray'))
+                $str .= self::varExport($var->toArray());
+            else
+                $str .= 'object';
+
+            $str .= ' ]';
+        }
+        else if (is_array($var))
+        {
+            $parts = array();
+            foreach ($var as $key => $val)
+            {
+                if (empty($parts))
+                {
+                    if (is_int($key))
+                    {
+                        $open  = '[ ';
+                        $close = ' ]';
+                    }
+                    else
+                    {
+                        $open  = '{ ';
+                        $close = ' }';
+                    }
+                }
+
+                if (is_int($key))
+                    $str = self::varExport($val);
+                else
+                    $str = $key .':'. self::varExport($val);
+
+                array_push($parts, $str);
+            }
+
+            $str = $open . implode(', ', $parts) . $close;
+        }
+        else if (is_string($var))
+        {
+            $str = '"'. preg_replace('/"/', '\\"', strval($var)) .'"';
+        }
+        else
+        {
+            $str = gettype($var) .'[ '. strval($var) .' ]';
+        }
+
+        array_pop(self::$_varExport_Stack);
+        return $str;
+
+
+
+
+        $str = var_export($var, true);
+        return preg_replace('/\s*$\s+/ms', '', $str);
+
         //return str_replace("\n", '', var_export($var, true));
-        return preg_replace('/\s*$\s+/ms', '', var_export($var, true));
+        //return preg_replace('/\s*$\s+/ms', '', var_export($var, true));
+        //return preg_replace('/\s*$\s+/ms', '', print_r($var, true));
     }
 
     /** @brief  Generate a backtrace without an overwhelming amount a detailed

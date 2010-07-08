@@ -49,28 +49,6 @@ class Model_Bookmark extends Model_Base
      *
      */
 
-    /** @brief  Given incoming record data, populate this model instance.
-     *  @param  data    Incoming key/value record data.
-     *
-     *  @return $this for a fluent interface.
-     */
-    public function populate($data)
-    {
-        if (empty($data['taggedOn']))
-        {
-            // Initialize the taggedOn visit date to NOW.
-            $data['taggedOn'] = date('Y-m-d H:i:s');
-        }
-
-        if (empty($data['updatedOn']))
-        {
-            // Initialize the updatedOn date to NOW.
-            $data['updatedOn'] = date('Y-m-d H:i:s');
-        }
-
-        return parent::populate($data);
-    }
-
     /** @brief  Save this instancne.
      *
      *  Override to update 'updatedOn'
@@ -81,6 +59,12 @@ class Model_Bookmark extends Model_Base
     {
         // On save, modify 'updatedOn' to NOW.
         $this->updatedOn = date('Y-m-d H:i:s');
+
+        if ($this->_data['taggedOn'] === null)
+        {
+            // If 'taggedOn' is not yet set, set it now.
+            $this->taggedOn = $this->updatedOn;
+        }
 
         $tags = $this->_tags;
         if ($this->_tags !== null)
@@ -277,6 +261,25 @@ class Model_Bookmark extends Model_Base
                 foreach ($this->tags as $idex => $tag)
                 {
                     array_push($reducedTags, $tag->toArray(  $props ));
+                }
+
+                $data['tags'] = $reducedTags;
+            }
+        }
+        else if ($props['public'] !== false)
+        {
+            // Convert "private" data to a public representation
+            if ($this->user !== null)
+                $data['userId'] = strval($this->user);
+            if ($this->item !== null)
+                $data['itemId'] = strval($this->item);
+
+            if ($this->tags !== null)
+            {
+                $reducedTags = array();
+                foreach ($this->tags as $idex => $tag)
+                {
+                    array_push($reducedTags, strval($tag));
                 }
 
                 $data['tags'] = $reducedTags;
