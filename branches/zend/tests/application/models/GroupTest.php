@@ -31,8 +31,7 @@ class GroupTest extends BaseTestCase
         $this->assertTrue(   $group->isValid() );
 
         $this->assertEquals($expected,
-                            $group->toArray(Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $group->toArray(self::$toArray_shallow_all));
     }
 
     public function testGroupGetId()

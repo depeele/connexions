@@ -100,8 +100,17 @@ class Model_Mapper_UserAuth extends Model_Mapper_Base
      */
     public function reduceModel(Connexions_Model $model)
     {
-        // Need to KEEP the "keys" for this model
-        return parent::reduceModel($model, true);
+        // Need to KEEP ALL fields for this model.
+        $data = $model->toArray( array('deep'    => false,
+                                       'public'  => false,
+                                       'dirty'   => false) );
+
+        /*
+        Connexions::log("Model_Mapper_UserAuth::reduceModel( %s ): [ %s ]",
+                        $model, Connexions::varExport($data));
+        // */
+
+        return $data;
     }
 
     /** @brief  Retrieve the user related to this userAuth.

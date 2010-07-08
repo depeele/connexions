@@ -120,8 +120,7 @@ class UserServiceTest extends DbTestCase
 
         $this->assertEquals($user->getValidationMessages(), array() );
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
     }
 
     public function testUserServiceGetAnonymous()
@@ -142,8 +141,7 @@ class UserServiceTest extends DbTestCase
 
         $this->assertEquals($user->getValidationMessages(), array() );
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
     }
 
     public function testUserServiceCreateExistingReturnsBackedInstance()
@@ -161,8 +159,7 @@ class UserServiceTest extends DbTestCase
         $this->assertFalse( $user->isAuthenticated() );
 
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
     }
 
     /*************************************************************************
@@ -183,8 +180,7 @@ class UserServiceTest extends DbTestCase
         $this->assertFalse( $user->isAuthenticated() );
 
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
     }
 
     public function testUserServiceFindByUserId2()
@@ -201,8 +197,7 @@ class UserServiceTest extends DbTestCase
         $this->assertFalse( $user->isAuthenticated() );
 
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
     }
 
     public function testUserServiceFindByUserId3()
@@ -219,8 +214,7 @@ class UserServiceTest extends DbTestCase
         $this->assertFalse( $user->isAuthenticated() );
 
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
     }
 
     public function testUserServiceFindByUserId4()
@@ -237,8 +231,7 @@ class UserServiceTest extends DbTestCase
         $this->assertFalse( $user->isAuthenticated() );
 
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
     }
 
     /*************************************************************************
@@ -316,8 +309,7 @@ class UserServiceTest extends DbTestCase
 
         $this->assertFalse ( $user->isAuthenticated() );
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
     }
 
     public function testUserServiceAuthenticationInvalidCredential()
@@ -338,8 +330,7 @@ class UserServiceTest extends DbTestCase
 
         $this->assertFalse ( $user->isAuthenticated() );
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
     }
 
     public function testUserServiceAuthenticationSuccess()
@@ -364,8 +355,7 @@ class UserServiceTest extends DbTestCase
 
         $this->assertTrue  ( $user->isAuthenticated() );
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
 
         // De-authenticate this user for the next test
         $user->logout();
@@ -397,8 +387,7 @@ class UserServiceTest extends DbTestCase
 
         $this->assertTrue  ( $user->isAuthenticated() );
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
 
         // De-authenticate this user for the next test
         $user->logout();
@@ -425,8 +414,7 @@ class UserServiceTest extends DbTestCase
 
         $this->assertTrue  (! $user->isAuthenticated() );
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
     }
 
     public function testUserServiceAuthenticationPkiSuccess()
@@ -448,8 +436,7 @@ class UserServiceTest extends DbTestCase
 
         $this->assertTrue  ( $user->isAuthenticated() );
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
 
         // De-authenticate this user for the next test
         $user->logout();
@@ -473,8 +460,7 @@ class UserServiceTest extends DbTestCase
 
         $this->assertFalse ( $user->isAuthenticated() );
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
     }
 
     /* Can't really test an OpenId success since it requires a multi-way
@@ -497,8 +483,7 @@ class UserServiceTest extends DbTestCase
 
         $this->assertTrue  ( $user->isAuthenticated() );
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
 
         // De-authenticate this user for the next test
         $user->logout();
@@ -550,14 +535,12 @@ class UserServiceTest extends DbTestCase
         $expected['credential'] = md5($seed);
 
         $this->assertEquals($expected,
-                            $auth->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $auth->toArray(self::$toArray_shallow_all));
 
         // Make sure we can retrieve.
         $authSet = $user->getAuthenticator();  //$expected['authType']);
         $this->assertEquals(array($expected),
-                            $authSet->toArray(Connexions_Model::DEPTH_SHALLOW,
-                                              Connexions_Model::FIELDS_ALL ));
+                            $authSet->toArray(self::$toArray_shallow_all));
 
         // Make sure the retrieved item is exacly the same instance.
         $this->assertSame($auth, $authSet[0]);
@@ -565,8 +548,7 @@ class UserServiceTest extends DbTestCase
         // Make sure we can retrieve by credential.
         $authSet = $user->getAuthenticator(null, $expected['credential']);
         $this->assertEquals(array($expected),
-                            $authSet->toArray(Connexions_Model::DEPTH_SHALLOW,
-                                              Connexions_Model::FIELDS_ALL ));
+                            $authSet->toArray(self::$toArray_shallow_all));
     }
 
     public function testUserServiceRemoveAuth1()
@@ -579,8 +561,7 @@ class UserServiceTest extends DbTestCase
 
         $authSet = $user->getAuthenticator( Model_UserAuth::AUTH_DEFAULT );
         $this->assertEquals(array(),
-                            $authSet->toArray(Connexions_Model::DEPTH_SHALLOW,
-                                              Connexions_Model::FIELDS_ALL ));
+                            $authSet->toArray(self::$toArray_shallow_all));
 
         // Check the database consistency
         $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(

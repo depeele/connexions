@@ -186,7 +186,7 @@ class Model_Mapper_User extends Model_Mapper_Base
 
         $numOrphans = $bookmarks->count();
 
-        // /*
+        /*
         Connexions::log("Model_Mapper_User::deleteTag( %d ): "
                         .   "tag[ %d:%s ], %d orphan(s)",
                         $user->userId,

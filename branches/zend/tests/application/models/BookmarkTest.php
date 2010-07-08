@@ -46,8 +46,7 @@ class BookmarkTest extends BaseTestCase
         $expected['updatedOn'] = $bookmark->updatedOn;
 
         $this->assertEquals($expected,
-                            $bookmark->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                                Connexions_Model::FIELDS_ALL ));
+                            $bookmark->toArray(self::$toArray_shallow_all));
     }
 
     public function testBookmarkToArray()
@@ -74,8 +73,7 @@ class BookmarkTest extends BaseTestCase
         $expected['taggedOn']  = $expected2['taggedOn']  = $bookmark->taggedOn;
 
         $this->assertEquals($expected,
-                            $bookmark->toArray(Connexions_Model::DEPTH_SHALLOW,
-                                               Connexions_Model::FIELDS_ALL ));
+                            $bookmark->toArray(self::$toArray_shallow_all));
         $this->assertEquals($expected2,
                             $bookmark->toArray());
     }

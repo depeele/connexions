@@ -108,7 +108,7 @@ class Service_User extends Connexions_Service
         // Rely on Service_Tag to properly interpret 'tags'
         $tagSet = $this->factory('Service_Tag')->csList2set($tags);
 
-        // /*
+        /*
         Connexions::log("Service_User::fetchByTags(): "
                         .   "tags[ %s ] == [ %s ]",
                         Connexions::varExport($tags), $tagSet);

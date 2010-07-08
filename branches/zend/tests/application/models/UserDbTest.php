@@ -82,8 +82,7 @@ class UserDbTest extends DbTestCase
 
         $this->assertEquals($user->getValidationMessages(), array() );
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
 
         // Check the database consistency
         $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
@@ -131,8 +130,7 @@ class UserDbTest extends DbTestCase
         $this->assertFalse ( $user->isAuthenticated() );
 
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
     }
 
     public function testUserIdentityMap()
@@ -182,8 +180,7 @@ class UserDbTest extends DbTestCase
 
         $this->assertEquals($user->getValidationMessages(), array() );
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
 
         //Connexions::log('--------------------------------------------------');
         // Update email
@@ -203,8 +200,7 @@ class UserDbTest extends DbTestCase
         //printf ("User [ %s ]\n", $user2->debugDump());
 
         $this->assertEquals($expected,
-                            $user2->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                             Connexions_Model::FIELDS_ALL ));
+                            $user2->toArray(self::$toArray_shallow_all));
 
         // Verify that the identity map is updated
         $user3 = $user->getMapper()->find( array('userId' => $user->userId ));
@@ -232,8 +228,7 @@ class UserDbTest extends DbTestCase
 
         $this->assertNotEquals(null, $user);
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
     }
 
     public function testUserRetrieveByName1()
@@ -244,8 +239,7 @@ class UserDbTest extends DbTestCase
         $user   = $mapper->find( array('name' => $expected['name'] ));
         $this->assertNotEquals(null, $user);
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
     }
 
     public function testUserDeletedFromDatabase()

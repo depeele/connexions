@@ -42,8 +42,7 @@ class ItemTest extends BaseTestCase
         $this->assertTrue(   $item->isValid() );
 
         $this->assertEquals($expected,
-                            $item->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $item->toArray(self::$toArray_shallow_all));
     }
 
     public function testItemToArray()
@@ -57,8 +56,7 @@ class ItemTest extends BaseTestCase
         ));
 
         $this->assertEquals($expected,
-                            $item->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $item->toArray(self::$toArray_shallow_all));
         $this->assertEquals($expected2,
                             $item->toArray( ));
     }

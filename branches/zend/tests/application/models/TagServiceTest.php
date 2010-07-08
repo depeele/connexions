@@ -88,8 +88,7 @@ class TagServiceTest extends DbTestCase
 
         $this->assertEquals($tag->getValidationMessages(), array() );
         $this->assertEquals($expected,
-                            $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                           Connexions_Model::FIELDS_ALL ));
+                            $tag->toArray(self::$toArray_shallow_all));
     }
 
     public function testTagServiceCreateExistingReturnsBackedInstance()
@@ -105,8 +104,7 @@ class TagServiceTest extends DbTestCase
         $this->assertTrue(  $tag->isValid() );
 
         $this->assertEquals($expected,
-                            $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $tag->toArray(self::$toArray_shallow_all));
     }
 
     /*************************************************************************
@@ -126,8 +124,7 @@ class TagServiceTest extends DbTestCase
         $this->assertTrue(  $tag->isValid() );
 
         $this->assertEquals($expected,
-                            $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $tag->toArray(self::$toArray_shallow_all));
     }
 
     public function testTagServiceFind2()
@@ -143,8 +140,7 @@ class TagServiceTest extends DbTestCase
         $this->assertTrue(  $tag->isValid() );
 
         $this->assertEquals($expected,
-                            $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $tag->toArray(self::$toArray_shallow_all));
     }
 
     public function testTagServiceFind3()
@@ -160,8 +156,7 @@ class TagServiceTest extends DbTestCase
         $this->assertTrue(  $tag->isValid() );
 
         $this->assertEquals($expected,
-                            $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $tag->toArray(self::$toArray_shallow_all));
     }
 
     public function testTagServiceFind4()
@@ -177,8 +172,7 @@ class TagServiceTest extends DbTestCase
         $this->assertTrue(  $tag->isValid() );
 
         $this->assertEquals($expected,
-                            $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $tag->toArray(self::$toArray_shallow_all));
     }
 
     /*************************************************************************

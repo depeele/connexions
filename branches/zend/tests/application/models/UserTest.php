@@ -57,8 +57,7 @@ class UserTest extends BaseTestCase
 
         $this->assertEquals($user->getValidationMessages(), array() );
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
     }
 
     public function testUserToArray()
@@ -82,8 +81,7 @@ class UserTest extends BaseTestCase
 
         $this->assertEquals($user->getValidationMessages(), array() );
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
         $this->assertEquals($expected2,
                             $user->toArray( ));
     }
@@ -206,8 +204,7 @@ class UserTest extends BaseTestCase
 
         $this->assertEquals($user->getValidationMessages(), array());
         $this->assertEquals($expected,
-                            $user->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $user->toArray(self::$toArray_shallow_all));
     }
 
     public function testUserFilterTooLongFullName()

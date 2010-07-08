@@ -87,8 +87,7 @@ class ItemServiceTest extends DbTestCase
 
         $this->assertEquals($item->getValidationMessages(), array() );
         $this->assertEquals($expected,
-                            $item->toArray(Connexions_Model::DEPTH_SHALLOW,
-                                           Connexions_Model::FIELDS_ALL ));
+                            $item->toArray(self::$toArray_shallow_all));
     }
 
     public function testItemServiceCreateExistingReturnsBackedInstance()
@@ -104,8 +103,7 @@ class ItemServiceTest extends DbTestCase
         $this->assertTrue(  $item->isValid() );
 
         $this->assertEquals($expected,
-                            $item->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $item->toArray(self::$toArray_shallow_all));
     }
 
     /*************************************************************************
@@ -125,8 +123,7 @@ class ItemServiceTest extends DbTestCase
         $this->assertTrue(  $item->isValid() );
 
         $this->assertEquals($expected,
-                            $item->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $item->toArray(self::$toArray_shallow_all));
     }
 
     public function testItemServiceFind2()
@@ -142,8 +139,7 @@ class ItemServiceTest extends DbTestCase
         $this->assertTrue(  $item->isValid() );
 
         $this->assertEquals($expected,
-                            $item->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $item->toArray(self::$toArray_shallow_all));
     }
 
     public function testItemServiceFind3()
@@ -159,8 +155,7 @@ class ItemServiceTest extends DbTestCase
         $this->assertTrue(  $item->isValid() );
 
         $this->assertEquals($expected,
-                            $item->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $item->toArray(self::$toArray_shallow_all));
     }
 
     public function testItemServiceFind4()
@@ -176,8 +171,7 @@ class ItemServiceTest extends DbTestCase
         $this->assertTrue(  $item->isValid() );
 
         $this->assertEquals($expected,
-                            $item->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $item->toArray(self::$toArray_shallow_all));
     }
 
     public function testItemServiceFind5()
@@ -193,8 +187,7 @@ class ItemServiceTest extends DbTestCase
         $this->assertTrue(  $item->isValid() );
 
         $this->assertEquals($expected,
-                            $item->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $item->toArray(self::$toArray_shallow_all));
     }
 
     public function testItemServiceFind6()
@@ -210,8 +203,7 @@ class ItemServiceTest extends DbTestCase
         $this->assertTrue(  $item->isValid() );
 
         $this->assertEquals($expected,
-                            $item->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                            Connexions_Model::FIELDS_ALL ));
+                            $item->toArray(self::$toArray_shallow_all));
     }
 
     /*************************************************************************

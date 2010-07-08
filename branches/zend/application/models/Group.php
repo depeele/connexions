@@ -175,25 +175,28 @@ class Model_Group extends Model_Base
     }
 
     /** @brief  Return an array version of this instance.
-     *  @param  deep    Should any associated models be retrieved?
-     *                      [ Connexions_Model::DEPTH_DEEP ] |
-     *                        Connexions_Model::DEPTH_SHALLOW
-     *  @param  public  Include only "public" information?
-     *                      [ Connexions_Model::FIELDS_PUBLIC ] |
-     *                        Connexions_Model::FIELDS_ALL
+     *  @param  props   Generation properties:
+     *                      - deep      Deep traversal (true)
+     *                                    or   shallow (false)
+     *                                    [true];
+     *                      - public    Include only public fields (true)
+     *                                    or  also include private (false)
+     *                                    [true];
+     *                      - dirty     Include only dirty fields (true)
+     *                                    or           all fields (false);
+     *                                    [false];
      *
      *  @return An array representation of this Domain Model.
      */
-    public function toArray($deep   = self::DEPTH_SHALLOW,
-                            $public = self::FIELDS_PUBLIC)
+    public function toArray(array $props    = array())
     {
-        $data = $this->_data;
+        $data = parent::toArray($props);
 
-        if ($deep === self::DEPTH_DEEP)
+        if ($props['deep'] !== false)
         {
             // Owner: Force resolution via '->owner' vs '->_owner'
             if ($this->owner !== null)
-                $data['owner'] = $this->owner->toArray( $deep, $public );
+                $data['owner'] = $this->owner->toArray( $props );
 
             // Members: Force resolution via '->members' vs '->_members'
             if ($this->members !== null)
@@ -203,7 +206,7 @@ class Model_Group extends Model_Base
                 foreach ($this->members as $idex => $member)
                 {
                     array_push($reducedMembers,
-                               $member->toArray(  $deep, $public ));
+                               $member->toArray(  $props ));
                 }
 
                 $data['members'] = $reducedMembers;
@@ -217,7 +220,7 @@ class Model_Group extends Model_Base
                 foreach ($this->items as $idex => $item)
                 {
                     array_push($reducedItems,
-                               $item->toArray(  $deep, $public ));
+                               $item->toArray(  $props ));
                 }
 
                 $data['items'] = $reducedItems;

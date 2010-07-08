@@ -37,8 +37,7 @@ class TagTest extends BaseTestCase
         $this->assertTrue(   $tag->isValid() );
 
         $this->assertEquals($expected,
-                            $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                           Connexions_Model::FIELDS_ALL ));
+                            $tag->toArray(self::$toArray_shallow_all));
     }
 
     public function testTagToArray()
@@ -54,8 +53,7 @@ class TagTest extends BaseTestCase
 
 
         $this->assertEquals($expected,
-                            $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                           Connexions_Model::FIELDS_ALL ));
+                            $tag->toArray(self::$toArray_shallow_all));
         $this->assertEquals($expected2,
                             $tag->toArray( ));
     }

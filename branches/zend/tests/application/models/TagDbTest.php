@@ -51,8 +51,7 @@ class TagDbTest extends DbTestCase
         $tag    = $tag->save();
         $this->assertTrue  ($tag instanceof Model_Tag);
         $this->assertEquals($expected,
-                            $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                           Connexions_Model::FIELDS_ALL ));
+                            $tag->toArray(self::$toArray_shallow_all));
 
         // Check the database consistency
         $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
@@ -86,8 +85,7 @@ class TagDbTest extends DbTestCase
         $this->assertTrue  ( $tag->isValid() );
 
         $this->assertEquals($expected,
-                            $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                           Connexions_Model::FIELDS_ALL ));
+                            $tag->toArray(self::$toArray_shallow_all));
     }
 
     public function testTagIdentityMap()
@@ -138,8 +136,7 @@ class TagDbTest extends DbTestCase
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
         $tag    = $mapper->find( array('tagId' => $expected['tagId']) );
         $this->assertEquals($expected,
-                            $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                           Connexions_Model::FIELDS_ALL ));
+                            $tag->toArray(self::$toArray_shallow_all));
     }
 
     public function testTagRetrieveByName1()
@@ -149,8 +146,7 @@ class TagDbTest extends DbTestCase
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
         $tag    = $mapper->find( array('tag' => $expected['tag'] ));
         $this->assertEquals($expected,
-                            $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                           Connexions_Model::FIELDS_ALL ));
+                            $tag->toArray(self::$toArray_shallow_all));
     }
 
     public function testTagRetrieveByName2()
@@ -160,8 +156,7 @@ class TagDbTest extends DbTestCase
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
         $tag    = $mapper->find( array('tag' => $expected['tag']) );
         $this->assertEquals($expected,
-                            $tag->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                           Connexions_Model::FIELDS_ALL ));
+                            $tag->toArray(self::$toArray_shallow_all));
     }
 
     public function testTagDeletedFromDatabase()

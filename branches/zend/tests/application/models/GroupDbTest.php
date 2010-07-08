@@ -75,8 +75,7 @@ class GroupDbTest extends DbTestCase
         $this->assertTrue  ( $group->isValid() );
 
         $this->assertEquals($expected,
-                            $group->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                             Connexions_Model::FIELDS_ALL ));
+                            $group->toArray(self::$toArray_shallow_all));
     }
 
     public function testGroupIdentityMap()
@@ -110,8 +109,7 @@ class GroupDbTest extends DbTestCase
 
         $this->assertNotEquals(null,   $group );
         $this->assertEquals($expected,
-                            $group->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                             Connexions_Model::FIELDS_ALL ));
+                            $group->toArray(self::$toArray_shallow_all));
     }
 
     public function testGroupOwner()
@@ -127,14 +125,11 @@ class GroupDbTest extends DbTestCase
         /*
         printf ("\nGroup Owner: [ %s ]\n",
                 Connexions::varExport(
-                   $group->owner->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                           Connexions_Model::FIELDS_ALL )) );
+                   $group->owner->toArray(self::$toArray_shallow_all));
         // */
 
         $this->assertEquals($expected,
-                            $group->owner->toArray(
-                                        Connexions_Model::DEPTH_SHALLOW,
-                                        Connexions_Model::FIELDS_ALL ));
+                            $group->owner->toArray(self::$toArray_shallow_all));
     }
 
     public function testGroupMembers()
@@ -147,16 +142,14 @@ class GroupDbTest extends DbTestCase
         {
             //$min = $userMapper->reduceModel( $member );
 
-            $min = $member->toArray(Connexions_Model::DEPTH_SHALLOW,
-                                    Connexions_Model::FIELDS_ALL );
+            $min = $member->toArray(self::$toArray_shallow_all);
             $min['userItemCount'] = 0;
             $min['itemCount']     = 0;
             $min['tagCount']      = 0;
             
             array_push($memberMin, $min);
         }
-        //$members->toArray( Connexions_Model::DEPTH_SHALLOW,
-        //                                Connexions_Model::FIELDS_ALL );
+        //$members->toArray(self::$toArray_shallow_all);
 
 
         /*
@@ -177,13 +170,11 @@ class GroupDbTest extends DbTestCase
 
         /*
         echo "\nGroup Members:\n";
-        print_r($group->members->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                          Connexions_Model::FIELDS_ALL ) );
+        print_r($group->members->toArray(self::$toArray_shallow_all));
         // */
 
         $this->assertEquals($expected,
-                            $group->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                             Connexions_Model::FIELDS_ALL ));
+                            $group->toArray(self::$toArray_shallow_all));
 
         $expected['members'] = $memberMin;
     }
@@ -208,8 +199,7 @@ class GroupDbTest extends DbTestCase
         $group = $group->save();
 
         $this->assertEquals($expected,
-                            $group->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                             Connexions_Model::FIELDS_ALL ));
+                            $group->toArray(self::$toArray_shallow_all));
     }
 }
 

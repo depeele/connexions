@@ -5,6 +5,17 @@
  */
 class BaseTestCase extends PHPUnit_Framework_TestCase
 {
+    protected static    $toArray_deep_all       = array(
+        'deep'      => true,
+        'public'    => false,
+        'dirty'     => false,
+    );
+    protected static    $toArray_shallow_all    = array(
+        'deep'      => false,
+        'public'    => false,
+        'dirty'     => false,
+    );
+
     public $application;
 
     public function __construct(       $name     = NULL,

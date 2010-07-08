@@ -268,9 +268,9 @@ abstract class Connexions_Model_Mapper
      */
     public function reduceModel(Connexions_Model $model)
     {
-        return $model->toArray( Connexions_Model::DEPTH_SHALLOW,
-                                Connexions_Model::FIELDS_ALL );
-                                //Connexions_Model::FIELDS_PUBLIC );
+        return $model->toArray( array('deep'    => false,
+                                      'public'  => false,
+                                      'dirty'   => true) );
     }
 
     /** @brief  Given identification value(s) that will be used for retrieval,
