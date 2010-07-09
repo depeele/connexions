@@ -12,6 +12,11 @@ echo "</pre>\n";
 
 $config         = Zend_Registry::get('config');
 
+/*
+Connexions::log("application/laytouts/header.phtml: api[ %s ]",
+                Connexions::varExport($config->api));
+// */
+
 $searchTerm     = $request->getParam('q', null);
 $searchContext  = $request->getParam('searchContext', 'all');
 $searchContexts = $config->searchContext;
@@ -35,6 +40,20 @@ $links->prependStylesheet($baseUrl .'css/themes/default/jquery-ui.css');
 //$links->prependStylesheet($baseUrl .'css/themes/base/jquery.ui.all.css');
 
 $jQuery->addJavascriptFile($this->baseurl('js/connexions-full.js'));
+
+/* Initialize global Javascript registry entries:
+ *      api     Specifies the base API URL and specific format parameters.
+ */
+$jQuery->javascriptCaptureStart();
+?>
+(function ($) {
+    $.registry("api",
+               <?= json_encode($config->api->toArray()) ?>);
+ }(jQuery));
+
+<?php
+$jQuery->javascriptCaptureEnd();
+
 //$jQuery->addJavascriptFile($this->baseurl('js/jquery.pngFix.js'));
 //$jQuery->addJavascriptFile($this->baseurl('js/ui.notify.min.js'));
 //$jQuery->addJavascriptFile($this->baseurl('js/ui.input.min.js'));

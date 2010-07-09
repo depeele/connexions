@@ -44,7 +44,8 @@ $.widget("ui.itemScope", {
     options: {
         namespace:          '',     // Cookie/parameter namespace
         jsonRpc:            null,   /* Json-RPC information:
-                                     *  { transport:    'POST' | 'GET',
+                                     *  { version:      '2.0',
+                                     *    transport:    'POST' | 'GET',
                                      *    target:       RPC URL,
                                      *    method:       RPC method name,
                                      *    params:       {
@@ -106,7 +107,7 @@ $.widget("ui.itemScope", {
         var opts    = self.options;
         var id      = opts.rpcId++;
         var data    = {
-            version:    '2.0',
+            version:    opts.jsonRpc.version,
             id:         id,
             method:     opts.jsonRpc.method,
             params:     opts.jsonRpc.params
@@ -120,6 +121,12 @@ $.widget("ui.itemScope", {
             dataType:   "json",
             data:       JSON.stringify(data),
             success:    function(ret, txtStatus, req){
+                if (ret.error !== null)
+                {
+                    self.element.trigger('error', [txtStatus, req, ret.error]);
+                    return;
+                }
+
                 response(
                     $.map(ret.result,
                           function(item) {
@@ -129,15 +136,10 @@ $.widget("ui.itemScope", {
                                 value: item.tag
                             };
                           }));
-                self.element.trigger('success',
-                                     [ret,
-                                      txtStatus,
-                                      req]);
+                self.element.trigger('success', [ret, txtStatus, req]);
             },
             error:      function(req, txtStatus, e) {
-                self.element.trigger('error',
-                                     [txtStatus,
-                                      req]);
+                self.element.trigger('error', [txtStatus, req]);
             }
         });
     },

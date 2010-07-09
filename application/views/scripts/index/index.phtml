@@ -67,6 +67,16 @@ if (count($this->tags) > 0)
 }
 */
 
+$scopeRpc = Connexions::getJsonRpcInfo();
+$scopeRpc['method'] = 'bookmark.autocompleteTag';
+$scopeRpc['params'] = array('tags'   => (count($this->tags) < 1
+                                            ? null
+                                            : $this->tags->__toString()),
+                           'users'  => ($this->owner === '*'
+                                            ? null
+                                            : $this->owner->name),
+                     );
+
 $htmlItemScope = $this->htmlItemScope( array(
                     'namespace'         => $this->namespace,
                     'items'             => $htmlBookmarks->paginator,
@@ -74,26 +84,7 @@ $htmlItemScope = $this->htmlItemScope( array(
                     'inputLabel'        => 'Tags',
                     'inputName'         => 'Tags',
                     'path'              => $scopePath,
-                    'jsonRpc'           => array(
-                        'target'        =>
-                                    $this->baseurl('/api/v1/json-rpc.php'),
-                        'transport'     => 'POST',
-
-                        // Json-RPC
-                        'method'        => 'bookmark.autocompleteTag',
-                        'params'        => array(
-                            'tags'      => (count($this->tags) < 1
-                                            ? null
-                                            : $this->tags->__toString()),
-                            'users'     => ($this->owner === '*'
-                                            ? null
-                                            : $this->owner->name),
-                        ),
-                    ),
-                    /*
-                    'autoCompleteUrl'   => $this->url()
-                                            .'?'. implode('&', $scopeQuery),
-                    */
+                    'jsonRpc'           => $scopeRpc,
                  ));
 
 $baseUrl = $this->baseUrl('/'); //Connexions::url('/');

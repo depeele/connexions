@@ -302,6 +302,28 @@ class Connexions
         return $val;
     }
 
+    /** @brief  Retrive Json-RPC api information from our application
+     * configuration (application/configs/application.ini : api.jsonRpc)
+     *
+     */
+    public static function getJsonRpcInfo()
+    {
+        try
+        {
+            $jsonRpc = Zend_Registry::get('config')
+                                        ->get('api')
+                                            ->get('jsonRpc')
+                                                ->toArray();
+        }
+        catch (Exception $e)
+        {
+            throw new Exception("Missing application configuration for "
+                                    . "'api.jsonRpc'");
+        }
+
+        return $jsonRpc;
+    }
+
     /** @brief  Given a site URL, apply any 'base' url prefix and return.
      *  @param  url     The site URL.
      *

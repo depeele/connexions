@@ -5,7 +5,7 @@
 #auth .legend .context-bg { position: absolute; left: -48px; -moz-border-radius: 8px 0 0 0; -webkit-border-radius: 8px 0 0 0; -ms-border-radius: 8px 0 0 0; -khtml-border-radius: 8px 0 0 0; border-radius: 8px 0 0 0; }
 #auth .legend h1 { padding: 0 2em 0 0.2em; font-size: 1.25em; font-weight: bold; }
 #auth .legend p { padding: 0 0 0 0.5em; }
-#auth .legend .ui-field-status { margin-top: 5em; padding: 0.5em; text-align: center; color: #999999; }
+#auth .legend .status, #auth .legend .ui-field-status { margin-top: 5em; padding: 0.5em; text-align: center; color: #999999; }
 #auth form .field { padding-bottom: 1em; }
 #auth form .field input.text { width: 15em; }
 #auth form .buttons { text-align: right; }

@@ -71,14 +71,14 @@ function validate_user(name)
     if (name.length > 2)
     {
         // Perform a JSONP call to see if this user name is in use
-        $.getJSON('<?= Connexions::url('/auth/checkuser') ?>?jsonp=?',
+        $.getJSON('<?= $this->baseUrl('auth/checkuser') ?>?jsonp=?',
             {format:   'json',
              userName: name},
              function(data) {
                 if (data.error !== undefined)
-                    $user.input('setValidationState', data.error.message);
+                    $user.input('valid', data.error.message);
                 else
-                    $user.input('setValidationState', true);
+                    $user.input('valid', true);
 
                 validate_form();
              });

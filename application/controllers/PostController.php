@@ -33,17 +33,21 @@ class PostController extends Connexions_Controller_Action
     {
         Connexions::log("PostController::postAction");
 
+        $request  =& $this->_request;
+
         if ( (! $this->_viewer instanceof Model_User) ||
              (! $this->_viewer->isAuthenticated()) )
         {
-            // Unauthenticated user -- Redirect to signIn
-            return $this->_helper->redirector('signIn','auth');
+            /* Unauthenticated user -- Redirect to signIn with a flash
+             * indicating that it should return here upon successful
+             * authentication.
+             */
+            return $this->_redirectToSignIn();
         }
 
         //$this->layout->setLayout('post');
         //$this->_helper->layout->setLayout('post');
 
-        $request  =& $this->_request;
         $bService = $this->service('Bookmark');
         $bookmark =  null;
         $postIn   =  array(

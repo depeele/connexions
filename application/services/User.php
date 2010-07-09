@@ -57,9 +57,11 @@ class Service_User extends Connexions_Service
         else
         {
             /* Get an 'anonymous' Model_User instance and do NOT mark it
-             * authenticated.
+             * authenticated.  Attach the current authentication results
+             * so we can properly present error messages.
              */
             $user = $this->getAnonymous();
+            $user->setAuthResult($authResult);
         }
 
         /*

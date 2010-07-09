@@ -42,8 +42,12 @@ class Model_Mapper_Item extends Model_Mapper_Base
             $newId = array();
             if (! Connexions::isMd5($id))
             {
-                $newId['url'] = $id;
-                $id           = Connexions::md5Url($id);
+                /* Do NOT include both url and urlHash, otherwise we'll end up
+                 * with an overly restrictive database query that requires a
+                 * match for both.
+                 */
+                //$newId['url'] = $id;
+                $id = Connexions::md5Url($id);
             }
 
             $newId['urlHash'] = $id;

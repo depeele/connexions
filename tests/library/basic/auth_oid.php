@@ -28,7 +28,7 @@ if ($request->isPost() &&
     {
         // Logout
         $auth->clearIdentity();
-        $user->setAuthenticated(false);
+        $user->setAuthResult(false);
     }
 }
 else if (isset($request->openid_mode))
