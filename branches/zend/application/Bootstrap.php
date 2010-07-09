@@ -414,7 +414,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             {
                 // Create a Zend_Auth_Result that indicates success
                 $result = new Connexions_Auth_Pre($user);
-                $user->setAuthenticated($result);
+                $user->setAuthResult($result);
 
                 // Update the 'lastVisit' time for this user.
                 Connexions::log("Bootstrap::_commonAuth: Update lastVisit...");

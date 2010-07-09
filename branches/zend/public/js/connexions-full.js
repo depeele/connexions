@@ -212,72 +212,29 @@
     };
 
  }(jQuery));
-// Inspired by base2 and Prototype
-/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
-/*global xyz:false */
-(function(){
-  var initializing  = false,
-      fnTest        = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/;
+/** @file
+ *
+ *  Provide a simple, global registry that stores data using jQuery.data,
+ *  attached to 'document'.
+ *
+ */
+/*jslint nomen: false, laxbreak: true */
+/*global jQuery:false, document:false */
+(function ($) {
+    $.registry = function (name, value) {
+        if (value !== undefined)
+        {
+            // name and value given -- set
+            $.data(document, name, value);
+        }
+        else
+        {
+            // name, but no value -- get
+            return $.data(document, name);
+        }
+    };
 
-  // The base Class implementation (does nothing)
-  var Class = function(){};
- 
-  // Create a new Class that inherits from this class
-  Class.extend = function(prop) {
-    var _super = this.prototype;
-   
-    // Instantiate a base class (but only create the instance,
-    // don't run the init constructor)
-    initializing = true;
-    var prototype = new this();
-    initializing = false;
-   
-    // Copy the properties over onto the new prototype
-    for (var name in prop) {
-      // Check if we're overwriting an existing function
-      prototype[name] = typeof prop[name]   === "function" &&
-                        typeof _super[name] === "function" &&
-                        fnTest.test(prop[name])
-        ? (function(name, fn){
-              return function() {
-                var tmp = this._super;
-           
-                // Add a new ._super() method that is the same method
-                // but on the super-class
-                this._super = _super[name];
-           
-                // The method only need to be bound temporarily, so we
-                // remove it when we're done executing
-                var ret = fn.apply(this, arguments);       
-                this._super = tmp;
-           
-                return ret;
-              };
-            }(name, prop[name]))
-        : prop[name];
-    }
-   
-    // The dummy class constructor
-    function Class() {
-      // All construction is actually done in the init method
-      if ( !initializing && this.init )
-      {
-        this.init.apply(this, arguments);
-      }
-    }
-   
-    // Populate our constructed prototype object
-    Class.prototype = prototype;
-   
-    // Enforce the constructor to be what we expect
-    Class.constructor = Class;
-
-    // And make this class extendable
-    Class.extend = arguments.callee;
-   
-    return Class;
-  };
-}());
+}(jQuery));
 /**
  * Cookie plugin
  *
@@ -2424,6 +2381,24 @@ $.widget("ui.bookmark", {
          */
         change:     null,
 
+        /* General Json-RPC information:
+         *  {version:   Json-RPC version,
+         *   target:    URL of the Json-RPC endpoint,
+         *   transport: 'POST' | 'GET'
+         *  }
+         *
+         * Defaults to the value of:
+         *      $.registry('api').jsonRpc
+         *
+         * (which is initialized from
+         *      application/configs/application.ini:api
+         *  via
+         *      application/layout/header.phtml
+         *
+         */
+        jsonRpc:    null,
+        rpcId:      1,      // The initial RPC identifier
+
         // Widget state
         enabled:    true
     },
@@ -2438,6 +2413,19 @@ $.widget("ui.bookmark", {
     {
         var self        = this;
         var opts        = self.options;
+
+        /********************************
+         * Initialize jsonRpc if not
+         * provided.
+         */
+        if ((opts.jsonRpc === null) && $.isFunction($.registry))
+        {
+            var api = $.registry('api');
+            if (api && api.jsonRpc)
+            {
+                opts.jsonRpc = api.jsonRpc;
+            }
+        }
 
         /********************************
          * Locate the pieces
@@ -2525,7 +2513,7 @@ $.widget("ui.bookmark", {
             }
 
             // Gather the current data about this item.
-            var data    = {
+            var params  = {
                 userId:     opts.userId,
                 itemId:     opts.itemId,
                 isFavorite: self.$favorite.checkbox('isChecked'),
@@ -2534,17 +2522,17 @@ $.widget("ui.bookmark", {
 
             if (self.$name.length > 0)
             {
-                data.name = self.$name.text();
+                params.name = self.$name.text();
             }
 
             if (self.$description.length > 0)
             {
-                data.description = self.$description.text();
+                params.description = self.$description.text();
             }
 
             if (self.$rating.length > 0)
             {
-                data.rating = self.$rating.stars('value');
+                params.rating = self.$rating.stars('value');
             }
 
             /* If there is a 'change' callback, invoke it.
@@ -2553,7 +2541,7 @@ $.widget("ui.bookmark", {
              */
             if ($.isFunction(self.options.change))
             {
-                if (! self.options.change(data))
+                if (! self.options.change(params))
                 {
                     // Rollback state.
                     self._resetState();
@@ -2562,25 +2550,66 @@ $.widget("ui.bookmark", {
                 }
             }
 
+            var rpc = {
+                version: opts.jsonRpc.version,
+                id:      opts.rpcId++,
+                method:  'bookmark.update',
+                params:  params
+            };
 
-            /* Perform an AJAJ call to update this item
+            // Perform a JSON-RPC call to update this item
             $.ajax({
-                url:        '/api/v1/bookmark/update.json',
-                type:       'POST',
+                url:        opts.jsonRpc.target,
+                type:       opts.jsonRpc.transport,
                 dataType:   'json',
-                data:       data,
+                data:       JSON.stringify(rpc),
                 success:    function(data, textStatus, req) {
+                    if (data.error !== null)
+                    {
+                        $.notify({
+                            title: 'Bookmark update failed',
+                            text:  '<p class="error">'
+                                 +   data.error.message
+                                 + '</p>'
+                        });
+
+                        // rollback state
+                        self._resetState();
+                        return;
+                    }
+
+                    // Include the updated data
+                    self.$itemId.val(           data.result.itemId );
+                    self.$name.text(            data.result.name );
+                    self.$description.text(     data.result.description );
+
+                    self.$rating.stars('select',data.result.rating);
+
+                    self.$favorite.checkbox(    (data.result.isFavorite
+                                                    ? 'check'
+                                                    : 'uncheck') );
+                    self.$private.checkbox(     (data.result.isPrivate
+                                                    ? 'check'
+                                                    : 'uncheck') );
+                    self.$url.attr('href',      data.result.url);
+
                     // set state
                     self._setState();
                 },
                 error:      function(req, textStatus, err) {
+                    $.notify({
+                        title: 'Bookmark update failed',
+                        text:  '<p class="error">'
+                             +   textStatus
+                             + '</p>'
+                    });
+
                     // rollback state
                     self._resetState();
                 },
                 complete:   function(req, textStatus) {
                 }
              });
-             */
         };
 
         // Handle item-edit
@@ -2624,7 +2653,7 @@ $.widget("ui.bookmark", {
         /*
         self.$favorite.bind('click.bookmark', _update_item);
         self.$private.bind('click.bookmark',  _update_item);
-        self.$rating.bind('click.bookmark',          _update_item);
+        self.$rating.bind('click.bookmark',   _update_item);
         */
 
         self.element.bind('change.bookmark',    _update_item);
@@ -2673,23 +2702,12 @@ $.widget("ui.bookmark", {
             self.$rating.stars('select', opts.rating);
         }
 
-        if (opts.isFavorite)
-        {
-            self.$favorite.checkbox('check');
-        }
-        else
-        {
-            self.$favorite.checkbox('uncheck');
-        }
-
-        if (opts.isPrivate)
-        {
-            self.$private.checkbox('check');
-        }
-        else
-        {
-            self.$private.checkbox('uncheck');
-        }
+        self.$favorite.checkbox( (opts.isFavorite
+                                    ? 'check'
+                                    : 'uncheck') );
+        self.$private.checkbox( (opts.isPrivate
+                                    ? 'check'
+                                    : 'uncheck') );
 
         self.$url.attr('href', opts.url);
 
@@ -3779,7 +3797,8 @@ $.widget("ui.itemScope", {
     options: {
         namespace:          '',     // Cookie/parameter namespace
         jsonRpc:            null,   /* Json-RPC information:
-                                     *  { transport:    'POST' | 'GET',
+                                     *  { version:      '2.0',
+                                     *    transport:    'POST' | 'GET',
                                      *    target:       RPC URL,
                                      *    method:       RPC method name,
                                      *    params:       {
@@ -3841,7 +3860,7 @@ $.widget("ui.itemScope", {
         var opts    = self.options;
         var id      = opts.rpcId++;
         var data    = {
-            version:    '2.0',
+            version:    opts.jsonRpc.version,
             id:         id,
             method:     opts.jsonRpc.method,
             params:     opts.jsonRpc.params
@@ -3855,6 +3874,12 @@ $.widget("ui.itemScope", {
             dataType:   "json",
             data:       JSON.stringify(data),
             success:    function(ret, txtStatus, req){
+                if (ret.error !== null)
+                {
+                    self.element.trigger('error', [txtStatus, req, ret.error]);
+                    return;
+                }
+
                 response(
                     $.map(ret.result,
                           function(item) {
@@ -3864,15 +3889,10 @@ $.widget("ui.itemScope", {
                                 value: item.tag
                             };
                           }));
-                self.element.trigger('success',
-                                     [ret,
-                                      txtStatus,
-                                      req]);
+                self.element.trigger('success', [ret, txtStatus, req]);
             },
             error:      function(req, txtStatus, e) {
-                self.element.trigger('error',
-                                     [txtStatus,
-                                      req]);
+                self.element.trigger('error', [txtStatus, req]);
             }
         });
     },

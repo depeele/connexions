@@ -13,16 +13,18 @@ class AuthController extends Connexions_Controller_Action
 {
     // Pre-defined openid endpoints: method = 'openid.<name>';
     static public   $openid_endpoints   = array(
-        'google' => 'https://www.google.com/accounts/o8/id',
-        'yahoo'  => 'http://open.login.yahooapis.com/openid20/www.yahoo.com/xrds'
+      'google' => 'https://www.google.com/accounts/o8/id',
+      'yahoo'  => 'http://open.login.yahooapis.com/openid20/www.yahoo.com/xrds'
     );
 
-    //protected $_redirector  = null;
+    protected   $_flashMessenger    = null;
+    protected   $_redirector        = null;
 
     public function init()
     {
         /* Initialize action controller here */
-        //$this->_redirector = $this->_helper->getHelper('Redirector');
+        $this->_flashMessenger = $this->_helper->getHelper('FlashMessenger');
+        $this->_redirector     = $this->_helper->getHelper('Redirector');
     }
 
     public function signinAction()
@@ -85,8 +87,7 @@ class AuthController extends Connexions_Controller_Action
         if ($authType === null)
         {
             // No authentication yet attempted -- present the auth form
-            $this->_helper->layout->setLayout('auth');
-            return;
+            return $this->_showAuthenticationForm();
         }
 
         /*********************************************************************
@@ -101,34 +102,72 @@ class AuthController extends Connexions_Controller_Action
              * form
              */
             $authResult = $user->getAuthResult();
-            $messages   = $authResult->getMessages();
-            $messages   = (is_array($messages)
-                            ? implode('; ', $authResult->getMessages())
-                            : '');
+            if ($authResult)
+            {
+                $messages   = $authResult->getMessages();
+                $messages   = (is_array($messages)
+                                ? implode('; ', $authResult->getMessages())
+                                : '');
 
-            Connexions::log("AuthController: Authentication Results: "
-                            .   "code[ {$authResult->getCode()} ], "
-                            .   "messages[ {$messages} ], "
-                            .   "identity[ {$authResult->getIdentity()} ]");
+                Connexions::log("AuthController: Authentication Results: "
+                                .   "code[ {$authResult->getCode()} ], "
+                                .   "messages[ {$messages} ], "
+                                .   "identity[ {$authResult->getIdentity()} ]");
 
-            $this->view->error = $messages;
-            $this->_helper->layout->setLayout('auth');
-            return;
+                $this->view->error = $messages;
+            }
+            else
+            {
+                $this->view->error = "Invalid authentication";
+            }
+
+            return $this->_showAuthenticationForm();
         }
 
         /********************************************************************
          * Authentication Success
          *
          */
+
+        // /*
         Connexions::log("AuthController: Authentication Success: "
                         .   "id[ %s ], user: %s\n",
                         $user, $user->debugDump());
+        // */
 
         Zend_Registry::set('user', $user);
 
+        // See if we should re-direct
+        $onSuccess = null;
+        $messages  = null;
 
-        // Re-direct to the main page
-        return $this->_helper->redirector('index','index');
+        if ($this->_flashMessenger->hasMessages())
+        {
+            $messages = $this->_flashMessenger->getMessages();
+            foreach ($messages as $msg)
+            {
+                if (preg_match('/^onSuccess:(.*)$/i', $msg, $matches))
+                {
+                    $onSuccess = $matches[1];
+                    break;
+                }
+            }
+        }
+
+        Connexions::log("AuthController::signinAction(): "
+                        .   "messages[ %s ], onSuccess[ %s ]",
+                        Connexions::varExport($messages),
+                        $onSuccess);
+
+        if (empty($onSuccess))
+        {
+            // Re-direct to the main page
+            return $this->_redirector->gotoSimple('index','index');
+        }
+        else
+        {
+            return $this->_redirector->gotoUrl($onSuccess);
+        }
     }
 
     public function signoutAction()
@@ -138,7 +177,7 @@ class AuthController extends Connexions_Controller_Action
         $auth->clearIdentity();
 
         // Redirect
-        return $this->_helper->redirector('index','index');
+        return $this->_redirector->gotoSimple('index','index');
         //return $this->_redirector->setGotoSimple('index', 'index');
 
         // action body
@@ -167,8 +206,9 @@ class AuthController extends Connexions_Controller_Action
         else
         {
             // Add this new user to the database
-            $userModel = new Model_User($user);
-            if ($userModel->isBacked())
+            $userModel = $this->service('User')
+                                    ->get(array('name' => $user));
+            if ( (! $userModel) || $userModel->isBacked())
             {
                 $this->view->error = "User Name is already taken.";
             }
@@ -189,14 +229,14 @@ class AuthController extends Connexions_Controller_Action
                     $auth->getStorage()->write($user);
 
                     // Redirect to a new user welcome.
-                    return $this->_helper->redirector('index', 'welcome');
+                    return $this->_redirector->gotoSimple('index', 'welcome');
                 }
 
                 $this->view->error = "Database error";
             }
         }
 
-        $this->_helper->layout->setLayout('auth');
+        return $this->_showAuthenticationForm();
     }
 
     /** @brief  An AJAJ auto-complete-like callback used to check whether or
@@ -209,14 +249,14 @@ class AuthController extends Connexions_Controller_Action
         if (($this->_getParam('format', false) !== 'json') ||
             ($request->isPost()) )
         {
-            return $this->_helper->redirector('signIn');
+            return $this->_redirector->gotoSimple('signIn');
         }
 
         // Grab the JsonRpc helper
         $jsonRpc = $this->_helper->getHelper('JsonRpc');
 
         // Is there a JSONP callback specified?
-        $jsonp    = trim($request->getQuery('jsonp', ''));
+        $jsonp = trim($request->getQuery('jsonp', ''));
         if (! empty($jsonp))
             $jsonRpc->setCallback($jsonp);
 
@@ -226,8 +266,9 @@ class AuthController extends Connexions_Controller_Action
         if (strlen($userName) > 2)
         {
             // Does a user exist with the given name?
-            $user = new Model_User($userName);
-            if ($user->isBacked())
+            $user = $this->service('User')
+                                    ->find(array('name' => $userName));
+            if ($user && $user->isBacked())
             {
                 // This user name is taken.
                 $jsonRpc->setError("User name is already taken.");
@@ -248,4 +289,29 @@ class AuthController extends Connexions_Controller_Action
         $jsonRpc->sendResponse();
     }
 
+    /** @brief  Prepare to (re)show the authentication form.  If there are any
+     *          flash messages that indicate a 'returnTo' URL, forward them on.
+     */
+    protected function _showAuthenticationForm()
+    {
+        if ($this->_flashMessenger->hasMessages())
+        {
+            // Forward any 'onSuccess' flash message
+            $messages = $this->_flashMessenger->getMessages();
+            foreach ($messages as $msg)
+            {
+                if (preg_match('/^onSuccess:/i', $msg))
+                {
+                    Connexions::log(
+                            "AuthController::_showAuthenticationForm(): "
+                            . "forward flash message '%s'",
+                            $msg);
+
+                    $this->_flashMessenger->addMessage($msg);
+                }
+            }
+        }
+
+        $this->_helper->layout->setLayout('auth');
+    }
 }

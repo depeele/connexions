@@ -170,7 +170,7 @@ abstract class DbTestCase extends Zend_Test_PHPUnit_DatabaseTestCase
         $result = new Zend_Auth_Result(Zend_Auth_Result::SUCCESS,
                                        $user->userId);
 
-        $user->setAuthenticated($result);
+        $user->setAuthResult($result);
 
         $this->_curUser = $user;
         try
@@ -192,7 +192,7 @@ abstract class DbTestCase extends Zend_Test_PHPUnit_DatabaseTestCase
     protected function _unsetAuthenticatedUser()
     {
         // De-Establish $user as the authenticated, visiting user.
-        $this->_curUser->setAuthenticated(false);
+        $this->_curUser->setAuthResult(false);
 
         // Restore the previous user.
         Zend_Registry::set('user', $this->_oldUser);

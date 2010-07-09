@@ -26,7 +26,8 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
                                          */
 
         'jsonRpc'           => null,    /*  Json-Rpc call data of the form:
-                                         *      {target:    % RPC URL %,
+                                         *      {version:   %RPC Version%,
+                                         *       target:    % RPC URL %,
                                          *       transport: % POST | GET %,
                                          *       method:    % RPC method %,
                                          *       params:    {
@@ -79,7 +80,8 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
      *                                                  item-name => item-url,
      *                                                  ...)
      *                      - jsonRpc           Json-Rpc call data of the form:
-     *                                              {target:    % RPC URL %,
+     *                                              {version:   % RPC version %,
+     *                                               target:    % RPC URL %,
      *                                               transport: % POST | GET %,
      *                                               method:    % RPC method %,
      *                                               params:    {

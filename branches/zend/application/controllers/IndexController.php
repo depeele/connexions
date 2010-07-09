@@ -20,6 +20,7 @@ class IndexController extends Connexions_Controller_Action
     protected   $_count     = null;
     protected   $_sortBy    = null;
     protected   $_sortOrder = null;
+    protected   $_format    = 'html';
 
     public      $contexts   = array(
                                 'index' => array('partial', 'json',
@@ -33,6 +34,14 @@ class IndexController extends Connexions_Controller_Action
         // Initialize context switching (via $this->contexts)
         $cs = $this->_helper->contextSwitch();
         $cs->initContext();
+
+        $format =  $cs->getCurrentContext();
+        if (empty($format))
+            $format = $this->_request->getParam('format', 'html');
+
+        //Connexions::log("IndexController::init(): [ %s ]", $format);
+
+        $this->_format = $format;
     }
 
     /** @brief  Index/Get/Read/View action.
@@ -46,6 +55,12 @@ class IndexController extends Connexions_Controller_Action
     public function indexAction()
     {
         $request  =& $this->_request;
+
+        // /*
+        Connexions::log('IndexController::indexAction(): '
+                        .   'params[ %s ]',
+                        print_r($request->getParams(), true));
+        // */
 
         /***************************************************************
          * Process the requested 'owner' and 'tags'
@@ -64,7 +79,7 @@ class IndexController extends Connexions_Controller_Action
                  (! $this->_viewer->isAuthenticated()) )
             {
                 // Unauthenticated user -- Redirect to signIn
-                return $this->_helper->redirector('signIn','auth');
+                return $this->_redirectToSignIn();
             }
 
             // Redirect to the viewer's bookmarks
@@ -146,146 +161,6 @@ class IndexController extends Connexions_Controller_Action
         $this->_handleFormat();
     }
 
-    /** @brief  Post action -- simply present the Post/Create view.
-     *
-     */
-    public function postAction()
-    {
-        Connexions::log("IndexController::postAction");
-
-        if ( (! $this->_viewer instanceof Model_User) ||
-             (! $this->_viewer->isAuthenticated()) )
-        {
-            // Unauthenticated user -- Redirect to signIn
-            return $this->_helper->redirector('signIn','auth');
-        }
-
-        //$this->layout->setLayout('post');
-        //$this->_helper->layout->setLayout('post');
-
-        $request  =& $this->_request;
-        $bService = $this->service('Bookmark');
-        $bookmark =  null;
-        $postInfo =  array(
-            'url'           => trim($request->getParam('url',         null)),
-            'name'          => trim($request->getParam('name',        null)),
-            'description'   => trim($request->getParam('description', null)),
-            'rating'        => $request->getParam('rating',           null),
-            'isFavorite'    => $request->getParam('isFavorite',       null),
-            'isPrivate'     => $request->getParam('isPrivate',        null),
-            'tags'          => trim($request->getParam('tags',        null)),
-        );
-
-        /*
-        Connexions::log("IndexController::postAction: "
-                        . "postInfo [ %s ]",
-                        Connexions::varExport($postInfo));
-        // */
-
-
-        if ($request->isPost())
-        {
-            // This is a POST -- attempt to create/update a bookmark
-            if ($postInfo['isFavorite'] === null)
-                $postInfo['isFavorite'] = false;
-
-            if ($postInfo['isPrivate'] === null)
-                $postInfo['isPrivate'] = false;
-
-            $error = null;
-            try
-            {
-                $bookmark = $bService->get($postInfo);
-                if ($bookmark === null)
-                {
-                    $error = "Cannot create new bookmark (internal error)";
-                }
-                else if (! $bookmark->isValid())
-                {
-                    $messages = $bookmark->getValidationMessages();
-                    $errors   = array();
-                    foreach ($messages as $field => $message)
-                    {
-                        array_push($errors,
-                                   sprintf("%s: %s", $field, $message));
-                    }
-
-                    $error = implode(', ', $errors);
-                }
-                else
-                {
-                    /* Attempt to save this bookmark.  This should either
-                     * update or create
-                     */
-                    $bookmark = $bookmark->save();
-                }
-            }
-            catch (Exception $e)
-            {
-                $error = $e->getMessage();
-            }
-
-            if ($error !== null)
-                $this->view->error = $error;
-        }
-        else
-        {
-            /* Initial presentation of posting form.
-             *
-             * Retrieve any existing bookmark for the given URL by the current
-             * user.
-             */
-            if (! empty($postInfo['url']))
-            {
-                $bookmark = $bService->find( array(
-                                                'user'   => $this->_viewer,
-                                                'itemId' => $postInfo['url'],
-                                             ));
-
-                if ($bookmark !== null)
-                {
-                    /*
-                    Connexions::log("IndexController::postAction: "
-                                    . "existing bookmark information [ %s ]",
-                                    Connexions::varExport(
-                                                    $bookmark->toArray()) );
-                    // */
-
-                    /* The user has an existing bookmark.  Fill in any data
-                     * that was NOT provided directly.
-                     */
-                    if (empty($postInfo['name']))
-                        $postInfo['name'] = $bookmark->name;
-
-                    if (empty($postInfo['description']))
-                        $postInfo['description'] = $bookmark->description;
-
-                    if ($postInfo['rating'] === null)
-                        $postInfo['rating'] = $bookmark->rating;
-
-                    if ($postInfo['isFavorite'] === null)
-                        $postInfo['isFavorite'] = $bookmark->isFavorite;
-
-                    if ($postInfo['isPrivate'] === null)
-                        $postInfo['isPrivate'] = $bookmark->isPrivate;
-
-                    if (empty($postInfo['tags']))
-                        $postInfo['tags'] = $bookmark->tags->__toString();
-                }
-            }
-            if ($postInfo['isFavorite'] === null)
-                $postInfo['isFavorite'] = false;
-
-            if ($postInfo['isPrivate'] === null)
-                $postInfo['isPrivate'] = false;
-        }
-
-        $this->view->headTitle('Save a Bookmark');
-
-        $this->view->viewer   = $viewer;
-        $this->view->postInfo = $postInfo;
-    }
-
     /*************************************************************************
      * Protected Helpers
      *
@@ -301,16 +176,7 @@ class IndexController extends Connexions_Controller_Action
      */
     protected function _handleFormat()
     {
-        $format =  $this->_helper->contextSwitch()->getCurrentContext();
-        Connexions::log("IndexController::_handleFormat: context [ %s ]",
-                        $format);
-
-        if (empty($format))
-            $format = $this->_request->getParam('format', 'html');
-
-        Connexions::log("IndexController::_handleFormat: [ %s ]", $format);
-
-        switch ($format)
+        switch ($this->_format)
         {
         case 'partial':
             /* Render just PART of the page and MAY not require the bookmark
@@ -374,29 +240,29 @@ class IndexController extends Connexions_Controller_Action
         case 'rss':
         case 'atom':
         default:
-            if ($format === 'rss')
+            if ($this->_format === 'rss')
             {
                 $this->view->main['feedType'] =
                                     View_Helper_FeedBookmarks::TYPE_RSS;
-                $format = 'feed';
+                $this->_format = 'feed';
             }
-            else if ($format === 'atom')
+            else if ($this->_format === 'atom')
             {
                 $this->view->main['feedType'] =
                                     View_Helper_FeedBookmarks::TYPE_ATOM;
-                $format = 'feed';
+                $this->_format = 'feed';
             }
 
             Connexions::log("IndexController::_handleFormat: "
                             .   "render 'index-%s'",
-                            $format);
+                            $this->_format);
 
-            $this->render('index-'. $format);
+            $this->render('index-'. $this->_format);
 
 
             Connexions::log("IndexController::_handleFormat: "
                             .   "render 'index.%s' COMPLETE",
-                            $format);
+                            $this->_format);
             break;
         }
     }
@@ -447,23 +313,36 @@ class IndexController extends Connexions_Controller_Action
     {
         $request          =& $this->_request;
 
-        $prefix           = 'items';
-        $itemsStyle       = $request->getParam($prefix."OptionGroup");
-        $itemsStyleCustom = $request->getParam($prefix."OptionGroups_option");
+        if (($this->_format === 'html') || ($this->_format === 'partial'))
+        {
+            $prefix           = 'items';
+            $itemsStyle       = $request->getParam($prefix."OptionGroup");
+            $itemsStyleCustom = $request->getParam($prefix
+                                                    ."OptionGroups_option");
 
-        $perPage          = $request->getParam($prefix ."PerPage");
-        $page             = $request->getParam($prefix ."Page");
-        $sortBy           = $request->getParam($prefix ."SortBy");
-        $sortOrder        = $request->getParam($prefix ."SortOrder");
+            $perPage          = $request->getParam($prefix ."PerPage");
+            $page             = $request->getParam($prefix ."Page");
+            $sortBy           = $request->getParam($prefix ."SortBy");
+            $sortOrder        = $request->getParam($prefix ."SortOrder");
 
-        /*
-        Connexions::log('IndexController::_perpareMain(): '
-                        .   'itemsStyle[ %s ], options[ %s ]',
-                        $itemsStyle, Connexions::varExport($itemsStyleCustom));
-        // */
+            if ( ($itemsStyle === 'custom') && (is_array($itemsStyleCustom)) )
+                $itemsStyle = $itemsStyleCustom;
+        }
+        else
+        {
+            $prefix           = '';
+            $itemsStyle       = null;
+            $perPage          = $request->getParam("perPage");
+            if (empty($perPage))
+                $perPage      = $request->getParam("limit");
 
-        if ( ($itemsStyle === 'custom') && (is_array($itemsStyleCustom)) )
-            $itemsStyle = $itemsStyleCustom;
+            $page             = $request->getParam("page");
+            if (empty($page))
+                $page         = $request->getParam("offset");
+
+            $sortBy           = $request->getParam("sortBy");
+            $sortOrder        = $request->getParam("sortOrder");
+        }
 
         // Additional view variables for the HTML view.
         $this->view->main = array(

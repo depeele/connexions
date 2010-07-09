@@ -1,6 +1,7 @@
 YUI_COMP	= yuicompressor
 
-SRCS =	connexions.js jquery.class.js jquery.cookie.js jquery.pngFix.js	\
+SRCS =	connexions.js jquery.registry.js jquery.cookie.js 		\
+	jquery.pngFix.js	\
 	ui.checkbox.js ui.dropdownForm.js ui.input.js 			\
 	ui.optionGroups.js ui.stars.js					\
 	ui.bookmark.js ui.bookmarkList.js				\

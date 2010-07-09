@@ -105,7 +105,7 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
                 $this->_user = $identity;
             }
 
-            $this->_user->setAuthenticated($this);
+            $this->_user->setAuthResult($this);
         }
 
         return $this;

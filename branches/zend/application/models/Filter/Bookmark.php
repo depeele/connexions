@@ -64,11 +64,13 @@ class Model_Filter_Bookmark extends Connexions_Model_Filter
         ),
         'taggedOn'      => array(array('regex',
                                        'pattern' => self::VALID_DATE),
-                                 'default'  => '0000-00-00 00:00:00',
+                                 'default'      => '0000-00-00 00:00:00',
+                                 'allowEmpty'   => true,
         ),
         'updatedOn'     => array(array('regex',
                                        'pattern' => self::VALID_DATE),
-                                 'default'  => '0000-00-00 00:00:00',
+                                 'default'      => '0000-00-00 00:00:00',
+                                 'allowEmpty'   => true,
         ),
     );
 }

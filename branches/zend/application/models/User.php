@@ -242,7 +242,7 @@ class Model_User extends Model_Taggable
         $this->invalidateCache();
 
         $this->setCredential(null, Model_UserAuth::AUTH_DEFAULT);
-        $this->setAuthenticated(false);
+        $this->setAuthResult(false);
 
         return parent::invalidate();
     }
@@ -304,7 +304,7 @@ class Model_User extends Model_Taggable
      *
      *  @return $this for a fluent interface.
      */
-    public function setAuthenticated($result)
+    public function setAuthResult($result)
     {
         if ($result instanceof Zend_Auth_Result)
             $this->_authResult = $result;
@@ -345,7 +345,7 @@ class Model_User extends Model_Taggable
     {
         Zend_Auth::getInstance()->clearIdentity();
 
-        $this->setAuthenticated(false);
+        $this->setAuthResult(false);
     }
 
     /** @brief  Add a new authenticator (Model_UserAuth entry) for this user.
