@@ -128,6 +128,14 @@ class Connexions
         {
             $str = '"'. preg_replace('/"/', '\\"', strval($var)) .'"';
         }
+        else if (is_null($var))
+        {
+            $str = 'null';
+        }
+        else if (is_bool($var))
+        {
+            $str = gettype($var) .'[ '. ($var ? 'true' : 'false') .' ]';
+        }
         else
         {
             $str = gettype($var) .'[ '. strval($var) .' ]';

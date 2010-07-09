@@ -139,6 +139,7 @@ $.widget("ui.bookmark", {
         isFavorite: null,
         isPrivate:  null,
 
+        tags:       null,
         url:        null,
 
         // taggedOn and updateOn are not user editable
@@ -208,6 +209,8 @@ $.widget("ui.bookmark", {
         self.$rating      = self.element.find('.rating .stars .owner');
         self.$favorite    = self.element.find('input[name=isFavorite]');
         self.$private     = self.element.find('input[name=isPrivate]');
+
+        self.$tags        = self.element.find('input[name=tags]');
 
         self.$edit        = self.element.find('.control .item-edit');
         self.$delete      = self.element.find('.control .item-delete');
@@ -282,26 +285,59 @@ $.widget("ui.bookmark", {
             }
 
             // Gather the current data about this item.
-            var params  = {
-                userId:     opts.userId,
-                itemId:     opts.itemId,
-                isFavorite: self.$favorite.checkbox('isChecked'),
-                isPrivate:  self.$private.checkbox('isChecked')
+            var nonEmpty    = false;
+            var params      = {
+                id: { userId: opts.userId, itemId: opts.itemId }
             };
 
-            if (self.$name.length > 0)
+            if (self.$name.text() !== opts.name)
             {
                 params.name = self.$name.text();
+                nonEmpty    = true;
             }
 
-            if (self.$description.length > 0)
+            if (self.$description.text() !== opts.description)
             {
                 params.description = self.$description.text();
+                nonEmpty           = true;
             }
 
-            if (self.$rating.length > 0)
+            if ( (self.$tags.length > 0) &&
+                 (self.$tags.text() !== opts.tags) )
+            {
+                params.tags = self.$tags.text();
+                nonEmpty    = true;
+            }
+
+            if (self.$favorite.checkbox('isChecked') !== opts.isFavorite)
+            {
+                params.isFavorite = self.$favorite.checkbox('isChecked');
+                nonEmpty          = true;
+            }
+
+            if (self.$private.checkbox('isChecked') !== opts.isPrivate)
+            {
+                params.isPrivate = self.$private.checkbox('isChecked');
+                nonEmpty         = true;
+            }
+
+            if ( (self.$rating.length > 0) &&
+                 (self.$rating.stars('value') !== opts.rating) )
             {
                 params.rating = self.$rating.stars('value');
+                nonEmpty      = true;
+            }
+
+            if (self.$url.attr('href') !== opts.url)
+            {
+                // The URL has changed -- pass it in
+                params.url = self.$url.attr('href');
+                nonEmpty   = true;
+            }
+
+            if (nonEmpty !== true)
+            {
+                return;
             }
 
             /* If there is a 'change' callback, invoke it.
@@ -347,10 +383,17 @@ $.widget("ui.bookmark", {
                         return;
                     }
 
+                    if (data.result === null)
+                    {
+                        return;
+                    }
+
                     // Include the updated data
                     self.$itemId.val(           data.result.itemId );
                     self.$name.text(            data.result.name );
                     self.$description.text(     data.result.description );
+
+                    self.$tags.text(            data.result.tags );
 
                     self.$rating.stars('select',data.result.rating);
 
