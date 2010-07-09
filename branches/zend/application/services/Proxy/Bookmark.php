@@ -163,4 +163,50 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
     {
         return $this->_service->autocompleteTag($str, $tags, $users, $limit);
     }
+
+    /** @brief  Update/Create a bookmark.
+     *  @param  id          Identification value(s) (string, integer, array).
+     *                      MAY be an associative array that specifically
+     *                      identifies attribute/value pairs.
+     *                      For a Model_Bookmark, there are a few special
+     *                      attributes supported:
+     *                          1) The user/owner may be identified in one of
+     *                             three ways:
+     *                              - 'user'   as a  Model_User instance;
+     *                              - 'userId' as an integer identifier;
+     *                              - 'userId' as a  string user-name;
+     *
+     *                          2) The referenced Item may be identified in one
+     *                             of seven ways:
+     *                              - 'item'        as a  Model_Item instance;
+     *                              - 'itemId'      as an integer identifier;
+     *                              - 'itemId'      as a  string url-hash;
+     *                              - 'itemUrlHash' as a  string url-hash;
+     *                              - 'urlHash'     as a  string url-hash;
+     *                              - 'itemUrl'     as a  string url;
+     *                              - 'url'         as a  string url;
+     *  @param  name        If non-empty, the (new) Bookmark name;
+     *  @param  description If non-null,  the (new) description;
+     *  @param  rating      If non-null,  the (new) rating;
+     *  @param  isFavorite  If non-null,  the (new) favorite value;
+     *  @param  isPrivate   If non-null,  the (new) privacy value;
+     *  @param  tags        If non-empty, the (new) set of tags;
+     *  @param  url         If non-empty, the (new) URL associated with this
+     *                      bookmark (MAY create a new Item);
+     *
+     *  @return Model_Bookmark
+     */
+    public function update($id,
+                           $name            = null,
+                           $description     = null,
+                           $rating          = 0,
+                           $isFavorite      = false,
+                           $isPrivate       = false,
+                           $tags            = null,
+                           $url             = null)
+    {
+        return $this->_service->update($id, $name, $description,
+                                       $rating, $isFavorite, $isPrivate,
+                                       $tags, $url);
+    }
 }
