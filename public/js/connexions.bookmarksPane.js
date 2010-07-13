@@ -3,20 +3,21 @@
  *  Javascript interface/wrapper for the presentation of a configurable pane
  *  which contains a bookmark list.
  *
- *  This is class extends ui.pane to include unobtrusive activation of any
- *  contained, pre-rendered ul.bookmarkList generated via
+ *  This is class extends connexions.pane to include unobtrusive activation of
+ *  any contained, pre-rendered ul.bookmarkList generated via
  *  View_Helper_HtmlBookmarks.
  *
  *  Requires:
  *      ui.core.js
  *      ui.widget.js
- *      ui.pane.js
+ *      connexions.pane.js
+ *      connexions.bookmarkList.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false */
 (function($) {
 
-$.widget("ui.bookmarksPane", $.ui.pane, {
+$.widget("connexions.bookmarksPane", $.connexions.pane, {
     version: "0.0.1",
     options: {
         // Defaults
@@ -60,7 +61,7 @@ $.widget("ui.bookmarksPane", $.ui.pane, {
             uiOpts.namespace = opts.namespace;
         }
 
-        // Instantiate the ui.bookmarkList widget
+        // Instantiate the connexions.bookmarkList widget
         self.$bookmarkList.bookmarkList(uiOpts);
     },
 

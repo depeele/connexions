@@ -756,333 +756,6 @@ $.widget("ui.checkbox", {
 }(jQuery));
 /** @file
  *
- *  Provide option groups for a set of checkbox options.
- *
- *  Requires:
- *      ui.core.js
- *      ui.widget.js
- */
-/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
-/*global jQuery:false, window:false */
-(function($) {
-
-$.widget("ui.dropdownForm", {
-    version: "0.1.1",
-
-    /* Remove the strange ui.widget._trigger() class name prefix for events.
-     *
-     * If you need to know which widget the event was triggered from, either
-     * bind directly to the widget or look at the event object.
-     */
-    widgetEventPrefix:    '',
-
-    options: {
-        // Defaults
-        namespace:  null,   // Form/cookie namespace
-        form:       null,   // Our parent/controlling form
-        groups:     null    // Display style groups.
-    },
-
-    /** @brief  Initialize a new instance.
-     *
-     *  Valid options are:
-     *      namespace   The form / cookie namespace [ '' ];
-     *      groups      An object of style-name => CSS selector;
-     *
-     *  @triggers:
-     *      'apply.uidropdownform'  when the form is submitted;
-     */
-    _create: function() {
-        var self        = this;
-        var opts        = self.options;
-
-        self.$form      = self.element.find('form:first');
-        self.$submit    = self.element.find(':submit');
-
-        /* Convert selects to buttons
-        self.$form.find('.field select')
-                .button();
-        */
-
-        // Add a toggle control button
-        self.$control   = 
-                $(  "<div class='control'>"
-                  +  "<button>Display Options</button>"
-                  + "</div>");
-
-        self.$control.prependTo(self.element);
-
-        self.$button = self.$control.find('button');
-        self.$button.button({
-            icons: {
-                secondary:  'ui-icon-triangle-1-s'
-            }
-        });
-        self.$control.fadeTo(100, 0.5);
-
-        /* Activate a ui.optionGroups handler for any container/div in this
-         * form with a CSS class of 'ui-optionGroups'.
-         * ui.optionGroups handler for them.
-         */
-        self.element.find('.ui-optionGroups').optionGroups();
-
-        self.$form.hide();
-
-        self._bindEvents();
-    },
-
-    /************************
-     * Private methods
-     *
-     */
-    _bindEvents: function() {
-        var self        = this;
-        
-
-        // Handle a click outside of the display options form.
-        var _body_click     = function(e) {
-            if (self.$form.is(':visible') &&
-                (! $.contains(self.$form[0], e.target)) )
-            {
-                /* Hide the form by triggering self.$control.click and then
-                 * mouseleave
-                 */
-                self.$control.trigger('click');
-
-                self._trigger('mouseleave', e);
-                //self.element.trigger('mouseleave');
-            }
-        };
-
-        // Opacity hover effects
-        var _mouse_enter    = function(e) {
-            self.$control.fadeTo(100, 1.0);
-        };
-
-        var _mouse_leave    = function(e) {
-            if (self.$form.is(':visible'))
-            {
-                // Don't fade if the form is currently visible
-                return;
-            }
-
-            self.$control.fadeTo(100, 0.5);
-        };
-
-        var _control_click  = function(e) {
-            // Toggle the displayOptions pane
-            e.preventDefault();
-            e.stopPropagation();
-
-            self.$form.toggle();
-            self.$button.toggleClass('ui-state-active');
-
-            return false;
-        };
-
-        var _prevent_default    = function(e) {
-            // Prevent the browser default, but let the event bubble up
-            e.preventDefault();
-        };
-
-        var _form_change        = function(e) {
-            /*
-            // Remember which fields have changed
-            var changed = self.element.data('changed.uidropdownform');
-
-            if (! $.isArray(changed))
-            {
-                changed = [];
-            }
-            changed.push(e.target);
-
-            self.element.data('changed.uidropdownform', changed);
-            */
-
-            //$.log("ui.dropdownForm::caught 'form:change'");
-
-            // Any change within the form should enable the submit button
-            self.$submit
-                    .removeClass('ui-state-disabled')
-                    .removeAttr('disabled')
-                    .addClass('ui-state-default');
-        };
-
-        var _form_submit        = function(e) {
-            // Serialize all form values to an array...
-            var settings    = self.$form.serializeArray();
-            //e.preventDefault();
-
-            /* ...and set a cookie for each
-             *      namespace +'SortBy'
-             *      namespace +'SortOrder'
-             *      namespace +'PerPage'
-             *      namespace +'Style'
-             *      and possibly
-             *          namespace +'StyleCustom[ ... ]'
-             */
-            $(settings).each(function() {
-                /*
-                $.log("Add Cookie: name[%s], value[%s]",
-                      this.name, this.value);
-                // */
-                $.cookie(this.name, this.value);
-            });
-
-            if (! self._trigger('apply', e))
-            {
-                e.stopImmediatePropagation();
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-
-            /*
-            var callback    = self.options.apply;
-            if ($.isFunction(callback))
-            {
-                callback.call( self.element[0], e);
-                //self.options.submitCb(e, self);
-            }
-            else
-            {
-                // Reload so our URL won't be polluted with form variables that
-                // we've just placed into cookies.
-                window.location.reload();
-            }
-            */
-        };
-
-        var _form_clickSubmit   = function(e) {
-            e.preventDefault();
-
-            // Trigger the 'submit' event on the form
-            self.$form.trigger('submit');
-        };
-
-        /**********************************************************************
-         * bind events
-         *
-         */
-
-        // Handle a click outside of the display options form.
-        $('body')
-                .bind('click.uidropdownform', _body_click);
-
-        // Add an opacity hover effect to the displayOptions
-        self.$control
-                .bind('mouseenter.uidroppdownform', _mouse_enter)
-                .bind('mouseleave.uidroppdownform', _mouse_leave)
-                .bind('click.uidropdownform',       _control_click);
-
-        self.$form
-                .bind('change.uidropdownform', _form_change)
-                .bind('submit.uidropdownform', _form_submit);
-
-        self.$submit
-                .bind('click.uidropdownform', _form_clickSubmit);
-
-    },
-
-    /************************
-     * Public methods
-     *
-     */
-    getGroup: function() {
-        return this.element.find('.displayStyle')
-                            .optionGroups( 'getGroup' );
-    },
-
-    setGroup: function(style) {
-        return this.element.find('.displayStyle')
-                            .optionGroups( 'setGroup', style );
-    },
-
-    getGroupInfo: function() {
-        return this.element.find('.displayStyle')
-                            .optionGroups( 'getGroupInfo' );
-    },
-
-    setApplyCb: function(cb) {
-        this.options.apply = cb;
-    },
-
-    open: function() {
-        if (this.element.find('form:first').is(':visible'))
-        {
-            // Already opened
-            return;
-        }
-
-        this.element.find('.control:first').click();
-    },
-
-    close: function() {
-        if (! this.element.find('form:first').is(':visible'))
-        {
-            // Already closed
-            return;
-        }
-
-        this.element.find('.control:first').click();
-    },
-
-    enable: function(enableSubmit) {
-
-        self.$form.find('input,select').removeAttr('disabled');
-
-        if (enableSubmit !== true)
-        {
-            // Any change within the form should enable the submit button
-            self.$submit
-                    .removeClass('ui-state-default ui-state-highlight')
-                    .addClass('ui-state-disabled')
-                    .attr('disabled', true);
-        }
-        else
-        {
-            self.$submit
-                    .removeClass('ui-state-disabled')
-                    .removeAttr('disabled')
-                    .addClass('ui-state-default');
-        }
-    },
-
-    disable: function() {
-        self.$form.find('input,select').attr('disabled', true);
-
-        // Any change within the form should enable the submit button
-        self.$submit
-                .removeClass('ui-state-default ui-state-highlight')
-                .addClass('ui-state-disabled')
-                .attr('disabled', true);
-    },
-
-    destroy: function() {
-        var self        = this;
-
-        // Unbind events
-        $('body')
-                .unbind('.uidropdownform');
-
-        self.$control.unbind('.uidropdownform');
-        self.$control.find('a:first, .ui-icon:first')
-                     .unbind('.uidropdownform');
-
-        self.$form.unbind('.uidropdownform');
-
-        // Remove added elements
-        self.$button.button('destroy');
-        self.$control.remove();
-
-        self.element.find('.displayStyle').optionGroups( 'destroy' );
-    }
-});
-
-
-}(jQuery));
-/** @file
- *
  *  Provide a ui-styled input / text input area that supports validation.
  *
  *  Requires:
@@ -1489,6 +1162,770 @@ $.widget("ui.input", {
 
 
 }(jQuery));
+/*!
+ * jQuery UI Stars v2.1.1
+ * http://plugins.jquery.com/project/Star_Rating_widget
+ *
+ * Copyright (c) 2009 Orkan (orkans@gmail.com)
+ * Dual licensed under the MIT and GPL licenses.
+ * http://docs.jquery.com/License
+ *
+ * $Rev: 114 $
+ * $Date:: 2009-06-12 #$
+ * $Build: 32 (2009-06-12)
+ *
+ * Take control of pre-assembled HTML:
+ *  <div >
+ *    <input class='ui-stars-rating' type='hidden' name='rating' value='...' />
+ *    <div class='ui-stars ui-stars-cancel ...'><a ..></a></div>
+ *    <div class='ui-stars ui-stars-star ...'><a ..></a></div>
+ *    <div class='ui-stars ui-stars-star ...'><a ..></a></div>
+ *    ...
+ *  </div>
+ *
+ * Depends:
+ *      ui.core.js
+ *      ui.widget.js
+ *
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false */
+(function($) {
+
+$.widget("ui.stars", {
+  version: "2.1.1b",
+
+  /* Remove the strange ui.widget._trigger() class name prefix for events.
+   *
+   * If you need to know which widget the event was triggered from, either
+   * bind directly to the widget or look at the event object.
+   */
+  widgetEventPrefix:    '',
+
+  options: {
+    // Defaults
+    inputType: "div", // radio|select
+    split: 0,
+    disabled: false,
+    cancelTitle: "Cancel Rating",
+    cancelValue: 0,
+    cancelShow: true,
+    oneVoteOnly: false,
+    showTitles: false,
+    captionEl: null,
+    callback: null, // function(ui, type, value, event)
+
+    /*
+     * CSS classes
+     */
+    starWidth: 16,
+    baseClass:   'ui-stars',            // Included for all star/cancel items
+    cancelClass: 'ui-stars-cancel',
+    starClass: 'ui-stars-star',
+    starOnClass: 'ui-stars-star-on',
+    starHoverClass: 'ui-stars-star-hover',
+    starDisabledClass: 'ui-stars-star-disabled',
+    cancelHoverClass: 'ui-stars-cancel-hover',
+    cancelDisabledClass: 'ui-stars-cancel-disabled'
+  },
+
+  _create: function() {
+    var self = this, o = this.options, id = 0;
+
+    //this.$stars  = $('.'+o.baseClass,   this.element);
+    this.$stars  = $('.'+o.starClass,   this.element);
+    this.$cancel = $('.'+o.cancelClass, this.element);
+    this.$input  = $('input[type=hidden]:first', this.element);
+
+    // How many Stars and how many are 'on'?
+    o.items = this.$stars.filter('.'+o.starClass).length;
+    o.value = this.$stars.filter('.'+o.starOnClass).length; // - 1;
+    if (o.value > 0) {
+        o.checked = o.defaultValue = o.value;
+    } else {
+        o.value = o.cancelValue;
+    }
+
+    if (o.disabled) {
+        this.$cancel.addClass(o.cancelDisabledClass);
+    }
+
+    //o.cancelShow &= !o.disabled && !o.oneVoteOnly;
+    o.cancelShow &= !o.oneVoteOnly;
+    //o.cancelShow && this.element.append(this.$cancel);
+
+    /*
+     * Star selection helpers
+     */
+    function fillNone() {
+      self.$stars.removeClass(o.starOnClass + " " + o.starHoverClass);
+      self._showCap("");
+    }
+
+    function fillTo(index, hover) {
+      if(index >= 0) {
+        var addClass = hover ? o.starHoverClass : o.starOnClass;
+        var remClass = hover ? o.starOnClass    : o.starHoverClass;
+
+        self.$stars.eq(index)
+                      .removeClass(remClass)
+                      .addClass(addClass)
+                    .prevAll("." + o.starClass)
+                      .removeClass(remClass)
+                      .addClass(addClass);
+        //             .end()
+        //            .end()
+        self.$stars.eq(index)
+                    .nextAll("." + o.starClass)
+                     .removeClass(o.starHoverClass + " " + o.starOnClass);
+
+        self._showCap(self.$stars.eq(index).find('a').attr('title'));
+      }
+      else {
+          fillNone();
+      }
+    }
+
+
+    /*
+     * Attach stars event handler
+     */
+    this.$stars.bind("click.stars", function(e) {
+      if(!o.forceSelect && o.disabled) {
+        return false;
+      }
+
+      var i = self.$stars.index(this);
+      o.checked = i;
+      o.value   = i + 1;
+      o.title   = $(this).find('a').attr('title');
+
+      self.$input.val(o.value);
+
+      fillTo(o.checked, false);
+      self._disableCancel();
+
+      !o.forceSelect && self.callback(e, "star");
+
+      self._trigger('change', null, o.value);
+    })
+    .bind("mouseover.stars", function() {
+      if(o.disabled) {
+        return false;
+      }
+      var i = self.$stars.index(this);
+      fillTo(i, true);
+    })
+    .bind("mouseout.stars", function() {
+      if(o.disabled) {
+        return false;
+      }
+      fillTo(o.checked, false);
+    });
+
+
+    /*
+     * Attach cancel event handler
+     */
+    this.$cancel.bind("click.stars", function(e) {
+      if(!o.forceSelect && (o.disabled || o.value === o.cancelValue))
+      {
+        return false;
+      }
+
+      o.checked = -1;
+      o.value   = o.cancelValue;
+
+      self.$input.val(o.cancelValue);
+
+      fillNone();
+      self._disableCancel();
+
+      !o.forceSelect && self.callback(e, "cancel");
+    })
+    .bind("mouseover.stars", function() {
+      if(self._disableCancel()) {
+        return false;
+      }
+      self.$cancel.addClass(o.cancelHoverClass);
+      fillNone();
+      self._showCap(o.cancelTitle);
+    })
+    .bind("mouseout.stars", function() {
+      if(self._disableCancel()) {
+        return false;
+      }
+      self.$cancel.removeClass(o.cancelHoverClass);
+      self.$stars.triggerHandler("mouseout.stars");
+    });
+
+    /*
+     * Clean up to avoid memory leaks in certain versions of IE 6
+     */
+    $(window).unload(function(){
+      self.$cancel.unbind(".stars");
+      self.$stars.unbind(".stars");
+      self.$stars = self.$cancel = null;
+    });
+
+
+
+    /*
+     * Finally, set up the Stars
+     */
+    this.select(o.value);
+    o.disabled && this.disable();
+
+  },
+
+  /*
+   * Private functions
+   */
+  _disableCancel: function() {
+    var o        = this.options,
+        disabled = o.disabled || o.oneVoteOnly || (o.value === o.cancelValue);
+
+    if(disabled) {
+        this.$cancel.removeClass(o.cancelHoverClass)
+                    .addClass(o.cancelDisabledClass);
+    }
+    else {
+        this.$cancel.removeClass(o.cancelDisabledClass);
+    }
+
+    this.$cancel.css("opacity", disabled ? 0.5 : 1);
+    return disabled;
+  },
+  _disableAll: function() {
+    var o = this.options;
+    this._disableCancel();
+    if(o.disabled) {this.$stars.filter("div").addClass(o.starDisabledClass);}
+    else           {this.$stars.filter("div").removeClass(o.starDisabledClass);}
+  },
+  _showCap: function(s) {
+    var o = this.options;
+    if(o.captionEl) {o.captionEl.text(s);}
+  },
+
+  /*
+   * Public functions
+   */
+  value: function() {
+    return this.options.value;
+  },
+  select: function(val) {
+    var o = this.options,
+        e = (val === o.cancelValue)
+                ? this.$cancel : this.$stars.eq(val - 1);
+
+    o.forceSelect = true;
+    e.triggerHandler("click.stars");
+    o.forceSelect = false;
+  },
+  selectID: function(id) {
+    var o = this.options, e = (id === -1) ? this.$cancel : this.$stars.eq(id);
+    o.forceSelect = true;
+    e.triggerHandler("click.stars");
+    o.forceSelect = false;
+  },
+  enable: function() {
+    this.options.disabled = false;
+    this._disableAll();
+  },
+  disable: function() {
+    this.options.disabled = true;
+    this._disableAll();
+  },
+  destroy: function() {
+    this.$cancel.unbind(".stars");
+    this.$stars.unbind(".stars");
+    this.element.unbind(".stars").removeData("stars");
+  },
+  callback: function(e, type) {
+    var o = this.options;
+    o.callback && o.callback(this, type, o.value, e);
+    o.oneVoteOnly && !o.disabled && this.disable();
+  }
+});
+
+}(jQuery));
+/*
+ * jQuery Notify UI Widget 1.2.2
+ * Copyright (c) 2010 Eric Hynds
+ *
+ * http://www.erichynds.com/jquery/a-jquery-ui-growl-ubuntu-notification-widget/
+ *
+ * Depends:
+ *   - jQuery 1.4
+ *   - jQuery UI 1.8 widget factory
+ *
+ * Dual licensed under the MIT and GPL licenses:
+ *   http://www.opensource.org/licenses/mit-license.php
+ *   http://www.gnu.org/licenses/gpl.html
+ *
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false */
+(function($){
+
+$.widget("ui.notify", {
+	options: {
+		speed: 500,
+		expires: 5000,
+		stack: 'below'
+	},
+	_create: function(){
+		var self = this;
+		this.templates = {};
+		this.keys = [];
+		
+		// build and save templates
+		this.element.addClass("ui-notify").children().addClass("ui-notify-message").each(function(i){
+			var key = this.id || i;
+			self.keys.push(key);
+			self.templates[key] = $(this).removeAttr("id").wrap("<div></div>").parent().html(); // because $(this).andSelf().html() no workie
+		}).end().empty();
+		
+	},
+	create: function(template, msg, opts){
+		if(typeof template === "object"){
+			opts = msg;
+			msg = template;
+			template = null;
+		}
+		
+		// return a new notification instance
+		return new $.ui.notify.instance(this)._create(msg, $.extend({}, this.options, opts), this.templates[ template || this.keys[0]]);
+	}
+});
+
+// instance constructor
+$.extend($.ui.notify, {
+	instance: function(widget){
+		this.parent = widget;
+		this.isOpen = false;
+	}
+});
+
+// instance methods
+$.extend($.ui.notify.instance.prototype, {
+	_create: function(params, options, template){
+		this.options = options;
+		
+		var self = this,
+			
+			// build html template
+			html = template.replace(/#(?:\{|%7B)(.*?)(?:\}|%7D)/g,
+                                    function($1, $2){
+				                        return ($2 in params)
+                                                ? params[$2]
+                                                : '';
+			                        }),
+			
+			// the actual message
+			m = (this.element = $(html)),
+			
+			// close link
+			closelink = m.find("a.ui-notify-close");
+		
+		// fire beforeopen event
+		if(this._trigger("beforeopen") === false){
+			return;
+		}
+
+		// clickable?
+		if(typeof this.options.click === "function"){
+			m.addClass("ui-notify-click").bind("click", function(e){
+				self._trigger("click", e, self);
+			});
+		}
+		
+		// show close link?
+		if(closelink.length && !!options.expires){
+			closelink.remove();
+		} else if(closelink.length){
+			closelink.bind("click", function(){
+				self.close();
+				return false;
+			});
+		}
+		
+		this.open();
+		
+		// auto expire?
+		if(typeof options.expires === "number"){
+			window.setTimeout(function(){
+				self.close();
+			}, options.expires);
+		}
+		
+		return this;
+	},
+	close: function(){
+		var self = this, speed = this.options.speed;
+		this.isOpen = false;
+		
+		this.element.fadeTo(speed, 0).slideUp(speed, function(){
+			self._trigger("close");
+		});
+		
+		return this;
+	},
+	open: function(){
+		if(this.isOpen){
+			return this;
+		}
+		
+		var self = this;
+		this.isOpen = true;
+		
+		this.element[this.options.stack === 'above'
+                        ? 'prependTo'
+                        : 'appendTo'](this.parent.element)
+                .css({ display:"none", opacity:"" })
+                .fadeIn(this.options.speed, function(){
+			        self._trigger("open");
+		        });
+		
+		return this;
+	},
+	widget: function(){
+		return this.element;
+	},
+	_trigger: function(type, e, instance){
+		return this.parent._trigger.call( this, type, e, instance );
+	}
+});
+
+}(jQuery));
+/** @file
+ *
+ *  Provide option groups for a set of checkbox options.
+ *
+ *  Requires:
+ *      ui.core.js
+ *      ui.widget.js
+ *      connexions.optionGroups.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false */
+(function($) {
+
+$.widget("connexions.dropdownForm", {
+    version: "0.1.1",
+
+    /* Remove the strange ui.widget._trigger() class name prefix for events.
+     *
+     * If you need to know which widget the event was triggered from, either
+     * bind directly to the widget or look at the event object.
+     */
+    widgetEventPrefix:    '',
+
+    options: {
+        // Defaults
+        namespace:  null,   // Form/cookie namespace
+        form:       null,   // Our parent/controlling form
+        groups:     null    // Display style groups.
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  Valid options are:
+     *      namespace   The form / cookie namespace [ '' ];
+     *      groups      An object of style-name => CSS selector;
+     *
+     *  @triggers:
+     *      'apply.uidropdownform'  when the form is submitted;
+     */
+    _create: function() {
+        var self        = this;
+        var opts        = self.options;
+
+        self.$form      = self.element.find('form:first');
+        self.$submit    = self.element.find(':submit');
+
+        /* Convert selects to buttons
+        self.$form.find('.field select')
+                .button();
+        */
+
+        // Add a toggle control button
+        self.$control   = 
+                $(  "<div class='control'>"
+                  +  "<button>Display Options</button>"
+                  + "</div>");
+
+        self.$control.prependTo(self.element);
+
+        self.$button = self.$control.find('button');
+        self.$button.button({
+            icons: {
+                secondary:  'ui-icon-triangle-1-s'
+            }
+        });
+        self.$control.fadeTo(100, 0.5);
+
+        /* Activate a connexions.optionGroups handler for any container/div in
+         * this form with a CSS class of 'ui-optionGroups'.
+         * connexions.optionGroups handler for them.
+         */
+        self.element.find('.ui-optionGroups').optionGroups();
+
+        self.$form.hide();
+
+        self._bindEvents();
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _bindEvents: function() {
+        var self        = this;
+        
+
+        // Handle a click outside of the display options form.
+        var _body_click     = function(e) {
+            if (self.$form.is(':visible') &&
+                (! $.contains(self.$form[0], e.target)) )
+            {
+                /* Hide the form by triggering self.$control.click and then
+                 * mouseleave
+                 */
+                self.$control.trigger('click');
+
+                self._trigger('mouseleave', e);
+                //self.element.trigger('mouseleave');
+            }
+        };
+
+        // Opacity hover effects
+        var _mouse_enter    = function(e) {
+            self.$control.fadeTo(100, 1.0);
+        };
+
+        var _mouse_leave    = function(e) {
+            if (self.$form.is(':visible'))
+            {
+                // Don't fade if the form is currently visible
+                return;
+            }
+
+            self.$control.fadeTo(100, 0.5);
+        };
+
+        var _control_click  = function(e) {
+            // Toggle the displayOptions pane
+            e.preventDefault();
+            e.stopPropagation();
+
+            self.$form.toggle();
+            self.$button.toggleClass('ui-state-active');
+
+            return false;
+        };
+
+        var _prevent_default    = function(e) {
+            // Prevent the browser default, but let the event bubble up
+            e.preventDefault();
+        };
+
+        var _form_change        = function(e) {
+            /*
+            // Remember which fields have changed
+            var changed = self.element.data('changed.uidropdownform');
+
+            if (! $.isArray(changed))
+            {
+                changed = [];
+            }
+            changed.push(e.target);
+
+            self.element.data('changed.uidropdownform', changed);
+            */
+
+            //$.log("connexions.dropdownForm::caught 'form:change'");
+
+            // Any change within the form should enable the submit button
+            self.$submit
+                    .removeClass('ui-state-disabled')
+                    .removeAttr('disabled')
+                    .addClass('ui-state-default');
+        };
+
+        var _form_submit        = function(e) {
+            // Serialize all form values to an array...
+            var settings    = self.$form.serializeArray();
+            //e.preventDefault();
+
+            /* ...and set a cookie for each
+             *      namespace +'SortBy'
+             *      namespace +'SortOrder'
+             *      namespace +'PerPage'
+             *      namespace +'Style'
+             *      and possibly
+             *          namespace +'StyleCustom[ ... ]'
+             */
+            $(settings).each(function() {
+                /*
+                $.log("Add Cookie: name[%s], value[%s]",
+                      this.name, this.value);
+                // */
+                $.cookie(this.name, this.value);
+            });
+
+            if (! self._trigger('apply', e))
+            {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+
+            /*
+            var callback    = self.options.apply;
+            if ($.isFunction(callback))
+            {
+                callback.call( self.element[0], e);
+                //self.options.submitCb(e, self);
+            }
+            else
+            {
+                // Reload so our URL won't be polluted with form variables that
+                // we've just placed into cookies.
+                window.location.reload();
+            }
+            */
+        };
+
+        var _form_clickSubmit   = function(e) {
+            e.preventDefault();
+
+            // Trigger the 'submit' event on the form
+            self.$form.trigger('submit');
+        };
+
+        /**********************************************************************
+         * bind events
+         *
+         */
+
+        // Handle a click outside of the display options form.
+        $('body')
+                .bind('click.uidropdownform', _body_click);
+
+        // Add an opacity hover effect to the displayOptions
+        self.$control
+                .bind('mouseenter.uidroppdownform', _mouse_enter)
+                .bind('mouseleave.uidroppdownform', _mouse_leave)
+                .bind('click.uidropdownform',       _control_click);
+
+        self.$form
+                .bind('change.uidropdownform', _form_change)
+                .bind('submit.uidropdownform', _form_submit);
+
+        self.$submit
+                .bind('click.uidropdownform', _form_clickSubmit);
+
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    getGroup: function() {
+        return this.element.find('.displayStyle')
+                            .optionGroups( 'getGroup' );
+    },
+
+    setGroup: function(style) {
+        return this.element.find('.displayStyle')
+                            .optionGroups( 'setGroup', style );
+    },
+
+    getGroupInfo: function() {
+        return this.element.find('.displayStyle')
+                            .optionGroups( 'getGroupInfo' );
+    },
+
+    setApplyCb: function(cb) {
+        this.options.apply = cb;
+    },
+
+    open: function() {
+        if (this.element.find('form:first').is(':visible'))
+        {
+            // Already opened
+            return;
+        }
+
+        this.element.find('.control:first').click();
+    },
+
+    close: function() {
+        if (! this.element.find('form:first').is(':visible'))
+        {
+            // Already closed
+            return;
+        }
+
+        this.element.find('.control:first').click();
+    },
+
+    enable: function(enableSubmit) {
+
+        self.$form.find('input,select').removeAttr('disabled');
+
+        if (enableSubmit !== true)
+        {
+            // Any change within the form should enable the submit button
+            self.$submit
+                    .removeClass('ui-state-default ui-state-highlight')
+                    .addClass('ui-state-disabled')
+                    .attr('disabled', true);
+        }
+        else
+        {
+            self.$submit
+                    .removeClass('ui-state-disabled')
+                    .removeAttr('disabled')
+                    .addClass('ui-state-default');
+        }
+    },
+
+    disable: function() {
+        self.$form.find('input,select').attr('disabled', true);
+
+        // Any change within the form should enable the submit button
+        self.$submit
+                .removeClass('ui-state-default ui-state-highlight')
+                .addClass('ui-state-disabled')
+                .attr('disabled', true);
+    },
+
+    destroy: function() {
+        var self        = this;
+
+        // Unbind events
+        $('body')
+                .unbind('.uidropdownform');
+
+        self.$control.unbind('.uidropdownform');
+        self.$control.find('a:first, .ui-icon:first')
+                     .unbind('.uidropdownform');
+
+        self.$form.unbind('.uidropdownform');
+
+        // Remove added elements
+        self.$button.button('destroy');
+        self.$control.remove();
+
+        self.element.find('.displayStyle').optionGroups( 'destroy' );
+    }
+});
+
+
+}(jQuery));
 /** @file
  *
  *  Provide option groups for a set of checkbox options.  These must have the
@@ -1548,7 +1985,7 @@ $.widget("ui.input", {
 
 (function($) {
 
-$.widget("ui.optionGroups", {
+$.widget("connexions.optionGroups", {
     version: "0.1.1",
     options: {
         // Defaults
@@ -1871,7 +2308,7 @@ $.widget("ui.optionGroups", {
          * group and an array of CSS selectors that will match all items NOT of
          * the group.
          */
-        //$.log("ui.optionGroups: trigger 'form:change'");
+        //$.log("connexions.optionGroups: trigger 'form:change'");
         self.options.form.trigger('change', groupInfo);
     },
 
@@ -1942,1858 +2379,6 @@ $.widget("ui.optionGroups", {
 
 
 }(jQuery));
-/*!
- * jQuery UI Stars v2.1.1
- * http://plugins.jquery.com/project/Star_Rating_widget
- *
- * Copyright (c) 2009 Orkan (orkans@gmail.com)
- * Dual licensed under the MIT and GPL licenses.
- * http://docs.jquery.com/License
- *
- * $Rev: 114 $
- * $Date:: 2009-06-12 #$
- * $Build: 32 (2009-06-12)
- *
- * Take control of pre-assembled HTML:
- *  <div >
- *    <input class='ui-stars-rating' type='hidden' name='rating' value='...' />
- *    <div class='ui-stars ui-stars-cancel ...'><a ..></a></div>
- *    <div class='ui-stars ui-stars-star ...'><a ..></a></div>
- *    <div class='ui-stars ui-stars-star ...'><a ..></a></div>
- *    ...
- *  </div>
- *
- * Depends:
- *      ui.core.js
- *      ui.widget.js
- *
- */
-/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
-/*global jQuery:false, window:false */
-(function($) {
-
-$.widget("ui.stars", {
-  version: "2.1.1b",
-
-  /* Remove the strange ui.widget._trigger() class name prefix for events.
-   *
-   * If you need to know which widget the event was triggered from, either
-   * bind directly to the widget or look at the event object.
-   */
-  widgetEventPrefix:    '',
-
-  options: {
-    // Defaults
-    inputType: "div", // radio|select
-    split: 0,
-    disabled: false,
-    cancelTitle: "Cancel Rating",
-    cancelValue: 0,
-    cancelShow: true,
-    oneVoteOnly: false,
-    showTitles: false,
-    captionEl: null,
-    callback: null, // function(ui, type, value, event)
-
-    /*
-     * CSS classes
-     */
-    starWidth: 16,
-    baseClass:   'ui-stars',            // Included for all star/cancel items
-    cancelClass: 'ui-stars-cancel',
-    starClass: 'ui-stars-star',
-    starOnClass: 'ui-stars-star-on',
-    starHoverClass: 'ui-stars-star-hover',
-    starDisabledClass: 'ui-stars-star-disabled',
-    cancelHoverClass: 'ui-stars-cancel-hover',
-    cancelDisabledClass: 'ui-stars-cancel-disabled'
-  },
-
-  _create: function() {
-    var self = this, o = this.options, id = 0;
-
-    //this.$stars  = $('.'+o.baseClass,   this.element);
-    this.$stars  = $('.'+o.starClass,   this.element);
-    this.$cancel = $('.'+o.cancelClass, this.element);
-    this.$input  = $('input[type=hidden]:first', this.element);
-
-    // How many Stars and how many are 'on'?
-    o.items = this.$stars.filter('.'+o.starClass).length;
-    o.value = this.$stars.filter('.'+o.starOnClass).length; // - 1;
-    if (o.value > 0) {
-        o.checked = o.defaultValue = o.value;
-    } else {
-        o.value = o.cancelValue;
-    }
-
-    if (o.disabled) {
-        this.$cancel.addClass(o.cancelDisabledClass);
-    }
-
-    //o.cancelShow &= !o.disabled && !o.oneVoteOnly;
-    o.cancelShow &= !o.oneVoteOnly;
-    //o.cancelShow && this.element.append(this.$cancel);
-
-    /*
-     * Star selection helpers
-     */
-    function fillNone() {
-      self.$stars.removeClass(o.starOnClass + " " + o.starHoverClass);
-      self._showCap("");
-    }
-
-    function fillTo(index, hover) {
-      if(index >= 0) {
-        var addClass = hover ? o.starHoverClass : o.starOnClass;
-        var remClass = hover ? o.starOnClass    : o.starHoverClass;
-
-        self.$stars.eq(index)
-                      .removeClass(remClass)
-                      .addClass(addClass)
-                    .prevAll("." + o.starClass)
-                      .removeClass(remClass)
-                      .addClass(addClass);
-        //             .end()
-        //            .end()
-        self.$stars.eq(index)
-                    .nextAll("." + o.starClass)
-                     .removeClass(o.starHoverClass + " " + o.starOnClass);
-
-        self._showCap(self.$stars.eq(index).find('a').attr('title'));
-      }
-      else {
-          fillNone();
-      }
-    }
-
-
-    /*
-     * Attach stars event handler
-     */
-    this.$stars.bind("click.stars", function(e) {
-      if(!o.forceSelect && o.disabled) {
-        return false;
-      }
-
-      var i = self.$stars.index(this);
-      o.checked = i;
-      o.value   = i + 1;
-      o.title   = $(this).find('a').attr('title');
-
-      self.$input.val(o.value);
-
-      fillTo(o.checked, false);
-      self._disableCancel();
-
-      !o.forceSelect && self.callback(e, "star");
-
-      self._trigger('change', null, o.value);
-    })
-    .bind("mouseover.stars", function() {
-      if(o.disabled) {
-        return false;
-      }
-      var i = self.$stars.index(this);
-      fillTo(i, true);
-    })
-    .bind("mouseout.stars", function() {
-      if(o.disabled) {
-        return false;
-      }
-      fillTo(o.checked, false);
-    });
-
-
-    /*
-     * Attach cancel event handler
-     */
-    this.$cancel.bind("click.stars", function(e) {
-      if(!o.forceSelect && (o.disabled || o.value === o.cancelValue))
-      {
-        return false;
-      }
-
-      o.checked = -1;
-      o.value   = o.cancelValue;
-
-      self.$input.val(o.cancelValue);
-
-      fillNone();
-      self._disableCancel();
-
-      !o.forceSelect && self.callback(e, "cancel");
-    })
-    .bind("mouseover.stars", function() {
-      if(self._disableCancel()) {
-        return false;
-      }
-      self.$cancel.addClass(o.cancelHoverClass);
-      fillNone();
-      self._showCap(o.cancelTitle);
-    })
-    .bind("mouseout.stars", function() {
-      if(self._disableCancel()) {
-        return false;
-      }
-      self.$cancel.removeClass(o.cancelHoverClass);
-      self.$stars.triggerHandler("mouseout.stars");
-    });
-
-    /*
-     * Clean up to avoid memory leaks in certain versions of IE 6
-     */
-    $(window).unload(function(){
-      self.$cancel.unbind(".stars");
-      self.$stars.unbind(".stars");
-      self.$stars = self.$cancel = null;
-    });
-
-
-
-    /*
-     * Finally, set up the Stars
-     */
-    this.select(o.value);
-    o.disabled && this.disable();
-
-  },
-
-  /*
-   * Private functions
-   */
-  _disableCancel: function() {
-    var o        = this.options,
-        disabled = o.disabled || o.oneVoteOnly || (o.value === o.cancelValue);
-
-    if(disabled) {
-        this.$cancel.removeClass(o.cancelHoverClass)
-                    .addClass(o.cancelDisabledClass);
-    }
-    else {
-        this.$cancel.removeClass(o.cancelDisabledClass);
-    }
-
-    this.$cancel.css("opacity", disabled ? 0.5 : 1);
-    return disabled;
-  },
-  _disableAll: function() {
-    var o = this.options;
-    this._disableCancel();
-    if(o.disabled) {this.$stars.filter("div").addClass(o.starDisabledClass);}
-    else           {this.$stars.filter("div").removeClass(o.starDisabledClass);}
-  },
-  _showCap: function(s) {
-    var o = this.options;
-    if(o.captionEl) {o.captionEl.text(s);}
-  },
-
-  /*
-   * Public functions
-   */
-  value: function() {
-    return this.options.value;
-  },
-  select: function(val) {
-    var o = this.options,
-        e = (val === o.cancelValue)
-                ? this.$cancel : this.$stars.eq(val - 1);
-
-    o.forceSelect = true;
-    e.triggerHandler("click.stars");
-    o.forceSelect = false;
-  },
-  selectID: function(id) {
-    var o = this.options, e = (id === -1) ? this.$cancel : this.$stars.eq(id);
-    o.forceSelect = true;
-    e.triggerHandler("click.stars");
-    o.forceSelect = false;
-  },
-  enable: function() {
-    this.options.disabled = false;
-    this._disableAll();
-  },
-  disable: function() {
-    this.options.disabled = true;
-    this._disableAll();
-  },
-  destroy: function() {
-    this.$cancel.unbind(".stars");
-    this.$stars.unbind(".stars");
-    this.element.unbind(".stars").removeData("stars");
-  },
-  callback: function(e, type) {
-    var o = this.options;
-    o.callback && o.callback(this, type, o.value, e);
-    o.oneVoteOnly && !o.disabled && this.disable();
-  }
-});
-
-}(jQuery));
-/** @file
- *
- *  Javascript interface/wrapper for the presentation of a single bookmark.
- *
- *  This is primarily a class to provide unobtrusive activation of a
- *  pre-rendered bookmark item (View_Helper_HtmlBookmark):
- *      - convert (optional Favorite and Privacy checkboxes into image-based
- *        hover buttons;
- *      - convert any (optional) star rating presentation to an active ui.stars
- *        widget;
- *      - allow in-line, on demand editing of the bookmark if it has a
- *        '.control .item-edit' link;
- *      - allow in-line, on demand deletion of the bookmark if it has a
- *        '.control .item-delete' link;
- *      - allow in-line, on demand saving of the bookmark if it has a
- *        '.control .item-save' link;
- *
- *  View_Helper_HtmlBookmark will generate HTML for a bookmark similar to:
- *     <form class='bookmark'>
- *       <input type='hidden' name='userId' value='...' />
- *       <input type='hidden' name='itemId' value='...' />
- *
- *       <!-- Status -->
- *       <div class='status'>
- *         <div class='favorite'>
- *           <input type='checkbox' name='isFavorite' value='...' />
- *         </div>
- *         <div class='private'>
- *           <input type='checkbox' name='isPrivate' value='...' />
- *         </div>
- *       </div>
- *
- *       <!-- Stats: item:stats -->
- *       <div class='stats'>
- *
- *         <!-- item:stats:count -->
- *         <a class='count' ...> count </a>
- *
- *         <!-- item:stats:rating -->
- *         <div class='rating'>
- *           <div class='stars'>
- *
- *             <!-- item:stats:rating:stars -->
- *             <div class='ui-stars-wrapper'> ... </div>
- *           </div>
- *
- *           <!-- item:stats:rating:info -->
- *           <div class='info'>
- *             <span class='count'> count </span> raters,
- *             <span class='average'> average </span> avg.
- *           </div>
- *         </div>
- *       </div>
- *
- *       <!-- Bookmark Data: item:data -->
- *       <div class='data'>
- *
- *         <!-- User Identification: item:data:userId -->
- *         <div class='userId'>
- *           <a ...>
- *
- *             <!-- item:data:userId:avatar -->
- *             <div class='img'>
- *               <img ... avatar image ... />
- *             </div>
- *
- *             <!-- item:data:userId:id -->
- *             <span class='name'> userName </span>
- *           </a>
- *         </div>
- *
- *         <!-- Owner controls -->
- *         <div class='control'>
- *           <a class='item-edit' ...>EDIT</a> |
- *           <a class='item-delete' ...>DELETE</a>
- *
- *           <a class='item-save' ...>SAVE</a>
- *         </div class='control'>
- *
- *         <!-- Item Name: item:data:itemName -->
- *         <h4 class='itemName'> <a ...> title </a> </h4>
- *
- *         <!-- Item Url: item:data:url -->
- *         <div class='url'><a ..> url </a></div>
- *
- *         <!-- Item Description: item:data:description -->
- *         <div class='description'>
- *
- *           <!-- Item Description: item:data:description:summary -->
- *           <div class='summary'> description summary </div>
- *
- *           <!-- Item Description: item:data:description:full -->
- *           <div class='full'> description full </div>
- *         </div class='description'>
- *
- *         <!-- Item Tags: item:data:tags -->
- *         <ul class='tags'>
- *           <li class='tag'><a ...> tag </a></li>
- *           ...
- *         </ul>
- *
- *         <!-- Item Dates: item:data:dates -->
- *         <div class='dates'>
- *
- *           <!-- item:data:dates:tagged -->
- *           <div class='tagged'> tagged date </div>
- *
- *           <!-- item:data:dates:updated -->
- *           <div class='updated'> updated date </div>
- *         </div>
- *       </div>
- *     </form>
- *
- *  Requires:
- *      ui.core.js
- *      ui.widget.js
- */
-/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
-/*global jQuery:false */
-(function($) {
-
-$.widget("ui.bookmark", {
-    version: "0.0.1",
-
-    /* Remove the strange ui.widget._trigger() class name prefix for events.
-     *
-     * If you need to know which widget the event was triggered from, either
-     * bind directly to the widget or look at the event object.
-     */
-    widgetEventPrefix:    '',
-
-    options: {
-        // Widget state (mirrors Model_Bookmark)
-        userId:     null,
-        itemId:     null,
-        name:       null,
-        description:null,
-        rating:     null,
-        isFavorite: null,
-        isPrivate:  null,
-
-        tags:       null,
-        url:        null,
-
-        // taggedOn and updateOn are not user editable
-
-        /* A change callback
-         *      function(data)
-         *          return true  to allow the change
-         *          return false to abort the change
-         */
-        change:     null,
-
-        /* General Json-RPC information:
-         *  {version:   Json-RPC version,
-         *   target:    URL of the Json-RPC endpoint,
-         *   transport: 'POST' | 'GET'
-         *  }
-         *
-         * Defaults to the value of:
-         *      $.registry('api').jsonRpc
-         *
-         * (which is initialized from
-         *      application/configs/application.ini:api
-         *  via
-         *      application/layout/header.phtml
-         *
-         */
-        jsonRpc:    null,
-        rpcId:      1,      // The initial RPC identifier
-
-        // Widget state
-        enabled:    true
-    },
-
-    /** @brief  Initialize a new instance.
-     *
-     *  @triggers:
-     *      'enabled.bookmark'
-     *      'disabled.bookmark'
-     */
-    _create: function()
-    {
-        var self        = this;
-        var opts        = self.options;
-
-        /********************************
-         * Initialize jsonRpc if not
-         * provided.
-         */
-        if ((opts.jsonRpc === null) && $.isFunction($.registry))
-        {
-            var api = $.registry('api');
-            if (api && api.jsonRpc)
-            {
-                opts.jsonRpc = api.jsonRpc;
-            }
-        }
-
-        /********************************
-         * Locate the pieces
-         *
-         */
-        self.$userId      = self.element.find('input[name=userId]');
-        self.$itemId      = self.element.find('input[name=itemId]');
-        self.$name        = self.element.find('.itemName a');
-        self.$description = self.element.find('.description');
-
-        self.$rating      = self.element.find('.rating .stars .owner');
-        self.$favorite    = self.element.find('input[name=isFavorite]');
-        self.$private     = self.element.find('input[name=isPrivate]');
-
-        self.$tags        = self.element.find('input[name=tags]');
-
-        self.$edit        = self.element.find('.control .item-edit');
-        self.$delete      = self.element.find('.control .item-delete');
-        self.$save        = self.element.find('.control .item-save');
-
-        self.$url         = self.element.find('.itemName a,.url a');
-
-        /********************************
-         * Instantiate our sub-widgets
-         *
-         */
-
-        // Status - Favorite
-        self.$favorite.checkbox({
-            css:        'connexions_sprites',
-            cssOn:      'star_fill',
-            cssOff:     'star_empty',
-            titleOn:    'Favorite: click to remove from Favorites',
-            titleOff:   'Click to add to Favorites',
-            useElTitle: false,
-            hideLabel:  true
-        });
-
-        // Status - Private
-        self.$private.checkbox({
-            css:        'connexions_sprites',
-            cssOn:      'lock_fill',
-            cssOff:     'lock_empty',
-            titleOn:    'Private: click to share',
-            titleOff:   'Public: click to mark as private',
-            useElTitle: false,
-            hideLabel:  true
-        });
-
-        // Rating - average and user
-        self.$rating.stars({
-            //split:    2
-        });
-
-
-        /********************************
-         * Initialize our state and bind
-         * to interesting events.
-         *
-         */
-        self._setState();
-        self._bindEvents();
-    },
-
-    /************************
-     * Private methods
-     *
-     */
-    _bindEvents: function()
-    {
-        var self    = this;
-        var opts    = self.options;
-
-        self._squelch = false;
-
-        // Handle a direct click on one of the status indicators
-        var _update_item      = function(e, data) {
-            e.stopImmediatePropagation();
-            e.preventDefault();
-            e.stopPropagation();
-
-            $.log('ui.bookmark::_update_item('+ data +')');
-
-            if ((self.options.enabled !== true) || (self._squelch === true))
-            {
-                return;
-            }
-
-            // Gather the current data about this item.
-            var nonEmpty    = false;
-            var params      = {
-                id: { userId: opts.userId, itemId: opts.itemId }
-            };
-
-            if (self.$name.text() !== opts.name)
-            {
-                params.name = self.$name.text();
-                nonEmpty    = true;
-            }
-
-            if (self.$description.text() !== opts.description)
-            {
-                params.description = self.$description.text();
-                nonEmpty           = true;
-            }
-
-            if ( (self.$tags.length > 0) &&
-                 (self.$tags.text() !== opts.tags) )
-            {
-                params.tags = self.$tags.text();
-                nonEmpty    = true;
-            }
-
-            if (self.$favorite.checkbox('isChecked') !== opts.isFavorite)
-            {
-                params.isFavorite = self.$favorite.checkbox('isChecked');
-                nonEmpty          = true;
-            }
-
-            if (self.$private.checkbox('isChecked') !== opts.isPrivate)
-            {
-                params.isPrivate = self.$private.checkbox('isChecked');
-                nonEmpty         = true;
-            }
-
-            if ( (self.$rating.length > 0) &&
-                 (self.$rating.stars('value') !== opts.rating) )
-            {
-                params.rating = self.$rating.stars('value');
-                nonEmpty      = true;
-            }
-
-            if (self.$url.attr('href') !== opts.url)
-            {
-                // The URL has changed -- pass it in
-                params.url = self.$url.attr('href');
-                nonEmpty   = true;
-            }
-
-            if (nonEmpty !== true)
-            {
-                return;
-            }
-
-            /* If there is a 'change' callback, invoke it.
-             *
-             * If it returns false, terminate the change.
-             */
-            if ($.isFunction(self.options.change))
-            {
-                if (! self.options.change(params))
-                {
-                    // Rollback state.
-                    self._resetState();
-
-                    return;
-                }
-            }
-
-            var rpc = {
-                version: opts.jsonRpc.version,
-                id:      opts.rpcId++,
-                method:  'bookmark.update',
-                params:  params
-            };
-
-            // Perform a JSON-RPC call to update this item
-            $.ajax({
-                url:        opts.jsonRpc.target,
-                type:       opts.jsonRpc.transport,
-                dataType:   'json',
-                data:       JSON.stringify(rpc),
-                success:    function(data, textStatus, req) {
-                    if (data.error !== null)
-                    {
-                        $.notify({
-                            title: 'Bookmark update failed',
-                            text:  '<p class="error">'
-                                 +   data.error.message
-                                 + '</p>'
-                        });
-
-                        // rollback state
-                        self._resetState();
-                        return;
-                    }
-
-                    if (data.result === null)
-                    {
-                        return;
-                    }
-
-                    // Include the updated data
-                    self.$itemId.val(           data.result.itemId );
-                    self.$name.text(            data.result.name );
-                    self.$description.text(     data.result.description );
-
-                    self.$tags.text(            data.result.tags );
-
-                    self.$rating.stars('select',data.result.rating);
-
-                    self.$favorite.checkbox(    (data.result.isFavorite
-                                                    ? 'check'
-                                                    : 'uncheck') );
-                    self.$private.checkbox(     (data.result.isPrivate
-                                                    ? 'check'
-                                                    : 'uncheck') );
-                    self.$url.attr('href',      data.result.url);
-
-                    // set state
-                    self._setState();
-                },
-                error:      function(req, textStatus, err) {
-                    $.notify({
-                        title: 'Bookmark update failed',
-                        text:  '<p class="error">'
-                             +   textStatus
-                             + '</p>'
-                    });
-
-                    // rollback state
-                    self._resetState();
-                },
-                complete:   function(req, textStatus) {
-                }
-             });
-        };
-
-        // Handle item-edit
-        var _edit_click  = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            if (self.options.enabled !== true)
-            {
-                return;
-            }
-        };
-
-        // Handle item-delete
-        var _delete_click  = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            if (self.options.enabled !== true)
-            {
-                return;
-            }
-        };
-
-        // Handle save-delete
-        var _save_click  = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            if (self.options.enabled !== true)
-            {
-                return;
-            }
-        };
-
-        /**********************************************************************
-         * bind events
-         *
-         */
-
-        /*
-        self.$favorite.bind('click.bookmark', _update_item);
-        self.$private.bind('click.bookmark',  _update_item);
-        self.$rating.bind('click.bookmark',   _update_item);
-        */
-
-        self.element.bind('change.bookmark',    _update_item);
-
-        self.$edit.bind('click.bookmark',       _edit_click);
-        self.$delete.bind('click.bookmark',     _delete_click);
-        self.$save.bind('click.bookmark',       _save_click);
-    },
-
-    _setState: function()
-    {
-        // Set the current widget state to the values of it's sub-components
-        var self    = this;
-        var opts    = self.options;
-
-        opts.userId      = self.$userId.val();
-        opts.itemId      = self.$itemId.val();
-        opts.name        = self.$name.text();
-        opts.description = self.$description.text();
-
-        if (self.$rating.length > 0)
-        {
-            opts.rating  = self.$rating.stars('value');
-        }
-
-        opts.isFavorite  = self.$favorite.checkbox('isChecked');
-        opts.isPrivate   = self.$private.checkbox('isChecked');
-
-        opts.url         = self.$url.attr('href');
-    },
-
-    _resetState: function()
-    {
-        // Reset the values of the sub-components to the current widget state
-        var self    = this;
-        var opts    = self.options;
-
-        // Squelch change-triggered item updates.
-        self._squelch = true;
-
-        self.$name.text(opts.name);
-        self.$description.text(opts.description);
-
-        if (self.$rating.length > 0)
-        {
-            self.$rating.stars('select', opts.rating);
-        }
-
-        self.$favorite.checkbox( (opts.isFavorite
-                                    ? 'check'
-                                    : 'uncheck') );
-        self.$private.checkbox( (opts.isPrivate
-                                    ? 'check'
-                                    : 'uncheck') );
-
-        self.$url.attr('href', opts.url);
-
-        self._squelch = false;
-    },
-
-    /************************
-     * Public methods
-     *
-     */
-    isEnabled: function()
-    {
-        return this.options.enabled;
-    },
-
-    enable: function()
-    {
-        var self    = this;
-        var opts    = self.options;
-
-        if (! self.options.enabled)
-        {
-            self.options.enabled = true;
-            self.element.removeClass('ui-state-disabled');
-
-            self.$favorite.checkbox('enable');
-            self.$private.checkbox('enable');
-            self.$rating.stars('enable');
-
-            self._trigger('enabled', null, true);
-        }
-    },
-
-    disable: function()
-    {
-        var self    = this;
-        var opts    = self.options;
-
-        if (self.options.enabled)
-        {
-            self.options.enabled = false;
-            self.element.addClass('ui-state-disabled');
-
-            self.$favorite.checkbox('disable');
-            self.$private.checkbox('disable');
-            self.$rating.stars('disable');
-
-            self._trigger('disabled', null, true);
-        }
-    },
-
-    destroy: function()
-    {
-        var self    = this;
-        var opts    = self.options;
-
-        // Unbind events
-        self.$favorite.unbind('.bookmark');
-        self.$private.unbind('.bookmark');
-        self.$rating.unbind('.bookmark');
-        self.$edit.unbind('.bookmark');
-        self.$delete.unbind('.bookmark');
-        self.$save.unbind('.bookmark');
-
-        // Remove added elements
-        self.$favorite.checkbox('destroy');
-        self.$private.checkbox('destroy');
-        self.$rating.stars('destroy');
-    }
-});
-
-
-}(jQuery));
-
-/** @file
- *
- *  Javascript interface/wrapper for the presentation of multiple bookmarks.
- *
- *  This is primarily a class to provide unobtrusive activation of a
- *  pre-rendered list of bookmark items (View_Helper_HtmlBookmarks), each of
- *  which will become a ui.bookmark instance.
- *
- *  This class also handles:
- *      - hover effects for .groupHeader DOM items;
- *      - conversion of all form.bookmark DOM items to ui.bookmark instances;
- *
- *  View_Helper_HtmlBookmarks will generate HTML for a bookmark list similar
- *  to:
- *      <div id='<ns>List'>
- *        <ul class='<ns>'>
- *          <li><form class='bookmark'> ... </form></li>
- *          ...
- *        </ul>
- *      </div>
- *
- *  Requires:
- *      ui.core.js
- *      ui.widget.js
- *      ui.bookmark.js
- */
-/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
-/*global jQuery:false */
-(function($) {
-
-$.widget("ui.bookmarkList", {
-    version: "0.0.1",
-
-    /* Remove the strange ui.widget._trigger() class name prefix for events.
-     *
-     * If you need to know which widget the event was triggered from, either
-     * bind directly to the widget or look at the event object.
-     */
-    widgetEventPrefix:    '',
-
-    options: {
-        // Defaults
-        namespace:  '',
-        dimOpacity: 0.5
-    },
-
-    /** @brief  Initialize a new instance.
-     *
-     *  @triggers:
-     *      'change.bookmark'  when something about the bookmark is changed;
-     */
-    _create: function()
-    {
-        var self    = this;
-        var opts    = self.options;
-
-        // Bookmarks
-        self.$bookmarks = self.element.find('form.bookmark');
-
-        // Group Headers
-        self.$headers = self.element.find('.groupHeader .groupType');
-
-
-        self.$bookmarks.bookmark();
-
-        self.$headers
-                .fadeTo(100, opts.dimOpacity)
-                .hover( function() {    // in
-                            self.$headers.fadeTo(100, 1.0);
-                        },
-                        function() {    // out
-                            self.$headers.fadeTo(100, opts.dimOpacity);
-                        }
-                );
-
-        self._bindEvents();
-    },
-
-    /************************
-     * Private methods
-     *
-     */
-    _bindEvents: function()
-    {
-        var self    = this;
-        var opts    = self.options;
-    },
-
-    /************************
-     * Public methods
-     *
-     */
-    destroy: function() {
-        var self        = this;
-
-        // Unbind events
-        self.$headers.unbind('hover');
-
-        // Remove added elements
-        self.$bookmarks.bookmark('destroy');
-    }
-});
-
-
-}(jQuery));
-
-
-/** @file
- *
- *  Javascript interface/wrapper for the presentation of a configurable pane.
- *
- *  This is primarily a class to provide unobtrusive activation of a
- *  pre-rendered view / pane:
- *      - conversion of any (optional) paginator markup (form.paginator),
- *        generated via View_Helper_HtmlPaginationControl, to ui.paginator
- *        instance(s);
- *      - conversion of any (optional) display options markup
- *        (.displayOptions), generated via View_Helper_HtmlDisplayOptions, to a
- *        ui.dropdownForm instance;
- *
- *  The pre-rendered HTML must have a form similar to:
- *      <div class='pane' ...>
- *        [ top paginator ]
- *        [ display options ]
- *
- *        content
- *
- *        [ bottom paginator ]
- *      </div>
- *
- *  Requires:
- *      ui.core.js
- *      ui.widget.js
- *      ui.dropdownForm.js
- *      ui.paginator.js
- */
-/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
-/*global jQuery:false, window:false */
-(function($) {
-
-$.widget("ui.pane", {
-    version: "0.0.1",
-    options: {
-        // Defaults
-        namespace:      '',     // Cookie/parameter namespace
-        partial:        null,   // The name of the 'partial' if asynchronous
-                                // reloads are to be used on pagination or
-                                // displayOption changes.
-
-        // Information via the ui.pagination widget(s)
-        pageCur:        null,   // The current page number
-        pageVar:        null,   // The page number URL variable name
-        page:           null,   // The target  page number
-
-
-        /* Configuration for any <form class='pagination'> element that 
-         * will be controlled by a ui.pagination widget.
-         */
-        paginator:      {},
-
-        /* Configuration for any <div class='displayOptions'> element that 
-         * will be controlled by a ui.dropdownForm widget.
-         */
-        displayOptions: {}
-    },
-
-    /** @brief  Initialize a new instance.
-     *
-     *  @triggers:
-     *      'change.bookmark'  when something about the bookmark is changed;
-     */
-    _create: function() {
-        this._paneInit();
-    },
-
-    /************************
-     * Private methods
-     *
-     */
-    _paneInit: function() {
-        this._init_paginators();
-        this._init_displayOptions();
-    },
-
-    _init_paginators: function() {
-        var self        = this;
-        var opts        = self.options;
-
-        self.$paginators    = self.element.find('form.paginator');
-
-        self.$paginators.each(function(idex) {
-            var $pForm  = $(this);
-
-            $pForm.paginator({namespace:    opts.namespace,
-                              form:         $pForm,
-                              disableHover: (idex !== 0)
-                              });
-
-            if (opts.page === null)
-            {
-                opts.pageCur = $pForm.paginator('getPage');
-                opts.pageVar = $pForm.paginator('getPageVar');
-            }
-        });
-
-        self.$paginators.bind('submit.uipane', function(e) {
-            e.preventDefault(true);
-            e.stopPropagation(true);
-            e.stopImmediatePropagation(true);
-
-            // Set the target page number
-            opts.page = $(this).paginator('getPage');
-
-            // reload
-            self.reload();
-        });
-    },
-
-    _init_displayOptions: function() {
-        var self                = this;
-        self.$displayOptions    = self.element.find('div.displayOptions');
-
-        if (self.$displayOptions.length < 1)
-        {
-            return;
-        }
-
-        var opts    = self.options;
-        var uiOpts  = (opts.displayOptions === undefined
-                        ? {}
-                        : opts.displayOptions);
-
-        if (uiOpts.namespace === undefined)
-        {
-            uiOpts.namespace = opts.namespace;
-        }
-
-        if (! $.isFunction(uiOpts.apply))
-        {
-            uiOpts.apply = function(e) {
-                /* dropdownForm sets cookies for any form values, so we can
-                 * simplify the form submission process (ensuring a clean url)
-                 * by simply re-loading the window.  The reload will cause the
-                 * new cookie values to be applied.
-                 */
-                e.stopImmediatePropagation();
-                e.preventDefault();
-                e.stopPropagation();
-
-                self.reload();
-            };
-        }
-
-        // Instantiate the ui.dropdownForm widget
-        self.$displayOptions.dropdownForm(uiOpts);
-    },
-    _paneDestroy: function() {
-        var self    = this;
-
-        // Remove added elements
-        self.$paginators.paginator('destroy');
-        self.$displayOptions.dropdownForm('destroy');
-    },
-
-    /************************
-     * Public methods
-     *
-     */
-    reload: function(page) {
-        var self    = this;
-        var opts    = self.options;
-        var re      = new RegExp(opts.pageVar +'='+ opts.pageCur);
-        var rep     = opts.pageVar +'='+ opts.page;
-        var loc     = window.location;
-        var url     = loc.toString();
-
-        if (loc.search.length === 0)
-        {
-            url += '?'+ rep;
-        }
-        else if (! url.match(re))
-        {
-            url += '&'+ rep;
-        }
-        else
-        {
-            url = url.replace(re, rep);
-        }
-
-        if (opts.partial !== null)
-        {
-            // AJAX reload of just this pane...
-            url += '&format=partial&part='+ opts.partial;
-
-            $.ajax({url:        url,
-                    dataType:   'html',
-                    beforeSend: function() {
-                        self.element.mask();
-                    },
-                    error:      function(req, txtStatus, err) {
-                        $.notify({
-                            title:'Reload pane "'+ opts.partial +'" failed',
-                            text: '<p class="error">'+ txtStatus +'</p>'});
-                    },
-                    success:    function(data, txtStatus, req) {
-                        // Out with the old...
-                        self.destroy();
-
-                        // In with the new.
-                        self.element.html(data);
-                        self._create();
-                    },
-                    complete:   function() {
-                        self.element.unmask();
-                    }
-            });
-        }
-        else
-        {
-            // Perform a full, synchronous reload...
-            window.location.assign(url);
-        }
-    },
-
-    destroy: function() {
-        this._paneDestroy();
-    }
-});
-
-
-}(jQuery));
-
-
-
-/** @file
- *
- *  Javascript interface/wrapper for the presentation of a configurable pane
- *  which contains a bookmark list.
- *
- *  This is class extends ui.pane to include unobtrusive activation of any
- *  contained, pre-rendered ul.bookmarkList generated via
- *  View_Helper_HtmlBookmarks.
- *
- *  Requires:
- *      ui.core.js
- *      ui.widget.js
- *      ui.pane.js
- */
-/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
-/*global jQuery:false */
-(function($) {
-
-$.widget("ui.bookmarksPane", $.ui.pane, {
-    version: "0.0.1",
-    options: {
-        // Defaults
-        namespace:  ''
-    },
-
-    /** @brief  Initialize a new instance.
-     *
-     *  @triggers:
-     *      'change.bookmark'  when something about the bookmark is changed;
-     */
-    _create: function() {
-        var self        = this;
-        var opts        = self.options;
-
-        self._init_bookmarkList();
-
-        self._paneInit();
-    },
-
-    /************************
-     * Private methods
-     *
-     */
-    _init_bookmarkList: function() {
-        var self            = this;
-        self.$bookmarkList  = self.element.find('ul.bookmarks');
-
-        if (self.$bookmarkList.length < 1)
-        {
-            return;
-        }
-
-        var opts    = self.options;
-        var uiOpts  = (opts.bookmarkList === undefined
-                        ? {}
-                        : opts.bookmarkList);
-
-        if (uiOpts.namespace === undefined)
-        {
-            uiOpts.namespace = opts.namespace;
-        }
-
-        // Instantiate the ui.bookmarkList widget
-        self.$bookmarkList.bookmarkList(uiOpts);
-    },
-
-    /************************
-     * Public methods
-     *
-     */
-    destroy: function() {
-        var self    = this;
-
-        // Remove added elements
-        self.$bookmarkList.bookmarkList('destroy');
-
-        self._paneDestroy();
-    }
-});
-
-
-}(jQuery));
-
-
-
-/** @file
- *
- *  Javascript interface/wrapper for the presentation of a configurable pane
- *  which contains a bookmark list.
- *
- *  This is class extends ui.pane to include unobtrusive activation of any
- *  contained, pre-rendered ul.cloud generated via
- *  View_Helper_Html_HtmlItemCloud.
- *
- *  Requires:
- *      ui.core.js
- *      ui.widget.js
- *      ui.pane.js
- */
-/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
-/*global jQuery:false */
-(function($) {
-
-$.widget("ui.cloudPane", $.ui.pane, {
-    version: "0.0.1",
-    options: {
-        // Defaults
-        namespace:  ''
-    },
-
-    /** @brief  Initialize a new instance.
-     *
-     *  @triggers:
-     *      'change.bookmark'  when something about the bookmark is changed;
-     */
-    _create: function() {
-        var self        = this;
-        var opts        = self.options;
-
-        //self._init_cloud();
-        self._paneInit();
-
-        self.$optionsForm = self.element.find('.displayOptions form');
-
-        self._bindEvents();
-    },
-
-    /************************
-     * Private methods
-     *
-     */
-    _bindEvents: function() {
-        /* On Display style change, toggle the state of 'highlightCount'
-         *
-         * Note: The ui.dropdownForm widget that controls the display options
-         *       DOM element attached a ui.optionsGroups instance to any
-         *       contained displayOptions element.  This widget will trigger
-         *       the 'change' event on the displayOptions form with information
-         *       about the selected display group when a change is made.
-         */
-        this.$optionsForm.bind('change.cloudPane',
-                function(e, info) {
-                    var $field  = $(this).find('.field.highlightCount');
-
-                    if (info.group === 'cloud')
-                    {
-                        // Enable the 'highlightCount'
-                        $field.removeClass('ui-state-disabled');
-                        $field.find('select').removeAttr('disabled');
-                    }
-                    else
-                    {
-                        // Disable the 'highlightCount'
-                        $field.addClass('ui-state-disabled');
-                        $field.find('select').attr('disabled', true);
-                    }
-                });
-    },
-
-    /************************
-     * Public methods
-     *
-     */
-    destroy: function() {
-        var self    = this;
-
-        // Unbind events
-        self.$optionsForm.unbind('.cloudPane');
-
-        self._paneDestroy();
-    }
-});
-
-
-}(jQuery));
-
-
-
-/** @file
- *
- *  Javascript interface/wrapper for the presentation of a pagination control.
- *
- *  This is primarily a class to provide unobtrusive activation of a
- *  pre-rendered pagination control, generate via Zend_Paginator.
- *
- *  The paginator has the following HTML structure:
- *
- *      <form class='paginator'>
- *        <div class='pager'>
- *          <button type='submit' ... value='page#'>page#</button>
- *          ...
- *        </div>
- *
- *        <!-- and optionally -->
- *        <div class='info'>
- *          <div class='perPage'>
- *            <div class='itemCount'>count#</div>
- *              items with
- *            <select name='%ns%PerPage'>...</select>
- *              items per page.
- *          </div>
- *          <div class='itemRange'>
- *            Currently viewing items
- *            <div class='count'>1 - 50</div>
- *             .
- *          </div>
- *        </div>
- *      </form>
- *
- *  Requires:
- *      ui.core.js
- *      ui.widget.js
- */
-/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
-/*global jQuery:false, window:false */
-
-(function($) {
-
-$.widget("ui.paginator", {
-    version: "0.1.1",
-    options: {
-        // Defaults
-        namespace:      '',     // Form/cookie namespace
-        disableHover:   false,
-        page:           1,
-        pageVar:        'Page'
-    },
-
-    /** @brief  Initialize a new instance.
-     *
-     *  Valid options are:
-     *      namespace   The form / cookie namespace [ '' ];
-     *
-     *  @triggers:
-     *      'submit'    on the controlling form when 'PerPage' select element
-     *                  is changed.
-     */
-    _create: function() {
-        var self        = this;
-        var opts        = self.options;
-
-        if (opts.form === null)
-        {
-            // See if the DOM element has a 'form' data item
-            var fm  = self.element.data('form');
-            if (fm !== undefined)
-            {
-                opts.form = fm;
-            }
-            else
-            {
-                // Choose the closest form
-                opts.form = self.element.closest('form');
-            }
-        }
-
-        // Which page is currently selected/active?
-        opts.page    = self.element.find('button.ui-state-active').text();
-        opts.pageVar = self.element.find('button:submit:first').attr('name');
-
-        // Interaction events
-        self._bindEvents();
-    },
-
-    /************************
-     * Private methods
-     *
-     */
-    _bindEvents: function() {
-        var self    = this;
-        var opts    = self.options;
-
-        // Add an opacity hover effect
-        if (! opts.disableHover)
-        {
-            self.element
-                .fadeTo(100, 0.5)
-                .hover( function() {    // in
-                            $(this).fadeTo(100, 1.0);
-                        },
-                        function() {    // out
-                            $(this).fadeTo(100, 0.5);
-                        }
-                );
-        }
-
-        // Attach to any PerPage selection box
-        self.element.find('select[name='+ opts.namespace +'PerPage]')
-                .bind('change.paginator', function(e) {
-                        /* On change of the PerPage select, trigger 'submit' on
-                         * the pagination form.
-                         */
-                        self.element.submit();
-                      }
-                );
-
-        // Attach to all 'submit' buttons to remember which page
-        self.element.find(':submit')
-                .bind('click.paginator', function(e) {
-                            opts.page = $(this).val();
-
-                            // Allow the event to bubble
-                        }
-                );
-
-        // Attach to any 'submit' event on the top-level form.
-        self.element
-                .bind('submit.paginator', function(e) {
-                        // Serialize all form values to an array...
-                        var settings    = self.element.serializeArray();
-
-                        /* ...and set a cookie for each:
-                         *      %ns%PerPage
-                         */
-                        $(settings).each(function() {
-                            $.log("Add Cookie: name[%s], value[%s]",
-                                  this.name, this.value);
-                            $.cookie(this.name, this.value);
-                        });
-
-                        /* Finally, since we've set all parameters as
-                         * cookies, we don't need to actually SUBMIT this
-                         * form.  Disable the event and reload the window.
-                        e.stopImmediatePropagation();
-                        e.preventDefault();
-                        e.stopPropagation();
-
-                        window.location.reload();
-                         */
-                      }
-                );
-
-    },
-
-    /************************
-     * Public methods
-     *
-     */
-    getPage: function() {
-        return this.options.page;
-    },
-    getPageVar: function() {
-        return this.options.pageVar;
-    },
-
-    getForm: function() {
-        return this.options.form;
-    },
-
-    enable: function() {
-        this.find(':button').removeAttr('disabled');
-    },
-
-    disable: function() {
-        this.find(':button').attr('disabled', true);
-    },
-
-    destroy: function() {
-    }
-});
-
-
-}(jQuery));
-/*
- * jQuery Notify UI Widget 1.2.2
- * Copyright (c) 2010 Eric Hynds
- *
- * http://www.erichynds.com/jquery/a-jquery-ui-growl-ubuntu-notification-widget/
- *
- * Depends:
- *   - jQuery 1.4
- *   - jQuery UI 1.8 widget factory
- *
- * Dual licensed under the MIT and GPL licenses:
- *   http://www.opensource.org/licenses/mit-license.php
- *   http://www.gnu.org/licenses/gpl.html
- *
- */
-/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
-/*global jQuery:false, window:false */
-(function($){
-
-$.widget("ui.notify", {
-	options: {
-		speed: 500,
-		expires: 5000,
-		stack: 'below'
-	},
-	_create: function(){
-		var self = this;
-		this.templates = {};
-		this.keys = [];
-		
-		// build and save templates
-		this.element.addClass("ui-notify").children().addClass("ui-notify-message").each(function(i){
-			var key = this.id || i;
-			self.keys.push(key);
-			self.templates[key] = $(this).removeAttr("id").wrap("<div></div>").parent().html(); // because $(this).andSelf().html() no workie
-		}).end().empty();
-		
-	},
-	create: function(template, msg, opts){
-		if(typeof template === "object"){
-			opts = msg;
-			msg = template;
-			template = null;
-		}
-		
-		// return a new notification instance
-		return new $.ui.notify.instance(this)._create(msg, $.extend({}, this.options, opts), this.templates[ template || this.keys[0]]);
-	}
-});
-
-// instance constructor
-$.extend($.ui.notify, {
-	instance: function(widget){
-		this.parent = widget;
-		this.isOpen = false;
-	}
-});
-
-// instance methods
-$.extend($.ui.notify.instance.prototype, {
-	_create: function(params, options, template){
-		this.options = options;
-		
-		var self = this,
-			
-			// build html template
-			html = template.replace(/#(?:\{|%7B)(.*?)(?:\}|%7D)/g,
-                                    function($1, $2){
-				                        return ($2 in params)
-                                                ? params[$2]
-                                                : '';
-			                        }),
-			
-			// the actual message
-			m = (this.element = $(html)),
-			
-			// close link
-			closelink = m.find("a.ui-notify-close");
-		
-		// fire beforeopen event
-		if(this._trigger("beforeopen") === false){
-			return;
-		}
-
-		// clickable?
-		if(typeof this.options.click === "function"){
-			m.addClass("ui-notify-click").bind("click", function(e){
-				self._trigger("click", e, self);
-			});
-		}
-		
-		// show close link?
-		if(closelink.length && !!options.expires){
-			closelink.remove();
-		} else if(closelink.length){
-			closelink.bind("click", function(){
-				self.close();
-				return false;
-			});
-		}
-		
-		this.open();
-		
-		// auto expire?
-		if(typeof options.expires === "number"){
-			window.setTimeout(function(){
-				self.close();
-			}, options.expires);
-		}
-		
-		return this;
-	},
-	close: function(){
-		var self = this, speed = this.options.speed;
-		this.isOpen = false;
-		
-		this.element.fadeTo(speed, 0).slideUp(speed, function(){
-			self._trigger("close");
-		});
-		
-		return this;
-	},
-	open: function(){
-		if(this.isOpen){
-			return this;
-		}
-		
-		var self = this;
-		this.isOpen = true;
-		
-		this.element[this.options.stack === 'above'
-                        ? 'prependTo'
-                        : 'appendTo'](this.parent.element)
-                .css({ display:"none", opacity:"" })
-                .fadeIn(this.options.speed, function(){
-			        self._trigger("open");
-		        });
-		
-		return this;
-	},
-	widget: function(){
-		return this.element;
-	},
-	_trigger: function(type, e, instance){
-		return this.parent._trigger.call( this, type, e, instance );
-	}
-});
-
-}(jQuery));
-/** @file
- *
- *  Javascript interface/wrapper for the presentation of a configurable
- *  sidebar.
- *
- *  This is primarily a class to provide unobtrusive activation of a
- *  pre-rendered sidebar:
- *      - conversion of markup generated via View_Helper_HtmlSidebar, to
- *        ui.tabs instance(s);
- *      - possible asynchronous loading of tab panes with masking of the tab
- *        widget during load;
- *
- *  The pre-rendered HTML must have a form similar to:
- *      <div id='%namespace%'>
- *        <ul>
- *          <li>
- *            <a href='%paneUrl%'>
- *              <span>Pane Title</span>
- *            </a>
- *          </li>
- *          ...
- *        </ul>
- *        
- *        <!-- If these are synchronous panes, the content is here -->
- *        <div id='%paneId%'>
- *          Pane content
- *        </div>
- *        ...
- *      </div>
- *
- *  Requires:
- *      ui.core.js
- *      ui.widget.js
- */
-/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
-/*global jQuery:false, window:false */
-(function($) {
-
-$.widget("ui.sidebar", {
-    version: "0.0.1",
-    options: {
-        // Defaults
-        namespace:      ''      // Cookie/parameter namespace
-    },
-
-    /** @brief  Initialize a new instance.
-     *
-     *  @triggers:
-     *      'change.bookmark'  when something about the bookmark is changed;
-     */
-    _create: function() {
-        var self    = this;
-        var opts    = self.options;
-
-        opts.namespace = self.element.attr('id');
-
-        self.element.tabs({
-            cache:      true,
-            cookie:     opts.namespace,
-            ajaxOptions:{
-                beforeSend: function() {
-                    // Mask the tab panel area...
-                    var sel = self.element.tabs('option', 'selected');
-                    self.$tab = self.element.find('.ui-tabs-panel').eq(sel);
-
-                    self.$tab.mask();
-                },
-                complete: function() {
-                    // Bind any new displayOptions forms
-                    self._bindReload(self.$tab);
-
-                    // Unmask the tab panel area...
-                    self.$tab.unmask();
-                }
-            }
-        });
-
-        // For each asynchronous tab, bind reload events
-        self.element.find('ul:first li a:first').each(function(idex) {
-            var url = $.data(this, 'load.tabs');
-            if (url)
-            {
-                var $tab = self.element.find('.ui-tabs-panel').eq(idex);
-                self._bindReload($tab);
-            }
-        });
-
-        self._bindReload(self.element);
-    },
-
-    /************************
-     * Private methods
-     *
-     */
-    _bindReload: function(context) {
-        var self    = this;
-
-        context.find('.displayOptions')
-                .dropdownForm('setApplyCb', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    e.stopImmediatePropagation();
-
-                    // Reload the tab contents
-                    self.element.tabs('load',
-                                      self.element.tabs('option', 'selected'));
-                });
-    },
-
-    /************************
-     * Public methods
-     *
-     */
-    destroy: function() {
-        this.element.tabs('destroy');
-    }
-});
-
-
-}(jQuery));
-
-
-
 /** @file
  *
  *  Javascript interface/wrapper for the presentation of an item scope
@@ -3836,19 +2421,31 @@ $.widget("ui.sidebar", {
 /*global jQuery:false, window:false, document:false */
 (function($){
 
-$.widget("ui.itemScope", {
+$.widget("connexions.itemScope", {
     options: {
         namespace:          '',     // Cookie/parameter namespace
-        jsonRpc:            null,   /* Json-RPC information:
-                                     *  { version:      '2.0',
-                                     *    transport:    'POST' | 'GET',
-                                     *    target:       RPC URL,
-                                     *    method:       RPC method name,
-                                     *    params:       {
-                                     *      key/value parameter pairs
-                                     *    }
-                                     *  }
-                                     */
+
+        /* General Json-RPC information:
+         *  {version:   Json-RPC version,
+         *   target:    URL of the Json-RPC endpoint,
+         *   transport: 'POST' | 'GET'
+         *   method:    RPC method name,
+         *   params:    {
+         *      key/value parameter pairs
+         *   }
+         *  }
+         *
+         * If not provided, 'version', 'target', and 'transport' are
+         * initialized from:
+         *      $.registry('api').jsonRpc
+         *
+         * (which is initialized from
+         *      application/configs/application.ini:api
+         *  via
+         *      application/layout/header.phtml
+         *
+         */
+        jsonRpc:            null,
         rpcId:              1,      // The initial RPC identifier
 
         separator:          ',',    // The term separator
@@ -3858,13 +2455,35 @@ $.widget("ui.itemScope", {
         var self    = this;
         var opts    = self.options;
 
+        /********************************
+         * Initialize jsonRpc
+         *
+         */
+        if ($.isFunction($.registry))
+        {
+            var api = $.registry('api');
+            if (api && api.jsonRpc)
+            {
+                opts.jsonRpc = $.extend({}, api.jsonRpc, opts.jsonRpc);
+            }
+        }
+
+        /********************************
+         * Locate the pieces
+         *
+         */
         self.$input    = self.element.find('.scopeEntry :text');
         self.$curItems = self.element.find('.scopeItem');
         self.$submit   = self.element.find('.scopeEntry :submit');
 
+        /********************************
+         * Instantiate our sub-widgets
+         *
+         */
         self.$input.input();
         if (opts.jsonRpc !== null)
         {
+            // Setup autocompletion via Json-RPC
             self.$input.autocomplete({
                 source:     function(request, response) {
                     return self._jsonRpc(request,response);
@@ -3927,8 +2546,12 @@ $.widget("ui.itemScope", {
                     $.map(ret.result,
                           function(item) {
                             return {
-                                label: item.tag +': '+
-                                       item.itemCount,
+                                label:   '<span class="name">'
+                                       +  item.tag
+                                       + '</span>'
+                                       +' <span class="count">'
+                                       +  item.userItemCount
+                                       + '</span>',
                                 value: item.tag
                             };
                           }));
@@ -4114,6 +2737,1442 @@ $.widget("ui.itemScope", {
 }(jQuery));
 /** @file
  *
+ *  Javascript interface/wrapper for the presentation of a pagination control.
+ *
+ *  This is primarily a class to provide unobtrusive activation of a
+ *  pre-rendered pagination control, generate via Zend_Paginator.
+ *
+ *  The paginator has the following HTML structure:
+ *
+ *      <form class='paginator'>
+ *        <div class='pager'>
+ *          <button type='submit' ... value='page#'>page#</button>
+ *          ...
+ *        </div>
+ *
+ *        <!-- and optionally -->
+ *        <div class='info'>
+ *          <div class='perPage'>
+ *            <div class='itemCount'>count#</div>
+ *              items with
+ *            <select name='%ns%PerPage'>...</select>
+ *              items per page.
+ *          </div>
+ *          <div class='itemRange'>
+ *            Currently viewing items
+ *            <div class='count'>1 - 50</div>
+ *             .
+ *          </div>
+ *        </div>
+ *      </form>
+ *
+ *  Requires:
+ *      ui.core.js
+ *      ui.widget.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false */
+
+(function($) {
+
+$.widget("connexions.paginator", {
+    version: "0.1.1",
+    options: {
+        // Defaults
+        namespace:      '',     // Form/cookie namespace
+        disableHover:   false,
+        page:           1,
+        pageVar:        'Page'
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  Valid options are:
+     *      namespace   The form / cookie namespace [ '' ];
+     *
+     *  @triggers:
+     *      'submit'    on the controlling form when 'PerPage' select element
+     *                  is changed.
+     */
+    _create: function() {
+        var self        = this;
+        var opts        = self.options;
+
+        if (opts.form === null)
+        {
+            // See if the DOM element has a 'form' data item
+            var fm  = self.element.data('form');
+            if (fm !== undefined)
+            {
+                opts.form = fm;
+            }
+            else
+            {
+                // Choose the closest form
+                opts.form = self.element.closest('form');
+            }
+        }
+
+        // Which page is currently selected/active?
+        opts.page    = self.element.find('button.ui-state-active').text();
+        opts.pageVar = self.element.find('button:submit:first').attr('name');
+
+        // Interaction events
+        self._bindEvents();
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _bindEvents: function() {
+        var self    = this;
+        var opts    = self.options;
+
+        // Add an opacity hover effect
+        if (! opts.disableHover)
+        {
+            self.element
+                .fadeTo(100, 0.5)
+                .hover( function() {    // in
+                            $(this).fadeTo(100, 1.0);
+                        },
+                        function() {    // out
+                            $(this).fadeTo(100, 0.5);
+                        }
+                );
+        }
+
+        // Attach to any PerPage selection box
+        self.element.find('select[name='+ opts.namespace +'PerPage]')
+                .bind('change.paginator', function(e) {
+                        /* On change of the PerPage select, trigger 'submit' on
+                         * the pagination form.
+                         */
+                        self.element.submit();
+                      }
+                );
+
+        // Attach to all 'submit' buttons to remember which page
+        self.element.find(':submit')
+                .bind('click.paginator', function(e) {
+                            opts.page = $(this).val();
+
+                            // Allow the event to bubble
+                        }
+                );
+
+        // Attach to any 'submit' event on the top-level form.
+        self.element
+                .bind('submit.paginator', function(e) {
+                        // Serialize all form values to an array...
+                        var settings    = self.element.serializeArray();
+
+                        /* ...and set a cookie for each:
+                         *      %ns%PerPage
+                         */
+                        $(settings).each(function() {
+                            $.log("Add Cookie: name[%s], value[%s]",
+                                  this.name, this.value);
+                            $.cookie(this.name, this.value);
+                        });
+
+                        /* Finally, since we've set all parameters as
+                         * cookies, we don't need to actually SUBMIT this
+                         * form.  Disable the event and reload the window.
+                        e.stopImmediatePropagation();
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        window.location.reload();
+                         */
+                      }
+                );
+
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    getPage: function() {
+        return this.options.page;
+    },
+    getPageVar: function() {
+        return this.options.pageVar;
+    },
+
+    getForm: function() {
+        return this.options.form;
+    },
+
+    enable: function() {
+        this.find(':button').removeAttr('disabled');
+    },
+
+    disable: function() {
+        this.find(':button').attr('disabled', true);
+    },
+
+    destroy: function() {
+    }
+});
+
+
+}(jQuery));
+/** @file
+ *
+ *  Javascript interface/wrapper for the presentation of a single bookmark.
+ *
+ *  This is primarily a class to provide unobtrusive activation of a
+ *  pre-rendered bookmark item (View_Helper_HtmlBookmark):
+ *      - convert (optional Favorite and Privacy checkboxes into image-based
+ *        hover buttons;
+ *      - convert any (optional) star rating presentation to an active ui.stars
+ *        widget;
+ *      - allow in-line, on demand editing of the bookmark if it has a
+ *        '.control .item-edit' link;
+ *      - allow in-line, on demand deletion of the bookmark if it has a
+ *        '.control .item-delete' link;
+ *      - allow in-line, on demand saving of the bookmark if it has a
+ *        '.control .item-save' link;
+ *
+ *  View_Helper_HtmlBookmark will generate HTML for a bookmark similar to:
+ *     <form class='bookmark'>
+ *       <input type='hidden' name='userId' value='...' />
+ *       <input type='hidden' name='itemId' value='...' />
+ *
+ *       <!-- Status -->
+ *       <div class='status'>
+ *         <div class='favorite'>
+ *           <input type='checkbox' name='isFavorite' value='...' />
+ *         </div>
+ *         <div class='private'>
+ *           <input type='checkbox' name='isPrivate' value='...' />
+ *         </div>
+ *       </div>
+ *
+ *       <!-- Stats: item:stats -->
+ *       <div class='stats'>
+ *
+ *         <!-- item:stats:count -->
+ *         <a class='count' ...> count </a>
+ *
+ *         <!-- item:stats:rating -->
+ *         <div class='rating'>
+ *           <div class='stars'>
+ *
+ *             <!-- item:stats:rating:stars -->
+ *             <div class='ui-stars-wrapper'> ... </div>
+ *           </div>
+ *
+ *           <!-- item:stats:rating:info -->
+ *           <div class='info'>
+ *             <span class='count'> count </span> raters,
+ *             <span class='average'> average </span> avg.
+ *           </div>
+ *         </div>
+ *       </div>
+ *
+ *       <!-- Bookmark Data: item:data -->
+ *       <div class='data'>
+ *
+ *         <!-- User Identification: item:data:userId -->
+ *         <div class='userId'>
+ *           <a ...>
+ *
+ *             <!-- item:data:userId:avatar -->
+ *             <div class='img'>
+ *               <img ... avatar image ... />
+ *             </div>
+ *
+ *             <!-- item:data:userId:id -->
+ *             <span class='name'> userName </span>
+ *           </a>
+ *         </div>
+ *
+ *         <!-- Owner controls -->
+ *         <div class='control'>
+ *           <a class='item-edit' ...>EDIT</a> |
+ *           <a class='item-delete' ...>DELETE</a>
+ *
+ *           <a class='item-save' ...>SAVE</a>
+ *         </div class='control'>
+ *
+ *         <!-- Item Name: item:data:itemName -->
+ *         <h4 class='itemName'> <a ...> title </a> </h4>
+ *
+ *         <!-- Item Url: item:data:url -->
+ *         <div class='url'><a ..> url </a></div>
+ *
+ *         <!-- Item Description: item:data:description -->
+ *         <div class='description'>
+ *
+ *           <!-- Item Description: item:data:description:summary -->
+ *           <div class='summary'> description summary </div>
+ *
+ *           <!-- Item Description: item:data:description:full -->
+ *           <div class='full'> description full </div>
+ *         </div class='description'>
+ *
+ *         <!-- Item Tags: item:data:tags -->
+ *         <ul class='tags'>
+ *           <li class='tag'><a ...> tag </a></li>
+ *           ...
+ *         </ul>
+ *
+ *         <!-- Item Dates: item:data:dates -->
+ *         <div class='dates'>
+ *
+ *           <!-- item:data:dates:tagged -->
+ *           <div class='tagged'> tagged date </div>
+ *
+ *           <!-- item:data:dates:updated -->
+ *           <div class='updated'> updated date </div>
+ *         </div>
+ *       </div>
+ *     </form>
+ *
+ *  Requires:
+ *      ui.core.js
+ *      ui.widget.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false */
+(function($) {
+
+$.widget("connexions.bookmark", {
+    version: "0.0.1",
+
+    /* Remove the strange ui.widget._trigger() class name prefix for events.
+     *
+     * If you need to know which widget the event was triggered from, either
+     * bind directly to the widget or look at the event object.
+     */
+    widgetEventPrefix:    '',
+
+    options: {
+        // Widget state (mirrors Model_Bookmark)
+        userId:     null,
+        itemId:     null,
+        name:       null,
+        description:null,
+        rating:     null,
+        isFavorite: null,
+        isPrivate:  null,
+
+        tags:       null,
+        url:        null,
+
+        // taggedOn and updateOn are not user editable
+
+        /* A change callback
+         *      function(data)
+         *          return true  to allow the change
+         *          return false to abort the change
+         */
+        change:     null,
+
+        /* General Json-RPC information:
+         *  {version:   Json-RPC version,
+         *   target:    URL of the Json-RPC endpoint,
+         *   transport: 'POST' | 'GET'
+         *  }
+         *
+         * If not provided, 'version', 'target', and 'transport' are
+         * initialized from:
+         *      $.registry('api').jsonRpc
+         *
+         * (which is initialized from
+         *      application/configs/application.ini:api
+         *  via
+         *      application/layout/header.phtml
+         *
+         */
+        jsonRpc:    null,
+        rpcId:      1,      // The initial RPC identifier
+
+        // Widget state
+        enabled:    true
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  @triggers:
+     *      'enabled.bookmark'
+     *      'disabled.bookmark'
+     */
+    _create: function()
+    {
+        var self        = this;
+        var opts        = self.options;
+
+        /********************************
+         * Initialize jsonRpc
+         *
+         */
+        if ($.isFunction($.registry))
+        {
+            var api = $.registry('api');
+            if (api && api.jsonRpc)
+            {
+                opts.jsonRpc = $.extend({}, api.jsonRpc, opts.jsonRpc);
+            }
+        }
+
+        /********************************
+         * Locate the pieces
+         *
+         */
+        self.$userId      = self.element.find('input[name=userId]');
+        self.$itemId      = self.element.find('input[name=itemId]');
+        self.$name        = self.element.find('.itemName a');
+        self.$description = self.element.find('.description');
+
+        self.$rating      = self.element.find('.rating .stars .owner');
+        self.$favorite    = self.element.find('input[name=isFavorite]');
+        self.$private     = self.element.find('input[name=isPrivate]');
+
+        self.$tags        = self.element.find('input[name=tags]');
+
+        self.$edit        = self.element.find('.control .item-edit');
+        self.$delete      = self.element.find('.control .item-delete');
+        self.$save        = self.element.find('.control .item-save');
+
+        self.$url         = self.element.find('.itemName a,.url a');
+
+        /********************************
+         * Instantiate our sub-widgets
+         *
+         */
+
+        // Status - Favorite
+        self.$favorite.checkbox({
+            css:        'connexions_sprites',
+            cssOn:      'star_fill',
+            cssOff:     'star_empty',
+            titleOn:    'Favorite: click to remove from Favorites',
+            titleOff:   'Click to add to Favorites',
+            useElTitle: false,
+            hideLabel:  true
+        });
+
+        // Status - Private
+        self.$private.checkbox({
+            css:        'connexions_sprites',
+            cssOn:      'lock_fill',
+            cssOff:     'lock_empty',
+            titleOn:    'Private: click to share',
+            titleOff:   'Public: click to mark as private',
+            useElTitle: false,
+            hideLabel:  true
+        });
+
+        // Rating - average and user
+        self.$rating.stars({
+            //split:    2
+        });
+
+
+        /********************************
+         * Initialize our state and bind
+         * to interesting events.
+         *
+         */
+        self._setState();
+        self._bindEvents();
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _bindEvents: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        self._squelch = false;
+
+        // Handle a direct click on one of the status indicators
+        var _update_item      = function(e, data) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            e.stopPropagation();
+
+            $.log('connexions.bookmark::_update_item('+ data +')');
+
+            if ((self.options.enabled !== true) || (self._squelch === true))
+            {
+                return;
+            }
+
+            // Gather the current data about this item.
+            var nonEmpty    = false;
+            var params      = {
+                id: { userId: opts.userId, itemId: opts.itemId }
+            };
+
+            if (self.$name.text() !== opts.name)
+            {
+                params.name = self.$name.text();
+                nonEmpty    = true;
+            }
+
+            if (self.$description.text() !== opts.description)
+            {
+                params.description = self.$description.text();
+                nonEmpty           = true;
+            }
+
+            if ( (self.$tags.length > 0) &&
+                 (self.$tags.text() !== opts.tags) )
+            {
+                params.tags = self.$tags.text();
+                nonEmpty    = true;
+            }
+
+            if (self.$favorite.checkbox('isChecked') !== opts.isFavorite)
+            {
+                params.isFavorite = self.$favorite.checkbox('isChecked');
+                nonEmpty          = true;
+            }
+
+            if (self.$private.checkbox('isChecked') !== opts.isPrivate)
+            {
+                params.isPrivate = self.$private.checkbox('isChecked');
+                nonEmpty         = true;
+            }
+
+            if ( (self.$rating.length > 0) &&
+                 (self.$rating.stars('value') !== opts.rating) )
+            {
+                params.rating = self.$rating.stars('value');
+                nonEmpty      = true;
+            }
+
+            if (self.$url.attr('href') !== opts.url)
+            {
+                // The URL has changed -- pass it in
+                params.url = self.$url.attr('href');
+                nonEmpty   = true;
+            }
+
+            if (nonEmpty !== true)
+            {
+                return;
+            }
+
+            /* If there is a 'change' callback, invoke it.
+             *
+             * If it returns false, terminate the change.
+             */
+            if ($.isFunction(self.options.change))
+            {
+                if (! self.options.change(params))
+                {
+                    // Rollback state.
+                    self._resetState();
+
+                    return;
+                }
+            }
+
+            var rpc = {
+                version: opts.jsonRpc.version,
+                id:      opts.rpcId++,
+                method:  'bookmark.update',
+                params:  params
+            };
+
+            // Perform a JSON-RPC call to update this item
+            $.ajax({
+                url:        opts.jsonRpc.target,
+                type:       opts.jsonRpc.transport,
+                dataType:   'json',
+                data:       JSON.stringify(rpc),
+                success:    function(data, textStatus, req) {
+                    if (data.error !== null)
+                    {
+                        $.notify({
+                            title: 'Bookmark update failed',
+                            text:  '<p class="error">'
+                                 +   data.error.message
+                                 + '</p>'
+                        });
+
+                        // rollback state
+                        self._resetState();
+                        return;
+                    }
+
+                    if (data.result === null)
+                    {
+                        return;
+                    }
+
+                    self._squelch = true;
+
+                    // Include the updated data
+                    self.$itemId.val(           data.result.itemId );
+                    self.$name.text(            data.result.name );
+                    self.$description.text(     data.result.description );
+
+                    self.$tags.text(            data.result.tags );
+
+                    self.$rating.stars('select',data.result.rating);
+
+                    self.$favorite.checkbox(    (data.result.isFavorite
+                                                    ? 'check'
+                                                    : 'uncheck') );
+                    self.$private.checkbox(     (data.result.isPrivate
+                                                    ? 'check'
+                                                    : 'uncheck') );
+                    self.$url.attr('href',      data.result.url);
+
+                    // Alter our parent to reflect 'isPrivate'
+                    var parent  = self.element.parent();
+                    if (data.result.isPrivate)
+                    {
+                        parent.addClass('private');
+                    }
+                    else
+                    {
+                        parent.removeClass('private');
+                    }
+                    self._squelch = false;
+
+                    // set state
+                    self._setState();
+                },
+                error:      function(req, textStatus, err) {
+                    $.notify({
+                        title: 'Bookmark update failed',
+                        text:  '<p class="error">'
+                             +   textStatus
+                             + '</p>'
+                    });
+
+                    // rollback state
+                    self._resetState();
+                },
+                complete:   function(req, textStatus) {
+                }
+             });
+
+            return false;
+        };
+
+        // Handle item-edit
+        var _edit_click  = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (self.options.enabled !== true)
+            {
+                return;
+            }
+        };
+
+        // Handle item-delete
+        var _delete_click  = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (self.options.enabled !== true)
+            {
+                return;
+            }
+        };
+
+        // Handle save-delete
+        var _save_click  = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (self.options.enabled !== true)
+            {
+                return;
+            }
+        };
+
+        /**********************************************************************
+         * bind events
+         *
+         */
+
+        /*
+        self.$favorite.bind('click.bookmark', _update_item);
+        self.$private.bind('click.bookmark',  _update_item);
+        self.$rating.bind('click.bookmark',   _update_item);
+        */
+
+        self.element.bind('change.bookmark',    _update_item);
+
+        self.$edit.bind('click.bookmark',       _edit_click);
+        self.$delete.bind('click.bookmark',     _delete_click);
+        self.$save.bind('click.bookmark',       _save_click);
+    },
+
+    _setState: function()
+    {
+        // Set the current widget state to the values of it's sub-components
+        var self    = this;
+        var opts    = self.options;
+
+        opts.userId      = self.$userId.val();
+        opts.itemId      = self.$itemId.val();
+        opts.name        = self.$name.text();
+        opts.description = self.$description.text();
+
+        if (self.$rating.length > 0)
+        {
+            opts.rating  = self.$rating.stars('value');
+        }
+
+        opts.isFavorite  = self.$favorite.checkbox('isChecked');
+        opts.isPrivate   = self.$private.checkbox('isChecked');
+
+        opts.url         = self.$url.attr('href');
+    },
+
+    _resetState: function()
+    {
+        // Reset the values of the sub-components to the current widget state
+        var self    = this;
+        var opts    = self.options;
+
+        // Squelch change-triggered item updates.
+        self._squelch = true;
+
+        self.$name.text(opts.name);
+        self.$description.text(opts.description);
+
+        if (self.$rating.length > 0)
+        {
+            self.$rating.stars('select', opts.rating);
+        }
+
+        self.$favorite.checkbox( (opts.isFavorite
+                                    ? 'check'
+                                    : 'uncheck') );
+        self.$private.checkbox( (opts.isPrivate
+                                    ? 'check'
+                                    : 'uncheck') );
+
+        self.$url.attr('href', opts.url);
+
+        self._squelch = false;
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    isEnabled: function()
+    {
+        return this.options.enabled;
+    },
+
+    enable: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        if (! self.options.enabled)
+        {
+            self.options.enabled = true;
+            self.element.removeClass('ui-state-disabled');
+
+            self.$favorite.checkbox('enable');
+            self.$private.checkbox('enable');
+            self.$rating.stars('enable');
+
+            self._trigger('enabled', null, true);
+        }
+    },
+
+    disable: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        if (self.options.enabled)
+        {
+            self.options.enabled = false;
+            self.element.addClass('ui-state-disabled');
+
+            self.$favorite.checkbox('disable');
+            self.$private.checkbox('disable');
+            self.$rating.stars('disable');
+
+            self._trigger('disabled', null, true);
+        }
+    },
+
+    destroy: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        // Unbind events
+        self.$favorite.unbind('.bookmark');
+        self.$private.unbind('.bookmark');
+        self.$rating.unbind('.bookmark');
+        self.$edit.unbind('.bookmark');
+        self.$delete.unbind('.bookmark');
+        self.$save.unbind('.bookmark');
+
+        // Remove added elements
+        self.$favorite.checkbox('destroy');
+        self.$private.checkbox('destroy');
+        self.$rating.stars('destroy');
+    }
+});
+
+
+}(jQuery));
+
+/** @file
+ *
+ *  Javascript interface/wrapper for the presentation of multiple bookmarks.
+ *
+ *  This is primarily a class to provide unobtrusive activation of a
+ *  pre-rendered list of bookmark items (View_Helper_HtmlBookmarks), each of
+ *  which will become a connexions.bookmark instance.
+ *
+ *  This class also handles:
+ *      - hover effects for .groupHeader DOM items;
+ *      - conversion of all form.bookmark DOM items to connexions.bookmark
+ *        instances;
+ *
+ *  View_Helper_HtmlBookmarks will generate HTML for a bookmark list similar
+ *  to:
+ *      <div id='<ns>List'>
+ *        <ul class='<ns>'>
+ *          <li><form class='bookmark'> ... </form></li>
+ *          ...
+ *        </ul>
+ *      </div>
+ *
+ *  Requires:
+ *      ui.core.js
+ *      ui.widget.js
+ *      connexions.bookmark.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false */
+(function($) {
+
+$.widget("connexions.bookmarkList", {
+    version: "0.0.1",
+
+    /* Remove the strange ui.widget._trigger() class name prefix for events.
+     *
+     * If you need to know which widget the event was triggered from, either
+     * bind directly to the widget or look at the event object.
+     */
+    widgetEventPrefix:    '',
+
+    options: {
+        // Defaults
+        namespace:  '',
+        dimOpacity: 0.5
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  @triggers:
+     *      'change.bookmark'  when something about the bookmark is changed;
+     */
+    _create: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        // Bookmarks
+        self.$bookmarks = self.element.find('form.bookmark');
+
+        // Group Headers
+        self.$headers = self.element.find('.groupHeader .groupType');
+
+
+        self.$bookmarks.bookmark();
+
+        self.$headers
+                .fadeTo(100, opts.dimOpacity)
+                .hover( function() {    // in
+                            self.$headers.fadeTo(100, 1.0);
+                        },
+                        function() {    // out
+                            self.$headers.fadeTo(100, opts.dimOpacity);
+                        }
+                );
+
+        self._bindEvents();
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _bindEvents: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    destroy: function() {
+        var self        = this;
+
+        // Unbind events
+        self.$headers.unbind('hover');
+
+        // Remove added elements
+        self.$bookmarks.bookmark('destroy');
+    }
+});
+
+
+}(jQuery));
+
+
+/** @file
+ *
+ *  Javascript interface/wrapper for the presentation of a configurable pane.
+ *
+ *  This is primarily a class to provide unobtrusive activation of a
+ *  pre-rendered view / pane:
+ *      - conversion of any (optional) paginator markup (form.paginator),
+ *        generated via View_Helper_HtmlPaginationControl, to
+ *        connexions.paginator instance(s);
+ *      - conversion of any (optional) display options markup
+ *        (.displayOptions), generated via View_Helper_HtmlDisplayOptions, to a
+ *        connexions.dropdownForm instance;
+ *
+ *  The pre-rendered HTML must have a form similar to:
+ *      <div class='pane' ...>
+ *        [ top paginator ]
+ *        [ display options ]
+ *
+ *        content
+ *
+ *        [ bottom paginator ]
+ *      </div>
+ *
+ *  Requires:
+ *      ui.core.js
+ *      ui.widget.js
+ *      connexions.dropdownForm.js
+ *      connexions.paginator.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false */
+(function($) {
+
+$.widget("connexions.pane", {
+    version: "0.0.1",
+    options: {
+        // Defaults
+        namespace:      '',     // Cookie/parameter namespace
+        partial:        null,   // The name of the 'partial' if asynchronous
+                                // reloads are to be used on pagination or
+                                // displayOption changes.
+
+        // Information via the connexions.pagination widget(s)
+        pageCur:        null,   // The current page number
+        pageVar:        null,   // The page number URL variable name
+        page:           null,   // The target  page number
+
+
+        /* Configuration for any <form class='pagination'> element that 
+         * will be controlled by a connexions.pagination widget.
+         */
+        paginator:      {},
+
+        /* Configuration for any <div class='displayOptions'> element that 
+         * will be controlled by a connexions.dropdownForm widget.
+         */
+        displayOptions: {}
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  @triggers:
+     *      'change.bookmark'  when something about the bookmark is changed;
+     */
+    _create: function() {
+        this._paneInit();
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _paneInit: function() {
+        this._init_paginators();
+        this._init_displayOptions();
+    },
+
+    _init_paginators: function() {
+        var self        = this;
+        var opts        = self.options;
+
+        self.$paginators    = self.element.find('form.paginator');
+
+        self.$paginators.each(function(idex) {
+            var $pForm  = $(this);
+
+            $pForm.paginator({namespace:    opts.namespace,
+                              form:         $pForm,
+                              disableHover: (idex !== 0)
+                              });
+
+            if (opts.page === null)
+            {
+                opts.pageCur = $pForm.paginator('getPage');
+                opts.pageVar = $pForm.paginator('getPageVar');
+            }
+        });
+
+        self.$paginators.bind('submit.uipane', function(e) {
+            e.preventDefault(true);
+            e.stopPropagation(true);
+            e.stopImmediatePropagation(true);
+
+            // Set the target page number
+            opts.page = $(this).paginator('getPage');
+
+            // reload
+            self.reload();
+        });
+    },
+
+    _init_displayOptions: function() {
+        var self                = this;
+        self.$displayOptions    = self.element.find('div.displayOptions');
+
+        if (self.$displayOptions.length < 1)
+        {
+            return;
+        }
+
+        var opts    = self.options;
+        var uiOpts  = (opts.displayOptions === undefined
+                        ? {}
+                        : opts.displayOptions);
+
+        if (uiOpts.namespace === undefined)
+        {
+            uiOpts.namespace = opts.namespace;
+        }
+
+        if (! $.isFunction(uiOpts.apply))
+        {
+            uiOpts.apply = function(e) {
+                /* dropdownForm sets cookies for any form values, so we can
+                 * simplify the form submission process (ensuring a clean url)
+                 * by simply re-loading the window.  The reload will cause the
+                 * new cookie values to be applied.
+                 */
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                e.stopPropagation();
+
+                self.reload();
+            };
+        }
+
+        // Instantiate the connexions.dropdownForm widget
+        self.$displayOptions.dropdownForm(uiOpts);
+    },
+    _paneDestroy: function() {
+        var self    = this;
+
+        // Remove added elements
+        self.$paginators.paginator('destroy');
+        self.$displayOptions.dropdownForm('destroy');
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    reload: function(page) {
+        var self    = this;
+        var opts    = self.options;
+        var re      = new RegExp(opts.pageVar +'='+ opts.pageCur);
+        var rep     = opts.pageVar +'='+ opts.page;
+        var loc     = window.location;
+        var url     = loc.toString();
+
+        if (loc.search.length === 0)
+        {
+            url += '?'+ rep;
+        }
+        else if (! url.match(re))
+        {
+            url += '&'+ rep;
+        }
+        else
+        {
+            url = url.replace(re, rep);
+        }
+
+        if (opts.partial !== null)
+        {
+            // AJAX reload of just this pane...
+            url += '&format=partial&part='+ opts.partial;
+
+            $.ajax({url:        url,
+                    dataType:   'html',
+                    beforeSend: function() {
+                        self.element.mask();
+                    },
+                    error:      function(req, txtStatus, err) {
+                        $.notify({
+                            title:'Reload pane "'+ opts.partial +'" failed',
+                            text: '<p class="error">'+ txtStatus +'</p>'});
+                    },
+                    success:    function(data, txtStatus, req) {
+                        // Out with the old...
+                        self.destroy();
+
+                        // In with the new.
+                        self.element.html(data);
+                        self._create();
+                    },
+                    complete:   function() {
+                        self.element.unmask();
+                    }
+            });
+        }
+        else
+        {
+            // Perform a full, synchronous reload...
+            window.location.assign(url);
+        }
+    },
+
+    destroy: function() {
+        this._paneDestroy();
+    }
+});
+
+
+}(jQuery));
+
+
+
+/** @file
+ *
+ *  Javascript interface/wrapper for the presentation of a configurable pane
+ *  which contains a bookmark list.
+ *
+ *  This is class extends connexions.pane to include unobtrusive activation of
+ *  any contained, pre-rendered ul.bookmarkList generated via
+ *  View_Helper_HtmlBookmarks.
+ *
+ *  Requires:
+ *      ui.core.js
+ *      ui.widget.js
+ *      connexions.pane.js
+ *      connexions.bookmarkList.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false */
+(function($) {
+
+$.widget("connexions.bookmarksPane", $.connexions.pane, {
+    version: "0.0.1",
+    options: {
+        // Defaults
+        namespace:  ''
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  @triggers:
+     *      'change.bookmark'  when something about the bookmark is changed;
+     */
+    _create: function() {
+        var self        = this;
+        var opts        = self.options;
+
+        self._init_bookmarkList();
+
+        self._paneInit();
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _init_bookmarkList: function() {
+        var self            = this;
+        self.$bookmarkList  = self.element.find('ul.bookmarks');
+
+        if (self.$bookmarkList.length < 1)
+        {
+            return;
+        }
+
+        var opts    = self.options;
+        var uiOpts  = (opts.bookmarkList === undefined
+                        ? {}
+                        : opts.bookmarkList);
+
+        if (uiOpts.namespace === undefined)
+        {
+            uiOpts.namespace = opts.namespace;
+        }
+
+        // Instantiate the connexions.bookmarkList widget
+        self.$bookmarkList.bookmarkList(uiOpts);
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    destroy: function() {
+        var self    = this;
+
+        // Remove added elements
+        self.$bookmarkList.bookmarkList('destroy');
+
+        self._paneDestroy();
+    }
+});
+
+
+}(jQuery));
+
+
+
+/** @file
+ *
+ *  Javascript interface/wrapper for the presentation of a configurable pane
+ *  which contains a bookmark list.
+ *
+ *  This is class extends connexions.pane to include unobtrusive activation of
+ *  any contained, pre-rendered ul.cloud generated via
+ *  View_Helper_Html_HtmlItemCloud.
+ *
+ *  Requires:
+ *      ui.core.js
+ *      ui.widget.js
+ *      connexions.pane.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false */
+(function($) {
+
+$.widget("connexions.cloudPane", $.connexions.pane, {
+    version: "0.0.1",
+    options: {
+        // Defaults
+        namespace:  ''
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  @triggers:
+     *      'change.bookmark'  when something about the bookmark is changed;
+     */
+    _create: function() {
+        var self        = this;
+        var opts        = self.options;
+
+        //self._init_cloud();
+        self._paneInit();
+
+        self.$optionsForm = self.element.find('.displayOptions form');
+
+        self._bindEvents();
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _bindEvents: function() {
+        /* On Display style change, toggle the state of 'highlightCount'
+         *
+         * Note: The connexions.dropdownForm widget that controls the display
+         *       options DOM element attached a connexions.optionsGroups
+         *       instance to any contained displayOptions element.  This widget
+         *       will trigger the 'change' event on the displayOptions form
+         *       with information about the selected display group when a
+         *       change is made.
+         */
+        this.$optionsForm.bind('change.cloudPane',
+                function(e, info) {
+                    var $field  = $(this).find('.field.highlightCount');
+
+                    if (info.group === 'cloud')
+                    {
+                        // Enable the 'highlightCount'
+                        $field.removeClass('ui-state-disabled');
+                        $field.find('select').removeAttr('disabled');
+                    }
+                    else
+                    {
+                        // Disable the 'highlightCount'
+                        $field.addClass('ui-state-disabled');
+                        $field.find('select').attr('disabled', true);
+                    }
+                });
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    destroy: function() {
+        var self    = this;
+
+        // Unbind events
+        self.$optionsForm.unbind('.cloudPane');
+
+        self._paneDestroy();
+    }
+});
+
+
+}(jQuery));
+
+
+
+/** @file
+ *
+ *  Javascript interface/wrapper for the presentation of a configurable
+ *  sidebar.
+ *
+ *  This is primarily a class to provide unobtrusive activation of a
+ *  pre-rendered sidebar:
+ *      - conversion of markup generated via View_Helper_HtmlSidebar, to
+ *        ui.tabs instance(s);
+ *      - possible asynchronous loading of tab panes with masking of the tab
+ *        widget during load;
+ *
+ *  The pre-rendered HTML must have a form similar to:
+ *      <div id='%namespace%'>
+ *        <ul>
+ *          <li>
+ *            <a href='%paneUrl%'>
+ *              <span>Pane Title</span>
+ *            </a>
+ *          </li>
+ *          ...
+ *        </ul>
+ *        
+ *        <!-- If these are synchronous panes, the content is here -->
+ *        <div id='%paneId%'>
+ *          Pane content
+ *        </div>
+ *        ...
+ *      </div>
+ *
+ *  Requires:
+ *      ui.core.js
+ *      ui.widget.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false */
+(function($) {
+
+$.widget("connexions.sidebar", {
+    version: "0.0.1",
+    options: {
+        // Defaults
+        namespace:      ''      // Cookie/parameter namespace
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  @triggers:
+     *      'change.bookmark'  when something about the bookmark is changed;
+     */
+    _create: function() {
+        var self    = this;
+        var opts    = self.options;
+
+        opts.namespace = self.element.attr('id');
+
+        self.element.tabs({
+            cache:      true,
+            cookie:     opts.namespace,
+            ajaxOptions:{
+                beforeSend: function() {
+                    // Mask the tab panel area...
+                    var sel = self.element.tabs('option', 'selected');
+                    self.$tab = self.element.find('.ui-tabs-panel').eq(sel);
+
+                    self.$tab.mask();
+                },
+                complete: function() {
+                    // Bind any new displayOptions forms
+                    self._bindReload(self.$tab);
+
+                    // Unmask the tab panel area...
+                    self.$tab.unmask();
+                }
+            }
+        });
+
+        // For each asynchronous tab, bind reload events
+        self.element.find('ul:first li a:first').each(function(idex) {
+            var url = $.data(this, 'load.tabs');
+            if (url)
+            {
+                var $tab = self.element.find('.ui-tabs-panel').eq(idex);
+                self._bindReload($tab);
+            }
+        });
+
+        self._bindReload(self.element);
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _bindReload: function(context) {
+        var self    = this;
+
+        context.find('.displayOptions')
+                .dropdownForm('setApplyCb', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+
+                    // Reload the tab contents
+                    self.element.tabs('load',
+                                      self.element.tabs('option', 'selected'));
+                });
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    destroy: function() {
+        this.element.tabs('destroy');
+    }
+});
+
+
+}(jQuery));
+
+
+
+/** @file
+ *
  *  Javascript interface/wrapper for the presentation of a search box with
  *  drop down context selection.
  *
@@ -4148,7 +4207,7 @@ $.widget("ui.itemScope", {
 /*global jQuery:false, window:false */
 (function($){
 
-$.widget("ui.search", {
+$.widget("connexions.search", {
 	options: {
 	},
 	_create: function(){

@@ -38,7 +38,7 @@
 
 (function($) {
 
-$.widget("ui.paginator", {
+$.widget("connexions.paginator", {
     version: "0.1.1",
     options: {
         // Defaults

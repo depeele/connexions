@@ -34,7 +34,7 @@
 /*global jQuery:false, window:false */
 (function($){
 
-$.widget("ui.search", {
+$.widget("connexions.search", {
 	options: {
 	},
 	_create: function(){

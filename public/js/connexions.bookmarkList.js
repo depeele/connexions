@@ -4,11 +4,12 @@
  *
  *  This is primarily a class to provide unobtrusive activation of a
  *  pre-rendered list of bookmark items (View_Helper_HtmlBookmarks), each of
- *  which will become a ui.bookmark instance.
+ *  which will become a connexions.bookmark instance.
  *
  *  This class also handles:
  *      - hover effects for .groupHeader DOM items;
- *      - conversion of all form.bookmark DOM items to ui.bookmark instances;
+ *      - conversion of all form.bookmark DOM items to connexions.bookmark
+ *        instances;
  *
  *  View_Helper_HtmlBookmarks will generate HTML for a bookmark list similar
  *  to:
@@ -22,13 +23,13 @@
  *  Requires:
  *      ui.core.js
  *      ui.widget.js
- *      ui.bookmark.js
+ *      connexions.bookmark.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false */
 (function($) {
 
-$.widget("ui.bookmarkList", {
+$.widget("connexions.bookmarkList", {
     version: "0.0.1",
 
     /* Remove the strange ui.widget._trigger() class name prefix for events.
