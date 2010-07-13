@@ -36,7 +36,7 @@
 /*global jQuery:false, window:false */
 (function($) {
 
-$.widget("ui.sidebar", {
+$.widget("connexions.sidebar", {
     version: "0.0.1",
     options: {
         // Defaults

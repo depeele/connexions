@@ -57,7 +57,7 @@
 
 (function($) {
 
-$.widget("ui.optionGroups", {
+$.widget("connexions.optionGroups", {
     version: "0.1.1",
     options: {
         // Defaults
@@ -380,7 +380,7 @@ $.widget("ui.optionGroups", {
          * group and an array of CSS selectors that will match all items NOT of
          * the group.
          */
-        //$.log("ui.optionGroups: trigger 'form:change'");
+        //$.log("connexions.optionGroups: trigger 'form:change'");
         self.options.form.trigger('change', groupInfo);
     },
 

@@ -40,19 +40,31 @@
 /*global jQuery:false, window:false, document:false */
 (function($){
 
-$.widget("ui.itemScope", {
+$.widget("connexions.itemScope", {
     options: {
         namespace:          '',     // Cookie/parameter namespace
-        jsonRpc:            null,   /* Json-RPC information:
-                                     *  { version:      '2.0',
-                                     *    transport:    'POST' | 'GET',
-                                     *    target:       RPC URL,
-                                     *    method:       RPC method name,
-                                     *    params:       {
-                                     *      key/value parameter pairs
-                                     *    }
-                                     *  }
-                                     */
+
+        /* General Json-RPC information:
+         *  {version:   Json-RPC version,
+         *   target:    URL of the Json-RPC endpoint,
+         *   transport: 'POST' | 'GET'
+         *   method:    RPC method name,
+         *   params:    {
+         *      key/value parameter pairs
+         *   }
+         *  }
+         *
+         * If not provided, 'version', 'target', and 'transport' are
+         * initialized from:
+         *      $.registry('api').jsonRpc
+         *
+         * (which is initialized from
+         *      application/configs/application.ini:api
+         *  via
+         *      application/layout/header.phtml
+         *
+         */
+        jsonRpc:            null,
         rpcId:              1,      // The initial RPC identifier
 
         separator:          ',',    // The term separator
@@ -62,13 +74,35 @@ $.widget("ui.itemScope", {
         var self    = this;
         var opts    = self.options;
 
+        /********************************
+         * Initialize jsonRpc
+         *
+         */
+        if ($.isFunction($.registry))
+        {
+            var api = $.registry('api');
+            if (api && api.jsonRpc)
+            {
+                opts.jsonRpc = $.extend({}, api.jsonRpc, opts.jsonRpc);
+            }
+        }
+
+        /********************************
+         * Locate the pieces
+         *
+         */
         self.$input    = self.element.find('.scopeEntry :text');
         self.$curItems = self.element.find('.scopeItem');
         self.$submit   = self.element.find('.scopeEntry :submit');
 
+        /********************************
+         * Instantiate our sub-widgets
+         *
+         */
         self.$input.input();
         if (opts.jsonRpc !== null)
         {
+            // Setup autocompletion via Json-RPC
             self.$input.autocomplete({
                 source:     function(request, response) {
                     return self._jsonRpc(request,response);
@@ -131,8 +165,12 @@ $.widget("ui.itemScope", {
                     $.map(ret.result,
                           function(item) {
                             return {
-                                label: item.tag +': '+
-                                       item.itemCount,
+                                label:   '<span class="name">'
+                                       +  item.tag
+                                       + '</span>'
+                                       +' <span class="count">'
+                                       +  item.userItemCount
+                                       + '</span>',
                                 value: item.tag
                             };
                           }));

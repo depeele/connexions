@@ -5,11 +5,11 @@
  *  This is primarily a class to provide unobtrusive activation of a
  *  pre-rendered view / pane:
  *      - conversion of any (optional) paginator markup (form.paginator),
- *        generated via View_Helper_HtmlPaginationControl, to ui.paginator
- *        instance(s);
+ *        generated via View_Helper_HtmlPaginationControl, to
+ *        connexions.paginator instance(s);
  *      - conversion of any (optional) display options markup
  *        (.displayOptions), generated via View_Helper_HtmlDisplayOptions, to a
- *        ui.dropdownForm instance;
+ *        connexions.dropdownForm instance;
  *
  *  The pre-rendered HTML must have a form similar to:
  *      <div class='pane' ...>
@@ -24,14 +24,14 @@
  *  Requires:
  *      ui.core.js
  *      ui.widget.js
- *      ui.dropdownForm.js
- *      ui.paginator.js
+ *      connexions.dropdownForm.js
+ *      connexions.paginator.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false, window:false */
 (function($) {
 
-$.widget("ui.pane", {
+$.widget("connexions.pane", {
     version: "0.0.1",
     options: {
         // Defaults
@@ -40,19 +40,19 @@ $.widget("ui.pane", {
                                 // reloads are to be used on pagination or
                                 // displayOption changes.
 
-        // Information via the ui.pagination widget(s)
+        // Information via the connexions.pagination widget(s)
         pageCur:        null,   // The current page number
         pageVar:        null,   // The page number URL variable name
         page:           null,   // The target  page number
 
 
         /* Configuration for any <form class='pagination'> element that 
-         * will be controlled by a ui.pagination widget.
+         * will be controlled by a connexions.pagination widget.
          */
         paginator:      {},
 
         /* Configuration for any <div class='displayOptions'> element that 
-         * will be controlled by a ui.dropdownForm widget.
+         * will be controlled by a connexions.dropdownForm widget.
          */
         displayOptions: {}
     },
@@ -144,7 +144,7 @@ $.widget("ui.pane", {
             };
         }
 
-        // Instantiate the ui.dropdownForm widget
+        // Instantiate the connexions.dropdownForm widget
         self.$displayOptions.dropdownForm(uiOpts);
     },
     _paneDestroy: function() {

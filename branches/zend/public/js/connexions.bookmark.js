@@ -119,7 +119,7 @@
 /*global jQuery:false */
 (function($) {
 
-$.widget("ui.bookmark", {
+$.widget("connexions.bookmark", {
     version: "0.0.1",
 
     /* Remove the strange ui.widget._trigger() class name prefix for events.
@@ -157,7 +157,8 @@ $.widget("ui.bookmark", {
          *   transport: 'POST' | 'GET'
          *  }
          *
-         * Defaults to the value of:
+         * If not provided, 'version', 'target', and 'transport' are
+         * initialized from:
          *      $.registry('api').jsonRpc
          *
          * (which is initialized from
@@ -185,15 +186,15 @@ $.widget("ui.bookmark", {
         var opts        = self.options;
 
         /********************************
-         * Initialize jsonRpc if not
-         * provided.
+         * Initialize jsonRpc
+         *
          */
-        if ((opts.jsonRpc === null) && $.isFunction($.registry))
+        if ($.isFunction($.registry))
         {
             var api = $.registry('api');
             if (api && api.jsonRpc)
             {
-                opts.jsonRpc = api.jsonRpc;
+                opts.jsonRpc = $.extend({}, api.jsonRpc, opts.jsonRpc);
             }
         }
 
@@ -277,7 +278,7 @@ $.widget("ui.bookmark", {
             e.preventDefault();
             e.stopPropagation();
 
-            $.log('ui.bookmark::_update_item('+ data +')');
+            $.log('connexions.bookmark::_update_item('+ data +')');
 
             if ((self.options.enabled !== true) || (self._squelch === true))
             {
@@ -388,6 +389,8 @@ $.widget("ui.bookmark", {
                         return;
                     }
 
+                    self._squelch = true;
+
                     // Include the updated data
                     self.$itemId.val(           data.result.itemId );
                     self.$name.text(            data.result.name );
@@ -404,6 +407,18 @@ $.widget("ui.bookmark", {
                                                     ? 'check'
                                                     : 'uncheck') );
                     self.$url.attr('href',      data.result.url);
+
+                    // Alter our parent to reflect 'isPrivate'
+                    var parent  = self.element.parent();
+                    if (data.result.isPrivate)
+                    {
+                        parent.addClass('private');
+                    }
+                    else
+                    {
+                        parent.removeClass('private');
+                    }
+                    self._squelch = false;
 
                     // set state
                     self._setState();
@@ -422,6 +437,8 @@ $.widget("ui.bookmark", {
                 complete:   function(req, textStatus) {
                 }
              });
+
+            return false;
         };
 
         // Handle item-edit

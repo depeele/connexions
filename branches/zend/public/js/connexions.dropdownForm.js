@@ -5,12 +5,13 @@
  *  Requires:
  *      ui.core.js
  *      ui.widget.js
+ *      connexions.optionGroups.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false, window:false */
 (function($) {
 
-$.widget("ui.dropdownForm", {
+$.widget("connexions.dropdownForm", {
     version: "0.1.1",
 
     /* Remove the strange ui.widget._trigger() class name prefix for events.
@@ -64,9 +65,9 @@ $.widget("ui.dropdownForm", {
         });
         self.$control.fadeTo(100, 0.5);
 
-        /* Activate a ui.optionGroups handler for any container/div in this
-         * form with a CSS class of 'ui-optionGroups'.
-         * ui.optionGroups handler for them.
+        /* Activate a connexions.optionGroups handler for any container/div in
+         * this form with a CSS class of 'ui-optionGroups'.
+         * connexions.optionGroups handler for them.
          */
         self.element.find('.ui-optionGroups').optionGroups();
 
@@ -143,7 +144,7 @@ $.widget("ui.dropdownForm", {
             self.element.data('changed.uidropdownform', changed);
             */
 
-            //$.log("ui.dropdownForm::caught 'form:change'");
+            //$.log("connexions.dropdownForm::caught 'form:change'");
 
             // Any change within the form should enable the submit button
             self.$submit
