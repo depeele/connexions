@@ -516,5 +516,8 @@ a:visited { color: #005a9c; }
 .ui-widget-content a { color: #0066cc; }
 .ui-widget-content a:visited { color: #005a9c; }
 
+.ui-autocomplete .ui-menu-item a { position: relative; display: block; }
+.ui-autocomplete .ui-menu-item a .count { position: absolute; top: 0.4em; right: 0.4em; font-size: 0.8em; font-weight: normal; }
+
 .rightCol .ui-tabs { border-right: none; -moz-border-radius: 4px 0 0 4px; -webkit-border-radius: 4px 0 0 4px; -ms-border-radius: 4px 0 0 4px; -khtml-border-radius: 4px 0 0 4px; border-radius: 4px 0 0 4px; }
 .rightCol .ui-tabs .ui-tabs-panel { padding: 1em 0.25em 1em 0; }

@@ -236,14 +236,26 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
                         Connexions::varExport($data));
         // */
 
+
         /* Covert any included user/item record to the associated database
          * identifiers (userId/itemId).
          */
-        $data['rating']     = ( is_numeric($data['rating'])
-                                ? $data['rating']
-                                : 0 );
-        $data['isFavorite'] = (bool)($data['isFavorite']);
-        $data['isPrivate']  = (bool)($data['isPrivate']);
+        if (isset($data['rating']))
+        {
+            $data['rating']     = ( is_numeric($data['rating'])
+                                    ? $data['rating']
+                                    : 0 );
+        }
+
+        if (isset($data['isFavorite']))
+        {
+            $data['isFavorite'] = (bool)($data['isFavorite']);
+        }
+
+        if (isset($data['isPrivate']))
+        {
+            $data['isPrivate']  = (bool)($data['isPrivate']);
+        }
 
         /* Ensure that the 'updatedOn' date is the current date
          * (i.e. the actual update date).

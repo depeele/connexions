@@ -164,6 +164,9 @@ class PostController extends Connexions_Controller_Action
                     /* The user has an existing bookmark.  Fill in any data
                      * that was NOT provided directly.
                      */
+                    $postInfo['userId'] = $bookmark->userId;
+                    $postInfo['itemId'] = $bookmark->itemId;
+
                     if (empty($postIn['name']))
                         $postInfo['name'] = $bookmark->name;
 
@@ -180,7 +183,11 @@ class PostController extends Connexions_Controller_Action
                         $postInfo['isPrivate'] = $bookmark->isPrivate;
 
                     if (empty($postIn['tags']))
-                        $postInfo['tags'] = $bookmark->tags->__toString();
+                    {
+                        $postInfo['tags'] =
+                            preg_replace('/\s*,\s*/', ', ',
+                                         $bookmark->tags->__toString());
+                    }
                 }
             }
         }

@@ -105,30 +105,8 @@ $.widget("connexions.itemScope", {
             // Setup autocompletion via Json-RPC
             self.$input.autocomplete({
                 source:     function(request, response) {
-                    return self._jsonRpc(request,response);
+                    return self._autocomplete(request,response);
                 },
-                search:     function() {
-                    var term    = self._curTerm();
-                    if (term.length < opts.minLength)
-                    {
-                        return false;
-                    }
-                },
-                focus:      function() {
-                    // prevent insertion on focus
-                    return false;
-                },
-                select:     function(event, ui) {
-                    var val = opts.val.substring(0, opts.start)
-                            + ui.item.value
-                            + opts.val.substring(opts.end)
-                            + opts.separator
-                            + ' ';
-
-                    this.value = val;
-                    return false;
-                },
-                delay:      200,
                 minLength:  opts.minLength
             });
         }
@@ -136,7 +114,7 @@ $.widget("connexions.itemScope", {
         self._bindEvents();
     },
 
-    _jsonRpc: function(request, response) {
+    _autocomplete: function(request, response) {
         var self    = this;
         var opts    = self.options;
         var id      = opts.rpcId++;
@@ -147,7 +125,7 @@ $.widget("connexions.itemScope", {
             params:     opts.jsonRpc.params
         };
 
-        data.params.str = opts.term;    //self._curTerm();  //request.term;
+        data.params.str = self.$input.autocomplete('option', 'term');
 
         $.ajax({
             type:       opts.jsonRpc.transport,
@@ -180,91 +158,6 @@ $.widget("connexions.itemScope", {
                 self.element.trigger('error', [txtStatus, req]);
             }
         });
-    },
-
-    _curTerm: function() {
-        var self    = this;
-        var opts    = self.options;
-
-        opts.start  = self._selectionStart();
-        opts.end    = self._selectionEnd();
-        opts.val    = self.$input.val();
-        if (opts.start === opts.end)
-        {
-            /* Current term is NOT selected.  Look backward from 'start' to
-             * find the previous separator, and forward from 'end' to the next
-             * separator.
-             */
-            opts.end    = opts.val.indexOf(opts.separator, opts.start);
-            if (opts.end < 0)
-            {
-                opts.end = opts.val.length;
-            }
-
-            var sep     = opts.val.indexOf(opts.separator, 0);
-            var newSt   = 0;
-            while ((sep >= 0) && (sep < opts.start))
-            {
-                while ( (sep < opts.end) &&
-                        (opts.val.substr(++sep,1).match(/\s/)) )
-                {
-                }
-
-                newSt = sep;
-                sep   = opts.val.indexOf(opts.separator, sep);
-            }
-
-            opts.start = newSt;
-        }
-
-        opts.term = opts.val.substring(opts.start, opts.end);
-
-        return opts.term;
-    },
-
-    _selectionStart: function() {
-        var self    = this;
-        var val     = 0;
-        if (self.$input[0].createTextRange)
-        {
-            // IE
-            var range   = document.selection.createRange().duplicate();
-            var ival    = self.$input.val();
-            range.moveEnd('character', ival.length);
-            if (range.text === '')
-            {
-                val = ival.length;
-            }
-            else
-            {
-                val = ival.lastIndexOf(range.text);
-            }
-        }
-        else
-        {
-            val = self.$input.attr('selectionStart');
-        }
-
-        return val;
-    },
-
-    _selectionEnd: function() {
-        var self    = this;
-        var val     = 0;
-        if (self.$input[0].createTextRange)
-        {
-            // IE
-            var range   = document.selection.createRange().duplicate();
-            var ival    = self.$input.val();
-            range.moveEnd('character', -(ival.length));
-            val = range.text.length;
-        }
-        else
-        {
-            val = self.$input.attr('selectionEnd');
-        }
-
-        return val;
     },
 
     _bindEvents: function() {

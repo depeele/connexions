@@ -20,11 +20,18 @@
 .ui-validation-form .legend { text-align: right; padding-right: 2em; }
 .ui-validation-form .legend h1 { padding: 0; color: #b0d730; font-size: 1.25em; font-weight: bold; }
 .ui-validation-form .legend p { padding: 0; color: #999999; }
-.ui-validation-form .userInput { padding: 1em; -moz-border-radius: 10px 10px 10px 10px; -webkit-border-radius: 10px 10px 10px 10px; -ms-border-radius: 10px 10px 10px 10px; -khtml-border-radius: 10px 10px 10px 10px; border-radius: 10px 10px 10px 10px; }
+.ui-validation-form .userInput { position: relative; padding: 1em; z-index: 1; -moz-border-radius: 10px 10px 10px 10px; -webkit-border-radius: 10px 10px 10px 10px; -ms-border-radius: 10px 10px 10px 10px; -khtml-border-radius: 10px 10px 10px 10px; border-radius: 10px 10px 10px 10px; }
+.ui-validation-form .userInput .item-status { padding: 0 0.5em 0 0; }
+.ui-validation-form .userInput .item-data .item-name { padding-bottom: 0; }
+.ui-validation-form .userInput .item-data .item-name input { width: 22em; }
+.ui-validation-form .userInput .item-data .item-name .ui-field-info { width: 23.835em; }
+.ui-validation-form .userInput .item-data .item-url { padding-bottom: 0; margin-left: 1em; }
+.ui-validation-form .userInput .item-data .item-url .text { width: 29em; }
+.ui-validation-form .userInput .item-data .item-url .ui-field-info { width: 31.78em; }
 .ui-validation-form .userInput .field { padding-bottom: 1em; }
 .ui-validation-form .userInput .field label { color: #999999; }
 .ui-validation-form .userInput .field .text { width: 30em; }
-.ui-validation-form .userInput .field .ui-field-info { height: 1.25em; font-size: 0.9em; padding-left: 1.25em; opacity: 0.5; filter: alpha(opacity=50); -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=50)'; -khtml-opacity: 0.5; -moz-opacity: 0.5; }
+.ui-validation-form .userInput .field .ui-field-info { width: 32.631em; height: 1.25em; font-size: 0.9em; padding-left: 1.25em; opacity: 0.5; filter: alpha(opacity=50); -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=50)'; -khtml-opacity: 0.5; -moz-opacity: 0.5; }
 .ui-validation-form .userInput .field .ui-field-info .ui-field-status { float: left; }
 .ui-validation-form .userInput .field .ui-field-info .ui-field-requirements { float: right; color: #999999; text-align: right; }
 .ui-validation-form .userInput .click-to-edit label { display: none; }
@@ -32,14 +39,12 @@
 .ui-validation-form .userInput .click-to-edit input:focus { border-color: #aaaaaa; color: black; }
 .ui-validation-form .userInput .click-to-edit .ui-field-info { visibility: hidden; }
 .ui-validation-form .userInput .click-to-edit:hover .ui-field-info { visibility: visible; }
-.ui-validation-form .userInput .buttons { position: relative; text-align: right; }
+.ui-validation-form .userInput .userRating { position: absolute; z-index: 2; right: 0; display: block; padding: 0; height: 32px; width: 96px; }
+.ui-validation-form .userInput .userRating label { display: none; }
+.ui-validation-form .userInput .favorite, .ui-validation-form .userInput .private { padding-bottom: 0.2em; }
+.ui-validation-form .userInput .favorite input, .ui-validation-form .userInput .private input { width: 0; height: 0; margin: 0; padding: 0; }
+.ui-validation-form .userInput .favorite .checkbox, .ui-validation-form .userInput .private .checkbox { position: relative; display: inline; cursor: pointer; border: none; }
+.ui-validation-form .userInput .favorite .checkbox .ui-stars-wrapper, .ui-validation-form .userInput .private .checkbox .ui-stars-wrapper { float: left; }
+.ui-validation-form .userInput .buttons { position: relative; text-align: right; width: 100%; padding-left: 2em; padding-top: 1em; clear: both; }
 .ui-validation-form .userInput .buttons input, .ui-validation-form .userInput .buttons label, .ui-validation-form .userInput .buttons button { position: relative; display: inline; cursor: pointer; }
-.ui-validation-form .userInput .personalize { width: 100%; padding-top: 1em; }
-.ui-validation-form .userInput .personalize .field { display: block; float: left; padding: 0 0.5em 0 0; }
-.ui-validation-form .userInput .personalize .field label { display: block; float: left; }
-.ui-validation-form .userInput .personalize .userRating { display: block; float: left; padding: 0 2.5em 0 0; height: 32px; width: 160px; }
-.ui-validation-form .userInput .personalize .userRating label { display: block; float: right; padding: 2px 0 0 0.25em; width: 2em; color: #0066cc; }
-.ui-validation-form .userInput .personalize .favorite input, .ui-validation-form .userInput .personalize .private input { width: 0; height: 0; margin: 0; padding: 0; }
-.ui-validation-form .userInput .personalize .checkbox { position: relative; display: inline; cursor: pointer; border: none; }
-.ui-validation-form .userInput .personalize .checkbox .ui-stars-wrapper { float: left; }
 .ui-validation-form .userInput .formError { padding: 0; font-weight: bold; text-align: left; color: #cd0a0a; }

@@ -587,11 +587,12 @@ class Service_Bookmark extends Connexions_Service
                            $name            = null,
                            $description     = null,
                            $rating          = 0,
-                           $isFavorite      = false,
-                           $isPrivate       = false,
+                           $isFavorite      = null,
+                           $isPrivate       = null,
                            $tags            = null,
                            $url             = null)
     {
+        /*
         Connexions::log("Service_Bookmark::update() "
                         . "id[ %s ], name[ %s ], description[ %s ], "
                         . "rating[ %s ], isFavorite[ %s ], isPrivate[ %s ], "
@@ -604,8 +605,93 @@ class Service_Bookmark extends Connexions_Service
                         Connexions::varExport($isPrivate),
                         Connexions::varExport($tags),
                         Connexions::varExport($url));
+        // */
 
-        return null;
+        // First, attempt to normalize the incoming bookmark id.
+        $id = $this->_mapper->normalizeId($id);
+
+        /* Now, if the bookmark's userId != the current authenticated userId,
+         * FAIL.
+         */
+        if (empty($id['userId']))
+        {
+            $id['userId'] = $this->_curUser()->userId;
+        }
+        else if ($id['userId'] !== $this->_curUser()->userId)
+        {
+            throw new Exception("Cannot update bookmarks of/for others");
+        }
+
+        // Finally, if we weren't given an itemId, user any incoming 'url'
+        if (empty($id['itemId']))
+        {
+            $id['itemId'] = $url;
+        }
+
+        /*
+        Connexions::log("Service_Bookmark::update(): "
+                        . "adjusted id[ %s ]",
+                        Connexions::varExport($id));
+        // */
+
+        try
+        {
+            $bookmark = $this->get($id);
+        }
+        catch (Exception $e)
+        {
+            $bookmark = null;
+        }
+
+        if (! $bookmark)
+        {
+            throw new Exception('Cannot locate bookmark [ '
+                                . Connexions::varExport($id) .' ]');
+        }
+
+        $update = array();
+
+        if (! empty($name))         $bookmark->name         = $name;
+        if (! empty($url))          $bookmark->url          = $url;
+        if (! empty($description))  $bookmark->description  = $description;
+        if (! empty($rating))       $bookmark->rating       = $rating;
+        if (  $isFavorite !== null) $bookmark->isFavorite   = $isFavorite;
+        if (  $isPrivate  !== null) $bookmark->isPrivate    = $isPrivate;
+        if (! empty($tags))
+        {
+            $bookmark->tags = $this->_prepareTags( array('tags' => $tags),
+                                                   true );
+        }
+
+        /*
+        Connexions::log("Service_Bookmark::update() "
+                        .   "update [ %s ], array[ %s ]",
+                        $bookmark->debugDump(),
+                        Connexions::varExport($bookmark->toArray()));
+        // */
+
+        if (! $bookmark->isValid())
+        {
+            $msgs = $bookmark->getValidationMessages();
+
+            Connexions::log("Service_Bookmark::update() "
+                            .   "invalid bookmark [ %s ]",
+                            Connexions::varExport($msgs));
+
+            throw new Exception ('Invalid bookmark [ '
+                                 . Connexions::varExport($msgs)
+                                 . ' ]');
+        }
+
+        $bookmark = $bookmark->save();
+
+        /*
+        Connexions::log("Service_Bookmark::update() "
+                        .   "updated [ %s ]",
+                        $bookmark->debugDump());
+        // */
+
+        return $bookmark;
     }
 
     /*************************************************************************

@@ -72,7 +72,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
             $url .= $params;
         }
 
-        $this->_flashMessenger->addMessage('onSuccess:'. $url);
+        $flash->addMessage('onSuccess:'. $url);
 
         // /*
         Connexions::log("Connexions_Controller_Action::_redirectToSignIn() "

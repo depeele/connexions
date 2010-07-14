@@ -8,7 +8,8 @@ SRCS =	connexions.js jquery.registry.js jquery.cookie.js 		\
 	connexions.bookmark.js connexions.bookmarkList.js		\
 	connexions.pane.js connexions.bookmarksPane.js			\
 	connexions.cloudPane.js connexions.sidebar.js			\
-	connexions.search.js
+	connexions.search.js connexions.bookmarkPost.js			\
+	connexions.autocomplete.js
 
 #all: connexions.min.css bookmarks.min.css users.min.css 	\
 #	urlItems.min.css inbox.min.css				\

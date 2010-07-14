@@ -155,7 +155,7 @@ class IndexController extends Connexions_Controller_Action
         $this->view->tags      = $this->_tags;
 
 
-        $this->_prepareMain();
+        $this->_prepareMain('items');
 
         // Handle this request based on the current context / format
         $this->_handleFormat();
@@ -309,55 +309,72 @@ class IndexController extends Connexions_Controller_Action
      *  This will collect the variables needed to render the main view, placing
      *  them in $view->main as a configuration array.
      */
-    protected function _prepareMain()
+    protected function _prepareMain($htmlNamespace  = '')
     {
         $request          =& $this->_request;
 
         if (($this->_format === 'html') || ($this->_format === 'partial'))
         {
-            $prefix           = 'items';
-            $itemsStyle       = $request->getParam($prefix."OptionGroup");
-            $itemsStyleCustom = $request->getParam($prefix
+            /* HTML and Partial will typically be requested via click on a
+             * pre-defined URL.
+             */
+            $namespace    = $htmlNamespace;
+            $displayStyle = $request->getParam($namespace ."OptionGroup");
+            $dsCustom     = $request->getParam($namespace
                                                     ."OptionGroups_option");
 
-            $perPage          = $request->getParam($prefix ."PerPage");
-            $page             = $request->getParam($prefix ."Page");
-            $sortBy           = $request->getParam($prefix ."SortBy");
-            $sortOrder        = $request->getParam($prefix ."SortOrder");
+            $perPage      = $request->getParam($namespace ."PerPage");
+            $page         = $request->getParam($namespace ."Page");
+            $sortBy       = $request->getParam($namespace ."SortBy");
+            $sortOrder    = $request->getParam($namespace ."SortOrder");
 
-            if ( ($itemsStyle === 'custom') && (is_array($itemsStyleCustom)) )
-                $itemsStyle = $itemsStyleCustom;
+            if ( ($displayStyle === 'custom') && (is_array($dsCustom)) )
+                $displayStyle = $dsCustom;
         }
         else
         {
-            $prefix           = '';
-            $itemsStyle       = null;
-            $perPage          = $request->getParam("perPage");
-            if (empty($perPage))
-                $perPage      = $request->getParam("limit");
+            /* All the rest are more subject to variability since they are
+             * likely added by a user.
+             */
+            $namespace    = '';
+            $displayStyle = null;
+            $perPage      = $request->getParam("perPage");
+            $page         = $request->getParam("page");
+            $sortBy       = $request->getParam("sortBy");
+            $sortOrder    = $request->getParam("sortOrder");
 
-            $page             = $request->getParam("page");
-            if (empty($page))
-                $page         = $request->getParam("offset");
+            // Alternative names
+            if (empty($perPage))    $perPage   = $request->getParam("perpage");
+            if (empty($sortBy))     $sortBy    = $request->getParam("sortby");
+            if (empty($sortOrder))  $sortOrder =
+                                            $request->getParam("sortorder");
 
-            $sortBy           = $request->getParam("sortBy");
-            $sortOrder        = $request->getParam("sortOrder");
+            if (empty($perPage))    $perPage   = $request->getParam("limit");
+            if (empty($page))       $page      = $request->getParam("offset");
         }
 
         // Additional view variables for the HTML view.
         $this->view->main = array(
-            'namespace'     => $prefix,
+            'namespace'     => $namespace,
             'viewer'        => &$this->_viewer,
-            'users'         => ($this->_owner !== '*'
-                                ? $this->_owner
-                                : null),
-            'tags'          => &$this->_tags,
-            'displayStyle'  => $itemsStyle,
             'perPage'       => $perPage,
             'page'          => $page,
             'sortBy'        => $sortBy,
             'sortOrder'     => $sortOrder,
         );
+
+
+        $extra = array(
+            'users'         => ($this->_owner !== '*'
+                                ? $this->_owner
+                                : null),
+            'tags'          => &$this->_tags,
+            'displayStyle'  => $displayStyle,
+        );
+        $this->view->main = array_merge($this->view->main, $extra);
+
+        Connexions::log("IndexController::_prepareMain(): main[ %s ]",
+                        Connexions::varExport($this->view->main));
     }
 
     /** @brief  Prepare for rendering the sidebar view.
@@ -469,7 +486,7 @@ class IndexController extends Connexions_Controller_Action
      *                              immediately into a placeholder?
      *                              [ true, into the 'right' placeholder ]
      *  @param  part                The portion of the sidebar to render
-     *                                  (tags | people)
+     *                                  (tags | people | items)
      *                              [ null == all ]
      *
      */
