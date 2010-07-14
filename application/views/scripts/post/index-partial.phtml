@@ -1,0 +1,108 @@
+<?php
+/** @file
+ *
+ *  Bookmark Post form partial.
+ *
+ *  Incoming data:
+ *      postInfo        POST form initialization data, if any.
+ *                          [ itemId ]
+ *                          name
+ *                          url
+ *                          description
+ *                          tags
+ *                          isFavorite
+ *                          isPrivate
+ *                          rating
+ *
+ *  This requires connexions.bookmarkPost.js as well as jQuery activation via:
+ *      $this->jQuery()->addOnLoad('$("... form").bookmarkPost();');
+ *
+ */
+if (! @is_array($this->postInfo))
+    $this->postInfo = array();
+
+?>
+   <form method='post'><!-- { -->
+    <?php if (isset($this->postInfo['userId'])): ?>
+    <input name='userId' type='hidden'
+          value='<?= $this->postInfo['userId'] ?>' />
+    <?php endif ?>
+    <?php if (isset($this->postInfo['itemId'])): ?>
+    <input name='itemId' type='hidden'
+          value='<?= $this->postInfo['itemId'] ?>' />
+    <?php endif ?>
+    <div class='unit item-status'><!-- { -->
+     <div class='field favorite'>
+      <label for='isFavorite'>Favorite</label>
+      <input name='isFavorite'
+            type='checkbox' value='true'
+            <?= ($this->postInfo['isFavorite'] ? ' checked' : '') ?> />
+     </div>
+
+     <div class='field private'>
+      <label for='isPrivate'>Private</label>
+      <input name='isPrivate'
+            type='checkbox' value='true'
+            <?= ($this->postInfo['isPrivate'] ? ' checked' : '') ?> />
+     </div>
+    </div><!-- item-status } -->
+
+    <div class='unit item-data'><!-- { -->
+     <div class='field userRating'>
+      <label for='rating'>rating</label>
+      <?= $this->htmlStarRating($this->postInfo['rating'],
+                                'stars-wrapper') ?>
+      <!-- div class='stars-wrapper'>
+       <input name='rating' type='radio' value='1' title='Terrible'
+             <?= ($this->postInfo['rating'] == '1'
+                     ? " checked='true'" : '') ?> />
+       <input name='rating' type='radio' value='2' title='Fair'
+             <?= ($this->postInfo['rating'] == '2'
+                     ? " checked='true'" : '') ?> />
+       <input name='rating' type='radio' value='3' title='Average'
+             <?= ($this->postInfo['rating'] == '3'
+                     ? " checked='true'" : '') ?> />
+       <input name='rating' type='radio' value='4' title='Good'
+             <?= ($this->postInfo['rating'] == '4'
+                     ? " checked='true'" : '') ?> />
+       <input name='rating' type='radio' value='5' title='Excellent'
+             <?= ($this->postInfo['rating'] == '5'
+                     ? " checked='true'" : '') ?> />
+      </div -->
+     </div>
+
+     <div class='field item-name'>
+      <label for='name'>Bookmark name / title</label>
+      <input type='text' class='text required' autocomplete='off'
+             name='name' value='<?= $this->postInfo['name'] ?>'
+                      tabindex='2' />
+     </div>
+     <div class='field item-url<?= (! @empty($this->postInfo['url'])
+                                         ? ' click-to-edit'
+                                         : '') ?>'>
+      <label for='url'>URL to bookmark</label>
+      <input type='text' class='text required' autocomplete='off'
+             name='url'  value='<?= $this->postInfo['url'] ?>'
+                      tabindex='1' />
+     </div>
+     <div class='field item-description'>
+      <label for='description'>Description / Notes for this bookmark</label>
+      <textarea class='text'
+                 name='description'
+             tabindex='3'><?= $this->postInfo['description'] ?></textarea>
+     </div>
+     <div class='field item-tags'>
+      <label for='tags'>Tags</label>
+      <textarea class='text required'
+                 name='tags'
+             tabindex='4'><?= $this->postInfo['tags'] ?></textarea>
+     </div>
+     <br class='clear' />
+    </div><!-- item-data } -->
+
+    <div class='buttons'>
+     <button name='submit' tabindex='5'>Save</button>
+     <button name='cancel' tabindex='6'>Cancel</button>
+     <br class='clear' />
+    </div>
+   </form><!-- form } -->

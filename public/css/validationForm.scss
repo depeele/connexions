@@ -31,9 +31,37 @@
     }
   }
   .userInput {
-    padding: 1em;
+    position: relative;
+    padding:  1em;
+    z-index:  1;
     //background-color: #eef
     @include corners(10px);
+    .item-status {
+      padding:  0 0.5em 0 0;
+    }
+    .item-data {
+      //width:    30em + 96px;
+      //width:    38em;
+      .item-name {
+        padding-bottom: 0;
+        input {
+          width:        22em;
+        }
+        .ui-field-info {
+          width:  (22em - 1em) * 1.135;
+        }
+      }
+      .item-url {
+        padding-bottom: 0;
+        margin-left:    1em;
+        .text {
+          width:  29em;
+        }
+        .ui-field-info {
+          width:  (29em - 1em) * 1.135;
+        }
+      }
+    }
     .field {
       padding-bottom: 1em;
       label {
@@ -43,6 +71,7 @@
         width: 30em;
       }
       .ui-field-info {
+        width:        (30em - 1.25em) * 1.135;
         height:       1.25em;
         font-size:    0.9em;
         padding-left: 1.25em;
@@ -80,49 +109,32 @@
         }
       }
     }
-    .buttons {
-      position: relative;
-      text-align: right;
-      input, label, button {
-        position: relative;
-        display: inline;
-        cursor: pointer;
+    .userRating {
+      position: absolute;
+      z-index:  2;
+      right:    0;
+      display:  block;
+      padding:  0;
+      // Accomadate a wrapped label
+      height:   32px;
+      width:    96px;
+      //width: 160px;
+      label {
+        display: none;
+        //display: block;
+        //float: right;
+        //padding: 2px 0 0 0.25em;
+        //width: 2em;
+        //color: $linkColor;
       }
     }
-    .personalize {
-      width: 100%;
-      padding-top: 1em;
-      .field {
-        display: block;
-        float: left;
-        padding: 0 0.5em 0 0;
-        label {
-          display: block;
-          float: left;
-        }
-      }
-      .userRating {
-        display: block;
-        float: left;
-        padding: 0 2.5em 0 0;
-        // Accomadate a wrapped label
-        height: 32px;
-        width: 160px;
-        label {
-          display: block;
-          float: right;
-          padding: 2px 0 0 0.25em;
-          width: 2em;
-          color: $linkColor;
-        }
-      }
-      .favorite,.private {
-        input {
-          width: 0;
-          height: 0;
-          margin: 0;
-          padding: 0;
-        }
+    .favorite,.private {
+      padding-bottom: 0.2em;
+      input {
+        width: 0;
+        height: 0;
+        margin: 0;
+        padding: 0;
       }
       // checkbox styling
       .checkbox {
@@ -133,6 +145,19 @@
         .ui-stars-wrapper {
           float: left;
         }
+      }
+    }
+    .buttons {
+      position:     relative;
+      text-align:   right;
+      width:        100%;
+      padding-left: 2em;
+      padding-top:  1em;
+      clear:        both;
+      input, label, button {
+        position: relative;
+        display: inline;
+        cursor: pointer;
       }
     }
     .formError {

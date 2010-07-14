@@ -168,6 +168,25 @@
   }
 }
 
+.ui-autocomplete {
+  .ui-menu-item {
+    a {
+      position: relative;
+      display:  block;
+      .name {
+      }
+      .count {
+        position:     absolute;
+        top:          0.4em;
+        right:        0.4em;
+
+        font-size:    0.8em;
+        font-weight:  normal;
+      }
+    }
+  }
+}
+
 .rightCol {
   .ui-tabs {
     border-right: none;
