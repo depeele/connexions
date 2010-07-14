@@ -409,14 +409,29 @@ class View_Helper_HtmlBookmark extends View_Helper_Bookmark
 
         if ($this->_isOwner)
         {
-            $html .= sprintf( "<a class='item-edit'   href='%s'>EDIT</a> | "
-                             ."<a class='item-delete' href='%s'>DELETE</a>",
+            $editUrl = $this->view->url(array('action' => 'post'))
+                     .  '?url='
+                     .          urlencode($this->_bookmark->item->url);
+                    /*
+                     .  '?itemId='. $this->_bookmark->itemId;
+
+                     .  '?url='
+                     .          urlencode($this->_bookmark->item->url);
+
                             $this->view->url(array(
                                     'action' => 'itemEdit',
                                     'item'   =>
                                         $this->_bookmark->user->userId
                                         . '.'. $this->_bookmark->itemId)),
-                            $this->view->url(array(
+                    // */
+
+            $html .= sprintf( "<a class='item-edit'   href='%s' "
+                             .                     "target='_blank'>EDIT</a>"
+                             .  " | "
+                             ."<a class='item-delete' href='%s' "
+                              .                    "target='_blank'>DELETE</a>",
+                             $editUrl,
+                             $this->view->url(array(
                                     'action' => 'itemDelete',
                                     'item'   =>
                                         $this->_bookmark->user->userId
@@ -434,7 +449,8 @@ class View_Helper_HtmlBookmark extends View_Helper_Bookmark
                      .  '&tags='
                      .          urlencode(''.$this->_bookmark->tags);
 
-            $html .= sprintf ( "<a class='item-save'   href='%s'>SAVE</a>",
+            $html .= sprintf ( "<a class='item-save'  href='%s' "
+                              .                    "target='_blank'>SAVE</a>",
                               $saveUrl);
         }
 

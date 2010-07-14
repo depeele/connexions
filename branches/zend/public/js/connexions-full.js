@@ -3258,6 +3258,8 @@ $.widget("connexions.bookmark", {
 
         // Handle item-edit
         var _edit_click  = function(e) {
+            return;
+
             e.preventDefault();
             e.stopPropagation();
 
@@ -3280,13 +3282,36 @@ $.widget("connexions.bookmark", {
 
         // Handle save-delete
         var _save_click  = function(e) {
+            return;
+
+
+            var formUrl;
+
+            if (self.options.enabled === true)
+            {
+                // Popup a dialog with a post form for this item.
+                try
+                {
+                    formUrl = $.registry('urls').base +'/post'
+                            +       '?format=partial'
+                            +       '&url='+ opts.url;
+                }
+                catch(e)
+                {
+                    // return and let the click propagate
+                    return;
+                }
+            }
+
             e.preventDefault();
             e.stopPropagation();
 
-            if (self.options.enabled !== true)
-            {
-                return;
-            }
+            $.get(formUrl,
+                  function(data) {
+                    self._dialog_save(data);
+                  });
+
+
         };
 
         /**********************************************************************
@@ -3305,6 +3330,30 @@ $.widget("connexions.bookmark", {
         self.$edit.bind('click.bookmark',       _edit_click);
         self.$delete.bind('click.bookmark',     _delete_click);
         self.$save.bind('click.bookmark',       _save_click);
+    },
+
+    _dialog_save: function(html)
+    {
+        html = '<div class="ui-validation-form">'
+             +  '<div class="userInput lastUnit">'
+             +   html
+             +  '</div>'
+             + '</div>';
+
+        var $form   = $(html);
+
+        $form.find('form').bookmarkPost();
+
+        $form.dialog({
+            autoOpen:   true,
+            height:     350,
+            width:      450,
+            modal:      true,
+            close: function() {
+                //allFields.val('').removeClass('ui-state-error');
+            }
+        });
+
     },
 
     _setState: function()
