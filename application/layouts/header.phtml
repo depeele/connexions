@@ -47,8 +47,8 @@ $jQuery->addJavascriptFile($this->baseurl('js/connexions-full.js'));
 $jQuery->javascriptCaptureStart();
 ?>
 (function ($) {
-    $.registry("api",
-               <?= json_encode($config->api->toArray()) ?>);
+    $.registry("api",  <?= json_encode($config->api->toArray()) ?>);
+    $.registry("urls", <?= json_encode($config->urls->toArray()) ?>);
  }(jQuery));
 
 <?php
@@ -92,9 +92,7 @@ $jQuery->setVersion('1.4.2')
        ->setUiVersion('1.8.0')
        ->enable()
        ->uiEnable()
-       ->addOnLoad('doc_pngFix();')
        ->addOnLoad('body_initHandlers();')
-       ->addOnLoad('search_initHandlers();')
        ->javascriptCaptureStart();
   ?>
 
@@ -116,7 +114,7 @@ function preloadImages()
     }
 }
 
-// Preload images that we use everywhere.
+// Immediately Preload images that we use everywhere.
 preloadImages('<?= $baseUrl ?>images/logo.gif',
               '<?= $baseUrl ?>images/logo-spinner.gif',
               '<?= $baseUrl ?>css/sprites/connexions.gif');
@@ -142,6 +140,8 @@ function doc_pngFix()
  */
 function body_initHandlers()
 {
+    doc_pngFix();
+
     // Create a ui.notify widget
     $.notify = function(vars, opts, template) {
         $('#notifications').notify('create', template, vars, opts);
@@ -191,17 +191,8 @@ function body_initHandlers()
                         $(this).removeClass('ui-state-hover');
                     });
     }
-}
 
-/************************************************
- * Initialize the search form handlers
- *
- */
-function search_initHandlers()
-{
     $('#search').search();
-
-    return;
 }
   <?php
 $jQuery->javascriptCaptureEnd();

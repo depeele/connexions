@@ -13,7 +13,7 @@ class PostController extends Connexions_Controller_Action
     public  $dependencies = array('db','layout');
 
     public      $contexts   = array(
-                                'index' => array('json'),
+                                'index' => array('json', 'partial'),
                               );
 
     public function init()
