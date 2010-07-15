@@ -197,6 +197,11 @@ $navBorder: unquote("1px dotted") $navColorBorder;
     input.ui-state-valid,input.ui-state-invalid {
       color:  $fieldTextColor;
     }
+    label.ui-input-over {
+      // Adjust for the fact that the input box this label will be over has no
+      // padding.
+      top:    0.3em;
+    }
   }
   .focus {
     color: black;
