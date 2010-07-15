@@ -287,6 +287,7 @@ a:visited { color: #005a9c; }
 #search .searchInput { border: 0; color: #999999; }
 #search .searchInput input { border: none; height: 1.5em; margin: 0; padding: 0 23px 0 2px; width: 170px; font-weight: normal; }
 #search .searchInput input.ui-state-valid, #search .searchInput input.ui-state-invalid { color: #555555; }
+#search .searchInput label.ui-input-over { top: 0.3em; }
 #search .focus { color: black; }
 #search .submit { display: block; position: absolute; top: 0.25em; left: 149px; width: 23px; padding: 0; border: 0; border-left: 1px dotted #999999; background-color: transparent; cursor: pointer; z-index: 101; }
 #search .choices .list { top: 1.933em; left: -15px; }
