@@ -86,7 +86,7 @@ $.widget("ui.checkbox", {
         {
             self.$label = $('label[for='+ id +']');
         }
-        if ((! self.$label) && name)
+        if ( ((! self.$label) || (self.$label.length < 1)) && name)
         {
             self.$label = $('label[for='+ name +']');
         }

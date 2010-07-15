@@ -114,10 +114,11 @@ $.widget("connexions.bookmarkPost", {
     /** @brief  Initialize a new instance.
      *
      *  @triggers:
-     *      'enabled.bookmarkPost'
-     *      'disabled.bookmarkPost'
-     *      'saved.bookmarkPost'
-     *      'canceled.bookmarkPost'
+     *      'enabled'
+     *      'disabled'
+     *      'saved'
+     *      'canceled'
+     *      'complete'
      */
     _create: function()
     {
@@ -353,6 +354,7 @@ $.widget("connexions.bookmarkPost", {
 
             // :TODO: "Cancel" notification
             self._trigger('canceled', null, data);
+            self._trigger('complete');
         };
 
         var _validation_change  = function(e, data) {
@@ -473,6 +475,8 @@ $.widget("connexions.bookmarkPost", {
         }
         if (nonEmpty !== true)
         {
+            // Nothing to save.
+            self._trigger('complete');
             return;
         }
 
@@ -537,7 +541,8 @@ $.widget("connexions.bookmarkPost", {
                 self._setFormFromState();
 
                 // "Save" notification
-                self._trigger('saved', null, data.result);
+                self._trigger('saved',    null, data.result);
+                self._trigger('complete');
             },
             error:      function(req, textStatus, err) {
                 self._status(false,

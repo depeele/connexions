@@ -630,7 +630,7 @@ abstract class Connexions_Model
      */
     public function delete()
     {
-        return $this->getMapper()->delete( $this );
+        $this->getMapper()->delete( $this );
     }
 
     /*********************************************************************

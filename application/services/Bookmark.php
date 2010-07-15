@@ -694,6 +694,72 @@ class Service_Bookmark extends Connexions_Service
         return $bookmark;
     }
 
+    /** @brief  Delete a bookmark.
+     *  @param  id          Identification value(s) (string, integer, array).
+     *                      MAY be an associative array that specifically
+     *                      identifies attribute/value pairs.
+     *                      For a Model_Bookmark, there are a few special
+     *                      attributes supported:
+     *                          1) The user/owner may be identified in one of
+     *                             three ways:
+     *                              - 'user'   as a  Model_User instance;
+     *                              - 'userId' as an integer identifier;
+     *                              - 'userId' as a  string user-name;
+     *
+     *                          2) The referenced Item may be identified in one
+     *                             of seven ways:
+     *                              - 'item'        as a  Model_Item instance;
+     *                              - 'itemId'      as an integer identifier;
+     *                              - 'itemId'      as a  string url-hash;
+     *                              - 'itemUrlHash' as a  string url-hash;
+     *                              - 'urlHash'     as a  string url-hash;
+     *                              - 'itemUrl'     as a  string url;
+     *                              - 'url'         as a  string url;
+     *
+     *  @return void
+     */
+    public function delete($id)
+    {
+        // /*
+        Connexions::log("Service_Bookmark::delete(): id[ %s ]",
+                        Connexions::varExport($id));
+        // */
+
+        /* So we can FAIL if the given userId is NOT the current authenticated
+         * user's id without leaking whether or not the bookmark exists, we
+         * first, attempt to normalize the incoming bookmark id.
+         */
+        $id = $this->_mapper->normalizeId($id);
+
+        /* If the bookmark's userId != the current authenticated userId,
+         * FAIL.
+         */
+        if (empty($id['userId']))
+        {
+            $id['userId'] = $this->_curUser()->userId;
+        }
+        else if ($id['userId'] !== $this->_curUser()->userId)
+        {
+            throw new Exception("Cannot delete bookmarks of/for others");
+        }
+
+        $bookmark = $this->find($id);
+
+        // If the bookmark wasn't found, FAIL
+        if (! $bookmark)
+        {
+            throw new Exception('Cannot locate bookmark [ '
+                                . Connexions::varExport($id) .' ]');
+        }
+
+        // /*
+        Connexions::log("Service_Bookmark::delete(): bokmark [ %s ]",
+                        $bookmark->debugDump());
+        // */
+
+        $bookmark->delete();
+    }
+
     /*************************************************************************
      * Protected helpers
      *

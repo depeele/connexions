@@ -209,4 +209,33 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
                                        $rating, $isFavorite, $isPrivate,
                                        $tags, $url);
     }
+
+    /** @brief  Delete a bookmark.
+     *  @param  id          Identification value(s) (string, integer, array).
+     *                      MAY be an associative array that specifically
+     *                      identifies attribute/value pairs.
+     *                      For a Model_Bookmark, there are a few special
+     *                      attributes supported:
+     *                          1) The user/owner may be identified in one of
+     *                             three ways:
+     *                              - 'user'   as a  Model_User instance;
+     *                              - 'userId' as an integer identifier;
+     *                              - 'userId' as a  string user-name;
+     *
+     *                          2) The referenced Item may be identified in one
+     *                             of seven ways:
+     *                              - 'item'        as a  Model_Item instance;
+     *                              - 'itemId'      as an integer identifier;
+     *                              - 'itemId'      as a  string url-hash;
+     *                              - 'itemUrlHash' as a  string url-hash;
+     *                              - 'urlHash'     as a  string url-hash;
+     *                              - 'itemUrl'     as a  string url;
+     *                              - 'url'         as a  string url;
+     *
+     *  @return void
+     */
+    public function delete($id)
+    {
+        return $this->_service->delete($id);
+    }
 }

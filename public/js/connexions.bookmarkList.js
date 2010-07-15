@@ -62,7 +62,12 @@ $.widget("connexions.bookmarkList", {
         self.$headers = self.element.find('.groupHeader .groupType');
 
 
-        self.$bookmarks.bookmark();
+        self.$bookmarks.bookmark({
+            'deleted': function(e, data) {
+                // Remove this bookmark
+                self._bookmarkDeleted( $(this) );
+            }
+        });
 
         self.$headers
                 .fadeTo(100, opts.dimOpacity)
@@ -85,6 +90,40 @@ $.widget("connexions.bookmarkList", {
     {
         var self    = this;
         var opts    = self.options;
+    },
+
+    _bookmarkDeleted: function($bookmark)
+    {
+        /* Remove the given bookmark, also removing the group header if this
+         * bookmark is the last in the group.
+         */
+        var $item       = $bookmark.parent('.item');
+
+        /* If this is the last bookmark in the group, the groupHeader will be
+         * the prevous element and the next element will NOT be another
+         * 'li.item'
+         */
+        var $group      = $item.prev('.groupHeader');
+        var $next       = $item.next();
+
+        // Slide the bookmark up and then the containing 'li.item'
+        $bookmark.slideUp('fast', function() {
+            $item.slideUp('normal', function() {
+                // Destroy the widget and remove the containing 'li.item'
+                $bookmark.bookmark('destroy');
+                $item.remove();
+
+                if (($group.length > 0) && (! $next.hasClass('item')) )
+                {
+                    /* There are no more bookmarks in the group, so remove the
+                     * group header
+                     */
+                    $group.slideUp('normal', function() {
+                        $group.remove();
+                    });
+                }
+            });
+        });
     },
 
     /************************

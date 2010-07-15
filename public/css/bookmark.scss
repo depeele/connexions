@@ -242,17 +242,20 @@ $displaySortOffset: 5px;
       }
       // Item controls: edit, delete, save
       .control {
-        float: right;
-        padding: 0;
-        font-size: 0.65em;
-        border: 0;
-        padding: 0 0 0 2em;
-        margin: 0;
-        font-weight: normal;
-        white-space: pre;
-        z-index: 3;
-        color: $controlColor;
-        visibility: hidden;
+        float:        right;
+        font-size:    0.65em;
+        font-weight:  normal;
+
+        border:       0;
+        padding:      0;
+        margin:       0 0 0 2em;  /* margin vs padding for .confirm width */
+
+        white-space:  pre;
+
+        color:        $controlColor;
+
+        visibility:   hidden;
+        z-index:      3;
         a {
           display: inline;
           font-weight: normal;
@@ -263,6 +266,20 @@ $displaySortOffset: 5px;
           background-color: $linkColor;
           color: $pageColorBackground;
           text-decoration: none;
+        }
+        .confirm {
+          text-align:       center;
+
+          color:            $confirmColor;
+          background-color: $pageColorBackground;
+
+          top:              0;
+          position:         absolute;
+          width:            100%;
+
+          button {
+            width:      3.5em;
+          }
         }
       }
     }
@@ -304,9 +321,9 @@ $displaySortOffset: 5px;
   .minimized {
     clear: left;
     .control {
-      float: right;
-      padding: 0;
-      font-size: 0.9em;
+      float:      right;
+      padding:    0;
+      font-size:  0.9em;
     }
     .status {
       display: none;
