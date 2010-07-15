@@ -447,7 +447,8 @@ class View_Helper_HtmlBookmark extends View_Helper_Bookmark
                      .  '&description='
                      .          urlencode($this->_bookmark->description)
                      .  '&tags='
-                     .          urlencode(''.$this->_bookmark->tags);
+                     .          urlencode(''.$this->_bookmark->tags)
+                     .  '&mode=post';
 
             $html .= sprintf ( "<a class='item-save'  href='%s' "
                               .                    "target='_blank'>SAVE</a>",

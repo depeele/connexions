@@ -16,18 +16,19 @@ connexions.css: main.scss		\
     		mixins.scss		\
 		colors.scss		\
 		sizes.scss		\
-		content.scss		\
-		grids.scss		\
 		libraries.scss		\
-		pagination.scss		\
-		itemScope.scss		\
-		displayOptions.scss	\
+		template.scss		\
+		grids.scss		\
+		content.scss		\
 		sprites.scss		\
 		tabs.scss		\
-		tagCloud.scss		\
-		template.scss		\
 		ui-form.scss		\
-		themes/default/jquery-ui.css
+		tagCloud.scss		\
+		itemScope.scss		\
+		pagination.scss		\
+		displayOptions.scss	\
+		ui.notify.scss		\
+		validationForm.scss
 	sass -t compact main.scss:connexions.css
 
 bookmarks.css: mixins.scss bookmarks.scss bookmark.scss \

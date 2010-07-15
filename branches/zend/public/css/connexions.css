@@ -304,7 +304,7 @@ a:visited { color: #005a9c; }
 .ui-form .ui-button { cursor: pointer; }
 .ui-form .ui-state-valid { color: #667e32; }
 .ui-form .ui-state-invalid { color: #cd0a0a; }
-.ui-form .ui-field-status { font-size: 0.75em; padding: 0 0 0 1em; }
+.ui-form .ui-field-status { padding: 0 0 0 1em; }
 .ui-form .ui-dropDown { position: relative; padding-right: 16px; }
 .ui-form .ui-dropDown ul { display: none; position: absolute; top: 1.5em; right: 0; padding: 2px; z-index: 10; }
 .ui-form .ui-dropDown ul li { padding: 2px; display: block; }
@@ -495,19 +495,17 @@ a:visited { color: #005a9c; }
 .ui-validation-form .userInput .item-status { padding: 0 0.5em 0 0; }
 .ui-validation-form .userInput .item-data .item-name { padding-bottom: 0; }
 .ui-validation-form .userInput .item-data .item-name input { width: 22em; }
-.ui-validation-form .userInput .item-data .item-name .ui-field-info { width: 23.835em; }
 .ui-validation-form .userInput .item-data .item-url { padding-bottom: 0; margin-left: 1em; }
 .ui-validation-form .userInput .item-data .item-url .text { width: 29em; }
-.ui-validation-form .userInput .item-data .item-url .ui-field-info { width: 31.78em; }
-.ui-validation-form .userInput .field { padding-bottom: 1em; }
+.ui-validation-form .userInput .field { padding-bottom: 0.25em; }
 .ui-validation-form .userInput .field label { color: #999999; }
 .ui-validation-form .userInput .field .text { width: 30em; }
-.ui-validation-form .userInput .field .ui-field-info { width: 32.631em; height: 1.25em; font-size: 0.9em; padding-left: 1.25em; opacity: 0.5; filter: alpha(opacity=50); -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=50)'; -khtml-opacity: 0.5; -moz-opacity: 0.5; }
+.ui-validation-form .userInput .field .ui-field-info { height: 1.25em; font-size: 0.9em; padding-left: 1.25em; opacity: 0.75; filter: alpha(opacity=75); -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=75)'; -khtml-opacity: 0.75; -moz-opacity: 0.75; }
 .ui-validation-form .userInput .field .ui-field-info .ui-field-status { float: left; }
 .ui-validation-form .userInput .field .ui-field-info .ui-field-requirements { float: right; color: #999999; text-align: right; }
 .ui-validation-form .userInput .click-to-edit label { display: none; }
-.ui-validation-form .userInput .click-to-edit input { border-color: transparent; color: #aaaaaa; background-color: white; background-image: none; }
-.ui-validation-form .userInput .click-to-edit input:focus { border-color: #aaaaaa; color: black; }
+.ui-validation-form .userInput .click-to-edit input { color: #aaaaaa; border-color: white; /* transparent */ background-color: white; background-image: none; }
+.ui-validation-form .userInput .click-to-edit input:focus { color: #555555; border-color: #aaaaaa; }
 .ui-validation-form .userInput .click-to-edit .ui-field-info { visibility: hidden; }
 .ui-validation-form .userInput .click-to-edit:hover .ui-field-info { visibility: visible; }
 .ui-validation-form .userInput .userRating { position: absolute; z-index: 2; right: 0; display: block; padding: 0; height: 32px; width: 96px; }
@@ -516,7 +514,7 @@ a:visited { color: #005a9c; }
 .ui-validation-form .userInput .favorite input, .ui-validation-form .userInput .private input { width: 0; height: 0; margin: 0; padding: 0; }
 .ui-validation-form .userInput .favorite .checkbox, .ui-validation-form .userInput .private .checkbox { position: relative; display: inline; cursor: pointer; border: none; }
 .ui-validation-form .userInput .favorite .checkbox .ui-stars-wrapper, .ui-validation-form .userInput .private .checkbox .ui-stars-wrapper { float: left; }
-.ui-validation-form .userInput .buttons { position: relative; text-align: right; width: 100%; padding-left: 2em; padding-top: 1em; clear: both; }
+.ui-validation-form .userInput .buttons { position: relative; text-align: right; width: 100%; padding-left: 2em; padding-top: 0; clear: both; }
 .ui-validation-form .userInput .buttons input, .ui-validation-form .userInput .buttons label, .ui-validation-form .userInput .buttons button { position: relative; display: inline; cursor: pointer; }
 .ui-validation-form .userInput .formError { padding: 0; font-weight: bold; text-align: left; color: #cd0a0a; }
 

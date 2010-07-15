@@ -9,7 +9,7 @@
 .ui-form .ui-button { cursor: pointer; }
 .ui-form .ui-state-valid { color: #667e32; }
 .ui-form .ui-state-invalid { color: #cd0a0a; }
-.ui-form .ui-field-status { font-size: 0.75em; padding: 0 0 0 1em; }
+.ui-form .ui-field-status { padding: 0 0 0 1em; }
 .ui-form .ui-dropDown { position: relative; padding-right: 16px; }
 .ui-form .ui-dropDown ul { display: none; position: absolute; top: 1.5em; right: 0; padding: 2px; z-index: 10; }
 .ui-form .ui-dropDown ul li { padding: 2px; display: block; }

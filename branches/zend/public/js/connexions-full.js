@@ -4498,6 +4498,15 @@ $.widget("connexions.bookmarkPost", {
                             .text('comma-separated, 30 characters per tag - '
                                   + 'required');
 
+        /* (Re)size all 'ui-field-info' elements to match their corresponding
+         * input field
+         */
+        self.$required.each(function() {
+            var $input = $(this);
+
+            $input.next().css('width', $input.css('width'));
+        });
+
         /********************************
          * Initialize our state and bind
          * to interesting events.
