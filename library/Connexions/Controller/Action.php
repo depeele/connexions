@@ -10,13 +10,38 @@ class Connexions_Controller_Action extends Zend_Controller_Action
 {
     protected   $_request   = null;
     protected   $_viewer    = null;
+    protected   $_format    = 'html';
 
     public function init()
     {
         /* Initialize action controller here */
         $this->_viewer  =& Zend_Registry::get('user');
         $this->_request =& $this->getRequest();
+
+        if (isset($this->contexts))
+        {
+            // Initialize context switching (via $this->contexts)
+            $cs = $this->_helper->contextSwitch();
+            $cs->initContext();
+
+            $format =  $cs->getCurrentContext();
+            if (empty($format))
+                $format = $this->_request->getParam('format', 'html');
+
+            $this->_format = $format;
+
+            /*
+            Connexions::log("Connexions_Controller_Action::init(): "
+                            . "format[ %s ]",
+                            $format);
+            // */
+        }
     }
+
+    /*************************************************************************
+     * Protected Helpers
+     *
+     */
 
     /** @brief  Retrieve a Connexions_Service instance.
      *  @param  name    The name of the desired service.

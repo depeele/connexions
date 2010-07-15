@@ -14,35 +14,18 @@ class IndexController extends Connexions_Controller_Action
 
     protected   $_url       = null;
     protected   $_owner     = null;
+    protected   $_tags      = null;
     protected   $_bookmarks = null;
 
     protected   $_offset    = 0;
     protected   $_count     = null;
     protected   $_sortBy    = null;
     protected   $_sortOrder = null;
-    protected   $_format    = 'html';
 
     public      $contexts   = array(
                                 'index' => array('partial', 'json',
                                                  'rss',     'atom'),
                               );
-
-    public function init()
-    {
-        parent::init();
-
-        // Initialize context switching (via $this->contexts)
-        $cs = $this->_helper->contextSwitch();
-        $cs->initContext();
-
-        $format =  $cs->getCurrentContext();
-        if (empty($format))
-            $format = $this->_request->getParam('format', 'html');
-
-        //Connexions::log("IndexController::init(): [ %s ]", $format);
-
-        $this->_format = $format;
-    }
 
     /** @brief  Index/Get/Read/View action.
      *
@@ -119,8 +102,10 @@ class IndexController extends Connexions_Controller_Action
             }
         }
 
+        /*
         Connexions::log("IndexController::indexAction: reqTags[ %s ]",
                         $reqTags);
+        // */
 
         // Parse the incoming request tags
         $this->_tags = $this->service('Tag')->csList2set($reqTags);
