@@ -177,8 +177,9 @@ $.widget("connexions.bookmark", {
     /** @brief  Initialize a new instance.
      *
      *  @triggers:
-     *      'enabled.bookmark'
-     *      'disabled.bookmark'
+     *      'enabled'
+     *      'disabled'
+     *      'deleted'
      */
     _create: function()
     {
@@ -278,225 +279,119 @@ $.widget("connexions.bookmark", {
             e.preventDefault();
             e.stopPropagation();
 
-            $.log('connexions.bookmark::_update_item('+ data +')');
-
-            if ((self.options.enabled !== true) || (self._squelch === true))
-            {
-                return;
-            }
-
-            // Gather the current data about this item.
-            var nonEmpty    = false;
-            var params      = {
-                id: { userId: opts.userId, itemId: opts.itemId }
-            };
-
-            if (self.$name.text() !== opts.name)
-            {
-                params.name = self.$name.text();
-                nonEmpty    = true;
-            }
-
-            if (self.$description.text() !== opts.description)
-            {
-                params.description = self.$description.text();
-                nonEmpty           = true;
-            }
-
-            if ( (self.$tags.length > 0) &&
-                 (self.$tags.text() !== opts.tags) )
-            {
-                params.tags = self.$tags.text();
-                nonEmpty    = true;
-            }
-
-            if (self.$favorite.checkbox('isChecked') !== opts.isFavorite)
-            {
-                params.isFavorite = self.$favorite.checkbox('isChecked');
-                nonEmpty          = true;
-            }
-
-            if (self.$private.checkbox('isChecked') !== opts.isPrivate)
-            {
-                params.isPrivate = self.$private.checkbox('isChecked');
-                nonEmpty         = true;
-            }
-
-            if ( (self.$rating.length > 0) &&
-                 (self.$rating.stars('value') !== opts.rating) )
-            {
-                params.rating = self.$rating.stars('value');
-                nonEmpty      = true;
-            }
-
-            if (self.$url.attr('href') !== opts.url)
-            {
-                // The URL has changed -- pass it in
-                params.url = self.$url.attr('href');
-                nonEmpty   = true;
-            }
-
-            if (nonEmpty !== true)
-            {
-                return;
-            }
-
-            /* If there is a 'change' callback, invoke it.
-             *
-             * If it returns false, terminate the change.
-             */
-            if ($.isFunction(self.options.change))
-            {
-                if (! self.options.change(params))
-                {
-                    // Rollback state.
-                    self._resetState();
-
-                    return;
-                }
-            }
-
-            var rpc = {
-                version: opts.jsonRpc.version,
-                id:      opts.rpcId++,
-                method:  'bookmark.update',
-                params:  params
-            };
-
-            // Perform a JSON-RPC call to update this item
-            $.ajax({
-                url:        opts.jsonRpc.target,
-                type:       opts.jsonRpc.transport,
-                dataType:   'json',
-                data:       JSON.stringify(rpc),
-                success:    function(data, textStatus, req) {
-                    if (data.error !== null)
-                    {
-                        $.notify({
-                            title: 'Bookmark update failed',
-                            text:  '<p class="error">'
-                                 +   data.error.message
-                                 + '</p>'
-                        });
-
-                        // rollback state
-                        self._resetState();
-                        return;
-                    }
-
-                    if (data.result === null)
-                    {
-                        return;
-                    }
-
-                    self._squelch = true;
-
-                    // Include the updated data
-                    self.$itemId.val(           data.result.itemId );
-                    self.$name.text(            data.result.name );
-                    self.$description.text(     data.result.description );
-
-                    self.$tags.text(            data.result.tags );
-
-                    self.$rating.stars('select',data.result.rating);
-
-                    self.$favorite.checkbox(    (data.result.isFavorite
-                                                    ? 'check'
-                                                    : 'uncheck') );
-                    self.$private.checkbox(     (data.result.isPrivate
-                                                    ? 'check'
-                                                    : 'uncheck') );
-                    self.$url.attr('href',      data.result.url);
-
-                    // Alter our parent to reflect 'isPrivate'
-                    var parent  = self.element.parent();
-                    if (data.result.isPrivate)
-                    {
-                        parent.addClass('private');
-                    }
-                    else
-                    {
-                        parent.removeClass('private');
-                    }
-                    self._squelch = false;
-
-                    // set state
-                    self._setState();
-                },
-                error:      function(req, textStatus, err) {
-                    $.notify({
-                        title: 'Bookmark update failed',
-                        text:  '<p class="error">'
-                             +   textStatus
-                             + '</p>'
-                    });
-
-                    // rollback state
-                    self._resetState();
-                },
-                complete:   function(req, textStatus) {
-                }
-             });
-
-            return false;
+            self._performUpdate();
         };
 
         // Handle item-edit
         var _edit_click  = function(e) {
-            return;
-
-            e.preventDefault();
-            e.stopPropagation();
-
-            if (self.options.enabled !== true)
-            {
-                return;
-            }
-        };
-
-        // Handle item-delete
-        var _delete_click  = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            if (self.options.enabled !== true)
-            {
-                return;
-            }
-        };
-
-        // Handle save-delete
-        var _save_click  = function(e) {
-            return;
-
-
-            var formUrl;
-
             if (self.options.enabled === true)
             {
                 // Popup a dialog with a post form for this item.
+                var formUrl;
                 try
                 {
                     formUrl = $.registry('urls').base +'/post'
                             +       '?format=partial'
                             +       '&url='+ opts.url;
                 }
-                catch(e)
+                catch(err)
                 {
                     // return and let the click propagate
                     return;
                 }
+
+                $.get(formUrl,
+                      function(data) {
+                        self._showBookmarkDialog('Edit', data);
+                      });
             }
 
             e.preventDefault();
             e.stopPropagation();
+        };
 
-            $.get(formUrl,
-                  function(data) {
-                    self._dialog_save(data);
-                  });
+        // Handle item-delete
+        var _delete_click  = function(e) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            e.stopPropagation();
 
+            if (self.options.enabled !== true)
+            {
+                return;
+            }
 
+            // Present a confirmation dialog and delete.
+            var html    = '<div class="confirm">'
+                        /*
+                        +  '<span class="ui-icon ui-icon-alert" '
+                        +        'style="float:left; margin:0 7px 20px 0;">'
+                        +  '</span>'
+                        */
+                        +  'Really delete?<br />'
+                        +  '<button name="yes">Yes</button>'
+                        +  '<button name="no" >No</button>'
+                        + '</div>';
+            var $div    = $(html);
+
+            self.$delete.after( $div );
+            self.$delete.attr('disabled', true);
+
+            $div.find('button[name=yes]').click(function(e) {
+                self.$delete.removeAttr('disabled');
+                $div.remove();
+
+                self._performDelete();
+            });
+            $div.find('button[name=no]').click(function() {
+                self.$delete.removeAttr('disabled');
+                $div.remove();
+            });
+
+            /*
+            $(html).dialog({
+                autoOpen:   true,
+                title:      'Delete?',
+                resizable:  false,
+                modal:      true,
+                buttons: {
+                    'Delete': function() {
+                        $(this).dialog('close');
+                    },
+                    'Cancel': function() {
+                        $(this).dialog('close');
+                    }
+                }
+            });
+            */
+        };
+
+        // Handle save-delete
+        var _save_click  = function(e) {
+            if (self.options.enabled === true)
+            {
+                // Popup a dialog with a post form for this item.
+                var formUrl;
+                try
+                {
+                    formUrl = $.registry('urls').base +'/post'
+                            +       '?format=partial'
+                            +       '&url='+ opts.url;
+                }
+                catch(err)
+                {
+                    // return and let the click propagate
+                    return;
+                }
+
+                $.get(formUrl,
+                      function(data) {
+                        self._showBookmarkDialog('Save', data);
+                      });
+            }
+
+            e.preventDefault();
+            e.stopPropagation();
         };
 
         /**********************************************************************
@@ -517,9 +412,227 @@ $.widget("connexions.bookmark", {
         self.$save.bind('click.bookmark',       _save_click);
     },
 
-    _dialog_save: function(html)
+    _performDelete: function( )
     {
-        html = '<div class="ui-validation-form">'
+        var self    = this;
+        var opts    = self.options;
+
+        if (opts.enabled !== true)
+        {
+            return;
+        }
+
+        var rpc     = {
+            version: opts.jsonRpc.version,
+            id:      opts.rpcId++,
+            method:  'bookmark.delete',
+            params:  { id: { userId: opts.userId, itemId: opts.itemId } }
+        };
+
+        // Perform a JSON-RPC call to update this item
+        $.ajax({
+            url:        opts.jsonRpc.target,
+            type:       opts.jsonRpc.transport,
+            dataType:   'json',
+            data:       JSON.stringify(rpc),
+            success:    function(data, textStatus, req) {
+                if ( (! data) || (data.error !== null))
+                {
+                    $.notify({
+                        title: 'Bookmark delete failed',
+                        text:  '<p class="error">'
+                             +   (data ? data.error.message : '')
+                             + '</p>'
+                    });
+
+                    return;
+                }
+
+                // Trigger a deletion event for our parent
+                self._trigger('deleted');
+            },
+            error:      function(req, textStatus, err) {
+                $.notify({
+                    title: 'Bookmark delete failed',
+                    text:  '<p class="error">'
+                         +   textStatus
+                         + '</p>'
+                });
+            },
+            complete:   function(req, textStatus) {
+            }
+         });
+    },
+
+    _performUpdate: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        if ((opts.enabled !== true) || (self._squelch === true))
+        {
+            return;
+        }
+
+        // Gather the current data about this item.
+        var nonEmpty    = false;
+        var params      = {
+            id: { userId: opts.userId, itemId: opts.itemId }
+        };
+
+        if (self.$name.text() !== opts.name)
+        {
+            params.name = self.$name.text();
+            nonEmpty    = true;
+        }
+
+        if (self.$description.text() !== opts.description)
+        {
+            params.description = self.$description.text();
+            nonEmpty           = true;
+        }
+
+        if ( (self.$tags.length > 0) &&
+             (self.$tags.text() !== opts.tags) )
+        {
+            params.tags = self.$tags.text();
+            nonEmpty    = true;
+        }
+
+        if (self.$favorite.checkbox('isChecked') !== opts.isFavorite)
+        {
+            params.isFavorite = self.$favorite.checkbox('isChecked');
+            nonEmpty          = true;
+        }
+
+        if (self.$private.checkbox('isChecked') !== opts.isPrivate)
+        {
+            params.isPrivate = self.$private.checkbox('isChecked');
+            nonEmpty         = true;
+        }
+
+        if ( (self.$rating.length > 0) &&
+             (self.$rating.stars('value') !== opts.rating) )
+        {
+            params.rating = self.$rating.stars('value');
+            nonEmpty      = true;
+        }
+
+        if (self.$url.attr('href') !== opts.url)
+        {
+            // The URL has changed -- pass it in
+            params.url = self.$url.attr('href');
+            nonEmpty   = true;
+        }
+
+        if (nonEmpty !== true)
+        {
+            return;
+        }
+
+        $.log('connexions.bookmark::_performUpdate()');
+
+        /* If there is a 'change' callback, invoke it.
+         *
+         * If it returns false, terminate the change.
+         */
+        if ($.isFunction(self.options.change))
+        {
+            if (! self.options.change(params))
+            {
+                // Rollback state.
+                self._resetState();
+
+                return;
+            }
+        }
+
+        var rpc = {
+            version: opts.jsonRpc.version,
+            id:      opts.rpcId++,
+            method:  'bookmark.update',
+            params:  params
+        };
+
+        // Perform a JSON-RPC call to update this item
+        $.ajax({
+            url:        opts.jsonRpc.target,
+            type:       opts.jsonRpc.transport,
+            dataType:   'json',
+            data:       JSON.stringify(rpc),
+            success:    function(data, textStatus, req) {
+                if ( (! data) || (data.error !== null))
+                {
+                    $.notify({
+                        title: 'Bookmark update failed',
+                        text:  '<p class="error">'
+                             +   (data ? data.error.message : '')
+                             + '</p>'
+                    });
+
+                    // rollback state
+                    self._resetState();
+                    return;
+                }
+
+                if (data.result === null)
+                {
+                    return;
+                }
+
+                self._squelch = true;
+
+                // Include the updated data
+                self.$itemId.val(           data.result.itemId );
+                self.$name.text(            data.result.name );
+                self.$description.text(     data.result.description );
+
+                self.$tags.text(            data.result.tags );
+
+                self.$rating.stars('select',data.result.rating);
+
+                self.$favorite.checkbox(    (data.result.isFavorite
+                                                ? 'check'
+                                                : 'uncheck') );
+                self.$private.checkbox(     (data.result.isPrivate
+                                                ? 'check'
+                                                : 'uncheck') );
+                self.$url.attr('href',      data.result.url);
+
+                // Alter our parent to reflect 'isPrivate'
+                var parent  = self.element.parent();
+                if (data.result.isPrivate)
+                {
+                    parent.addClass('private');
+                }
+                else
+                {
+                    parent.removeClass('private');
+                }
+                self._squelch = false;
+
+                // set state
+                self._setState();
+            },
+            error:      function(req, textStatus, err) {
+                $.notify({
+                    title: 'Bookmark update failed',
+                    text:  '<p class="error">'
+                         +   textStatus
+                         + '</p>'
+                });
+
+                // rollback state
+                self._resetState();
+            },
+            complete:   function(req, textStatus) {
+            }
+         });
+    },
+
+    _showBookmarkDialog: function(title, html)
+    {
+        html = '<div class="ui-validation-form" style="padding:0;">'
              +  '<div class="userInput lastUnit">'
              +   html
              +  '</div>'
@@ -527,15 +640,23 @@ $.widget("connexions.bookmark", {
 
         var $form   = $(html);
 
-        $form.find('form').bookmarkPost();
+        //$form.find('form').bookmarkPost();
 
         $form.dialog({
             autoOpen:   true,
-            height:     350,
-            width:      450,
+            title:      title +' bookmark',
+            width:      480,
+            resizable:  false,
             modal:      true,
-            close: function() {
-                //allFields.val('').removeClass('ui-state-error');
+            open:       function(event, ui) {
+                $form.find('form').bookmarkPost({
+                    saved:      function(event, data) {
+                        var a   = 1;
+                    },
+                    complete:   function() {
+                        $form.dialog('close');
+                    }
+                });
             }
         });
 
