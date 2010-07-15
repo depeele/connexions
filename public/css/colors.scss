@@ -38,15 +38,15 @@ $highlightTopHeaderColor:     $navColorBackground;
 $highlightTopTagColor:        $navColorSub;
 $highlightTopTagCountColor:   $controlColor;
 
-$validationInputColor:        #aaa;
-$validationFocusColor:        #000;
-$validationFocusBorderColor:  $validationInputColor;
-$validationValidColor:        $successColor;
-
 //!fieldInfoColor             = !validationInputColor
 $fieldInfoColor:      $controlColor;
 $fieldTextColor:      #555;
 $formBackgroundColor: #86c9ef;
+
+$validationInputColor:        #aaa;
+$validationFocusColor:        $fieldTextColor;
+$validationFocusBorderColor:  $validationInputColor;
+$validationValidColor:        $successColor;
 
 $columnHeaderBorderColor: #eee;
 

@@ -1,14 +1,24 @@
 <?php
 if (! @is_array($this->postInfo))
     $this->postInfo = array();
-//$this->postInfo['url'] = 'url://to-edit/';
 
 //$noConflict = Zend_JQuery_View_Helper_JQuery::getJQueryHandler();
 
 $jQuery = $this->jQuery();
 $jQuery->addStylesheet($this->baseUrl('css/post.css'))
-       ->addStylesheet($this->baseUrl('css/validationForm.css'))
+       //->addStylesheet($this->baseUrl('css/validationForm.css'))
        ->addOnLoad('$("#post form").bookmarkPost({statusEl: ".status"});');
+
+if (isset($this->postInfo['itemId']) && ($this->postInfo['mode'] !== 'post'))
+{
+    $verb = 'Update';
+    $adj  = '';
+}
+else
+{
+    $verb = 'Post';
+    $adj  = 'new';
+}
 
 ?>
 <div class="line"><!-- { -->
@@ -18,8 +28,8 @@ $jQuery->addStylesheet($this->baseUrl('css/post.css'))
    <div class='context-bg connexions_sprites bookmark_bg'>
      &nbsp;
    </div>
-   <h1>Post</h1>
-   <p>a new bookmark</p>
+   <h1><?= $verb ?></h1>
+   <p>a <?= $adj ?> bookmark</p>
    <div class='status<?= (@isset($this->error) ? ' error' : '') ?>'>
     <?= (@isset($this->error) ? $this->error : '') ?>
    </div>

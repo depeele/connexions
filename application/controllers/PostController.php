@@ -58,6 +58,7 @@ class PostController extends Connexions_Controller_Action
             'isFavorite'    => $request->getParam('isFavorite',       null),
             'isPrivate'     => $request->getParam('isPrivate',        null),
             'tags'          => trim($request->getParam('tags',        null)),
+            'mode'          => $request->getParam('mode',             null),
         );
         $postInfo = $postIn;
 

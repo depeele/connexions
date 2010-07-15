@@ -47,9 +47,6 @@
         input {
           width:        22em;
         }
-        .ui-field-info {
-          width:  (22em - 1em) * 1.135;
-        }
       }
       .item-url {
         padding-bottom: 0;
@@ -57,13 +54,10 @@
         .text {
           width:  29em;
         }
-        .ui-field-info {
-          width:  (29em - 1em) * 1.135;
-        }
       }
     }
     .field {
-      padding-bottom: 1em;
+      padding-bottom: 0.25em;
       label {
         color: $fieldInfoColor;
       }
@@ -71,11 +65,10 @@
         width: 30em;
       }
       .ui-field-info {
-        width:        (30em - 1.25em) * 1.135;
         height:       1.25em;
         font-size:    0.9em;
         padding-left: 1.25em;
-        @include opacity(50);
+        @include opacity(75);
         .ui-field-status {
           float:      left;
         }
@@ -91,14 +84,14 @@
         display: none;
       }
       input {
-        border-color: transparent;
-        color: $validationInputColor;
+        color:            $validationInputColor;
+        border-color:     $pageColorBackground; /* transparent */
         background-color: $pageColorBackground;
         background-image: none;
       }
       input:focus {
-        border-color: $validationFocusBorderColor;
-        color: $validationFocusColor;
+        color:            $validationFocusColor;
+        border-color:     $validationFocusBorderColor;
       }
       .ui-field-info {
         visibility: hidden;
@@ -152,7 +145,7 @@
       text-align:   right;
       width:        100%;
       padding-left: 2em;
-      padding-top:  1em;
+      padding-top:  0;
       clear:        both;
       input, label, button {
         position: relative;

@@ -6,8 +6,6 @@
 #auth .legend h1 { padding: 0 2em 0 0.2em; font-size: 1.25em; font-weight: bold; }
 #auth .legend p { padding: 0 0 0 0.5em; }
 #auth .legend .status, #auth .legend .ui-field-status { margin-top: 5em; padding: 0.5em; text-align: center; color: #999999; }
-#auth form .field { padding-bottom: 1em; }
 #auth form .field input.text { width: 15em; }
-#auth form .buttons { text-align: right; }
 #auth form input.button { background-color: #59a5d1; border-color: #408bb6; color: white; cursor: pointer; }
 #auth .formError { padding: 1em 0; font-weight: bold; text-align: center; }
