@@ -38,7 +38,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
              ->_commonDb()
              ->_commonAuth();
 
-        // /*
+        /*
         Connexions_Profile::checkpoint('Connexions',
                                        'Bootstrap::_initCommon complete');
         // */
@@ -386,7 +386,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         Zend_Registry::set('db', $db);
         $this->setResource('db', $db);
 
-        Connexions::log('Bootstrap::Database initialized');
+        //Connexions::log('Bootstrap::Database initialized');
 
         return $this;
     }
@@ -408,7 +408,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
          */
         if  ($auth->hasIdentity())
         {
-            Connexions::log("Bootstrap::_commonAuth: Auth has identity...");
+            //Connexions::log("Bootstrap::_commonAuth: Auth has identity...");
+
             $user = $uService->find( $auth->getIdentity() );
             if ($user !== null)
             {
@@ -417,14 +418,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
                 $user->setAuthResult($result);
 
                 // Update the 'lastVisit' time for this user.
-                Connexions::log("Bootstrap::_commonAuth: Update lastVisit...");
-
                 $user->updateLastVisit();
                 $user->save();
             }
         }
 
-        // /*
+        /*
         Connexions::log("Bootstrap::_commonAuth: user is %sNULL",
                         ($user === null ? '' : 'NOT '));
         // */
@@ -445,7 +444,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
              *          - non-backed, unauthenticated anonymous user;
              */
 
-            // /*
+            /*
             Connexions::log("Bootstrap::_commonAuth: create an anonymous user");
             // */
 
@@ -453,7 +452,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             $user = $uService->getAnonymous();
         }
 
-        Connexions::log("Bootstrap::_commonAuth: Add 'user' to registry");
+        //Connexions::log("Bootstrap::_commonAuth: Add 'user' to registry");
 
         /* Make this available via the global Registry and as a Bootstrap
          * Resource.
@@ -469,7 +468,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         Zend_Registry::set('user', $user);
         $this->setResource('user', $user);
 
-        // /*
+        /*
         Connexions_Profile::checkpoint('Connexions',
                                        "Bootstrap::_commonAuth complete: "
                                        .    "user[ %s ], %sauthenticated",

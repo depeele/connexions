@@ -1,0 +1,109 @@
+<?php
+/** @file
+ *
+ *  View script for IndexController::index to render the people portion of the
+ *  sidebar.
+ *
+ *  The Connexions_View_Helper_HtmlItemCloud helper MUST be initialized
+ *  before this view is rendered.
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      owner           The owner of the current item set -- either a string or
+ *                      a Model_User instance;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
+ *      sidebar         An array of settings for the sidebar:
+ */
+
+?>
+  <div class='columnHeader'>
+   <div class='context-bg connexions_sprites user_bg ui-corner-left'>
+    &nbsp;
+   </div>
+   <?php
+    if ($this->owner === '*')
+    {
+        echo "<p>People related to these bookmarks.</p>\n";
+    }
+  ?>
+  </div>
+  <?php
+
+    $htmlSidebar = $this->htmlSidebar( $this->sidebar );
+    $config      = $htmlSidebar->getPane('people');
+
+    /*
+    Connexions::log("index/sidebar-people.phtml: config[ %s ]",
+                    print_r($config, true));
+    // */
+
+    $service = Connexions_Service::factory('Model_User');
+
+    $perPage    = $config['perPage'];
+    $page       = $config['page'];
+    if ($perPage < 1)   $perPage = 100;
+    if ($page    < 1)   $page    = 1;
+
+    $count      = $perPage;
+    $offset     = ($page - 1) * $perPage;
+
+    /* Order by userItem/Bookmark count here so the most used will be in the
+     * limited set.  User-requested sorting will be performed later
+     * (in View_Helper_HtmlItemCloud) before the cloud is rendered.
+     */
+    $fetchOrder = array('userItemCount DESC',
+                        'userCount     DESC',
+                        'itemCount     DESC',
+                        'name          ASC');
+
+    if ($this->owner !== '*')
+    {
+        // Present information about the single user
+        echo $this->partial('user.phtml',
+                            array(
+                                'user'   => $this->owner,
+                                'viewer' => $this->viewer,
+                            ));
+    }
+    else
+    {
+        // Tag-related users
+        /*
+        Connexions::log("sidebar-people.phtml: tag-related [%d..%d]",
+                        $offset, $offset+$count);
+        // */
+        $userSet = $service->fetchByTags($this->tags,
+                                         true,          // exactTags
+                                         $fetchOrder,
+                                         $count,
+                                         $offset );
+
+        /*
+        Connexions::log("sidebar-people.phtml: related by tag(s) [ %s ], "
+                        .   "%d users, [%d..%d], [ %s ]",
+                        $this->tags,
+                        count($userSet),
+                        $offset, $offset+$count,
+                        $userSet);
+
+        foreach ($userSet as $idex => $user)
+        {
+            Connexions::log("sidebar-people.phtml: User %d: '%s' [ %s ]",
+                            $idex,
+                            (is_object($user)
+                                ? get_class($user) : gettype($user)),
+                            $user->name);
+        }
+        // */
+
+        $config['items']    =& $userSet;
+        //$config['selected'] =& $this->tags;
+        $config['itemType'] =  View_Helper_HtmlItemCloud::ITEM_TYPE_USER;
+
+        $htmlItemCloud = $this->htmlItemCloud($config);
+
+        echo $htmlItemCloud->render();
+    }

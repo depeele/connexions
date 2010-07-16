@@ -13,16 +13,16 @@
 .ui-stars-wrapper .ui-stars-cancel-disabled a { background-image: none; }
 .ui-stars-wrapper .ui-stars-star-disabled, .ui-stars-wrapper .ui-stars-cancel-disabled { cursor: default; }
 
-/****** bookmarks.sass ****** */
-.bookmarks .groupHeader { position: relative; background-color: #eeeeff; border-bottom: 1px solid #cccccc; color: #999999; height: 20px; left: -15px; }
-.bookmarks .groupHeader .group { position: relative; background-color: #eeeeff; height: 20px; right: -20px; }
-.bookmarks .groupHeader .date { position: relative; left: -12px; }
-.bookmarks .groupHeader .date .year { position: absolute; left: 1em; top: -0.45em; font-size: 3em; font-weight: bold; color: #ddddff; z-index: 4; }
-.bookmarks .groupHeader .date .dateBox { position: relative; left: -0.25em; font-size: 1em; font-weight: bold; }
-.bookmarks .groupHeader .date .dateBox .month { display: inline; }
-.bookmarks .groupHeader .date .dateBox .day { display: inline; padding: 0 0.25em; }
-.bookmarks .groupHeader .date .dateBox .day-of-week { display: block; position: absolute; font-size: 0.8em; font-weight: bold; z-index: 4; }
-.bookmarks .groupHeader .alpha, .bookmarks .groupHeader .numeric { position: absolute; left: -0.55em; top: -0.45em; font-size: 3em; font-weight: bold; color: #bbbbff; z-index: 0; }
+/****** users.scss ****** */
+.items .groupHeader { position: relative; background-color: #eeeeff; border-bottom: 1px solid #cccccc; color: #999999; height: 20px; left: -15px; }
+.items .groupHeader .group { position: relative; background-color: #eeeeff; height: 20px; right: -20px; }
+.items .groupHeader .date { position: relative; left: -12px; }
+.items .groupHeader .date .year { position: absolute; left: 1em; top: -0.45em; font-size: 3em; font-weight: bold; color: #ddddff; z-index: 4; }
+.items .groupHeader .date .dateBox { position: relative; left: -0.25em; font-size: 1em; font-weight: bold; }
+.items .groupHeader .date .dateBox .month { display: inline; }
+.items .groupHeader .date .dateBox .day { display: inline; padding: 0 0.25em; }
+.items .groupHeader .date .dateBox .day-of-week { display: block; position: absolute; font-size: 0.8em; font-weight: bold; z-index: 4; }
+.items .groupHeader .alpha, .items .groupHeader .numeric { position: absolute; left: -0.55em; top: -0.45em; font-size: 3em; font-weight: bold; color: #bbbbff; z-index: 0; }
 
 .ui-stars-wrapper { display: block; width: 96px; overflow: hidden; }
 .ui-stars-wrapper input.ui-stars-rating { width: 0; height: 0; padding: 0; margin: 0; }

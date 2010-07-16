@@ -3,9 +3,6 @@
  *
  *  View script for IndexController::index to render the main content.
  *
- *  The Connexions_View_Helper_HtmlBookmarks helper MUST be initialized
- *  before this view is rendered.
- *
  *  Incoming members:
  *      url             The full url for the main controller of this page;
  *      owner           The owner of the current item set -- either a string or
@@ -39,14 +36,25 @@
  *                          current bookmark set;
  */
 
-/* Prepare the HTML Bookmarks helper (required here because the Scope Helper
- * needs access to the bookmarks for count)
+Connexions::log("index/index.phtml: begin...");
+
+/* Initialize the HTML Bookmarks helper, needed here because the Scope Helper
+ * needs access to the bookmarks for count.
  */
 $htmlBookmarks = $this->htmlBookmarks( $this->main );
 
+/*
+$bookmarks     = $htmlBookmarks->bookmarks;
+
+Connexions::log("index/index.phtml: paginator with %d bookmarks [ %s ]",
+                count($bookmarks),
+                (is_object($bookmarks)
+                    ? get_class($bookmarks)
+                    : gettype($bookmarks)) );
+// */
+
 
 // Prepare the Html Item Scope helper
-
 if ($this->owner === '*')
 {
     $scopePath = array('Bookmarks' => $this->baseurl('/bookmarks'));

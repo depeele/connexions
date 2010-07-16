@@ -1,8 +1,8 @@
 <?php
 /** @file
  *
- *  View script for IndexController::index to render an JSON version of the
- *  main content.
+ *  View script for IndexController::index to render a Feed (RSS/Atom) version
+ *  of the main content.
  *
  *  Incoming members:
  *      url             The full url for the main controller of this page;
@@ -35,41 +35,18 @@
  *                          current bookmark set;
  *          sortOrder       Indicates the sort order used to retrieve the
  *                          current bookmark set;
+ *          feedType        The type of feed to render
+ *                          (View_Helper_FeedBookmarks::TYPE_*);
  *
- *  Sets the 'data' item of the view for use by Bootstrap::jsonp_post in final
+ *  Sets the 'feed' item of the view for use by Bootstrap::feed_post in final
  *  rendering.
  */
 Connexions_Profile::checkpoint('Connexions',
-                               'IndexView Json rendering beginning');
+                               'IndexView Feed rendering beginning');
 
-/*
-Connexions::log('index/index-json.phtml: main[ %s ]',
-                Connexions::varExport($this->main));
-// */
-
-$helper    = $this->bookmarks( $this->main );
-$bookmarks = $helper->getBookmarks();
-$paginator = $helper->paginator;
-
-/*
-Connexions::log("index/index-json.phtml: paginator with %d bookmarks [ %s ]",
-                count($bookmarks),
-                (is_object($bookmarks)
-                    ? get_class($bookmarks)
-                    : gettype($bookmarks)) );
-// */
-
-$items = array();
-foreach ($paginator as $item)
-{
-    //array_push($items, $item->toArray( ));
-    array_push($items, $item->toArray( array('deep'     => false,
-                                             'public'   => true,
-                                             'dirty'    => false)) );
-}
-
-$this->data = $items;
+// Use the application/views/helpers/FeedBookmarks.php view helper...
+$this->feed = $this->feedBookmarks($this->main)->render();
 
 Connexions_Profile::checkpoint('Connexions',
-                               'IndexView Json rendering COMPLETE');
-
+                               'IndexView Feed rendering COMPLETE, '
+                               . 'feed is class '. get_class($this->feed));

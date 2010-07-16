@@ -6,6 +6,10 @@
  */
 class View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
 {
+    protected   $_user      = null;
+    protected   $_viewer    = null;
+    protected   $_showParts = array();
+
     /** @brief  Generate an HTML view of a single User.
      *  @param  user        The Model_User instance to present.
      *  @param  viewer      The Model_User instance of the current viewer
@@ -29,7 +33,7 @@ class View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
 
         if ($showParts['minimized'])    array_push($itemClasses, 'minimized');
 
-        $html .= "<li class='person "           // person {
+        $html .= "<li class='item person "      // person {
               .             implode(' ', $itemClasses) . "'>\n"
               .   "<form class='user'>"         // user {
               .    "<input type='hidden' name='userId' "
@@ -120,13 +124,13 @@ class View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
          */
         if ($showParts['user:data:userId'] === true)
         {
-            $html .= "<div class='userId'>"
+            $html .= "<div class='userId' title='User id'>"
                   .   sprintf("<a href='%s' title='%s'>",
                               $this->view->url(array(
                                       'controller'  => 'index',
                                       'action'      => 'index',
                                       'owner'       => $user->name)),
-                              $user->fullName)
+                              'User Id')
                   .    "<span class='name'>{$user->name}</span>"
                   .   "</a>"
                   .  "</div>";
@@ -139,7 +143,7 @@ class View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
          */
         if ($showParts['user:data:fullName'] === true)
         {
-            $html .= "<div class='fullName'>";   // fullName {
+            $html .= "<div class='fullName' title='Full Name'>";   // fullName {
 
             if ($showParts['user:data:userId'] !== true)
             {
@@ -148,7 +152,7 @@ class View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
                                          'controller'   => 'index',
                                          'action'       => 'index',
                                          'owner'        => $user->name)),
-                                 htmlspecialchars($user->fullName),
+                                 'Full Name',
                                  htmlspecialchars($user->fullName));
             }
             else
@@ -165,7 +169,7 @@ class View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
          */
         if ($showParts['user:data:email'] === true)
         {
-            $html .= "<div class='email'>"
+            $html .= "<div class='email' title='email address'>"
                   .   sprintf ( "<a href='mailto:%s' "
                                .  "title='%s'>"
                                . "<div class='icon icon-highlight'>"
@@ -176,7 +180,7 @@ class View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
                                . "%s"
                               . "</a>",
                                $user->email,
-                               $user->fullName,
+                               'email address',
                                $user->email)
                   .  "</div>";
         }
@@ -193,12 +197,13 @@ class View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
                 $html .= "<br class='clear' />";
             */
 
-            $html .= "<ul class='tags'>";       // tags {
+            $tagLimit = 5;
+
+            $html .= "<ul class='tags' title='Top {$tagLimit} tags'>";// tags {
 
             $tags = $user->tags->weightBy('userItem');
 
             // Only show the top 5
-            $tagLimit = 5;
             foreach ($tags as $tag)
             {
                 if ($tagLimit-- < 0)
@@ -234,7 +239,7 @@ class View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
             $html .= "<div class='dates'>";
 
             if ($showParts['user:data:dates:lastVisit'] === true)
-                $html .= "<div class='lastVisit'>"
+                $html .= "<div class='lastVisit' title='Last visited'>"
                       .    $user->lastVisit
                       .  "</div>";
 
@@ -265,9 +270,6 @@ class View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
                             $this->view->url(array(
                                     'action' => 'itemEdit',
                                     'item'   => $user->userId)) );
-        }
-        else
-        {
         }
 
         $html .=  "</div>"; //  control }

@@ -103,13 +103,13 @@ class View_Helper_HtmlSidebar extends Zend_View_Helper_Abstract
      *                  (MUST implement the getTotalItemCount() method).
      *
      *  @return $this for a fluent interface.
-     */
     public function setItems(Connexions_Model_Set   $items)
     {
         $this->_params['items'] = $items;
 
         return $this;
     }
+     */
 
     /** @brief  Retrieve configuration information for the named pane.
      *  @param  name    The name of the desired pane.

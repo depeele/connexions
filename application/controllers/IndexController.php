@@ -15,7 +15,6 @@ class IndexController extends Connexions_Controller_Action
     protected   $_url       = null;
     protected   $_owner     = null;
     protected   $_tags      = null;
-    protected   $_bookmarks = null;
 
     protected   $_offset    = 0;
     protected   $_count     = null;
@@ -39,7 +38,7 @@ class IndexController extends Connexions_Controller_Action
     {
         $request  =& $this->_request;
 
-        // /*
+        /*
         Connexions::log('IndexController::indexAction(): '
                         .   'params[ %s ]',
                         print_r($request->getParams(), true));
@@ -151,107 +150,6 @@ class IndexController extends Connexions_Controller_Action
      *
      */
 
-    /** @brief  Determine the proper rendering format.  The only ones we deal
-     *          with directly are:
-     *              partial - render a single part of this page
-     *              html    - normal HTML rendering
-     *
-     *  All others are handled by the 'contextSwitch' established in
-     *  this controller's init method.
-     */
-    protected function _handleFormat()
-    {
-        switch ($this->_format)
-        {
-        case 'partial':
-            /* Render just PART of the page and MAY not require the bookmark
-             * paginator.
-             *
-             *  part=(content | sidebar([.:-](tags | people))? )
-             */
-            //$this->_helper->layout->setLayout('partial');
-            $this->layout->setLayout('partial');
-
-            /* Notify view scripts that we are rendering a partial
-             * (asynchronously loaded portion of a full page).
-             */
-            $this->view->isPartial = true;
-
-            $parts = preg_split('/\s*[\.:\-]\s*/',
-                                $this->_request->getParam('part', 'content'));
-            switch ($parts[0])
-            {
-            case 'sidebar':
-                /* Render JUST the sidebar, or a single pane of the sidebar
-                 *      application/views/scripts/index/sidebar.phtml
-                 *      application/views/scripts/index/sidebar-tags.phtml
-                 *      application/views/scripts/index/sidebar-people.phtml
-                 *      application/views/scripts/index/sidebar-items.phtml
-                 */
-                $this->_htmlSidebar(false, (count($parts) > 1
-                                                ? $parts[1]
-                                                : null));
-                break;
-
-            case 'main':
-                /* Render JUST the main pane
-                 *      application/views/scripts/index/main.phtml
-                 */
-                $this->render('main');
-                break;
-
-            case 'content':
-            default:
-                /* Render JUST the main content section, that includes
-                 * the main pane.
-                 *
-                 * through to perform normal rendering of
-                 *      application/views/scripts/index/index.phtml
-                 *
-                 * This will render the primary content section, that includes
-                 * the main pane.
-                 */
-                break;
-            }
-            break;
-
-        case 'html':
-            // Normal HTML rendering includes the sidebar
-            $this->render('index');
-            $this->_htmlSidebar();
-            break;
-
-        case 'json':
-        case 'rss':
-        case 'atom':
-        default:
-            if ($this->_format === 'rss')
-            {
-                $this->view->main['feedType'] =
-                                    View_Helper_FeedBookmarks::TYPE_RSS;
-                $this->_format = 'feed';
-            }
-            else if ($this->_format === 'atom')
-            {
-                $this->view->main['feedType'] =
-                                    View_Helper_FeedBookmarks::TYPE_ATOM;
-                $this->_format = 'feed';
-            }
-
-            Connexions::log("IndexController::_handleFormat: "
-                            .   "render 'index-%s'",
-                            $this->_format);
-
-            $this->render('index-'. $this->_format);
-
-
-            Connexions::log("IndexController::_handleFormat: "
-                            .   "render 'index.%s' COMPLETE",
-                            $this->_format);
-            break;
-        }
-    }
-
     /** @brief  Given a string that is supposed to represent a user, see if it
      *          represents a valid user.
      *  @param  name    The user name.
@@ -296,69 +194,18 @@ class IndexController extends Connexions_Controller_Action
      */
     protected function _prepareMain($htmlNamespace  = '')
     {
-        $request          =& $this->_request;
-
-        if (($this->_format === 'html') || ($this->_format === 'partial'))
-        {
-            /* HTML and Partial will typically be requested via click on a
-             * pre-defined URL.
-             */
-            $namespace    = $htmlNamespace;
-            $displayStyle = $request->getParam($namespace ."OptionGroup");
-            $dsCustom     = $request->getParam($namespace
-                                                    ."OptionGroups_option");
-
-            $perPage      = $request->getParam($namespace ."PerPage");
-            $page         = $request->getParam($namespace ."Page");
-            $sortBy       = $request->getParam($namespace ."SortBy");
-            $sortOrder    = $request->getParam($namespace ."SortOrder");
-
-            if ( ($displayStyle === 'custom') && (is_array($dsCustom)) )
-                $displayStyle = $dsCustom;
-        }
-        else
-        {
-            /* All the rest are more subject to variability since they are
-             * likely added by a user.
-             */
-            $namespace    = '';
-            $displayStyle = null;
-            $perPage      = $request->getParam("perPage");
-            $page         = $request->getParam("page");
-            $sortBy       = $request->getParam("sortBy");
-            $sortOrder    = $request->getParam("sortOrder");
-
-            // Alternative names
-            if (empty($perPage))    $perPage   = $request->getParam("perpage");
-            if (empty($sortBy))     $sortBy    = $request->getParam("sortby");
-            if (empty($sortOrder))  $sortOrder =
-                                            $request->getParam("sortorder");
-
-            if (empty($perPage))    $perPage   = $request->getParam("limit");
-            if (empty($page))       $page      = $request->getParam("offset");
-        }
-
-        // Additional view variables for the HTML view.
-        $this->view->main = array(
-            'namespace'     => $namespace,
-            'viewer'        => &$this->_viewer,
-            'perPage'       => $perPage,
-            'page'          => $page,
-            'sortBy'        => $sortBy,
-            'sortOrder'     => $sortOrder,
-        );
-
+        parent::_prepareMain($htmlNamespace);
 
         $extra = array(
-            'users'         => ($this->_owner !== '*'
-                                ? $this->_owner
-                                : null),
-            'tags'          => &$this->_tags,
-            'displayStyle'  => $displayStyle,
+            'users' => ($this->_owner !== '*'
+                            ? $this->_owner
+                            : null),
+            'tags'  => &$this->_tags,
         );
         $this->view->main = array_merge($this->view->main, $extra);
 
-        Connexions::log("IndexController::_prepareMain(): main[ %s ]",
+        Connexions::log("IndexController::_prepareMain(): "
+                        .   "main[ %s ]",
                         Connexions::varExport($this->view->main));
     }
 
@@ -378,134 +225,17 @@ class IndexController extends Connexions_Controller_Action
      */
     protected function _prepareSidebar($async = false)
     {
-        $request =& $this->_request;
+        parent::_prepareSidebar($async);
 
-        $sidebar = array(
-            'namespace' => 'sidebar-tab',
-            'async'     => $async,
-            'viewer'    => &$this->_viewer,
-            'users'     => ($this->_owner !== '*'
-                            ? $this->_owner
-                            : null),
-            'tags'      => &$this->_tags,
-            // 'items'   will be set by the sidebar-tags view renderer
-
-            'panes'     => array(
-                /* Used by:
-                 *      application/views/scripts/index/sidebar-tags.phtml
-                 *          and from there by
-                 *      application/views/helpers/HtmlItemCloud.php
-                 */
-                'tags'    => array(
-                    'namespace'     => 'sbTags',
-                    'title'         => 'Tags',
-                    'weightName'    => 'userItemCount',
-
-                    // 'related' will be set by the main view renderer
-                    // 'selected'      => $this->_tags,
-                    'itemType'      =>
-                                View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM,
-                    'itemBaseUrl'   => $this->_url,
-
-                    'sortBy'        => $request->getParam("sbTagsSortBy"),
-                    'sortOrder'     => $request->getParam("sbTagsSortOrder"),
-
-                    'page'          => $request->getParam("sbTagsPage"),
-                    'perPage'       => $request->getParam("sbTagsPerPage"),
-                    'highlightCount'=> $request->getParam(
-                                                    "sbTagsHighlightCount"),
-
-                    'displayStyle'  => $request->getParam("sbTagsOptionGroup"),
-                ),
-
-                'people'  => array(
-                    'namespace'     => 'sbPeople',
-                    'title'         => 'People',
-                    'weightName'    => 'userItemCount',
-
-                    // 'related' will be set by the main view renderer
-                    // 'selected'      => $this->_owner,
-                    'itemType'      =>
-                                View_Helper_HtmlItemCloud::ITEM_TYPE_USER,
-                    'itemBaseUrl'   => Connexions::url('/'),    // $this->_url,
-
-                    'sortBy'        => $request->getParam("sbPeopleSortBy"),
-                    'sortOrder'     => $request->getParam("sbPeopleSortOrder"),
-
-                    'page'          => $request->getParam("sbPeoplePage"),
-                    'perPage'       => $request->getParam("sbPeoplePerPage"),
-                    'highlightCount'=> $request->getParam(
-                                                    "sbPeopleHighlightCount"),
-
-                    'displayStyle'  => $request->getParam(
-                                                    "sbPeopleOptionGroup"),
-                ),
-
-                'items'   => array(
-                    'namespace'     => 'sbItems',
-                    'title'         => 'Items',
-
-                    // 'related' will be set by the main view renderer
-                    // 'selected'      => $this->_owner,
-                    'itemBaseUrl'   => $this->_url,
-
-                    'sortBy'        => $request->getParam("sbItemsSortBy"),
-                    'sortOrder'     => $request->getParam("sbItemsSortOrder"),
-
-                    'page'          => $request->getParam("sbItemsPage"),
-                    'perPage'       => $request->getParam("sbItemsPerPage"),
-                    'highlightCount'=> $request->getParam(
-                                                    "sbItemsHighlightCount"),
-
-                    'displayStyle'  => $request->getParam(
-                                                    "sbItemsOptionGroup"),
-                ),
-            ),
+        $extra = array(
+            'users'         => ($this->_owner !== '*'
+                                ? $this->_owner
+                                : null),
         );
+        $this->view->sidebar = array_merge($this->view->sidebar, $extra);
 
-        $this->view->sidebar = $sidebar;
-    }
-
-    /** @brief  Generate HTML for the sidebar based upon the incoming request.
-     *  @param  usePlaceholder      Should the rendering be performed
-     *                              immediately into a placeholder?
-     *                              [ true, into the 'right' placeholder ]
-     *  @param  part                The portion of the sidebar to render
-     *                                  (tags | people | items)
-     *                              [ null == all ]
-     *
-     */
-    protected function _htmlSidebar($usePlaceholder = true,
-                                    $part           = null)
-    {
-        //return;
-
-        $this->_prepareSidebar( $usePlaceholder );
-
-        if ($part !== null)
-        {
-            // Render just the requested part
-            $this->render('sidebar-'. $part);
-        }
-        else
-        {
-            // Render the entire sidebar
-            if ($usePlaceholder === true)
-            {
-                // Render the sidebar into the 'right' placeholder
-                $this->view->renderToPlaceholder('index/sidebar.phtml',
-                                                 'right');
-
-                // /*
-                Connexions_Profile::checkpoint('Connexions',
-                                               'IndexController::_htmlSidebar: '
-                                               . 'rendered to placeholder');
-                // */
-            }
-            else
-            {
-                $this->render('sidebar');
-            }
-        }
+        Connexions::log("IndexController::_prepareSidebar(): "
+                        .   "sidebar[ %s ]",
+                        Connexions::varExport($this->view->sidebar));
     }
 }

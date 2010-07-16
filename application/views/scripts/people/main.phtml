@@ -5,8 +5,6 @@
  *
  *  Incoming members:
  *      url             The full url for the main controller of this page;
- *      owner           The owner of the current item set -- either a string or
- *                      a Model_User instance;
  *      viewer          The Model_User instance representing the current
  *                      viewer;
  *      tags            A Model_Set_Tag instance containing information about
@@ -17,10 +15,6 @@
  *                          main body;
  *          viewer          The Model_User instance representing the current
  *                          viewer (typically a reference to $view->viewer);
- *          users           The Model_User or Model_Set_User instance
- *                          representing the user(s) that partially define the
- *                          scope of this view
- *                          (typically a reference to $view->owner);
  *          tags            The Model_Tag or Model_Set_Tag instance  
  *                          representing the tag(s) that partially define the
  *                          scope of this view
@@ -31,28 +25,28 @@
  *          perPage         The number of results on a single page;
  *          page            The desired page of results;
  *          sortBy          Indicates the sort field used to retrieve the
- *                          current bookmark set;
+ *                          current user set;
  *          sortOrder       Indicates the sort order used to retrieve the
- *                          current bookmark set;
+ *                          current user set;
  */
 
-Connexions::log("index/main.phtml: begin: main[ %s ]",
+Connexions::log("people/main.phtml: begin: main[ %s ]",
                 Connexions::varExport($this->main));
 
-// Prepare the HTML Bookmarks helper and retrieve the current bookmark set.
-$htmlBookmarks = $this->htmlBookmarks( $this->main );
-$bookmarks     = $htmlBookmarks->bookmarks; //items;
+// Prepare the HTML Users helper and retrieve the current user set.
+$htmlUsers = $this->htmlUsers( $this->main );
+$users     = $htmlUsers->users; //items;
 
 // /*
-Connexions::log("index/main.phtml: paginator with %d bookmarks [ %s ]",
-                count($bookmarks),
-                (is_object($bookmarks)
-                    ? get_class($bookmarks)
-                    : gettype($bookmarks)) );
+Connexions::log("index/main.phtml: paginator with %d users [ %s ]",
+                count($users),
+                (is_object($users)
+                    ? get_class($users)
+                    : gettype($users)) );
 // */
 
 // Notify the sidebar about the items rendered in the main view.
-$this->htmlSidebar(array('items' => $bookmarks));
+$this->htmlSidebar(array('items' => $users));
 
 // Render the main view.
-echo $htmlBookmarks->render();
+echo $htmlUsers->render();

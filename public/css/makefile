@@ -31,11 +31,14 @@ connexions.css: main.scss		\
 		validationForm.scss
 	sass -t compact main.scss:connexions.css
 
+items.css: mixins.scss items.scss colors.scss sizes.scss
+	sass -t compact items.scss:items.css
+
 bookmarks.css: mixins.scss bookmarks.scss bookmark.scss \
 		uiStars.scss colors.scss sizes.scss
 	sass -t compact bookmarks.scss:bookmarks.css
 
-users.css: mixins.scss users.scss colors.scss sizes.scss
+users.css: mixins.scss users.scss user.scss colors.scss sizes.scss
 	sass -t compact users.scss:users.css
 
 urlItems.css: mixins.scss urlItems.scss bookmark.scss \

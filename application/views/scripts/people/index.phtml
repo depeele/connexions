@@ -1,42 +1,112 @@
 <?php
 /** @file
  *
- *  View script for PeopleController::index to render the main content.
- *
- *  The Connexions_View_Helper_HtmlUsers helper MUST be initialized
- *  before this view is rendered.
+ *  View script for IndexController::index to render the main content.
  *
  *  Incoming members:
- *      viewer              The Model_User instance representing the current
- *                          viewer;
- *      tagInfo             A Connexions_Set_Info instance containing
- *                          information about the requested tags.
+ *      url             The full url for the main controller of this page;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
  *
- *      paginator           A Zend_Paginator instance established for the
- *                          presentation of the current Model_UserSet;
+ *      main            An array of settings for the main body:
+ *          namespace       The cookie/parameters/settings namespace for the
+ *                          main body;
+ *          viewer          The Model_User instance representing the current
+ *                          viewer (typically a reference to $view->viewer);
+ *          tags            The Model_Tag or Model_Set_Tag instance  
+ *                          representing the tag(s) that partially define the
+ *                          scope of this view
+ *                          (typically a reference to $view->tags);
+ *
+ *          displayStyle    Indicates the current presentation style -- if this
+ *                          is an array, the style is 'custom';
+ *          perPage         The number of results on a single page;
+ *          page            The desired page of results;
+ *          sortBy          Indicates the sort field used to retrieve the
+ *                          current user set;
+ *          sortOrder       Indicates the sort order used to retrieve the
+ *                          current user set;
  */
-$baseUrl = $this->baseUrl('/'); //Connexions::url('/');
-$links   = $this->headLink();
-$links->appendStylesheet($baseUrl .'css/users.css');
 
-$this->headTitle('People');
+Connexions::log("people/index.phtml: begin...");
+
+/* Initialize the HTML Users helper, needed here because the Scope Helper
+ * needs access to the users for count.
+ */
+$htmlUsers = $this->htmlUsers( $this->main );
+
+/*
+$users     = $htmlUsers->users;
+
+Connexions::log("people/index.phtml: paginator with %d users [ %s ]",
+                count($users),
+                (is_object($users)
+                    ? get_class($users)
+                    : gettype($users)) );
+// */
+
+
+// Prepare the Html Item Scope helper
+$scopePath = array('Users' => $this->baseurl('/people'));
+
+/*
+$scopeQuery = array('format=json',
+                    'method=autocomplete');
+if (count($this->tags) > 0)
+{
+    array_push($scopeQuery, 'tags='. $this->tags);
+}
+*/
+
+$scopeRpc = Connexions::getJsonRpcInfo();
+$scopeRpc['method'] = 'user.autocompleteTag';
+$scopeRpc['params'] = array('tags'   => (count($this->tags) < 1
+                                            ? null
+                                            : $this->tags->__toString()),
+                     );
+
+$htmlItemScope = $this->htmlItemScope( array(
+                    'namespace'         => $this->namespace,
+                    'items'             => $htmlUsers->paginator,
+                    'scope'             => $this->tags, //$htmlUsers->tags,
+                    'inputLabel'        => 'Tags',
+                    'inputName'         => 'Tags',
+                    'path'              => $scopePath,
+                    'jsonRpc'           => $scopeRpc,
+                 ));
+
+$baseUrl = $this->baseUrl('/'); //Connexions::url('/');
+
+$links = $this->headLink();
+$links->appendStylesheet($baseUrl .'css/users.css');
 
 ?>
 <div class='columnHeader'>
  <div class='context-bg connexions_sprites user_bg
              ui-corner-left ui-corner-tr'>&nbsp;</div>
- <p>All People<?php
-    if ( $this->tagInfo->hasValidItems())
-        printf (" with tags '%s'", $this->tagInfo->validItems);
-  ?>.
+ <p>Users
+    <br />
+  <?php
+    if ( count($this->tags) > 0)
+        printf ("related by tags '%s'.", $this->tags);
+  ?>
  </p>
 </div>
 
-<?= $this->htmlItemScope($this->paginator,
-                         $this->tagInfo) ?>
+<?php
+//Connexions_Profile::checkpoint('Connexions', 'IndexView render scope');
 
-<?= $this->htmlUsers($this->paginator,
-                     $this->viewer,
-                     $this->tagInfo) ?>
+echo $htmlItemScope->render();
+
+//Connexions_Profile::checkpoint('Connexions', 'IndexView render items');
+
+echo $this->render('people/main.phtml');
+?>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
+
+<?php
+
+//Connexions_Profile::checkpoint('Connexions', 'IndexView complete');

@@ -6,199 +6,113 @@
  *      /people[/:tags]
  */
 
-class PeopleController extends Zend_Controller_Action
+class PeopleController extends Connexions_Controller_Action
 {
+    // Tell Connexions_Controller_Action_Helper_ResourceInjector which
+    // Bootstrap resources to make directly available
+    public  $dependencies = array('db','layout');
+
+    protected   $_url       = null;
+    protected   $_tags      = null;
+    protected   $_users     = null;
+
+    protected   $_offset    = 0;
+    protected   $_count     = null;
+    protected   $_sortBy    = null;
+    protected   $_sortOrder = null;
+
+    public      $contexts   = array(
+                                'index' => array('partial', 'json',
+                                                 'rss',     'atom'),
+                              );
+
     protected   $_viewer    = null;
     protected   $_tagInfo   = null;
     protected   $_userSet   = null;
 
-    public function init()
-    {
-        /* Initialize action controller here */
-        $this->_viewer  =& Zend_Registry::get('user');
-    }
-
+    /** @brief  Index/Get/Read/View action.
+     *
+     *  Retrieve a set of Users based upon the requested 'tags'.
+     *
+     *  Once retrieved, perform further setup based upon the current
+     *  context/format.
+     */
     public function indexAction()
     {
-        $request   = $this->getRequest();
+        $request  =& $this->_request;
+
+        // /*
+        Connexions::log('PeopleController::indexAction(): '
+                        .   'params[ %s ]',
+                        print_r($request->getParams(), true));
+        // */
+
+        /***************************************************************
+         * Process the requested 'owner' and 'tags'
+         *
+         */
         $reqTags   = $request->getParam('tags',      null);
 
+        /*
+        Connexions::log("IndexController::indexAction: reqTags[ %s ]",
+                        $reqTags);
+        // */
+
         // Parse the incoming request tags
-        $this->_tagInfo = new Connexions_Set_Info($reqTags, 'Model_Tag');
-        if ($this->_tagInfo->hasInvalidItems())
-            $this->view->error =
-                        "Invalid tag(s) [ {$this->_tagInfo->invalidItems} ]";
+        $this->_tags = $this->service('Tag')->csList2set($reqTags);
 
-        /* Create the user set, scoped by any incoming valid tags
-         * (i.e. the set of tag-related users).
+        /***************************************************************
+         * We now have a valid 'owner' ($this->_owner) and
+         * 'tags' ($this->_tags)
+         *
+         * Adjust the URL to reflect the validated 'owner' and 'tags'
          */
-        $this->_userSet = new Model_UserSet( $this->_tagInfo->validIds );
+        $this->_url = $request->getBasePath()
+                    . '/people'
+                    . '/' .(count($this->_tags) > 0
+                            ? $this->_tags .'/'
+                            : '');
+
+        /***************************************************************
+         * Set the view variables required for all views/layouts.
+         *
+         */
+        $this->view->headTitle('People');
+
+        $this->view->url       = $this->_url;
+        $this->view->viewer    = $this->_viewer;
+
+        $this->view->tags      = $this->_tags;
 
 
-        $this->_htmlContent();
-        $this->_htmlSidebar();
+        $this->_prepareMain('users');
+
+        // Handle this request based on the current context / format
+        $this->_handleFormat();
     }
 
     /*************************************************************************
      * Context-specific view initialization and invocation
      *
      */
-    protected function _htmlContent()
+
+    /** @brief  Prepare for rendering the main view, regardless of format.
+     *
+     *  This will collect the variables needed to render the main view, placing
+     *  them in $view->main as a configuration array.
+     */
+    protected function _prepareMain($htmlNamespace  = '')
     {
-        $request =& $this->getRequest();
-        $layout  =& $this->view->layout();
+        parent::_prepareMain($htmlNamespace);
 
-        /********************************************************************
-         * Prepare for rendering the main view.
-         *
-         * Notify the HtmlUsers View Helper (used to render the main view)
-         * of any incoming settings, allowing it establish any required
-         * defaults.
-         */
-        $prefix           = 'users';
-        $usersPerPage     = $request->getParam($prefix."PerPage",       null);
-        $usersSortBy      = $request->getParam($prefix."SortBy",        null);
-        $usersSortOrder   = $request->getParam($prefix."SortOrder",     null);
-        $usersStyle       = $request->getParam($prefix."OptionGroup",   null);
-        $usersStyleCustom = $request->getParam($prefix."OptionGroups_option",
-                                                                        null);
-        // /*
-        Connexions::log('PeopleController::'
-                            . 'prefix [ '. $prefix .' ], '
-                            . 'params [ '
-                            .   print_r($request->getParams(), true) ." ],\n"
-                            . "    PerPage        [ {$usersPerPage} ],\n"
-                            . "    SortBy         [ {$usersSortBy} ],\n"
-                            . "    SortOrder      [ {$usersSortOrder} ],\n"
-                            . "    Style          [ {$usersStyle} ]"
-                            . "    StyleCustom    [ "
-                            .           print_r($usersStyleCustom, true) .' ]');
-        // */
+        $extra = array(
+            'tags'  => &$this->_tags,
+        );
+        $this->view->main = array_merge($this->view->main, $extra);
 
-        // Initialize the Connexions_View_Helper_HtmlUsers helper...
-        $uiHelper = $this->view->htmlUsers();
-        $uiHelper->setNamespace($prefix)
-                 ->setSortBy($usersSortBy)
-                 ->setSortOrder($usersSortOrder);
-        if (is_array($usersStyleCustom))
-            $uiHelper->setStyle(Connexions_View_Helper_HtmlUsers
-                                                        ::STYLE_CUSTOM,
-                                $usersStyleCustom);
-        else
-            $uiHelper->setStyle($usersStyle);
-
-        /*
-        Connexions::log("PeopleController: uiHelper updated sort "
-                            . "by[ {$uiHelper->getSortBy() } ], "
-                            . "order[ {$uiHelper->getSortOrder() } ]");
-        // */
-
-
-        // Set Scope information
-        $scopeParts  = array('format=json');
-        if ($this->_tagInfo->hasValidItems())
-        {
-            array_push($scopeParts, 'tags='. $this->_tagInfo->validItems);
-        }
-
-        $scopeUrl    = $this->view->baseUrl('/people');
-        $scopeCbUrl  = $this->view->baseUrl('/scopeAutoComplete')
-                     . '?'. implode('&', $scopeParts);
-
-        $scopeHelper = $this->view->htmlItemScope();
-        $scopeHelper->setNamespace($prefix)
-                    ->setInputLabel('Tags')
-                    ->setInputName( 'tags')
-                    ->setPath(array('People' => $scopeUrl))
-                    ->setAutoCompleteUrl( $scopeCbUrl );
-
-        /* Ensure that the final sort information is properly reflected in
-         * the source set.
-         */
-        $this->_userSet->setOrder( $uiHelper->getSortBy() .' '.
-                                   $uiHelper->getSortOrder() );
-
-        /*
-        Connexions::log("PeopleController: userSet "
-                            . "SQL[ "
-                            .   $this->_userSet->select()->assemble() ." ]");
-        // */
-
-        /* Use the Connexions_Controller_Action_Helper_Pager to create a
-         * paginator for the retrieved user set.
-         */
-        $page      = $request->getParam('page',  null);
-        $paginator = $this->_helper->Pager($this->_userSet,
-                                           $page, $usersPerPage);
-
-
-        /********************************************************************
-         * Set the required view variables
-         *
-         */
-        $this->view->viewer    = $this->_viewer;
-        $this->view->tagInfo   = $this->_tagInfo;
-        $this->view->paginator = $paginator;
-
-        /* The default view script (views/scripts/index/index.phtml) will
-         * render this main view
-         */
+        Connexions::log("PeopleController::_prepareMain(): "
+                        .   "main[ %s ]",
+                        Connexions::varExport($this->view->main));
     }
 
-    protected function _htmlSidebar()
-    {
-        $request =& $this->getRequest();
-        $layout  =& $this->view->layout();
-
-        /* Create the tagSet that will be presented in the side-bar:
-         *      All tags used by all users contained in the current user set.
-         *
-         *  $tagSet = new Model_TagSet( $this->_userSet->userIds() );
-         */
-        $tagSet = $this->_userSet
-                            ->getRelatedSet(Connexions_Set::RELATED_TAGS)
-                            ->weightBy('user');
-
-        /********************************************************************
-         * Prepare for rendering the right column.
-         *
-         * Notify the HtmlItemCloud View Helper
-         * (used to render the right column) of any incoming settings, allowing
-         * it establish any required defaults.
-         */
-        $prefix             = 'sbTags';
-        $tagsPerPage        = $request->getParam("{$prefix}PerPage",    250);
-        $tagsHighlightCount = $request->getParam("{$prefix}HighlightCount",
-                                                                        null);
-        $tagsSortBy         = $request->getParam("{$prefix}SortBy",     'tag');
-        $tagsSortOrder      = $request->getParam("{$prefix}SortOrder",  null);
-        $tagsStyle          = $request->getParam("{$prefix}OptionGroup",null);
-
-        // /*
-        Connexions::log('PeopleController::'
-                            . "right-column prefix [ {$prefix} ],\n"
-                            . "    PerPage        [ {$tagsPerPage} ],\n"
-                            . "    HighlightCount [ {$tagsHighlightCount} ],\n"
-                            . "    SortBy         [ {$tagsSortBy} ],\n"
-                            . "    SortOrder      [ {$tagsSortOrder} ],\n"
-                            . "    Style          [ {$tagsStyle} ]");
-        // */
-
-
-        // Initialize the Connexions_View_Helper_HtmlItemCloud helper...
-        $cloudHelper = $this->view->htmlItemCloud();
-        $cloudHelper->setNamespace($prefix)
-                    ->setStyle($tagsStyle)
-                    ->setItemType(Connexions_View_Helper_HtmlItemCloud::
-                                                            ITEM_TYPE_ITEM)
-                    ->setSortBy($tagsSortBy)
-                    ->setSortOrder($tagsSortOrder)
-                    ->setPerPage($tagsPerPage)
-                    ->setHighlightCount($tagsHighlightCount)
-                    ->setItemSet($tagSet)
-                    ->setItemSetInfo($this->_tagInfo);
-
-        // Render the sidebar into the 'right' placeholder
-        $this->view->renderToPlaceholder('people/sidebar.phtml', 'right');
-    }
 }

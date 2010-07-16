@@ -3,18 +3,11 @@
  *
  *  View helper to render a paginated set of Users in HTML.
  */
-class View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
+class View_Helper_HtmlUsers extends View_Helper_Users
 {
-    static public   $numericGrouping    = 10;
-    static public   $perPageChoices     = array(10, 25, 50, 100);
-
     static public   $defaults               = array(
-        'sortBy'            => self::SORT_BY_NAME,
-        'sortOrder'         => Model_UserSet::SORT_ORDER_ASC,
-
-        'perPage'           => 50,
-
-        'displayStyle'      => self::STYLE_REGULAR
+        'displayStyle'      => self::STYLE_REGULAR,
+        'includeScript'     => true,
     );
 
 
@@ -93,77 +86,51 @@ class View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
         )
     );
 
-    const SORT_BY_NAME              = 'name';
-    const SORT_BY_FULLNAME          = 'fullName';
-    const SORT_BY_EMAIL             = 'email';
-
-    const SORT_BY_DATE_VISITED      = 'lastVisit';
-
-    const SORT_BY_TAG_COUNT         = 'totalTags';
-    const SORT_BY_ITEM_COUNT        = 'totalItems';
-
-    static public   $sortTitles     = array(
-                    self::SORT_BY_NAME          => 'User Name',
-                    self::SORT_BY_FULLNAME      => 'Full Name',
-                    self::SORT_BY_EMAIL         => 'Email Address',
-
-                    self::SORT_BY_DATE_VISITED  => 'Last Visit Date',
-
-                    self::SORT_BY_TAG_COUNT     => 'Tag Count',
-                    self::SORT_BY_ITEM_COUNT    => 'Item Count',
-                );
-
-    static public   $orderTitles    = array(
-                    Model_UserSet::SORT_ORDER_ASC   => 'Ascending',
-                    Model_UserSet::SORT_ORDER_DESC  => 'Descending'
-                );
-
-
     static protected $_initialized  = array();
 
     /** @brief  Set-able parameters. */
-    protected       $_namespace         = 'users';
-
     protected       $_displayOptions    = null;
-    protected       $_sortBy            = null;
-    protected       $_sortOrder         = null;
 
-    /** @brief  Render an HTML version of a paginated set of Users or,
-     *          if no arguments, this helper instance.
-     *  @param  paginator       The Zend_Paginator representing the items to
-     *                          be presented.
-     *  @param  viewer          A Model_User instance representing the
-     *                          current viewer;
-     *  @param  tagInfo         A Connexions_Set_Info instance containing
-     *                          information about the requested tags;
-     *  @param  style           The style to use for each item
-     *                          (View_Helper_HtmlUsers::
-     *                                                          STYLE_*);
-     *  @param  sortBy          The field used to sort the items
-     *                          (View_Helper_HtmlUsers::
-     *                                                      SORT_BY_*);
-     *  @param  sortOrder       The sort order
-     *                          (Model_UserSet::SORT_ORDER_ASC |
-     *                           Model_UserSet::SORT_ORDER_DESC)
-     *
-     *  @return The HTML representation of the users.
+    /** @brief  Construct a new HTML Users helper.
+     *  @param  config  A configuration array that may include, in addition to
+     *                  what our parent accepts:
+     *                      - displayStyle      Desired display style
+     *                                          (if an array, STYLE_CUSTOM)
+     *                                          [ STYLE_REGULAR ];
+     *                      - includeScript     Should Javascript related to
+     *                                          bookmark presentation be
+     *                                          included?  [ true ];
      */
-    public function htmlUsers($paginator    = null,
-                              $viewer       = null,
-                              $tagInfo      = null,
-                              $style        = null,
-                              $sortBy       = null,
-                              $sortOrder    = null)
+    public function __construct(array $config = array())
     {
-        if ((! $paginator instanceof Zend_Paginator) ||
-            (! $viewer    instanceof Model_User)     ||
-            (! $tagInfo   instanceof Connexions_Set_Info))
+        // Over-ride the default namespace
+        parent::$defaults['namespace'] = 'users';
+
+        // Add extra class-specific defaults
+        foreach (self::$defaults as $key => $value)
         {
-            return $this;
+            $this->_params[$key] = $value;
         }
 
-        return $this->render($paginator, $viewer, $tagInfo,
-                             $style, $sortBy, $sortOrder);
+        parent::__construct($config);
+    }
+
+    /** @brief  Configure and retrive this helper instance OR, if no
+     *          configuration is provided, perform a render.
+     *  @param  config  A configuration array (see populate());
+     *
+     *  @return A (partially) configured instance of $this OR, if no
+     *          configuration is provided, the HTML rendering of the configured
+     *          users.
+     */
+    public function htmlUsers(array $config = array())
+    {
+        if (! empty($config))
+        {
+            return $this->populate($config);
+        }
+
+        return $this->render();
     }
 
     /** @brief  Set the namespace, primarily for forms and cookies.
@@ -178,75 +145,24 @@ class View_Helper_HtmlUsers extends Zend_View_Helper_Abstract
                             .   "setNamespace( {$namespace} )");
         // */
 
-        $this->_namespace = $namespace;
+        parent::setNamespace($namespace);
 
-        if (! @isset(self::$_initialized['__global__']))
-        {
-            // Include required jQuery
-            $view   = $this->view;
-            $jQuery =  $view->jQuery();
-
-            $jQuery->addJavascriptFile($view->baseUrl('js/ui.stars.min.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.checkbox.min.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.button.min.js'))
-                   ->addJavascriptFile($view->baseUrl('js/ui.input.min.js'))
-                   ->javascriptCaptureStart();
-            ?>
-
-/************************************************
- * Initialize group header options.
- *
- */
-function init_GroupHeader(namespace)
-{
-    var $headers    = $('#'+ namespace +'List .groupHeader .groupType');
-    var dimOpacity  = 0.5;
-
-    $headers
-        .fadeTo(100, dimOpacity)
-        .hover(
-            // in
-            function() {
-                $(this).fadeTo(100, 1.0);
-            },
-
-            // out
-            function() {
-                $(this).fadeTo(100, dimOpacity);
-            }
-        );
-}
-
-/************************************************
- * Initialize ui elements.
- *
- */
-function init_UsersList(namespace)
-{
-    // Initialize any group headers
-    init_GroupHeader(namespace);
-}
-
-            <?php
-            $jQuery->javascriptCaptureEnd();
-
-            self::$_initialized['__global__'] = true;
-        }
-
+        if ($this->includeScript !== true)
+            return $this;
 
         if (! @isset(self::$_initialized[$namespace]))
         {
-            $view   = $this->view;
+            $view       = $this->view;
+            $dsConfig   = array(
+                                'namespace'     => $namespace,
+                                'definition'    => self::$displayStyles,
+                                'groups'        => self::$styleGroups
+                          );
+
 
             // Set / Update our displayOptions namespace.
             if ($this->_displayOptions === null)
             {
-                $dsConfig = array(
-                                'namespace'     => $namespace,
-                                'definition'    => self::$displayStyles,
-                                'groups'        => self::$styleGroups
-                            );
-
                 $this->_displayOptions = $view->htmlDisplayOptions($dsConfig);
             }
             else
@@ -254,19 +170,25 @@ function init_UsersList(namespace)
                 $this->_displayOptions->setNamespace($namespace);
             }
 
-            $view->jQuery()->addOnLoad("init_UsersList('{$namespace}');");
+            // Include required jQuery
+            $config = array('namespace'         => $namespace,
+                            'partial'           => 'main',
+                            'displayOptions'    => $dsConfig,
+                            /* Rely on the CSS class of rendered items
+                             * (see View_Helper_HtmlUsersUser)
+                             * to determine their Javascript objClass
+                            'uiOpts'            => array(
+                                'objClass'      => 'user',
+                            ),
+                             */
+                      );
+
+            $call   = "$('#{$namespace}List').itemsPane("
+                    .               Zend_Json::encode($config) .");";
+            $view->jQuery()->addOnLoad($call);
         }
 
         return $this;
-    }
-
-    /** @brief  Get the current namespace.
-     *
-     *  @return The string namespace.
-     */
-    public function getNamespace()
-    {
-        return $this->_namespace;
     }
 
     /** @brief  Set the current style.
@@ -275,32 +197,31 @@ function init_UsersList(namespace)
      *
      *  @return View_Helper_HtmlUsers for a fluent interface.
      */
-    public function setStyle($style, array $values = null)
+    public function setDisplayStyle($style, array $values = null)
     {
-        if ($values !== null)
+        if (is_array($style))
         {
-            $this->_displayOptions->setGroupValues($values);
+            $values = $style;
+            $style  = self::STYLE_CUSTOM;
         }
-        else
+
+        switch ($style)
         {
-            switch ($style)
-            {
-            case self::STYLE_REGULAR:
-            case self::STYLE_FULL:
-            case self::STYLE_CUSTOM:
-                break;
+        case self::STYLE_REGULAR:
+        case self::STYLE_FULL:
+        case self::STYLE_CUSTOM:
+            break;
 
-            default:
-                $style = self::$defaults['displayStyle'];
-                break;
-            }
-
-            $this->_displayOptions->setGroup($style);
+        default:
+            $style = self::$defaults['displayStyle'];
+            break;
         }
+
+        $this->_displayOptions->setGroup($style, $values);
 
         /*
         Connexions::log('View_Helper_HtmlUsers::'
-                            . "setStyle({$style}) == [ "
+                            . "setDisplayStyle({$style}) == [ "
                             .   $this->_displayOptions->getGroup() ." ]");
         // */
     
@@ -311,93 +232,9 @@ function init_UsersList(namespace)
      *
      *  @return The style value (self::STYLE_*).
      */
-    public function getStyle()
+    public function getDisplayStyle()
     {
         return $this->_displayOptions->getGroup();
-    }
-
-
-    /** @brief  Set the current sortBy.
-     *  @param  sortBy  A sortBy value (self::SORT_BY_*)
-     *
-     *  @return View_Helper_HtmlUsers for a fluent interface.
-     */
-    public function setSortBy($sortBy)
-    {
-        $orig = $sortBy;
-
-        switch ($sortBy)
-        {
-        case self::SORT_BY_NAME:
-        case self::SORT_BY_FULLNAME:
-        case self::SORT_BY_EMAIL:
-        case self::SORT_BY_DATE_VISITED:
-        case self::SORT_BY_TAG_COUNT:
-        case self::SORT_BY_ITEM_COUNT:
-            break;
-
-        default:
-            $sortBy = self::$defaults['sortBy'];
-            break;
-        }
-
-        /*
-        Connexions::log('View_Helper_HtmlUsers::'
-                            . "setSortBy({$orig}) == [ {$sortBy} ]");
-        // */
-
-        $this->_sortBy = $sortBy;
-
-        return $this;
-    }
-
-    /** @brief  Get the current sortBy value.
-     *
-     *  @return The sortBy value (self::SORT_BY_*).
-     */
-    public function getSortBy()
-    {
-        return $this->_sortBy;
-    }
-
-    /** @brief  Set the current sortOrder.
-     *  @param  sortOrder   A sortOrder value (Model_UserSet::SORT_ORDER_*)
-     *
-     *  @return View_Helper_HtmlUsers for a fluent interface.
-     */
-    public function setSortOrder($sortOrder)
-    {
-        $orig = $sortOrder;
-
-        $sortOrder = strtoupper($sortOrder);
-        switch ($sortOrder)
-        {
-        case Model_UserSet::SORT_ORDER_ASC:
-        case Model_UserSet::SORT_ORDER_DESC:
-            break;
-
-        default:
-            $sortOrder = self::$defaults['sortOrder'];
-            break;
-        }
-
-        /*
-        Connexions::log('View_Helper_HtmlUsers::'
-                            . "setSortOrder({$orig}) == [ {$sortOrder} ]");
-        // */
-    
-        $this->_sortOrder = $sortOrder;
-
-        return $this;
-    }
-
-    /** @brief  Get the current sortOrder value.
-     *
-     *  @return The sortOrder value (Model_UserSet::SORT_ORDER_*).
-     */
-    public function getSortOrder()
-    {
-        return $this->_sortOrder;
     }
 
     /** @brief  Get the current showMeta value.
@@ -427,82 +264,63 @@ function init_UsersList(namespace)
     }
 
     /** @brief  Render an HTML version of a paginated set of Users.
-     *  @param  paginator       The Zend_Paginator representing the items to
-     *                          be presented.
-     *  @param  viewer          A Model_User instance representing the
-     *                          current viewer;
-     *  @param  tagInfo         A Connexions_Set_Info instance containing
-     *                          information about the requested tags;
-     *  @param  style           The style to use for each item
-     *                          (View_Helper_HtmlUsers::
-     *                                                          STYLE_*);
-     *  @param  sortBy          The field used to sort the items
-     *                          (View_Helper_HtmlUsers::
-     *                                                      SORT_BY_*);
-     *  @param  sortOrder       The sort order
-     *                          (Model_UserSet::SORT_ORDER_ASC |
-     *                           Model_UserSet::SORT_ORDER_DESC)
      *
      *  @return The HTML representation of the users.
      */
-    public function render(Zend_Paginator            $paginator,
-                           Model_User                $viewer,
-                           Connexions_Set_info       $tagInfo,
-                           $style        = null,
-                           $sortBy       = null,
-                           $sortOrder    = null)
+    public function render()
     {
-        /*
-        Connexions::log("View_Helper_HtmlUsers: "
-                            . "style[ {$style} ], "
-                            . "sortBy[ {$sortBy} ], "
-                            . "sortOrder[ {$sortOrder} ]");
-        // */
+        $paginator    = $this->paginator;
+        $viewer       = $this->viewer;
 
-        if ($style     !== null)    $this->setStyle($style);
-        if ($sortBy    !== null)    $this->setSortBy($sortBy);
-        if ($sortOrder !== null)    $this->setSortOrder($sortOrder);
-
-        /*
-        Connexions::log("View_Helper_HtmlUsers: "
-                            . "validated to: "
-                            . "style[ {$this->getStyle()} ], "
-                            . "sortBy[ {$this->_sortBy} ], "
-                            . "sortByTitle[ "
-                            .       self::$sortTitles[$this->_sortBy]." ], "
-                            . "sortOrder[ {$this->_sortOrder} ], "
-                            . "sortOrderTitle[ "
-                            .       self::$orderTitles[$this->_sortOrder]." ]");
-        // */
-
-        $html = "";
-
-        $showMeta   = $this->getShowMeta();
-
+        $html         = "";
+        $showMeta     = $this->getShowMeta();
 
         $uiPagination = $this->view->htmlPaginationControl();
-        $uiPagination->setPerPageChoices(self::$perPageChoices)
-                     ->setNamespace($this->_namespace);
+        $uiPagination->setNamespace($this->namespace)
+                     ->setPerPageChoices(self::$perPageChoices);
 
-
-        $html .= "<div id='{$this->_namespace}List'>"   // List {
+        $html .= "<div id='{$this->namespace}List' class='pane'>"   // List {
               .   $uiPagination->render($paginator, 'paginator-top', true)
               .   $this->_renderDisplayOptions($paginator);
 
-        if (count($paginator))
+        $nPages = count($paginator);
+        if ($nPages > 0)
         {
-            $html .= "<ul class='{$this->_namespace}'>";
+            //$html .= "<ul class='items {$this->namespace}'>";
+            $html .= "<ul class='items users'>";
 
-            // Group by the field identified in $this->_sortBy
-            $lastGroup = null;
+            /* Group by the field identified in $this->sortBy
+             *
+             * This grouping MAY be a "special field", indicated by the
+             * presence of one (or potentially more) ':' characters
+             *  (see Model_Mapper_Base::_getSpecialFields())
+             *
+             * If so, we ASSUME that the final field has been promoted to a
+             * pseudo-field of Bookmark.
+             */
+            $lastGroup  = null;
+            $groupBy    = explode(':', $this->sortBy);
+            $groupByCnt = count($groupBy);
+            $groupByLst = $groupBy[ $groupByCnt - 1];
+
             foreach ($paginator as $idex => $user)
             {
-                $groupVal = $user->{$this->_sortBy};
-                $newGroup = $this->_groupValue($this->_sortBy, $groupVal);
+                if ($user === null)
+                {
+                    /* Paginator items that aren't avaialble (i.e. beyond the
+                     * end of the paginated set) are returned as null.
+                     * Therefore, the first null item indicates end-of-set.
+                     */
+                    break;
+                }
+
+                // Retrieve the indicated grouping field value
+                $groupVal = $user->{$this->sortBy};
+                $newGroup = $this->_groupValue($this->sortBy, $groupVal);
 
                 if ($newGroup !== $lastGroup)
                 {
-                    $html      .= $this->_renderGroupHeader($this->_sortBy,
+                    $html      .= $this->_renderGroupHeader($this->sortBy,
                                                             $newGroup);
                     $lastGroup  = $newGroup;
                 }
@@ -559,10 +377,10 @@ function init_UsersList(namespace)
         case self::SORT_BY_TAG_COUNT:         // 'totalTags'
         case self::SORT_BY_ITEM_COUNT:        // 'totalItems'
             /* We'll do numeric grouping in groups of:
-             *      self::$numericGrouping [ 10 ]
+             *      $this->numericGrouping [ 10 ]
              */
-            $value = floor($value / self::$numericGrouping) *
-                                                    self::$numericGrouping;
+            $value = floor($value / $this->numericGrouping) *
+                                                    $this->numericGrouping;
             break;
         }
 
@@ -643,52 +461,18 @@ function init_UsersList(namespace)
         return $html;
     }
 
-    /** @brief  Given a show style array, include additional show-meta 
-     *          information useful for future view renderers in determining
-     *          what to render.
-     *  @param  show    The show style array.
-     *
-     *  @return A new, updated show style array.
-     */
-    protected function _includeShowMeta($show)
-    {
-        /* View meta-info:
-         *  Include additional meta-info that is helpful for further view
-         *  renderers in determining what to render.
-         */
-        if (! @isset($show['meta:count']))
-        {
-            $show['meta:count'] =
-                    (($show['meta:count:items'] === true) ||
-                     ($show['meta:count:tags']  === true));
-        }
-
-        if (! @isset($show['meta']))
-        {
-            $show['meta'] =
-                    (($show['meta:relation']  === true) ||
-                     ($show['meta:count']     === true));
-        }
-
-        if (! @isset($show['dates']))
-        {
-            $show['dates'] =
-                    (($show['dates:visited'] === true));
-        }
-
-        return $show;
-    }
-
     /** @brief  Render the 'displayOptions' control area.
      *  @param  paginator   The current paginator (so we know the number of 
      *                                             items per page);
+     *
      *
      *  @return A string of HTML.
      */
     protected function _renderDisplayOptions($paginator)
     {
-        $namespace        = $this->_namespace;
+        $namespace        = $this->namespace;
         $itemCountPerPage = $paginator->getItemCountPerPage();
+
 
         /**************************************************************
          * SortBy
@@ -697,24 +481,29 @@ function init_UsersList(namespace)
         $html =  "<label   for='{$namespace}SortBy'>Sorted by</label>"
               .  "<select name='{$namespace}SortBy' "
               .            "id='{$namespace}SortBy' "
-              .         "class='sort-by sort-by-{$this->_sortBy} "
+              .         "class='sort-by sort-by-{$this->sortBy} "
               .                 "ui-input ui-state-default ui-corner-all'>";
+
+        /*
+        Connexions::log('View_Helper_HtmlBookmarks::_renderDisplayOptions(): '
+                        .   '_sortBy[ %s ], sortOrder[ %s ]',
+                        $this->sortBy, $this->sortOrder);
+        // */
 
         foreach (self::$sortTitles as $key => $title)
         {
-            $isOn = ($key == $this->_sortBy);
+            $isOn = ($key == $this->sortBy);
             $css  = 'ui-corner-all';
-            if ($isOn)              $css .= ' option-on';
+
+            if ($isOn)  $css .= ' option-on';
 
             $html .= sprintf(  "<option%s title='%s' value='%s'%s>"
                              .  "<span>%s</span>"
                              . "</option>",
-                             ( !@empty($css)
-                                 ? " class='". $css ."'"
-                                 : ""),
+                             ( !@empty($css) ? " class='". $css ."'" : ""),
                              $title,
                              $key,
-                             ($isOn ? " selected" : ""),
+                             ($isOn          ? " selected"           : ""),
                              $title);
         }
 
@@ -735,7 +524,7 @@ function init_UsersList(namespace)
                   .   "<input type='radio' name='{$namespace}SortOrder' "
                   .                         "id='{$namespace}SortOrder-{$key}' "
                   .                      "value='{$key}'"
-                  .          ($key == $this->_sortOrder
+                  .          ($key == $this->sortOrder
                                  ? " checked='true'" : "" ). " />"
                   .   "<label for='{$namespace}SortOrder-{$key}'>"
                   .    $title

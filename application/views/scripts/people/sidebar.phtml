@@ -1,36 +1,69 @@
 <?php
 /** @file
  *
- *  View script for PeopleController::index to render the sidebar content.
+ *  View script for IndexController::index to render the sidebar content.
  *
- *  The Connexions_View_Helper_HtmlItemCloud helper MUST be initialized
- *  before this view is rendered.
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      owner           The owner of the current item set
+ *                          either a string ('*') or a Model_User instance;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any request tags (i.e. tag restrictions);
+ *
+ *      sidebar         An array of settings for the sidebar:
+ *          namespace       The cookie/parameters/settings namespace for the
+ *                          sidebar [ 'sidebarTab' ];
+ *          async           Should be panes be loaded immediately (false), or
+ *                          asynchronously on-demend (true), [ false ];
+ *          viewer          The Model_User instance representing the current
+ *                          viewer (typically a reference to $view->viewer);
+ *          users           The Model_User or Model_Set_User instance
+ *                          representing the user(s) that partially define the
+ *                          scope of this view
+ *                          (typically a reference to $view->owner);
+ *          tags            The Model_Tag or Model_Set_Tag instance
+ *                          representing the tag(s) that paraially define the
+ *                          scope of this view
+ *                          (typically a reference to $view->tags);
+ *          items           The Connexions_Model_Set representing the items
+ *                          that are presented in the main view;
+ *
+ *          panes           An associative array of pane information, keyed by
+ *                          the namespace/id of the pane with a configuration
+ *                          array for that pane as the value.  General options
+ *                          for panes are:
+ *                              - title     The pane's title text;
+ *                              - namespace The cookie/parameters/settings
+ *                                          namespace for the sidebar pane;
+ *
+ *                              Panes for the main page:
+ *                                  tags
+ *                                  people
  */
+$baseUrl = $this->baseUrl('/'); //Connexions::url('/');
+$links   = $this->headLink();
 
-?>
-<?= $this->render('sidebar.phtml') ?>
+if ($this->owner !== '*')
+{
+    /* Bookmarks for a single user are being presented.  The 'People' pane will
+     * contain details about that user, generated from
+     * View_Helper_HtmlUsersUser, which requires 'css/users.css' to render
+     * properly.  Include that here.
+     */
+    $links->appendStylesheet($baseUrl .'css/users.css');
 
-<div id='sidebar-tabs'>
- <ul>
-  <li><a href='#sidebar-tags'  ><span>Tags</span></a></li>
-  <!-- li><a href='#sidebar-people'><span>People</span></a></li -->
- </ul>
- <div id='sidebar-tags'>
-  <div class='columnHeader'>
-   <div class='context-bg connexions_sprites tag_bg ui-corner-left'>
-    &nbsp;
-   </div>
-   <p>Tags related to these bookmarks.</p>
-  </div>
-  <?= $this->htmlItemCloud()->render() ?>
- </div>
+    //unset($this->sidebar['panes']['people']);
+}
 
- <!-- div id='sidebar-people'>
-  <div class='columnHeader'>
-   <div class='context-bg connexions_sprites user_bg ui-corner-left'>
-    &nbsp;
-   </div>
-   <p>People that are in my network...</p>
-  </div>
- </div -->
-</div>
+// Prepare the HTML Sidebar helper
+$htmlSidebar = $this->htmlSidebar( $this->sidebar );
+
+/* Invoke the Html Sidebar View helper to render the sidebar based upon
+ * settings in $this->sidbar established by IndexController::_prepareSidebar
+ *
+ * This will either render the sidebar partials immediately or setup
+ * asynchronous loading, depending on $this->sidebar['async']
+ */
+echo $htmlSidebar->render('index/');
