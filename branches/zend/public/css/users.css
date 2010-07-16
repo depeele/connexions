@@ -1,63 +1,56 @@
 /****** users.scss ****** */
-.rightCol #usersList .users { padding: 0 0 0 0.5em; border: none; }
-.rightCol #usersList .users .user .stats { width: 48px; }
-.rightCol #usersList .users .user .data { border: none; }
+.items .groupHeader { position: relative; background-color: #eeeeff; border-bottom: 1px solid #cccccc; color: #999999; height: 20px; left: -15px; }
+.items .groupHeader .group { position: relative; background-color: #eeeeff; height: 20px; right: -20px; }
+.items .groupHeader .date { position: relative; left: -12px; }
+.items .groupHeader .date .year { position: absolute; left: 1em; top: -0.45em; font-size: 3em; font-weight: bold; color: #ddddff; z-index: 4; }
+.items .groupHeader .date .dateBox { position: relative; left: -0.25em; font-size: 1em; font-weight: bold; }
+.items .groupHeader .date .dateBox .month { display: inline; }
+.items .groupHeader .date .dateBox .day { display: inline; padding: 0 0.25em; }
+.items .groupHeader .date .dateBox .day-of-week { display: block; position: absolute; font-size: 0.8em; font-weight: bold; z-index: 4; }
+.items .groupHeader .alpha, .items .groupHeader .numeric { position: absolute; left: -0.55em; top: -0.45em; font-size: 3em; font-weight: bold; color: #bbbbff; z-index: 0; }
 
-#usersList .displayOptions form { width: 22em; }
-#usersList .displayOptions form .displayStyle .users, #usersList .displayOptions form .displayStyle fieldset.options { border-bottom: none; padding-top: 1em; }
-#usersList .displayOptions form .displayStyle .users .user, #usersList .displayOptions form .displayStyle fieldset.options .user { border: 1px solid #cccccc; padding: 0 0.1em 0.1em 0.2em; }
-#usersList .displayOptions form .displayStyle .users .user label, #usersList .displayOptions form .displayStyle fieldset.options .user label { display: inline; float: none; width: auto; padding-left: 0; }
-#usersList .displayOptions form .displayStyle .users .user .stats, #usersList .displayOptions form .displayStyle fieldset.options .user .stats { font-weight: normal; }
-#usersList .displayOptions form .displayStyle .users .user .data, #usersList .displayOptions form .displayStyle fieldset.options .user .data { padding-left: 24px; }
-#usersList .displayOptions form .displayStyle .users .user .data .avatar, #usersList .displayOptions form .displayStyle fieldset.options .user .data .avatar { border: 1px solid #cccccc; height: 32px; width: 18px; margin-top: 0.2em; padding: 0 2px; }
-#usersList .displayOptions form .displayStyle .users .user .data .avatar label, #usersList .displayOptions form .displayStyle fieldset.options .user .data .avatar label { display: none; }
-#usersList .displayOptions form .displayStyle .users .user .data .userId, #usersList .displayOptions form .displayStyle fieldset.options .user .data .userId { font-size: 1em; }
-#usersList .displayOptions form .displayStyle .users .user .data .fullName, #usersList .displayOptions form .displayStyle .users .user .data .email, #usersList .displayOptions form .displayStyle fieldset.options .user .data .fullName, #usersList .displayOptions form .displayStyle fieldset.options .user .data .email { display: inline; font-size: 0.9em; padding: 0.25em 0; }
-#usersList .displayOptions form .displayStyle .users .user .data .email, #usersList .displayOptions form .displayStyle fieldset.options .user .data .email { padding-right: 0.5em; }
-#usersList .displayOptions form .displayStyle .users .user .data .fullName, #usersList .displayOptions form .displayStyle fieldset.options .user .data .fullName { float: none; }
-#usersList .displayOptions form .displayStyle .users .user .data .tags, #usersList .displayOptions form .displayStyle fieldset.options .user .data .tags { clear: both; width: auto; text-align: left; padding: 0.25em 0; }
-#usersList .displayOptions form .displayStyle .users .user .data .tags label, #usersList .displayOptions form .displayStyle fieldset.options .user .data .tags label { display: inline; float: none; font-size: 0.8em; }
-#usersList .displayOptions form .displayStyle .users .user .data .dates, #usersList .displayOptions form .displayStyle fieldset.options .user .data .dates { padding: 0.25em 0; }
-#usersList .displayOptions form .displayStyle .users .user .data .dates .lastVisit, #usersList .displayOptions form .displayStyle fieldset.options .user .data .dates .lastVisit { display: block; }
-#usersList .users { clear: both; padding-top: 2em; border-bottom: 1px solid #cccccc; }
-#usersList .users .groupHeader { position: relative; background-color: #eeeeff; border-bottom: 1px solid #cccccc; color: #999999; height: 20px; left: -15px; }
-#usersList .users .groupHeader .group { position: relative; background-color: #eeeeff; height: 20px; right: -20px; }
-#usersList .users .groupHeader .date { position: relative; left: -12px; }
-#usersList .users .groupHeader .date .year { position: absolute; left: 1em; top: -0.45em; font-size: 3em; font-weight: bold; color: #ddddff; z-index: 4; }
-#usersList .users .groupHeader .date .dateBox { position: relative; left: -0.25em; font-size: 1em; font-weight: bold; }
-#usersList .users .groupHeader .date .dateBox .month { display: inline; }
-#usersList .users .groupHeader .date .dateBox .day { display: inline; padding: 0 0.25em; }
-#usersList .users .groupHeader .date .dateBox .day-of-week { display: block; font-size: 0.8em; font-weight: bold; }
-#usersList .users .groupHeader .alpha, #usersList .users .groupHeader .numeric { position: absolute; left: -0.55em; top: -0.45em; font-size: 3em; font-weight: bold; color: #bbbbff; z-index: 0; }
-#usersList .users .person { clear: both; min-height: 45px; }
-#usersList .users .user { position: relative; z-index: 1; padding-bottom: 1em; border-top: 1px solid #cccccc; }
-#usersList .users .user .stats { position: relative; float: right; width: 100px; background-color: #999999; padding: 0; z-index: 2; }
-#usersList .users .user .stats .countItems { display: block; color: white; padding: 0.25em; font-weight: normal; text-align: center; text-decoration: none; }
-#usersList .users .user .stats .countItems:hover { background-color: #b0d730; }
-#usersList .users .user .stats .countTags { display: block; position: relative; color: #cccccc; padding: 0.25em 16px 0.25em 0.25em; font-size: 0.75em; font-weight: normal; text-align: right; text-decoration: none; }
-#usersList .users .user .stats .countTags:hover { background-color: #b0d730; color: white; }
-#usersList .users .user .stats .countTags .icon { position: absolute; border: none; top: 0.25em; right: -2px; padding: 0; }
-#usersList .users .user .data { position: relative; padding: 0.25em 0 0 40px; z-index: 1; }
-#usersList .users .user .data .avatar { position: absolute; left: 0; top: 0; width: 32px; height: 32px; }
-#usersList .users .user .data .avatar a .img { display: block; position: relative; border: 0; background-color: transparent; }
-#usersList .users .user .data .avatar a .img img { width: 32px; height: 32px; }
-#usersList .users .user .data .avatar a .img .ui-icon { position: relative; left: 8px; }
-#usersList .users .user .data .userId { float: left; padding: 0; font-size: 1.25em; width: 6em; }
-#usersList .users .user .data .userId a { display: inline; font-weight: bold; }
-#usersList .users .user .data .fullName { float: left; padding: 0.25em; }
-#usersList .users .user .data .fullName a { display: inline; font-weight: bold; }
-#usersList .users .user .data .email { float: right; padding: 0.25em; border: none; max-width: 794px; }
-#usersList .users .user .data .email a { display: inline; font-weight: normal; }
-#usersList .users .user .data .email .icon { position: relative; float: left; }
-#usersList .users .user .data .tags { clear: right; display: block; float: right; font-size: 0.9em; padding: 0.5em 0 0; margin: 0; text-align: right; }
-#usersList .users .user .data .tags .tag, #usersList .users .user .data .tags .tag:hover { display: block; float: right; padding: 0.2em; margin: 0.1em; background-color: #eeeeee; color: #172322; }
-#usersList .users .user .data .tags .tag a, #usersList .users .user .data .tags .tag a:hover, #usersList .users .user .data .tags .tag a:visited, #usersList .users .user .data .tags .tag a:focus, #usersList .users .user .data .tags .tag:hover a, #usersList .users .user .data .tags .tag:hover a:hover, #usersList .users .user .data .tags .tag:hover a:visited, #usersList .users .user .data .tags .tag:hover a:focus { display: inline; font-weight: normal; text-decoration: none; color: #172322; }
-#usersList .users .user .data .tags .tag:hover { background-color: #172322; color: #eeeeee; }
-#usersList .users .user .data .tags .tag:hover a, #usersList .users .user .data .tags .tag:hover a:hover, #usersList .users .user .data .tags .tag:hover a:visited, #usersList .users .user .data .tags .tag:hover a:focus { color: #eeeeee; }
-#usersList .users .user .data .dates { float: left; font-size: 0.8em; height: 1em; padding: 1em; color: #999999; }
-#usersList .users .user .data .dates .lastVisit { display: block; }
-#usersList .users .user .data .control { display: inline; font-size: 0.65em; border: 0; padding: 0 0 0 2em; margin: 0; font-weight: normal; white-space: pre; z-index: 3; color: #999999; }
-#usersList .users .user .data .control a { display: inline; font-weight: normal; text-decoration: none; padding: 0.1em; }
-#usersList .users .user .data .control a:hover { background-color: #0066cc; color: white; text-decoration: none; }
-#usersList .users .mine { min-height: 45px; }
-#usersList .users .mine .status { display: block; min-height: 45px; }
+/****** user.scss ****** */
+.users { clear: both; padding-top: 2em; border-bottom: 1px solid #cccccc; }
+
+.users .user { position: relative; z-index: 1; margin-bottom: 1em; border-top: 1px solid #cccccc; }
+
+.users .person, .pane .displayStyle fieldset.options .person { clear: both; min-height: 45px; }
+.users .user, .pane .displayStyle fieldset.options .user { position: relative; z-index: 1; padding-bottom: 1em; border-top: 1px solid #cccccc; }
+.users .user .stats, .pane .displayStyle fieldset.options .user .stats { position: relative; float: right; width: 100px; background-color: #999999; padding: 0; z-index: 2; }
+.users .user .stats .countItems, .pane .displayStyle fieldset.options .user .stats .countItems { display: block; color: white; padding: 0.25em; font-weight: normal; text-align: center; text-decoration: none; }
+.users .user .stats .countItems:hover, .pane .displayStyle fieldset.options .user .stats .countItems:hover { background-color: #b0d730; }
+.users .user .stats .countTags, .pane .displayStyle fieldset.options .user .stats .countTags { display: block; position: relative; color: #cccccc; padding: 0.25em 16px 0.25em 0.25em; font-size: 0.75em; font-weight: normal; text-align: right; text-decoration: none; }
+.users .user .stats .countTags:hover, .pane .displayStyle fieldset.options .user .stats .countTags:hover { background-color: #b0d730; color: white; }
+.users .user .stats .countTags .icon, .pane .displayStyle fieldset.options .user .stats .countTags .icon { position: absolute; border: none; top: 0.25em; right: -2px; padding: 0; }
+.users .user .data, .pane .displayStyle fieldset.options .user .data { position: relative; padding: 0.25em 0 0 40px; z-index: 1; }
+.users .user .data .avatar, .pane .displayStyle fieldset.options .user .data .avatar { position: absolute; left: 0; top: 0; width: 32px; height: 32px; }
+.users .user .data .avatar a .img, .pane .displayStyle fieldset.options .user .data .avatar a .img { display: block; position: relative; border: 0; background-color: transparent; }
+.users .user .data .avatar a .img img, .pane .displayStyle fieldset.options .user .data .avatar a .img img { width: 32px; height: 32px; }
+.users .user .data .avatar a .img .ui-icon, .pane .displayStyle fieldset.options .user .data .avatar a .img .ui-icon { position: relative; left: 8px; }
+.users .user .data .userId, .pane .displayStyle fieldset.options .user .data .userId { float: left; padding: 0; font-size: 1.25em; width: 6em; }
+.users .user .data .userId a, .pane .displayStyle fieldset.options .user .data .userId a { display: inline; font-weight: bold; }
+.users .user .data .fullName, .pane .displayStyle fieldset.options .user .data .fullName { float: left; padding: 0.25em; }
+.users .user .data .fullName a, .pane .displayStyle fieldset.options .user .data .fullName a { display: inline; font-weight: bold; }
+.users .user .data .email, .pane .displayStyle fieldset.options .user .data .email { float: right; padding: 0.25em; border: none; max-width: 794px; }
+.users .user .data .email a, .pane .displayStyle fieldset.options .user .data .email a { display: inline; font-weight: normal; }
+.users .user .data .email .icon, .pane .displayStyle fieldset.options .user .data .email .icon { position: relative; float: left; }
+.users .user .data .tags, .pane .displayStyle fieldset.options .user .data .tags { clear: right; display: block; float: right; font-size: 0.9em; padding: 0.5em 0 0; margin: 0; text-align: right; }
+.users .user .data .tags .tag, .users .user .data .tags .tag:hover, .pane .displayStyle fieldset.options .user .data .tags .tag, .pane .displayStyle fieldset.options .user .data .tags .tag:hover { display: block; float: right; padding: 0.2em; margin: 0.1em; background-color: #eeeeee; color: #172322; }
+.users .user .data .tags .tag a, .users .user .data .tags .tag a:hover, .users .user .data .tags .tag a:visited, .users .user .data .tags .tag a:focus, .users .user .data .tags .tag:hover a, .users .user .data .tags .tag:hover a:hover, .users .user .data .tags .tag:hover a:visited, .users .user .data .tags .tag:hover a:focus, .pane .displayStyle fieldset.options .user .data .tags .tag a, .pane .displayStyle fieldset.options .user .data .tags .tag a:hover, .pane .displayStyle fieldset.options .user .data .tags .tag a:visited, .pane .displayStyle fieldset.options .user .data .tags .tag a:focus, .pane .displayStyle fieldset.options .user .data .tags .tag:hover a, .pane .displayStyle fieldset.options .user .data .tags .tag:hover a:hover, .pane .displayStyle fieldset.options .user .data .tags .tag:hover a:visited, .pane .displayStyle fieldset.options .user .data .tags .tag:hover a:focus { display: inline; font-weight: normal; text-decoration: none; color: #172322; }
+.users .user .data .tags .tag:hover, .pane .displayStyle fieldset.options .user .data .tags .tag:hover { background-color: #172322; color: #eeeeee; }
+.users .user .data .tags .tag:hover a, .users .user .data .tags .tag:hover a:hover, .users .user .data .tags .tag:hover a:visited, .users .user .data .tags .tag:hover a:focus, .pane .displayStyle fieldset.options .user .data .tags .tag:hover a, .pane .displayStyle fieldset.options .user .data .tags .tag:hover a:hover, .pane .displayStyle fieldset.options .user .data .tags .tag:hover a:visited, .pane .displayStyle fieldset.options .user .data .tags .tag:hover a:focus { color: #eeeeee; }
+.users .user .data .dates, .pane .displayStyle fieldset.options .user .data .dates { clear: both; font-size: 0.8em; height: 1em; padding: 0 0 0 1em; color: #999999; }
+.users .user .data .dates .lastVisit, .pane .displayStyle fieldset.options .user .data .dates .lastVisit { display: block; }
+.users .user .data .control, .pane .displayStyle fieldset.options .user .data .control { display: inline; font-size: 0.65em; border: 0; padding: 0 0 0 2em; margin: 0; font-weight: normal; white-space: pre; z-index: 3; color: #999999; }
+.users .user .data .control a, .pane .displayStyle fieldset.options .user .data .control a { display: inline; font-weight: normal; text-decoration: none; padding: 0.1em; }
+.users .user .data .control a:hover, .pane .displayStyle fieldset.options .user .data .control a:hover { background-color: #0066cc; color: white; text-decoration: none; }
+.users .mine, .pane .displayStyle fieldset.options .mine { min-height: 45px; }
+.users .mine .status, .pane .displayStyle fieldset.options .mine .status { display: block; min-height: 45px; }
+
+.pane .displayOptions .displayStyle fieldset.options .user .data .avatar { position: relative; width: auto; height: auto; float: left; padding: 0; }
+.pane .displayOptions .displayStyle fieldset.options .user .data .avatar .img { float: left; }
+.pane .displayOptions .displayStyle fieldset.options .user .data .userId { float: left; padding: 0.25 0 0.25em 16px; }
+.pane .displayOptions .displayStyle fieldset.options .user .data .fullName, .pane .displayOptions .displayStyle fieldset.options .user .data .email { clear: left; padding: 0 0 0.25em 16px; }
+.pane .displayOptions .displayStyle fieldset.options .user .data .email { float: left; }
+.pane .displayOptions .displayStyle fieldset.options .user .data .tags { margin: 0; padding: 0 0 0.25em 16px; }
+.pane .displayOptions .displayStyle fieldset.options .user .data .dates { clear: both; float: none; padding: 0.25em 0 0 16px; }

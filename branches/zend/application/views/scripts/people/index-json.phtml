@@ -42,25 +42,11 @@
 Connexions_Profile::checkpoint('Connexions',
                                'IndexView Json rendering beginning');
 
-/*
-Connexions::log('index/index-json.phtml: main[ %s ]',
-                Connexions::varExport($this->main));
-// */
-
-$helper    = $this->bookmarks( $this->main );
-$bookmarks = $helper->getBookmarks();
-$paginator = $helper->paginator;
-
-/*
-Connexions::log("index/index-json.phtml: paginator with %d bookmarks [ %s ]",
-                count($bookmarks),
-                (is_object($bookmarks)
-                    ? get_class($bookmarks)
-                    : gettype($bookmarks)) );
-// */
+$bookmarks = $this->bookmarks( $this->main );
+$paginator = $bookmarks->paginator;
 
 $items = array();
-foreach ($paginator as $item)
+foreach ($bookmarks->paginator as $item)
 {
     //array_push($items, $item->toArray( ));
     array_push($items, $item->toArray( array('deep'     => false,

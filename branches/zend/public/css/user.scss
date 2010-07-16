@@ -1,0 +1,260 @@
+@import "sizes";
+@import "colors";
+@import "mixins";
+
+$displaySortOffset: 5px;
+
+/****** user.scss ****** */
+// Styling for a single User
+// Used by users.sass
+
+// Include fieldset.options here so 'form .displayStyle fieldset.options'
+// will be rendered similar to users
+// (i.e. will visually match the bookmark presentation that it controls)
+.users {
+  clear: both;
+  padding-top: 2em;
+  border-bottom: unquote("1px solid") $borderColor;
+}
+
+.users {
+  .user {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 1em;
+    border-top: unquote("1px solid") $borderColor;
+  }
+}
+
+.users, .pane .displayStyle fieldset.options {
+  .person {
+    clear: both;
+    min-height: 45px;
+  }
+  .user {
+    position: relative;
+    z-index: 1;
+    padding-bottom: 1em;
+    border-top: unquote("1px solid") $borderColor;
+    // stats:countItems, countTags
+    .stats {
+      position: relative;
+      float: right;
+      width: $countBoxWidth;
+      background-color: $controlColor;
+      padding: 0;
+      z-index: 2;
+      .countItems {
+        display: block;
+        color: $pageColorBackground;
+        padding: 0.25em;
+        font-weight: normal;
+        text-align: center;
+        text-decoration: none;
+        &:hover {
+          background-color: $navColorHover;
+        }
+      }
+      .countTags {
+        display: block;
+        position: relative;
+        color: $borderColor;
+        padding: 0.25em 16px 0.25em 0.25em;
+        font-size: 0.75em;
+        font-weight: normal;
+        text-align: right;
+        text-decoration: none;
+        &:hover {
+          background-color: $navColorHover;
+          color: $pageColorBackground;
+        }
+        // tag icon
+        .icon {
+          position: absolute;
+          border: none;
+          top: 0.25em;
+          right: -2px;
+          padding: 0;
+        }
+      }
+    }
+    .data {
+      position: relative;
+      padding: 0.25em 0 0 40px;
+      z-index: 1;
+      // Avatar
+      .avatar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 32px;
+        height: 32px;
+        a {
+          .img {
+            display: block;
+            position: relative;
+            border: 0;
+            background-color: transparent;
+            img {
+              width: 32px;
+              height: 32px;
+            }
+            .ui-icon {
+              position: relative;
+              left: 8px;
+            }
+          }
+        }
+      }
+      // UserId
+      .userId {
+        float: left;
+        padding: 0;
+        font-size: 1.25em;
+        width: 6em;
+        a {
+          display: inline;
+          font-weight: bold;
+        }
+      }
+      // FullName
+      .fullName {
+        float: left;
+        padding: 0.25em;
+        a {
+          display: inline;
+          font-weight: bold;
+        }
+      }
+      // Email
+      .email {
+        float: right;
+        padding: 0.25em;
+        border: none;
+        max-width: $urlBoxWidth;
+        a {
+          display: inline;
+          font-weight: normal;
+        }
+        .icon {
+          position: relative;
+          float: left;
+        }
+      }
+      // List of tags for this item
+      .tags {
+        clear: right;
+        display: block;
+        float: right;
+        font-size: 0.9em;
+        padding: 0.5em 0 0;
+        margin: 0;
+        text-align: right;
+        //width:      45%
+        // Individual tag
+        .tag,.tag:hover {
+          display: block;
+          float: right;
+          padding: 0.2em;
+          margin: 0.1em;
+          background-color: $tagColorBackground;
+          color: $tagColor;
+          a,a:hover,a:visited,a:focus {
+            display: inline;
+            font-weight: normal;
+            text-decoration: none;
+            color: $tagColor;
+          }
+        }
+        .tag:hover {
+          background-color: $tagColor;
+          color: $tagColorBackground;
+          a, a:hover, a:visited, a:focus {
+            color: $tagColorBackground;
+          }
+        }
+      }
+      // Dates (lastVisit)
+      .dates {
+        clear:      both;
+        font-size:  0.8em;
+        height:     1em;
+        padding:    0 0 0 1em;
+        color:      $controlColor;
+        .lastVisit {
+          display: block;
+        }
+      }
+      // Item controls: edit, delete, save
+      .control {
+        display: inline;
+        font-size: 0.65em;
+        border: 0;
+        padding: 0 0 0 2em;
+        margin: 0;
+        font-weight: normal;
+        white-space: pre;
+        z-index: 3;
+        color: $controlColor;
+        a {
+          display: inline;
+          font-weight: normal;
+          text-decoration: none;
+          padding: 0.1em;
+        }
+        a:hover {
+          background-color: $linkColor;
+          color: $pageColorBackground;
+          text-decoration: none;
+        }
+      }
+    }
+  }
+  // Item (mine)
+  .mine {
+    min-height: 45px;
+    .status {
+      display: block;
+      min-height: 45px;
+    }
+  }
+}
+
+// Cleanup the displayOptions area
+.pane .displayOptions .displayStyle fieldset.options {
+  .user {
+    .data {
+      .avatar {
+        position: relative;
+        width:    auto;
+        height:   auto;
+
+        float:    left;
+        padding:  0;
+        .img {
+          float:  left;
+        }
+      }
+      .userId {
+        float:    left;
+        padding:  0.25 0 0.25em 16px;
+      }
+      .fullName, .email {
+        clear:    left;
+        padding:  0 0 0.25em 16px;
+      }
+      .email {
+        float:    left;
+      }
+      .tags {
+        margin:   0;
+        padding:  0 0 0.25em 16px;
+      }
+      .dates {
+        clear:    both;
+        float:    none;
+        padding:  0.25em 0 0 16px;
+      }
+    }
+  }
+}

@@ -5,11 +5,11 @@ SRCS =	connexions.js jquery.registry.js jquery.cookie.js 		\
 	ui.checkbox.js ui.input.js ui.stars.js ui.notify.js		\
 	connexions.dropdownForm.js connexions.optionGroups.js		\
 	connexions.itemScope.js connexions.paginator.js			\
-	connexions.bookmark.js connexions.bookmarkList.js		\
-	connexions.pane.js connexions.bookmarksPane.js			\
+	connexions.pane.js connexions.itemsPane.js			\
 	connexions.cloudPane.js connexions.sidebar.js			\
-	connexions.search.js connexions.bookmarkPost.js			\
-	connexions.autocomplete.js
+	connexions.itemList.js	connexions.search.js 			\
+	connexions.bookmarkPost.js connexions.autocomplete.js		\
+	connexions.bookmark.js connexions.user.js
 
 #all: connexions.min.css bookmarks.min.css users.min.css 	\
 #	urlItems.min.css inbox.min.css				\

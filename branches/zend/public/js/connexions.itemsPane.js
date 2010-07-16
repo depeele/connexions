@@ -1,23 +1,23 @@
 /** @file
  *
  *  Javascript interface/wrapper for the presentation of a configurable pane
- *  which contains a bookmark list.
+ *  which contains an item list.
  *
  *  This is class extends connexions.pane to include unobtrusive activation of
- *  any contained, pre-rendered ul.bookmarkList generated via
- *  View_Helper_HtmlBookmarks.
+ *  any contained, pre-rendered ul.list generated via
+ *  View_Helper_Html{ Bookmarks | Users }.
  *
  *  Requires:
  *      ui.core.js
  *      ui.widget.js
  *      connexions.pane.js
- *      connexions.bookmarkList.js
+ *      connexions.itemList.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false */
 (function($) {
 
-$.widget("connexions.bookmarksPane", $.connexions.pane, {
+$.widget("connexions.itemsPane", $.connexions.pane, {
     version: "0.0.1",
     options: {
         // Defaults
@@ -25,15 +25,12 @@ $.widget("connexions.bookmarksPane", $.connexions.pane, {
     },
 
     /** @brief  Initialize a new instance.
-     *
-     *  @triggers:
-     *      'change.bookmark'  when something about the bookmark is changed;
      */
     _create: function() {
         var self        = this;
         var opts        = self.options;
 
-        self._init_bookmarkList();
+        self._init_itemList();
 
         self._paneInit();
     },
@@ -42,27 +39,27 @@ $.widget("connexions.bookmarksPane", $.connexions.pane, {
      * Private methods
      *
      */
-    _init_bookmarkList: function() {
+    _init_itemList: function() {
         var self            = this;
-        self.$bookmarkList  = self.element.find('ul.bookmarks');
+        self.$itemList  = self.element.find('ul.items');
 
-        if (self.$bookmarkList.length < 1)
+        if (self.$itemList.length < 1)
         {
             return;
         }
 
         var opts    = self.options;
-        var uiOpts  = (opts.bookmarkList === undefined
+        var uiOpts  = (opts.itemList === undefined
                         ? {}
-                        : opts.bookmarkList);
+                        : opts.itemList);
 
         if (uiOpts.namespace === undefined)
         {
             uiOpts.namespace = opts.namespace;
         }
 
-        // Instantiate the connexions.bookmarkList widget
-        self.$bookmarkList.bookmarkList(uiOpts);
+        // Instantiate the connexions.itemList widget
+        self.$itemList.itemList(uiOpts);
     },
 
     /************************
@@ -73,7 +70,7 @@ $.widget("connexions.bookmarksPane", $.connexions.pane, {
         var self    = this;
 
         // Remove added elements
-        self.$bookmarkList.bookmarkList('destroy');
+        self.$itemList.itemList('destroy');
 
         self._paneDestroy();
     }
@@ -81,6 +78,3 @@ $.widget("connexions.bookmarksPane", $.connexions.pane, {
 
 
 }(jQuery));
-
-
-

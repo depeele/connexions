@@ -436,24 +436,24 @@ a:visited { color: #005a9c; }
 .displayOptions .displayStyle ul.groups li.toggle { border: none; }
 
 .pane .displayOptions .displayStyle fieldset.options { padding-top: 0.5em; }
-.pane .displayOptions .displayStyle fieldset.options .item { border: 1px solid #cccccc; border-bottom: none; padding: 0 0 0.1em 0.2em; }
-.pane .displayOptions .displayStyle fieldset.options .item label { display: inline; float: none; width: auto; padding-left: 0.25em; }
-.pane .displayOptions .displayStyle fieldset.options .item .stats { font-weight: normal; padding: 0; }
-.pane .displayOptions .displayStyle fieldset.options .item .stats .rating { padding: 0.25em 0.1em 0.25em 0.5em; text-align: left; }
-.pane .displayOptions .displayStyle fieldset.options .item .stats .rating .info { text-align: left; float: none; padding: 0; }
-.pane .displayOptions .displayStyle fieldset.options .item .data { padding-left: 0; padding-right: 0.1em; }
-.pane .displayOptions .displayStyle fieldset.options .item .data .itemName { padding-bottom: 0.5em; }
-.pane .displayOptions .displayStyle fieldset.options .item .data .url, .pane .displayOptions .displayStyle fieldset.options .item .data .description, .pane .displayOptions .displayStyle fieldset.options .item .data .description .full, .pane .displayOptions .displayStyle fieldset.options .item .data .description .summary { margin: 0; }
-.pane .displayOptions .displayStyle fieldset.options .item .data .description .full, .pane .displayOptions .displayStyle fieldset.options .item .data .description .summary { padding: 0; }
-.pane .displayOptions .displayStyle fieldset.options .item .data .userId { white-space: normal; padding: 0 0 0 1em; margin-bottom: 1em; font-size: 0.8em; }
-.pane .displayOptions .displayStyle fieldset.options .item .data .userId label { padding-left: 0; }
-.pane .displayOptions .displayStyle fieldset.options .item .data .userId .avatar { position: relative; float: left; padding: 0 0.75em 0 0.25em; }
-.pane .displayOptions .displayStyle fieldset.options .item .data .userId .avatar label { padding-left: 8px; }
-.pane .displayOptions .displayStyle fieldset.options .item .data .userId .avatar .img { position: absolute; left: 14px; top: 0; }
-.pane .displayOptions .displayStyle fieldset.options .item .data .userId .id { display: inline; }
-.pane .displayOptions .displayStyle fieldset.options .item .data .tags { width: auto; text-align: left; margin-bottom: 1em; padding: 0; }
-.pane .displayOptions .displayStyle fieldset.options .item .data .tags label, .pane .displayOptions .displayStyle fieldset.options .item .data .tags .tag { display: inline; float: none; font-size: 0.8em; }
-.pane .displayOptions .displayStyle fieldset.options .item .data .dates .updated { width: auto; }
+.pane .displayOptions .displayStyle fieldset.options .item, .pane .displayOptions .displayStyle fieldset.options .user { border: 1px solid #cccccc; border-bottom: none; padding: 0 0 0.1em 0.2em; }
+.pane .displayOptions .displayStyle fieldset.options .item label, .pane .displayOptions .displayStyle fieldset.options .user label { display: inline; float: none; width: auto; padding-left: 0.25em; }
+.pane .displayOptions .displayStyle fieldset.options .item .stats, .pane .displayOptions .displayStyle fieldset.options .user .stats { font-weight: normal; padding: 0; }
+.pane .displayOptions .displayStyle fieldset.options .item .stats .rating, .pane .displayOptions .displayStyle fieldset.options .user .stats .rating { padding: 0.25em 0.1em 0.25em 0.5em; text-align: left; }
+.pane .displayOptions .displayStyle fieldset.options .item .stats .rating .info, .pane .displayOptions .displayStyle fieldset.options .user .stats .rating .info { text-align: left; float: none; padding: 0; }
+.pane .displayOptions .displayStyle fieldset.options .item .data, .pane .displayOptions .displayStyle fieldset.options .user .data { padding-left: 0; padding-right: 0.1em; }
+.pane .displayOptions .displayStyle fieldset.options .item .data .itemName, .pane .displayOptions .displayStyle fieldset.options .user .data .itemName { padding-bottom: 0.5em; }
+.pane .displayOptions .displayStyle fieldset.options .item .data .url, .pane .displayOptions .displayStyle fieldset.options .item .data .description, .pane .displayOptions .displayStyle fieldset.options .item .data .description .full, .pane .displayOptions .displayStyle fieldset.options .item .data .description .summary, .pane .displayOptions .displayStyle fieldset.options .user .data .url, .pane .displayOptions .displayStyle fieldset.options .user .data .description, .pane .displayOptions .displayStyle fieldset.options .user .data .description .full, .pane .displayOptions .displayStyle fieldset.options .user .data .description .summary { margin: 0; }
+.pane .displayOptions .displayStyle fieldset.options .item .data .description .full, .pane .displayOptions .displayStyle fieldset.options .item .data .description .summary, .pane .displayOptions .displayStyle fieldset.options .user .data .description .full, .pane .displayOptions .displayStyle fieldset.options .user .data .description .summary { padding: 0; }
+.pane .displayOptions .displayStyle fieldset.options .item .data .userId, .pane .displayOptions .displayStyle fieldset.options .user .data .userId { white-space: normal; padding: 0 0 0 1em; margin-bottom: 1em; font-size: 0.8em; }
+.pane .displayOptions .displayStyle fieldset.options .item .data .userId label, .pane .displayOptions .displayStyle fieldset.options .user .data .userId label { padding-left: 0; }
+.pane .displayOptions .displayStyle fieldset.options .item .data .userId .avatar, .pane .displayOptions .displayStyle fieldset.options .user .data .userId .avatar { position: relative; float: left; padding: 0 0.75em 0 0.25em; }
+.pane .displayOptions .displayStyle fieldset.options .item .data .userId .avatar label, .pane .displayOptions .displayStyle fieldset.options .user .data .userId .avatar label { padding-left: 8px; }
+.pane .displayOptions .displayStyle fieldset.options .item .data .userId .avatar .img, .pane .displayOptions .displayStyle fieldset.options .user .data .userId .avatar .img { position: absolute; left: 14px; top: 0; }
+.pane .displayOptions .displayStyle fieldset.options .item .data .userId .id, .pane .displayOptions .displayStyle fieldset.options .user .data .userId .id { display: inline; }
+.pane .displayOptions .displayStyle fieldset.options .item .data .tags, .pane .displayOptions .displayStyle fieldset.options .user .data .tags { width: auto; text-align: left; margin-bottom: 1em; padding: 0; }
+.pane .displayOptions .displayStyle fieldset.options .item .data .tags label, .pane .displayOptions .displayStyle fieldset.options .item .data .tags .tag, .pane .displayOptions .displayStyle fieldset.options .user .data .tags label, .pane .displayOptions .displayStyle fieldset.options .user .data .tags .tag { display: inline; float: none; font-size: 0.8em; }
+.pane .displayOptions .displayStyle fieldset.options .item .data .dates .updated, .pane .displayOptions .displayStyle fieldset.options .user .data .dates .updated { width: auto; }
 
 .ui-notify { width: 350px; position: absolute; top: 10px; right: 10px; }
 

@@ -7,7 +7,6 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 {
     static public   $defaults           = array(
         'displayStyle'      => self::STYLE_REGULAR,
-        'numericGrouping'   => 10,
         'includeScript'     => true,
     );
 
@@ -103,11 +102,10 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         )
     );
 
+    static protected $_initialized  = array();
 
     /** @brief  Set-able parameters. */
     protected       $_displayOptions    = null;
-
-    static protected $_initialized  = array();
 
     /** @brief  Construct a new HTML Bookmarks helper.
      *  @param  config  A configuration array that may include, in addition to
@@ -115,9 +113,6 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
      *                      - displayStyle      Desired display style
      *                                          (if an array, STYLE_CUSTOM)
      *                                          [ STYLE_REGULAR ];
-     *                      - numericGrouping   When sorting numerically, the
-     *                                          number of items per group
-     *                                          [ 10 ];
      *                      - includeScript     Should Javascript related to
      *                                          bookmark presentation be
      *                                          included?  [ true ];
@@ -125,7 +120,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
     public function __construct(array $config = array())
     {
         // Over-ride the default _namespace
-        parent::$defaults['namespace'] = 'items';
+        parent::$defaults['namespace'] = 'bookmarks';   //'items';
 
         // Add extra class-specific defaults
         foreach (self::$defaults as $key => $value)
@@ -195,9 +190,16 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
             $config = array('namespace'         => $namespace,
                             'partial'           => 'main',
                             'displayOptions'    => $dsConfig,
+                            /* Rely on the CSS class of rendered items
+                             * (see View_Helper_HtmlBookmark)
+                             * to determine their Javascript objClass
+                            'uiOpts'            => array(
+                                'objClass'      => 'bookmark',
+                            ),
+                             */
                       );
 
-            $call   = "$('#{$namespace}List').bookmarksPane("
+            $call   = "$('#{$namespace}List').itemsPane("
                     .               Zend_Json::encode($config) .");";
             $view->jQuery()->addOnLoad($call);
         }
@@ -299,9 +301,9 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         return $val;
     }
 
-    /** @brief  Render an HTML version of a paginated set of User Items.
+    /** @brief  Render an HTML version of a paginated set of bookmarks.
      *
-     *  @return The HTML representation of the user items.
+     *  @return The HTML representation of the bookmarks.
      */
     public function render()
     {
@@ -328,8 +330,8 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
                             $paginator->getCurrentPageNumber());
             // */
 
-            //$html .= "<ul class='{$this->namespace}'>";
-            $html .= "<ul class='bookmarks'>";
+            //$html .= "<ul class='items {$this->namespace}'>";
+            $html .= "<ul class='items bookmarks'>";
 
             /* Group by the field identified in $this->sortBy
              *

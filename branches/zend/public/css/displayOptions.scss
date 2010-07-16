@@ -115,7 +115,7 @@
 // More specific to override '.bookmarks fieldset.options'
 .pane .displayOptions .displayStyle fieldset.options {
   padding-top: 0.5em;
-  .item {
+  .item, .user {
     border:         unquote("1px solid") $borderColor;
     border-bottom:  none;
     padding:        0 0 0.1em 0.2em;
