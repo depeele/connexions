@@ -1756,7 +1756,13 @@ $.widget("connexions.dropdownForm", {
         var _form_submit        = function(e) {
             // Serialize all form values to an array...
             var settings    = self.$form.serializeArray();
+            var cookieOpts  = {path: window.location.pathname};
             //e.preventDefault();
+
+            if (window.location.protocol === 'https')
+            {
+                cookieOpts.secure = true;
+            }
 
             /* ...and set a cookie for each
              *      namespace +'SortBy'
@@ -1771,7 +1777,7 @@ $.widget("connexions.dropdownForm", {
                 $.log("Add Cookie: name[%s], value[%s]",
                       this.name, this.value);
                 // */
-                $.cookie(this.name, this.value);
+                $.cookie(this.name, this.value, cookieOpts);
             });
 
             if (! self._trigger('apply', e))
@@ -1873,6 +1879,7 @@ $.widget("connexions.dropdownForm", {
     },
 
     enable: function(enableSubmit) {
+        var self    = this;
 
         self.$form.find('input,select').removeAttr('disabled');
 
@@ -1894,6 +1901,8 @@ $.widget("connexions.dropdownForm", {
     },
 
     disable: function() {
+        var self    = this;
+
         self.$form.find('input,select').attr('disabled', true);
 
         // Any change within the form should enable the submit button
@@ -3406,7 +3415,7 @@ $.widget("connexions.itemList", {
             /* Determine the type/class of item by the CSS class of the
              * representative form
              */
-            objClass = self.$items.attr('class');
+            objClass = opts.objClass = self.$items.attr('class');
         }
 
         self.$items[objClass]({
@@ -3478,13 +3487,14 @@ $.widget("connexions.itemList", {
      *
      */
     destroy: function() {
-        var self        = this;
+        var self    = this;
+        var opts    = self.options;
 
         // Unbind events
         self.$headers.unbind('hover');
 
         // Remove added elements
-        self.$items.item('destroy');
+        self.$items[opts.objClass]('destroy');
     }
 });
 

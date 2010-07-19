@@ -10,7 +10,7 @@
    <div class='context-bg connexions_sprites item_bg ui-corner-left'>
     &nbsp;
    </div>
-   <p>Items related to these bookmarks.</p>
+   <p>Items related to these people.</p>
   </div>
   <?php
 
@@ -40,20 +40,42 @@
                         'ratingCount       DESC',
                         'url               ASC');
 
-    /* Items related to the given bookmarks -- actually, related to the
-     * identified 'owner' and any specified tags.
-     */
-    $itemSet = $service->fetchByUsersAndTags(($this->owner === '*'
-                                                ? null          // ALL users
-                                                : $this->owner),// ONE user
-                                             $this->tags,
-                                             true,          // exact
-                                             $fetchOrder,
-                                             $count,
-                                             $offset );
+    // Tags related to the given users
+    if ($htmlSidebar->items === null)
+    {
+        /* There have been no users/items communicated to the
+         * htmlSidebar helper (e.g. this is invoked as a partial and
+         *                          index.phtml has not been rendered).
+         *
+         * Use the View_Helper_HtmlUsers view helper to generate the
+         * appropriate set now, assuming the controller has filled in
+         * $this->main for the configuration of the main view.
+         *
+         * Tell it NOT to include any script.
+         */
+        $subOpts = $this->main;
+        $subOpts['includeScript'] = false;
+        $subOpts['perPage']       = -1;
+
+        $htmlUsers = $this->htmlUsers( $subOpts );
+        $items     = $htmlUsers->users;
+
+        /* Tell the sidebar helper about the set of items
+         * (I don't thing this really matters).
+         */
+        $htmlSidebar->items = $items;
+    }
+
+
+    // Items related to the given users (saved by main.phtml into 'items').
+    $itemSet = $service->fetchByUsers($htmlSidebar->items,
+                                      $fetchOrder,
+                                      $count,
+                                      $offset );
 
     $config['items']       =& $itemSet;
     $config['itemBaseUrl'] = $this->baseUrl('/url/');
+    $config['weightName'] =  'userCount';
     $config['itemType']    =  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
 
     $htmlItemCloud         = $this->htmlItemCloud($config);

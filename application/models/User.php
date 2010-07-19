@@ -144,7 +144,7 @@ class Model_User extends Model_Taggable
         {
         case 'authType':      $val = $this->_authType;        break;
         case 'credential':    $val = $this->_credential;      break;
-        case 'tags':          $val = $this->_tags();          break;
+        case 'tags':          $val = $this->getTags();        break;
         case 'bookmarks':     $val = $this->_bookmarks();     break;
         default:              $val = parent::__get($name);    break;
         }
@@ -475,6 +475,28 @@ class Model_User extends Model_Taggable
      *
      */
 
+    /** @brief  Retrieve the set of tags related to this user.
+     *  @param  order   Optional ORDER clause (string, array);
+     *  @param  count   Optional LIMIT count;
+     *  @param  offset  Optional LIMIT offset;
+     *
+     *  @return A Model_Tag_Set
+     */
+    public function getTags($order  = null,
+                            $count  = null,
+                            $offset = null)
+    {
+        if ($this->_tags === null)
+        {
+            $this->_tags = $this->getMapper()->getTags( $this,
+                                                        $order,
+                                                        $count,
+                                                        $offset );
+        }
+
+        return $this->_tags;
+    }
+
     /** @brief  Given an array of tag rename information, rename tags for the
      *          provided user.
      *  @param  renames     An array of tag rename information:
@@ -617,16 +639,6 @@ class Model_User extends Model_Taggable
         }
 
         return true;
-    }
-
-    protected function _tags()
-    {
-        if ($this->_tags === null)
-        {
-            $this->_tags = $this->getMapper()->getTags( $this );
-        }
-
-        return $this->_tags;
     }
 
     protected function _bookmarks()

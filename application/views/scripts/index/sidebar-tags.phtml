@@ -87,9 +87,11 @@
              *
              * Tell it NOT to include any script.
              */
-            $this->main['includeScript'] = false;
+            $subOpts = $this->main;
+            $subOpts['includeScript'] = false;
+            $subOpts['perPage']       = -1;
 
-            $htmlBookmarks = $this->htmlBookmarks( $this->main );
+            $htmlBookmarks = $this->htmlBookmarks( $subOpts );
             $items         = $htmlBookmarks->bookmarks;
 
             /* Tell the sidebar helper about the set of items

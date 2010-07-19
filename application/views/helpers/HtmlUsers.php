@@ -486,7 +486,7 @@ class View_Helper_HtmlUsers extends View_Helper_Users
 
         /*
         Connexions::log('View_Helper_HtmlBookmarks::_renderDisplayOptions(): '
-                        .   '_sortBy[ %s ], sortOrder[ %s ]',
+                        .   'sortBy[ %s ], sortOrder[ %s ]',
                         $this->sortBy, $this->sortOrder);
         // */
 

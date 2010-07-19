@@ -149,7 +149,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         }
 
         /*
-        Connexions::log("View_Helper_HtmlSidebar::populate(): params[ %s ]",
+        Connexions::log("View_Helper_HtmlItemCloud::populate(): params[ %s ]",
                         print_r($this->_params, true));
 
         // */
