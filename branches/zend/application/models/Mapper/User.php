@@ -44,12 +44,26 @@ class Model_Mapper_User extends Model_Mapper_Base
 
     /** @brief  Retrieve a set of user-related tags
      *  @param  user    The Model_User instance.
+     *  @param  order   Optional ORDER clause (string, array);
+     *  @param  count   Optional LIMIT count;
+     *  @param  offset  Optional LIMIT offset;
      *
      *  @return A Model_Tag_Set
      */
-    public function getTags(Model_User $user)
+    public function getTags(Model_User  $user,
+                                        $order  = null,
+                                        $count  = null,
+                                        $offset = null)
     {
-        throw new Exception('Not yet implemented');
+        $tagMapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
+        $tags      = $tagMapper->fetchRelated( array(
+                                    'users'     => array($user->userId),
+                                    'order'     => $order,
+                                    'count'     => $count,
+                                    'offset'    => $offset,
+                                ));
+
+        return $tags;
     }
 
     /** @brief  Retrieve a set of user-related items

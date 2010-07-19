@@ -67,7 +67,7 @@ $.widget("connexions.itemList", {
             /* Determine the type/class of item by the CSS class of the
              * representative form
              */
-            objClass = self.$items.attr('class');
+            objClass = opts.objClass = self.$items.attr('class');
         }
 
         self.$items[objClass]({
@@ -139,13 +139,14 @@ $.widget("connexions.itemList", {
      *
      */
     destroy: function() {
-        var self        = this;
+        var self    = this;
+        var opts    = self.options;
 
         // Unbind events
         self.$headers.unbind('hover');
 
         // Remove added elements
-        self.$items.item('destroy');
+        self.$items[opts.objClass]('destroy');
     }
 });
 

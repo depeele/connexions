@@ -6,8 +6,6 @@
  *
  *  Incoming members:
  *      url             The full url for the main controller of this page;
- *      owner           The owner of the current item set -- either a string or
- *                      a Model_User instance;
  *      viewer          The Model_User instance representing the current
  *                      viewer;
  *      tags            A Model_Set_Tag instance containing information about
@@ -18,10 +16,6 @@
  *                          main body;
  *          viewer          The Model_User instance representing the current
  *                          viewer (typically a reference to $view->viewer);
- *          users           The Model_User or Model_Set_User instance
- *                          representing the user(s) that partially define the
- *                          scope of this view
- *                          (typically a reference to $view->owner);
  *          tags            The Model_Tag or Model_Set_Tag instance  
  *                          representing the tag(s) that partially define the
  *                          scope of this view
@@ -42,11 +36,11 @@
  *  rendering.
  */
 Connexions_Profile::checkpoint('Connexions',
-                               'IndexView Feed rendering beginning');
+                               'PeopleView Feed rendering beginning');
 
 // Use the application/views/helpers/FeedBookmarks.php view helper...
-$this->feed = $this->feedBookmarks($this->main)->render();
+$this->feed = $this->feedUsers($this->main)->render();
 
 Connexions_Profile::checkpoint('Connexions',
-                               'IndexView Feed rendering COMPLETE, '
+                               'PeopleView Feed rendering COMPLETE, '
                                . 'feed is class '. get_class($this->feed));

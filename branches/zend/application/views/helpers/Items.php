@@ -131,7 +131,7 @@ abstract class View_Helper_Items extends Zend_View_Helper_Abstract
 
     public function setPerPage($value)
     {
-        if ($value < 1)
+        if ($value === 0)
             $value = self::$defaults['perPage'];
 
         $this->_params['perPage'] = $value;

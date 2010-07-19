@@ -48,8 +48,10 @@ class View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
             $html .=   "<div class='stats ui-corner-bottom'>";  // stats {
             if ($showParts['user:stats:countItems'] === true)
             {
+                /*
                 $count = $user->getWeight();
                 if ($count < 1)
+                */
                     $count = $user->totalItems;
 
                 $html .= sprintf ("<a class='countItems' "
@@ -201,7 +203,7 @@ class View_Helper_HtmlUsersUser extends Zend_View_Helper_Abstract
 
             $html .= "<ul class='tags' title='Top {$tagLimit} tags'>";// tags {
 
-            $tags = $user->tags->weightBy('userItem');
+            $tags = $user->getTags('userItemCount DESC', 5);
 
             // Only show the top 5
             foreach ($tags as $tag)

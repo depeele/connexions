@@ -33,7 +33,7 @@ class View_Helper_Users extends View_Helper_Items
         self::SORT_BY_ITEM_COUNT    => 'Item Count',
     );
 
-    /** @brief  Construct a new Bookmarks helper.
+    /** @brief  Construct a new Users helper.
      *  @param  config  A configuration array (see populate());
      */
     public function __construct(array $config = array())
@@ -48,6 +48,17 @@ class View_Helper_Users extends View_Helper_Items
         }
 
         parent::__construct($config);
+    }
+
+    public function users(array $config = array())
+    {
+        if (! empty($config))
+        {
+            $this->populate($config);
+            return $this;
+        }
+
+        return $this->render();
     }
 
     /** @brief  Set the current sortBy.
@@ -74,12 +85,12 @@ class View_Helper_Users extends View_Helper_Items
             break;
         }
 
+        $this->_params['sortBy'] = trim($sortBy);
+
         /*
-        Connexions::log('View_Helper_HtmlUsers::'
+        Connexions::log('View_Helper_Users::'
                             . "setSortBy({$orig}) == [ {$sortBy} ]");
         // */
-
-        $this->_sortBy = $sortBy;
 
         return $this;
     }

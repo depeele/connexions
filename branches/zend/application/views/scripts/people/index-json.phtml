@@ -6,8 +6,6 @@
  *
  *  Incoming members:
  *      url             The full url for the main controller of this page;
- *      owner           The owner of the current item set -- either a string or
- *                      a Model_User instance;
  *      viewer          The Model_User instance representing the current
  *                      viewer;
  *      tags            A Model_Set_Tag instance containing information about
@@ -18,10 +16,6 @@
  *                          main body;
  *          viewer          The Model_User instance representing the current
  *                          viewer (typically a reference to $view->viewer);
- *          users           The Model_User or Model_Set_User instance
- *                          representing the user(s) that partially define the
- *                          scope of this view
- *                          (typically a reference to $view->owner);
  *          tags            The Model_Tag or Model_Set_Tag instance  
  *                          representing the tag(s) that partially define the
  *                          scope of this view
@@ -40,13 +34,13 @@
  *  rendering.
  */
 Connexions_Profile::checkpoint('Connexions',
-                               'IndexView Json rendering beginning');
+                               'PeopleView Json rendering beginning');
 
-$bookmarks = $this->bookmarks( $this->main );
-$paginator = $bookmarks->paginator;
+$users     = $this->users( $this->main );
+$paginator = $users->paginator;
 
 $items = array();
-foreach ($bookmarks->paginator as $item)
+foreach ($paginator as $item)
 {
     //array_push($items, $item->toArray( ));
     array_push($items, $item->toArray( array('deep'     => false,
@@ -57,5 +51,5 @@ foreach ($bookmarks->paginator as $item)
 $this->data = $items;
 
 Connexions_Profile::checkpoint('Connexions',
-                               'IndexView Json rendering COMPLETE');
+                               'PeopleView Json rendering COMPLETE');
 
