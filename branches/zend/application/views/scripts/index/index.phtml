@@ -80,7 +80,7 @@ $scopeRpc['method'] = 'bookmark.autocompleteTag';
 $scopeRpc['params'] = array('tags'   => (count($this->tags) < 1
                                             ? null
                                             : $this->tags->__toString()),
-                           'users'  => ($this->owner === '*'
+                            'users'  => ($this->owner === '*'
                                             ? null
                                             : $this->owner->name),
                      );

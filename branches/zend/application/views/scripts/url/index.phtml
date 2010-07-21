@@ -1,59 +1,85 @@
 <?php
 /** @file
  *
- *  View script for UrlController::index to render the main content.
- *
- *  The Connexions_View_Helper_HtmlUrlItems helper MUST be initialized
- *  before this view is rendered.
+ *  View script for UrlController::index to render the sidebar content.
  *
  *  Incoming members:
- *      viewer              The Model_User instance representing the current
- *                          viewer;
- *      item                A Model_Item instance representing the base item;
- *      tagInfo             A Connexions_Set_Info instance containing
- *                          information about the requested tags;
+ *      url             The full url for the main controller of this page;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any request tags (i.e. tag restrictions);
+ *      item            A Model_Item instance containing information about
+ *                      the target Item;
  *
- *      paginator           A Zend_Paginator instance established for the
- *                          presentation of the current Model_UserItemSet;
+ *      main            An array of settings for the main body:
+ *          namespace       The cookie/parameters/settings namespace for the
+ *                          sidebar [ 'sidebarTab' ];
+ *          viewer          The Model_User instance representing the current
+ *                          viewer (typically a reference to $view->viewer);
+ *          tags            The Model_Tag or Model_Set_Tag instance
+ *                          representing the tag(s) that paraially define the
+ *                          scope of this view
+ *                          (typically a reference to $view->tags);
+ *          items           The Model_Item_Set or Model_Item instance
+ *                          representing the target item(s);
+ *
+ *          displayStyle    Indicates the current presentation style -- if this
+ *                          is an array, the style is 'custom';
+ *          perPage         The number of results on a single page;
+ *          page            The desired page of results;
+ *          sortBy          Indicates the sort field used to retrieve the
+ *                          current bookmark set;
+ *          sortOrder       Indicates the sort order used to retrieve the
+ *                          current bookmark set;
  */
-$baseUrl = $this->baseUrl('/');
+Connexions::log('views/scripts/url/index.phtml');
+
+$htmlBookmarks = $this->htmlBookmarks( $this->main );
+
+// Prepare the Html Item Scope helper
+$scopePath = array('Url' => $this->baseurl('/url'));
+
+$scopeRpc = Connexions::getJsonRpcInfo();
+$scopeRpc['method'] = 'bookmark.autocompleteTag';
+$scopeRpc['params'] = array('tags'   => (count($this->tags) < 1
+                                            ? null
+                                            : $this->tags->__toString()),
+                            'items'  => ( (! $this->item)
+                                            ? null
+                                            : $this->item->urlHash),
+                     );
+
+$htmlItemScope = $this->htmlItemScope( array(
+                    'namespace'         => $this->namespace,
+                    'items'             => $htmlBookmarks->paginator,
+                    'scope'             => $this->tags, //$htmlBookmarks->tags,
+                    'inputLabel'        => 'Tags',
+                    'inputName'         => 'Tags',
+                    'path'              => $scopePath,
+                    'jsonRpc'           => $scopeRpc,
+                 ));
 
 $links = $this->headLink();
-$links->appendStylesheet($baseUrl .'css/urlItems.css');
-
-// Grab the first item from the paginator
-$item0 = $this->paginator->getItem(0);
-
-//echo "<pre>Item:\n", $this->item->debugDump() ,"</pre>\n";
-//echo "<pre>UseItem 0:\n", print_r($item0, true) ,"</pre>\n";
-
-$this->headTitle('Bookmarks for "'. $item0['name'] .'"');
+$links->appendStylesheet($this->baseUrl('css/urlItems.css'));
 
 ?>
 <div class='columnHeader'>
  <div class='context-bg connexions_sprites bookmark_bg
              ui-corner-left ui-corner-tr'>&nbsp;</div>
- <div class='itemInfo'>
-  <p>
-   <span class='title'><?= $item0['name'] ?></span>
-   <a href='<?= $this->item->url ?>'><?= $this->item->url ?></a>
-   <?php
-    /*
-    if ( $this->tagInfo->hasValidItems())
-        printf ("with tags '%s'.", $this->tagInfo->validItems);
+ <p>Bookmarks related to <?= $this->item->url ?>
+    <br />
+  <?php
+    if ( count($this->tags) > 0)
+        printf ("with tags '%s'.", $this->tags);
     else
         printf ("NO tags.");
-    */
-   ?>
-  </p>
- </div>
-</div>
+  ?>
+ </p>
+<?php
 
-<?= $this->htmlItemScope($this->paginator,
-                         $this->tagInfo) ?>
-
-<?= $this->htmlUrlItems($this->paginator,
-                        $this->viewer,
-                        $this->tagInfo) ?>
+echo $htmlItemScope->render();
+echo $this->render('index/main.phtml');
+?>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

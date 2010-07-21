@@ -1,15 +1,14 @@
-@import "sizes";
 @import "colors";
 @import "mixins";
 @import "ribbon-form";
 
-/****** auth.sass ****** */
+/****** url-choose.sass ****** */
 // Styling for registration / login
-#auth {
+#choose {
   form {
     .field {
       input.text {
-        width: 15em;
+        //width:  15em;
       }
     }
     input.button {
@@ -23,5 +22,10 @@
     padding: 1em 0;
     font-weight: bold;
     text-align: center;
+  }
+}
+.ribbon-form {
+  .legend {
+    width:    6em;
   }
 }

@@ -325,7 +325,11 @@ $.widget("ui.input", {
 
         // Let everyone know that the validation state has changed.
         //this.element.trigger('validation_change.uiinput');
-        this._trigger('validation_change', null, [state]);
+
+        if (state !== undefined)
+        {
+            this._trigger('validation_change', null, [state]);
+        }
     },
 
     getLabel: function()
