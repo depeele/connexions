@@ -5,24 +5,34 @@
  *      /url[/<md5 hash of url>]
  */
 
-class UrlController extends Zend_Controller_Action
+class UrlController extends Connexions_Controller_Action
 {
-    protected   $_viewer    = null;
-    protected   $_tagInfo   = null;
+    // Tell Connexions_Controller_Action_Helper_ResourceInjector which
+    // Bootstrap resources to make directly available
+    public  $dependencies = array('db','layout');
+
+    protected   $_url       = null;
+    protected   $_tags      = null;
+
     protected   $_item      = null;
-    protected   $_userItems = null;
+
     protected   $_urlHash   = null;
 
-    public function init()
-    {
-        /* Initialize action controller here */
-        $this->_viewer  =& Zend_Registry::get('user');
-    }
+    public      $contexts   = array(
+                                'index' => array('partial', 'json',
+                                                 'rss',     'atom'),
+                              );
 
+    /** @brief  Index/Get/Read/View action.
+     *
+     *  Retrieve a set of Bookmarks for the given url.
+     */
     public function indexAction()
     {
-        $request = $this->getRequest();
-        $url     = $request->getParam('url',  null);
+        Connexions::log('UrlController::indexAction');
+
+        $request =& $this->_request;
+        $url     =  $request->getParam('url',  null);
 
         if (empty($url))
             return $this->_forward('choose');
@@ -34,31 +44,39 @@ class UrlController extends Zend_Controller_Action
         if ($this->_urlHash !== $url)
         {
             // Redirect using the URL hash
-            //$newUrl = $this->_helper->url($this->_urlHash);
-
             return $this->_helper->redirector
                                     ->setGotoRoute(array('url',
                                                          $this->_urlHash));
         }
 
-        $reqTags = $request->getParam('tags', null);
+        /***************************************************************
+         * Process the requested 'tags'
+         *
+         */
+        $reqTags     = $request->getParam('tags', null);
+        $this->_tags = $this->service('Tag')->csList2set($reqTags);
 
-        // Parse the incoming request tags
-        $this->_tagInfo = new Connexions_Set_Info($reqTags, 'Model_Tag');
-        if ($this->_tagInfo->hasInvalidItems())
-            $this->view->error =
-                        "Invalid tag(s) [ {$this->_tagInfo->invalidItems} ]";
-
+        /***************************************************************
+         * We now have a valid 'owner' ($this->_owner) and
+         * 'tags' ($this->_tags)
+         *
+         * Adjust the URL to reflect the validated 'owner' and 'tags'
+         */
+        $this->_url = $request->getBasePath()
+                    . '/'. $this->_urlHash
+                    . '/' .(count($this->_tags) > 0
+                            ? $this->_tags .'/'
+                            : '');
 
         // Locate the item with the requested URL (if there is one).
-        $this->_item = new Model_Item($this->_urlHash);
+        $this->_item = $this->service('Item')->find($this->_urlHash);
 
         // /*
-        Connexions::log("UrlController:: "
-                        . 'item[ '
-                        .       $this->_item->debugDump() .' ]');
+        Connexions::log("UrlController:: item[ %s ]",
+                        ($this->_item ? $this->_item->debugDump()
+                                      : 'null'));
         // */
-        if (! $this->_item->isValid())
+        if ( (! $this->_item) || (! $this->_item->isValid()) )
         {
             // This URL has not been bookmarked here.
             $this->view->url   = $url;
@@ -68,21 +86,21 @@ class UrlController extends Zend_Controller_Action
         }
 
 
-        /* Create the userItem set, scoped by any incoming valid tags and
-         * possibly the owner of the area.
-         */
-        $this->_userItems = new Model_UserItemSet($this->_tagInfo->validIds,
-                                                  null,    // userIds
-                                                  $this->_item->itemId);
+        $this->view->url       = $this->_url;
+        $this->view->viewer    = $this->_viewer;
+        $this->view->tags      = $this->_tags;
+        $this->view->item      = $this->_item;
 
-        $this->_htmlContent();
-        $this->_htmlSidebar();
+        $this->_prepareMain('items');
+
+        // Handle this request based on the current context / format
+        $this->_handleFormat();
     }
 
     public function chooseAction()
     {
         // Nothing much to do...
-        $this->view->renderToPlaceholder('url/choose-sidebar.phtml', 'right');
+        Connexions::log('UrlController::chooseAction');
     }
 
     /** @brief Redirect all other actions to 'index'
@@ -107,161 +125,54 @@ class UrlController extends Zend_Controller_Action
      * Context-specific view initialization and invocation
      *
      */
-    protected function _htmlContent()
+
+    /** @brief  Prepare for rendering the main view, regardless of format.
+     *
+     *  This will collect the variables needed to render the main view, placing
+     *  them in $view->main as a configuration array.
+     */
+    protected function _prepareMain($htmlNamespace  = '')
     {
-        $request =& $this->getRequest();
-        $layout  =& $this->view->layout();
+        Connexions::log("UrlController::_prepareMain()");
 
-        /********************************************************************
-         * Prepare for rendering the main view.
-         *
-         * Notify the HtmlUrlItems View Helper (used to render the main view)
-         * of any incoming settings, allowing it establish any required
-         * defaults.
-         */
-        $prefix           = 'urlItems';
-        $itemsPerPage     = $request->getParam($prefix."PerPage",       null);
-        $itemsSortBy      = $request->getParam($prefix."SortBy",        null);
-        $itemsSortOrder   = $request->getParam($prefix."SortOrder",     null);
-        $itemsStyle       = $request->getParam($prefix."OptionGroup",   null);
-        $itemsStyleCustom = $request->getParam($prefix."OptionGroups_option",
-                                                                        null);
+        parent::_prepareMain($htmlNamespace);
 
-        // /*
-        Connexions::log('UrlController::'
-                            . 'prefix [ '. $prefix .' ], '
-                            . 'params [ '
-                            .   print_r($request->getParams(), true) ." ],\n"
-                            . "    PerPage        [ {$itemsPerPage} ],\n"
-                            . "    SortBy         [ {$itemsSortBy} ],\n"
-                            . "    SortOrder      [ {$itemsSortOrder} ],\n"
-                            . "    Style          [ {$itemsStyle} ],\n"
-                            . "    StyleCustom    [ "
-                            .           print_r($itemsStyleCustom, true) .' ]');
-        // */
+        $extra = array(
+            'item'  => &$this->_item,
+            'tags'  => &$this->_tags,
+        );
+        $this->view->main = array_merge($this->view->main, $extra);
 
-        // Initialize the Connexions_View_Helper_HtmlUrlItems helper...
-        $uiHelper = $this->view->htmlUrlItems();
-        $uiHelper->setNamespace($prefix)
-                 ->setSortBy($itemsSortBy)
-                 ->setSortOrder($itemsSortOrder);
-        if (is_array($itemsStyleCustom))
-            $uiHelper->setStyle(Connexions_View_Helper_HtmlUrlItems
-                                                            ::STYLE_CUSTOM,
-                                $itemsStyleCustom);
-        else
-            $uiHelper->setStyle($itemsStyle);
-
-        // Set Scope information
-        $scopeParts  = array('format=json');
-        if ($this->_tagInfo->hasValidItems())
-        {
-            array_push($scopeParts, 'tags='. $this->_tagInfo->validItems);
-        }
-
-        $scopeUrl    = $this->view->baseUrl('/bookmarks');
-        $scopeCbUrl  = $this->view->baseUrl('/scopeAutoComplete')
-                     . '?'. implode('&', $scopeParts);
-
-        $scopeHelper = $this->view->htmlItemScope();
-        $scopeHelper->setNamespace($prefix)
-                    ->setInputLabel('Tags')
-                    ->setInputName( 'tags')
-                    ->setPath(array('Bookmarks' => $scopeUrl))
-                    ->setAutoCompleteUrl( $scopeCbUrl );
-
-
-        /* Ensure that the final sort information is properly reflected in
-         * the source set.
-         */
-        $this->_userItems->setOrder( $uiHelper->getSortBy() .' '.
-                                     $uiHelper->getSortOrder() );
-
-        /*
-        Connexions::log("UrlController:: updated params:\n"
-                            . '    SortBy         [ '
-                            .           $uiHelper->getSortBy() ." ],\n"
-                            . '    SortOrder      [ '
-                            .           $uiHelper->getSortOrder() ." ],\n"
-                            . '    Style          [ '
-                            .           $uiHelper->getStyle() ." ],\n"
-                            . '    ShowMeta       [ '
-                            .           print_r($uiHelper->getShowMeta(),
-                                                true) .' ]');
-        // */
-
-        /* Use the Connexions_Controller_Action_Helper_Pager to create a
-         * paginator for the retrieved user items / bookmarks.
-         */
-        $page      = $request->getParam('page',  null);
-        $paginator = $this->_helper->Pager($this->_userItems, $page,
-                                           $itemsPerPage);
-
-        // Set the required view variables.
-        $this->view->viewer    = $this->_viewer;
-        $this->view->tagInfo   = $this->_tagInfo;
-        $this->view->item      = $this->_item;
-        $this->view->paginator = $paginator;
-
-        /* The default view script (views/scripts/index/index.phtml) will
-         * render this main view
-         */
+        Connexions::log("UrlController::_prepareMain(): "
+                        .   "main[ %s ]",
+                        Connexions::varExport($this->view->main));
     }
 
-    protected function _htmlSidebar()
+    /** @brief  Prepare for rendering the sidebar view.
+     *  @param  async   Should we setup to do an asynchronous render
+     *                  (i.e. tab callbacks will request tab pane contents when 
+     *                        needed)?
+     *
+     *  This will collect the variables needed to render the sidebar view,
+     *  placing them in $view->sidebar as a configuration array.
+     *
+     *  Note: The main index view script
+     *        (application/views/scripts/url/index.phtml) will also add
+     *        sidebar-related rendering information to the sidbar helper.  In
+     *        particular, it will notify the sidbar helper of the items that
+     *        are being presented in the main view.
+     */
+    protected function _prepareSidebar($async = false)
     {
-        $request =& $this->getRequest();
-        $layout  =& $this->view->layout();
+        parent::_prepareSidebar($async);
 
-        /* Create the tagSet that will be presented in the side-bar:
-         *      All tags used by all users/items contained in the current
-         *      user item / bookmark set.
-         */
-        $tagSet = new Model_TagSet( $this->_userItems->userIds(),
-                                    $this->_userItems->itemIds() );
-        $tagSet->withAnyUser();
+        $extra = array(
+            'item'          => &$this->_item,
+        );
+        $this->view->sidebar = array_merge($this->view->sidebar, $extra);
 
-        /********************************************************************
-         * Prepare for rendering the right column.
-         *
-         * Create a second HtmlItemCloud View Helper
-         * (used to render the right column) and set it up using the incoming
-         * user-cloud parameters.
-         */
-        $prefix             = 'sbTags';
-        $tagsPerPage        = $request->getParam($prefix."PerPage",     100);
-        $tagsHighlightCount = $request->getParam($prefix."HighlightCount",
-                                                                        null);
-        $tagsSortBy         = $request->getParam($prefix."SortBy",      'tag');
-        $tagsSortOrder      = $request->getParam($prefix."SortOrder",   null);
-        $tagsStyle          = $request->getParam($prefix."OptionGroup", null);
-
-        /*
-        Connexions::log('UrlController::'
-                            . "right-column prefix [ {$prefix} ],\n"
-                            . "    PerPage        [ {$tagsPerPage} ],\n"
-                            . "    HighlightCount [ {$tagsHighlightCount} ],\n"
-                            . "    SortBy         [ {$tagsSortBy} ],\n"
-                            . "    SortOrder      [ {$tagsSortOrder} ],\n"
-                            . "    Style          [ {$tagsStyle} ]");
-        // */
-
-
-        // Initialize the Connexions_View_Helper_HtmlItemCloud helper...
-        $cloudHelper = $this->view->htmlItemCloud();
-        $cloudHelper->setNamespace($prefix)
-                    ->setStyle($tagsStyle)
-                    ->setItemType(Connexions_View_Helper_HtmlItemCloud::
-                                                            ITEM_TYPE_ITEM)
-                    ->setSortBy($tagsSortBy)
-                    ->setSortOrder($tagsSortOrder)
-                    ->setPerPage($tagsPerPage)
-                    ->setHighlightCount($tagsHighlightCount)
-                    ->setItemSet($tagSet)
-                    ->setItemSetInfo($this->_tagInfo);
-                    //->setItemBaseUrl( '/bookmarks');
-
-        // Render the sidebar into the 'right' placeholder
-        $this->view->renderToPlaceholder('url/sidebar.phtml', 'right');
+        Connexions::log("UrlController::_prepareSidebar(): "
+                        .   "sidebar[ %s ]",
+                        Connexions::varExport($this->view->sidebar));
     }
 }

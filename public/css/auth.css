@@ -1,11 +1,14 @@
+/****** ui-form.sass ****** */
+/* ====== Forms ====== */
+.ribbon-form { padding: 0; }
+.ribbon-form .context-ribbon { position: absolute; top: 0; left: 0; width: 48px; height: 100%; background-color: #3d7cc2; -moz-border-radius: 8px 0 0 8px; -webkit-border-radius: 8px 0 0 8px; -ms-border-radius: 8px 0 0 8px; -khtml-border-radius: 8px 0 0 8px; border-radius: 8px 0 0 8px; }
+.ribbon-form .legend { margin-left: 48px; padding-right: 0; text-align: left; width: 8em; }
+.ribbon-form .legend .context-bg { position: absolute; left: -48px; -moz-border-radius: 8px 0 0 0; -webkit-border-radius: 8px 0 0 0; -ms-border-radius: 8px 0 0 0; -khtml-border-radius: 8px 0 0 0; border-radius: 8px 0 0 0; }
+.ribbon-form .legend h1 { padding: 0 2em 0 0.2em; font-size: 1.25em; font-weight: bold; }
+.ribbon-form .legend p { padding: 0 0 0 0.5em; }
+.ribbon-form .legend .status { margin-top: 5em; padding: 0.5em; text-align: center; color: #999999; }
+
 /****** auth.sass ****** */
-#auth { padding: 0; }
-#auth .context-ribbon { position: absolute; top: 0; left: 0; width: 48px; height: 100%; background-color: #3d7cc2; -moz-border-radius: 8px 0 0 8px; -webkit-border-radius: 8px 0 0 8px; -ms-border-radius: 8px 0 0 8px; -khtml-border-radius: 8px 0 0 8px; border-radius: 8px 0 0 8px; }
-#auth .legend { margin-left: 48px; padding-right: 0; text-align: left; width: 8em; }
-#auth .legend .context-bg { position: absolute; left: -48px; -moz-border-radius: 8px 0 0 0; -webkit-border-radius: 8px 0 0 0; -ms-border-radius: 8px 0 0 0; -khtml-border-radius: 8px 0 0 0; border-radius: 8px 0 0 0; }
-#auth .legend h1 { padding: 0 2em 0 0.2em; font-size: 1.25em; font-weight: bold; }
-#auth .legend p { padding: 0 0 0 0.5em; }
-#auth .legend .status, #auth .legend .ui-field-status { margin-top: 5em; padding: 0.5em; text-align: center; color: #999999; }
 #auth form .field input.text { width: 15em; }
 #auth form input.button { background-color: #59a5d1; border-color: #408bb6; color: white; cursor: pointer; }
 #auth .formError { padding: 1em 0; font-weight: bold; text-align: center; }

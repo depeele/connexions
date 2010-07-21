@@ -1,68 +1,32 @@
 <?php
-/** @file
- *
- *  View script for UrlController::index with incoming members:
- *      viewer      The Model_User instance representing the current viewer;
- *
- *      error       On error, an error string is provided.
- */
-$baseUrl = $this->baseUrl('/');
-
-$links = $this->headLink();
-$links->appendStylesheet($baseUrl .'css/urlItems.css');
-
-$this->headTitle('Lookup a URL');
-
-$actionUrl = $this->url(array('url'));
+//$this->headLink()->appendStylesheet($this->baseUrl('css/auth.css'));
+//
+$this->headTitle('URL Lookup');
 
 $jQuery = $this->jQuery();
-
-$jQuery->addJavascriptFile($baseUrl .'js/ui.input.min.js')
-       ->addOnLoad("init_urlChooser();")
-       ->javascriptCaptureStart();  // jQuery {
+$jQuery->addStylesheet($this->baseUrl('css/url-choose.css'))
+       ->addOnLoad('$("#choose form").validationForm();');
 ?>
-
-/************************************************
- * Initialize the url chooser form
- *
- */
-function init_urlChooser()
-{
-    var $form   = $('#urlChooser');
-    var $url    = $form.find('input[name=url]');
-
-    $url.input({
-        emptyText:  $url.val(),
-        validation: function(val) {
-            return true;
-        }
-    });
-}
-
-<?php
-$jQuery->javascriptCaptureEnd();    // jQuery }
-
-
-?>
-<div class='columnHeader'>
- <div class='context-bg connexions_sprites bookmark_bg
-             ui-corner-left ui-corner-tr'>&nbsp;</div>
- <div class='itemInfo'>
-  <p>
-   <span class='title'>Lookup a URL</span>
-   <span class='subTitle'>See all bookmarks for any URL.</span>
-  </p>
+<div class="line"><!-- { -->
+ <div id="choose" class='ui-validation-form ribbon-form'>
+  <div class='context-ribbon'>&nbsp;</div>
+  <div class="legend unit"><!-- { -->
+   <h1>URL Lookup</h1>
+   <div class='status<?= (@isset($this->error) ? ' error' : '') ?>'>
+    <?= (@isset($this->error) ? $this->error : '') ?>
+   </div>
+  </div><!-- legend } -->
+  <div class="userInput unit"><!-- { -->
+   <form method='post'>
+    <div class='field'>
+     <label for='url'>Desired URL</label>
+     <textarea class='text required' autocomplete='off'
+                name='url' tabindex='1'><?= $this->url ?></textarea>
+    </div>
+    <div class='field buttons'>
+     <button name='submit' tabindex='4'>Lookup</button>
+    </div>
+   </form>
+  </div><!-- userInput } -->
  </div>
-</div>
-
-<form id='urlChooser' class='ui-corner-all' 
-  action='<?= $this->url(array('url')) ?>'>
- <label   for='url'>URL</label>
- <input  name='url'    type='text' value='Type a URL' />
- <button name='submit' type='submit'>
-  <span>lookup</span>
- </button>
- <br class='clear' />
-</form>
-
-<div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
+</div><!-- line } -->

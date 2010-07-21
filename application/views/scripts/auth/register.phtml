@@ -17,57 +17,50 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.css'))
  * Initialize the form handlers
  *
  */
-var $form       = null;
-var $submit     = null;
-var $status     = null;
-
 function authRegister_onLoad()
 {
-    $form   = $('#auth form');
-    $form.hide();   // hide while we prepare....
+    var $auth   = $('#auth');
+    var $form   = $auth.find('form:first');
 
-    $form.addClass('ui-form');
-
-    $status = $('#auth .status');
-    $submit = $('#auth button[name=submit]');
-
-    $submit.button({ priority:'primary', enabled:false});
-    $('#auth button[name=cancel]').button({ priority:'secondary'});
-
-
-    // Passwords have custom synchronous validator
+    /* Passwords have a custom, synchronous validator that we need to
+     * bind BEFORE instantiating the validationForm so we can syncrhonously
+     * perform validation as needed.
+     */
     var pass1Name   = 'password';
     var pass2Name   = 'password2';
-    var $pass1      = $('#auth input[name='+ pass1Name +']');
-    var $pass2      = $('#auth input[name='+ pass2Name +']');
+    var $pass1      = $form.find('input[name='+ pass1Name +']');
+    var $pass2      = $form.find('input[name='+ pass2Name +']');
+    var $status     = $auth.find('.status');
 
-    $('#auth input[name='+ pass1Name +'],'+
-      '#auth input[name='+ pass2Name +']').input({
+    $form.find('input[name=user]').input({
         validation: function(val) {
+            return validate_user($(this), val);
+        }
+    });
+
+    $form.find('input[name='+ pass1Name +'],'+
+               'input[name='+ pass2Name +']').input({
+        validation: function() {
             return validate_passwords($(this), $pass1, $pass2);
         }
     });
 
-    /* User name has a custom, asynchrounous validator -- we do this separately
-     * since this is an asynchrounous call
-     */
-    $('#auth input[name=user]').input({ validation: validate_user });
-
-    // Bind to the 'validation_change' event for all inputs.
-    $('#auth input[type=text],#auth input[type=password],textarea')
-         .input()
-         .bind('validation_change', function() { validate_form(); });
-
-    $('#auth input[name=user]')
-            .bind('validation_change', function() {
-             });
-
-    $form.show();
+    $form.validationForm({$validation: $status} );
 }
 
-function validate_user(name)
+function validate_user($user, name)
 {
-    var $user   = $(this);
+    var stat    = $user.input('isValid');
+    /* :XXX: If the stat is currently 'undefined', we will be returned an
+     *       object which we need to convert BACK to 'undefined' so we don't
+     *       toggle the state (undefined => object) causing the CSS class to be
+     *       changed, causing a flicker from undefined to invalid.
+     */
+    if ((stat !== true) && (stat !== false))
+    {
+        stat = undefined;
+    }
+
     if (name.length > 2)
     {
         // Perform a JSONP call to see if this user name is in use
@@ -79,13 +72,11 @@ function validate_user(name)
                     $user.input('valid', data.error.message);
                 else
                     $user.input('valid', true);
-
-                validate_form();
              });
     }
 
     // Regardless, don't change the current validation.
-    return $user.input('getValidationState');
+    return stat;
 }
 
 function validate_passwords($el, $pass1, $pass2)
@@ -101,9 +92,9 @@ function validate_passwords($el, $pass1, $pass2)
 
         // Also clear the validation status for the other field
         if ($el[0] === $pass1[0])
-            $pass2.input('setValidationState', undefined);
+            $pass2.input('valid');  //, undefined);
         else
-            $pass1.input('setValidationState', undefined);
+            $pass1.input('valid');  //, undefined);
     }
     else if (pass1 !== pass2)
     {
@@ -113,7 +104,7 @@ function validate_passwords($el, $pass1, $pass2)
         // Only report errors on 'password2'
         if ($el[0] === $pass1[0])
         {
-            $pass2.input('setValidationState', res);
+            $pass2.input('valid', res);
             res = undefined;
         }
         else
@@ -121,49 +112,19 @@ function validate_passwords($el, $pass1, $pass2)
             /* But we still  want to clear the validation status for
              * password1
              */
-            $pass1.input('setValidationState', undefined);
+            $pass1.input('valid');  //, undefined);
         }
     }
     else
     {
         // Also report success for the other field.
         if ($el[0] === $pass1[0])
-            $pass2.input('setValidationState', true);
+            $pass2.input('valid', true);
         else
-            $pass1.input('setValidationState', true);
-
-        //validate_form();
+            $pass1.input('valid', true);
     }
 
     return res;
-}
-
-function validate_form()
-{
-    var $required   = $('.required');
-    var isValid     = true;
-
-    $required.each(function() {
-        if (! $(this).hasClass('ui-state-valid'))
-        {
-            isValid = false;
-            return false;
-        }
-    });
-
-    if (isValid)
-    {
-        $submit.button('enable');
-        $status.removeClass('error')
-               .addClass('success')
-               .text('');
-    }
-    else
-    {
-        $submit.button('disable');
-        $status.removeClass('success')
-               .addClass('error');
-    }
 }
 
 <?php
@@ -172,7 +133,7 @@ $jQuery->javascriptCaptureEnd();
 
 ?>
 <div class="line"><!-- { -->
- <div id="auth" class='ui-validation-form'>
+ <div id="auth" class='ui-validation-form ribbon-form'>
   <div class='context-ribbon'>&nbsp;</div>
   <div class="legend unit"><!-- { -->
    <h1>Join</h1>
