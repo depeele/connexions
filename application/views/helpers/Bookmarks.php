@@ -3,7 +3,7 @@
  *
  *  View helper to render a paginated set of User Items / Bookmarks.
  */
-class View_Helper_Bookmarks extends View_Helper_Items
+class View_Helper_Bookmarks extends View_Helper_List
 {
     /* Additional, statistics fields are established via
      *  Model_Mapper_Bookmark::_includeStatistics
@@ -17,8 +17,11 @@ class View_Helper_Bookmarks extends View_Helper_Items
     const SORT_BY_USER_COUNT        = 'userCount';
 
     static public   $defaults       = array(
+        'listName'                  => 'bookmarks',
+
         'users'                     => null,
         'tags'                      => null,
+        'items'                     => null,
 
         'sortBy'                    => self::SORT_BY_DATE_TAGGED,
         'sortOrder'                 => Connexions_Service::SORT_DIR_DESC,
@@ -42,6 +45,7 @@ class View_Helper_Bookmarks extends View_Helper_Items
     public function __construct(array $config = array())
     {
         // Over-ride the default sortBy/sortOrder
+        parent::$defaults['listName']  = self::$defaults['listName'];
         parent::$defaults['sortBy']    = self::$defaults['sortBy'];
         parent::$defaults['sortOrder'] = self::$defaults['sortOrder'];
 
@@ -124,6 +128,8 @@ class View_Helper_Bookmarks extends View_Helper_Items
             $this->setMultipleUsers();
         }
 
+        $this->_params['users'] = $value;
+
         /*
         Connexions::log("View_Helper_Bookmarks::setUsers(%s): "
                         . "users set [ %s ], multipleUsers:%s",
@@ -141,17 +147,9 @@ class View_Helper_Bookmarks extends View_Helper_Items
         return $this;
     }
 
-    public function __set($key, $val)
-    {
-        if ($key === 'bookmarks')
-            $key = 'items';
-
-        return parent::__set($key, $val);
-    }
-
     public function getBookmarks()
     {
-        $key = 'items';
+        $key = $this->listName;
         if ( (! @isset($this->_params[$key])) ||
              ($this->_params[$key] === null) )
         {
@@ -164,34 +162,42 @@ class View_Helper_Bookmarks extends View_Helper_Items
             $count      = $perPage;
             $offset     = ($page - 1) * $perPage;
 
-            if ($this->users instanceof Model_User)
-                $users = $this->users->userId;
-            else
-                $users =& $this->users;
+            $to         = array();
+
+            $users = $this->users;
+            if ($users !== null)
+            {
+                if ($users instanceof Model_User)
+                    $to['users'] = $users->userId;
+                else
+                    $to['users'] =& $users;
+            }
+
+            $tags = $this->tags;
+            if ($tags !== null)
+            {
+                $to['tagsExact'] =& $tags;
+            }
+
+            $items = $this->items;
+            if ($items !== null)
+            {
+                $to['items'] =& $items;
+            }
+
 
             // /*
-            Connexions::log("View_Helper_Bookmarks::__get( %s ): "
+            Connexions::log("View_Helper_Bookmarks::getBookmarks(): "
                             . "Retrieve bookmarks: "
                             . "order[ %s ], count[ %d ], offset[ %d ]",
-                            $key, $fetchOrder, $count, $offset);
+                            $fetchOrder, $count, $offset);
             // */
 
             $bookmarks = Connexions_Service::factory('Model_Bookmark')
-                                ->fetchByUsersAndTags($users,
-                                                      $this->tags,
-                                                      true,
-                                                      $fetchOrder,
-                                                      $count,
-                                                      $offset);
-
-            /*
-            Connexions::log("View_Helper_Bookmarks::__get( %s ): "
-                            . "Retrieved %d bookmarks: "
-                            . "order[ %s ], count[ %d ], offset[ %d ]",
-                            $key,
-                            count($bookmarks),
-                            $fetchOrder, $count, $offset);
-            // */
+                                ->fetchRelated($to,
+                                               $fetchOrder,
+                                               $count,
+                                               $offset);
 
             $this->_params[$key] = $bookmarks;
         }
@@ -207,7 +213,6 @@ class View_Helper_Bookmarks extends View_Helper_Items
         switch ($key)
         {
         case 'bookmarks':
-        case 'items':
             $val = $this->getBookmarks();
             break;
 

@@ -28,8 +28,8 @@
     $htmlSidebar = $this->htmlSidebar( $this->sidebar );
     $config      = $htmlSidebar->getPane('tags');
 
-    /*
-    Connexions::log("index/sidebar-tags.phtml: config[ %s ]",
+    // /*
+    Connexions::log("url/sidebar-tags.phtml: config[ %s ]",
                     print_r($config, true));
     // */
 
@@ -54,36 +54,36 @@
 
     if (count($this->tags) < 1)
     {
-        /* There were no requested tags that limited the bookmark retrieval so,
-         * for the sidebar, retrieve ALL tags...
+        /* There were no requested tags to limit the bookmark retrieval so,
+         * for the sidebar, retrieve ALL tags for the current item.
          */
+        $to = array('items' => $this->item);
+        if (count($this->tags) > 0)
+        {
+            $to['tags'] = $this->tags;
+        }
 
-        /*
-        Connexions::log("sidebar-tags.phtml: ALL tags for '%s' [%d..%d]",
-                        $this->owner, $offset, $offset+$count);
-        // */
-
-        $tagSet = $service->fetchByUsers(($this->owner === '*'
-                                            ? null          // ALL users
-                                            : $this->owner),// ONE user
-                                         $fetchOrder,
-                                         $count,
-                                         $offset);
+        $tagSet = $service->fetchRelated( $to,
+                                          $fetchOrder,
+                                          $count,
+                                          $offset );
     }
     else
     {
-        // Tags related to the given bookmarks
+        /* There WERE requested tags, so we need the set of bookmarks in order
+         * to generate the complete list of associated tags...
+         */
         $items = $htmlSidebar->items;
 
         if ($items === null)
         {
             /* There have been no bookmarks/items communicated to the
              * htmlSidebar helper (e.g. this is invoked as a partial and
-             *                          index.phtml has not been rendered).
+             *                          index.phtml has not been rendered.).
              *
-             * Use the View_Helper_HtmlBookmarks view helper to generate the
-             * appropriate set now, assuming the controller has filled in
-             * $this->main for the configuration of the main view.
+             * Use the View_Helper_HtmlBookmarks to generate the appropriate
+             * set now, assuming the controller has filled in $this->main for
+             * the configuration in the main view.
              *
              * Tell it NOT to include any script and to return ALL tags.
              */
@@ -100,10 +100,6 @@
             $htmlSidebar->items = $items;
         }
 
-        /*
-        Connexions::log("sidebar-tags.phtml: bookmarks-related [%d..%d]",
-                        $offset, $offset+$count);
-        // */
         $tagSet = $service->fetchByBookmarks( $items,
                                               $fetchOrder,
                                               $count,

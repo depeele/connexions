@@ -10,8 +10,17 @@
  */
 abstract class Connexions_Service
 {
-    protected   $_modelName = null;
-    protected   $_mapper    = null;
+    protected   $_modelName         = null;
+    protected   $_mapper            = null;
+
+    /** @brief  Any default ordering that should be be merged into a specified 
+     *          order.
+     *
+     *  Merged via _extraOrder(), this should be an associative array of
+     *  field/sort_direction pairs.
+     */
+    protected   $_defaultOrdering   = array();
+
 
     /** @brief  Returned from a factory if no instance can be located or 
      *          generated.
@@ -125,6 +134,88 @@ abstract class Connexions_Service
                                       $count,
                                       $offset );
 
+    }
+
+    /** @brief  Retrieve a set of Domain Model instance related by the provided 
+     *          set of Users, Tags, and/or Items.
+     *  @param  to      An array containing the User(s), Tag(s) and/or Item(s) 
+     *                  retrieved bookmarks should be related to:
+     *                      users       A Model_Set_User instance, array, or 
+     *                                  comma-separated string of users to 
+     *                                  match -- ANY user in the list.
+     *                      items       A Model_Set_Item instance, array, or 
+     *                                  comma-separated string of items to 
+     *                                  match -- ANY item in the list..
+     *                      tags        A Model_Set_Tag instance, array, or 
+     *                                  comma-separated string of tags to
+     *                                  match -- ANY tag in the list.
+     *                      tagsExact   A Model_Set_Tag instance, array, or 
+     *                                  comma-separated string of tags to
+     *                                  match -- ALL tags in the list.
+     *  @param  order   Optional ORDER clause (string, array)
+     *                      [ [ 'taggedOn      DESC',
+     *                          'name          ASC',
+     *                          'userCount     DESC',
+     *                          'tagCount      DESC' ] ]
+     *  @param  count   Optional LIMIT count
+     *  @param  offset  Optional LIMIT offset
+     *
+     *  @return A new Connexions_Model_Set instance.
+     */
+    public function fetchRelated(array  $to,
+                                        $order  = null,
+                                        $count  = null,
+                                        $offset = null)
+    {
+        $config = array('count'   => $count,
+                        'offset'  => $offset,
+                        'privacy' => $this->_curUser(),
+                  );
+
+        if ($order === null)
+        {
+            $config['order'] = array('taggedOn  DESC',
+                                     'name      ASC',
+                                     'userCount DESC',
+                                     'tagCount  DESC',
+                               );
+        }
+        else
+        {
+            $config['order'] = $this->_extraOrder($order);
+        }
+
+        foreach ($to as $key => $val)
+        {
+            // Rely on Services to properly interpret users/items/tags
+            switch ($key)
+            {
+            case 'users':
+                $config['users'] = $this->factory('Service_User')
+                                            ->csList2set($val);
+                break;
+
+            case 'items':
+                $config['items'] = $this->factory('Service_Item')
+                                            ->csList2set($val);
+                break;
+
+            case 'tagsExact':
+            case 'tags':
+                $config['exactTags'] = ($key === 'tagsExact');
+                $config['tags']      = $this->factory('Service_Tag')
+                                                ->csList2set($val);
+                break;
+            }
+        }
+
+        // /*
+        Connexions::log("Service_Bookmark::fetchRelated(): "
+                        .   "config[ %s ]",
+                        Connexions::varExport($config));
+        // */
+
+        return $this->_mapper->fetchRelated( $config );
     }
 
     /** @brief  Retrieve a paginated set of Domain Model instances.
@@ -436,5 +527,63 @@ abstract class Connexions_Service
         }
 
         return $service;
+    }
+
+    /** @brief  Given an ordering, include additional ordering criteria that
+     *          will help make result sets consistent.
+     *  @param  order   The incoming order criteria.
+     *
+     *  @return A new order criteria array.
+     */
+    protected function _extraOrder($order)
+    {
+        if (! isset($this->_defaultOrdering))
+            return $order;
+
+        /* Include any of the default ordering values that haven't been
+         * overridden.
+         */
+        $newOrder = (is_array($order)
+                        ? $order
+                        : (is_string($order)
+                            ? array($order)
+                            : array()));
+
+        /* First, split apart the current orderings into 'field' and 
+         * 'direction'
+         */
+        $orderMap = array();
+        foreach ($newOrder as $ord)
+        {
+            list($by, $dir) = preg_split('/\s+/', $ord);
+            $orderMap[$by] = $dir;
+        }
+
+        /* Now, walk through '_defaultOrdering' and add any that haven't been 
+         * overridden.
+         */
+        foreach ($this->_defaultOrdering as $by => $dir)
+        {
+            if (! isset($orderMap[ $by ]))
+            {
+                array_push($newOrder, $by .' '. $dir);
+            }
+
+        }
+
+        return $newOrder;
+    }
+
+    /** @brief  Retrieve the currently identified user.
+     *
+     *  @return A Model_User instance or null if none.
+     */
+    protected function _curUser()
+    {
+        $user = Connexions::getUser();
+        if ($user === false)
+            $user = null;
+
+        return $user;
     }
 }

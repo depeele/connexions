@@ -63,7 +63,7 @@ class UrlController extends Connexions_Controller_Action
          * Adjust the URL to reflect the validated 'owner' and 'tags'
          */
         $this->_url = $request->getBasePath()
-                    . '/'. $this->_urlHash
+                    . '/url/'. $this->_urlHash
                     . '/' .(count($this->_tags) > 0
                             ? $this->_tags .'/'
                             : '');
@@ -85,6 +85,15 @@ class UrlController extends Connexions_Controller_Action
             return $this->_forward('choose');
         }
 
+        /***************************************************************
+         * Set the view variables required for all views/layouts.
+         *
+         */
+        $this->view->headTitle('Url');
+        /*
+        if ($this->_item  !== null)
+            $this->view->headTitle($this->_item->urlHash);
+        // */
 
         $this->view->url       = $this->_url;
         $this->view->viewer    = $this->_viewer;
@@ -138,7 +147,7 @@ class UrlController extends Connexions_Controller_Action
         parent::_prepareMain($htmlNamespace);
 
         $extra = array(
-            'item'  => &$this->_item,
+            'items' => &$this->_item,
             'tags'  => &$this->_tags,
         );
         $this->view->main = array_merge($this->view->main, $extra);
@@ -167,7 +176,7 @@ class UrlController extends Connexions_Controller_Action
         parent::_prepareSidebar($async);
 
         $extra = array(
-            'item'          => &$this->_item,
+            'tags'  => &$this->_tags,
         );
         $this->view->sidebar = array_merge($this->view->sidebar, $extra);
 

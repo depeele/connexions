@@ -1,9 +1,9 @@
 <?php
 /** @file
  *
- *  View helper to render a paginated set of Items.
+ *  View helper to render a paginated list.
  */
-abstract class View_Helper_Items extends Zend_View_Helper_Abstract
+abstract class View_Helper_List extends Zend_View_Helper_Abstract
 {
     static public   $perPageChoices = array(10, 25, 50, 100);
 
@@ -11,8 +11,8 @@ abstract class View_Helper_Items extends Zend_View_Helper_Abstract
         'namespace'                 => '',
         'viewer'                    => null,
 
-        // The primary set of items to present
-        'items'                     => null,
+        // The name of the primary set of items to present
+        'listName'                  => 'items',
 
         // Pagination values
         'page'                      => 1,
@@ -131,7 +131,7 @@ abstract class View_Helper_Items extends Zend_View_Helper_Abstract
 
     public function setPerPage($value)
     {
-        if ($value === 0)
+        if (empty($value))
             $value = self::$defaults['perPage'];
 
         $this->_params['perPage'] = $value;
@@ -164,7 +164,7 @@ abstract class View_Helper_Items extends Zend_View_Helper_Abstract
         case 'paginator':
             if (! isset($this->_params[$key]))
             {
-                $items = $this->items;
+                $items = $this->__get($this->listName);
                 if ( (! is_object($items)) ||
                      (! method_exists($items, 'getPaginatorAdapter')) )
                 {
@@ -175,7 +175,7 @@ abstract class View_Helper_Items extends Zend_View_Helper_Abstract
                 }
 
                 /*
-                Connexions::log("View_Helper_Items::__get( %s ): "
+                Connexions::log("View_Helper_List::__get( %s ): "
                                 . "%d items [ %s ]",
                                 $key,
                                 count($items),
@@ -187,7 +187,7 @@ abstract class View_Helper_Items extends Zend_View_Helper_Abstract
                 $paginator = new Zend_Paginator($items->getPaginatorAdapter());
 
                 /*
-                Connexions::log("View_Helper_Items::__get( %s ): "
+                Connexions::log("View_Helper_List::__get( %s ): "
                                 . "Retrieve paginator: "
                                 . "perPage[ %d ], page[ %d ]",
                                 $key, $this->perPage, $this->page);

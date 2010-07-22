@@ -3,7 +3,7 @@
  *
  *  View helper to render a paginated set of Users.
  */
-class View_Helper_Users extends View_Helper_Items
+class View_Helper_Users extends View_Helper_List
 {
     const SORT_BY_NAME              = 'name';
     const SORT_BY_FULLNAME          = 'fullName';
@@ -15,6 +15,7 @@ class View_Helper_Users extends View_Helper_Items
     const SORT_BY_ITEM_COUNT        = 'totalItems';
 
     static public   $defaults       = array(
+        'listName'                  => 'users',
         'tags'                      => null,
 
         'sortBy'                    => self::SORT_BY_NAME,
@@ -39,6 +40,7 @@ class View_Helper_Users extends View_Helper_Items
     public function __construct(array $config = array())
     {
         // Over-ride the default sortBy/sortOrder
+        parent::$defaults['listName']  = self::$defaults['listName'];
         parent::$defaults['sortBy']    = self::$defaults['sortBy'];
         parent::$defaults['sortOrder'] = self::$defaults['sortOrder'];
 

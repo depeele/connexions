@@ -10,6 +10,16 @@ class Service_Bookmark extends Connexions_Service
     protected   $_modelName = 'Model_Bookmark';
     protected   $_mapper    = 'Model_Mapper_Bookmark'; */
 
+    /** @brief  Any default ordering that should be be merged into a specified 
+     *          order.
+     */
+    protected   $_defaultOrdering   = array(
+        'taggedOn'  => 'DESC',
+        'name'      => 'ASC',
+        'userCount' => 'DESC',
+        'tagCount'  => 'DESC',
+    );
+
     /** @brief  Find an existing Domain Model instance, updating it with the
      *          provided data, or Create a new Domain Model instance,
      *          initializing it with the provided data.
@@ -765,48 +775,6 @@ class Service_Bookmark extends Connexions_Service
      *
      */
 
-    /** @brief  Given an ordering, include additional ordering criteria that
-     *          will help make result sets consistent.
-     *  @param  order   The incoming order criteria.
-     *
-     *  @return A new order criteria array.
-     */
-    protected function _extraOrder($order)
-    {
-        $newOrder = (is_array($order)
-                        ? $order
-                        : (is_string($order)
-                            ? array($order)
-                            : array()));
-
-        $orderMap = array();
-        foreach ($newOrder as $ord)
-        {
-            list($by, $dir) = preg_split('/\s+/', $ord);
-            $orderMap[$by] = $dir;
-        }
-
-        /* Include additional, distiguishing order:
-         *      taggedOn  DESC
-         *      name      ASC
-         *      userCount DESC
-         *      tagCount  DESC
-         */
-        if (! isset($orderMap['taggedOn']))
-            array_push($newOrder, 'taggedOn DESC');
-
-        if (! isset($orderMap['name']))
-            array_push($newOrder, 'name ASC');
-
-        if (! isset($orderMap['userCount']))
-            array_push($newOrder, 'userCount DESC');
-
-        if (! isset($orderMap['tagCount']))
-            array_push($newOrder, 'tagCount DESC');
-
-        return $newOrder;
-    }
-
     /** @brief  Given an array of name/value pairs to be used in creating a new
      *          Bookmark, see if there is a valid Model_Set_Tag identified.
      *  @param  data    An array of name/value pairs to be used to initialize
@@ -853,18 +821,5 @@ class Service_Bookmark extends Connexions_Service
          */
 
         return $tags;
-    }
-
-    /** @brief  Retrieve the currently identified user.
-     *
-     *  @return A Model_User instance or null if none.
-     */
-    protected function _curUser()
-    {
-        $user = Connexions::getUser();
-        if ($user === false)
-            $user = null;
-
-        return $user;
     }
 }
