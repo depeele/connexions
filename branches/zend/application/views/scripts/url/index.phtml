@@ -35,6 +35,9 @@
  */
 Connexions::log('views/scripts/url/index.phtml');
 
+/* Initialize the HTML Bookmarks helper, needed here because the Scope Helper
+ * needs access to the bookmarks for count.
+ */
 $htmlBookmarks = $this->htmlBookmarks( $this->main );
 
 // Prepare the Html Item Scope helper
@@ -61,14 +64,19 @@ $htmlItemScope = $this->htmlItemScope( array(
                  ));
 
 $links = $this->headLink();
-$links->appendStylesheet($this->baseUrl('css/urlItems.css'));
-
+$links->appendStylesheet($this->baseUrl('css/bookmarks.css'));
+ 
+#$itemBaseUrl = preg_replace('#([^:]+://[^/]+).*$#', '$1', $this->item->url);
+#$icoUrl      = $itemBaseUrl .'/favicon.ico';
 ?>
 <div class='columnHeader'>
  <div class='context-bg connexions_sprites bookmark_bg
              ui-corner-left ui-corner-tr'>&nbsp;</div>
- <p>Bookmarks related to <?= $this->item->url ?>
-    <br />
+ <p>Bookmarks related to<br />
+    <span class='url'>
+     <img class='favicon' src='<?= $this->baseUrl('images/blank.gif') ?>' />
+     <a href='<?= $this->item->url ?>'><?= $this->item->url ?></a>
+    </span><br />
   <?php
     if ( count($this->tags) > 0)
         printf ("with tags '%s'.", $this->tags);
@@ -79,7 +87,9 @@ $links->appendStylesheet($this->baseUrl('css/urlItems.css'));
 <?php
 
 echo $htmlItemScope->render();
-echo $this->render('index/main.phtml');
+
+// Use the main.phtml view script from the IndexController
+echo $this->render('url/main.phtml');
 ?>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

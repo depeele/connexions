@@ -717,6 +717,397 @@ class BookmarkServiceTest extends DbTestCase
         $this->_unsetAuthenticatedUser();
     }
 
+    public function testBookmarkServiceFetchRelated1()
+    {
+        $expected   = '1:2,1:4,1:5,4:15,3:4';
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $config     = array('tags' => array( 6, 12 ));
+
+        $bookmarks  = $service->fetchRelated( $config );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $ids        = $bookmarks->getIds();
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected,   $bookmarks);
+    }
+
+    public function testBookmarkServiceFetchRelated2()
+    {
+        $expected   = '1:2,1:4,1:5,4:15,3:4';
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $config     = array('tags' => array( 'web2.0', 'javascript' ));
+
+        $bookmarks  = $service->fetchRelated( $config );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $ids        = $bookmarks->getIds();
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected,   $bookmarks);
+    }
+
+    public function testBookmarkServiceFetchRelated3()
+    {
+        $expected   = '1:2,1:4,1:5,4:15,3:4';
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $config     = array('tags' => 'web2.0,javascript');
+
+        $bookmarks  = $service->fetchRelated( $config );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $ids        = $bookmarks->getIds();
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected,   $bookmarks);
+    }
+
+    public function testBookmarkServiceFetchRelatedAuthenticated3()
+    {
+        // Establish User1 as the authenticated, visiting user.
+        $this->_setAuthenticatedUser(1);
+
+        $expected   = '1:1,1:2,1:3,1:4,1:5,4:15,3:4';
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $config     = array('tags'  => array( 6, 12 ));
+
+        $bookmarks  = $service->fetchRelated( $config );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected, $bookmarks);
+
+        // De-Establish User1 as the authenticated, visiting user.
+        $this->_unsetAuthenticatedUser();
+    }
+
+    public function testBookmarkServiceFetchRelated4()
+    {
+        $expected   = '1:2,1:4,3:4';
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $config     = array('tagsExact' => array( 6, 12 ));
+
+        $bookmarks  = $service->fetchRelated( $config );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected, $bookmarks);
+    }
+
+    public function testBookmarkServiceFetchRelatedAuthenticated4()
+    {
+        // Establish User1 as the authenticated, visiting user.
+        $this->_setAuthenticatedUser(1);
+
+        $expected   = '1:2,1:3,1:4,3:4';
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $config     = array( 'tagsExact' => array( 6, 12 ));
+
+        $bookmarks  = $service->fetchRelated( $config );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected, $bookmarks);
+
+        // De-Establish User1 as the authenticated, visiting user.
+        $this->_unsetAuthenticatedUser();
+    }
+
+    public function testBookmarkServiceFetchRelated5()
+    {
+        $expected   = '1:2,1:4,1:5,3:9,3:10,3:6,3:8,3:4';
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $config     = array( 'users' => array( 1, 3 ) );
+
+        $bookmarks  = $service->fetchRelated( $config );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected, $bookmarks);
+    }
+
+    public function testBookmarkServiceFetchRelatedAuthenticated5()
+    {
+        // Establish User1 as the authenticated, visiting user.
+        $this->_setAuthenticatedUser(1);
+
+        $expected   = '1:1,1:2,1:3,1:4,1:5,3:9,3:10,3:6,3:8,3:4';
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $config     = array( 'users' => array( 1, 3 ) );
+
+        $bookmarks  = $service->fetchRelated( $config );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected, $bookmarks);
+
+        // De-Establish User1 as the authenticated, visiting user.
+        $this->_unsetAuthenticatedUser();
+    }
+
+    public function testBookmarkServiceFetchRelated6()
+    {
+        $expected   = '4:6,2:6,3:6,4:12';
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $config     = array( 'items' => array( 6, 12 ) );
+
+        $bookmarks  = $service->fetchRelated( $config );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected, $bookmarks);
+    }
+
+    public function testBookmarkServiceFetchRelatedAuthenticated6()
+    {
+        // Establish User1 as the authenticated, visiting user.
+        $this->_setAuthenticatedUser(1);
+
+        $expected   = '4:6,2:6,3:6,4:12';
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $config     = array( 'items' => array( 6, 12 ) );
+
+        $bookmarks  = $service->fetchRelated( $config );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected, $bookmarks);
+
+        // De-Establish User1 as the authenticated, visiting user.
+        $this->_unsetAuthenticatedUser();
+    }
+
+    public function testBookmarkServiceFetchRelated7()
+    {
+        $expected   = '1:2,1:4,3:4';
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $config     = array( 'users'     => array( 1, 3, 4 ),
+                             'tagsExact' => array(12,13 ));
+
+        $bookmarks  = $service->fetchRelated( $config );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected, $bookmarks);
+    }
+
+    public function testBookmarkServiceFetchRelatedAuthenticated17()
+    {
+        // Establish User1 as the authenticated, visiting user.
+        $this->_setAuthenticatedUser(1);
+
+        $expected   = '1:2,1:3,1:4,3:4';
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $config     = array( 'users'     => array( 1, 3, 4 ),
+                             'tagsExact' => array(12,13 ));
+
+        $bookmarks  = $service->fetchRelated( $config );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected, $bookmarks);
+
+        // De-Establish User1 as the authenticated, visiting user.
+        $this->_unsetAuthenticatedUser();
+    }
+
+    public function testBookmarkServiceFetchRelated8()
+    {
+        $expected   = '1:2,1:4,1:5,4:15,3:4';
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $config     = array( 'users'     => array( 1, 3, 4 ),
+                             'tags'      => array(12,13 ));
+
+        $bookmarks  = $service->fetchRelated( $config );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected, $bookmarks);
+    }
+
+    public function testBookmarkServiceFetchRelatedAuthenticated8()
+    {
+        // Establish User1 as the authenticated, visiting user.
+        $this->_setAuthenticatedUser(1);
+
+        $expected   = '1:2,1:3,1:4,1:5,4:15,3:4';
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $config     = array( 'users'     => array( 1, 3, 4 ),
+                             'tags'      => array(12,13 ));
+
+        $bookmarks  = $service->fetchRelated( $config );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected, $bookmarks);
+
+        // De-Establish User1 as the authenticated, visiting user.
+        $this->_unsetAuthenticatedUser();
+    }
+
+    public function testBookmarkServiceFetchRelated9()
+    {
+        $expected   = '4:15,3:4';
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $config     = array(
+                        'items'    => array( 3, 4, 6, 7, 8, 9, 10, 11, 13, 15),
+                        'tagsExact'=> array(12,73 ),
+                      );
+
+        $bookmarks  = $service->fetchRelated( $config );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected, $bookmarks);
+    }
+
+    public function testBookmarkServiceFetchRelatedAuthenticated9()
+    {
+        // Establish User1 as the authenticated, visiting user.
+        $this->_setAuthenticatedUser(1);
+
+        $expected   = '4:15,3:4';
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $config     = array(
+                        'items'    => array( 3, 4, 6, 7, 8, 9, 10, 11, 13, 15),
+                        'tagsExact'=> array(12,73 ),
+                      );
+
+        $bookmarks  = $service->fetchRelated( $config );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected, $bookmarks);
+
+        // De-Establish User1 as the authenticated, visiting user.
+        $this->_unsetAuthenticatedUser();
+    }
+
+    public function testBookmarkServiceFetchRelated10()
+    {
+        $expected   = '1:4,3:9,2:6,3:10,4:15,3:8,2:7,3:4,2:11,2:13';
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $config     = array(
+                        'items'    => array( 3, 4, 6, 7, 8, 9, 10, 11, 13, 15),
+                        'tags'     => array(12,73 ),
+                      );
+
+        $bookmarks  = $service->fetchRelated( $config );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected, $bookmarks);
+    }
+
+    public function testBookmarkServiceFetchRelatedAuthenticated10()
+    {
+        // Establish User1 as the authenticated, visiting user.
+        $this->_setAuthenticatedUser(1);
+
+        $expected   = '1:3,1:4,3:9,2:6,3:10,4:15,3:8,2:7,3:4,2:11,2:13';
+        $service    = Connexions_Service::factory('Model_Bookmark');
+        $config     = array(
+                        'items'    => array( 3, 4, 6, 7, 8, 9, 10, 11, 13, 15),
+                        'tags'     => array(12,73 ),
+                      );
+
+        $bookmarks  = $service->fetchRelated( $config );
+        $this->assertNotEquals(null, $bookmarks);
+
+        //printf ("Bookmarks: [ %s ]\n", print_r($bookmarks->toArray(), true));
+
+        $bookmarks  = $bookmarks->__toString();
+
+        //printf ("Bookmarks: [ %s ]\n", $bookmarks);
+
+        $this->assertEquals($expected, $bookmarks);
+
+        // De-Establish User1 as the authenticated, visiting user.
+        $this->_unsetAuthenticatedUser();
+    }
+
     public function testBookmarkServiceCreateBookmark1()
     {
         $user = $this->_user1;

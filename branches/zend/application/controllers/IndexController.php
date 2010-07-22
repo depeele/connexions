@@ -228,9 +228,10 @@ class IndexController extends Connexions_Controller_Action
         parent::_prepareSidebar($async);
 
         $extra = array(
-            'users'         => ($this->_owner !== '*'
-                                ? $this->_owner
-                                : null),
+            'users' => ($this->_owner !== '*'
+                            ? $this->_owner
+                            : null),
+            'tags'  => &$this->_tags,
         );
         $this->view->sidebar = array_merge($this->view->sidebar, $extra);
 

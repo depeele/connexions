@@ -257,7 +257,7 @@ abstract class Connexions_Model_Mapper_DbTable
             $select->limit($count, $offset);
         }
 
-        // /*
+        /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::fetch() "
                         . "sql[ %s ]...",
                         get_class($this),

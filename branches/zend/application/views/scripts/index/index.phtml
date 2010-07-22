@@ -43,17 +43,6 @@ Connexions::log("index/index.phtml: begin...");
  */
 $htmlBookmarks = $this->htmlBookmarks( $this->main );
 
-/*
-$bookmarks     = $htmlBookmarks->bookmarks;
-
-Connexions::log("index/index.phtml: paginator with %d bookmarks [ %s ]",
-                count($bookmarks),
-                (is_object($bookmarks)
-                    ? get_class($bookmarks)
-                    : gettype($bookmarks)) );
-// */
-
-
 // Prepare the Html Item Scope helper
 if ($this->owner === '*')
 {
@@ -65,15 +54,6 @@ else
 
     $scopePath = array($ownerStr => $this->baseurl($ownerStr));
 }
-
-/*
-$scopeQuery = array('format=json',
-                    'method=autocomplete');
-if (count($this->tags) > 0)
-{
-    array_push($scopeQuery, 'tags='. $this->tags);
-}
-*/
 
 $scopeRpc = Connexions::getJsonRpcInfo();
 $scopeRpc['method'] = 'bookmark.autocompleteTag';
@@ -126,18 +106,7 @@ $links->appendStylesheet($baseUrl .'css/bookmarks.css');
  </p>
 </div>
 
-<?php
-//Connexions_Profile::checkpoint('Connexions', 'IndexView render scope');
-
-echo $htmlItemScope->render();
-
-//Connexions_Profile::checkpoint('Connexions', 'IndexView render items');
-
-echo $this->render('index/main.phtml');
-?>
+<?= $htmlItemScope->render() ?>
+<?= $this->render('index/main.phtml') ?>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
-
-<?php
-
-//Connexions_Profile::checkpoint('Connexions', 'IndexView complete');
