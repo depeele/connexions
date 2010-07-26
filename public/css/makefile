@@ -5,6 +5,7 @@ YUI_COMP	= yuicompressor
 
 
 all: connexions.min.css bookmarks.min.css users.min.css 	\
+	bookmark-users.min.css					\
 	ui-form.min.css urlItems.min.css inbox.min.css		\
  	validationForm.min.css post.min.css auth.min.css 	\
 	ribbon-form.min.css url-choose.min.css			\
@@ -41,6 +42,9 @@ bookmarks.css: mixins.scss bookmarks.scss bookmark.scss \
 
 users.css: mixins.scss users.scss user.scss colors.scss sizes.scss
 	sass -t compact users.scss:users.css
+
+bookmark-users.css: mixins.scss users.scss user.scss colors.scss sizes.scss
+	sass -t compact bookmark-users.scss:bookmark-users.css
 
 urlItems.css: mixins.scss urlItems.scss bookmark.scss \
 		uiStars.scss colors.scss sizes.scss urls.scss
