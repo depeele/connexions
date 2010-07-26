@@ -203,3 +203,43 @@
     }
   }
 }
+
+// General tag list / tag presentation
+.tags {
+  font-size: 0.9em;
+  padding: 0.5em 0;
+  margin: 0;
+  text-align: right;
+  // Individual tag
+  .tag {
+    border:   1px solid #fff;
+  }
+  .tag:hover {
+    border-color: $tagColor;
+  }
+  .tag,.tag:hover {
+    display: block;
+    float: left;
+    background-color: $tagColorBackground;
+    color: $tagColor;
+    @include corners(1em, 0, 0, 1em);
+
+    // Make nested, rouned boxes
+    margin:   0.1em 0.1em 0.1em -0.5em;
+    padding:  0.2em 0.75em 0.2em 0.5em;
+
+    a,a:hover,a:visited,a:focus {
+      display: inline;
+      font-weight: normal;
+      text-decoration: none;
+      color: $tagColor;
+    }
+  }
+  .tag:hover {
+    background-color: $tagColor;
+    color: $tagColorBackground;
+    a, a:hover, a:visited, a:focus {
+      color: $tagColorBackground;
+    }
+  }
+}

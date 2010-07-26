@@ -384,16 +384,29 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                     // 'selected'      => $this->_owner,
                     'itemBaseUrl'   => $this->_url,
 
-                    'sortBy'        => $request->getParam("sbItemsSortBy"),
-                    'sortOrder'     => $request->getParam("sbItemsSortOrder"),
-
                     'page'          => $request->getParam("sbItemsPage"),
                     'perPage'       => $request->getParam("sbItemsPerPage"),
                     'highlightCount'=> $request->getParam(
                                                     "sbItemsHighlightCount"),
 
-                    'displayStyle'  => $request->getParam(
-                                                    "sbItemsOptionGroup"),
+                    /************************************
+                     * Adjust the default for this pane
+                     *      list style,
+                     *      sorted in descending order
+                     *      by weight
+                     *
+                     */
+                    'sortBy'        =>
+                        $request->getParam("sbItemsSortBy",
+                                    View_Helper_HtmlItemCloud::SORT_BY_WEIGHT),
+
+                    'sortOrder'     =>
+                        $request->getParam("sbItemsSortOrder",
+                                    Connexions_Service::SORT_DIR_DESC),
+
+                    'displayStyle'  =>
+                        $request->getParam("sbItemsOptionGroup",
+                                    View_Helper_HtmlItemCloud::STYLE_LIST),
                 ),
             ),
         );
