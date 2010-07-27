@@ -34,7 +34,9 @@ else
 
 $jQuery = $this->jQuery();
 
-$links = $this->headLink();
+$links = $this->headLink(array('rel'  => 'shortcut icon',
+                               'href' => $baseUrl .'/images/favicon.png'));
+
 $links->prependStylesheet($baseUrl .'css/connexions.css');
 $links->prependStylesheet($baseUrl .'css/themes/default/jquery-ui.css');
 //$links->prependStylesheet($baseUrl .'css/themes/base/jquery.ui.all.css');
