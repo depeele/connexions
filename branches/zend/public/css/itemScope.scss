@@ -31,7 +31,7 @@ $itemCountWidth: $countBoxWidth + 10px;
   }
   .scopeEntry {
     border: none;
-    padding: 0.1em 0.1em 0.1em 0.25em;
+    padding: 0.2em 0.1em 0.2em 0.25em;
     // Normal ui.input
     input {
       margin: 0;
@@ -125,28 +125,37 @@ $itemCountWidth: $countBoxWidth + 10px;
   }
   .root {
     background-color: $linkColor;
+    padding:          0 0.5em 0 0;
+    border:           unquote("1px solid") $linkColor;
+    z-index:          10;
   }
   .scopeItem {
-    padding: 0;
+    padding-left:     0.6em;
+    margin-left:      -0.5em;
+    @include corners(0, 1em, 1em, 0);
+    border:           unquote("1px dotted") $borderColor;
+    z-index:          2;
+
     background-color: $controlColor;
   }
   .deletable {
     a.delete {
-      display: block;
-      padding: 0;
-      margin: 0.25em;
-      text-indent: 999em;
-      text-decoration: none;
+      display:          block;
+      padding:          0;
+      margin:           0.25em;
+      text-indent:      999em;
+      text-decoration:  none;
     }
   }
   .itemCount {
-    position: absolute;
-    right: 0;
+    position:         absolute;
+    right:            0;
     background-color: $controlColor;
-    color: $navColor;
-    padding: 0.25em;
-    float: none;
-    width: $itemCountWidth;
-    text-align: center;
+    border:           unquote("1px solid") $controlColor;
+    color:            $navColor;
+    padding:            0.25em;
+    float:            none;
+    width:            $itemCountWidth;
+    text-align:       center;
   }
 }

@@ -99,9 +99,14 @@
         }
         // */
 
-        $config['items']    =& $userSet;
-        //$config['selected'] =& $this->tags;
-        $config['itemType'] =  View_Helper_HtmlItemCloud::ITEM_TYPE_USER;
+        $config['items']           =& $userSet;
+        //$config['selected']        =& $this->tags;
+        $config['itemType']        =  View_Helper_HtmlItemCloud::ITEM_TYPE_USER;
+        $config['weightName']      = 'userItemCount';  //'weight';
+        $config['weightTitle']     = 'Bookmarks';
+        //$config['titleTitle']      = 'User';
+        $config['currentSortBy']   =  View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
+        $config['currentSortOrder']=  Connexions_Service::SORT_DIR_DESC;
 
         $htmlItemCloud = $this->htmlItemCloud($config);
 

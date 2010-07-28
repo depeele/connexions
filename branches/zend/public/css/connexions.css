@@ -337,12 +337,17 @@ a:visited { color: #005a9c; }
 .cloud .highlights h4 { font-size: 1em; font-weight: bold; padding: 0; text-align: center; color: #172322; }
 
 .Item_List { padding: 0; }
+.Item_List li.header { background-color: #f3f3ff; border-bottom: 1px solid #e3e3ff; padding: 0.25em; }
+.Item_List li.header .item, .Item_List li.header .itemCount { padding: 0; font-weight: bold; }
+.Item_List li.header .itemCount { top: 0.5em; }
 .Item_List li.odd { background-color: #f3f3ff; }
 .Item_List li.even { background-color: none; }
-.Item_List .item { display: block; float: left; font-weight: normal; color: #2786c2; margin-right: 3em; }
-.Item_List .itemCount { display: block; position: absolute; right: 0; padding: 0.15em 0 0.15em; color: #999999; font-size: 0.8em; }
+.Item_List .item { display: block; font-weight: normal; color: #2786c2; margin-right: 3em; }
+.Item_List .itemCount { display: block; position: absolute; top: 0; right: 0; padding: 0.15em 0 0.15em; color: #999999; font-size: 0.8em; }
 
-#sbItemsCloud .Item_List .item { padding-bottom: 0.5em; }
+#sbItemsCloud .Item_List li.header .item { padding: 0; }
+#sbItemsCloud .Item_List .item { padding-top: 0.25em; padding-bottom: 0.25em; }
+#sbItemsCloud .Item_List .itemCount { top: 0.5em; }
 
 .Item_Cloud { list-style: none; text-align: justify; padding: 0; }
 .Item_Cloud .cloudItem { display: inline; font-size: 100%; margin: 0.25em; }
@@ -368,7 +373,7 @@ a:visited { color: #005a9c; }
 .itemScope ul li { background-color: transparent; float: left; border-right: 1px dotted #cccccc; }
 .itemScope ul li a, .itemScope ul li input { display: block; float: left; font-weight: normal; }
 .itemScope ul li a { padding: 0.25em; }
-.itemScope .scopeEntry { border: none; padding: 0.1em 0.1em 0.1em 0.25em; }
+.itemScope .scopeEntry { border: none; padding: 0.2em 0.1em 0.2em 0.25em; }
 .itemScope .scopeEntry input { margin: 0; padding: 0.1em; }
 .itemScope .scopeEntry button { border: 0; color: white; background-color: #cccccc; padding: 0.1em; margin: 0; cursor: pointer; float: left; }
 .itemScope .scopeEntry ul.as-selections { box-shadow: none; -webkit-box-shadow: none; -moz-box-shadow: none; border: none; padding: 0.1em; margin: 0; }
@@ -385,10 +390,10 @@ a:visited { color: #005a9c; }
 .itemScope .scopeEntry .as-results .as-list .as-result-item .as-message { padding: 0.25em; }
 .itemScope .scopeEntry .as-results .as-list .active { color: white; background-color: #0066cc; }
 .itemScope .scopeEntry .as-results .as-list .active em { background-color: #172322; }
-.itemScope .root { background-color: #0066cc; }
-.itemScope .scopeItem { padding: 0; background-color: #999999; }
+.itemScope .root { background-color: #0066cc; padding: 0 0.5em 0 0; border: 1px solid #0066cc; z-index: 10; }
+.itemScope .scopeItem { padding-left: 0.6em; margin-left: -0.5em; -moz-border-radius: 0 1em 1em 0; -webkit-border-radius: 0 1em 1em 0; -ms-border-radius: 0 1em 1em 0; -khtml-border-radius: 0 1em 1em 0; border-radius: 0 1em 1em 0; border: 1px dotted #cccccc; z-index: 2; background-color: #999999; }
 .itemScope .deletable a.delete { display: block; padding: 0; margin: 0.25em; text-indent: 999em; text-decoration: none; }
-.itemScope .itemCount { position: absolute; right: 0; background-color: #999999; color: white; padding: 0.25em; float: none; width: 110px; text-align: center; }
+.itemScope .itemCount { position: absolute; right: 0; background-color: #999999; border: 1px solid #999999; color: white; padding: 0.25em; float: none; width: 110px; text-align: center; }
 
 /****** papgination.sass ****** */
 .paginator { clear: both; padding: 1em; float: left; text-align: center; }

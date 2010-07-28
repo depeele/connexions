@@ -73,7 +73,7 @@ class Model_Mapper_Group extends Model_Mapper_Base
     {
         $data = parent::reduceModel($model);
 
-        // /*
+        /*
         Connexions::log("Model_Mapper_Group::reduceModel(%d, %d): [ %s ]",
                         $model->groupId, $data['groupId'],
                         Connexions::varExport($data));

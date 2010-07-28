@@ -73,10 +73,14 @@
                                       $count,
                                       $offset );
 
-    $config['items']       =& $itemSet;
-    $config['itemBaseUrl'] = $this->baseUrl('/url/');
-    $config['weightName'] =  'userCount';
-    $config['itemType']    =  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
+    $config['items']            =& $itemSet;
+    $config['itemBaseUrl']      = $this->baseUrl('/url/');
+    $config['weightName']       = 'userCount';
+    $config['weightTitle']      = 'Bookmarks';
+    $config['titleTitle']       = 'Item Url';
+    $config['itemType']         =  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
+    $config['currentSortBy']    =  View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
+    $config['currentSortOrder'] =  Connexions_Service::SORT_DIR_DESC;
 
     $htmlItemCloud         = $this->htmlItemCloud($config);
 

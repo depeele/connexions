@@ -134,7 +134,7 @@ class Model_UserAuth extends Model_Base
     {
         $norm = $this->_normalizeCredential($credential);
 
-        // /*
+        /*
         Connexions::log("Model_UserAuth::compare(%s): "
                         . "normalize[ %s ] to [ %s ]",
                         $credential, $norm, $this->credential);
@@ -177,9 +177,11 @@ class Model_UserAuth extends Model_Base
                 $seed  = $this->user->name .':'. $credential;
                 $mdVal = md5( $seed );
 
+                /*
                 Connexions::log("Model_UserAuth::_normalizeCredential(%s): "
                                 . "password: seed[ %s ], credential[ %s ]",
                                 $credential, $seed, $mdVal);
+                // */
 
                 $credential = $mdVal;
             }

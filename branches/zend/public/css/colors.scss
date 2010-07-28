@@ -28,9 +28,6 @@ $groupHeaderAlphaColor:       $groupHeaderColorBackground - #333300;
 $privateColorBackground:  #fee;
 $privateColorBorder:      #f33;
 
-$tagsHeaderColorBackground:       $borderColor;
-$tagsHeaderActiveColorBackground: #7c7c7c;
-
 $tagColorBackground:  #eee;
 $tagColor:            $navColorBackground;
 
@@ -38,6 +35,9 @@ $highlightTopColorBackground: #f3f3ff;
 $highlightTopHeaderColor:     $navColorBackground;
 $highlightTopTagColor:        $navColorSub;
 $highlightTopTagCountColor:   $controlColor;
+
+$tagsHeaderColorBackground:       $highlightTopColorBackground;
+$tagsHeaderColorBorder:           $tagsHeaderColorBackground - #101000;
 
 //!fieldInfoColor             = !validationInputColor
 $fieldInfoColor:      $controlColor;

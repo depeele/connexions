@@ -129,7 +129,6 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
      */
     public function save(Connexions_Model $bookmark)
     {
-        $accessor      = $this->getAccessor();
         $ratingChanged = false;
         $id            = $bookmark->getId();
         $tags          = $bookmark->tags;       // Save the tags
@@ -190,7 +189,6 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
      */
     public function delete(Connexions_Model $bookmark)
     {
-        $accessor = $this->getAccessor();
         $id       = $bookmark->getId();
 
         if ($id)

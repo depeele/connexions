@@ -104,10 +104,14 @@
                                           $offset );
     }
 
-    $config['items']      =& $tagSet;
-    $config['selected']   =& $this->tags;
-    $config['weightName'] =  'userCount';
-    $config['itemType']   =  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
+    $config['items']            =& $tagSet;
+    $config['selected']         =& $this->tags;
+    $config['weightName']       =  'userCount';
+    $config['weightTitle']      =  'Users of this tag';
+    $config['titleTitle']       =  'Tag';
+    $config['itemType']         =  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
+    $config['currentSortBy']    =  View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
+    $config['currentSortOrder'] =  Connexions_Service::SORT_DIR_DESC;
 
     $htmlItemCloud = $this->htmlItemCloud($config);
 

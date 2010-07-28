@@ -128,8 +128,9 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
         // Locate the matching Model_UserAuth instance...
         if ($identity !== null)
         {
-            // See if there is a Model_User instance matching the provided
-            // 'identity'
+            /* We were given 'identity'.  See if there is a matching Model_User
+             * instance.
+             */
             $user = $uService->find( $identity );
             if ($user === null)
             {
@@ -139,7 +140,10 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
                 return false;
             }
 
-            // Attempt to locate the Model_UserAuth instance matching 'user'
+            /* Now that we have a Model_User, attempt to locate the
+             * Model_UserAuth instance matching the identified user AND
+             * current authentication type.
+             */
             $userAuth = $uaMapper->find( array(
                             'userId'    => $user->userId,
                             'authType'  => $this->getAuthType(),
@@ -147,7 +151,14 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
         }
         else
         {
-            // We weren't given an identity, so perform a lookup by credential
+            /* We weren't given 'identity', so perform a lookup by 'credential'
+             * AND current authentication type.
+             *
+             * This makes sense for authentication methods that have a unique
+             * 'credential' per user (e.g. OpenId, PKI).  Authentication
+             * methods that this does NOT make sense for should ALWAYS provide
+             * 'identity'...
+             */
             $userAuth = $uaMapper->find( array(
                                 'authType'   => $this->getAuthType(),
                                 'credential' => $credential));
@@ -169,6 +180,13 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
             return false;
         }
 
+        /**********************************************************
+         * We found a matching authentication record.
+         *
+         * Double check to ensure that any user that
+         * was identified on entry is the user who
+         * owns this authenticationr record.
+         */
         if ($user === null)
         {
             // Now, retrieve the matching Model_User instance
@@ -189,7 +207,7 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
 
         /**********************************************************
          * Compare the incoming credential against the
-         * authentic credential.
+         * authentication credential.
          *
          */
         if (! $userAuth->compare($credential))

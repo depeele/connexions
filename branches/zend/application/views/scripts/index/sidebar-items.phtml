@@ -36,25 +36,44 @@
      * limited set.  User-requested sorting will be performed later
      * (in View_Helper_HtmlItemCloud) before the cloud is rendered.
      */
-    $fetchOrder = array('uti.userItemCount DESC',
-                        'ratingCount       DESC',
-                        'url               ASC');
+    if ($this->owner === '*')
+    {
+        // ALL users -- sort by userItemCount
+        $fetchOrder = array('userItemCount DESC',
+                            'ratingCount   DESC',
+                            'url           ASC');
+
+        $users                 = null;
+        $config['weightName']  = 'userItemCount';
+        $config['weightTitle'] = 'Bookmarks';
+    }
+    else
+    {
+        // A single user's bookmarks -- sort by rating
+        $fetchOrder = array('ratingAvg DESC',
+                            'url       ASC');
+
+        $users                 = $this->owner;
+        $config['weightName']  = 'ratingAvg';
+        $config['weightTitle'] = 'Average Rating';
+    }
 
     /* Items related to the given bookmarks -- actually, related to the
      * identified 'owner' and any specified tags.
      */
-    $itemSet = $service->fetchByUsersAndTags(($this->owner === '*'
-                                                ? null          // ALL users
-                                                : $this->owner),// ONE user
+    $itemSet = $service->fetchByUsersAndTags($users,
                                              $this->tags,
                                              true,          // exact
                                              $fetchOrder,
                                              $count,
                                              $offset );
 
-    $config['items']       =& $itemSet;
-    $config['itemBaseUrl'] = $this->baseUrl('/url/');
-    $config['itemType']    =  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
+    $config['items']            =& $itemSet;
+    $config['itemBaseUrl']      = $this->baseUrl('/url/');
+    $config['titleTitle']       = 'Item Url';
+    $config['itemType']         =  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
+    $config['currentSortBy']    =  View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
+    $config['currentSortOrder'] =  Connexions_Service::SORT_DIR_DESC;
 
     $htmlItemCloud         = $this->htmlItemCloud($config);
 

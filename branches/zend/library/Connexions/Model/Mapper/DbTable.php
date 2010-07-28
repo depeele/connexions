@@ -65,7 +65,7 @@ abstract class Connexions_Model_Mapper_DbTable
         if (! $domainModel->isBacked())
         {
             // Insert new record
-            // /*
+            /*
             Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
                             . "EMPTY id, insert new model[ %s ]",
                             get_class($this),
@@ -77,7 +77,7 @@ abstract class Connexions_Model_Mapper_DbTable
 
             $id        = array_combine($this->_keyNames, (array)$id);
 
-            // /*
+            /*
             Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
                             . "insert returned[ %s ]",
                             get_class($this),
@@ -91,7 +91,7 @@ abstract class Connexions_Model_Mapper_DbTable
                                    $this->getId($domainModel));
             $where = $this->_where($id);
 
-            // /*
+            /*
             Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
                             . "update model[ %s ], where[ %s ]",
                             get_class($this),
@@ -143,7 +143,7 @@ abstract class Connexions_Model_Mapper_DbTable
             $id       = array_combine($this->_keyNames,
                                       $this->getId($domainModel));
 
-            // /*
+            /*
             Connexions::log("Connexions_Model_Mapper_DbTable::delete(): "
                             .   "id[ %s ]",
                             Connexions::varExport($id));

@@ -100,6 +100,18 @@
 
 .Item_List {
   padding: 0;
+  li.header {
+    background-color: $tagsHeaderColorBackground;
+    border-bottom:    1px solid $tagsHeaderColorBorder;
+    padding:          0.25em;
+    .item,.itemCount {
+      padding:      0;
+      font-weight:  bold;
+    }
+    .itemCount {
+      top:          0.5em;
+    }
+  }
   li.odd {
     background-color: $li_oddColor;
   }
@@ -107,26 +119,35 @@
     background-color: $li_evenColor;
   }
   .item {
-    display: block;
-    float: left;
-    font-weight: normal;
-    color: $highlightTopTagColor;
+    display:      block;
+    font-weight:  normal;
+    color:        $highlightTopTagColor;
     margin-right: 3em;
   }
   .itemCount {
-    display: block;
-    position: absolute;
-    right: 0;
-    padding: 0.15em 0 0.15em;
-    color: $highlightTopTagCountColor;
-    font-size: 0.8em;
+    display:    block;
+    position:   absolute;
+    top:        0;
+    right:      0;
+    padding:    0.15em 0 0.15em;
+    color:      $highlightTopTagCountColor;
+    font-size:  0.8em;
   }
 }
 
 #sbItemsCloud {
   .Item_List {
+    li.header {
+      .item {
+        padding:      0;
+      }
+    }
     .item {
-      padding-bottom: 0.5em;
+      padding-top:    0.25em;
+      padding-bottom: 0.25em;
+    }
+    .itemCount {
+      top:          0.5em;
     }
   }
 }
