@@ -1,8 +1,19 @@
 <?php
 /** @file
  *
- *  View script for IndexController::index to render the items portion of the
- *  sidebar.
+ *  View script for UrlController::index to render the items portion of the
+ *  sidebar (i.e. the 'Items' tab).
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
+ *      item            The item being presented in the main view;
+ *
+ *      main            An array of settings for the main content panel:
+ *      sidebar         An array of settings for the sidebar:
  */
 
 ?>
@@ -10,7 +21,7 @@
    <div class='context-bg connexions_sprites item_bg ui-corner-left'>
     &nbsp;
    </div>
-   <p>Items related to these bookmarks.</p>
+   <p>Similar Items (by url).</p>
   </div>
   <?php
 
@@ -43,18 +54,19 @@
     /* Items related to the given bookmarks -- actually, related to the
      * identified 'owner' and any specified tags.
      */
-    $itemSet = $service->fetchByUsersAndTags(($this->owner === '*'
-                                                ? null          // ALL users
-                                                : $this->owner),// ONE user
-                                             $this->tags,
-                                             true,          // exact
-                                             $fetchOrder,
-                                             $count,
-                                             $offset );
+    $itemSet = $service->fetchSimilar($this->item,
+                                      $fetchOrder,
+                                      $count,
+                                      $offset );
 
-    $config['items']       =& $itemSet;
-    $config['itemBaseUrl'] = $this->baseUrl('/url/');
-    $config['itemType']    =  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
+    $config['items']            =& $itemSet;
+    $config['weightName']       = 'userItemCount';
+    $config['weightTitle']      = 'Bookmarks';
+    $config['titleTitle']       = 'Item Url';
+    $config['itemBaseUrl']      = $this->baseUrl('/url/');
+    $config['itemType']         =  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
+    $config['currentSortBy']    =  View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
+    $config['currentSortOrder'] =  Connexions_Service::SORT_DIR_DESC;
 
     $htmlItemCloud         = $this->htmlItemCloud($config);
 

@@ -30,16 +30,15 @@
  *                          current bookmark set;
  *          sortOrder       Indicates the sort order used to retrieve the
  *                          current bookmark set;
+ *
+ *
+ *
+ *  Prepare the HTML Bookmarks helper and retrieve the current bookmark set.
  */
-
-Connexions::log("url/main.phtml: begin: main[ %s ]",
-                Connexions::varExport($this->main));
-
-// Prepare the HTML Bookmarks helper and retrieve the current bookmark set.
 $htmlBookmarks = $this->htmlBookmarks( $this->main );
 $bookmarks     = $htmlBookmarks->bookmarks; //items;
 
-// /*
+/*
 Connexions::log("url/main.phtml: paginator with %d bookmarks [ %s ]",
                 count($bookmarks),
                 (is_object($bookmarks)

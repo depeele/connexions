@@ -580,7 +580,7 @@ class Model_User extends Model_Taggable
             $tags      = $tagMapper->fetchBy('tag', $tags);
         }
 
-        Connexions::log("Model_User::deleteTags( %s )", $tags);
+        //Connexions::log("Model_User::deleteTags( %s )", $tags);
         $status = array();
         foreach ($tags as $tag)
         {

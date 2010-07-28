@@ -120,4 +120,34 @@ class Service_Item extends Connexions_Service
                                         'offset'    => $offset,
                                     ));
     }
+
+    /** @brief  Retrieve a set of items that are "similar" to the provided
+     *          item (i.e. similar to the Item's URL -- actually, having the
+     *                     same host).
+     *  @param  id      A Model_Item instance, string url or urlHash, or an
+     *                  array of 'property/value' pairs.
+     *  @param  order   Optional ORDER clause (string, array);
+     *  @param  count   Optional LIMIT count
+     *  @param  offset  Optional LIMIT offset
+     *
+     *  @return A new Model_Set_Item instance.
+     */
+    public function fetchSimilar($id,
+                                 $order   = null,
+                                 $count   = null,
+                                 $offset  = null)
+    {
+        if (! $id instanceof Model_Item)
+        {
+            $normId = $this->_mapper->normalizeId($id);
+            $item   = $this->_mapper->find( $normId );
+        }
+        else
+            $item = $id;
+
+        return $this->_mapper->fetchSimilar($item,
+                                            $order,
+                                            $count,
+                                            $offset);
+    }
 }

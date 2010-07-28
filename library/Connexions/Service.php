@@ -190,14 +190,19 @@ abstract class Connexions_Service
             // Rely on Services to properly interpret users/items/tags
             switch ($key)
             {
+            case 'bookmarks':
+                $config['bookmarks'] = $this->factory('Service_Bookmark')
+                                                ->csList2set($val);
+                break;
+
             case 'users':
                 $config['users'] = $this->factory('Service_User')
-                                            ->csList2set($val);
+                                                ->csList2set($val);
                 break;
 
             case 'items':
                 $config['items'] = $this->factory('Service_Item')
-                                            ->csList2set($val);
+                                                ->csList2set($val);
                 break;
 
             case 'tagsExact':
@@ -209,8 +214,8 @@ abstract class Connexions_Service
             }
         }
 
-        // /*
-        Connexions::log("Service_Bookmark::fetchRelated(): "
+        /*
+        Connexions::log("Connexions_Service::fetchRelated(): "
                         .   "config[ %s ]",
                         Connexions::varExport($config));
         // */

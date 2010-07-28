@@ -29,8 +29,6 @@ class UrlController extends Connexions_Controller_Action
      */
     public function indexAction()
     {
-        Connexions::log('UrlController::indexAction');
-
         $request =& $this->_request;
         $url     =  $request->getParam('url',  null);
 
@@ -71,7 +69,7 @@ class UrlController extends Connexions_Controller_Action
         // Locate the item with the requested URL (if there is one).
         $this->_item = $this->service('Item')->find($this->_urlHash);
 
-        // /*
+        /*
         Connexions::log("UrlController:: item[ %s ]",
                         ($this->_item ? $this->_item->debugDump()
                                       : 'null'));
@@ -108,7 +106,7 @@ class UrlController extends Connexions_Controller_Action
 
     public function chooseAction()
     {
-        // Nothing much to do...
+        // Nothing much to do -- let the view script render...
         Connexions::log('UrlController::chooseAction');
     }
 
@@ -142,8 +140,6 @@ class UrlController extends Connexions_Controller_Action
      */
     protected function _prepareMain($htmlNamespace  = '')
     {
-        Connexions::log("UrlController::_prepareMain()");
-
         parent::_prepareMain($htmlNamespace);
 
         $extra = array(
@@ -152,9 +148,11 @@ class UrlController extends Connexions_Controller_Action
         );
         $this->view->main = array_merge($this->view->main, $extra);
 
+        /*
         Connexions::log("UrlController::_prepareMain(): "
                         .   "main[ %s ]",
                         Connexions::varExport($this->view->main));
+        // */
     }
 
     /** @brief  Prepare for rendering the sidebar view.
@@ -180,8 +178,19 @@ class UrlController extends Connexions_Controller_Action
         );
         $this->view->sidebar = array_merge($this->view->sidebar, $extra);
 
+        /************************************
+         * Adjust the default for this pane
+         *      list style,
+         *
+         */
+        $this->view->sidebar['panes']['people']['displayStyle'] =
+                        $this->_request->getParam("sbPeopleOptionGroup",
+                                    View_Helper_HtmlItemCloud::STYLE_LIST);
+
+        /*
         Connexions::log("UrlController::_prepareSidebar(): "
                         .   "sidebar[ %s ]",
                         Connexions::varExport($this->view->sidebar));
+        // */
     }
 }

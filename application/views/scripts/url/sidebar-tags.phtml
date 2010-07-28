@@ -1,17 +1,17 @@
 <?php
 /** @file
  *
- *  View script for IndexController::index to render the tags portion of the
+ *  View script for UrlController::index to render the tags portion of the
  *  sidebar (i.e. the 'Tags' tab).
  *
  *  Incoming members:
  *      url             The full url for the main controller of this page;
- *      owner           The owner of the current item set -- either a string or
- *                      a Model_User instance;
  *      viewer          The Model_User instance representing the current
  *                      viewer;
  *      tags            A Model_Set_Tag instance containing information about
  *                      any requested tags (i.e. tag restrictions);
+ *      item            The item being presented in the main view;
+ *
  *      main            An array of settings for the main content panel:
  *      sidebar         An array of settings for the sidebar:
  */
@@ -28,7 +28,7 @@
     $htmlSidebar = $this->htmlSidebar( $this->sidebar );
     $config      = $htmlSidebar->getPane('tags');
 
-    // /*
+    /*
     Connexions::log("url/sidebar-tags.phtml: config[ %s ]",
                     print_r($config, true));
     // */
@@ -106,9 +106,13 @@
                                               $offset );
     }
 
-    $config['items']    =& $tagSet;
-    $config['selected'] =& $this->tags;
-    $config['itemType'] =  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
+    $config['items']            =& $tagSet;
+    $config['selected']         =& $this->tags;
+    $config['weightTitle']      = 'Item bookmarks';
+    $config['titleTitle']       = 'Tag';
+    $config['itemType']         =  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
+    $config['currentSortBy']    =  View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
+    $config['currentSortOrder'] =  Connexions_Service::SORT_DIR_DESC;
 
     $htmlItemCloud = $this->htmlItemCloud($config);
 

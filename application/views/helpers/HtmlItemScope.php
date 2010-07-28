@@ -304,6 +304,7 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
 
         
             $validList = preg_split('/\s*,\s*/', $scope->__toString());
+            $nItems    = count($validList);
             foreach ($validList as $idex => $name)
             {
                 if (in_array($name, $this->_hiddenItems))
@@ -322,13 +323,15 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
                                         . "remUrl[ {$remUrl} ]");
                 // */
         
-                $html .= sprintf (  "<li class='scopeItem deletable'>"
+                $html .= sprintf (  "<li class='scopeItem deletable' "
+                                  .     "style='z-index: %d;'>"
                                   .  "<a href='%s/%s'>%s</a>"
                                   .  "<a href='%s' "
                                   .     "class='delete ui-icon ui-icon-close'>"
                                   .   "x"
                                   .  "</a>"
                                   . "</li>",
+                                  ($nItems - $idex) + 1,
                                   $url, $name, $name,
                                   $remUrl);
 

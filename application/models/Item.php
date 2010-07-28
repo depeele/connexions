@@ -162,11 +162,21 @@ class Model_Item extends Model_Taggable
     public function getTitle()
     {
         $title = (String)($this->url);
+        $orig  = $title;
 
         /* Since a url is typically a LARGE, contiguous string, url decode it,
-         * and add white-space around every [/.,&=?_-].
+         * and add white-space around every non-word character
+         * [/.,&=?_-].
          */
-        $title = preg_replace('/([\/\.,\&=\?_\-])/', '$1 ', urldecode($title));
+        $title = preg_replace('/\s*(\W|_)\s*/', ' $1 ', urldecode($title));
+
+        // Remove white-space from teh schema
+        $title = preg_replace('/^(\S+)\s+:\s+\/\s+\//', '$1://', $title);
+
+        /*
+        Connexions::log("Model_Item::getTitle(): [ %s ] == [ %s ]",
+                        $orig, $title);
+        // */
 
         return $title;
     }

@@ -29,10 +29,21 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         'weightName'        => null,        /* The name of the field/member
                                              * to use for weight.
                                              */
+        'weightTitle'       => null,        /* The title describing the item's
+                                             * weight.
+                                             */
+        'titleTitle'        => null,        /* The title describing the item's
+                                             * title.
+                                             */
 
 
+        // The desired sort order
         'sortBy'            => self::SORT_BY_TITLE,
         'sortOrder'         => Connexions_Service::SORT_DIR_ASC,
+
+        // The current sort order
+        'currentSortBy'     => null,
+        'currentSortOrder'  => null,
 
         'page'              => 1,
         'perPage'           => 100,
@@ -84,6 +95,9 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
     protected       $_displayOptions    = null;
     protected       $_hiddenItems       = array();
+
+    protected       $_currentSortBy     = null;
+    protected       $_currentSortOrder  = null;
 
     static protected $_initialized      = array();
 
@@ -209,16 +223,14 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         /*
         Connexions::log("View_Helper_HtmlItemCloud::render(): "
                         .   "namespace[ %s ], %d items, "
-                        .   "sortBy[ %s ], sortOrder[ %s ], style[ %s ]",
+                        .   "sortBy[ %s ], sortOrder[ %s ], style[ %s ], "
+                        .   "weightName[ %s ]",
                         $this->namespace,
                         $this->items->count(),
                         $this->sortBy, $this->sortOrder,
-                        $this->getDisplayStyle());
+                        $this->getDisplayStyle(),
+                        $this->weightName);
         // */
-
-
-        // (Re)sort the items according to the requested ordering
-        $this->items->usort( array($this, 'sortCb') );
 
         /*
         Connexions::log("View_Helper_HtmlItemCloud::render(): sort[ %s, %s ]",
@@ -295,103 +307,104 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
             }
         }
 
-        $sortedList = $this->_sort($itemList, $this->sortBy,
-                                              $this->sortOrder);
+        $html .= "<div class='cloud'>";
 
-        if ($this->getDisplayStyle() === self::STYLE_CLOUD)
+        if (count($itemList) < 1)
         {
-            // Zend_Tag_Cloud configuration
-            $cloudConfig = array(
-                // Make helpers in 'application/views/helpers' available.
-                'prefixPath'            => array(
-                    'prefix'    => 'View_Helper',
-                    'path'      => APPLICATION_PATH .'/views/helpers/'
-                 ),
-                'ItemList'              => $sortedList,
-                /* Use the default cloud decorator:
-                 *      Zend_Tag_Cloud_Decorator_HtmlItemCloud
-                 */
-                'CloudDecorator'        => array(
-                    'decorator'         => 'htmlCloud',
-                    'options'           => array(
-                        'HtmlTags'      => array(
-                            'ul'        => array(
-                                'class' =>'Item_Cloud'
-                            )
-                        )
-                    )
-                ),
-                // Shared configuration for the tag decorators
-                'TagDecorator'          => array(
-                    //'decorator'         => 'htmlItemCloudItem',
-                    'options'           => array(
-                        'HtmlTags'      => array(
-                            'li'        => array(
-                                'class'=>'cloudItem'
-                            )
-                        ),
-                        'ClassList'     => array(
-                            'size0', 'size1', 'size2', 'size3',
-                            'size4', 'size5', 'size6'
-                        )
-                    )
-                ),
-            );
-
-            switch ($this->itemType)
-            {
-            case self::ITEM_TYPE_ITEM:
-                /* Use our cloud item decorator:
-                 *      View_Helper_HtmlItemCloudItem
-                 */
-                $cloudConfig['TagDecorator']['decorator'] =
-                                                        'htmlItemCloudItem';
-
-                break;
-
-            case self::ITEM_TYPE_USER:
-                /* Use our cloud item decorator:
-                 *      View_Helper_HtmlItemCloudUser
-                 *
-                 *      and include 'user' in the CSS class for the <li> around
-                 *      each "tag".
-                 */
-                $cloudConfig['TagDecorator']['decorator'] =
-                                                        'htmlItemCloudItem';
-                $cloudConfig['TagDecorator']
-                                ['options']
-                                    ['HtmlTags']
-                                        ['li']
-                                            ['class']    .= ' user';
-                break;
-            }
-
-
-            // Create a Zend_Tag_Cloud renderer (by default, renders HTML)
-            $cloud = new Zend_Tag_Cloud( $cloudConfig );
-
-            // Render the HTML for a cloud
-            $html .= "<div class='cloud'>"
-                  .   ($this->highlightCount > 0
-                            ? $this->_renderHighlights( $itemList )
-                            : '')
-                  .   $cloud->render()
-                  .  "<br class='clear' />"
-                  .  "</div>";
+            $html .= 'No matching items.';
         }
         else
         {
-            // Render the HTML for a list
-            $html .= "<div class='cloud'>"
-                  /* Showing top doesn't make sense when presenting a list...
-                  .   ($this->highlightCount > 0
-                            ? $this->_renderHighlights( $itemList )
-                            : '')
-                  */
-                  .   $this->_renderList( $sortedList )
-                  .   "<br class='clear' />"
-                  .  "</div>";
+            $sortedList = $this->_sort($itemList, $this->sortBy,
+                                                  $this->sortOrder);
+
+            if ($this->getDisplayStyle() !== self::STYLE_CLOUD)
+            {
+                // Render the HTML for a list
+                $html .= $this->_renderList( $sortedList );
+            }
+            else
+            {
+                // Zend_Tag_Cloud configuration
+                $cloudConfig = array(
+                    // Make helpers in 'application/views/helpers' available.
+                    'prefixPath'            => array(
+                        'prefix'    => 'View_Helper',
+                        'path'      => APPLICATION_PATH .'/views/helpers/'
+                     ),
+                    'ItemList'              => $sortedList,
+                    /* Use the default cloud decorator:
+                     *      Zend_Tag_Cloud_Decorator_HtmlItemCloud
+                     */
+                    'CloudDecorator'        => array(
+                        'decorator'         => 'htmlCloud',
+                        'options'           => array(
+                            'HtmlTags'      => array(
+                                'ul'        => array(
+                                    'class' =>'Item_Cloud'
+                                )
+                            )
+                        )
+                    ),
+                    // Shared configuration for the tag decorators
+                    'TagDecorator'          => array(
+                        //'decorator'         => 'htmlItemCloudItem',
+                        'options'           => array(
+                            'HtmlTags'      => array(
+                                'li'        => array(
+                                    'class'=>'cloudItem'
+                                )
+                            ),
+                            'ClassList'     => array(
+                                'size0', 'size1', 'size2', 'size3',
+                                'size4', 'size5', 'size6'
+                            )
+                        )
+                    ),
+                );
+
+                switch ($this->itemType)
+                {
+                case self::ITEM_TYPE_ITEM:
+                    /* Use our cloud item decorator:
+                     *      View_Helper_HtmlItemCloudItem
+                     */
+                    $cloudConfig['TagDecorator']['decorator'] =
+                                                        'htmlItemCloudItem';
+
+                    break;
+
+                case self::ITEM_TYPE_USER:
+                    /* Use our cloud item decorator:
+                     *      View_Helper_HtmlItemCloudUser
+                     *
+                     *      and include 'user' in the CSS class for the <li>
+                     *      around each "tag".
+                     */
+                    $cloudConfig['TagDecorator']['decorator'] =
+                                                        'htmlItemCloudItem';
+                    $cloudConfig['TagDecorator']
+                                    ['options']
+                                        ['HtmlTags']
+                                            ['li']
+                                                ['class']    .= ' user';
+                    break;
+                }
+
+
+                // Create a Zend_Tag_Cloud renderer (by default, renders HTML)
+                $cloud = new Zend_Tag_Cloud( $cloudConfig );
+
+                // Render the HTML for a cloud
+                $html .= ($this->highlightCount > 0
+                                ? $this->_renderHighlights( $itemList )
+                                : '')
+                      .   $cloud->render();
+            }
         }
+
+        $html .=  "<br class='clear' />"
+              .  "</div>";
 
         if ($uiPagination !== null)
         {
@@ -414,8 +427,10 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
     {
         $this->_params['namespace'] = $namespace;
 
+        /*
         Connexions::log("View_Helper_HtmlItemCloud::setNamespace( %s )",
                         $namespace);
+        // */
 
         $view   = $this->view;
         $jQuery = $view->jQuery();
@@ -476,6 +491,22 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         }
 
         $this->_params['items'] = $items;
+
+        /*
+        Connexions::log("View_Helper_HtmlItemCloud::setItems(): "
+                        . "%d items:",
+                        count($items));
+
+        foreach($items as $key => $item)
+        {
+            Connexions::log("View_Helper_HtmlItemCloud::setItems(): "
+                            . "%s: (%s) title [ %s ], weight[ %d ]",
+                            $key,
+                            get_class($item),
+                            $item->getTitle(),
+                            $item->getWeight() );
+        }
+        // */
 
         return $this;
     }
@@ -539,7 +570,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
             $this->_displayOptions->setGroup($style);
         }
 
-        // /*
+        /*
         Connexions::log('View_Helper_HtmlItemCloud::'
                             . "setDisplayStyle({$reqStyle}) == [ "
                             .   $this->_displayOptions->getGroup() ." ]");
@@ -557,32 +588,55 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         return $this->_displayOptions->getGroup();
     }
 
-    /** @brief  Set the current sortBy.
+    /** @brief  Set the desired sortBy.
      *  @param  sortBy  A sortBy value (self::SORT_BY_*)
      *
      *  @return $this for a fluent interface.
      */
     public function setSortBy($sortBy)
     {
-        $orig = $sortBy;
-
-        switch ($sortBy)
-        {
-        case self::SORT_BY_TITLE:
-        case self::SORT_BY_WEIGHT:
-            break;
-
-        default:
-            $sortBy = self::$defaults['sortBy'];
-            break;
-        }
+        $this->_params['sortBy'] = $this->_validateSortBy($sortBy);
 
         /*
         Connexions::log('View_Helper_HtmlItemCloud::'
-                            . "setSortBy({$orig}) == [ {$sortBy} ]");
+                            . "setSortBy({$sortBy}) == [ {$this->sortBy} ]");
         // */
 
-        $this->_params['sortBy'] = $sortBy;
+        return $this;
+    }
+
+    /** @brief  Set the desired sortOrder.
+     *  @param  sortOrder   A sortOrder value (Connexions_Service::SORT_DIR_*)
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function setSortOrder($sortOrder)
+    {
+        $this->_params['sortOrder'] = $this->_validateSortOrder($sortOrder);
+
+        /*
+        Connexions::log('View_Helper_HtmlItemCloud::'
+                            . "setSortOrder({$sortOrder}) == "
+                            .            "[ {$this->sortOrder} ]");
+        // */
+
+        return $this;
+    }
+
+    /** @brief  Set the current sortBy.
+     *  @param  sortBy  A sortBy value (self::SORT_BY_*)
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function setCurrentSortBy($sortBy)
+    {
+        $this->_params['currentSortBy'] = $this->_validateSortBy($sortBy);
+
+        /*
+        Connexions::log('View_Helper_HtmlItemCloud::'
+                            . "setCurrentSortBy({$sortBy}) == "
+                            .         "[ {$this->currentSortBy} ]");
+        // */
 
         return $this;
     }
@@ -592,28 +646,16 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      *
      *  @return $this for a fluent interface.
      */
-    public function setSortOrder($sortOrder)
+    public function setCurrentSortOrder($sortOrder)
     {
-        $orig = $sortOrder;
-
-        $sortOrder = strtoupper($sortOrder);
-        switch ($sortOrder)
-        {
-        case Connexions_Service::SORT_DIR_ASC:
-        case Connexions_Service::SORT_DIR_DESC:
-            break;
-
-        default:
-            $sortOrder = self::$defaults['sortOrder'];
-            break;
-        }
+        $this->_params['currentSortOrder'] =
+                            $this->_validateSortOrder($sortOrder);
 
         /*
         Connexions::log('View_Helper_HtmlItemCloud::'
-                            . "setSortOrder({$orig}) == [ {$sortOrder} ]");
+                            . "setCurrentSortOrder({$sortOrder}) == "
+                            .            "[ {$this->currentSortOrder} ]");
         // */
-    
-        $this->_params['sortOrder'] = $sortOrder;
 
         return $this;
     }
@@ -678,6 +720,51 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      *
      */
 
+    /** @brief  Given a requested sortBy value, validate, returning a valid
+     *          value.
+     *  @param  sortBy  A sortBy value (self::SORT_BY_*)
+     *
+     *  @return A valid sortBy value.
+     */
+    protected function _validateSortBy($sortBy)
+    {
+        switch ($sortBy)
+        {
+        case self::SORT_BY_TITLE:
+        case self::SORT_BY_WEIGHT:
+            break;
+
+        default:
+            $sortBy = self::$defaults['sortBy'];
+            break;
+        }
+
+        return $sortBy;
+    }
+
+    /** @brief  Given a requested sortOrder value, validate, returning a valid
+     *          value.
+     *  @param  sortOrder   A sortOrder value (Connexions_Service::SORT_DIR_*)
+     *
+     *  @return A valid sortOrder value.
+     */
+    protected function _validateSortOrder($sortOrder)
+    {
+        $sortOrder = strtoupper($sortOrder);
+        switch ($sortOrder)
+        {
+        case Connexions_Service::SORT_DIR_ASC:
+        case Connexions_Service::SORT_DIR_DESC:
+            break;
+
+        default:
+            $sortOrder = self::$defaults['sortOrder'];
+            break;
+        }
+
+        return $sortOrder;
+    }
+
     /** @brief  Sort our tags, if needed.
      *  @param  itemList    A Connexions_Model_Set_Adapter_ItemList instance;
      *  @param  sortBy      The field to sort by ( self::SORT_BY_* );
@@ -689,13 +776,16 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                              $sortBy, $sortOrder)
     {
         /*
-        Connexions::log("HtmlItemCloud: _sort: ". count($itemList) ." items, "
-                            . "sort[ {$sortBy}, {$sortOrder} ]");
+        Connexions::log("View_Helper_HtmlItemCloud::_sort(): "
+                        . "%d items, sort[ %s => %s, %s => %s ]",
+                        count($itemList),
+                        $this->currentSortBy,    $sortBy,
+                        $this->currentSortOrder, $sortOrder);
 
         foreach($itemList as $key => $item)
         {
-            Connexions::log("HtmlItemCloud: _sort: %s: "
-                            . "(%s) title [ %s ], weight[ %d ]",
+            Connexions::log("View_Helper_HtmlItemCloud::_sort(): "
+                            . "%s: (%s) title [ %s ], weight[ %d ]",
                             $key,
                             get_class($item),
                             $item->getTitle(),
@@ -705,38 +795,14 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
         /* In setItemSet(), the chosen sort order MAY be over-ridden to ensure
          * that we're presenting the most weighty portion of the cloud.
-         *
-         * This will occur if the incoming set is a Connexions_Set instance AND
-         * sortBy !== SORT_BY_WEIGHT.
-         *
-         * So, here, the sort order of the incoming itemSet is:
-         *      - 'weight DESC'
-         *          - if ((this->items instanceof  Connexions_Set) &&
-         *                (displayStyle     === self::STYLE_CLOUD)    &&
-         *                (this->sortBy    !== self::SORT_BY_WEIGHT))
-         *          - OR ((this->sortBy    === self::SORT_BY_WEIGHT) &&
-         *                (this->sortOrder === 
-         *                              Connexions_Service::SORT_DIR_DESC))
-         *
-         * We ALSO don't need to sort if the requested order is 'weight DESC'
-         * Now, we need to apply the chosen sort on the current sub-set of
-         * items.
-        if (($this->items instanceof Connexions_Set)                &&
-            ($this->_displayOptions->getGroup() === self::STYLE_CLOUD) &&
-            ($this->sortBy                     !== self::SORT_BY_WEIGHT) )
-        {
-            $curSortBy    = self::SORT_BY_WEIGHT;
-            $curSortOrder = Connexions_Service::SORT_DIR_DESC;
-        }
-        else
          */
         {
             $curSortBy    = $this->sortBy;
             $curSortOrder = $this->sortOrder;
         }
 
-        if (($sortBy    === $curSortBy) &&
-            ($sortOrder === $curSortOrder))
+        if (($sortBy    === $this->currentSortBy) &&
+            ($sortOrder === $this->currentSortOrder))
         {
             // The incoming list should ALREADY be properly sorted.
             return $itemList;
@@ -757,7 +823,9 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         }
         else
         {
-            $val = 'getWeight()';
+            $val = ($this->weightName === null
+                        ? 'getWeight()'
+                        : $this->weightName);
 
             if ($sortOrder === Connexions_Service::SORT_DIR_DESC)
                 // Reverse sort (Descending)
@@ -777,18 +845,20 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         $itemList->uasort($sortFn);
 
         /*
-        Connexions::log("HtmlItemCloud: _sort: ----------------------- "
+        Connexions::log("View_Helper_HtmlItemCloud:_sort(): "
+                        .   "----------------------- "
                             . count($itemList) ." items, "
                             . "sorted [ {$sortBy}, {$sortOrder} ]");
         foreach($itemList as $key => $item)
         {
-            Connexions::log("HtmlItemCloud: _sort: %-3s: "
-                            . "title [ %-15s ], weight[ %d ]",
+            Connexions::log("View_Helper_HtmlItemCloud:_sort(): "
+                            . "%-3s: title [ %-15s ], weight[ %d ]",
                             $key,
                             $item->getTitle(),
                             $item->getWeight() );
         }
         // */
+
         return $itemList;
     }
 
@@ -804,13 +874,41 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
     {
         $html .= "<ul class='Item_List'>";
 
-        foreach ($itemList as $idex => $item)
+        $includeWeight = ($this->weightName !== null);
+
+        Connexions::log("View_Helper_HtmlItemCloud::_renderList(): "
+                        . "%d items, weightName[ %s ], weightTitle[ %s ]",
+                        count($itemList), $this->weightName,
+                        $this->weightTitle);
+
+        $html .= "<li class='header'>"
+              .   "<span class='item'>"
+              .    ($this->titleTitle !== null
+                      ? $this->titleTitle
+                      : ($this->itemType === self::ITEM_TYPE_USER
+                            ? "User"
+                            : "Item"))
+              .   "</span>";
+        if ($includeWeight)
         {
-            $oddEven = ($idex % 2 ? 'odd' : 'even');
+
+            $html .= "<span class='itemCount'>"
+                  .   ($this->weightTitle !== null
+                        ? $this->weightTitle
+                        : 'Weight')
+                  .  "</span>";
+        }
+        $html .= "</li>";
+
+        $idex = 0;
+        foreach ($itemList as $item)
+        {
+            $oddEven = ($idex++ % 2 ? 'odd' : 'even');
             $html   .= "<li class='{$oddEven}'>";
 
             $url    = $item->getParam('url');
-            $weight = number_format($item->getWeight());
+            $weight = number_format(round($item->getWeight()));
+
             if (empty($url))
                 $html .= sprintf("<span class='item'>%s</span>",
                                     htmlSpecialChars($item->getTitle()));
@@ -819,9 +917,16 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                                     htmlSpecialChars($url),
                                     htmlSpecialChars($item->getTitle()));
 
-            $html .=  "<span class='itemCount'>{$weight}</span>"
-                  .   "<br class='clear' />"
-                  .  "</li>";
+            if ($includeWeight)
+            {
+                $title = ($this->weightTitle !== null
+                            ? " title='{$this->weightTitle}'"
+                            : '');
+
+                $html .=  "<span class='itemCount'{$title}>{$weight}</span>";
+            }
+
+            $html .= "</li>";
         }
 
         $html .= "</ul>";
@@ -873,7 +978,6 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                                     htmlSpecialChars($item->getTitle()));
 
             $html .=  "<span class='itemCount'>{$weight}</span>"
-                  .   "<br class='clear' />"
                   .  "</li>";
         }
 

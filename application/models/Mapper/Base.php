@@ -461,11 +461,23 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                                                             $secAs,
                                           array             $params)
     {
+        $accessor  = $this->getAccessor();
+        $mainTable = $accessor->info(Zend_Db_Table_Abstract::NAME);
+
         // Include the statistics in the column list of the primary select
-        $select->columns(array("{$secAs}.userItemCount",
-                               "{$secAs}.userCount",
-                               "{$secAs}.itemCount",
-                               "{$secAs}.tagCount"));
+        $mainStatCols = array("{$secAs}.userItemCount",
+                              "{$secAs}.userCount",
+                              "{$secAs}.itemCount",
+                              "{$secAs}.tagCount");
+        if ($mainTable === 'item')
+        {
+            // Include the rating average
+            array_push($mainStatCols, $this->_fieldExpression($mainTable,
+                                                              'ratingAvg'));
+        }
+
+
+        $select->columns( $mainStatCols );
 
         // Generate the statistics in the secondary select
         $secSelect->columns(array(

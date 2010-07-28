@@ -30,6 +30,30 @@ class ItemServiceTest extends DbTestCase
             'itemCount'     => 0,
             'tagCount'      => 0,
     );
+    protected   $_item3 = array(
+            'itemId'        => 3,
+            'url'           => 'http://demo.openlinksw.com/weblog/demo/?id=1',
+            'urlHash'       => '052973b1ac311978abdc0413daa1d5db',
+
+            'userCount'     => 1,
+            'ratingCount'   => 0,
+            'ratingSum'     => 0,
+            'userItemCount' => 0,
+            'itemCount'     => 0,
+            'tagCount'      => 0,
+    );
+    protected   $_item4 = array(
+            'itemId'        => 4,
+            'url'           => 'http://demo.openlinksw.com/DAV/JS/demo/index.html',
+            'urlHash'       => '52cda3e66df5938103c48725357c59ab',
+
+            'userCount'     => 2,
+            'ratingCount'   => 0,
+            'ratingSum'     => 0,
+            'userItemCount' => 0,
+            'itemCount'     => 0,
+            'tagCount'      => 0,
+    );
 
     protected function getDataSet()
     {
@@ -585,5 +609,77 @@ class ItemServiceTest extends DbTestCase
         //printf ("Items: [ %s ]\n", $items);
 
         $this->assertEquals($expected, $items);
+    }
+
+    public function testItemServiceSimilar1()
+    {
+        $expected = $this->_item4['urlHash'];
+
+        $service  = Connexions_Service::factory('Model_Item');
+        $items    = $service->fetchSimilar( $this->_item3['itemId'] );
+
+        $this->assertEquals($expected,
+                            $items->__toString());
+    }
+
+    public function testItemServiceSimilar2()
+    {
+        $expected = $this->_item4['urlHash'];
+
+        $service  = Connexions_Service::factory('Model_Item');
+        $items    = $service->fetchSimilar( $this->_item3['url'] );
+
+        $this->assertEquals($expected,
+                            $items->__toString());
+    }
+
+    public function testItemServiceSimilar3()
+    {
+        $expected = $this->_item4['urlHash'];
+
+        $service  = Connexions_Service::factory('Model_Item');
+        $items    = $service->fetchSimilar( $this->_item3['urlHash'] );
+
+        $this->assertEquals($expected,
+                            $items->__toString());
+    }
+
+    public function testItemServiceSimilar4()
+    {
+        $expected = $this->_item4['urlHash'];
+
+        $service  = Connexions_Service::factory('Model_Item');
+        $items    = $service->fetchSimilar( array(
+                                'itemId' => $this->_item3['itemId']
+                    ));
+
+        $this->assertEquals($expected,
+                            $items->__toString());
+    }
+
+    public function testItemServiceSimilar5()
+    {
+        $expected = $this->_item4['urlHash'];
+
+        $service  = Connexions_Service::factory('Model_Item');
+        $items    = $service->fetchSimilar( array(
+                                'url' => $this->_item3['url']
+                    ));
+
+        $this->assertEquals($expected,
+                            $items->__toString());
+    }
+
+    public function testItemServiceSimilar6()
+    {
+        $expected = $this->_item4['urlHash'];
+
+        $service  = Connexions_Service::factory('Model_Item');
+        $items    = $service->fetchSimilar( array(
+                                'urlHash' => $this->_item3['urlHash']
+                    ));
+
+        $this->assertEquals($expected,
+                            $items->__toString());
     }
 }
