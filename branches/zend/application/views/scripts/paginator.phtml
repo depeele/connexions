@@ -1,0 +1,222 @@
+<?php
+/** @file
+ *
+ *  HTML rendering of a pagination control
+ *      (typically via View_Helper_HtmlPaginationControl).
+ *
+ *  Incoming parameters:
+ *      namespace   The form namespace for this paginator;
+ *      paginator   A Zend_Paginator instance;
+ *      cssForm     Additional CSS class(es) to apply to the paginator form
+ *                  [ null ];
+ *      excludeInfo Should paging information be excluded [ false ];
+ */
+$perPageChoices =  array(10, 25, 50, 100, 250, 500);
+
+$paginator      =& $this->paginator;
+$cssForm        =  (isset($this->cssForm)    ? ' '.$this->cssForm : '');
+$excludeInfo    =  (isset($this->excludeInfo)
+                        ? ($this->excludeInfo ? true : false)
+                        : false);
+
+$pages = $paginator->getPages();
+$pages = get_object_vars($pages);
+
+?>
+<!-- pages [ <?= var_export($pages, true) ?> ] -->
+<form class='paginator<?= $cssForm ?>'>
+ <div class='pager'><?
+
+    if ($pages['pageCount'] > 1)
+    {
+        // We have one or more pages.  Render the pagination control
+
+        /*****************************************************
+         * Render a 'Previous Page' button, possibly disabled.
+         *
+         */
+        $state = (@isset($pages['previous'])
+                    ? 'default'
+                    : 'disabled');
+        $prev  = (@isset($pages['previous'])
+                    ? $pages['previous']
+                    : '');
+
+?><button type='submit'
+          name='<?= $this->namespace ?>Page'
+         class='ends-left ui-state-<?= $state ?> ui-corner-all'
+         value='<?= $prev ?>'
+         title='Previous Page'
+              >&lsaquo;</button><?
+
+        /*****************************************************
+         * Render any pages BEFORE the current range
+         *
+         */
+        if ($pages['firstPageInRange'] > $pages['first'])
+        {
+            /* The very first page is not in the range of pages being
+             * presented.
+             *
+             * Render a button for the first page.
+             */
+?><button type='submit'
+          name='<?= $this->namespace ?>Page'
+         class='ui-state-default ui-corner-all'
+         value='<?= $pages['first'] ?>'
+         title='Page <?= $pages['first'] ?>'
+              ><?= $pages['first'] ?></button><?
+        }
+
+        if ($pages['firstPageInRange'] > ($pages['first'] + 1))
+        {
+            /* The second page is not in the range of pages being presented
+             * so include a button for it.
+             */
+?><button type='submit'
+          name='<?= $this->namespace ?>Page'
+         class='ui-state-default ui-corner-all'
+         value='<?= $pages['first']+1 ?>'
+         title='Page <?= $pages['first']+1 ?>'
+             ><?= $pages['first']+1 ?></button><?
+        }
+
+        if ($pages['firstPageInRange'] > ($pages['first'] + 2))
+        {
+            /* None of the first 3 pages are in the range of pages being
+             * presented, so include an ellipses to represent the page gap.
+             */
+?><span class='ui-state-skip ui-corner-all'>...</span><?
+        }
+
+        /*****************************************************
+         * Render the pages within the current range
+         *
+         */
+        foreach ($pages['pagesInRange'] as $page)
+        {
+            $state = ($page == $pages['current']
+                        ? 'active'
+                        : 'default');
+
+?><button type='submit'
+          name='<?= $this->namespace ?>Page'
+         class='ui-state-<?= $state ?> ui-corner-all'
+         value='<?= $page ?>'
+         title='Page <?= $page ?>'
+             ><?= $page ?></button><?
+        }
+
+        /*****************************************************
+         * Render the pages AFTER the current range
+         *
+         */
+
+        /* The very last page is not in the range of pages being
+         * presented.
+         */
+        if ($pages['lastPageInRange'] < ($pages['last'] - 2))
+        {
+            /* None of the last 3 pages are in the range of pages being
+             * presented, so include an ellipses to represent the page gap.
+             */
+?><span class='ui-state-skip ui-corner-all'>...</span><?
+        }
+
+        if ($pages['lastPageInRange'] < ($pages['last'] - 1))
+        {
+            /* The next-to-last page is not in the range of pages being
+             * presented so include a button for it.
+             */
+?><button type='submit'
+          name='<?= $this->namespace ?>Page'
+         class='ui-state-default ui-corner-all'
+         value='<?= $pages['last']-1 ?>'
+         title='Page <?= $pages['last']-1 ?>'
+             ><?= $pages['last']-1 ?></button><?
+        }
+
+        if ($pages['lastPageInRange'] < $pages['last'])
+        {
+            /* Render the last page. */
+?><button type='submit'
+          name='<?= $this->namespace ?>Page'
+         class='ui-state-default ui-corner-all'
+         value='<?= $pages['last'] ?>'
+         title='Page <?= $pages['last'] ?>'
+             ><?= $pages['last'] ?></button><?
+        }
+
+
+        /*****************************************************
+         * Render a 'Next Page' button, possibly disabled.
+         *
+         */
+        $state = (@isset($pages['next'])
+                    ? 'default'
+                    : 'disabled');
+        $next  = (@isset($pages['next'])
+                    ? $pages['next']
+                    : '');
+
+?><button type='submit'
+          name='<?= $this->namespace ?>Page'
+         class='ends-right ui-state-<?= $state ?> ui-corner-all'
+         value='<?= $next ?>'
+         title='Next Page'
+              >&rsaquo;</button><?
+    }
+    else
+    {
+        // There is just a single page -- no need for a pagination control.
+        ?>
+  &nbsp;<?
+    }
+    ?>
+ </div><?php
+
+    if (! $excludeInfo)
+    {
+        // Present additional information about the paged set.
+        $totalItemCount   = $pages['totalItemCount'];
+        $pageCount        = $pages['pageCount'];
+        $itemCountPerPage = $pages['itemCountPerPage'];
+
+        ?>
+ <div class='info'>
+  <div class='perPage'>
+   <div class='itemCount'><?= number_format($totalItemCount) ?></div>
+   item<?= ($totalItemCount === 1 ? '' : 's') ?>
+   with
+   <select class='ui-input ui-state-default count ui-corner-all'
+            name='<?= $this->namespace ?>PerPage'><?php
+
+        foreach ($perPageChoices as $perPage)
+        {
+            $selected = ($perPage == $itemCountPerPage
+                            ? ' selected'
+                            : '');
+
+            ?>
+    <option value='<?= $perPage ?>'
+            <?= $selected ?>><?= $perPage ?></option><?php
+        }
+
+        ?>
+   </select>
+   item<?= ($itemCountPerPage === 1 ? '' : 's') ?>
+   per page.
+  </div>
+  <div class='itemRange'>
+   Currently viewing items
+   <div class='count ui-corner-all'><?
+        echo number_format($pages['firstItemNumber']),
+             ' - ',
+             number_format($pages['lastItemNumber']);?>
+   </div>
+  </div>
+ </div><?php
+    }
+
+    ?>
+</form>

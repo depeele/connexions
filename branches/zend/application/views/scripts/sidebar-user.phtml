@@ -1,0 +1,37 @@
+<?php
+/** @file
+ *
+ *  Generic user view script.
+ *
+ *  Incoming members:
+ *      user            The Model_User instance to render.
+ *      viewer          The Model_User instance to render.
+ *      showParts       An array indicating which portions of the user record
+ *                      to present;
+ *      maxTags         The maximum number of tags to present for a user [ 5 ];
+ */
+
+if (! isset($this->showParts))
+{
+    // The portions of the user information to present
+    $this->showParts = array(
+        'user:stats'                => true,
+        'user:stats:countItems'     => true,
+        'user:stats:countTags'      => true,
+        'user:data:avatar'          => true,
+        'user:data:userId'          => true,
+        'user:data:fullName'        => true,
+        'user:data:email'           => true,
+        'user:data:tags'            => true,
+        'user:data:dates'           => true,
+        'user:data:dates:lastVisit' => true,
+    );
+}
+
+?>
+<div id='usersList'>
+  <ul class='users'>
+    <?= $this->partial('user.phtml', $this) ?>
+    <br class='clear' />
+  </ul>
+</div>

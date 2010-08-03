@@ -36,6 +36,15 @@ abstract class View_Helper_List extends Zend_View_Helper_Abstract
      */
     protected   $_params            = array();
 
+    /** @brief  The view script / partial that should be used to render this
+     *          list and the items of this list (set by the concrete sub-class).
+     *
+     *          By default we use the HTML render scripts
+     *              (found in application/view/scripts).
+     */
+    protected   $_listScript        = 'list.phtml';
+    protected   $_itemScript        = null; // depends on the sub-class
+
     /** @brief  Construct a new Bookmarks helper.
      *  @param  config  A configuration array (see populate());
      */
@@ -112,7 +121,7 @@ abstract class View_Helper_List extends Zend_View_Helper_Abstract
         $this->_params['sortOrder'] = $value;
 
         /*
-        Connexions::log("View_Helper_Bookmarks::setSortOrder( %s ) == '%s'",
+        Connexions::log("View_Helper_List::setSortOrder( %s ) == '%s'",
                         $orig, $value);
         // */
 
@@ -142,7 +151,7 @@ abstract class View_Helper_List extends Zend_View_Helper_Abstract
     public function __set($key, $value)
     {
         /*
-        Connexions::log("View_Helper_Bookmarks::__set(%s, %s)",
+        Connexions::log("View_Helper_List::__set(%s, %s)",
                         $key, $value);
         // */
 
@@ -159,8 +168,17 @@ abstract class View_Helper_List extends Zend_View_Helper_Abstract
 
     public function __get($key)
     {
+        $val = null;
         switch ($key)
         {
+        case 'listScript':
+            $val = $this->_listScript;
+            break;
+
+        case 'itemScript':
+            $val = $this->_itemScript;
+            break;
+
         case 'paginator':
             if (! isset($this->_params[$key]))
             {
@@ -198,12 +216,51 @@ abstract class View_Helper_List extends Zend_View_Helper_Abstract
 
                 $this->_params[$key] = $paginator;
             }
+
+            // Fall through
+        default:
+
+            $val = (isset($this->_params[$key])
+                        ? $this->_params[$key]
+                        : null);
             break;
         }
 
-        return (isset($this->_params[$key])
-                    ? $this->_params[$key]
-                    : null);
+        return $val;
+    }
+
+    /** @brief  Render a paginated set of items.
+     *
+     *  @return The rendered version.
+     */
+    public function render()
+    {
+        $res = $this->view->partial($this->_listScript,
+                                     array(
+                                         'helper' => $this,
+                                     ));
+        return $res;
+    }
+
+    /** @brief  Render an item within this list.
+     *  @param  item    The item to render.
+     *  @param  params  If provided, parameters to pass to the partial
+     *                  [ {namespace, item, viewer} ];
+     *
+     *  Typically invoked from within a list-rendering view script.
+     *
+     *  @return The rendered item.
+     */
+    public function renderItem($item, $params = array())
+    {
+        if (empty($params))
+        {
+            $params = array('namespace' => $this->namespace,
+                            'item'      => $item,
+                            'viewer'    => $this->viewer,
+                      );
+        }
+
+        return $this->view->partial($this->_itemScript, $params);
     }
 }
-

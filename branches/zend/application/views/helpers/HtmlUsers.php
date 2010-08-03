@@ -8,6 +8,7 @@ class View_Helper_HtmlUsers extends View_Helper_Users
     static public   $defaults               = array(
         'displayStyle'      => self::STYLE_REGULAR,
         'includeScript'     => true,
+        'ulCss'             => 'users',     // view/scripts/list.phtml
     );
 
 
@@ -90,6 +91,16 @@ class View_Helper_HtmlUsers extends View_Helper_Users
 
     /** @brief  Set-able parameters. */
     protected       $_displayOptions    = null;
+
+    /** @brief  For renderGroupHeader() */
+    protected       $_lastYear          = null;
+    protected       $_showParts         = null;
+
+    /** @brief  The view script / partial that should be used to render this
+     *          list and the items of this list.
+     */
+    protected       $_listScript        = 'list.phtml';
+    protected       $_itemScript        = 'user.phtml';
 
     /** @brief  Construct a new HTML Users helper.
      *  @param  config  A configuration array that may include, in addition to
@@ -269,6 +280,12 @@ class View_Helper_HtmlUsers extends View_Helper_Users
      */
     public function render()
     {
+        $this->_showParts = $this->getShowMeta();
+
+        return parent::render();
+
+        /******************************************************/
+
         $paginator    = $this->paginator;
         $viewer       = $this->viewer;
 
@@ -343,122 +360,74 @@ class View_Helper_HtmlUsers extends View_Helper_Users
         return $html;
     }
 
-    /*************************************************************************
-     * Protected helpers
+    /** @brief  Render HTML to represent a User within this list.
+     *  @param  item        The Model_User instance to render.
      *
+     *  @return The HTML of the rendered user.
      */
-
-    /** @brief  Given a grouping identifier and values, return the group into
-     *          which the value falls.
-     *  @param  groupBy     The grouping identifier / field (self::SORT_BY_*);
-     *  @param  value       The value;
-     *
-     * @return  The value of the group into which the value falls.
-     */
-    protected function _groupValue($groupBy, $value)
+    public function renderItem($item)
     {
-        $orig = $value;
-        switch ($groupBy)
-        {
-        case self::SORT_BY_DATE_VISITED:      // 'lastVisit'
-            /* Dates are strings of the form YYYY-MM-DD HH:MM:SS
-             *
-             * Grouping should be by year:month:day, so strip off the time.
-             */
-            $value = substr($value, 0, 10);
-            break;
-            
-        case self::SORT_BY_NAME:              // 'name'
-        case self::SORT_BY_FULLNAME:          // 'fullName'
-        case self::SORT_BY_EMAIL:             // 'email'
-            $value = strtoupper(substr($value, 0, 1));
-            break;
-
-        case self::SORT_BY_TAG_COUNT:         // 'totalTags'
-        case self::SORT_BY_ITEM_COUNT:        // 'totalItems'
-            /* We'll do numeric grouping in groups of:
-             *      $this->numericGrouping [ 10 ]
-             */
-            $value = floor($value / $this->numericGrouping) *
-                                                    $this->numericGrouping;
-            break;
-        }
-
-        /*
-        Connexions::log("HtmlUsers::_groupValue(%s, %s:%s) == [ %s ]",
-                        $groupBy, $orig, gettype($orig),
-                        $value);
-        // */
-
-        return $value;
+        return parent::renderItem($item,
+                                  array(
+                                    'namespace'  => $this->namespace,
+                                    'user'       => $item,
+                                    'viewer'     => $this->viewer,
+                                    'showParts'  => $this->_showParts,
+                                  ));
     }
 
-
-    protected $_lastYear    = null;
-
     /** @brief  Render the HTML of a group header.
-     *  @param  groupBy     The grouping identifier / field (self::SORT_BY_*);
      *  @param  value       The value of this group;
+     *  @param  groupBy     The grouping identifier / field (self::SORT_BY_*)
+     *                      [ $this->sortBy ];
      *
+     *  Typically invoked from within a list-rendering view script.
+     * 
      *  @return The HTML of the group header.
      */
-    protected function _renderGroupHeader($groupBy, $value)
+    public function renderGroupHeader($value, $groupBy = null)
     {
-        $html  =  "<div class='groupHeader ui-corner-tl'>" // groupHeader {
-               .   "<div class='group group". ucfirst($groupBy)
-                                      // groupTaggedOn, groupDateUpdated,
-                                      // groupName,     groupRating,
-                                      // groupUserCount
-               .              " ui-corner-right'>";
+        if ($groupBy === null)
+            $groupBy = $this->sortBy;
 
+        $detailsScript = null;
+        $detailsScriptParams = array('helper'   => $this,
+                                     'value'    => $value);
 
         switch ($groupBy)
         {
         case self::SORT_BY_DATE_VISITED:      // 'lastVisit'
             // The date group value will be of the form YYYY-MM-DD
+            $detailsScript = 'list_groupDate.phtml';
+            $detailsScriptParams['lastYear'] = $this->_lastYear;
+
+            // Update '_lastYear'
             list($year, $month, $day) = explode('-', $value);
-
-            // Figure out the day-of-week
-            $time      = strtotime($value);
-            $month     = date('M', $time);
-            $dayOfWeek = date('D', $time);
-
-            $html .= "<div class='groupType date'>";
-
             if ($year !== $this->_lastYear)
             {
-                $html .=  "<span class='year'    >{$year}</span>";
                 $this->_lastYear = $year;
             }
-
-            $html .=  "<div class='dateBox'>"
-                  .    "<span class='month'      >{$month}</span>"
-                  .    "<span class='day'        >{$day}</span>"
-                  .    "<span class='day-of-week'>{$dayOfWeek}</span>"
-                  .   "</div>"
-                  .  "</div>";
             break;
             
         case self::SORT_BY_NAME:              // 'name'
         case self::SORT_BY_FULLNAME:          // 'fullName'
         case self::SORT_BY_EMAIL:             // 'email'
-            $html .= "<div class='groupType alpha'>"
-                  .   $value
-                  .  "</div>";
+            $detailsScript = 'list_groupAlpha.phtml';
             break;
 
         case self::SORT_BY_TAG_COUNT:         // 'totalTags'
         case self::SORT_BY_ITEM_COUNT:        // 'totalItems'
-            $html .= "<div class='groupType numeric'>"
-                  .   $value .'<sup>+</sup>'
-                  .  "</div>";
+            $detailsScript = 'list_groupNumeric.phtml';
             break;
         }
 
-        $html  .=  "</div>"
-               .  "</div>";                         // groupHeader }
-
-        return $html;
+        return $this->view->partial('list_group.phtml',
+                                    array(
+                                        'helper'       => $this,
+                                        'groupBy'      => $groupBy,
+                                        'script'       => $detailsScript,
+                                        'scriptParams' => $detailsScriptParams,
+                                   ));
     }
 
     /** @brief  Render the 'displayOptions' control area.
@@ -468,8 +437,11 @@ class View_Helper_HtmlUsers extends View_Helper_Users
      *
      *  @return A string of HTML.
      */
-    protected function _renderDisplayOptions($paginator)
+    public function renderDisplayOptions($paginator = null)
     {
+        if ($paginator === null)
+            $paginator =& $this->paginator;
+
         $namespace        = $this->namespace;
         $itemCountPerPage = $paginator->getItemCountPerPage();
 

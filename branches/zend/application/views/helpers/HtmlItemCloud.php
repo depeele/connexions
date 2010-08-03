@@ -106,7 +106,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     public function __construct(array $config = array())
     {
-        //Connexions::log("View_Helper_Bookmarks::__construct()");
+        //Connexions::log("View_Helper_HtmlItemCloud::__construct()");
 
         foreach (self::$defaults as $key => $value)
         {

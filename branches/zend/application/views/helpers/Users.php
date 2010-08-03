@@ -66,7 +66,7 @@ class View_Helper_Users extends View_Helper_List
     /** @brief  Set the current sortBy.
      *  @param  sortBy  A sortBy value (self::SORT_BY_*)
      *
-     *  @return View_Helper_HtmlUsers for a fluent interface.
+     *  @return $this for a fluent interface.
      */
     public function setSortBy($sortBy)
     {
@@ -162,5 +162,77 @@ class View_Helper_Users extends View_Helper_List
         }
 
         return $val;
+    }
+
+    /** @brief  Render a User within this list.
+     *  @param  item    The Model_User instance to render;
+     *  @param  params  If provided, parameters to pass to the partial
+     *                  [ {namespace, bookmark, viewer} ];
+     *
+     *  Typically invoked from within a list-rendering view script.
+     *
+     *  @return The rendered user.
+     */
+    public function renderItem($item, $params = array())
+    {
+        if (empty($params))
+        {
+            $params = array('namespace' => $this->namespace,
+                            'user'      => $item,
+                            'viewer'    => $this->viewer,
+                      );
+        }
+
+        return parent::renderItem($item, $params);
+    }
+
+    /** @brief  Given a grouping identifier and values, return the group into
+     *          which the value falls.
+     *  @param  value       The value;
+     *  @param  groupBy     The field by which to group [ $this->sortBy ];
+     *
+     *  Typically invoked from within a list-rendering view script.
+     *
+     *  @return The value of the group into which the value falls.
+     */
+    public function groupValue($value, $groupBy = null)
+    {
+        if ($groupBy === null)
+            $groupBy = $this->sortBy;
+
+        $orig = $value;
+        switch ($groupBy)
+        {
+        case self::SORT_BY_DATE_VISITED:      // 'lastVisit'
+            /* Dates are strings of the form YYYY-MM-DD HH:MM:SS
+             *
+             * Grouping should be by year:month:day, so strip off the time.
+             */
+            $value = substr($value, 0, 10);
+            break;
+            
+        case self::SORT_BY_NAME:              // 'name'
+        case self::SORT_BY_FULLNAME:          // 'fullName'
+        case self::SORT_BY_EMAIL:             // 'email'
+            $value = strtoupper(substr($value, 0, 1));
+            break;
+
+        case self::SORT_BY_TAG_COUNT:         // 'totalTags'
+        case self::SORT_BY_ITEM_COUNT:        // 'totalItems'
+            /* We'll do numeric grouping in groups of:
+             *      $this->numericGrouping [ 10 ]
+             */
+            $value = floor($value / $this->numericGrouping) *
+                                                    $this->numericGrouping;
+            break;
+        }
+
+        /*
+        Connexions::log("View_Helper_Users::groupValue(%s:%s, %s) == [ %s ]",
+                        $orig, gettype($orig), $groupBy,
+                        $value);
+        // */
+
+        return $value;
     }
 }

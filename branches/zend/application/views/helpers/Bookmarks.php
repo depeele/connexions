@@ -223,4 +223,82 @@ class View_Helper_Bookmarks extends View_Helper_List
 
         return $val;
     }
+
+    /** @brief  Render a Bookmark within this list.
+     *  @param  item    The Model_Bookmark instance to render;
+     *  @param  params  If provided, parameters to pass to the partial
+     *                  [ {namespace, bookmark, viewer} ];
+     *
+     *  Typically invoked from within a list-rendering view script.
+     *
+     *  @return The rendered bookmark.
+     */
+    public function renderItem($item, $params = array())
+    {
+        if (empty($params))
+        {
+            $params = array('namespace' => $this->namespace,
+                            'bookmark'  => $item,
+                            'viewer'    => $this->viewer,
+                      );
+        }
+
+        return parent::renderItem($item, $params);
+    }
+
+    /** @brief  Given a value, return the group (accoroding to 'groupBy') into
+     *          which the value falls.
+     *  @param  value       The value;
+     *  @param  groupBy     The field by which to group [ $this->sortBy ];
+     *
+     *  Typically invoked from within a list-rendering view script.
+     *
+     *  @return  The value of the group into which the value falls.
+     */
+    public function groupValue($value, $groupBy = null)
+    {
+        if ($groupBy === null)
+            $groupBy = $this->sortBy;
+
+        $orig    = $value;
+        switch ($groupBy)
+        {
+        case self::SORT_BY_DATE_TAGGED:       // 'taggedOn'
+        case self::SORT_BY_DATE_UPDATED:      // 'dateUpdated'
+            /* Dates are strings of the form YYYY-MM-DD HH:MM:SS
+             *
+             * Grouping should be by year:month:day, so strip off the time.
+             */
+            $value = substr($value, 0, 10);
+            break;
+            
+        case self::SORT_BY_NAME:              // 'name'
+            $value = strtoupper(substr($value, 0, 1));
+
+            break;
+
+        case self::SORT_BY_RATING:            // 'rating'
+        case self::SORT_BY_RATING_AVERAGE:    // 'ratingAvg'
+            $value = floor($value);
+            break;
+
+        case self::SORT_BY_RATING_COUNT:      // 'ratingCount'
+        case self::SORT_BY_USER_COUNT:        // 'userCount'
+            /* We'll do numeric grouping in groups of:
+             *      $this->numericGrouping [ 10 ]
+             */
+            $value = floor($value / $this->numericGrouping) *
+                                                    $this->numericGrouping;
+            break;
+        }
+
+        /*
+        Connexions::log(
+            sprintf("Bookmarks::_groupValue(%s, %s:%s) == [ %s ]",
+                    $groupBy, $orig, gettype($orig),
+                    $value));
+        // */
+
+        return $value;
+    }
 }
