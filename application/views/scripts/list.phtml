@@ -1,0 +1,67 @@
+<?php
+/** @file
+ *
+ *  HTML rendering of a list of items
+ *      (typically via View_Helper_List sub-class).
+ *
+ *  Incoming parameters:
+ *      helper          The View_Helper_List instance that initiated this view
+ *                      script.  It provides additional parameters (e.g.
+ *                      namespace, perPageChoices, viewer, paginator, sortBy)
+ *                      as well as group value parsing and rendering of display
+ *                      options and group headers;
+ */
+$helper     =& $this->helper;
+$namespace  =  $helper->namespace;
+$paginator  =& $helper->paginator;
+
+$uiPagination = $this->htmlPaginationControl();
+$uiPagination->setNamespace($namespace);
+$uiPagination->setPerPageChoices($helper->perPageChoices);
+
+?>
+<div id='<?= $namespace ?>List' class='pane'>
+ <?= $uiPagination->render($paginator, 'paginator-top', true) ?>
+ <?= $helper->renderDisplayOptions($paginator) ?>
+ <ul class='items <?= $helper->ulCss ?>'>
+ <?php
+    /* Group by the field identified as the primary sort field.
+     *
+     * This grouping MAY be a "special field", indicated by the presense of onr
+     * or more ':' characters (see Model_Mapper_Base::_getSpecialFields()).
+     *
+     * If so, we ASSUME that the final field has been promoted to a
+     * pseudo-field.
+     */
+    $lastGroup  = null;
+    $groupBy    = explode(':', $helper->sortBy);
+    $groupByCnt = count($groupBy);
+    $groupByLst = $groupBy[ $groupByCnt - 1];
+
+    foreach ($paginator as $idex => $item)
+    {
+        if ($item === null)
+        {
+            /* Paginator items that aren't available (i.e. beyond the end of
+             * the paginated set) are returned as null so treat the first null
+             * item as end-of-set.
+             */
+            break;
+        }
+
+        // Retrieve the value of the grouping field
+        $groupVal = $item->{$groupByLst};
+        $newGroup = $helper->groupValue($groupVal); //, $helper->sortBy);
+        if ($newGroup !== $lastGroup)
+        {
+            echo $helper->renderGroupHeader($newGroup); //, $helper->sortBy);
+            $lastGroup = $newGroup;
+        }
+
+        echo $helper->renderItem($item);
+    }
+
+ ?>
+ </ul>
+ <?= $uiPagination->render($paginator) ?>
+</div>

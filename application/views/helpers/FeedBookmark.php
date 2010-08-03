@@ -5,7 +5,7 @@
  *  Item / Bookmark.
  *
  */
-class View_Helper_FeedBookmark extends View_Helper_Bookmark
+class View_Helper_FeedBookmark extends Zend_View_Helper_Abstract
 {
     /** @brief  Generate an Zend_Feed-compatible version of a single
      *          User Item / Bookmark.
@@ -48,7 +48,7 @@ class View_Helper_FeedBookmark extends View_Helper_Bookmark
         $entryInfo = array(
             'title'         => $title,
             'link'          => $itemUrl,
-            'description'   => $this->getSummary( $descr ),
+            'description'   => $$descr,
 
             'author'        => $bookmark->user->fullName,
             'guid'          => $localUrl,

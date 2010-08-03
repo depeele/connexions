@@ -31,7 +31,7 @@ class PostController extends Connexions_Controller_Action
      */
     public function indexAction()
     {
-        Connexions::log("PostController::postAction");
+        //Connexions::log("PostController::indexAction");
 
         $request  =& $this->_request;
 
@@ -71,8 +71,8 @@ class PostController extends Connexions_Controller_Action
         if ($postIn['isPrivate'] === null)
             unset($postInfo['isPrivate']);
 
-        // /*
-        Connexions::log("PostController::postAction: "
+        /*
+        Connexions::log("PostController::indexAction: "
                         . "postInfo [ %s ]",
                         Connexions::varExport($postInfo));
         // */
@@ -111,8 +111,11 @@ class PostController extends Connexions_Controller_Action
                     /* Attempt to save this bookmark.  This should either
                      * update or create
                      */
+
+                    /*
                     Connexions::log("PostController: Got Bookmark: [ %s ]",
                                     $bookmark->debugDump());
+                    // */
 
                     $method = ($bookmark->isBacked()
                                 ? 'updated'
@@ -120,9 +123,11 @@ class PostController extends Connexions_Controller_Action
 
                     $bookmark = $bookmark->save();
 
+                    /*
                     Connexions::log("PostController: %s Bookmark: [ %s ]",
                                     ucfirst($method),
                                     $bookmark->debugDump());
+                    // */
                 }
             }
             catch (Exception $e)
@@ -156,7 +161,7 @@ class PostController extends Connexions_Controller_Action
                 if ($bookmark !== null)
                 {
                     /*
-                    Connexions::log("PostController::postAction: "
+                    Connexions::log("PostController::indexAction: "
                                     . "existing bookmark information [ %s ]",
                                     Connexions::varExport(
                                                     $bookmark->toArray()) );
@@ -218,8 +223,11 @@ class PostController extends Connexions_Controller_Action
     protected function _handleFormat()
     {
         $format =  $this->_helper->contextSwitch()->getCurrentContext();
+
+        /*
         Connexions::log("PostController::_handleFormat: context [ %s ]",
                         $format);
+        // */
 
         if (empty($format))
             $format = $this->_request->getParam('format', 'html');
@@ -235,16 +243,20 @@ class PostController extends Connexions_Controller_Action
 
         case 'json':
         default:
+            /*
             Connexions::log("PostController::_handleFormat: "
                             .   "render 'index-%s'",
                             $format);
+            // */
 
             $this->render('index-'. $format);
 
 
+            /*
             Connexions::log("PostController::_handleFormat: "
                             .   "render 'index.%s' COMPLETE",
                             $format);
+            // */
             break;
         }
     }

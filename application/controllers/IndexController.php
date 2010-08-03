@@ -204,9 +204,11 @@ class IndexController extends Connexions_Controller_Action
         );
         $this->view->main = array_merge($this->view->main, $extra);
 
+        /*
         Connexions::log("IndexController::_prepareMain(): "
                         .   "main[ %s ]",
                         Connexions::varExport($this->view->main));
+        // */
     }
 
     /** @brief  Prepare for rendering the sidebar view.
@@ -235,8 +237,10 @@ class IndexController extends Connexions_Controller_Action
         );
         $this->view->sidebar = array_merge($this->view->sidebar, $extra);
 
+        /*
         Connexions::log("IndexController::_prepareSidebar(): "
                         .   "sidebar[ %s ]",
                         Connexions::varExport($this->view->sidebar));
+        // */
     }
 }

@@ -8,6 +8,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
     static public   $defaults           = array(
         'displayStyle'      => self::STYLE_REGULAR,
         'includeScript'     => true,
+        'ulCss'             => 'bookmarks', // view/scripts/list.phtml
     );
 
     const STYLE_TITLE                   = 'title';
@@ -106,6 +107,16 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 
     /** @brief  Set-able parameters. */
     protected       $_displayOptions    = null;
+
+    /** @brief  For renderGroupHeader() */
+    protected       $_lastYear          = null;
+    protected       $_showParts         = null;
+
+    /** @brief  The view script / partial that should be used to render this
+     *          list and the items of this list.
+     */
+    protected       $_listScript        = 'list.phtml';
+    protected       $_itemScript        = 'bookmark.phtml';
 
     /** @brief  Construct a new HTML Bookmarks helper.
      *  @param  config  A configuration array that may include, in addition to
@@ -307,223 +318,85 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
      */
     public function render()
     {
-        $paginator    = $this->paginator;
-        $viewer       = $this->viewer;
+        $this->_showParts = $this->getShowMeta();
 
-        $html         = "";
-        $showMeta     = $this->getShowMeta();
-
-        $uiPagination = $this->view->htmlPaginationControl();
-        $uiPagination->setNamespace($this->namespace)
-                     ->setPerPageChoices(self::$perPageChoices);
-
-        $html .= "<div id='{$this->namespace}List' class='pane'>"   // List {
-              .   $uiPagination->render($paginator, 'paginator-top', true)
-              .   $this->_renderDisplayOptions($paginator);
-
-        $nPages = count($paginator);
-        if ($nPages > 0)
-        {
-            /*
-            Connexions::log("View_Helper_HtmlBookmarks: "
-                            . "render page %d",
-                            $paginator->getCurrentPageNumber());
-            // */
-
-            //$html .= "<ul class='items {$this->namespace}'>";
-            $html .= "<ul class='items bookmarks'>";
-
-            /* Group by the field identified in $this->sortBy
-             *
-             * This grouping MAY be a "special field", indicated by the
-             * presence of one (or potentially more) ':' characters
-             *  (see Model_Mapper_Base::_getSpecialFields())
-             *
-             * If so, we ASSUME that the final field has been promoted to a
-             * pseudo-field of Bookmark.
-             */
-            $lastGroup  = null;
-            $groupBy    = explode(':', $this->sortBy);
-            $groupByCnt = count($groupBy);
-            $groupByLst = $groupBy[ $groupByCnt - 1];
-
-            /*
-            Connexions::log("View_Helper_HtmlBookmarks::render(): "
-                            . "sortBy[ %s ], groupBy[ %s ]",
-                            $this->sortBy, implode(', ', $groupBy));
-            // */
-
-            foreach ($paginator as $idex => $bookmark)
-            {
-                if ($bookmark === null)
-                {
-                    /* Paginator items that aren't avaialble (i.e. beyond the
-                     * end of the paginated set) are returned as null.
-                     * Therefore, the first null item indicates end-of-set.
-                     */
-                    break;
-                }
-
-                // Retrieve the indicated grouping field value
-                $groupVal = $bookmark->{$groupByLst};
-
-                /*
-                Connexions::log("View_Helper_HtmlBookmarks::render(): "
-                                . "groupBy[ %s ], bookmark[ %s ]",
-                                implode(', ', $groupBy),
-                                $bookmark->debugDump());
-                // */
-
-                $newGroup = $this->_groupValue($this->sortBy, $groupVal);
-
-                if ($newGroup !== $lastGroup)
-                {
-                    $html      .= $this->_renderGroupHeader($this->sortBy,
-                                                            $newGroup);
-                    $lastGroup  = $newGroup;
-                }
-
-                $html .= $this->view->htmlBookmark($bookmark,
-                                                   $viewer,
-                                                   $showMeta,
-                                                   $idex);
-            }
-
-            $html .= "</ul>";
-        }
-
-
-        $html .= $uiPagination->render($paginator)
-              .  "<br class='clear' />\n"
-              . "</div>\n";                      // List }
-
-        // Return the rendered HTML
-        return $html;
+        return parent::render();
     }
 
-    /*************************************************************************
-     * Protected helpers
+    /** @brief  Render HTML to represent a Bookmark within this list.
+     *  @param  item        The Model_Bookmark instance to render.
      *
+     *  @return The HTML of the rendered bookmark.
      */
-
-    /** @brief  Given a grouping identifier and values, return the group into
-     *          which the value falls.
-     *  @param  groupBy     The grouping identifier / field (self::SORT_BY_*);
-     *  @param  value       The value;
-     *
-     * @return  The value of the group into which the value falls.
-     */
-    protected function _groupValue($groupBy, $value)
+    public function renderItem($item)
     {
-        $orig = $value;
-        switch ($groupBy)
-        {
-        case self::SORT_BY_DATE_TAGGED:       // 'taggedOn'
-        case self::SORT_BY_DATE_UPDATED:      // 'dateUpdated'
-            /* Dates are strings of the form YYYY-MM-DD HH:MM:SS
-             *
-             * Grouping should be by year:month:day, so strip off the time.
-             */
-            $value = substr($value, 0, 10);
-            break;
-            
-        case self::SORT_BY_NAME:              // 'name'
-            $value = strtoupper(substr($value, 0, 1));
-
-            break;
-
-        case self::SORT_BY_RATING:            // 'rating'
-        case self::SORT_BY_RATING_AVERAGE:    // 'ratingAvg'
-            $value = floor($value);
-            break;
-
-        case self::SORT_BY_RATING_COUNT:      // 'ratingCount'
-        case self::SORT_BY_USER_COUNT:        // 'userCount'
-            /* We'll do numeric grouping in groups of:
-             *      $this->numericGrouping [ 10 ]
-             */
-            $value = floor($value / $this->numericGrouping) *
-                                                    $this->numericGrouping;
-            break;
-        }
-
         /*
-        Connexions::log(
-            sprintf("HtmlBookmarks::_groupValue(%s, %s:%s) == [ %s ]",
-                    $groupBy, $orig, gettype($orig),
-                    $value));
+        Connexions::log("View_Helper_HtmlBookmarks::renderItem(): "
+                        . "item[ %s ], showParts[ %s ]",
+                        $item, Connexions::varExport($this->_showParts));
         // */
 
-        return $value;
+        return parent::renderItem($item,
+                                  array(
+                                    'namespace'  => $this->namespace,
+                                    'bookmark'   => $item,
+                                    'viewer'     => $this->viewer,
+                                    'showParts'  => $this->_showParts,
+                                  ));
     }
 
-
-    protected $_lastYear    = null;
-
     /** @brief  Render the HTML of a group header.
-     *  @param  groupBy     The grouping identifier / field (self::SORT_BY_*);
      *  @param  value       The value of this group;
+     *  @param  groupBy     The grouping identifier / field (self::SORT_BY_*)
+     *                      [ $this->sortBy ];
      *
-     *  @return The HTML of the group header.
+     *  Typically invoked from within a list-rendering view script.
+     *
+     *  @return The HTML of a group header.
      */
-    protected function _renderGroupHeader($groupBy, $value)
+    public function renderGroupHeader($value, $groupBy = null)
     {
-        $html  =  "<div class='groupHeader ui-corner-tl'>" // groupHeader {
-               .   "<div class='group group". ucfirst($groupBy)
-                                      // groupTaggedOn, groupDateUpdated,
-                                      // groupName,     groupRating,
-                                      // groupUserCount
-               .              " ui-corner-right'>";
+        if ($groupBy === null)
+            $groupBy = $this->sortBy;
 
+        $detailsScript       = null;
+        $detailsScriptParams = array('helper' => $this,
+                                     'value'  => $value);
 
         switch ($groupBy)
         {
         case self::SORT_BY_DATE_TAGGED:       // 'taggedOn'
         case self::SORT_BY_DATE_UPDATED:      // 'dateUpdated'
-            // The date group value will be of the form YYYY-MM-DD
+            $detailsScript = 'list_groupDate.phtml';
+            $detailsScriptParams['lastYear'] = $this->_lastYear;
+
+            // Update '_lastYear'
             list($year, $month, $day) = explode('-', $value);
-
-            // Figure out the day-of-week
-            $time      = strtotime($value);
-            $month     = date('M', $time);
-            $dayOfWeek = date('D', $time);
-
-            $html .= "<div class='groupType date'>";
-
             if ($year !== $this->_lastYear)
             {
-                $html .=  "<span class='year'    >{$year}</span>";
                 $this->_lastYear = $year;
             }
-
-            $html .=  "<div class='dateBox'>"
-                  .    "<span class='month'      >{$month}</span>"
-                  .    "<span class='day'        >{$day}</span>"
-                  .    "<span class='day-of-week'>{$dayOfWeek}</span>"
-                  .   "</div>"
-                  .  "</div>";
             break;
             
         case self::SORT_BY_NAME:              // 'name'
-            $html .= "<div class='groupType alpha'>"
-                  .   $value
-                  .  "</div>";
+            $detailsScript = 'list_groupAlpha.phtml';
             break;
 
         case self::SORT_BY_RATING:            // 'rating'
         case self::SORT_BY_RATING_AVERAGE:    // 'ratingAvg'
         case self::SORT_BY_RATING_COUNT:      // 'ratingCount'
         case self::SORT_BY_USER_COUNT:        // 'userCount'
-            $html .= "<div class='groupType numeric'>"
-                  .   $value .'<sup>+</sup>'
-                  .  "</div>";
+            $detailsScript = 'list_groupNumeric.phtml';
             break;
         }
 
-        $html  .=  "</div>"
-               .  "</div>";                         // groupHeader }
-
-        return $html;
+        return $this->view->partial('list_group.phtml',
+                                    array(
+                                    'helper'       => $this,
+                                    'groupBy'      => $groupBy,
+                                    'script'       => $detailsScript,
+                                    'scriptParams' => $detailsScriptParams,
+                                   ));
     }
 
     /** @brief  Render the 'displayOptions' control area.
@@ -533,8 +406,11 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
      *
      *  @return A string of HTML.
      */
-    protected function _renderDisplayOptions($paginator)
+    public function renderDisplayOptions($paginator = null)
     {
+        if ($paginator === null)
+            $paginator =& $this->paginator;
+
         $namespace        = $this->namespace;
         $itemCountPerPage = $paginator->getItemCountPerPage();
 
@@ -550,7 +426,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
               .                 "ui-input ui-state-default ui-corner-all'>";
 
         /*
-        Connexions::log('View_Helper_HtmlBookmarks::_renderDisplayOptions(): '
+        Connexions::log('View_Helper_HtmlBookmarks::renderDisplayOptions(): '
                         .   '_sortBy[ %s ], sortOrder[ %s ]',
                         $this->sortBy, $this->sortOrder);
         // */

@@ -196,10 +196,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         }
         // */
 
+        /*
         Connexions_Profile::checkpoint('Connexions',
                                        "Bootstrap::_initView complete: "
                                        .    "role[ %s ]",
                                        $view->navigation()->getRole());
+        // */
 
         return $view;
     }

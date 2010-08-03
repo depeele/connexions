@@ -62,7 +62,7 @@
     if ($this->owner !== '*')
     {
         // Present information about the single user
-        echo $this->partial('user.phtml',
+        echo $this->partial('sidebar-user.phtml',
                             array(
                                 'user'   => $this->owner,
                                 'viewer' => $this->viewer,

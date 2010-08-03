@@ -6,29 +6,232 @@
  *  Incoming members:
  *      user            The Model_User instance to render.
  *      viewer          The Model_User instance to render.
+ *      showParts       An array indicating which portions of the user record
+ *                      to present;
+ *      maxTags         The maximum number of tags to present for a user [ 5 ];
  */
-$baseUrl = $this->baseUrl('/'); //Connexions::url('/');
-$links   = $this->headLink();
-$links->appendStylesheet($baseUrl .'css/users.css');
+$user        =& $this->user;
+$viewer      =  $this->viewer;    // MAY be unset, hence the missing '=&'
+$showParts   =& $this->showParts;
+$maxTags     =  ( isset($this->maxTags)
+                    ? $this->maxTags
+                    : 5 );
 
-// The portions of the user information to present
-$showMeta = array(
-    'user:stats'                => true,
-    'user:stats:countItems'     => true,
-    'user:stats:countTags'      => true,
-    'user:data:avatar'          => true,
-    'user:data:userId'          => true,
-    'user:data:fullName'        => true,
-    'user:data:email'           => true,
-    'user:data:tags'            => true,
-    'user:data:dates'           => true,
-    'user:data:dates:lastVisit' => true,
-);
+$isMe        =  ( $viewer &&
+                  ($viewer->userId === $user->userId)
+                    ? true
+                    : false );
+$userUrl     = $this->url(array('controller' => 'index',
+                                'action'     => 'index',
+                                'owner'      => $user->name));
+
+$links       = $this->headLink();
+$links->appendStylesheet($this->baseUrl('/css/users.css'));
+
+$css = array();
+array_push($css, ($isMe ? 'me' : 'other'));
+
+if ($showParts['minimized'])    array_push($css, 'minimized');
 
 ?>
-<div id='usersList'>
-  <ul class='users'>
-    <?= $this->htmlUsersUser($this->user, $this->viewer, $showMeta) ?>
-    <br class='clear' />
-  </ul>
-</div>
+ <li class='item person <?= implode(' ', $css) ?>'>
+  <form class='user'>
+   <input type='hidden' name='userId' value='<?= $user->userId ?>' /><?php
+
+    /*****************************
+     * Stats
+     *
+     */
+    if ($showParts['user:stats'] === true)
+    {
+        ?>
+   <div class='stats ui-corner-bottom'><?php
+
+        if ($showParts['user:stats:countItems'] === true)
+        {
+            $count = number_format($user->totalItems);
+
+            echo "<a class='countItems' ",
+                     "href='{$userUrl}' ",
+                    "title='Bookmarks'>",
+                   $count,
+                 "</a>";
+        }
+
+        if ($showParts['user:stats:countTags'] === true)
+        {
+            $count = number_format($user->totalTags);
+            $url   = $this->url(array('controller' => 'tags',
+                                      'action'     => 'index',
+                                      'owner'      => $user->name));
+
+            // Watch the white-space...
+            echo "<a class='countTags' ",
+                     "href='{$url}' ",
+                    "title='Tags'>",
+                  "<div class='icon icon-active'>",
+                   "<div class='ui-icon ui-icon-tag'>",
+                    "&nbsp;",
+                   "</div>",
+                  "</div>",
+                  $count,
+                 "</a>";
+        }
+
+        ?>
+   </div><?php
+    }
+
+    /*****************************
+     * User Data
+     *
+     */
+    ?>
+   <div class='data'><?php  // data {
+
+    $clearFloats = $showParts['minimized'];
+
+
+    /*****************************
+     * Avatar
+     *
+     */
+    if ($showParts['user:data:avatar'] === true)
+    {
+        echo "<div class='avatar'>",
+              "<a href='{$userUrl}' title='{$user->fullName}'>",
+               "<div class='img icon-highlight'>";
+
+        if (! empty($user->pictureUrl))
+        {
+            echo "<img src='", $user->pictureUrl, "' />";
+        }
+        else
+        {
+            echo "<div class='ui-icon ui-icon-person'>&nbsp;</div>";
+        }
+
+        echo   "</div>",
+              "</a>",
+             "</div>";
+    }
+
+    /*****************************
+     * UserId
+     *
+     */
+    if ($showParts['user:data:userId'] === true)
+    {
+        echo "<div class='userId' title='User id'>",
+              "<a href='{$userUrl}' title='User Id'>",
+               "<span class='name'>{$user->name}</span>",
+              "</a>",
+             "</div>";
+    }
+
+    /*****************************
+     * fullName
+     *
+     */
+    if ($showParts['user:data:fullName'] === true)
+    {
+        echo "<div class='fullName' ",
+                  "title='Full Name'>";
+
+        if ($showParts['user:data:userId'] !== true)
+        {
+            echo "<a href='{$userUrl}' ",
+                   "title='Full Name'>",
+                  $this->escape($user->fullName),
+                 "</a>";
+        }
+        else
+        {
+            echo $this->escape($user->fullName);
+        }
+
+        echo "</div>";
+    }
+
+    /*****************************
+     * Email address
+     *
+     */
+    if ($showParts['user:data:email'] === true)
+    {
+        echo "<div class='email' ",
+                  "title='email address'>",
+              "<a  href='mailto:{$user->email}' ",
+                 "title='email address'>",
+               "<div class='icon icon-highlight'>",
+                "<div class='ui-icon ui-icon-mail-closed'>",
+                 "&nbsp;",
+                "</div>",
+               "</div>",
+               $user->email,
+              "</a>",
+             "</div>";
+    }
+
+    /*****************************
+     * Tags
+     *
+     */
+    if (($showParts['user:data:tags'] === true) && ($maxTags > 0))
+    {
+        echo "<ul class='tags' title='Top {$maxTags} tags'>";
+
+        foreach ($user->getTags('userItemCount DESC', $maxTags) as $tag)
+        {
+            if ($maxTags-- < 0)
+                break;
+
+            $title  = $tag->getTitle();
+            $weight = $tag->getWeight();
+            $url    = $this->url(array('controller' => 'index',
+                                       'action'     => 'index',
+                                       'owner'      => $user->name,
+                                       'tag'        => $title));
+
+            echo "<li class='tag'>",
+                  "<a href='{$url}' title='{$title}: {$weight}'>",
+                   $title,
+                  "</a>",
+                 "</li>";
+
+        }
+
+        echo "</ul>";
+
+        $clearFloats = true;
+    }
+
+    /*****************************
+     * Dates
+     *
+     */
+    if ($showParts['user:data:dates'] === true)
+    {
+        echo "<div class='dates'>";
+
+        if ($showParts['user:data:dates:lastVisit'] === true)
+        {
+            echo "<div class='lastVisit' title='Last visited'>",
+                  $user->lastVisit,
+                 "</div>";
+        }
+
+        echo "</div>";
+    }
+
+    if ($clearFloats)
+    {
+        ?>
+    <br class='clear' /><?php
+
+    }
+
+   ?>
+   </div><?php  // data } ?>
+  </form>
+ </li>

@@ -1,0 +1,43 @@
+<?php
+/** @file
+ *
+ *  HTML rendering of the userId for a single bookmark
+ *      (typically via views/scripts/bookmark.phtml).
+ *
+ *  Incoming parameters:
+ *      bookmark        Model_Bookmark instance to present;
+ *      showParts       An array indicating which portions of the bookmark to
+ *                      present;
+ */
+$bookmark  =& $this->bookmark;
+$showParts =& $this->showParts;
+
+/* Be careful not to introduce unnecessary white-space.  It'll mess up the
+ * presentation...
+ */
+?><div class='userId'><a  
+        href='<?= $this->url(array('action' => $bookmark->user->name)) ?>'
+        title='<?= $bookmark->user->fullName ?>'><?php
+
+    if ($showParts['item:data:userId:avatar'] === true)
+    {
+        ?><div class='img icon-highlight'><?php
+
+        if (! empty($bookmark->user->pictureUrl))
+        {
+            ?><img src='<?= $bookmark->user->pictureUrl ?>' /><?php
+        }
+        else
+        {
+            ?><div class='ui-icon ui-icon-person'>&nbsp;</div><?php
+        }
+
+        ?></div><?php
+    }
+
+    if ($showParts['item:data:userId:id'] === true)
+    {
+        ?><span class='name'><?= $bookmark->user->name ?></span><?php
+    }
+
+     ?></a></div>

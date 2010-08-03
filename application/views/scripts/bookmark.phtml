@@ -1,0 +1,351 @@
+<?php
+/** @file
+ *
+ *  HTML rendering of a single bookmark
+ *      (typically via View_Helper_HtmlBookmark).
+ *
+ *  Incoming parameters:
+ *      namespace       The form namespace for this paginator;
+ *      bookmark        Model_Bookmark instance to present;
+ *      viewer          Model_User instance representing the currently
+ *                      authenticated user;
+ *      showParts       An array indicating which portions of the bookmark to
+ *                      present:
+ *                          minimized
+ *                          item:data:userId
+ *      summaryMax      The maximum number of characters in a summary [ 40 ];
+ */
+$bookmark   =& $this->bookmark;
+$viewer     =& $this->viewer;
+$showParts  =& $this->showParts;
+$summaryMax =  (isset($this->summaryMax) && ($this->summaryMax > 0)
+                    ? $this->summaryMax
+                    : 40);
+
+$isOwner    =  ( $viewer &&
+                ($viewer->userId === $bookmark->user->userId)
+                    ? true
+                    : false );
+
+$css = array();
+array_push($css, ($isOwner ? 'mine' : 'other'));
+
+if ($bookmark->isFavorite)    array_push($css, 'favorite');
+if ($bookmark->isPrivate)     array_push($css, 'private');
+if ($showParts['minimized'])
+{
+    array_push($css, 'minimized');
+    if ($showParts['item:data:userId'] !== true)
+        array_push($css, 'no-userId');
+}
+
+?>
+ <li class='item <?= implode(' ', $css) ?>'>
+  <form class='bookmark'>
+   <input type='hidden' name='userId' value='<?= $bookmark->userId ?>' />
+   <input type='hidden' name='itemId' value='<?= $bookmark->itemId ?>' />
+   <div class='status'><?php // status {
+
+    /*****************************
+     * Status
+     *
+     */
+    if ($isOwner)
+    {
+        ?>
+     <div class='favorite'>
+      <input type='checkbox'
+             name='isFavorite'
+             value='true'<?= ($bookmark->isFavorite
+                                ? " checked='true'"
+                                : '') ?> />
+     </div>
+     <div class='private'>
+      <input type='checkbox'
+             name='isPrivate'
+             value='true'<?= ($bookmark->isPrivate
+                                ? " checked='true'"
+                                : '') ?> />
+     </div><?php
+    }
+
+    ?>
+   </div><?php  // status }
+
+    /*****************************
+     * Stats
+     *
+     */
+    if ($showParts['item:stats'] === true)
+    {
+        ?>
+   <div class='stats'><?php // stats {
+        if ($showParts['item:stats:count'] === true)
+        {
+            $countValue = $bookmark->item->userCount;
+            $countTitle = 'user'. ($countValue !== 1 ? 's' : '');
+            $href       = $this->url(array(
+                                        'action'  => 'url',
+                                        'urlHash' => $bookmark->item->urlHash
+                                    ));
+
+            ?>
+    <a class='count ui-corner-bottom'
+       title='<?= $countTitle ?>'
+        href='<?= $href ?>'><?= $countValue ?></a><?php
+
+        }
+
+        if ($showParts['item:stats:rating'] === true)
+        {
+            ?>
+    <div class='rating'><?php   // rating {
+            if (($showParts['item:stats:rating:stars'] === true) &&
+                ( ($bookmark->item->ratingCount > 0) || $isOwner) )
+            {
+                ?>
+     <div class='stars'><?php   // stars {
+
+                $ratingAvg = (isset($bookmark->item->ratingAvg)
+                                ? $bookmark->item->ratingAvg
+                                : ($bookmark->item->ratingCount > 0
+                                    ? ($bookmark->item->ratingSum /
+                                       $bookmark->item->ratingCount)
+                                    : 0.0)
+                             );
+
+                if ($ratingAvg > 0.0)
+                {
+                    // Present the average
+                    $count       = $bookmark->item->ratingCount;
+                    $ratingTitle = sprintf ("%d rater%s, %5.2f avg.",
+                                            $count,
+                                            ($count === 1 ? '' : 's'),
+                                            $ratingAvg);
+
+                    echo $this->htmlStarRating($ratingAvg,
+                                               ($isOwner
+                                                    ? 'average-owner'
+                                                    : 'average'),
+                                               $ratingTitle,
+                                               true);   // read-only
+
+                }
+
+                if ($isOwner)
+                {
+                    // Present the owner's rating
+                    echo $this->htmlStarRating($bookmark->rating, 'owner');
+                }
+
+                ?>
+     </div><?php // stars }
+
+            }
+
+            ?>
+    </div><?php // rating }
+
+        }
+
+        ?>
+   </div><?php // stats }
+
+    }
+
+    /*****************************
+     * Bookmark Data
+     *
+     */
+    ?>
+   <div class='data'><?php  // data {
+
+    $clearFloats = $showParts['minimized'];
+    if ( ($showParts['minimized']        === true) &&
+         ($showParts['item:data:userId'] === true) )
+    {
+        // Render User Id
+        echo $this->partial('bookmark-userId.phtml',
+                            array(
+                                'namespace' => $this->namespace,
+                                'bookmark'  => $this->bookmark,
+                                'viewer'    => $this->viewer,
+                                'showParts' => $this->showParts,
+                            ));
+    }
+
+    if ($viewer->isAuthenticated())
+    {
+        /**************************
+         * Html Controls
+         *  watch the white-space!
+         *
+         */
+        ?><div class='control'><?
+
+        if ($isOwner)
+        {
+            ?><a 
+                class='item-edit'
+                 href='<?= $this->url(array('action' => 'post'))
+                           . '?url='. urlencode($bookmark->item->url) ?>'
+               target='_blank'>EDIT</a> | <a   
+
+                class='item-delete' 
+                 href='<?= $this->url(array('action' => 'itemDelete',
+                                            'item'   =>
+                                                  $bookmark->user->userId .'.'
+                                                  . $bookmark->itemId)) ?>'
+               target='_blank'>DELETE</a><?php
+        }
+        else
+        {
+            ?><a
+                class='item-save' 
+                 href='<?= $this->url(array('action' => 'post'))
+                           . '?name='.       urlencode($bookmark->name)
+                           . '&url='.        urlencode($bookmark->item->url)
+                           . '&description='.urlencode($bookmark->description)
+                           . '&tags='.       urlencode($bookmark->tags)
+                           . '&mode=post' ?>' 
+               target='_blank'>SAVE</a><?php
+        }
+
+        ?></div><?
+    }
+
+    /*****************************
+     * Item Name
+     *
+     */
+    if ($showParts['item:data:itemName'] === true)
+    {
+        ?><h4 class='itemName'><a
+                href='<?= $bookmark->item->url ?>'
+               title='<?= $bookmark->item->urlHash ?>'
+                ><?= htmlspecialchars($bookmark->name) ?></a></h4><?php
+    }
+
+    /*****************************
+     * Item Url
+     *
+     */
+    if ($showParts['item:data:url'] === true)
+    {
+        ?><div class='url'><a
+                href='<?= $bookmark->item->url ?>'
+               title='<?= $bookmark->item->urlHash ?>'
+                ><?= htmlspecialchars($bookmark->item->url) ?></a></div><?php
+    }
+
+    /*****************************
+     * Item Description
+     *
+     */
+    if ($showParts['item:data:description'] === true)
+    {
+        ?><div class='description'><?php    // description {
+        if ($showParts['item:data:description:summary'] === true)
+        {
+            $summary = html_entity_decode($bookmark->description, $summaryMax);
+            if (strlen($summary) > $summaryMax)
+            {
+                $summary  = substr($summary, 0,
+                                   strrpos($summary, ' ', $summaryMax));
+
+                // Trim any white-space and/or punctuation from the end...
+                $summary  = rtrim($summary, " \t\n\r.!?:;,-");
+                $summary .= '...';
+            }
+            $summary = htmlentities($summary, ENT_QUOTES);
+
+            if ( (! empty($summary)) && ($showParts['minimized'] === true) )
+                $summary = '&mdash; '. $summary;
+
+            ?><div class='summary'><?= $summary ?></div><?php
+        }
+
+        if ($showParts['item:data:description:full'] === true)
+        {
+            $text = htmlspecialchars($bookmark->description);
+
+            ?><div class='full'><?= $text ?></div><?php
+        }
+        ?></div><?php                       // description }
+    }
+
+    if ( ($showParts['minimized']        !== true) &&
+         ($showParts['item:data:userId'] === true) )
+    {
+        ?>
+    <br class='clear' /><?php
+
+        // Render User Id
+        echo $this->partial('bookmark-userId.phtml',
+                            array(
+                                'namespace' => $this->namespace,
+                                'bookmark'  => $this->bookmark,
+                                'viewer'    => $this->viewer,
+                                'showParts' => $this->showParts,
+                            ));
+    }
+
+    /*****************************
+     * Item Tags
+     *
+     */
+    if ($showParts['item:data:tags'] === true)
+    {
+        ?><ul class='tags'><?php
+
+        foreach ($bookmark->tags as $tag)
+        {
+            $tagUrl = $this->url(array('action' => 'index',
+                                       'owner'  => $bookmark->user->name,
+                                       'tag'    => $tag->tag));
+
+            ?><li class='tag'><a 
+                    href='<?= $tagUrl ?>'><?= $tag->tag ?></a></li><?php
+        }
+
+        ?></ul><br class='clear' /><?php
+
+        $clearFloats = false;
+    }
+
+    /*****************************
+     * Item Dates
+     *
+     */
+    if ($showParts['item:data:dates'] === true)
+    {
+        ?><div class='dates'><?php
+
+        if ($showParts['item:data:dates:tagged'] === true)
+        {
+            ?><div class='tagged' 
+                   title='Date tagged'><?= $bookmark->taggedOn ?></div><?php
+        }
+
+        if ($showParts['item:data:dates:updated'] === true)
+        {
+            ?><div class='tagged' 
+                   title='Date updated'><?= $bookmark->updatedOn ?></div><?php
+        }
+
+        ?></div><br class='clear' /><?php
+
+        $clearFloats = false;
+    }
+
+    if ($clearFloats)
+    {
+        ?>
+    <br class='clear' /><?php
+
+    }
+
+   ?>
+   </div><?php // data } ?>
+  </form>
+ </li>
