@@ -38,8 +38,9 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
 
 
         'items'             => null,    /* The set of items to be presented
-                                         *  MUST implement the
-                                         *      getTotalItemCount() method
+                                         *  MUST implement either
+                                         *      getTotalItemCount()
+                                         *   OR getTotalCount()
                                          */
         'scope'             => null,    /* A Connexions_Model_Set of items that
                                          * define the current scope.  MUST
@@ -156,7 +157,9 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
 
     /** @brief  Establish the set of items being presented within this scope.
      *  @param  items   The set of items to be presented
-     *                  (MUST implement the getTotalItemCount() method).
+     *                  (MUST implement either
+     *                      getTotalItemCount()
+     *                   OR getTotalCount()).
      *
      *  @return $this for a fluent interface.
      */
@@ -341,6 +344,17 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
             //$html .=  "</ul>"
             //      .  "</li>";
         }
+
+        Connexions::log("View_Helper_HtmlItemScope::render(): "
+                        . "items is %s",
+                        (is_object($this->items)
+                            ? get_class($this->items)
+                            : gettype($this->items)) );
+
+        if (method_exists($this->items, 'getTotalItemCount'))
+            $count = $this->items->getTotalItemCount();
+        else
+            $count = $this->items->getTotalCount();
         
         $html .=  "<li class='scopeEntry'>"
               .    "<label  for='{$this->inputName}'>"
@@ -350,7 +364,7 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
               .    "<button type='submit'>&gt;</button>"
               .   "</li>"
               .   "<li class='itemCount ui-corner-tr'>"
-              .    number_format($this->items->getTotalItemCount())
+              .    number_format($count)
               .   "</li>"
               .   "<br class='clear' />"
               .  "</ul>";

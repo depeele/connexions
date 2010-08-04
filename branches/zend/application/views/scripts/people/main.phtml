@@ -30,7 +30,7 @@
  *                          current user set;
  */
 
-Connexions::log("people/main.phtml: begin: main[ %s ]",
+Connexions::log("scripts/people/main.phtml: begin: main[ %s ]",
                 Connexions::varExport($this->main));
 
 // Prepare the HTML Users helper and retrieve the current user set.
@@ -38,7 +38,7 @@ $htmlUsers = $this->htmlUsers( $this->main );
 $users     = $htmlUsers->users; //items;
 
 // /*
-Connexions::log("index/main.phtml: paginator with %d users [ %s ]",
+Connexions::log("scripts/people/main.phtml: paginator with %d users [ %s ]",
                 count($users),
                 (is_object($users)
                     ? get_class($users)

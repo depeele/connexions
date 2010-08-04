@@ -495,6 +495,14 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $front   = Zend_Controller_Front::getInstance();
         $request = Connexions::getRequest();
 
+        /* DEBUG: Disable output buffering...
+        $front->getDispatcher()
+                    ->setParam('disableOutputBuffering', true);
+
+        printf ("_controllerRequest(): output buffering disabled<br />\n");
+        // */
+
+
         /*
         $request = $front->getRequest();
         */

@@ -1,0 +1,76 @@
+<?php
+/** @file
+ *
+ *  View script for IndexController::index to render the main content.
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      users           A Model_Set_User instance containing information about
+ *                      any request users (i.e. user restrictions);
+ *
+ *      main            An array of settings for the main body:
+ *          namespace       The cookie/parameters/settings namespace for the
+ *                          main body;
+ *          viewer          The Model_User instance representing the current
+ *                          viewer (typically a reference to $view->viewer);
+ *          users           The Model_Set_User instance representing the
+ *                          user(s) that define the scope of this view
+ *                          (typically a reference to $view->users);
+ *          tags            The Model_Set_Tag instance representing the
+ *                          tag(s) to be presented;
+ *
+ *          displayStyle    Indicates the current presentation style -- if this
+ *                          is an array, the style is 'custom';
+ *          perPage         The number of results on a single page;
+ *          page            The desired page of results;
+ *          sortBy          Indicates the sort field used to retrieve the
+ *                          current bookmark set;
+ *          sortOrder       Indicates the sort order used to retrieve the
+ *                          current bookmark set;
+ *
+ *          highlightCount  The number of tags to highlight;
+ *
+ *
+ *  Prepare the HTML Bookmarks helper and retrieve the current bookmark set.
+ */
+Connexions::log('view/scripts/tags/main.phtml');
+
+$baseUrl     =  $this->baseUrl('/tags/');
+
+/*
+$tags        =& $this->main['tags'];
+$paginator   =  new Zend_Paginator($tags->getPaginatorAdapter());
+$paginator->setItemCountPerPage( $this->main['perPage'] );
+$paginator->setCurrentPageNumber($this->main['page'] );
+*/
+
+$htmlCloud = $this->htmlItemCloud( array(
+                'namespace'        => $this->main['namespace'],
+                'showRelation'     => false,
+
+                'itemType'         => View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM,
+                'displayStyle'     => $this->main['displayStyle'],
+
+                'items'            => &$this->main['tags'],
+                'paginator'        => &$this->main['paginator'],
+
+                'itemBaseUrl'      => $baseUrl,
+
+                'weightName'       => 'userItemCount',
+                'weightTitle'      => 'Bookmarks with this tag',
+                'titleTitle'       => 'Tag',
+
+                'currentSortBy'    => $this->main['sortBy'],
+                'currentSortOrder' => $this->main['sortOrder'],
+
+                'page'             => $this->main['page'],
+                'perPage'          => $this->main['perPage'],
+                'highlightCount'   => $this->main['highlightCount'],
+             ));
+
+// Render the main view.
+echo $htmlCloud->render();
+
+Connexions::log('view/scripts/tags/main.phtml: Cloud rendered');

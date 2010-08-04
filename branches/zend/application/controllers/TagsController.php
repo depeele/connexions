@@ -3,40 +3,68 @@
  *
  *  This controller controls access to Tags and is accessed via the url/routes:
  *      /tags[/<user>]
- *      /tags/scopeAutoComplete?q=<query>
- *                             &limit=<max>
- *                             &format=json
- *                             &users=<comma-separated user list>
  */
 
-class TagsController extends Zend_Controller_Action
+class TagsController extends Connexions_Controller_Action
 {
-    protected   $_viewer    = null;
-    protected   $_userInfo  = null;
-    protected   $_tagSet    = null;
+    // Tell Connexions_Controller_Action_Helper_ResourceInjector which
+    // Bootstrap resources to make directly available
+    public  $dependencies = array('db','layout');
 
-    public function init()
-    {
-        /* Initialize action controller here */
-        $this->_viewer  =& Zend_Registry::get('user');
-    }
+    protected   $_url       = null;
+    protected   $_users     = null;
 
+    public      $contexts   = array(
+                                'index' => array('partial', 'json',
+                                                 'rss',     'atom'),
+                              );
+
+    /** @brief  Index/Get/Read/View action.
+     *
+     *  Retrieve a set of Tags based upon the requested 'users'.
+     *
+     *  Once retrieved, perform further setup based upon the current
+     *  context/format.
+     */
     public function indexAction()
     {
-        $request   = $this->getRequest();
-        $reqUsers  = $request->getParam('owners',    null);
+        Connexions::log("TagsController::indexAction(): - start");
+
+        $request  =& $this->_request;
+
+        /***************************************************************
+         * Process the requested 'users'/'owners'
+         *
+         */
+        $reqUsers = $request->getParam('owners', null);
 
         // Parse the incoming request users / owners
-        $this->_userInfo = new Connexions_Set_Info($reqUsers, 'Model_User');
-        if ($this->_userInfo->hasInvalidItems())
-            $this->view->error =
-                    "Invalid user(s) [ {$this->_userInfo->invalidItems} ]";
+        $this->_users = $this->service('User')->csList2set($reqUsers);
 
-        // Retrieve the complete set of tags
-        $this->_tagSet = new Model_TagSet( $this->_userInfo->validIds );
+        /***************************************************************
+         * We now have a set of valid 'users' ($this->_users).
+         *
+         * Adjust the URL to reflect the validated 'users'
+         */
+        $this->_url = $request->getBasePath()
+                    . '/tags'
+                    . '/' .(count($this->_users) > 0
+                            ? $this->_users .'/'
+                            : '');
 
-        $this->_htmlContent();
-        $this->_htmlSidebar();
+        /***************************************************************
+         * Set the view variables required for all views/layouts.
+         *
+         */
+        $this->view->url    = $this->_url;
+        $this->view->viewer = $this->_viewer;
+
+        $this->view->users  = $this->_users;
+
+        // Handle this request based on the current context / format
+        $this->_handleFormat('tags');
+
+        Connexions::log("TagsController::indexAction(): - complete");
     }
 
     /** @brief Redirect all other actions to 'index'
@@ -58,168 +86,100 @@ class TagsController extends Zend_Controller_Action
     }
 
     /*************************************************************************
-     * Context-specific view initialization and invocation
+     * Protected Helpers
      *
      */
-    protected function _htmlContent()
+
+    /** @brief  Prepare for rendering the main view, regardless of format.
+     *
+     *  This will collect the variables needed to render the main view, placing
+     *  them in $view->main as a configuration array.
+     */
+    protected function _prepareMain($htmlNamespace  = '')
     {
-        $request =& $this->getRequest();
-        $layout  =& $this->view->layout();
+        parent::_prepareMain($htmlNamespace);
 
-        /********************************************************************
-         * Prepare for rendering the main view.
-         *
-         * Establish the primary HtmlItemCloud View Helper, setting it up using
-         * the incoming tag-cloud parameters.
-         */
-        $prefix             = 'tags';
-        $tagsPerPage        = $request->getParam($prefix."PerPage",     250);
-        $tagsHighlightCount = $request->getParam($prefix."HighlightCount",
-                                                                        null);
-        $tagsSortBy         = $request->getParam($prefix."SortBy",      null);
-        $tagsSortOrder      = $request->getParam($prefix."SortOrder",   null);
-        $tagsStyle          = $request->getParam($prefix."OptionGroup", null);
+        $extra = array(
+            'users' => $this->_users,
+        );
+        $config = array_merge($this->view->main, $extra);
 
-        // /*
-        Connexions::log('TagsController::'
-                            . 'prefix [ '. $prefix .' ], '
-                            . 'params [ '
-                            .   print_r($request->getParams(), true) ." ],\n"
-                            . "    PerPage        [ {$tagsPerPage} ],\n"
-                            . "    HighlightCount [ {$tagsHighlightCount} ],\n"
-                            . "    SortBy         [ {$tagsSortBy} ],\n"
-                            . "    SortOrder      [ {$tagsSortOrder} ],\n"
-                            . "    Style          [ {$tagsStyle} ]");
+        // Defaults
+        if ( ($config['perPage'] = (int)$config['perPage']) < 1)
+            $config['perPage'] = 250;
+
+        if ( ($config['page'] = (int)$config['page']) < 1)
+            $config['page'] = 1;
+
+        if ((empty($config['sortBy'])) || ($config['sortBy'] === 'title'))
+            $config['sortBy'] = 'tag';
+
+        if (empty($config['sortOrder']))
+            $config['sortOrder'] = Connexions_Service::SORT_DIR_ASC;
+
+        if (empty($config['displayStyle']))
+            $config['displayStyle'] = View_Helper_HtmlItemCloud::STYLE_CLOUD;
+
+        if (empty($config['highlightCount']))
+            $config['highlightCount'] = 0;
+
+        // Retrieve the set of tags to be presented.
+        $count      = $config['perPage'];
+        $offset     = ($config['page'] - 1) * $count;
+        $fetchOrder = $config['sortBy'] .' '. $config['sortOrder'];
+
+        Connexions::log("TagsController::_prepareMain(): "
+                        . "offset[ %d ], count[ %d ], order[ %s ]",
+                        $count, $offset, $fetchOrder);
+        $config['tags'] = Connexions_Service::factory('Model_Tag')
+                                    ->fetchByUsers($this->_users,
+                                                   $fetchOrder,
+                                                   $count,
+                                                   $offset);
+
+        $paginator   =  new Zend_Paginator($config['tags']
+                                                ->getPaginatorAdapter());
+        $paginator->setItemCountPerPage( $config['perPage'] );
+        $paginator->setCurrentPageNumber($config['page'] );
+
+        $config['paginator'] = $paginator;
+
+        $this->view->main = $config;
+
+        /*
+        Connexions::log("TagsController::_prepareMain(): "
+                        .   "main[ %s ]",
+                        Connexions::varExport($this->view->main));
         // */
-
-
-        /* Setup the HtmlItemScope helper.
-         *
-         * Begin by constructing the scope auto-completion callback URL
-         */
-        $scopeParts = array('format=json');
-        if ($this->_userInfo->hasValidItems())
-        {
-            array_push($scopeParts, 'users='. $this->_userInfo->validItems);
-        }
-
-        $scopeCbUrl = $this->view->baseUrl('/tags/scopeAutoComplete')
-                    . '?'. implode('&', $scopeParts);
-
-        $scopeHelper = $this->view->htmlItemScope();
-        $scopeHelper->setInputLabel('Users')
-                    ->setInputName( 'owners')
-                    ->setPath( array('Tags'  => $this->view->baseUrl('/tags')) )
-                    ->setAutoCompleteUrl($scopeCbUrl);
-
-
-        // Initialize the primary Connexions_View_Helper_HtmlItemCloud helper.
-        $cloudHelper = $this->view->htmlItemCloud();
-        $cloudHelper->setNamespace($prefix)
-                    ->setShowRelation( false )
-                    ->setStyle($tagsStyle)
-                    ->setItemType(Connexions_View_Helper_HtmlItemCloud::
-                                                            ITEM_TYPE_ITEM)
-                    ->setItemBaseUrl( '/bookmarks' )
-                    ->setSortBy($tagsSortBy)
-                    ->setSortOrder($tagsSortOrder)
-                    ->setPerPage($tagsPerPage)
-                    ->setHighlightCount($tagsHighlightCount);
-
-        /* Ensure that the final sort information is properly reflected in
-         * the source set.
-         *
-         * Do this NOW since we're about to use the set to create a paginator.
-         */
-        $this->_tagSet->setOrder( $cloudHelper->getSortBy() .' '.
-                                  $cloudHelper->getSortOrder() );
-
-        /* Use the Connexions_Controller_Action_Helper_Pager to create a
-         * paginator for the retrieved tagSet.
-         */
-        $page      = $request->getParam('page',  null);
-        $paginator = $this->_helper->Pager($this->_tagSet,
-                                           $page,
-                                           $cloudHelper->getPerPage());
-
-        $cloudHelper->setItemSet($paginator);
-
-
-        // Set the required view variables.
-        $this->view->owner     = $this->_owner;
-        $this->view->viewer    = $this->_viewer;
-        $this->view->userInfo  = $this->_userInfo;
-        $this->view->paginator = $paginator;
-
-        /* The default view script (views/scripts/index/index.phtml) will
-         * render this main view
-         */
     }
 
-    protected function _htmlSidebar()
+    /** @brief  Prepare for rendering the sidebar view.
+     *  @param  async   Should we setup to do an asynchronous render
+     *                  (i.e. tab callbacks will request tab pane contents when 
+     *                        needed)?
+     *
+     *  This will collect the variables needed to render the sidebar view,
+     *  placing them in $view->sidebar as a configuration array.
+     *
+     *  Note: The main index view script
+     *        (application/views/scripts/tags/index.phtml) will also add
+     *        sidebar-related rendering information to the sidbar helper.  In
+     *        particular, it will notify the sidbar helper of the items that
+     *        are being presented in the main view.
+     */
+    protected function _prepareSidebar($async = false)
     {
-        $request =& $this->getRequest();
-        $layout  =& $this->view->layout();
+        parent::_prepareSidebar($async);
 
-        /********************************************************************
-         * Prepare for rendering the right column.
-         *
-         * Create a second HtmlItemCloud View Helper
-         * (used to render the right column) and set it up using the incoming
-         * user-cloud parameters.
-         */
-        $prefix             = 'sbUsers';
-        $usrsPerPage        = $request->getParam($prefix."PerPage",     500);
-        $usrsHighlightCount = $request->getParam($prefix."HighlightCount",
-                                                                        null);
-        $usrsSortBy         = $request->getParam($prefix."SortBy",      null);
-        $usrsSortOrder      = $request->getParam($prefix."SortOrder",   null);
-        $usrsStyle          = $request->getParam($prefix."OptionGroup", null);
+        $extra = array(
+            'users' => $this->_users,
+        );
+        $this->view->sidebar = array_merge($this->view->sidebar, $extra);
 
-        // /*
-        Connexions::log('TagsController::'
-                            . "right-column prefix [ {$prefix} ],\n"
-                            . "    PerPage        [ {$usrsPerPage} ],\n"
-                            . "    HighlightCount [ {$usrsHighlightCount} ],\n"
-                            . "    SortBy         [ {$usrsSortBy} ],\n"
-                            . "    SortOrder      [ {$usrsSortOrder} ],\n"
-                            . "    Style          [ {$usrsStyle} ]");
+        /*
+        Connexions::log("TagsController::_prepareSidebar(): "
+                        .   "sidebar[ %s ]",
+                        Connexions::varExport($this->view->sidebar));
         // */
-
-        // Retrieve the ids of all tags we're currently presenting
-        $tagIds = $this->_tagSet->tagIds();
-
-        // Create a user set for all users that have this set of tags
-        $userSet = new Model_UserSet( $tagIds );
-        $userSet->withAnyTag()
-                ->weightBy('tag');
-    
-        /* Create a new instance of the HtmlItemCloud view helper since we'll
-         * be presenting two different clouds.
-         */
-        $sbCloudHelper = new Connexions_View_Helper_HtmlItemCloud();
-        $sbCloudHelper->setView($this->view)
-                      ->setNamespace($prefix)
-                      ->setStyle($usrsStyle)
-                      ->setItemType(Connexions_View_Helper_HtmlItemCloud::
-                                                            ITEM_TYPE_USER)
-                      ->setItemSet($userSet)
-                      ->setItemSetInfo($this->_userInfo)
-                      /*
-                      ->setItemBaseUrl( ($owner !== '*'
-                                            ? null
-                                            : '/bookmarks'))
-                      */
-                      ->setSortBy($usrsSortBy)
-                      ->setSortOrder($usrsSortOrder)
-                      ->setPerPage($usrsPerPage)
-                      ->setHighlightCount($usrsHighlightCount);
-
-        // Set the required view variables.
-        $this->view->sbCloudHelper = $sbCloudHelper;
-
-        // Render the sidebar into the 'right' placeholder
-        $this->view->renderToPlaceholder('tags/sidebar.phtml', 'right');
     }
-
 }

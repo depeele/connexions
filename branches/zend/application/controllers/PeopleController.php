@@ -41,7 +41,7 @@ class PeopleController extends Connexions_Controller_Action
     {
         $request  =& $this->_request;
 
-        // /*
+        /*
         Connexions::log('PeopleController::indexAction(): '
                         .   'params[ %s ]',
                         print_r($request->getParams(), true));
@@ -85,10 +85,8 @@ class PeopleController extends Connexions_Controller_Action
         $this->view->tags      = $this->_tags;
 
 
-        $this->_prepareMain('users');
-
         // Handle this request based on the current context / format
-        $this->_handleFormat();
+        $this->_handleFormat('users');
     }
 
     /*************************************************************************
@@ -110,9 +108,11 @@ class PeopleController extends Connexions_Controller_Action
         );
         $this->view->main = array_merge($this->view->main, $extra);
 
+        /*
         Connexions::log("PeopleController::_prepareMain(): "
                         .   "main[ %s ]",
                         Connexions::varExport($this->view->main));
+        // */
     }
 
 }
