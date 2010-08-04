@@ -13,9 +13,15 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         'namespace'         => 'tags',
         'showRelation'      => true,
         'itemType'          => self::ITEM_TYPE_ITEM,
+
         'items'             => null,        /* A Connexions_Model_Set
                                              * containing the items to present
                                              */
+        'paginator'         => null,        /* A paginated version of 'items'.
+                                             * Provide if a paginator control
+                                             * should be rendered.
+                                             */
+                                               
         'selected'          => null,        /* A Connexions_Model_Set, that
                                              * SHOULD be a sub-set of 'items',
                                              * containing those items that are
@@ -255,7 +261,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         }
 
         $uiPagination = null;
-        if ($this->items instanceof Zend_Paginator)
+        if ($this->paginator instanceof Zend_Paginator)
         {
             /* Present the top pagination control.
              * Default values are established via
@@ -264,7 +270,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
             $uiPagination = $this->view->htmlPaginationControl();
             $uiPagination->setNamespace($this->namespace);
 
-            $html .= $uiPagination->render($this->items,
+            $html .= $uiPagination->render($this->paginator,
                                            'paginator-top', true);
         }
 
@@ -409,7 +415,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         if ($uiPagination !== null)
         {
             // Present the bottom pagination control.
-            $html .= $uiPagination->render($this->items);
+            $html .= $uiPagination->render($this->paginator);
         }
 
         $html .= "</div>";  // <itemType>Items }

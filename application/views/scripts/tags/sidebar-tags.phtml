@@ -1,17 +1,17 @@
 <?php
 /** @file
  *
- *  View script for IndexController::index to render the tags portion of the
+ *  View script for TagsController::index to render the tags portion of the
  *  sidebar (i.e. the 'Tags' tab).
  *
  *  Incoming members:
  *      url             The full url for the main controller of this page;
- *      owner           The owner of the current item set -- either a string or
- *                      a Model_User instance;
  *      viewer          The Model_User instance representing the current
  *                      viewer;
  *      tags            A Model_Set_Tag instance containing information about
  *                      any requested tags (i.e. tag restrictions);
+ *      item            The item being presented in the main view;
+ *
  *      main            An array of settings for the main content panel:
  *      sidebar         An array of settings for the sidebar:
  */
@@ -29,7 +29,7 @@
     $config      = $htmlSidebar->getPane('tags');
 
     /*
-    Connexions::log("index/sidebar-tags.phtml: config[ %s ]",
+    Connexions::log("url/sidebar-tags.phtml: config[ %s ]",
                     print_r($config, true));
     // */
 
@@ -54,36 +54,36 @@
 
     if (count($this->tags) < 1)
     {
-        /* There were no requested tags that limited the bookmark retrieval so,
-         * for the sidebar, retrieve ALL tags...
+        /* There were no requested tags to limit the bookmark retrieval so,
+         * for the sidebar, retrieve ALL tags for the current item.
          */
+        $to = array('items' => $this->item);
+        if (count($this->tags) > 0)
+        {
+            $to['tags'] = $this->tags;
+        }
 
-        /*
-        Connexions::log("sidebar-tags.phtml: ALL tags for '%s' [%d..%d]",
-                        $this->owner, $offset, $offset+$count);
-        // */
-
-        $tagSet = $service->fetchByUsers(($this->owner === '*'
-                                            ? null          // ALL users
-                                            : $this->owner),// ONE user
-                                         $fetchOrder,
-                                         $count,
-                                         $offset);
+        $tagSet = $service->fetchRelated( $to,
+                                          $fetchOrder,
+                                          $count,
+                                          $offset );
     }
     else
     {
-        // Tags related to the given bookmarks
+        /* There WERE requested tags, so we need the set of bookmarks in order
+         * to generate the complete list of associated tags...
+         */
         $items = $htmlSidebar->items;
 
         if ($items === null)
         {
             /* There have been no bookmarks/items communicated to the
              * htmlSidebar helper (e.g. this is invoked as a partial and
-             *                          main.phtml has not been rendered).
+             *                          index.phtml has not been rendered.).
              *
-             * Use the View_Helper_HtmlBookmarks view helper to generate the
-             * appropriate set now, assuming the controller has filled in
-             * $this->main for the configuration of the main view.
+             * Use the View_Helper_HtmlBookmarks to generate the appropriate
+             * set now, assuming the controller has filled in $this->main for
+             * the configuration in the main view.
              *
              * Tell it NOT to include any script and to return ALL tags.
              */
@@ -100,10 +100,6 @@
             $htmlSidebar->items = $items;
         }
 
-        /*
-        Connexions::log("sidebar-tags.phtml: bookmarks-related [%d..%d]",
-                        $offset, $offset+$count);
-        // */
         $tagSet = $service->fetchByBookmarks( $items,
                                               $fetchOrder,
                                               $count,
@@ -112,10 +108,9 @@
 
     $config['items']            =& $tagSet;
     $config['selected']         =& $this->tags;
-    $config['itemType']         =  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
-    $config['weightName']       = 'userItemCount';  //'weight';
-    $config['weightTitle']      = 'Bookmarks with this tag';
+    $config['weightTitle']      = 'Item bookmarks';
     $config['titleTitle']       = 'Tag';
+    $config['itemType']         =  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
     $config['currentSortBy']    =  View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
     $config['currentSortOrder'] =  Connexions_Service::SORT_DIR_DESC;
 

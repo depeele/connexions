@@ -153,19 +153,22 @@ class View_Helper_Bookmarks extends View_Helper_List
         if ( (! @isset($this->_params[$key])) ||
              ($this->_params[$key] === null) )
         {
+            /* This is here in a view helper and not in the controller
+             * primarily to allow centralized, contextual default values
+             * for things like sortBy, sortOrder and perPage.
+             */
             $fetchOrder = $this->sortBy .' '. $this->sortOrder;
             $perPage    = $this->perPage;
-            $page       = $this->page;
-            if ($page < 1)
-                $page = 1;
+            $page       = ($this->page > 0
+                            ? $this->page
+                            : 1);
 
             $count      = $perPage;
             $offset     = ($page - 1) * $perPage;
 
-            $to         = array();
 
-            $users = $this->users;
-            if ($users !== null)
+            $to = array();
+            if ( ($users = $this->users) !== null)
             {
                 if ($users instanceof Model_User)
                     $to['users'] = $users->userId;
@@ -173,23 +176,23 @@ class View_Helper_Bookmarks extends View_Helper_List
                     $to['users'] =& $users;
             }
 
-            $tags = $this->tags;
-            if ($tags !== null)
+            if ( ($tags = $this->tags) !== null)
             {
                 $to['tagsExact'] =& $tags;
             }
 
-            $items = $this->items;
-            if ($items !== null)
+            if ( ($items = $this->items) !== null)
             {
                 $to['items'] =& $items;
             }
 
 
-            /*
+            // /*
             Connexions::log("View_Helper_Bookmarks::getBookmarks(): "
                             . "Retrieve bookmarks: "
+                            . "to[ %s ], "
                             . "order[ %s ], count[ %d ], offset[ %d ]",
+                            Connexions::varExport($to),
                             $fetchOrder, $count, $offset);
             // */
 

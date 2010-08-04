@@ -70,7 +70,14 @@
     }
     else
     {
-        // Tag-related users
+        /* Tag-related users
+         *
+         * :XXX: Should this really be Bookmark-releated users requiring that
+         *       we retrieve ALL currently presented bookmarks (or hope that
+         *       the main view has been rendered and communicated the set of
+         *       presented bookmarks)??
+         */
+
         /*
         Connexions::log("sidebar-people.phtml: tag-related [%d..%d]",
                         $offset, $offset+$count);

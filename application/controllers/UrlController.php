@@ -98,10 +98,8 @@ class UrlController extends Connexions_Controller_Action
         $this->view->tags      = $this->_tags;
         $this->view->item      = $this->_item;
 
-        $this->_prepareMain('items');
-
         // Handle this request based on the current context / format
-        $this->_handleFormat();
+        $this->_handleFormat('items');
     }
 
     public function chooseAction()

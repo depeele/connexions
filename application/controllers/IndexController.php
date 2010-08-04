@@ -36,6 +36,8 @@ class IndexController extends Connexions_Controller_Action
      */
     public function indexAction()
     {
+        Connexions::log("IndexController::indexAction(): - start");
+
         $request  =& $this->_request;
 
         /*
@@ -139,10 +141,10 @@ class IndexController extends Connexions_Controller_Action
         $this->view->tags      = $this->_tags;
 
 
-        $this->_prepareMain('items');
-
         // Handle this request based on the current context / format
-        $this->_handleFormat();
+        $this->_handleFormat('items');
+
+        Connexions::log("IndexController::indexAction(): - complete");
     }
 
     /*************************************************************************

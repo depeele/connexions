@@ -3,50 +3,77 @@
  *
  *  View script for TagsController::index to render the main content.
  *
- *  The Connexions_View_Helper_HtmlItemCloud helper MUST be initialized
- *  before this view is rendered.
- *
  *  Incoming members:
- *      viewer              The Model_User instance representing the current
- *                          viewer;
- *      userInfo            A Connexions_Set_Info instance containing
- *                          information about the requested users;
+ *      url             The full url for the main controller of this page;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      users           A Model_Set_User instance containing information about
+ *                      any request users (i.e. user restrictions);
  *
- *      tagList             The Zend_Tag_ItemList instance established for the
- *                          presentation of current Model_TagSet;
- *      sbCloudHelper       The Connexions_View_Helper_HtmlItemCloud instance
- *                          established for the cloud presentation of users
- *                          related to the current ModeL_TagSet;
+ *      main            An array of settings for the main body:
+ *          namespace       The cookie/parameters/settings namespace for the
+ *                          sidebar [ 'sidebarTab' ];
+ *          viewer          The Model_User instance representing the current
+ *                          viewer (typically a reference to $view->viewer);
+ *          users           The Model_Set_User instance representing the
+ *                          user(s) that define the scope of this view
+ *                          (typically a reference to $view->users);
+ *          tags            The Model_Set_Tag instance representing the
+ *                          tag(s) to be presented;
+ *
+ *          displayStyle    Indicates the current presentation style -- if this
+ *                          is an array, the style is 'custom';
+ *          perPage         The number of results on a single page;
+ *          page            The desired page of results;
+ *          sortBy          Indicates the sort field used to retrieve the
+ *                          current bookmark set;
+ *          sortOrder       Indicates the sort order used to retrieve the
+ *                          current bookmark set;
+ *
+ *          highlightCount  The number of tags to highlight;
+ *
  */
 
-$this->headTitle('Tags');
+Connexions::log('view/scripts/tags/index.phtml');
 
-$uiCloud = $this->htmlItemCloud();
+// Prepare the Html Item Scope helper
+$scopePath = array('Users' => $baseUrl);
 
+$scopeRpc = Connexions::getJsonRpcInfo();
+$scopeRpc['method'] = 'tags.autocompleteUser';
+$scopeRpc['params'] = array('users'  => (count($this->users) < 1
+                                            ? null
+                                            : $this->users->__toString()),
+                      );
+
+$htmlItemScope = $this->htmlItemScope( array(
+                    'namespace'         =>  $this->namespace,
+                    'items'             => &$this->main['tags'],
+                    'scope'             =>  $this->users,
+                    'inputLabel'        =>  'Users',
+                    'inputName'         =>  'Users',
+                    'path'              =>  $scopePath,
+                    'jsonRpc'           =>  $scopeRpc,
+                 ));
+
+$links = $this->headLink();
+$links->appendStylesheet($this->baseUrl('css/tagCloud.css'));
+ 
 ?>
 <div class='columnHeader'>
  <div class='context-bg connexions_sprites tag_bg
              ui-corner-left ui-corner-tr'>&nbsp;</div>
  <p>
   <?php
-    if ( $this->userInfo && $this->userInfo->hasValidItems())
-    {
-            if (count($this->userInfo->validIds) == 1)
-                echo "All tags used by user ";
-            else
-                echo "Those tags in common to users ";
-
-            echo "'{$this->userInfo->validItems}'.";
-    }
+    if ( count($this->users) > 0)
+        printf ("Tags<br />with users '%s'.", $this->users);
     else
-        printf ("All tags.");
+        echo "All Tags.";
   ?>
  </p>
 </div>
 
-<?= $this->htmlItemScope($uiCloud->getItemSet(),
-                         $this->userInfo) ?>
-
-<?= $uiCloud->render() ?>
+<?= $htmlItemScope->render() ?>
+<?= $this->render('tags/main.phtml') ?>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

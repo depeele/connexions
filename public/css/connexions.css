@@ -367,6 +367,8 @@ a:visited { color: #005a9c; }
 .Item_Cloud .cloudItem a.selected { background-image: none; background-color: #0066cc; color: white; }
 .Item_Cloud .cloudItem a.selected:hover { color: #0066cc; background-color: white; }
 
+.main .cloud { font-size: 1.25em; }
+
 /* ****** itemScope.scss ****** */
 .itemScope a { color: white; }
 .itemScope ul { background-color: #cccccc; padding: 0; padding-right: 112px; }

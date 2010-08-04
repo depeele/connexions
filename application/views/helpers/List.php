@@ -69,9 +69,6 @@ abstract class View_Helper_List extends Zend_View_Helper_Abstract
      *                                      [ '' ];
      *                      - viewer        A Model_User instance identifying
      *                                      the current viewer;
-     *                      - items         A Connexions_Model_Set instance
-     *                                      representing the primary set of
-     *                                      items being presented [ null ];
      *                      - page          The page to present [ 1 ];
      *                      - perPage       The number of items per page
      *                                      [ 50 ];
