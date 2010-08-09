@@ -4,6 +4,9 @@
  *  View helper to render the item scope -- root (e.g. user-name, main section
  *  name), sub-section name, scope items (e.g. tags), scope entry, item count
  *  all in HTML.
+ *
+ *  REQUIRES:
+ *      application/view/scripts/itemScope.phtml
  */
 class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
 {
@@ -193,6 +196,16 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
         array_push($this->_hiddenItems, $str);
     }
 
+    /** @brief  Is the item with the given name hidden?
+     *  @param  name    The item name.
+     *
+     *  @return true | false
+     */
+    public function isHiddenItem($name)
+    {
+        return (in_array($name, $this->_hiddenItems));
+    }
+
     public function __set($key, $value)
     {
         $method = 'set'. ucfirst($key);
@@ -212,7 +225,6 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
                     ? $this->_params[$key]
                     : null);
     }
-
 
     /** @brief  Render an HTML version of Item Scope.
      *  @param  config  A configuration array (see populate());
@@ -246,140 +258,10 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
             $this->setNamespace($namespace, true);
         }
 
-        $url    = '';
-        $action = '';
-        $html   = '<ul class="ui-corner-top">';
-        if ( @is_array($this->path))
-        {
-            $cssClass = 'root ui-corner-tl';
-            foreach ($this->path as $pathName => $pathUrl)
-            {
-                $html .= sprintf(  "<li class='%s'>"
-                                 .  "<a href='%s'>%s</a>"
-                                 . "</li>",
-                                 $cssClass,
-                                 $pathUrl, $pathName);
-
-                if (strpos($cssClass, 'root') !== false)
-                {
-                    $action = $pathUrl;
-
-                    $cssClass = 'section';
-                }
-                else
-                {
-                    array_push($curScope, $pathName);
-                }
-
-                $url = $pathUrl;
-            }
-        }
-
-        $curScope = array();
-        $scope    = $this->scope;
-        if ( $scope && (count($scope) > 0))
-        {
-            //$html .= "<li class='scopeItems'>"
-            //      .   "<ul>";
-        
-            // Grab the original request URL and clean it up.
-            $reqUrl = Connexions::getRequestUri();
-
-            $src    = $scope->getSource();
-            /*
-            Connexions::log("HtmlItemScope: reqUrl[ %s ], "
-                            .   "scope source[ %s ]",
-                            $reqUrl, $src);
-            // */
-
-                      // remove the query/fragment
-            $reqUrl = preg_replace('/[\?#].*$/', '',  $reqUrl);
-            $reqUrl = urldecode($reqUrl);
-                      // collapse white-space
-            $reqUrl = preg_replace('/\s\s+/',    ' ', $reqUrl);
-            $reqUrl = rtrim($reqUrl, " \t\n\r\0\x0B/");
-            $reqUrl = str_replace('/'. $src, '', $reqUrl);
-        
-            /*
-            Connexions::log("HtmlItemScope: Adjusted reqUrl[ %s ]",
-                            $reqUrl);
-            // */
-
-        
-            $validList = preg_split('/\s*,\s*/', $scope->__toString());
-            $nItems    = count($validList);
-            foreach ($validList as $idex => $name)
-            {
-                if (in_array($name, $this->_hiddenItems))
-                    continue;
-
-                /* Get the set of all OTHER scope items (i.e. everything EXCEPT
-                 * the current) and use it to construct the URL to use for
-                 * removing this item from the scope.
-                 */
-                $others = array_diff($validList, array($name));
-                $remUrl = $reqUrl .'/'. implode(',', $others);
-        
-                /*
-                Connexions::log("HtmlItemScope: reqUrl[ {$reqUrl} ], "
-                                        . "name[ {$name} ], "
-                                        . "remUrl[ {$remUrl} ]");
-                // */
-        
-                $html .= sprintf (  "<li class='scopeItem deletable' "
-                                  .     "style='z-index: %d;'>"
-                                  .  "<a href='%s/%s'>%s</a>"
-                                  .  "<a href='%s' "
-                                  .     "class='delete ui-icon ui-icon-close'>"
-                                  .   "x"
-                                  .  "</a>"
-                                  . "</li>",
-                                  ($nItems - $idex) + 1,
-                                  $url, $name, $name,
-                                  $remUrl);
-
-                array_push($curScope, $name);
-            }
-        
-            //$html .=  "</ul>"
-            //      .  "</li>";
-        }
-
-        Connexions::log("View_Helper_HtmlItemScope::render(): "
-                        . "items is %s",
-                        (is_object($this->items)
-                            ? get_class($this->items)
-                            : gettype($this->items)) );
-
-        if (method_exists($this->items, 'getTotalItemCount'))
-            $count = $this->items->getTotalItemCount();
-        else
-            $count = $this->items->getTotalCount();
-        
-        $html .=  "<li class='scopeEntry'>"
-              .    "<label  for='{$this->inputName}'>"
-              .     $this->inputLabel
-              .    "</label>"
-              .    "<input name='{$this->inputName}' />"
-              .    "<button type='submit'>&gt;</button>"
-              .   "</li>"
-              .   "<li class='itemCount ui-corner-tr'>"
-              .    number_format($count)
-              .   "</li>"
-              .   "<br class='clear' />"
-              .  "</ul>";
-
-
-
-        // Finalize the HTML
-        $html = "<form action='{$action}' "
-              .        "class='itemScope {$this->namespace}ItemScope ui-form'>"
-              .  "<input type='hidden' name='scopeCurrent' "
-              .        "value='". implode(',', $curScope) ."'>"
-              .  $html
-              . "</form>";
-
-        
-        return $html;
+        $res = $this->view->partial('itemScope.phtml',
+                                     array(
+                                         'helper'     =>  $this,
+                                     ));
+        return $res;
     }
 }

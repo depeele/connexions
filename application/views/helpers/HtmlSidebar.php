@@ -5,6 +5,9 @@
  *
  *  The sidebar is a tabbed area that can present one or more information panes
  *  presenting information related to the items presented in the main view.
+ *
+ *  REQUIRES (for each tab pane in the sidebar):
+ *      application/view/scripts/sidebar-{pane}.phtml
  */
 class View_Helper_HtmlSidebar extends Zend_View_Helper_Abstract
 {

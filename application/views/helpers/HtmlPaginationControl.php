@@ -2,6 +2,9 @@
 /** @file
  *
  *  View helper to render a paginated set of User Items / Bookmarks in HTML.
+ *
+ *  REQUIRES:
+ *      application/view/scripts/paginator.phtml
  */
 class View_Helper_HtmlPaginationControl
                                     extends Zend_View_Helper_Abstract

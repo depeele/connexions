@@ -2,6 +2,15 @@
 /** @file
  *
  *  View helper to render a paginated set of User Items / Bookmarks in HTML.
+ *
+ *  REQUIRES:
+ *      application/view/scripts/list.phtml
+ *      application/view/scripts/bookmark.phtml
+ *
+ *      application/view/scripts/list_group.phtml
+ *      application/view/scripts/list_groupDate.phtml
+ *      application/view/scripts/list_groupAlpha.phtml
+ *      application/view/scripts/list_groupNumeric.phtml
  */
 class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 {
