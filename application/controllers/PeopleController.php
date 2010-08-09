@@ -115,4 +115,22 @@ class PeopleController extends Connexions_Controller_Action
         // */
     }
 
+    /** @brief  Prepare for rendering the sidebar view.
+     *  @param  async   Should we setup to do an asynchronous render
+     *                  (i.e. tab callbacks will request tab pane contents when 
+     *                        needed)?
+     *
+     *  This will collect the variables needed to render the sidebar view,
+     *  placing them in $view->sidebar as a configuration array.
+     */
+    protected function _prepareSidebar($async = false)
+    {
+        // Our sidebar MAY need main-view variables set...
+        if (! isset($this->view->main))
+        {
+            $this->_prepareMain();
+        }
+
+        parent::_prepareSidebar($async);
+    }
 }
