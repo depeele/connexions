@@ -1,0 +1,135 @@
+<?php
+/** @file
+ *
+ *  HTML rendering of item scope presentation and entry.
+ *
+ *  Incoming parameters:
+ *      helper          The View_Helper_HtmlItemScope instance;
+ *
+ *
+ *  The 'helper' provides access to the following:
+ *      namespace       The form namespace for this paginator;
+ *      inputLabel      The text to present when the scope input box is empty;
+ *      inputName       The form-name for the scope input box;
+ *      path            An array of name/url path items that identify the
+ *                      current scope;
+ *      scope           A Connexions_Model_Set representing the items that
+ *                      define the current scope;
+ *      items           The set of items to be presented -- implements either
+ *                          getTotalItemCount()
+ *                              or
+ *                          getTotalCount()
+ */
+$helper     =& $this->helper;
+$namespace  =  $helper->namespace;
+$path       =& $helper->path;
+$scope      =& $helper->scope;
+$items      =& $helper->items;
+
+$url       = '';
+$action    = '';
+$liHtml    = '';
+$itemCount = (method_exists($items, 'getTotalItemCount')
+                ? $items->getTotalItemCount()
+                : $items->getTotalCount());
+
+/*********************************************************************
+ * In order to assemble the proper current scope, we need to generate
+ * the HTML for all scope items.
+ */
+$curScope = array();
+if (is_array($path))
+{
+    $cssClass = 'root ui-corner-tl';
+
+    foreach ($path as $pathName => $pathUrl)
+    {
+        $liHtml .= "<li class='{$cssClass}'>"
+                .   "<a href='{$pathUrl}'>{$pathName}</a>"
+                .  "</li>";
+
+        if (strpos($cssClass, 'root') !== false)
+        {
+            $action   = $pathUrl;
+            $cssClass = 'section';
+        }
+        else
+        {
+            array_push($curScope, $pathName);
+        }
+
+        $url = $pathUrl;
+    }
+}
+
+if ( $scope && (count($scope) > 0) )
+{
+    // Grab the original request URL and clean it up...
+    $reqUrl = Connexions::getRequestUri();
+    $src    = $scope->getSource();
+
+    // Remove the query/fragment
+    $reqUrl = preg_replace('/[\?#].*$/', '', $reqUrl);
+    $reqUrl = urldecode($reqUrl);
+
+    // Collapse white-space
+    $reqUrl = preg_replace('/\s\s+/', ' ', $reqUrl);
+
+    // Trim trailing white-space
+    $reqUrl = rtrim($reqUrl, " \t\n\r\0\x0B/");
+
+    // Remove the current source component
+    $reqUrl = str_replace('/'. $src, '', $reqUrl);
+
+    $validList = preg_split('/\s*,\s*/', $scope->__toString());
+    $nItems    = count($validList);
+    foreach ($validList as $idex => $name)
+    {
+        if ($helper->isHiddenItem($name))
+            continue;
+
+        /* Get the set of all OTHER scope items
+         * (i.e. everything EXCEPT the current item) and use it to
+         * construct the URL to use for removing this item from the scope.
+         */
+        $others  = array_diff($validList, array($name));
+        $remUrl  = $reqUrl .'/'. implode(',', $others);
+        $itemUrl = $url . '/'. $name;
+
+
+        $liHtml .= "<li  class='scopeItem deletable' "
+                .       "style='z-index: {($nItems - $idex) + 1};'>"
+                .    "<a  href='{$itemUrl}'>{$name}</a>"
+                .    "<a  href='{$remUrl}'"
+                .       "class='delete ui-icon ui-icon-close'>x</a>"
+                .  "</li>";
+
+        array_push($curScope, $name);
+    }
+}
+
+$liHtml .= "<li class='scopeEntry'>"
+        .   "<label  for='{$helper->inputName}'>{$helper->inputLabel}</label>"
+        .   "<input name='{$helper->inputName}' />"
+        .   "<button type='submit'>&gt;</button>"
+        .  "</li>"
+        .  "<li class='itemCount ui-corner-tr'>"
+        .    number_format($itemCount)
+        .  "</li>";
+
+
+/*********************************************************************
+ * Assemble and render the final HTML
+ *
+ */
+?>
+<form action='<?= $action ?>'
+       class='itemScope <?= $namespace ?>ItemScope ui-form'>
+ <input type='hidden'
+        name='scopeCurrent'
+       value='<?= implode(',', $curScope) ?>' />
+ <ul class='ui-corner-top'>
+  <?= $liHtml ?>
+  <br class='clear' />
+ </ul>
+</form>

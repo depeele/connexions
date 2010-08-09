@@ -59,6 +59,10 @@
  *                                  value selection? ( true | [false] );
  *                      'options'   eiter a comma-separated string of field 
  *                                  names OR an array of field names.
+ *
+ *
+ *  REQUIRES:
+ *      application/view/scripts/displayOptions.phtml
  */
 class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
 {
@@ -634,17 +638,9 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
      */
     public function render(array $opts = array())
     {
-        $ns  = $this->_namespace;
         $res = $this->view->partial('displayOptions.phtml',
                                      array(
                                          'helper'     =>  $this,
-                                         'namespace'  =>  $ns,
-                                         'fields'     =>
-                                            (@is_array($this->_fields[$ns])
-                                                ? $this->_fields[$ns]
-                                                : null),
-                                         'groups'     => &$this->_groups,
-                                         'definition' => &$this->_definition,
                                      ));
         return $res;
     }

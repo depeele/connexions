@@ -2,6 +2,15 @@
 /** @file
  *
  *  View helper to render a paginated set of Users in HTML.
+ *
+ *  REQUIRES:
+ *      application/view/scripts/list.phtml
+ *      application/view/scripts/user.phtml
+ *
+ *      application/view/scripts/list_group.phtml
+ *      application/view/scripts/list_groupDate.phtml
+ *      application/view/scripts/list_groupAlpha.phtml
+ *      application/view/scripts/list_groupNumeric.phtml
  */
 class View_Helper_HtmlUsers extends View_Helper_Users
 {

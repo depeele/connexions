@@ -2,6 +2,9 @@
 /** @file
  *
  *  View helper to render a paginated list.
+ *
+ *  REQUIRES view scripts for list AND item rendering -- these view scripts are
+ *  defined by the concrete sub-classes.
  */
 abstract class View_Helper_List extends Zend_View_Helper_Abstract
 {
