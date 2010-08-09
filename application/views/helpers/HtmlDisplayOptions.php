@@ -185,6 +185,35 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
      *
      */
 
+    public function __get($name)
+    {
+        $val = null;
+        switch ($name)
+        {
+        case 'namespace':
+            $val = $this->_namespace;
+            break;
+
+        case 'definition':
+            $val =& $this->_definition;
+            break;
+
+        case 'fields':
+            $val =& $this->_fields[$this->_namespace];
+            break;
+
+        case 'groups':
+            $val =& $this->_groups;
+            break;
+
+        default:
+            $val = parent::__get($name);
+            break;
+        }
+
+        return $val;
+    }
+
     /** @brief  Retrieve the current namespace.
      *
      *  @return The current namespace.
@@ -397,6 +426,34 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
      *
      */
 
+    public function __set($name, $val)
+    {
+        switch ($name)
+        {
+        case 'namespace':
+            $this->setNamespace($val);
+            break;
+
+        case 'definition':
+            if (! is_array($val))
+                throw new Exception("'definition' MUST be an array");
+
+            $this->setDefinition($val);
+            break;
+
+        case 'groups':
+            if (! is_array($val))
+                throw new Exception("'groups' MUST be an array");
+
+            $this->setGroups($val);
+            break;
+
+        default:
+            $val = parent::__get($name);
+            break;
+        }
+    }
+
     /** @brief  Set field values by an established group.
      *  @param  groupName       The name of the desired group.
      *  @param  customValues    If 'groupName' identifies the "custom" group,
@@ -577,107 +634,111 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
      */
     public function render(array $opts = array())
     {
-        $namespace = $this->_namespace;
-        $html      = '';
-
-        $html .= "<div class='displayOptions "              // displayOptions {
-              .              "ui-form {$namespace}-displayOptions'>"
-              .   "<form method='POST' "                            // form {
-              .         "class='ui-state-active ui-corner-all'>";
-
-        // Include all form fields (added via addFormField()).
-        if (@is_array($this->_fields[$namespace]))
-        {
-            foreach ($this->_fields[$namespace] as $cssClass => $fieldHtml)
-            {
-                $html .= "<div class='field {$cssClass}'>"
-                      .   $fieldHtml
-                      .  "</div>";
-            }
-        }
-
-        // Include the display style area (if one exists)
-        $html .= $this->renderDisplayStyle();
-
-        $html .=   "<div id='buttons-global' class='buttons'>"
-              .     "<button type='submit' "
-              .            "class='ui-button ui-corner-all "
-              .                  "ui-state-default ui-state-disabled' "
-              .            "value='custom'"
-              .         "disabled='true'>apply</button>"
-              .    "</div>";
-
-        $html .=  "</form>" // form }
-              .  "</div>";  // displayOptions }
-
-        return $html;
+        $ns  = $this->_namespace;
+        $res = $this->view->partial('displayOptions.phtml',
+                                     array(
+                                         'helper'     =>  $this,
+                                         'namespace'  =>  $ns,
+                                         'fields'     =>
+                                            (@is_array($this->_fields[$ns])
+                                                ? $this->_fields[$ns]
+                                                : null),
+                                         'groups'     => &$this->_groups,
+                                         'definition' => &$this->_definition,
+                                     ));
+        return $res;
     }
 
-    /** @brief  Render the display style control.
-     *  @param  opts    Additional rendering options:
-     *                      'class' => Additional CSS class(es)
-     *                      'style' => Additional CSS styling
+    /** @brief  Render a single element.
      *
-     *  @return The HTML of the fieldset.
+     *  Helper method for the displayOptions.phtml view script.
+     *
+     *
+     *  @return The HTML of the element.
      */
-    public function renderDisplayStyle(array $opts = array())
+    public function renderOptionGroupsElement($name, &$val, $indent = 1)
     {
-        $namespace = $this->_namespace;
-        $fName     = "{$namespace}OptionGroup";
+        $inStr      = str_repeat(' ', $indent);
+        $isOption   = (is_array($val) && (isset($val['label'])));
+        $hasClass   = (is_array($val) && (isset($val['containerCss'])));
+        $hasTitle   = (is_array($val) && (isset($val['containerTitle'])));
+        $el         = (is_array($val) && (isset($val['containerEl']))
+                            ? $val['containerEl']
+                            : 'div');
+        $html       = $inStr ."<${el} class='{$name}"
+                    .                        ($isOption
+                                                ? ' option'
+                                                : '')
+                    .                        ($hasClass
+                                                ? " {$val['containerCss']}"
+                                                : '') ."'"
+                    .               ($hasTitle
+                                        ? " title='{$val['containerTitle']}'"
+                                        : '')
+                    .              ">\n";
 
-        $html =   "<div class='field displayStyle "     // displayStyle {
-              .                     "ui-optionGroups "
-              .                     "{$namespace}OptionGroups'>"
-              .    "<label for='{$fName}'>Display</label>"
-              .    "<ul class='groups'>";               // groups {
+        if (is_array($val) && isset($val['containerPre']))
+            $html = $inStr . $val['containerPre'] ."\n". $html;
 
-        foreach ($this->_groups as $key => $info)
+        if (is_array($val))
         {
-            /*
-            Connexions::log('View_Helper_HtmlDisplayOptions::'
-                            .   'renderDisplayStyle(): '
-                            .   'currentGroup[ %s ] %s== [ %s ]',
-                            $this->_currentGroup,
-                            ($this->_currentGroup === $key ? '=' : '!'),
-                            $key);
-            // */
-
-            $html .= "<li class='field"
-                  .     ($info['isCustom']
-                            ? " isCustom"
-                            : "") ."'>"
-                  .   "<input type='radio' "
-                  .          "name='{$fName}' "
-                  .         "value='{$key}' "
-                  .     ($key === $this->_currentGroup
-                            ? " checked='checked'"
-                            : "") ." />"
-                  .   "<label for='{$fName}'>{$info['label']}</label>"
-                  .  "</li>";
-        }
-
-        $html .=    "<br class='clear' />"
-              .    "</ul>";                     // groups }
-
-        if (! empty($this->_definition))
-        {
-            $html .= "<fieldset class='options'>";
-
-            foreach ($this->_definition as $name => $val)
+            $addIndent = 1;
+            if (isset($val['label']))
             {
+                // This is a form-field
+                $addIndent = 1;
+                $ns        = "{$this->_namespace}OptionGroups_option";
+                $fId       = "{$ns}-{$name}";
+                $fName     = "{$ns}[{$val['fieldName']}]";
+
+                /* Assemble the list of groups this field belongs to and add
+                 * them as 'inGroup-<name>' css classes.
+                 */
+                $cssGroups = '';
+                foreach ($val['inGroup'] as $groupName)
+                {
+                    $cssGroups .= " inGroup-{$groupName}";
+                }
+
                 /*
-                Connexions::log("View_Helper_HtmlDisplayOptions::"
-                                .   "renderDisplayStyle(): '%s' == [ %s ]",
-                                $name, var_export($val, true));
+                Connexions::log("View_Helper_HtmlDisplayOptions:"
+                            . "renderOptionGroupsElement: "
+                            .   "field [ ". print_r($val, true) ." ]");
                 // */
 
-                $html .= $this->_renderOptionGroupsElement($name, $val);
+                if (isset($val['extraPre']))
+                    $html .= $inStr .' '. $val['extraPre'] ."\n";
+
+                $html .= $inStr." <input type='checkbox' "
+                      .                "class='{$cssGroups}' "
+                      .                   "id='{$fId}'"
+                      .                 "name='{$fName}' "
+                      .                     ($val['isSet'] === true
+                                                ? " checked='checked'"
+                                                : "") ." />\n"
+                      .  $inStr." <label for='{$fId}'"
+                      .     (isset($val['labelCss'])
+                              ? " class='{$val['labelCss']}'"
+                              : ''). ">"
+                      .            $val['label']
+                      .          "</label>\n";
+
+                if (isset($val['extraPost']))
+                    $html .= $inStr .' '. $val['extraPost'] ."\n";
             }
 
-            $html .= "</fieldset>";
+            foreach ($val as $cName => $cVal)
+            {
+                if ( ($cName !== 'inGroup') && is_array($cVal))
+                    $html .= $this->renderOptionGroupsElement($cName, $cVal,
+                                                   $indent + $addIndent);
+            }
         }
 
-        $html .=  "</div>";                     // displayStyle }
+        $html .= $inStr ."</{$el}>\n";
+
+        if (is_array($val) && isset($val['containerPost']))
+            $html .= $inStr . $val['containerPost'] ."\n";
 
         return $html;
     }
@@ -940,101 +1001,5 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
         $this->_groups[$name] = $group;
 
         return $this;
-    }
-
-    /*************************************************************************
-     * Protected Helpers
-     *
-     */
-
-    /** @brief  Render a single element.
-     *
-     *  @return The HTML of the element.
-     */
-    protected function _renderOptionGroupsElement($name, &$val, $indent = 1)
-    {
-        $inStr      = str_repeat(' ', $indent);
-        $isOption   = (is_array($val) && (isset($val['label'])));
-        $hasClass   = (is_array($val) && (isset($val['containerCss'])));
-        $hasTitle   = (is_array($val) && (isset($val['containerTitle'])));
-        $el         = (is_array($val) && (isset($val['containerEl']))
-                            ? $val['containerEl']
-                            : 'div');
-        $html       = $inStr ."<${el} class='{$name}"
-                    .                        ($isOption
-                                                ? ' option'
-                                                : '')
-                    .                        ($hasClass
-                                                ? " {$val['containerCss']}"
-                                                : '') ."'"
-                    .               ($hasTitle
-                                        ? " title='{$val['containerTitle']}'"
-                                        : '')
-                    .              ">\n";
-
-        if (is_array($val) && isset($val['containerPre']))
-            $html = $inStr . $val['containerPre'] ."\n". $html;
-
-        if (is_array($val))
-        {
-            $addIndent = 1;
-            if (isset($val['label']))
-            {
-                // This is a form-field
-                $addIndent = 1;
-                $ns        = "{$this->_namespace}OptionGroups_option";
-                $fId       = "{$ns}-{$name}";
-                $fName     = "{$ns}[{$val['fieldName']}]";
-
-                /* Assemble the list of groups this field belongs to and add
-                 * them as 'inGroup-<name>' css classes.
-                 */
-                $cssGroups = '';
-                foreach ($val['inGroup'] as $groupName)
-                {
-                    $cssGroups .= " inGroup-{$groupName}";
-                }
-
-                /*
-                Connexions::log("View_Helper_HtmlDisplayOptions:"
-                            . "_renderOptionGroupsElement: "
-                            .   "field [ ". print_r($val, true) ." ]");
-                // */
-
-                if (isset($val['extraPre']))
-                    $html .= $inStr .' '. $val['extraPre'] ."\n";
-
-                $html .= $inStr." <input type='checkbox' "
-                      .                "class='{$cssGroups}' "
-                      .                   "id='{$fId}'"
-                      .                 "name='{$fName}' "
-                      .                     ($val['isSet'] === true
-                                                ? " checked='checked'"
-                                                : "") ." />\n"
-                      .  $inStr." <label for='{$fId}'"
-                      .     (isset($val['labelCss'])
-                              ? " class='{$val['labelCss']}'"
-                              : ''). ">"
-                      .            $val['label']
-                      .          "</label>\n";
-
-                if (isset($val['extraPost']))
-                    $html .= $inStr .' '. $val['extraPost'] ."\n";
-            }
-
-            foreach ($val as $cName => $cVal)
-            {
-                if ( ($cName !== 'inGroup') && is_array($cVal))
-                    $html .= $this->_renderOptionGroupsElement($cName, $cVal,
-                                                   $indent + $addIndent);
-            }
-        }
-
-        $html .= $inStr ."</{$el}>\n";
-
-        if (is_array($val) && isset($val['containerPost']))
-            $html .= $inStr . $val['containerPost'] ."\n";
-
-        return $html;
     }
 }
