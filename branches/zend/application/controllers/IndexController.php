@@ -229,6 +229,12 @@ class IndexController extends Connexions_Controller_Action
      */
     protected function _prepareSidebar($async = false)
     {
+        // Our tags sidebar MAY need main-view variables set...
+        if (! isset($this->view->main))
+        {
+            $this->_prepareMain();
+        }
+
         parent::_prepareSidebar($async);
 
         $extra = array(
