@@ -16,12 +16,26 @@
  *      sidebar         An array of settings for the sidebar:
  */
 
+$nTags = count($this->tags);
 ?>
   <div class='columnHeader'>
    <div class='context-bg connexions_sprites user_bg ui-corner-left'>
     &nbsp;
    </div>
-   <p>People related to these bookmarks.</p>
+   <p>
+    <?php
+    if ($nTags > 0)
+    {
+        echo "People who have tagged this item with ",
+             "tag", ($nTags === 1 ? '' : 's'),
+             " '", $this->tags->__toString(), "'";
+    }
+    else
+    {
+        echo "People who have bookmarked this item";
+    }
+    ?>
+   .</p>
   </div>
   <?php
 
@@ -46,6 +60,34 @@
     /* Order by userItem/Bookmark count here so the most used will be in the
      * limited set.  User-requested sorting will be performed later
      * (in View_Helper_HtmlItemCloud) before the cloud is rendered.
+     *
+     * Best solution would be to weight by 'taggedOn' date:
+     *    SELECT u.*,
+     *           ui.taggedOn,
+     *           uti.userItemCount,
+     *           uti.userCount,
+     *           uti.itemCount,
+     *           uti.tagCount
+     *       FROM user AS u
+     *       INNER JOIN (
+     *          SELECT uti.*,
+     *                 COUNT(DISTINCT uti.userId) AS userCount,
+     *                 COUNT(DISTINCT uti.tagId) AS tagCount,
+     *                 COUNT(DISTINCT uti.itemId) AS itemCount,
+     *                 COUNT(DISTINCT uti.userId,
+     *                 uti.itemId) AS userItemCount
+     *              FROM userTagItem AS uti
+     *              WHERE (uti.itemId IN ( ... )) AND
+     *                    (tagId IN ( ... ))
+     *              GROUP BY userId) AS uti
+     *        ON u.userId=uti.userId
+     *       INNER JOIN (
+     *          SELECT ui.taggedOn
+     *              FROM userItem AS ui
+     *              WHERE (ui.itemId IN ( ... ))
+     *              GROUP BY userId) AS ui
+     *        ON u.userId=ui.userId;
+     *
      */
     $fetchOrder = array('totalItems DESC',
                         'totalTags  DESC',
@@ -56,7 +98,7 @@
      * tags.
      */
     $to = array('items' => $this->item);
-    if (count($this->tags) > 0)
+    if ($nTags > 0)
     {
         $to['tagsExact'] = $this->tags;
     }
