@@ -773,8 +773,8 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         }
 
         // Create function to reverse sort by weight.
-        $sortFn = create_function('$a,$b',   '$aVal = $a->__get("'. $val .'");'
-                                           . '$bVal = $b->__get("'. $val .'");'
+        $sortFn = create_function('$a,$b',   '$aVal = $a->'. $val .';'
+                                           . '$bVal = $b->'. $val .';'
                                            . 'return '. $cmp .';');
 
         // Clone and sort the item list
