@@ -4,66 +4,45 @@
  *  View script for IndexController::index to render the sidebar content.
  *
  *  Incoming members:
+ *      sidebarHelper   A View_Helper_HtmlSidebar instance configured with
+ *                      (at least general) information about the sidebar;
+ *
  *      url             The full url for the main controller of this page;
- *      owner           The owner of the current item set
- *                          either a string ('*') or a Model_User instance;
+ *      owner           The owner of the current item set -- either a string or
+ *                      a Model_User instance;
  *      viewer          The Model_User instance representing the current
  *                      viewer;
  *      tags            A Model_Set_Tag instance containing information about
- *                      any request tags (i.e. tag restrictions);
+ *                      any requested tags (i.e. tag restrictions);
  *
- *      sidebar         An array of settings for the sidebar:
- *          namespace       The cookie/parameters/settings namespace for the
- *                          sidebar [ 'sidebarTab' ];
- *          async           Should be panes be loaded immediately (false), or
- *                          asynchronously on-demend (true), [ false ];
- *          viewer          The Model_User instance representing the current
- *                          viewer (typically a reference to $view->viewer);
- *          users           The Model_User or Model_Set_User instance
- *                          representing the user(s) that partially define the
- *                          scope of this view
- *                          (typically a reference to $view->owner);
- *          tags            The Model_Tag or Model_Set_Tag instance
- *                          representing the tag(s) that paraially define the
- *                          scope of this view
- *                          (typically a reference to $view->tags);
- *          items           The Connexions_Model_Set representing the items
- *                          that are presented in the main view;
- *
- *          panes           An associative array of pane information, keyed by
- *                          the namespace/id of the pane with a configuration
- *                          array for that pane as the value.  General options
- *                          for panes are:
- *                              - title     The pane's title text;
- *                              - namespace The cookie/parameters/settings
- *                                          namespace for the sidebar pane;
- *
- *                              Panes for the main page:
- *                                  tags
- *                                  people
  */
-$baseUrl = $this->baseUrl('/'); //Connexions::url('/');
-$links   = $this->headLink();
-
 if ($this->owner !== '*')
 {
     /* Bookmarks for a single user are being presented.  The 'People' pane will
-     * contain details about that user, generated from
-     * View_Helper_HtmlUsersUser, which requires 'css/users.css' to render
-     * properly.  Include that here.
+     * contain details about that user, generated via:
+     *      View_Helper_HtmlSidebar->render()
+     *          => application/views/scripts/index/sidebar-people.phtml
+     *              => application/views/scripts/sidebar-user.phtml
+     *                  => application/views/scripts/user.phtml
+     *
+     * Properly rendering a 'user' in the sidebar requires
+     * 'css/bookmark-users.css', which can only effectively be included here
+     * since sidebar-user.phtml, the most logical place to perform the include,
+     * is currently included asynchronously, causing all headLink()
+     * modifications to be ignored.
      */
-    $links->appendStylesheet($baseUrl .'css/bookmark-users.css');
+    $this->headLink()
+            ->appendStylesheet( $this->baseUrl('/css/bookmark-users.css') );
 
-    //unset($this->sidebar['panes']['people']);
 }
 
 // Prepare the HTML Sidebar helper
-$htmlSidebar = $this->htmlSidebar( $this->sidebar );
+//$htmlSidebar = $this->htmlSidebar( $this->sidebar );
 
 /* Invoke the Html Sidebar View helper to render the sidebar based upon
- * settings in $this->sidbar established by IndexController::_prepareSidebar
+ * settings in $this->sidebar established by IndexController::_prepareSidebar
  *
  * This will either render the sidebar partials immediately or setup
  * asynchronous loading, depending on $this->sidebar['async']
  */
-echo $htmlSidebar->render('index/');
+echo $this->sidebarHelper->render('index/');

@@ -1079,8 +1079,6 @@ $.widget("ui.input", {
 
         this.options.valid = state;
 
-        $.log('ui.input::valid: new state [ '+ state +' ]');
-
         // Let everyone know that the validation state has changed.
         //this.element.trigger('validation_change.uiinput');
 

@@ -187,7 +187,7 @@ class View_Helper_Bookmarks extends View_Helper_List
             }
 
 
-            // /*
+            /*
             Connexions::log("View_Helper_Bookmarks::getBookmarks(): "
                             . "Retrieve bookmarks: "
                             . "to[ %s ], "

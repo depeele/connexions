@@ -5,15 +5,15 @@
  *  sidebar (i.e. the 'Tags' tab).
  *
  *  Incoming members:
+ *      sidebarHelper   A View_Helper_HtmlSidebar instance configured with
+ *                      information about the 'tags' sidebar pane;
+ *
  *      url             The full url for the main controller of this page;
  *      viewer          The Model_User instance representing the current
  *                      viewer;
  *      tags            A Model_Set_Tag instance containing information about
  *                      any requested tags (i.e. tag restrictions);
  *      item            The item being presented in the main view;
- *
- *      main            An array of settings for the main content panel:
- *      sidebar         An array of settings for the sidebar:
  */
 
 ?>
@@ -25,95 +25,7 @@
   </div>
   <?php
 
-    $htmlSidebar = $this->htmlSidebar( $this->sidebar );
-    $config      = $htmlSidebar->getPane('tags');
-
-    /*
-    Connexions::log("url/sidebar-tags.phtml: config[ %s ]",
-                    print_r($config, true));
-    // */
-
-    $service = Connexions_Service::factory('Model_Tag');
-
-    $perPage    = $config['perPage'];
-    $page       = $config['page'];
-    if ($perPage < 1)   $perPage = 100;
-    if ($page    < 1)   $page    = 1;
-
-    $count      = $perPage;
-    $offset     = ($page - 1) * $perPage;
-
-    /* Order by userItem/Bookmark count here so the most used will be in the
-     * limited set.  User-requested sorting will be performed later
-     * (in View_Helper_HtmlItemCloud) before the cloud is rendered.
-     */
-    $fetchOrder = array('userItemCount DESC',
-                        'userCount     DESC',
-                        'itemCount     DESC',
-                        'tag           ASC');
-
-    if (count($this->tags) < 1)
-    {
-        /* There were no requested tags to limit the bookmark retrieval so,
-         * for the sidebar, retrieve ALL tags for the current item.
-         */
-        $to = array('items' => $this->item);
-        if (count($this->tags) > 0)
-        {
-            $to['tags'] = $this->tags;
-        }
-
-        $tagSet = $service->fetchRelated( $to,
-                                          $fetchOrder,
-                                          $count,
-                                          $offset );
-    }
-    else
-    {
-        /* There WERE requested tags, so we need the set of bookmarks in order
-         * to generate the complete list of associated tags...
-         */
-        $items = $htmlSidebar->items;
-
-        if ($items === null)
-        {
-            /* There have been no bookmarks/items communicated to the
-             * htmlSidebar helper (e.g. this is invoked as a partial and
-             *                          index.phtml has not been rendered.).
-             *
-             * Use the View_Helper_HtmlBookmarks to generate the appropriate
-             * set now, assuming the controller has filled in $this->main for
-             * the configuration in the main view.
-             *
-             * Tell it NOT to include any script and to return ALL tags.
-             */
-            $subOpts = $this->main;
-            $subOpts['includeScript'] = false;
-            $subOpts['perPage']       = -1;
-
-            $htmlBookmarks = $this->htmlBookmarks( $subOpts );
-            $items         = $htmlBookmarks->bookmarks;
-
-            /* Tell the sidebar helper about the set of items, though I don't
-             * think this is needed.
-             */
-            $htmlSidebar->items = $items;
-        }
-
-        $tagSet = $service->fetchByBookmarks( $items,
-                                              $fetchOrder,
-                                              $count,
-                                              $offset );
-    }
-
-    $config['items']            =& $tagSet;
-    $config['selected']         =& $this->tags;
-    $config['weightTitle']      = 'Item bookmarks';
-    $config['titleTitle']       = 'Tag';
-    $config['itemType']         =  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
-    $config['currentSortBy']    =  View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
-    $config['currentSortOrder'] =  Connexions_Service::SORT_DIR_DESC;
-
+    $config        = $this->sidebarHelper->getPane('tags');
     $htmlItemCloud = $this->htmlItemCloud($config);
 
     echo $htmlItemCloud->render();

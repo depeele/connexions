@@ -8,6 +8,9 @@
  *  before this view is rendered.
  *
  *  Incoming members:
+ *      sidebarHelper   A View_Helper_HtmlSidebar instance configured with
+ *                      information about the 'people' sidebar pane;
+ *
  *      url             The full url for the main controller of this page;
  *      owner           The owner of the current item set -- either a string or
  *                      a Model_User instance;
@@ -15,7 +18,6 @@
  *                      viewer;
  *      tags            A Model_Set_Tag instance containing information about
  *                      any requested tags (i.e. tag restrictions);
- *      sidebar         An array of settings for the sidebar:
  */
 
 ?>
@@ -32,65 +34,7 @@
   </div>
   <?php
 
-    $htmlSidebar = $this->htmlSidebar( $this->sidebar );
-    $config      = $htmlSidebar->getPane('people');
+    $config        = $this->sidebarHelper->getPane('people');
+    $htmlItemCloud = $this->htmlItemCloud($config);
 
-    /*
-    Connexions::log("scripts/people/sidebar-people.phtml: config[ %s ]",
-                    print_r($config, true));
-    // */
-
-    // Tags related to the given users
-    if ($htmlSidebar->items === null)
-    {
-        /* There have been no users/items communicated to the
-         * htmlSidebar helper (e.g. this is invoked as a partial and
-         *                          index.phtml has not been rendered).
-         *
-         * Use the View_Helper_HtmlUsers view helper to generate the
-         * appropriate set now, assuming the controller has filled in
-         * $this->main for the configuration of the main view.
-         *
-         * Tell it NOT to include any script.
-         */
-        $subOpts = $this->main;
-        $subOpts['includeScript'] = false;
-        $subOpts['perPage']       = -1;
-        $subOpts['sortBy']        = 'uti.userItemCount';
-        $subOpts['sortOrder']     = 'DESC';
-
-        $htmlUsers = $this->htmlUsers( $subOpts );
-
-        /* Tell the sidebar helper about the set of items
-         * (I don't thing this really matters).
-         */
-        $htmlSidebar->items = $htmlUsers->users;
-    }
-
-    echo "<div class='info'>\n",
-          "<div class='stats'>\n";
-
-    $nPeople = count($htmlSidebar->items);
-    $nTags   = ($this->tags !== null ? count($this->tags) : 0);
-
-    printf ("%d %s", $nPeople, ($nPeople === 1 ? 'person' : 'people'));
-
-    if ($nTags > 0)
-    {
-        printf (" %s used %s %d tag%s",
-                ($nPeople === 1 ? 'has'  : 'have'),
-                ($nTags   === 1 ? 'this' : 'these'),
-                $nTags,
-                ($nTags   === 1 ? ''     : 's'));
-
-        printf (" (%s)", preg_replace('/\s*,\s*/', ', ', $this->tags));
-    }
-    else
-    {
-        printf (" %s tagged items",
-                ($nPeople === 1 ? 'has'  : 'have'));
-    }
-
-    echo  ".</div>\n";
-
-    echo "</div>\n";
+    echo $htmlItemCloud->render();

@@ -563,7 +563,7 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
         {
             if (! isset($this->_fieldMap[$name]))
             {
-                // /*
+                /*
                 Connexions::log("View_Helper_HtmlDisplayOptions:"
                                     . "setGroupValues: "
                                     .   "Unmatched form value: "

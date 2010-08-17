@@ -197,6 +197,25 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                     : null);
     }
 
+    /** @brief  Are there hidden items?
+     *
+     *  @return true | false
+     */
+    public function hasHiddenItems()
+    {
+        return (! empty($this->_hiddenItems));
+    }
+
+    /** @brief  Is the given item hidden?
+     *  @param  item    A Connexions_Model instance to check.
+     *
+     *  @return true | false
+     */
+    public function isHiddenItem(Connexions_Model   $item)
+    {
+        return (in_array($item->getTitle(), $this->_hiddenItems));
+    }
+
     /** @brief  A sort callback for ordering the items to be rendered.
      *  @param  item1   A Connexions_Model instance
      *  @param  item2   A Connexions_Model instance
@@ -226,202 +245,9 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     public function render()
     {
-        /*
-        Connexions::log("View_Helper_HtmlItemCloud::render(): "
-                        .   "namespace[ %s ], %d items, "
-                        .   "sortBy[ %s ], sortOrder[ %s ], style[ %s ], "
-                        .   "weightName[ %s ]",
-                        $this->namespace,
-                        $this->items->count(),
-                        $this->sortBy, $this->sortOrder,
-                        $this->getDisplayStyle(),
-                        $this->weightName);
-        // */
-
-        /*
-        Connexions::log("View_Helper_HtmlItemCloud::render(): sort[ %s, %s ]",
-                        $this->sortBy, $this->sortOrder);
-        foreach ($this->items as $idex => $item)
-        {
-            Connexions::log("  %2d: %4d '%s'",
-                            $idex, $item->getWeight(), $item->getTitle());
-        }
-        // */
-
-
-        $html = "<div id='{$this->namespace}Cloud' "
-              .   "class='{$this->itemType}Items pane'>";  // <itemType>Items {
-
-        if ($this->showRelation)
-        {
-            $html .= "<div class='cloudRelation "
-                  .              "connexions_sprites relation_ltr'>"
-                  .   "&nbsp;"
-                  .  "</div>";
-        }
-
-        $uiPagination = null;
-        if ($this->paginator instanceof Zend_Paginator)
-        {
-            /* Present the top pagination control.
-             * Default values are established via
-             *      Bootstrap.php::_initViewGlobal().
-             */
-            $uiPagination = $this->view->htmlPaginationControl();
-            $uiPagination->setNamespace($this->namespace);
-
-            $html .= $uiPagination->render($this->paginator,
-                                           'paginator-top', true);
-        }
-
-        if ($hideOptions !== true)
-        {
-            $html .= $this->_renderDisplayOptions()
-                  .  "<br class='clear' />";
-        }
-
-        /*****************************************************************
-         * We now need a Zend_Tag_ItemList adapter for our item set
-         *
-         */
-        $itemList = new Connexions_Model_Set_Adapter_ItemList(
-                                    $this->items,
-                                    $this->selected,
-                                    $this->itemBaseUrl,
-                                    $this->weightName);
-
-        if (! empty($this->_hiddenItems))
-        {
-            // Remove any tags that are to be hidden
-            /*
-            Connexions::log("View_Helper_HtmlItemCloud:: "
-                                . "filter out tags [ "
-                                .   implode(", ", $this->_hiddenItems) ." ]");
-            // */
-
-            foreach ($itemList as $key => $item)
-            {
-                if (in_array($item->getTitle(), $this->_hiddenItems))
-                {
-                    /*
-                    Connexions::log("View_Helper_HtmlItemCloud:: "
-                                    . "remove tag [{$item->getTitle()}]");
-                    // */
-
-                    unset($itemList[$key]);
-                }
-            }
-        }
-
-        $html .= "<div class='cloud'>";
-
-        if (count($itemList) < 1)
-        {
-            $html .= 'No matching items.';
-        }
-        else
-        {
-            $sortedList = $this->_sort($itemList, $this->sortBy,
-                                                  $this->sortOrder);
-
-            if ($this->getDisplayStyle() !== self::STYLE_CLOUD)
-            {
-                // Render the HTML for a list
-                $html .= $this->_renderList( $sortedList );
-            }
-            else
-            {
-                // Zend_Tag_Cloud configuration
-                $cloudConfig = array(
-                    // Make helpers in 'application/views/helpers' available.
-                    'prefixPath'            => array(
-                        'prefix'    => 'View_Helper',
-                        'path'      => APPLICATION_PATH .'/views/helpers/'
-                     ),
-                    'ItemList'              => $sortedList,
-                    /* Use the default cloud decorator:
-                     *      Zend_Tag_Cloud_Decorator_HtmlItemCloud
-                     */
-                    'CloudDecorator'        => array(
-                        'decorator'         => 'htmlCloud',
-                        'options'           => array(
-                            'HtmlTags'      => array(
-                                'ul'        => array(
-                                    'class' =>'Item_Cloud'
-                                )
-                            )
-                        )
-                    ),
-                    // Shared configuration for the tag decorators
-                    'TagDecorator'          => array(
-                        //'decorator'         => 'htmlItemCloudItem',
-                        'options'           => array(
-                            'HtmlTags'      => array(
-                                'li'        => array(
-                                    'class'=>'cloudItem'
-                                )
-                            ),
-                            'ClassList'     => array(
-                                'size0', 'size1', 'size2', 'size3',
-                                'size4', 'size5', 'size6'
-                            )
-                        )
-                    ),
-                );
-
-                switch ($this->itemType)
-                {
-                case self::ITEM_TYPE_ITEM:
-                    /* Use our cloud item decorator:
-                     *      View_Helper_HtmlItemCloudItem
-                     */
-                    $cloudConfig['TagDecorator']['decorator'] =
-                                                        'htmlItemCloudItem';
-
-                    break;
-
-                case self::ITEM_TYPE_USER:
-                    /* Use our cloud item decorator:
-                     *      View_Helper_HtmlItemCloudUser
-                     *
-                     *      and include 'user' in the CSS class for the <li>
-                     *      around each "tag".
-                     */
-                    $cloudConfig['TagDecorator']['decorator'] =
-                                                        'htmlItemCloudItem';
-                    $cloudConfig['TagDecorator']
-                                    ['options']
-                                        ['HtmlTags']
-                                            ['li']
-                                                ['class']    .= ' user';
-                    break;
-                }
-
-
-                // Create a Zend_Tag_Cloud renderer (by default, renders HTML)
-                $cloud = new Zend_Tag_Cloud( $cloudConfig );
-
-                // Render the HTML for a cloud
-                $html .= ($this->highlightCount > 0
-                                ? $this->_renderHighlights( $itemList )
-                                : '')
-                      .   $cloud->render();
-            }
-        }
-
-        $html .=  "<br class='clear' />"
-              .  "</div>";
-
-        if ($uiPagination !== null)
-        {
-            // Present the bottom pagination control.
-            $html .= $uiPagination->render($this->paginator);
-        }
-
-        $html .= "</div>";  // <itemType>Items }
-
-        // Return the rendered HTML
-        return $html;
+        $res = $this->view->partial('itemCloud.phtml',
+                                    array('helper' => $this));
+        return $res;
     }
 
     /** @brief  Set the namespace, primarily for forms and cookies.
@@ -448,6 +274,12 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                             'namespace' => $namespace,
                             'groups'    => self::$styleGroups,
                         );
+
+            /*
+            Connexions::log("View_Helper_HtmlItemCloud::setNamespace(): "
+                            . "new namespace: config[ %s ]",
+                            Connexions::varExport($dsConfig));
+            // */
 
             if ($this->_displayOptions === null)
             {
@@ -721,284 +553,12 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         array_push($this->_hiddenItems, $str);
     }
 
-    /*************************************************************************
-     * Protected helpers
-     *
-     */
-
-    /** @brief  Given a requested sortBy value, validate, returning a valid
-     *          value.
-     *  @param  sortBy  A sortBy value (self::SORT_BY_*)
-     *
-     *  @return A valid sortBy value.
-     */
-    protected function _validateSortBy($sortBy)
-    {
-        switch ($sortBy)
-        {
-        case self::SORT_BY_TITLE:
-        case self::SORT_BY_WEIGHT:
-            break;
-
-        default:
-            $sortBy = self::$defaults['sortBy'];
-            break;
-        }
-
-        return $sortBy;
-    }
-
-    /** @brief  Given a requested sortOrder value, validate, returning a valid
-     *          value.
-     *  @param  sortOrder   A sortOrder value (Connexions_Service::SORT_DIR_*)
-     *
-     *  @return A valid sortOrder value.
-     */
-    protected function _validateSortOrder($sortOrder)
-    {
-        $sortOrder = strtoupper($sortOrder);
-        switch ($sortOrder)
-        {
-        case Connexions_Service::SORT_DIR_ASC:
-        case Connexions_Service::SORT_DIR_DESC:
-            break;
-
-        default:
-            $sortOrder = self::$defaults['sortOrder'];
-            break;
-        }
-
-        return $sortOrder;
-    }
-
-    /** @brief  Sort our tags, if needed.
-     *  @param  itemList    A Connexions_Model_Set_Adapter_ItemList instance;
-     *  @param  sortBy      The field to sort by ( self::SORT_BY_* );
-     *  @param  sortOrder   Sort order ( Connexions_Service::SORT_DIR_* );
-     *
-     *  @return The sorted Connexions_Model_Set_Adapter_ItemList
-     */
-    protected function _sort(Connexions_Model_Set_Adapter_ItemList  $itemList,
-                             $sortBy, $sortOrder)
-    {
-        /*
-        Connexions::log("View_Helper_HtmlItemCloud::_sort(): "
-                        . "%d items, sort[ %s => %s, %s => %s ]",
-                        count($itemList),
-                        $this->currentSortBy,    $sortBy,
-                        $this->currentSortOrder, $sortOrder);
-
-        foreach($itemList as $key => $item)
-        {
-            Connexions::log("View_Helper_HtmlItemCloud::_sort(): "
-                            . "%s: (%s) title [ %s ], weight[ %d ]",
-                            $key,
-                            get_class($item),
-                            $item->getTitle(),
-                            $item->getWeight() );
-        }
-        // */
-
-        /* In setItemSet(), the chosen sort order MAY be over-ridden to ensure
-         * that we're presenting the most weighty portion of the cloud.
-         */
-        {
-            $curSortBy    = $this->sortBy;
-            $curSortOrder = $this->sortOrder;
-        }
-
-        if (($sortBy    === $this->currentSortBy) &&
-            ($sortOrder === $this->currentSortOrder))
-        {
-            // The incoming list should ALREADY be properly sorted.
-            return $itemList;
-        }
-
-        /**********************************************************************
-         * Re-sort the list
-         *
-         */
-        if ($sortBy === self::SORT_BY_TITLE)
-        {
-            $val = 'getTitle()';
-            $cmp = 'strcasecmp($aVal, $bVal)';
-
-            if ($sortOrder === Connexions_Service::SORT_DIR_DESC)
-                // Reverse sort
-                $cmp = '(0 - '. $cmp .')';
-        }
-        else
-        {
-            $val = ($this->weightName === null
-                        ? 'getWeight()'
-                        : $this->weightName);
-
-            if ($sortOrder === Connexions_Service::SORT_DIR_DESC)
-                // Reverse sort (Descending)
-                $cmp = '($bVal - $aVal)';
-            else
-                $cmp = '($aVal - $bVal)';
-        }
-
-        // Create function to reverse sort by weight.
-        $sortFn = create_function('$a,$b',   '$aVal = $a->'. $val .';'
-                                           . '$bVal = $b->'. $val .';'
-                                           . 'return '. $cmp .';');
-
-        // Clone and sort the item list
-        $itemList = clone $itemList;
-
-        $itemList->uasort($sortFn);
-
-        /*
-        Connexions::log("View_Helper_HtmlItemCloud:_sort(): "
-                        .   "----------------------- "
-                            . count($itemList) ." items, "
-                            . "sorted [ {$sortBy}, {$sortOrder} ]");
-        foreach($itemList as $key => $item)
-        {
-            Connexions::log("View_Helper_HtmlItemCloud:_sort(): "
-                            . "%-3s: title [ %-15s ], weight[ %d ]",
-                            $key,
-                            $item->getTitle(),
-                            $item->getWeight() );
-        }
-        // */
-
-        return $itemList;
-    }
-
-    /** @brief  Render an item list.
-     *  @param  itemList    A Connexions_Model_Set_Adapter_ItemList instance
-     *                      representing the items to be presented;
-     *
-     *
-     *  @return A string of HTML.
-     */
-    protected function _renderList(Connexions_Model_Set_Adapter_ItemList
-                                                                    $itemList)
-    {
-        $html .= "<ul class='Item_List'>";
-
-        $includeWeight = ($this->weightName !== null);
-
-        Connexions::log("View_Helper_HtmlItemCloud::_renderList(): "
-                        . "%d items, weightName[ %s ], weightTitle[ %s ]",
-                        count($itemList), $this->weightName,
-                        $this->weightTitle);
-
-        $html .= "<li class='header'>"
-              .   "<span class='item'>"
-              .    ($this->titleTitle !== null
-                      ? $this->titleTitle
-                      : ($this->itemType === self::ITEM_TYPE_USER
-                            ? "User"
-                            : "Item"))
-              .   "</span>";
-        if ($includeWeight)
-        {
-
-            $html .= "<span class='itemCount'>"
-                  .   ($this->weightTitle !== null
-                        ? $this->weightTitle
-                        : 'Weight')
-                  .  "</span>";
-        }
-        $html .= "</li>";
-
-        $idex = 0;
-        foreach ($itemList as $item)
-        {
-            $oddEven = ($idex++ % 2 ? 'odd' : 'even');
-            $html   .= "<li class='{$oddEven}'>";
-
-            $url    = $item->getParam('url');
-            $weight = number_format(round($item->getWeight()));
-
-            if (empty($url))
-                $html .= sprintf("<span class='item'>%s</span>",
-                                    htmlSpecialChars($item->getTitle()));
-            else
-                $html .= sprintf('<a class="item" href="%s">%s</a>',
-                                    htmlSpecialChars($url),
-                                    htmlSpecialChars($item->getTitle()));
-
-            if ($includeWeight)
-            {
-                $title = ($this->weightTitle !== null
-                            ? " title='{$this->weightTitle}'"
-                            : '');
-
-                $html .=  "<span class='itemCount'{$title}>{$weight}</span>";
-            }
-
-            $html .= "</li>";
-        }
-
-        $html .= "</ul>";
-
-        return $html;
-    }
-
-    /** @brief  Render the top items (by count).
-     *  @param  itemList    A Connexions_Model_Set_Adapter_ItemList instance;
-     *
-     *  Note: itemList SHOULD currently be sorted according to the selected
-     *        sort order ($this->sortBy / sortOrder).
-     *
-     *  @return A string of HTML.
-     */
-    protected function _renderHighlights(Connexions_Model_Set_Adapter_ItemList
-                                                                    $itemList)
-    {
-        // Re-sort by weight and walk forward from the beginning
-        $itemList = $this->_sort($itemList,
-                                 'weight',
-                                 Connexions_Service::SORT_DIR_DESC);
-
-        /******************************************************************
-         * Render the top items.
-         *
-         */
-        $html .= "<div class='highlights ui-corner-all'>"
-              .   "<h4>Top {$this->highlightCount}</h4>"
-              .   "<ul class='Item_List'>";
-
-        $idex = 0;
-        foreach ($itemList as $item)
-        {
-            if (++$idex > $this->highlightCount)
-                break;
-
-            $oddEven = ($idex % 2 ? 'odd' : 'even');
-            $html   .= "<li class='{$oddEven}'>";
-
-            $url    = $item->getParam('url');
-            $weight = number_format($item->getWeight());
-            if (empty($url))
-                $html .= sprintf("<span class='item'>%s</span>",
-                                    htmlSpecialChars($item->getTitle()));
-            else
-                $html .= sprintf('<a class="item" href="%s">%s</a>',
-                                    htmlSpecialChars($url),
-                                    htmlSpecialChars($item->getTitle()));
-
-            $html .=  "<span class='itemCount'>{$weight}</span>"
-                  .  "</li>";
-        }
-
-        $html .=  "</ul>"
-              .  "</div>";
-
-        return $html;
-    }
-
     /** @brief  Render the 'displayOptions' control area.
      *
      *
      *  @return A string of HTML.
      */
-    protected function _renderDisplayOptions()
+    public function renderDisplayOptions()
     {
         $namespace = $this->namespace;
 
@@ -1135,4 +695,224 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         return $this->_displayOptions->render();
     }
 
+    /** @brief  Sort our tags, if needed.
+     *  @param  itemList    A Connexions_Model_Set_Adapter_ItemList instance;
+     *  @param  sortBy      The field to sort by ( self::SORT_BY_* )
+     *                      [ $this->sortBy ];
+     *  @param  sortOrder   Sort order ( Connexions_Service::SORT_DIR_* )
+     *                      [ $this->sortOrder ];
+     *
+     *  @return The sorted Connexions_Model_Set_Adapter_ItemList
+     */
+    public function sortItemList(
+                        Connexions_Model_Set_Adapter_ItemList  $itemList,
+                        $sortBy     = null,
+                        $sortOrder  = null)
+    {
+        if ($sortBy    === null)    $sortBy    = $this->sortBy;
+        if ($sortOrder === null)    $sortOrder = $this->sortOrder;
+
+        /*
+        Connexions::log("View_Helper_HtmlItemCloud::sortItemList(): "
+                        . "%d items, sort[ %s => %s, %s => %s ]",
+                        count($itemList),
+                        $this->currentSortBy,    $sortBy,
+                        $this->currentSortOrder, $sortOrder);
+
+        foreach($itemList as $key => $item)
+        {
+            Connexions::log("View_Helper_HtmlItemCloud::sortItemList(): "
+                            . "%s: (%s) title [ %s ], weight[ %d ]",
+                            $key,
+                            get_class($item),
+                            $item->getTitle(),
+                            $item->getWeight() );
+        }
+        // */
+
+        /* In setItemSet(), the chosen sort order MAY be over-ridden to ensure
+         * that we're presenting the most weighty portion of the cloud.
+         */
+        if (($sortBy    === $this->currentSortBy) &&
+            ($sortOrder === $this->currentSortOrder))
+        {
+            // The incoming list should ALREADY be properly sorted.
+            return $itemList;
+        }
+
+        /**********************************************************************
+         * Re-sort the list
+         *
+         */
+        if ($sortBy === self::SORT_BY_TITLE)
+        {
+            $val = 'getTitle()';
+            $cmp = 'strcasecmp($aVal, $bVal)';
+
+            if ($sortOrder === Connexions_Service::SORT_DIR_DESC)
+                // Reverse sort
+                $cmp = '(0 - '. $cmp .')';
+        }
+        else
+        {
+            $val = ($this->weightName === null
+                        ? 'getWeight()'
+                        : $this->weightName);
+
+            if ($sortOrder === Connexions_Service::SORT_DIR_DESC)
+                // Reverse sort (Descending)
+                $cmp = '($bVal - $aVal)';
+            else
+                $cmp = '($aVal - $bVal)';
+        }
+
+        // Create function to reverse sort by weight.
+        $sortFn = create_function('$a,$b',   '$aVal = $a->'. $val .';'
+                                           . '$bVal = $b->'. $val .';'
+                                           . 'return '. $cmp .';');
+
+        // Clone and sort the item list
+        $itemList = clone $itemList;
+
+        $itemList->uasort($sortFn);
+
+        /*
+        Connexions::log("View_Helper_HtmlItemCloud:sortItemList(): "
+                        .   "----------------------- "
+                            . count($itemList) ." items, "
+                            . "sorted [ {$sortBy}, {$sortOrder} ]");
+        foreach($itemList as $key => $item)
+        {
+            Connexions::log("View_Helper_HtmlItemCloud:sortItemList(): "
+                            . "%-3s: title [ %-15s ], weight[ %d ]",
+                            $key,
+                            $item->getTitle(),
+                            $item->getWeight() );
+        }
+        // */
+
+        return $itemList;
+    }
+
+    /** @brief  Render an item list.
+     *  @param  itemList    A Connexions_Model_Set_Adapter_ItemList instance
+     *                      representing the items to be presented;
+     *
+     *
+     *  @return A string of HTML.
+     */
+    public function renderList(Connexions_Model_Set_Adapter_ItemList
+                                                                    $itemList)
+    {
+        $html .= "<ul class='Item_List'>";
+
+        $includeWeight = ($this->weightName !== null);
+
+        Connexions::log("View_Helper_HtmlItemCloud::renderList(): "
+                        . "%d items, weightName[ %s ], weightTitle[ %s ]",
+                        count($itemList), $this->weightName,
+                        $this->weightTitle);
+
+        $html .= "<li class='header'>"
+              .   "<span class='item'>"
+              .    ($this->titleTitle !== null
+                      ? $this->titleTitle
+                      : ($this->itemType === self::ITEM_TYPE_USER
+                            ? "User"
+                            : "Item"))
+              .   "</span>";
+        if ($includeWeight)
+        {
+
+            $html .= "<span class='itemCount'>"
+                  .   ($this->weightTitle !== null
+                        ? $this->weightTitle
+                        : 'Weight')
+                  .  "</span>";
+        }
+        $html .= "</li>";
+
+        $idex = 0;
+        foreach ($itemList as $item)
+        {
+            $oddEven = ($idex++ % 2 ? 'odd' : 'even');
+            $html   .= "<li class='{$oddEven}'>";
+
+            $url    = $item->getParam('url');
+            $weight = number_format(round($item->getWeight()));
+
+            if (empty($url))
+                $html .= sprintf("<span class='item'>%s</span>",
+                                    htmlSpecialChars($item->getTitle()));
+            else
+                $html .= sprintf('<a class="item" href="%s">%s</a>',
+                                    htmlSpecialChars($url),
+                                    htmlSpecialChars($item->getTitle()));
+
+            if ($includeWeight)
+            {
+                $title = ($this->weightTitle !== null
+                            ? " title='{$this->weightTitle}'"
+                            : '');
+
+                $html .=  "<span class='itemCount'{$title}>{$weight}</span>";
+            }
+
+            $html .= "</li>";
+        }
+
+        $html .= "</ul>";
+
+        return $html;
+    }
+
+    /*************************************************************************
+     * Protected helpers
+     *
+     */
+
+    /** @brief  Given a requested sortBy value, validate, returning a valid
+     *          value.
+     *  @param  sortBy  A sortBy value (self::SORT_BY_*)
+     *
+     *  @return A valid sortBy value.
+     */
+    protected function _validateSortBy($sortBy)
+    {
+        switch ($sortBy)
+        {
+        case self::SORT_BY_TITLE:
+        case self::SORT_BY_WEIGHT:
+            break;
+
+        default:
+            $sortBy = self::$defaults['sortBy'];
+            break;
+        }
+
+        return $sortBy;
+    }
+
+    /** @brief  Given a requested sortOrder value, validate, returning a valid
+     *          value.
+     *  @param  sortOrder   A sortOrder value (Connexions_Service::SORT_DIR_*)
+     *
+     *  @return A valid sortOrder value.
+     */
+    protected function _validateSortOrder($sortOrder)
+    {
+        $sortOrder = strtoupper($sortOrder);
+        switch ($sortOrder)
+        {
+        case Connexions_Service::SORT_DIR_ASC:
+        case Connexions_Service::SORT_DIR_DESC:
+            break;
+
+        default:
+            $sortOrder = self::$defaults['sortOrder'];
+            break;
+        }
+
+        return $sortOrder;
+    }
 }

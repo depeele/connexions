@@ -37,11 +37,12 @@
  */
 Connexions::log('script/index/main.phtml');
 
-// Prepare the HTML Bookmarks helper and retrieve the current bookmark set.
+// Prepare the HTML Bookmarks helper.
 $htmlBookmarks = $this->htmlBookmarks( $this->main );
-$bookmarks     = $htmlBookmarks->bookmarks; //items;
+
 
 /*
+//$bookmarks     = $htmlBookmarks->bookmarks; //items;
 Connexions::log("index/main.phtml: paginator with %d bookmarks [ %s ]",
                 count($bookmarks),
                 (is_object($bookmarks)
@@ -50,7 +51,7 @@ Connexions::log("index/main.phtml: paginator with %d bookmarks [ %s ]",
 // */
 
 // Notify the sidebar about the items rendered in the main view.
-$this->htmlSidebar(array('items' => $bookmarks));
+$this->htmlSidebar(array('items' => $htmlBookmarks->bookmarks));
 
 // Render the main view.
 echo $htmlBookmarks->render();

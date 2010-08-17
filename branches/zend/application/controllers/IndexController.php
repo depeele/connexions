@@ -16,11 +16,6 @@ class IndexController extends Connexions_Controller_Action
     protected   $_owner     = null;
     protected   $_tags      = null;
 
-    protected   $_offset    = 0;
-    protected   $_count     = null;
-    protected   $_sortBy    = null;
-    protected   $_sortOrder = null;
-
     public      $contexts   = array(
                                 'index' => array('partial', 'json',
                                                  'rss',     'atom'),
@@ -214,28 +209,24 @@ class IndexController extends Connexions_Controller_Action
     }
 
     /** @brief  Prepare for rendering the sidebar view.
+     *  @param  part    The part/pane of the sidebar to be rendered
+     *                  (tags | people | items) [ null == all ]
      *  @param  async   Should we setup to do an asynchronous render
      *                  (i.e. tab callbacks will request tab pane contents when 
      *                        needed)?
      *
      *  This will collect the variables needed to render the sidebar view,
      *  placing them in $view->sidebar as a configuration array.
-     *
-     *  Note: The main index view script
-     *        (application/views/scripts/index/index.phtml) will also add
-     *        sidebar-related rendering information to the sidbar helper.  In
-     *        particular, it will notify the sidbar helper of the items that
-     *        are being presented in the main view.
      */
-    protected function _prepareSidebar($async = false)
+    protected function _prepareSidebar($part    = null,
+                                       $async   = false)
     {
-        // Our tags sidebar MAY need main-view variables set...
-        if (! isset($this->view->main))
-        {
-            $this->_prepareMain();
-        }
-
-        parent::_prepareSidebar($async);
+        /*
+        Connexions::log("IndexController::_prepareSidebar( %s, %s )",
+                        $part,
+                        ($async ? "async" : "sync"));
+        // */
+        parent::_prepareSidebar($part, $async);
 
         $extra = array(
             'users' => ($this->_owner !== '*'
@@ -245,10 +236,302 @@ class IndexController extends Connexions_Controller_Action
         );
         $this->view->sidebar = array_merge($this->view->sidebar, $extra);
 
+
+        /******************************************************************
+         * Create a Sidebar Helper using the configuration information
+         * that we've gathered thus far.
+         *
+         */
+        $sidebar = $this->view->htmlSidebar( $this->view->sidebar );
+        if ($async === false)
+        {
+            /* Finialize sidebar preparations by retrieving the necessary model 
+             * data for those portions of the sidebar that are to be rendered.
+             *
+             * The fact that actual sidebar rendering will occur is indicated 
+             * by 'async' == false.  The value of 'pane' will indicate which 
+             * sidebar pane is to be rendered with null meaning that they will 
+             * all be rendered.
+             */
+            if ( ($part === null) || ($part === 'tags') )
+            {
+                $this->_prepareSidebarPane('tags', $sidebar);
+            }
+
+            if ( ($part === null) || ($part === 'people') )
+            {
+                $this->_prepareSidebarPane('people', $sidebar);
+            }
+
+            if ( ($part === null) || ($part === 'items') )
+            {
+                $this->_prepareSidebarPane('items', $sidebar);
+            }
+        }
+
+        // Pass the configured instance of the sidebar helper to the views
+        $this->view->sidebarHelper = $sidebar;
+
         /*
         Connexions::log("IndexController::_prepareSidebar(): "
                         .   "sidebar[ %s ]",
                         Connexions::varExport($this->view->sidebar));
         // */
+    }
+
+    /** @brief  Given the portion of the sidebar to prepare, along with an
+     *          instance of the sidebar helper, finish preparations for the 
+     *          sidebar portion by retrieving the model data that will be 
+     *          presented.
+     *  @param  pane    The portion of the sidebar to render
+     *                  (tags | people | items);
+     *  @param  sidebar The View_Helper_HtmlSidebar instance;
+     *
+     */
+    protected function _prepareSidebarPane(                        $pane,
+                                           View_Helper_HtmlSidebar &$sidebar)
+    {
+        $config  = $sidebar->getPane($pane);
+
+        $perPage = ((int)$config['perPage'] > 0
+                        ? (int)$config['perPage']
+                        : 100);
+        $page    = ((int)$config['page'] > 0
+                        ? (int)$config['page']
+                        : 1);
+
+        $count   = $perPage;
+        $offset  = ($page - 1) * $perPage;
+
+        switch ($pane)
+        {
+        /*************************************************************
+         * Sidebar::Tags
+         *
+         */
+        case 'tags':
+            $service    = $this->service('Tag');
+            $fetchOrder = array('userItemCount DESC',
+                                'userCount     DESC',
+                                'itemCount     DESC',
+                                'tag           ASC');
+
+            if (count($this->_tags) < 1)
+            {
+                /* There were no requested tags that limit the bookmark 
+                 * retrieval so, for the sidebar, retrieve ALL tags limited 
+                 * only by the current owner (if any).
+                 */
+
+                // /*
+                Connexions::log("IndexController::_prepareSidebarPane( %s ): "
+                                .   "Fetch tags %d-%d by user [ %s ]",
+                                $pane,
+                                $offset, $offset + $count,
+                                Connexions::varExport($this->_owner));
+                // */
+
+                $tags = $service->fetchByUsers(($this->_owner === '*'
+                                                ? null            // ALL users
+                                                : $this->_owner), // ONE user
+                                               $fetchOrder,
+                                               $count,
+                                               $offset);
+            }
+            else
+            {
+                // Tags related to the bookmarks with the given set of tags.
+
+                // /*
+                Connexions::log("IndexController::_prepareSidebarPane( %s ): "
+                                .   "Fetch tags %d-%d related to bookmarks "
+                                .   "with tags[ %s ]",
+                                $pane,
+                                $offset, $offset + $count,
+                                Connexions::varExport($this->_tags));
+                // */
+
+                /* In order to prepare the sidebar, we need to know the set
+                 * of bookmarks presented in the main view.  If we're rendering 
+                 * the main view and sidebar syncrhonously, this MAY have been 
+                 * communicated to the sidebar helper via 
+                 *      application/view/scripts/index/main.phtml.
+                 */
+                if (! isset($this->view->main))
+                {
+                    $this->_prepareMain();
+                }
+
+                if ($sidebar->items === null)
+                {
+                    /* The set of bookmarks presented in the main view has not 
+                     * been communicated to the sidebar helper.  We need to 
+                     * generate them now using the non-format related 
+                     * View_Helper_Bookmarks to generate the appropriate set of 
+                     * bookmarks, telling the helper to return ALL bookmarks by 
+                     * setting 'perPage' to -1.
+                     */
+                    $overRides = array_merge($this->view->main,
+                                             array('perPage' => -1));
+
+                    $helper    = $this->view->bookmarks( $overRides );
+                    $bookmarks = $helper->bookmarks;
+
+                    /* Notify the sidebar helper of the main-view 
+                     * items/bookmarks
+                     */
+                    $sidebar->items = $bookmarks;
+                }
+
+                /* Retrieve the set of tags that are related to the presented 
+                 * bookmarks.
+                 */
+                $tags = $service->fetchByBookmarks($sidebar->items,
+                                                   $fetchOrder,
+                                                   $count,
+                                                   $offset);
+
+                $config['selected'] =& $this->_tags;
+            }
+
+            $config['items']            =& $tags;
+            $config['itemsType']        =
+                                 View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
+            $config['weightName']       =  'userItemCount';
+            $config['weightTitle']      =  'Bookmarks with this tag';
+            $config['titleTitle']       =  'Tag';
+            $config['currentSortBy']    =
+                                 View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
+            $config['currentSortOrder'] =
+                                 Connexions_Service::SORT_DIR_DESC;
+            break;
+
+        /*************************************************************
+         * Sidebar::People
+         *
+         */
+        case 'people':
+            if ($this->_owner === '*')
+            {
+                /* Order by userItem/Bookmark count here so the most used items 
+                 * will be in the limited set.  User-requested sorting will be 
+                 * performed later (via View_Helper_HtmlItemCloud) before the 
+                 * cloud or list is rendered.
+                 */
+
+                // /*
+                Connexions::log("IndexController::_prepareSidebarPane( %s ): "
+                                .   "Fetch people %d-%d related to tags[ %s ]",
+                                $pane,
+                                $offset, $offset + $count,
+                                Connexions::varExport($this->_tags));
+                // */
+
+                $fetchOrder = array('userItemCount DESC',
+                                    'userCount     DESC',
+                                    'itemCount     DESC',
+                                    'name          ASC');
+
+                // Fetch related users by tag
+                $service = $this->service('User');
+                $users   = $service->fetchByTags($this->_tags,
+                                                 true,    // exact
+                                                 $fetchOrder,
+                                                 $count,
+                                                 $offset);
+
+
+                $config['items']            =& $users;
+                $config['itemsType']        =
+                                 View_Helper_HtmlItemCloud::ITEM_TYPE_USER;
+                $config['weightName']       =  'userItemCount';
+                $config['weightTitle']      =  'Bookmarks';
+                $config['currentSortBy']    =
+                                 View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
+                $config['currentSortOrder'] =
+                                 Connexions_Service::SORT_DIR_DESC;
+            }
+            else
+            {
+                // A single user's bookmarks -- show just the "owner"
+
+                // /*
+                Connexions::log("IndexController::_prepareSidebarPane( %s ): "
+                                .   "Present JUST the owner [ %s ]",
+                                $pane,
+                                Connexions::varExport($this->_owner));
+                // */
+
+            }
+            break;
+
+        /*************************************************************
+         * Sidebar::Items
+         *
+         */
+        case 'items':
+            if ($this->_owner === '*')
+            {
+                // ALL users - sort by userItemCount
+                $fetchOrder = array('userItemCount DESC',
+                                    'ratingCount   DESC',
+                                    'url           ASC');
+
+                $users                 = null;
+                $config['weightName']  = 'userItemCount';
+                $config['weightTitle'] = 'Bookmarks';
+
+                // /*
+                Connexions::log("IndexController::_prepareSidebarPane( %s ): "
+                                .   "Fetch items %d-%d for all users "
+                                .   "related to tags [ %s ]",
+                                $pane,
+                                $offset, $offset + $count,
+                                Connexions::varExport($this->_tags));
+                // */
+
+            }
+            else
+            {
+                // A single user's bookmarks -- sort by rating
+                $fetchOrder = array('ratingAvg DESC',
+                                    'url       ASC');
+
+                $users                 =& $this->_owner;
+                $config['weightName']  =  'ratingAvg';
+                $config['weightTitle'] =  'Average Rating';
+
+                // /*
+                Connexions::log("IndexController::_prepareSidebarPane( %s ): "
+                                .   "Fetch items %d-%d for owner[ %s ] "
+                                .   "related to tags [ %s ]",
+                                $pane,
+                                $offset, $offset + $count,
+                                Connexions::varExport($this->_owner),
+                                Connexions::varExport($this->_tags));
+                // */
+            }
+
+            $service = $this->service('Item');
+            $items   = $service->fetchByUsersAndTags($users,
+                                                     $this->_tags,
+                                                     true,    // exact
+                                                     $fetchOrder,
+                                                     $count,
+                                                     $offset);
+
+            $config['items']            =& $items;
+            $config['itemsType']        =
+                                 View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
+            $config['itemBaseUrl']      =  $this->_helper->url(null, 'url');
+                                            //$this->view->baseUrl('/url/');
+            $config['currentSortBy']    =
+                                 View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
+            $config['currentSortOrder'] =
+                                 Connexions_Service::SORT_DIR_DESC;
+            break;
+        }
+
+        $sidebar->setPane($pane, $config);
     }
 }
