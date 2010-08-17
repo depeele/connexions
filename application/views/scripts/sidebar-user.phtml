@@ -29,7 +29,8 @@ if (! isset($this->showParts))
 }
 
 ?>
-<div id='usersList'>
+<div id='usersList' class='userItems'>
+  <div class='cloudRelation connexions_sprites relation_ltr'>&nbsp;</div>
   <ul class='users'>
     <?= $this->partial('user.phtml', $this) ?>
     <br class='clear' />

@@ -2,7 +2,19 @@
 /** @file
  *
  *  View script for IndexController::index to render the items portion of the
- *  sidebar.
+ *  sidebar (i.e. the 'Items' tab).
+ *
+ *  Incoming members:
+ *      sidebarHelper   A View_Helper_HtmlSidebar instance configured with
+ *                      information about the 'items' sidebar pane;
+ *
+ *      url             The full url for the main controller of this page;
+ *      owner           The owner of the current item set -- either a string or
+ *                      a Model_User instance;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
  */
 
 ?>
@@ -14,67 +26,7 @@
   </div>
   <?php
 
-    $htmlSidebar = $this->htmlSidebar( $this->sidebar );
-    $config      = $htmlSidebar->getPane('items');
-
-    /*
-    Connexions::log("index/sidebar-items.phtml: config[ %s ]",
-                    print_r($config, true));
-    // */
-
-    $service = Connexions_Service::factory('Model_Item');
-
-    $perPage    = $config['perPage'];
-    $page       = $config['page'];
-    if ($perPage < 1)   $perPage = 100;
-    if ($page    < 1)   $page    = 1;
-
-    $count      = $perPage;
-    $offset     = ($page - 1) * $perPage;
-
-    /* Order by userItem/Bookmark count here so the most used will be in the
-     * limited set.  User-requested sorting will be performed later
-     * (in View_Helper_HtmlItemCloud) before the cloud is rendered.
-     */
-    if ($this->owner === '*')
-    {
-        // ALL users -- sort by userItemCount
-        $fetchOrder = array('userItemCount DESC',
-                            'ratingCount   DESC',
-                            'url           ASC');
-
-        $users                 = null;
-        $config['weightName']  = 'userItemCount';
-        $config['weightTitle'] = 'Bookmarks';
-    }
-    else
-    {
-        // A single user's bookmarks -- sort by rating
-        $fetchOrder = array('ratingAvg DESC',
-                            'url       ASC');
-
-        $users                 = $this->owner;
-        $config['weightName']  = 'ratingAvg';
-        $config['weightTitle'] = 'Average Rating';
-    }
-
-    /* Items related to the given bookmarks -- actually, related to the
-     * identified 'owner' and any specified tags.
-     */
-    $itemSet = $service->fetchByUsersAndTags($users,
-                                             $this->tags,
-                                             true,          // exact
-                                             $fetchOrder,
-                                             $count,
-                                             $offset );
-
-    $config['items']            =& $itemSet;
-    $config['itemBaseUrl']      = $this->baseUrl('/url/');
-    $config['titleTitle']       = 'Item Url';
-    $config['itemType']         =  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
-    $config['currentSortBy']    =  View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
-    $config['currentSortOrder'] =  Connexions_Service::SORT_DIR_DESC;
-
-    $htmlItemCloud         = $this->htmlItemCloud($config);
+    $config        = $this->sidebarHelper->getPane('items');
+    $htmlItemCloud = $this->htmlItemCloud($config);
 
     echo $htmlItemCloud->render();

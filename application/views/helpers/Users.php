@@ -120,9 +120,9 @@ class View_Helper_Users extends View_Helper_List
             {
                 $fetchOrder = $this->sortBy .' '. $this->sortOrder;
                 $perPage    = $this->perPage;
-                $page       = $this->page;
-                if ($page < 1)
-                    $page = 1;
+                $page       = ($this->page > 0
+                                ? $this->page
+                                : 1);
 
                 $count      = $perPage;
                 $offset     = ($page - 1) * $perPage;

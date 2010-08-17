@@ -179,6 +179,12 @@ class View_Helper_HtmlUsers extends View_Helper_Users
                                 'groups'        => self::$styleGroups
                           );
 
+            // /*
+            Connexions::log("View_Helper_HtmlUsers::setNamespace(): "
+                            . "new namespace: config[ %s ]",
+                            Connexions::varExport($dsConfig));
+            // */
+
 
             // Set / Update our displayOptions namespace.
             if ($this->_displayOptions === null)
@@ -219,31 +225,34 @@ class View_Helper_HtmlUsers extends View_Helper_Users
      */
     public function setDisplayStyle($style, array $values = null)
     {
-        if (is_array($style))
+        if ($this->_displayOptions !== null)
         {
-            $values = $style;
-            $style  = self::STYLE_CUSTOM;
-        }
+            if (is_array($style))
+            {
+                $values = $style;
+                $style  = self::STYLE_CUSTOM;
+            }
 
-        switch ($style)
-        {
-        case self::STYLE_REGULAR:
-        case self::STYLE_FULL:
-        case self::STYLE_CUSTOM:
-            break;
+            switch ($style)
+            {
+            case self::STYLE_REGULAR:
+            case self::STYLE_FULL:
+            case self::STYLE_CUSTOM:
+                break;
 
-        default:
-            $style = self::$defaults['displayStyle'];
-            break;
-        }
+            default:
+                $style = self::$defaults['displayStyle'];
+                break;
+            }
 
-        $this->_displayOptions->setGroup($style, $values);
+            $this->_displayOptions->setGroup($style, $values);
 
-        /*
-        Connexions::log('View_Helper_HtmlUsers::'
+            /*
+            Connexions::log('View_Helper_HtmlUsers::'
                             . "setDisplayStyle({$style}) == [ "
                             .   $this->_displayOptions->getGroup() ." ]");
-        // */
+            // */
+        }
     
         return $this;
     }
@@ -254,7 +263,9 @@ class View_Helper_HtmlUsers extends View_Helper_Users
      */
     public function getDisplayStyle()
     {
-        return $this->_displayOptions->getGroup();
+        return ($this->_displayOptions
+                    ? $this->_displayOptions->getGroup()
+                    : self::$defaults['displayStyle']);
     }
 
     /** @brief  Get the current showMeta value.

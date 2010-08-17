@@ -50,6 +50,8 @@ $definition =& $helper->definition;
    <ul class='groups'>
     <?php
 
+    $currentGroup = $helper->getBestGroupMatch();
+
     // Render the predefined display group choices
     foreach ($groups as $key => $info)
     {

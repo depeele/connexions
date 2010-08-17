@@ -1,8 +1,20 @@
 <?php
 /** @file
  *
- *  View script for IndexController::index to render the items portion of the
- *  sidebar.
+ *  View script for PeopleController::index to render the items portion of the
+ *  sidebar (i.e. the 'Items' tab).
+ *
+ *  Incoming members:
+ *      sidebarHelper   A View_Helper_HtmlSidebar instance configured with
+ *                      information about the 'items' sidebar pane;
+ *
+ *      url             The full url for the main controller of this page;
+ *      owner           The owner of the current item set -- either a string or
+ *                      a Model_User instance;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
  */
 
 ?>
@@ -14,74 +26,7 @@
   </div>
   <?php
 
-    $htmlSidebar = $this->htmlSidebar( $this->sidebar );
-    $config      = $htmlSidebar->getPane('items');
-
-    /*
-    Connexions::log("scripts/people/sidebar-items.phtml: config[ %s ]",
-                    print_r($config, true));
-    // */
-
-    $service = Connexions_Service::factory('Model_Item');
-
-    $perPage    = $config['perPage'];
-    $page       = $config['page'];
-    if ($perPage < 1)   $perPage = 100;
-    if ($page    < 1)   $page    = 1;
-
-    $count      = $perPage;
-    $offset     = ($page - 1) * $perPage;
-
-    /* Order by userItem/Bookmark count here so the most used will be in the
-     * limited set.  User-requested sorting will be performed later
-     * (in View_Helper_HtmlItemCloud) before the cloud is rendered.
-     */
-    $fetchOrder = array('uti.userItemCount DESC',
-                        'ratingCount       DESC',
-                        'url               ASC');
-
-    // Tags related to the given users
-    if ($htmlSidebar->items === null)
-    {
-        /* There have been no users/items communicated to the
-         * htmlSidebar helper (e.g. this is invoked as a partial and
-         *                          index.phtml has not been rendered).
-         *
-         * Use the View_Helper_HtmlUsers view helper to generate the
-         * appropriate set now, assuming the controller has filled in
-         * $this->main for the configuration of the main view.
-         *
-         * Tell it NOT to include any script.
-         */
-        $subOpts = $this->main;
-        $subOpts['includeScript'] = false;
-        $subOpts['perPage']       = -1;
-
-        $htmlUsers = $this->htmlUsers( $subOpts );
-        $items     = $htmlUsers->users;
-
-        /* Tell the sidebar helper about the set of items
-         * (I don't thing this really matters).
-         */
-        $htmlSidebar->items = $items;
-    }
-
-
-    // Items related to the given users (saved by main.phtml into 'items').
-    $itemSet = $service->fetchByUsers($htmlSidebar->items,
-                                      $fetchOrder,
-                                      $count,
-                                      $offset );
-
-    $config['items']            =& $itemSet;
-    $config['itemBaseUrl']      = $this->baseUrl('/url/');
-    $config['weightName']       = 'userCount';
-    $config['weightTitle']      = 'Bookmarks';
-    $config['titleTitle']       = 'Item Url';
-    $config['itemType']         =  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
-    $config['currentSortBy']    =  View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
-    $config['currentSortOrder'] =  Connexions_Service::SORT_DIR_DESC;
-
-    $htmlItemCloud         = $this->htmlItemCloud($config);
+    $config        = $this->sidebarHelper->getPane('items');
+    $htmlItemCloud = $this->htmlItemCloud($config);
 
     echo $htmlItemCloud->render();

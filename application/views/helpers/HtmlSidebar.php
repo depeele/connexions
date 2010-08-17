@@ -126,6 +126,19 @@ class View_Helper_HtmlSidebar extends Zend_View_Helper_Abstract
                     : array());
     }
 
+    /** @brief  (Re)set configuration information for the named pane.
+     *  @param  name    The name of the desired pane.
+     *  @param  config  The pane configuration.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function setPane($name, array $config)
+    {
+        $this->_params['panes'][$name] = $config;
+
+        return $this;
+    }
+
     public function __set($key, $value)
     {
         $method = 'set'. ucfirst($key);

@@ -86,12 +86,17 @@
              * the configuration in the main view.
              *
              * Tell it NOT to include any script and to return ALL tags.
+             *
+             * NOTE: 'includeScript' MUST appear before 'namespace' in the
+             *       configuration.  Otherwise, 'displayOptions' for our
+             *       sidebar will be corrupted to include options from the main
+             *       view.
              */
-            $subOpts = $this->main;
-            $subOpts['includeScript'] = false;
-            $subOpts['perPage']       = -1;
+            $overRides = array_merge(array('includeScript'  => false,
+                                           'perPage'        => -1),
+                                     $this->main);
 
-            $htmlBookmarks = $this->htmlBookmarks( $subOpts );
+            $htmlBookmarks = $this->htmlBookmarks( $overRides );
             $items         = $htmlBookmarks->bookmarks;
 
             /* Tell the sidebar helper about the set of items, though I don't

@@ -45,13 +45,13 @@ $htmlBookmarks = $this->htmlBookmarks( $this->main );
 // Prepare the Html Item Scope helper
 if ($this->owner === '*')
 {
-    $scopePath = array('Bookmarks' => $this->baseurl('/bookmarks'));
+    $scopePath = array('Bookmarks' => $this->baseUrl('/bookmarks'));
 }
 else
 {
     $ownerStr = $this->owner->name;
 
-    $scopePath = array($ownerStr => $this->baseurl($ownerStr));
+    $scopePath = array($ownerStr => $this->baseUrl($ownerStr));
 }
 
 $scopeRpc = Connexions::getJsonRpcInfo();
@@ -67,17 +67,16 @@ $scopeRpc['params'] = array('tags'   => (count($this->tags) < 1
 $htmlItemScope = $this->htmlItemScope( array(
                     'namespace'         => $this->namespace,
                     'items'             => $htmlBookmarks->paginator,
-                    'scope'             => $this->tags, //$htmlBookmarks->tags,
+                    'scope'             => $this->tags,
                     'inputLabel'        => 'Tags',
                     'inputName'         => 'Tags',
                     'path'              => $scopePath,
                     'jsonRpc'           => $scopeRpc,
                  ));
 
-$baseUrl = $this->baseUrl('/'); //Connexions::url('/');
 
 $links = $this->headLink();
-$links->appendStylesheet($baseUrl .'css/bookmarks.css');
+$links->appendStylesheet($this->baseUrl('/css/bookmarks.css'));
 
 ?>
 <div class='columnHeader'>

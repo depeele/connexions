@@ -43,7 +43,8 @@ bookmarks.css: mixins.scss bookmarks.scss bookmark.scss \
 users.css: mixins.scss users.scss user.scss colors.scss sizes.scss
 	sass -t compact users.scss:users.css
 
-bookmark-users.css: mixins.scss users.scss user.scss colors.scss sizes.scss
+bookmark-users.css: mixins.scss users.scss user.scss \
+    			bookmark-users.scss colors.scss sizes.scss
 	sass -t compact bookmark-users.scss:bookmark-users.css
 
 urlItems.css: mixins.scss urlItems.scss bookmark.scss \

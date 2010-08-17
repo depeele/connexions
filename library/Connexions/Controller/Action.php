@@ -126,6 +126,12 @@ class Connexions_Controller_Action extends Zend_Controller_Action
      */
     protected function _handleFormat($htmlNamespace = '')
     {
+        /*
+        Connexions::log("Connexions_Controller_Action::_handleFormat(%s): "
+                        . "_format[ %s ]",
+                        $htmlNamespace, $this->_format);
+        // */
+
         /* All actual rendering is via one of the scripts in:
          *      application / views / scripts / %controller% /
          *
@@ -150,8 +156,15 @@ class Connexions_Controller_Action extends Zend_Controller_Action
              */
             $this->view->isPartial = true;
 
-            $parts = preg_split('/\s*[\.:\-]\s*/',
-                                $this->_request->getParam('part', 'content'));
+            $part  = $this->_request->getParam('part', 'content');
+            $parts = preg_split('/\s*[\.:\-]\s*/', $part);
+
+            /*
+            Connexions::log("Connexions_Controller_Action::_handleFormat(): "
+                            . "part[ %s ] == parts[ %s ]",
+                            $part, Connexions::varExport($parts));
+            // */
+
             switch ($parts[0])
             {
             case 'sidebar':
@@ -283,19 +296,17 @@ class Connexions_Controller_Action extends Zend_Controller_Action
     }
 
     /** @brief  Prepare for rendering the sidebar view.
+     *  @param  part    The portion of the sidebar to render
+     *                  (tags | people | items) [ null == all ]
      *  @param  async   Should we setup to do an asynchronous render
      *                  (i.e. tab callbacks will request tab pane contents when 
      *                        needed)?
      *
      *  This will collect the variables needed to render the sidebar view,
      *  placing them in $view->sidebar as a configuration array.
-     *
-     *  Note: The main index view script MAY also add sidebar-related rendering
-     *        information to the sidbar helper.  In particular, it will notify
-     *        the sidbar helper of the items that are being presented in the
-     *        main view IF they are rendered in the same pass.
      */
-    protected function _prepareSidebar($async = false)
+    protected function _prepareSidebar($part    = null,
+                                       $async   = false)
     {
         $request =& $this->_request;
 
@@ -425,16 +436,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
     protected function _renderMain($script, $namespace = '')
     {
         $this->_prepareMain($namespace);
-
-        Connexions::log("Connexions_Controller_Action::_renderMain(): "
-                        . "script[ %s ], namespace[ %s ]",
-                        $script, $namespace);
-
         $this->render($script);
-
-        Connexions::log("Connexions_Controller_Action::_renderMain(): "
-                        . "script[ %s ], namespace[ %s ] - COMPLETE",
-                        $script, $namespace);
 
     }
 
@@ -450,23 +452,21 @@ class Connexions_Controller_Action extends Zend_Controller_Action
     protected function _renderSidebar($usePlaceholder = true,
                                       $part           = null)
     {
-        $this->_prepareSidebar( $usePlaceholder );
+        /*
+        Connexions::log("Connexions_Controller_Action::_renderSidebar(): "
+                        . "usePlaceholder[ %s ], part[ %s ]",
+                        Connexions::varExport($usePlaceholder),
+                        Connexions::varExport($part));
+        // */
+
+        $this->_prepareSidebar( $part, $usePlaceholder );
 
         if ($part !== null)
         {
             // Render just the requested part
             $script = 'sidebar-'. $part;
 
-            Connexions::log("Connexions_Controller_Action::_renderMain(): "
-                            . "script[ %s ]",
-                            $script);
-
             $this->render($script);
-
-            Connexions::log("Connexions_Controller_Action::_renderMain(): "
-                            . "script[ %s ] - COMPLETE",
-                            $script);
-
         }
         else
         {
@@ -484,31 +484,12 @@ class Connexions_Controller_Action extends Zend_Controller_Action
 
                 // Render the sidebar into the 'right' placeholder
                 $script = $controller .'/sidebar.phtml';
-
-                Connexions::log("Connexions_Controller_Action::_renderMain(): "
-                                . "script[ %s ]",
-                                $script);
-
                 $this->view->renderToPlaceholder($script, 'right');
-
-                Connexions::log("Connexions_Controller_Action::_renderMain(): "
-                                . "script[ %s ] - COMPLETE",
-                                $script);
             }
             else
             {
                 $script = 'sidebar';
-
-                Connexions::log("Connexions_Controller_Action::_renderMain(): "
-                                . "script[ %s ]",
-                                $script);
-
                 $this->render($script);
-
-                Connexions::log("Connexions_Controller_Action::_renderMain(): "
-                                . "script[ %s ] - COMPLETE",
-                                $script);
-
             }
         }
     }

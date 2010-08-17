@@ -161,9 +161,16 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
      */
     public function htmlBookmarks(array $config = array())
     {
+        /*
+        Connexions::log("View_Helper_HtmlBookmarks::htmlBookmarks( %s )",
+                        Connexions::varExport($config));
+        // */
+
         if (! empty($config))
         {
-            return $this->populate($config);
+            $rc = $this->populate($config);
+
+            return $rc;
         }
 
         return $this->render();
@@ -178,7 +185,9 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
     {
         /*
         Connexions::log("View_Helper_HtmlBookmarks::"
-                            .   "setNamespace( {$namespace} )");
+                        .   "setNamespace( %s ): includeScript[ %s ]",
+                        $namespace,
+                        Connexions::varExport($this->includeScript));
         // */
 
         parent::setNamespace($namespace);
@@ -195,6 +204,12 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
                                 'groups'        => self::$styleGroups
                           );
 
+
+            /*
+            Connexions::log("View_Helper_Bookmarks::setNamespace(): "
+                            . "new namespace: config[ %s ]",
+                            Connexions::varExport($dsConfig));
+            // */
 
             // Set / Update our displayOptions namespace.
             if ($this->_displayOptions === null)
@@ -237,33 +252,37 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
      */
     public function setDisplayStyle($style, array $values = null)
     {
-        if (is_array($style))
+        if ($this->_displayOptions !== null)
         {
-            $values = $style;
-            $style  = self::STYLE_CUSTOM;
-        }
+            if (is_array($style))
+            {
+                $values = $style;
+                $style  = self::STYLE_CUSTOM;
+            }
 
-        switch ($style)
-        {
-        case self::STYLE_TITLE:
-        case self::STYLE_REGULAR:
-        case self::STYLE_FULL:
-        case self::STYLE_CUSTOM:
-            break;
+            switch ($style)
+            {
+            case self::STYLE_TITLE:
+            case self::STYLE_REGULAR:
+            case self::STYLE_FULL:
+            case self::STYLE_CUSTOM:
+                break;
 
-        default:
-            $style = self::$defaults['displayStyle'];
-            break;
-        }
+            default:
+                $style = self::$defaults['displayStyle'];
+                break;
+            }
 
-        $this->_displayOptions->setGroup($style, $values);
+            $this->_displayOptions->setGroup($style, $values);
 
-        /*
-        Connexions::log('View_Helper_HtmlBookmarks::'
-                            . "setDisplayStyle({$style}) == [ "
-                            .   $this->_displayOptions->getGroup() ." ]");
-        // */
+            /*
+            Connexions::log('View_Helper_HtmlBookmarks::'
+                                . "setDisplayStyle({$style}) == [ "
+                                .   $this->_displayOptions->getGroup() ." ]");
+            // */
     
+        }
+
         return $this;
     }
 
@@ -273,7 +292,9 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
      */
     public function getDisplayStyle()
     {
-        return $this->_displayOptions->getGroup();
+        return ($this->_displayOptions
+                    ? $this->_displayOptions->getGroup()
+                    : self::$defaults['displayStyle']);
     }
 
 

@@ -5,15 +5,15 @@
  *  sidebar (i.e. the 'Items' tab).
  *
  *  Incoming members:
+ *      sidebarHelper   A View_Helper_HtmlSidebar instance configured with
+ *                      information about the 'items' sidebar pane;
+ *
  *      url             The full url for the main controller of this page;
  *      viewer          The Model_User instance representing the current
  *                      viewer;
  *      tags            A Model_Set_Tag instance containing information about
  *                      any requested tags (i.e. tag restrictions);
  *      item            The item being presented in the main view;
- *
- *      main            An array of settings for the main content panel:
- *      sidebar         An array of settings for the sidebar:
  */
 
 ?>
@@ -25,49 +25,7 @@
   </div>
   <?php
 
-    $htmlSidebar = $this->htmlSidebar( $this->sidebar );
-    $config      = $htmlSidebar->getPane('items');
-
-    /*
-    Connexions::log("index/sidebar-items.phtml: config[ %s ]",
-                    print_r($config, true));
-    // */
-
-    $service = Connexions_Service::factory('Model_Item');
-
-    $perPage    = $config['perPage'];
-    $page       = $config['page'];
-    if ($perPage < 1)   $perPage = 100;
-    if ($page    < 1)   $page    = 1;
-
-    $count      = $perPage;
-    $offset     = ($page - 1) * $perPage;
-
-    /* Order by userItem/Bookmark count here so the most used will be in the
-     * limited set.  User-requested sorting will be performed later
-     * (in View_Helper_HtmlItemCloud) before the cloud is rendered.
-     */
-    $fetchOrder = array('uti.userItemCount DESC',
-                        'ratingCount       DESC',
-                        'url               ASC');
-
-    /* Items related to the given bookmarks -- actually, related to the
-     * identified 'owner' and any specified tags.
-     */
-    $itemSet = $service->fetchSimilar($this->item,
-                                      $fetchOrder,
-                                      $count,
-                                      $offset );
-
-    $config['items']            =& $itemSet;
-    $config['weightName']       = 'userItemCount';
-    $config['weightTitle']      = 'Bookmarks';
-    $config['titleTitle']       = 'Item Url';
-    $config['itemBaseUrl']      = $this->baseUrl('/url/');
-    $config['itemType']         =  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
-    $config['currentSortBy']    =  View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
-    $config['currentSortOrder'] =  Connexions_Service::SORT_DIR_DESC;
-
-    $htmlItemCloud         = $this->htmlItemCloud($config);
+    $config        = $this->sidebarHelper->getPane('items');
+    $htmlItemCloud = $this->htmlItemCloud($config);
 
     echo $htmlItemCloud->render();

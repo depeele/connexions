@@ -233,7 +233,8 @@ class Zend_Validate_StringLength extends Zend_Validate_Abstract
         if ($this->_encoding !== null) {
             $length = iconv_strlen($value, $this->_encoding);
         } else {
-            $length = iconv_strlen($value);
+            // wamp doesn't have iconv...
+            $length = strlen($value);   //iconv_strlen($value);
         }
 
         if ($length < $this->_min) {
