@@ -195,8 +195,10 @@ abstract class Connexions_Service
                                                 ->csList2set($val);
                 break;
 
+            case 'usersExact':
             case 'users':
-                $config['users'] = $this->factory('Service_User')
+                $config['exactUsers'] = ($key === 'usersExact');
+                $config['users']      = $this->factory('Service_User')
                                                 ->csList2set($val);
                 break;
 

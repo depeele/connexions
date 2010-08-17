@@ -5,14 +5,14 @@
  *  sidebar (i.e. the 'People' tab).
  *
  *  Incoming members:
+ *      sidebarHelper   A View_Helper_HtmlSidebar instance configured with
+ *                      information about the 'people' sidebar pane;
+ *
  *      url             The full url for the main controller of this page;
  *      viewer          The Model_User instance representing the current
  *                      viewer;
  *      users           A Model_Set_User instance containing information about
  *                      any requested users (i.e. user restrictions);
- *
- *      main            An array of settings for the main content panel:
- *      sidebar         An array of settings for the sidebar:
  */
 
 ?>
@@ -20,87 +20,12 @@
    <div class='context-bg connexions_sprites user_bg ui-corner-left'>
     &nbsp;
    </div>
-   <p>People related to these tags.</p>
+   <p>People who also used one or more of these tags.</p>
   </div>
   <?php
 
-    $htmlSidebar = $this->htmlSidebar( $this->sidebar );
-    $config      = $htmlSidebar->getPane('people');
-
-    /*
-    Connexions::log("index/sidebar-people.phtml: config[ %s ]",
-                    print_r($config, true));
-    // */
-
-    $service = Connexions_Service::factory('Model_User');
-
-    $perPage    = $config['perPage'];
-    $page       = $config['page'];
-    if ($perPage < 1)   $perPage = 100;
-    if ($page    < 1)   $page    = 1;
-
-    $count      = $perPage;
-    $offset     = ($page - 1) * $perPage;
-
-    /* Order by userItem/Bookmark count here so the most used will be in the
-     * limited set.  User-requested sorting will be performed later
-     * (in View_Helper_HtmlItemCloud) before the cloud is rendered.
-     */
-    $fetchOrder = array('totalItems DESC',
-                        'totalTags  DESC',
-                        'tagCount   DESC',
-                        'name       ASC');
-
-    if (count($this->users) > 0)
-    {
-    }
-
-    /* Locate all people associated with the current item and ALL specified
-     * tags.
-     */
-    $to = array();  //'users' => $this->users);
-    if (count($this->tags) > 0)
-    {
-        $to['tags'] = $this->tags;
-        // Users related to the presented tags
-        if ($htmlSidebar->items === null)
-        {
-            /* There have been no users communicated to the
-             * htmlSidebar helper (e.g. this is invoked as a partial and
-             *                          main.phtml has not been rendered).
-             *
-             * Retrieve all tags belonging to the specified users.
-             */
-            $to['tags'] = Connexions_Service::factory('Model_Tag')
-                                ->fetchByUsers($this->users);
-
-            /* Tell the sidebar helper about the set of items
-             * (I don't thing this really matters).
-             */
-            $htmlSidebar->items = $to['tags'];
-        }
-        else
-        {
-            $to['tags'] = $htmlSidebar->items;
-        }
-    }
-
-    $people = $service->fetchRelated( $to,
-                                      $fetchOrder,
-                                      $count,
-                                      $offset );
-
-    $config['items']            =& $people;
-    //$config['selected']         =& $this->tags;
-    $config['weightName']       = 'totalItems';
-    $config['weightTitle']      = 'Total Bookmarks';
-    //$config['titleTitle']       = 'User';
-    $config['itemType']         =  View_Helper_HtmlItemCloud::ITEM_TYPE_USER;
-    $config['currentSortBy']    =  View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
-    $config['currentSortOrder'] =  Connexions_Service::SORT_DIR_DESC;
-
-    //unset($config['weightName']);
-
+    // Tag-related users
+    $config        = $this->sidebarHelper->getPane('people');
     $htmlItemCloud = $this->htmlItemCloud($config);
 
     echo $htmlItemCloud->render();

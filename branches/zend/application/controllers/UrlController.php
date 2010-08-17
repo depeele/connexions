@@ -185,14 +185,23 @@ class UrlController extends Connexions_Controller_Action
         );
         $this->view->sidebar = array_merge($this->view->sidebar, $extra);
 
-        /************************************
-         * Adjust the default for this pane
-         *      list style,
+        /**************************************
+         * Adjust the default style for the
+         * people pane to be "list", sorted
+         * by "weight" ordered "descending".
          *
          */
+        $paramNs = $this->view->sidebar['panes']['people']['namespace'];
+
         $this->view->sidebar['panes']['people']['displayStyle'] =
-                        $this->_request->getParam("sbPeopleOptionGroup",
+                        $this->_request->getParam($paramNs .'OptionGroup',
                                     View_Helper_HtmlItemCloud::STYLE_LIST);
+        $this->view->sidebar['panes']['people']['sortBy'] =
+                        $this->_request->getParam($paramNs .'SortBy',
+                                    View_Helper_HtmlItemCloud::SORT_BY_WEIGHT);
+        $this->view->sidebar['panes']['people']['sortOrder'] =
+                        $this->_request->getParam($paramNs .'SortOrder',
+                                    Connexions_Service::SORT_DIR_DESC);
 
 
         /******************************************************************

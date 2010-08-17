@@ -22,7 +22,17 @@
    <div class='context-bg connexions_sprites item_bg ui-corner-left'>
     &nbsp;
    </div>
-   <p>Items related to these people.</p>
+   <p>Items related to these people
+   <?php
+    $nTags = count($this->tags);
+    if ($nTags > 0)
+    {
+        printf ("<br />and %d tag%s",
+                $nTags,
+                ($nTags === 1 ? '' : 's'));
+    }
+   
+   ?>.</p>
   </div>
   <?php
 

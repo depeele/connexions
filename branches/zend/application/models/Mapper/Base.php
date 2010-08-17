@@ -366,6 +366,14 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
             {
                 $secSelect->where('userId=?', $users);
             }
+
+            if ( (! isset($params['exactUsers'])) ||
+                 ($params['exactUsers'] !== false) )
+            {
+                $nUsers = count($users);
+                if ($nUsers > 1)
+                    $secSelect->having('userCount='. $nUsers);
+            }
         }
         if ( isset($params['items']) && (! empty($params['items'])) )
         {
@@ -466,14 +474,21 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
 
         // Include the statistics in the column list of the primary select
         $mainStatCols = array("{$secAs}.userItemCount",
-                              "{$secAs}.userCount",
                               "{$secAs}.itemCount",
                               "{$secAs}.tagCount");
         if ($mainTable === 'item')
         {
-            // Include the rating average
+            /* Name the computer 'userCount' as 'statUserCount' and
+             * include the rating average
+             */
+            array_push($mainStatCols, "{$secAs}.userCount as statUserCount");
             array_push($mainStatCols, $this->_fieldExpression($mainTable,
                                                               'ratingAvg'));
+        }
+        else
+        {
+            // Include 'userCount' directly (no alias)
+            array_push($mainStatCols, "{$secAs}.userCount");
         }
 
 

@@ -112,13 +112,16 @@ class Service_Tag extends Connexions_Service
      *                        'tag           ASC' ];
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
+     *  @param  exact   Tags MUST be associated with ALL provided users
+     *                  [ false ];
      *
      *  @return A new Model_Set_Tag instance.
      */
     public function fetchByUsers($users,
                                  $order   = null,
                                  $count   = null,
-                                 $offset  = null)
+                                 $offset  = null,
+                                 $exact   = false)
     {
         // Rely on Service_User to properly interpret 'users'
         $users = $this->factory('Service_User')->csList2set($users);
@@ -131,10 +134,11 @@ class Service_Tag extends Connexions_Service
         }
 
         return $this->_mapper->fetchRelated( array(
-                                        'users'  => $users,
-                                        'order'  => $order,
-                                        'count'  => $count,
-                                        'offset' => $offset,
+                                        'users'      => $users,
+                                        'exactUsers' => $exact,
+                                        'order'      => $order,
+                                        'count'      => $count,
+                                        'offset'     => $offset,
                                     ));
     }
 

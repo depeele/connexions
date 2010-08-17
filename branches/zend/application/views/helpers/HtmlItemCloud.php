@@ -714,19 +714,25 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
         /*
         Connexions::log("View_Helper_HtmlItemCloud::sortItemList(): "
-                        . "%d items, sort[ %s => %s, %s => %s ]",
+                        . "%d items, sort[ %s => %s, %s => %s ], "
+                        . "weightName[ %s ]",
                         count($itemList),
                         $this->currentSortBy,    $sortBy,
-                        $this->currentSortOrder, $sortOrder);
+                        $this->currentSortOrder, $sortOrder,
+                        $this->weightName);
 
         foreach($itemList as $key => $item)
         {
+            $val = ($this->weightName === null
+                        ? $item->getWeight()
+                        : $item->__get($this->weightName));
+
             Connexions::log("View_Helper_HtmlItemCloud::sortItemList(): "
-                            . "%s: (%s) title [ %s ], weight[ %d ]",
+                            . "%s: (%s) title [ %s ], weight[ %d / %d ]",
                             $key,
                             get_class($item),
                             $item->getTitle(),
-                            $item->getWeight() );
+                            $item->getWeight(), $val );
         }
         // */
 
@@ -767,8 +773,8 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         }
 
         // Create function to reverse sort by weight.
-        $sortFn = create_function('$a,$b',   '$aVal = $a->'. $val .';'
-                                           . '$bVal = $b->'. $val .';'
+        $sortFn = create_function('$a,$b',   '$aVal = $a->__get("'. $val .'");'
+                                           . '$bVal = $b->__get("'. $val .'");'
                                            . 'return '. $cmp .';');
 
         // Clone and sort the item list
