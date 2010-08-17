@@ -37,8 +37,6 @@
  */
 Connexions::log('view/scripts/tags/main.phtml');
 
-$baseUrl     =  $this->baseUrl('/tags/');
-
 /*
 $tags        =& $this->main['tags'];
 $paginator   =  new Zend_Paginator($tags->getPaginatorAdapter());
@@ -56,7 +54,7 @@ $htmlCloud = $this->htmlItemCloud( array(
                 'items'            => &$this->main['tags'],
                 'paginator'        => &$this->main['paginator'],
 
-                'itemBaseUrl'      => $baseUrl,
+                'itemBaseUrl'      => $this->baseUrl('/bookmarks/'),
 
                 'weightName'       => 'userItemCount',
                 'weightTitle'      => 'Bookmarks with this tag',

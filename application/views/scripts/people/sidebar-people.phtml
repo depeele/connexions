@@ -25,12 +25,17 @@
    <div class='context-bg connexions_sprites user_bg ui-corner-left'>
     &nbsp;
    </div>
+   <p>Summary of people
    <?php
-    if ($this->owner === '*')
+    $nTags = count($this->tags);
+    if ($nTags > 0)
     {
-        echo "<p>General information about these people.</p>\n";
+        printf ("<br />using %d tag%s",
+                $nTags,
+                ($nTags === 1 ? '' : 's'));
     }
-  ?>
+   
+   ?>.</p>
   </div>
   <?php
 

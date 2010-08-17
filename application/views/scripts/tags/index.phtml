@@ -37,7 +37,7 @@
 Connexions::log('view/scripts/tags/index.phtml');
 
 // Prepare the Html Item Scope helper
-$scopePath = array('Users' => $baseUrl);
+$scopePath = array('Tags' => $this->baseUrl('/tags'));
 
 $scopeRpc = Connexions::getJsonRpcInfo();
 $scopeRpc['method'] = 'tags.autocompleteUser';
@@ -66,7 +66,7 @@ $links->appendStylesheet($this->baseUrl('css/tagCloud.css'));
  <p>
   <?php
     if ( count($this->users) > 0)
-        printf ("Tags<br />with users '%s'.", $this->users);
+        printf ("Tags used by<br />'%s'.", $this->users);
     else
         echo "All Tags.";
   ?>

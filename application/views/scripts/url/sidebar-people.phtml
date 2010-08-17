@@ -26,16 +26,15 @@ $nTags = count($this->tags);
     <?php
     if ($nTags > 0)
     {
-        echo "People who have tagged this item with ",
-             "tag", ($nTags === 1 ? '' : 's'),
-             " '", $this->tags->__toString(), "'";
+        printf ("People who have tagged this item with '%s'",
+                $this->tags);
     }
     else
     {
         echo "People who have bookmarked this item";
     }
-    ?>
-   .</p>
+
+    ?>.</p>
   </div>
   <?php
 
