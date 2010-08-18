@@ -55,3 +55,15 @@ $ms_filter_base: unquote("progid:DXImageTransform.Microsoft.");
     filter: unquote("#{$ms_filter_base}BasicImage(rotation=-3)");
   }
 }
+
+@mixin inlineBlock() {
+  /* OLD Mozilla browsers */
+  display:  -moz-inline-stack;
+
+  /* Modern browsers */
+  display:  inline-block;
+
+  /* Trigger 'hasLayout' and set display to inline == inline-block */
+  zoom:     1;
+  *display: inline;
+}

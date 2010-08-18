@@ -8,6 +8,12 @@
   display:  block;
 }
 
+.inlineBlock {
+  /* Trigger 'hasLayout' and set display to inline == inline-block */
+  zoom:     1;
+  *display: inline;
+}
+
 // For main.scss
 .pane {
   zoom:   1;

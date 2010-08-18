@@ -218,8 +218,7 @@
     border-color: $tagColor;
   }
   .tag,.tag:hover {
-    display: block;
-    float: left;
+    @include inlineBlock();
     background-color: $tagColorBackground;
     color: $tagColor;
     @include corners(1em, 0, 0, 1em);

@@ -44,14 +44,14 @@
 
 .bookmarks .item { position: relative; z-index: 1; margin-bottom: 1em; border-top: 1px solid #cccccc; }
 
-.bookmarks .item .status, .pane .displayStyle fieldset.options .item .status { position: absolute; top: 0; left: 0; width: 20px; height: 100%; z-index: 5; }
+.bookmarks .item .status, .pane .displayStyle fieldset.options .item .status { position: absolute; top: 0; left: 0; width: 20px; height: 100%; z-index: 2; }
 .bookmarks .item .status .checkbox, .pane .displayStyle fieldset.options .item .status .checkbox { border: 0; }
 .bookmarks .item .status .favorite, .bookmarks .item .status .private, .pane .displayStyle fieldset.options .item .status .favorite, .pane .displayStyle fieldset.options .item .status .private { position: absolute; cursor: pointer; }
 .bookmarks .item .status .favorite, .pane .displayStyle fieldset.options .item .status .favorite { top: 4px; left: 4px; }
 .bookmarks .item .status .favorite .star_empty, .pane .displayStyle fieldset.options .item .status .favorite .star_empty { visibility: hidden; }
 .bookmarks .item .status .private, .pane .displayStyle fieldset.options .item .status .private { top: 24px; left: 4px; }
 .bookmarks .item .status .private .lock_empty, .pane .displayStyle fieldset.options .item .status .private .lock_empty { visibility: hidden; }
-.bookmarks .item .stats, .pane .displayStyle fieldset.options .item .stats { position: relative; float: right; width: 100px; padding: 0 0 0 4px; text-align: right; z-index: 2; }
+.bookmarks .item .stats, .pane .displayStyle fieldset.options .item .stats { position: relative; float: right; width: 100px; padding: 0 0 0 4px; text-align: right; z-index: 3; }
 .bookmarks .item .stats a.count, .bookmarks .item .stats div.count, .pane .displayStyle fieldset.options .item .stats a.count, .pane .displayStyle fieldset.options .item .stats div.count { display: block; background-color: #999999; color: white; padding: 0.25em; font-weight: normal; text-align: center; text-decoration: none; }
 .bookmarks .item .stats a.count:hover, .bookmarks .item .stats div.count:hover, .pane .displayStyle fieldset.options .item .stats a.count:hover, .pane .displayStyle fieldset.options .item .stats div.count:hover { background-color: #b0d730; }
 .bookmarks .item .stats .rating, .pane .displayStyle fieldset.options .item .stats .rating { display: block; position: relative; }
@@ -64,7 +64,7 @@
 .bookmarks .item .stats .rating .stars .average-owner .ui-stars-star-disabled, .pane .displayStyle fieldset.options .item .stats .rating .stars .average-owner .ui-stars-star-disabled { visibility: hidden; }
 .bookmarks .item .stats .rating .stars .owner .ui-stars-star-disabled, .bookmarks .item .stats .rating .stars .owner .ui-stars-cancel, .pane .displayStyle fieldset.options .item .stats .rating .stars .owner .ui-stars-star-disabled, .pane .displayStyle fieldset.options .item .stats .rating .stars .owner .ui-stars-cancel { visibility: hidden; }
 .bookmarks .item .stats .rating .info, .pane .displayStyle fieldset.options .item .stats .rating .info { clear: left; color: #999999; font-size: 0.75em; }
-.bookmarks .item .data, .pane .displayStyle fieldset.options .item .data { position: relative; padding: 0.25em 0 0 32px; z-index: 1; }
+.bookmarks .item .data, .pane .displayStyle fieldset.options .item .data { position: relative; padding: 0.25em 0 0 32px; }
 .bookmarks .item .data .itemName, .pane .displayStyle fieldset.options .item .data .itemName { padding: 0; }
 .bookmarks .item .data .itemName a, .pane .displayStyle fieldset.options .item .data .itemName a { display: inline; font-weight: bold; }
 .bookmarks .item .data .url, .pane .displayStyle fieldset.options .item .data .url { padding: 0 0 0 1em; max-width: 794px; }
@@ -77,11 +77,11 @@
 .bookmarks .item .data .userId a .img img, .pane .displayStyle fieldset.options .item .data .userId a .img img { width: 16px; height: 16px; }
 .bookmarks .item .data .userId a .img .ui-icon, .pane .displayStyle fieldset.options .item .data .userId a .img .ui-icon { position: relative; top: -2px; }
 .bookmarks .item .data .userId a .name, .pane .displayStyle fieldset.options .item .data .userId a .name { display: inline; font-size: 0.9em; padding-left: 0.25em; }
-.bookmarks .item .data .tags, .pane .displayStyle fieldset.options .item .data .tags { display: block; clear: right; float: right; }
+.bookmarks .item .data .tags, .pane .displayStyle fieldset.options .item .data .tags { display: block; clear: right; text-align: right; }
 .bookmarks .item .data .dates, .pane .displayStyle fieldset.options .item .data .dates { display: block; font-size: 0.8em; height: 1em; padding-left: 1em; color: #999999; }
 .bookmarks .item .data .dates .tagged, .pane .displayStyle fieldset.options .item .data .dates .tagged { float: left; }
 .bookmarks .item .data .dates .updated, .pane .displayStyle fieldset.options .item .data .dates .updated { float: right; }
-.bookmarks .item .data .control, .pane .displayStyle fieldset.options .item .data .control { float: right; font-size: 0.65em; font-weight: normal; border: 0; padding: 0; margin: 0 0 0 2em; /* margin vs padding for .confirm width */ white-space: pre; color: #999999; visibility: hidden; z-index: 3; }
+.bookmarks .item .data .control, .pane .displayStyle fieldset.options .item .data .control { float: right; font-size: 0.65em; font-weight: normal; border: 0; padding: 0; margin: 0 0 0 2em; /* margin vs padding for .confirm width */ white-space: pre; color: #999999; visibility: hidden; z-index: 4; }
 .bookmarks .item .data .control a, .pane .displayStyle fieldset.options .item .data .control a { display: inline; font-weight: normal; text-decoration: none; padding: 0.1em; }
 .bookmarks .item .data .control a:hover, .pane .displayStyle fieldset.options .item .data .control a:hover { background-color: #0066cc; color: white; text-decoration: none; }
 .bookmarks .item .data .control .confirm, .pane .displayStyle fieldset.options .item .data .control .confirm { text-align: center; color: #cd0a0a; background-color: white; top: 0; position: absolute; width: 100%; }
@@ -102,9 +102,10 @@
 .bookmarks .mine, .pane .displayStyle fieldset.options .mine { min-height: 45px; }
 .bookmarks .mine .status, .pane .displayStyle fieldset.options .mine .status { display: block; min-height: 45px; }
 .bookmarks .mine.minimized, .pane .displayStyle fieldset.options .mine.minimized { display: block; min-height: 64px; }
-.bookmarks .mine.minimized .status, .pane .displayStyle fieldset.options .mine.minimized .status { top: 0; z-index: 1; }
+.bookmarks .mine.minimized .status, .pane .displayStyle fieldset.options .mine.minimized .status { top: 0; }
 .bookmarks .mine.minimized .status .favorite, .pane .displayStyle fieldset.options .mine.minimized .status .favorite { top: 28px; }
 .bookmarks .mine.minimized .status .private, .pane .displayStyle fieldset.options .mine.minimized .status .private { top: 48px; }
+.bookmarks .mine.minimized .data .userId, .pane .displayStyle fieldset.options .mine.minimized .data .userId { z-index: 4; /* ABOVE the status area */ }
 .bookmarks .mine.no-userId, .bookmarks .no-userId, .pane .displayStyle fieldset.options .mine.no-userId, .pane .displayStyle fieldset.options .no-userId { min-height: 45px; }
 .bookmarks .mine.no-userId .status, .bookmarks .no-userId .status, .pane .displayStyle fieldset.options .mine.no-userId .status, .pane .displayStyle fieldset.options .no-userId .status { top: 0; }
 .bookmarks .mine.no-userId .status .favorite, .bookmarks .no-userId .status .favorite, .pane .displayStyle fieldset.options .mine.no-userId .status .favorite, .pane .displayStyle fieldset.options .no-userId .status .favorite { top: 4px; }
