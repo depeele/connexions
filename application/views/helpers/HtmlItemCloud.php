@@ -849,11 +849,11 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
             if (empty($url))
                 $html .= sprintf("<span class='item'>%s</span>",
-                                    htmlSpecialChars($item->getTitle()));
+                                    $item->getTitle());
             else
                 $html .= sprintf('<a class="item" href="%s">%s</a>',
                                     htmlSpecialChars($url),
-                                    htmlSpecialChars($item->getTitle()));
+                                    $item->getTitle());
 
             if ($includeWeight)
             {

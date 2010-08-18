@@ -86,7 +86,7 @@ class View_Helper_HtmlItemCloudUser
                                     $cssClass,
                                     $attribute,
                                     $avatar,
-                                    htmlSpecialChars($user->getTitle()));
+                                    $user->getTitle());
             else
                 $userHtml = sprintf( '<a href="%s" title="%s" %s%s>'
                                     . '%s'
@@ -97,7 +97,7 @@ class View_Helper_HtmlItemCloudUser
                                     $cssClass,
                                     $attribute,
                                     $avatar,
-                                    htmlSpecialChars($user->getTitle()));
+                                    $user->getTitle());
 
             /*
             Connexions::log("View_Helper_HtmlItemCloudUser::render() [%s]: "

@@ -38,13 +38,13 @@ abstract class Model_Taggable extends Model_Base
         return $this;
     }
 
-    /** @brief  Retrieve the string that represents this item.
+    /** @brief  Return an HTML-safe version of this items title.
      *
-     *  @return The String title.
+     *  @return An HTML-safe title.
      */
     public function getTitle()
     {
-        return $this->getParam('title');
+        return htmlspecialchars($this->getParam('title'));
     }
 
     /** @brief  Retrieve the floating point value that represents the weight of

@@ -65,14 +65,14 @@ class View_Helper_HtmlItemCloudItem
                                     $weight,
                                     $cssClass,
                                     $attribute,
-                                    htmlSpecialChars($item->getTitle()));
+                                    $item->getTitle());
             else
                 $itemHtml = sprintf('<a href="%s" title="%s" %s%s>%s</a>',
                                     htmlSpecialChars($url),
                                     $weight,
                                     $cssClass,
                                     $attribute,
-                                    htmlSpecialChars($item->getTitle()));
+                                    $item->getTitle());
 
             /*
             Connexions::log("View_Helper_HtmlItemCloudItem::render() "

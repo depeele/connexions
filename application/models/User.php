@@ -442,9 +442,14 @@ class Model_User extends Model_Taggable
      * Zend_Tag_Taggable Interface (via Model_Taggable)
      *
      */
+
+    /** @brief  Return an HTML-safe version of this items title.
+     *
+     *  @return An HTML-safe title.
+     */
     public function getTitle()
     {
-        $title = (String)($this->name);
+        $title = htmlspecialchars( (String)($this->name) );
 
         return $title;
     }
