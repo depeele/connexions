@@ -36,7 +36,7 @@ $displaySortOffset: 5px;
       left: 0;
       width: $controlBoxWidth;
       height: 100%;
-      z-index: 5;
+      z-index: 2;
       .checkbox {
         border: 0;
       }
@@ -66,7 +66,7 @@ $displaySortOffset: 5px;
       width: $countBoxWidth;
       padding: 0 0 0 4px;
       text-align: right;
-      z-index: 2;
+      z-index: 3;
       a.count,div.count {
         display: block;
         background-color: $controlColor;
@@ -124,7 +124,6 @@ $displaySortOffset: 5px;
     .data {
       position: relative;
       padding: unquote("0.25em 0 0") $controlBoxWidth + 12px;
-      z-index: 1;
       // Item Name / title
       .itemName {
         padding: 0;
@@ -186,9 +185,12 @@ $displaySortOffset: 5px;
       }
       // List of tags for this item
       .tags {
-        display: block;
-        clear: right;
-        float: right;
+        display:    block;
+        clear:      right;
+        text-align: right;
+
+        .tag {
+        }
       }
       // Dates (tagged, updated)
       .dates {
@@ -219,7 +221,7 @@ $displaySortOffset: 5px;
         color:        $controlColor;
 
         visibility:   hidden;
-        z-index:      3;
+        z-index:      4;
         a {
           display: inline;
           font-weight: normal;
@@ -329,14 +331,16 @@ $displaySortOffset: 5px;
     min-height: 64px;
     .status {
       top: 0;
-      // If an avatar is presented, make sure it is ABOVE the status
-      z-index: 1;
       .favorite {
         top: 28px;
       }
       .private {
         top: 48px;
       }
+    }
+    .data .userId {
+      // Raise the userId/avatar ABOVE status
+      z-index:      4;      /* ABOVE the status area */
     }
   }
   // Item (mine+no-userId, no-userId)

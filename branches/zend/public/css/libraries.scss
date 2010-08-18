@@ -126,11 +126,21 @@ pre,code,kbd,samp,tt {
   visibility: hidden;
 }
 
-/* float clearfix */
+/* float clearfix per:
+ *  http://www.positioniseverything.net/easyclearing.html
+ */
 .clearfix:after {
   content: ".";
   display: block;
   height: 0;
   clear: both;
   visibility: hidden;
+}
+
+/* inline-block normalization per:
+ *  http://foohack.com/2007/11/cross-browser-support-for-inline-block-styling/
+ */
+.inlineBlock {
+  display:  -moz-inline-stack;  /* OLD Mozilla browsers */
+  display:  inline-block;
 }
