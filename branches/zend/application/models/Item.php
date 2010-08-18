@@ -159,6 +159,11 @@ class Model_Item extends Model_Taggable
      * Zend_Tag_Taggable Interface (via Model_Taggable)
      *
      */
+
+    /** @brief  Return an HTML-safe version of this items title.
+     *
+     *  @return An HTML-safe title.
+     */
     public function getTitle()
     {
         $title = (String)($this->url);
@@ -170,8 +175,19 @@ class Model_Item extends Model_Taggable
          */
         $title = preg_replace('/\s*(\W|_)\s*/', ' $1 ', urldecode($title));
 
-        // Remove white-space from teh schema
-        $title = preg_replace('/^(\S+)\s+:\s+\/\s+\//', '$1://', $title);
+        // Remove white-space from the schema
+        $title = preg_replace('/^(\S+)\s+:\s*\/\s+\//', '$1://', $title);
+
+        // Make the title HTML-safe
+        $title = htmlspecialchars($title);
+
+        /* Replace ALL white-space with a Zero Width Space (&#8203;).  This
+         * will allow line-wrapping without making the URL look spaced out.
+         *
+         * We could also use a Hair Space (&#8202;) if we want to see that the
+         * white-space exists.
+         */
+        $title = preg_replace('/\s+/', '&#8203;', $title);
 
         /*
         Connexions::log("Model_Item::getTitle(): [ %s ] == [ %s ]",

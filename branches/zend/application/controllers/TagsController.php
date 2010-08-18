@@ -56,6 +56,8 @@ class TagsController extends Connexions_Controller_Action
          * Set the view variables required for all views/layouts.
          *
          */
+        $this->view->headTitle('Tags');
+
         $this->view->url    = $this->_url;
         $this->view->viewer = $this->_viewer;
 

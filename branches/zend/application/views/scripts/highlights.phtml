@@ -27,7 +27,7 @@ $highlightCount =  $this->highlightCount;
         $oddEven = ($idex % 2 ? 'odd' : 'even');
         $url     = $item->getParam('url');
         $weight  = number_format($item->getWeight());
-        $title   = htmlSpecialChars($item->getTitle());
+        $title   = $item->getTitle();
 
         ?><li class='<?= $oddEven ?>'><?php
 
