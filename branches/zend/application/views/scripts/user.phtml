@@ -9,6 +9,8 @@
  *      showParts       An array indicating which portions of the user record
  *                      to present;
  *      maxTags         The maximum number of tags to present for a user [ 5 ];
+ *      sortBy          The current sorting order if this user entry is being
+ *                      rendered in a list;
  */
 $user        =& $this->user;
 $viewer      =  $this->viewer;    // MAY be unset, hence the missing '=&'
@@ -203,7 +205,7 @@ if ($showParts['minimized'])    array_push($css, 'minimized');
 
         echo "</ul>";
 
-        $clearFloats = true;
+        $clearFloats = false;
     }
 
     /*****************************
@@ -222,6 +224,8 @@ if ($showParts['minimized'])    array_push($css, 'minimized');
         }
 
         echo "</div>";
+
+        $clearFloats = false;
     }
 
     if ($clearFloats)

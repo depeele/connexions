@@ -180,6 +180,7 @@ class View_Helper_Users extends View_Helper_List
             $params = array('namespace' => $this->namespace,
                             'user'      => $item,
                             'viewer'    => $this->viewer,
+                            'sortBy'    => $this->sortBy,
                       );
         }
 

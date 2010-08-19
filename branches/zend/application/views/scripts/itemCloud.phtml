@@ -186,5 +186,10 @@ if ($helper->hasHiddenItems())
  ?>
  </div><?php                // cloud }
 
+    if ($uiPagination !== null)
+    {
+        echo $uiPagination->render($paginator);
+    }
+
  ?>
 </div>

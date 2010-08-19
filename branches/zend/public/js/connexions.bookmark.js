@@ -651,6 +651,9 @@ $.widget("connexions.bookmark", {
             open:       function(event, ui) {
                 $form.find('form').bookmarkPost({
                     saved:      function(event, data) {
+                        /* Update the presented bookmark with the newly saved
+                         * data.
+                         */
                         var a   = 1;
                     },
                     complete:   function() {

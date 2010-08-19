@@ -44,17 +44,13 @@ class View_Helper_HtmlUsers extends View_Helper_Users
         'user:data:fullName'                => 'Full Name',
         'user:data:email'                   => array(
             'label'         => 'email@ddress',
-            'extraPre'      => "<div class='img icon-highlight'><div class='ui-icon ui-icon-mail-closed'>&nbsp;</div></div>"
+            'extraPre'      => "<div class='icon icon-highlight'><div class='ui-icon ui-icon-mail-closed'>&nbsp;</div></div>"
         ),
-        'user:data:email'                   => 'email@',
+        'user:data:dates:lastVisit'         => 'date:Last Visited',
         'user:data:tags'                    => array(
             'label'         => 'Top tags',
             'extraPost'     => "<label class='tag'>...</label><label class='tag'>...</label><label class='tag'>...</label><label class='tag'>...</label>"
         ),
-        'user:data:dates'                   => array(
-            'containerPost' => "<br class='clear' />"
-        ),
-        'user:data:dates:lastVisit'         => 'date:Last Visited'
     );
 
 
@@ -393,6 +389,7 @@ class View_Helper_HtmlUsers extends View_Helper_Users
                                     'user'       => $item,
                                     'viewer'     => $this->viewer,
                                     'showParts'  => $this->_showParts,
+                                    'sortBy'     => $this->sortBy,
                                   ));
     }
 

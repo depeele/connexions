@@ -258,6 +258,7 @@ abstract class View_Helper_List extends Zend_View_Helper_Abstract
             $params = array('namespace' => $this->namespace,
                             'item'      => $item,
                             'viewer'    => $this->viewer,
+                            'sortBy'    => $this->sortBy,
                       );
         }
 

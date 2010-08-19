@@ -56,14 +56,35 @@ $ms_filter_base: unquote("progid:DXImageTransform.Microsoft.");
   }
 }
 
+// inline-block normalization per:
+//  http://foohack.com/2007/11/cross-browser-support-for-inline-block-styling/
 @mixin inlineBlock() {
-  /* OLD Mozilla browsers */
+  // OLD Mozilla browsers
   display:  -moz-inline-stack;
 
-  /* Modern browsers */
+  // Modern browsers
   display:  inline-block;
 
-  /* Trigger 'hasLayout' and set display to inline == inline-block */
+  // Trigger 'hasLayout' and set display to inline == inline-block
   zoom:     1;
   *display: inline;
+}
+
+// float clearfix per:
+//    http://www.positioniseverything.net/easyclearing.html
+//
+//  MUST be WITHIN the CSS rule to which it is applied.
+@mixin clearFix() {
+  &:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+
+    // IE
+    *display: inline-block;
+    zoom:     1;
+    *display: block;
+  }
 }
