@@ -34,7 +34,6 @@ $displaySortOffset: 5px;
   .user {
     position: relative;
     z-index: 1;
-    padding-bottom: 1em;
     border-top: unquote("1px solid") $borderColor;
     // stats:countItems, countTags
     .stats {
@@ -143,9 +142,8 @@ $displaySortOffset: 5px;
       }
       // List of tags for this item
       .tags {
-        clear: right;
-        display: block;
-        float: right;
+        clear:    both;
+        display:  block;
       }
       // Dates (lastVisit)
       .dates {
@@ -189,45 +187,6 @@ $displaySortOffset: 5px;
     .status {
       display: block;
       min-height: 45px;
-    }
-  }
-}
-
-// Cleanup the displayOptions area
-.pane .displayOptions .displayStyle fieldset.options {
-  .user {
-    .data {
-      .avatar {
-        position: relative;
-        width:    auto;
-        height:   auto;
-
-        float:    left;
-        padding:  0;
-        .img {
-          float:  left;
-        }
-      }
-      .userId {
-        float:    left;
-        padding:  0.25 0 0.25em 16px;
-      }
-      .fullName, .email {
-        clear:    left;
-        padding:  0 0 0.25em 16px;
-      }
-      .email {
-        float:    left;
-      }
-      .tags {
-        margin:   0;
-        padding:  0 0 0.25em 16px;
-      }
-      .dates {
-        clear:    both;
-        float:    none;
-        padding:  0.25em 0 0 16px;
-      }
     }
   }
 }

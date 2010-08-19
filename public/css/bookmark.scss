@@ -22,7 +22,7 @@ $displaySortOffset: 5px;
   .item {
     position: relative;
     z-index: 1;
-    margin-bottom: 1em;
+    margin-bottom: 0.5em;
     border-top: unquote("1px solid") $borderColor;
   }
 }
@@ -40,20 +40,27 @@ $displaySortOffset: 5px;
       .checkbox {
         border: 0;
       }
-      .favorite,.private {
+      .avatar,.favorite,.private {
         position: absolute;
         cursor: pointer;
       }
+      .avatar {
+        top:  4px;
+        left: 1px;
+        img {
+          width:  16px;
+        }
+      }
       .favorite {
-        top: 4px;
-        left: 4px;
+        top:  28px;
+        left: 3px;
         .star_empty {
           visibility: hidden;
         }
       }
       .private {
-        top: 24px;
-        left: 4px;
+        top: 48px;
+        left: 3px;
         .lock_empty {
           visibility: hidden;
         }
@@ -61,6 +68,7 @@ $displaySortOffset: 5px;
     }
     // Tagger count, rating, tag date/time
     .stats {
+      @include clearFix();
       position: relative;
       float: right;
       width: $countBoxWidth;
@@ -121,93 +129,116 @@ $displaySortOffset: 5px;
         }
       }
     }
+
     .data {
       position: relative;
       padding: unquote("0.25em 0 0") $controlBoxWidth + 12px;
+
       // Item Name / title
       .itemName {
         padding: 0;
         a {
-          display: inline;
-          font-weight: bold;
+          display:      inline;
+          font-weight:  normal;
+          font-size:    1.2em;
         }
       }
       // Item Url
       .url {
         padding: 0 0 0 1em;
-        max-width: $urlBoxWidth;
+        //max-width: $urlBoxWidth;
         a {
-          display: inline;
-          font-weight: normal;
+          display:      inline;
+          font-size:    0.75em;
+          font-weight:  bold;
+          color:        $linkColorSubdued;
         }
       }
       // Item Description / Description Summary
       .description {
-        display: block;
-        padding: 0 0 0 1em;
-        margin: 0 175px 0 0;
-        color: $controlColor;
+        display:  block;
+        padding:  0.25em 0 0.25em 1em;
+        margin:   0 175px 0 0;
+        color:    $controlColor;
         .full, .summary {
           display: block;
         }
       }
-      // UserId
-      .userId {
-        display: block;
-        float: left;
-        font-size: 0.9em;
-        padding: 0.5em 0 0.5em 1em;
-        margin: 0;
-        white-space: pre;
-        a {
-          font-weight: normal;
-          .img {
-            display: block;
-            position: relative;
-            float: left;
-            border: 0;
-            background-color: transparent;
-            img {
-              width: 16px;
-              height: 16px;
-            }
-            .ui-icon {
-              position: relative;
-              top: -2px;
-            }
-          }
-          .name {
-            display: inline;
-            font-size: 0.9em;
-            padding-left: 0.25em;
-          }
-        }
-      }
-      // List of tags for this item
-      .tags {
-        display:    block;
-        clear:      right;
-        text-align: right;
+      .meta {
+        @include clearFix();
+        clear:        both;
+        margin-left:  14em;
+        padding-top:  0.25em;
 
-        .tag {
+        // List of tags for this item
+        .tags {
+          display:        block;
+          vertical-align: top;
+          float:          right;
+          text-align:     right;
+          padding-top:    0;
+  
+          // Ensure we receive hover events by being ABOVE stats
+          z-index:        5;
+  
+          .tag {
+            font-size:  0.9em;
+          }
+        }
+
+        // UserId
+        .userId {
+          @include inlineBlock();
+          vertical-align: top;
+          margin-left:    -13em;
+          min-width:      5em;
+
+          a {
+            font-size:   0.85em;
+            font-weight: normal;
+            color:       $linkColorSubdued;
+
+            .img {
+              @include inlineBlock();
+              vertical-align:   middle;
+              border:           0;
+              background-color: transparent;
+              img {
+                width: 16px;
+                height: 16px;
+              }
+              .ui-icon {
+                position: relative;
+                top: -2px;
+              }
+            }
+            .name {
+              @include inlineBlock();
+              vertical-align: middle;
+              font-size:      0.9em;
+              padding-left:   0.25em;
+            }
+          }
+        }
+
+        // Dates (tagged, updated)
+        .dates {
+          @include inlineBlock();
+          vertical-align: top;
+          color:          $controlColor;
+          width:          7.5em;
+          text-align:     right;
+          padding-top:    0.25em;
+          .tagged,.updated {
+            font-size:      0.8em;
+            padding-right:  0.1em;
+          }
         }
       }
-      // Dates (tagged, updated)
-      .dates {
-        display: block;
-        font-size: 0.8em;
-        height: 1em;
-        padding-left: 1em;
-        color: $controlColor;
-        .tagged {
-          float: left;
-        }
-        .updated {
-          float: right;
-        }
-      }
+
       // Item controls: edit, delete, save
       .control {
+        @include clearFix();
         float:        right;
         font-size:    0.65em;
         font-weight:  normal;
@@ -276,6 +307,7 @@ $displaySortOffset: 5px;
       }
     }
   }
+
   // Item (private)
   .private {
     .status {
@@ -283,40 +315,7 @@ $displaySortOffset: 5px;
       border-left: unquote("1px dotted") $privateColorBorder;
     }
   }
-  // Item (minimized)
-  .minimized {
-    clear: left;
-    .control {
-      float:      right;
-      padding:    0;
-      font-size:  0.9em;
-    }
-    .status {
-      display: none;
-    }
-    .data {
-      margin-left: 5em;
-      padding-left: 0;
-      .itemName,.description,.description .summary,.description .full {
-        display: inline;
-      }
-      .userId {
-        position: absolute;
-        left: -5.25em;
-        width: 5em;
-        padding: 0.25em 0;
-        overflow: hidden;
-      }
-      .description .summary {
-        padding: 0 0 0 0.5em;
-        margin: 0;
-      }
-      .tags {
-        padding: 0.1em 0 0 0.5em;
-        clear: right;
-      }
-    }
-  }
+
   // Item (mine)
   .mine {
     min-height: 45px;
@@ -325,40 +324,18 @@ $displaySortOffset: 5px;
       min-height: 45px;
     }
   }
-  // Item (mine+minimized)
-  .mine.minimized {
-    display: block;
-    min-height: 64px;
-    .status {
-      top: 0;
-      .favorite {
-        top: 28px;
-      }
-      .private {
-        top: 48px;
-      }
-    }
-    .data .userId {
-      // Raise the userId/avatar ABOVE status
-      z-index:      4;      /* ABOVE the status area */
-    }
-  }
-  // Item (mine+no-userId, no-userId)
-  .mine.no-userId,
-  .no-userId {
-    min-height: 45px;
-    .status {
-      top: 0;
-      .favorite {
-        top: 4px;
-      }
-      .private {
-        top: 24px;
-      }
-    }
+
+  // Item (minimized)
+  .minimized {
     .data {
-      margin-left: 0;
-      padding-left: $controlBoxWidth + 12px;
+      .itemName, .description, .description .summary, .description .full {
+        //@include inlineBlock();
+        display:  inline;
+        margin:   0;
+      }
+      .description {
+        padding:  0 0 0 0.5em;
+      }
     }
   }
 }

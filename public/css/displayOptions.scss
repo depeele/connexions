@@ -112,7 +112,7 @@
   }
 }
 
-// More specific to override '.bookmarks fieldset.options'
+// More specific overrides
 .pane .displayOptions .displayStyle fieldset.options {
   padding-top: 0.5em;
   .item, .user {
@@ -126,8 +126,10 @@
       padding-left: 0.25em;
     }
     .stats {
-      font-weight: normal;
-      padding: 0;
+      position:     absolute;
+      right:        0;
+      font-weight:  normal;
+      padding:      0;
       .rating {
         padding: 0.25em 0.1em 0.25em 0.5em;
         text-align: left;
@@ -141,57 +143,108 @@
     .data {
       padding-left:   0;
       padding-right:  0.1em;
+
+      .avatar {
+        @include inlineBlock();
+        padding:  0 0.75em 0 0;
+
+        label {
+          padding-left: 14px;
+        }
+        .img {
+          position: absolute;
+          left:     14px;
+          top:      0;
+        }
+      }
+
       .itemName {
+        @include inlineBlock();
+        font-size:      1.2em;
         padding-bottom: 0.5em;
       }
       .url, .description, .description .full, .description .summary {
         margin: 0;
       }
       .description {
+        padding-bottom: 1em;
         .full, .summary {
           padding: 0;
         }
       }
+      .tags {
+        @include clearFix();
+        float:          right;
+        vertical-align: top;
+
+        width:          auto;
+        text-align:     left;
+        margin-bottom:  1em;
+        padding:        0;
+        label,.tag {
+          @include inlineBlock();
+          float:        none;
+          font-size:    0.8em;
+        }
+        .tag {
+          padding:      inherit;
+        }
+      }
       .userId {
-        white-space:    normal;
+        @include inlineBlock();
+        vertical-align: top;
         padding:        0 0 0 1em;
         margin-bottom:  1em;
         font-size:      0.8em;
         label {
           padding-left: 0;
         }
-        .avatar {
-          position: relative;
-          float: left;
-          padding: 0 0.75em 0 0.25em;
-          label {
-            padding-left: 8px;
-          }
-          .img {
-            position: absolute;
-            left: 14px;
-            top: 0;
-          }
-        }
         .id {
-          display: inline;
-        }
-      }
-      .tags {
-        width:          auto;
-        text-align:     left;
-        margin-bottom:  1em;
-        padding:        0;
-        label,.tag {
-          display:      inline;
-          float:        none;
-          font-size:    0.8em;
+          @include inlineBlock();
         }
       }
       .dates {
+        @include inlineBlock();
+        vertical-align: top;
+        font-size:      0.8em;
+        padding:        0 0 0 1em;
         .updated {
           width: auto;
         }
+      }
+    }
+  }
+  .user {
+    .data {
+      @include clearFix();
+      .avatar, .userId, .fullName, .email, .tags, .dates {
+        position: relative;
+        width:    auto;
+        height:   auto;
+        float:    none;
+        padding:  0 0.75em 0 0;
+      }
+      .fullName, .email, .tags, .dates {
+        display:  block;
+      }
+      .avatar, .userId {
+        @include inlineBlock();
+      }
+      .userId {
+        padding-top:  0.25em;
+      }
+      .tags {
+        clear:    none;
+        float:    right;
+        padding:  0.2em 0 0 0;
+      }
+      .fullName {
+        padding-bottom: 0.5em;
+      }
+      .dates {
+        clear:    none;
+        float:    left;
+        padding:  0.5em 0 0 16px;
       }
     }
   }

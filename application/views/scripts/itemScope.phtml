@@ -95,10 +95,11 @@ if ( $scope && (count($scope) > 0) )
         $others  = array_diff($validList, array($name));
         $remUrl  = $reqUrl .'/'. implode(',', $others);
         $itemUrl = $url . '/'. $name;
+        $zIndex  = ($nItems - $idex) + 1;
 
 
         $liHtml .= "<li  class='scopeItem deletable' "
-                .       "style='z-index: {($nItems - $idex) + 1};'>"
+                .       "style='z-index:{$zIndex}'>"
                 .    "<a  href='{$itemUrl}'>{$name}</a>"
                 .    "<a  href='{$remUrl}'"
                 .       "class='delete ui-icon ui-icon-close'>x</a>"

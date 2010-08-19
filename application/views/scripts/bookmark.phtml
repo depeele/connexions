@@ -14,6 +14,8 @@
  *                          minimized
  *                          item:data:userId
  *      summaryMax      The maximum number of characters in a summary [ 40 ];
+ *      sortBy          The current sorting order if this bookmark is being
+ *                      rendered in a list;
  */
 $bookmark   =& $this->bookmark;
 $viewer     =& $this->viewer;
@@ -50,6 +52,22 @@ if ($showParts['minimized'])
      * Status
      *
      */
+    if ( ($showParts['item:data:avatar'] === true) &&
+         (! empty($bookmark->user->pictureUrl)) )
+    {
+        // Avatar
+        $userHref = $this->url(array('action' => $bookmark->user->name));
+
+        ?>
+     <div class='avatar'>
+       <a  href='<?= $userHref ?>'
+          title='<?= $bookmark->user->fullName ?>'>
+         <img src='<?= $bookmark->user->pictureUrl ?>' />
+       </a>
+     </div><?php
+
+    }
+
     if ($isOwner)
     {
         ?>
@@ -89,40 +107,45 @@ if ($showParts['minimized'])
                                         'urlHash' => $bookmark->item->urlHash
                                     ));
 
-            ?>
-    <a class='count ui-corner-bottom'
-       title='<?= $countTitle ?>'
-        href='<?= $href ?>'><?= $countValue ?></a><?php
+            ?><a class='count ui-corner-bottom'
+                 title='<?= $countTitle ?>'
+                  href='<?= $href ?>'><?= $countValue ?></a><?php
 
         }
 
         if ($showParts['item:stats:rating'] === true)
         {
-            ?>
-    <div class='rating'><?php   // rating {
+            ?><div class='rating'><?php   // rating {
+
+            $ratingAvg = (isset($bookmark->item->ratingAvg)
+                            ? $bookmark->item->ratingAvg
+                            : ($bookmark->item->ratingCount > 0
+                                ? ($bookmark->item->ratingSum /
+                                   $bookmark->item->ratingCount)
+                                : 0.0)
+                         );
+
+            if ($ratingAvg > 0.0)
+            {
+                $count       = $bookmark->item->ratingCount;
+                $ratingTitle = sprintf ("%d rater%s, %5.2f avg.",
+                                        $count,
+                                        ($count === 1 ? '' : 's'),
+                                        $ratingAvg);
+            }
+            else
+            {
+                $ratingTitle = 'No ratings';
+            }
+
             if (($showParts['item:stats:rating:stars'] === true) &&
                 ( ($bookmark->item->ratingCount > 0) || $isOwner) )
             {
-                ?>
-     <div class='stars'><?php   // stars {
-
-                $ratingAvg = (isset($bookmark->item->ratingAvg)
-                                ? $bookmark->item->ratingAvg
-                                : ($bookmark->item->ratingCount > 0
-                                    ? ($bookmark->item->ratingSum /
-                                       $bookmark->item->ratingCount)
-                                    : 0.0)
-                             );
+                ?><div class='stars'><?php   // stars {
 
                 if ($ratingAvg > 0.0)
                 {
                     // Present the average
-                    $count       = $bookmark->item->ratingCount;
-                    $ratingTitle = sprintf ("%d rater%s, %5.2f avg.",
-                                            $count,
-                                            ($count === 1 ? '' : 's'),
-                                            $ratingAvg);
-
                     echo $this->htmlStarRating($ratingAvg,
                                                ($isOwner
                                                     ? 'average-owner'
@@ -138,13 +161,19 @@ if ($showParts['minimized'])
                     echo $this->htmlStarRating($bookmark->rating, 'owner');
                 }
 
-                ?>
-     </div><?php // stars }
+                ?></div><?php // stars }
 
             }
 
-            ?>
-    </div><?php // rating }
+            /*
+            if (($showParts['item:stats:rating:info'] === true) &&
+                ($ratingAvg > 0.0))
+            {
+                ?><div class='info'><?= $ratingTitle ?></div><?php
+            }
+            // */
+
+            ?></div><?php // rating }
 
         }
 
@@ -161,18 +190,6 @@ if ($showParts['minimized'])
    <div class='data'><?php  // data {
 
     $clearFloats = $showParts['minimized'];
-    if ( ($showParts['minimized']        === true) &&
-         ($showParts['item:data:userId'] === true) )
-    {
-        // Render User Id
-        echo $this->partial('bookmark-userId.phtml',
-                            array(
-                                'namespace' => $this->namespace,
-                                'bookmark'  => $this->bookmark,
-                                'viewer'    => $this->viewer,
-                                'showParts' => $this->showParts,
-                            ));
-    }
 
     if ($viewer->isAuthenticated())
     {
@@ -232,10 +249,13 @@ if ($showParts['minimized'])
      */
     if ($showParts['item:data:url'] === true)
     {
+        /* Use Model_Item::getTitle() to retrieve an HTML-safe URL with
+         * zero-width, breakable white-space around every non-word character.
+         */
         ?><div class='url'><a
                 href='<?= $bookmark->item->url ?>'
                title='<?= $bookmark->item->urlHash ?>'
-                ><?= htmlspecialchars($bookmark->item->url) ?></a></div><?php
+                ><?= $bookmark->item->getTitle() ?></a></div><?php
     }
 
     /*****************************
@@ -274,20 +294,13 @@ if ($showParts['minimized'])
         ?></div><?php                       // description }
     }
 
-    if ( ($showParts['minimized']        !== true) &&
-         ($showParts['item:data:userId'] === true) )
+    if ( ($showParts['item:data:dates']  === true) ||
+         ($showParts['item:data:tags']   === true) ||
+         ($showParts['item:data:userId'] === true))
     {
-        ?>
-    <br class='clear' /><?php
+        ?><div class='meta'><?php   // meta {
 
-        // Render User Id
-        echo $this->partial('bookmark-userId.phtml',
-                            array(
-                                'namespace' => $this->namespace,
-                                'bookmark'  => $this->bookmark,
-                                'viewer'    => $this->viewer,
-                                'showParts' => $this->showParts,
-                            ));
+        $clearFloats = false;
     }
 
     /*****************************
@@ -308,10 +321,42 @@ if ($showParts['minimized'])
                     href='<?= $tagUrl ?>'><?= $tag->tag ?></a></li><?php
         }
 
-        ?></ul><br class='clear' /><?php
-
-        $clearFloats = false;
+        ?></ul><?php
     }
+
+    // .userId moves things left, so we need at least the container...
+    ?><div class='userId'><?
+
+    if ($showParts['item:data:userId'] === true)
+    {
+        // Render User Id
+        ?><a  href='<?= $this->url(array('action' => $bookmark->user->name)) ?>'
+             title='<?= $bookmark->user->fullName ?>'><?php
+
+        if ($showParts['item:data:avatar'] === true)
+        {
+            ?><div class='img icon-highlight'><?php
+
+            if (false)  //! empty($bookmark->user->pictureUrl))
+            {
+                ?><img src='<?= $bookmark->user->pictureUrl ?>' /><?php
+            }
+            else
+            {
+                ?><div class='ui-icon ui-icon-person'>&nbsp;</div><?php
+            }
+
+            ?></div><?php
+        }
+
+        if ($showParts['item:data:userId:id'] === true)
+        {
+            ?><span class='name'><?= $bookmark->user->name ?></span><?php
+        }
+
+        ?></a><?php
+    }
+    ?></div><?
 
     /*****************************
      * Item Dates
@@ -319,24 +364,58 @@ if ($showParts['minimized'])
      */
     if ($showParts['item:data:dates'] === true)
     {
-        ?><div class='dates'><?php
+        ?><div class='dates icon-highlight'><?php   // dates {
 
         if ($showParts['item:data:dates:tagged'] === true)
         {
-            ?><div class='tagged' 
-                   title='Date tagged'><?= $bookmark->taggedOn ?></div><?php
+            $date = $bookmark->taggedOn;
+            if ($this->sortBy === 'taggedOn')
+            {
+                /* We are sorting (and thus grouping) by tag date so don't
+                 * repeat the date in the display.  Just include the time.
+                 */
+                $info = explode(' ', $date);
+                $date = $info[1];
+            }
+
+            $dTitle = "Date tagged";
+            if ( ($showParts['item:data:dates:updated'] === true) &&
+                 ($bookmark->taggedOn === $bookmark->updatedOn) )
+            {
+                $dTitle .= '/updated';
+            }
+
+            ?><div class='tagged'
+                   title='<?= $dTitle ?>'><?= $date ?></div><?php
         }
 
-        if ($showParts['item:data:dates:updated'] === true)
+        if ( ($showParts['item:data:dates:updated'] === true) &&
+             (($showParts['item:data:dates:tagged'] !== true) ||
+              ($bookmark->taggedOn !== $bookmark->updatedOn)) )
         {
-            ?><div class='tagged' 
-                   title='Date updated'><?= $bookmark->updatedOn ?></div><?php
+            $date = $bookmark->updatedOn;
+            if ($this->sortBy === 'updatedOn')
+            {
+                /* We are sorting (and thus grouping) by tag date so don't
+                 * repeat the date in the display.  Just include the time.
+                 */
+                $info = explode(' ', $date);
+                $date = $info[1];
+            }
+
+            ?><div class='updated' 
+                   title='Date updated'><?= $date ?></div><?php
         }
 
-        ?></div><br class='clear' /><?php
-
-        $clearFloats = false;
+        ?></div><?php   // dates }
     }
+
+    if ( ($showParts['item:data:dates'] === true) ||
+         ($showParts['item:data:tags']  === true) )
+    {
+        ?></div><?php       // meta }
+    }
+
 
     if ($clearFloats)
     {

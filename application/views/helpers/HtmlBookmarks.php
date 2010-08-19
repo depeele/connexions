@@ -33,29 +33,29 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         ),
         'item:stats:rating:stars'           => 'rating stars',
         'item:stats:rating:info'            => 'rating info',
+        'item:data:avatar'           => array(
+            'label'         => 'avatar',
+            'extraPre'      => "<div class='img icon-highlight'><div class='ui-icon ui-icon-person'>&nbsp;</div></div>"
+        ),
         'item:data:itemName'                => array(
             'label'         => 'Title',
-            'containerEl'   => 'h4'
+            'containerEl'   => 'h4',
+            'containerCss'  => 'itemName',
         ),
         'item:data:url'                     => 'url',
         'item:data:description:full'        => 'description',
         'item:data:description:summary'     => array(
             'label'         => 'summarized description',
-            'containerPost' => "<br class='clear' />"
+            //'containerPost' => "<br class='clear' />"
         ),
-        'item:data:userId:avatar'           => array(
-            'label'         => 'avatar',
-            'extraPre'      => "<div class='img icon-highlight'><div class='ui-icon ui-icon-person'>&nbsp;</div></div>"
-        ),
-        'item:data:userId:id'               => 'User Id',
         'item:data:tags'                    => array(
             'label'         => 'tags',
-            'labelCss'      => 'tag',
             'extraPost'     => "<label class='tag'>...</label><label class='tag'>...</label><label class='tag'>...</label><label class='tag'>...</label>",
-            'containerPost' => "<br class='clear' />"
+            //'containerPost' => "<br class='clear' />"
         ),
+        'item:data:userId:id'               => 'User Id',
         'item:data:dates'                   => array(
-            'containerPost' => "<br class='clear' />"
+            //'containerPost' => "<br class='clear' />"
         ),
         'item:data:dates:tagged'            => 'date:Tagged',
         'item:data:dates:updated'           => 'date:Updated'
@@ -68,7 +68,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
             'options'   => array('item:stats:count',
                                  'item:data:itemName',
                                  'item:data:description:summary',
-                                 'item:data:userId:avatar',
+                                 'item:data:avatar',
                                  'item:data:userId:id'
             )
         ),
@@ -78,7 +78,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
                                  'item:stats:rating:stars',
                                  'item:data:itemName',
                                  'item:data:description:summary',
-                                 'item:data:userId:avatar',
+                                 'item:data:avatar',
                                  'item:data:userId:id',
                                  'item:data:tags',
                                  'item:data:dates:tagged'
@@ -92,7 +92,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
                                  'item:data:itemName',
                                  'item:data:url',
                                  'item:data:description:full',
-                                 'item:data:userId:avatar',
+                                 'item:data:avatar',
                                  'item:data:userId:id',
                                  'item:data:tags',
                                  'item:data:dates:tagged',
@@ -105,7 +105,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
             'options'   => array('item:stats:count',
                                  'item:data:itemName',
                                  'item:data:description:summary',
-                                 'item:data:userId:avatar',
+                                 'item:data:avatar',
                                  'item:data:userId:id',
                                  'item:data:tags',
             )
@@ -310,8 +310,8 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
              * 'userId' as 'hide' (not true nor false).
              */
             $this->_displayOptions
-                    ->setGroupValue('item:data:userId:avatar','hide')
-                    ->setGroupValue('item:data:userId:id',    'hide');
+                    ->setGroupValue('item:data:avatar',    'hide')
+                    ->setGroupValue('item:data:userId:id', 'hide');
         }
 
         $val = $this->_displayOptions->getGroupValues();
@@ -372,6 +372,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
                                     'bookmark'   => $item,
                                     'viewer'     => $this->viewer,
                                     'showParts'  => $this->_showParts,
+                                    'sortBy'     => $this->sortBy,
                                   ));
     }
 

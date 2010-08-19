@@ -2,6 +2,7 @@ $pageColorBackground: #fff;
 
 $linkColor:           #06c;
 $linkColorVisited:    #005a9c;
+$linkColorSubdued:    #396C9B;
 $controlColor:        #999;
 $borderColor:         #ccc;
 
@@ -25,8 +26,8 @@ $groupHeaderColor:            $controlColor;
 $groupHeaderYearColor:        $groupHeaderColorBackground - #111100;
 $groupHeaderAlphaColor:       $groupHeaderColorBackground - #333300;
 
-$privateColorBackground:  #fee;
-$privateColorBorder:      #f33;
+$privateColorBackground:  #fff0f0;
+$privateColorBorder:      #f99;
 
 $tagColorBackground:  #eee;
 $tagColor:            $navColorBackground;

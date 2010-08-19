@@ -3,7 +3,7 @@
  * Code licensed under the BSD License:
  * http://developer.yahoo.net/yui/license.txt
  * version: 3.0.0pr2 */
-/* reset */
+// reset
 html {
   color:      black;
   background: white;
@@ -19,7 +19,7 @@ body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input
   vertical-align: baseline;
   background:     transparent;
 
-  /* Make the box models nearly match across browsers */
+  // Make the box models nearly match across browsers
   box-sizing:         border-box;
   -moz-box-sizing:    border-box;
   -webkit-box-sizing: border-box;
@@ -43,7 +43,7 @@ q:before, q:after {
   content:    none;
 }
 
-/* Remember to define focus styles */
+// Remember to define focus styles
 :focus {
   outline:    0;
 }
@@ -95,7 +95,7 @@ legend {
   color: black;
 }
 
-/* fonts */
+// fonts
 body {
   //font: 13px/1.231 arial,helvetica,clean,sans-serif
   font: $baseFontSize unquote("/1.231 arial,helvetica,clean,sans-serif");
@@ -118,29 +118,10 @@ pre,code,kbd,samp,tt {
   *font-size:   108%;
 }
 
-/* float clear */
+// float clear
 .clear {
   display: block;
   height: 0;
   clear: both;
   visibility: hidden;
-}
-
-/* float clearfix per:
- *  http://www.positioniseverything.net/easyclearing.html
- */
-.clearfix:after {
-  content: ".";
-  display: block;
-  height: 0;
-  clear: both;
-  visibility: hidden;
-}
-
-/* inline-block normalization per:
- *  http://foohack.com/2007/11/cross-browser-support-for-inline-block-styling/
- */
-.inlineBlock {
-  display:  -moz-inline-stack;  /* OLD Mozilla browsers */
-  display:  inline-block;
 }

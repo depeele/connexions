@@ -243,6 +243,7 @@ class View_Helper_Bookmarks extends View_Helper_List
             $params = array('namespace' => $this->namespace,
                             'bookmark'  => $item,
                             'viewer'    => $this->viewer,
+                            'sortBy'    => $this->sortBy,
                       );
         }
 
