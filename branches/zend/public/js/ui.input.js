@@ -209,6 +209,12 @@ $.widget("ui.input", {
 
                 opts.$label.show();
             }
+            else
+            {
+                opts.$label.hide();
+
+                self.element.removeClass('ui-state-empty');
+            }
         };
 
         self.element
@@ -344,7 +350,9 @@ $.widget("ui.input", {
 
     val: function(newVal)
     {
-        return this.element.val();
+        return (newVal === undefined
+                    ? this.element.val()
+                    : this.element.val( newVal ));
     },
 
     validate: function()
@@ -378,7 +386,11 @@ $.widget("ui.input", {
             newState = ((this.val().length > 0)
                                     ? true
                                     : false);
-            msg.push('Cannot be empty');
+
+            if (! newState)
+            {
+                msg.push('Cannot be empty');
+            }
         }
 
         // Set the new state

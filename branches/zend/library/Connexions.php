@@ -699,6 +699,65 @@ class Connexions
         return false;
     }
 
+    /** @brief  Convert a value to boolean.
+     *  @param  val     The value to convert.
+     *
+     *  Conversion from     to:
+     *              true,  'true',  'yes', (int)!= 0, (float)!= 0.0   => true
+     *              false, 'false', 'no',  (int)== 0, (float)== 0.0   => false
+     *
+     *  @return The boolean value.
+    public static function to_bool($val)
+    {
+        Connexions::log("Connexions::to_bool( %s ): type[ %s ]",
+                        $val, gettype($val));
+
+        switch (gettype($val))
+        {
+        case 'boolean':
+            // Nothing to do -- it's already boolean
+            break;
+
+        case 'integer':
+            $val = ($val === 0 ? false : true);
+            break;
+
+        case 'double':
+            $val = (round($val) === 0 ? false : true);
+            break;
+
+        case 'NULL':
+            $val = false;
+            break;
+
+        case 'string':
+            switch (strtolower($val))
+            {
+            case 'false':
+            case 'no':
+            case '0':
+            case '0.0':
+                $val = false;
+                break;
+
+            default:
+                $val = true;
+                break;
+            }
+            break;
+
+        default:
+            // Evertyhing else should be fine with a simple cast
+            $val = (bool)$val;
+        }
+
+        Connexions::log("Connexions::to_bool(): result[ %s ]",
+                        Connexions::varExport($val));
+
+        return $val;
+    }
+     */
+
     /*************************************************************************
      * Browser detection
      *

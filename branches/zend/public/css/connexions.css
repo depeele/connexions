@@ -42,7 +42,7 @@ table { font-size: inherit; font: 100%; }
 
 pre, code, kbd, samp, tt { font-family: monospace; line-height: 100%; *font-size: 108%; }
 
-.clear { display: block; height: 0; clear: both; visibility: hidden; }
+br.clear { clear: both; display: block; height: 0; line-height: 0px; }
 
 /****** template.sass ****** */
 /* ====== Page Head, Body, and Foot ====== */
@@ -410,9 +410,9 @@ a:visited { color: #005a9c; }
 .paginator-top .pager { display: inline; }
 
 .displayOptions { float: right; padding-top: 0.5em; }
-.displayOptions form { position: absolute; top: 2.5em; right: 0; padding: 0.5em; width: 20em; z-index: 4; }
+.displayOptions form { position: absolute; top: 2.5em; right: 0; padding: 0.5em; width: 20em; z-index: 11; }
 .displayOptions form select { font-size: 0.9em; }
-.displayOptions .control { z-index: 3; cursor: pointer; padding: 0.3em 0.25em 0.25em; }
+.displayOptions .control { z-index: 10; cursor: pointer; padding: 0.3em 0.25em 0.25em; }
 .displayOptions .control a { font-weight: normal; }
 .displayOptions .control .ui-icon { float: right; }
 .displayOptions .buttons { text-align: right; }
