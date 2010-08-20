@@ -8,10 +8,9 @@ $prog = array_shift($argv);
 $svc = Connexions_Service::factory('Service_User');
 foreach ($argv as $userId)
 {
+    printf ("find: userId[ %s ]: ", $userId);
     $user = $svc->find($userId);
-    printf ("userId[ %s ]: %s\n",
-            $userId,
-            ($user instanceof Model_User
+    echo ($user instanceof Model_User
                 ? $user->debugDump()
-                : "NOT FOUND") );
+                : "NOT FOUND");
 }

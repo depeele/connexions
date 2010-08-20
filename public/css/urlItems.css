@@ -69,6 +69,7 @@
 
 .bookmarks .item { position: relative; z-index: 1; margin-bottom: 0.5em; border-top: 1px solid #cccccc; }
 
+.bookmarks .item:after, .pane .displayStyle fieldset.options .item:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; *display: inline-block; zoom: 1; *display: block; }
 .bookmarks .item .status, .pane .displayStyle fieldset.options .item .status { position: absolute; top: 0; left: 0; width: 20px; height: 100%; z-index: 2; }
 .bookmarks .item .status .checkbox, .pane .displayStyle fieldset.options .item .status .checkbox { border: 0; }
 .bookmarks .item .status .avatar, .bookmarks .item .status .favorite, .bookmarks .item .status .private, .pane .displayStyle fieldset.options .item .status .avatar, .pane .displayStyle fieldset.options .item .status .favorite, .pane .displayStyle fieldset.options .item .status .private { position: absolute; cursor: pointer; }

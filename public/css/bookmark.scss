@@ -29,6 +29,8 @@ $displaySortOffset: 5px;
 
 .bookmarks, .pane .displayStyle fieldset.options {
   .item {
+    @include clearFix();
+
     // Item status: Favorite, Private
     .status {
       position: absolute;

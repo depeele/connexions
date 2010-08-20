@@ -426,5 +426,14 @@ if ($showParts['minimized'])
 
    ?>
    </div><?php // data } ?>
-  </form>
+   </form><?php
+
+    // IE < 8 REQUIRES a clear here.  Otherwise, floats continue...
+    $browser = Connexions::getBrowser();
+    if ( ($browser->id === 'ie') && ($browser->major < 8) )
+    {
+        echo "<br class='clear' />";
+    }
+
+    ?>
  </li>
