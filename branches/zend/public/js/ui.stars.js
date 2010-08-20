@@ -141,7 +141,10 @@ $.widget("ui.stars", {
       fillTo(o.checked, false);
       self._disableCancel();
 
-      !o.forceSelect && self.callback(e, "star");
+      if (!o.forceSelect)
+      {
+        self.callback(e, "star");
+      }
 
       self._trigger('change', null, o.value);
     })
@@ -177,7 +180,10 @@ $.widget("ui.stars", {
       fillNone();
       self._disableCancel();
 
-      !o.forceSelect && self.callback(e, "cancel");
+      if (!o.forceSelect)
+      {
+        self.callback(e, "cancel");
+      }
     })
     .bind("mouseover.stars", function() {
       if(self._disableCancel()) {
@@ -210,7 +216,10 @@ $.widget("ui.stars", {
      * Finally, set up the Stars
      */
     this.select(o.value);
-    o.disabled && this.disable();
+    if (o.disabled)
+    {
+        this.disable();
+    }
 
   },
 
@@ -279,8 +288,14 @@ $.widget("ui.stars", {
   },
   callback: function(e, type) {
     var o = this.options;
-    o.callback && o.callback(this, type, o.value, e);
-    o.oneVoteOnly && !o.disabled && this.disable();
+    if (o.callback)
+    {
+        o.callback(this, type, o.value, e);
+    }
+    if (o.oneVoteOnly && !o.disabled)
+    {
+        this.disable();
+    }
   }
 });
 

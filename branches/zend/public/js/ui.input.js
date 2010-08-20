@@ -28,7 +28,7 @@ $.widget("ui.input", {
                                      * information in [:sibling
                                      *                  .ui-field-status]
                                      */
-        validation:     null,       /* The validation criteria
+        validation:     null        /* The validation criteria
                                      *      '!empty'
                                      *      function(value)
                                      *          returns {isValid:  true|false,

@@ -700,6 +700,87 @@ class Connexions
     }
 
     /*************************************************************************
+     * Browser detection
+     *
+     * More flexible than PHP's get_browser(), which, according to 
+     * documentation:
+     *      http://php.net/manual/en/function.get-browser.php
+     *
+     * and testing requires a detailed initialization file, e.g.:
+     *      http://browsers.garykeith.com/stream.asp?PHP_BrowsCapINI)
+     */
+
+    protected static $_browsers = array(
+        // shorthand-id => user agent regex a capture for version number.
+
+        /* Specific browsers
+        'saf'   => 'safari/([0-9\\.]+)',
+        'ch'    => 'chrome/([0-9\\.]+)',
+        'ff'    => 'firefox/([0-9\\.]+)',
+        'nav'   => 'navigator(?:[0-9]+)?/([0-9\\.]+)',
+        */
+
+        // Browser classes
+        'ie'    => 'msie ([0-9\\.]+)',
+        'wk'    => 'webkit/([0-9\\.]+)',
+        'gk'    => 'gecko/([0-9\\.]+)',
+
+        'op'    => 'opera[ /]([0-9\\.]+)',
+        'konq'  => 'konqueror/([0-9\\.]+)',
+
+        // Nearly all call themselves 'Mozilla/*'
+        'moz'   => 'mozilla/([0-9\\.]+)',
+
+        'other' => null,
+    );
+
+    protected static $_browser  = null;
+
+    /** @brief  Retrieve the name and version of the current user agent.
+     *
+     *  @return An array containing the name and version.
+     */
+    public static function getBrowser()
+    {
+        if (self::$_browser !== null)
+            return self::$_browser;
+
+        $data      = array('id'      => null,
+                           'version' => null,
+                           'major'   => null,
+                           'minor'   => null,
+                           'extra'   => null,
+        );
+
+        $userAgent = ( isset( $_SERVER['HTTP_USER_AGENT'] )
+                        ? strtolower( $_SERVER['HTTP_USER_AGENT'] )
+                        : '');
+
+        foreach (self::$_browsers as $id => $idPattern)
+        {
+            if (preg_match('#'. $idPattern .'#i', $userAgent, $match))
+            {
+                /* We have identified the browser type, and should have a
+                 * version number in $match[1];
+                 */
+                $data['id']      = $id;
+                $data['version'] = $match[1];
+
+                $version = explode('.', $match[1]);
+
+                $data['major'] = array_shift($version);
+                $data['minor'] = array_shift($version);
+                $data['extra'] = implode('.', $version);
+                break;
+            }
+        }
+
+        self::$_browser = (object)$data;
+
+        return self::$_browser;
+    }
+
+    /*************************************************************************
      * Protected helpers
      *
      */

@@ -50,120 +50,6 @@
     }
 
     /*************************************************************************
-     * Dynamic script inclusion -- Based upon jquery-include.js
-     *
-     * Note: This modifies jQuery.ready to wait for any scripts that have been
-     *       queued for dynamic loading.
-     */
-
-    if (false) {
-    /* Overload jQuery's onDomReady
-     *
-     * Note: This MUST be BEFORE we redefine $.ready() so we can remove the
-     *       current jQuery.ready event listener.
-     */
-    if ($.browser.mozilla || $.browser.opera)
-    {
-        document.removeEventListener('DOMContentLoaded', $.ready, false);
-        document.addEventListener('DOMContentLoaded', function(){ $.ready(); },
-                                  false);
-    }
-    $.event.remove(window, 'load', $.ready);
-    $.event.add(window, 'load', function(){ $.ready(); });
-
-    function scriptLoaded(script, url)
-    {
-        $.includeScripts[url] = true;
-
-        // Invoke all callbacks that we have queued for this script
-        $.each($.includeCallbacks[url], function(idex, onload) {
-            onload.call(script);
-        });
-    }
-
-    $.extend({
-        includeScripts:     {}, // by url: false | $(script)
-        includeCallbacks:   {}, // by url: array( onload callbacks )
-        includeTimer:       null,
-        include: function(url, onload) {
-            if ($.includeScripts[url] !== undefined)
-            {
-                if (typeof onload === 'function')
-                {
-                    if ($.includeScripts[url] !== false)
-                    {
-                        // Already loaded, invoke the callback immediately
-                        onload($.includeScripts[url]);
-                    }
-                    else
-                    {
-                        // Not yet loaded, push the callback on our list
-                        $.includeCallbacks[url].push(onload);
-                    }
-                }
-                return;
-            }
-
-            var script                = document.createElement('script');
-            script.type               = 'text/javascript';
-            script.onload             = function() {
-                scriptLoaded(script, url);
-            };
-            script.onreadystatechange = function() {
-                if ( (script.readyState !== 'complete') &&
-                     (script.readyState !== 'loaded') )
-                {
-                    return;
-                }
-
-                scriptLoaded(script, url);
-            };
-            script.src                = url;
-
-            // Mark this script as not-yet-loaded
-            $.includeScripts[url]     = false;
-            $.includeCallbacks[url] = [];
-            if (typeof onload === 'function')
-            {
-                $.includeCallbacks[url].push(onload);
-            }
-
-            // Put the script into the DOM -- loading begins now
-            document.getElementsByTagName('head')[0].appendChild(script);
-        },
-
-        /* Replace jQuery.ready to wait for included scripts to be loaded */
-        _ready: $.ready,
-        ready: function() {
-            var isReady = true;
-
-            // See if all included scripts have loaded
-            $.each($.includeScripts, function(url, state) {
-                if (state === false)
-                {
-                    return (isReady = false); // Stop traversal
-                }
-            });
-
-            if (isReady)
-            {
-                /* All included scripts have loaded, invoke the original
-                 * jQuery.ready()
-                 */
-                $._ready.apply($, arguments);
-            }
-            else
-            {
-                // NOT all included script are loaded, wait a bit...
-                setTimeout($.ready, 10);
-            }
-        }
-    });
-
-    }
-    /*************************************************************************/
-
-    /*************************************************************************
      * Overlay any element.
      *
      */
@@ -367,88 +253,89 @@ jQuery.cookie = function(name, value, options) {
  * @desc Fixes all PNG's within div with class examples, provides blank gif for input with png
  * --------------------------------------------------------------------
  */
-/*jslint nomen: false, laxbreak: true */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, navigator:false */
 
 (function($) {
 
 jQuery.fn.pngFix = function(settings) {
 
-	// Settings
-	settings = jQuery.extend({
-		blankgif: 'blank.gif'
-	}, settings);
+    // Settings
+    settings = jQuery.extend({
+        blankgif: 'blank.gif'
+    }, settings);
 
-	var ie55 = (navigator.appName == "Microsoft Internet Explorer" && parseInt(navigator.appVersion) == 4 && navigator.appVersion.indexOf("MSIE 5.5") != -1);
-	var ie6 = (navigator.appName == "Microsoft Internet Explorer" && parseInt(navigator.appVersion) == 4 && navigator.appVersion.indexOf("MSIE 6.0") != -1);
+    var ie55 = (navigator.appName === "Microsoft Internet Explorer" && parseInt(navigator.appVersion) === 4 && navigator.appVersion.indexOf("MSIE 5.5") !== -1);
+    var ie6 = (navigator.appName === "Microsoft Internet Explorer" && parseInt(navigator.appVersion) === 4 && navigator.appVersion.indexOf("MSIE 6.0") !== -1);
 
-	if (jQuery.browser.msie && (ie55 || ie6)) {
+    if (jQuery.browser.msie && (ie55 || ie6)) {
 
-		//fix images with png-source
-		jQuery(this).find("img[src$=.png]").each(function() {
+        //fix images with png-source
+        jQuery(this).find("img[src$=.png]").each(function() {
 
-			jQuery(this).attr('width',jQuery(this).width());
-			jQuery(this).attr('height',jQuery(this).height());
+            jQuery(this).attr('width',jQuery(this).width());
+            jQuery(this).attr('height',jQuery(this).height());
 
-			var prevStyle = '';
-			var strNewHTML = '';
-			var imgId = (jQuery(this).attr('id')) ? 'id="' + jQuery(this).attr('id') + '" ' : '';
-			var imgClass = (jQuery(this).attr('class')) ? 'class="' + jQuery(this).attr('class') + '" ' : '';
-			var imgTitle = (jQuery(this).attr('title')) ? 'title="' + jQuery(this).attr('title') + '" ' : '';
-			var imgAlt = (jQuery(this).attr('alt')) ? 'alt="' + jQuery(this).attr('alt') + '" ' : '';
-			var imgAlign = (jQuery(this).attr('align')) ? 'float:' + jQuery(this).attr('align') + ';' : '';
-			var imgHand = (jQuery(this).parent().attr('href')) ? 'cursor:hand;' : '';
-			if (this.style.border) {
-				prevStyle += 'border:'+this.style.border+';';
-				this.style.border = '';
-			}
-			if (this.style.padding) {
-				prevStyle += 'padding:'+this.style.padding+';';
-				this.style.padding = '';
-			}
-			if (this.style.margin) {
-				prevStyle += 'margin:'+this.style.margin+';';
-				this.style.margin = '';
-			}
-			var imgStyle = (this.style.cssText);
+            var prevStyle = '';
+            var strNewHTML = '';
+            var imgId = (jQuery(this).attr('id')) ? 'id="' + jQuery(this).attr('id') + '" ' : '';
+            var imgClass = (jQuery(this).attr('class')) ? 'class="' + jQuery(this).attr('class') + '" ' : '';
+            var imgTitle = (jQuery(this).attr('title')) ? 'title="' + jQuery(this).attr('title') + '" ' : '';
+            var imgAlt = (jQuery(this).attr('alt')) ? 'alt="' + jQuery(this).attr('alt') + '" ' : '';
+            var imgAlign = (jQuery(this).attr('align')) ? 'float:' + jQuery(this).attr('align') + ';' : '';
+            var imgHand = (jQuery(this).parent().attr('href')) ? 'cursor:hand;' : '';
+            if (this.style.border) {
+                prevStyle += 'border:'+this.style.border+';';
+                this.style.border = '';
+            }
+            if (this.style.padding) {
+                prevStyle += 'padding:'+this.style.padding+';';
+                this.style.padding = '';
+            }
+            if (this.style.margin) {
+                prevStyle += 'margin:'+this.style.margin+';';
+                this.style.margin = '';
+            }
+            var imgStyle = (this.style.cssText);
 
-			strNewHTML += '<span '+imgId+imgClass+imgTitle+imgAlt;
-			strNewHTML += 'style="position:relative;white-space:pre-line;display:inline-block;background:transparent;'+imgAlign+imgHand;
-			strNewHTML += 'width:' + jQuery(this).width() + 'px;' + 'height:' + jQuery(this).height() + 'px;';
-			strNewHTML += 'filter:progid:DXImageTransform.Microsoft.AlphaImageLoader' + '(src=\'' + jQuery(this).attr('src') + '\', sizingMethod=\'scale\');';
-			strNewHTML += imgStyle+'"></span>';
-			if (prevStyle != ''){
-				strNewHTML = '<span style="position:relative;display:inline-block;'+prevStyle+imgHand+'width:' + jQuery(this).width() + 'px;' + 'height:' + jQuery(this).height() + 'px;'+'">' + strNewHTML + '</span>';
-			}
+            strNewHTML += '<span '+imgId+imgClass+imgTitle+imgAlt;
+            strNewHTML += 'style="position:relative;white-space:pre-line;display:inline-block;background:transparent;'+imgAlign+imgHand;
+            strNewHTML += 'width:' + jQuery(this).width() + 'px;' + 'height:' + jQuery(this).height() + 'px;';
+            strNewHTML += 'filter:progid:DXImageTransform.Microsoft.AlphaImageLoader' + '(src=\'' + jQuery(this).attr('src') + '\', sizingMethod=\'scale\');';
+            strNewHTML += imgStyle+'"></span>';
+            if (prevStyle !== ''){
+                strNewHTML = '<span style="position:relative;display:inline-block;'+prevStyle+imgHand+'width:' + jQuery(this).width() + 'px;' + 'height:' + jQuery(this).height() + 'px;'+'">' + strNewHTML + '</span>';
+            }
 
-			jQuery(this).hide();
-			jQuery(this).after(strNewHTML);
+            jQuery(this).hide();
+            jQuery(this).after(strNewHTML);
 
-		});
+        });
 
-		// fix css background pngs
-		jQuery(this).find("*").each(function(){
-			var bgIMG = jQuery(this).css('background-image');
-			if(bgIMG.indexOf(".png")!=-1){
-				var iebg = bgIMG.split('url("')[1].split('")')[0];
-				jQuery(this).css('background-image', 'none');
-				jQuery(this).get(0).runtimeStyle.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" + iebg + "',sizingMethod='scale')";
-			}
-		});
-		
-		//fix input with png-source
-		jQuery(this).find("input[src$=.png]").each(function() {
-			var bgIMG = jQuery(this).attr('src');
-			jQuery(this).get(0).runtimeStyle.filter = 'progid:DXImageTransform.Microsoft.AlphaImageLoader' + '(src=\'' + bgIMG + '\', sizingMethod=\'scale\');';
-   		jQuery(this).attr('src', settings.blankgif)
-		});
-	
-	}
-	
-	return jQuery;
+        // fix css background pngs
+        jQuery(this).find("*").each(function(){
+            var bgIMG = jQuery(this).css('background-image');
+            if(bgIMG.indexOf(".png") !== -1){
+                var iebg = bgIMG.split('url("')[1].split('")')[0];
+                jQuery(this).css('background-image', 'none');
+                jQuery(this).get(0).runtimeStyle.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" + iebg + "',sizingMethod='scale')";
+            }
+        });
+        
+        //fix input with png-source
+        jQuery(this).find("input[src$=.png]").each(function() {
+            var bgIMG = jQuery(this).attr('src');
+            jQuery(this).get(0).runtimeStyle.filter = 'progid:DXImageTransform.Microsoft.AlphaImageLoader' + '(src=\'' + bgIMG + '\', sizingMethod=\'scale\');';
+            jQuery(this).attr('src', settings.blankgif);
+        });
+    
+    }
+    
+    return jQuery;
 
 };
 
-})(jQuery);
+}(jQuery));
 /** @file
  *
  *  Provide a sprite-based checkbox.
@@ -784,7 +671,7 @@ $.widget("ui.input", {
                                      * information in [:sibling
                                      *                  .ui-field-status]
                                      */
-        validation:     null,       /* The validation criteria
+        validation:     null        /* The validation criteria
                                      *      '!empty'
                                      *      function(value)
                                      *          returns {isValid:  true|false,
@@ -1309,7 +1196,10 @@ $.widget("ui.stars", {
       fillTo(o.checked, false);
       self._disableCancel();
 
-      !o.forceSelect && self.callback(e, "star");
+      if (!o.forceSelect)
+      {
+        self.callback(e, "star");
+      }
 
       self._trigger('change', null, o.value);
     })
@@ -1345,7 +1235,10 @@ $.widget("ui.stars", {
       fillNone();
       self._disableCancel();
 
-      !o.forceSelect && self.callback(e, "cancel");
+      if (!o.forceSelect)
+      {
+        self.callback(e, "cancel");
+      }
     })
     .bind("mouseover.stars", function() {
       if(self._disableCancel()) {
@@ -1378,7 +1271,10 @@ $.widget("ui.stars", {
      * Finally, set up the Stars
      */
     this.select(o.value);
-    o.disabled && this.disable();
+    if (o.disabled)
+    {
+        this.disable();
+    }
 
   },
 
@@ -1447,8 +1343,14 @@ $.widget("ui.stars", {
   },
   callback: function(e, type) {
     var o = this.options;
-    o.callback && o.callback(this, type, o.value, e);
-    o.oneVoteOnly && !o.disabled && this.disable();
+    if (o.callback)
+    {
+        o.callback(this, type, o.value, e);
+    }
+    if (o.oneVoteOnly && !o.disabled)
+    {
+        this.disable();
+    }
   }
 });
 
@@ -5408,6 +5310,9 @@ $.widget("connexions.bookmark", {
             open:       function(event, ui) {
                 $form.find('form').bookmarkPost({
                     saved:      function(event, data) {
+                        /* Update the presented bookmark with the newly saved
+                         * data.
+                         */
                         var a   = 1;
                     },
                     complete:   function() {
