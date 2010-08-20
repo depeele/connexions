@@ -75,7 +75,7 @@ if (! @is_array($this->postInfo))
       <label for='name'>Bookmark name / title</label>
       <input type='text' class='text required' autocomplete='off'
              name='name' value='<?= $this->postInfo['name'] ?>'
-                      tabindex='2' />
+                      tabindex='1' />
      </div>
      <div class='field item-url<?= (! @empty($this->postInfo['url'])
                                          ? ' click-to-edit'
@@ -83,7 +83,7 @@ if (! @is_array($this->postInfo))
       <label for='url'>URL to bookmark</label>
       <input type='text' class='text required' autocomplete='off'
              name='url'  value='<?= $this->postInfo['url'] ?>'
-                      tabindex='1' />
+                      tabindex='2' />
      </div>
      <div class='field item-description'>
       <label for='description'>Description / Notes for this bookmark</label>

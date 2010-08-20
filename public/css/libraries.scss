@@ -119,9 +119,10 @@ pre,code,kbd,samp,tt {
 }
 
 // float clear
-.clear {
-  display: block;
-  height: 0;
-  clear: both;
-  visibility: hidden;
+br.clear {
+  clear:        both;
+  display:      block;
+  height:       0;
+  line-height:  0px;
+  //visibility:   hidden;
 }

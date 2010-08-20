@@ -852,6 +852,12 @@ $.widget("ui.input", {
 
                 opts.$label.show();
             }
+            else
+            {
+                opts.$label.hide();
+
+                self.element.removeClass('ui-state-empty');
+            }
         };
 
         self.element
@@ -987,7 +993,9 @@ $.widget("ui.input", {
 
     val: function(newVal)
     {
-        return this.element.val();
+        return (newVal === undefined
+                    ? this.element.val()
+                    : this.element.val( newVal ));
     },
 
     validate: function()
@@ -1021,7 +1029,11 @@ $.widget("ui.input", {
             newState = ((this.val().length > 0)
                                     ? true
                                     : false);
-            msg.push('Cannot be empty');
+
+            if (! newState)
+            {
+                msg.push('Cannot be empty');
+            }
         }
 
         // Set the new state
@@ -3903,6 +3915,14 @@ $.widget("connexions.bookmarkPost", {
         }
 
         /********************************
+         * Hold an indicator as to wheter
+         * input was automatically
+         * generated / inserted or
+         * the user has typed...
+         */
+        self.auto         = {};
+
+        /********************************
          * Locate the pieces
          *
          */
@@ -4125,6 +4145,26 @@ $.widget("connexions.bookmarkPost", {
                .unbind('validationChange');
         };
 
+        var _url_change = function(e, data) {
+            var $el = $(this);
+            if ($el.hasClass('ui-state-valid'))
+            {
+                /* We have a valid URL.  If any of name, description, or tags
+                 * are empty, perform a HEAD request to fill in target-based
+                 * suggestions.
+                 */
+                if ( ((self.auto.name        !== false)     ||
+                      (self.$name.val().length        < 1)) ||
+                     ((self.auto.description !== false)     ||
+                      (self.$description.val().length < 1)) ||
+                     ((self.auto.tags        !== false)     ||
+                      (self.$tags.val().length        < 1)) )
+                {
+                    self._headers(self.$url.val());
+                }
+            }
+        };
+
         var _validate_form  = function() {
             var isValid     = true;
 
@@ -4148,6 +4188,13 @@ $.widget("connexions.bookmarkPost", {
             }
         };
 
+        var _mark_userInput = function() {
+            var $el = $(this);
+
+            self.auto[ $el.attr('name') ] = ($el.val().length > 0
+                                                ? false       // user supplied
+                                                : undefined); // now empty
+        };
 
         /**********************************************************************
          * bind events
@@ -4161,6 +4208,14 @@ $.widget("connexions.bookmarkPost", {
 
         self.$save.bind('click.bookmarkPost',   _save_click);
         self.$cancel.bind('click.bookmarkPost', _cancel_click);
+
+        self.$url.bind('validation_change.bookmarkPost',
+                                                _url_change);
+
+        self.$name.bind('keydown.bookmarkPost', _mark_userInput);
+        self.$description.bind('keydown.bookmarkPost', _mark_userInput);
+        self.$tags.bind('keydown.bookmarkPost', _mark_userInput);
+
 
         _validate_form();
     },
@@ -4306,6 +4361,131 @@ $.widget("connexions.bookmarkPost", {
             },
             complete:   function(req, textStatus) {
                 self.element.unmask();
+            }
+         });
+    },
+
+    /** @brief  Callback for _headers() to process retrieved site headers.
+     *  @param  headers     An object containing title and meta items from
+     *                      the sites <head> section.
+     *
+     */
+    _headers_success: function(headers) {
+        var self    = this;
+
+        if ( self.auto.name || (self.$name.val().length < 1))
+        {
+            // See if we can find the title
+            if (headers.title.length > 0)
+            {
+                self.$name.val( headers.title );
+                self.$name.trigger('blur');
+                self.auto.name = true;
+            }
+        }
+
+        if ( self.auto.description || (self.$description.val().length < 1))
+        {
+            // See if there is a '<meta name="description">'
+            var $desc   = headers.meta.filter('meta[name=description]');
+            if ($desc.length > 0)
+            {
+                self.$description.val( $desc.attr('content') );
+                self.$description.trigger('blur');
+                self.auto.description = true;
+            }
+        }
+
+        if ( self.auto.tags || (self.$tags.val().length < 1))
+        {
+            // See if there is a '<meta name="keywords">'
+            var $keywords   = headers.meta.filter('meta[name=keywords]');
+            if ($keywords.length > 0)
+            {
+                self.$tags.val( $keywords.attr('content') );
+                self.$tags.trigger('blur');
+                self.auto.tags = true;
+            }
+        }
+    },
+
+    /** @brief  Make a request to our server for the retrieval of 'title' and
+     *          'meta' items from within the <head> element of the web page at
+     *          the given URL.
+     *  @param  url     The desired URL.
+     *  @param  callback    The callback to invoke upon successful retrieval:
+     *                          callback( headers )
+     */
+    _headers: function(url, callback) {
+        var self    = this;
+        var opts    = self.options;
+
+        if (self.headersUrl === url)
+        {
+            // We've already done a check for this URL.
+            return;
+        }
+        self.headersUrl = url;
+
+
+        // Generate a JSON-RPC to perform the update.
+        var rpc = {
+            version: opts.jsonRpc.version,
+            id:      opts.rpcId++,
+            method:  'util.getHead',
+            params:  {
+                url:        url,
+                keepTags:   'title,meta'
+            }
+        };
+
+        // Perform a JSON-RPC call to update this item
+        $.ajax({
+            url:        opts.jsonRpc.target,
+            type:       opts.jsonRpc.transport,
+            dataType:   'json',
+            data:       JSON.stringify(rpc),
+            success:    function(data, textStatus, req) {
+                if (data.error !== null)
+                {
+                    /*
+                    self._status(false,
+                                 'URL header retrieval',
+                                 data.error.message);
+                    // */
+
+                    return;
+                }
+
+                if (data.result === null)
+                {
+                    return;
+                }
+
+                var $head   = $('<div />');
+                $head.html( data.result.html );
+
+                // Now, pull out all title and meta items
+                var headers = {
+                    title:  $head.find('title').text(),
+                    meta:   $head.find('meta')
+                };
+
+		        if ($.isFunction(callback))
+                {
+			        callback(headers);
+		        }
+                else
+                {
+                    self._headers_success(headers);
+                }
+            },
+            error:      function(req, textStatus, err) {
+                // :TODO: "Error" notification / invalid URL??
+                //self.headersUrl = null;
+            },
+            complete:   function(req, textStatus) {
+                // :TODO: Some indication of completion?
             }
          });
     },
