@@ -12,14 +12,14 @@ class IndexController extends Connexions_Controller_Action
     // Bootstrap resources to make directly available
     public  $dependencies = array('db','layout');
 
-    protected   $_url       = null;
-    protected   $_owner     = null;
-    protected   $_tags      = null;
+    protected   $_url           = null;
+    protected   $_owner         = null;
+    protected   $_tags          = null;
 
-    public      $contexts   = array(
-                                'index' => array('partial', 'json',
-                                                 'rss',     'atom'),
-                              );
+    public      $contexts       = array(
+                                    'index' => array('partial', 'json',
+                                                     'rss',     'atom'),
+                                );
 
     /** @brief  Index/Get/Read/View action.
      *
@@ -112,13 +112,15 @@ class IndexController extends Connexions_Controller_Action
          *
          * Adjust the URL to reflect the validated 'owner' and 'tags'
          */
-        $this->_url = $request->getBasePath()
-                    . '/' .($this->_owner instanceof Model_User
-                            ? $this->_owner->name
-                            : 'bookmarks')
-                    . '/' .(count($this->_tags) > 0
-                            ? $this->_tags .'/'
-                            : '');
+        $this->_baseUrl .= ($this->_owner instanceof Model_User
+                                ? $this->_owner->name
+                                : 'bookmarks')
+                        .  '/';
+
+        $this->_url      = $this->_baseUrl
+                         . (count($this->_tags) > 0
+                                ? $this->_tags .'/'
+                                : '');
 
         /***************************************************************
          * Set the view variables required for all views/layouts.
@@ -292,6 +294,8 @@ class IndexController extends Connexions_Controller_Action
                                            View_Helper_HtmlSidebar &$sidebar)
     {
         $config  = $sidebar->getPane($pane);
+
+        $config['pageBaseUrl'] = $this->_baseUrl;
 
         $perPage = ((int)$config['perPage'] > 0
                         ? (int)$config['perPage']

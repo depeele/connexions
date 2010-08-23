@@ -15,6 +15,15 @@
 class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 {
     static public   $defaults           = array(
+        'pageBaseUrl'       => null,        /* The base URL of the containing page
+                                             * used to set the cookie path for
+                                             * the attached Javascript
+                                             * 'cloudPane' which, in turn, effects
+                                             * the cookie path passed to the
+                                             * contained 'dropdownForm'
+                                             * presneting Display Options.
+                                             */
+
         'displayStyle'      => self::STYLE_REGULAR,
         'includeScript'     => true,
         'ulCss'             => 'bookmarks', // view/scripts/list.phtml
@@ -151,6 +160,30 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         parent::__construct($config);
     }
 
+    /** @brief  Over-ride to ensure that if incoming configuration has BOTH
+     *          'namespace' AND 'pageBaseUrl', the 'pageBaseUrl' is set first
+     *          (since setNamespace() makes use of it).
+     *  @param  config  A configuration array that may include:
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function populate(array $config)
+    {
+        // Ensure that 'pageBaseUrl' is set FIRST
+        foreach (array('pageBaseUrl') as $key)
+        {
+            if (isset($config[$key]))
+            {
+                Connexions::log("View_Helper_HtmlBookmarks::populate(): "
+                                . "set 'pageBaseUrl' first");
+
+                $this->__set($key, $config[$key]);
+            }
+        }
+
+        return parent::populate($config);
+    }
+
     /** @brief  Configure and retrive this helper instance OR, if no
      *          configuration is provided, perform a render.
      *  @param  config  A configuration array (see populate());
@@ -204,8 +237,13 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
                                 'groups'        => self::$styleGroups
                           );
 
+            if ($this->pageBaseUrl !== null)
+            {
+                $dsConfig['cookiePath'] = $this->pageBaseUrl;
+            }
 
-            /*
+
+            // /*
             Connexions::log("View_Helper_Bookmarks::setNamespace(): "
                             . "new namespace: config[ %s ]",
                             Connexions::varExport($dsConfig));

@@ -15,6 +15,15 @@
 class View_Helper_HtmlUsers extends View_Helper_Users
 {
     static public   $defaults               = array(
+        'pageBaseUrl'       => null,        /* The base URL of the containing page
+                                             * used to set the cookie path for
+                                             * the attached Javascript
+                                             * 'cloudPane' which, in turn, effects
+                                             * the cookie path passed to the
+                                             * contained 'dropdownForm'
+                                             * presneting Display Options.
+                                             */
+
         'displayStyle'      => self::STYLE_REGULAR,
         'includeScript'     => true,
         'ulCss'             => 'users',     // view/scripts/list.phtml
@@ -131,6 +140,27 @@ class View_Helper_HtmlUsers extends View_Helper_Users
         parent::__construct($config);
     }
 
+    /** @brief  Over-ride to ensure that if incoming configuration has BOTH
+     *          'namespace' AND 'pageBaseUrl', the 'pageBaseUrl' is set first
+     *          (since setNamespace() makes use of it).
+     *  @param  config  A configuration array that may include:
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function populate(array $config)
+    {
+        // Ensure that 'pageBaseUrl' is set FIRST
+        foreach (array('pageBaseUrl') as $key)
+        {
+            if (isset($config[$key]))
+            {
+                $this->__set($key, $config[$key]);
+            }
+        }
+
+        return parent::populate($config);
+    }
+
     /** @brief  Configure and retrive this helper instance OR, if no
      *          configuration is provided, perform a render.
      *  @param  config  A configuration array (see populate());
@@ -174,6 +204,11 @@ class View_Helper_HtmlUsers extends View_Helper_Users
                                 'definition'    => self::$displayStyles,
                                 'groups'        => self::$styleGroups
                           );
+
+            if ($this->pageBaseUrl !== null)
+            {
+                $dsConfig['cookiePath'] = $this->pageBaseUrl;
+            }
 
             // /*
             Connexions::log("View_Helper_HtmlUsers::setNamespace(): "

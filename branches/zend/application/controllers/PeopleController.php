@@ -10,15 +10,22 @@ class PeopleController extends Connexions_Controller_Action
 {
     // Tell Connexions_Controller_Action_Helper_ResourceInjector which
     // Bootstrap resources to make directly available
-    public  $dependencies = array('db','layout');
+    public  $dependencies       = array('db','layout');
 
-    protected   $_url       = null;
-    protected   $_tags      = null;
+    protected   $_url           = null;
+    protected   $_tags          = null;
 
-    public      $contexts   = array(
-                                'index' => array('partial', 'json',
-                                                 'rss',     'atom'),
-                              );
+    public      $contexts       = array(
+                                    'index' => array('partial', 'json',
+                                                     'rss',     'atom'),
+                                );
+
+    public function init()
+    {
+        parent::init();
+
+        $this->_baseUrl .= 'people/';
+    }
 
     /** @brief  Index/Get/Read/View action.
      *
@@ -57,11 +64,10 @@ class PeopleController extends Connexions_Controller_Action
          *
          * Adjust the URL to reflect the validated 'owner' and 'tags'
          */
-        $this->_url = $request->getBasePath()
-                    . '/people'
-                    . '/' .(count($this->_tags) > 0
-                            ? $this->_tags .'/'
-                            : '');
+        $this->_url         = $this->_baseUrl
+                            . (count($this->_tags) > 0
+                                    ? $this->_tags .'/'
+                                    : '');
 
         /***************************************************************
          * Set the view variables required for all views/layouts.
@@ -180,6 +186,9 @@ class PeopleController extends Connexions_Controller_Action
                                            View_Helper_HtmlSidebar &$sidebar)
     {
         $config  = $sidebar->getPane($pane);
+
+        $config['pageBaseUrl'] = $this->_baseUrl;
+
 
         $perPage = ((int)$config['perPage'] > 0
                         ? (int)$config['perPage']

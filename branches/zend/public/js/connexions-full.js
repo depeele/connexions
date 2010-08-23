@@ -1745,6 +1745,7 @@ $.widget("connexions.dropdownForm", {
 
     options: {
         // Defaults
+        cookiePath: null,   // Cookie path (defaults to window.location.pathname)
         namespace:  null,   // Form/cookie namespace
         form:       null,   // Our parent/controlling form
         groups:     null    // Display style groups.
@@ -1791,7 +1792,13 @@ $.widget("connexions.dropdownForm", {
          * this form with a CSS class of 'ui-optionGroups'.
          * connexions.optionGroups handler for them.
          */
-        self.element.find('.ui-optionGroups').optionGroups();
+        self.element
+                .find('.ui-optionGroups')
+                    .optionGroups({
+                        cookiePath: opts.cookiePath,
+                        namespace:  opts.namespace,
+                        form:       self.$form
+                    });
 
         self.$form.hide();
 
@@ -1804,6 +1811,7 @@ $.widget("connexions.dropdownForm", {
      */
     _bindEvents: function() {
         var self        = this;
+        var opts        = self.options;
         
 
         // Handle a click outside of the display options form.
@@ -1878,7 +1886,11 @@ $.widget("connexions.dropdownForm", {
         var _form_submit        = function(e) {
             // Serialize all form values to an array...
             var settings    = self.$form.serializeArray();
-            var cookieOpts  = {path: window.location.pathname};
+            var cookieOpts  = {
+                path: (opts.cookiePath === null
+                        ? window.location.pathname
+                        : opts.cookiePath)
+            };
             //e.preventDefault();
 
             if (window.location.protocol === 'https')
@@ -2112,7 +2124,7 @@ $.widget("connexions.dropdownForm", {
  *      ui.widget.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
-/*global jQuery:false, document:false */
+/*global jQuery:false, document:false, window:false */
 
 (function($) {
 
@@ -2120,6 +2132,7 @@ $.widget("connexions.optionGroups", {
     version: "0.1.1",
     options: {
         // Defaults
+        cookiePath: null,   // Cookie path (defaults to window.location.pathname)
         namespace:  null,   // Form/cookie namespace
         form:       null    // Our parent/controlling form
     },
@@ -2245,6 +2258,7 @@ $.widget("connexions.optionGroups", {
      */
     _bindEvents: function() {
         var self            = this;
+        var opts            = this.options;
         var $groups         = self.element.find('ul.groups');
         var $groupFieldset  = self.element.find('fieldset:first');
         var $groupControl   = $groups.find('.control:first');
@@ -2297,6 +2311,16 @@ $.widget("connexions.optionGroups", {
 
         // Bind to submit.
         var _form_submit        = function(e) {
+            var cookieOpts  = {
+                path: (opts.cookiePath === null
+                        ? window.location.pathname
+                        : opts.cookiePath)
+            };
+            if (window.location.protocol === 'https')
+            {
+                cookieOpts.secure = true;
+            }
+
             /* Remove all cookies directly identifying options.  This is
              * because, when an option is NOT selected, it is not included so,
              * to remove a previously selected options, we must first remove
@@ -2308,7 +2332,7 @@ $.widget("connexions.optionGroups", {
                         this.name, $(this).attr('name'));
                 // */
 
-                $.cookie( $(this).attr('name'), null );
+                $.cookie( $(this).attr('name'), null, cookieOpts );
             });
 
             /* If the selected display group is NOT 'custom', disable
@@ -2349,8 +2373,7 @@ $.widget("connexions.optionGroups", {
                 .bind('click.uioptiongroups',  _group_select);
 
         // Bind to submit.
-        self.options.form
-                .bind('submit.uioptiongroups', _form_submit);
+        opts.form.bind('submit.uioptiongroups', _form_submit);
     },
 
     /************************
@@ -3311,7 +3334,9 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
                 function(e, info) {
                     var $field  = $(this).find('.field.highlightCount');
 
-                    if (info.group === 'cloud')
+                    if ( (info       === undefined) ||
+                         (info.group === undefined) ||
+                         (info.group === 'cloud') )
                     {
                         // Enable the 'highlightCount'
                         $field.removeClass('ui-state-disabled');

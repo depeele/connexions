@@ -53,7 +53,7 @@
  *      ui.widget.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
-/*global jQuery:false, document:false */
+/*global jQuery:false, document:false, window:false */
 
 (function($) {
 
@@ -61,6 +61,7 @@ $.widget("connexions.optionGroups", {
     version: "0.1.1",
     options: {
         // Defaults
+        cookiePath: null,   // Cookie path (defaults to window.location.pathname)
         namespace:  null,   // Form/cookie namespace
         form:       null    // Our parent/controlling form
     },
@@ -186,6 +187,7 @@ $.widget("connexions.optionGroups", {
      */
     _bindEvents: function() {
         var self            = this;
+        var opts            = this.options;
         var $groups         = self.element.find('ul.groups');
         var $groupFieldset  = self.element.find('fieldset:first');
         var $groupControl   = $groups.find('.control:first');
@@ -238,6 +240,16 @@ $.widget("connexions.optionGroups", {
 
         // Bind to submit.
         var _form_submit        = function(e) {
+            var cookieOpts  = {
+                path: (opts.cookiePath === null
+                        ? window.location.pathname
+                        : opts.cookiePath)
+            };
+            if (window.location.protocol === 'https')
+            {
+                cookieOpts.secure = true;
+            }
+
             /* Remove all cookies directly identifying options.  This is
              * because, when an option is NOT selected, it is not included so,
              * to remove a previously selected options, we must first remove
@@ -249,7 +261,7 @@ $.widget("connexions.optionGroups", {
                         this.name, $(this).attr('name'));
                 // */
 
-                $.cookie( $(this).attr('name'), null );
+                $.cookie( $(this).attr('name'), null, cookieOpts );
             });
 
             /* If the selected display group is NOT 'custom', disable
@@ -290,8 +302,7 @@ $.widget("connexions.optionGroups", {
                 .bind('click.uioptiongroups',  _group_select);
 
         // Bind to submit.
-        self.options.form
-                .bind('submit.uioptiongroups', _form_submit);
+        opts.form.bind('submit.uioptiongroups', _form_submit);
     },
 
     /************************

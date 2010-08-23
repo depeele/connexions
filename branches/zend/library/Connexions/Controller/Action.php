@@ -11,12 +11,15 @@ class Connexions_Controller_Action extends Zend_Controller_Action
     protected   $_request   = null;
     protected   $_viewer    = null;
     protected   $_format    = 'html';
+    protected   $_baseUrl   = null;     // The page's base URL minus any
+                                        // differentiating parameters
 
     public function init()
     {
         /* Initialize action controller here */
         $this->_viewer  =& Zend_Registry::get('user');
         $this->_request =& $this->getRequest();
+        $this->_baseUrl =  $this->_request->getBasePath() .'/';
 
         if (isset($this->contexts))
         {
@@ -283,6 +286,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
 
         // Additional view variables for the HTML view.
         $this->view->main = array(
+            'pageBaseUrl'   => $this->_baseUrl,
             'namespace'     => $namespace,
             'viewer'        => &$this->_viewer,
 
@@ -332,6 +336,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                      * render the tag cloud or list.
                      *
                      */
+                    'pageBaseUrl'   => $this->_baseUrl,
                     'namespace'     => 'sbTags',
                     'title'         => 'Tags',
                     'weightName'    => 'userItemCount',
@@ -361,6 +366,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                      * render the people cloud or list.
                      *
                      */
+                    'pageBaseUrl'   => $this->_baseUrl,
                     'namespace'     => 'sbPeople',
                     'title'         => 'People',
                     'weightName'    => 'userItemCount',
@@ -391,6 +397,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                      * render the item cloud or list.
                      *
                      */
+                    'pageBaseUrl'   => $this->_baseUrl,
                     'namespace'     => 'sbItems',
                     'title'         => 'Items',
 

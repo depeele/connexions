@@ -23,6 +23,7 @@ $.widget("connexions.dropdownForm", {
 
     options: {
         // Defaults
+        cookiePath: null,   // Cookie path (defaults to window.location.pathname)
         namespace:  null,   // Form/cookie namespace
         form:       null,   // Our parent/controlling form
         groups:     null    // Display style groups.
@@ -69,7 +70,13 @@ $.widget("connexions.dropdownForm", {
          * this form with a CSS class of 'ui-optionGroups'.
          * connexions.optionGroups handler for them.
          */
-        self.element.find('.ui-optionGroups').optionGroups();
+        self.element
+                .find('.ui-optionGroups')
+                    .optionGroups({
+                        cookiePath: opts.cookiePath,
+                        namespace:  opts.namespace,
+                        form:       self.$form
+                    });
 
         self.$form.hide();
 
@@ -82,6 +89,7 @@ $.widget("connexions.dropdownForm", {
      */
     _bindEvents: function() {
         var self        = this;
+        var opts        = self.options;
         
 
         // Handle a click outside of the display options form.
@@ -156,7 +164,11 @@ $.widget("connexions.dropdownForm", {
         var _form_submit        = function(e) {
             // Serialize all form values to an array...
             var settings    = self.$form.serializeArray();
-            var cookieOpts  = {path: window.location.pathname};
+            var cookieOpts  = {
+                path: (opts.cookiePath === null
+                        ? window.location.pathname
+                        : opts.cookiePath)
+            };
             //e.preventDefault();
 
             if (window.location.protocol === 'https')
