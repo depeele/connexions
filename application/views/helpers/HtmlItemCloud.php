@@ -6,11 +6,19 @@
  */
 class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 {
-    static public   $perPageChoices         = array(50, 100, 250, 500);
+    static public   $perPageChoices         = array(10, 25, 50, 100, 250, 500);
     static public   $highlightCountChoices  = array(0,  5,   10);
 
     static public   $defaults               = array(
         'namespace'         => 'tags',
+        'pageBaseUrl'       => null,        /* The base URL of the containing page
+                                             * used to set the cookie path for
+                                             * the attached Javascript
+                                             * 'cloudPane' which, in turn, effects
+                                             * the cookie path passed to the
+                                             * contained 'dropdownForm'
+                                             * presneting Display Options.
+                                             */
         'showRelation'      => true,
         'itemType'          => self::ITEM_TYPE_ITEM,
 
@@ -274,6 +282,11 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                             'namespace' => $namespace,
                             'groups'    => self::$styleGroups,
                         );
+
+            if ($this->pageBaseUrl !== null)
+            {
+                $dsConfig['cookiePath'] = $this->pageBaseUrl;
+            }
 
             /*
             Connexions::log("View_Helper_HtmlItemCloud::setNamespace(): "

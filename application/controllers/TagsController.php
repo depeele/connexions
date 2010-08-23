@@ -19,6 +19,13 @@ class TagsController extends Connexions_Controller_Action
                                                  'rss',     'atom'),
                               );
 
+    public function init()
+    {
+        parent::init();
+
+        $this->_baseUrl .= 'tags/';
+    }
+
     /** @brief  Index/Get/Read/View action.
      *
      *  Retrieve a set of Tags based upon the requested 'users'.
@@ -46,9 +53,8 @@ class TagsController extends Connexions_Controller_Action
          *
          * Adjust the URL to reflect the validated 'users'
          */
-        $this->_url = $request->getBasePath()
-                    . '/tags'
-                    . '/' .(count($this->_users) > 0
+        $this->_url = $this->baseUrl
+                    . (count($this->_users) > 0
                             ? $this->_users .'/'
                             : '');
 
@@ -105,6 +111,8 @@ class TagsController extends Connexions_Controller_Action
             'users' => $this->_users,
         );
         $config = array_merge($this->view->main, $extra);
+
+        $config['pageBaseUrl'] = $this->_baseUrl;
 
         // Defaults
         if ( ($config['perPage'] = (int)$config['perPage']) < 1)
@@ -259,6 +267,8 @@ class TagsController extends Connexions_Controller_Action
                                            View_Helper_HtmlSidebar &$sidebar)
     {
         $config  = $sidebar->getPane($pane);
+
+        $config['pageBaseUrl'] = $this->_baseUrl;
 
         $perPage = ((int)$config['perPage'] > 0
                         ? (int)$config['perPage']

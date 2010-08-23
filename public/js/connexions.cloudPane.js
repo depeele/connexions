@@ -58,7 +58,9 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
                 function(e, info) {
                     var $field  = $(this).find('.field.highlightCount');
 
-                    if (info.group === 'cloud')
+                    if ( (info       === undefined) ||
+                         (info.group === undefined) ||
+                         (info.group === 'cloud') )
                     {
                         // Enable the 'highlightCount'
                         $field.removeClass('ui-state-disabled');

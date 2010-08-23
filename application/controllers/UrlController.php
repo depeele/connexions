@@ -23,6 +23,13 @@ class UrlController extends Connexions_Controller_Action
                                                  'rss',     'atom'),
                               );
 
+    public function init()
+    {
+        parent::init();
+
+        $this->_baseUrl .= 'url/';
+    }
+
     /** @brief  Index/Get/Read/View action.
      *
      *  Retrieve a set of Bookmarks for the given url.
@@ -60,9 +67,9 @@ class UrlController extends Connexions_Controller_Action
          *
          * Adjust the URL to reflect the validated 'owner' and 'tags'
          */
-        $this->_url = $request->getBasePath()
-                    . '/url/'. $this->_urlHash
-                    . '/' .(count($this->_tags) > 0
+        $this->_url = $this->_baseUrl
+                    . $this->_urlHash .'/'
+                    . (count($this->_tags) > 0
                             ? $this->_tags .'/'
                             : '');
 
@@ -257,6 +264,8 @@ class UrlController extends Connexions_Controller_Action
                                            View_Helper_HtmlSidebar &$sidebar)
     {
         $config  = $sidebar->getPane($pane);
+
+        $config['pageBaseUrl'] = $this->_baseUrl;
 
         $perPage = ((int)$config['perPage'] > 0
                         ? (int)$config['perPage']
