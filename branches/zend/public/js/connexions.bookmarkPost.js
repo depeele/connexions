@@ -3,8 +3,12 @@
  *  Javascript interface/wrapper for the posting of a bookmark.
  *
  *  This is primarily a class to provide unobtrusive activation of a
- *  pre-renderd bookmark post form
+ *  pre-renderd bookmark post from
  *      (application/views/scripts/post/index-partial.phtml)
+ *
+ *      - conversion of markup for suggestions to ui.tabs instance(s) 
+ *        possibly containing connexions.collapsible instance(s);
+ *
  *
  *  <form>
  *   <div class='item-status'>
@@ -44,11 +48,42 @@
  *    <button name='submit'>Save</button>
  *    <button name='cancel'>Cancel</button>
  *   </div>
+ *
+ *   <div class='suggestions' style='display:none;'>
+ *    <ul>
+ *     <li><a href='#suggestions-tags'><span>Tags</span></a></li>
+ *     <li><a href='#suggestions-people'><span>People</span></a></li>
+ *    </ul>
+ *
+ *    <ul id='suggestions-tags'>
+ *     <li class='collapsable'>
+ *      <h3 class='tooggle'><span>Recommended</span></h3>
+ *      <div class='cloud'>
+ *      </div>
+ *     </li>
+ *
+ *     <li class='collapsable'>
+ *      <h3 class='tooggle'><span>Your Top 100</span></h3>
+ *      <div class='cloud'>
+ *      </div>
+ *     </li>
+ *    </ul>
+ *
+ *    <ul id='suggestions-people'>
+ *     <li class='collapsable'>
+ *      <h3 class='tooggle'><span>Network</span></h3>
+ *      <div class='cloud'>
+ *      </div>
+ *     </li>
+ *    </ul>
+ *   </div>
+ *
  *  </form>
  *
  *  Requires:
  *      ui.core.js
  *      ui.widget.js
+ *      connexions.collapsable
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false */
@@ -186,6 +221,12 @@ $.widget("connexions.bookmarkPost", {
         // click-to-edit elements
         self.$cte         = self.element.find('.click-to-edit');
 
+        // 'suggestions' div -- to be converted to ui.tabs
+        self.$suggestions = self.element.find('.suggestions');
+
+        // 'collapsable' elements -- to be converted to connexions.collapsable
+        self.$collapsable = self.element.find('.collapsable');
+
         /********************************
          * Instantiate our sub-widgets
          *
@@ -230,6 +271,9 @@ $.widget("connexions.bookmarkPost", {
 
         self.$cancel.addClass('ui-priority-secondary')
                     .button({disabled: false});
+
+        self.$suggestions.tabs();
+        self.$collapsable.collapsable();
 
         /* Style all remaining input[type=text|password] / textarea controls
          * with ui.input
@@ -663,7 +707,10 @@ $.widget("connexions.bookmarkPost", {
         self.headersUrl = url;
 
 
-        // Generate a JSON-RPC to perform the update.
+        /********************************************************
+         * Generate a JSON-RPC to perform the header retrieval.
+         *
+         */
         var rpc = {
             version: opts.jsonRpc.version,
             id:      opts.rpcId++,
@@ -674,7 +721,7 @@ $.widget("connexions.bookmarkPost", {
             }
         };
 
-        // Perform a JSON-RPC call to update this item
+        // Perform a JSON-RPC call
         $.ajax({
             url:        opts.jsonRpc.target,
             type:       opts.jsonRpc.transport,
@@ -714,6 +761,56 @@ $.widget("connexions.bookmarkPost", {
                 {
                     self._headers_success(headers);
                 }
+            },
+            error:      function(req, textStatus, err) {
+                // :TODO: "Error" notification / invalid URL??
+                //self.headersUrl = null;
+            },
+            complete:   function(req, textStatus) {
+                // :TODO: Some indication of completion?
+            }
+         });
+
+        /********************************************************
+         * Generate a JSON-RPC to perform a retrieval of
+         * related tags.
+         *
+         */
+        var rpc2 = {
+            version: opts.jsonRpc.version,
+            id:      opts.rpcId++,
+            method:  'util.tagCloud',
+            params:  {
+                items:      url
+            }
+        };
+
+        // Perform a JSON-RPC call
+        $.ajax({
+            url:        opts.jsonRpc.target,
+            type:       opts.jsonRpc.transport,
+            dataType:   'json',
+            data:       JSON.stringify(rpc2),
+            success:    function(data, textStatus, req) {
+                if (data.error !== null)
+                {
+                    /*
+                    self._status(false,
+                                 'URL header retrieval',
+                                 data.error.message);
+                    // */
+
+                    return;
+                }
+
+                if (data.result === null)
+                {
+                    return;
+                }
+
+                var $content    = self.$suggestions
+                                        .find('#suggestions-tags .content');
+                $content.html( data.result.html );
             },
             error:      function(req, textStatus, err) {
                 // :TODO: "Error" notification / invalid URL??
@@ -888,6 +985,9 @@ $.widget("connexions.bookmarkPost", {
         self.$inputs.input('destroy');
         self.$save.button('destroy');
         self.$cancel.button('destroy');
+
+        self.$suggestions.tabs('destroy');
+        self.$collapsable.collapsable('destroy');
     }
 });
 

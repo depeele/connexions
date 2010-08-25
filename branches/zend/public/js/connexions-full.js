@@ -1722,6 +1722,132 @@ $.widget("ui.validationForm", {
 }(jQuery));
 /** @file
  *
+ *  Javascript interface/wrapper for the presentation of a collapsable area.
+ *
+ *  This is primarily a class to provide unobtrusive activation of a
+ *  pre-rendered area.
+ *
+ *  The pre-rendered HTML must have a form similar to:
+ *      < dom container, 'element' for this class (e.g. <div>, <ul>, <li>) >
+ *        <h3 class='toggle'><span>Area Title</span></h3>
+ *        <div > ... </div>
+ *      </ dom container >
+ *
+ *  Requires:
+ *      ui.core.js
+ *      ui.widget.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false */
+(function($) {
+
+$.widget("connexions.collapsable", {
+    version: "0.0.1",
+    options: {
+        // Defaults
+    },
+
+    /** @brief  Initialize a new instance.
+     *
+     *  @triggers:
+     *      'collapse', 'expand', 'toggle'
+     */
+    _create: function() {
+        var self    = this;
+        var opts    = self.options;
+
+        self.$toggle  = self.element.find('.toggle:first');
+        self.$content = self.$toggle.next();
+
+        // Add styling to the toggle and content
+        self.$toggle.addClass('ui-corner-top');
+        self.$content.addClass('ui-corner-bottom');
+
+        // Add an open/close indicator
+        self.$toggle.prepend( '<div class="ui-icon">&nbsp;</div>');
+        self.$indicator = self.$toggle.find('.ui-icon:first');
+
+        if (self.$toggle.hasClass('collapsed'))
+        {
+            // Change the indicator to "closed" and hide the content
+            self.$indicator.addClass('ui-icon-triangle-1-e');
+            self.$content.hide();
+        }
+        else
+        {
+            // Change the indicator to "open" and hide the content
+            self.$indicator.addClass('ui-icon-triangle-1-s');
+            self.$content.show();
+
+            if (! self.$toggle.hasClass('expanded'))
+            {
+                self.$toggle.addClass('expanded');
+            }
+        }
+
+        self._bindEvents();
+    },
+
+    _bindEvents: function() {
+        var self    = this;
+
+        self.$toggle.bind('click.collapsable', function() {
+            if (self.$content.is(":hidden"))
+            {
+                // Show the content / open
+                self.$toggle.removeClass('collapsed')
+                            .addClass(   'expanded');
+                self.$indicator.removeClass('ui-icon-triangle-1-e')
+                               .addClass(   'ui-icon-triangle-1-s');
+                self.$content.slideDown();
+                    
+                self.element.trigger('expand');
+            }
+            else
+            {
+                // Hide the content / close
+                self.$toggle.removeClass('expanded')
+                            .addClass(   'collapsed');
+                self.$indicator.removeClass('ui-icon-triangle-1-s')
+                               .addClass(   'ui-icon-triangle-1-e');
+                self.$content.slideUp();
+
+                self.element.trigger('collapse');
+            }
+
+            // Trigger 'toggle'
+            self.element.trigger('toggle');
+        });
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+    destroy: function() {
+        var self    = this;
+        var opts    = self.options;
+
+        // Remove styling
+        self.$toggle.addClass('ui-corner-top');
+        self.$content.addClass('ui-corner-bottom');
+        self.$toggle.removeClass('collapsed,expanded');
+
+        // Remove event bindings
+        self.$toggle.unbind('.collapsable');
+
+        // Ensure that the content is visible
+        self.$content.show();
+    }
+});
+
+
+}(jQuery));
+
+
+
+/** @file
+ *
  *  Provide option groups for a set of checkbox options.
  *
  *  Requires:
@@ -3793,8 +3919,12 @@ $.widget("connexions.search", {
  *  Javascript interface/wrapper for the posting of a bookmark.
  *
  *  This is primarily a class to provide unobtrusive activation of a
- *  pre-renderd bookmark post form
+ *  pre-renderd bookmark post from
  *      (application/views/scripts/post/index-partial.phtml)
+ *
+ *      - conversion of markup for suggestions to ui.tabs instance(s) 
+ *        possibly containing connexions.collapsible instance(s);
+ *
  *
  *  <form>
  *   <div class='item-status'>
@@ -3834,11 +3964,42 @@ $.widget("connexions.search", {
  *    <button name='submit'>Save</button>
  *    <button name='cancel'>Cancel</button>
  *   </div>
+ *
+ *   <div class='suggestions' style='display:none;'>
+ *    <ul>
+ *     <li><a href='#suggestions-tags'><span>Tags</span></a></li>
+ *     <li><a href='#suggestions-people'><span>People</span></a></li>
+ *    </ul>
+ *
+ *    <ul id='suggestions-tags'>
+ *     <li class='collapsable'>
+ *      <h3 class='tooggle'><span>Recommended</span></h3>
+ *      <div class='cloud'>
+ *      </div>
+ *     </li>
+ *
+ *     <li class='collapsable'>
+ *      <h3 class='tooggle'><span>Your Top 100</span></h3>
+ *      <div class='cloud'>
+ *      </div>
+ *     </li>
+ *    </ul>
+ *
+ *    <ul id='suggestions-people'>
+ *     <li class='collapsable'>
+ *      <h3 class='tooggle'><span>Network</span></h3>
+ *      <div class='cloud'>
+ *      </div>
+ *     </li>
+ *    </ul>
+ *   </div>
+ *
  *  </form>
  *
  *  Requires:
  *      ui.core.js
  *      ui.widget.js
+ *      connexions.collapsable
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false */
@@ -3976,6 +4137,12 @@ $.widget("connexions.bookmarkPost", {
         // click-to-edit elements
         self.$cte         = self.element.find('.click-to-edit');
 
+        // 'suggestions' div -- to be converted to ui.tabs
+        self.$suggestions = self.element.find('.suggestions');
+
+        // 'collapsable' elements -- to be converted to connexions.collapsable
+        self.$collapsable = self.element.find('.collapsable');
+
         /********************************
          * Instantiate our sub-widgets
          *
@@ -4020,6 +4187,9 @@ $.widget("connexions.bookmarkPost", {
 
         self.$cancel.addClass('ui-priority-secondary')
                     .button({disabled: false});
+
+        self.$suggestions.tabs();
+        self.$collapsable.collapsable();
 
         /* Style all remaining input[type=text|password] / textarea controls
          * with ui.input
@@ -4453,7 +4623,10 @@ $.widget("connexions.bookmarkPost", {
         self.headersUrl = url;
 
 
-        // Generate a JSON-RPC to perform the update.
+        /********************************************************
+         * Generate a JSON-RPC to perform the header retrieval.
+         *
+         */
         var rpc = {
             version: opts.jsonRpc.version,
             id:      opts.rpcId++,
@@ -4464,7 +4637,7 @@ $.widget("connexions.bookmarkPost", {
             }
         };
 
-        // Perform a JSON-RPC call to update this item
+        // Perform a JSON-RPC call
         $.ajax({
             url:        opts.jsonRpc.target,
             type:       opts.jsonRpc.transport,
@@ -4504,6 +4677,56 @@ $.widget("connexions.bookmarkPost", {
                 {
                     self._headers_success(headers);
                 }
+            },
+            error:      function(req, textStatus, err) {
+                // :TODO: "Error" notification / invalid URL??
+                //self.headersUrl = null;
+            },
+            complete:   function(req, textStatus) {
+                // :TODO: Some indication of completion?
+            }
+         });
+
+        /********************************************************
+         * Generate a JSON-RPC to perform a retrieval of
+         * related tags.
+         *
+         */
+        var rpc2 = {
+            version: opts.jsonRpc.version,
+            id:      opts.rpcId++,
+            method:  'util.tagCloud',
+            params:  {
+                items:      url
+            }
+        };
+
+        // Perform a JSON-RPC call
+        $.ajax({
+            url:        opts.jsonRpc.target,
+            type:       opts.jsonRpc.transport,
+            dataType:   'json',
+            data:       JSON.stringify(rpc2),
+            success:    function(data, textStatus, req) {
+                if (data.error !== null)
+                {
+                    /*
+                    self._status(false,
+                                 'URL header retrieval',
+                                 data.error.message);
+                    // */
+
+                    return;
+                }
+
+                if (data.result === null)
+                {
+                    return;
+                }
+
+                var $content    = self.$suggestions
+                                        .find('#suggestions-tags .content');
+                $content.html( data.result.html );
             },
             error:      function(req, textStatus, err) {
                 // :TODO: "Error" notification / invalid URL??
@@ -4678,6 +4901,9 @@ $.widget("connexions.bookmarkPost", {
         self.$inputs.input('destroy');
         self.$save.button('destroy');
         self.$cancel.button('destroy');
+
+        self.$suggestions.tabs('destroy');
+        self.$collapsable.collapsable('destroy');
     }
 });
 

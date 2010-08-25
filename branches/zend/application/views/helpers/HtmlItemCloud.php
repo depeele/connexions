@@ -20,6 +20,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                                              * presneting Display Options.
                                              */
         'showRelation'      => true,
+        'showOptions'       => true,
         'itemType'          => self::ITEM_TYPE_ITEM,
 
         'items'             => null,        /* A Connexions_Model_Set
@@ -152,6 +153,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      *  @param  config  A configuration array that may include:
      *                      namespace       [tags];
      *                      showRelation    [true];
+     *                      showOptions     [true];
      *                      itemType        [self::ITEM_TYPE_ITEM];
      *                      items           The Connexions_Model_Set containing
      *                                      the items to present;
@@ -272,12 +274,13 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                         $namespace);
         // */
 
-        $view   = $this->view;
-        $jQuery = $view->jQuery();
-
-        if (! @isset(self::$_initialized[$namespace]))
+        if ( ($this->showOptions !== false) &&
+             (! @isset(self::$_initialized[$namespace])) )
         {
             // Set / Update our displayOptions namespace.
+            $view   = $this->view;
+            $jQuery = $view->jQuery();
+
             $dsConfig = array(
                             'namespace' => $namespace,
                             'groups'    => self::$styleGroups,
@@ -403,7 +406,10 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         $reqStyle = $style;
         if ($values !== null)
         {
-            $this->_displayOptions->setGroupValues($values);
+            if ($this->_displayOptions !== null)
+            {
+                $this->_displayOptions->setGroupValues($values);
+            }
         }
         else
         {
@@ -418,7 +424,11 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                 break;
             }
 
-            $this->_displayOptions->setGroup($style);
+            $this->_params['displayStyle'] = $style;
+            if ($this->_displayOptions !== null)
+            {
+                $this->_displayOptions->setGroup($style);
+            }
         }
 
         /*
@@ -436,7 +446,9 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     public function getDisplayStyle()
     {
-        return $this->_displayOptions->getGroup();
+        return ($this->_displayOptions !== null
+                    ? $this->_displayOptions->getGroup()
+                    : $this->_params['displayStyle']);
     }
 
     /** @brief  Set the desired sortBy.
@@ -573,6 +585,11 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     public function renderDisplayOptions()
     {
+        if ($this->showOptions === false)
+        {
+            return '';
+        }
+
         $namespace = $this->namespace;
 
         $html .= "<div class='displayOptions {$namespace}-displayOptions'>"
@@ -705,7 +722,8 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
          * with the available display styles to render the complete display
          * options form.
          */
-        return $this->_displayOptions->render();
+        return $this->_displayOptions->render()
+               . "<br class='clear' />";
     }
 
     /** @brief  Sort our tags, if needed.
