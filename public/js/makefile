@@ -4,6 +4,7 @@ SRCS =	connexions.js jquery.registry.js jquery.cookie.js 		\
 	jquery.pngFix.js						\
 	ui.checkbox.js ui.input.js ui.stars.js ui.notify.js		\
 	ui.validationForm.js						\
+	connexions.collapsable.js					\
 	connexions.dropdownForm.js connexions.optionGroups.js		\
 	connexions.itemScope.js connexions.paginator.js			\
 	connexions.pane.js connexions.itemsPane.js			\

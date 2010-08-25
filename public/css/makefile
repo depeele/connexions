@@ -30,7 +30,9 @@ connexions.css: main.scss		\
 		pagination.scss		\
 		displayOptions.scss	\
 		ui.notify.scss		\
-		validationForm.scss
+		validationForm.scss	\
+		post.scss		\
+		ribbon-form.scss
 	sass -t compact main.scss:connexions.css
 
 items.css: mixins.scss items.scss colors.scss sizes.scss

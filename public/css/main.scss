@@ -14,6 +14,7 @@
 @import "displayOptions";
 @import "ui.notify";
 @import "validationForm";
+@import "post";
 
 /****** main.scss ****** */
 //a, a:link, a:visited, a:focus, a:hover
@@ -240,5 +241,31 @@
     a, a:hover, a:visited, a:focus {
       color: $tagColorBackground;
     }
+  }
+}
+
+// Collapsable content
+.collapsable {
+  .toggle {
+    color:            $collapsableColor;
+    background-color: $collapsableColorBackground;
+    cursor:           pointer;
+    font-size:        0.9em;
+    padding:          0.2em;
+    margin:           0.5em 0 0 0;
+
+    border:           1px solid $borderColor;
+
+    .ui-icon {
+      @include inlineBlock();
+      float:  left;
+    }
+  }
+  .content {
+    margin-top:       0;
+
+    border-bottom:    1px solid $borderColor;
+    border-left:      1px solid $borderColor;
+    border-right:     1px solid $borderColor;
   }
 }

@@ -6,10 +6,50 @@
 /****** post.sass ****** */
 // Styling for bookmark post form
 //  (in addition to styles from validationForm.sass)
-#post {
+#post, .ui-validation-form {
   .item-description, .item-tags {
     textarea {
       height:     4em;
+    }
+  }
+
+  .suggestions {
+    margin:       1em 0 0 1em;
+
+    .cloud {
+      font-size:  1em;
+
+      // Width here is based off validationForm.scss
+      //  .ui-validation-form .userInput .field .text (width: 30em)
+      //
+      // minus the padding of our div.suggesionts ul container
+      //  1em per side, thus decreasing 30em to 28em.
+      //
+      width:      28em;
+
+      .cloudItem {
+        .size0 {
+          font-size: 0.65em;
+        }
+        .size1 {
+          font-size: 0.75em;
+        }
+        .size2 {
+          font-size: 0.85em;
+        }
+        .size3 {
+          font-size: 0.95em;
+        }
+        .size4 {
+          font-size: 1.05em;
+        }
+        .size5 {
+          font-size: 1.10em;
+        }
+        .size6 {
+          font-size: 1.25em;
+        }
+      }
     }
   }
 }
