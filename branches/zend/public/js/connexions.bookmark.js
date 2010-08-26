@@ -292,7 +292,9 @@ $.widget("connexions.bookmark", {
                 {
                     formUrl = $.registry('urls').base +'/post'
                             +       '?format=partial'
-                            +       '&url='+ opts.url;
+                            +       '&part=main'
+                            +       '&url='+ opts.url
+                            +       '&excludeSuggestions=true';
                 }
                 catch(err)
                 {
@@ -376,7 +378,11 @@ $.widget("connexions.bookmark", {
                 {
                     formUrl = $.registry('urls').base +'/post'
                             +       '?format=partial'
-                            +       '&url='+ opts.url;
+                            +       '&part=main'
+                            +       '&url='+ opts.url
+                            // Include suggestions
+                            //+       '&excludeSuggestions=true'
+                            ;
                 }
                 catch(err)
                 {
@@ -660,6 +666,10 @@ $.widget("connexions.bookmark", {
                         $form.dialog('close');
                     }
                 });
+            },
+            close:      function(event, ui) {
+                $form.dialog('destroy');
+                $form.remove();
             }
         });
 

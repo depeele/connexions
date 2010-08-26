@@ -174,8 +174,10 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         {
             if (isset($config[$key]))
             {
+                /*
                 Connexions::log("View_Helper_HtmlBookmarks::populate(): "
                                 . "set 'pageBaseUrl' first");
+                // */
 
                 $this->__set($key, $config[$key]);
             }
@@ -243,8 +245,8 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
             }
 
 
-            // /*
-            Connexions::log("View_Helper_Bookmarks::setNamespace(): "
+            /*
+            Connexions::log("View_Helper_HtmlBookmarks::setNamespace(): "
                             . "new namespace: config[ %s ]",
                             Connexions::varExport($dsConfig));
             // */

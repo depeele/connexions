@@ -235,7 +235,18 @@ $.widget("connexions.bookmarkPost", {
         // Tag autocompletion
         self.$tags.autocomplete({
             source: function(req, rsp) {
+                $.log('connexions.bookmarkPost::$tags.source('+ req.term +')');
                 return self._autocomplete(req, rsp);
+            },
+            change: function(e, ui) {
+                $.log('connexions.bookmarkPost::$tags.change( "'
+                        + self.$tags.val() +'" )');
+                self._highlightTags();
+            },
+            close: function(e, ui) {
+                // A tag has been completed.  Perform highlighting.
+                $.log('connexions.bookmarkPost::$tags.close()');
+                self._highlightTags();
             }
         });
 
@@ -475,6 +486,57 @@ $.widget("connexions.bookmarkPost", {
                                                 : undefined); // now empty
         };
 
+        var _tagInput       = function( event ) {
+            _mark_userInput();
+            /*
+            var $el = $(this);
+
+            self.auto[ 'tag' ] = ($el.val().length > 0
+                                    ? false       // user supplied
+                                    : undefined); // now empty
+            */
+
+            var keyCode = $.ui.keyCode;
+            if ( event.keyCode === $.ui.keyCode.COMMA)
+            {
+                // This is the end of a tag -- treat it as a 'select' event
+                // and close the menu
+                var menu    = self.$tags.autocomplete('widget');
+
+                //event.preventDefault();
+                //event.stopPropagation();
+                self.$tags.autocomplete('close');
+            }
+        };
+
+        self._tagClick = function( event ) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            var $el     = $(this);
+            var tag     = $el.text();
+            var tags    = self.$tags.val();
+
+            if ($el.hasClass('selected'))
+            {
+                // De-select / remove
+                var re  = new RegExp('\\s*'+ tag +'\\s*[,]?');
+                tags    = tags.replace(re, '');
+            }
+            else
+            {
+                // Select / add
+                if (! tags.match(/,\s*$/))
+                {
+                    tags += ', ';
+                }
+                tags += tag;
+            }
+
+            self.$tags.val(tags);
+            self._highlightTags();
+        };
+
         /**********************************************************************
          * bind events
          *
@@ -493,8 +555,10 @@ $.widget("connexions.bookmarkPost", {
 
         self.$name.bind('keydown.bookmarkPost', _mark_userInput);
         self.$description.bind('keydown.bookmarkPost', _mark_userInput);
-        self.$tags.bind('keydown.bookmarkPost', _mark_userInput);
+        self.$tags.bind('keydown.bookmarkPost', _tagInput);
 
+        self.$suggestions.find('.cloud .cloudItem a')
+                    .bind('click.bookmarkPost', self._tagClick);
 
         _validate_form();
     },
@@ -787,9 +851,62 @@ $.widget("connexions.bookmarkPost", {
                 var $content    = self.$suggestions
                                         .find('#suggestions-tags '
                                                 +'.recommended .content');
+
+                // Unbind current tag click handler
+                self.$suggestions.find('.cloud .cloudItem a')
+                    .unbind('.bookmarkPost');
+
                 $content.html( data );
+
+                // Re-bind tag click handler to the new content
+                self.$suggestions.find('.cloud .cloudItem a')
+                    .bind('click.bookmarkPost', self._tagClick);
+
+                self._highlightTags();
             }
         });
+    },
+
+    _highlightTags: function() {
+        var self    = this;
+
+        if (self.$suggestions.length < 1)
+        {
+            // No suggestions area so no tags to highlight
+            return;
+        }
+
+        // Find all tags in the suggestions area
+        var $cloudTags  = self.$suggestions.find('.cloud .cloudItem a');
+
+        // Remove any existing highlights
+        $cloudTags.filter('.selected').removeClass('selected');
+
+        // Highlight any currently selected tags.
+        var tags    = self.$tags.val();
+        var nTags   = tags.length;
+        var tag     = null;
+
+        if (nTags < 1)
+        {
+            return;
+        }
+
+        tags  = tags.split(/\s*,\s*/);
+        nTags = tags.length;
+        for (var idex = 0; idex < nTags; idex++)
+        {
+            tag = tags[idex].toLowerCase();
+            if (tag.length < 1)
+            {
+                continue;
+            }
+
+            tag = tag.replace('"', '\"');
+            $.log('connexions.bookmarkPost::_highlightTags('+ tag +')');
+
+            $cloudTags.filter(':contains("'+ tag +'")').addClass('selected');
+        }
     },
 
     _autocomplete: function(request, response) {
@@ -803,8 +920,11 @@ $.widget("connexions.bookmarkPost", {
             params:     { id: { userId: opts.userId, itemId: opts.itemId } }
         };
 
-        // If no itemId was provided, use the final URL.
-        if (data.params.id.itemId === null)
+        /* If no itemId was provided (or the URL has changed), use the current
+         * URL value.
+         */
+        if ( (data.params.id.itemId === null) ||
+             (self.$url.val()       !== opts.url) )
         {
             // The URL has changed -- pass it in
             data.params.id.itemId = self.$url.val();

@@ -584,7 +584,7 @@ class Service_Bookmark extends Connexions_Service
      *                              - 'url'         as a  string url;
      *  @param  name        If non-empty, the (new) Bookmark name;
      *  @param  description If non-null,  the (new) description;
-     *  @param  rating      If non-null,  the (new) rating;
+     *  @param  rating      If >= 0,      the (new) rating;
      *  @param  isFavorite  If non-null,  the (new) favorite value;
      *  @param  isPrivate   If non-null,  the (new) privacy value;
      *  @param  tags        If non-empty, the (new) set of tags;
@@ -596,7 +596,7 @@ class Service_Bookmark extends Connexions_Service
     public function update($id,
                            $name            = null,
                            $description     = null,
-                           $rating          = 0,
+                           $rating          = -1,
                            $isFavorite      = null,
                            $isPrivate       = null,
                            $tags            = null,
@@ -664,7 +664,7 @@ class Service_Bookmark extends Connexions_Service
         if (! empty($name))         $bookmark->name         = $name;
         if (! empty($url))          $bookmark->url          = $url;
         if (! empty($description))  $bookmark->description  = $description;
-        if (! empty($rating))       $bookmark->rating       = $rating;
+        if (  $rating     >=  -1)   $bookmark->rating       = $rating;
         if (  $isFavorite !== null) $bookmark->isFavorite   = $isFavorite;
         if (  $isPrivate  !== null) $bookmark->isPrivate    = $isPrivate;
         if (! empty($tags))

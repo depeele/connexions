@@ -123,8 +123,7 @@ if (! @is_array($this->postInfo))
 <? if (is_array($this->suggest)): ?>
     <div class='suggestions'>
 
-      <ul>
-        <?php
+      <ul><?php
 
         foreach ($this->suggest as $tab => $tabConfig)
         {
@@ -138,11 +137,12 @@ if (! @is_array($this->postInfo))
                         : ucfirst($tab));
 
             ?>
-        <li><a href='#suggestions-<?= $tab ?>'><span><?= $title ?></span></a></li>
-            <?php
+
+        <li><a href='#suggestions-<?= $tab ?>'><span><?= $title ?></span></a></li><?php
         }
 
         ?>
+
       </ul>
 
       <?php
@@ -154,6 +154,7 @@ if (! @is_array($this->postInfo))
             }
 
             ?>
+
       <ul id='suggestions-<?= $tab ?>'><?php
 
             foreach ($tabConfig as $section => $sectionConfig)
@@ -172,6 +173,7 @@ if (! @is_array($this->postInfo))
                             : 'collapsed');
 
                 ?>
+
         <li class='collapsable <?= $section ?>'>
           <h3 class='toggle <?= $css ?>'><span><?= $title ?></span></h3>
           <div class='content'><?php
@@ -196,16 +198,19 @@ if (! @is_array($this->postInfo))
                 }
 
                 ?>
+
           </div>
         </li>
                 <?php
         }
 
             ?>
+
       </ul><?php
         }
 
         ?>
+
     </div>
 <? endif ?>
 

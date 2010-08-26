@@ -467,7 +467,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
 
         $this->_prepareMain($namespace);
 
-        if ( is_array($this->_partials))
+        if ( count($this->_partials) > 0)
         {
             $script .= '-' . implode('-', $this->_partials);
         }
