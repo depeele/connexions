@@ -707,10 +707,13 @@ class Connexions
      *              false, 'false', 'no',  (int)== 0, (float)== 0.0   => false
      *
      *  @return The boolean value.
+     */
     public static function to_bool($val)
     {
+        /*
         Connexions::log("Connexions::to_bool( %s ): type[ %s ]",
                         $val, gettype($val));
+        // */
 
         switch (gettype($val))
         {
@@ -751,17 +754,18 @@ class Connexions
             $val = (bool)$val;
         }
 
+        /*
         Connexions::log("Connexions::to_bool(): result[ %s ]",
                         Connexions::varExport($val));
+        // */
 
         return $val;
     }
-     */
 
     /*************************************************************************
      * Browser detection
      *
-     * More flexible than PHP's get_browser(), which, according to 
+     * More flexible/performant than PHP's get_browser(), which, according to 
      * documentation:
      *      http://php.net/manual/en/function.get-browser.php
      *

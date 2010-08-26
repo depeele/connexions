@@ -184,6 +184,8 @@ $.widget("ui.stars", {
       {
         self.callback(e, "cancel");
       }
+
+      self._trigger('change', null, o.value);
     })
     .bind("mouseover.stars", function() {
       if(self._disableCancel()) {

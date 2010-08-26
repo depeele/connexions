@@ -116,7 +116,12 @@ class PostController extends Connexions_Controller_Action
         $this->view->viewer     = $viewer;
         $this->view->postInfo   = $postInfo;
         $this->view->bookmark   = $bookmark;
-        $this->view->suggest    = $this->_prepareSuggestions($postInfo);
+
+        if (Connexions::to_bool($request->getParam('excludeSuggestions',
+                                                   false)) !== true)
+        {
+            $this->view->suggest = $this->_prepareSuggestions($postInfo);
+        }
     }
 
     /** @brief  Given incoming bookmark-related data, generate suggestion
@@ -156,7 +161,8 @@ class PostController extends Connexions_Controller_Action
          * already be extracted leaving '_partials' containing
          * [ tags, recommended ]
          */
-        if (is_array($this->_partials) && ($this->_partials[0] !== 'tags'))
+        if ( (count($this->_partials) > 0) &&
+             ($this->_partials[0] !== 'tags'))
         {
             /* We're not rendering the 'tags' portion so no configuration is 
              * needed
@@ -287,13 +293,19 @@ class PostController extends Connexions_Controller_Action
      */
     protected function _prepareSuggestions_People(array &$postInfo)
     {
+        // /*
+        Connexions::log("PostController::_prepareSuggestions_People(): "
+                        . "partials[ %s ]",
+                        Connexions::varExport($this->_partials));
+        // */
+
         /* '_partials' represents any partial portion of a page we are
          * rendering.  For example, 'main-tags-recommended' where 'main' has 
          * already be extracted leaving '_partials' containing
          * [ tags, recommended ]
          */
-        if (is_array($this->_partials) &&
-            ($this->_partials[0] !== 'people'))
+        if ( (count($this->_partials) > 0) &&
+             ($this->_partials[0] !== 'people'))
         {
             /* We're not rendering the 'people' portion so no configuration is 
              * needed
@@ -307,7 +319,7 @@ class PostController extends Connexions_Controller_Action
         $section = (count($this->_partials) > 1
                         ? $this->_partials[1]
                         : null);
-        $tags    = array();
+        $config  = array();
         $service = $this->service('User');
 
         if ( ($section === null) || ($section === 'network') )
