@@ -112,8 +112,6 @@ class PeopleController extends Connexions_Controller_Action
     }
 
     /** @brief  Prepare for rendering the sidebar view.
-     *  @param  part    The portion of the sidebar to render
-     *                  (tags | people | items) [ null == all ]
      *  @param  async   Should we setup to do an asynchronous render
      *                  (i.e. tab callbacks will request tab pane contents when 
      *                        needed)?
@@ -121,16 +119,14 @@ class PeopleController extends Connexions_Controller_Action
      *  This will collect the variables needed to render the sidebar view,
      *  placing them in $view->sidebar as a configuration array.
      */
-    protected function _prepareSidebar($part    = null,
-                                       $async   = false)
+    protected function _prepareSidebar($async   = false)
     {
         /*
-        Connexions::log("PeopleController::_prepareSidebar( %s, %s )",
-                        $part,
+        Connexions::log("PeopleController::_prepareSidebar( %s )",
                         ($async ? "async" : "sync"));
         // */
 
-        parent::_prepareSidebar($part, $async);
+        parent::_prepareSidebar($async);
 
 
         /******************************************************************
@@ -149,6 +145,10 @@ class PeopleController extends Connexions_Controller_Action
              * sidebar pane is to be rendered with null meaning that they will 
              * all be rendered.
              */
+            $part = (is_array($this->_partials)
+                        ? $this->_partials[0]
+                        : null);
+
             if ( ($part === null) || ($part === 'tags') )
             {
                 $this->_prepareSidebarPane('tags', $sidebar);

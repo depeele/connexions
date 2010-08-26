@@ -31,8 +31,6 @@ class IndexController extends Connexions_Controller_Action
      */
     public function indexAction()
     {
-        Connexions::log("IndexController::indexAction(): - start");
-
         $request  =& $this->_request;
 
         /*
@@ -140,8 +138,6 @@ class IndexController extends Connexions_Controller_Action
 
         // Handle this request based on the current context / format
         $this->_handleFormat('items');
-
-        Connexions::log("IndexController::indexAction(): - complete");
     }
 
     /*************************************************************************
@@ -211,8 +207,6 @@ class IndexController extends Connexions_Controller_Action
     }
 
     /** @brief  Prepare for rendering the sidebar view.
-     *  @param  part    The part/pane of the sidebar to be rendered
-     *                  (tags | people | items) [ null == all ]
      *  @param  async   Should we setup to do an asynchronous render
      *                  (i.e. tab callbacks will request tab pane contents when 
      *                        needed)?
@@ -220,15 +214,13 @@ class IndexController extends Connexions_Controller_Action
      *  This will collect the variables needed to render the sidebar view,
      *  placing them in $view->sidebar as a configuration array.
      */
-    protected function _prepareSidebar($part    = null,
-                                       $async   = false)
+    protected function _prepareSidebar($async   = false)
     {
         /*
-        Connexions::log("IndexController::_prepareSidebar( %s, %s )",
-                        $part,
+        Connexions::log("IndexController::_prepareSidebar( %s )",
                         ($async ? "async" : "sync"));
         // */
-        parent::_prepareSidebar($part, $async);
+        parent::_prepareSidebar($async);
 
         $extra = array(
             'users' => ($this->_owner !== '*'
@@ -255,6 +247,18 @@ class IndexController extends Connexions_Controller_Action
              * sidebar pane is to be rendered with null meaning that they will 
              * all be rendered.
              */
+
+            /*
+            Connexions::log("IndexController::_prepareSidebar(): "
+                            . "!async, partials %sarray [ %s ]",
+                            (is_array($this->_partials) ? "" : "!"),
+                            Connexions::varExport($this->_partials));
+            // */
+
+            $part = (is_array($this->_partials)
+                        ? $this->_partials[0]
+                        : null);
+
             if ( ($part === null) || ($part === 'tags') )
             {
                 $this->_prepareSidebarPane('tags', $sidebar);
@@ -327,7 +331,7 @@ class IndexController extends Connexions_Controller_Action
                  * only by the current owner (if any).
                  */
 
-                // /*
+                /*
                 Connexions::log("IndexController::_prepareSidebarPane( %s ): "
                                 .   "Fetch tags %d-%d by user [ %s ]",
                                 $pane,
@@ -346,7 +350,7 @@ class IndexController extends Connexions_Controller_Action
             {
                 // Tags related to the bookmarks with the given set of tags.
 
-                // /*
+                /*
                 Connexions::log("IndexController::_prepareSidebarPane( %s ): "
                                 .   "Fetch tags %d-%d related to bookmarks "
                                 .   "with tags[ %s ]",
@@ -423,7 +427,7 @@ class IndexController extends Connexions_Controller_Action
                  * cloud or list is rendered.
                  */
 
-                // /*
+                /*
                 Connexions::log("IndexController::_prepareSidebarPane( %s ): "
                                 .   "Fetch people %d-%d related to tags[ %s ]",
                                 $pane,
@@ -459,7 +463,7 @@ class IndexController extends Connexions_Controller_Action
             {
                 // A single user's bookmarks -- show just the "owner"
 
-                // /*
+                /*
                 Connexions::log("IndexController::_prepareSidebarPane( %s ): "
                                 .   "Present JUST the owner [ %s ]",
                                 $pane,
@@ -485,7 +489,7 @@ class IndexController extends Connexions_Controller_Action
                 $config['weightName']  = 'userItemCount';
                 $config['weightTitle'] = 'Bookmarks';
 
-                // /*
+                /*
                 Connexions::log("IndexController::_prepareSidebarPane( %s ): "
                                 .   "Fetch items %d-%d for all users "
                                 .   "related to tags [ %s ]",
@@ -505,7 +509,7 @@ class IndexController extends Connexions_Controller_Action
                 $config['weightName']  =  'ratingAvg';
                 $config['weightTitle'] =  'Average Rating';
 
-                // /*
+                /*
                 Connexions::log("IndexController::_prepareSidebarPane( %s ): "
                                 .   "Fetch items %d-%d for owner[ %s ] "
                                 .   "related to tags [ %s ]",

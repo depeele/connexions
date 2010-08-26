@@ -16,8 +16,12 @@
   .suggestions {
     margin:       1em 0 0 1em;
 
-    .cloud {
-      font-size:  1em;
+    .ui-tabs-panel {
+      padding:    0.25em;
+    }
+
+    .cloud, .db-profile {
+      font-size:      1em;
 
       // Width here is based off validationForm.scss
       //  .ui-validation-form .userInput .field .text (width: 30em)
@@ -26,6 +30,14 @@
       //  1em per side, thus decreasing 30em to 28em.
       //
       width:      28em;
+    }
+
+    .db-profile {
+      margin:     0.5em;
+    }
+
+    .cloud {
+      padding-bottom: 1em;
 
       .cloudItem {
         .size0 {

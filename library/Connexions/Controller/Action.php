@@ -10,7 +10,20 @@ class Connexions_Controller_Action extends Zend_Controller_Action
 {
     protected   $_request   = null;
     protected   $_viewer    = null;
-    protected   $_format    = 'html';
+
+    protected   $_format    = 'html';   // Render format
+    protected   $_partials  = null;     /* If '_format' is 'partial', this MAY 
+                                         * be an array of partial rendering 
+                                         * information
+                                         * (e.g. 'main-tags-recommended' would 
+                                         *       have '_partials' of
+                                         *       [ 'tags', 'recommended' ] )
+                                         */
+    protected   $_namespace = null;     /* The cookie namespace for HTML 
+                                         * rendering.
+                                         */
+
+
     protected   $_baseUrl   = null;     // The page's base URL minus any
                                         // differentiating parameters
 
@@ -102,7 +115,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
 
         $flash->addMessage('onSuccess:'. $url);
 
-        // /*
+        /*
         Connexions::log("Connexions_Controller_Action::_redirectToSignIn() "
                         . "Redirect to signIn with a flash to return to "
                         . "url [ %s ].",
@@ -147,12 +160,19 @@ class Connexions_Controller_Action extends Zend_Controller_Action
             /* Render just PART of the page and MAY not require the item
              * paginator.
              *
-             *  part=(content | sidebar([.:-](tags | people))? )
+             *  part=(content                                           |
+             *        main   ([.:-](tags  ([.:-](recommended | top))? |
+             *                      people([.:-](network))? )? )        |
+             *        sidebar([.:-](tags | people | items))? )
+             *
+             * Note: The separation for 'main' is primarily to support
+             *       the PostController.
              *
              * Change the layout script to:
              *      partial.phtml
              */
             $this->layout->setLayout('partial');
+
 
             /* Notify view scripts that we are rendering a partial
              * (asynchronously loaded portion of a full page).
@@ -162,24 +182,28 @@ class Connexions_Controller_Action extends Zend_Controller_Action
             $part  = $this->_request->getParam('part', 'content');
             $parts = preg_split('/\s*[\.:\-]\s*/', $part);
 
+            $primePart       = array_shift($parts);
+            $this->_partials = $parts;
+
             /*
             Connexions::log("Connexions_Controller_Action::_handleFormat(): "
-                            . "part[ %s ] == parts[ %s ]",
-                            $part, Connexions::varExport($parts));
+                            . "part[ %s ] == primePart[ %s ], partials[ %s ]",
+                            $part,
+                            $primePart,
+                            Connexions::varExport($this->_partials));
             // */
 
-            switch ($parts[0])
+
+            switch ($primePart)
             {
             case 'sidebar':
                 /* Render JUST the sidebar:
                  *      sidebar.phtml
                  *
                  * OR a single pane of the sidebar:
-                 *      sidebar-%part%.phtml
+                 *      sidebar-(implode('-', _partials)).phtml
                  */
-                $this->_renderSidebar(false, (count($parts) > 1
-                                                ? $parts[1]
-                                                : null));
+                $this->_renderSidebar(false);
                 break;
 
             case 'main':
@@ -300,8 +324,6 @@ class Connexions_Controller_Action extends Zend_Controller_Action
     }
 
     /** @brief  Prepare for rendering the sidebar view.
-     *  @param  part    The portion of the sidebar to render
-     *                  (tags | people | items) [ null == all ]
      *  @param  async   Should we setup to do an asynchronous render
      *                  (i.e. tab callbacks will request tab pane contents when 
      *                        needed)?
@@ -309,8 +331,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
      *  This will collect the variables needed to render the sidebar view,
      *  placing them in $view->sidebar as a configuration array.
      */
-    protected function _prepareSidebar($part    = null,
-                                       $async   = false)
+    protected function _prepareSidebar($async   = false)
     {
         $request =& $this->_request;
 
@@ -442,7 +463,15 @@ class Connexions_Controller_Action extends Zend_Controller_Action
      */
     protected function _renderMain($script, $namespace = '')
     {
+        $this->_namespace = $namespace;
+
         $this->_prepareMain($namespace);
+
+        if ( is_array($this->_partials))
+        {
+            $script .= '-' . implode('-', $this->_partials);
+        }
+
         $this->render($script);
 
     }
@@ -451,27 +480,29 @@ class Connexions_Controller_Action extends Zend_Controller_Action
      *  @param  usePlaceholder      Should the rendering be performed
      *                              immediately into a placeholder?
      *                              [ true, into the 'right' placeholder ]
-     *  @param  part                The portion of the sidebar to render
-     *                                  (tags | people | items)
-     *                              [ null == all ]
      *
      */
-    protected function _renderSidebar($usePlaceholder = true,
-                                      $part           = null)
+    protected function _renderSidebar($usePlaceholder = true)
     {
         /*
         Connexions::log("Connexions_Controller_Action::_renderSidebar(): "
-                        . "usePlaceholder[ %s ], part[ %s ]",
-                        Connexions::varExport($usePlaceholder),
-                        Connexions::varExport($part));
+                        . "usePlaceholder[ %s ]",
+                        Connexions::varExport($usePlaceholder));
         // */
 
-        $this->_prepareSidebar( $part, $usePlaceholder );
+        $this->_prepareSidebar( $usePlaceholder );
 
-        if ($part !== null)
+        if ($this->_partials !== null)
         {
             // Render just the requested part
-            $script = 'sidebar-'. $part;
+            $script = 'sidebar-'. implode('-', $this->_partials);
+
+            /*
+            Connexions::log("Connexions_Controller_Action::_renderSidebar(): "
+                            . "script [ %s ]",
+                            $script);
+            // */
+
 
             $this->render($script);
         }
