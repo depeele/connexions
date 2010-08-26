@@ -161,8 +161,6 @@ class UrlController extends Connexions_Controller_Action
     }
 
     /** @brief  Prepare for rendering the sidebar view.
-     *  @param  part    The portion of the sidebar to render
-     *                  (tags | people | items) [ null == all ]
      *  @param  async   Should we setup to do an asynchronous render
      *                  (i.e. tab callbacks will request tab pane contents when 
      *                        needed)?
@@ -176,8 +174,7 @@ class UrlController extends Connexions_Controller_Action
      *        particular, it will notify the sidbar helper of the items that
      *        are being presented in the main view.
      */
-    protected function _prepareSidebar($part    = null,
-                                       $async   = false)
+    protected function _prepareSidebar($async   = false)
     {
         // Our tags sidebar MAY need main-view variables set...
         if (! isset($this->view->main))
@@ -185,7 +182,7 @@ class UrlController extends Connexions_Controller_Action
             $this->_prepareMain();
         }
 
-        parent::_prepareSidebar($part, $async);
+        parent::_prepareSidebar($async);
 
         $extra = array(
             'tags'  => &$this->_tags,
@@ -227,6 +224,10 @@ class UrlController extends Connexions_Controller_Action
              * sidebar pane is to be rendered with null meaning that they will 
              * all be rendered.
              */
+            $part = (is_array($this->_partials)
+                        ? $this->_partials[0]
+                        : null);
+
             if ( ($part === null) || ($part === 'tags') )
             {
                 $this->_prepareSidebarPane('tags', $sidebar);

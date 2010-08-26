@@ -772,54 +772,24 @@ $.widget("connexions.bookmarkPost", {
          });
 
         /********************************************************
-         * Generate a JSON-RPC to perform a retrieval of
-         * related tags.
+         * Also, update the recommended tags section in the
+         * suggestions area.
          *
          */
-        var rpc2 = {
-            version: opts.jsonRpc.version,
-            id:      opts.rpcId++,
-            method:  'util.tagCloud',
-            params:  {
-                items:      url
-            }
-        };
-
-        // Perform a JSON-RPC call
         $.ajax({
-            url:        opts.jsonRpc.target,
-            type:       opts.jsonRpc.transport,
-            dataType:   'json',
-            data:       JSON.stringify(rpc2),
-            success:    function(data, textStatus, req) {
-                if (data.error !== null)
-                {
-                    /*
-                    self._status(false,
-                                 'URL header retrieval',
-                                 data.error.message);
-                    // */
-
-                    return;
-                }
-
-                if (data.result === null)
-                {
-                    return;
-                }
-
+            url:    ($.registry('urls')).base +'/post/',
+            data:   {
+                format: 'partial',
+                part:   'main-tags-recommended',
+                url:    url
+            },
+            success: function(data) {
                 var $content    = self.$suggestions
-                                        .find('#suggestions-tags .content');
-                $content.html( data.result.html );
-            },
-            error:      function(req, textStatus, err) {
-                // :TODO: "Error" notification / invalid URL??
-                //self.headersUrl = null;
-            },
-            complete:   function(req, textStatus) {
-                // :TODO: Some indication of completion?
+                                        .find('#suggestions-tags '
+                                                +'.recommended .content');
+                $content.html( data );
             }
-         });
+        });
     },
 
     _autocomplete: function(request, response) {

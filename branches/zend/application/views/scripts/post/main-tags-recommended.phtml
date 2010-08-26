@@ -1,0 +1,30 @@
+<?php
+/** @file
+ *
+ *  Render the recommended tags for the suggestions area of a Bookmark Post
+ *  form.
+ *
+ *  Incoming data:
+ *      postInfo        POST form initialization data, if any.
+ *                          [ itemId ]
+ *                          name
+ *                          url
+ *                          description
+ *                          tags
+ *                          isFavorite
+ *                          isPrivate
+ *                          rating
+ *
+ *      suggest         If suggestions should be included, this is an array of
+ *                      configuration for suggestions comprised of:
+ *          tags
+ *              recommended An array of configuration data for
+ *                          View_Helper_HtmlItemCloud for the 'recommended'
+ *                          section within the 'tags' tab of 'suggestions';
+ */
+$config =& $this->suggest['tags']['recommended'];
+
+if ($config['items'] !== null)
+{
+    echo $this->htmlItemCloud($config)->render();
+}

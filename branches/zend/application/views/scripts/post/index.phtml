@@ -5,9 +5,7 @@ if (! @is_array($this->postInfo))
 //$noConflict = Zend_JQuery_View_Helper_JQuery::getJQueryHandler();
 
 $jQuery = $this->jQuery();
-$jQuery->addStylesheet($this->baseUrl('css/post.css'))
-       //->addStylesheet($this->baseUrl('css/validationForm.css'))
-       ->addOnLoad('$("#post form").bookmarkPost({statusEl: ".status"});');
+$jQuery->addOnLoad('$("#post form").bookmarkPost({statusEl: ".status"});');
 
 if (isset($this->postInfo['itemId']) && ($this->postInfo['mode'] !== 'post'))
 {
@@ -35,7 +33,7 @@ else
    </div>
   </div><!-- legend } -->
   <div class="userInput unit"><!-- { -->
-    <?= $this->render('post/index-partial.phtml') ?>
+    <?= $this->render('post/main.phtml') ?>
   </div><!-- userInput } -->
   <br class='clear' />
  </div>
