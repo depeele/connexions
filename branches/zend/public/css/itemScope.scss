@@ -123,11 +123,14 @@ $itemCountWidth: $countBoxWidth + 10px;
       }
     }
   }
-  .root {
+  .root, .section {
     background-color: $linkColor;
-    padding:          0 0.5em 0 0;
+    padding:          0 0.2em 0 0;
     border:           unquote("1px solid") $linkColor;
     z-index:          10;
+  }
+  .section {
+    margin-left:      1px;
   }
   .scopeItem {
     padding-left:     0.6em;

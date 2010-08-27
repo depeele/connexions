@@ -17,7 +17,7 @@
  *      viewer          The Model_User instance representing the current
  *                      viewer;
  *      tags            A Model_Set_Tag instance containing information about
- *                      any requested tags (i.e. tag restrictions);
+ *                      any requested tags AND the 'for:%user%' for this inbox;
  */
 
 ?>
@@ -25,41 +25,24 @@
    <div class='context-bg connexions_sprites user_bg ui-corner-left'>
     &nbsp;
    </div>
+   <p>
    <?php
-    if ($this->owner === '*')
+    if (count($this->tags) > 1)
     {
-        echo "<p>People related to these bookmarks.</p>\n";
-    }
-  ?>
-  </div>
-  <?php
-
-    if ($this->owner !== '*')
-    {
-        /* Present information about the single user.
-         *
-         * In order for 'sidebar-user.phtml' to render properly,
-         * 'css/bookmark-users.css' MUST be included.
-         *
-         * NOTE: Since this view scripts is most often included asynchronously,
-         *       this headLink() will NOT effect the containing page.  See
-         *       application/views/scripts/inbox/sidebar.phtml where it is
-         *       currently included effectively.
-        $this->headLink()
-                ->appendStylesheet( $this->baseUrl('/css/bookmark-users.css'));
-         */
-
-        echo $this->partial('sidebar-user.phtml',
-                            array(
-                                'user'   => $this->owner,
-                                'viewer' => $this->viewer,
-                            ));
+        echo "People related to these bookmarks.";
     }
     else
     {
-        // Tag-related users
-        $config        = $this->sidebarHelper->getPane('people');
-        $htmlItemCloud = $this->htmlItemCloud($config);
-
-        echo $htmlItemCloud->render();
+        printf ("People who tagged one or more items for '%s'.",
+                $this->owner);
     }
+    ?>
+   </p>
+  </div>
+<?php
+
+// Tag-related users
+$config        = $this->sidebarHelper->getPane('people');
+$htmlItemCloud = $this->htmlItemCloud($config);
+
+echo $htmlItemCloud->render();

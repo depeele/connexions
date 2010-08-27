@@ -11,20 +11,18 @@
  *                      viewer;
  *      tags            A Model_Set_Tag instance containing information about
  *                      any requested tags (i.e. tag restrictions);
+ *      allTags         A Model_Set_Tag instance that is a clone of 'tags' but
+ *                      also includes the 'for:%user%' tag for 'owner';
  *
  *      main            An array of settings for the main body:
  *          namespace       The cookie/parameters/settings namespace for the
  *                          main body;
  *          viewer          The Model_User instance representing the current
  *                          viewer (typically a reference to $view->viewer);
- *          users           The Model_User or Model_Set_User instance
- *                          representing the user(s) that partially define the
- *                          scope of this view
- *                          (typically a reference to $view->owner);
  *          tags            The Model_Tag or Model_Set_Tag instance  
  *                          representing the tag(s) that partially define the
  *                          scope of this view
- *                          (typically a reference to $view->tags);
+ *                          (typically a reference to $view->allTags);
  *
  *          displayStyle    Indicates the current presentation style -- if this
  *                          is an array, the style is 'custom';

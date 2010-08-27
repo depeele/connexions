@@ -50,7 +50,7 @@ if ($helper->hasHiddenItems())
     // Remove any items that were identified as "hidden"
     foreach ($itemList as $key => $item)
     {
-        if ($helper->isHidden($item))
+        if ($helper->isHiddenItem($item))
         {
             unset($itemList[$key]);
         }
