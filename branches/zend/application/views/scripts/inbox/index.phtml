@@ -1,56 +1,92 @@
 <?php
 /** @file
  *
- *  View script for IndexController::index with incoming members:
- *      owner               The owner of the current item set -- either a
- *                          string or a Model_User instance;
- *      viewer              The Model_User instance representing the current
- *                          viewer;
- *      tagInfo             A Connexions_Set_Info instance containing
- *                          information about the requested tags;
+ *  View script for InboxController::index to render the main content.
  *
- *      paginator           A Zend_Paginator instance established for the
- *                          presentation of the current Model_Set_Bookmark;
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      owner           The owner of the current item set -- either a string or
+ *                      a Model_User instance;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
+ *      allTags         'tags' + the 'for:%name%' tag for 'owner';
+ *
+ *      main            An array of settings for the main body:
+ *          namespace       The cookie/parameters/settings namespace for the
+ *                          main body;
+ *          viewer          The Model_User instance representing the current
+ *                          viewer (typically a reference to $view->viewer);
+ *          users           The Model_User or Model_Set_User instance
+ *                          representing the user(s) that partially define the
+ *                          scope of this view
+ *                          (typically a reference to $view->owner);
+ *          tags            A reference to 'allTags';
+ *
+ *          displayStyle    Indicates the current presentation style -- if this
+ *                          is an array, the style is 'custom';
+ *          perPage         The number of results on a single page;
+ *          page            The desired page of results;
+ *          sortBy          Indicates the sort field used to retrieve the
+ *                          current bookmark set;
+ *          sortOrder       Indicates the sort order used to retrieve the
+ *                          current bookmark set;
  */
-$baseUrl = $this->baseUrl('/'); //Connexions::url('/');
+Connexions::log('script/inbox/index.phtml');
+
+/* Initialize the HTML Bookmarks helper, needed here because the Scope Helper
+ * needs access to the bookmarks for count.
+ */
+$htmlBookmarks = $this->htmlBookmarks( $this->main );
+
+// Prepare the Html Item Scope helper
+$name = $this->owner->name;
+
+$scopePath = array($name    => $this->baseUrl('/'. $name),
+                   'inbox'  => $this->baseUrl('/inbox/'. $name));
+
+$scopeRpc = Connexions::getJsonRpcInfo();
+$scopeRpc['method'] = 'bookmark.autocompleteTag';
+$scopeRpc['params'] = array('tags'   => $this->allTags->__toString(),
+                            'users'  => $this->owner->name,
+                     );
+
+$htmlItemScope = $this->htmlItemScope( array(
+                    'namespace'         => $this->namespace,
+                    'items'             => $htmlBookmarks->paginator,
+                    'scope'             => $this->tags,
+                    'inputLabel'        => 'Tags',
+                    'inputName'         => 'Tags',
+                    'path'              => $scopePath,
+                    'jsonRpc'           => $scopeRpc,
+                 ));
+
 
 $links = $this->headLink();
-$links->appendStylesheet($baseUrl .'css/bookmarks.css')
-      ->appendStylesheet($baseUrl .'css/inbox.css');
-
-$this->headTitle('inbox')
-     ->headTitle($this->owner);
+$links->appendStylesheet($this->baseUrl('/css/bookmarks.css'));
 
 ?>
 <div class='columnHeader'>
- <div class='context-bg connexions_sprites inbox_bg
+ <div class='context-bg connexions_sprites bookmark_bg
              ui-corner-left ui-corner-tr'>&nbsp;</div>
- <p>Inbox for <?= $this->owner ?>
+ <p><?= $this->owner ?>'s inbox
     <?php
-        if (! empty($this->owner->pictureUrl))
+        if ( (! empty($this->owner->pictureUrl)) )
         {
             printf ("<img class='avatar' src='%s' title='%s' />\n",
                     $this->owner->pictureUrl,
                     $this->owner->fullName);
         }
     ?>
-    <br />
   <?php
-    $forPat = '/for:'. $this->owner->name .'(,?$)/';
-    $tagStr = preg_replace($forPat, '', $this->tagInfo->validItems);
-    if ( ! empty($tagStr))
-        printf ("with tags '%s'.", $tagStr);
-    else
-        printf ("NO tags.");
+    if ( count($this->tags) > 0)
+        printf ("<br />with tags '%s'.", $this->tags);
   ?>
  </p>
 </div>
 
-<?= $this->htmlItemScope($this->paginator,
-                         $this->tagInfo) ?>
-
-<?= $this->htmlBookmarks($this->paginator,
-                         $this->viewer,
-                         $this->tagInfo) ?>
+<?= $htmlItemScope->render() ?>
+<?= $this->render('inbox/main.phtml') ?>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

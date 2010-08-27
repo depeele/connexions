@@ -6,73 +6,84 @@
  *      /inbox/<user>[/<tag list>]]
  */
 
-class InboxController extends Zend_Controller_Action
+class InboxController extends Connexions_Controller_Action
 {
-    protected   $_viewer    = null;
-    protected   $_owner     = null;
-    protected   $_forTag    = null;
-    protected   $_tagInfo   = null;
-    protected   $_userItems = null;
-    protected   $_tagIds    = null;
+    // Tell Connexions_Controller_Action_Helper_ResourceInjector which
+    // Bootstrap resources to make directly available
+    public  $dependencies = array('db','layout');
 
+    protected   $_url           = null;
+    protected   $_owner         = null;
+    protected   $_tags          = null;
+
+    protected   $_forTag        = null;
+    protected   $_allTags       = null; // _tags + _forTag
+
+
+    public      $contexts       = array(
+                                    'index' => array('partial', 'json',
+                                                     'rss',     'atom'),
+                                );
+
+    /** @brief  Index/Get/Read/View action.
+     *
+     *  Retrieve a set of Bookmarks based upon the requested
+     *  'owner' and/or 'tags', including the 'for:%user%' tag.
+     *
+     *  Once retrieved, perform further setup based upon the current
+     *  context/format.
+     */
     public function indexAction()
     {
-        $this->_viewer =& Zend_Registry::get('user');
+        $request       =& $this->_request;
 
-        $request       = $this->getRequest();
-        $this->_owner  = $request->getParam('owner',     null);
-        $reqTags       = $request->getParam('tags',      null);
+        /***************************************************************
+         * Process the requested 'owner' and 'tags'
+         *
+         */
+        $reqOwner = $request->getParam('owner', null);
+        $reqTags  = $request->getParam('tags', null);
 
-        /* If this is a user/"owned" area (e.g. /<userName> [/ <tags ...>]),
+        /* If this is a user/"owned" area
+         * (e.g. /inbox/<userName> [/ <tags ...>]),
          * verify the validity of the requested user.
          */
-        if ($this->_owner === 'mine')
+        if ( ($reqOwner === null)   ||
+             ($reqOwner === 'mine') ||
+             ($reqOwner === 'me')   ||
+             ($reqOwner === 'self') )
         {
-            // 'mine' == the currently authenticated user
-            $this->_owner =& $this->_viewer;
-            if ( ( ! $this->_owner instanceof Model_User) ||
-                 (! $this->_owner->isAuthenticated()) )
+            // Use the currently authenticated user (viewer)
+            if ( ( ! $this->_viewer instanceof Model_User) ||
+                 (! $this->_viewer->isAuthenticated()) )
             {
                 // Unauthenticated user -- Redirect to signIn
-                return $this->_helper->redirector('signIn','auth');
+                return $this->_redirectToSignIn();
             }
+
+            // Redirect to the viewer's inbox
+            return $this->_helper->redirector($this->_viewer->name);
         }
 
-
-        if ( (! $this->_owner instanceof Model_User) &&
-             (! empty($this->_owner)) )
+        // Does the name match an existing user?
+        if ($reqOwner === $this->_viewer->name)
         {
-            /* :TODO: Allow user-groups to be named here.
-             *
-             * Is this a valid user?
-             */
-            $ownerInst = Model_User::find(array('name' => $this->_owner));
-            if ($ownerInst->isBacked())
-            {
-                /*
-                Connexions::log("IndexController:: Valid ".
-                                        "owner[ {$ownerInst->name} ]");
-                // */
-
-                $this->_owner =& $ownerInst;
-            }
-            else
-            {
-                // Invalid user!
-                /*
-                Connexions::log("IndexController:: "
-                                    . "Unknown User with tags; "
-                                    . "set owner to '*'");
-                // */
-
-                $this->view->error = "Unknown user [ {$this->_owner} ].";
-            }
+            // 'name' matches the current viewer...
+            $this->_owner =& $this->_viewer;
+        }
+        else
+        {
+            //$ownerInst = Model_User::find(array('name' => $name));
+            $this->_owner = $this->service('User')
+                                ->find(array('name' => $reqOwner));
         }
 
-        /* :TODO: Allow filtering by "sender" (i.e. the person that tagged
-         *        items for this inbox).
-         */
-
+        if ($this->_owner === null)
+        {
+            // Unknown User
+            $this->view->error = "Unknown user [ {$reqOwner} ]";
+            return;
+        }
 
         /* :TODO: Is 'viewer' allowed to see the inbox of 'owner'??
          *        - For a user       inbox,
@@ -85,272 +96,389 @@ class InboxController extends Zend_Controller_Action
          *
          * For now, only the owner may view.
          */
-        if ( ( ! $this->_owner instanceof Model_User) ||
-             ($this->_owner->userId !== $this->_viewer->userId) )
-        {
-            // Redirect to the viewer's inbox
-            return $this->_forward('index', 'inbox', null,
-                                   array('owner' => $this->_viewer->name));
-        }
-        $forTagStr = 'for:'. $this->_owner->name;
-        $this->_forTag    = new Model_Tag($forTagStr);
-
-        /*
-        Connexions::log("InboxController:: forTag[ "
-                            . $this->_forTag->debugDump() . " ]");
-        // */
-
 
         // Parse the incoming request tags
-        $this->_tagInfo = new Connexions_Set_Info($reqTags, 'Model_Tag');
-        if ($this->_tagInfo->hasInvalidItems())
-            $this->view->error =
-                        "Invalid tag(s) [ {$this->_tagInfo->invalidItems} ]";
+        $tService      = $this->service('Tag');
 
-        /*
-        Connexions::log("InboxController:: tagInfo: "
-                        .   "itemClass[ %s ], reqStr[ %s ], "
-                        .   "validItems[ %s ], invalidItems[ %s ]",
-                        $this->_tagInfo->itemClass,
-                        $this->_tagInfo->reqStr,
-                        $this->_tagInfo->validItems,
-                        $this->_tagInfo->invalidItems);
+        $this->_tags   = $tService->csList2set($reqTags);
+
+        // And retrieve a Domain Model instance representing the for tag.
+        $this->_forTag = $tService->get('for:'. $this->_owner->name);
+
+        $this->_allTags = clone $this->_tags;
+        $this->_allTags->append( $this->_forTag );
+
+        // /*
+        Connexions::log("InboxController::indexAction(): "
+                        . "tags[ %s ], forTag[ %s ], allTags[ %s ]",
+                        Connexions::varExport($this->_tags),
+                        Connexions::varExport($this->_forTag),
+                        Connexions::varExport($this->_allTags));
         // */
 
-        /* Create the userItem set, scoped by any incoming valid tags from
-         * ALL users.
+        /***************************************************************
+         * We now have a valid 'owner' ($this->_owner) and
+         * 'tags' ($this->_tags)
+         *
+         * Adjust the URL to reflect the validated 'owner' and 'tags'
          */
-        $this->_tagIds = $this->_tagInfo->validIds;
-        array_push($this->_tagIds, $this->_forTag->tagId);
+        $this->_baseUrl .= $this->_owner->name
+                        .  '/';
 
-        /*
-        Connexions::log("InboxController:: tagIds[ "
-                            . implode(', ', $this->_tagIds) ." ]");
-        // */
+        $this->_url      = $this->_baseUrl
+                         . (count($this->_tags) > 0
+                                ? $this->_tags .'/'
+                                : '');
 
-        $this->_userItems = new Model_UserItemSet($this->_tagIds);
+        /***************************************************************
+         * Set the view variables required for all views/layouts.
+         *
+         */
+        $this->view->headTitle($this->_owner ."'s Inbox");
+
+        $this->view->url       = $this->_url;
+        $this->view->viewer    = $this->_viewer;
+
+        $this->view->owner     = $this->_owner;
+        $this->view->allTags   = $this->_allTags;
+
+        $this->view->tags      = $this->_tags;
 
 
-        $this->_htmlContent();
-        $this->_htmlSidebar();
-    }
-
-    /** @brief Redirect all other actions to 'index'
-     *  @param  method      The target method.
-     *  @param  args        Incoming arguments.
-     *
-     */
-    public function __call($method, $args)
-    {
-        if (substr($method, -6) == 'Action')
-        {
-            $owner = substr($method, 0, -6);
-
-            /*
-            $request = $this->getRequest();
-
-            Connexions::log("InboxController::__call({$method}): "
-                                           . "owner[ {$owner} ], "
-                                           . "parameters[ "
-                                           .    $request->getParam('tags','')
-                                           .        " ]");
-            // */
-
-            return $this->_forward('index', 'inbox', null,
-                                   array('owner' => $owner));
-        }
-
-        throw new Exception('Invalid method "'. $method .'" called', 500);
+        // Handle this request based on the current context / format
+        $this->_handleFormat('items');
     }
 
     /*************************************************************************
-     * Context-specific view initialization and invocation
+     * Protected Helpers
      *
      */
-    protected function _htmlContent()
-    {
-        $request =& $this->getRequest();
-        $layout  =& $this->view->layout();
 
-        /********************************************************************
-         * Prepare for rendering the main view.
-         *
-         * Notify the HtmlUserItems View Helper (used to render the main view)
-         * of any incoming settings, allowing it establish any required
-         * defaults.
-         */
-        $prefix           = 'inboxItems';
-        $itemsPerPage     = $request->getParam($prefix."PerPage",       null);
-        $itemsSortBy      = $request->getParam($prefix."SortBy",        null);
-        $itemsSortOrder   = $request->getParam($prefix."SortOrder",     null);
-        $itemsStyle       = $request->getParam($prefix."OptionGroup",   null);
-        $itemsStyleCustom = $request->getParam($prefix."OptionGroups_option",
-                                                                        null);
+    /** @brief  Prepare for rendering the main view, regardless of format.
+     *
+     *  This will collect the variables needed to render the main view, placing
+     *  them in $view->main as a configuration array.
+     */
+    protected function _prepareMain($htmlNamespace  = '')
+    {
+        parent::_prepareMain($htmlNamespace);
+
+        $extra = array(
+            'users'  =>  $this->_owner,
+            'tags'   => &$this->_allTags,
+            'forTag' =>  $this->_forTag,
+        );
+        $this->view->main = array_merge($this->view->main, $extra);
 
         /*
-        Connexions::log('InboxController::'
-                            . 'prefix [ '. $prefix .' ], '
-                            . 'params [ '
-                            .   print_r($request->getParams(), true) ." ],\n"
-                            . "    PerPage        [ {$itemsPerPage} ],\n"
-                            . "    SortBy         [ {$itemsSortBy} ],\n"
-                            . "    SortOrder      [ {$itemsSortOrder} ],\n"
-                            . "    Style          [ {$itemsStyle} ],\n"
-                            . "    StyleCustom    [ "
-                            .           print_r($itemsStyleCustom, true) .' ]');
+        Connexions::log("InboxController::_prepareMain(): "
+                        .   "main[ %s ]",
+                        Connexions::varExport($this->view->main));
         // */
+    }
 
-        // Initialize the Connexions_View_Helper_HtmlUserItems helper...
-        $uiHelper = $this->view->htmlUserItems();
-        $uiHelper->setNamespace($prefix)
-                 ->setSortBy($itemsSortBy)
-                 ->setSortOrder($itemsSortOrder);
-        if (is_array($itemsStyleCustom))
-            $uiHelper->setStyle(Connexions_View_Helper_HtmlUserItems
-                                                            ::STYLE_CUSTOM,
-                                $itemsStyleCustom);
-        else
-            $uiHelper->setStyle($itemsStyle);
+    /** @brief  Prepare for rendering the sidebar view.
+     *  @param  async   Should we setup to do an asynchronous render
+     *                  (i.e. tab callbacks will request tab pane contents when 
+     *                        needed)?
+     *
+     *  This will collect the variables needed to render the sidebar view,
+     *  placing them in $view->sidebar as a configuration array.
+     */
+    protected function _prepareSidebar($async   = false)
+    {
+        /*
+        Connexions::log("InboxController::_prepareSidebar( %s )",
+                        ($async ? "async" : "sync"));
+        // */
+        parent::_prepareSidebar($async);
 
-        $uiHelper->setMultipleUsers();
+        $extra = array(
+            'users' => $this->_owner,
+            'tags'  => &$this->_allTags,
+        );
+        $this->view->sidebar = array_merge($this->view->sidebar, $extra);
 
 
-        // Set Scope information
-        $scopeParts  = array('format=json');
-        if ($this->_tagInfo->hasValidItems())
+        /******************************************************************
+         * Create a Sidebar Helper using the configuration information
+         * that we've gathered thus far.
+         *
+         */
+        $sidebar = $this->view->htmlSidebar( $this->view->sidebar );
+        if ($async === false)
         {
-            array_push($scopeParts, 'tags='. $this->_tagInfo->validItems);
+            /* Finialize sidebar preparations by retrieving the necessary model 
+             * data for those portions of the sidebar that are to be rendered.
+             *
+             * The fact that actual sidebar rendering will occur is indicated 
+             * by 'async' == false.  The value of 'pane' will indicate which 
+             * sidebar pane is to be rendered with null meaning that they will 
+             * all be rendered.
+             */
+
+            /*
+            Connexions::log("InboxController::_prepareSidebar(): "
+                            . "!async, partials %sarray [ %s ]",
+                            (is_array($this->_partials) ? "" : "!"),
+                            Connexions::varExport($this->_partials));
+            // */
+
+            $part = (is_array($this->_partials)
+                        ? $this->_partials[0]
+                        : null);
+
+            if ( ($part === null) || ($part === 'tags') )
+            {
+                $this->_prepareSidebarPane('tags', $sidebar);
+            }
+
+            if ( ($part === null) || ($part === 'people') )
+            {
+                $this->_prepareSidebarPane('people', $sidebar);
+            }
+
+            if ( ($part === null) || ($part === 'items') )
+            {
+                $this->_prepareSidebarPane('items', $sidebar);
+            }
         }
 
-        $inboxUrl    = $this->view->baseUrl('/inbox/'. $this->_owner->name);
-        $scopeCbUrl  = $this->view->baseUrl('/scopeAutoComplete')
-                     . '?'. implode('&', $scopeParts);
-
-        $scopeHelper = $this->view->htmlItemScope();
-        $scopeHelper->setNamespace($prefix)
-                    ->setInputLabel('Tags')
-                    ->setInputName( 'tags')
-                    ->setPath(array('Inbox' => $inboxUrl))
-                    ->setAutoCompleteUrl( $scopeCbUrl );
-
-
-        /* Ensure that the final sort information is properly reflected in
-         * the source set.
-         */
-        $this->_userItems->setOrder( $uiHelper->getSortBy() .' '.
-                                     $uiHelper->getSortOrder() );
-
-        // /*
-        Connexions::log("InboxController:: updated params:\n"
-                            . '    SortBy         [ '
-                            .           $uiHelper->getSortBy() ." ],\n"
-                            . '    SortOrder      [ '
-                            .           $uiHelper->getSortOrder() ." ],\n"
-                            . '    Style          [ '
-                            .           $uiHelper->getStyle() ." ],\n"
-                            . '    ShowMeta       [ '
-                            .           print_r($uiHelper->getShowMeta(),
-                                                true) .' ]');
-        // */
-
-
-        /* Use the Connexions_Controller_Action_Helper_Pager to create a
-         * paginator for the retrieved user items / bookmarks.
-         */
-        $page      = $request->getParam('page',  null);
-        $paginator = $this->_helper->Pager($this->_userItems,
-                                           $page, $itemsPerPage);
-
-        /********************************************************************
-         * Set the required view variables and render this main view
-         *
-         */
-        $this->view->owner     = $this->_owner;
-        $this->view->viewer    = $this->_viewer;
-        $this->view->tagInfo   = $this->_tagInfo;
-        $this->view->paginator = $paginator;
-    }
-
-    protected function _htmlSidebar()
-    {
-        $request =& $this->getRequest();
-        $layout  =& $this->view->layout();
-
-        /* Create the tagSet that will be presented in the side-bar:
-         *      All tags used by all users/items contained in the current
-         *      user item / bookmark set.
-         *
-         *  $tagSet = new Model_TagSet( $this->_userItems->userIds(),
-         *                              $this->_userItems->itemIds() );
-         *  $tagSet->withAnyUser();
-         */
-         $tagSet = $this->_userItems
-                            ->getRelatedSet(Connexions_Set::RELATED_TAGS)
-                            ->withAnyUser();
-
-        /* Create the userSet that will be presented in the side-bar:
-         *      All users that have tagged something for this user.
-         *
-         *  $senderSet = new Model_UserSet( $this->_tagIds,
-         *                                  $this->_userItems->itemIds(),
-         *                                  $this->_userItems->userIds() );
-         *  $senderSet->weightBy('item');
-         */
-        $senderSet = $this->_userItems
-                            ->getRelatedSet(Connexions_Set::RELATED_USERS,
-                                            $this->_tagIds)
-                            ->weightBy('item');
-            
-        /********************************************************************
-         * Prepare for rendering the right column.
-         *
-         * Notify the HtmlItemCloud View Helper
-         * (used to render the right column) of any incoming settings, allowing
-         * it establish any required defaults.
-         */
-        $prefix             = 'sbTags';
-        $tagsPerPage        = $request->getParam($prefix."PerPage",     100);
-        $tagsHighlightCount = $request->getParam($prefix."HighlightCount",
-                                                                        null);
-        $tagsSortBy         = $request->getParam($prefix."SortBy",      'tag');
-        $tagsSortOrder      = $request->getParam($prefix."SortOrder",   null);
-        $tagsStyle          = $request->getParam($prefix."OptionGroup", null);
+        // Pass the configured instance of the sidebar helper to the views
+        $this->view->sidebarHelper = $sidebar;
 
         /*
-        Connexions::log('InboxController::'
-                            . "right-column prefix [ {$prefix} ],\n"
-                            . "    PerPage        [ {$tagsPerPage} ],\n"
-                            . "    HighlightCount [ {$tagsHighlightCount} ],\n"
-                            . "    SortBy         [ {$tagsSortBy} ],\n"
-                            . "    SortOrder      [ {$tagsSortOrder} ],\n"
-                            . "    Style          [ {$tagsStyle} ]");
+        Connexions::log("InboxController::_prepareSidebar(): "
+                        .   "sidebar[ %s ]",
+                        Connexions::varExport($this->view->sidebar));
         // */
-
-
-        // Initialize the Connexions_View_Helper_HtmlItemCloud helper...
-        $cloudHelper = $this->view->htmlItemCloud();
-        $cloudHelper->setNamespace($prefix)
-                    ->setStyle($tagsStyle)
-                    ->setItemType(Connexions_View_Helper_HtmlItemCloud::
-                                                            ITEM_TYPE_ITEM)
-                    ->setSortBy($tagsSortBy)
-                    ->setSortOrder($tagsSortOrder)
-                    ->setPerPage($tagsPerPage)
-                    ->setHighlightCount($tagsHighlightCount)
-                    ->setItemSet($tagSet)
-                    ->setItemSetInfo($this->_tagInfo)
-                    ->setItemBaseUrl( ($this->_owner !== '*'
-                                        ? null
-                                        : '/bookmarks'))
-                    // Do NOT show the 'for:<user>' tag
-                    ->addHiddenItem($this->_forTag->tag);  //$forTagStr);
-
-
-        // Set the additional required view variables
-        $this->view->senderSet = $senderSet;
-
-
-        // Render the sidebar into the 'right' placeholder
-        $this->view->renderToPlaceholder('inbox/sidebar.phtml', 'right');
     }
+
+    /** @brief  Given the portion of the sidebar to prepare, along with an
+     *          instance of the sidebar helper, finish preparations for the 
+     *          sidebar portion by retrieving the model data that will be 
+     *          presented.
+     *  @param  pane    The portion of the sidebar to render
+     *                  (tags | people | items);
+     *  @param  sidebar The View_Helper_HtmlSidebar instance;
+     *
+     */
+    protected function _prepareSidebarPane(                        $pane,
+                                           View_Helper_HtmlSidebar &$sidebar)
+    {
+        $config  = $sidebar->getPane($pane);
+
+        $config['pageBaseUrl'] = $this->_baseUrl;
+
+        $perPage = ((int)$config['perPage'] > 0
+                        ? (int)$config['perPage']
+                        : 100);
+        $page    = ((int)$config['page'] > 0
+                        ? (int)$config['page']
+                        : 1);
+
+        $count   = $perPage;
+        $offset  = ($page - 1) * $perPage;
+
+        switch ($pane)
+        {
+        /*************************************************************
+         * Sidebar::Tags
+         *
+         */
+        case 'tags':
+            $service    = $this->service('Tag');
+            $fetchOrder = array('userItemCount DESC',
+                                'userCount     DESC',
+                                'itemCount     DESC',
+                                'tag           ASC');
+
+            if (count($this->_tags) < 1)
+            {
+                /* There were no requested tags that limit the bookmark 
+                 * retrieval so, for the sidebar, retrieve ALL tags limited 
+                 * only by the current owner (if any).
+                 */
+
+                /*
+                Connexions::log("InboxController::_prepareSidebarPane( %s ): "
+                                .   "Fetch tags %d-%d by user [ %s ]",
+                                $pane,
+                                $offset, $offset + $count,
+                                Connexions::varExport($this->_owner));
+                // */
+
+                $tags = $service->fetchByUsers($this->_owner,   // ONE user
+                                               $fetchOrder,
+                                               $count,
+                                               $offset);
+            }
+            else
+            {
+                // Tags related to the bookmarks with the given set of tags.
+
+                /*
+                Connexions::log("InboxController::_prepareSidebarPane( %s ): "
+                                .   "Fetch tags %d-%d related to bookmarks "
+                                .   "with tags[ %s ]",
+                                $pane,
+                                $offset, $offset + $count,
+                                Connexions::varExport($this->_tags));
+                // */
+
+                /* In order to prepare the sidebar, we need to know the set
+                 * of bookmarks presented in the main view.  If we're rendering 
+                 * the main view and sidebar syncrhonously, this MAY have been 
+                 * communicated to the sidebar helper via 
+                 *      application/view/scripts/index/main.phtml.
+                 */
+                if (! isset($this->view->main))
+                {
+                    $this->_prepareMain();
+                }
+
+                if ($sidebar->items === null)
+                {
+                    /* The set of bookmarks presented in the main view has not 
+                     * been communicated to the sidebar helper.  We need to 
+                     * generate them now using the non-format related 
+                     * View_Helper_Bookmarks to generate the appropriate set of 
+                     * bookmarks, telling the helper to return ALL bookmarks by 
+                     * setting 'perPage' to -1.
+                     */
+                    $overRides = array_merge($this->view->main,
+                                             array('perPage' => -1));
+
+                    $helper    = $this->view->bookmarks( $overRides );
+                    $bookmarks = $helper->bookmarks;
+
+                    /* Notify the sidebar helper of the main-view 
+                     * items/bookmarks
+                     */
+                    $sidebar->items = $bookmarks;
+                }
+
+                /* Retrieve the set of tags that are related to the presented 
+                 * bookmarks.
+                 */
+                $tags = $service->fetchByBookmarks($sidebar->items,
+                                                   $fetchOrder,
+                                                   $count,
+                                                   $offset);
+
+                $config['selected'] =& $this->_tags;
+            }
+
+            $config['items']            =& $tags;
+            $config['itemsType']        =
+                                 View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
+            $config['weightName']       =  'userItemCount';
+            $config['weightTitle']      =  'Bookmarks with this tag';
+            $config['titleTitle']       =  'Tag';
+            $config['currentSortBy']    =
+                                 View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
+            $config['currentSortOrder'] =
+                                 Connexions_Service::SORT_DIR_DESC;
+            break;
+
+        /*************************************************************
+         * Sidebar::People
+         *
+         */
+        case 'people':
+            /* Order by userItem/Bookmark count here so the most used items 
+             * will be in the limited set.  User-requested sorting will be 
+             * performed later (via View_Helper_HtmlItemCloud) before the 
+             * cloud or list is rendered.
+             */
+
+            /*
+            Connexions::log("InboxController::_prepareSidebarPane( %s ): "
+                            .   "Fetch people %d-%d related to tags[ %s ]",
+                            $pane,
+                            $offset, $offset + $count,
+                            Connexions::varExport($this->_tags));
+            // */
+
+            $fetchOrder = array('userItemCount DESC',
+                                'userCount     DESC',
+                                'itemCount     DESC',
+                                'name          ASC');
+
+            // Fetch related users by tag
+            $service = $this->service('User');
+            $users   = $service->fetchByTags($this->_tags,
+                                             true,    // exact
+                                             $fetchOrder,
+                                             $count,
+                                             $offset);
+
+
+            $config['items']            =& $users;
+            $config['itemsType']        =
+                             View_Helper_HtmlItemCloud::ITEM_TYPE_USER;
+            $config['weightName']       =  'userItemCount';
+            $config['weightTitle']      =  'Bookmarks';
+            $config['currentSortBy']    =
+                             View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
+            $config['currentSortOrder'] =
+                             Connexions_Service::SORT_DIR_DESC;
+            break;
+
+        /*************************************************************
+         * Sidebar::Items
+         *
+         */
+        case 'items':
+            // ALL users - sort by userItemCount
+            $fetchOrder = array('userItemCount DESC',
+                                'ratingCount   DESC',
+                                'url           ASC');
+
+            $users                 = null;
+            $config['weightName']  = 'userItemCount';
+            $config['weightTitle'] = 'Bookmarks';
+
+            /*
+            Connexions::log("InboxController::_prepareSidebarPane( %s ): "
+                            .   "Fetch items %d-%d for all users "
+                            .   "related to tags [ %s ]",
+                            $pane,
+                            $offset, $offset + $count,
+                            Connexions::varExport($this->_tags));
+            // */
+
+            /*
+            Connexions::log("InboxController::_prepareSidebarPane( %s ): "
+                            .   "Fetch items %d-%d for owner[ %s ] "
+                            .   "related to tags [ %s ]",
+                            $pane,
+                            $offset, $offset + $count,
+                            Connexions::varExport($this->_owner),
+                            Connexions::varExport($this->_tags));
+            // */
+
+            $service = $this->service('Item');
+            $items   = $service->fetchByUsersAndTags($users,
+                                                     $this->_tags,
+                                                     true,    // exact
+                                                     $fetchOrder,
+                                                     $count,
+                                                     $offset);
+
+            $config['items']            =& $items;
+            $config['itemsType']        =
+                                 View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
+            $config['itemBaseUrl']      =  $this->_helper->url(null, 'url');
+                                            //$this->view->baseUrl('/url/');
+            $config['currentSortBy']    =
+                                 View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
+            $config['currentSortOrder'] =
+                                 Connexions_Service::SORT_DIR_DESC;
+            break;
+        }
+
+        $sidebar->setPane($pane, $config);
+    }
+
 }
