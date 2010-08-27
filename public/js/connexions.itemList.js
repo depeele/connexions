@@ -70,12 +70,15 @@ $.widget("connexions.itemList", {
             objClass = opts.objClass = self.$items.attr('class');
         }
 
-        self.$items[objClass]({
-            'deleted': function(e, data) {
-                // Remove this item
-                self._itemDeleted( $(this) );
-            }
-        });
+        if (self.$items.length > 0)
+        {
+            self.$items[objClass]({
+                'deleted': function(e, data) {
+                    // Remove this item
+                    self._itemDeleted( $(this) );
+                }
+            });
+        }
 
         self.$headers
                 .fadeTo(100, opts.dimOpacity)
@@ -146,7 +149,10 @@ $.widget("connexions.itemList", {
         self.$headers.unbind('hover');
 
         // Remove added elements
-        self.$items[opts.objClass]('destroy');
+        if (self.$items.length > 0)
+        {
+            self.$items[opts.objClass]('destroy');
+        }
     }
 });
 
