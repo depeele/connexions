@@ -631,6 +631,9 @@ abstract class Connexions_Model_Mapper_DbTable
                      * match[2] == field name
                      * match[3] == condition operator '=' or '!='
                      */
+                    if (empty($value))
+                        continue;
+
                     $condition = $match[1] . $match[2];
                     if ($match[3] === '!=')
                         $condition .= ' NOT(IN ?)';

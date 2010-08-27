@@ -217,23 +217,27 @@ class Service_Bookmark extends Connexions_Service
      *                  [ null == all ];
      *  @param  offset  The starting offset in the full set of matching items
      *                  [ null == 0 ].
+     *  @param  since   Limit the results to bookmarks updated after this
+     *                  date/time [ null == no time limits ];
      *
      *  @return A new Connexions_Model_Set.
      */
     public function fetch($id       = null,
                           $order    = null,
                           $count    = null,
-                          $offset   = null)
+                          $offset   = null,
+                          $since    = null)
     {
         $ids     = $this->_csList2array($id);
         $normIds = $this->_mapper->normalizeIds($ids);
         $order   = $this->_csOrder2array($order);
 
+        $normIds = $this->_includeSince($normIds, $since);
+
         return $this->_mapper->fetch( $normIds,
                                       $order,
                                       $count,
                                       $offset );
-
     }
 
     /** @brief  Retrieve a paginated set of Domain Model instances.
@@ -245,15 +249,20 @@ class Service_Bookmark extends Connexions_Service
      *                  Connexions_Service::SORT_DIR_* constant.  If an order
      *                  is omitted, Connexions_Service::SORT_DIR_ASC will be
      *                  used [ no specified order ];
+     *  @param  since   Limit the results to bookmarks updated after this
+     *                  date/time [ null == no time limits ];
      *
      *  @return A new Connexions_Model_Set.
      */
     public function fetchPaginated($id      = null,
-                                   $order   = null)
+                                   $order   = null,
+                                   $since   = null)
     {
         $ids     = $this->_csList2array($id);
         $normIds = $ids;    //$this->_mapper->normalizeIds($ids);
         $order   = $this->_csOrder2array($order);
+
+        $normIds = $this->_includeSince($normIds, $since);
 
         $set = $this->_mapper->fetch( $normIds, $order );
         return new Zend_Paginator( $set->getPaginatorAdapter() );
@@ -271,6 +280,8 @@ class Service_Bookmark extends Connexions_Service
      *                          'userCount     DESC' ] ]
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
+     *  @param  since   Limit the results to bookmarks updated after this
+     *                  date/time [ null == no time limits ];
      *
      *  @return A new Model_Set_Bookmark instance.
      */
@@ -278,7 +289,8 @@ class Service_Bookmark extends Connexions_Service
                                 $exact   = true,
                                 $order   = null,
                                 $count   = null,
-                                $offset  = null)
+                                $offset  = null,
+                                $since   = null)
     {
         // Rely on Service_Tag to properly interpret 'tags'
         $tags = $this->factory('Service_Tag')->csList2set($tags);
@@ -298,6 +310,8 @@ class Service_Bookmark extends Connexions_Service
         }
 
         $tags = $this->_prepareTags( array('tags' => $tags) );
+
+        $where = $this->_includeSince(array(), $since);
 
         return $this->_mapper->fetchRelated( array(
                                         'tags'      => $tags,
@@ -320,13 +334,16 @@ class Service_Bookmark extends Connexions_Service
      *                          'tagCount      DESC' ] ]
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
+     *  @param  since   Limit the results to bookmarks updated after this
+     *                  date/time [ null == no time limits ];
      *
      *  @return A new Model_Set_Bookmark instance.
      */
     public function fetchByUsers($users,
                                  $order   = null,
                                  $count   = null,
-                                 $offset  = null)
+                                 $offset  = null,
+                                 $since   = null)
     {
         // Rely on Service_User to properly interpret 'users'
         $users = $this->factory('Service_User')->csList2set($users);
@@ -345,11 +362,14 @@ class Service_Bookmark extends Connexions_Service
             $order = $this->_extraOrder($order);
         }
 
+        $where = $this->_includeSince(array(), $since);
+
         return $this->_mapper->fetchRelated( array(
                                         'users'   => $users,
                                         'order'   => $order,
                                         'count'   => $count,
                                         'offset'  => $offset,
+                                        'where'   => $where,
                                         'privacy' => $this->_curUser(),
                                     ));
     }
@@ -364,13 +384,16 @@ class Service_Bookmark extends Connexions_Service
      *                          'tagCount      DESC' ] ]
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
+     *  @param  since   Limit the results to bookmarks updated after this
+     *                  date/time [ null == no time limits ];
      *
      *  @return A new Model_Set_Bookmark instance.
      */
     public function fetchByItems($items,
                                  $order   = null,
                                  $count   = null,
-                                 $offset  = null)
+                                 $offset  = null,
+                                 $since   = null)
     {
         // Rely on Service_Item to properly interpret 'items'
         $items = $this->factory('Service_Item')->csList2set($items);
@@ -389,11 +412,14 @@ class Service_Bookmark extends Connexions_Service
             $order = $this->_extraOrder($order);
         }
 
+        $where = $this->_includeSince(array(), $since);
+
         return $this->_mapper->fetchRelated( array(
                                         'items'   => $items,
                                         'order'   => $order,
                                         'count'   => $count,
                                         'offset'  => $offset,
+                                        'where'   => $where,
                                         'privacy' => $this->_curUser(),
                                     ));
     }
@@ -412,6 +438,8 @@ class Service_Bookmark extends Connexions_Service
      *                          'tagCount      DESC' ] ]
      *  @param  count       Optional LIMIT count
      *  @param  offset      Optional LIMIT offset
+     *  @param  since       Limit the results to bookmarks updated after this
+     *                      date/time [ null == no time limits ];
      *
      *  @return A new Model_Set_Bookmark instance.
      */
@@ -420,7 +448,8 @@ class Service_Bookmark extends Connexions_Service
                                         $exactTags = true,
                                         $order     = null,
                                         $count     = null,
-                                        $offset    = null)
+                                        $offset    = null,
+                                        $since     = null)
     {
         /* Rely on Service_User/Service_Tag to properly interpret 'users' and
          * 'tags'
@@ -442,6 +471,8 @@ class Service_Bookmark extends Connexions_Service
             $order = $this->_extraOrder($order);
         }
 
+        $where = $this->_includeSince(array(), $since);
+
         return $this->_mapper->fetchRelated( array(
                                         'users'     => $users,
                                         'tags'      => $tags,
@@ -449,6 +480,7 @@ class Service_Bookmark extends Connexions_Service
                                         'order'     => $order,
                                         'count'     => $count,
                                         'offset'    => $offset,
+                                        'where'     => $where,
                                         'privacy'   => $this->_curUser(),
                                     ));
     }
@@ -467,6 +499,8 @@ class Service_Bookmark extends Connexions_Service
      *                          'tagCount      DESC' ] ]
      *  @param  count       Optional LIMIT count
      *  @param  offset      Optional LIMIT offset
+     *  @param  since       Limit the results to bookmarks updated after this
+     *                      date/time [ null == no time limits ];
      *
      *  @return A new Model_Set_Bookmark instance.
      */
@@ -475,7 +509,8 @@ class Service_Bookmark extends Connexions_Service
                                         $exact   = true,
                                         $order   = null,
                                         $count   = null,
-                                        $offset  = null)
+                                        $offset  = null,
+                                        $since   = null)
     {
         /* Rely on Service_Item/Service_Tag to properly interpret 'items' and
          * 'tags'
@@ -497,6 +532,8 @@ class Service_Bookmark extends Connexions_Service
             $order = $this->_extraOrder($order);
         }
 
+        $where = $this->_includeSince(array(), $since);
+
         return $this->_mapper->fetchRelated( array(
                                         'items'     => $items,
                                         'tags'      => $tags,
@@ -504,6 +541,7 @@ class Service_Bookmark extends Connexions_Service
                                         'order'     => $order,
                                         'count'     => $count,
                                         'offset'    => $offset,
+                                        'where'     => $where,
                                         'privacy'   => $this->_curUser(),
                                     ));
     }
@@ -774,6 +812,28 @@ class Service_Bookmark extends Connexions_Service
      * Protected helpers
      *
      */
+
+    /** @brief  Include a date/time restriction.
+     *  @param  id      The identifier to add date/time restrictions to;
+     *  @param  since   Limit the results to bookmarks updated after this
+     *                  date/time [ null == no time limits ];
+     *
+     *  @return The (possibly) modified 'id'.
+     */
+    protected function _includeSince(array $id, $since)
+    {
+        if (is_string($since))
+        {
+            $since = strtotime($since);
+            if ($since !== false)
+            {
+                // Include an additional condition in 'normIds'
+                $id['updatedOn >='] = strftime('%Y-%m-%d %H:%M:%S', $since);
+            }
+        }
+
+        return $id;
+    }
 
     /** @brief  Given an array of name/value pairs to be used in creating a new
      *          Bookmark, see if there is a valid Model_Set_Tag identified.
