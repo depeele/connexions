@@ -63,13 +63,19 @@ $links->appendStylesheet($this->baseUrl('css/tagCloud.css'));
 <div class='columnHeader'>
  <div class='context-bg connexions_sprites tag_bg
              ui-corner-left ui-corner-tr'>&nbsp;</div>
- <p>
-  <?php
-    if ( count($this->users) > 0)
-        printf ("Tags used by<br />'%s'.", $this->users);
-    else
-        echo "All Tags.";
-  ?>
+ <p>All Tags<?php
+
+        $nUsers = count($this->users);
+        if ( $nUsers > 0 )
+        {
+            printf ("<span class='restrictions'>used by '%s'.</span>",
+                    $this->users);
+        }
+        else
+        {
+            echo ".";
+        }
+    ?>
  </p>
 </div>
 

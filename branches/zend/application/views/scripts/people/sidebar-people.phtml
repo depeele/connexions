@@ -25,17 +25,21 @@
    <div class='context-bg connexions_sprites user_bg ui-corner-left'>
     &nbsp;
    </div>
-   <p>Summary of people
-   <?php
+   <p>Summary of people<?php
+
     $nTags = count($this->tags);
     if ($nTags > 0)
     {
-        printf ("<br />using %d tag%s",
+        printf ("<span class='restrictions'>using %d tag%s.</span>",
                 $nTags,
                 ($nTags === 1 ? '' : 's'));
     }
+    else
+    {
+        echo ".";
+    }
    
-   ?>.</p>
+   ?></p>
   </div>
   <?php
 

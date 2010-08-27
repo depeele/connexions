@@ -1,5 +1,5 @@
 /****** users.scss ****** */
-.items .groupHeader { position: relative; background-color: #eeeeff; border-bottom: 1px solid #cccccc; color: #999999; height: 20px; left: -15px; }
+.items .groupHeader { position: relative; background-color: #eeeeff; color: #999999; height: 20px; left: -15px; }
 .items .groupHeader .group { position: relative; background-color: #eeeeff; height: 20px; right: -20px; }
 .items .groupHeader .date { position: relative; left: -12px; }
 .items .groupHeader .date .year { position: absolute; left: 1em; top: -0.45em; font-size: 3em; font-weight: bold; color: #ddddff; z-index: 4; }

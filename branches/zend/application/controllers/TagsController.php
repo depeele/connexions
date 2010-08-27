@@ -193,15 +193,17 @@ class TagsController extends Connexions_Controller_Action
          * by "weight" ordered "descending".
          *
          */
-        $paramNs = $this->view->sidebar['panes']['tags']['namespace'];
+        $paramNs  =  $this->view->sidebar['panes']['tags']['namespace'];
+        $paneTags =& $this->view->sidebar['panes']['tags'];
 
-        $this->view->sidebar['panes']['tags']['displayStyle'] =
+        $paneTags['showRelation']   = false;
+        $paneTags['displayStyle']   =
                         $this->_request->getParam($paramNs .'OptionGroup',
                                     View_Helper_HtmlItemCloud::STYLE_LIST);
-        $this->view->sidebar['panes']['tags']['sortBy'] =
+        $paneTags['sortBy']         =
                         $this->_request->getParam($paramNs .'SortBy',
                                     View_Helper_HtmlItemCloud::SORT_BY_WEIGHT);
-        $this->view->sidebar['panes']['tags']['sortOrder'] =
+        $paneTags['sortOrder']      =
                         $this->_request->getParam($paramNs .'SortOrder',
                                     Connexions_Service::SORT_DIR_DESC);
 

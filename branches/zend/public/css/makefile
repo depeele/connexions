@@ -38,11 +38,11 @@ connexions.css: main.scss		\
 items.css: mixins.scss items.scss colors.scss sizes.scss
 	sass -t compact items.scss:items.css
 
-bookmarks.css: mixins.scss bookmarks.scss bookmark.scss \
+bookmarks.css: mixins.scss bookmarks.scss items.scss bookmark.scss \
 		uiStars.scss colors.scss sizes.scss
 	sass -t compact bookmarks.scss:bookmarks.css
 
-users.css: mixins.scss users.scss user.scss colors.scss sizes.scss
+users.css: mixins.scss users.scss items.scss user.scss colors.scss sizes.scss
 	sass -t compact users.scss:users.css
 
 bookmark-users.css: mixins.scss users.scss user.scss \

@@ -24,17 +24,21 @@ $nTags = count($this->tags);
    </div>
    <p>
     <?php
+
+    $nTags = count($this->tags);
     if ($nTags > 0)
     {
-        printf ("People who have tagged this item with '%s'",
-                $this->tags);
+        printf ("People who have tagged this item using "
+                . "<span class='restrictions'>the %d specified tag%s.</span>",
+                $nTags,
+                ($nTags === 1 ? '' : 's'));
     }
     else
     {
-        echo "People who have bookmarked this item";
+        echo "People who have bookmarked this item.";
     }
 
-    ?>.</p>
+    ?></p>
   </div>
   <?php
 

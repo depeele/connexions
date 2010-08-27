@@ -20,16 +20,21 @@
    <div class='context-bg connexions_sprites item_bg ui-corner-left'>
     &nbsp;
    </div>
-   <p>Items related to these tags
-    <?php
+   <p>Items related to these tags<?php
+
     $nUsers = count($this->users);
     if ($nUsers > 0)
     {
-        printf ("<br />and %d user%s",
-                $nUsers, ($nUsers === 1 ? '' : 's'));
+        printf ("<span class='restrictions'>and %d %s.</span>",
+                $nUsers,
+                ($nUsers === 1 ? 'person' : 'people'));
+    }
+    else
+    {
+        echo ".";
     }
 
-    ?>.</p>
+    ?></p>
   </div>
   <?php
 

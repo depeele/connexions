@@ -21,18 +21,22 @@
    <div class='context-bg connexions_sprites tag_bg ui-corner-left'>
     &nbsp;
    </div>
-   <p>Summary of
-   <?php
+   <p>Summary of <?php
+
     $nUsers = count($this->users);
     if ( $nUsers > 0)
-        printf ("tags used by<br />%s %d user%s",
-                ($nUsers === 1 ? 'this' : 'these'),
+    {
+        printf ("tags used by<span class='restrictions'>%s %d %s.</span>",
+                ($nUsers === 1 ? 'this'   : 'these'),
                 $nUsers,
-                ($nUsers === 1 ? ''     : 's'));
+                ($nUsers === 1 ? 'person' : 'people'));
+    }
     else
-        echo "all tags";
+    {
+        echo "all tags.";
+    }
 
-    ?>.</p>
+    ?></p>
   </div>
   <?php
 

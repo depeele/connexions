@@ -12,7 +12,7 @@ $displaySortOffset: 5px;
     // (with .group, provides a solid header the full width)
     position: relative;
     background-color: $groupHeaderColorBackground;
-    border-bottom: unquote("1px solid") $borderColor;
+    //border-bottom: unquote("1px solid") $borderColor;
     color: $groupHeaderColor;
     height: 20px;
     left: -15px;

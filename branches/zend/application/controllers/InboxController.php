@@ -334,18 +334,21 @@ class InboxController extends Connexions_Controller_Action
                 $sidebar->items = $bookmarks;
             }
 
-            /* Retrieve the set of tags that are related to the presented 
-             * bookmarks.
-             */
-            $tags = $service->fetchByBookmarks($sidebar->items,
+            if (! empty($sidebar->items))
+            {
+                /* Retrieve the set of tags that are related to the presented 
+                 * bookmarks.
+                 */
+                $config['items'] =
+                    $service->fetchByBookmarks($sidebar->items,
                                                $fetchOrder,
                                                $count,
                                                $offset);
+            }
 
             $config['selected']         =& $this->_tags;
             $config['hiddenItems']      = array( $this->_forTag->tag );
 
-            $config['items']            =& $tags;
             $config['itemsType']        =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
             $config['weightName']       =  'userItemCount';

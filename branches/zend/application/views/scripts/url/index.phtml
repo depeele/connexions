@@ -64,6 +64,8 @@ $htmlItemScope = $this->htmlItemScope( array(
 
 $links = $this->headLink();
 $links->appendStylesheet($this->baseUrl('css/bookmarks.css'));
+
+$firstBookmark = $htmlBookmarks->paginator->getItem(0);
  
 #$itemBaseUrl = preg_replace('#([^:]+://[^/]+).*$#', '$1', $this->item->url);
 #$icoUrl      = $itemBaseUrl .'/favicon.ico';
@@ -71,18 +73,14 @@ $links->appendStylesheet($this->baseUrl('css/bookmarks.css'));
 <div class='columnHeader'>
  <div class='context-bg connexions_sprites bookmark_bg
              ui-corner-left ui-corner-tr'>&nbsp;</div>
- <p>Bookmarks related to<br />
-    <span class='url'>
-     <img class='favicon' src='<?= $this->baseUrl('images/blank.gif') ?>' />
-     <a href='<?= $this->item->url ?>'><?= $this->item->url ?></a>
-    </span><br />
-  <?php
-    if ( count($this->tags) > 0)
-        printf ("with tags '%s'.", $this->tags);
-    else
-        printf ("NO tags.");
-  ?>
- </p>
+ <p class='smaller'>Bookmarks for</p>
+ <div class='url'>
+  <a href='<?= $this->item->url ?>'><?= $this->item->getTitle() ?></a>
+ </div>
+ <h3 class='siteName'>
+  <a href='<?= $this->item->url ?>'><?= $firstBookmark->name ?></a>
+ </h3>
+</div>
 <?php
 
 echo $htmlItemScope->render();

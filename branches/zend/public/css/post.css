@@ -13,7 +13,7 @@
 #post .suggestions, .ui-validation-form .suggestions { margin: 1em 0 0 1em; }
 #post .suggestions .ui-tabs-panel, .ui-validation-form .suggestions .ui-tabs-panel { padding: 0.25em; }
 #post .suggestions .cloud, #post .suggestions .db-profile, .ui-validation-form .suggestions .cloud, .ui-validation-form .suggestions .db-profile { font-size: 1em; width: 28em; }
-#post .suggestions .db-profile, .ui-validation-form .suggestions .db-profile { padding: 0.5em; }
+#post .suggestions .db-profile, .ui-validation-form .suggestions .db-profile { margin: 0.5em; }
 #post .suggestions .cloud, .ui-validation-form .suggestions .cloud { padding-bottom: 1em; }
 #post .suggestions .cloud .cloudItem .size0, .ui-validation-form .suggestions .cloud .cloudItem .size0 { font-size: 0.65em; }
 #post .suggestions .cloud .cloudItem .size1, .ui-validation-form .suggestions .cloud .cloudItem .size1 { font-size: 0.75em; }
