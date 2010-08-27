@@ -86,12 +86,24 @@ $links->appendStylesheet($baseUrl .'css/users.css');
 <div class='columnHeader'>
  <div class='context-bg connexions_sprites user_bg
              ui-corner-left ui-corner-tr'>&nbsp;</div>
- <p>Users
-    <br />
-  <?php
-    if ( count($this->tags) > 0)
-        printf ("related by tags '%s'.", $this->tags);
-  ?>
+ <p>All People<?php
+
+        $nTags = count($this->tags);
+        if ( $nTags > 1 )
+        {
+            printf ("<span class='restrictions'>with tags '%s'.</span>",
+                    $this->tags);
+        }
+        else if ( $nTags > 0 )
+        {
+            printf ("<span class='restrictions'>with tag '%s'.</span>",
+                    $this->tags);
+        }
+        else
+        {
+            echo ".";
+        }
+    ?>
  </p>
 </div>
 

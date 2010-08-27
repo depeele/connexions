@@ -39,20 +39,23 @@ $paginator    = $helper->paginator;
 
 printf ("<!-- displayStyle [ %s ] -->\n", $displayStyle);
 
-$itemList = new Connexions_Model_Set_Adapter_ItemList(
+if ($helper->items !== null)
+{
+    $itemList = new Connexions_Model_Set_Adapter_ItemList(
                         $helper->items,
                         $helper->selected,
                         $helper->itemBaseUrl,
                         $helper->weightName);
 
-if ($helper->hasHiddenItems())
-{
-    // Remove any items that were identified as "hidden"
-    foreach ($itemList as $key => $item)
+    if ($helper->hasHiddenItems())
     {
-        if ($helper->isHiddenItem($item))
+        // Remove any items that were identified as "hidden"
+        foreach ($itemList as $key => $item)
         {
-            unset($itemList[$key]);
+            if ($helper->isHiddenItem($item))
+            {
+                unset($itemList[$key]);
+            }
         }
     }
 }

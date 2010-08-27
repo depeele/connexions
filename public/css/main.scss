@@ -57,7 +57,7 @@
 
 /* Page Content */
 #pageContent {
-  padding: 0 0 0 1em;
+  padding: 1em 0 0 1em;
   z-index: 10;
   .error {
     color: $errorColor;
@@ -105,31 +105,54 @@
 
 /* Columns */
 .columnHeader {
-  height: 3em;
+  height:   3em;
+  h3,p {
+    padding:    0 1em 0 60px;
+    color:      $linkColor;
+  }
+  h3 {
+    font-size:    1em;
+    font-weight:  bold;
+    color:        $darkest;
+  }
+  h3 a {
+    color:        inherit;
+  }
   p {
-    padding: 0 40px 1em 1em;
-    text-align: right;
-    color: $linkColor;
+    font-size:    0.9em;
+  }
+  .smaller {
+    font-size:    0.8em;
+  }
+  .restrictions {
+    display:      block;
+    padding:      0 0 0 2em;
+    text-align:   left;
+    font-size:    0.9em;
   }
   .context-bg {
     position: absolute;
-    right: 0px;
+    left: 5px;
     top: -4px;
     @include opacity(40);
   }
   .avatar {
     position: absolute;
-    width: 25px;
-    height: 25px;
-    top: -6px;
-    right: -2px;
+    width: 20px;
+    height: 20px;
+    top: -3px;
+    left: 33px;
     @include opacity(60);
   }
   .url {
+    font-size:  0.7em;
+    padding:    0 0 0 1em;
+    float:      right;
+    max-width:  40%;
     .favicon {
       display:  inline;
-      width:    16px;
-      height:   16px;
+      width:    0.8em;
+      height:   0.8em;
     }
   }
 }

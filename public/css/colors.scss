@@ -1,4 +1,7 @@
-$pageColorBackground: #fff;
+$lightest:            #fff;
+$darkest:             #172322;
+
+$pageColorBackground: $lightest;
 
 $linkColor:           #06c;
 $linkColorVisited:    #005a9c;
@@ -11,10 +14,10 @@ $errorColor:                  #cd0a0a;
 $successColor:                #667e32;
 $confirmColor:                $errorColor;
 
-$navColorBackground:          #172322;
+$navColorBackground:          $darkest;
 $navColorWelcomeBackground:   #142940;
 $navColorJoinBackground:      #9fc54e;
-$navColor:                    #fff;
+$navColor:                    $lightest;
 $navColorHover:               #b0d730;
 $navColorSelected:            #b0d730;
 $navColorSub:                 #2786c2;

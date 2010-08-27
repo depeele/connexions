@@ -21,17 +21,21 @@
    <div class='context-bg connexions_sprites tag_bg ui-corner-left'>
     &nbsp;
    </div>
-   <p>Tags related to these people
-   <?php
+   <p>Tags related to these people<?php
+
     $nTags = count($this->tags);
     if ($nTags > 0)
     {
-        printf ("<br />and %d tag%s",
+        printf ("<span class='restrictions'>and %d tag%s.</span>",
                 $nTags,
                 ($nTags === 1 ? '' : 's'));
     }
+    else
+    {
+        echo ".";
+    }
    
-   ?>.</p>
+   ?></p>
   </div>
   <?php
 

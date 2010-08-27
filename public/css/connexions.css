@@ -565,7 +565,7 @@ a:visited { color: #005a9c; }
 #pageHeader h1#siteName img { position: relative; float: left; height: 34px; top: 5px; left: -4px; margin-right: -10px; }
 
 /* Page Content */
-#pageContent { padding: 0 0 0 1em; z-index: 10; }
+#pageContent { padding: 1em 0 0 1em; z-index: 10; }
 #pageContent .error { color: #cd0a0a; }
 #pageContent .success { color: #667e32; }
 
@@ -584,10 +584,16 @@ a:visited { color: #005a9c; }
 
 /* Columns */
 .columnHeader { height: 3em; }
-.columnHeader p { padding: 0 40px 1em 1em; text-align: right; color: #0066cc; }
-.columnHeader .context-bg { position: absolute; right: 0px; top: -4px; opacity: 0.4; filter: alpha(opacity=40); -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=40)'; -khtml-opacity: 0.4; -moz-opacity: 0.4; }
-.columnHeader .avatar { position: absolute; width: 25px; height: 25px; top: -6px; right: -2px; opacity: 0.6; filter: alpha(opacity=60); -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=60)'; -khtml-opacity: 0.6; -moz-opacity: 0.6; }
-.columnHeader .url .favicon { display: inline; width: 16px; height: 16px; }
+.columnHeader h3, .columnHeader p { padding: 0 1em 0 60px; color: #0066cc; }
+.columnHeader h3 { font-size: 1em; font-weight: bold; color: #172322; }
+.columnHeader h3 a { color: inherit; }
+.columnHeader p { font-size: 0.9em; }
+.columnHeader .smaller { font-size: 0.8em; }
+.columnHeader .restrictions { display: block; padding: 0 0 0 2em; text-align: left; font-size: 0.9em; }
+.columnHeader .context-bg { position: absolute; left: 5px; top: -4px; opacity: 0.4; filter: alpha(opacity=40); -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=40)'; -khtml-opacity: 0.4; -moz-opacity: 0.4; }
+.columnHeader .avatar { position: absolute; width: 20px; height: 20px; top: -3px; left: 33px; opacity: 0.6; filter: alpha(opacity=60); -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=60)'; -khtml-opacity: 0.6; -moz-opacity: 0.6; }
+.columnHeader .url { font-size: 0.7em; padding: 0 0 0 1em; float: right; max-width: 40%; }
+.columnHeader .url .favicon { display: inline; width: 0.8em; height: 0.8em; }
 
 .rightCol { padding-left: 2em; padding-right: 0.2em; }
 
