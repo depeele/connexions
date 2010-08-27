@@ -5,6 +5,35 @@
  */
 class Service_Proxy_Bookmark extends Connexions_Service_Proxy
 {
+    /** @brief  Retrieve a set of Domain Model instances.
+     *  @param  id      Identification value(s), null to retrieve all.
+     *                  MAY be an associative array that specifically
+     *                  identifies attribute/value(s) pairs.
+     *  @param  order   An array of name/direction pairs representing the
+     *                  desired sorting order.  The 'name's MUST be valid for
+     *                  the target Domain Model and the directions a
+     *                  Connexions_Service::SORT_DIR_* constant.  If an order
+     *                  is omitted, Connexions_Service::SORT_DIR_ASC will be
+     *                  used [ no specified order ];
+     *  @param  count   The maximum number of items from the full set of
+     *                  matching items that should be returned
+     *                  [ null == all ];
+     *  @param  offset  The starting offset in the full set of matching items
+     *                  [ null == 0 ].
+     *  @param  since   Limit the results to bookmarks updated after this
+     *                  date/time [ null == no time limits ];
+     *
+     *  @return A new Connexions_Model_Set.
+     */
+    public function fetch($id       = null,
+                          $order    = null,
+                          $count    = null,
+                          $offset   = null,
+                          $since    = null)
+    {
+        return $this->_service->fetch($ids, $order, $count, $offset, $since);
+    }
+
     /** @brief  Retrieve a set of bookmarks related by a set of Tags.
      *  @param  tags    A Model_Set_Tag instance or array of tags to match.
      *  @param  exact   Bookmarks MUST be associated with provided tags
@@ -16,6 +45,8 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
      *                          'userCount     DESC' ] ]
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
+     *  @param  since   Limit the results to bookmarks updated after this
+     *                  date/time [ null == no time limits ];
      *
      *  @return A new Model_Set_Bookmark instance.
      */
@@ -23,13 +54,15 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
                                 $exact   = true,
                                 $order   = null,
                                 $count   = null,
-                                $offset  = null)
+                                $offset  = null,
+                                $since   = null)
     {
         return $this->_service->fetchByTags($tags,
                                             $exact,
                                             $order,
                                             $count,
-                                            $offset);
+                                            $offset,
+                                            $since);
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Users.
@@ -41,18 +74,22 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
      *                          'tagCount      DESC' ] ]
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
+     *  @param  since   Limit the results to bookmarks updated after this
+     *                  date/time [ null == no time limits ];
      *
      *  @return A new Model_Set_Bookmark instance.
      */
     public function fetchByUsers($users,
                                  $order   = null,
                                  $count   = null,
-                                 $offset  = null)
+                                 $offset  = null,
+                                 $since   = null)
     {
         return $this->_service->fetchByUsers($users,
                                              $order,
                                              $count,
-                                             $offset);
+                                             $offset,
+                                             $since);
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Items.
@@ -64,18 +101,22 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
      *                          'tagCount      DESC' ] ]
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
+     *  @param  since   Limit the results to bookmarks updated after this
+     *                  date/time [ null == no time limits ];
      *
      *  @return A new Model_Set_Bookmark instance.
      */
     public function fetchByItems($items,
                                  $order   = null,
                                  $count   = null,
-                                 $offset  = null)
+                                 $offset  = null,
+                                 $since   = null)
     {
         return $this->_service->fetchByItems($items,
                                              $order,
                                              $count,
-                                             $offset);
+                                             $offset,
+                                             $since);
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Users and Tags.
@@ -92,6 +133,8 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
      *                          'tagCount      DESC' ] ]
      *  @param  count       Optional LIMIT count
      *  @param  offset      Optional LIMIT offset
+     *  @param  since       Limit the results to bookmarks updated after this
+     *                      date/time [ null == no time limits ];
      *
      *  @return A new Model_Set_Bookmark instance.
      */
@@ -100,14 +143,16 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
                                         $exactTags = true,
                                         $order     = null,
                                         $count     = null,
-                                        $offset    = null)
+                                        $offset    = null,
+                                        $since     = null)
     {
         return $this->_service->fetchByUsersAndTags($users,
                                                     $tags,
                                                     $exactTags,
                                                     $order,
                                                     $count,
-                                                    $offset);
+                                                    $offset,
+                                                    $since);
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Items and Tags.
@@ -124,6 +169,8 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
      *                          'tagCount      DESC' ] ]
      *  @param  count       Optional LIMIT count
      *  @param  offset      Optional LIMIT offset
+     *  @param  since       Limit the results to bookmarks updated after this
+     *                      date/time [ null == no time limits ];
      *
      *  @return A new Model_Set_Bookmark instance.
      */
@@ -132,14 +179,16 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
                                         $exact   = true,
                                         $order   = null,
                                         $count   = null,
-                                        $offset  = null)
+                                        $offset  = null,
+                                        $since   = null)
     {
         return $this->_service->fetchByItemsAndTags($items,
                                                     $tags,
                                                     $exact,
                                                     $order,
                                                     $count,
-                                                    $offset);
+                                                    $offset,
+                                                    $since);
     }
 
     /** @brief  Perform tag autocompletion within the given context.
