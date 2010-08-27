@@ -122,7 +122,8 @@ class InboxController extends Connexions_Controller_Action
          *
          * Adjust the URL to reflect the validated 'owner' and 'tags'
          */
-        $this->_baseUrl .= $this->_owner->name
+        $this->_baseUrl .= 'inbox/'
+                        .  $this->_owner->name
                         .  '/';
 
         $this->_url      = $this->_baseUrl
@@ -164,9 +165,7 @@ class InboxController extends Connexions_Controller_Action
         parent::_prepareMain($htmlNamespace);
 
         $extra = array(
-            'users'  =>  $this->_owner,
             'tags'   => &$this->_allTags,
-            'forTag' =>  $this->_forTag,
         );
         $this->view->main = array_merge($this->view->main, $extra);
 
@@ -194,7 +193,6 @@ class InboxController extends Connexions_Controller_Action
         parent::_prepareSidebar($async);
 
         $extra = array(
-            'users' => $this->_owner,
             'tags'  => &$this->_allTags,
         );
         $this->view->sidebar = array_merge($this->view->sidebar, $extra);
@@ -293,81 +291,59 @@ class InboxController extends Connexions_Controller_Action
                                 'itemCount     DESC',
                                 'tag           ASC');
 
-            if (count($this->_tags) < 1)
+            // Tags related to the bookmarks with the given set of tags.
+
+            /*
+            Connexions::log("InboxController::_prepareSidebarPane( %s ): "
+                            .   "Fetch tags %d-%d related to bookmarks "
+                            .   "with tags[ %s ]",
+                            $pane,
+                            $offset, $offset + $count,
+                            Connexions::varExport($this->_tags));
+            // */
+
+            /* In order to prepare the sidebar, we need to know the set
+             * of bookmarks presented in the main view.  If we're rendering 
+             * the main view and sidebar syncrhonously, this MAY have been 
+             * communicated to the sidebar helper via 
+             *      application/view/scripts/index/main.phtml.
+             */
+            if (! isset($this->view->main))
             {
-                /* There were no requested tags that limit the bookmark 
-                 * retrieval so, for the sidebar, retrieve ALL tags limited 
-                 * only by the current owner (if any).
+                $this->_prepareMain();
+            }
+
+            if ($sidebar->items === null)
+            {
+                /* The set of bookmarks presented in the main view has not 
+                 * been communicated to the sidebar helper.  We need to 
+                 * generate them now using the non-format related 
+                 * View_Helper_Bookmarks to generate the appropriate set of 
+                 * bookmarks, telling the helper to return ALL bookmarks by 
+                 * setting 'perPage' to -1.
                  */
+                $overRides = array_merge($this->view->main,
+                                         array('perPage' => -1));
 
-                /*
-                Connexions::log("InboxController::_prepareSidebarPane( %s ): "
-                                .   "Fetch tags %d-%d by user [ %s ]",
-                                $pane,
-                                $offset, $offset + $count,
-                                Connexions::varExport($this->_owner));
-                // */
+                $helper    = $this->view->bookmarks( $overRides );
+                $bookmarks = $helper->bookmarks;
 
-                $tags = $service->fetchByUsers($this->_owner,   // ONE user
+                /* Notify the sidebar helper of the main-view 
+                 * items/bookmarks
+                 */
+                $sidebar->items = $bookmarks;
+            }
+
+            /* Retrieve the set of tags that are related to the presented 
+             * bookmarks.
+             */
+            $tags = $service->fetchByBookmarks($sidebar->items,
                                                $fetchOrder,
                                                $count,
                                                $offset);
-            }
-            else
-            {
-                // Tags related to the bookmarks with the given set of tags.
 
-                /*
-                Connexions::log("InboxController::_prepareSidebarPane( %s ): "
-                                .   "Fetch tags %d-%d related to bookmarks "
-                                .   "with tags[ %s ]",
-                                $pane,
-                                $offset, $offset + $count,
-                                Connexions::varExport($this->_tags));
-                // */
-
-                /* In order to prepare the sidebar, we need to know the set
-                 * of bookmarks presented in the main view.  If we're rendering 
-                 * the main view and sidebar syncrhonously, this MAY have been 
-                 * communicated to the sidebar helper via 
-                 *      application/view/scripts/index/main.phtml.
-                 */
-                if (! isset($this->view->main))
-                {
-                    $this->_prepareMain();
-                }
-
-                if ($sidebar->items === null)
-                {
-                    /* The set of bookmarks presented in the main view has not 
-                     * been communicated to the sidebar helper.  We need to 
-                     * generate them now using the non-format related 
-                     * View_Helper_Bookmarks to generate the appropriate set of 
-                     * bookmarks, telling the helper to return ALL bookmarks by 
-                     * setting 'perPage' to -1.
-                     */
-                    $overRides = array_merge($this->view->main,
-                                             array('perPage' => -1));
-
-                    $helper    = $this->view->bookmarks( $overRides );
-                    $bookmarks = $helper->bookmarks;
-
-                    /* Notify the sidebar helper of the main-view 
-                     * items/bookmarks
-                     */
-                    $sidebar->items = $bookmarks;
-                }
-
-                /* Retrieve the set of tags that are related to the presented 
-                 * bookmarks.
-                 */
-                $tags = $service->fetchByBookmarks($sidebar->items,
-                                                   $fetchOrder,
-                                                   $count,
-                                                   $offset);
-
-                $config['selected'] =& $this->_tags;
-            }
+            $config['selected']         =& $this->_tags;
+            $config['hiddenItems']      = array( $this->_forTag->tag );
 
             $config['items']            =& $tags;
             $config['itemsType']        =
@@ -407,7 +383,7 @@ class InboxController extends Connexions_Controller_Action
 
             // Fetch related users by tag
             $service = $this->service('User');
-            $users   = $service->fetchByTags($this->_tags,
+            $users   = $service->fetchByTags($this->_allTags,
                                              true,    // exact
                                              $fetchOrder,
                                              $count,
@@ -460,7 +436,7 @@ class InboxController extends Connexions_Controller_Action
 
             $service = $this->service('Item');
             $items   = $service->fetchByUsersAndTags($users,
-                                                     $this->_tags,
+                                                     $this->_allTags,
                                                      true,    // exact
                                                      $fetchOrder,
                                                      $count,

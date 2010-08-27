@@ -174,6 +174,20 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
     {
         foreach ($config as $key => $value)
         {
+            if ($key === 'hiddenItems')
+            {
+                $list = (is_array($value)
+                            ? $value
+                            : preg_split('/\s*,\s*/', trim($value)) );
+
+                foreach ($list as $value)
+                {
+                    $this->addHiddenItem($value);
+                }
+
+                continue;
+            }
+
             $this->__set($key, $value);
             //$this->_params[$key] = $value;
         }

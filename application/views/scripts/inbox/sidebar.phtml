@@ -13,31 +13,9 @@
  *      viewer          The Model_User instance representing the current
  *                      viewer;
  *      tags            A Model_Set_Tag instance containing information about
- *                      any requested tags (i.e. tag restrictions);
+ *                      any requested tags AND the 'for:%user%' for this inbox;
  *
  */
-if ($this->owner !== '*')
-{
-    /* Bookmarks for a single user are being presented.  The 'People' pane will
-     * contain details about that user, generated via:
-     *      View_Helper_HtmlSidebar->render()
-     *          => application/views/scripts/inbox/sidebar-people.phtml
-     *              => application/views/scripts/sidebar-user.phtml
-     *                  => application/views/scripts/user.phtml
-     *
-     * Properly rendering a 'user' in the sidebar requires
-     * 'css/bookmark-users.css', which can only effectively be included here
-     * since sidebar-user.phtml, the most logical place to perform the include,
-     * is currently included asynchronously, causing all headLink()
-     * modifications to be ignored.
-     */
-    $this->headLink()
-            ->appendStylesheet( $this->baseUrl('/css/bookmark-users.css') );
-
-}
-
-// Prepare the HTML Sidebar helper
-//$htmlSidebar = $this->htmlSidebar( $this->sidebar );
 
 /* Invoke the Html Sidebar View helper to render the sidebar based upon
  * settings in $this->sidebar established by InboxController::_prepareSidebar
