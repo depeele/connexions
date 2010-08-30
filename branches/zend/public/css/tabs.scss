@@ -88,6 +88,23 @@ $navBorder: unquote("1px dotted") $navColorBorder;
       background-color: $navColorBackground;
       height: $tabHeight;
     }
+
+    .inbox-indicator {
+      position:   absolute;
+      top:        5px;
+      right:      7px;
+
+      background: none;
+      border:     none;
+      font-size:  0.7em;
+
+      .ui-icon, .count {
+        @include inlineBlock();
+        border:         none;
+        vertical-align: bottom;
+        padding:        0;
+      }
+    }
   }
   /* Sub-menu */
   ul.sub {
