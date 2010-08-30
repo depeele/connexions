@@ -149,9 +149,12 @@ abstract class Connexions_Service
      *                      tags        A Model_Set_Tag instance, array, or 
      *                                  comma-separated string of tags to
      *                                  match -- ANY tag in the list.
-     *                      tagsExact   A Model_Set_Tag instance, array, or 
-     *                                  comma-separated string of tags to
-     *                                  match -- ALL tags in the list.
+     *                      exactUsers  If 'users' is provided, the retrieved
+     *                                  models MUST match them all;
+     *                      exactItems  If 'items' is provided, the retrieved
+     *                                  models MUST match them all;
+     *                      exactTags   If 'tags' is provided, the retrieved
+     *                                  models MUST match them all;
      *  @param  order   Optional ORDER clause (string, array)
      *                      [ [ 'taggedOn      DESC',
      *                          'name          ASC',
@@ -191,14 +194,18 @@ abstract class Connexions_Service
             switch ($key)
             {
             case 'bookmarks':
-                $config['bookmarks'] = $this->factory('Service_Bookmark')
+                $bookmarks = $this->factory('Service_Bookmark')
                                                 ->csList2set($val);
+                $ids       = ( (! empty($bookmarks)) &&
+                                ($bookmarks instanceof Model_Set_Bookmark)
+                                    ? $bookmarks->getIds()
+                                    : $bookmarks);
+
+                $config['bookmarks'] = $ids;
                 break;
 
-            case 'usersExact':
             case 'users':
-                $config['exactUsers'] = ($key === 'usersExact');
-                $config['users']      = $this->factory('Service_User')
+                $config['users'] = $this->factory('Service_User')
                                                 ->csList2set($val);
                 break;
 
@@ -207,18 +214,21 @@ abstract class Connexions_Service
                                                 ->csList2set($val);
                 break;
 
-            case 'tagsExact':
             case 'tags':
-                $config['exactTags'] = ($key === 'tagsExact');
-                $config['tags']      = $this->factory('Service_Tag')
+                $config['tags']  = $this->factory('Service_Tag')
                                                 ->csList2set($val);
                 break;
+
+            default:    // exactUsers, exactItems, exactTags, where, ...
+                $config[$key] = $val;
             }
         }
 
         /*
         Connexions::log("Connexions_Service::fetchRelated(): "
+                        .   "to[ %s ], "
                         .   "config[ %s ]",
+                        Connexions::varExport($to),
                         Connexions::varExport($config));
         // */
 

@@ -108,7 +108,7 @@ class InboxController extends Connexions_Controller_Action
         $this->_allTags = clone $this->_tags;
         $this->_allTags->append( $this->_forTag );
 
-        // /*
+        /*
         Connexions::log("InboxController::indexAction(): "
                         . "tags[ %s ], forTag[ %s ], allTags[ %s ]",
                         Connexions::varExport($this->_tags),
@@ -138,7 +138,6 @@ class InboxController extends Connexions_Controller_Action
         $this->view->headTitle($this->_owner ."'s Inbox");
 
         $this->view->url       = $this->_url;
-        $this->view->viewer    = $this->_viewer;
 
         $this->view->owner     = $this->_owner;
         $this->view->allTags   = $this->_allTags;
@@ -299,7 +298,7 @@ class InboxController extends Connexions_Controller_Action
                             .   "with tags[ %s ]",
                             $pane,
                             $offset, $offset + $count,
-                            Connexions::varExport($this->_tags));
+                            Connexions::varExport($this->_allTags));
             // */
 
             /* In order to prepare the sidebar, we need to know the set
@@ -328,19 +327,45 @@ class InboxController extends Connexions_Controller_Action
                 $helper    = $this->view->bookmarks( $overRides );
                 $bookmarks = $helper->bookmarks;
 
+
+                /*
+                Connexions::log("InboxController::_prepareSidebarPane( %s ): "
+                                .   "%d bookmarks in main view",
+                                $pane,
+                                count($bookmarks));
+                // */
+
+
                 /* Notify the sidebar helper of the main-view 
                  * items/bookmarks
+                 *
+                 * :NOTE: This does NOT seem to actually set the value of
+                 *        $sidebar->items...  Hence the regression to
+                 *        $bookmarks below.
                  */
                 $sidebar->items = $bookmarks;
             }
+            else
+            {
+                $bookmarks =& $sidebar->items;
+            }
 
-            if (! empty($sidebar->items))
+            /*
+            Connexions::log("InboxController::_prepareSidebarPane( %s ): "
+                            .   "bookmarks are %sempty, "
+                            .   "sidebar items are %sempty",
+                            $pane,
+                            (empty($bookmarks) ? '' : 'NOT '),
+                            (empty($sidebar->items) ? '' : 'NOT '));
+            // */
+
+            if (! empty($bookmarks))
             {
                 /* Retrieve the set of tags that are related to the presented 
                  * bookmarks.
                  */
                 $config['items'] =
-                    $service->fetchByBookmarks($sidebar->items,
+                    $service->fetchByBookmarks($bookmarks,
                                                $fetchOrder,
                                                $count,
                                                $offset);
@@ -414,36 +439,15 @@ class InboxController extends Connexions_Controller_Action
                                 'ratingCount   DESC',
                                 'url           ASC');
 
-            $users                 = null;
             $config['weightName']  = 'userItemCount';
             $config['weightTitle'] = 'Bookmarks';
 
-            /*
-            Connexions::log("InboxController::_prepareSidebarPane( %s ): "
-                            .   "Fetch items %d-%d for all users "
-                            .   "related to tags [ %s ]",
-                            $pane,
-                            $offset, $offset + $count,
-                            Connexions::varExport($this->_tags));
-            // */
-
-            /*
-            Connexions::log("InboxController::_prepareSidebarPane( %s ): "
-                            .   "Fetch items %d-%d for owner[ %s ] "
-                            .   "related to tags [ %s ]",
-                            $pane,
-                            $offset, $offset + $count,
-                            Connexions::varExport($this->_owner),
-                            Connexions::varExport($this->_tags));
-            // */
-
             $service = $this->service('Item');
-            $items   = $service->fetchByUsersAndTags($users,
-                                                     $this->_allTags,
-                                                     true,    // exact
-                                                     $fetchOrder,
-                                                     $count,
-                                                     $offset);
+            $items   = $service->fetchByTags( $this->_allTags,
+                                              true,    // exact
+                                              $fetchOrder,
+                                              $count,
+                                              $offset);
 
             $config['items']            =& $items;
             $config['itemsType']        =

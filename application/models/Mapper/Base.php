@@ -36,27 +36,35 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
     /** @brief  Retrieve a set of Domain Model items via the userTagItem core
      *          table.
      *  @param  params  An array retrieval criteria:
-     *                      - bookmarks The Model_Set_Bookmark or
-     *                                  Model_Bookmark, or an array of
-     *                                  (userId,itemId) items to use
-     *                                  in the relation;
-     *                      - users     The Model_Set_User or Model_User
-     *                                  instance, or an array of userIds to use
-     *                                  in the relation;
-     *                      - items     The Model_Set_Item or Model_Item
-     *                                  instance or an array of itemIds to use
-     *                                  in the relation;
-     *                      - tags      The Model_Set_Tag or Model_Tag
-     *                                  instance or an array of tagIds to use
-     *                                  in the relation;
-     *                      - order     Optional ORDER clause (string, array);
-     *                      - count     Optional LIMIT count;
-     *                      - offset    Optional LIMIT offset;
-     *                      - exactTags If 'tags' is provided,  should we
-     *                                  require a match on ALL tags? [ true ];
-     *                      - where     Additional condition(s) [ null ];
-     *                      - paginate  Return a Zend_Paginator instead of
-     *                                  a Connexions_Model_Set.
+     *                      - bookmarks     The Model_Set_Bookmark or
+     *                                      Model_Bookmark, or an array of
+     *                                      (userId,itemId) items to use
+     *                                      in the relation;
+     *                      - users         The Model_Set_User or Model_User
+     *                                      instance, or an array of userIds to
+     *                                      use in the relation;
+     *                      - items         The Model_Set_Item or Model_Item
+     *                                      instance or an array of itemIds to
+     *                                      use in the relation;
+     *                      - tags          The Model_Set_Tag or Model_Tag
+     *                                      instance or an array of tagIds to
+     *                                      use in the relation;
+     *                      - order         Optional ORDER clause
+     *                                      (string, array);
+     *                      - count         Optional LIMIT count;
+     *                      - offset        Optional LIMIT offset;
+     *                      - exactUsers    If 'tags' is provided,  should we
+     *                                      require a match on ALL users?
+     *                                      [ true ];
+     *                      - exactItems    If 'items' is provided,  should we
+     *                                      require a match on ALL items?
+     *                                      [ true ];
+     *                      - exactTags     If 'tags' is provided,  should we
+     *                                      require a match on ALL tags?
+     *                                      [ true ];
+     *                      - where         Additional condition(s) [ null ];
+     *                      - paginate      Return a Zend_Paginator instead of
+     *                                      a Connexions_Model_Set.
      *
      *  @return A Connexions_Model_Set instance that provides access to all
      *          matching Domain Model instances.
@@ -309,6 +317,8 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
          * include any limiters in the sub-select
          *
          */
+
+        // Bookmarks
         if ( isset($params['bookmarks']) && (! empty($params['bookmarks'])) )
         {
             $bookmarks =& $params['bookmarks'];
@@ -339,6 +349,8 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                 $secSelect->where('(userId,itemId)=?', $bookmarks);
             }
         }
+
+        // Users
         if ( isset($params['users']) && (! empty($params['users'])) )
         {
             $users =& $params['users'];
@@ -367,14 +379,25 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                 $secSelect->where('userId=?', $users);
             }
 
-            if ( (! isset($params['exactUsers'])) ||
-                 ($params['exactUsers'] !== false) )
+            // Default 'exactUsers' is false
+            if ( (isset($params['exactUsers'])) &&
+                 ($params['exactUsers'] === true) )
             {
                 $nUsers = count($users);
                 if ($nUsers > 1)
+                {
+                    /*
+                    Connexions::log("Model_Mapper_Base::fetchRelated(): "
+                                    . "exactly %d users",
+                                    $nUsers);
+                    // */
+
                     $secSelect->having('userCount='. $nUsers);
+                }
             }
         }
+
+        // Items
         if ( isset($params['items']) && (! empty($params['items'])) )
         {
             $items =& $params['items'];
@@ -402,7 +425,23 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
             {
                 $secSelect->where("{$as}.itemId=?", $items);
             }
+
+            /* Doesn't really make sense to restrict based upon itemCount
+             * since in most contexts, itemCount will be 1.
+             *
+            if ( (! isset($params['exactItems'])) ||
+                 ($params['exactItems'] !== false) )
+            {
+                $nItems = count($items);
+                if ($nItems > 1)
+                {
+                    $secSelect->having('itemCount='. $nItems);
+                }
+            }
+            */
         }
+
+        // Tags
         if ( isset($params['tags']) && (! empty($params['tags'])) )
         {
             $tags =& $params['tags'];
@@ -441,12 +480,21 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                 $select->where('tag=?', $tags);
             }
 
+            // Default 'exactTags' is true
             if ( (! isset($params['exactTags'])) ||
                  ($params['exactTags'] !== false) )
             {
                 $nTags = count($tags);
                 if ($nTags > 1)
+                {
+                    /*
+                    Connexions::log("Model_Mapper_Base::fetchRelated(): "
+                                    . "exactly %d tags",
+                                    $nTags);
+                    // */
+
                     $secSelect->having('tagCount='. $nTags);
+                }
             }
         }
 
@@ -478,7 +526,7 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                               "{$secAs}.tagCount");
         if ($mainTable === 'item')
         {
-            /* Name the computer 'userCount' as 'statUserCount' and
+            /* Name the computed 'userCount' as 'statUserCount' and
              * include the rating average
              */
             array_push($mainStatCols, "{$secAs}.userCount as statUserCount");

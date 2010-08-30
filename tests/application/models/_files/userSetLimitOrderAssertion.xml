@@ -4,10 +4,12 @@
  <user userId="2" name="User441"
        fullName="Random User 441" email="User441@home.com" apiKey="xvkz0j5OwR"
        pictureUrl="" profile=""
-       lastVisit="0000-00-00 00:00:00" totalTags="24" totalItems="5" />
+       lastVisit="0000-00-00 00:00:00" lastVisitFor="0000-00-00 00:00:00"
+       totalTags="24" totalItems="5" />
  <user userId="4" name="User478"
        fullName="Random User 478" email="User478@home.com" apiKey="9kHPpShPoM"
        pictureUrl="" profile=""
-       lastVisit="0000-00-00 00:00:00" totalTags="32" totalItems="5" />
+       lastVisit="0000-00-00 00:00:00" lastVisitFor="0000-00-00 00:00:00"
+       totalTags="32" totalItems="5" />
 
 </dataset>

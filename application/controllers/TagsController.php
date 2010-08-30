@@ -65,7 +65,6 @@ class TagsController extends Connexions_Controller_Action
         $this->view->headTitle('Tags');
 
         $this->view->url    = $this->_url;
-        $this->view->viewer = $this->_viewer;
 
         $this->view->users  = $this->_users;
 

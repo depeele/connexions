@@ -103,7 +103,8 @@ $nTags = count($this->tags);
     $to = array('items' => $this->item);
     if ($nTags > 0)
     {
-        $to['tagsExact'] = $this->tags;
+        $to['tags']      = $this->tags;
+        //$to['exactTags'] = true;
     }
 
     $people = $service->fetchRelated( $to,

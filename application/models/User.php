@@ -20,6 +20,7 @@ class Model_User extends Model_Taggable
             'pictureUrl'    => '',
             'profile'       => '',
             'lastVisit'     => '',
+            'lastVisitFor'  => '',
 
             /* Note: these items are typically computed and may not be 
              *       persisted directly.
@@ -96,6 +97,17 @@ class Model_User extends Model_Taggable
     public function updateLastVisit()
     {
         $this->__set('lastVisit', date('Y-m-d H:i:s'));
+
+        return $this;
+    }
+
+    /** @brief  Update the last visit for date of this model instance to NOW.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function updateLastVisitFor()
+    {
+        $this->__set('lastVisitFor', date('Y-m-d H:i:s'));
 
         return $this;
     }

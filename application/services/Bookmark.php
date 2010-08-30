@@ -292,36 +292,14 @@ class Service_Bookmark extends Connexions_Service
                                 $offset  = null,
                                 $since   = null)
     {
-        // Rely on Service_Tag to properly interpret 'tags'
-        $tags = $this->factory('Service_Tag')->csList2set($tags);
+        $to = array('tags'      => $tags,
+                    'exactTags' => $exact,
+                    'where'     => $this->_includeSince(array(), $since) );
 
-        if ($order === null)
-        {
-            $order   = array(
-                             'tagCount      DESC',
-                             'taggedOn      DESC',
-                             'name          ASC',
-                             'userCount     DESC',
-                       );
-        }
-        else
-        {
-            $order = $this->_extraOrder($order);
-        }
-
-        $tags = $this->_prepareTags( array('tags' => $tags) );
-
-        $where = $this->_includeSince(array(), $since);
-
-        return $this->_mapper->fetchRelated( array(
-                                        'tags'      => $tags,
-                                        'exactTags' => $exact,
-                                        'order'     => $order,
-                                        'count'     => $count,
-                                        'offset'    => $offset,
-                                        'where'     => $where,
-                                        'privacy'   => $this->_curUser(),
-                                    ));
+        return $this->fetchRelated( $to,
+                                    $order,
+                                    $count,
+                                    $offset );
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Users.
@@ -345,33 +323,14 @@ class Service_Bookmark extends Connexions_Service
                                  $offset  = null,
                                  $since   = null)
     {
-        // Rely on Service_User to properly interpret 'users'
-        $users = $this->factory('Service_User')->csList2set($users);
+        $to = array('users'      => $users,
+                    'exactUsers' => false,  // userCount doesn't matter
+                    'where'      => $this->_includeSince(array(), $since) );
 
-        if ($order === null)
-        {
-            $order   = array(
-                             'taggedOn      DESC',
-                             'name          ASC',
-                             'userCount     DESC',
-                             'tagCount      DESC',
-                       );
-        }
-        else
-        {
-            $order = $this->_extraOrder($order);
-        }
-
-        $where = $this->_includeSince(array(), $since);
-
-        return $this->_mapper->fetchRelated( array(
-                                        'users'   => $users,
-                                        'order'   => $order,
-                                        'count'   => $count,
-                                        'offset'  => $offset,
-                                        'where'   => $where,
-                                        'privacy' => $this->_curUser(),
-                                    ));
+        return $this->fetchRelated( $to,
+                                    $order,
+                                    $count,
+                                    $offset );
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Items.
@@ -395,33 +354,14 @@ class Service_Bookmark extends Connexions_Service
                                  $offset  = null,
                                  $since   = null)
     {
-        // Rely on Service_Item to properly interpret 'items'
-        $items = $this->factory('Service_Item')->csList2set($items);
+        $to = array('items'      => $items,
+                    'exactItems' => false,  // itemCount doesn't matter
+                    'where'      => $this->_includeSince(array(), $since) );
 
-        if ($order === null)
-        {
-            $order   = array(
-                             'taggedOn      DESC',
-                             'name          ASC',
-                             'userCount     DESC',
-                             'tagCount      DESC',
-                       );
-        }
-        else
-        {
-            $order = $this->_extraOrder($order);
-        }
-
-        $where = $this->_includeSince(array(), $since);
-
-        return $this->_mapper->fetchRelated( array(
-                                        'items'   => $items,
-                                        'order'   => $order,
-                                        'count'   => $count,
-                                        'offset'  => $offset,
-                                        'where'   => $where,
-                                        'privacy' => $this->_curUser(),
-                                    ));
+        return $this->fetchRelated( $to,
+                                    $order,
+                                    $count,
+                                    $offset );
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Users and Tags.
@@ -429,6 +369,8 @@ class Service_Bookmark extends Connexions_Service
      *                      comma-separated string of users to match.
      *  @param  tags        A Model_Set_Tag instance, array, or comma-separated
      *                      string of tags to match.
+     *  @param  exactUsers  Bookmarks MUST be associated with ALL provided
+     *                      users [ false ];
      *  @param  exactTags   Bookmarks MUST be associated with provided tags
      *                      [ true ];
      *  @param  order       Optional ORDER clause (string, array)
@@ -445,44 +387,23 @@ class Service_Bookmark extends Connexions_Service
      */
     public function fetchByUsersAndTags($users,
                                         $tags,
-                                        $exactTags = true,
-                                        $order     = null,
-                                        $count     = null,
-                                        $offset    = null,
-                                        $since     = null)
+                                        $exactUsers = false,
+                                        $exactTags  = true,
+                                        $order      = null,
+                                        $count      = null,
+                                        $offset     = null,
+                                        $since      = null)
     {
-        /* Rely on Service_User/Service_Tag to properly interpret 'users' and
-         * 'tags'
-         */
-        $users = $this->factory('Service_User')->csList2set($users);
-        $tags  = $this->factory('Service_Tag')->csList2set($tags);
+        $to = array('users'      => $users,
+                    'tags'       => $tags,
+                    'exactUsers' => $exactUsers,
+                    'exactTags'  => $exactTags,
+                    'where'      => $this->_includeSince(array(), $since) );
 
-        if ($order === null)
-        {
-            $order   = array(
-                             'taggedOn      DESC',
-                             'name          ASC',
-                             'userCount     DESC',
-                             'tagCount      DESC',
-                       );
-        }
-        else
-        {
-            $order = $this->_extraOrder($order);
-        }
-
-        $where = $this->_includeSince(array(), $since);
-
-        return $this->_mapper->fetchRelated( array(
-                                        'users'     => $users,
-                                        'tags'      => $tags,
-                                        'exactTags' => $exactTags,
-                                        'order'     => $order,
-                                        'count'     => $count,
-                                        'offset'    => $offset,
-                                        'where'     => $where,
-                                        'privacy'   => $this->_curUser(),
-                                    ));
+        return $this->fetchRelated( $to,
+                                    $order,
+                                    $count,
+                                    $offset );
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Items and Tags.
@@ -512,38 +433,82 @@ class Service_Bookmark extends Connexions_Service
                                         $offset  = null,
                                         $since   = null)
     {
-        /* Rely on Service_Item/Service_Tag to properly interpret 'items' and
-         * 'tags'
+        $to = array('items'      => $items,
+                    'tags'       => $tags,
+                    'exactItems' => false,  // itemCount doesn't matter
+                    'exactTags'  => $exact,
+                    'where'      => $this->_includeSince(array(), $since) );
+
+        return $this->fetchRelated( $to,
+                                    $order,
+                                    $count,
+                                    $offset );
+    }
+
+    /** @brief  Retrieve the set of bookmarks in the given user's inbox
+     *          that have been updated since the given date/time and
+     *          have all of the given tags.
+     *  @param  user    A Model_Set_User instance representing the target user.
+     *  @param  tags    A Model_Set_Tag instance, array, or comma-separated
+     *                  string of tags to match
+     *                  (retrieved bookmarks will have ALL tags).
+     *  @param  since   Limit the results to bookmarks updated after this
+     *                  date/time [ null == no time limits ];
+     *
+     *  @return A new Model_Set_Bookmark instance.
+     */
+    public function fetchInbox($user,
+                               $tags    = null,
+                               $since   = null)
+    {
+        if (! $user instanceof Model_User)
+        {
+            $user = $this->factory('Service_User')
+                            ->find($user);
+
+            if (! $user)
+            {
+                // Unknown user -- empty Inbox
+                return $this->_mapper->makeEmptySet();
+            }
+        }
+
+        /*****************************************************
+         * Generate a 'for:%user%' tag and append it to any
+         * provided tags.
+         *
          */
-        $items = $this->factory('Service_Item')->csList2set($items);
-        $tags  = $this->factory('Service_Tag')->csList2set($tags);
-
-        if ($order === null)
+        $forTag = 'for:'. $user->name;
+        if (empty($tags))
         {
-            $order   = array(
-                             'taggedOn      DESC',
-                             'name          ASC',
-                             'userCount     DESC',
-                             'tagCount      DESC',
-                       );
+            $tags = $forTag;
         }
-        else
+        else if (is_string($tags))
         {
-            $order = $this->_extraOrder($order);
+            if (! preg_match('/,\s*$/', $tags))
+                $tags .= ',';
+            $tags .= $forTag;
+        }
+        else if (is_array($tags))
+        {
+            array_push($tags, $forTag);
+        }
+        else if ( $tags instanceof Model_Set_Tag )
+        {
+            $tags->append( $this->factory('Service_tag')
+                                    ->get($forTag) );
         }
 
-        $where = $this->_includeSince(array(), $since);
+        /*****************************************************
+         * Construct a 'to' relation restriction that includes
+         * the user, ALL tags, and a 'since'
+         *
+         */
+        $to = array('tags'       => $tags,
+                    'exactTags'  => true,
+                    'where'      => $this->_includeSince(array(), $since) );
 
-        return $this->_mapper->fetchRelated( array(
-                                        'items'     => $items,
-                                        'tags'      => $tags,
-                                        'exactTags' => $exact,
-                                        'order'     => $order,
-                                        'count'     => $count,
-                                        'offset'    => $offset,
-                                        'where'     => $where,
-                                        'privacy'   => $this->_curUser(),
-                                    ));
+        return $this->fetchRelated( $to );
     }
 
     /** @brief  Perform tag autocompletion within the given context.

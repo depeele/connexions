@@ -10,6 +10,7 @@ CREATE TABLE user (
 
   -- statistics about this user
   lastVisit     TIMESTAMP               NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  lastVisitFor  TIMESTAMP               NOT NULL DEFAULT 0,
 
   -- Statistics about this user:
   --     SELECT COUNT(DISTINCT tagId)  AS totalTags,

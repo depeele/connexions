@@ -107,26 +107,16 @@ class Service_User extends Connexions_Service
                                 $count   = null,
                                 $offset  = null)
     {
-        // Rely on Service_Tag to properly interpret 'tags'
-        $tagSet = $this->factory('Service_Tag')->csList2set($tags);
-
-        /*
-        Connexions::log("Service_User::fetchByTags(): "
-                        .   "tags[ %s ] == [ %s ]",
-                        Connexions::varExport($tags), $tagSet);
-        // */
-        $tags   = $tagSet;
-
         if ($order === null)
             $order = 'tagCount DESC';
 
-        return $this->_mapper->fetchRelated( array(
-                                        'tags'      => $tags,
-                                        'exactTags' => $exact,
-                                        'order'     => $order,
-                                        'count'     => $count,
-                                        'offset'    => $offset,
-                                    ));
+        $to = array('tags'       => $tags,
+                    'exactTags'  => $exact);
+
+        return $this->fetchRelated( $to,
+                                    $order,
+                                    $count,
+                                    $offset );
     }
 
     /** @brief  Given an array of tag rename information, rename tags for the

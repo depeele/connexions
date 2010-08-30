@@ -14,7 +14,6 @@
 
 class SearchController extends Zend_Controller_Action
 {
-
     public function init()
     {
         /* Initialize action controller here */
@@ -59,7 +58,6 @@ class SearchController extends Zend_Controller_Action
         }
 
         $this->view->owner   = $owner;
-        $this->view->viewer  = $viewer;
         $this->view->tags    = $tags;
         $this->view->context = $context;
         $this->view->terms   = $terms;

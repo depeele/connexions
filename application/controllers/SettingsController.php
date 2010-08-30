@@ -31,7 +31,6 @@ class SettingsController extends Zend_Controller_Action
         $type    = $request->getParam('type', null);
         $cmd     = $request->getParam('cmd',  null);
 
-        $this->view->viewer = $viewer;
         $this->view->type   = $type;
         $this->view->cmd    = $cmd;
     }

@@ -101,7 +101,6 @@ class UrlController extends Connexions_Controller_Action
         // */
 
         $this->view->url       = $this->_url;
-        $this->view->viewer    = $this->_viewer;
         $this->view->tags      = $this->_tags;
         $this->view->item      = $this->_item;
 
@@ -282,7 +281,8 @@ class UrlController extends Connexions_Controller_Action
         $to = array('items' => $this->_item);
         if (count($this->_tags) > 0)
         {
-            $to['tagsExact'] = $this->_tags;
+            $to['tags']      = $this->_tags;
+            //$to['exactTags'] = true;
         }
 
 

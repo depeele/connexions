@@ -4,18 +4,22 @@
  <user userId="1" name="User1"
        fullName="Random User 1" email="User1@home.com" apiKey="edOEMfwY6d"
        pictureUrl="/connexions/images/User1.png" profile=""
-       lastVisit="2007-04-12 12:38:02" totalTags="24" totalItems="5" />
+       lastVisit="2007-04-12 12:38:02" lastVisitFor="0000-00-00 00:00:00"
+       totalTags="24" totalItems="5" />
  <user userId="2" name="User441"
        fullName="Random User 441" email="User441@home.com" apiKey="xvkz0j5OwR"
        pictureUrl="" profile=""
-       lastVisit="0000-00-00 00:00:00" totalTags="24" totalItems="5" />
+       lastVisit="0000-00-00 00:00:00" lastVisitFor="0000-00-00 00:00:00"
+       totalTags="24" totalItems="5" />
  <user userId="3" name="User83"
        fullName="Random User 83" email="User83@home.com" apiKey="3W8mOnLKyS"
        pictureUrl="" profile=""
-       lastVisit="0000-00-00 00:00:00" totalTags="24" totalItems="5" />
+       lastVisit="0000-00-00 00:00:00" lastVisitFor="0000-00-00 00:00:00"
+       totalTags="24" totalItems="5" />
  <user userId="4" name="User478"
        fullName="Random User 478" email="User478@home.com" apiKey="9kHPpShPoM"
        pictureUrl="" profile=""
-       lastVisit="0000-00-00 00:00:00" totalTags="32" totalItems="5" />
+       lastVisit="0000-00-00 00:00:00" lastVisitFor="0000-00-00 00:00:00"
+       totalTags="32" totalItems="5" />
 
 </dataset>
