@@ -46,7 +46,6 @@ class NetworkController extends Zend_Controller_Action
         }
 
         $this->view->owner  = $owner;
-        $this->view->viewer = $viewer;
         $this->view->tags   = $tags;
     }
 }

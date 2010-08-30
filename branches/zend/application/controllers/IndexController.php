@@ -133,7 +133,6 @@ class IndexController extends Connexions_Controller_Action
 
         $this->view->url       = $this->_url;
         $this->view->owner     = $this->_owner;
-        $this->view->viewer    = $this->_viewer;
 
         $this->view->tags      = $this->_tags;
 
@@ -525,7 +524,8 @@ class IndexController extends Connexions_Controller_Action
             $service = $this->service('Item');
             $items   = $service->fetchByUsersAndTags($users,
                                                      $this->_tags,
-                                                     true,    // exact
+                                                     true,    // exact Users
+                                                     true,    // exact Tags
                                                      $fetchOrder,
                                                      $count,
                                                      $offset);

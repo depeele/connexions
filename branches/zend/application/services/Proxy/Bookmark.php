@@ -124,6 +124,8 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
      *                      match.
      *  @param  tags        A Model_Set_Tag  instance or array of tags  to
      *                      match.
+     *  @param  exactUsers  Bookmarks MUST be associated with provided users
+     *                      [ true ];
      *  @param  exactTags   Bookmarks MUST be associated with provided tags
      *                      [ true ];
      *  @param  order       Optional ORDER clause (string, array)
@@ -140,14 +142,16 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
      */
     public function fetchByUsersAndTags($users,
                                         $tags,
-                                        $exactTags = true,
-                                        $order     = null,
-                                        $count     = null,
-                                        $offset    = null,
-                                        $since     = null)
+                                        $exactUsers = true,
+                                        $exactTags  = true,
+                                        $order      = null,
+                                        $count      = null,
+                                        $offset     = null,
+                                        $since      = null)
     {
         return $this->_service->fetchByUsersAndTags($users,
                                                     $tags,
+                                                    $exactUsers,
                                                     $exactTags,
                                                     $order,
                                                     $count,

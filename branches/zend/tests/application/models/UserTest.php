@@ -13,6 +13,7 @@ class UserTest extends BaseTestCase
             'pictureUrl'    => 'http://gravatar.com/avatar/%md5%.jpg',
             'profile'       => 'https://google.com/profile/test.user@gmail.com',
             'lastVisit'     => null,
+            'lastVisitFor'  => null,
 
             'totalTags'     => 0,
             'totalItems'    => 0,
@@ -187,6 +188,7 @@ class UserTest extends BaseTestCase
             'pictureUrl'    => 'http://gravatar.com/avatar/12345.jpg',
             'profile'       => 'https://google.com/profile/test.user@gmail.com',
             'lastVisit'     => date('Y.m.d H:i:s'),
+            'lastVisitFor'  => '0000-00-00 00:00:00',
 
             'totalTags'     => 0,
             'totalItems'    => 0,

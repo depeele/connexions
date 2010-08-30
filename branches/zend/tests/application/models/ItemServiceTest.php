@@ -342,7 +342,8 @@ class ItemServiceTest extends DbTestCase
 
         $users      = array(1, 2, 3);
         $service    = Connexions_Service::factory('Model_Item');
-        $items      = $service->fetchByUsers( $users );
+        $items      = $service->fetchByUsers( $users,
+                                              false );  // !exact
         $this->assertNotEquals(null, $items);
 
         $items      = $items->__toString();
@@ -371,7 +372,8 @@ class ItemServiceTest extends DbTestCase
 
         $users      = array('User1', 'User441', 'User83');
         $service    = Connexions_Service::factory('Model_Item');
-        $items      = $service->fetchByUsers( $users );
+        $items      = $service->fetchByUsers( $users,
+                                              false );  // !exact
         $this->assertNotEquals(null, $items);
 
         $items      = $items->__toString();
@@ -400,7 +402,8 @@ class ItemServiceTest extends DbTestCase
 
         $users      = 'User1,User441, User83';
         $service    = Connexions_Service::factory('Model_Item');
-        $items      = $service->fetchByUsers( $users );
+        $items      = $service->fetchByUsers( $users,
+                                              false );  // !exact
         $this->assertNotEquals(null, $items);
 
         $items      = $items->__toString();
@@ -421,7 +424,8 @@ class ItemServiceTest extends DbTestCase
                     . 'f6cbe8f4ff12275e776a401cf2679469';
         $tags       = array(6, 12);
         $service    = Connexions_Service::factory('Model_Item');
-        $items      = $service->fetchByTags( $tags, false );
+        $items      = $service->fetchByTags( $tags,
+                                             false );  // !exact
         $this->assertNotEquals(null, $items);
 
         //printf ("Items: [ %s ]\n", print_r($items->toArray(), true));
@@ -444,7 +448,8 @@ class ItemServiceTest extends DbTestCase
                     . 'f6cbe8f4ff12275e776a401cf2679469';
         $tags       = array('web2.0', 'javascript');
         $service    = Connexions_Service::factory('Model_Item');
-        $items      = $service->fetchByTags( $tags, false );
+        $items      = $service->fetchByTags( $tags,
+                                             false );  // !exact
         $this->assertNotEquals(null, $items);
 
         //printf ("Items: [ %s ]\n", print_r($items->toArray(), true));
@@ -467,7 +472,8 @@ class ItemServiceTest extends DbTestCase
                     . 'f6cbe8f4ff12275e776a401cf2679469';
         $tags       = 'web2.0, javascript';
         $service    = Connexions_Service::factory('Model_Item');
-        $items      = $service->fetchByTags( $tags, false );
+        $items      = $service->fetchByTags( $tags,
+                                             false );  // !exact
         $this->assertNotEquals(null, $items);
 
         //printf ("Items: [ %s ]\n", print_r($items->toArray(), true));
@@ -490,7 +496,8 @@ class ItemServiceTest extends DbTestCase
                     . 'f6cbe8f4ff12275e776a401cf2679469';
         $tags       = '6, 12';
         $service    = Connexions_Service::factory('Model_Item');
-        $items      = $service->fetchByTags( $tags, false );
+        $items      = $service->fetchByTags( $tags,
+                                             false );  // !exact
         $this->assertNotEquals(null, $items);
 
         //printf ("Items: [ %s ]\n", print_r($items->toArray(), true));
@@ -511,7 +518,8 @@ class ItemServiceTest extends DbTestCase
                     . 'd78f0feda6386fb621bdc0ffe30c55ae';
         $tags       = array(6, 12);
         $service    = Connexions_Service::factory('Model_Item');
-        $items      = $service->fetchByTags( $tags );
+        $items      = $service->fetchByTags( $tags,
+                                             true  );  // exact
         $this->assertNotEquals(null, $items);
 
         //printf ("Items: [ %s ]\n", print_r($items->toArray(), true));
@@ -535,7 +543,10 @@ class ItemServiceTest extends DbTestCase
         $users      = array(1, 2, 3);
         $tags       = array(6, 12);
         $service    = Connexions_Service::factory('Model_Item');
-        $items      = $service->fetchByUsersAndTags( $users, $tags, false );
+        $items      = $service->fetchByUsersAndTags( $users,
+                                                     $tags,
+                                                     false,     // !exactUsers
+                                                     false);    // !exactTags
         $this->assertNotEquals(null, $items);
 
         $items      = $items->__toString();
@@ -557,7 +568,10 @@ class ItemServiceTest extends DbTestCase
         $users      = array('User1','User441','User83');
         $tags       = array('web2.0','javascript');
         $service    = Connexions_Service::factory('Model_Item');
-        $items      = $service->fetchByUsersAndTags( $users, $tags, false );
+        $items      = $service->fetchByUsersAndTags( $users,
+                                                     $tags,
+                                                     false,     // !exactUsers
+                                                     false);    // !exactTags
         $this->assertNotEquals(null, $items);
 
         $items      = $items->__toString();
@@ -579,7 +593,10 @@ class ItemServiceTest extends DbTestCase
         $users      = 'User1,User441,User83';
         $tags       = 'web2.0,javascript';
         $service    = Connexions_Service::factory('Model_Item');
-        $items      = $service->fetchByUsersAndTags( $users, $tags, false );
+        $items      = $service->fetchByUsersAndTags( $users,
+                                                     $tags,
+                                                     false,     // !exactUsers
+                                                     false);    // !exactTags
         $this->assertNotEquals(null, $items);
 
         $items      = $items->__toString();
@@ -601,7 +618,10 @@ class ItemServiceTest extends DbTestCase
         $users      = '1,2,3';
         $tags       = '6,12';
         $service    = Connexions_Service::factory('Model_Item');
-        $items      = $service->fetchByUsersAndTags( $users, $tags, false );
+        $items      = $service->fetchByUsersAndTags( $users,
+                                                     $tags,
+                                                     false,     // !exactUsers
+                                                     false);    // !exactTags
         $this->assertNotEquals(null, $items);
 
         $items      = $items->__toString();

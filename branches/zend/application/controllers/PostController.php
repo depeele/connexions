@@ -113,7 +113,6 @@ class PostController extends Connexions_Controller_Action
             $bookmark = $this->_doGet( $postInfo );
         }
 
-        $this->view->viewer     = $viewer;
         $this->view->postInfo   = $postInfo;
         $this->view->bookmark   = $bookmark;
 

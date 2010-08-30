@@ -15,12 +15,12 @@
 class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 {
     static public   $defaults           = array(
-        'pageBaseUrl'       => null,        /* The base URL of the containing page
-                                             * used to set the cookie path for
-                                             * the attached Javascript
-                                             * 'cloudPane' which, in turn, effects
-                                             * the cookie path passed to the
-                                             * contained 'dropdownForm'
+        'pageBaseUrl'       => null,        /* The base URL of the containing
+                                             * page used to set the cookie path
+                                             * for the attached Javascript
+                                             * 'cloudPane' which, in turn,
+                                             * effects the cookie path passed
+                                             * to the contained 'dropdownForm'
                                              * presneting Display Options.
                                              */
 

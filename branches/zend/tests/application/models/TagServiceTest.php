@@ -267,7 +267,7 @@ class TagServiceTest extends DbTestCase
 
     public function testTagServiceFetchByUsers()
     {
-        $expected   = 'shared,'             . 'ajax,'
+        $expected   = 'for:user1,'          . 'ajax,'
                     . 'javascript,'         . 'web2.0,'
                     . 'framework,'          . 'oat,'
                     . 'widgets,'            . 'chip,'
@@ -318,12 +318,11 @@ class TagServiceTest extends DbTestCase
                     . 'ibm,'            . 'processor,'
                     . 'technology,'     . 'ajax,'
                     . 'blog,'           . 'cms,'
-                    . 'cryptography,'
+                    . 'cryptography,'   . 'for:user1,'
                     . 'identity,'       . 'mysql,'
                     . 'online,'         . 'password,'
                     . 'passwords,'      . 'php,'
                     . 'privacy,'        . 'security,'
-                    . 'shared,'
                     . 'software,'       . 'storage,'
                     . 'test,'           . 'tools,'
                     . 'web2.0';
@@ -389,7 +388,7 @@ class TagServiceTest extends DbTestCase
     public function testTagServiceFetchByBookmarksAll()
     {
         //            vv ordered by 'userItemCount DESC'
-        $expected   = 'shared,'             . 'javascript,'
+        $expected   = 'for:user1,'          . 'javascript,'
                     . 'ajax,'               . 'web2.0,'
                     . 'framework,'          . 'oat,'
                     . 'chip,'               . 'cooling,'

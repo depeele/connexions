@@ -178,7 +178,8 @@ class View_Helper_Bookmarks extends View_Helper_List
 
             if ( ($tags = $this->tags) !== null)
             {
-                $to['tagsExact'] =& $tags;
+                $to['tags']      =& $tags;
+                //$to['exactTags'] =  true;
             }
 
             if ( ($items = $this->items) !== null)

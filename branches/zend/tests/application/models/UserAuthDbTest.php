@@ -15,6 +15,7 @@ class UserAuthDbTest extends DbTestCase
                         'pictureUrl'    => '/connexions/images/User1.png',
                         'profile'       => null,
                         'lastVisit'     => '2007-04-12 12:38:02',
+                        'lastVisitFor'  => '0000-00-00 00:00:00',
 
                         'totalTags'     => 24,
                         'totalItems'    => 5,

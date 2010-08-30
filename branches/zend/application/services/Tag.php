@@ -123,9 +123,6 @@ class Service_Tag extends Connexions_Service
                                  $offset  = null,
                                  $exact   = false)
     {
-        // Rely on Service_User to properly interpret 'users'
-        $users = $this->factory('Service_User')->csList2set($users);
-
         if ($order === null)
         {
             $order = array('userCount     DESC',
@@ -133,13 +130,13 @@ class Service_Tag extends Connexions_Service
                            'tag           ASC');
         }
 
-        return $this->_mapper->fetchRelated( array(
-                                        'users'      => $users,
-                                        'exactUsers' => $exact,
-                                        'order'      => $order,
-                                        'count'      => $count,
-                                        'offset'     => $offset,
-                                    ));
+        $to = array('users'      => $users,
+                    'exactUsers' => $exact);
+
+        return $this->fetchRelated( $to,
+                                    $order,
+                                    $count,
+                                    $offset );
     }
 
     /** @brief  Retrieve a set of tags related by a set of Items.
@@ -158,9 +155,6 @@ class Service_Tag extends Connexions_Service
                                  $count   = null,
                                  $offset  = null)
     {
-        // Rely on Service_Item to properly interpret 'items'
-        $items = $this->factory('Service_Item')->csList2set($items);
-
         if ($order === null)
         {
             $order = array('itemCount     DESC',
@@ -168,12 +162,13 @@ class Service_Tag extends Connexions_Service
                            'tag           ASC');
         }
 
-        return $this->_mapper->fetchRelated( array(
-                                        'items'  => $items,
-                                        'order'  => $order,
-                                        'count'  => $count,
-                                        'offset' => $offset,
-                                    ));
+        $to = array('items'      => $items,
+                    'exactItems' => true);
+
+        return $this->fetchRelated( $to,
+                                    $order,
+                                    $count,
+                                    $offset );
     }
 
     /** @brief  Retrieve a set of tags related by a set of Bookmarks
@@ -197,23 +192,6 @@ class Service_Tag extends Connexions_Service
                                      $offset    = null,
                                      $where     = null)
     {
-        /*
-        Connexions::log("Service_Tag::fetchByBookmarks(): "
-                        .   "bookmarks[ %s ], where[ %s ]",
-                        $bookmarks,
-                        Connexions::varExport($where) );
-        // */
-
-        // Rely on Service_Bookmark to properly interpret 'bookmarks'
-        $bookmarks = $this->factory('Service_Bookmark')->csList2set($bookmarks);
-
-        /*
-        Connexions::log("Service_Tag::fetchByBookmarks(): "
-                        .   "bookmarks2[ %s ]",
-                        $bookmarks );
-        // */
-
-
         if ($order === null)
         {
             $order = array('userItemCount DESC',
@@ -221,52 +199,18 @@ class Service_Tag extends Connexions_Service
                            'tag           ASC');
         }
 
-        $ids = ( (! empty($bookmarks)) &&
-                 ($bookmarks instanceof Model_Set_Bookmark)
-                    ? $bookmarks->getIds()
-                    : $bookmarks);
+        $to = array('bookmarks'  => $bookmarks,
+                    'where'      => $where);
 
         /*
-        Connexions::log("Service_Tag::fetchByBookmarks(): "
-                        .   "bookmarks[ %s ], where[ %s ]",
-                        Connexions::varExport($ids),
-                        Connexions::varExport($where) );
+        Connexions::log("Service_Tag::fetchByBookmarks(): %d bookmarks",
+                        count($bookmarks));
         // */
 
-        return $this->_mapper->fetchRelated( array(
-                                        'bookmarks' => $ids,
-                                        'order'     => $order,
-                                        'count'     => $count,
-                                        'offset'    => $offset,
-                                        'where'     => $where,
-                                    ));
-
-        /*
-        $users = null;
-        $items = null;
-        if (! empty($bookmarks))
-        {
-            $ids   = (is_array($bookmarks)
-                        ? $bookmarks
-                        : $bookmarks->getIds());
-            $users = array();
-            $items = array();
-            foreach ($ids as $id)
-            {
-                array_push($users, $id[0]);
-                array_push($items, $id[1]);
-            }
-        }
-
-        return $this->_mapper->fetchRelated( array(
-                                        'users'  => $users,
-                                        'items'  => $items,
-                                        'order'  => $order,
-                                        'count'  => $count,
-                                        'offset' => $offset,
-                                    ));
-        // */
-
+        return $this->fetchRelated( $to,
+                                    $order,
+                                    $count,
+                                    $offset );
     }
 
     /*********************************************************************

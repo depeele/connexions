@@ -29,14 +29,21 @@ class Connexions_Controller_Action extends Zend_Controller_Action
 
     public function init()
     {
-        /* Initialize action controller here */
+        // Initialize action controller here
         $this->_viewer  =& Zend_Registry::get('user');
         $this->_request =& $this->getRequest();
         $this->_baseUrl =  $this->_request->getBasePath() .'/';
 
+        // Default view variables that we can set early
+        $this->view->viewer = $this->_viewer;
+
+        /*********************************************************************
+         * If the concrete controller has defined contexts, initialize context
+         * switching.
+         *
+         */
         if (isset($this->contexts))
         {
-            // Initialize context switching (via $this->contexts)
             $cs = $this->_helper->contextSwitch();
             $cs->initContext();
 

@@ -13,6 +13,7 @@ class UserServiceTest extends DbTestCase
             'pictureUrl'    => null,
             'profile'       => null,
             'lastVisit'     => null,
+            'lastVisitFor'  => null,
 
             'totalTags'     => 0,
             'totalItems'    => 0,
@@ -29,6 +30,7 @@ class UserServiceTest extends DbTestCase
             'pictureUrl'    => '/connexions/images/User1.png',
             'profile'       => null,
             'lastVisit'     => '2007-04-12 12:38:02',
+            'lastVisitFor'  => '0000-00-00 00:00:00',
 
             'totalTags'     => 24,
             'totalItems'    => 5,
@@ -45,6 +47,7 @@ class UserServiceTest extends DbTestCase
             'pictureUrl'    => null,
             'profile'       => null,
             'lastVisit'     => '0000-00-00 00:00:00',
+            'lastVisitFor'  => '0000-00-00 00:00:00',
 
             'totalTags'     => 24,
             'totalItems'    => 5,

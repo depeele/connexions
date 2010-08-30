@@ -1,45 +1,24 @@
 <?php
+$config  = Zend_Registry::get('config');
 $request = Connexions::getRequest();
 $baseUrl = $this->baseUrl('/'); //Connexions::url('/');
 
 $this->headMeta()->appendHttpEquiv('Content-Type', 'text/html; charset=utf8');
 
 /*
-echo "<pre>Request Params:\n";
-print_r($request->getParams());
-echo "</pre>\n";
-// */
-
-$config         = Zend_Registry::get('config');
-
-/*
 Connexions::log("application/laytouts/header.phtml: api[ %s ]",
                 Connexions::varExport($config->api));
 // */
-
-$searchTerm     = $request->getParam('q', null);
-$searchContext  = $request->getParam('searchContext', 'all');
-$searchContexts = $config->searchContext;
-if ($searchContexts instanceof Zend_Config)
-{
-    $searchContexts = $searchContexts->toArray();
-}
-else
-{
-    $searchContexts = array();
-}
-
 
 //ZendX_JQuery_View_Helper_JQuery::enableNoConflictMode();
 
 $jQuery = $this->jQuery();
 
-$links = $this->headLink(array('rel'  => 'shortcut icon',
-                               'href' => $baseUrl .'/images/favicon.png'));
+$links  = $this->headLink(array('rel'  => 'shortcut icon',
+                                'href' => $baseUrl .'/images/favicon.png'));
 
 $links->prependStylesheet($baseUrl .'css/connexions.css');
 $links->prependStylesheet($baseUrl .'css/themes/default/jquery-ui.css');
-//$links->prependStylesheet($baseUrl .'css/themes/base/jquery.ui.all.css');
 
 $jQuery->addJavascriptFile($this->baseurl('js/connexions-full.js'));
 
@@ -56,17 +35,6 @@ $jQuery->javascriptCaptureStart();
 <?php
 $jQuery->javascriptCaptureEnd();
 
-//$jQuery->addJavascriptFile($this->baseurl('js/jquery.pngFix.js'));
-//$jQuery->addJavascriptFile($this->baseurl('js/ui.notify.min.js'));
-//$jQuery->addJavascriptFile($this->baseurl('js/ui.input.min.js'));
-
-/*
-
-$links->appendStylesheet($baseUrl .'css/screen.css', 'screen,projection');
-$links->appendStylesheet($baseUrl .'css/sprites.css','screen,projection');
-$links->appendStylesheet($baseUrl .'css/screen.css', 'print');
-
-*/
 $links->appendStylesheet($baseUrl .'css/ie.min.css',  'screen,projection',
                          'lt IE 8');
 $links->appendStylesheet($baseUrl .'css/ie8.min.css', 'screen,projection',
@@ -238,27 +206,8 @@ $jQuery->javascriptCaptureEnd();
                tabs_outer_curve">&nbsp;</div>
    <div class='tabs'><!-- tabs { -->
     <?php
-        /* Present the Navigation Menu
-         *
-         * Note: $this/view->navigation() is initialized in
-         *       Bootstrap::_initNavigation
-         */
-        $nav   = $this->navigation();
-
-        /*
-        $acl  = $nav->getAcl();
-        $role = $nav->getRole();
-        printf("role[ %s ]<br />\n", $role);
-echo "<pre>acl:\n";
-print_r($acl);
-echo "</pre>\n";
-        */
-
-        $items = $nav->findOneByLabel('nav_menu');
-
-        echo $this->navigation()
-                  ->menu()
-                  ->renderPartial($items, 'nav_menu.phtml');
+        // Present the Navigation Menu
+        echo $this->render('nav_menu.phtml');
 
     ?>
    </div><!-- tabs } -->

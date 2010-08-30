@@ -76,7 +76,6 @@ class PeopleController extends Connexions_Controller_Action
         $this->view->headTitle('People');
 
         $this->view->url       = $this->_url;
-        $this->view->viewer    = $this->_viewer;
 
         $this->view->tags      = $this->_tags;
 
@@ -404,13 +403,18 @@ class PeopleController extends Connexions_Controller_Action
                     // Notify the sidebar helper of the main-view  users.
                     $sidebar->items = $users;
                 }
+                else
+                {
+                    $users =& $sidebar->items;
+                }
 
                 /* Retrieve the set of items that are related to the presented 
                  * users.
                  */
-                $items = $service->fetchByUsersAndTags($sidebar->items,
+                $items = $service->fetchByUsersAndTags($users,
                                                        $this->_tags,
-                                                       true,    // exact
+                                                       true,    // exact Users
+                                                       true,    // exact Tags
                                                        $fetchOrder,
                                                        $count,
                                                        $offset);
