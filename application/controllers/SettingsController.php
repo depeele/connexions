@@ -7,17 +7,12 @@
  */
 
 
-class SettingsController extends Zend_Controller_Action
+class SettingsController extends Connexions_Controller_Action
 {
-
-    public function init()
-    {
-        /* Initialize action controller here */
-    }
 
     public function indexAction()
     {
-        $viewer =& Zend_Registry::get('user');
+        $viewer =& $this->_viewer;
 
         // Use the currently authenticated user
         if ( ( ! $viewer instanceof Model_User) ||
@@ -27,9 +22,9 @@ class SettingsController extends Zend_Controller_Action
             return $this->_helper->redirector('signIn','auth');
         }
 
-        $request = $this->getRequest();
-        $type    = $request->getParam('type', null);
-        $cmd     = $request->getParam('cmd',  null);
+        $request =& $this->_request;
+        $type    =  $request->getParam('type', null);
+        $cmd     =  $request->getParam('cmd',  null);
 
         $this->view->type   = $type;
         $this->view->cmd    = $cmd;

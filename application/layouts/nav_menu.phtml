@@ -14,7 +14,7 @@
 /* Initialize our navigation menu related view variables -- the ones that will
  * only be needed here.
  */
-$this->initNavMenu();
+$navMenu = $this->navMenu();
 
 Connexions::log("layouts/nav_menu.phtml: inbox[ %s ]",
                 Connexions::varExport($this->inbox));
@@ -217,14 +217,23 @@ $searchContext  = (isset($this->search['context'])
         /* Render the list of available search contexts.
          *
          * This is defined in 'application/configs/application.ini' via
-         *     'searchContext.<name> = <label>
+         *     'searchContext.<name> = { title: , resource: }
          */
         $contextText = 'Search connexions';
         $ind         = "     ";
         $nItems      = count($this->search['contexts']);
         $idex        = 0;
-        foreach($this->search['contexts'] as $name => $label)
+        foreach($this->search['contexts'] as $name => $info)
         {
+            if (! $navMenu->searchAccept($name))
+            {
+                // NOT accepted by ACL or visibility
+                $idex++;
+                continue;
+            }
+
+            $title = $info['title'];
+
             $id        = 'search-choice-'. $name;
             $liClasses = array();
             if ( $idex == 0 )
@@ -235,7 +244,7 @@ $searchContext  = (isset($this->search['context'])
             {
                 //array_push($liClasses, 'on');
                 array_push($liClasses, 'active');
-                $contextText = $label;
+                $contextText = $title;
             }
 
             printf ("%s<li id='%s'%s>",
@@ -250,11 +259,11 @@ $searchContext  = (isset($this->search['context'])
                      "</div>";
             }
 
-            $label = Connexions::replaceables($label);
-            printf ("<a>%s</a>", $label);
+            $title = Connexions::replaceables($title);
+            printf ("<a>%s</a>", $title);
             /*
             printf ("<span>%s</span>",
-                    $label);
+                    $title);
             */
 
             if ($idex == 0)
