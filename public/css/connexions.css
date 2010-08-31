@@ -192,9 +192,13 @@ a:visited { color: #005a9c; }
 
 .star_small_fill { width: 13px; height: 12px; background-position: -13px -59px; }
 
+.envelope { width: 17px; height: 13px; background-position: -32px -28px; }
+
+.envelope_dim { width: 17px; height: 13px; background-position: -32px -44px; }
+
 .magnifier { width: 17px; height: 16px; background-position: 0 -71px; }
 
-.magnifier_small { width: 15px; height: 15px; background-position: -45px -59px; }
+.magnifier_small { width: 15px; height: 15px; background-position: -20px -71px; }
 
 .bookmark_bg { background-position: -100px -110px; width: 48px; height: 48px; }
 
@@ -210,7 +214,9 @@ a:visited { color: #005a9c; }
 
 .search_bg { width: 173px; height: 23px; background-position: 0 -87px; }
 
-.welcome_bg { width: 100px; height: 64px; background-position: 0 -110px; }
+.welcome_bg { background-position: 0 -270px; }
+
+.old_welcome_bg { width: 100px; height: 64px; background-position: 0 -110px; }
 
 .join_bg { width: 100px; height: 64px; background-position: 0 -174px; }
 
@@ -244,23 +250,23 @@ a:visited { color: #005a9c; }
 /* Alternative Tab styling using no background image but rather border-radius. Requires a change to application/configs/navigation.xml to remove 'connexions_sprites welcome_bg' from the 'class' of <userInfo> and 'connexions_sprites join_bg'    from the 'class' of <register>  This will show square tabs in browsers that don't support border-radius and likely won't work at all in IE6. */
 /* Tabs / Navigation */
 #pageHeader { border-top: 0.25em solid #172322; /* Sub-menu */ }
-#pageHeader .tabs_outer_curve { position: absolute; right: 750px; }
-#pageHeader .tabs { position: absolute; top: 0; right: 0; padding: 0; width: 750px; padding: 0; background-color: transparent; }
+#pageHeader .tabs_outer_curve { position: absolute; right: 800px; }
+#pageHeader .tabs { position: absolute; top: 0; right: 0; padding: 0; width: 800px; padding: 0; background-color: transparent; }
 #pageHeader .tabs a { padding: 2px; color: white; font-weight: normal; text-decoration: none; }
 #pageHeader .tabs li.active a, #pageHeader .tabs a:hover { color: #b0d730; }
-#pageHeader .tabs li.welcome, #pageHeader .tabs li.join { width: 110px; border-right: 1px dotted #666666; -moz-border-radius: 0 0 0 20px; -webkit-border-radius: 0 0 0 20px; -ms-border-radius: 0 0 0 20px; -khtml-border-radius: 0 0 0 20px; border-radius: 0 0 0 20px; }
-#pageHeader .tabs li.welcome { background: url("sprites/welcome_bg_gradient.gif") repeat-x scroll 0 0 transparent; }
-#pageHeader .tabs li.welcome ul.sub { left: 0; }
-#pageHeader .tabs li.welcome ul.sub li { width: 100px; }
-#pageHeader .tabs li.welcome ul.sub .corner_inner_left { display: none; }
-#pageHeader .tabs li.welcome:hover { -moz-border-radius: 0 0 0 0; -webkit-border-radius: 0 0 0 0; -ms-border-radius: 0 0 0 0; -khtml-border-radius: 0 0 0 0; border-radius: 0 0 0 0; }
+#pageHeader .tabs li.welcome, #pageHeader .tabs li.join { width: 170px; border-right: 1px dotted #666666; padding-left: 10px; padding-right: 20px; -moz-border-radius: 0 0 0 20px; -webkit-border-radius: 0 0 0 20px; -ms-border-radius: 0 0 0 20px; -khtml-border-radius: 0 0 0 20px; border-radius: 0 0 0 20px; }
+#pageHeader .tabs li.welcome ul.sub { left: 28px; }
 #pageHeader .tabs li.join { background-color: #9fc54e; }
 #pageHeader .tabs li.join a { color: white; }
 #pageHeader .tabs li.join a:hover { color: #172322; }
-#pageHeader .nav { position: absolute; top: 0; left: 0; padding: 0; width: 560px; *width: 561px; }
-#pageHeader .nav li { float: left; width: 90px; text-align: center; padding: 0.25em 0; background-color: #172322; height: 2em; }
-#pageHeader .nav .inbox-indicator { position: absolute; top: 5px; right: 7px; background: none; border: none; font-size: 0.7em; }
-#pageHeader .nav .inbox-indicator .ui-icon, #pageHeader .nav .inbox-indicator .count { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; border: none; vertical-align: bottom; padding: 0; }
+#pageHeader .nav { position: absolute; top: 0; left: 0; padding: 0; width: 610px; *width: 611px; }
+#pageHeader .nav li { float: left; width: 88px; text-align: center; padding: 0.25em 0; background-color: #172322; height: 2em; }
+#pageHeader .nav .inbox-indicator { position: absolute; z-index: 0; }
+#pageHeader .nav .welcome .inbox-indicator { top: 0.4em; right: 0.4em; }
+#pageHeader .nav .sub .inbox-indicator { top: 0.5em; right: 1em; background: none; border: none; font-size: 0.65em; text-align: center; color: white; }
+#pageHeader .nav .sub .inbox-indicator .ui-icon, #pageHeader .nav .sub .inbox-indicator .count { display: block; border: none; vertical-align: bottom; padding: 0; }
+#pageHeader .nav .sub .inbox-indicator .ui-icon { height: 16px; }
+#pageHeader .nav .sub .inbox-indicator .count { padding: 0.8em 0.8em 0 0; }
 #pageHeader ul.sub { display: none; position: absolute; top: 2em; left: 2px; color: white; padding: 0; margin: 0; }
 #pageHeader li:hover ul.sub { display: block; }
 

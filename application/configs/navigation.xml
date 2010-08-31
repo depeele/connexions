@@ -8,7 +8,7 @@
      <controller>index</controller>
      <action>%user.name%</action>
      <resource>member</resource>
-     <class>welcome</class>
+     <class>welcome connexions_sprites welcome_bg</class>
      <pages>
       <inbox>
        <label>Inbox</label>

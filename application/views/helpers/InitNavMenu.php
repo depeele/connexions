@@ -48,10 +48,13 @@ class View_Helper_InitNavMenu extends Zend_View_Helper_Abstract
             ),
         );
 
-        if ($viewer->isAuthenticated())
+        if ( ($viewer instanceof Model_User) && $viewer->isAuthenticated())
         {
             // See if this user has any inbox items they have not yet seen
-            $lastVisit = $viewer->lastVisitFor;
+            $lastVisit = (isset($this->view->lastVisitFor)
+                            ? $this->view->lastVisitFor
+                            : $viewer->lastVisitFor);
+
             $bookmarks = Connexions_Service::factory('Model_Bookmark')
                                         ->fetchInbox($viewer,
                                                      null,  // no extra tags
@@ -61,6 +64,12 @@ class View_Helper_InitNavMenu extends Zend_View_Helper_Abstract
                 'unread'    => $bookmarks->getTotalCount(),
             );
         }
+
+        /*
+        Connexions::log('View_Helper_InitNavMenu::initNavMenu(): '
+                        . 'config[ %s ]',
+                        Connexions::varExport($config));
+        // */
 
         $this->view->inbox  = $config['inbox'];
         $this->view->search = $config['search'];

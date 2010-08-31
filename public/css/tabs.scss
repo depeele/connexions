@@ -18,7 +18,7 @@ $navBorder: unquote("1px dotted") $navColorBorder;
   // Outer curve connecting the tabs with the top border
   .tabs_outer_curve {
     position: absolute;
-    right: $tabWidth;
+    right:    $tabWidth;
   }
   // Top navigation tabs
   .tabs {
@@ -42,25 +42,17 @@ $navBorder: unquote("1px dotted") $navColorBorder;
 
     // Welcome / Join -- first tab item
     li.welcome, li.join {
-      width: $navWidthFirst;
-      border-right: $navBorder;
+      width:          $navWidthFirst;
+      border-right:   $navBorder;
+      padding-left:   10px;
+      padding-right:  20px;
       @include corners(0, 0, 0, 20px);
     }
 
     li.welcome {
       //background-color =    !navColorWelcomeBackground
-      background: url("sprites/welcome_bg_gradient.gif") repeat-x scroll 0 0 transparent;
       ul.sub {
-        left: 0;
-      }
-      ul.sub li {
-        width: 100px;
-      }
-      ul.sub .corner_inner_left {
-        display: none;
-      }
-      &:hover {
-        @include corners(0, 0, 0, 0);
+        left: 28px;
       }
     }
     li.join {
@@ -81,28 +73,46 @@ $navBorder: unquote("1px dotted") $navColorBorder;
     width: $navWidth;
     *width: $navWidth + 1;
     li {
-      float: left;
-      width: $navWidthItem;
-      text-align: center;
-      padding: $navPadSubItem_tb unquote("0");
+      float:            left;
+      width:            $navWidthItem;
+      text-align:       center;
+      padding:          $navPadSubItem_tb unquote("0");
       background-color: $navColorBackground;
-      height: $tabHeight;
+      height:           $tabHeight;
     }
 
     .inbox-indicator {
       position:   absolute;
-      top:        5px;
-      right:      7px;
+      z-index:    0;
+    }
+    .welcome .inbox-indicator {
+      top:        0.4em;    // Based on #pageHeader .nav ul.sub li a
+      right:      0.4em;
+    }
+    .sub .inbox-indicator {
+      top:        0.5em;    // Based on #pageHeader .nav ul.sub li a
+      right:      1em;      // Based on #pageHeader ul.sub li
 
       background: none;
       border:     none;
-      font-size:  0.7em;
+
+      font-size:  0.65em;
+      text-align: center;
+      color:      $lightest;
 
       .ui-icon, .count {
-        @include inlineBlock();
+        //@include inlineBlock();
+        display:        block;
         border:         none;
         vertical-align: bottom;
         padding:        0;
+      }
+
+      .ui-icon {
+        height:         16px;
+      }
+      .count {
+        padding:        0.8em 0.8em 0 0;
       }
     }
   }

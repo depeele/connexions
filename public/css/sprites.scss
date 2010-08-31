@@ -190,6 +190,17 @@
   background-position: -13px -59px;
 }
 
+.envelope {
+  width: 17px;
+  height: 13px;
+  background-position: -32px -28px;
+}
+.envelope_dim {
+  width: 17px;
+  height: 13px;
+  background-position: -32px -44px;
+}
+
 .magnifier {
   width: 17px;
   height: 16px;
@@ -199,7 +210,7 @@
 .magnifier_small {
   width: 15px;
   height: 15px;
-  background-position: -45px -59px;
+  background-position: -20px -71px;
 }
 
 .bookmark_bg {
@@ -245,6 +256,12 @@
 }
 
 .welcome_bg {
+  //width: 205px;
+  //height: 31px;
+  background-position: 0 -270px;
+}
+
+.old_welcome_bg {
   width: 100px;
   height: 64px;
   background-position: 0 -110px;

@@ -1,9 +1,9 @@
 $baseFontSize: 14px;
 
-$minPageWidth: 960px;
-$rightColumnWidth: 300px;
-$countBoxWidth: 100px;
-$controlBoxWidth: 20px;
+$minPageWidth:      960px;
+$rightColumnWidth:  300px;
+$countBoxWidth:     100px;
+$controlBoxWidth:   20px;
 
 // Keep the url from expanding the left column
 //  we include '!baseFontSize * 1' to account for the 1em of left-padding on
@@ -11,27 +11,27 @@ $controlBoxWidth: 20px;
 $urlBoxWidth: $minPageWidth - $rightColumnWidth + $countBoxWidth + $controlBoxWidth + $baseFontSize * 1;
 
 // Navigation tabs
-$tabWidth: 750px;
+$tabWidth:  800px;
 $tabHeight: 2em;
 
-$navWidth: 560px;
+$navWidth:  610px;
 
 // Sign-Out, Bookmarks, People, Tags, Help
-$navNumItems: 5;
+$navNumItems:   5;
 
-$navWidthFirst: 110px;
+$navWidthFirst: 170px;
 
-//  90px                = (560px     - 110px         ) / 5
+//  126px    = (800px     - 170px         ) / 5
 $navWidthItem: ($navWidth - $navWidthFirst) / $navNumItems;
 
-// 190px                = 750px     - 560px
+// 190px       = 800px     - 610px
 $navWidthSearch: $tabWidth - $navWidth;
 
-$navPadItem: 0.1em;
-$navPadSubItem_tb: 0.25em;
-$navPadSubItem_lr: 1em;
+$navPadItem:        0.1em;
+$navPadSubItem_tb:  0.25em;
+$navPadSubItem_lr:  1em;
 
-//  48px                = 64px       - (8px         * 2)    *2 for top and bottom
+//  48px  = 64px       - (8px         * 2)    *2 for top and bottom
 $navTopSub: $tabHeight;
 
 $searchPad_r: 0.5em;
@@ -42,9 +42,9 @@ $searchInputPad: 2px;
 
 $searchInputInputPadLeft: 2px;
 $searchInputInputPadRght: $searchMagWidth;
-$searchInputInputWidth: 170px;
+$searchInputInputWidth:   170px;
 
-// 199px           = 170px                + 2px                      + 23px                     + (2               *2)
+// 199px         = 170px                  + 2px                      + 23px                     + (2              *2)
 $searchInputWidth: $searchInputInputWidth + $searchInputInputPadLeft + $searchInputInputPadRght + $searchInputPad * 2;
 
 // 150px      = 170px                  - 23px            + 2

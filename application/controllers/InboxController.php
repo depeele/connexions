@@ -144,6 +144,29 @@ class InboxController extends Connexions_Controller_Action
 
         $this->view->tags      = $this->_tags;
 
+        /* Finally, IF 'owner' === 'viewer' AND 'viewer' is authenticated, save
+         * the current 'lastVisitFor' value for later use by
+         * View_Helper_InitNavMenu, and then update it.
+         */
+        if ( ($this->_viewer->getId() == $this->_owner->getId()) &&
+             ($this->_viewer->isAuthenticated()) )
+        {
+            /* Record the initial 'lastVisitFor' value so
+             *  View_Helper_InitNavMenu has access to the value
+             *  BEFORE we reset it here
+             */
+            $this->view->lastVisitFor = $this->_viewer->lastVisitFor;
+
+            // /*
+            Connexions::log("InboxController::indexAction(): "
+                            . "update lastVisitFor for owner '%s'",
+                            $this->_viewer);
+            // */
+
+            $this->_viewer->updateLastVisitFor();
+            $this->_viewer->save();
+        }
+
 
         // Handle this request based on the current context / format
         $this->_handleFormat('items');
