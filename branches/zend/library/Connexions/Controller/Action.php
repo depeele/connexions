@@ -24,18 +24,54 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                                          */
 
 
-    protected   $_baseUrl   = null;     // The page's base URL minus any
-                                        // differentiating parameters
+    protected   $_baseUrl   = null;     /* The page's base URL minus any
+                                         * differentiating parameters
+                                         * (e.g. tag restrictions).
+                                         *
+                                         * Initially, this will be the site's
+                                         * root URL but should be changed by
+                                         * the controller.
+                                         */
+    protected   $_url       = null;     /* The page's URL with
+                                         * differentiating parameters but
+                                         * minus any query.
+                                         *
+                                         * This MAY be changed by the
+                                         * controller based upon validation of
+                                         * restrictions (e.g. tags, users).
+                                         */
+
 
     public function init()
     {
         // Initialize action controller here
         $this->_viewer  =& Zend_Registry::get('user');
         $this->_request =& $this->getRequest();
-        $this->_baseUrl =  $this->_request->getBasePath() .'/';
+        $this->_baseUrl =  $this->_request->getBasePath();
+        $this->_url     =  $this->_baseUrl
+                        .  $this->_request->getPathInfo();
+
+        if (! preg_match('#/\s*$#', $this->_url))
+        {
+            $this->_url .= '/';
+        }
+
+        if (! preg_match('#/\s*$#', $this->_baseUrl))
+        {
+            $this->_baseUrl .= '/';
+        }
+
 
         // Default view variables that we can set early
-        $this->view->viewer = $this->_viewer;
+        $this->view->baseUrl = $this->_baseUrl;
+        $this->view->url     = $this->_url;
+        $this->view->viewer  = $this->_viewer;
+
+        Connexions::log("Connexions_Controller_Action::init(): "
+                        .   "baseUrl[ %s ], url[ %s ], viewer[ %s ]",
+                        $this->_baseUrl,
+                        $this->_url,
+                        $this->_viewer);
 
         /*********************************************************************
          * If the concrete controller has defined contexts, initialize context
