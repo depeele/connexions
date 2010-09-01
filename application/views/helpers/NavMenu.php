@@ -10,7 +10,7 @@ class View_Helper_NavMenu extends Zend_View_Helper_Abstract
 {
     public static       $searchContexts = array(
         'same'          => array(
-            'title'     => "Search these bookmarks",
+            'title'     => "Search this view",
             'resource'  => 'guest',
         ),
         'mybookmarks'   => array(

@@ -2,10 +2,26 @@
 
 $this->headTitle("Search results for '". $this->terms ."'");
 
+$nResults = count($this->results);
+if ($nResults < 1)
+{
+    printf ("<p>No results found for '%s'.</p>", $this->terms);
+}
+else
+{
+    printf ("<p>%s results matching '%s'.</p>",
+            number_format($nResults),
+            $this->terms);
+
+    echo "<ul class='results'>";
+    foreach ($this->results as $item)
+    {
+        printf ("<li><pre>%s</pre></li>\n",
+                htmlspecialchars($item->debugDump()));
+    }
+    echo "</ul>";
+}
+
 ?>
-<p>Present search results to      <?= $this->viewer ?>,
-                          context '<?= $this->context ?>',
-                          terms   '<?= $this->terms ?>'
-</p>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

@@ -137,6 +137,7 @@ class InboxController extends Connexions_Controller_Action
          */
         $this->view->headTitle($this->_owner ."'s Inbox");
 
+        $this->view->baseUrl   = $this->_baseUrl;
         $this->view->url       = $this->_url;
 
         $this->view->owner     = $this->_owner;
@@ -399,6 +400,8 @@ class InboxController extends Connexions_Controller_Action
 
             $config['itemsType']        =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
+            $config['itemBaseUrl']      =  $this->_url;
+
             $config['weightName']       =  'userItemCount';
             $config['weightTitle']      =  'Bookmarks with this tag';
             $config['titleTitle']       =  'Tag';

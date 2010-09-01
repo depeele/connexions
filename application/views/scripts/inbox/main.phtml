@@ -33,7 +33,8 @@
  *          sortOrder       Indicates the sort order used to retrieve the
  *                          current bookmark set;
  */
-Connexions::log('script/inbox/main.phtml');
+Connexions::log('script/inbox/main.phtml: baseUrl[ %s ], url[ %s ]',
+                $this->baseUrl, $this->url);
 
 // Prepare the HTML Bookmarks helper.
 $htmlBookmarks = $this->htmlBookmarks( $this->main );

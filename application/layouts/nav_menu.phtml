@@ -210,6 +210,8 @@ $searchContext  = (isset($this->search['context'])
  <div class='searchBox'><!-- searchBox { -->
   <div class='searchInput'><!-- searchInput { -->
    <div class='choices'>
+    <input name='referer' type='hidden'
+          value='<?= $this->url ?>' />
     <input name='searchContext' type='hidden'
           value='<?= $searchContext ?>' />
     <ul class='sub list'>
@@ -223,6 +225,7 @@ $searchContext  = (isset($this->search['context'])
         $ind         = "     ";
         $nItems      = count($this->search['contexts']);
         $idex        = 0;
+        $isFirst     = true;
         foreach($this->search['contexts'] as $name => $info)
         {
             if (! $navMenu->searchAccept($name))
@@ -236,10 +239,11 @@ $searchContext  = (isset($this->search['context'])
 
             $id        = 'search-choice-'. $name;
             $liClasses = array();
-            if ( $idex == 0 )
+            if ( $isFirst ) //$idex == 0 )
                 array_push($liClasses, 'first');
             else if ( ($idex + 1) >= $nItems)
                 array_push($liClasses, 'last');
+
             if ($searchContext == $name)
             {
                 //array_push($liClasses, 'on');
@@ -252,7 +256,7 @@ $searchContext  = (isset($this->search['context'])
                     (! @empty($liClasses)
                         ? " class='". implode(' ', $liClasses) ."'"
                         : ""));
-            if ($idex == 0)
+            if ( $isFirst ) //$idex == 0)
             {
                 // Include the left inner corner
                 echo "<div class='connexions_sprites corner_inner_left'>",
@@ -261,18 +265,16 @@ $searchContext  = (isset($this->search['context'])
 
             $title = Connexions::replaceables($title);
             printf ("<a>%s</a>", $title);
-            /*
-            printf ("<span>%s</span>",
-                    $title);
-            */
 
-            if ($idex == 0)
+            if ( $isFirst ) //$idex == 0)
             {
                 // Include the right inner corner
                 echo "<div class='connexions_sprites corner_inner_right'>",
                      "</div>";
             }
             echo "</li>\n";
+
+            $isFirst = false;
             $idex++;
         }
      ?>
