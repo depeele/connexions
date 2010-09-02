@@ -98,7 +98,7 @@ foreach ($iterator as $page)
     else if ($depth < $prevDepth)
     {
         // Close li/ul tags until we're at current depth
-        closeTags($indent, $prevDepth, $depth);
+        Connexions::closeTags($indent, $prevDepth, $depth, '</li></ul>');
     }
 
     if ($depth <= $prevDepth)
@@ -190,7 +190,7 @@ foreach ($iterator as $page)
 }
 
 // Finished iterating -- close all open li/ul tags
-closeTags($indent, $depth+1);
+Connexions::closeTags($indent, $depth+1, 0, '</li></ul>');
 
 
 /************************************************************
@@ -287,25 +287,3 @@ $searchContext  = (isset($this->search['context'])
   <button class='submit connexions_sprites magnifier_small'>&nbsp;</button>
  </div><!-- searchBox } -->
 </form>
-
-<?php
-
-/** @brief  Given a previous depth and current depth, close all open li/ul tags
- *  @param  indent          The indent for the current depth.
- *  @param  prevDepth       The previous depth.
- *  @param  depth           The current depth
- */
-function closeTags($indent, $prevDepth, $depth = 0)
-{
-    // Close li/ul tags until we're at current depth
-    for ($idex = $prevDepth; $idex > $depth; $idex--)
-    {
-        printf("<!-- closeTags: prevDepth[ %d ], depth[ %d ], idex[ %d ] -->\n",
-                $prevDepth, $depth, $idex);
-
-        $ind = $indent . str_repeat(' ', $idex);
-        echo $ind, " </li>\n";
-
-        echo $ind, "</ul>\n";
-    }
-}

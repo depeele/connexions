@@ -393,6 +393,33 @@ class Connexions
                         $name);
     }
 
+    /** @brief  Given a previous depth and current depth, close all tags until 
+     *          we're back to the current tag depth.
+     *  @param  indent          The indent for the current depth;
+     *  @param  prevDepth       The previous depth;
+     *  @param  depth           The current depth;
+     *  @param  closeTags       The tag(s) required to close a level;
+     */
+    public static function closeTags($indent,
+                                     $prevDepth,
+                                     $depth         = 0,
+                                     $closeTags     = '</div>')
+    {
+        $ind = $indent . str_repeat(' ', $idex);
+
+        // Close tags until we're at current depth
+        for ($idex = $prevDepth; $idex > $depth; $idex--)
+        {
+            /*
+            printf("<!-- closeTags: prevDepth[ %d ], depth[ %d ], "
+                   .               "idex[ %d ] -->\n",
+                    $prevDepth, $depth, $idex);
+            // */
+
+            echo $ind, $closeTags, "\n";
+        }
+    }
+
     /** @brief  Perform variable replacement.
      *  @param  str     The string to operate on.
      *
