@@ -21,8 +21,12 @@ class View_Helper_NavMenu extends Zend_View_Helper_Abstract
             'title'     => "My network's bookmarks",
             'resource'  => 'member',
         ),
-        'all'           => array(
+        'bookmarks'     => array(
             'title'     => "Everyone's bookmarks",
+            'resource'  => 'guest',
+        ),
+        'all'           => array(
+            'title'     => "All of connexions",
             'resource'  => 'guest',
         ),
     );

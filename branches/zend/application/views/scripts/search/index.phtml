@@ -9,17 +9,20 @@ if ($nResults < 1)
 }
 else
 {
-    printf ("<p>%s results matching '%s'.</p>",
-            number_format($nResults),
-            $this->terms);
-
-    echo "<ul class='results'>";
-    foreach ($this->results as $item)
+    foreach ($this->results as $section => $items)
     {
+        printf ("<p>%s %s results matching '%s'.</p>",
+                number_format(count($items)),
+                preg_replace('/s$/', '', $section),
+                $this->terms);
+
+        echo "<ul class='results'>";
+        /*
         printf ("<li><pre>%s</pre></li>\n",
-                htmlspecialchars($item->debugDump()));
+                htmlspecialchars($items->debugDump()));
+        */
+        echo "</ul>";
     }
-    echo "</ul>";
 }
 
 ?>

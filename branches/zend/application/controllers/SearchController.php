@@ -42,7 +42,7 @@ class SearchController extends Connexions_Controller_Action
             $this->_refererSearch();
             break;
 
-        case 'all':
+        default:
             $this->_search();
             break;
         }
@@ -65,15 +65,64 @@ class SearchController extends Connexions_Controller_Action
         switch ($this->_context)
         {
         case 'mybookmarks':
+            /* Fetch bookmarks belonging to the current viewer that also have
+             * a match to 'term(s)' in name and/or description.
+             */
+            $this->_searchBookmarks($this->_viewer);
+
             break;
 
         case 'mynetwork':
+            /* Fetch bookmarks belonging to the any user in the network
+             * of the current viewer that also have a match to 'term(s)' in 
+             * name and/or description.
+             */
             break;
 
-        case 'same':
+        case 'bookmarks':
+            /* Fetch bookmarks that have a match to 'term(s)' in name and/or 
+             * description.
+             */
+            $this->_searchBookmarks();
             break;
 
         case 'all':
+            /* Fetch bookmarks, tags, items, and people that have a match to 
+             * 'term(s)' in:
+             *  - bookmarks - name and/or description
+             *  - tags      - tag
+             *  - people    - name, fullName, email, pictureUrl, profile
+             *  - items     - url
+             */
+            $this->_searchBookmarks();
+
+            $tService = $this->service('Tag');
+            $iService = $this->service('Item');
+            $uService = $this->service('User');
+
+            $tTo = array(
+                'where' => $this->_parseTerms($this->_terms,
+                                              array('tag')),
+            );
+            $iTo = array(
+                'where' => $this->_parseTerms($this->_terms,
+                                              array('url')),
+            );
+            $uTo = array(
+                'where' => $this->_parseTerms($this->_terms,
+                                              array(
+                                                'name',
+                                                'fullName',
+                                                'email',
+                                                'pictureUrl',
+                                                'profile',
+                                              )),
+            );
+
+            $this->_results['tags']   = $tService->fetchRelated($tTo);
+            $this->_results['people'] = $uService->fetchRelated($uTo);
+            $this->_results['items']  = $iService->fetchRelated($iTo);
+
             break;
         }
     }
@@ -222,11 +271,16 @@ class SearchController extends Connexions_Controller_Action
      *  @param  items   The required item(s) (null == no item restrictions);
      *
      */
-    protected function _searchBookmarks($users,
-                                        $tags,
-                                        $items = null)
+    protected function _searchBookmarks($users  = null,
+                                        $tags   = null,
+                                        $items  = null)
     {
-        $to = array('where' => $this->_terms);
+        $to = array('where' => $this->_parseTerms($this->_terms,
+                                                   array(
+                                                    'name',
+                                                    'description',
+                                                ))
+        );
 
         if ($users !== null)
         {
@@ -242,7 +296,9 @@ class SearchController extends Connexions_Controller_Action
             $to['items'] = $items;
         }
 
-        $this->_results = $this->service('Bookmark')->fetchRelated($to);
+        $this->_results = array(
+            'bookmarks' => $this->service('Bookmark')->fetchRelated($to),
+        );
     }
 
     /** @brief  Retrieve the next item from 'rest'
@@ -271,12 +327,13 @@ class SearchController extends Connexions_Controller_Action
         return $ret;
     }
 
-    /** @brief  Given search term(s), parse them according to our search
-     *          syntax.
-     *  @param  terms       The term(s) to parse.
-     *  @param  fields      A set of field(s) to apply the term(s) against.
+    /** @brief  Given a search term (string) and array of fields to apply the 
+     *          term against, construct a representative array of 
+     *          'condition/value' pairs.
+     *  @param  terms       The search term string;
+     *  @param  fields      The array of fields to apply the term against;
      *
-     *  Syntax:
+     *  The search term syntax:
      *      - Quoted phrase;
      *      - Term exclusion by prefixing the term with '-';
      *      - Wildcard '*';
@@ -284,11 +341,93 @@ class SearchController extends Connexions_Controller_Action
      *      - The OR operator: '|' 'OR';
      *      - By default, all terms are combined with AND;
      *
-     *  @return An array of conditions suitable for the 'where' parameter to
-     *          Connexions_Service::fetch() / fetchRelated().
+     *  @return An array of 'condition/value' pairs.
      */
-    protected function _parseTerm($terms, array $fields)
+    protected function _parseTerms($terms, array $fields)
     {
-        $parts = preg_split('/(".*?[^\\]"|\s+(?:\|OR)\s+|\s+)/', $terms);
+        $re = '/(?:'
+            .    '(\(|\))'              // ( or )   => ( or )
+            .'|'.'"(.*?[^\\\])"'        // "term"   => term
+            .'|'.'\'(.*?[^\\\])\''      // 'term'   => term
+            .'|'.'\s*([^\s\)]+)\s*'     // \sterm\s => term
+            . ')/';
+        preg_match_all($re, $terms, $matches);
+    
+        
+        $splitTerms = array();
+        $nParts = count($matches[0]);
+        for ($idex = 0; $idex < $nParts; $idex++)
+        {
+            if (! empty($matches[2][$idex]))
+                array_push($splitTerms, str_replace('\\','',
+                           $matches[2][$idex]));
+            else if (! empty($matches[3][$idex]))
+                array_push($splitTerms, str_replace('\\','',
+                           $matches[3][$idex]));
+            else if (! empty($matches[4][$idex]))
+                array_push($splitTerms, str_replace('\\','',
+                           $matches[4][$idex]));
+            else if (! empty($matches[1][$idex]))
+                array_push($splitTerms, str_replace('\\','',
+                           $matches[1][$idex]));
+        }
+    
+        // Now, combine the splitTerms and fields
+        $search = array();
+        $nTerms = count($splitTerms) - 1;
+        $op     = '';
+        foreach ($splitTerms as $term)
+        {
+            $combiner = '+|';
+            if (($term === '|') || ($term === 'OR'))
+            {
+                $op = '|';
+                continue;
+            }
+            else if ($term[0] === '+')
+            {
+                // Exactly
+                $comp = '=';
+                $term = substr($term,1);
+            }
+            else if ($term[0] === '-')
+            {
+                // Does NOT contain
+                $comp     = '!=*';
+                $combiner = '+';
+                $term     = substr($term,1);
+            }
+            else if ($term[0] === '*')
+            {
+                // Ends with
+                $comp = '=$';
+                $term = substr($term,1);
+            }
+            else if ($term[strlen($term)-1] === '*')
+            {
+                // Begins with
+                $comp = '=^';
+                $term = substr($term,0,-1);
+            }
+            else
+            {
+                // Contains
+                $comp = '=*';
+            }
+    
+            foreach ($fields as $idex => $field)
+            {
+                $condition = ($idex === 0
+                                ? $op      . $field . $comp
+                                : $combiner. $field . $comp);
+    
+                array_push($search, array('condition' => $condition,
+                                          'value'     => $term));
+            }
+    
+            $op   = '';
+        }
+    
+        return $search;
     }
 }
