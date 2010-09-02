@@ -257,7 +257,7 @@ abstract class Connexions_Model_Mapper_DbTable
             $select->limit($count, $offset);
         }
 
-        /*
+        // /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::fetch() "
                         . "sql[ %s ]...",
                         get_class($this),
@@ -568,18 +568,21 @@ abstract class Connexions_Model_Mapper_DbTable
         return $model;
     }
 
-    /** @brief  Given an entry 'id', generate a matching WHERE clause.
-     *  @param  id          An array of 'property/value' pairs identifying the
-     *                      desired model(s).
-     *  @param  nonEmpty    Is a non-empty clause required?
+    /** @brief  Given a condition string and value, generate an appropriate
+     *          'where' condition array entry.
+     *  @param  condition   The condition string.
+     *  @param  value       The desired value.
      *
-     *  Within 'id', 'property' values may include the following, optional 
-     *  prefix to adjust the matching condition:
-     *      |   - this is an 'OR' condition as opposed to the normal 'AND' and
-     *            may preceed any of the following;
+     *  'condition' can have the form:
+     *      prefix field op
      *
-     *  'property' values may also include the following postfix values to 
-     *  represent the match operation:
+     *  'prefix' may be:
+     *      |   - this is an 'OR' condition as opposed to the default 'AND';
+     *      +   - combine/group this condition with the previous using 'AND';
+     *      +|  - combine/group this condition with the previous using 'OR';
+     *
+     *  'field' names the target database field
+     *  'op' may be:
      *      =   - [default] equivalence match;
      *      !=  - NOT equal;
      *      >   - greater than;
@@ -587,169 +590,248 @@ abstract class Connexions_Model_Mapper_DbTable
      *      <   - less than;
      *      <=  - less than or equal to;
      *
-     *  If 'value' is a string, additional valid postfix values are:
+     *  For String values, the follow are also valid for 'op':
      *      =*  - contains 'value';
      *      =^  - begins with 'value';
-     *      =$  - end with 'value;
+     *      =$  - ends   with 'value;
      *
-     *  If 'value' is an array, the only valid operators are:
-     *      =   - match any entry in 'value';
-     *      !=  - does NOT match any entry in 'value';
+     *      !=* - does NOT contain 'value';
+     *      !=^ - does NOT begin with 'value';
+     *      !=$ - does NOT end   with 'value;
      *
-     *  @return An array contining one or more WHERE clauses.
+     *
+     *  If 'value' is an array, it indicates that any of the values is 
+     *  acceptable.
+     *
+     *  For array values, if the operator is '=' or '!=', the condition will be
+     *  reduced using 'IN' or 'NOT IN'; otherwise, it will be converted to a 
+     *  single, complex 'where' condition with one per value, pre-bound and 
+     *  database quoted, all combined via 'OR' ('AND' for NOT conditions).  
+     *
+     *  Note: This REQUIRES _flattenConditions() to convert a set of conditions 
+     *        generate via _whereCondition() to a single, flat, pre-bound, 
+     *        database-specific WHERE condition string.
+     *
+     *  @return An array of { condition: %condition%,
+     *                        value:     %value% } or null if invalid.
      */
-    protected function _where(array $id, $nonEmpty = true)
+    protected function _whereCondition($condition, $value)
     {
-        /*
-        Connexions::log("Connexions_Model_Mapper_DbTable[%s]::"
-                        . "_where(%s, %sempty):",
-                        get_class($this),
-                        Connexions::varExport($id),
-                        ($nonEmpty ? 'non-' : ''));
-        // */
-
-        $where = array();
-        foreach ($id as $condition => $value)
+        if (preg_match(
+                //    prefix  field    op
+                '/^\s*(\|)?\s*(.*?)\s*(!=[\^*$]?|[<>]=?|=[\^*$]?)?\s*[?]?\s*$/',
+                $condition, $match))
         {
-            if (is_int($condition))
-            {
-                /* 'condition' is an integer, meaning this is a non-associative 
-                 * member where 'value' is actually the condition.
-                 */
-                $where[ $value ] = null;
+            /*
+            Connexions::log("Connexions_Model_Mapper_DbTable::_whereCondition()"
+                            .   ": condition match [ %s ]",
+                            Connexions::varExport($match));
+            // */
 
-                //array_push($where, $value);
-                continue;
-            }
+            /* match[1] == empty or '|'
+             * match[2] == field name
+             * match[3] == condition operator
+             */
+            $prefix    = $match[1];
+            $field     = $match[2];
+            $op        = $match[3];
 
-            if (is_array($value))
+            $condition = $prefix . $field;
+            switch ($op)
             {
-                if (preg_match('/^\s*(\|)?\s*(.*?)\s*(!?=)?\s*$/',
-                               $condition, $match))
+            case '=':
+            case '!=':
+                if (is_array($value))
                 {
-                    /* match[1] == empty or '|'
-                     * match[2] == field name
-                     * match[3] == condition operator '=' or '!='
-                     */
-                    if (empty($value))
-                        continue;
-
-                    $condition = $match[1] . $match[2];
-                    if ($match[3] === '!=')
-                        $condition .= ' NOT(IN ?)';
+                    // Convert to IN / NOT IN
+                    if ($op[0] == '!')
+                        $condition .= ' NOT IN ?';
                     else
                         $condition .= ' IN ?';
                 }
                 else
                 {
-                    // else, skip it (or throw an error)...
-                    continue;
+                    $condition .= ' '. $op .' ?';
                 }
+                break;
+
+            case '<=':
+            case '>=':
+            case '<':
+            case '>':
+                $condition .= ' '. $op .' ?';
+                break;
+
+            case '=^':
+            case '!=^':
+                if ($op[0] == '!')
+                    $condition .= ' NOT';
+
+                $condition .= ' LIKE ?';
+
+                // Adjust each value to be a string with '%' suffix
+                if (! is_array($value))
+                    $value = (array)$value;
+
+                $newValue = array();
+                foreach ($value as $val)
+                {
+                    $pVal = preg_replace('/\*+/', '%', $val);
+                    if ($pVal[strlen($pVal)-1] !== '%')
+                        $pVal = $pVal .'%';
+
+                    array_push($newValue, $pVal);
+                }
+
+                $value = (count($newValue) > 1
+                            ? $newValue
+                            : array_pop($newValue));
+                break;
+
+            case '=*':
+            case '!=*':
+                if ($op[0] == '!')
+                    $condition .= ' NOT';
+
+                $condition .= ' LIKE ?';
+
+                // Adjust each value to be a string surrounded with '%'
+                if (! is_array($value))
+                    $value = (array)$value;
+
+                $newValue = array();
+                foreach ($value as $val)
+                {
+                    $pVal = preg_replace('/\*+/', '%', $val);
+                    if ($pVal[0] !== '%')
+                        $pVal = '%'. $pVal;
+                    if ($pVal[strlen($pVal)-1] !== '%')
+                        $pVal = $pVal .'%';
+
+                    array_push($newValue, $pVal);
+                }
+
+                $value = (count($newValue) > 1
+                            ? $newValue
+                            : array_pop($newValue));
+                break;
+
+            case '=$':
+            case '!=$':
+                if ($op[0] == '!')
+                    $condition .= ' NOT';
+
+                $condition .= ' LIKE ?';
+
+                // Adjust each value to be a string with '%' prefix
+                if (! is_array($value))
+                    $value = (array)$value;
+
+                $newValue = array();
+                foreach ($value as $val)
+                {
+                    $pVal = preg_replace('/\*+/', '%', $val);
+                    if ($pVal[0] !== '%')
+                        $pVal = '%'. $pVal;
+
+                    array_push($newValue, $pVal);
+                }
+
+                $value = (count($newValue) > 1
+                            ? $newValue
+                            : array_pop($newValue));
+                break;
+
+            default:
+                $condition .= ' = ?';
+                break;
             }
-            else
+
+            // Now, handle an array of values depending on the operator.
+            if (is_array($value))
             {
-                /*
-                Connexions::log("Connexions_Model_Mapper_DbTable[%s]::"
-                                . "_where():1 condition[ %s ], value[ %s ]",
-                                get_class($this),
-                                $condition, $value);
-                // */
-
-                if (preg_match(
-                        '/^\s*(\|)?\s*(.*?)\s*(!=|[<>]=?|=[\^*$]?)?\s*$/',
-                        $condition, $match))
+                if (($op !== '=') && ($op !== '!='))
                 {
-                    /* match[1] == empty or '|'
-                     * match[2] == field name
-                     * match[3] == condition operator
+                    /* MUST be expanded to a direct query since we need one
+                     * statement per value.
                      */
-
-                    /*
-                    Connexions::log("Connexions_Model_Mapper_DbTable[%s]::"
-                                    . "_where():2 1[ %s ], 2[ %s ], 3[ %s ]",
-                                    get_class($this),
-                                    $match[1], $match[2], $match[3]);
-                    // */
-
-                    $condition = $match[1] . $match[2];
-                    switch ($match[3])
+                    $conditions = array();
+                    foreach ($value as $idex => $val)
                     {
-                    case '=':
-                    case '!=':
-                    case '<=':
-                    case '>=':
-                    case '<':
-                    case '>':
-                        $condition .= ' '. $match[3] .' ?';
-                        break;
-
-                    case '=^':
-                        if (! is_string($value))
-                            continue;
-
-                        $condition .= ' LIKE ?';
-                        $value      = $value .'%';
-                        break;
-
-                    case '=*':
-                        if (! is_string($value))
-                            continue;
-
-                        $condition .= ' LIKE ?';
-                        $value      = '%'. $value .'%';
-                        break;
-
-                    case '=$':
-                        if (! is_string($value))
-                            continue;
-
-                        $condition .= ' LIKE ?';
-                        $value      = '%'. $value;
-                        break;
-
-                    default:
-                        $condition .= ' = ?';
-                        break;
+                        array_push($conditions,
+                                   array('condition' => $condition,
+                                         'value'     => $val));
                     }
-                }
-                else
-                {
-                    // else, skip it (or throw an error)...
-                    continue;
-                }
 
-                /*
-                Connexions::log("Connexions_Model_Mapper_DbTable[%s]::"
-                                . "_where(%s, %sempty):3 "
-                                . "condition[ %s ], value[ %s ]",
-                                get_class($this),
-                                Connexions::varExport($id),
-                                ($nonEmpty ? 'non-' : ''),
-                                $condition, $value);
-                // */
+                    /* For multi-value matches, if the operator included a NOT,
+                     * we need to combine using 'AND' instead of 'OR'.
+                     */
+                    $condition = $this->_flattenConditions($conditions,
+                                                           ($op[0] === '!'));
 
+                    $value     = null;
+                }
             }
-
-            $where[ $condition ] = $value;
         }
-
-        if ( ($nonEmpty !== false) && empty($where) )
+        else
         {
-            throw new Exception(
-                        "Cannot generate a non-empty WHERE clause for "
-                        . "model [ ". get_class($this) ." ] "
-                        . "from data "
-                        . "[ ". Connexions::varExport($id) ." ]");
+            // else, skip it (or throw an error)...
+
+            /*
+            Connexions::log("Connexions_Model_Mapper_DbTable::_whereCondition()"
+                            .   ": condition NO MATCH");
+            // */
+
+            $condition = null;
         }
 
         /*
-        Connexions::log("Connexions_Model_Mapper_DbTable[%s]::"
-                        . "_where(): where [ %s ]",
-                        get_class($this),
-                        Connexions::varExport($where));
+        Connexions::log("Connexions_Model_Mapper_DbTable::_whereCondition():"
+                        .   "final condition: [ %s ], value[ %s ]",
+                        Connexions::varExport($condition),
+                        Connexions::varExport($value));
         // */
 
-        return $where;
+        return ($condition !== null
+                    ? array('condition' => $condition,
+                            'value'     => $value)
+                    : null);
+    }
+
+    /** @brief  Given an array of conditions generated via _whereCondition(),
+     *          flatten them into a single condition string, binding and 
+     *          quoting all values.
+     *  @param  conditions      An array of conditions from _whereCondition();
+     *  @param  and             Join via 'AND' (true) or 'OR' (false) [ true ];
+     *
+     *  @return A flat, string condition
+     */
+    protected function _flattenConditions($conditions, $and = true)
+    {
+        $adapter    = $this->getAccessor()->getAdapter();
+
+        /*
+        Connexions::log("_flattenConditions: adapter [ %s ]",
+                        (is_object($adapter)
+                            ? get_class($adapter)
+                            : gettype($adapter)) );
+        // */
+
+        $quoted = array();
+        foreach ($conditions as $cond)
+        {
+            array_push($quoted,
+                       '('.$adapter->quoteInto($cond['condition'],
+                                               $cond['value']) .')');
+        }
+
+        $res = '('
+             .    implode(($and ? ' AND '   // Zend_Db_Select::SQL_AND
+                                : ' OR '),  // Zend_Db_Select::SQL_OR
+                          $quoted)
+             . ')';
+
+        return $res;
     }
 
     /** @brief  Given a Zend_Db_Select instance along with a 'where' condition 
@@ -907,6 +989,212 @@ abstract class Connexions_Model_Mapper_DbTable
                     : 0);
 
         return $count;
+    }
+
+    /**************************************************************************
+     * These MAY be generic enough now to move to Connexions_Model_Mapper()
+     *
+     */
+
+    /** @brief  Given an array of identification/selection information,
+     *          construct a database-specific array of selection clauses.
+     *  @param  id          The identification/selection information;
+     *  @param  nonEmpty    Can the final array of selection clauses be empty?
+     *                      [ true ];
+     *
+     *  Identification/selection information may have the form:
+     *      { condition1: value(s), condition2: value(s), ... }
+     *      [ condition1, condition2, ... ]
+     *      [ {'condition': condition1, 'value': value(s)},
+     *         'condition': condition2, 'value': value(s)},
+     *         ...} ]
+     *
+     *  Each 'condition' can have the form:
+     *      prefix field op
+     *
+     *  'prefix' may be:
+     *      |   - this is an 'OR' condition as opposed to the default 'AND';
+     *      +   - combine/group this condition with the previous using 'AND';
+     *      +|  - combine/group this condition with the previous using 'OR';
+     *
+     *  'field' names the target database field
+     *  'op' may be:
+     *      =   - [default] equivalence match;
+     *      !=  - NOT equal;
+     *      >   - greater than;
+     *      >=  - greater than or equal to;
+     *      <   - less than;
+     *      <=  - less than or equal to;
+     *
+     *  For String values, the follow are also valid for 'op':
+     *      =*  - contains 'value';
+     *      =^  - begins with 'value';
+     *      =$  - ends   with 'value;
+     *
+     *      !=* - does NOT contain 'value';
+     *      !=^ - does NOT begin with 'value';
+     *      !=$ - does NOT end   with 'value;
+     *
+     *
+     *  If 'value' is an array, it indicates that any of the values is 
+     *  acceptable.
+     *
+     *  For array values, if the operator is '=' or '!=', the condition will be
+     *  reduced using 'IN' or 'NOT IN'; otherwise, it will be converted to a 
+     *  single, complex 'where' condition with one per value, pre-bound and 
+     *  database quoted, all combined via 'OR' ('AND' for NOT conditions).  
+     *
+     *  Note: This REQUIRES _whereCondition() to convert a generic 
+     *        condition/value pair into a database-specific, bindable 
+     *        condition/value pair.
+     *
+     *        This also REQUIRES _flattenConditions() to convert a set of 
+     *        conditions generate via _whereCondition() to a single, flat, 
+     *        pre-bound, database-specific WHERE condition string.
+     *
+     *  @return An array of database-specific selection clauses.
+     */
+    protected function _where(array $id, $nonEmpty = true)
+    {
+        /*
+        Connexions::log("Connexions_Model_Mapper_DbTable[%s]::"
+                        . "_where(%s, %sempty):",
+                        get_class($this),
+                        Connexions::varExport($id),
+                        ($nonEmpty ? 'non-' : ''));
+        // */
+
+        $tmpWhere = array();
+        foreach ($id as $condition => $value)
+        {
+            if (is_int($condition))
+            {
+                /* 'condition' is an integer, meaning this is a non-associative 
+                 * member.
+                 *
+                 * See if 'value' is an array containing 'condition' and 
+                 * 'value'.  If so, we have a condition and value, otherwise, 
+                 * 'value' is actually the condition.
+                 */
+                if ( is_array($value)           &&
+                     isset($value['condition']) &&
+                     isset($value['value']) )
+                {
+                    // Special, complex condition(s)
+                    $condition = $value['condition'];
+                    $value     = $value['value'];
+                }
+                else
+                {
+                    /* Simply use 'value' as the condition.  This is for
+                     * simple, direct compare/value statements (e.g. 'field=1')
+                     */
+                    $condition = $value;
+                    $value     = null;
+
+                    array_push($tmpWhere,
+                               array('condition' => $condition,
+                                     'value'     => $value));
+                    continue;
+                }
+            }
+
+            /*******************************************************
+             * See if this condition is to be directly joined
+             * with the previous condition (i.e. prefixed with '+').
+             *
+             */
+            if (preg_match('/^\s*\+(.*)$/', $condition, $match))
+            {
+                // YES - remember the condition without the prefix.
+                $joinPrevious = true;
+                $condition    = $match[1];
+            }
+            else
+            {
+                // NO
+                $joinPrevious = false;
+            }
+
+            /*******************************************************
+             * Parse this single condition/value pair, generating
+             * a discrete 'condition' and 'value'
+             *
+             */
+            $res = $this->_whereCondition($condition, $value);
+            if ($res === null)
+            {
+                // INVALID - skip it (or throw an error)...
+                continue;
+            }
+
+            if ($joinPrevious)
+            {
+                /* Join the current condition with the previous condition 
+                 * pre-binding and quoting all values.
+                 */
+                $prev      = array_pop($tmpWhere);
+                $condition = '';
+
+                if ($prev['condition'][0] === '|')
+                {
+                    $condition = '|';
+                    $prev['condition'] = substr($prev['condition'], 1);
+                }
+
+                if ($res['condition'][0] === '|')
+                {
+                    $and = false;
+                    $res['condition'] = substr($res['condition'], 1);
+                }
+                else
+                {
+                    $and = true;
+                }
+
+
+                // Generate a flattened, string condition.
+                $condition .= $this->_flattenConditions(array($prev,$res),
+                                                        $and);
+
+                $res['condition'] = $condition;
+                $res['value']     = null;
+            }
+
+            array_push($tmpWhere, $res);
+        }
+
+        if ( ($nonEmpty !== false) && empty($tmpWhere) )
+        {
+            throw new Exception(
+                        "Cannot generate a non-empty WHERE clause for "
+                        . "model [ ". get_class($this) ." ] "
+                        . "from data "
+                        . "[ ". Connexions::varExport($id) ." ]");
+        }
+
+        /***********************************************************
+         * Finally, simplify the where to an associative array of
+         *  { condition: value(s), ... }
+         */
+        $where = array();
+        foreach ($tmpWhere as $statement)
+        {
+            if (is_array($statement['condition']))
+            {
+                // Break it out into multiple statements
+                foreach ($statement['condition'] as $idex => $condition)
+                {
+                    $where[ $condition ] = $statement['value'][$idex];
+                }
+            }
+            else
+            {
+                $where[ $statement['condition'] ] = $statement['value'];
+            }
+        }
+
+        return $where;
     }
 
     /*********************************************************************
