@@ -9,6 +9,15 @@ class Service_User extends Connexions_Service
     protected   $_modelName = 'Model_User';
     protected   $_mapper    = 'Model_Mapper_User'; */
 
+    /** @brief  Any default ordering that should be be merged into a specified 
+     *          order.
+     */
+    protected   $_defaultOrdering   = array(
+        'lastVisit' => 'DESC',
+        'name'      => 'ASC',
+        'fullName'  => 'ASC',
+    );
+
     /** @brief  Given a user identifier and/or credential, attempt to
      *          authenticate the identified user.
      *  @param  authType    The type of authentication to perform

@@ -9,6 +9,13 @@ class Service_Item extends Connexions_Service
     protected   $_modelName = 'Model_Item';
     protected   $_mapper    = 'Model_Mapper_Item'; */
 
+    /** @brief  Any default ordering that should be be merged into a specified 
+     *          order.
+     */
+    protected   $_defaultOrdering   = array(
+        'url'       => 'ASC',
+    );
+
     /** @brief  Retrieve a set of items related by a set of Users.
      *  @param  users   A Model_Set_User instance, array, or comma-separated
      *                  string of users to match.
