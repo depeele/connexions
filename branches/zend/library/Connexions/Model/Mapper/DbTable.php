@@ -632,9 +632,10 @@ abstract class Connexions_Model_Mapper_DbTable
              * match[2] == field name
              * match[3] == condition operator
              */
+            $nMatches  = count($match);
             $prefix    = $match[1];
             $field     = $match[2];
-            $op        = $match[3];
+            $op        = ($nMatches > 3 ? $match[3] : '=');
 
             $condition = $prefix . $field;
             switch ($op)
