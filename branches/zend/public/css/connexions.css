@@ -2,11 +2,13 @@
 /* Copyright (c) 2008, Yahoo! Inc. All rights reserved. Code licensed under the BSD License: http://developer.yahoo.net/yui/license.txt version: 3.0.0pr2 */
 html { color: black; background: white; }
 
-body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form, fieldset, legend, input, textarea, p, blockquote, th, td { position: relative; margin: 0; padding: 0; border: 0; outline: 0; font-size: 100%; vertical-align: baseline; background: transparent; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; -ms-box-sizing: border-box; }
+html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp, small, strong, sub, sup, var, a, b, i, dl, dt, dd, ol, ul, li, form, fieldset, label, legend, input, textarea, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, figure, footer, header, hgroup, menu, nav, sectioni, time, mark, audio, video { position: relative; margin: 0; padding: 0; border: 0; outline: 0; font-size: 100%; vertical-align: baseline; background: transparent; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; -ms-box-sizing: border-box; }
+
+article, aside, figure, footer, header, hgroup, nav, section { display: block; }
 
 body { line-height: 1; }
 
-ol, li { list-style: none; }
+ol, ul, li { list-style: none; }
 
 blockquote, q { quotes: none; }
 
@@ -32,6 +34,8 @@ sub { vertical-align: text-bottom; }
 
 input, textarea, select { font-family: inherit; font-size: inherit; font-weight: inherit; *font-size: 100%; }
 
+input, select { vertical-align: middle; }
+
 legend { color: black; }
 
 body { font: 14px /1.231 arial,helvetica,clean,sans-serif; *font-size: small; *font: x-small; }
@@ -41,6 +45,10 @@ select, input, button, textarea { font: 99% arial, helvetica, clean, sans-serif;
 table { font-size: inherit; font: 100%; }
 
 pre, code, kbd, samp, tt { font-family: monospace; line-height: 100%; *font-size: 108%; }
+
+html { -webkit-font-smoothing: antialiased; }
+
+html { overflow-y: scroll; }
 
 br.clear { clear: both; display: block; height: 0; line-height: 0px; }
 
@@ -320,7 +328,7 @@ a:visited { color: #005a9c; }
 .itemItems .displayOptions form .field label, .userItems .displayOptions form .field label { width: 5.5em; }
 .itemItems .displayOptions form .itemCounts, .userItems .displayOptions form .itemCounts { padding-top: 0.5em; padding-bottom: 0.5em; border-bottom: 1px dotted #cccccc; }
 .itemItems .displayOptions form .itemCounts .field, .userItems .displayOptions form .itemCounts .field { display: inline; }
-.itemItems .displayOptions form .itemCounts .field label, .userItems .displayOptions form .itemCounts .field label { width: 2.5em; }
+.itemItems .displayOptions form .itemCounts .field label, .userItems .displayOptions form .itemCounts .field label { width: auto; }
 .itemItems .displayOptions form .itemCounts .field select, .userItems .displayOptions form .itemCounts .field select { width: 4.5em; }
 .itemItems .displayOptions form .itemCounts .field label, .itemItems .displayOptions form .itemCounts .field select, .itemItems .displayOptions form .itemCounts .field .label, .userItems .displayOptions form .itemCounts .field label, .userItems .displayOptions form .itemCounts .field select, .userItems .displayOptions form .itemCounts .field .label { float: left; margin-bottom: 0.25em; }
 .itemItems .displayOptions form .itemCounts .field label, .itemItems .displayOptions form .itemCounts .field .label, .userItems .displayOptions form .itemCounts .field label, .userItems .displayOptions form .itemCounts .field .label { padding: 0 0.25em; }
@@ -397,7 +405,7 @@ a:visited { color: #005a9c; }
 .itemScope .section { margin-left: 1px; }
 .itemScope .scopeItem { padding-left: 0.6em; margin-left: -0.5em; -moz-border-radius: 0 1em 1em 0; -webkit-border-radius: 0 1em 1em 0; -ms-border-radius: 0 1em 1em 0; -khtml-border-radius: 0 1em 1em 0; border-radius: 0 1em 1em 0; border: 1px dotted #cccccc; z-index: 2; background-color: #999999; }
 .itemScope .deletable a.delete { display: block; padding: 0; margin: 0.25em; text-indent: 999em; text-decoration: none; }
-.itemScope .itemCount { position: absolute; right: 0; background-color: #999999; border: 1px solid #999999; color: white; padding: 0.25em; float: none; width: 110px; text-align: center; }
+.itemScope .itemCount { position: absolute; right: 0; background-color: #999999; border: 1px solid #999999; color: white; padding: 0.25em; float: none; width: 110px; text-align: center; font-weight: bold; }
 
 /****** papgination.sass ****** */
 .paginator { clear: both; padding: 1em; float: left; text-align: center; }
@@ -444,7 +452,7 @@ a:visited { color: #005a9c; }
 .displayOptions .displayStyle ul.groups li.ui-state-active { font-weight: bold; }
 .displayOptions .displayStyle ul.groups li.toggle { border: none; }
 
-.pane .displayOptions .displayStyle fieldset.options { padding-top: 0.5em; }
+.pane .displayOptions .displayStyle fieldset.options { padding-top: 0.5em; border: none; }
 .pane .displayOptions .displayStyle fieldset.options .item, .pane .displayOptions .displayStyle fieldset.options .user { border: 1px solid #cccccc; border-bottom: none; padding: 0 0 0.1em 0.2em; }
 .pane .displayOptions .displayStyle fieldset.options .item label, .pane .displayOptions .displayStyle fieldset.options .user label { display: inline; float: none; width: auto; padding-left: 0.25em; }
 .pane .displayOptions .displayStyle fieldset.options .item .stats, .pane .displayOptions .displayStyle fieldset.options .user .stats { position: absolute; right: 0; font-weight: normal; padding: 0; }

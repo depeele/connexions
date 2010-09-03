@@ -207,7 +207,7 @@ class View_Helper_HtmlUsers extends View_Helper_Users
 
             if ($this->pageBaseUrl !== null)
             {
-                $dsConfig['cookiePath'] = $this->pageBaseUrl;
+                $dsConfig['cookiePath'] = rtrim($this->pageBaseUrl, '/');
             }
 
             // /*

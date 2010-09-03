@@ -241,7 +241,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 
             if ($this->pageBaseUrl !== null)
             {
-                $dsConfig['cookiePath'] = $this->pageBaseUrl;
+                $dsConfig['cookiePath'] = rtrim($this->pageBaseUrl, '/');
             }
 
 
@@ -292,6 +292,14 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
      */
     public function setDisplayStyle($style, array $values = null)
     {
+        /*
+        Connexions::log("View_Helper_HtmlBookmarks::setDisplayStyle(): "
+                        . "_displayOptions is %snull, "
+                        . "style[ %s ], values[ %s ]",
+                        ($this->_displayOptions === null ? '' : 'NOT '),
+                        print_r($style, true), print_r($values, true));
+        // */
+
         if ($this->_displayOptions !== null)
         {
             if (is_array($style))

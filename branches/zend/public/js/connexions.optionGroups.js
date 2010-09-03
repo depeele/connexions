@@ -170,15 +170,6 @@ $.widget("connexions.optionGroups", {
 
         // Interaction events
         self._bindEvents();
-
-
-        /* If the currently selected group is NOT the 'isCustom' group, toggle
-         * the fieldset control closed.
-         */
-        if (! $groups.find('li.ui-state-active').hasClass('isCustom'))
-        {
-            self.toggleFieldset();
-        }
     },
 
     /************************
