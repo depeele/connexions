@@ -11,12 +11,12 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
     static public   $defaults               = array(
         'namespace'         => 'tags',
-        'pageBaseUrl'       => null,        /* The base URL of the containing page
-                                             * used to set the cookie path for
-                                             * the attached Javascript
-                                             * 'cloudPane' which, in turn, effects
-                                             * the cookie path passed to the
-                                             * contained 'dropdownForm'
+        'pageBaseUrl'       => null,        /* The base URL of the containing
+                                             * page used to set the cookie path
+                                             * for the attached Javascript
+                                             * 'cloudPane' which, in turn,
+                                             * effects the cookie path passed
+                                             * to the contained 'dropdownForm'
                                              * presneting Display Options.
                                              */
         'showRelation'      => true,
@@ -125,6 +125,9 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
         foreach (self::$defaults as $key => $value)
         {
+            /* :WARNING: Do NOT invoke __set() here -- it's too early for many
+             *           of the set methods...
+             */
             $this->_params[$key] = $value;
         }
 
@@ -302,7 +305,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
             if ($this->pageBaseUrl !== null)
             {
-                $dsConfig['cookiePath'] = $this->pageBaseUrl;
+                $dsConfig['cookiePath'] = rtrim($this->pageBaseUrl, '/');
             }
 
             /*
@@ -314,6 +317,11 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
             if ($this->_displayOptions === null)
             {
                 $this->_displayOptions = $view->htmlDisplayOptions($dsConfig);
+
+                /* Ensure that the current display style is properly reflected
+                 * in the new display options instance.
+                 */
+                $this->_displayOptions->setGroup($this->displayStyle);
             }
             else
             {
@@ -417,6 +425,13 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     public function setDisplayStyle($style, array $values = null)
     {
+        /*
+        Connexions::log("View_Helper_HtmlItemCloud:"
+                        . "setDisplayStyle(): "
+                        .   "style[ %s ], values[ %s ]",
+                        $style, print_r($values, true));
+        // */
+
         $reqStyle = $style;
         if ($values !== null)
         {

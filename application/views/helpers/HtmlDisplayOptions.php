@@ -310,12 +310,29 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
      */
     public function getBestGroupMatch()
     {
-        $bestMatch  = null;
+        // First, how many fields are set
+        $fieldCount = 0;
+        foreach ($this->_fieldMap as $name => &$def)
+        {
+            if ($def['isSet'] === true)
+            {
+                $fieldCount++;
+            }
+        }
+
+        $bestMatch  = $this->_currentGroup;
         $bestCount  = 0;
         $exactMatch = false;
         $custom     = null;
         foreach ($this->_groups as $name => $group)
         {
+            /*
+            Connexions::log("View_Helper_HtmlDisplayOptions::"
+                            .   "getBestGroupMatch(): "
+                            .   "checking group[ %s ] best thus far[ %s ]...",
+                            $name, $bestMatch);
+            // */
+
             if ($group['isCustom'])
             {
                 $custom = $name;
@@ -349,7 +366,8 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
                 {
                     $bestMatch  = $name;
                     $bestCount  = $matchCount;
-                    $exactMatch = ($matchCount == count($group['options']));
+                    $exactMatch = (($matchCount == count($group['options'])) &&
+                                   ($matchCount == $fieldCount));
                 }
             }
         }
@@ -359,6 +377,19 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
                         .   "best match[ %s ], is %sexact",
                         $bestMatch, ($exactMatch ? '' : 'NOT '));
         // */
+
+        if ( ($custom !== null) && (! $exactMatch) )
+        {
+            // Revert to custom since there are no exact matches.
+            $bestMatch = $custom;
+
+            /*
+            Connexions::log("View_Helper_HtmlDisplayOptions::"
+                            . "getBestGroupMatch(): "
+                            . "no exact match - revert to custom group [ %s ]",
+                            $bestMatch);
+            // */
+        }
 
         return $bestMatch;
     }
@@ -470,9 +501,10 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
     {
         /*
         Connexions::log("View_Helper_HtmlDisplayOptions::setGroup( %s ): "
-                        .   "is %svalid",
+                        .   "is %svalid; customValues[ %s ]",
                         $groupName,
-                        (isset($this->_groups[$groupName]) ? '' : 'NOT '));
+                        (isset($this->_groups[$groupName]) ? '' : 'NOT '),
+                        print_r($customValues, true));
         // */
 
         if (! isset($this->_groups[$groupName]))

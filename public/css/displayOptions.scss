@@ -114,7 +114,8 @@
 
 // More specific overrides
 .pane .displayOptions .displayStyle fieldset.options {
-  padding-top: 0.5em;
+  padding-top:  0.5em;
+  border:       none;
   .item, .user {
     border:         unquote("1px solid") $borderColor;
     border-bottom:  none;

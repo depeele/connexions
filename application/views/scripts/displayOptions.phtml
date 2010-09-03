@@ -31,7 +31,7 @@ $definition =& $helper->definition;
 ?>
 <div    class='displayOptions ui-form <?= $namespace ?>-displayOptions'>
  <form method='POST'
-        class='ui-state-active ui-corner-all'>
+        class='ui-state-active ui-corner-all' style='display:none;'>
   <?php
 
     // Render the non-presentation component form fields
@@ -52,9 +52,17 @@ $definition =& $helper->definition;
 
     $currentGroup = $helper->getBestGroupMatch();
 
+    printf ("    <!-- best group match [ %s ] -->\n", $currentGroup);
+
     // Render the predefined display group choices
+    $customGroup = null;
     foreach ($groups as $key => $info)
     {
+        if ($info['isCustom'])
+        {
+            $customGroup = $key;
+        }
+
         $cssExtra = ($info['isCustom']      ? ' isCustom'          : '');
         $checked  = ($key === $currentGroup ? " checked='checked'" : '');
 
@@ -73,7 +81,11 @@ $definition =& $helper->definition;
     // Render the selectable presentation components
     if (! empty($definition))
     {
- ?><fieldset class='options'><?php
+        $inlineStyle = ($currentGroup === $customGroup
+                            ? ''
+                            : "display:none;");
+
+ ?><fieldset class='options' style='<?= $inlineStyle ?>'><?php
 
         foreach ($definition as $name => $val)
         {

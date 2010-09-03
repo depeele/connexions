@@ -9,7 +9,18 @@ html {
   background: white;
 }
 
-body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,textarea,p,blockquote,th,td {
+// Full Reset including HTML5 (html5doctor.com
+html,body,div,span,object,iframe,
+h1,h2,h3,h4,h5,h6,p,blockquote,pre,
+abbr,address,cite,code,
+del,dfn,em,img,ins,kbd,q,samp,
+small,strong,sub,sup,var,
+a,b,i,
+dl,dt,dd,ol,ul,li,
+form,fieldset,label,legend,input,textarea,
+table,caption,tbody,tfoot,thead,tr,th,td,
+article,aside,figure,footer,header,hgroup,menu,nav,sectioni,
+time,mark,audio,video {
   position:       relative;
   margin:         0;
   padding:        0;
@@ -26,11 +37,15 @@ body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input
   -ms-box-sizing:     border-box;
 }
 
+article,aside,figure,footer,header,hgroup,nav,section {
+  display:  block;
+}
+
 body {
   line-height:  1;
 }
 
-ol, li {
+ol, ul, li {
   list-style: none;
 }
 
@@ -91,6 +106,10 @@ input,textarea,select {
   *font-size: 100%;
 }
 
+input,select {
+  vertical-align: middle;
+}
+
 legend {
   color: black;
 }
@@ -99,6 +118,7 @@ legend {
 body {
   //font: 13px/1.231 arial,helvetica,clean,sans-serif
   font: $baseFontSize unquote("/1.231 arial,helvetica,clean,sans-serif");
+
   *font-size: small;
   *font: x-small;
 }
@@ -117,6 +137,12 @@ pre,code,kbd,samp,tt {
   line-height:  100%;
   *font-size:   108%;
 }
+
+// Webkit font smoothing
+html { -webkit-font-smoothing: antialiased; }
+
+// Force scroll bars so pages will have a consistent width regardless of length
+html { overflow-y: scroll; }
 
 // float clear
 br.clear {

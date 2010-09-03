@@ -80,11 +80,11 @@ $displaySortOffset: 5px;
       a.count,div.count {
         display: block;
         background-color: $controlColor;
-        color: $pageColorBackground;
-        padding: 0.25em;
-        font-weight: normal;
-        text-align: center;
-        text-decoration: none;
+        color:            $pageColorBackground;
+        padding:          0.25em;
+        font-weight:      bold;
+        text-align:       center;
+        text-decoration:  none;
         &:hover {
           background-color: $navColorHover;
         }
