@@ -9,6 +9,13 @@ class Service_Tag extends Connexions_Service
     protected   $_modelName = 'Model_Tag';
     protected   $_mapper    = 'Model_Mapper_Tag'; */
 
+    /** @brief  Any default ordering that should be be merged into a specified 
+     *          order.
+     */
+    protected   $_defaultOrdering   = array(
+        'tag'       => 'ASC',
+    );
+
     /** @brief  Convert a comma-separated list of tags to a 
      *          Model_Set_Tag instance.
      *  @param  csList  The comma-separated list of tag identifiers;

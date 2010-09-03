@@ -242,7 +242,7 @@ class SearchController extends Connexions_Controller_Action
                             Connexions::varExport($owner),
                             Connexions::varExport($tags));
 
-            $this->_searchBookmarks($owner,
+            $this->_searchBookmarks(null,   // ALL users $owner,
                                     $tags);
             break;
 

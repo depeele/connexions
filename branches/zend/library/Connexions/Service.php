@@ -170,23 +170,11 @@ abstract class Connexions_Service
                                         $count  = null,
                                         $offset = null)
     {
-        $config = array('count'   => $count,
+        $config = array('order'   => $this->_extraOrder($order),
+                        'count'   => $count,
                         'offset'  => $offset,
                         'privacy' => $this->_curUser(),
                   );
-
-        if ($order === null)
-        {
-            $config['order'] = array('taggedOn  DESC',
-                                     'name      ASC',
-                                     'userCount DESC',
-                                     'tagCount  DESC',
-                               );
-        }
-        else
-        {
-            $config['order'] = $this->_extraOrder($order);
-        }
 
         foreach ($to as $key => $val)
         {
