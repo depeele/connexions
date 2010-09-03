@@ -14,13 +14,11 @@ if ($argc < 2)
     $nItems = count($items);
     printf ("Updating statistics for ALL %d item%s:\n",
             $nItems, ($nItems === 1 ? '' : 's'));
-    /*
     foreach ($items as $item)
     {
         echo ".";
         $item->updateStatistics();
     }
-    */
     echo "\n";
 }
 else
