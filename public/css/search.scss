@@ -1,0 +1,21 @@
+@import "sizes";
+@import "colors";
+@import "mixins";
+@import "ribbon-form";
+
+/****** search.sass ****** */
+// Styling for the search form
+//  (in addition to styles from validationForm.sass)
+#simple-search, .ui-validation-form {
+
+  .searchContexts {
+    padding-left:     1em;
+
+    label {
+      @include inlineBlock();
+
+      padding-left:   0.2em;
+      vertical-align: middle;
+    }
+  }
+}

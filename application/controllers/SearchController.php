@@ -27,7 +27,7 @@ class SearchController extends Connexions_Controller_Action
 
         $this->_referer =  $request->getParam('referer',       null);
         $this->_context =  $request->getParam('searchContext', null);
-        $this->_terms   =  $request->getParam('q',             null);
+        $this->_terms   =  $request->getParam('terms',         null);
 
         $this->_context =  strtolower($this->_context);
 

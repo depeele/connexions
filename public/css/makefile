@@ -9,7 +9,7 @@ all: connexions.min.css bookmarks.min.css users.min.css 	\
 	ui-form.min.css urlItems.min.css inbox.min.css		\
  	validationForm.min.css post.min.css auth.min.css 	\
 	ribbon-form.min.css url-choose.min.css			\
-	inbox.min.css ie.min.css ie8.min.css
+	search.min.css inbox.min.css ie.min.css ie8.min.css
 
 #all: connexions.css bookmarks.css users.css urlItems.css inbox.css	\
 # 	validationForm.css post.css auth.css inbox.css
@@ -67,6 +67,9 @@ auth.css: mixins.scss auth.scss colors.scss ribbon-form.scss
 
 url-choose.css: mixins.scss url-choose.scss colors.scss ribbon-form.scss
 	sass -t compact url-choose.scss:url-choose.css
+
+search.css: mixins.scss search.scss colors.scss ribbon-form.scss
+	sass -t compact search.scss:search.css
 
 sprites.scss:	urls.scss
 
