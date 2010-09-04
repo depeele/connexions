@@ -21,7 +21,7 @@ $navNumItems:   5;
 
 $navWidthFirst: 170px;
 
-//  126px    = (800px     - 170px         ) / 5
+//  88px     = (610px     - 170px         ) / 5
 $navWidthItem: ($navWidth - $navWidthFirst) / $navNumItems;
 
 // 190px       = 800px     - 610px

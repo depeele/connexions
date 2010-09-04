@@ -3793,7 +3793,7 @@ $.widget("connexions.itemList", {
  *              </ul>
  *            </div>
  *            
- *            <input type='text' name='q' class='input' ... />
+ *            <input type='text' name='terms' class='input' ... />
  *          </div>
  *          <button class='submit' ...>&nbsp;</button>
  *        </div>
@@ -3815,7 +3815,7 @@ $.widget("connexions.search", {
 		var self    = this;
         var opts    = self.options;
 
-        self.$input         = self.element.find('input[name=q]');
+        self.$input         = self.element.find('input[name=terms]');
         self.$submit        = self.element.find('button.submit');
         self.$context       = self.element.find('input[name=searchContext]');
         self.$choices       = self.element.find('.choices .list');
