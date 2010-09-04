@@ -30,15 +30,26 @@ class View_Helper_NavMenu extends Zend_View_Helper_Abstract
             'resource'  => 'guest',
         ),
     );
+
     public static       $defaultContext = 'all';
+
+    protected static    $_disableSearch = false;
 
     /** @brief  Initialize view variables related to rendering the
      *          navigation menu.
+     *  @param  config  Should this instance be configured for presentation, or 
+     *                  just return the instance immediately?
+     *                  [ true, configure for presentation ]
      *
      *  @return $this for a fluent interface.
      */
-    public function navMenu()
+    public function navMenu($config = true)
     {
+        if ($config != true)
+        {
+            return $this;
+        }
+
         // /*
         Connexions_Profile::checkpoint('Connexions',
                                        'View_Helper_NavMenu::begin');
@@ -61,6 +72,7 @@ class View_Helper_NavMenu extends Zend_View_Helper_Abstract
         $config = array(
             'inbox'     => null,
             'search'    => array(
+                'disabled'  => $this->_disableSearch,
                 'contexts'  => self::$searchContexts,   //$searchContexts,
                 'context'   => self::$defaultContext,
             ),
@@ -100,7 +112,23 @@ class View_Helper_NavMenu extends Zend_View_Helper_Abstract
         return $this;
     }
 
-    /** @brief  Determin whether or not the requested search id is presentable
+    public function getContexts()
+    {
+        return self::$searchContexts;
+    }
+
+    /** @brief  Disable the search box.
+     *  @param  disable     Disable? [ true ];
+     *
+     *  @return $this for a fluent interfact.
+     */
+    public function disableSearch($disable = true)
+    {
+        $this->_disableSearch = $disable;
+        return $this;
+    }
+
+    /** @brief  Determine whether or not the requested search id is presentable
      *          to the current user.
      *  @param  id      The search id (from $this->searchContexts);
      *

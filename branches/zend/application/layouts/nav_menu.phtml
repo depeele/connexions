@@ -216,6 +216,9 @@ $searchContext  = (isset($this->search['context'])
           value='<?= $searchContext ?>' />
     <ul class='sub list'>
      <?php
+
+    if (! $this->search['disabled'])
+    {
         /* Render the list of available search contexts.
          *
          * This is defined in 'application/configs/application.ini' via
@@ -277,13 +280,17 @@ $searchContext  = (isset($this->search['context'])
             $isFirst = false;
             $idex++;
         }
+    }
      ?>
     </ul>
    </div>
-   <label  for='q'></label>
-   <input name='q'       type='text' class='input'
-          autocomplete='off' maxlength='255' size='30' />
+   <label  for='terms'></label>
+   <input name='terms'   type='text' class='input'
+          autocomplete='off' maxlength='255' size='30'
+          <?= ($this->search['disabled'] === true ? "disabled='true'" : '') ?>
+    />
   </div><!-- searchInput } -->
-  <button class='submit connexions_sprites magnifier_small'>&nbsp;</button>
+  <button class='submit connexions_sprites magnifier_small'
+          <?= ($this->search['disabled'] === true ? "disabled='true'" : '') ?>>&nbsp;</button>
  </div><!-- searchBox } -->
 </form>

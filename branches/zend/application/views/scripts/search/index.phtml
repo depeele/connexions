@@ -1,5 +1,24 @@
 <?php
+/** @file
+ *
+ *  If search results are available, present them, otherwise, present a search
+ *  form.
+ *
+ */
 
+$this->navMenu(false)->disableSearch();
+
+if (! isset($this->results))
+{
+    // Render a search form
+    echo $this->render('search/form.phtml');
+    return;
+}
+
+/********************************************************************
+ * Render results
+ *
+ */
 $this->headTitle("Search results for '". $this->terms ."'");
 
 $nResults = count($this->results);
