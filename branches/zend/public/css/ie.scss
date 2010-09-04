@@ -30,6 +30,10 @@
     top:  $navTopSub + 0.1em;
   }
   .tabs {
+    li {
+      // Firefox/Chrome 88px, 81px
+      width:  $navWidthItem - 7;
+    }
     li.welcome {
       background-image: none;
       background-color: $contextColorBackground;
@@ -37,14 +41,14 @@
   }
 }
 
-#pageHeader ul.sub li,
-#search ul.sub li {
-  width:  $navWidthItem;
-}
-
+//#pageHeader ul.sub li,
+//#search ul.sub li {
+//  width:  $navWidthItem;
+//}
+//
 #search {
   .submit {
-    left: $searchMagLeft - 2px;
+    left:  $searchInputInputWidth;
   }
   .choices {
     .list {
