@@ -994,7 +994,7 @@ abstract class Connexions_Model_Set
             if ( $item === null )
             {
                 // One or more members are missing...
-                $this->_fillMembers($idex, $numItems);
+                $this->_fillMembers($idex, ($count - $idex));
 
                 $item =& $this->_members[$idex];
             }

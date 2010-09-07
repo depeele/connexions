@@ -425,6 +425,7 @@ class View_Helper_HtmlUsers extends View_Helper_Users
                                     'viewer'     => $this->viewer,
                                     'showParts'  => $this->_showParts,
                                     'sortBy'     => $this->sortBy,
+                                    'tags'       => $this->tags,
                                   ));
     }
 

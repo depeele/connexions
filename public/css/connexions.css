@@ -640,6 +640,8 @@ a:visited { color: #005a9c; }
 .tags .tag a, .tags .tag a:hover, .tags .tag a:visited, .tags .tag a:focus, .tags .tag:hover a, .tags .tag:hover a:hover, .tags .tag:hover a:visited, .tags .tag:hover a:focus { display: inline; font-weight: normal; text-decoration: none; color: #172322; }
 .tags .tag:hover { background-color: #172322; color: #eeeeee; }
 .tags .tag:hover a, .tags .tag:hover a:hover, .tags .tag:hover a:visited, .tags .tag:hover a:focus { color: #eeeeee; }
+.tags .highlight { background-color: #999999; color: #eeeeee; }
+.tags .highlight a, .tags .highlight a:hover, .tags .highlight a:visited, .tags .highlight a:focus { color: #eeeeee; }
 
 .collapsable .toggle { color: #999999; background-color: #eeeeee; cursor: pointer; font-size: 0.9em; padding: 0.2em; margin: 0.5em 0 0 0; border: 1px solid #cccccc; }
 .collapsable .toggle .ui-icon { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; float: left; }

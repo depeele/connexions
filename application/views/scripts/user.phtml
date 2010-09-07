@@ -11,23 +11,28 @@
  *      maxTags         The maximum number of tags to present for a user [ 5 ];
  *      sortBy          The current sorting order if this user entry is being
  *                      rendered in a list;
+ *      tags            A Model_Set_Tag instance of tags that should be
+ *                      highlighted;
  */
-$user        =& $this->user;
-$viewer      =  $this->viewer;    // MAY be unset, hence the missing '=&'
-$showParts   =& $this->showParts;
-$maxTags     =  ( isset($this->maxTags)
-                    ? $this->maxTags
-                    : 5 );
+$user          =& $this->user;
+$viewer        =  $this->viewer;    // MAY be unset, hence the missing '=&'
+$showParts     =& $this->showParts;
+$maxTags       =  ( isset($this->maxTags)
+                        ? $this->maxTags
+                        : 5 );
+$highlightTags = ($this->tags && ($this->tags instanceof Model_Set_Tag)
+                        ? $this->tags->__toString()
+                        : null);
 
-$isMe        =  ( $viewer &&
-                  ($viewer->userId === $user->userId)
-                    ? true
-                    : false );
-$userUrl     = $this->url(array('controller' => 'index',
+$isMe          =  ( $viewer &&
+                    ($viewer->userId === $user->userId)
+                        ? true
+                        : false );
+$userUrl       = $this->url(array('controller' => 'index',
                                 'action'     => 'index',
                                 'owner'      => $user->name));
 
-$links       = $this->headLink();
+$links         = $this->headLink();
 $links->appendStylesheet($this->baseUrl('/css/users.css'));
 
 $css = array();
@@ -195,7 +200,12 @@ if ($showParts['minimized'])    array_push($css, 'minimized');
                                        'owner'      => $user->name,
                                        'tag'        => $title));
 
-            echo "<li class='tag'>",
+            $cssExtra = ( ($highlightTags !== null) &&
+                          (strpos($highlightTags, $tag->tag) !== false)
+                            ? ' highlight'
+                            : '');
+
+            echo "<li class='tag{$cssExtra}'>",
                   "<a href='{$url}' title='{$title}: {$weight}'>",
                    $title,
                   "</a>",
