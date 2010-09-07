@@ -5,10 +5,13 @@
  *  url/routes:
  *      /search
  *          POST parameters:
- *              owner           The owner user name;
- *              tags            Tags to limit the search;
- *              searchContext   The search context;
- *              q               The search query.
+ *              owner                   The owner user name;
+ *              tags                    Tags to limit the search;
+ *              searchContext           The search context from the top-level
+ *                                      search area;
+ *              directSearchContext     The search context specified in the
+ *                                      search form;
+ *              terms                   The search terms/query.
  */
 
 
@@ -20,37 +23,57 @@ class SearchController extends Connexions_Controller_Action
     protected $_terms   = null; // The terms to search for.
     protected $_results = null; // The generated search results.
 
+    public function init()
+    {
+        $this->_noSidebar = true;
+
+        parent::init();
+    }
 
     public function indexAction()
     {
         $request =& $this->_request;
 
-        $this->_referer =  $request->getParam('referer',       null);
-        $this->_context =  $request->getParam('searchContext', null);
-        $this->_terms   =  $request->getParam('terms',         null);
+        $this->_referer =  $request->getParam('referer',             null);
+        $this->_context =  $request->getParam('directSearchContext',
+                            $request->getParam('searchContext',      null));
+        $this->_terms   =  $request->getParam('terms',               null);
 
         $this->_context =  strtolower($this->_context);
 
-        switch ($this->_context)
+        Connexions::log("SearchController::indexAction: "
+                        . "referer[ %s ], context[ %s ], terms[ %s ]",
+                        $this->_referer,
+                        $this->_context,
+                        $this->_terms);
+
+        if (! empty($this->_terms))
         {
-        case 'mybookmarks':
-        case 'mynetwork':
-            $this->_authSearch();
-            break;
+            switch ($this->_context)
+            {
+            case 'mybookmarks':
+            case 'mynetwork':
+                $this->_authSearch();
+                break;
 
-        case 'same':
-            $this->_refererSearch();
-            break;
+            case 'same':
+                $this->_refererSearch();
+                break;
 
-        default:
-            $this->_search();
-            break;
+            default:
+                $this->_search();
+                break;
+            }
+
+            $this->view->results = $this->_results;
         }
 
         $this->view->referer = $this->_referer;
         $this->view->context = $this->_context;
         $this->view->terms   = $this->_terms;
-        $this->view->results = $this->_results;
+
+        // Handle this request based on the current context / format
+        $this->_handleFormat('items');
     }
 
     /** @brief  Perform a search regardless of authentication.
@@ -275,6 +298,10 @@ class SearchController extends Connexions_Controller_Action
                                         $tags   = null,
                                         $items  = null)
     {
+        Connexions::log("SearchController::_searchBookmarks(): "
+                        . "users[ %s ], tags[ %s ], items[ %s ]",
+                        $users, $tags, $items);
+
         $to = array('where' => $this->_parseTerms($this->_terms,
                                                    array(
                                                     'name',

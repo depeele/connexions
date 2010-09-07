@@ -8,6 +8,7 @@
  */
 class Connexions_Controller_Action extends Zend_Controller_Action
 {
+    protected   $_noSidebar = false;
     protected   $_request   = null;
     protected   $_viewer    = null;
 
@@ -242,14 +243,17 @@ class Connexions_Controller_Action extends Zend_Controller_Action
             switch ($primePart)
             {
             case 'sidebar':
-                /* Render JUST the sidebar:
-                 *      sidebar.phtml
-                 *
-                 * OR a single pane of the sidebar:
-                 *      sidebar-(implode('-', _partials)).phtml
-                 */
-                $this->_renderSidebar(false);
-                break;
+                if ($this->_noSidebar !== true)
+                {
+                    /* Render JUST the sidebar:
+                     *      sidebar.phtml
+                     *
+                     * OR a single pane of the sidebar:
+                     *      sidebar-(implode('-', _partials)).phtml
+                     */
+                    $this->_renderSidebar(false);
+                    break;
+                }
 
             case 'main':
                 // Render JUST the main pane.
@@ -271,7 +275,10 @@ class Connexions_Controller_Action extends Zend_Controller_Action
              * sidebar.
              */
             $this->_renderMain('index', $htmlNamespace);
-            $this->_renderSidebar();
+            if ($this->_noSidebar !== true)
+            {
+                $this->_renderSidebar();
+            }
             break;
 
         case 'json':
@@ -529,6 +536,11 @@ class Connexions_Controller_Action extends Zend_Controller_Action
      */
     protected function _renderSidebar($usePlaceholder = true)
     {
+        if ($this->_noSidebar === true)
+        {
+            return;
+        }
+
         /*
         Connexions::log("Connexions_Controller_Action::_renderSidebar(): "
                         . "usePlaceholder[ %s ]",
