@@ -6,7 +6,8 @@
  *
  */
 
-$this->navMenu(false)->disableSearch();
+// Disable the 'same' / 'Search this view' context
+$this->navMenu(false)->disableSearchContext('same');
 
 if (! isset($this->results))
 {

@@ -169,25 +169,8 @@ class Model_Item extends Model_Taggable
         $title = (String)($this->url);
         $orig  = $title;
 
-        /* Since a url is typically a LARGE, contiguous string, url decode it,
-         * and add white-space around every non-word character
-         * [/.,&=?_-].
-         */
-        $title = preg_replace('/\s*(\W|_)\s*/', ' $1 ', urldecode($title));
-
-        // Remove white-space from the schema
-        $title = preg_replace('/^(\S+)\s+:\s*\/\s+\//', '$1://', $title);
-
-        // Make the title HTML-safe
-        $title = htmlspecialchars($title);
-
-        /* Replace ALL white-space with a Zero Width Space (&#8203;).  This
-         * will allow line-wrapping without making the URL look spaced out.
-         *
-         * We could also use a Hair Space (&#8202;) if we want to see that the
-         * white-space exists.
-         */
-        $title = preg_replace('/\s+/', '&#8203;', $title);
+        // Convert the URL to a wrappable HTML string.
+        $title = Connexions::wrappableUrl($title);
 
         /*
         Connexions::log("Model_Item::getTitle(): [ %s ] == [ %s ]",

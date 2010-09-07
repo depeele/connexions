@@ -3877,6 +3877,9 @@ $.widget("connexions.search", {
                     // Set the new context value
                     self.$context.val(newChoice);
 
+                    // Remember this context value via cookie
+                    $.cookie('searchContext', newChoice);
+
                     // Grab the new label value for the query input box
                     self.contextLabel = $li.text();
 
