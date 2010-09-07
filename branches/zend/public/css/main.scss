@@ -265,6 +265,13 @@
       color: $tagColorBackground;
     }
   }
+  .highlight {
+    background-color: $tagColorHighlight;
+    color: $tagColorBackground;
+    a, a:hover, a:visited, a:focus {
+      color: $tagColorBackground;
+    }
+  }
 }
 
 // Collapsable content

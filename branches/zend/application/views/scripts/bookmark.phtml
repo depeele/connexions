@@ -16,13 +16,19 @@
  *      summaryMax      The maximum number of characters in a summary [ 40 ];
  *      sortBy          The current sorting order if this bookmark is being
  *                      rendered in a list;
+ *      tags            A Model_Set_Tag instance of tags that should be
+ *                      highlighted;
  */
-$bookmark   =& $this->bookmark;
-$viewer     =& $this->viewer;
-$showParts  =& $this->showParts;
-$summaryMax =  (isset($this->summaryMax) && ($this->summaryMax > 0)
+$bookmark      =& $this->bookmark;
+$viewer        =& $this->viewer;
+$showParts     =& $this->showParts;
+$summaryMax    =  (isset($this->summaryMax) && ($this->summaryMax > 0)
                     ? $this->summaryMax
                     : 40);
+
+$highlightTags = ($this->tags && ($this->tags instanceof Model_Set_Tag)
+                    ? $this->tags->__toString()
+                    : null);
 
 $isOwner    =  ( $viewer &&
                 ($viewer->userId === $bookmark->user->userId)
@@ -317,7 +323,12 @@ if ($showParts['minimized'])
                                        'owner'  => $bookmark->user->name,
                                        'tag'    => $tag->tag));
 
-            ?><li class='tag'><a 
+            $cssExtra = ( ($highlightTags !== null) &&
+                          (strpos($highlightTags, $tag->tag) !== false)
+                            ? ' highlight'
+                            : '');
+
+            ?><li class='tag<?= $cssExtra ?>'><a 
                     href='<?= $tagUrl ?>'><?= $tag->tag ?></a></li><?php
         }
 

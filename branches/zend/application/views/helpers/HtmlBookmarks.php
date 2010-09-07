@@ -421,6 +421,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
                                     'viewer'     => $this->viewer,
                                     'showParts'  => $this->_showParts,
                                     'sortBy'     => $this->sortBy,
+                                    'tags'       => $this->tags,
                                   ));
     }
 
