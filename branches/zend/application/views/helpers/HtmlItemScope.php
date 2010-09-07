@@ -14,6 +14,7 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
     protected   $_params    = array(
         'namespace'         => null,
 
+        'hideInput'         => false,
         'inputLabel'        => 'Items', /* The text to present when the
                                          * input box is empty;
                                          */
@@ -73,6 +74,7 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
      *                      - namespace         The namespace to use for all
      *                                          cookies/parameters/settings
      *                                          [ '' ];
+     *                      - hideInput         Hide the input area? [ false ];
      *                      - inputLabel        The text to present when the
      *                                          input box is empty [ 'Items' ];
      *                      - inputName         The form-name for the input box

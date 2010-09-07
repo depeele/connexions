@@ -4,14 +4,34 @@
  *  If search results are available, present them, otherwise, present a search
  *  form.
  *
+ *  Incoming members:
+ *      baseUrl         The base url for the main controller of this page
+ *                      without any differentiating parameters
+ *                      (e.g. tag restrictions);
+ *      url             The full url for the main controller of this page
+ *                      with differentiating parameters;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *
+ *      referer         The URL of the referring page
+ *                      (used primarily for 'Search this view');
+ *      context         The chosen search context;
+ *      terms           The provided search terms / query;
+ *      results         The search results:
+ *                          bookmarks
+ *                          tags
+ *                          people
+ *                          items
  */
 
 // Disable the 'same' / 'Search this view' context
 $this->navMenu(false)->disableSearchContext('same');
 
+$this->headLink()->appendStylesheet($this->baseUrl('/css/searchResults.css'));
+
 if (! isset($this->results))
 {
-    // Render a search form
+    // No search results -- render a search form
     echo $this->render('search/form.phtml');
     return;
 }
@@ -22,29 +42,37 @@ if (! isset($this->results))
  */
 $this->headTitle("Search results for '". $this->terms ."'");
 
-$nResults = count($this->results);
-if ($nResults < 1)
-{
-    printf ("<p>No results found for '%s'.</p>", $this->terms);
-}
-else
+$nResults = @count($this->results);
+
+?>
+<div class='columnHeader'>
+ <div class='context-bg connexions_sprites search_bg
+             ui-corner-left ui-corner-tr'>&nbsp;</div>
+
+ <p><?= ($nResults < 1 ? 'No' : 'Search') ?>
+     results found for '<?= $this->terms ?>'.</p>
+</div>
+<div class='results'>
+<?php
+
+if ($nResults > 0)
 {
     foreach ($this->results as $section => $items)
     {
+        /*
         printf ("<p>%s %s results matching '%s'.</p>",
                 number_format(count($items)),
                 preg_replace('/s$/', '', $section),
                 $this->terms);
-
-        echo "<ul class='results'>";
-        /*
-        printf ("<li><pre>%s</pre></li>\n",
-                htmlspecialchars($items->debugDump()));
         */
-        echo "</ul>";
+        $template = 'search/main-'. $section .'.phtml';
+
+        //printf ("Render '%s'<br />\n", $template);
+        echo $this->render($template);
     }
 }
 
 ?>
+</div>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
