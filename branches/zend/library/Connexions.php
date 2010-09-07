@@ -702,6 +702,37 @@ class Connexions
         return $summary;
     }
 
+    /** @brief  Given a URL string, convert it to HTML text that can be wrapped
+     *          by the browser where needed.
+     *  @param  url     The URL string.
+     *
+     *  @return A string of HTML representing the URL.
+     */
+    public static function wrappableUrl($url)
+    {
+        /* Since a url is typically a LARGE, contiguous string, url decode it,
+         * and add white-space around every non-word character [/.,&=?_-].
+         */
+        $url = preg_replace('/\s*(\W|_)\s*/', ' $1 ', urldecode($url));
+
+        // Remove white-space from the schema
+        $url = preg_replace('/^(\S+)\s+:\s*\/\s+\//', '$1://', $url);
+
+        // Make the url HTML-safe
+        $url = htmlspecialchars($url);
+
+        /* To make a nicer presentation, replace ALL white-space with a
+         * Zero Width Space (&$8203;).  This will allow line-wrapping without
+         * visual white-space clutter.
+         *
+         * We could also use a Hair Space (&#8202;) if we want to see that the
+         * white-space exists.
+         */
+        $url = preg_replace('/\s+/', '&#8203;', $url);
+
+        return $url;
+    }
+
     /** @brief  Search for 'needle' in 'haystack' including any sub-arrays
      *          within 'haystack'.
      *  @param  needle      The item to locate (mixed).

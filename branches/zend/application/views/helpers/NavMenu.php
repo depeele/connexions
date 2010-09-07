@@ -31,9 +31,10 @@ class View_Helper_NavMenu extends Zend_View_Helper_Abstract
         ),
     );
 
-    public static       $defaultContext = 'all';
+    public static       $defaultContext     = 'all';
 
-    protected static    $_disableSearch = false;
+    protected static    $_disableSearch     = false;
+    protected static    $_disabled          = array();
 
     /** @brief  Initialize view variables related to rendering the
      *          navigation menu.
@@ -73,8 +74,12 @@ class View_Helper_NavMenu extends Zend_View_Helper_Abstract
             'inbox'     => null,
             'search'    => array(
                 'disabled'  => $this->_disableSearch,
+                'contextualSearchdisabled'
+                            => $this->_disableViewSearch,
                 'contexts'  => self::$searchContexts,   //$searchContexts,
-                'context'   => self::$defaultContext,
+                'context'   => ($this->view->searchContext !== null
+                                    ? $this->view->searchContext
+                                    : self::$defaultContext),
             ),
         );
 
@@ -117,7 +122,7 @@ class View_Helper_NavMenu extends Zend_View_Helper_Abstract
         return self::$searchContexts;
     }
 
-    /** @brief  Disable the search box.
+    /** @brief  Disable the entire search box.
      *  @param  disable     Disable? [ true ];
      *
      *  @return $this for a fluent interfact.
@@ -128,6 +133,19 @@ class View_Helper_NavMenu extends Zend_View_Helper_Abstract
         return $this;
     }
 
+    /** @brief  Disable a specific search context.
+     *  @param  id          The search context.
+     *  @param  disable     Disable? [ true ];
+     *
+     *  @return $this for a fluent interfact.
+     */
+    public function disableSearchContext($id, $disable = true)
+    {
+        $this->_disabled[$id] = $disable;
+        return $this;
+    }
+
+
     /** @brief  Determine whether or not the requested search id is presentable
      *          to the current user.
      *  @param  id      The search id (from $this->searchContexts);
@@ -137,7 +155,14 @@ class View_Helper_NavMenu extends Zend_View_Helper_Abstract
     public function searchAccept($id)
     {
         $res = false;
-        if (isset(self::$searchContexts[$id]))
+        if ( $this->_disableSearch ||
+             (isset($this->_disabled[$id]) &&
+              ($this->_disabled[$id] !== false)) )
+        {
+            // Directly disabled item(s)
+            $res = false;
+        }
+        else if (isset(self::$searchContexts[$id]))
         {
             switch (self::$searchContexts[$id]['resource'])
             {

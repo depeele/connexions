@@ -63,9 +63,11 @@ class Connexions_Controller_Action extends Zend_Controller_Action
 
 
         // Default view variables that we can set early
-        $this->view->baseUrl = $this->_baseUrl;
-        $this->view->url     = $this->_url;
-        $this->view->viewer  = $this->_viewer;
+        $this->view->baseUrl       = $this->_baseUrl;
+        $this->view->url           = $this->_url;
+        $this->view->viewer        = $this->_viewer;
+        $this->view->searchContext = $this->_request->getParam('searchContext',
+                                                               null);
 
         Connexions::log("Connexions_Controller_Action::init(): "
                         .   "baseUrl[ %s ], url[ %s ], viewer[ %s ]",
