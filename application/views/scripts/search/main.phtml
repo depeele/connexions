@@ -28,11 +28,27 @@
 $nResults = @count($this->results);
 
 ?>
-<div class='results'>
+<div id='searchResults' class='results'>
+ <ul>
 <?php
 
 if ($nResults > 0)
 {
+    $async    = true;
+    $paneHtml = '';
+
+    $jQuery = $this->jQuery();
+    $jQuery->addOnLoad("$('#searchResults').tabs();");
+
+    if ($async === true)
+    {
+        // Load all stylesheets that MAY be used
+        $this->headLink()
+                ->appendStylesheet($this->baseUrl('/css/bookmarks.css'))
+                ->appendStylesheet($this->baseUrl('/css/tagCloud.css'))
+                ->appendStylesheet($this->baseUrl('/css/users.css'));
+    }
+
     foreach ($this->results as $section => $sectionConfig)
     {
         /*
@@ -41,6 +57,28 @@ if ($nResults > 0)
                 preg_replace('/s$/', '', $section),
                 $this->terms);
         */
+        if ($async === true)
+        {
+            $paneUrl = $this->view->url .'?format=partial';
+
+            if (is_array($sectionConfig['hiddenVars']))
+            {
+                foreach ($sectionConfig['hiddenVars'] as $name => $val)
+                {
+                    $paneUrl .= "&{$name}={$val}";
+                }
+            }
+            $paneUrl .= '&part=main-';
+        }
+        else
+        {
+            $paneUrl = '#main-';
+        }
+
+        ?>
+  <li><a href='<?= $paneUrl . $section ?>'><span><?= ucfirst($section) ?></span></a></li><?php
+
+        /*
         switch ($section)
         {
         case 'bookmarks':
@@ -96,14 +134,20 @@ if ($nResults > 0)
             break;
 
         }
+        // */
 
-        $template   = 'search/main-'. $section .'.phtml';
+        if ($async !== true)
+        {
+            $script   = "search/main-{$section}.phtml";
 
-        //printf ("Render '%s'<br />\n", $template);
-        echo $this->render($template);
-        echo "<br class='clear' />\n";
+            $paneHtml .= "<div id='main-{$section}'>"
+                      .     $this->render($script)
+                      .  "</div>";
+        }
     }
 }
 
 ?>
+ </ul>
+ <?= $paneHtml ?>
 </div>

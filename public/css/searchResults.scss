@@ -5,5 +5,10 @@
 /****** searchResults.sass ****** */
 // Styling for the search results
 .results {
-  padding-right:  1em;
+  margin-right:  1em;
+
+  .searchStats {
+    float:        right;
+    font-weight:  bold;
+  }
 }
