@@ -38,9 +38,10 @@ $this->headLink()->appendStylesheet($this->baseUrl('/css/users.css'));
 $htmlUsers = $this->htmlUsers($sectionConfig);
 
 $count = $htmlUsers->users->getTotalCount();
-printf ("<div class='stats'><span class='count'>%s</span> %s</div>\n",
+printf ("<div class='searchStats'><span class='count'>%s</span> %s</div>\n",
         number_format($count), ($count === 1 ? 'person' : 'people'));
 
 
 // Render the people section.
-echo $htmlUsers->render();
+echo $htmlUsers->render(),
+     "<br class='clear' />";

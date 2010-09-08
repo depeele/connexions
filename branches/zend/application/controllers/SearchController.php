@@ -432,7 +432,7 @@ class SearchController extends Connexions_Controller_Action
         $referer = preg_replace('#^'. $this->_rootUrl .'#', '',
                                 rtrim($this->_referer, '/'));
 
-        $rest       = split('/', $referer);
+        $rest       = explode('/', $referer);
         $controller = array_shift($rest);
 
         /*
