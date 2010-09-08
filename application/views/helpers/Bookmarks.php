@@ -178,9 +178,9 @@ class View_Helper_Bookmarks extends View_Helper_List
 
 
             $to = array();
-            if ( ! empty($this->where))
+            if ( ($where = $this->where) !== null)
             {
-                $to['where'] = $this->where;
+                $to['where'] = $where;
             }
 
             if ( ($users = $this->users) !== null)

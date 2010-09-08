@@ -25,6 +25,7 @@ class SearchController extends Connexions_Controller_Action
                             );
 
 
+    protected $_rootUrl = null; // connexions URL from which a search was
     protected $_referer = null; // connexions URL from which a search was
                                 // performed.
     protected $_context = null; // The requested search context.
@@ -42,6 +43,7 @@ class SearchController extends Connexions_Controller_Action
         $this->_terms    =  $request->getParam('terms',               null);
         $this->_context  =  strtolower($this->_context);
 
+        $this->_rootUrl  = $this->_baseUrl;
         $this->_baseUrl .= 'search/';
         $this->_url      = $this->_baseUrl;
 
@@ -66,11 +68,13 @@ class SearchController extends Connexions_Controller_Action
      */
     protected function _renderMain($script, $namespace = '')
     {
+        /*
         Connexions::log("SearchController::_renderMain: "
                         . "referer[ %s ], context[ %s ], terms[ %s ]",
                         $this->_referer,
                         $this->_context,
                         $this->_terms);
+        // */
 
         if (! empty($this->_terms))
         {
@@ -105,7 +109,7 @@ class SearchController extends Connexions_Controller_Action
             $script = 'form';
         }
 
-        // /*
+        /*
         Connexions::log("SearchController::_renderMain(): "
                         . "script[ %s ]",
                         $script);
@@ -131,9 +135,11 @@ class SearchController extends Connexions_Controller_Action
      */
     protected function _search()
     {
+        /*
         Connexions::log("SearchController::_search(): "
                         . "context[ %s ], terms[ %s ]",
                         $this->_context, $this->_terms);
+        // */
 
         switch ($this->_context)
         {
@@ -279,7 +285,7 @@ class SearchController extends Connexions_Controller_Action
 
                 $where = $this->_parseTerms($this->_terms, array('url'));
 
-                // /*
+                /*
                 Connexions::log("SearchController::_search(): "
                                 . "items config[ %s ]",
                                 Connexions::varExport($items));
@@ -312,7 +318,7 @@ class SearchController extends Connexions_Controller_Action
                                             $where,
                                             $fetchOrder)
     {
-        // /*
+        /*
         Connexions::log("SearchController::_prepareCloud(): "
                         . "config[ %s ], modelName[ %s ], "
                         . "where[ %s ], fetchOrder[ %s ]",
@@ -351,7 +357,7 @@ class SearchController extends Connexions_Controller_Action
         $count      = $config['perPage'];
         $offset     = ($config['page'] - 1) * $count;
 
-        // /*
+        /*
         Connexions::log("SearchController::_prepareCloud(): "
                         . "page[ %d ], perPage[ %d ], "
                         . "offset[ %d ], count[ %d ], order[ %s ]",
@@ -391,17 +397,21 @@ class SearchController extends Connexions_Controller_Action
         if ( (! $this->_viewer instanceof Model_User) ||
              (! $this->_viewer->isAuthenticated()) )
         {
+            /*
             Connexions::log("SearchController::_authSearch(): "
                             . "NOT authenticated");
+            // */
 
             $this->view->error =
                     "You must be logged in to perform that search.";
             return;
         }
 
+        /*
         Connexions::log("SearchController::_authSearch(): "
                         . "authenticated as '%s'",
                         $this->_viewer);
+        // */
 
         return $this->_search();
     }
@@ -411,55 +421,77 @@ class SearchController extends Connexions_Controller_Action
      */
     protected function _refererSearch()
     {
+        /*
         Connexions::log("SearchController::_refererSearch(): "
-                        . "referer[ %s ], context[ %s ], terms[ %s ]",
-                        $this->_referer, $this->_context, $this->_terms);
+                        . "referer[ %s ], context[ %s ], terms[ %s ], "
+                        . "baseUrl[ %s ]",
+                        $this->_referer, $this->_context, $this->_terms,
+                        $this->_rootUrl);
+        // */
 
-        $referer = preg_replace('#^'. $this->_baseUrl .'#', '',
+        $referer = preg_replace('#^'. $this->_rootUrl .'#', '',
                                 rtrim($this->_referer, '/'));
 
         $rest       = split('/', $referer);
         $controller = array_shift($rest);
 
+        /*
         Connexions::log("SearchController::_refererSearch(): "
                         . "controller[ %s ], rest[ %s ]",
                         $controller,
                         Connexions::varExport($rest));
+        // */
 
         switch ($controller)
         {
         case 'people':
             $tags = $this->_getNext($rest);
 
+            // /*
             Connexions::log("SearchController::_refererSearch(): "
                             . "people, tags[ %s ]",
                             Connexions::varExport($tags));
+            // */
 
             /*****************************************************************
              * Perform a search for 'people' with the given 'tags' AND match
              * 'terms' in name, fullName, email, pictureUrl, or profile.
              */
+            $this->view->error = "Sorry.  "
+                               . "Contextual 'people' search "
+                               . "is not yet implemented.";
             break;
 
         case 'tags':
             $people = $this->_getNext($rest);
 
+            // /*
             Connexions::log("SearchController::_refererSearch(): "
                             . "tags, people[ %s ]",
                             Connexions::varExport($people));
+            // */
 
             /*****************************************************************
              * Perform a search for 'tags' used by the given 'tags' AND match
              * 'terms'.
              */
+            $this->view->error = "Sorry.  "
+                               . "Contextual 'tag' search "
+                               . "is not yet implemented.";
             break;
 
         case 'help':
             $topic = $this->_getNext($rest);
 
+            // /*
             Connexions::log("SearchController::_refererSearch(): "
                             . "help, topic[ %s ]",
                             Connexions::varExport($topic));
+            // */
+
+            $this->view->error = "Sorry.  "
+                               . "Contextual 'help' search "
+                               . "is not yet implemented.";
             break;
 
         case 'search':
@@ -472,10 +504,12 @@ class SearchController extends Connexions_Controller_Action
             $hash = $this->_getNext($rest);
             $tags = $this->_getNext($rest);
 
+            /*
             Connexions::log("SearchController::_refererSearch(): "
                             . "url, hash[ %s ], tags[ %s ]",
                             Connexions::varExport($hash),
                             Connexions::varExport($tags));
+            // */
 
             $this->_searchBookmarks(null,   // No 'owner'
                                     $tags,
@@ -493,10 +527,12 @@ class SearchController extends Connexions_Controller_Action
 
             $tags .= 'for:'. $owner;
 
+            /*
             Connexions::log("SearchController::_refererSearch(): "
                             . "inbox, owner[ %s ], tags[ %s ]",
                             Connexions::varExport($owner),
                             Connexions::varExport($tags));
+            // */
 
             $this->_searchBookmarks(null,   // ALL users $owner,
                                     $tags);
@@ -510,10 +546,12 @@ class SearchController extends Connexions_Controller_Action
                         : null);
             $tags  = $this->_getNext($rest);
 
+            /*
             Connexions::log("SearchController::_refererSearch(): "
                             . "bookmarks, owner[ %s ], tags[ %s ]",
                             Connexions::varExport($owner),
                             Connexions::varExport($tags));
+            // */
 
             $this->_searchBookmarks($owner,
                                     $tags);
@@ -531,9 +569,11 @@ class SearchController extends Connexions_Controller_Action
                                         $tags   = null,
                                         $items  = null)
     {
+        /*
         Connexions::log("SearchController::_searchBookmarks(): "
                         . "users[ %s ], tags[ %s ], items[ %s ]",
                         $users, $tags, $items);
+        // */
 
         /*****************************************
          * Use _prepareMain to retrieve display
@@ -550,9 +590,11 @@ class SearchController extends Connexions_Controller_Action
             'terms'     => $this->_terms
         );
 
+        /*
         Connexions::log("SearchController::_searchBookmarks: "
                         . "bookmarks config[ %s ]",
                         Connexions::varExport($bookmarks));
+        // */
 
         $bookmarks['where'] = $this->_parseTerms($this->_terms,
                                                  array('name',
@@ -570,6 +612,13 @@ class SearchController extends Connexions_Controller_Action
         {
             $bookmarks['items'] = $items;
         }
+
+        /*
+        Connexions::log("SearchController::_searchBookmarks: "
+                        . "bookmarks config[ %s ]",
+                        Connexions::varExport($bookmarks));
+        // */
+
 
         $this->_results['bookmarks'] = $bookmarks;
     }
