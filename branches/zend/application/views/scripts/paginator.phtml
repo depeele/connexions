@@ -10,6 +10,7 @@
  *      cssForm     Additional CSS class(es) to apply to the paginator form
  *                  [ null ];
  *      excludeInfo Should paging information be excluded [ false ];
+ *      hiddenVars  Hidden form variables;
  */
 $perPageChoices =  array(10, 25, 50, 100, 250, 500);
 
@@ -24,6 +25,17 @@ $pages = get_object_vars($pages);
 
 ?>
 <form class='paginator<?= $cssForm ?>'>
+ <?php
+    if (is_array($this->hiddenVars))
+    {
+        foreach ($this->hiddenVars as $name => $val)
+        {
+            printf (" <input type='hidden' name='%s' value='%s' />\n",
+                    $name, $val);
+        }
+    }
+
+ ?>
  <div class='pager'><?
 
     if ($pages['pageCount'] > 1)

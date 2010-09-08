@@ -19,6 +19,8 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                                              * to the contained 'dropdownForm'
                                              * presneting Display Options.
                                              */
+        'panePartial'       => 'main',
+
         'showRelation'      => true,
         'showOptions'       => true,
         'itemType'          => self::ITEM_TYPE_ITEM,
@@ -175,6 +177,15 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     public function populate(array $config)
     {
+        // Variables that MUST be set BEFORE 'namespace'...
+        foreach (array('pageBaseUrl', 'panePartial') as $key)
+        {
+            if (isset($config[$key]))
+            {
+                $this->__set($key, $config[$key]);
+            }
+        }
+
         foreach ($config as $key => $value)
         {
             if ($key === 'hiddenItems')
@@ -329,7 +340,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
             }
 
             $config = array('namespace'         => $namespace,
-                            //'partial'           => 'main',
+                            'partial'           => $this->panePartial,
                             'displayOptions'    => $dsConfig,
                       );
             $call   = "$('#{$namespace}Cloud').cloudPane("

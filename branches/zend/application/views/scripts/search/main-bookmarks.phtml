@@ -17,47 +17,29 @@
  *                      (used primarily for 'Search this view');
  *      context         The chosen search context;
  *      terms           The provided search terms / query;
- *      results         The search results:
- *                          bookmarks
- *                          tags
- *                          people
- *                          items
  *
- *      main            An array of settings for the main body:
- *          displayStyle    Indicates the current presentation style -- if this
- *                          is an array, the style is 'custom';
- *          perPage         The number of results on a single page;
- *          page            The desired page of results;
- *          sortBy          Indicates the sort field used to retrieve the
- *                          current bookmark set;
- *          sortOrder       Indicates the sort order used to retrieve the
- *                          current bookmark set;
+ *      results                 An array of section information:
+ *          bookmarks           An array of settings for the bookmarks section:
+ *              where           Additional retrieval conditions;
+ *              displayStyle    Indicates the current presentation style --
+ *                              if this is an array, the style is 'custom';
+ *              perPage         The number of results on a single page;
+ *              page            The desired page of results;
+ *              sortBy          Indicates the sort field used to retrieve the
+ *                              current bookmark set;
+ *              sortOrder       Indicates the sort order used to retrieve the
+ *                              current bookmark set;
  */
 Connexions::log('script/search/main-bookmarks.phtml');
+$sectionConfig = $this->results['bookmarks'];
 
 $this->headLink()->appendStylesheet($this->baseUrl('/css/bookmarks.css'));
 
-$bookmarks     = $this->results['bookmarks'];
-$htmlBookmarks = $this->htmlBookmarks($this->main);
-$hiddenVars    = array('referer'    => $this->referer,
-                       'context'    => $this->context,
-                       'terms'      => $this->terms );
+$htmlBookmarks = $this->htmlBookmarks($sectionConfig);
 
-//$htmlBookmarks->bookmarks = $bookmarks;
-$htmlBookmarks->__set($htmlBookmarks->listName, $bookmarks);
+$count = $htmlBookmarks->bookmarks->getTotalCount();
+printf ("<div class='stats'><span class='count'>%s</span> bookmark%s</div>\n",
+        number_format($count), ($count === 1 ? '' : 's'));
 
-$htmlBookmarks->setHiddenVars($hiddenVars);
-
-$scopePath     = array('Bookmarks' => $this->baseUrl('/bookmarks'));
-$htmlItemScope = $this->htmlItemScope( array(
-                    'namespace' => $this->main->namespace,
-                    'items'     => $htmlBookmarks->paginator,
-                    'hideInput' => true,
-                    'path'      => $scopePath,
-                 ));
-
-echo $htmlItemScope->render();
-
-// Render the main view.
+// Render the bookmarks section.
 echo $htmlBookmarks->render();
-

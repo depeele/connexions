@@ -19,9 +19,15 @@ class View_Helper_Bookmarks extends View_Helper_List
     static public   $defaults       = array(
         'listName'                  => 'bookmarks',
 
+        /* Connexions_Model_Set instances that the retrieved bookmarks should 
+         * be related to
+         */
         'users'                     => null,
         'tags'                      => null,
         'items'                     => null,
+
+        // Additional 'where' conditions for the retrieved bookmarks
+        'where'                     => null,
 
         'sortBy'                    => self::SORT_BY_DATE_TAGGED,
         'sortOrder'                 => Connexions_Service::SORT_DIR_DESC,
@@ -147,6 +153,10 @@ class View_Helper_Bookmarks extends View_Helper_List
         return $this;
     }
 
+    /** @brief  Retrieve the bookmarks to be presented.
+     *
+     *  @return The Model_Set_Bookmark instance representing the bookmarks.
+     */
     public function getBookmarks()
     {
         $key = $this->listName;
@@ -168,6 +178,11 @@ class View_Helper_Bookmarks extends View_Helper_List
 
 
             $to = array();
+            if ( ! empty($this->where))
+            {
+                $to['where'] = $this->where;
+            }
+
             if ( ($users = $this->users) !== null)
             {
                 if ($users instanceof Model_User)

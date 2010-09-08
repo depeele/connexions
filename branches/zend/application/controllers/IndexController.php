@@ -12,7 +12,6 @@ class IndexController extends Connexions_Controller_Action
     // Bootstrap resources to make directly available
     public  $dependencies = array('db','layout');
 
-    protected   $_url           = null;
     protected   $_owner         = null;
     protected   $_tags          = null;
 

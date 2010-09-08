@@ -12,12 +12,23 @@
  *                      options and group headers;
  */
 $helper     =& $this->helper;
+$hiddenVars =  $helper->hiddenVars;
 $namespace  =  $helper->namespace;
 $paginator  =& $helper->paginator;
 
 $uiPagination = $this->htmlPaginationControl();
 $uiPagination->setNamespace($namespace);
 $uiPagination->setPerPageChoices($helper->perPageChoices);
+
+/*
+Connexions::log('views/scripts/list.phtml: hiddenVars[ %s ]',
+                print_r($hiddenVars, true));
+// */
+
+if (is_array($hiddenVars))
+{
+    $uiPagination->setHiddenVars($hiddenVars);
+}
 
 ?>
 <div id='<?= $namespace ?>List' class='pane'>

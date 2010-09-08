@@ -79,6 +79,8 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
 
     protected           $_currentGroup  = null;
 
+    protected           $_hiddenVars    = null;
+
     /** @brief  Retrieve the HtmlDisplayOptions instance.
      *  @param  config  An associative array of configuration information that
      *                  may include:
@@ -208,6 +210,10 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
 
         case 'groups':
             $val =& $this->_groups;
+            break;
+
+        case 'hiddenVars':
+            $val = $this->_hiddenVars;
             break;
 
         default:
@@ -487,6 +493,19 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
             $val = parent::__get($name);
             break;
         }
+    }
+
+    /** @brief  Set additional hidden form variables that should be included
+     *          in any rendered form.
+     *  @param  vars        An array of name/value pairs.
+     *
+     *  @return View_Helper_HtmlBookmarks for a fluent interface.
+     */
+    public function setHiddenVars(array $vars)
+    {
+        $this->_hiddenVars = $vars;
+
+        return $this;
     }
 
     /** @brief  Set field values by an established group.

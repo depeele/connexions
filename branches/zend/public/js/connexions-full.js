@@ -3012,9 +3012,14 @@ $.widget("connexions.paginator", {
         // Attach to any PerPage selection box
         self.element.find('select[name='+ opts.namespace +'PerPage]')
                 .bind('change.paginator', function(e) {
-                        /* On change of the PerPage select, trigger 'submit' on
-                         * the pagination form.
+                        /* On change of the PerPage select:
+                         *  - set a cookie for the %ns%PerPage value...
                          */
+                        $.log("Add Cookie: name[%s], value[%s]",
+                              this.name, this.value);
+                        $.cookie(this.name, this.value);
+
+                        //  - and trigger 'submit' on the pagination form.
                         self.element.submit();
                       }
                 );
@@ -3028,32 +3033,30 @@ $.widget("connexions.paginator", {
                         }
                 );
 
-        // Attach to any 'submit' event on the top-level form.
+        /* Attach to any 'submit' event on the top-level form.
         self.element
                 .bind('submit.paginator', function(e) {
                         // Serialize all form values to an array...
                         var settings    = self.element.serializeArray();
 
-                        /* ...and set a cookie for each:
-                         *      %ns%PerPage
-                         */
+                        // ...and set a cookie for each:
+                        //      %ns%PerPage
                         $(settings).each(function() {
                             $.log("Add Cookie: name[%s], value[%s]",
                                   this.name, this.value);
                             $.cookie(this.name, this.value);
                         });
 
-                        /* Finally, since we've set all parameters as
-                         * cookies, we don't need to actually SUBMIT this
-                         * form.  Disable the event and reload the window.
-                        e.stopImmediatePropagation();
-                        e.preventDefault();
-                        e.stopPropagation();
-
-                        window.location.reload();
-                         */
+                        // Finally, since we've set all parameters as
+                        // cookies, we don't need to actually SUBMIT this
+                        // form.  Disable the event and reload the window.
+                        //e.stopImmediatePropagation();
+                        //e.preventDefault();
+                        //e.stopPropagation();
+                        //window.location.reload();
                       }
                 );
+        */
 
     },
 
@@ -3132,6 +3135,7 @@ $.widget("connexions.pane", {
         pageCur:        null,   // The current page number
         pageVar:        null,   // The page number URL variable name
         page:           null,   // The target  page number
+        hiddenVars:     null,   // Hidden variables from the target form
 
 
         /* Configuration for any <form class='pagination'> element that 
@@ -3185,12 +3189,18 @@ $.widget("connexions.pane", {
         });
 
         self.$paginators.bind('submit.uipane', function(e) {
+            var $pForm  = $(this);
+
             e.preventDefault(true);
             e.stopPropagation(true);
             e.stopImmediatePropagation(true);
 
             // Set the target page number
-            opts.page = $(this).paginator('getPage');
+            opts.page       = $pForm.paginator('getPage');
+            opts.hiddenVars = {};
+            $pForm.find('input:hidden').each(function() {
+                opts.hiddenVars[ this.name ] = this.value;
+            });
 
             // reload
             self.reload();
@@ -3272,6 +3282,15 @@ $.widget("connexions.pane", {
         {
             // AJAX reload of just this pane...
             url += '&format=partial&part='+ opts.partial;
+
+            if (opts.hiddenVars !== null)
+            {
+                $.each(opts.hiddenVars, function(name,val) {
+                    url += '&'+ name +'='+ val;
+                });
+            }
+
+            // Also include any hidden input values from the pagination form
 
             $.ajax({url:        url,
                     dataType:   'html',
