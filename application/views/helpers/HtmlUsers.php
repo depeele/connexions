@@ -15,17 +15,18 @@
 class View_Helper_HtmlUsers extends View_Helper_Users
 {
     static public   $defaults               = array(
-        'pageBaseUrl'       => null,        /* The base URL of the containing page
-                                             * used to set the cookie path for
-                                             * the attached Javascript
-                                             * 'cloudPane' which, in turn, effects
-                                             * the cookie path passed to the
-                                             * contained 'dropdownForm'
-                                             * presneting Display Options.
+        'pageBaseUrl'       => null,        /* The base URL of the containing 
+                                             * page used to set the cookie path 
+                                             * for the attached Javascript
+                                             * 'cloudPane' which, in turn, 
+                                             * effects the cookie path passed 
+                                             * to the contained 'dropdownForm'
+                                             * presenting Display Options.
                                              */
 
         'displayStyle'      => self::STYLE_REGULAR,
         'includeScript'     => true,
+        'panePartial'       => 'main',
         'ulCss'             => 'users',     // view/scripts/list.phtml
     );
 
@@ -150,7 +151,7 @@ class View_Helper_HtmlUsers extends View_Helper_Users
     public function populate(array $config)
     {
         // Ensure that 'pageBaseUrl' is set FIRST
-        foreach (array('pageBaseUrl') as $key)
+        foreach (array('pageBaseUrl', 'panePartial') as $key)
         {
             if (isset($config[$key]))
             {
@@ -177,6 +178,31 @@ class View_Helper_HtmlUsers extends View_Helper_Users
         }
 
         return $this->render();
+    }
+
+    /** @brief  Set additional hidden form variables that should be included
+     *          in any rendered form.
+     *  @param  vars        An array of name/value pairs.
+     *
+     *  @return View_Helper_HtmlBookmarks for a fluent interface.
+     */
+    public function setHiddenVars(array $vars)
+    {
+        /*
+        Connexions::log("View_Helper_HtmlUsers::setHiddenVars( %s )",
+                        Connexions::varExport($vars));
+        // */
+
+        $key = 'hiddenVars';
+
+        $this->_params[$key] = $vars;
+
+        if ($this->_displayOptions !== null)
+        {
+            $this->_displayOptions->setHiddenVars($vars);
+        }
+
+        return $this;
     }
 
     /** @brief  Set the namespace, primarily for forms and cookies.
@@ -221,6 +247,12 @@ class View_Helper_HtmlUsers extends View_Helper_Users
             if ($this->_displayOptions === null)
             {
                 $this->_displayOptions = $view->htmlDisplayOptions($dsConfig);
+
+                if ($this->hiddenVars !== null)
+                {
+                    // Pass hidden vars down.
+                    $this->_displayOptions->setHiddenVars($this->hiddenVars);
+                }
             }
             else
             {
@@ -229,7 +261,7 @@ class View_Helper_HtmlUsers extends View_Helper_Users
 
             // Include required jQuery
             $config = array('namespace'         => $namespace,
-                            'partial'           => 'main',
+                            'partial'           => $this->panePartial,
                             'displayOptions'    => $dsConfig,
                             /* Rely on the CSS class of rendered items
                              * (see View_Helper_HtmlUsersUser)
@@ -334,81 +366,6 @@ class View_Helper_HtmlUsers extends View_Helper_Users
         $this->_showParts = $this->getShowMeta();
 
         return parent::render();
-
-        /******************************************************/
-
-        $paginator    = $this->paginator;
-        $viewer       = $this->viewer;
-
-        $html         = "";
-        $showMeta     = $this->getShowMeta();
-
-        $uiPagination = $this->view->htmlPaginationControl();
-        $uiPagination->setNamespace($this->namespace)
-                     ->setPerPageChoices(self::$perPageChoices);
-
-        $html .= "<div id='{$this->namespace}List' class='pane'>"   // List {
-              .   $uiPagination->render($paginator, 'paginator-top', true)
-              .   $this->_renderDisplayOptions($paginator);
-
-        $nPages = count($paginator);
-        if ($nPages > 0)
-        {
-            //$html .= "<ul class='items {$this->namespace}'>";
-            $html .= "<ul class='items users'>";
-
-            /* Group by the field identified in $this->sortBy
-             *
-             * This grouping MAY be a "special field", indicated by the
-             * presence of one (or potentially more) ':' characters
-             *  (see Model_Mapper_Base::_getSpecialFields())
-             *
-             * If so, we ASSUME that the final field has been promoted to a
-             * pseudo-field of Bookmark.
-             */
-            $lastGroup  = null;
-            $groupBy    = explode(':', $this->sortBy);
-            $groupByCnt = count($groupBy);
-            $groupByLst = $groupBy[ $groupByCnt - 1];
-
-            foreach ($paginator as $idex => $user)
-            {
-                if ($user === null)
-                {
-                    /* Paginator items that aren't avaialble (i.e. beyond the
-                     * end of the paginated set) are returned as null.
-                     * Therefore, the first null item indicates end-of-set.
-                     */
-                    break;
-                }
-
-                // Retrieve the indicated grouping field value
-                $groupVal = $user->{$this->sortBy};
-                $newGroup = $this->_groupValue($this->sortBy, $groupVal);
-
-                if ($newGroup !== $lastGroup)
-                {
-                    $html      .= $this->_renderGroupHeader($this->sortBy,
-                                                            $newGroup);
-                    $lastGroup  = $newGroup;
-                }
-
-                $html .= $this->view->htmlUsersUser($user,
-                                                    $viewer,
-                                                    $showMeta,
-                                                    $idex);
-            }
-
-            $html .= "</ul>";
-        }
-
-
-        $html .= $uiPagination->render($paginator)
-              .  "<br class='clear' />\n"
-              . "</div>\n";                      // List }
-
-        // Return the rendered HTML
-        return $html;
     }
 
     /** @brief  Render HTML to represent a User within this list.

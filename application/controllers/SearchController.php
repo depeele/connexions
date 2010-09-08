@@ -17,31 +17,56 @@
 
 class SearchController extends Connexions_Controller_Action
 {
+    // Tell Connexions_Controller_Action_Helper_ResourceInjector which
+    // Bootstrap resources to make directly available
+    public  $dependencies = array('db','layout');
+    public  $contexts     = array('index' => array('partial', 'json',
+                                                   'rss',     'atom'),
+                            );
+
+
     protected $_referer = null; // connexions URL from which a search was
                                 // performed.
     protected $_context = null; // The requested search context.
     protected $_terms   = null; // The terms to search for.
     protected $_results = null; // The generated search results.
 
-    public function init()
-    {
-        $this->_noSidebar = true;
-
-        parent::init();
-    }
-
     public function indexAction()
     {
         $request =& $this->_request;
 
-        $this->_referer =  $request->getParam('referer',             null);
-        $this->_context =  $request->getParam('directSearchContext',
-                            $request->getParam('searchContext',      null));
-        $this->_terms   =  $request->getParam('terms',               null);
+        $this->_referer  =  $request->getParam('referer',             null);
+        $this->_context  =  $request->getParam('directSearchContext',
+                             $request->getParam('searchContext',
+                              $request->getParam('context',           null)));
+        $this->_terms    =  $request->getParam('terms',               null);
+        $this->_context  =  strtolower($this->_context);
 
-        $this->_context =  strtolower($this->_context);
+        $this->_baseUrl .= 'search/';
+        $this->_url      = $this->_baseUrl;
 
-        Connexions::log("SearchController::indexAction: "
+        // Set initial view variables
+        $this->view->referer = $this->_referer;
+        $this->view->context = $this->_context;
+        $this->view->terms   = $this->_terms;
+
+        // Handle this request based on the current context / format
+        $this->_handleFormat('items');
+    }
+
+    /*************************************************************************
+     * Protected Helpers
+     *
+     */
+
+    /** @brief  Prepare and render the main view using the provided view script.
+     *  @param  script      The view script to use for rendering;
+     *  @param  namespace   The namespace for this rendering;
+     *
+     */
+    protected function _renderMain($script, $namespace = '')
+    {
+        Connexions::log("SearchController::_renderMain: "
                         . "referer[ %s ], context[ %s ], terms[ %s ]",
                         $this->_referer,
                         $this->_context,
@@ -49,6 +74,8 @@ class SearchController extends Connexions_Controller_Action
 
         if (! empty($this->_terms))
         {
+            $this->_results = array();
+
             switch ($this->_context)
             {
             case 'mybookmarks':
@@ -66,14 +93,37 @@ class SearchController extends Connexions_Controller_Action
             }
 
             $this->view->results = $this->_results;
+
+            if ( count($this->_partials) > 0)
+            {
+                $script .= '-' . implode('-', $this->_partials);
+            }
+        }
+        else
+        {
+            // Render the search form.
+            $script = 'form';
         }
 
-        $this->view->referer = $this->_referer;
-        $this->view->context = $this->_context;
-        $this->view->terms   = $this->_terms;
+        // /*
+        Connexions::log("SearchController::_renderMain(): "
+                        . "script[ %s ]",
+                        $script);
+        // */
 
-        // Handle this request based on the current context / format
-        $this->_handleFormat('items');
+        $this->render($script);
+
+    }
+
+    /** @brief  Render the sidebar based upon the incoming request.
+     *  @param  usePlaceholder      Should the rendering be performed
+     *                              immediately into a placeholder?
+     *                              [ true, into the 'right' placeholder ]
+     *
+     */
+    protected function _renderSidebar($usePlaceholder = true)
+    {
+        // NO sidebar
     }
 
     /** @brief  Perform a search regardless of authentication.
@@ -117,37 +167,220 @@ class SearchController extends Connexions_Controller_Action
              *  - people    - name, fullName, email, pictureUrl, profile
              *  - items     - url
              */
-            $this->_searchBookmarks();
+            $partial = ( count($this->_partials) > 0
+                            ? implode('-', $this->_partials)
+                            : null );
 
-            $tService = $this->service('Tag');
-            $iService = $this->service('Item');
-            $uService = $this->service('User');
+            if ( ($partial === null) || ($partial === 'bookmarks') )
+            {
+                $this->_searchBookmarks();
+            }
 
-            $tTo = array(
-                'where' => $this->_parseTerms($this->_terms,
-                                              array('tag')),
-            );
-            $iTo = array(
-                'where' => $this->_parseTerms($this->_terms,
-                                              array('url')),
-            );
-            $uTo = array(
-                'where' => $this->_parseTerms($this->_terms,
-                                              array(
-                                                'name',
-                                                'fullName',
-                                                'email',
-                                                'pictureUrl',
-                                                'profile',
-                                              )),
-            );
+            if ( ($partial === null) || ($partial === 'tags') )
+            {
+                /*****************************************
+                 * Use _prepareMain to retrieve display
+                 * parameters for the 'tags' section
+                 * and retrieve the tags.
+                 *
+                 */
+                $this->_prepareMain('tags');
+                $tags = $this->view->main;
+                $tags['panePartial'] = 'main-tags';
+                $tags['hiddenVars']  = array(
+                    'referer'   => $this->_referer,
+                    'context'   => $this->_context,
+                    'terms'     => $this->_terms
+                );
+                $tags['itemType']    =
+                                View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
+                $tags['itemBaseUrl'] = $this->_helper->url(null, 'bookmarks');
 
-            $this->_results['tags']   = $tService->fetchRelated($tTo);
-            $this->_results['people'] = $uService->fetchRelated($uTo);
-            $this->_results['items']  = $iService->fetchRelated($iTo);
+                $tags['weightName']  = 'userItemCount';
+                $tags['weightTitle'] = 'Bookmarks with this tag';
+                $tags['titleTitle']  = 'Tag';
+
+                $where = $this->_parseTerms($this->_terms,
+                                            array('tag'));
+
+                /*
+                Connexions::log("SearchController::_search(): "
+                                . "tags config[ %s ]",
+                                Connexions::varExport($tags));
+                // */
+
+                $fetchOrder = array('userItemCount DESC',
+                                    'userCount     DESC',
+                                    'itemCount     DESC',
+                                    'tag           ASC');
+                $tags = $this->_prepareCloud($tags, 'Model_Tag',
+                                             $where, $fetchOrder);
+
+                $this->_results['tags'] = $tags;
+            }
+
+            if ( ($partial === null) || ($partial === 'people') )
+            {
+                /*****************************************
+                 * Use _prepareMain to retrieve display
+                 * parameters for the 'people' section
+                 * and retrieve the people.
+                 *
+                 */
+                $this->_prepareMain('people');
+                $people = $this->view->main;
+                $people['panePartial'] = 'main-people';
+                $people['hiddenVars']  = array(
+                    'referer'   => $this->_referer,
+                    'context'   => $this->_context,
+                    'terms'     => $this->_terms
+                );
+
+                $people['where'] = $this->_parseTerms($this->_terms,
+                                                      array('name',
+                                                            'fullName',
+                                                            'email',
+                                                            'pictureUrl',
+                                                            'profile'));
+
+                $this->_results['people'] = $people;
+            }
+
+            if ( ($partial === null) || ($partial === 'items') )
+            {
+                /*****************************************
+                 * Use _prepareMain to retrieve display
+                 * parameters for the 'items' section
+                 * and retrieve the items.
+                 *
+                 */
+                $this->_prepareMain('items');
+                $items = $this->view->main;
+                $items['panePartial'] = 'main-items';
+                $items['hiddenVars']  = array(
+                    'referer'   => $this->_referer,
+                    'context'   => $this->_context,
+                    'terms'     => $this->_terms
+                );
+                $items['itemType']    =
+                                View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
+                $items['itemBaseUrl'] = $this->_helper->url(null, 'url');
+
+                $items['weightName']  = 'userItemCount';
+                $items['weightTitle'] = 'Bookmarks';
+                $items['titleTitle']  = 'Url';
+
+                if ($items['displayStyle'] === null)
+                {
+                    $items['displayStyle'] =
+                        View_Helper_HtmlItemCloud::STYLE_LIST;
+                }
+
+
+                $where = $this->_parseTerms($this->_terms, array('url'));
+
+                // /*
+                Connexions::log("SearchController::_search(): "
+                                . "items config[ %s ]",
+                                Connexions::varExport($items));
+                // */
+
+                $fetchOrder = array('ratingAvg DESC',
+                                    'url       ASC');
+
+                $items = $this->_prepareCloud($items, 'Model_Item',
+                                              $where, $fetchOrder);
+
+                $this->_results['items'] = $items;
+            }
 
             break;
         }
+    }
+
+    /** @brief  Perform preparation for using the HtmlItemCloud helper.
+     *  @param  config      Current configuration;
+     *  @param  modelName   The name of the Model to be presented;
+     *  @param  where       The where condition to restrict item retrieval;
+     *  @param  fetchOrder  The retrieval ordering
+     *                      (that will return items sorted by weight);
+     *
+     *  @return New configuration.
+     */
+    protected function _prepareCloud(array &$config,
+                                            $modelName,
+                                            $where,
+                                            $fetchOrder)
+    {
+        // /*
+        Connexions::log("SearchController::_prepareCloud(): "
+                        . "config[ %s ], modelName[ %s ], "
+                        . "where[ %s ], fetchOrder[ %s ]",
+                        Connexions::varExport($config),
+                        $modelName,
+                        Connexions::varExport($where),
+                        Connexions::varExport($fetchOrder));
+        // */
+
+        $extra = array(
+            'pageBaseUrl'   => $this->_baseUrl,
+            'showRelation'  => false,
+        );
+        $config = array_merge($config, $extra);
+
+        // Defaults
+        if ( ($config['perPage'] = (int)$config['perPage']) < 1)
+            $config['perPage'] = 250;
+
+        if ( ($config['page'] = (int)$config['page']) < 1)
+            $config['page'] = 1;
+
+        if ((empty($config['sortBy'])) || ($config['sortBy'] === 'title'))
+            $config['sortBy'] = 'tag';
+
+        if (empty($config['sortOrder']))
+            $config['sortOrder'] = Connexions_Service::SORT_DIR_ASC;
+
+        if (empty($config['displayStyle']))
+            $config['displayStyle'] = View_Helper_HtmlItemCloud::STYLE_CLOUD;
+
+        if (empty($config['highlightCount']))
+            $config['highlightCount'] = 0;
+
+        // Retrieve the set of tags to be presented.
+        $count      = $config['perPage'];
+        $offset     = ($config['page'] - 1) * $count;
+
+        // /*
+        Connexions::log("SearchController::_prepareCloud(): "
+                        . "page[ %d ], perPage[ %d ], "
+                        . "offset[ %d ], count[ %d ], order[ %s ]",
+                        $config['page'], $config['perPage'],
+                        $offset, $count,
+                        Connexions::varExport($fetchOrder));
+        // */
+
+        $to = array('where' => $where);
+
+        $config['items'] = Connexions_Service::factory($modelName)
+                                    ->fetchRelated($to,
+                                                   $fetchOrder,
+                                                   $count,
+                                                   $offset);
+
+        $paginator       =  new Zend_Paginator($config['items']
+                                                ->getPaginatorAdapter());
+        $paginator->setItemCountPerPage( $config['perPage'] );
+        $paginator->setCurrentPageNumber($config['page'] );
+
+        $config['paginator']        = $paginator;
+
+        $config['currentSortBy']    =
+                                 View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
+        $config['currentSortOrder'] =
+                                 Connexions_Service::SORT_DIR_DESC;
+
+        return $config;
     }
 
     /** @brief  Restrict this search to authenticated users.
@@ -302,30 +535,43 @@ class SearchController extends Connexions_Controller_Action
                         . "users[ %s ], tags[ %s ], items[ %s ]",
                         $users, $tags, $items);
 
-        $to = array('where' => $this->_parseTerms($this->_terms,
-                                                   array(
-                                                    'name',
-                                                    'description',
-                                                ))
+        /*****************************************
+         * Use _prepareMain to retrieve display
+         * parameters for the 'bookmarks' section
+         * and retrieve the bookmarks.
+         *
+         */
+        $this->_prepareMain('bookmarks');
+        $bookmarks = $this->view->main;
+        $bookmarks['panePartial'] = 'main-bookmarks';
+        $bookmarks['hiddenVars']  = array(
+            'referer'   => $this->_referer,
+            'context'   => $this->_context,
+            'terms'     => $this->_terms
         );
 
+        Connexions::log("SearchController::_searchBookmarks: "
+                        . "bookmarks config[ %s ]",
+                        Connexions::varExport($bookmarks));
+
+        $bookmarks['where'] = $this->_parseTerms($this->_terms,
+                                                 array('name',
+                                                       'description',
+                                                 ));
         if ($users !== null)
         {
-            $to['users'] = $users;
+            $bookmarks['users'] = $users;
         }
         if ($tags !== null)
         {
-            $to['tags']      = $tags;
-            $to['exactTags'] = true;
+            $bookmarks['tags']  = $tags;
         }
         if ($items !== null)
         {
-            $to['items'] = $items;
+            $bookmarks['items'] = $items;
         }
 
-        $this->_results = array(
-            'bookmarks' => $this->service('Bookmark')->fetchRelated($to),
-        );
+        $this->_results['bookmarks'] = $bookmarks;
     }
 
     /** @brief  Retrieve the next item from 'rest'

@@ -1,0 +1,109 @@
+<?php
+/** @file
+ *
+ *  If search results are available, present them, otherwise, present a search
+ *  form.
+ *
+ *  Incoming members:
+ *      baseUrl         The base url for the main controller of this page
+ *                      without any differentiating parameters
+ *                      (e.g. tag restrictions);
+ *      url             The full url for the main controller of this page
+ *                      with differentiating parameters;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *
+ *      referer         The URL of the referring page
+ *                      (used primarily for 'Search this view');
+ *      context         The chosen search context;
+ *      terms           The provided search terms / query;
+ *      results         The search results/configuration for:
+ *                          bookmarks
+ *                          tags
+ *                          people
+ *                          items
+ */
+
+
+$nResults = @count($this->results);
+
+?>
+<div class='results'>
+<?php
+
+if ($nResults > 0)
+{
+    foreach ($this->results as $section => $sectionConfig)
+    {
+        /*
+        printf ("<p>%s %s results matching '%s'.</p>",
+                number_format(count($items)),
+                preg_replace('/s$/', '', $section),
+                $this->terms);
+        */
+        switch ($section)
+        {
+        case 'bookmarks':
+            $itemHelper = $this->htmlBookmarks($sectionConfig);
+
+            $scopePath     = array('Bookmarks' => $this->baseUrl('/bookmarks'));
+            $htmlItemScope = $this->htmlItemScope( array(
+                                'namespace' => $sectionConfig->namespace,
+                                'items'     => $itemHelper->paginator,
+                                'hideInput' => true,
+                                'path'      => $scopePath,
+                             ));
+            echo $htmlItemScope->render();
+            break;
+
+        case 'tags':
+            $itemHelper = $this->htmlItemCloud($sectionConfig);
+
+            $scopePath     = array('Tags' => $this->baseUrl('/tags'));
+            $htmlItemScope = $this->htmlItemScope( array(
+                                'namespace' => $sectionConfig->namespace,
+                                'items'     => $itemHelper->paginator,
+                                'hideInput' => true,
+                                'path'      => $scopePath,
+                             ));
+            echo $htmlItemScope->render();
+            break;
+
+        case 'people':
+            $itemHelper = $this->htmlUsers($sectionConfig);
+
+            $scopePath     = array('People' => $this->baseUrl('/people'));
+            $htmlItemScope = $this->htmlItemScope( array(
+                                'namespace' => $sectionConfig->namespace,
+                                'items'     => $itemHelper->paginator,
+                                'hideInput' => true,
+                                'path'      => $scopePath,
+                             ));
+            echo $htmlItemScope->render();
+            break;
+
+        case 'items':
+            $itemHelper = $this->htmlItemCloud($sectionConfig);
+
+            $scopePath     = array('Url' => $this->baseUrl('/url'));
+            $htmlItemScope = $this->htmlItemScope( array(
+                                'namespace' => $sectionConfig->namespace,
+                                'items'     => $itemHelper->paginator,
+                                'hideInput' => true,
+                                'path'      => $scopePath,
+                             ));
+            echo $htmlItemScope->render();
+            break;
+
+        }
+
+        $template   = 'search/main-'. $section .'.phtml';
+
+        //printf ("Render '%s'<br />\n", $template);
+        echo $this->render($template);
+        echo "<br class='clear' />\n";
+    }
+}
+
+?>
+</div>

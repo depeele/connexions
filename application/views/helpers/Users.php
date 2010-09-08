@@ -97,6 +97,63 @@ class View_Helper_Users extends View_Helper_List
         return $this;
     }
 
+    /** @brief  Retrieve the users to be presented.
+     *
+     *  @return The Model_Set_User instance representing the users.
+     */
+    public function getUsers()
+    {
+        $key = $this->listName;
+        if ( (! @isset($this->_params[$key])) ||
+             ($this->_params[$key] === null) )
+        {
+            /* This is here in a view helper and not in the controller
+             * primarily to allow centralized, contextual default values
+             * for things like sortBy, sortOrder and perPage.
+             */
+            $fetchOrder = $this->sortBy .' '. $this->sortOrder;
+            $perPage    = $this->perPage;
+            $page       = ($this->page > 0
+                            ? $this->page
+                            : 1);
+
+            $count      = $perPage;
+            $offset     = ($page - 1) * $perPage;
+
+            $to = array();
+            if ( $this->where !== null )
+            {
+                $to['where'] = $this->where;
+            }
+
+            if ( ($tags = $this->tags) !== null)
+            {
+                $to['tags']      =& $tags;
+                $to['exactTags'] =  true;
+            }
+
+            /*
+            Connexions::log("View_Helper_Users::getUsers(): "
+                            . "Retrieve users: "
+                            . "to[ %s ], "
+                            . "order[ %s ], count[ %d ], offset[ %d ]",
+                            Connexions::varExport($to),
+                            $fetchOrder, $count, $offset);
+            // */
+
+            $users = Connexions_Service::factory('Model_User')
+                                ->fetchRelated($to,
+                                               $fetchOrder,
+                                               $count,
+                                               $offset);
+
+            $this->_params[$key] = $users;
+        }
+        $val = $this->_params[$key];
+
+        return $val;
+    }
+
     public function __set($key, $val)
     {
         if ($key === 'users')
@@ -112,48 +169,8 @@ class View_Helper_Users extends View_Helper_List
         switch ($key)
         {
         case 'users':
-            $key = 'items';
-
-            // Fall through
         case 'items':
-            if (! @isset($this->_params[$key]))
-            {
-                $fetchOrder = $this->sortBy .' '. $this->sortOrder;
-                $perPage    = $this->perPage;
-                $page       = ($this->page > 0
-                                ? $this->page
-                                : 1);
-
-                $count      = $perPage;
-                $offset     = ($page - 1) * $perPage;
-
-                /*
-                Connexions::log("View_Helper_Users::__get( %s ): "
-                                . "Retrieve users: "
-                                . "order[ %s ], count[ %d ], offset[ %d ]",
-                                $key, $fetchOrder, $count, $offset);
-                // */
-
-                $users = Connexions_Service::factory('Model_User')
-                                    ->fetchByTags($this->tags,
-                                                  true,
-                                                  $fetchOrder,
-                                                  $count,
-                                                  $offset);
-
-                /*
-                Connexions::log("View_Helper_Users::__get( %s ): "
-                                . "Retrieved %d users: "
-                                . "order[ %s ], count[ %d ], offset[ %d ]",
-                                $key,
-                                count($users),
-                                $fetchOrder, $count, $offset);
-                // */
-
-                $this->_params[$key] = $users;
-            }
-            $val = $this->_params[$key];
-
+            $val = $this->getUsers();
             break;
 
         default:

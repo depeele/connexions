@@ -44,6 +44,7 @@ $.widget("connexions.pane", {
         pageCur:        null,   // The current page number
         pageVar:        null,   // The page number URL variable name
         page:           null,   // The target  page number
+        hiddenVars:     null,   // Hidden variables from the target form
 
 
         /* Configuration for any <form class='pagination'> element that 
@@ -97,12 +98,18 @@ $.widget("connexions.pane", {
         });
 
         self.$paginators.bind('submit.uipane', function(e) {
+            var $pForm  = $(this);
+
             e.preventDefault(true);
             e.stopPropagation(true);
             e.stopImmediatePropagation(true);
 
             // Set the target page number
-            opts.page = $(this).paginator('getPage');
+            opts.page       = $pForm.paginator('getPage');
+            opts.hiddenVars = {};
+            $pForm.find('input:hidden').each(function() {
+                opts.hiddenVars[ this.name ] = this.value;
+            });
 
             // reload
             self.reload();
@@ -184,6 +191,15 @@ $.widget("connexions.pane", {
         {
             // AJAX reload of just this pane...
             url += '&format=partial&part='+ opts.partial;
+
+            if (opts.hiddenVars !== null)
+            {
+                $.each(opts.hiddenVars, function(name,val) {
+                    url += '&'+ name +'='+ val;
+                });
+            }
+
+            // Also include any hidden input values from the pagination form
 
             $.ajax({url:        url,
                     dataType:   'html',

@@ -109,9 +109,14 @@ $.widget("connexions.paginator", {
         // Attach to any PerPage selection box
         self.element.find('select[name='+ opts.namespace +'PerPage]')
                 .bind('change.paginator', function(e) {
-                        /* On change of the PerPage select, trigger 'submit' on
-                         * the pagination form.
+                        /* On change of the PerPage select:
+                         *  - set a cookie for the %ns%PerPage value...
                          */
+                        $.log("Add Cookie: name[%s], value[%s]",
+                              this.name, this.value);
+                        $.cookie(this.name, this.value);
+
+                        //  - and trigger 'submit' on the pagination form.
                         self.element.submit();
                       }
                 );
@@ -124,34 +129,6 @@ $.widget("connexions.paginator", {
                             // Allow the event to bubble
                         }
                 );
-
-        // Attach to any 'submit' event on the top-level form.
-        self.element
-                .bind('submit.paginator', function(e) {
-                        // Serialize all form values to an array...
-                        var settings    = self.element.serializeArray();
-
-                        /* ...and set a cookie for each:
-                         *      %ns%PerPage
-                         */
-                        $(settings).each(function() {
-                            $.log("Add Cookie: name[%s], value[%s]",
-                                  this.name, this.value);
-                            $.cookie(this.name, this.value);
-                        });
-
-                        /* Finally, since we've set all parameters as
-                         * cookies, we don't need to actually SUBMIT this
-                         * form.  Disable the event and reload the window.
-                        e.stopImmediatePropagation();
-                        e.preventDefault();
-                        e.stopPropagation();
-
-                        window.location.reload();
-                         */
-                      }
-                );
-
     },
 
     /************************

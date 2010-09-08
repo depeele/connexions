@@ -8,7 +8,6 @@
  */
 class Connexions_Controller_Action extends Zend_Controller_Action
 {
-    protected   $_noSidebar = false;
     protected   $_request   = null;
     protected   $_viewer    = null;
 
@@ -62,6 +61,12 @@ class Connexions_Controller_Action extends Zend_Controller_Action
             $this->_baseUrl .= '/';
         }
 
+        /*
+        Connexions::log("Connexions_Controller_Action::init(): "
+                        .   "request params[ %s ]",
+                        Connexions::varExport($this->_request->getParams()));
+        // */
+
 
         // Default view variables that we can set early
         $this->view->baseUrl       = $this->_baseUrl;
@@ -70,11 +75,13 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         $this->view->searchContext = $this->_request->getParam('searchContext',
                                                                null);
 
+        /*
         Connexions::log("Connexions_Controller_Action::init(): "
                         .   "baseUrl[ %s ], url[ %s ], viewer[ %s ]",
                         $this->_baseUrl,
                         $this->_url,
                         $this->_viewer);
+        // */
 
         /*********************************************************************
          * If the concrete controller has defined contexts, initialize context
@@ -87,8 +94,24 @@ class Connexions_Controller_Action extends Zend_Controller_Action
             $cs->initContext();
 
             $format =  $cs->getCurrentContext();
+
+            /*
+            Connexions::log("Connexions_Controller_Action::init(): "
+                            . "ContextSwitch format[ %s ]",
+                            $format);
+            // */
+
             if (empty($format))
+            {
                 $format = $this->_request->getParam('format', 'html');
+
+                /*
+                Connexions::log("Connexions_Controller_Action::init(): "
+                                . "request format[ %s ]",
+                                $format);
+                // */
+
+            }
 
             $this->_format = $format;
 
@@ -243,17 +266,14 @@ class Connexions_Controller_Action extends Zend_Controller_Action
             switch ($primePart)
             {
             case 'sidebar':
-                if ($this->_noSidebar !== true)
-                {
-                    /* Render JUST the sidebar:
-                     *      sidebar.phtml
-                     *
-                     * OR a single pane of the sidebar:
-                     *      sidebar-(implode('-', _partials)).phtml
-                     */
-                    $this->_renderSidebar(false);
-                    break;
-                }
+                /* Render JUST the sidebar:
+                 *      sidebar.phtml
+                 *
+                 * OR a single pane of the sidebar:
+                 *      sidebar-(implode('-', _partials)).phtml
+                 */
+                $this->_renderSidebar(false);
+                break;
 
             case 'main':
                 // Render JUST the main pane.
@@ -275,10 +295,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
              * sidebar.
              */
             $this->_renderMain('index', $htmlNamespace);
-            if ($this->_noSidebar !== true)
-            {
-                $this->_renderSidebar();
-            }
+            $this->_renderSidebar();
             break;
 
         case 'json':
@@ -524,6 +541,12 @@ class Connexions_Controller_Action extends Zend_Controller_Action
             $script .= '-' . implode('-', $this->_partials);
         }
 
+        /*
+        Connexions::log("Connexions_Controller_Action::_renderMain(): "
+                        . "script[ %s ]",
+                        $script);
+        // */
+
         $this->render($script);
 
     }
@@ -536,11 +559,6 @@ class Connexions_Controller_Action extends Zend_Controller_Action
      */
     protected function _renderSidebar($usePlaceholder = true)
     {
-        if ($this->_noSidebar === true)
-        {
-            return;
-        }
-
         /*
         Connexions::log("Connexions_Controller_Action::_renderSidebar(): "
                         . "usePlaceholder[ %s ]",

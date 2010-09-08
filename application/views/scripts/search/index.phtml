@@ -17,7 +17,7 @@
  *                      (used primarily for 'Search this view');
  *      context         The chosen search context;
  *      terms           The provided search terms / query;
- *      results         The search results:
+ *      results         The search results/configuration for:
  *                          bookmarks
  *                          tags
  *                          people
@@ -52,27 +52,6 @@ $nResults = @count($this->results);
  <p><?= ($nResults < 1 ? 'No' : 'Search') ?>
      results found for '<?= $this->terms ?>'.</p>
 </div>
-<div class='results'>
-<?php
-
-if ($nResults > 0)
-{
-    foreach ($this->results as $section => $items)
-    {
-        /*
-        printf ("<p>%s %s results matching '%s'.</p>",
-                number_format(count($items)),
-                preg_replace('/s$/', '', $section),
-                $this->terms);
-        */
-        $template = 'search/main-'. $section .'.phtml';
-
-        //printf ("Render '%s'<br />\n", $template);
-        echo $this->render($template);
-    }
-}
-
-?>
-</div>
+<?= $this->render('search/main.phtml') ?>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

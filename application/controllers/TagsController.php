@@ -107,11 +107,19 @@ class TagsController extends Connexions_Controller_Action
         parent::_prepareMain($htmlNamespace);
 
         $extra = array(
-            'users' => $this->_users,
+            'users'         => $this->_users,
+            'pageBaseUrl'   => $this->_baseUrl,
+
+            'showRelation'  => false,
+
+            'itemType'      => View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM,
+            'itemBaseUrl'   => $this->view->baseUrl('/bookmarks/'),
+
+            'weightName'    => 'userItemCount',
+            'weightTitle'   => 'Bookmarks with this tag',
+            'titleTitle'    => 'Tag',
         );
         $config = array_merge($this->view->main, $extra);
-
-        $config['pageBaseUrl'] = $this->_baseUrl;
 
         // Defaults
         if ( ($config['perPage'] = (int)$config['perPage']) < 1)
@@ -140,19 +148,21 @@ class TagsController extends Connexions_Controller_Action
         Connexions::log("TagsController::_prepareMain(): "
                         . "offset[ %d ], count[ %d ], order[ %s ]",
                         $count, $offset, $fetchOrder);
-        $config['tags'] = Connexions_Service::factory('Model_Tag')
+        $config['items'] = Connexions_Service::factory('Model_Tag')
                                     ->fetchByUsers($this->_users,
                                                    $fetchOrder,
                                                    $count,
                                                    $offset,
                                                    true);   // exact users
 
-        $paginator   =  new Zend_Paginator($config['tags']
+        $paginator   =  new Zend_Paginator($config['items']
                                                 ->getPaginatorAdapter());
         $paginator->setItemCountPerPage( $config['perPage'] );
         $paginator->setCurrentPageNumber($config['page'] );
 
-        $config['paginator'] = $paginator;
+        $config['paginator']        = $paginator;
+        $config['currentSortBy']    = $config['sortBy'];
+        $config['currentSortOrder'] = $config['sortOrder'];
 
         $this->view->main = $config;
 

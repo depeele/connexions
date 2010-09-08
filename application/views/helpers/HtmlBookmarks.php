@@ -26,6 +26,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 
         'displayStyle'      => self::STYLE_REGULAR,
         'includeScript'     => true,
+        'panePartial'       => 'main',
         'ulCss'             => 'bookmarks', // view/scripts/list.phtml
     );
 
@@ -169,16 +170,11 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
      */
     public function populate(array $config)
     {
-        // Ensure that 'pageBaseUrl' is set FIRST
-        foreach (array('pageBaseUrl') as $key)
+        // Variables that MUST be set BEFORE 'namespace'...
+        foreach (array('pageBaseUrl', 'panePartial') as $key)
         {
             if (isset($config[$key]))
             {
-                /*
-                Connexions::log("View_Helper_HtmlBookmarks::populate(): "
-                                . "set 'pageBaseUrl' first");
-                // */
-
                 $this->__set($key, $config[$key]);
             }
         }
@@ -211,6 +207,31 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         return $this->render();
     }
 
+    /** @brief  Set additional hidden form variables that should be included
+     *          in any rendered form.
+     *  @param  vars        An array of name/value pairs.
+     *
+     *  @return View_Helper_HtmlBookmarks for a fluent interface.
+     */
+    public function setHiddenVars(array $vars)
+    {
+        /*
+        Connexions::log("View_Helper_HtmlBookmarks::setHiddenVars( %s )",
+                        Connexions::varExport($vars));
+        // */
+
+        $key = 'hiddenVars';
+
+        $this->_params[$key] = $vars;
+
+        if ($this->_displayOptions !== null)
+        {
+            $this->_displayOptions->setHiddenVars($vars);
+        }
+
+        return $this;
+    }
+
     /** @brief  Set the namespace, primarily for forms and cookies.
      *  @param  namespace   A string namespace.
      *
@@ -220,9 +241,11 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
     {
         /*
         Connexions::log("View_Helper_HtmlBookmarks::"
-                        .   "setNamespace( %s ): includeScript[ %s ]",
+                        .   "setNamespace( %s ): includeScript[ %s ], "
+                        .   "panePartial[ %s ]",
                         $namespace,
-                        Connexions::varExport($this->includeScript));
+                        Connexions::varExport($this->includeScript),
+                        $this->panePartial);
         // */
 
         parent::setNamespace($namespace);
@@ -236,7 +259,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
             $dsConfig   = array(
                                 'namespace'     => $namespace,
                                 'definition'    => self::$displayStyles,
-                                'groups'        => self::$styleGroups
+                                'groups'        => self::$styleGroups,
                           );
 
             if ($this->pageBaseUrl !== null)
@@ -255,6 +278,12 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
             if ($this->_displayOptions === null)
             {
                 $this->_displayOptions = $view->htmlDisplayOptions($dsConfig);
+
+                if ($this->hiddenVars !== null)
+                {
+                    // Pass hidden vars down.
+                    $this->_displayOptions->setHiddenVars($this->hiddenVars);
+                }
             }
             else
             {
@@ -263,7 +292,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 
             // Include required jQuery
             $config = array('namespace'         => $namespace,
-                            'partial'           => 'main',
+                            'partial'           => $this->panePartial,
                             'displayOptions'    => $dsConfig,
                             /* Rely on the CSS class of rendered items
                              * (see View_Helper_HtmlBookmark)

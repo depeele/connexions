@@ -1,0 +1,65 @@
+<?php
+/** @file
+ *
+ *  View script for SearchController::index to render tag results in the
+ *  main content section.
+ *
+ *  Incoming members:
+ *      baseUrl         The base url for the main controller of this page
+ *                      without any differentiating parameters
+ *                      (e.g. tag restrictions);
+ *      url             The full url for the main controller of this page
+ *                      with differentiating parameters;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *
+ *      referer         The URL of the referring page
+ *                      (used primarily for 'Search this view');
+ *      context         The chosen search context;
+ *      terms           The provided search terms / query;
+ *
+ *      results                 An array of section information:
+ *          tags                An array of settings for the tags section:
+ *              namespace       The cookie/parameters/settings namespace for
+ *                              the this section;
+ *              displayStyle    Indicates the current presentation style --
+ *                              if this is an array, the style is 'custom';
+ *              perPage         The number of results on a single page;
+ *              page            The desired page of results;
+ *              sortBy          The desired sort field;
+ *              sortOrder       The desired sort order;
+ *              highlightCount  The number of tags to highlight;
+ *
+ *              showRelation    Show the relation indicator?;
+ *              itemType        The type of item being presented
+ *                              (View_Helper_HtmlItemCloud::ITEM_TYPE_*);
+ *
+ *              items           The Model_Set_Tag instance representing the
+ *                              tag(s) to be presented;
+ *              paginator       The item paginator;
+ *
+ *              itemBaseUrl     The baseUrl for item links;
+ *
+ *              weightName      The name to use for item weights;
+ *              weightTitle     The title of item weights;
+ *              titleTitle      The title of item names/titles;
+ *
+ *              currentSortBy   The current sortBy for 'items';
+ *              currentSortOrder
+ *                              The current sortOrder for 'items';
+ */
+Connexions::log('script/search/main-tags.phtml');
+$sectionConfig = $this->results['tags'];
+
+$this->headLink()->appendStylesheet($this->baseUrl('/css/tagCloud.css'));
+
+$htmlCloud = $this->htmlItemCloud( $sectionConfig );
+
+$count = $htmlCloud->items->getTotalCount();
+printf ("<div class='stats'><span class='count'>%s</span> tag%s</div>\n",
+        number_format($count), ($count === 1 ? '' : 's'));
+
+
+// Render the tags section.
+echo $htmlCloud->render();
+

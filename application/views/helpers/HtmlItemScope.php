@@ -107,7 +107,7 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
 
         /*
         Connexions::log("View_Helper_HtmlItemScope::populate(): params[ %s ]",
-                        print_r($this->_params, true));
+                        Connexions::varExport($this->_params));
 
         // */
 
