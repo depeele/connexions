@@ -3032,32 +3032,6 @@ $.widget("connexions.paginator", {
                             // Allow the event to bubble
                         }
                 );
-
-        /* Attach to any 'submit' event on the top-level form.
-        self.element
-                .bind('submit.paginator', function(e) {
-                        // Serialize all form values to an array...
-                        var settings    = self.element.serializeArray();
-
-                        // ...and set a cookie for each:
-                        //      %ns%PerPage
-                        $(settings).each(function() {
-                            $.log("Add Cookie: name[%s], value[%s]",
-                                  this.name, this.value);
-                            $.cookie(this.name, this.value);
-                        });
-
-                        // Finally, since we've set all parameters as
-                        // cookies, we don't need to actually SUBMIT this
-                        // form.  Disable the event and reload the window.
-                        //e.stopImmediatePropagation();
-                        //e.preventDefault();
-                        //e.stopPropagation();
-                        //window.location.reload();
-                      }
-                );
-        */
-
     },
 
     /************************
