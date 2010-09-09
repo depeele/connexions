@@ -34,16 +34,6 @@ $definition =& $helper->definition;
         class='ui-state-active ui-corner-all' style='display:none;'>
   <?php
 
-    $hiddenVars = $helper->hiddenVars;
-    if (is_array($hiddenVars))
-    {
-        foreach ($hiddenVars as $name => $val)
-        {
-            printf ("  <input type='hidden' name='%s' value='%s' />\n",
-                    $name, $val);
-        }
-    }
-
     // Render the non-presentation component form fields
     if (is_array($fields))
     {

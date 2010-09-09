@@ -108,7 +108,7 @@ class TagsController extends Connexions_Controller_Action
 
         $extra = array(
             'users'         => $this->_users,
-            'pageBaseUrl'   => $this->_baseUrl,
+            'cookieUrl'     => $this->_rootUrl,
 
             'showRelation'  => false,
 
@@ -280,7 +280,7 @@ class TagsController extends Connexions_Controller_Action
     {
         $config  = $sidebar->getPane($pane);
 
-        $config['pageBaseUrl'] = $this->_baseUrl;
+        $config['cookieUrl'] = $this->_rootUrl;
 
         $perPage = ((int)$config['perPage'] > 0
                         ? (int)$config['perPage']

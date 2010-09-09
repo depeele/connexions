@@ -24,6 +24,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                                          */
 
 
+    protected   $_rootUrl   = null;     // The root connexions URL.
     protected   $_baseUrl   = null;     /* The page's base URL minus any
                                          * differentiating parameters
                                          * (e.g. tag restrictions).
@@ -47,7 +48,8 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         // Initialize action controller here
         $this->_viewer  =& Zend_Registry::get('user');
         $this->_request =& $this->getRequest();
-        $this->_baseUrl =  $this->_request->getBasePath();
+        $this->_rootUrl =  $this->_request->getBasePath();
+        $this->_baseUrl =  $this->_rootUrl;
         $this->_url     =  $this->_baseUrl
                         .  $this->_request->getPathInfo();
 
@@ -69,6 +71,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
 
 
         // Default view variables that we can set early
+        $this->view->rootUrl       = $this->_rootUrl;
         $this->view->baseUrl       = $this->_baseUrl;
         $this->view->url           = $this->_url;
         $this->view->viewer        = $this->_viewer;
@@ -339,6 +342,12 @@ class Connexions_Controller_Action extends Zend_Controller_Action
     {
         $request          =& $this->_request;
 
+        /*
+        Connexions::log("Connexions_Controller_Action::_prepareMain(): "
+                        . "namespace[ %s ], format[ %s ]",
+                        $namespace, $this->_format);
+        // */
+
         if (($this->_format === 'html') || ($this->_format === 'partial'))
         {
             /* HTML and Partial will typically be requested via click on a
@@ -352,6 +361,14 @@ class Connexions_Controller_Action extends Zend_Controller_Action
             $page         = $request->getParam($namespace ."Page");
             $sortBy       = $request->getParam($namespace ."SortBy");
             $sortOrder    = $request->getParam($namespace ."SortOrder");
+
+            /*
+            Connexions::log("Connexions_Controller_Action::_prepareMain(): "
+                            . "displayStyle[ %s ], perPage[ %s ], page[ %s ], "
+                            . "sortBy[ %s ], sortOrder[ %s ]",
+                            $displayStyle, $perPage, $page,
+                            $sortBy, $sortOrder);
+            // */
 
             if ( ($displayStyle === 'custom') && (is_array($dsCustom)) )
                 $displayStyle = $dsCustom;
@@ -379,7 +396,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
 
         // Additional view variables for the HTML view.
         $this->view->main = array(
-            'pageBaseUrl'   => $this->_baseUrl,
+            'cookieUrl'     => $this->_rootUrl,
             'namespace'     => $namespace,
             'viewer'        => &$this->_viewer,
 
@@ -426,7 +443,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                      * render the tag cloud or list.
                      *
                      */
-                    'pageBaseUrl'   => $this->_baseUrl,
+                    'cookieUrl'     => $this->_rootUrl,
                     'namespace'     => 'sbTags',
                     'title'         => 'Tags',
                     'weightName'    => 'userItemCount',
@@ -456,7 +473,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                      * render the people cloud or list.
                      *
                      */
-                    'pageBaseUrl'   => $this->_baseUrl,
+                    'cookieUrl'     => $this->_rootUrl,
                     'namespace'     => 'sbPeople',
                     'title'         => 'People',
                     'weightName'    => 'userItemCount',
@@ -487,7 +504,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                      * render the item cloud or list.
                      *
                      */
-                    'pageBaseUrl'   => $this->_baseUrl,
+                    'cookieUrl'     => $this->_rootUrl,
                     'namespace'     => 'sbItems',
                     'title'         => 'Items',
 

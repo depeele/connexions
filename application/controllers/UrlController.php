@@ -105,7 +105,7 @@ class UrlController extends Connexions_Controller_Action
         $this->view->item      = $this->_item;
 
         // Handle this request based on the current context / format
-        $this->_handleFormat('items');
+        $this->_handleFormat('bookmarks');
     }
 
     public function chooseAction()
@@ -265,7 +265,7 @@ class UrlController extends Connexions_Controller_Action
     {
         $config  = $sidebar->getPane($pane);
 
-        $config['pageBaseUrl'] = $this->_baseUrl;
+        $config['cookieUrl'] = $this->_rootUrl;
 
         $perPage = ((int)$config['perPage'] > 0
                         ? (int)$config['perPage']

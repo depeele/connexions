@@ -36,8 +36,9 @@ $namespace    = $helper->namespace;
 $displayStyle = $helper->getDisplayStyle(); //displayStyle;
 $itemType     = $helper->itemType;
 $paginator    = $helper->paginator;
+$html         = $helper->html; // Holder for any additional HTML to be included
 
-printf ("<!-- displayStyle [ %s ] -->\n", $displayStyle);
+//printf ("<!-- displayStyle [ %s ] -->\n", $displayStyle);
 
 if ($helper->items !== null)
 {
@@ -60,29 +61,46 @@ if ($helper->items !== null)
     }
 }
 
+$uiPagination = null;
+if ($paginator instanceof Zend_Paginator)
+{
+    $uiPagination = $this->htmlPaginationControl();
+    $uiPagination->setNamespace($namespace);
+    $uiPagination->setPerPageChoices($helper->perPageChoices);
+}
+
 ?>
 <div    id='<?= $namespace ?>Cloud'
      class='<?= $itemType ?>Items pane'>
  <?php
-
     if ($helper->showRelation)
     {
- ?><div class='cloudRelation connexions_sprites relation_ltr'>&nbsp;</div><?php
+        echo " ",
+             "<div class='cloudRelation connexions_sprites relation_ltr'>",
+              "&nbsp;",
+             "</div>",
+             "\n";
     }
 
-    $uiPagination = null;
-    if ($paginator instanceof Zend_Paginator)
+    if (is_array($html) && isset($html['prepend']))
     {
-        $uiPagination = $this->htmlPaginationControl();
-        $uiPagination->setNamespace($namespace);
-        $uiPagination->setPerPageChoices($helper->perPageChoices);
-
-        echo $uiPagination->render($paginator, 'paginator-top', true);
+         echo " ",
+              $html['prepend'],
+              "\n";
     }
 
+    if ($uiPagination !== null)
+    {
+         echo " ",
+              $uiPagination->render($paginator, 'paginator-top', true),
+              "\n";
+    }
+
+    echo " ",
+         $helper->renderDisplayOptions(),
+         "\n";
  ?>
- <?= $helper->renderDisplayOptions() ?>
- <div class='cloud'><?php   // cloud {
+ <div class='cloud'><?php
 
     if (count($itemList) < 1)
     {
@@ -186,12 +204,11 @@ if ($helper->items !== null)
     }
 
  ?>
- </div><?php                // cloud }
-
-    if ($uiPagination !== null)
-    {
-        echo $uiPagination->render($paginator);
-    }
-
- ?>
+ </div>
+ <?= ($uiPagination !== null
+         ? $uiPagination->render($paginator)
+         : '') ?>
+ <?= (is_array($html) && isset($html['append'])
+         ? $html['append']
+         : '') ?>
 </div>

@@ -38,7 +38,37 @@ if ($nResults > 0)
     $paneHtml = '';
 
     $jQuery = $this->jQuery();
-    $jQuery->addOnLoad("$('#searchResults').tabs();");
+    $jQuery->addOnLoad("searchResults_onLoad();")
+           ->javascriptCaptureStart();
+?>
+/************************************************
+ * Initialize the search Results as tabs
+ *
+ */
+function searchResults_onLoad()
+{
+    var $el     = $('#searchResults');
+    var $tab    = null;
+    $el.tabs({
+        cache:  true,
+        cookie: 'search',
+        ajaxOptions: {
+            beforeSend: function() {
+                // Mask the tab panel area...
+                var sel = $el.tabs('option', 'selected');
+                $tab = $el.find('.ui-tabs-panel').eq(sel);
+
+                $tab.mask();
+            },
+            complete: function() {
+                // Unmask the tab panel area...
+                $tab.unmask();
+            }
+        }
+    });
+}
+<?php
+    $jQuery->javascriptCaptureEnd();
 
     if ($async === true)
     {
@@ -61,9 +91,9 @@ if ($nResults > 0)
         {
             $paneUrl = $this->view->url .'?format=partial';
 
-            if (is_array($sectionConfig['hiddenVars']))
+            if (is_array($sectionConfig['paneVars']))
             {
-                foreach ($sectionConfig['hiddenVars'] as $name => $val)
+                foreach ($sectionConfig['paneVars'] as $name => $val)
                 {
                     $paneUrl .= "&{$name}={$val}";
                 }
@@ -141,7 +171,7 @@ if ($nResults > 0)
             $script   = "search/main-{$section}.phtml";
 
             $paneHtml .= "<div id='main-{$section}'>"
-                      .     $this->render($script)
+                      .    $this->render($script)
                       .  "</div>";
         }
     }

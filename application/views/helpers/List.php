@@ -55,8 +55,24 @@ abstract class View_Helper_List extends Zend_View_Helper_Abstract
     {
         foreach (self::$defaults as $key => $value)
         {
-            $this->_params[$key] = $value;
+            if (! isset($this->_params[$key]))
+            {
+                /*
+                Connexions::log("View_Helper_List::__construct(): "
+                                . "'%s', default value '%s'",
+                                $key, $value);
+                // */
+
+                $this->_params[$key] = $value;
+            }
         }
+
+        /*
+        Connexions::log("View_Helper_List::__construct(): "
+                        . "_params[ %s ], config[ %s ]",
+                        Connexions::varExport($this->_params),
+                        Connexions::varExport($config));
+        // */
 
         if (! empty($config))
             $this->populate($config);

@@ -38,9 +38,15 @@ $this->headLink()->appendStylesheet($this->baseUrl('/css/bookmarks.css'));
 $htmlBookmarks = $this->htmlBookmarks($sectionConfig);
 
 $count = $htmlBookmarks->bookmarks->getTotalCount();
-printf ("<div class='searchStats'><span class='count'>%s</span> %s</div>\n",
-        number_format($count), ($count === 1 ? 'bookmark' : 'bookmarks'));
+$htmlBookmarks->html = array(
+    'prepend'   => sprintf ( "<div class='searchStats'>"
+                            . "<span class='count'>%s</span> "
+                            . "%s"
+                            ."</div>\n",
+                            number_format($count),
+                            ($count === 1 ? 'bookmark' : 'bookmarks')),
+    'append'    => "<br class='clear' />",
+);
 
 // Render the bookmarks section.
-echo $htmlBookmarks->render(),
-     "<br class='clear' />";
+echo $htmlBookmarks->render();

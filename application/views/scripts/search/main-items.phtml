@@ -56,9 +56,15 @@ $this->headLink()->appendStylesheet($this->baseUrl('/css/tagCloud.css'));
 $htmlCloud = $this->htmlItemCloud( $sectionConfig );
 
 $count = $htmlCloud->items->getTotalCount();
-printf ("<div class='searchStats'><span class='count'>%s</span> %s</div>\n",
-        number_format($count), ($count === 1 ? 'url' : 'urls'));
+$htmlCloud->html = array(
+    'prepend'   => sprintf ( "<div class='searchStats'>"
+                            . "<span class='count'>%s</span> "
+                            . "%s"
+                            ."</div>\n",
+                            number_format($count),
+                            ($count === 1 ? 'url' : 'urls')),
+    'append'    => "<br class='clear' />",
+);
 
 // Render the items section.
-echo $htmlCloud->render(),
-     "<br class='clear' />";
+echo $htmlCloud->render();

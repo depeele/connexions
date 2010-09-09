@@ -12,26 +12,30 @@
  *                      options and group headers;
  */
 $helper     =& $this->helper;
-$hiddenVars =  $helper->hiddenVars;
+
+/*
+Connexions::log("view/scripts/list.phtml: "
+                . "namespace[ %s ], sortBy[ %s ], sortOrder[ %s ]\n",
+                $helper->namespace, $helper->sortBy, $helper->sortOrder);
+// */
+
+
 $namespace  =  $helper->namespace;
 $paginator  =& $helper->paginator;
+
 
 $uiPagination = $this->htmlPaginationControl();
 $uiPagination->setNamespace($namespace);
 $uiPagination->setPerPageChoices($helper->perPageChoices);
 
-/*
-Connexions::log('views/scripts/list.phtml: hiddenVars[ %s ]',
-                print_r($hiddenVars, true));
-// */
-
-if (is_array($hiddenVars))
-{
-    $uiPagination->setHiddenVars($hiddenVars);
-}
+// Holder for any additional HTML to be included
+$html = $helper->html;
 
 ?>
 <div id='<?= $namespace ?>List' class='pane'>
+ <?= (is_array($html) && isset($html['prepend'])
+         ? $html['prepend']
+         : '') ?>
  <?= $uiPagination->render($paginator, 'paginator-top', true) ?>
  <?= $helper->renderDisplayOptions($paginator) ?>
  <ul class='items <?= $helper->ulCss ?>'>
@@ -75,4 +79,7 @@ if (is_array($hiddenVars))
  ?>
  </ul>
  <?= $uiPagination->render($paginator) ?>
+ <?= (is_array($html) && isset($html['append'])
+         ? $html['append']
+         : '') ?>
 </div>

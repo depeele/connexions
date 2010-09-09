@@ -21,13 +21,10 @@ class View_Helper_FeedBookmarks extends View_Helper_Bookmarks
      */
     public function __construct(array $config = array())
     {
-        // Over-ride the default _namespace
-        parent::$defaults['namespace'] = 'items';
-
-        // Add extra class-specific defaults
         foreach (self::$defaults as $key => $value)
         {
-            $this->_params[$key] = $value;
+            if (! isset($this->_params[$key]))
+                $this->_params[$key] = $value;
         }
 
         parent::__construct($config);
