@@ -3171,10 +3171,6 @@ $.widget("connexions.pane", {
 
             // Set the target page number
             opts.page       = $pForm.paginator('getPage');
-            opts.hiddenVars = {};
-            $pForm.find('input:hidden').each(function() {
-                opts.hiddenVars[ this.name ] = this.value;
-            });
 
             // reload
             self.reload();
@@ -3252,19 +3248,18 @@ $.widget("connexions.pane", {
             url = url.replace(re, rep);
         }
 
+        if (opts.hiddenVars !== null)
+        {
+            // Also include any hidden input values in the URL.
+            $.each(opts.hiddenVars, function(name,val) {
+                url += '&'+ name +'='+ val;
+            });
+        }
+
         if (opts.partial !== null)
         {
             // AJAX reload of just this pane...
             url += '&format=partial&part='+ opts.partial;
-
-            if (opts.hiddenVars !== null)
-            {
-                $.each(opts.hiddenVars, function(name,val) {
-                    url += '&'+ name +'='+ val;
-                });
-            }
-
-            // Also include any hidden input values from the pagination form
 
             $.ajax({url:        url,
                     dataType:   'html',
@@ -3280,9 +3275,15 @@ $.widget("connexions.pane", {
                         // Out with the old...
                         self.destroy();
 
-                        // In with the new.
+                        /* In with the new which should come with
+                         * initialization (e.g. $('#id).pane({ ... }); )
+                         */
+                        self.element.replaceWith(data);
+
+                        /*
                         self.element.html(data);
                         self._create();
+                        */
                     },
                     complete:   function() {
                         self.element.unmask();

@@ -65,7 +65,7 @@ $scopeRpc['params'] = array('tags'   => (count($this->tags) < 1
                      );
 
 $htmlItemScope = $this->htmlItemScope( array(
-                    'namespace'         => $this->namespace,
+                    'namespace'         => $this->main->namespace,
                     'items'             => $htmlBookmarks->paginator,
                     'scope'             => $this->tags,
                     'inputLabel'        => 'Tags',

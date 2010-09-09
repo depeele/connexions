@@ -15,19 +15,23 @@
 class View_Helper_HtmlUsers extends View_Helper_Users
 {
     static public   $defaults               = array(
-        'pageBaseUrl'       => null,        /* The base URL of the containing 
-                                             * page used to set the cookie path 
-                                             * for the attached Javascript
-                                             * 'cloudPane' which, in turn, 
-                                             * effects the cookie path passed 
-                                             * to the contained 'dropdownForm'
-                                             * presenting Display Options.
+        'cookieUrl'         => null,        /* The URL to use when setting
+                                             * cookies.  This is used to set
+                                             * the cookie path for the attached
+                                             * Javascript 'itemPane' which, in
+                                             * turn, effects the cookie path
+                                             * passed to the contained
+                                             * 'dropdownForm' presneting
+                                             * Display Options.
                                              */
 
         'displayStyle'      => self::STYLE_REGULAR,
         'includeScript'     => true,
         'panePartial'       => 'main',
         'ulCss'             => 'users',     // view/scripts/list.phtml
+
+        // HTML to prepend/append to the inner container.
+        'html'              => null,
     );
 
 
@@ -129,29 +133,24 @@ class View_Helper_HtmlUsers extends View_Helper_Users
      */
     public function __construct(array $config = array())
     {
-        // Over-ride the default namespace
-        parent::$defaults['namespace'] = 'users';
-
-        // Add extra class-specific defaults
         foreach (self::$defaults as $key => $value)
         {
-            $this->_params[$key] = $value;
+            if (! isset($this->_params[$key]))
+                $this->_params[$key] = $value;
         }
 
         parent::__construct($config);
     }
 
-    /** @brief  Over-ride to ensure that if incoming configuration has BOTH
-     *          'namespace' AND 'pageBaseUrl', the 'pageBaseUrl' is set first
-     *          (since setNamespace() makes use of it).
+    /** @brief  Over-ride to ensure that those variables that should be set
+     *          BEFORE 'namespace' are.
      *  @param  config  A configuration array that may include:
      *
      *  @return $this for a fluent interface.
      */
     public function populate(array $config)
     {
-        // Ensure that 'pageBaseUrl' is set FIRST
-        foreach (array('pageBaseUrl', 'panePartial') as $key)
+        foreach (array('cookieUrl', 'panePartial', 'paneVars') as $key)
         {
             if (isset($config[$key]))
             {
@@ -180,31 +179,6 @@ class View_Helper_HtmlUsers extends View_Helper_Users
         return $this->render();
     }
 
-    /** @brief  Set additional hidden form variables that should be included
-     *          in any rendered form.
-     *  @param  vars        An array of name/value pairs.
-     *
-     *  @return View_Helper_HtmlBookmarks for a fluent interface.
-     */
-    public function setHiddenVars(array $vars)
-    {
-        /*
-        Connexions::log("View_Helper_HtmlUsers::setHiddenVars( %s )",
-                        Connexions::varExport($vars));
-        // */
-
-        $key = 'hiddenVars';
-
-        $this->_params[$key] = $vars;
-
-        if ($this->_displayOptions !== null)
-        {
-            $this->_displayOptions->setHiddenVars($vars);
-        }
-
-        return $this;
-    }
-
     /** @brief  Set the namespace, primarily for forms and cookies.
      *  @param  namespace   A string namespace.
      *
@@ -231,9 +205,9 @@ class View_Helper_HtmlUsers extends View_Helper_Users
                                 'groups'        => self::$styleGroups
                           );
 
-            if ($this->pageBaseUrl !== null)
+            if ($this->cookieUrl !== null)
             {
-                $dsConfig['cookiePath'] = rtrim($this->pageBaseUrl, '/');
+                $dsConfig['cookiePath'] = rtrim($this->cookieUrl, '/');
             }
 
             // /*
@@ -247,12 +221,6 @@ class View_Helper_HtmlUsers extends View_Helper_Users
             if ($this->_displayOptions === null)
             {
                 $this->_displayOptions = $view->htmlDisplayOptions($dsConfig);
-
-                if ($this->hiddenVars !== null)
-                {
-                    // Pass hidden vars down.
-                    $this->_displayOptions->setHiddenVars($this->hiddenVars);
-                }
             }
             else
             {
@@ -262,6 +230,7 @@ class View_Helper_HtmlUsers extends View_Helper_Users
             // Include required jQuery
             $config = array('namespace'         => $namespace,
                             'partial'           => $this->panePartial,
+                            'hiddenVars'        => $this->paneVars,
                             'displayOptions'    => $dsConfig,
                             /* Rely on the CSS class of rendered items
                              * (see View_Helper_HtmlUsersUser)

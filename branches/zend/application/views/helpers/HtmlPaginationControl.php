@@ -23,20 +23,6 @@ class View_Helper_HtmlPaginationControl
     protected static    $_initialized       = false;
     protected           $_namespace         = '';
     protected           $_perPageChoices    = array(10, 25, 50, 100, 250, 500);
-    protected           $_hiddenVars        = null;
-
-    public function setHiddenVars(array $vars)
-    {
-        /*
-        Connexions::log("View_Helper_HtmlPaginationControl::setHiddenVars(): "
-                        . 'vars[ %s ]',
-                        Connexions::varExport($vars));
-        // */
-
-        $this->_hiddenVars = $vars;
-
-        return $this;
-    }
 
     public function setPerPageChoices($choices)
     {
@@ -126,7 +112,6 @@ class View_Helper_HtmlPaginationControl
                                         'paginator'   => $paginator,
                                         'cssForm'     => $cssClassExtra,
                                         'excludeInfo' => $excludeInfo,
-                                        'hiddenVars'  => $this->_hiddenVars,
                                     ));
     }
 }

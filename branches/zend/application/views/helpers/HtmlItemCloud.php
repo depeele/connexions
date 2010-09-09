@@ -11,13 +11,14 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
     static public   $defaults               = array(
         'namespace'         => 'tags',
-        'pageBaseUrl'       => null,        /* The base URL of the containing
-                                             * page used to set the cookie path
-                                             * for the attached Javascript
-                                             * 'cloudPane' which, in turn,
-                                             * effects the cookie path passed
-                                             * to the contained 'dropdownForm'
-                                             * presneting Display Options.
+        'cookieUrl'         => null,        /* The URL to use when setting
+                                             * cookies.  This is used to set
+                                             * the cookie path for the attached
+                                             * Javascript 'cloudPane' which, in
+                                             * turn, effects the cookie path
+                                             * passed to the contained
+                                             * 'dropdownForm' presneting
+                                             * Display Options.
                                              */
         'panePartial'       => 'main',
 
@@ -67,6 +68,9 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         'highlightCount'    => 5,
 
         'displayStyle'      => self::STYLE_CLOUD,
+
+        // HTML to prepend/append to the inner container.
+        'html'              => null,
     );
 
     /** @brief  Cloud Item type -- determines the item decorator
@@ -127,10 +131,8 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
         foreach (self::$defaults as $key => $value)
         {
-            /* :WARNING: Do NOT invoke __set() here -- it's too early for many
-             *           of the set methods...
-             */
-            $this->_params[$key] = $value;
+            if (! isset($this->_params[$key]))
+                $this->_params[$key] = $value;
         }
 
         if (! empty($config))
@@ -178,7 +180,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
     public function populate(array $config)
     {
         // Variables that MUST be set BEFORE 'namespace'...
-        foreach (array('pageBaseUrl', 'panePartial') as $key)
+        foreach (array('cookieUrl', 'panePartial', 'paneVars') as $key)
         {
             if (isset($config[$key]))
             {
@@ -303,7 +305,8 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         // */
 
         if ( ($this->showOptions !== false) &&
-             (! @isset(self::$_initialized[$namespace])) )
+             (! @isset(self::$_initialized[$namespace])) &&
+             is_object($this->view) )
         {
             // Set / Update our displayOptions namespace.
             $view   = $this->view;
@@ -314,9 +317,9 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                             'groups'    => self::$styleGroups,
                         );
 
-            if ($this->pageBaseUrl !== null)
+            if ($this->cookieUrl !== null)
             {
-                $dsConfig['cookiePath'] = rtrim($this->pageBaseUrl, '/');
+                $dsConfig['cookiePath'] = rtrim($this->cookieUrl, '/');
             }
 
             /*
@@ -341,6 +344,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
             $config = array('namespace'         => $namespace,
                             'partial'           => $this->panePartial,
+                            'hiddenVars'        => $this->paneVars,
                             'displayOptions'    => $dsConfig,
                       );
             $call   = "$('#{$namespace}Cloud').cloudPane("

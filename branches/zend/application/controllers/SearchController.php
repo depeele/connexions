@@ -25,7 +25,6 @@ class SearchController extends Connexions_Controller_Action
                             );
 
 
-    protected $_rootUrl = null; // connexions URL from which a search was
     protected $_referer = null; // connexions URL from which a search was
                                 // performed.
     protected $_context = null; // The requested search context.
@@ -43,7 +42,6 @@ class SearchController extends Connexions_Controller_Action
         $this->_terms    =  $request->getParam('terms',               null);
         $this->_context  =  strtolower($this->_context);
 
-        $this->_rootUrl  = $this->_baseUrl;
         $this->_baseUrl .= 'search/';
         $this->_url      = $this->_baseUrl;
 
@@ -53,7 +51,7 @@ class SearchController extends Connexions_Controller_Action
         $this->view->terms   = $this->_terms;
 
         // Handle this request based on the current context / format
-        $this->_handleFormat('items');
+        $this->_handleFormat();
     }
 
     /*************************************************************************
@@ -192,8 +190,9 @@ class SearchController extends Connexions_Controller_Action
                  */
                 $this->_prepareMain('tags');
                 $tags = $this->view->main;
+                $tags['namespace']   = 'tags';
                 $tags['panePartial'] = 'main-tags';
-                $tags['hiddenVars']  = array(
+                $tags['paneVars']    = array(
                     'referer'   => $this->_referer,
                     'context'   => $this->_context,
                     'terms'     => $this->_terms
@@ -235,8 +234,9 @@ class SearchController extends Connexions_Controller_Action
                  */
                 $this->_prepareMain('people');
                 $people = $this->view->main;
+                $people['namespace']   = 'people';
                 $people['panePartial'] = 'main-people';
-                $people['hiddenVars']  = array(
+                $people['paneVars']    = array(
                     'referer'   => $this->_referer,
                     'context'   => $this->_context,
                     'terms'     => $this->_terms
@@ -262,8 +262,9 @@ class SearchController extends Connexions_Controller_Action
                  */
                 $this->_prepareMain('items');
                 $items = $this->view->main;
+                $items['namespace']   = 'items';
                 $items['panePartial'] = 'main-items';
-                $items['hiddenVars']  = array(
+                $items['paneVars']    = array(
                     'referer'   => $this->_referer,
                     'context'   => $this->_context,
                     'terms'     => $this->_terms
@@ -329,7 +330,7 @@ class SearchController extends Connexions_Controller_Action
         // */
 
         $extra = array(
-            'pageBaseUrl'   => $this->_baseUrl,
+            'cookieUrl'     => $this->_rootUrl,
             'showRelation'  => false,
         );
         $config = array_merge($config, $extra);
@@ -583,8 +584,9 @@ class SearchController extends Connexions_Controller_Action
          */
         $this->_prepareMain('bookmarks');
         $bookmarks = $this->view->main;
+        $bookmarks['namespace']   = 'bookmarks';
         $bookmarks['panePartial'] = 'main-bookmarks';
-        $bookmarks['hiddenVars']  = array(
+        $bookmarks['paneVars']    = array(
             'referer'   => $this->_referer,
             'context'   => $this->_context,
             'terms'     => $this->_terms
