@@ -1,0 +1,17 @@
+@import "sizes";
+@import "colors";
+@import "mixins";
+
+/****** settings.sass ****** */
+// Styling for the search results
+.settings {
+  margin-right:  1em;
+
+  .ui-tabs-panel ul {
+    padding:  0;
+
+    .collapsable .content {
+      padding:  0.5em;
+    }
+  }
+}
