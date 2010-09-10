@@ -1743,10 +1743,17 @@ $.widget("ui.validationForm", {
 /*global jQuery:false, window:false */
 (function($) {
 
+var collapsableId   = 0;
+
 $.widget("connexions.collapsable", {
     version: "0.0.1",
     options: {
         // Defaults
+        cache:          true,
+        ajaxOptions:    null,
+        cookie:         null,
+        idPrefix:       'connexions-collapsable-',
+        panelTemplate:  '<div></div>'
     },
 
     /** @brief  Initialize a new instance.
@@ -1759,11 +1766,43 @@ $.widget("connexions.collapsable", {
         var opts    = self.options;
 
         self.$toggle  = self.element.find('.toggle:first');
-        self.$content = self.$toggle.next();
+        self.$a       = self.$toggle.find('a:first');
+
+        if (self.$a.length > 0)
+        {
+            var href    = self.$a.attr('href');
+            if (! href.match(/^#.+/))
+            {
+                // remote tab -- save the original URL
+                self.$a.data('href.collapsable', href);
+                self.$a.data('load.collapsable', href.replace(/#.*$/, ''));
+
+                var id  = ((self.$a.title &&
+                            self.$a.title.replace(/\s/g, '_')
+                                         .replace(/[^A-Za-z0-9\-_:\.]/g, '')) ||
+                           opts.idPrefix + (++collapsableId));
+                self.$a.attr('href', '#'+ id);
+
+                self.$content = $('#'+ id);
+                if (self.$content.length < 1)
+                {
+                    self.$content = $(opts.panelTemplate)
+                                        .attr('id', id)
+                                        .addClass('ui-corner-bottom')
+                                        .insertAfter(self.$toggle);
+                    self.$content.data('destroy.collapsable', true);
+                }
+                self.$content.addClass('content');
+            }
+        }
+        else
+        {
+            self.$content = self.$toggle.next();
+            self.$content.addClass('ui-corner-bottom');
+        }
 
         // Add styling to the toggle and content
         self.$toggle.addClass('ui-corner-top');
-        self.$content.addClass('ui-corner-bottom');
 
         // Add an open/close indicator
         self.$toggle.prepend( '<div class="ui-icon">&nbsp;</div>');
@@ -1785,6 +1824,8 @@ $.widget("connexions.collapsable", {
             {
                 self.$toggle.addClass('expanded');
             }
+
+            self._load();
         }
 
         self._bindEvents();
@@ -1804,6 +1845,7 @@ $.widget("connexions.collapsable", {
                 self.$content.slideDown();
                     
                 self.element.trigger('expand');
+                self._load();
             }
             else
             {
@@ -1822,6 +1864,66 @@ $.widget("connexions.collapsable", {
         });
     },
 
+    _load: function() {
+        var self    = this;
+        var opts    = self.options;
+        var url     = self.$a.data('load.collapsable');
+
+        self._abort();
+
+        if ((! url) || self.$a.data('cache.collapsable'))
+        {
+            return;
+        }
+
+        // Load remove content.
+        self.xhr = $.ajax($.extend({}, opts.ajaxOptions, {
+            url:     url,
+            success: function(res, stat) {
+                self.$content.html(res);
+
+                if (opts.cache)
+                {
+                    self.$a.data('cache.collapsable', true);
+                }
+
+                self._trigger('load', null, self.element);
+
+                try {
+                    opts.ajaxOptions.success(res, stat);
+                }
+                catch (e) {}
+            },
+            error:   function(xhr, stat, err) {
+                self.$content.html(  "<div class='error'>"
+                                   +  "Cannot load: "
+                                   +  xhr.statusText
+                                   + "</div>");
+
+                self._trigger('load', null, self.element);
+
+                try {
+                    opts.ajaxOptions.error(xhr, stat, self.element, self.$a);
+                }
+                catch (e) {}
+            }
+        }));
+
+        return this;
+    },
+
+    _abort: function() {
+        var self    = this;
+
+        if (self.xhr)
+        {
+            self.xhr.abort();
+            delete self.xhr;
+        }
+
+        return self;
+    },
+
     /************************
      * Public methods
      *
@@ -1830,9 +1932,27 @@ $.widget("connexions.collapsable", {
         var self    = this;
         var opts    = self.options;
 
+        // Restore the href and remove data.
+        var href    = self.$a.data('href.collapsable');
+        if (href)
+        {
+            self.$a.attr('href', href);
+        }
+        $.each(['href', 'load', 'cache'], function(i, prefix) {
+            self.$a.removeData(prefix +'.collapsable');
+        });
+
+        if (self.$content.data('destroy.collapsable'))
+        {
+            self.$content.remove();
+        }
+        else
+        {
+            self.$content.removeClass('ui-corner-bottom content');
+        }
+
         // Remove styling
-        self.$toggle.addClass('ui-corner-top');
-        self.$content.addClass('ui-corner-bottom');
+        self.$toggle.removeClass('ui-corner-top');
         self.$toggle.removeClass('collapsed,expanded');
 
         // Remove event bindings

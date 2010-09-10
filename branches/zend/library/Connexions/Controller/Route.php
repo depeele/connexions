@@ -21,7 +21,7 @@
  *      /url             /:url      [/:tags]    Lookup url
  *      /people          [/:tags]               People list
  *
- *      /settings       [/:type     [/:cmd]]    Viewer settings
+ *      /settings       [/:section  [/:cmd]]    Viewer settings
  *
  *      /help           [/*]                    Help
  *
@@ -73,7 +73,7 @@ class Connexions_Controller_Route
                            ),
         'people'        => array(':tags'    => false),
   
-        'settings'      => array(':type'    => array(
+        'settings'      => array(':section' => array(
                                     ':cmd'     => false)
                            ),
   

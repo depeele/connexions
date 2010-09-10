@@ -1,0 +1,35 @@
+<?php
+/** @file
+ *
+ *  Render the Account Info section.
+ *
+ *  Incoming members:
+ *      baseUrl         The base url for the main controller of this page
+ *                      without any differentiating parameters
+ *                      (e.g. tag restrictions);
+ *      url             The full url for the main controller of this page
+ *                      with differentiating parameters;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *
+ *      section         The settings section;
+ *      cmd             The specific settings command;
+ *      sections        An array of avaialble sections and commands of the
+ *                      form:
+ *                          {section: {
+ *                              'title':    section title,
+ *                              'script':   section render script
+ *                              'cmds':     [
+ *                                  {'title':   command title,
+ *                                   'script':  command render script},
+ *                                  ...
+ *                              ],
+ *                           },
+ *                           ...
+ *                          }
+ */
+
+?>
+<pre>
+ <?= $this->viewer->debugDump() ?>
+</pre>

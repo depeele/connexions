@@ -10,7 +10,7 @@ all: connexions.min.css bookmarks.min.css users.min.css 	\
  	validationForm.min.css post.min.css auth.min.css 	\
 	ribbon-form.min.css url-choose.min.css			\
 	search.min.css searchResults.min.css inbox.min.css	\
-	ie.min.css ie8.min.css
+	settings.min.css ie.min.css ie8.min.css
 
 #all: connexions.css bookmarks.css users.css urlItems.css inbox.css	\
 # 	validationForm.css post.css auth.css inbox.css
@@ -74,6 +74,9 @@ search.css: mixins.scss search.scss colors.scss ribbon-form.scss
 
 searchResults.css: mixins.scss searchResults.scss colors.scss
 	sass -t compact searchResults.scss:searchResults.css
+
+settings.css: mixins.scss settings.scss colors.scss
+	sass -t compact settings.scss:settings.css
 
 sprites.scss:	urls.scss
 
