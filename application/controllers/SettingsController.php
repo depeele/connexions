@@ -165,6 +165,7 @@ class SettingsController extends Connexions_Controller_Action
             return;
 
         // Retrieve all credentials for the current user.
+        $this->view->credentials = $this->_viewer->getAuthenticator();
     }
 
     protected function _prepareBookmarks()
@@ -204,6 +205,7 @@ class SettingsController extends Connexions_Controller_Action
         case 'rename':
         case 'delete':
             // Retrieve all user-related tags
+            $this->view->tags = $this->_viewer->getTags();
             break;
 
         case 'groups':
