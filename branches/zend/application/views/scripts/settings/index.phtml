@@ -33,53 +33,6 @@ $this->headTitle('Settings');
 
 $this->headLink()->appendStylesheet($this->baseUrl('/css/settings.css'));
 
-$jQuery = $this->jQuery();
-$jQuery->addOnLoad("settings_onLoad();")
-       ->javascriptCaptureStart();
-?>
-/************************************************
- * Initialize the settings tabs
- *
- */
-function settings_onLoad()
-{
-    var $el         = $('#settings');
-    var $tab        = null;
-
-    var _sendPre    = function() {
-        // Mask the tab panel area...
-        var sel = $el.tabs('option', 'selected');
-        $tab = $el.find('.ui-tabs-panel').eq(sel);
-
-        $tab.mask();
-    };
-
-    var _sendPost   = function() {
-        $tab.unmask();
-    };
-
-    $el.tabs({
-        cache:  true,
-        cookie: 'settings',
-        ajaxOptions: {
-            beforeSend: _sendPre,
-            complete:   _sendPost
-        }
-    });
-
-    $el.find('.collapsable').collapsable({
-        cache:  true,
-        cookie: 'settings',
-        ajaxOptions: {
-            beforeSend: _sendPre,
-            complete:   _sendPost
-        }
-    });
-}
-
-<?php
-    $jQuery->javascriptCaptureEnd();
-
 ?>
 <p>Present the Settings for <?= $this->viewer ?>:<br />
       section[ <?= $this->section ?>], cmd[ <?= $this->cmd ?> ]
@@ -88,9 +41,16 @@ function settings_onLoad()
 <div id='settings' class='settings'>
  <ul>
 <?php
-    $paneHtml = '';
+    $paneHtml    = '';
+    $tabSelected = 0;
+    $tabNum      = 0;
     foreach ($this->sections as $id => $section)
     {
+        if ($id === $this->section)
+        {
+            $tabSelected = $tabNum;
+        }
+
         /*
         $paneUrl = $this->view->url
                  .  '?format=partial'
@@ -108,20 +68,22 @@ function settings_onLoad()
                   .    "<ul id='{$id}-cmds' class='{$paneCss}'>";
         foreach ($section['cmds'] as $cmd)
         {
-            $cmdId  = $id .'-'. preg_replace('/\s+/', '_',
-                                             strtolower($cmd['title']));
-            $state  = ($cmd['expanded'] === true
-                        ? 'expanded'
-                        : 'collapsed');
+            $cmdId      = strtolower($cmd['title']);
+            $cmdFullId  = $id .'-'. preg_replace('/\s+/', '_', $cmdId);
+
+            $state      = ((empty($this->cmd) && ($cmd['expanded'] === true)) ||
+                           ($this->cmd === $cmdId)
+                                ? 'expanded'
+                                : 'collapsed');
 
             /*
             Connexions::log("view/scripts/settings/index.phtml: "
-                            . "section[ %s ], cmd[ %s ]",
-                            $id, Connexions::varExport($cmd));
+                            . "section[ %s ], cmd[ %s ], state[ %s ]",
+                            $id, Connexions::varExport($cmd), $state);
             // */
 
             $sectHtml  = '';
-            $paneHtml .= "<li class='collapsable {$cmdId}'>"
+            $paneHtml .= "<li class='collapsable {$cmdFullId}'>"
                       .   "<h3 class='toggle {$state}'>";
 
             if (isset($cmd['async']) && ($cmd['async'] === true))
@@ -154,11 +116,68 @@ function settings_onLoad()
         }
         $paneHtml .=  "</ul>"
                   .  "</div>";
+
+        $tabNum++;
     }
 
 ?>
  </ul>
  <?= $paneHtml ?>
 </div>
+<?php
+
+/*********************************************************************
+ * Now that we've had a chance to see which tab should be selected,
+ * generate the Javascript to create a ui.tabs instance.
+ */
+$jQuery = $this->jQuery();
+$jQuery->addOnLoad("settings_onLoad();")
+       ->javascriptCaptureStart();
+?>
+/************************************************
+ * Initialize the settings tabs
+ *
+ */
+function settings_onLoad()
+{
+    var $el         = $('#settings');
+    var $tab        = null;
+
+    var _sendPre    = function() {
+        // Mask the tab panel area...
+        var sel = $el.tabs('option', 'selected');
+        $tab = $el.find('.ui-tabs-panel').eq(sel);
+
+        $tab.mask();
+    };
+
+    var _sendPost   = function() {
+        $tab.unmask();
+    };
+
+    $el.tabs({
+        cache:      true,
+        cookie:     'settings',
+        selected:   <?= $tabSelected ?>,
+        ajaxOptions: {
+            beforeSend: _sendPre,
+            complete:   _sendPost
+        }
+    });
+
+    $el.find('.collapsable').collapsable({
+        cache:  true,
+        cookie: 'settings',
+        ajaxOptions: {
+            beforeSend: _sendPre,
+            complete:   _sendPost
+        }
+    });
+}
+
+<?php
+    $jQuery->javascriptCaptureEnd();
+
+?>
 
 <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

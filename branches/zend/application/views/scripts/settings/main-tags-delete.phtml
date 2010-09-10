@@ -11,6 +11,8 @@
  *                      with differentiating parameters;
  *      viewer          The Model_User instance representing the current
  *                      viewer;
+ *      tags            The Model_Set_Tag instance representing all tags
+ *                      for the current user;
  *
  *      section         The settings section;
  *      cmd             The specific settings command;
@@ -29,4 +31,7 @@
  *                          }
  */
 
-printf ("<div>Delete...</div>");
+?>
+<pre>
+ <?= $this->tags->debugDump() ?>
+</pre>
