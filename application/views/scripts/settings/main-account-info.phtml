@@ -29,7 +29,43 @@
  *                          }
  */
 
+$avatar = (empty($this->viewer->pictureUrl)
+            ? "<div class='connexions_sprites user_bg'>&nbsp;</div>"
+            : "<img src='{$this->viewer->pictureUrl}' />" );
+
 ?>
-<pre>
+<form class='person'>
+  <div style='float:left;'>
+   <div class='avatar ui-corner-all'>
+    <?= $avatar ?>
+   </div>
+   <div class='user-name'>
+    <?= $this->viewer->name ?>
+   </div>
+   <div class='user-date'>
+    <?= substr($this->viewer->lastVisit, 0, 10) ?>
+   </div>
+  </div>
+  <div style='float:left;'>
+   <h3 class='user-fullName field'>
+    <label for='fullName'>Full Name</label>
+    <input name='fullName' type='text' class='text' autocomplete='off'
+          value='<?= $this->viewer->fullName ?>' tabindex='1' />
+   </h3>
+   <div class='user-email field'>
+    <label  for='email'>email</label>
+    <input name='email' type='text' class='text' autocomplete='off'
+          value='<?= $this->viewer->email ?>' tabindex='2' />
+   </div>
+   <div class='user-profile'>
+    <label  for='profile'>Profile url</label>
+    <input name='profile' type='text' class='text' autocomplete='off'
+          value='<?= $this->viewer->profile ?>' tabindex='3' />
+   </div>
+  </div>
+  <br class='clear' />
+</form>
+
+<!-- pre style='padding:1em; font-size:0.9em;'>
  <?= $this->viewer->debugDump() ?>
-</pre>
+</pre -->

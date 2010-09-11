@@ -166,6 +166,10 @@ a:visited { color: #005a9c; }
 
 .lock_fill { width: 13px; height: 16px; background-position: -13px -28px; }
 
+.star_empty { width: 15px; height: 15px; background-position: 0 -44px; }
+
+.star_fill { width: 15px; height: 15px; background-position: -15px -44px; }
+
 .button_delete_on { width: 16px; height: 16px; background-position: -72px -12px; }
 
 .button_delete_off { width: 16px; height: 16px; background-position: -88px -12px; }
@@ -192,14 +196,6 @@ a:visited { color: #005a9c; }
 
 .star_1_owner { width: 16px; height: 16px; background-position: -104px -42px; }
 
-.star_empty { width: 15px; height: 15px; background-position: 0 -44px; }
-
-.star_fill { width: 15px; height: 15px; background-position: -15px -44px; }
-
-.star_small_empty { width: 13px; height: 12px; background-position: 0 -59px; }
-
-.star_small_fill { width: 13px; height: 12px; background-position: -13px -59px; }
-
 .envelope { width: 17px; height: 13px; background-position: -32px -28px; }
 
 .envelope_dim { width: 17px; height: 13px; background-position: -32px -44px; }
@@ -207,6 +203,10 @@ a:visited { color: #005a9c; }
 .magnifier { width: 17px; height: 16px; background-position: 0 -71px; }
 
 .magnifier_small { width: 15px; height: 15px; background-position: -20px -71px; }
+
+.old_search_bg { width: 173px; height: 23px; background-position: 0 -87px; }
+
+.certificate { width: 16px; height: 16px; background-position: -20px -71px; }
 
 .bookmark_bg { background-position: -100px -110px; width: 48px; height: 48px; }
 
@@ -222,21 +222,23 @@ a:visited { color: #005a9c; }
 
 .relation_ltr { background-position: 0px -240px; width: 20px; height: 20px; }
 
-.old_search_bg { width: 173px; height: 23px; background-position: 0 -87px; }
+.join_bg { width: 100px; height: 64px; background-position: 0 -174px; }
+
+.welcome_gradient { background-position: -110px -110px; }
 
 .welcome_bg { background-position: 0 -270px; }
 
 .old_welcome_bg { width: 100px; height: 64px; background-position: 0 -110px; }
-
-.join_bg { width: 100px; height: 64px; background-position: 0 -174px; }
-
-.welcome_gradient { background-position: -110px -110px; }
 
 .scope_root { height: 24px; width: 16px; background-position: -24px -240px; }
 
 .scope_go { height: 24px; width: 16px; background-position: -44px -240px; }
 
 .scope_root_item { height: 24px; width: 16px; background-position: -64px -240px; }
+
+.star_small_empty { width: 13px; height: 12px; background-position: 0 -59px; }
+
+.star_small_fill { width: 13px; height: 12px; background-position: -13px -59px; }
 
 /* smallIcons.gif 15x44 */
 .smallIcon_bookmark { background: url("sprites/smallIcons.gif") no-repeat scroll 3px 0px transparent; }
