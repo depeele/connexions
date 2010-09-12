@@ -24,6 +24,11 @@ $.widget("ui.input", {
         // Defaults
         priority:       'normal',
         $label:         null,       // The field label element.
+        hideLabel:      true,       /* Should the label be hidden / used to
+                                     * present a default value for the field
+                                     * [ true ];
+                                     */
+
         $validation:    null,       /* The element to present validation
                                      * information in [:sibling
                                      *                  .ui-field-status]
@@ -42,6 +47,8 @@ $.widget("ui.input", {
      *      priority        The priority of this field
      *                      ( ['normal'], 'primary', 'secondary');
      *      $label:         The field label element.
+     *      hideLabel:      Should the label be hidden / used to present a
+     *                      default value for the field [ true ];
      *      $validation:    The element to present validation information in
      *                      [ parent().find('.ui-field-status:first) ]
      *      validation:     The validation criteria:
@@ -126,8 +133,16 @@ $.widget("ui.input", {
             opts.$label = self.element.closest('label');
         }
 
-        opts.$label.addClass('ui-input-over')
-                   .hide();
+        if (opts.hideLabel === true)
+        {
+            opts.$label.addClass('ui-input-over')
+                       .hide();
+        }
+        else
+        {
+            opts.$label.addClass('ui-input-over')
+                       .show();
+        }
 
         self._bindEvents();
     },
@@ -189,7 +204,10 @@ $.widget("ui.input", {
         var _focus      = function(e) {
             if (self.options.enabled === true)
             {
-                opts.$label.hide();
+                if (opts.hideLabel === true)
+                {
+                    opts.$label.hide();
+                }
 
                 self.element.removeClass('ui-state-empty')
                             .addClass('ui-state-focus ui-state-active');
@@ -207,11 +225,17 @@ $.widget("ui.input", {
             {
                 self.element.addClass('ui-state-empty');
 
-                opts.$label.show();
+                if (opts.hideLabel === true)
+                {
+                    opts.$label.show();
+                }
             }
             else
             {
-                opts.$label.hide();
+                if (opts.hideLabel === true)
+                {
+                    opts.$label.hide();
+                }
 
                 self.element.removeClass('ui-state-empty');
             }
@@ -232,7 +256,7 @@ $.widget("ui.input", {
             // Perform an initial validation
             self.validate();
         }
-        else
+        else if (opts.hideLabel === true)
         {
             opts.$label.show();
         }
