@@ -29,6 +29,10 @@ $.widget("ui.validationForm", {
                                      * primary submit button
                                      *  [ button[name=submit] ];
                                      */
+        hideLabels:     true,       /* Should the input labels be hidden / used
+                                     * to present a default value for the field
+                                     * [ true ];
+                                     */
 
         $validation:    null        /* The element to present validation
                                      * information in [:sibling
@@ -87,7 +91,7 @@ $.widget("ui.validationForm", {
         opts.$cancel   = self.element.find('button[name=cancel]');
 
         // Instantiate sub-widgets
-        opts.$inputs.input();
+        opts.$inputs.input({hideLabel: opts.hideLabels});
         opts.$submit.button({priority:'primary', enabled:false});
         opts.$cancel.button({priority:'secondary'});
 

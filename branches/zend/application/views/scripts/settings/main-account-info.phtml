@@ -33,38 +33,79 @@ $avatar = (empty($this->viewer->pictureUrl)
             ? "<div class='connexions_sprites user_bg'>&nbsp;</div>"
             : "<img src='{$this->viewer->pictureUrl}' />" );
 
+$jQuery = $this->jQuery();
+$jQuery->addOnLoad('account_info_onLoad();')
+       ->javascriptCaptureStart();
 ?>
-<form class='person'>
-  <div style='float:left;'>
+/************************************************
+ * Initialize the Account Info area.
+ *
+ */
+function account_info_onLoad()
+{
+    var $ai     = $('#account-info .ui-validation-form');
+    var $submit = $ai.find('button[name=submit]');
+    
+    $ai.validationForm()    //{hideLabels:false})
+            .bind('change', function(e) {
+                $submit.button('enable');
+            })
+            .bind('submit', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Perform an json-rpc call to save the new information.
+            });
+    $submit.button('disable');
+
+    $ai.find('.avatar div,.avatar img')
+            .attr('title', 'click-to-edit')
+            .bind('click', function() {
+                // Popup an image selection dialog
+            });
+}
+<?php
+$jQuery->javascriptCaptureEnd();
+
+
+?>
+<div id='account-info' class='line'>
+ <form class='ui-validation-form'>
+  <div class='legend unit'>
    <div class='avatar ui-corner-all'>
     <?= $avatar ?>
    </div>
-   <div class='user-name'>
+   <div class='user-name' title='User name'>
     <?= $this->viewer->name ?>
    </div>
-   <div class='user-date'>
+   <div class='user-date' title='Last visit'>
     <?= substr($this->viewer->lastVisit, 0, 10) ?>
    </div>
   </div>
-  <div style='float:left;'>
-   <h3 class='user-fullName field'>
+  <div class='userInput unit'>
+   <h3 class='user-fullName click-to-edit field' title='Full Name'>
     <label for='fullName'>Full Name</label>
     <input name='fullName' type='text' class='text' autocomplete='off'
           value='<?= $this->viewer->fullName ?>' tabindex='1' />
    </h3>
-   <div class='user-email field'>
+   <div class='user-email click-to-edit field' title='email address'>
     <label  for='email'>email</label>
     <input name='email' type='text' class='text' autocomplete='off'
           value='<?= $this->viewer->email ?>' tabindex='2' />
    </div>
-   <div class='user-profile'>
+   <div class='user-profile click-to-edit field' title='Profile url'>
     <label  for='profile'>Profile url</label>
     <input name='profile' type='text' class='text' autocomplete='off'
           value='<?= $this->viewer->profile ?>' tabindex='3' />
    </div>
+   <div class='buttons'>
+    <button name='submit' tabindex='4'>Save</button>
+    <!-- button name='cancel' tabindex='5'>Cancel</button -->
+    <br class='clear' />
+   </div>
   </div>
-  <br class='clear' />
-</form>
+ </form>
+</div>
 
 <!-- pre style='padding:1em; font-size:0.9em;'>
  <?= $this->viewer->debugDump() ?>
