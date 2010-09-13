@@ -65,7 +65,6 @@ $.widget("connexions.itemScope", {
          *
          */
         jsonRpc:            null,
-        rpcId:              1,      // The initial RPC identifier
 
         separator:          ',',    // The term separator
         minLength:          2       // Minimum term length
@@ -117,21 +116,12 @@ $.widget("connexions.itemScope", {
     _autocomplete: function(request, response) {
         var self    = this;
         var opts    = self.options;
-        var id      = opts.rpcId++;
-        var data    = {
-            version:    opts.jsonRpc.version,
-            id:         id,
-            method:     opts.jsonRpc.method,
-            params:     opts.jsonRpc.params
-        };
+        var params  = opts.jsonRpc.params;
+        
+        params.str  = self.$input.autocomplete('option', 'term');
 
-        data.params.str = self.$input.autocomplete('option', 'term');
-
-        $.ajax({
-            type:       opts.jsonRpc.transport,
-            url:        opts.jsonRpc.target,
-            dataType:   "json",
-            data:       JSON.stringify(data),
+        // Perform a JSON-RPC call to perform the update.
+        $.jsonRpc(opts.jsonRpc, opts.jsonRpc.method, params, {
             success:    function(ret, txtStatus, req){
                 if (ret.error !== null)
                 {

@@ -26,6 +26,9 @@
       .avatar {
         width:    48px;
         cursor:   pointer;
+        img {
+          width:  inherit;
+        }
       }
       .user-date {
         font-size:  0.9em;
@@ -34,16 +37,17 @@
 
     .userInput {
       padding-top:      0;
+      width:            30em;
       label {
         @include inlineBlock();
         position:       relative;
-        width:          5.5em;
+        width:          19%;
         padding:        0 0 1em;
         vertical-align: middle;
       }
       .field {
         .text {
-          width:          auto;
+          width:          80%;
           color:          $darkest;
           vertical-align: middle;
         }
@@ -62,6 +66,22 @@
       }
       .user-profile {
       }
+    }
+  }
+
+  .account-api_key {
+    .legend {
+      padding-top:  0.25em;
+    }
+    .data {
+      padding-left: 0.5em;
+      width:        10em;
+      text-align:   center;
+    }
+    h3.apiKey  {
+      padding:      0;
+      font-size:    1.5em;
+      font-weight:  bold;
     }
   }
 }

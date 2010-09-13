@@ -168,7 +168,11 @@ $.widget("connexions.bookmark", {
          *
          */
         jsonRpc:    null,
-        rpcId:      1,      // The initial RPC identifier
+
+        /* If the JSON-RPC method is GET, the apiKey for the authenticated user
+         * is required for any methods that modify data.
+         */
+        apiKey:     null,
 
         // Widget state
         enabled:    true
@@ -349,23 +353,6 @@ $.widget("connexions.bookmark", {
                 self.$delete.removeAttr('disabled');
                 $div.remove();
             });
-
-            /*
-            $(html).dialog({
-                autoOpen:   true,
-                title:      'Delete?',
-                resizable:  false,
-                modal:      true,
-                buttons: {
-                    'Delete': function() {
-                        $(this).dialog('close');
-                    },
-                    'Cancel': function() {
-                        $(this).dialog('close');
-                    }
-                }
-            });
-            */
         };
 
         // Handle save-delete
@@ -428,19 +415,16 @@ $.widget("connexions.bookmark", {
             return;
         }
 
-        var rpc     = {
-            version: opts.jsonRpc.version,
-            id:      opts.rpcId++,
-            method:  'bookmark.delete',
-            params:  { id: { userId: opts.userId, itemId: opts.itemId } }
+        var params  = {
+            id:     { userId: opts.userId, itemId: opts.itemId }
         };
+        if (opts.apiKey !== null)
+        {
+            params.apiKey = opts.apiKey;
+        }
 
-        // Perform a JSON-RPC call to update this item
-        $.ajax({
-            url:        opts.jsonRpc.target,
-            type:       opts.jsonRpc.transport,
-            dataType:   'json',
-            data:       JSON.stringify(rpc),
+        // Perform a JSON-RPC call to perform the update.
+        $.jsonRpc(opts.jsonRpc, 'bookmark.delete', params, {
             success:    function(data, textStatus, req) {
                 if ( (! data) || (data.error !== null))
                 {
@@ -483,7 +467,7 @@ $.widget("connexions.bookmark", {
         // Gather the current data about this item.
         var nonEmpty    = false;
         var params      = {
-            id: { userId: opts.userId, itemId: opts.itemId }
+            id:     { userId: opts.userId, itemId: opts.itemId }
         };
 
         if (self.$name.text() !== opts.name)
@@ -553,19 +537,13 @@ $.widget("connexions.bookmark", {
             }
         }
 
-        var rpc = {
-            version: opts.jsonRpc.version,
-            id:      opts.rpcId++,
-            method:  'bookmark.update',
-            params:  params
-        };
+        if (opts.apiKey !== null)
+        {
+            params.apiKey = opts.apiKey;
+        }
 
-        // Perform a JSON-RPC call to update this item
-        $.ajax({
-            url:        opts.jsonRpc.target,
-            type:       opts.jsonRpc.transport,
-            dataType:   'json',
-            data:       JSON.stringify(rpc),
+        // Perform a JSON-RPC call to perform the update.
+        $.jsonRpc(opts.jsonRpc, 'bookmark.update', params, {
             success:    function(data, textStatus, req) {
                 if ( (! data) || (data.error !== null))
                 {

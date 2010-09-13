@@ -118,7 +118,6 @@ $.widget("connexions.user", {
          *
          */
         jsonRpc:    null,
-        rpcId:      1,      // The initial RPC identifier
 
         // Widget state
         enabled:    true
@@ -266,19 +265,12 @@ $.widget("connexions.user", {
             return;
         }
 
-        var rpc     = {
-            version: opts.jsonRpc.version,
-            id:      opts.rpcId++,
-            method:  'user.delete',
-            params:  { id: { userId: opts.userId } }
+        var params  = {
+            id: { userId: opts.userId }
         };
 
-        // Perform a JSON-RPC call to update this item
-        $.ajax({
-            url:        opts.jsonRpc.target,
-            type:       opts.jsonRpc.transport,
-            dataType:   'json',
-            data:       JSON.stringify(rpc),
+        // Perform a JSON-RPC call to perform the update.
+        $.jsonRpc(opts.jsonRpc, 'user.delete', params, {
             success:    function(data, textStatus, req) {
                 if ( (! data) || (data.error !== null))
                 {
@@ -364,19 +356,8 @@ $.widget("connexions.user", {
             }
         }
 
-        var rpc = {
-            version: opts.jsonRpc.version,
-            id:      opts.rpcId++,
-            method:  'user.update',
-            params:  params
-        };
-
-        // Perform a JSON-RPC call to update this item
-        $.ajax({
-            url:        opts.jsonRpc.target,
-            type:       opts.jsonRpc.transport,
-            dataType:   'json',
-            data:       JSON.stringify(rpc),
+        // Perform a JSON-RPC call to perform the update.
+        $.jsonRpc(opts.jsonRpc, 'user.update', params, {
             success:    function(data, textStatus, req) {
                 if ( (! data) || (data.error !== null))
                 {

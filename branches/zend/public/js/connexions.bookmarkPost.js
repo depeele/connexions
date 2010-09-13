@@ -134,13 +134,13 @@ $.widget("connexions.bookmarkPost", {
          *      application/configs/application.ini:api
          *  via
          *      application/layout/header.phtml
-         *
-         * If not provided, 'method' will be:
-         *      'bookmarks.update'
-         *
          */
         jsonRpc:    null,
-        rpcId:      1,      // The initial RPC identifier
+
+        /* If the JSON-RPC method is GET, the apiKey for the authenticated user
+         * is required for any methods that modify data.
+         */
+        apiKey:     null,
 
         // Widget state
         enabled:    true
@@ -174,8 +174,7 @@ $.widget("connexions.bookmarkPost", {
             var api = $.registry('api');
             if (api && api.jsonRpc)
             {
-                opts.jsonRpc = $.extend({method: 'bookmark.update'},
-                                        api.jsonRpc, opts.jsonRpc);
+                opts.jsonRpc = $.extend({}, api.jsonRpc, opts.jsonRpc);
             }
         }
 
@@ -576,7 +575,7 @@ $.widget("connexions.bookmarkPost", {
         // Gather the current data about this item.
         var nonEmpty    = false;
         var params      = {
-            id: { userId: opts.userId, itemId: opts.itemId }
+            id:     { userId: opts.userId, itemId: opts.itemId }
         };
 
         // Include all fields that have changed.
@@ -639,22 +638,15 @@ $.widget("connexions.bookmarkPost", {
                                 : opts.url);
         }
 
-        // Generate a JSON-RPC to perform the update.
-        var rpc = {
-            version: opts.jsonRpc.version,
-            id:      opts.rpcId++,
-            method:  opts.jsonRpc.method,
-            params:  params
-        };
+        if (opts.apiKey !== null)
+        {
+            params.apiKey = opts.apiKey;
+        }
 
         self.element.mask();
 
-        // Perform a JSON-RPC call to update this item
-        $.ajax({
-            url:        opts.jsonRpc.target,
-            type:       opts.jsonRpc.transport,
-            dataType:   'json',
-            data:       JSON.stringify(rpc),
+        // Perform a JSON-RPC call to perform the update.
+        $.jsonRpc(opts.jsonRpc, 'bookmark.update', params, {
             success:    function(data, textStatus, req) {
                 if (data.error !== null)
                 {
@@ -666,7 +658,7 @@ $.widget("connexions.bookmarkPost", {
                 }
 
                 self._status(true,
-                             null,
+                             'Bookmark update succeeded',
                              'Bookmark '+ (opts.itemId === null
                                             ? 'created'
                                             : 'updated'));
@@ -775,22 +767,12 @@ $.widget("connexions.bookmarkPost", {
          * Generate a JSON-RPC to perform the header retrieval.
          *
          */
-        var rpc = {
-            version: opts.jsonRpc.version,
-            id:      opts.rpcId++,
-            method:  'util.getHead',
-            params:  {
-                url:        url,
-                keepTags:   'title,meta'
-            }
+        var params  = {
+            url:        url,
+            keepTags:   'title,meta'
         };
 
-        // Perform a JSON-RPC call
-        $.ajax({
-            url:        opts.jsonRpc.target,
-            type:       opts.jsonRpc.transport,
-            dataType:   'json',
-            data:       JSON.stringify(rpc),
+        $.jsonRpc(opts.jsonRpc, 'util.getHead', params, {
             success:    function(data, textStatus, req) {
                 if (data.error !== null)
                 {
@@ -912,31 +894,24 @@ $.widget("connexions.bookmarkPost", {
     _autocomplete: function(request, response) {
         var self    = this;
         var opts    = self.options;
-        var id      = opts.rpcId++;
-        var data    = {
-            version:    opts.jsonRpc.version,
-            id:         id,
-            method:     'bookmark.autocompleteTag',
-            params:     { id: { userId: opts.userId, itemId: opts.itemId } }
+        var params  = {
+            id: { userId: opts.userId, itemId: opts.itemId }
         };
+
 
         /* If no itemId was provided (or the URL has changed), use the current
          * URL value.
          */
-        if ( (data.params.id.itemId === null) ||
+        if ( (params.id.itemId === null) ||
              (self.$url.val()       !== opts.url) )
         {
             // The URL has changed -- pass it in
-            data.params.id.itemId = self.$url.val();
+            params.id.itemId = self.$url.val();
         }
 
-        data.params.str = self.$tags.autocomplete('option', 'term');
+        params.str = self.$tags.autocomplete('option', 'term');
 
-        $.ajax({
-            type:       opts.jsonRpc.transport,
-            url:        opts.jsonRpc.target,
-            dataType:   "json",
-            data:       JSON.stringify(data),
+        $.jsonRpc(opts.jsonRpc, 'bookmark.autocompleteTag', params, {
             success:    function(ret, txtStatus, req){
                 if (ret.error !== null)
                 {

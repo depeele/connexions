@@ -246,6 +246,8 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
      *  @param  tags        If non-empty, the (new) set of tags;
      *  @param  url         If non-empty, the (new) URL associated with this
      *                      bookmark (MAY create a new Item);
+     *  @param  apiKey      The apiKey for the currently authenticated user
+     *                      (REQUIRED if the transport method is NOT POST);
      *
      *  @return Model_Bookmark
      */
@@ -256,8 +258,11 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
                            $isFavorite      = false,
                            $isPrivate       = false,
                            $tags            = null,
-                           $url             = null)
+                           $url             = null,
+                           $apiKey          = null)
     {
+        $user = $this->_authenticate($apiKey);
+
         return $this->_service->update($id, $name, $description,
                                        $rating, $isFavorite, $isPrivate,
                                        $tags, $url);
@@ -284,11 +289,15 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
      *                              - 'urlHash'     as a  string url-hash;
      *                              - 'itemUrl'     as a  string url;
      *                              - 'url'         as a  string url;
+     *  @param  apiKey      The apiKey for the currently authenticated user
+     *                      (REQUIRED if the transport method is NOT POST);
      *
      *  @return void
      */
-    public function delete($id)
+    public function delete($id, $apiKey = null)
     {
+        $user = $this->_authenticate($apiKey);
+
         return $this->_service->delete($id);
     }
 }
