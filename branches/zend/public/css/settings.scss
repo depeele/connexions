@@ -14,6 +14,38 @@
       padding:  0.5em;
     }
   }
+
+  #tabs-left {
+    position:     relative;
+    padding-left: 6.5em;
+  }
+  #tabs-left .ui-tabs-nav {
+    position: absolute;
+    left:     0.25em;
+    top:      0.25em;
+    bottom:   0.25em;
+    width:    6em;
+    padding:  0.2em 0 0.2em 0.2em;
+  }
+  #tabs-left .ui-tabs-nav li {
+    right:                1px;
+    width:                100%;
+    border-right:         none;
+    border-bottom-width:  1px !important;
+    overflow:             hidden;
+    @include corners(4px, 0px, 0px 4px);
+  }
+  #tabs-left .ui-tabs-nav li.ui-tabs-selected {
+    border-right:         1px solid transparent;
+  }
+  #tabs-left .ui-tabs-nav li a {
+    float:      right;
+    width:      100%;
+    text-align: right;
+  }
+  #tabs-left > div {
+    height:     35em;
+  }
 }
 
 .account {
