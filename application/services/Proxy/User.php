@@ -48,15 +48,19 @@ class Service_Proxy_User extends Connexions_Service_Proxy
      *  @param  renames     A comma-separated list of tag rename information,
      *                      echo item of the form:
      *                          'oldTagName::newTagName'
+     *  @param  apiKey      The apiKey for the currently authenticated user
+     *                      (REQUIRED if the transport method is NOT POST);
      *
      *  @return An array of status information, keyed by old tag name:
      *              { 'oldTagName'  => true (success) |
      *                                 String explanation of failure,
      *                 ... }
      */
-    public function renameTags($renames)
+    public function renameTags($renames, $apiKey = null)
     {
-        return $this->_service->renameTags(Connexions::getUser(), $renames);
+        $user = $this->_authenticate($apiKey);
+
+        return $this->_service->renameTags($user, $renames);
     }
 
     /** @brief  Given a comma-separated list of tag names, delete all tags for
@@ -64,14 +68,57 @@ class Service_Proxy_User extends Connexions_Service_Proxy
      *          result in an "orphaned bookmark" (i.e. a bookmark with no
      *          tags), the delete of that tag will fail.
      *  @param  tags        A comma-separated list of tags.
+     *  @param  apiKey      The apiKey for the currently authenticated user
+     *                      (REQUIRED if the transport method is NOT POST);
      *
      *  @return An array of status information, keyed by tag name:
      *              { 'tagName' => true (success) |
      *                             String explanation of failure,
      *                 ... }
      */
-    public function deleteTags($tags)
+    public function deleteTags($tags, $apiKey = null)
     {
-        return $this->_service->deleteTags(Connexions::getUser(), $tags);
+        $user = $this->_authenticate($apiKey);
+
+        return $this->_service->deleteTags($user, $tags);
+    }
+
+    /** @brief  Update the currently authenticated user.
+     *  @param  fullName    The new 'fullName'   (null for no change);
+     *  @param  email       The new 'email'      (null for no change);
+     *  @param  pictureUrl  The new 'pictureUrl' (null for no change);
+     *  @param  profileUrl  The new 'profile'    (null for no change);
+     *  @param  apiKey      The apiKey for the currently authenticated user
+     *                      (REQUIRED if the transport method is NOT POST);
+     *
+     *  @return The updated user.
+     */
+    public function update($fullName    = null,
+                           $email       = null,
+                           $pictureUrl  = null,
+                           $profileUrl  = null,
+                           $apiKey      = null)
+    {
+        $user = $this->_authenticate($apiKey);
+
+        return $this->_service->update($user, $fullName, $email,
+                                       $pictureUrl, $profileUrl);
+    }
+
+    /** @brief  Regenerate the API Key for the currently authenticated user.
+     *  @param  apiKey      The apiKey for the currently authenticated user
+     *                      (REQUIRED if the transport method is NOT POST);
+     *
+     *  @return The new Api Key (false on error).
+     */
+    public function regenerateApiKey($apiKey    = null)
+    {
+        $user   = $this->_authenticate($apiKey);
+        $apiKey = $user->apiKey;
+
+        $user   = $this->_service->regenerateApiKey($user);
+        return ($user->apiKey != $apiKey
+                    ? $user->apiKey
+                    : false);
     }
 }

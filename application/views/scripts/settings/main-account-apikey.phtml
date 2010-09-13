@@ -29,4 +29,84 @@
  *                          }
  */
 
-printf ("ApiKey: %s<br />\n", $this->viewer->apiKey);
+$jQuery = $this->jQuery();
+$jQuery->addOnLoad('$.account_apiKey_onLoad();')
+       ->javascriptCaptureStart();
+?>
+(function($) {
+    var api     = null;
+    var $aa     = null;
+    var $submit = null;
+    var $apiKey = null;
+
+    function account_apiKey_regenerate()
+    {
+        $aa.mask();
+
+        // Perform an json-rpc call to regenerate the apiKey information.
+        $.jsonRpc(api.jsonRpc, 'user.regenerateApiKey', {}, {
+            success: function(data) {
+                if ( (! data) || (data.error !== null))
+                {
+                    $.notify({
+                        title:  'API Key Regeneration failed',
+                        text:   '<p class="error">'
+                              +   (data ? data.error.message : '')
+                              + '</p>'
+                    });
+                }
+                else
+                {
+                    $apiKey.text(data.result);
+
+                    $.notify({
+                        title:  'API Key Regenerated',
+                        text:   ''
+                    });
+                }
+            },
+            error: function(req, textStatus, err) {
+                $.notify({
+                    title:  'API Key Regeneration failed',
+                    text:   '<p class="error">'
+                          +   textStatus
+                          + '</p>'
+                });
+            },
+            complete: function(req, textStatus) {
+                $aa.unmask();
+            }
+        });
+    }
+
+    $.account_apiKey_onLoad = function() {
+        api     = $.registry('api');
+        $aa     = $('#account-apiKey');
+        $submit = $aa.find('button[name=submit]');
+        $apiKey = $aa.find('.apiKey');
+        
+        $aa.bind('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            account_apiKey_regenerate();
+        });
+        $submit.button();
+    };
+
+}(jQuery));
+<?php
+$jQuery->javascriptCaptureEnd();
+
+?>
+<div class='line'>
+ <form id='account-apiKey'>
+  <div class='legend unit'>Current API Key:</div>
+  <div class='data lastUnit'>
+   <h3 class='apiKey'><?= $this->viewer->apiKey ?></h3>
+   <div class='buttons'>
+    <button name='submit'>Regenerate</button>
+   </div>
+  </div>
+ </form>
+</div>

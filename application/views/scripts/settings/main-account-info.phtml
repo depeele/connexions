@@ -34,36 +34,93 @@ $avatar = (empty($this->viewer->pictureUrl)
             : "<img src='{$this->viewer->pictureUrl}' />" );
 
 $jQuery = $this->jQuery();
-$jQuery->addOnLoad('account_info_onLoad();')
+$jQuery->addOnLoad('$.account_info_onLoad();')
        ->javascriptCaptureStart();
 ?>
-/************************************************
- * Initialize the Account Info area.
- *
- */
-function account_info_onLoad()
-{
-    var $ai     = $('#account-info .ui-validation-form');
-    var $submit = $ai.find('button[name=submit]');
-    
-    $ai.validationForm()    //{hideLabels:false})
-            .bind('change', function(e) {
-                $submit.button('enable');
-            })
-            .bind('submit', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
+(function($) {
+    var api     = null;
+    var $ai     = null;
+    var $submit = null;
 
-                // Perform an json-rpc call to save the new information.
-            });
-    $submit.button('disable');
+    function account_info_submit()
+    {
+        var $fullName   = $ai.find('.user-fullName input');
+        var $email      = $ai.find('.user-email input');
+        var $profile    = $ai.find('.user-profile input');
+        var $avatar     = $ai.find('.avatar img');
+        var params  = {
+            'fullName':   $fullName.val(),
+            'email':      $email.val(),
+            'profile':    $profile.val()
+        };
 
-    $ai.find('.avatar div,.avatar img')
-            .attr('title', 'click-to-edit')
-            .bind('click', function() {
-                // Popup an image selection dialog
-            });
-}
+        if ($avatar.length > 0)
+        {
+            params.pictureUrl = $avatar.attr('src');
+        }
+
+        $ai.mask();
+
+        // Perform an json-rpc call to save the new information.
+        $.jsonRpc(api.jsonRpc, 'user.update', params, {
+            success: function(data) {
+                if ( (! data) || (data.error !== null))
+                {
+                    $.notify({
+                        title:  'Information Update failed',
+                        text:   '<p class="error">'
+                              +   (data ? data.error.message : '')
+                              + '</p>'
+                    });
+                }
+                else
+                {
+                    $.notify({
+                        title:  'Information Updated',
+                        text:   ''
+                    });
+                }
+            },
+            error: function(req, textStatus, err) {
+                $.notify({
+                    title:  'Information Update failed',
+                    text:   '<p class="error">'
+                          +   textStatus
+                          + '</p>'
+                });
+            },
+            complete: function(req, textStatus) {
+                $ai.unmask();
+                $submit.button('disable');
+            }
+        });
+    }
+
+    $.account_info_onLoad = function() {
+        api     = $.registry('api');
+        $ai     = $('#account-info .ui-validation-form');
+        $submit = $ai.find('button[name=submit]');
+        
+        $ai.validationForm({hideLabels:false})
+                .bind('change', function(e) {
+                    $submit.button('enable');
+                })
+                .bind('submit', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    account_info_submit();
+                });
+        $submit.button('disable');
+
+        $ai.find('.avatar div,.avatar img')
+                .attr('title', 'click-to-edit')
+                .bind('click', function() {
+                    // Popup an image selection dialog
+                });
+    };
+
+}(jQuery));
 <?php
 $jQuery->javascriptCaptureEnd();
 
@@ -82,18 +139,18 @@ $jQuery->javascriptCaptureEnd();
     <?= substr($this->viewer->lastVisit, 0, 10) ?>
    </div>
   </div>
-  <div class='userInput unit'>
-   <h3 class='user-fullName click-to-edit field' title='Full Name'>
+  <div class='userInput lastUnit'>
+   <h3 class='user-fullName field' title='Full Name'>
     <label for='fullName'>Full Name</label>
     <input name='fullName' type='text' class='text' autocomplete='off'
           value='<?= $this->viewer->fullName ?>' tabindex='1' />
    </h3>
-   <div class='user-email click-to-edit field' title='email address'>
+   <div class='user-email field' title='email address'>
     <label  for='email'>email</label>
     <input name='email' type='text' class='text' autocomplete='off'
           value='<?= $this->viewer->email ?>' tabindex='2' />
    </div>
-   <div class='user-profile click-to-edit field' title='Profile url'>
+   <div class='user-profile field' title='Profile url'>
     <label  for='profile'>Profile url</label>
     <input name='profile' type='text' class='text' autocomplete='off'
           value='<?= $this->viewer->profile ?>' tabindex='3' />
@@ -101,7 +158,6 @@ $jQuery->javascriptCaptureEnd();
    <div class='buttons'>
     <button name='submit' tabindex='4'>Save</button>
     <!-- button name='cancel' tabindex='5'>Cancel</button -->
-    <br class='clear' />
    </div>
   </div>
  </form>

@@ -50,6 +50,38 @@
     }
 
     /*************************************************************************
+     * JSON-RPC helper.
+     *
+     */
+
+    var _jsonRpcId  = 0;
+
+    /** @brief  Perform a JSON-RPC call.
+     *  @param  def     The JSON-RPC description object:
+     *                      { version:, target:, transport: }
+     *  @param  method  The desired RPC method string;
+     *  @param  params  An object containing the RPC parameters to pass;
+     *  @param  options $.ajax-compatible options object;
+     */
+    $.jsonRpc = function(def, method, params, options) {
+        var rpc = {
+            version:    def.version,
+            id:         _jsonRpcId++,
+            method:     method,
+            params:     params
+        };
+
+        options = $.extend({}, options, {
+                            url:        def.target,
+                            type:       def.transport,
+                            dataType:   'json',
+                            data:       JSON.stringify(rpc)
+                           });
+
+        $.ajax(options);
+    };
+
+    /*************************************************************************
      * Overlay any element.
      *
      */

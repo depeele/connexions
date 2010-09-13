@@ -18,7 +18,18 @@ $server->setClass('Service_Proxy_User',     'user')
        ->setClass('Service_Proxy_Bookmark', 'bookmark')
        ->setClass('Service_Util',           'util');
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET')
+// (Re)Set the server request
+$req = new Connexions_Json_Server_Request_Http();
+$server->setRequest($req);
+Connexions::setRequest($req);
+
+/*
+Connexions::log("json-rpc: json[ %s ], request method[ %s ], params[ %s ]",
+                $req->getRawJson(), $req->getRequestMethod(),
+                print_r($req->getParams(), true));
+// */
+
+if ($req->isGet() && ($req->getParam('serviceDescription')))
 {
     $server->setTarget(Connexions::url('/api/v1/json-rpc'))
            ->setEnvelope(Zend_Json_Server_Smd::ENV_JSONRPC_2);
@@ -34,12 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET')
     echo $server->getServiceMap();
     return;
 }
-
-// (Re)Set the server request
-$req = $server->getRequest();
-Connexions::setRequest($req);
-Connexions::log("json-rpc: json[ %s ]",
-                $req->getRawJson());
 
 $server->setAutoEmitResponse(false);
 $rsp = $server->handle();

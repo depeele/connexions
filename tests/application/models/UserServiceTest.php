@@ -989,4 +989,79 @@ class UserServiceTest extends DbTestCase
         $res      = $service->deleteTags($user, $tags);
         $this->assertEquals($expected, $res);
     }
+
+    public function testUserServiceUpdate_unauth()
+    {
+        $expected = $this->_user1;
+        $service  = Connexions_Service::factory('Model_User');
+
+        $user1    = $service->find( array('userId'=> $this->_user1['userId']));
+        $this->assertTrue(  $user1 instanceof Model_User );
+        $this->assertTrue(  $user1->isBacked() );
+        $this->assertTrue(  $user1->isValid() );
+        $this->assertFalse( $user1->isAuthenticated() );
+
+        try
+        {
+            $user2 = $service->update( $user1,
+                                       'New Name',           // new fullName
+                                       'new@email.com',      // new email
+                                       '/new/picture.png',   // new pictureUrl
+                                       '/new/profile.html'   // new profileUrl
+                                     );
+            $this->fail("Unauthenticated update permitted");
+        }
+        catch (Exception $e)
+        {
+            $this->assertEquals(
+                    'Operation prohibited for an unauthenticated user.',
+                    $e->getMessage());
+            //$this->assertEquals(null, $auth);
+        }
+    }
+
+    public function testUserServiceUpdate_auth()
+    {
+        $expected = $this->_user1;
+        $service  = Connexions_Service::factory('Model_User');
+
+        // Retrieve the target user.
+        $service  = Connexions_Service::factory('Model_User');
+
+        $user1    = $service->find( array('userId'=> $this->_user1['userId']));
+        $this->assertNotEquals(null, $user1);
+
+        // Mark the user as 'authenticated'
+        $this->_setAuthenticatedUser($user1);
+        $this->assertTrue ($user1->isAuthenticated());
+
+        /*******************************************************
+         * Now, as an authenticated user, attempt to update
+         */
+        $expected['fullName']   = 'New Name';
+        $expected['email']      = 'new@email.com';
+        $expected['pictureUrl'] = '/new/picture.png';
+        $expected['profile']    = '/new/profile.html';
+        $user2    = $service->update( $user1,
+                                      $expected['fullName'],
+                                      $expected['email'],
+                                      $expected['pictureUrl'],
+                                      $expected['profile'] );
+
+        $this->assertTrue(  $user2 instanceof Model_User );
+        $this->assertTrue(  $user2->isBacked() );
+        $this->assertTrue(  $user2->isValid() );
+        $this->assertTrue(  $user2->isAuthenticated() );
+
+        // apiKey and lastVisit are dynamically generated
+        $expected['apiKey']    = $user2->apiKey;
+        $expected['lastVisit'] = $user2->lastVisit;
+
+        $this->assertEquals($user2->getValidationMessages(), array() );
+        $this->assertEquals($expected,
+                            $user2->toArray(self::$toArray_shallow_all));
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user1);
+    }
 }

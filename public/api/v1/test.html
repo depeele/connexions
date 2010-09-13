@@ -142,7 +142,7 @@
 
                 // Invoke the Json-RPC
                 $.ajax({
-                    type:     'POST',
+                    type:     $form.attr('method'),
                     url:      $form.attr('action'),
                     data:     JSON.stringify(rpc),
                     dataType: 'json',
@@ -323,7 +323,7 @@
                 opened: 'ui-icon-triangle-1-s',
                 closed: 'ui-icon-triangle-1-e'
             };
-            $.getJSON('json-rpc.php',
+            $.getJSON('json-rpc.php?serviceDescription=1',
                       function(data, txtStatus)
                       {
                         buildForms(data);

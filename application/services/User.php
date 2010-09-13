@@ -200,4 +200,63 @@ class Service_User extends Connexions_Service
 
         return $user->deleteTags($tags);
     }
+
+    /** @brief  Update a user.
+     *  @param  user        The Model_User instance for which this update
+     *                      is intended (MUST be authenticated);
+     *  @param  fullName    The new 'fullName'   (null for no change);
+     *  @param  email       The new 'email'      (null for no change);
+     *  @param  pictureUrl  The new 'pictureUrl' (null for no change);
+     *  @param  profileUrl  The new 'profile'    (null for no change);
+     *
+     *  @return The updated user.
+     */
+    public function update(Model_User   $user,
+                                        $fullName   = null,
+                                        $email      = null,
+                                        $pictureUrl = null,
+                                        $profileUrl = null)
+    {
+        if (! $user->isAuthenticated())
+        {
+            throw new Exception('Operation prohibited for an '
+                                .   'unauthenticated user.');
+        }
+
+        if (! empty($fullName))     $user->fullName   = $fullName;
+        if (! empty($email))        $user->email      = $email;
+        if (! empty($pictureUrl))   $user->pictureUrl = $pictureUrl;
+        if (! empty($profileUrl))   $user->profile    = $profileUrl;
+
+        if ($user->isValid())
+        {
+            $user->save();
+        }
+
+        return $user;
+    }
+
+    /** @brief  Regenerate the user's API Key
+     *  @param  user        The Model_User instance for which this update
+     *                      is intended (MUST be authenticated);
+     *
+     *  @return The updated user.
+     */
+    public function regenerateApiKey(Model_User   $user)
+    {
+        if (! $user->isAuthenticated())
+        {
+            throw new Exception('Operation prohibited for an '
+                                .   'unauthenticated user.');
+        }
+
+        $user->apiKey = Model_User::genApiKey();
+
+        if ($user->isValid())
+        {
+            $user->save();
+        }
+
+        return $user;
+    }
 }
