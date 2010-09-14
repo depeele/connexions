@@ -228,10 +228,18 @@ class Service_User extends Connexions_Service
         if (! empty($pictureUrl))   $user->pictureUrl = $pictureUrl;
         if (! empty($profileUrl))   $user->profile    = $profileUrl;
 
-        if ($user->isValid())
+        if (! $user->isValid())
         {
-            $user->save();
+            $msgStrs = array();
+            foreach ($user->getValidationMessages() as $field => $msgs)
+            {
+                array_push($msgStrs, "'{$field}': ", implode('; ', $msgs));
+            }
+
+            throw new Exception('Invalid user data: '. implode(', ', $msgStrs));
         }
+
+        $user->save();
 
         return $user;
     }
