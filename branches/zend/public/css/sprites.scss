@@ -218,10 +218,42 @@
 
 
 // Settings
-.certificate {
+.type-certificate {
   width:  16px;
   height: 16px;
-  background-position: -20px -71px;
+  background-position: -120px 0;
+}
+.type-openId {
+  width:  16px;
+  height: 16px;
+  background-position: -136px 0;
+}
+.type-password {
+  width:  16px;
+  height: 16px;
+  background-position: -152px 0;
+}
+
+.setting-private {
+  width:  16px;
+  height: 16px;
+  background-position: -120px -16px;
+}
+.setting-public {
+  width:  16px;
+  height: 16px;
+  background-position: -136px -16px;
+}
+
+.setting-restricted {
+  width:  16px;
+  height: 16px;
+  background-position: -120px -32px;
+}
+.setting-group {
+  width:  16px;
+  height: 16px;
+  background-position: -136px -32px;
 }
 
 // Context backgrounds

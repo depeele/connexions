@@ -206,7 +206,19 @@ a:visited { color: #005a9c; }
 
 .old_search_bg { width: 173px; height: 23px; background-position: 0 -87px; }
 
-.certificate { width: 16px; height: 16px; background-position: -20px -71px; }
+.type-certificate { width: 16px; height: 16px; background-position: -120px 0; }
+
+.type-openId { width: 16px; height: 16px; background-position: -136px 0; }
+
+.type-password { width: 16px; height: 16px; background-position: -152px 0; }
+
+.setting-private { width: 16px; height: 16px; background-position: -120px -16px; }
+
+.setting-public { width: 16px; height: 16px; background-position: -136px -16px; }
+
+.setting-restricted { width: 16px; height: 16px; background-position: -120px -32px; }
+
+.setting-group { width: 16px; height: 16px; background-position: -136px -32px; }
 
 .bookmark_bg { background-position: -100px -110px; width: 48px; height: 48px; }
 
