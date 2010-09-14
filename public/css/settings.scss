@@ -1,6 +1,7 @@
 @import "sizes";
 @import "colors";
 @import "mixins";
+@import "urls";
 
 /****** settings.sass ****** */
 // Styling for the search results
@@ -97,6 +98,63 @@
       .user-email {
       }
       .user-profile {
+      }
+    }
+  }
+
+  .account-credentials {
+    li {
+      padding:  0 0 0.25em 0;
+    }
+    .type {
+      // From sprites.scss
+      background:       $connexions_sprites_url unquote("no-repeat scroll 0px 0px transparent");
+      background-image: $connexions_sprites_url unquote("!important");
+      width:            16px;
+      height:           16px;
+      overflow:         hidden;
+      text-indent:      -9999px;
+    }
+    .type, .name, .credential, .control {
+      @include inlineBlock();
+    }
+
+    .pki .type {
+      background-position:  -120px 0;
+    }
+    .openid .type {
+      background-position:  -136px 0;
+    }
+    .password .type {
+      background-position:  -152px 0;
+    }
+
+    .name {
+      input {
+        width:  8em;
+      }
+    }
+    .credential {
+      width:    42em;
+      input {
+        font-size:  0.9em;
+        width:      99%;
+      }
+    }
+    .control {
+      a {
+        font-size:    0.9em;
+        font-weight:  normal;
+        color:        $controlColor;
+      }
+    }
+
+    .buttons {
+      width:    51em;
+      padding:  0.25em 0 1em 24px;
+
+      button {
+        float:    right;
       }
     }
   }
