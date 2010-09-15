@@ -102,16 +102,24 @@ $jQuery->addOnLoad('$.account_info_onLoad();')
         $submit = $ai.find('button[name=submit]');
         
         $ai.validationForm({hideLabels:false})
-                .bind('change', function(e) {
-                    $submit.button('enable');
+                /*
+                .bind('validation_change', function(e) {
+                    $submit.button(($ai.validationForm('hasChanged') &&
+                                    $ai.validationForm('isValid')
+                                        ? 'enable'
+                                        : 'disable'));
                 })
+                */
                 .bind('submit', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
 
-                    account_info_submit();
+                    if ($ai.validationForm('isValid'))
+                    {
+                        account_info_submit();
+                    }
                 });
-        $submit.button('disable');
+        //$submit.button('disable');
 
         $ai.find('.avatar div,.avatar img')
                 .attr('title', 'click-to-edit')
@@ -142,12 +150,12 @@ $jQuery->javascriptCaptureEnd();
   <div class='userInput lastUnit'>
    <h3 class='user-fullName field' title='Full Name'>
     <label for='fullName'>Full Name</label>
-    <input name='fullName' type='text' class='text' autocomplete='off'
+    <input name='fullName' type='text' class='text required' autocomplete='off'
           value='<?= $this->viewer->fullName ?>' tabindex='1' />
    </h3>
    <div class='user-email field' title='email address'>
     <label  for='email'>email</label>
-    <input name='email' type='text' class='text' autocomplete='off'
+    <input name='email' type='text' class='text required' autocomplete='off'
           value='<?= $this->viewer->email ?>' tabindex='2' />
    </div>
    <div class='user-profile field' title='Profile url'>
@@ -156,7 +164,8 @@ $jQuery->javascriptCaptureEnd();
           value='<?= $this->viewer->profile ?>' tabindex='3' />
    </div>
    <div class='buttons'>
-    <button name='submit' tabindex='4'>Save</button>
+    <button name='reset'  tabindex='4'>Reset</button>
+    <button name='submit' tabindex='5'>Save</button>
     <!-- button name='cancel' tabindex='5'>Cancel</button -->
    </div>
   </div>

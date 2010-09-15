@@ -744,6 +744,9 @@ $.widget("ui.input", {
         var self    = this;
         var opts    = this.options;
 
+        // Remember the original value
+        self.element.data('value.uiinput', self.val() );
+
         opts.enabled = self.element.attr('disabled') ? false : true;
 
         if (opts.$validation)
@@ -896,7 +899,7 @@ $.widget("ui.input", {
                 self.validate();
             }
 
-            if ($.trim(self.val()) === '')
+            if (self.val() === '')
             {
                 self.element.addClass('ui-state-empty');
 
@@ -926,7 +929,7 @@ $.widget("ui.input", {
         opts.$label
                 .bind('click.uiinput', function() { self.element.focus(); });
 
-        if ($.trim(self.val()) !== '')
+        if (self.val() !== '')
         {
             // Perform an initial validation
             self.validate();
@@ -979,6 +982,24 @@ $.widget("ui.input", {
             //this.element.trigger('disabled.uiinput');
             this._trigger('disabled');
         }
+    },
+
+    /** @brief  Reset the input to its original (creation or last direct set)
+     *          value.
+     */
+    reset: function()
+    {
+        // Remember the original value
+        this.val( this.element.data('value.uiinput') );
+    },
+
+    /** @brief  Has the value of this input changed from its original?
+     *
+     *  @return true | false
+     */
+    hasChanged: function()
+    {
+        return (this.val() !== this.element.data('value.uiinput'));
     },
 
     /** @brief  Set the current validation state.
@@ -1047,11 +1068,23 @@ $.widget("ui.input", {
         this.options.$label.text(str);
     },
 
+    getOrigValue: function()
+    {
+        return this.element.data('value.uiinput');
+    },
+
+
     val: function(newVal)
     {
-        return (newVal === undefined
-                    ? this.element.val()
-                    : this.element.val( newVal ));
+        if (newVal !== undefined)
+        {
+            newVal = $.trim(newVal);
+
+            this.element.data('value.uiinput', newVal);
+            return this.element.val( newVal );
+        }
+
+        return $.trim( this.element.val() );
     },
 
     validate: function()
@@ -1115,7 +1148,8 @@ $.widget("ui.input", {
                              +'ui-state-active '
                              +'ui-priority-primary '
                              +'ui-priority-secondary ')
-                .unbind('.uiinput');
+                .unbind('.uiinput')
+                .removeData('.uiinput');
     }
 });
 
@@ -1665,11 +1699,13 @@ $.widget("ui.validationForm", {
             opts.$submit = self.element.find( opts.submitSelector );
         }
         opts.$cancel   = self.element.find('button[name=cancel]');
+        opts.$reset    = self.element.find('button[name=reset]');
 
         // Instantiate sub-widgets
         opts.$inputs.input({hideLabel: opts.hideLabels});
         opts.$submit.button({priority:'primary', enabled:false});
         opts.$cancel.button({priority:'secondary'});
+        opts.$reset.button({priority:'secondary'});
 
         self._bindEvents();
     },
@@ -1683,7 +1719,15 @@ $.widget("ui.validationForm", {
             self.validate();
         };
 
+        var _reset      = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            self.reset();
+        };
+
         opts.$inputs.bind('validation_change.uivalidationform', _validate);
+        opts.$reset.bind('click.uivalidationform', _reset);
 
         // Perform an initial validation
         self.validate();
@@ -1729,40 +1773,88 @@ $.widget("ui.validationForm", {
         }
     },
 
+    /** @brief  Reset any ui.input fields to their original
+     *          (creation or direct set) values.
+     */
+    reset: function()
+    {
+        var self    = this;
+        var opts    = this.options;
+
+        opts.$inputs.input('reset');
+
+        // Perform a validation
+        self.validate();
+    },
+
+    /** @brief  Have any of the ui.input fields changed from their original
+     *          values?
+     *
+     *  @return true | false
+     */
+    hasChanged: function()
+    {
+        var self    = this;
+        var opts    = this.options;
+        var hasChanged  = false;
+
+        // Has anything changed from the forms initial values?
+        opts.$inputs.each(function() {
+            if ($(this).input('hasChanged'))
+            {
+                hasChanged = true;
+                return false;
+            }
+        });
+
+        return hasChanged;
+    },
+
     validate: function()
     {
         var self        = this;
         var opts        = self.options;
         var isValid     = true;
+        var hasChanged  = self.hasChanged();
 
-        opts.$required.each(function() {
-            /*
-            $.log( 'ui.validationForm::validate: '
-                  +      'name[ '+ this.name +' ], '
-                  +     'class[ '+ this.className +' ]');
-            // */
+        if (hasChanged)
+        {
+            opts.$required.each(function() {
+                /*
+                $.log( 'ui.validationForm::validate: '
+                      +      'name[ '+ this.name +' ], '
+                      +     'class[ '+ this.className +' ]');
+                // */
 
-            if (! $(this).hasClass('ui-state-valid'))
+                if (! $(this).hasClass('ui-state-valid'))
+                {
+                    isValid = false;
+                    return false;
+                }
+            });
+
+            if (isValid)
             {
-                isValid = false;
-                return false;
+                opts.$validation
+                        .removeClass('error')
+                        .addClass('success')
+                        .text('');
             }
-        });
+            else
+            {
+                opts.$validation
+                        .removeClass('success')
+                        .addClass('error');
+            }
+        }
 
-        if (isValid)
+        if (hasChanged && isValid)
         {
             opts.$submit.button('enable');
-            opts.$validation
-                    .removeClass('error')
-                    .addClass('success')
-                    .text('');
         }
         else
         {
             opts.$submit.button('disable');
-            opts.$validation
-                    .removeClass('success')
-                    .addClass('error');
         }
     },
 
@@ -1771,10 +1863,12 @@ $.widget("ui.validationForm", {
         var opts    = self.options;
 
         opts.$inputs.unbind('.uivalidationform');
+        opts.$reset.unbind('.uivalidationform');
 
         opts.$inputs.input('destroy');
         opts.$submit.button('destroy');
         opts.$cancel.button('destroy');
+        opts.$reset.button('destroy');
 
         self.element.removeClass('ui-form');
     }
