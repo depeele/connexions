@@ -76,6 +76,9 @@ $.widget("ui.checkbox", {
         opts.checked = self.element.attr('checked')  ? true  : false;
         opts.title   = '';
 
+        // Remember the original value
+        self.element.data('value.uicheckbox', opts.checked);
+
         var name     = self.element.attr('name');
         var id       = self.element.attr('id');
 
@@ -284,6 +287,31 @@ $.widget("ui.checkbox", {
             //this.element.click();
             this._trigger('change', null, 'uncheck');
         }
+    },
+
+    /** @brief  Reset the input to its original (creation or last direct set)
+     *          value.
+     */
+    reset: function()
+    {
+        // Remember the original value
+        if (this.element.data('value.uicheckbox'))
+        {
+            this.check();
+        }
+        else
+        {
+            this.uncheck();
+        }
+    },
+
+    /** @brief  Has the value of this input changed from its original?
+     *
+     *  @return true | false
+     */
+    hasChanged: function()
+    {
+        return (this.options.checked !== this.element.data('value.uicheckbox'));
     },
 
     destroy: function() {

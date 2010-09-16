@@ -446,6 +446,9 @@ $.widget("ui.checkbox", {
         opts.checked = self.element.attr('checked')  ? true  : false;
         opts.title   = '';
 
+        // Remember the original value
+        self.element.data('value.uicheckbox', opts.checked);
+
         var name     = self.element.attr('name');
         var id       = self.element.attr('id');
 
@@ -654,6 +657,31 @@ $.widget("ui.checkbox", {
             //this.element.click();
             this._trigger('change', null, 'uncheck');
         }
+    },
+
+    /** @brief  Reset the input to its original (creation or last direct set)
+     *          value.
+     */
+    reset: function()
+    {
+        // Remember the original value
+        if (this.element.data('value.uicheckbox'))
+        {
+            this.check();
+        }
+        else
+        {
+            this.uncheck();
+        }
+    },
+
+    /** @brief  Has the value of this input changed from its original?
+     *
+     *  @return true | false
+     */
+    hasChanged: function()
+    {
+        return (this.options.checked !== this.element.data('value.uicheckbox'));
     },
 
     destroy: function() {
@@ -991,6 +1019,7 @@ $.widget("ui.input", {
     {
         // Remember the original value
         this.val( this.element.data('value.uiinput') );
+        this.element.trigger('blur');
     },
 
     /** @brief  Has the value of this input changed from its original?
@@ -1236,7 +1265,7 @@ $.widget("ui.stars", {
     if (o.value > 0) {
         o.checked = o.defaultValue = o.value;
     } else {
-        o.value = o.cancelValue;
+        o.value = o.defaultValue = o.cancelValue;
     }
 
     if (o.disabled) {
@@ -1439,6 +1468,12 @@ $.widget("ui.stars", {
   disable: function() {
     this.options.disabled = true;
     this._disableAll();
+  },
+  hasChanged: function() {
+    return (this.options.value !== this.options.defaultValue);
+  },
+  reset: function() {
+    this.select( this.options.defaultValue );
   },
   destroy: function() {
     this.$cancel.unbind(".stars");
@@ -4373,20 +4408,25 @@ $.widget("connexions.bookmarkPost", {
          */
         self.$required    = self.element.find('.required');
 
+        // Hidden fields
         self.$userId      = self.element.find('input[name=userId]');
         self.$itemId      = self.element.find('input[name=itemId]');
 
-        self.$favorite    = self.element.find('input[name=isFavorite]');
-        self.$private     = self.element.find('input[name=isPrivate]');
-        self.$rating      = self.element.find('.userRating .stars-wrapper');
-
+        // Text fields
         self.$name        = self.element.find('input[name=name]');
         self.$url         = self.element.find('input[name=url]');
         self.$description = self.element.find('textarea[name=description]');
         self.$tags        = self.element.find('textarea[name=tags]');
 
+        // Non-text fields
+        self.$favorite    = self.element.find('input[name=isFavorite]');
+        self.$private     = self.element.find('input[name=isPrivate]');
+        self.$rating      = self.element.find('.userRating .stars-wrapper');
+
+        // Buttons
         self.$save        = self.element.find('button[name=submit]');
         self.$cancel      = self.element.find('button[name=cancel]');
+        self.$reset       = self.element.find('button[name=reset]');
 
         // All input[text/password] and textarea elements
         self.$inputs      = self.element.find(  'input[type=text],'
@@ -4456,6 +4496,8 @@ $.widget("connexions.bookmarkPost", {
                   .button({disabled: true});
 
         self.$cancel.addClass('ui-priority-secondary')
+                    .button({disabled: false});
+        self.$reset.addClass('ui-priority-secondary')
                     .button({disabled: false});
 
         self.$suggestions.tabs();
@@ -4595,6 +4637,20 @@ $.widget("connexions.bookmarkPost", {
             self._trigger('complete');
         };
 
+        var _reset_click   = function(e, data) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            e.stopPropagation();
+
+            self.$inputs.input('reset');
+            self.$favorite.checkbox('reset');
+            self.$private.checkbox('reset');
+            self.$rating.stars('reset');
+
+            // :TODO: "Cancel" notification
+            self._trigger('reset', null, data);
+        };
+
         var _validation_change  = function(e, data) {
             /* On ANY validation change, remove the 'click-to-edit' class and
              * unbind this listener.
@@ -4617,6 +4673,12 @@ $.widget("connexions.bookmarkPost", {
                 /* We have a valid URL.  If any of name, description, or tags
                  * are empty, perform a HEAD request to fill in target-based
                  * suggestions.
+                if ( (! self.$inputs.filter('name=name')
+                                                    .input('hasChanged')) ||
+                     (! self.$inputs.filter('name=description')
+                                                    .input('hasChanged')) ||
+                     (! self.$inputs.filter('name=tags')
+                                                    .input('hasChanged')) )
                  */
                 if ( ((self.auto.name        !== false)     ||
                       (self.$name.val().length        < 1)) ||
@@ -4632,24 +4694,35 @@ $.widget("connexions.bookmarkPost", {
 
         var _validate_form  = function() {
             var isValid     = true;
+            var hasChanged  = self.hasChanged();
 
-            self.$required.each(function() {
-                if (! $(this).hasClass('ui-state-valid'))
+            if (hasChanged)
+            {
+                self.$required.each(function() {
+                    if (! $(this).hasClass('ui-state-valid'))
+                    {
+                        isValid = false;
+                        return false;
+                    }
+                });
+
+                if (isValid)
                 {
-                    isValid = false;
-                    return false;
+                    self._status(true);
                 }
-            });
+                else
+                {
+                    self._status(false);
+                }
+            }
 
-            if (isValid)
+            if (hasChanged && isValid)
             {
                 self.$save.button('enable');
-                self._status(true);
             }
             else
             {
                 self.$save.button('disable');
-                self._status(false);
             }
         };
 
@@ -4718,12 +4791,19 @@ $.widget("connexions.bookmarkPost", {
          */
         self.$inputs.bind('validation_change.bookmarkPost',
                                                 _validate_form);
+        self.$favorite.bind('change.bookmarkPost',
+                                                _validate_form);
+        self.$private.bind('change.bookmarkPost',
+                                                _validate_form);
+        self.$rating.bind('change.bookmarkPost',
+                                                _validate_form);
 
         self.$cte.bind('validation_change.bookmarkPost',
                                                 _validation_change);
 
         self.$save.bind('click.bookmarkPost',   _save_click);
-        self.$cancel.bind('click.bookmarkPost', _cancel_click);
+        self.$cancel.bind('click.bookmarkPost', _reset_click);//_cancel_click);
+        self.$reset.bind('click.bookmarkPost', _reset_click);
 
         self.$url.bind('validation_change.bookmarkPost',
                                                 _url_change);
@@ -5201,6 +5281,52 @@ $.widget("connexions.bookmarkPost", {
         }
     },
 
+    /** @brief  Reset any ui.input fields to their original
+     *          (creation or direct set) values.
+     */
+    reset: function()
+    {
+        var self    = this;
+
+        self.$inputs.input('reset');
+        self.$favorite.checkbox('reset');
+        self.$private.checkbox('reset');
+        self.$rating.stars('reset');
+
+        // Perform a validation
+        self.validate();
+    },
+
+    /** @brief  Have any of the ui.input fields changed from their original
+     *          values?
+     *
+     *  @return true | false
+     */
+    hasChanged: function()
+    {
+        var self    = this;
+        var hasChanged  = false;
+
+        // Has anything changed from the forms initial values?
+        self.$inputs.each(function() {
+            if ($(this).input('hasChanged'))
+            {
+                hasChanged = true;
+                return false;
+            }
+        });
+
+        if ((! hasChanged) &&
+            (self.$favorite.checkbox('hasChanged') ||
+             self.$private.checkbox('hasChanged')  ||
+             self.$rating.stars('hasChanged')) )
+        {
+            hasChanged = true;
+        }
+
+        return hasChanged;
+    },
+
     destroy: function()
     {
         var self    = this;
@@ -5209,12 +5335,16 @@ $.widget("connexions.bookmarkPost", {
         // Cleanup
         self.$save.removeClass('ui-priority-primary');
         self.$cancel.removeClass('ui-priority-secondary');
+        self.$reset.removeClass('ui-priority-secondary');
         self.$required.next('.ui-field-info').remove();
 
         self.element.removeClass('ui-form');
 
         // Unbind events
         self.$inputs.unbind('.bookmarkPost');
+        self.$favorite.unbind('.bookmarkPost');
+        self.$private.unbind('.bookmarkPost');
+        self.$rating.unbind('.bookmarkPost');
         self.$cte.unbind('.bookmarkPost');
         self.$save.unbind('.bookmarkPost');
         self.$cancel.unbind('.bookmarkPost');
@@ -5226,6 +5356,7 @@ $.widget("connexions.bookmarkPost", {
         self.$inputs.input('destroy');
         self.$save.button('destroy');
         self.$cancel.button('destroy');
+        self.$reset.button('destroy');
 
         self.$suggestions.tabs('destroy');
         self.$collapsable.collapsable('destroy');

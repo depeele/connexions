@@ -79,7 +79,7 @@ $.widget("ui.stars", {
     if (o.value > 0) {
         o.checked = o.defaultValue = o.value;
     } else {
-        o.value = o.cancelValue;
+        o.value = o.defaultValue = o.cancelValue;
     }
 
     if (o.disabled) {
@@ -282,6 +282,12 @@ $.widget("ui.stars", {
   disable: function() {
     this.options.disabled = true;
     this._disableAll();
+  },
+  hasChanged: function() {
+    return (this.options.value !== this.options.defaultValue);
+  },
+  reset: function() {
+    this.select( this.options.defaultValue );
   },
   destroy: function() {
     this.$cancel.unbind(".stars");
