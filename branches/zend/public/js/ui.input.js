@@ -316,6 +316,7 @@ $.widget("ui.input", {
     {
         // Remember the original value
         this.val( this.element.data('value.uiinput') );
+        this.element.trigger('blur');
     },
 
     /** @brief  Has the value of this input changed from its original?
