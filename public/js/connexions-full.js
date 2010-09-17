@@ -1123,6 +1123,7 @@ $.widget("ui.input", {
 
         if (this.options.validation === null)
         {
+            this.valid( true );
             return;
         }
 
