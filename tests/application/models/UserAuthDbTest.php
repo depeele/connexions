@@ -25,17 +25,20 @@ class UserAuthDbTest extends DbTestCase
         ),
 
         // Expected userAuth model data (by authType)
-        'password'  => array(
-            'userId'        => 1,
-            'authType'      => 'password',
-            'credential'    => '77c3d13750c0a0a59b0a2cf1bc189f61',
-        ),
         'openid'    => array(
+            'userAuthId'    => 1,
             'userId'        => 1,
             'authType'      => 'openid',
             'credential'    => 'https://google.com/profile/User.1',
         ),
+        'password'  => array(
+            'userAuthId'    => 2,
+            'userId'        => 1,
+            'authType'      => 'password',
+            'credential'    => '77c3d13750c0a0a59b0a2cf1bc189f61',
+        ),
         'pki'       => array(
+            'userAuthId'    => 3,
             'userId'        => 1,
             'authType'      => 'pki',
             'credential'    => 'C=US, ST=Maryland, L=Baltimore, O=City Government, OU=Public Works, CN=User 1/emailAddress=User1@home.com',
@@ -83,18 +86,17 @@ class UserAuthDbTest extends DbTestCase
         $this->assertEquals($expected, $userAuth->toArray());
     }
 
-    public function testUserAuthGetId()
+    public function testUserAuthGetId1()
     {
-        $expected = array($this->_user1['password']['userId'],
-                          $this->_user1['password']['authType'],
-                          $this->_user1['password']['credential']);
+        $expected = $this->_user1['password'];
 
         $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
-        $userAuth = $mapper->find( array('userId'   => $expected[0],
-                                         'authType' => $expected[1]) );
+        $userAuth = $mapper->find( array('userAuthId' =>
+                                            $expected['userAuthId']) );
 
         $this->assertTrue  ($userAuth instanceof Model_UserAuth);
-        $this->assertEquals($expected, $userAuth->getId());
+        $this->assertEquals($expected,
+                            $userAuth->toArray(self::$toArray_shallow_all));
     }
 
 
@@ -184,6 +186,7 @@ class UserAuthDbTest extends DbTestCase
     public function testUserAuthDefaultTypeInsertedIntoDatabase()
     {
         $expected = array(
+            'userAuthId'    => 4,
             'userId'        => 2,
             'authType'      => 'password',
                                // md5( 'User441:' )

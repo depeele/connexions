@@ -17,6 +17,7 @@ class Model_UserAuth extends Model_Base
 
     // The data for this Model
     protected   $_data      = array(
+            'userAuthId'    => null,
             'userId'        => null,
             'authType'      => self::AUTH_DEFAULT,
             'credential'    => '',
@@ -37,7 +38,8 @@ class Model_UserAuth extends Model_Base
      */
     public function getId()
     {
-        return ( array( $this->userId, $this->authType, $this->credential ) );
+        return ( $this->userAuthId );
+        //return ( array( $this->userId, $this->authType, $this->credential ) );
     }
 
     /*************************************************************************

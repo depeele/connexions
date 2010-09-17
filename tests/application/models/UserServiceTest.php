@@ -526,7 +526,8 @@ class UserServiceTest extends DbTestCase
         $this->assertNotEquals(null, $user);
 
         $credential = '1234567';
-        $expected   = array('userId'     => $user->userId,
+        $expected   = array('userAuthId' => 4,
+                            'userId'     => $user->userId,
                             'authType'   => Model_UserAuth::AUTH_DEFAULT,
                             'credential' => $credential);
 
