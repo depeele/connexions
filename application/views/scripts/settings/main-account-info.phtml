@@ -102,14 +102,6 @@ $jQuery->addOnLoad('$.account_info_onLoad();')
         $submit = $ai.find('button[name=submit]');
         
         $ai.validationForm({hideLabels:false})
-                /*
-                .bind('validation_change', function(e) {
-                    $submit.button(($ai.validationForm('hasChanged') &&
-                                    $ai.validationForm('isValid')
-                                        ? 'enable'
-                                        : 'disable'));
-                })
-                */
                 .bind('submit', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -119,7 +111,6 @@ $jQuery->addOnLoad('$.account_info_onLoad();')
                         account_info_submit();
                     }
                 });
-        //$submit.button('disable');
 
         $ai.find('.avatar div,.avatar img')
                 .attr('title', 'click-to-edit')
