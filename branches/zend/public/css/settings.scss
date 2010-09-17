@@ -103,6 +103,10 @@
   }
 
   .account-credentials {
+    .ui-validation-form {
+      float:  none;
+      width:  55em;
+    }
     li {
       padding:  0 0 0.25em 0;
     }
@@ -131,11 +135,11 @@
 
     .name {
       input {
-        width:  8em;
+        // width:  8em;
       }
     }
     .credential {
-      width:    42em;
+      width:    35em;
       input {
         font-size:  0.9em;
         width:      99%;
@@ -150,8 +154,7 @@
     }
 
     .buttons {
-      width:    51em;
-      padding:  0.25em 0 1em 24px;
+      padding:  0.25em 5.5em 1em 24px;
 
       button {
         float:    right;
