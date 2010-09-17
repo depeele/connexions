@@ -144,12 +144,14 @@ CREATE TABLE groupItem (
 
 -- User Authentication methods
 CREATE TABLE userAuth (
+  userAuthId    INT(10)     UNSIGNED    NOT NULL AUTO_INCREMENT,
   userId        INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
   authType      VARCHAR(30)             NOT NULL DEFAULT 'password',
 
   credential    VARCHAR(255)            NOT NULL DEFAULT '',
 
-  PRIMARY KEY           (`userId`, `authType`, `credential`),
+  PRIMARY KEY           (`userAuthId`)
+  KEY `ua_triple`       (`userId`, `authType`, `credential`),
   KEY `ua_userId`       (`userId`),
   KEY `ua_credential`   (`credential`)
 ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;

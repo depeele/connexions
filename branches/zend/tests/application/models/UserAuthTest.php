@@ -7,6 +7,7 @@ class UserAuthTest extends BaseTestCase
     public function testUserAuthConstructorInjectionOfProperties()
     {
         $expected = array(
+            'userAuthId'    => null,
             'userId'        => null,
             'authType'      => 'password',
             'credential'    => '',
@@ -24,8 +25,7 @@ class UserAuthTest extends BaseTestCase
     {
         $data     = array('userId'   => 5,
                           'authType' => 'password');
-        $expected = array_values($data);
-        array_push($expected, '');
+        $expected = null;
 
         $userAuth = new Model_UserAuth( $data );
 

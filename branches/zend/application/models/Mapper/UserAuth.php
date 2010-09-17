@@ -6,7 +6,8 @@
  */
 class Model_Mapper_UserAuth extends Model_Mapper_Base
 {
-    protected   $_keyNames  = array('userId', 'authType', 'credential');
+    protected   $_keyNames  = array('userAuthId');
+    //protected   $_keyNames  = array('userId', 'authType', 'credential');
 
     // If not provided, the following will be generated from our class name:
     //      <Prefix>_Mapper_<Name>                     == Model_Mapper_UserAuth
