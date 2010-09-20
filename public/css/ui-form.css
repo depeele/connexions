@@ -5,7 +5,8 @@
 .ui-form label.ui-input-over { position: absolute; top: 0.5em; left: 0.5em; z-index: 2; color: #999999; }
 .ui-form .ui-button { font-size: 0.85em; }
 .ui-form .ui-button-text-icon .ui-button-text, .ui-form .ui-button-text-icons .ui-button-text { padding: 0.1em 0.3em 0.1em 16px; }
-.ui-form input, .ui-form select, .ui-form textarea { /* Also requires ui-state-* to provide the border */ padding: 0.3em; color: #555555; }
+.ui-form input, .ui-form select, .ui-form textarea { padding: 0.3em; color: #555555; }
+.ui-form .ui-state-changed { border-color: #ccc856; }
 .ui-form .ui-button { cursor: pointer; }
 .ui-form .ui-state-valid { color: #667e32; }
 .ui-form .ui-state-invalid { color: #cd0a0a; }

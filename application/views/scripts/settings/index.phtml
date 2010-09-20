@@ -68,8 +68,8 @@ $this->headLink()->appendStylesheet($this->baseUrl('/css/settings.css'));
                   .    "<ul id='{$id}-cmds' class='{$paneCss}'>";
         foreach ($section['cmds'] as $cmd)
         {
-            $cmdId      = strtolower($cmd['title']);
-            $cmdFullId  = $id .'-'. preg_replace('/\s+/', '_', $cmdId);
+            $cmdId      = preg_replace('/\s+/', '', strtolower($cmd['title']));
+            $cmdFullId  = $id .'-'. $cmdId;
 
             $state      = ((empty($this->cmd) && ($cmd['expanded'] === true)) ||
                            ($this->cmd === $cmdId)
