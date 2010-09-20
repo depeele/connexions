@@ -1017,8 +1017,13 @@ $.widget("ui.input", {
      */
     reset: function()
     {
-        // Remember the original value
+        // Restore the original value
         this.val( this.element.data('value.uiinput') );
+
+        this.element
+                .removeClass('ui-state-error ui-state-valid ui-state-changed');
+
+        // Trigger 'blur' which will cause a re-validation.
         this.element.trigger('blur');
     },
 
@@ -1047,7 +1052,7 @@ $.widget("ui.input", {
 
         // Clear out validation information
         this.element
-                .removeClass('ui-state-error ui-state-valid');
+                .removeClass('ui-state-error ui-state-valid ui-state-changed');
 
         this.options.$validation
                 .html('&nbsp;')
@@ -1074,6 +1079,11 @@ $.widget("ui.input", {
                 this.options.$validation
                             .html(state);
             }
+        }
+
+        if (this.hasChanged())
+        {
+            this.element.addClass('ui-state-changed');
         }
 
         this.options.valid = state;
