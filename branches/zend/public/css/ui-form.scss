@@ -29,9 +29,13 @@
   input,
   select,
   textarea {
-    /* Also requires ui-state-* to provide the border */
+    // Also requires ui-state-* to provide the border
+    //  see themes/default/jquery-ui.css as well as this file below.
     padding:      0.3em;
     color:        $fieldTextColor;
+  }
+  .ui-state-changed {
+    border-color: $inputChangedColor;
   }
   .ui-button {
     cursor:       pointer;
