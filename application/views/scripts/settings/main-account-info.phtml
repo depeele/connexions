@@ -143,11 +143,19 @@ $jQuery->javascriptCaptureEnd();
     <label for='fullName'>Full Name</label>
     <input name='fullName' type='text' class='text required' autocomplete='off'
           value='<?= $this->viewer->fullName ?>' tabindex='1' />
+    <div class='ui-field-info'>
+     <div class='ui-field-status'></div>
+     <div class='ui-field-requirements'>required</div>
+    </div>
    </h3>
    <div class='user-email field' title='email address'>
     <label  for='email'>email</label>
     <input name='email' type='text' class='text required' autocomplete='off'
           value='<?= $this->viewer->email ?>' tabindex='2' />
+    <div class='ui-field-info'>
+     <div class='ui-field-status'></div>
+     <div class='ui-field-requirements'>required</div>
+    </div>
    </div>
    <div class='user-profile field' title='Profile url'>
     <label  for='profile'>Profile url</label>
