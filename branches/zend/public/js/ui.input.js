@@ -218,30 +218,7 @@ $.widget("ui.input", {
         };
 
         var _blur       = function(e) {
-            self.element.removeClass('ui-state-focus ui-state-active');
-            if (! self.element.hasClass('ui-state-valid'))
-            {
-                self.validate();
-            }
-
-            if (self.val() === '')
-            {
-                self.element.addClass('ui-state-empty');
-
-                if (opts.hideLabel === true)
-                {
-                    opts.$label.show();
-                }
-            }
-            else
-            {
-                if (opts.hideLabel === true)
-                {
-                    opts.$label.hide();
-                }
-
-                self.element.removeClass('ui-state-empty');
-            }
+            self._blur();
         };
 
         self.element
@@ -262,6 +239,37 @@ $.widget("ui.input", {
         else if (opts.hideLabel === true)
         {
             opts.$label.show();
+        }
+    },
+
+    _blur: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        self.element.removeClass('ui-state-focus ui-state-active');
+        if (! self.element.hasClass('ui-state-valid'))
+        {
+            self.validate();
+        }
+
+        if (self.val() === '')
+        {
+            self.element.addClass('ui-state-empty');
+
+            if (opts.hideLabel === true)
+            {
+                opts.$label.show();
+            }
+        }
+        else
+        {
+            if (opts.hideLabel === true)
+            {
+                opts.$label.hide();
+            }
+
+            self.element.removeClass('ui-state-empty');
         }
     },
 
@@ -320,8 +328,12 @@ $.widget("ui.input", {
         this.element
                 .removeClass('ui-state-error ui-state-valid ui-state-changed');
 
-        // Trigger 'blur' which will cause a re-validation.
-        this.element.trigger('blur');
+        // Invoke '_blur' which will cause a re-validation.
+        this._blur();
+
+        // On reset, don't leave anything marked error, valid OR changed.
+        this.element
+                .removeClass('ui-state-error ui-state-valid ui-state-changed');
     },
 
     /** @brief  Has the value of this input changed from its original?
@@ -417,7 +429,11 @@ $.widget("ui.input", {
             newVal = $.trim(newVal);
 
             this.element.data('value.uiinput', newVal);
-            return this.element.val( newVal );
+            var ret = this.element.val( newVal );
+
+            // Invoke _blur() to validate
+            this._blur();
+            return ret;
         }
 
         return $.trim( this.element.val() );

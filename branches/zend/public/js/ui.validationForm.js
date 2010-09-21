@@ -76,8 +76,8 @@ $.widget("ui.validationForm", {
              *  'ui-form-status'
              */
             opts.$validation = self.element
-                                        .parent()
-                                            .find('.ui-form-status:first');
+                                    .parent()
+                                        .find('.ui-form-status:first');
         }
 
         opts.$required = self.element.find('.required');

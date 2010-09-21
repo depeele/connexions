@@ -118,7 +118,7 @@ $.widget("connexions.bookmarkPost", {
         /* An element or element selector to be used to present general status
          * information.  If not provided, $.notify will be used.
          */
-        statusEl:   null,
+        $status:    null,
 
         /* General Json-RPC information:
          *  {version:   Json-RPC version,
@@ -178,58 +178,50 @@ $.widget("connexions.bookmarkPost", {
             }
         }
 
-        if ((opts.statusEl !== null) && (opts.statusEl.jquery === undefined))
+        if ((opts.$status !== null) && (opts.$status.jquery === undefined))
         {
-            opts.statusEl = $(opts.statusEl);
+            opts.$status = $(opts.$status);
         }
-
-        /********************************
-         * Hold an indicator as to wheter
-         * input was automatically
-         * generated / inserted or
-         * the user has typed...
-         */
-        self.auto         = {};
 
         /********************************
          * Locate the pieces
          *
          */
-        self.$required    = self.element.find('.required');
+        opts.$required    = self.element.find('.required');
 
         // Hidden fields
-        self.$userId      = self.element.find('input[name=userId]');
-        self.$itemId      = self.element.find('input[name=itemId]');
+        opts.$userId      = self.element.find('input[name=userId]');
+        opts.$itemId      = self.element.find('input[name=itemId]');
 
         // Text fields
-        self.$name        = self.element.find('input[name=name]');
-        self.$url         = self.element.find('input[name=url]');
-        self.$description = self.element.find('textarea[name=description]');
-        self.$tags        = self.element.find('textarea[name=tags]');
+        opts.$name        = self.element.find('input[name=name]');
+        opts.$url         = self.element.find('input[name=url]');
+        opts.$description = self.element.find('textarea[name=description]');
+        opts.$tags        = self.element.find('textarea[name=tags]');
 
         // Non-text fields
-        self.$favorite    = self.element.find('input[name=isFavorite]');
-        self.$private     = self.element.find('input[name=isPrivate]');
-        self.$rating      = self.element.find('.userRating .stars-wrapper');
+        opts.$favorite    = self.element.find('input[name=isFavorite]');
+        opts.$private     = self.element.find('input[name=isPrivate]');
+        opts.$rating      = self.element.find('.userRating .stars-wrapper');
 
         // Buttons
-        self.$save        = self.element.find('button[name=submit]');
-        self.$cancel      = self.element.find('button[name=cancel]');
-        self.$reset       = self.element.find('button[name=reset]');
+        opts.$save        = self.element.find('button[name=submit]');
+        opts.$cancel      = self.element.find('button[name=cancel]');
+        opts.$reset       = self.element.find('button[name=reset]');
 
         // All input[text/password] and textarea elements
-        self.$inputs      = self.element.find(  'input[type=text],'
+        opts.$inputs      = self.element.find(  'input[type=text],'
                                               + 'input[type=password],'
                                               + 'textarea');
 
         // click-to-edit elements
-        self.$cte         = self.element.find('.click-to-edit');
+        opts.$cte         = self.element.find('.click-to-edit');
 
         // 'suggestions' div -- to be converted to ui.tabs
-        self.$suggestions = self.element.find('.suggestions');
+        opts.$suggestions = self.element.find('.suggestions');
 
         // 'collapsable' elements -- to be converted to connexions.collapsable
-        self.$collapsable = self.element.find('.collapsable');
+        opts.$collapsable = self.element.find('.collapsable');
 
         /********************************
          * Instantiate our sub-widgets
@@ -237,14 +229,14 @@ $.widget("connexions.bookmarkPost", {
          */
 
         // Tag autocompletion
-        self.$tags.autocomplete({
+        opts.$tags.autocomplete({
             source: function(req, rsp) {
                 $.log('connexions.bookmarkPost::$tags.source('+ req.term +')');
                 return self._autocomplete(req, rsp);
             },
             change: function(e, ui) {
                 $.log('connexions.bookmarkPost::$tags.change( "'
-                        + self.$tags.val() +'" )');
+                        + opts.$tags.val() +'" )');
                 self._highlightTags();
             },
             close: function(e, ui) {
@@ -255,7 +247,7 @@ $.widget("connexions.bookmarkPost", {
         });
 
         // Status - Favorite
-        self.$favorite.checkbox({
+        opts.$favorite.checkbox({
             css:        'connexions_sprites',
             cssOn:      'star_fill',
             cssOff:     'star_empty',
@@ -266,7 +258,7 @@ $.widget("connexions.bookmarkPost", {
         });
 
         // Status - Private
-        self.$private.checkbox({
+        opts.$private.checkbox({
             css:        'connexions_sprites',
             cssOn:      'lock_fill',
             cssOff:     'lock_empty',
@@ -277,35 +269,35 @@ $.widget("connexions.bookmarkPost", {
         });
 
         // Rating - average and user
-        self.$rating.stars({
+        opts.$rating.stars({
             //split:    2
         });
 
-        self.$save.addClass('ui-priority-primary')
+        opts.$save.addClass('ui-priority-primary')
                   .button({disabled: true});
 
-        self.$cancel.addClass('ui-priority-secondary')
+        opts.$cancel.addClass('ui-priority-secondary')
                     .button({disabled: false});
-        self.$reset.addClass('ui-priority-secondary')
+        opts.$reset.addClass('ui-priority-secondary')
                     .button({disabled: false});
 
-        self.$suggestions.tabs();
-        self.$collapsable.collapsable();
+        opts.$suggestions.tabs();
+        opts.$collapsable.collapsable();
 
         /* Style all remaining input[type=text|password] / textarea controls
          * with ui.input
          */
-        self.$inputs.input();
+        opts.$inputs.input();
 
         // Add 'ui-field-info' for all required fields
-        self.$required.after(  '<div class="ui-field-info">'
+        opts.$required.after(  '<div class="ui-field-info">'
                              +  '<div class="ui-field-status"></div>'
                              +  '<div class="ui-field-requirements">'
                              +   'required'
                              +  '</div>'
                              + '</div>');
 
-        self.$required
+        opts.$required
                 .filter('[name=tags]')
                     .next('.ui-field-info')
                         .find('.ui-field-requirements')
@@ -315,7 +307,7 @@ $.widget("connexions.bookmarkPost", {
         /* (Re)size all 'ui-field-info' elements to match their corresponding
          * input field
          */
-        self.$required.each(function() {
+        opts.$required.each(function() {
             var $input = $(this);
 
             $input.next().css('width', $input.css('width'));
@@ -338,28 +330,28 @@ $.widget("connexions.bookmarkPost", {
         var self    = this;
         var opts    = self.options;
 
-        opts.name        = self.$name.val();
-        opts.description = self.$description.val();
-        opts.tags        = self.$tags.val();
+        opts.name        = opts.$name.val();
+        opts.description = opts.$description.val();
+        opts.tags        = opts.$tags.val();
 
-        opts.isFavorite  = self.$favorite.checkbox('isChecked');
-        opts.isPrivate   = self.$private.checkbox('isChecked');
+        opts.isFavorite  = opts.$favorite.checkbox('isChecked');
+        opts.isPrivate   = opts.$private.checkbox('isChecked');
 
-        opts.url         = self.$url.val();
+        opts.url         = opts.$url.val();
 
-        if (self.$userId.length > 0)
+        if (opts.$userId.length > 0)
         {
-            opts.userId  = self.$userId.val();
+            opts.userId  = opts.$userId.val();
         }
 
-        if (self.$userId.length > 0)
+        if (opts.$userId.length > 0)
         {
-            opts.itemId  = self.$itemId.val();
+            opts.itemId  = opts.$itemId.val();
         }
 
-        if (self.$rating.length > 0)
+        if (opts.$rating.length > 0)
         {
-            opts.rating  = self.$rating.stars('value');
+            opts.rating  = opts.$rating.stars('value');
         }
     },
 
@@ -369,28 +361,28 @@ $.widget("connexions.bookmarkPost", {
         var self    = this;
         var opts    = self.options;
 
-        self.$name.val(opts.name);
-        self.$description.val(opts.description);
-        self.$tags.val(opts.tags);
+        opts.$name.val(opts.name);
+        opts.$description.val(opts.description);
+        opts.$tags.val(opts.tags);
 
-        self.$favorite.checkbox( opts.isFavorite ? 'check' : 'uncheck' );
-        self.$private.checkbox(  opts.isPrivate  ? 'check' : 'uncheck' );
+        opts.$favorite.checkbox( opts.isFavorite ? 'check' : 'uncheck' );
+        opts.$private.checkbox(  opts.isPrivate  ? 'check' : 'uncheck' );
 
-        self.$url.val(opts.url);
+        opts.$url.val(opts.url);
 
-        if (self.$userId.length > 0)
+        if (opts.$userId.length > 0)
         {
-            self.$userId.val(opts.userId);
+            opts.$userId.val(opts.userId);
         }
 
-        if (self.$userId.length > 0)
+        if (opts.$userId.length > 0)
         {
-            self.$itemId.val(opts.itemId);
+            opts.$itemId.val(opts.itemId);
         }
 
-        if (self.$rating.length > 0)
+        if (opts.$rating.length > 0)
         {
-            self.$rating.stars('value', opts.rating);
+            opts.$rating.stars('value', opts.rating);
         }
     },
 
@@ -431,13 +423,7 @@ $.widget("connexions.bookmarkPost", {
             e.preventDefault();
             e.stopPropagation();
 
-            self.$inputs.input('reset');
-            self.$favorite.checkbox('reset');
-            self.$private.checkbox('reset');
-            self.$rating.stars('reset');
-
-            // :TODO: "Cancel" notification
-            self._trigger('reset', null, data);
+            self.reset();
         };
 
         var _validation_change  = function(e, data) {
@@ -462,97 +448,44 @@ $.widget("connexions.bookmarkPost", {
                 /* We have a valid URL.  If any of name, description, or tags
                  * are empty, perform a HEAD request to fill in target-based
                  * suggestions.
-                if ( (! self.$inputs.filter('name=name')
-                                                    .input('hasChanged')) ||
-                     (! self.$inputs.filter('name=description')
-                                                    .input('hasChanged')) ||
-                     (! self.$inputs.filter('name=tags')
-                                                    .input('hasChanged')) )
                  */
-                if ( ((self.auto.name        !== false)     ||
-                      (self.$name.val().length        < 1)) ||
-                     ((self.auto.description !== false)     ||
-                      (self.$description.val().length < 1)) ||
-                     ((self.auto.tags        !== false)     ||
-                      (self.$tags.val().length        < 1)) )
+                if ( (! opts.$name.input('hasChanged')) ||
+                     (! opts.$description.input('hasChanged')) ||
+                     (! opts.$tags.input('hasChanged')) )
                 {
-                    self._headers(self.$url.val());
+                    self._headers(opts.$url.val());
                 }
             }
         };
 
         var _validate_form  = function() {
-            var isValid     = true;
-            var hasChanged  = self.hasChanged();
-
-            if (hasChanged)
-            {
-                self.$required.each(function() {
-                    if (! $(this).hasClass('ui-state-valid'))
-                    {
-                        isValid = false;
-                        return false;
-                    }
-                });
-
-                if (isValid)
-                {
-                    self._status(true);
-                }
-                else
-                {
-                    self._status(false);
-                }
-            }
-
-            if (hasChanged && isValid)
-            {
-                self.$save.button('enable');
-            }
-            else
-            {
-                self.$save.button('disable');
-            }
-        };
-
-        var _mark_userInput = function() {
-            var $el = $(this);
-
-            self.auto[ $el.attr('name') ] = ($el.val().length > 0
-                                                ? false       // user supplied
-                                                : undefined); // now empty
+            self.validate();
         };
 
         var _tagInput       = function( event ) {
-            _mark_userInput();
-            /*
-            var $el = $(this);
-
-            self.auto[ 'tag' ] = ($el.val().length > 0
-                                    ? false       // user supplied
-                                    : undefined); // now empty
-            */
-
             var keyCode = $.ui.keyCode;
             if ( event.keyCode === $.ui.keyCode.COMMA)
             {
                 // This is the end of a tag -- treat it as a 'select' event
                 // and close the menu
-                var menu    = self.$tags.autocomplete('widget');
+                var menu    = opts.$tags.autocomplete('widget');
 
                 //event.preventDefault();
                 //event.stopPropagation();
-                self.$tags.autocomplete('close');
+                opts.$tags.autocomplete('close');
             }
         };
 
+        /* Context bind this function in 'self/this' so we can use it
+         * outside of this routine.
+         */
         self._tagClick = function( event ) {
             event.preventDefault();
             event.stopPropagation();
 
             var $el     = $(this);
             var tag     = $el.text();
-            var tags    = self.$tags.val();
+            var tags    = opts.$tags.val();
 
             if ($el.hasClass('selected'))
             {
@@ -570,7 +503,7 @@ $.widget("connexions.bookmarkPost", {
                 tags += tag;
             }
 
-            self.$tags.val(tags);
+            opts.$tags.val(tags);
             self._highlightTags();
         };
 
@@ -578,36 +511,35 @@ $.widget("connexions.bookmarkPost", {
          * bind events
          *
          */
-        self.$inputs.bind('validation_change.bookmarkPost',
+        opts.$inputs.bind('validation_change.bookmarkPost',
                                                 _validate_form);
-        self.$favorite.bind('change.bookmarkPost',
+        opts.$favorite.bind('change.bookmarkPost',
                                                 _validate_form);
-        self.$private.bind('change.bookmarkPost',
+        opts.$private.bind('change.bookmarkPost',
                                                 _validate_form);
-        self.$rating.bind('change.bookmarkPost',
+        opts.$rating.bind('change.bookmarkPost',
                                                 _validate_form);
 
-        self.$cte.bind('validation_change.bookmarkPost',
+        opts.$cte.bind('validation_change.bookmarkPost',
                                                 _validation_change);
 
-        self.$save.bind('click.bookmarkPost',   _save_click);
-        self.$cancel.bind('click.bookmarkPost', _reset_click);//_cancel_click);
-        self.$reset.bind('click.bookmarkPost', _reset_click);
+        opts.$save.bind('click.bookmarkPost',   _save_click);
+        opts.$cancel.bind('click.bookmarkPost', _reset_click);//_cancel_click);
+        opts.$reset.bind('click.bookmarkPost',  _reset_click);
 
-        self.$url.bind('validation_change.bookmarkPost',
+        opts.$url.bind('validation_change.bookmarkPost',
                                                 _url_change);
 
-        self.$name.bind('keydown.bookmarkPost', _mark_userInput);
-        self.$description.bind('keydown.bookmarkPost', _mark_userInput);
-        self.$tags.bind('keydown.bookmarkPost', _tagInput);
+        opts.$tags.bind('keydown.bookmarkPost', _tagInput);
 
-        self.$suggestions.find('.cloud .cloudItem a')
+        opts.$suggestions.find('.cloud .cloudItem a')
                     .bind('click.bookmarkPost', self._tagClick);
 
         _validate_form();
     },
 
-    _performUpdate: function() {
+    _performUpdate: function()
+    {
         var self    = this;
         var opts    = self.options;
 
@@ -624,48 +556,48 @@ $.widget("connexions.bookmarkPost", {
         };
 
         // Include all fields that have changed.
-        if (self.$name.val() !== opts.name)
+        if (opts.$name.val() !== opts.name)
         {
-            params.name = self.$name.val();
+            params.name = opts.$name.val();
             nonEmpty    = true;
         }
 
-        if (self.$description.val() !== opts.description)
+        if (opts.$description.val() !== opts.description)
         {
-            params.description = self.$description.val();
+            params.description = opts.$description.val();
             nonEmpty           = true;
         }
 
-        if ( (self.$tags.length > 0) &&
-             (self.$tags.val() !== opts.tags) )
+        if ( (opts.$tags.length > 0) &&
+             (opts.$tags.val() !== opts.tags) )
         {
-            params.tags = self.$tags.val();
+            params.tags = opts.$tags.val();
             nonEmpty    = true;
         }
 
-        if (self.$favorite.checkbox('isChecked') !== opts.isFavorite)
+        if (opts.$favorite.checkbox('isChecked') !== opts.isFavorite)
         {
-            params.isFavorite = self.$favorite.checkbox('isChecked');
+            params.isFavorite = opts.$favorite.checkbox('isChecked');
             nonEmpty          = true;
         }
 
-        if (self.$private.checkbox('isChecked') !== opts.isPrivate)
+        if (opts.$private.checkbox('isChecked') !== opts.isPrivate)
         {
-            params.isPrivate = self.$private.checkbox('isChecked');
+            params.isPrivate = opts.$private.checkbox('isChecked');
             nonEmpty         = true;
         }
 
-        if ( (self.$rating.length > 0) &&
-             (self.$rating.stars('value') !== opts.rating) )
+        if ( (opts.$rating.length > 0) &&
+             (opts.$rating.stars('value') !== opts.rating) )
         {
-            params.rating = self.$rating.stars('value');
+            params.rating = opts.$rating.stars('value');
             nonEmpty      = true;
         }
 
-        if (self.$url.val() !== opts.url)
+        if (opts.$url.val() !== opts.url)
         {
             // The URL has changed -- pass it in
-            params.url = self.$url.val();
+            params.url = opts.$url.val();
             nonEmpty   = true;
         }
         if (nonEmpty !== true)
@@ -750,41 +682,43 @@ $.widget("connexions.bookmarkPost", {
      *                      the sites <head> section.
      *
      */
-    _headers_success: function(headers) {
+    _headers_success: function(headers)
+    {
         var self    = this;
+        var opts    = self.options;
 
-        if ( self.auto.name || (self.$name.val().length < 1))
+        if ( ! opts.$name.input('hasChanged') )
         {
             // See if we can find the title
             if (headers.title.length > 0)
             {
-                self.$name.val( headers.title );
-                self.$name.trigger('blur');
-                self.auto.name = true;
+                /* Do NOT use input('val') here since we don't want to 
+                 * alter the field's default value.
+                 */
+                opts.$name.val(headers.title );
+                opts.$name.trigger('blur');
             }
         }
 
-        if ( self.auto.description || (self.$description.val().length < 1))
+        if ( ! opts.$name.input('hasChanged') )
         {
             // See if there is a '<meta name="description">'
             var $desc   = headers.meta.filter('meta[name=description]');
             if ($desc.length > 0)
             {
-                self.$description.val( $desc.attr('content') );
-                self.$description.trigger('blur');
-                self.auto.description = true;
+                opts.$description.val($desc.attr('content') );
+                opts.$description.trigger('blur');
             }
         }
 
-        if ( self.auto.tags || (self.$tags.val().length < 1))
+        if ( ! opts.$tags.input('hasChanged') )
         {
             // See if there is a '<meta name="keywords">'
             var $keywords   = headers.meta.filter('meta[name=keywords]');
             if ($keywords.length > 0)
             {
-                self.$tags.val( $keywords.attr('content') );
-                self.$tags.trigger('blur');
-                self.auto.tags = true;
+                opts.$tags.val($keywords.attr('content') );
+                opts.$tags.trigger('blur');
             }
         }
     },
@@ -796,7 +730,8 @@ $.widget("connexions.bookmarkPost", {
      *  @param  callback    The callback to invoke upon successful retrieval:
      *                          callback( headers )
      */
-    _headers: function(url, callback) {
+    _headers: function(url, callback)
+    {
         var self    = this;
         var opts    = self.options;
 
@@ -875,18 +810,18 @@ $.widget("connexions.bookmarkPost", {
                 url:    url
             },
             success: function(data) {
-                var $content    = self.$suggestions
+                var $content    = opts.$suggestions
                                         .find('#suggestions-tags '
                                                 +'.recommended .content');
 
                 // Unbind current tag click handler
-                self.$suggestions.find('.cloud .cloudItem a')
+                opts.$suggestions.find('.cloud .cloudItem a')
                     .unbind('.bookmarkPost');
 
                 $content.html( data );
 
                 // Re-bind tag click handler to the new content
-                self.$suggestions.find('.cloud .cloudItem a')
+                opts.$suggestions.find('.cloud .cloudItem a')
                     .bind('click.bookmarkPost', self._tagClick);
 
                 self._highlightTags();
@@ -894,23 +829,25 @@ $.widget("connexions.bookmarkPost", {
         });
     },
 
-    _highlightTags: function() {
+    _highlightTags: function()
+    {
         var self    = this;
+        var opts    = self.options;
 
-        if (self.$suggestions.length < 1)
+        if (opts.$suggestions.length < 1)
         {
             // No suggestions area so no tags to highlight
             return;
         }
 
         // Find all tags in the suggestions area
-        var $cloudTags  = self.$suggestions.find('.cloud .cloudItem a');
+        var $cloudTags  = opts.$suggestions.find('.cloud .cloudItem a');
 
         // Remove any existing highlights
         $cloudTags.filter('.selected').removeClass('selected');
 
         // Highlight any currently selected tags.
-        var tags    = self.$tags.val();
+        var tags    = opts.$tags.val();
         var nTags   = tags.length;
         var tag     = null;
 
@@ -936,7 +873,8 @@ $.widget("connexions.bookmarkPost", {
         }
     },
 
-    _autocomplete: function(request, response) {
+    _autocomplete: function(request, response)
+    {
         var self    = this;
         var opts    = self.options;
         var params  = {
@@ -948,13 +886,13 @@ $.widget("connexions.bookmarkPost", {
          * URL value.
          */
         if ( (params.id.itemId === null) ||
-             (self.$url.val()       !== opts.url) )
+             (opts.$url.val()       !== opts.url) )
         {
             // The URL has changed -- pass it in
-            params.id.itemId = self.$url.val();
+            params.id.itemId = opts.$url.val();
         }
 
-        params.str = self.$tags.autocomplete('option', 'term');
+        params.str = opts.$tags.autocomplete('option', 'term');
 
         $.jsonRpc(opts.jsonRpc, 'bookmark.autocompleteTag', params, {
             success:    function(ret, txtStatus, req){
@@ -985,11 +923,12 @@ $.widget("connexions.bookmarkPost", {
         });
     },
 
-    _status: function(isSuccess, title, text) {
+    _status: function(isSuccess, title, text)
+    {
         var self    = this;
         var opts    = self.options;
 
-        if (opts.statusEl === null)
+        if (opts.$status === null)
         {
             if ((title !== undefined) && (text !== undefined))
             {
@@ -1010,15 +949,15 @@ $.widget("connexions.bookmarkPost", {
                 msg += text;
             }
 
-            opts.statusEl.html(msg);
+            opts.$status.html(msg);
 
             if (isSuccess)
             {
-                opts.statusEl.removeClass('error').addClass('success');
+                opts.$status.removeClass('error').addClass('success');
             }
             else
             {
-                opts.statusEl.removeClass('success').addClass('error');
+                opts.$status.removeClass('success').addClass('error');
             }
         }
     },
@@ -1042,10 +981,10 @@ $.widget("connexions.bookmarkPost", {
             opts.enabled = true;
             self.element.removeClass('ui-state-disabled');
 
-            self.$favorite.checkbox('enable');
-            self.$private.checkbox('enable');
-            self.$rating.stars('enable');
-            self.$inputs.input('enable');
+            opts.$favorite.checkbox('enable');
+            opts.$private.checkbox('enable');
+            opts.$rating.stars('enable');
+            opts.$inputs.input('enable');
 
             self._trigger('enabled', null, true);
         }
@@ -1061,10 +1000,10 @@ $.widget("connexions.bookmarkPost", {
             opts.enabled = false;
             self.element.addClass('ui-state-disabled');
 
-            self.$favorite.checkbox('disable');
-            self.$private.checkbox('disable');
-            self.$rating.stars('disable');
-            self.$inputs.input('disable');
+            opts.$favorite.checkbox('disable');
+            opts.$private.checkbox('disable');
+            opts.$rating.stars('disable');
+            opts.$inputs.input('disable');
 
             self._trigger('disabled', null, true);
         }
@@ -1075,15 +1014,55 @@ $.widget("connexions.bookmarkPost", {
      */
     reset: function()
     {
-        var self    = this;
+        var self        = this;
+        var opts        = self.options;
 
-        self.$inputs.input('reset');
-        self.$favorite.checkbox('reset');
-        self.$private.checkbox('reset');
-        self.$rating.stars('reset');
+        opts.$favorite.checkbox('reset');
+        opts.$private.checkbox('reset');
+        opts.$rating.stars('reset');
+        opts.$inputs.input('reset');
 
-        // Perform a validation
+        self._trigger('reset');
+        self.headersUrl = undefined;
+
         self.validate();
+    },
+
+    validate: function()
+    {
+        var self        = this;
+        var opts        = self.options;
+        var isValid     = true;
+        var hasChanged  = self.hasChanged();
+
+        if (hasChanged)
+        {
+            opts.$required.each(function() {
+                if (! $(this).hasClass('ui-state-valid'))
+                {
+                    isValid = false;
+                    return false;
+                }
+            });
+
+            if (isValid)
+            {
+                self._status(true);
+            }
+            else
+            {
+                self._status(false);
+            }
+        }
+
+        if (hasChanged && isValid)
+        {
+            opts.$save.button('enable');
+        }
+        else
+        {
+            opts.$save.button('disable');
+        }
     },
 
     /** @brief  Have any of the ui.input fields changed from their original
@@ -1093,11 +1072,12 @@ $.widget("connexions.bookmarkPost", {
      */
     hasChanged: function()
     {
-        var self    = this;
+        var self        = this;
+        var opts        = self.options;
         var hasChanged  = false;
 
         // Has anything changed from the forms initial values?
-        self.$inputs.each(function() {
+        opts.$inputs.each(function() {
             if ($(this).input('hasChanged'))
             {
                 hasChanged = true;
@@ -1106,9 +1086,9 @@ $.widget("connexions.bookmarkPost", {
         });
 
         if ((! hasChanged) &&
-            (self.$favorite.checkbox('hasChanged') ||
-             self.$private.checkbox('hasChanged')  ||
-             self.$rating.stars('hasChanged')) )
+            (opts.$favorite.checkbox('hasChanged') ||
+             opts.$private.checkbox('hasChanged')  ||
+             opts.$rating.stars('hasChanged')) )
         {
             hasChanged = true;
         }
@@ -1122,33 +1102,40 @@ $.widget("connexions.bookmarkPost", {
         var opts    = self.options;
 
         // Cleanup
-        self.$save.removeClass('ui-priority-primary');
-        self.$cancel.removeClass('ui-priority-secondary');
-        self.$reset.removeClass('ui-priority-secondary');
-        self.$required.next('.ui-field-info').remove();
+        opts.$save.removeClass('ui-priority-primary');
+        opts.$cancel.removeClass('ui-priority-secondary');
+        opts.$reset.removeClass('ui-priority-secondary');
+        opts.$required.next('.ui-field-info').remove();
 
         self.element.removeClass('ui-form');
 
         // Unbind events
-        self.$inputs.unbind('.bookmarkPost');
-        self.$favorite.unbind('.bookmarkPost');
-        self.$private.unbind('.bookmarkPost');
-        self.$rating.unbind('.bookmarkPost');
-        self.$cte.unbind('.bookmarkPost');
-        self.$save.unbind('.bookmarkPost');
-        self.$cancel.unbind('.bookmarkPost');
+        opts.$inputs.unbind('.bookmarkPost');
+        opts.$favorite.unbind('.bookmarkPost');
+        opts.$private.unbind('.bookmarkPost');
+        opts.$rating.unbind('.bookmarkPost');
+        opts.$cte.unbind('.bookmarkPost');
+        opts.$save.unbind('.bookmarkPost');
+        opts.$cancel.unbind('.bookmarkPost');
+        opts.$reset.unbind('.bookmarkPost');
+
+        opts.$url.unbind('.bookmarkPost');
+        opts.$tags.unbind('.bookmarkPost');
+
+        opts.$suggestions.find('.cloud .cloudItem a')
+                    .unbind('.bookmarkPost');
 
         // Remove added elements
-        self.$favorite.checkbox('destroy');
-        self.$private.checkbox('destroy');
-        self.$rating.stars('destroy');
-        self.$inputs.input('destroy');
-        self.$save.button('destroy');
-        self.$cancel.button('destroy');
-        self.$reset.button('destroy');
+        opts.$favorite.checkbox('destroy');
+        opts.$private.checkbox('destroy');
+        opts.$rating.stars('destroy');
+        opts.$inputs.input('destroy');
+        opts.$save.button('destroy');
+        opts.$cancel.button('destroy');
+        opts.$reset.button('destroy');
 
-        self.$suggestions.tabs('destroy');
-        self.$collapsable.collapsable('destroy');
+        opts.$suggestions.tabs('destroy');
+        opts.$collapsable.collapsable('destroy');
     }
 });
 

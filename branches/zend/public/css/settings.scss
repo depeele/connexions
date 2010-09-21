@@ -74,15 +74,22 @@
       label {
         @include inlineBlock();
         position:       relative;
-        width:          19%;
+        // 5.75em is roughly 19% using .userInput font-size
+        width:          5.75em;
         padding:        0 0 1em;
         vertical-align: middle;
       }
       .field {
         .text {
+          // Use % for width since the different field types have different
+          // font-size settings.  80% is 24em using .userInput font-size
           width:          80%;
           color:          $darkest;
           vertical-align: middle;
+        }
+        .ui-field-info {
+          //                         vv '.userInput label width'
+          padding:        0 0.75em 0 5.75em;
         }
       }
       .user-fullName {
