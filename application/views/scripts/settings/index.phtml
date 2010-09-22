@@ -131,7 +131,9 @@ $this->headLink()->appendStylesheet($this->baseUrl('/css/settings.css'));
  * generate the Javascript to create a ui.tabs instance.
  */
 $jQuery = $this->jQuery();
-$jQuery->addOnLoad("settings_onLoad();")
+$jQuery->addJavascriptFile($this->baseurl('js/connexions-full.js'))
+       ->addJavascriptFile($this->baseurl('js/settings-full.js'))
+       ->addOnLoad("settings_onLoad();")
        ->javascriptCaptureStart();
 ?>
 /************************************************
