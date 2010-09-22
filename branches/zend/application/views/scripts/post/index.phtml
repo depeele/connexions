@@ -5,7 +5,7 @@ if (! @is_array($this->postInfo))
 //$noConflict = Zend_JQuery_View_Helper_JQuery::getJQueryHandler();
 
 $jQuery = $this->jQuery();
-$jQuery->addOnLoad('$("#post form").bookmarkPost({statusEl: ".status"});');
+$jQuery->addOnLoad('$("#post form").bookmarkPost({$status: ".status"});');
 
 if (isset($this->postInfo['itemId']) && ($this->postInfo['mode'] !== 'post'))
 {

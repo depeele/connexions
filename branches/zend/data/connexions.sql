@@ -150,7 +150,7 @@ CREATE TABLE userAuth (
 
   credential    VARCHAR(255)            NOT NULL DEFAULT '',
 
-  PRIMARY KEY           (`userAuthId`)
+  PRIMARY KEY           (`userAuthId`),
   KEY `ua_triple`       (`userId`, `authType`, `credential`),
   KEY `ua_userId`       (`userId`),
   KEY `ua_credential`   (`credential`)

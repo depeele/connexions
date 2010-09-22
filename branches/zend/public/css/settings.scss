@@ -119,25 +119,63 @@
     }
     .type {
       // From sprites.scss
-      background:       $connexions_sprites_url unquote("no-repeat scroll 0px 0px transparent");
-      background-image: $connexions_sprites_url unquote("!important");
-      width:            16px;
-      height:           16px;
-      overflow:         hidden;
-      text-indent:      -9999px;
+      width:                  16px;
+      height:                 16px;
+      overflow:               hidden;
+      text-indent:            -9999px;
+
+      background-image:       $connexions_sprites_url;
+      background-repeat-x:    no-repeat;
+      background-repeat-y:    no-repeat;
+      background-attachment:  scroll;
+      background-position:    0px 0px;
     }
-    .type, .name, .credential, .control {
+    .type, .name, .credential, .control, .typeSelection {
       @include inlineBlock();
     }
+    .type {
+      margin-right: 8px;
+    }
 
-    .pki .type {
-      background-position:  -120px 0;
+    .pki {
+      background-position:  -120px 0px;
     }
-    .openid .type {
-      background-position:  -136px 0;
+    .openid {
+      background-position:  -136px 0px;
     }
-    .password .type {
-      background-position:  -152px 0;
+    .password {
+      background-position:  -152px 0px;
+    }
+
+    .typeSelection {
+      z-index:  5;
+
+      .control {
+        position: absolute;
+        right:    -4px;
+      }
+      .options {
+        position: absolute;
+        display:  block;
+        width:    8em;
+        display:  none;
+
+        .current {
+          font-weight:  bold;
+        }
+        .option {
+          padding:  0.25em;
+          border:   none;
+          cursor:   pointer;
+          .type, .label {
+            @include inlineBlock();
+          }
+          .label {
+            width:        5em;
+            padding-left: 0.5em;
+          }
+        }
+      }
     }
 
     .name {
@@ -180,7 +218,7 @@
     }
 
     .buttons {
-      padding:  0.25em 5.5em 1em 24px;
+      padding:  0.25em 5.5em 1em 36px;
 
       button {
         float:    right;

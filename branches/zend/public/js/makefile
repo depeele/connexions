@@ -13,14 +13,20 @@ SRCS =	connexions.js jquery.registry.js jquery.cookie.js 		\
 	connexions.bookmarkPost.js connexions.autocomplete.js		\
 	connexions.bookmark.js connexions.user.js
 
+SETTINGS_SRCS	= settings.credentials.js
+
 #all: connexions.min.css bookmarks.min.css users.min.css 	\
 #	urlItems.min.css inbox.min.css				\
 # 	validationForm.min.css post.min.css auth.min.css 	\
 #	inbox.min.css
-all:	$(MINS) connexions-full.js connexions-full.min.js
+all:	connexions-full.js connexions-full.min.js	\
+	settings-full.js   settings-full.min.js
 
 connexions-full.js: $(SRCS)
 	cat $(SRCS) > $@
+
+settings-full.js: $(SETTINGS_SRCS)
+	cat $(SETTINGS_SRCS) > $@
 
 #----------------------------------------------------------------------------
 

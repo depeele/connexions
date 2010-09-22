@@ -1034,10 +1034,9 @@ $.widget("ui.input", {
         // Invoke '_blur' which will cause a re-validation.
         this._blur();
 
-        /*
+        // On reset, don't leave anything marked error, valid OR changed.
         this.element
                 .removeClass('ui-state-error ui-state-valid ui-state-changed');
-        */
     },
 
     /** @brief  Has the value of this input changed from its original?
@@ -1707,7 +1706,7 @@ $.widget("ui.validationForm", {
                                      * [ true ];
                                      */
 
-        $validation:    null        /* The element to present validation
+        $status:        null        /* The element to present validation
                                      * information in [:sibling
                                      *                  .ui-form-status]
                                      */
@@ -1716,7 +1715,7 @@ $.widget("ui.validationForm", {
     /** @brief  Initialize a new instance.
      *
      *  Valid options:
-     *      $validation:    The element to present validation information in
+     *      $status:        The element to present validation information in
      *                      [ parent().find('.ui-form-status:first) ]
      *
      *  @triggers:
@@ -1733,11 +1732,11 @@ $.widget("ui.validationForm", {
 
         opts.enabled = self.element.attr('disabled') ? false : true;
 
-        if (opts.$validation)
+        if (opts.$status)
         {
-            if (opts.$validation.jquery === undefined)
+            if (opts.$status.jquery === undefined)
             {
-                opts.$validation = $(opts.$validation);
+                opts.$status = $(opts.$status);
             }
         }
         else
@@ -1748,7 +1747,7 @@ $.widget("ui.validationForm", {
              * Use the first child of our parent that has the CSS class
              *  'ui-form-status'
              */
-            opts.$validation = self.element
+            opts.$status = self.element
                                     .parent()
                                         .find('.ui-form-status:first');
         }
@@ -1898,14 +1897,14 @@ $.widget("ui.validationForm", {
 
             if (isValid)
             {
-                opts.$validation
+                opts.$status
                         .removeClass('error')
                         .addClass('success')
                         .text('');
             }
             else
             {
-                opts.$validation
+                opts.$status
                         .removeClass('success')
                         .addClass('error');
             }
