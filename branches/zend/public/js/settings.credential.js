@@ -108,7 +108,7 @@ $.widget("settings.credential", {
          * Locate our parts.
          */
         opts.$userAuthId = self.element.find('input[name^=userAuthId]');
-        opts.$type       = self.element.find('.type');
+        opts.$type       = self.element.find('.type:first');
         opts.$name       = self.element.find('input[name^=name]');
         opts.$credential = self.element.find('input[name^=credential]');
 
@@ -124,6 +124,12 @@ $.widget("settings.credential", {
         }
 
         self._activateNew();
+
+        // Save the initial values
+        opts.userAuthId = opts.$userAuthId.val();
+        opts.authType   = opts.$type.data('type.settingsCredential');
+        opts.name       = opts.$name.val();
+        opts.credential = opts.$credential.val();
 
         /********************************
          * Bind to interesting events.
@@ -380,6 +386,41 @@ $.widget("settings.credential", {
      * Public methods
      *
      */
+
+    hasChanged: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+        var $cred   = self.element;
+
+        return ( ($cred.hasClass('new')                  ||
+                  opts.$name.input('hasChanged')         ||
+                  opts.$credential.input('hasChanged'))
+                    ? true
+                    : false );
+    },
+
+    reset: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        opts.$name.input('reset');
+        opts.$credential.input('reset');
+    },
+
+    values: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        // Return the current values
+        return { userAuthId: opts.userAuthId,
+                 authType:   opts.$type.data('type.settingsCredential'),
+                 name:       opts.$name.val(),
+                 credential: opts.$credential.val()
+        };
+    },
 
     destroy: function()
     {
