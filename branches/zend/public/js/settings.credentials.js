@@ -1,6 +1,6 @@
 /** @file
  *
- *  Javascript interface/wrapper for credential management.
+ *  Javascript interface/wrapper for the management of multiple credentials.
  *
  *  This is primarily a class to provide unobtrusive activation of a
  *  pre-renderd credentials form
@@ -30,7 +30,7 @@
  *  Requires:
  *      ui.core.js
  *      ui.widget.js
- *      connexions.collapsable
+ *      settings.credential.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false */
@@ -47,15 +47,6 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
     widgetEventPrefix:    '',
 
     options: {
-        // Widget state (mirrors Model_UserAuth)
-        userAuthId: null,
-
-        authType:   null,
-        name:       null,
-        credential: null,
-
-        validTypes: [ 'openid', 'password', 'pki' ],
-
         /* An element or element selector to be used to present general status
          * information.  If not provided, $.notify will be used.
          */
@@ -138,17 +129,16 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
                                     .find('li:has(input[name^=userAuthId])');
 
 
-        // Hidden fields
-        opts.$usrAuthId   = self.element.find('input[name=userAuthId]');
-
-        // Delete and Add items
-        opts.$deletes   = self.element.find('.delete');
+        // Add item
         opts.$add       = self.element.find('.add');
 
         /********************************
          * Instantiate any sub-widgets
          * 
          */
+        opts.$credentials.each(function() {
+            self._activateCredential( $(this) );
+        });
 
 
         self._initialized = true;
@@ -192,16 +182,6 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
             return false;
         };
 
-        self.__delete_item    = function(e) {
-            e.stopImmediatePropagation();
-            e.preventDefault();
-            e.stopPropagation();
-
-            $.log('settings.credentials::__delete_item()');
-
-            self.deleteItem(this);
-        };
-
         var _add_item       = function(e) {
             e.stopImmediatePropagation();
             e.preventDefault();
@@ -211,14 +191,21 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
 
             self.addItem();
         };
+        var _status         = function(e, isSuccess, title, text) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            e.stopPropagation();
+
+            self._status(isSuccess, title, text);
+        };
 
         /**********************************************************************
          * bind events
          *
          */
         opts.$submit.bind('click.settingsCredentials',  _save_click);
-        opts.$deletes.bind('click.settingsCredentials', self.__delete_item);
         opts.$add.bind('click.settingsCredentials',     _add_item);
+        self.element.bind('status.settingsCredentials', _status);
     },
 
     _performUpdate: function()
@@ -358,171 +345,33 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
         }
     },
 
-    /** @brief  Request the deletion of an existing credential
-     *  @param  $cred   The jQuery DOM element representing the credential to
-     *                  delete.
-     */
-    _deleteCredential: function($cred)
-    {
-        var self    = this;
-        var opts    = self.options;
-        var params  = {
-            userAuthId: $cred.find('[name^=userAuthId]').val()
-        };
-
-        // Perform a JSON-RPC call to perform the update.
-        $.jsonRpc(opts.jsonRpc, 'user.deleteCredential', params, {
-            success:    function(data, textStatus, req) {
-                if (data.error !== null)
-                {
-                    self._status(false,
-                                 'Credential deletion failed',
-                                 data.error.message);
-
-                    return;
-                }
-
-                self._status(true,
-                             'Credential deletion succeeded',
-                             'Credential deleted');
-
-                $cred.remove();
-
-                // "Save" notification
-                self._trigger('saved',    null, data.result);
-                self._trigger('complete');
-            },
-            error:      function(req, textStatus, err) {
-                self._status(false,
-                             'Credential deletion failed',
-                             textStatus);
-
-                // :TODO: "Error" notification??
-            },
-            complete:   function(req, textStatus) {
-                self.element.unmask();
-            }
-         });
-    },
-
     _activateCredential: function($cred)
     {
         var self    = this;
         var opts    = self.options;
-        var $inputs = $cred.find(  'input[type=text],'
-                                 + 'input[type=password],'
-                                 + 'textarea');
-        var $delete = $cred.find('.delete');
-        var $sel    = $cred.find('.typeSelection');
 
-        // Activate the widgets
-        $inputs.input({hideLabel: opts.hideLabels});
+        $cred.credential({jsonRpc: opts.jsonRpc,
+                          apiKey:  opts.apiKey});
 
-        // Bind events
-        $delete.bind('click.settingsCredentials', self.__delete_item);
-
-        if ($sel.length > 0)
-        {
-            var $cur    = $sel.find('.current:first');
-            var $ctrl   = $sel.find('.type,.control');
-            var $type   = $sel.find('.type');
-            var $opts   = $sel.find('.options');
-            var $types  = $opts.find('.option');
-
-            $types.each(function() {
-                var $el     = $(this);
-                var type    = $el.find('.label').text();
-
-                $el.data('type.settingsCredentials', type);
-            });
-
-            $cur.data('type.settingsCredentials', $cur.text());
-
-            //'removeNew.settingsCredentials'
-            $cred.bind('remove.settingsCredentials', function(e) {
-                // Remove this credential, cleaning up as we go
-                $types.removeData();
-                $cur.removeData();
-                $ctrl.unbind('.settingsCredentials');
-                $types.unbind('.settingsCredentials');
-
-                self._deactivateCredential($cred);
-            });
-
-            $ctrl.bind('click.settingsCredentials', function(e) {
-                $opts.slideToggle();
-            });
-            $types.bind('click.settingsCredentials', function(e) {
-                var $el     = $(this);
-                var type    = $el.data('type.settingsCredentials');
-                var curType = $cur.data('type.settingsCredentials');
-
-                if (type === curType)
-                {
-                    return;
-                }
-
-                // Change the current value class and data
-                $cur.removeClass(curType)
-                    .addClass(type)
-                    .text(type)
-                    .data('type.settingsCredentials', type);
-
-                if ((curType === 'password') || (type === 'password'))
-                {
-                    // We need to change the form field type
-                    var $input  = $cred.find('[name^=credential]');
-                    var val     = $input.val();
-                    var html    = "<input type='"
-                                +           (type === 'password'
-                                                ? 'password'
-                                                : 'text') +"' "
-                                +        "name='credential[]' "
-                                +       "class='text required' "
-                                +       "value='"+ val +"' />";
-                    var $new    = $(html);
-
-                    $input.before( $new )
-                          .input('destroy')
-                          .remove();
-                    $new.input({hideLabel: opts.hideLabels});
-                }
-
-                $types.removeClass('current');
-                $el.addClass('current');
-
-                $opts.slideToggle();
-            });
-        }
-
-        // Finally, update the inputs and deletes item lists.
+        // Update the inputs and required item lists.
+        opts.$inputs  = self.element.find(  'input[type=text],'
+                                          + 'input[type=password],'
+                                          + 'textarea');
         opts.$required = self.element.find('.required');
-        opts.$inputs   = self.element.find(  'input[type=text],'
-                                           + 'input[type=password],'
-                                           + 'textarea');
-        opts.$deletes  = self.element.find('.delete');
     },
 
     _deactivateCredential: function($cred)
     {
         var self    = this;
         var opts    = self.options;
-        var $inputs = $cred.find(  'input[type=text],'
-                                 + 'input[type=password],'
-                                 + 'textarea');
-        var $delete = $cred.find('.delete');
 
-        // Destroy the widgets...
-        $inputs.input('destroy');
+        $cred.credential('destroy');
 
-        // Unbind events
-        $delete.unbind('.settingsCredentials');
-
-        // Finally, update the inputs and deletes item lists.
-        opts.$inputs  = self.element.find(  'input[type=text],'
-                                          + 'input[type=password],'
-                                          + 'textarea');
-        opts.$deletes = self.element.find('.delete');
+        // Update the inputs and required item lists.
+        opts.$inputs   = self.element.find(  'input[type=text],'
+                                           + 'input[type=password],'
+                                           + 'textarea');
+        opts.$required = self.element.find('.required');
     },
 
     /************************
@@ -535,9 +384,10 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
      */
     addItem: function()
     {
+        var valids  = $.settings.credential.prototype.options.validTypes;
         var self    = this;
         var opts    = self.options;
-        var cur     = opts.validTypes[0];
+        var cur     = valids[0];
         var html    = "<li class='new'>"
                     +  "<div class='field typeSelection'>"
                     +   "<div class='type current "+ cur +"'>"+ cur +"</div>"
@@ -546,7 +396,7 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
                     +   "</div>"
                     +   "<div class='options ui-corner-all ui-state-default'>";
 
-        $.each(opts.validTypes, function(idex, val) {
+        $.each(valids, function(idex, val) {
             html    +=   "<div class='option ui-state-default"
                     +               (cur === val ? ' current' : '') + "'>"
                     +      "<div class='type "+ this +"'>"+ this +"</div>"
@@ -583,54 +433,6 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
         self._activateCredential($div);
     },
 
-    /** @brief  Delete an existing credential (or credential entry area)
-     *  @param  item    The targeted delete item.
-     *
-     */
-    deleteItem: function(item)
-    {
-        var self    = this;
-        var opts    = self.options;
-        var $el     = $(item);
-        var $cred   = $el.closest('li');
-
-        // Present a confirmation dialog.
-        var html    = '<div class="confirm">'
-                    /*
-                    +  '<span class="ui-icon ui-icon-alert" '
-                    +        'style="float:left; margin:0 7px 20px 0;">'
-                    +  '</span>'
-                    */
-                    +  'Really delete?<br />'
-                    +  '<button name="yes">Yes</button>'
-                    +  '<button name="no" >No</button>'
-                    + '</div>';
-        var $div    = $(html);
-
-        $el.after( $div );
-        $el.attr('disabled', true);
-
-        $div.find('button[name=yes]').click(function(e) {
-            $el.removeAttr('disabled');
-            $div.remove();
-
-            if ( $cred.hasClass('new'))
-            {
-                // This was an unsaved, new credential so just remove it.
-                $cred.remove(); //trigger('removeNew');
-                return;
-            }
-
-            // This was an existing credential, so perform a server-side delete
-            self._deleteCredential($cred);
-        });
-        $div.find('button[name=no]').click(function() {
-            $el.removeAttr('disabled');
-            $div.remove();
-        });
-
-    },
-
     destroy: function()
     {
         var self    = this;
@@ -640,7 +442,6 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
 
         // Unbind events
         opts.$submit.unbind('.settingsCredentials');
-        opts.$deletes.unbind('.settingsCredentials');
         opts.$add.unbind('.settingsCredentials');
 
         // Remove added elements
