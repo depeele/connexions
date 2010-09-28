@@ -127,7 +127,8 @@ $.widget("ui.validationForm", {
      * Public methods
      *
      */
-    isEnabled: function() {
+    isEnabled: function()
+    {
         return this.options.enabled;
     },
 
@@ -200,6 +201,28 @@ $.widget("ui.validationForm", {
         return hasChanged;
     },
 
+    /** @brief  Invoked when additional inputs have been added to the form.
+     */
+    rebind: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        // Make sure our lists are up-to-date
+        opts.$required = self.element.find('.required');
+        opts.$inputs   = self.element.find(  'input[type=text],'
+                                           + 'input[type=password],'
+                                           + 'textarea');
+
+        // Unbind any existing events
+        opts.$inputs.unbind('.uivalidationform');
+
+        // and rebind
+        self._bindEvents();
+    },
+
+    /** @brief  Invoked to perform validation.
+     */
     validate: function()
     {
         var self        = this;

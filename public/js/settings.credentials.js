@@ -126,7 +126,7 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
          * by our superclass.
          */
         opts.$credentials = self.element
-                                    .find('li:has(input[name^=userAuthId])');
+                                    .find('li:has(input[name^=credential])');
 
 
         // Add item
@@ -224,24 +224,14 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
 
         // Fill in all credentials that have changes or are new.
         opts.$credentials.each(function() {
-            var $el     = $(this);
-            var $type   = $el.find('.type');
-            var $name   = $el.find('.name');
-            var $cred   = $el.find('.credential');
+            var $cred   = $(this);
 
-            if ( (! $type.hasClass('new'))     &&
-                 (! $name.input('hasChanged')) &&
-                 (! $cred.input('hasChanged')) )
+            if (! $cred.credential('hasChanged'))
             {
                 return;
             }
 
-            params.credentials.push( {
-                userAuthId: $el.find('[name^=userAuthId]').val(),
-                type:       $type.val(),
-                name:       $name.val(),
-                credential: $name.val()
-            });
+            params.credentials.push( $cred.credential('values') );
         });
 
         if (params.credentials.length < 1)
@@ -353,11 +343,9 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
         $cred.credential({jsonRpc: opts.jsonRpc,
                           apiKey:  opts.apiKey});
 
-        // Update the inputs and required item lists.
-        opts.$inputs  = self.element.find(  'input[type=text],'
-                                          + 'input[type=password],'
-                                          + 'textarea');
-        opts.$required = self.element.find('.required');
+        $cred.bind('remove.settingsCredentials', function() {
+            self._deactivateCredential( $cred );
+        });
     },
 
     _deactivateCredential: function($cred)
@@ -367,11 +355,12 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
 
         $cred.credential('destroy');
 
-        // Update the inputs and required item lists.
-        opts.$inputs   = self.element.find(  'input[type=text],'
-                                           + 'input[type=password],'
-                                           + 'textarea');
-        opts.$required = self.element.find('.required');
+        // Refresh the list of credentials
+        opts.$credentials = self.element
+                                    .find('li:has(input[name^=credential])');
+
+        // Re-bind to account for the destroyed inputs
+        self.rebind();  //$.ui.validationForm.prototype.rebind.call(this);
     },
 
     /************************
@@ -429,8 +418,15 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
 
         $buttons.before( $div );
 
-        // :TODO: bind the new item.
+        // Activate the new item.
         self._activateCredential($div);
+
+        // Refresh theh list of credentials
+        opts.$credentials = self.element
+                                    .find('li:has(input[name^=credential])');
+
+        // Re-bind to take into account the new inputs
+        self.rebind();  //$.ui.validationForm.prototype.rebind.call(this);
     },
 
     destroy: function()
