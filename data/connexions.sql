@@ -85,8 +85,9 @@ CREATE TABLE memberGroup (
   ownerId           INT(10)     UNSIGNED            NOT NULL DEFAULT 0,
 
   PRIMARY KEY           (`groupId`),
-  KEY `n_groupType`     (`groupType`),
-  KEY `n_ownerId`       (`ownerId`)
+  KEY `mg_name`         (`name`),
+  KEY `mg_groupType`    (`groupType`),
+  KEY `mg_ownerId`      (`ownerId`)
 ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --

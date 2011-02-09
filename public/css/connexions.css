@@ -440,13 +440,13 @@ a:visited { color: #005a9c; }
 .paginator .info .perPage .pageCount, .paginator .info .itemRange .pageCount { font-size: 1.1em; }
 .paginator .info .itemRange .count { margin-right: 0; }
 
-.paginator-top { float: left; padding: 0.5em 0; }
+.paginator-top { float: left; padding: 0.1em 0; }
 .paginator-top .pager { display: inline; }
 
-.displayOptions { float: right; padding-top: 0.5em; }
-.displayOptions form { position: absolute; top: 2.5em; right: 0; padding: 0.5em; width: 20em; z-index: 11; }
+.displayOptions { float: right; }
+.displayOptions form { position: absolute; top: 1.75em; right: 0; padding: 0.5em; width: 20em; z-index: 11; }
 .displayOptions form select { font-size: 0.9em; }
-.displayOptions .control { z-index: 10; cursor: pointer; padding: 0.3em 0.25em 0.25em; }
+.displayOptions .control { z-index: 10; cursor: pointer; }
 .displayOptions .control a { font-weight: normal; }
 .displayOptions .control .ui-icon { float: right; }
 .displayOptions .buttons { text-align: right; }
@@ -592,8 +592,8 @@ a:visited { color: #005a9c; }
 
 /****** main.scss ****** */
 /* Page Header */
-#pageHeader { height: 3.5em; z-index: 100; }
-#pageHeader h1#siteName { position: absolute; top: 0; left: 0; color: black; font-weight: bold; font-size: 26px; padding-top: 5px; height: 45px; width: 200px; }
+#pageHeader { height: 3.25em; z-index: 100; }
+#pageHeader h1#siteName { position: absolute; top: 0; left: 0; color: black; font-weight: bold; font-size: 26px; padding: 0.1em 0.5em; width: 200px; }
 #pageHeader h1#siteName span { display: block; float: left; }
 #pageHeader h1#siteName img { position: relative; float: left; height: 34px; top: 5px; left: -4px; margin-right: -10px; }
 

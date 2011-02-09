@@ -385,8 +385,8 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
         /*
         Connexions::log("View_Helper_HtmlItemCloud::setItems(): "
-                        . "%d items:",
-                        count($items));
+                        . "%d items / %d:",
+                        count($items), $items->getTotalCount());
 
         foreach($items as $key => $item)
         {

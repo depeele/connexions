@@ -147,7 +147,7 @@ class TagsController extends Connexions_Controller_Action
 
         Connexions::log("TagsController::_prepareMain(): "
                         . "offset[ %d ], count[ %d ], order[ %s ]",
-                        $count, $offset, $fetchOrder);
+                        $offset, $count, $fetchOrder);
         $config['items'] = Connexions_Service::factory('Model_Tag')
                                     ->fetchByUsers($this->_users,
                                                    $fetchOrder,

@@ -186,19 +186,51 @@
  <tag tagId="73" tag="for:user1" />
 
 <!-- MemberGroup Items -->
- <memberGroup groupId="1" name="Group1"
+ <memberGroup groupId="1" name="Tags"
               groupType="tag"
               controlMembers="owner" controlItems="owner" visibility="private"
               canTransfer="0" ownerId="1" />
+ <memberGroup groupId="2" name="Network"
+              groupType="user"
+              controlMembers="owner" controlItems="owner" visibility="private"
+              canTransfer="0" ownerId="1" />
+ <memberGroup groupId="3" name="Urls"
+              groupType="item"
+              controlMembers="owner" controlItems="owner" visibility="group"
+              canTransfer="0" ownerId="1" />
+ <memberGroup groupId="4" name="Network"
+              groupType="user"
+              controlMembers="owner" controlItems="owner" visibility="public"
+              canTransfer="0" ownerId="2" />
 
 <!-- groupMember joins / Group Members -->
  <groupMember groupId="1" userId="1" />
  <groupMember groupId="1" userId="4" />
 
+ <groupMember groupId="2" userId="1" />
+ <groupMember groupId="2" userId="4" />
+
+ <groupMember groupId="3" userId="1" />
+ <groupMember groupId="3" userId="4" />
+
+ <groupMember groupId="4" userId="1" />
+ <groupMember groupId="4" userId="2" />
+
 <!-- groupItem joins / Group Items : tags -->
  <groupItem groupId="1" itemId="6" />
  <groupItem groupId="1" itemId="10" />
  <groupItem groupId="1" itemId="12" />
+
+ <groupItem groupId="2" itemId="1" />
+ <groupItem groupId="2" itemId="3" />
+ <groupItem groupId="2" itemId="4" />
+
+ <groupItem groupId="3" itemId="2" />
+ <groupItem groupId="3" itemId="3" />
+ <groupItem groupId="3" itemId="4" />
+
+ <groupItem groupId="4" itemId="1" />
+ <groupItem groupId="4" itemId="2" />
 
 <!-- userAuth Records -->
  <userAuth userAuthId="1" userId="1" authType="openid"

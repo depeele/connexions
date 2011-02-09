@@ -28,7 +28,7 @@
 
 /* Page Header */
 #pageHeader {
-  height: 3.5em;
+  height: 3.25em;
   z-index: 100;
   h1#siteName {
     position: absolute;
@@ -37,8 +37,7 @@
     color: black;
     font-weight: bold;
     font-size: 26px;
-    padding-top: 5px;
-    height: 45px;
+    padding: 0.1em 0.5em;
     width: 200px;
     span {
       display: block;

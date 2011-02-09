@@ -6,7 +6,7 @@ class GroupDbTest extends DbTestCase
 {
     private $_group1 = array(
                         'groupId'        => 1,
-                        'name'           => 'Group1',
+                        'name'           => 'Tags',
                         'groupType'      => 'tag',
                         'ownerId'        => 1,
 
@@ -15,6 +15,39 @@ class GroupDbTest extends DbTestCase
                         'visibility'     => 'private',
                         'canTransfer'    => 0,
     );
+    private $_group1_items      = array(6,10,12);
+
+    private $_group1u= array(
+                        'groupId'        => 2,
+                        'name'           => 'Network',
+                        'groupType'      => 'user',
+                        'ownerId'        => 1,
+
+                        'controlMembers' => 'owner',
+                        'controlItems'   => 'owner',
+                        'visibility'     => 'private',
+                        'canTransfer'    => 0,
+    );
+    private $_group1u_items     = array(1,3,4);
+
+    private $_group1i= array(
+                        'groupId'        => 3,
+                        'name'           => 'Urls',
+                        'groupType'      => 'item',
+                        'ownerId'        => 1,
+
+                        'controlMembers' => 'owner',
+                        'controlItems'   => 'owner',
+                        'visibility'     => 'group',
+                        'canTransfer'    => 0,
+    );
+    private $_group1i_items     = array(2,3,4);
+
+    /* In the test dataset, all groups name 'Group1' have the same list of
+     * members
+     */
+    private $_group1_members    = array(1,4);
+
     private $_user1 = array(
                         'userId'        => 1,
                         'name'          => 'User1',
@@ -135,13 +168,16 @@ class GroupDbTest extends DbTestCase
 
     public function testGroupMembers()
     {
-        $userMapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $members    = $userMapper->fetch( array('userId' => array(1,4)));
+        /* Retrieve the members that SHOULD be part of the group identified by
+         * _group1 (i.e. Users 1 and 4)
+         */
+        $mapper  = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $members = $mapper->fetch( array('userId' => $this->_group1_members));
         $this->assertEquals(2, $members->count() );
         $memberMin = array();
         foreach ($members as $member)
         {
-            //$min = $userMapper->reduceModel( $member );
+            //$min = $mapper->reduceModel( $member );
 
             $min = $member->toArray(self::$toArray_shallow_all);
             $min['userItemCount'] = 0;
@@ -161,17 +197,17 @@ class GroupDbTest extends DbTestCase
 
         $expected = $this->_group1;
 
+        // Retrieve the target group by name
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
         $group  = $mapper->find( array('name' => $expected['name'] ));
 
         $this->assertNotEquals(null,   $group );
 
-        $memberCount = $group->members;
+        // Retrieve the group members
         $this->assertNotEquals(null,   $group->members );
 
         /*
-        echo "\nGroup Members:\n";
-        print_r($group->members->toArray(self::$toArray_shallow_all));
+        printf ("\nGroup Members:\n%s\n", $group->members->debugDump());
         // */
 
         $this->assertEquals($expected,
@@ -180,10 +216,182 @@ class GroupDbTest extends DbTestCase
         $expected['members'] = $memberMin;
     }
 
+    public function testTagGroupItems()
+    {
+        /* Retrieve the items that SHOULD be part of the group identified by
+         * _group1
+         */
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
+        $items  = $mapper->fetch( array('tagId' => $this->_group1_items));
+        $this->assertEquals(count($this->_group1_items), $items->count() );
+        $itemMin = array();
+        foreach ($items as $item)
+        {
+            //$min = $mapper->reduceModel( $item );
+
+            $min = $item->toArray(self::$toArray_shallow_all);
+            $min['userItemCount'] = 0;
+            $min['itemCount']     = 0;
+            $min['tagCount']      = 0;
+            
+            array_push($itemMin, $min);
+        }
+        //$items->toArray(self::$toArray_shallow_all);
+
+
+        /*
+        echo "\nMinimized items:\n";
+        print_r($itemMin);
+        echo "\n\n";
+        // */
+
+        // Retrieve the target group by name
+        $expected = $this->_group1;
+
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('name'      => $expected['name'],
+                                       'groupType' => $expected['groupType']));
+
+        $this->assertNotEquals(null,   $group );
+
+        /*
+        printf("\n%s Group named '%s':\n%s\n\n",
+               $expected['groupType'], $expected['name'], $group->debugDump());
+        // */
+
+
+        // Retrieve the group items
+        $this->assertNotEquals(null, $group->items );
+
+        /*
+        printf ("\nGroup items:\n%s\n", $group->items->debugDump());
+        // */
+
+        $this->assertEquals($expected,
+                            $group->toArray(self::$toArray_shallow_all));
+
+        $expected['items'] = $itemMin;
+    }
+
+    public function testUserGroupItems()
+    {
+        /* Retrieve the items that SHOULD be part of the group identified by
+         * _group1u
+         */
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $items  = $mapper->fetch( array('userId' => $this->_group1u_items));
+        $this->assertEquals(count($this->_group1u_items), $items->count() );
+        $itemMin = array();
+        foreach ($items as $item)
+        {
+            //$min = $mapper->reduceModel( $item );
+
+            $min = $item->toArray(self::$toArray_shallow_all);
+            $min['userItemCount'] = 0;
+            $min['itemCount']     = 0;
+            $min['tagCount']      = 0;
+            
+            array_push($itemMin, $min);
+        }
+        //$items->toArray(self::$toArray_shallow_all);
+
+
+        /*
+        echo "\nMinimized items:\n";
+        print_r($itemMin);
+        echo "\n\n";
+        // */
+
+        // Retrieve the target group by name
+        $expected = $this->_group1u;
+
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('name'      => $expected['name'],
+                                       'groupType' => $expected['groupType']));
+
+        $this->assertNotEquals(null,   $group );
+
+        /*
+        printf("\n%s Group named '%s':\n%s\n\n",
+               $expected['groupType'], $expected['name'], $group->debugDump());
+        // */
+
+
+        // Retrieve the group items
+        $this->assertNotEquals(null, $group->items );
+
+        /*
+        printf ("\nGroup items:\n%s\n", $group->items->debugDump());
+        // */
+
+        $this->assertEquals($expected,
+                            $group->toArray(self::$toArray_shallow_all));
+
+        $expected['items'] = $itemMin;
+    }
+
+    public function testItemGroupItems()
+    {
+        /* Retrieve the items that SHOULD be part of the group identified by
+         * _group1i
+         */
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Item');
+        $items  = $mapper->fetch( array('itemId' => $this->_group1i_items));
+        $this->assertEquals(count($this->_group1i_items), $items->count() );
+        $itemMin = array();
+        foreach ($items as $item)
+        {
+            //$min = $mapper->reduceModel( $item );
+
+            $min = $item->toArray(self::$toArray_shallow_all);
+            $min['userItemCount'] = 0;
+            $min['itemCount']     = 0;
+            $min['tagCount']      = 0;
+            
+            array_push($itemMin, $min);
+        }
+        //$items->toArray(self::$toArray_shallow_all);
+
+
+        /*
+        echo "\nMinimized items:\n";
+        print_r($itemMin);
+        echo "\n\n";
+        // */
+
+        // Retrieve the target group by name
+        $expected = $this->_group1i;
+
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('name'      => $expected['name'],
+                                       'groupType' => $expected['groupType']));
+
+        $this->assertNotEquals(null,   $group );
+
+        /*
+        printf("\n%s Group named '%s':\n%s\n\n",
+               $expected['groupType'], $expected['name'], $group->debugDump());
+        // */
+
+
+        // Retrieve the group items
+        $this->assertNotEquals(null, $group->items );
+
+        /*
+        printf ("\nGroup items:\n%s\n", $group->items->debugDump());
+        // */
+
+        $this->assertEquals($expected,
+                            $group->toArray(self::$toArray_shallow_all));
+
+        $expected['items'] = $itemMin;
+    }
+
+
     public function testGroupInsertedIntoDatabase()
     {
         $expected = array(
-            'groupId'        => 2,
+            'groupId'        => 5,
             'name'           => 'Group2',
             'groupType'      => 'tag',
             'ownerId'        => 1,

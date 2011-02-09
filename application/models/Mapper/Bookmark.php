@@ -300,6 +300,14 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
             // Include a privacy filter
             $where = '( (b.isPrivate=0) ';
 
+            if ( empty($privacy))
+            {
+                /* If no explicit user was provided, use the currently
+                 * authenticated user in privacy decisions
+                 */
+                $privacy = Connexions::getUser();
+            }
+
             if ( (! empty($privacy))              &&
                  ($privacy instanceof Model_User) &&
                  $privacy->isAuthenticated() )

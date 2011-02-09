@@ -197,6 +197,43 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         return $this->_helper->Redirector('signIn','auth');
     }
 
+    /** @brief  Given a string that is supposed to represent a user, see if it
+     *          represents a valid user.
+     *  @param  name    The user name.
+     *
+     *  @return A Model_User instance matching 'name', null if no match.
+     */
+    protected function _resolveUserName($name)
+    {
+        $res = null;
+
+        if ((! @empty($name)) && ($name !== '*'))
+        {
+            // Does the name match an existing user?
+            if ($name === $this->_viewer->name)
+            {
+                // 'name' matches the current viewer...
+                $ownerInst =& $this->_viewer;
+            }
+            else
+            {
+                //$ownerInst = Model_User::find(array('name' => $name));
+                $ownerInst = $this->service('User')
+                                    ->find(array('name' => $name));
+            }
+
+            // Have we located a valid, backed user?
+            if ($ownerInst !== null)
+            {
+                // YES -- we've located an existing user.
+
+                $res = $ownerInst;
+            }
+        }
+
+        return $res;
+    }
+
     /** @brief  Determine the proper rendering format.  The only ones we deal
      *          with directly are:
      *              partial       - render a single part of this page

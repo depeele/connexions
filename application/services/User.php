@@ -267,4 +267,38 @@ class Service_User extends Connexions_Service
 
         return $user;
     }
+
+    /** @brief  Update the user's credentials
+     *  @param  user        The Model_User instance for which this update
+     *                      is intended (MUST be authenticated);
+     *  @param  credentials An array of credentials of the form:
+     *                          { userAuthId:   (if updating an existing
+     *                                           credential),
+     *                            authType:     ( Model_UserAuth::AUTH_OPENID |
+     *                                            Model_UserAuth::AUTH_PKI    |
+     *                                            Model_UserAuth::AUTH_PASSWORD
+     *                                          )
+     *                            name:         The name of the credential,
+     *                            credential:   The credential data }
+     *
+     *  @return The updated user.
+     */
+    public function updateCredentials(Model_User   $user,
+                                                   $credentials)
+    {
+        if (! $user->isAuthenticated())
+        {
+            throw new Exception('Operation prohibited for an '
+                                .   'unauthenticated user.');
+        }
+
+        Connexions::log("Service_User::updateCredentials(): "
+                        .   "authType[ %s ], authAdapter[ %s ]",
+                        $authType,
+                        (is_object($authAdapter)
+                            ? get_class($authAdapter)
+                            : gettype($authAdapter)));
+
+        return $user;
+    }
 }

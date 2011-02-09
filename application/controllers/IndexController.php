@@ -79,7 +79,7 @@ class IndexController extends Connexions_Controller_Action
                 $this->_owner = $user;
             }
             // 'owner' is NOT a valid user.
-            else if (empty($reqTags))   // If 'tags' are empty, user 'owner'
+            else if (empty($reqTags))   // If 'tags' are empty, use 'owner'
             {
                 /* No 'tags' were specified.  Use the owner as 'tags' and set
                  * 'owner' to '*'
@@ -144,43 +144,6 @@ class IndexController extends Connexions_Controller_Action
      * Protected Helpers
      *
      */
-
-    /** @brief  Given a string that is supposed to represent a user, see if it
-     *          represents a valid user.
-     *  @param  name    The user name.
-     *
-     *  @return A Model_User instance matching 'name', null if no match.
-     */
-    protected function _resolveUserName($name)
-    {
-        $res = null;
-
-        if ((! @empty($name)) && ($name !== '*'))
-        {
-            // Does the name match an existing user?
-            if ($name === $this->_viewer->name)
-            {
-                // 'name' matches the current viewer...
-                $ownerInst =& $this->_viewer;
-            }
-            else
-            {
-                //$ownerInst = Model_User::find(array('name' => $name));
-                $ownerInst = $this->service('User')
-                                    ->find(array('name' => $name));
-            }
-
-            // Have we located a valid, backed user?
-            if ($ownerInst !== null)
-            {
-                // YES -- we've located an existing user.
-
-                $res = $ownerInst;
-            }
-        }
-
-        return $res;
-    }
 
     /** @brief  Prepare for rendering the main view, regardless of format.
      *
