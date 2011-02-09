@@ -2,10 +2,9 @@
 
 .displayOptions {
   float: right;
-  padding-top: 0.5em;
   form {
     position:   absolute;
-    top:        2.5em;
+    top:        1.75em;
     right:      0;
     padding:    0.5em;
     width:      20em;
@@ -17,7 +16,6 @@
   .control {
     z-index: 10;
     cursor: pointer;
-    padding: 0.3em 0.25em 0.25em;
     a {
       font-weight: normal;
     }

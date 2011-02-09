@@ -68,22 +68,113 @@ class Model_Mapper_User extends Model_Mapper_Base
 
     /** @brief  Retrieve a set of user-related items
      *  @param  user    The Model_User instance.
+     *  @param  order   Optional ORDER clause (string, array);
+     *  @param  count   Optional LIMIT count;
+     *  @param  offset  Optional LIMIT offset;
      *
      *  @return A Model_Item_Set
      */
-    public function getItems(Model_User $user)
+    public function getItems(Model_User $user,
+                                        $order  = null,
+                                        $count  = null,
+                                        $offset = null)
     {
-        throw new Exception('Not yet implemented');
+        //throw new Exception('Not yet implemented');
+        $itemMapper = Connexions_Model_Mapper::factory('Model_Mapper_Item');
+        $items      = $itemMapper->fetchRelated( array(
+                                    'users'     => array($user->userId),
+                                    'order'     => $order,
+                                    'count'     => $count,
+                                    'offset'    => $offset,
+                                ));
+
+        return $items;
     }
 
     /** @brief  Retrieve a set of user-related bookmarks
      *  @param  user    The Model_User instance.
+     *  @param  order   Optional ORDER clause (string, array);
+     *  @param  count   Optional LIMIT count;
+     *  @param  offset  Optional LIMIT offset;
      *
      *  @return A Model_Bookmark_Set
      */
-    public function getBookmarks(Model_User $user)
+    public function getBookmarks(Model_User $user,
+                                            $order  = null,
+                                            $count  = null,
+                                            $offset = null)
     {
-        throw new Exception('Not yet implemented');
+        //throw new Exception('Not yet implemented');
+        $bookmarkMapper = Connexions_Model_Mapper::factory(
+                                                    'Model_Mapper_Bookmark');
+        $bookmarks      = $bookmarkMapper->fetchRelated( array(
+                                    'users'     => array($user->userId),
+                                    'order'     => $order,
+                                    'count'     => $count,
+                                    'offset'    => $offset,
+                                ));
+
+        return $bookmarks;
+    }
+
+    /** @brief  Retrieve the Group representing the given user's network
+     *          (i.e. all users in the 'user' Group owned by the given
+     *                user, and named 'network').
+     *  @param  user    The Model_User instance.
+     *
+     *  A user's network is a 'Model_Group' with the following characteristics:
+     *      name            'Network'
+     *      groupType       'user'
+     *      controlMembers  'owner'
+     *      controlItems    'owner'
+     *      visibility      'public' | 'private'
+     *      canTransfer     false
+     *      ownerId         user's userId
+     *      (If visibility != 'public', (ownerId == authenticated User))
+     *
+     *  @return A Model_Group
+     */
+    public function getNetwork(Model_User $user)
+    {
+        $authUser = Connexions::getUser();
+        $id = array(
+            'name'              => 'Network',
+            'ownerId'           => $user->getId(),
+            'groupType'         => 'user',
+            'controlMembers'    => 'owner',
+            'controlItems'      => 'owner',
+            'canTransfer'       => false,
+            'visibility'        => 'public'
+        );
+
+        if ($authUser->isAuthenticated())
+        {
+            // Allow 'visibility' to be anything IF ownerId == authUser
+            $id['+|ownerId'] = $authUser->getId();
+        }
+
+        /*
+        Connexions::log("Model_Mapper_User::getNetwork(): "
+                        .   "user[ %s ] == id[ %s ]",
+                        $user, Connexions::varExport($id));
+        // */
+
+        $groupMapper = Connexions_Model_Mapper::factory(
+                                                    'Model_Mapper_Group');
+        $group       = $groupMapper->find( $id );
+        if ($group === null)
+        {
+            // Create an empty group for the identified user's network
+            $group = $groupMapper->makeModel( $id );
+        }
+
+        // /*
+        Connexions::log("Model_Mapper_User::getNetwork(): "
+                        .   "user[ %s ], network[ %s ]",
+                        $user, Connexions::varExport($group));
+        // */
+
+        return $group;
     }
 
     /**********************************************

@@ -36,6 +36,12 @@
 
 Connexions::log('view/scripts/tags/index.phtml');
 
+/* Initialize the HTML Bookmarks helper, needed here because the Scope Helper
+ * needs access to the bookmarks for count.
+ */
+$htmlCloud = $this->htmlItemCloud( $this->main );
+
+
 // Prepare the Html Item Scope helper
 $scopePath = array('Tags' => $this->baseUrl('/tags'));
 
@@ -48,7 +54,7 @@ $scopeRpc['params'] = array('users'  => (count($this->users) < 1
 
 $htmlItemScope = $this->htmlItemScope( array(
                     'namespace'         =>  $this->namespace,
-                    'items'             => &$this->main['tags'],
+                    'items'             =>  $htmlCloud->paginator,  //&$this->main['tags'],
                     'scope'             =>  $this->users,
                     'inputLabel'        =>  'Users',
                     'inputName'         =>  'Users',

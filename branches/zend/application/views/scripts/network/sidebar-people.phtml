@@ -1,0 +1,38 @@
+<?php
+/** @file
+ *
+ *  View script for IndexController::index to render the people portion of the
+ *  sidebar.
+ *
+ *  The Connexions_View_Helper_HtmlItemCloud helper MUST be initialized
+ *  before this view is rendered.
+ *
+ *  Incoming members:
+ *      sidebarHelper   A View_Helper_HtmlSidebar instance configured with
+ *                      information about the 'people' sidebar pane;
+ *
+ *      url             The full url for the main controller of this page;
+ *      owner           The owner of the current item set -- either a string or
+ *                      a Model_User instance;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
+ */
+
+?>
+  <div class='columnHeader'>
+   <div class='context-bg connexions_sprites user_bg ui-corner-left'>
+    &nbsp;
+   </div>
+   <?php
+    echo "<p>People in related to these bookmarks.</p>\n";
+  ?>
+  </div>
+  <?php
+
+    // Tag-related users
+    $config        = $this->sidebarHelper->getPane('people');
+    $htmlItemCloud = $this->htmlItemCloud($config);
+
+    echo $htmlItemCloud->render();

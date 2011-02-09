@@ -35,6 +35,7 @@ class Model_User extends Model_Taggable
     // Data that is an instance of another Model or Model_Set
     protected   $_tags              = null;
     protected   $_bookmarks         = null;
+    protected   $_network           = null;
 
     protected   $_authType          = Model_UserAuth::AUTH_DEFAULT;
     protected   $_credential        = null;
@@ -157,7 +158,8 @@ class Model_User extends Model_Taggable
         case 'authType':      $val = $this->_authType;        break;
         case 'credential':    $val = $this->_credential;      break;
         case 'tags':          $val = $this->getTags();        break;
-        case 'bookmarks':     $val = $this->_bookmarks();     break;
+        case 'bookmarks':     $val = $this->getBookmarks();   break;
+        case 'network':       $val = $this->getNetwork();     break;
         default:              $val = parent::__get($name);    break;
         }
 
@@ -198,6 +200,16 @@ class Model_User extends Model_Taggable
                                     . "instance of Model_Bookmarks");
             }
             $this->_bookmarks = $value;
+            break;
+
+        case 'network':
+            if ( (! ($value instanceof Model_Group)) ||
+                 ($value->groupType !== 'user') )
+            {
+                throw new Exception("Network can only be set using an "
+                                    . "instance of a 'user' Model_Group");
+            }
+            $this->_network = $value;
             break;
 
         default:
@@ -267,6 +279,7 @@ class Model_User extends Model_Taggable
     {
         $this->_tags        = null;
         $this->_bookmarks   = null;
+        $this->_network     = null;
 
         return $this;
     }
@@ -488,6 +501,57 @@ class Model_User extends Model_Taggable
     }
 
     /**********************************************
+     * Bookmark Management related methods
+     *
+     */
+
+    /** @brief  Retrieve the set of bookmarks related to this user.
+     *  @param  order   Optional ORDER clause (string, array);
+     *  @param  count   Optional LIMIT count;
+     *  @param  offset  Optional LIMIT offset;
+     *
+     *  @return A Model_Bookmark_Set
+     */
+    public function getBookmarks($order  = null,
+                                 $count  = null,
+                                 $offset = null)
+    {
+        if ($this->_bookmarks === null)
+        {
+            $this->_bookmarks = $this->getMapper()->getBookmarks( $this,
+                                                                  $order,
+                                                                  $count,
+                                                                  $offset );
+        }
+
+        return $this->_bookmarks;
+    }
+
+    /**********************************************
+     * Network Management related methods
+     *
+     */
+
+    /** @brief  Retrieve the set of users in this user's network.
+     *
+     *  @return A Model_Group or null if the network is not visibile
+     */
+    public function getNetwork()
+    {
+        Connexions::log("Model_User::getNetwork(): user[ %s ]", $this);
+
+        if ($this->_network === null)
+        {
+            $this->_network = $this->getMapper()->getNetwork( $this );
+        }
+
+        Connexions::log("Model_User::getNetwork(): user[ %s ], network[ %s ]",
+                        $this, $this->_network);
+
+        return $this->_network;
+    }
+
+    /**********************************************
      * Tag Management related methods
      *
      */
@@ -656,16 +720,6 @@ class Model_User extends Model_Taggable
         }
 
         return true;
-    }
-
-    protected function _bookmarks()
-    {
-        if ($this->_bookmarks)
-        {
-            $this->_bookmarks = $this->getMapper()->getBookmarks( $this );
-        }
-
-        return $this->_bookmarks;
     }
 
     /*************************************************************************

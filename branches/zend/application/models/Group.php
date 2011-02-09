@@ -14,12 +14,12 @@ class Model_Group extends Model_Base
     protected   $_data      = array(
             'groupId'           => null,
             'name'              => null,
-            'groupType'         => 'tag',
+            'groupType'         => 'tag',       // user    | item  | tag
             'ownerId'           => null,
 
-            'controlMembers'    => 'owner',
-            'controlItems'      => 'owner',
-            'visibility'        => 'private',
+            'controlMembers'    => 'owner',     // owner   | group
+            'controlItems'      => 'owner',     // owner   | group
+            'visibility'        => 'private',   // private | group | public
             'canTransfer'       => false,
     );
 
@@ -92,6 +92,9 @@ class Model_Group extends Model_Base
             break;
 
         case 'items':
+            /* :XXX: Ensure that $value is the proper TYPE of Model_Set
+             *       based upon 'groupType' (user, item, tag)
+             */
             if ( (  $value !== null )             &&
                  (! $value instanceof Connexions_Model_Set) )
             {
@@ -253,4 +256,61 @@ class Model_Group extends Model_Base
 
         return $this;
     }
+
+    /** @brief  Generate a string representation of this record.
+     *  @param  indent      The number of spaces to indent [ 0 ];
+     *  @param  leaveOpen   Should the terminating '];\n' be excluded [ false ];
+     *
+     *  @return A string.
+     */
+    public function debugDump($indent       = 0,
+                              $leaveOpen    = false)
+    {
+        $str = parent::debugDump($indent, true);
+
+        // Include owner, member, and items information
+        $owner   = $this->owner;
+        $members = $this->members;
+        $items   = $this->items;
+
+        $str .= sprintf ("%s%-15s == %-15s %s [\n%s%s]\n",
+                         str_repeat(' ', $indent + 1),
+                         'owner',
+                         (is_object($owner)
+                            ? get_class($owner)
+                            : gettype($owner)),
+                         ' ',
+                         (is_object($owner)
+                            ? $owner->debugDump($indent + 2, true)
+                            : ''),
+                         str_repeat(' ', $indent + 1));
+
+        $str .= sprintf ("%s%-15s == %-15s %s [ %s ]\n",
+                         str_repeat(' ', $indent + 1),
+                         'members',
+                         (is_object($members)
+                            ? get_class($members)
+                            : gettype($members)),
+                         ' ',
+                         (is_object($members)
+                            ? $members->debugDump($indent + 2, true)
+                            : ''));
+
+        $str .= sprintf ("%s%-15s == %-15s %s [ %s ]\n",
+                         str_repeat(' ', $indent + 1),
+                         'items',
+                         (is_object($items)
+                            ? get_class($items)
+                            : gettype($items)),
+                         ' ',
+                         (is_object($items)
+                            ? $items->debugDump($indent + 2, true)
+                            : ''));
+
+        if ($leaveOpen !== true)
+            $str .= str_repeat(' ', $indent) .'];';
+
+        return $str;
+    }
+
 }

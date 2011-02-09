@@ -53,7 +53,7 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      *                                      (string, array);
      *                      - count         Optional LIMIT count;
      *                      - offset        Optional LIMIT offset;
-     *                      - exactUsers    If 'tags' is provided,  should we
+     *                      - exactUsers    If 'users' is provided,  should we
      *                                      require a match on ALL users?
      *                                      [ true ];
      *                      - exactItems    If 'items' is provided,  should we

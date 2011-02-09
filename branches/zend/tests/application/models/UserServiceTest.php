@@ -59,7 +59,7 @@ class UserServiceTest extends DbTestCase
     protected function getDataSet()
     {
         return $this->createFlatXmlDataSet(
-                        dirname(__FILE__) .'/_files/5users.xml');
+                        dirname(__FILE__) .'/_files/5users+groups.xml');
     }
 
     protected function tearDown()
@@ -236,6 +236,144 @@ class UserServiceTest extends DbTestCase
         $this->assertEquals($expected,
                             $user->toArray(self::$toArray_shallow_all));
     }
+
+    /*************************************************************************
+     * Model-related retrievals
+     *
+     */
+    public function testUserServiceRelatedTags()
+    {
+        $expected = array(1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                          20, 21, 22, 23, 71, 72);
+        $service  = Connexions_Service::factory('Model_User');
+        $id       = array( 'userId' => $this->_user1['userId']);
+
+        $user     = $service->find( $id );
+
+        $this->assertTrue(  $user instanceof Model_User );
+        $this->assertTrue(  $user->isBacked() );
+        $this->assertTrue(  $user->isValid() );
+        $this->assertFalse( $user->isAuthenticated() );
+
+        $tags = $user->getTags();
+        //printf ("User[ %s ] tags[ %s ] == [ %s ]", $user, $tags, implode(', ', $tags->getIds()));
+
+        $this->assertEquals($expected, $tags->getIds());
+    }
+
+    public function testUserServiceRelatedBookmarks1()
+    {
+        // Only include 'public' bookmakrs
+        $expected = "1:2,1:4,1:5";
+        $service  = Connexions_Service::factory('Model_User');
+        $id       = array( 'userId' => $this->_user1['userId']);
+
+        $user     = $service->find( $id );
+        $user->invalidateCache();
+
+        $this->assertTrue(  $user instanceof Model_User );
+        $this->assertTrue(  $user->isBacked() );
+        $this->assertTrue(  $user->isValid() );
+        $this->assertFalse( $user->isAuthenticated() );
+
+        $bookmarks = $user->getBookmarks();
+        //printf ("User[ %s ] bookmarks[ %s ]", $user, $bookmarks);
+
+        $this->assertEquals($expected, $bookmarks->__toString());
+    }
+
+    public function testUserServiceRelatedBookmarks2()
+    {
+        // Authenticate as User1 and the results should include ALL bookmarks
+        $expected = "1:1,1:2,1:3,1:4,1:5";
+        $service  = Connexions_Service::factory('Model_User');
+        $id       = array( 'userId' => $this->_user1['userId']);
+
+        $user     = $service->find( $id );
+
+        $this->assertTrue(  $user instanceof Model_User );
+        $this->assertTrue(  $user->isBacked() );
+        $this->assertTrue(  $user->isValid() );
+        $this->assertFalse( $user->isAuthenticated() );
+
+        // Mark the user as 'authenticated'
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue ($user->isAuthenticated());
+
+        $bookmarks = $user->getBookmarks();
+        //printf ("User[ %s ] bookmarks[ %s ]", $user, $bookmarks);
+
+        $this->assertEquals($expected, $bookmarks->__toString());
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
+    }
+
+    public function testUserServiceRelatedNetwork1()
+    {
+        $expected = null;
+        $service  = Connexions_Service::factory('Model_User');
+        $id       = array( 'userId' => $this->_user1['userId']);
+
+        $user     = $service->find( $id );
+
+        $this->assertTrue(  $user instanceof Model_User );
+        $this->assertTrue(  $user->isBacked() );
+        $this->assertTrue(  $user->isValid() );
+        $this->assertFalse( $user->isAuthenticated() );
+
+        // User1's Network is private
+        $network = $user->getNetwork();
+        //printf ("User[ %s ] network[ %s ]", $user, $network->getId());
+
+        $this->assertEquals($expected, $network);
+    }
+
+    public function testUserServiceRelatedNetwork2()
+    {
+        $expected = 2;
+        $service  = Connexions_Service::factory('Model_User');
+
+        $user     = $service->find(array( 'userId' => $this->_user1['userId']));
+
+        $this->assertTrue(  $user instanceof Model_User );
+        $this->assertTrue(  $user->isBacked() );
+        $this->assertTrue(  $user->isValid() );
+        $this->assertFalse( $user->isAuthenticated() );
+
+        // Mark the user as 'authenticated'
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue ($user->isAuthenticated());
+
+        // User1's Network is private
+        $network = $user->getNetwork();
+        //printf ("User[ %s ] network[ %s ]", $user, $network->getId());
+
+        $this->assertEquals($expected, $network->getId());
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
+    }
+
+    public function testUserServiceRelatedNetwork3()
+    {
+        $expected = 4;
+        $service  = Connexions_Service::factory('Model_User');
+
+        $user     = $service->find(array( 'userId' => $this->_user2['userId']));
+
+        $this->assertTrue(  $user instanceof Model_User );
+        $this->assertTrue(  $user->isBacked() );
+        $this->assertTrue(  $user->isValid() );
+        $this->assertFalse( $user->isAuthenticated() );
+
+        // User2's Network is public
+        $network = $user->getNetwork();
+        //printf ("User[ %s ] network[ %s ]", $user, $network->getId());
+
+        $this->assertEquals($expected, $network->getId());
+    }
+
 
     /*************************************************************************
      * Set retrieval tests

@@ -41,26 +41,16 @@
  */
 $htmlBookmarks = $this->htmlBookmarks( $this->main );
 
-// Prepare the Html Item Scope helper
-if ($this->owner === '*')
-{
-    $scopePath = array('Bookmarks' => $this->baseUrl('/bookmarks'));
-}
-else
-{
-    $ownerStr = $this->owner->name;
+$ownerStr = $this->owner->name;
 
-    $scopePath = array($ownerStr => $this->baseUrl($ownerStr));
-}
+$scopePath = array($ownerStr => $this->baseUrl($ownerStr));
 
 $scopeRpc = Connexions::getJsonRpcInfo();
 $scopeRpc['method'] = 'bookmark.autocompleteTag';
 $scopeRpc['params'] = array('tags'   => (count($this->tags) < 1
                                             ? null
                                             : $this->tags->__toString()),
-                            'users'  => ($this->owner === '*'
-                                            ? null
-                                            : $this->owner->name),
+                            'users'  => $this->owner->name,
                      );
 
 $htmlItemScope = $this->htmlItemScope( array(
@@ -83,9 +73,7 @@ $links->appendStylesheet($this->baseUrl('/css/bookmarks.css'));
              ui-corner-left ui-corner-tr'>&nbsp;</div>
  <p>Network of <?php
 
-        echo ($this->owner === '*'
-                ? 'all users'
-                : $this->owner);
+        echo $this->owner;
 
         if (($this->owner instanceof Model_User) &&
             (! empty($this->owner->pictureUrl)) )

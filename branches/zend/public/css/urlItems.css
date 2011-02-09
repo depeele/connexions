@@ -65,7 +65,7 @@
 .ui-stars-wrapper .ui-stars-star-disabled, .ui-stars-wrapper .ui-stars-cancel-disabled { cursor: default; }
 
 /****** bookmark.scss ****** */
-.bookmarks { clear: both; padding-top: 2em; border-bottom: 1px solid #cccccc; }
+.bookmarks { clear: both; padding-top: 0.5em; border-bottom: 1px solid #cccccc; }
 
 .bookmarks .item { position: relative; z-index: 1; margin-bottom: 0.5em; border-top: 1px solid #cccccc; }
 
