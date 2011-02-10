@@ -79,6 +79,8 @@ $jQuery->addOnLoad('$.account_info_onLoad();')
                         title:  'Information Updated',
                         text:   ''
                     });
+
+                    $ai.validationForm('saved');
                 }
             },
             error: function(req, textStatus, err) {

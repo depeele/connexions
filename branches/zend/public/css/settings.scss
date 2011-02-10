@@ -4,7 +4,14 @@
 @import "urls";
 
 /****** settings.sass ****** */
-// Styling for the search results
+// Styling for the settings
+.columnHeader {
+  .userName {
+    padding-left: 75px;
+    font-weight:  bold;
+    font-size:    1em;
+  }
+}
 .settings {
   margin-right:  1em;
 

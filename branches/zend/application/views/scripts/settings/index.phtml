@@ -34,10 +34,13 @@ $this->headTitle('Settings');
 $this->headLink()->appendStylesheet($this->baseUrl('/css/settings.css'));
 
 ?>
-<p>Present the Settings for <?= $this->viewer ?>:<br />
-      section[ <?= $this->section ?>], cmd[ <?= $this->cmd ?> ]
-</p>
-
+<div class='columnHeader'>
+ <div class='context-bg connexions_sprites settings_bg
+             ui-corner-left ui-corner-tr'>&nbsp;</div>
+ <p>Settings</p>
+ <!-- p>Settings for <?= $this->viewer ?></p>
+ <p class='userName'><?= $this->viewer->fullName ?></p -->
+</div>
 <div id='settings' class='settings'>
  <ul>
 <?php
