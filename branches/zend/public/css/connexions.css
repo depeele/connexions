@@ -204,8 +204,6 @@ a:visited { color: #005a9c; }
 
 .magnifier_small { width: 15px; height: 15px; background-position: -20px -71px; }
 
-.old_search_bg { width: 173px; height: 23px; background-position: 0 -87px; }
-
 .type-certificate { width: 16px; height: 16px; background-position: -120px 0; }
 
 .type-openId { width: 16px; height: 16px; background-position: -136px 0; }
@@ -231,6 +229,8 @@ a:visited { color: #005a9c; }
 .item_bg { background-position: -100px -210px; width: 48px; height: 48px; }
 
 .search_bg { background-position: -150px -210px; width: 48px; height: 48px; }
+
+.people_bg, .network_bg { background-position: -150px -60px; width: 48px; height: 48px; }
 
 .relation_ltr { background-position: 0px -240px; width: 20px; height: 20px; }
 
@@ -369,6 +369,7 @@ a:visited { color: #005a9c; }
 .Item_List li.odd { background-color: #f3f3ff; }
 .Item_List li.even { background-color: none; }
 .Item_List .item { display: block; font-weight: normal; color: #2786c2; margin-right: 3em; }
+.Item_List .item .img { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
 .Item_List .itemCount { display: block; position: absolute; top: 0; right: 0; padding: 0.15em 0 0.15em; color: #999999; font-size: 0.8em; }
 
 #sbItemsCloud .Item_List li.header .item { padding: 0; }

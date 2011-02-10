@@ -538,15 +538,19 @@ class Model_User extends Model_Taggable
      */
     public function getNetwork()
     {
+        /*
         Connexions::log("Model_User::getNetwork(): user[ %s ]", $this);
+        // */
 
         if ($this->_network === null)
         {
             $this->_network = $this->getMapper()->getNetwork( $this );
         }
 
+        /*
         Connexions::log("Model_User::getNetwork(): user[ %s ], network[ %s ]",
                         $this, $this->_network);
+        // */
 
         return $this->_network;
     }

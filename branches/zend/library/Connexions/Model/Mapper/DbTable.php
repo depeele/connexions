@@ -532,7 +532,7 @@ abstract class Connexions_Model_Mapper_DbTable
 
         $this->_addWhere($select, $where);
 
-        // /*
+        /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::_find(): "
                         .   "sql[ %s ]",
                         get_class($this),
@@ -550,8 +550,10 @@ abstract class Connexions_Model_Mapper_DbTable
                             get_class($this),
                             $e->getMessage());
 
+            $model = null;
+
             // Re-throw the exception
-            throw $e;
+            //throw $e;
         }
 
         /*

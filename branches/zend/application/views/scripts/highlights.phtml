@@ -24,7 +24,7 @@ $highlightCount =  $this->highlightCount;
         if (++$idex > $highlightCount)
             break;
 
-        $oddEven = ($idex % 2 ? 'odd' : 'even');
+        $oddEven = ($idex % 2 ? 'even' : 'odd');
         $url     = $item->getParam('url');
         $weight  = number_format($item->getWeight());
         $title   = $item->getTitle();

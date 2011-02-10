@@ -128,6 +128,48 @@ class Service_User extends Connexions_Service
                                     $offset );
     }
 
+    /** @brief  Retrieve a set of users related by a set of Bookmarks
+     *          (actually, by the users and items represented by the 
+     *           bookmarks).
+     *  @param  bookmarks   A Model_Set_Bookmark instance or array of bookmark 
+     *                      identifiers to match.
+     *  @param  order       Optional ORDER clause (string, array)
+     *                          [ 'userItemCount DESC',
+     *                            'userCount     DESC',
+     *                            'tag           ASC' ];
+     *  @param  count       Optional LIMIT count
+     *  @param  offset      Optional LIMIT offset
+     *  @param  where       Additional condition(s) [ null ];
+     *
+     *  @return A new Model_Set_User instance.
+     */
+    public function fetchByBookmarks($bookmarks = null,
+                                     $order     = null,
+                                     $count     = null,
+                                     $offset    = null,
+                                     $where     = null)
+    {
+        if ($order === null)
+        {
+            $order = array('userItemCount DESC',
+                           'userCount     DESC',
+                           'name          ASC');
+        }
+
+        $to = array('bookmarks'  => $bookmarks,
+                    'where'      => $where);
+
+        /*
+        Connexions::log("Service_User::fetchByBookmarks(): %d bookmarks [ %s ]",
+                        count($bookmarks), $bookmarks);
+        // */
+
+        return $this->fetchRelated( $to,
+                                    $order,
+                                    $count,
+                                    $offset );
+    }
+
     /** @brief  Given an array of tag rename information, rename tags for the
      *          provided user iff 'user' is authenticated.
      *  @param  user        The Model_User instance for which renaming should

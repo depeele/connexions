@@ -172,10 +172,19 @@ class Model_Mapper_Group extends Model_Mapper_Base
          * array of Zend_Db_Table_Row objects...
          */
         $row   = $this->_find( array('groupId' => $group->groupId) );
-        $items = $row->findManyToManyRowset($accessorName,
-                                            'Model_DbTable_GroupItem');
-        $set   = new $setName( array('totalCount' => count($items),
-                                     'results'    => $items) );
+        if ($row !== null)
+        {
+            $items = $row->findManyToManyRowset($accessorName,
+                                                'Model_DbTable_GroupItem');
+            $set   = new $setName( array('totalCount' => count($items),
+                                         'results'    => $items) );
+        }
+        else
+        {
+            //$set = new $setName( array('mapper'    => $mapperName,
+            //                           'modelName' => $modelName ) );
+            $set = new $setName( array('totalCount' => 0) );
+        }
 
         return $set;
     }

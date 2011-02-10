@@ -210,13 +210,6 @@
   background-position: -20px -71px;
 }
 
-.old_search_bg {
-  width: 173px;
-  height: 23px;
-  background-position: 0 -87px;
-}
-
-
 // Settings
 .type-certificate {
   width:  16px;
@@ -289,6 +282,12 @@
 
 .search_bg {
   background-position: -150px -210px;
+  width: 48px;
+  height: 48px;
+}
+
+.people_bg, .network_bg {
+  background-position: -150px -60px;
   width: 48px;
   height: 48px;
 }
