@@ -123,6 +123,9 @@
     font-weight:  normal;
     color:        $highlightTopTagColor;
     margin-right: 3em;
+    .img {
+      @include inlineBlock();
+    }
   }
   .itemCount {
     display:    block;

@@ -168,7 +168,7 @@ class Model_Mapper_User extends Model_Mapper_Base
             $group = $groupMapper->makeModel( $id );
         }
 
-        // /*
+        /*
         Connexions::log("Model_Mapper_User::getNetwork(): "
                         .   "user[ %s ], network[ %s ]",
                         $user, Connexions::varExport($group));

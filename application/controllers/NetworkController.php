@@ -128,8 +128,11 @@ class NetworkController extends Connexions_Controller_Action
          */
         $this->_network = $this->_owner->getNetwork();
 
-        Connexions::log("NetworkController::indexAction(): owner[ %s ], network[ %s ]",
-                        $this->_owner, $this->_network);
+        /*
+        Connexions::log("NetworkController::indexAction(): "
+                        .   "owner[ %s ], network[ %s ], people[ %s ]",
+                        $this->_owner, $this->_network, $this->_network->items);
+        // */
 
         /***************************************************************
          * Set the view variables required for all views/layouts.
@@ -174,9 +177,15 @@ class NetworkController extends Connexions_Controller_Action
             'users'     => &$this->_networkUsers,
             'tags'      => &$this->_tags,
         );
+
+        if (count($this->_networkUsers) < 1)
+        {
+            $extra['bookmarks'] = $this->service('Bookmark')->makeEmptySet();
+        }
+
         $this->view->main = array_merge($this->view->main, $extra);
 
-        // /*
+        /*
         Connexions::log("NetworkController::_prepareMain(): "
                         .   "main[ %s ]",
                         Connexions::varExport($this->view->main));
@@ -194,8 +203,10 @@ class NetworkController extends Connexions_Controller_Action
     protected function _prepareSidebar($async   = false)
     {
         /*
-        Connexions::log("NetworkController::_prepareSidebar( %s )",
-                        ($async ? "async" : "sync"));
+        Connexions::log("NetworkController::_prepareSidebar( %s ), "
+                        . "partial[ %s ]",
+                        ($async === false ? "sync" : "async"),
+                        Connexions::varExport($this->_partials));
         // */
         parent::_prepareSidebar($async);
 
@@ -211,6 +222,12 @@ class NetworkController extends Connexions_Controller_Action
             'users'     => &$this->_networkUsers,
             'tags'      => &$this->_tags,
         );
+
+        if (count($this->_networkUsers) < 1)
+        {
+            $extra['bookmarks'] = $this->service('Bookmark')->makeEmptySet();
+        }
+
         $this->view->sidebar = array_merge($this->view->sidebar, $extra);
 
 
@@ -261,7 +278,7 @@ class NetworkController extends Connexions_Controller_Action
         // Pass the configured instance of the sidebar helper to the views
         $this->view->sidebarHelper = $sidebar;
 
-        // /*
+        /*
         Connexions::log("NetworkController::_prepareSidebar(): "
                         .   "sidebar[ %s ]",
                         Connexions::varExport($this->view->sidebar));
@@ -307,14 +324,21 @@ class NetworkController extends Connexions_Controller_Action
                                 'itemCount     DESC',
                                 'tag           ASC');
 
-            if (count($this->_tags) < 1)
+            if (count($this->_networkUsers) < 1)
+            {
+                /* This user has no network, so the tags list should also be
+                 * empty
+                 */
+                $tags = $service->makeEmptySet();
+            }
+            else if (count($this->_tags) < 1)
             {
                 /* There were no requested tags that limit the bookmark 
                  * retrieval so, for the sidebar, retrieve ALL tags limited 
                  * only by the current owner (if any).
                  */
 
-                // /*
+                /*
                 Connexions::log("NetworkController::_prepareSidebarPane( %s ): "
                                 .   "Fetch tags %d-%d by user [ %s ]",
                                 $pane,
@@ -400,21 +424,119 @@ class NetworkController extends Connexions_Controller_Action
          *
          */
         case 'people':
-            // Show the people in the network.
-            $config['items']            =& $this->_networkUsers;
+            /*
+            Connexions::log("NetworkController::_prepareSidebarPane( %s ): "
+                            .   "tags [ %s ]",
+                            $pane,
+                            $this->_tags);
+            // */
+
+            if (count($this->_networkUsers) < 1)
+            {
+                /* This user has no network, so the tags list should also be
+                 * empty
+                 */
+                $config['items'] = $this->service('User')->makeEmptySet();
+            }
+            else if (count($this->_tags) < 1)
+            {
+                /* There were no requested tags that limit the users so, for
+                 * the sidebar, present ALL people in this user's network.
+                 */
+                $config['items'] =& $this->_networkUsers;
+            }
+            else
+            {
+                // Users related to the bookmarks with the given set of tags.
+                $service = $this->service('User');
+
+                /*
+                Connexions::log("NetworkController::_prepareSidebarPane( %s ): "
+                                .   "sidebar items[ %s ]",
+                                $pane, Connexions::varExport($sidebar->items));
+                // */
+
+                /* In order to prepare the sidebar, we need to know the set of
+                 * bookmarks presented in the main view, as well as have
+                 * '$this->view->main' established.  If we're rendering the
+                 * main view and sidebar syncrhonously, this MAY have been
+                 * communicated to the sidebar helper via 
+                 *      application/view/scripts/network/main.phtml.
+                 */
+                if (! isset($this->view->main))
+                {
+                    /*
+                    Connexions::log("NetworkController::_prepareSidebarPane( %s ): "
+                                    .   "invoke _prepareMain() to try and gather "
+                                    .   "the set of bookmarks being presented.",
+                                    $pane);
+                    // */
+
+                    $this->_prepareMain();
+                }
+
+                if ($sidebar->items === null)
+                {
+                    /*
+                    Connexions::log("NetworkController::_prepareSidebarPane( %s ): "
+                                    .   "_prepareMain() did NOT provide the bookmarks.  "
+                                    .   "Retrieve them ourselves...",
+                                    $pane);
+                    // */
+
+                    $overRides = array_merge($this->view->main,
+                                             array('perPage' => -1));
+
+                    $helper    = $this->view->bookmarks( $overRides );
+                    $bookmarks = $helper->bookmarks;
+
+                    /* Notify the sidebar helper of the main-view 
+                     * items/bookmarks
+                     */
+                    $sidebar->items = $bookmarks;
+                }
+
+                /*
+                Connexions::log("NetworkController::_prepareSidebarPane( %s ): "
+                                .   "presented bookmarks[ %s ]",
+                                $pane, $sidebar->items);
+                // */
+
+                /* Retrieve the set of users that are related to the presented 
+                 * bookmarks.
+                 */
+                $config['items'] = $service->fetchByBookmarks($sidebar->items,
+                                                              $fetchOrder,
+                                                              $count,
+                                                              $offset);
+
+                /*
+                Connexions::log("NetworkController::_prepareSidebarPane( %s ): "
+                                .   "retrieved people[ %s ]",
+                                $pane, Connexions::varExport($config['items']));
+                // */
+
+            }
+
             $config['itemsType']        =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_USER;
-            $config['itemBaseUrl']      =  $this->_helper->url(null, 'url');
+            $config['itemBaseUrl']      =  $this->_helper->url(null, 'network');
                                             //$this->view->baseUrl('/url/');
+            $config['weightName']       = 'totalItems';
+            $config['weightTitle']      = 'Bookmarks';
+            /*
+            $config['displayStyle']     =
+                                 View_Helper_HtmlItemCloud::STYLE_LIST;
+            // */
             $config['currentSortBy']    =
                                  View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
             $config['currentSortOrder'] =
                                  Connexions_Service::SORT_DIR_DESC;
             /*
             Connexions::log("NetworkController::_prepareSidebarPane( %s ): "
-                            .   "Present JUST the owner [ %s ]",
+                            .   "People [ %s ]",
                             $pane,
-                            Connexions::varExport($this->_owner));
+                            Connexions::varExport($config['items']));
             // */
             break;
 
@@ -442,13 +564,23 @@ class NetworkController extends Connexions_Controller_Action
 
 
             $service = $this->service('Item');
-            $items   = $service->fetchByUsersAndTags($this->_networkUsers,
-                                                     $this->_tags,
-                                                     false,   // exact Users
-                                                     true,    // exact Tags
-                                                     $fetchOrder,
-                                                     $count,
-                                                     $offset);
+            if (count($this->_networkUsers) < 1)
+            {
+                /* This user has no network, so the tags list should also be
+                 * empty
+                 */
+                $items = $service->makeEmptySet();
+            }
+            else
+            {
+                $items = $service->fetchByUsersAndTags($this->_networkUsers,
+                                                       $this->_tags,
+                                                       false,   // exact Users
+                                                       true,    // exact Tags
+                                                       $fetchOrder,
+                                                       $count,
+                                                       $offset);
+            }
 
             $config['items']            =& $items;
             $config['itemsType']        =

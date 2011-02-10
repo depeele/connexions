@@ -170,6 +170,12 @@ abstract class Connexions_Service
                                         $count  = null,
                                         $offset = null)
     {
+        /*
+        Connexions::log("Connexions_Service::fetchRelated(): "
+                        .   "to[ %s ], ",
+                        Connexions::varExport($to));
+        // */
+
         $config = array('order'   => $this->_extraOrder($order),
                         'count'   => $count,
                         'offset'  => $offset,
@@ -214,9 +220,7 @@ abstract class Connexions_Service
 
         /*
         Connexions::log("Connexions_Service::fetchRelated(): "
-                        .   "to[ %s ], "
                         .   "config[ %s ]",
-                        Connexions::varExport($to),
                         Connexions::varExport($config));
         // */
 
@@ -246,6 +250,15 @@ abstract class Connexions_Service
         return new Zend_Paginator( $set->getPaginatorAdapter() );
     }
                                       
+    /** @brief  Create an empty set.
+     *
+     *  @return Connexions_Model_Set
+     */
+    public function makeEmptySet()
+    {
+        return $this->_mapper->makeEmptySet();
+    }
+
     /** @brief  Convert a comma-separated list of item identifiers to a
      *          Connexions_Model_Set instance.
      *  @param  csList  The comma-separated list of identifiers

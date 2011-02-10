@@ -127,6 +127,14 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
 
         $set    = $this->fetch($select, $order, $count, $offset);
 
+        /*
+        Connexions::log("Model_Mapper_Base[%s]::fetchRelated(): "
+                        .   "result set[ %s ]",
+                        get_class($this),
+                        $set);
+        // */
+
+
         if ( isset($params['paginate']) && ($params['paginate'] !== false) )
         {
             $result = new Zend_Paginator( $set->getPaginatorAdapter() );
