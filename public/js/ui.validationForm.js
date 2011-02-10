@@ -178,6 +178,15 @@ $.widget("ui.validationForm", {
         self.validate();
     },
 
+    /** @brief  The form has been successfully submitted/saved so any
+     *          "original" values (e.g. in ui.input widgets) should be
+     *          updated to allow further edits to properly reflect changes.
+     */
+    saved: function()
+    {
+        this.options.$inputs.input('saved');
+    },
+
     /** @brief  Have any of the ui.input fields changed from their original
      *          values?
      *

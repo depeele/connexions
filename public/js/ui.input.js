@@ -70,7 +70,7 @@ $.widget("ui.input", {
         var opts    = this.options;
 
         // Remember the original value
-        self.element.data('value.uiinput', self.val() );
+        self.saved();
 
         opts.enabled = self.element.attr('disabled') ? false : true;
 
@@ -421,6 +421,14 @@ $.widget("ui.input", {
         return this.element.data('value.uiinput');
     },
 
+    /** @brief  This field has been successfully saved.  Update the "original"
+     *          value to the current value so changes can be properly
+     *          reflected.
+     */
+    saved: function()
+    {
+        this.element.data('value.uiinput', this.val() );
+    },
 
     val: function(newVal)
     {

@@ -170,31 +170,31 @@ a:visited { color: #005a9c; }
 
 .star_fill { width: 15px; height: 15px; background-position: -15px -44px; }
 
-.button_delete_on { width: 16px; height: 16px; background-position: -72px -12px; }
+.button_delete_on { width: 16px; height: 16px; background-position: -72px 0; }
 
-.button_delete_off { width: 16px; height: 16px; background-position: -88px -12px; }
+.button_delete_off { width: 16px; height: 16px; background-position: -88px 0; }
 
-.status_ok { width: 15px; height: 15px; background-position: -72px -28px; }
+.status_ok { width: 15px; height: 15px; background-position: -72px -16px; }
 
-.status_error { width: 15px; height: 15px; background-position: -87px -28px; }
+.status_error { width: 15px; height: 15px; background-position: -87px -16px; }
 
-.status_empty { width: 15px; height: 15px; background-position: -104px -28px; }
+.status_empty { width: 15px; height: 15px; background-position: -104px -16px; }
 
-.star_0 { width: 14px; height: 14px; background-position: -72px -44px; }
+.star_0 { width: 14px; height: 14px; background-position: -72px -32px; }
 
-.star_0_off { width: 14px; height: 14px; background-position: -72px -44px; }
+.star_0_off { width: 14px; height: 14px; background-position: -72px -32px; }
 
-.star_0_hover { width: 14px; height: 14px; background-position: -86px -44px; }
+.star_0_hover { width: 14px; height: 14px; background-position: -86px -32px; }
 
-.star_1 { width: 16px; height: 16px; background-position: -72px -58px; }
+.star_1 { width: 16px; height: 16px; background-position: -72px -46px; }
 
-.star_1_off { width: 16px; height: 16px; background-position: -72px -58px; }
+.star_1_off { width: 16px; height: 16px; background-position: -72px -46px; }
 
-.star_1_hover { width: 16px; height: 16px; background-position: -88px -58px; }
+.star_1_hover { width: 16px; height: 16px; background-position: -88px -46px; }
 
-.star_1_on { width: 16px; height: 16px; background-position: -104px -58px; }
+.star_1_on { width: 16px; height: 16px; background-position: -104px -46px; }
 
-.star_1_owner { width: 16px; height: 16px; background-position: -104px -42px; }
+.star_1_owner { width: 16px; height: 16px; background-position: -104px -30px; }
 
 .envelope { width: 17px; height: 13px; background-position: -32px -28px; }
 
@@ -218,19 +218,21 @@ a:visited { color: #005a9c; }
 
 .setting-group { width: 16px; height: 16px; background-position: -136px -32px; }
 
-.bookmark_bg { background-position: -100px -110px; width: 48px; height: 48px; }
+.settings_bg { background-position: -100px -74px; width: 48px; height: 48px; }
 
-.user_bg { background-position: -150px -110px; width: 48px; height: 48px; }
+.people_bg, .network_bg { background-position: -150px -74px; width: 48px; height: 48px; }
 
-.tag_bg { background-position: -100px -160px; width: 48px; height: 48px; }
+.bookmark_bg { background-position: -100px -123px; width: 48px; height: 48px; }
 
-.inbox_bg { background-position: -150px -160px; width: 48px; height: 48px; }
+.user_bg { background-position: -150px -123px; width: 48px; height: 48px; }
 
-.item_bg { background-position: -100px -210px; width: 48px; height: 48px; }
+.tag_bg { background-position: -100px -172px; width: 48px; height: 48px; }
 
-.search_bg { background-position: -150px -210px; width: 48px; height: 48px; }
+.inbox_bg { background-position: -150px -172px; width: 48px; height: 48px; }
 
-.people_bg, .network_bg { background-position: -150px -60px; width: 48px; height: 48px; }
+.item_bg { background-position: -100px -221px; width: 48px; height: 48px; }
+
+.search_bg { background-position: -150px -221px; width: 48px; height: 48px; }
 
 .relation_ltr { background-position: 0px -240px; width: 20px; height: 20px; }
 
