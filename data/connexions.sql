@@ -151,6 +151,9 @@ CREATE TABLE userAuth (
 
   credential    VARCHAR(255)            NOT NULL DEFAULT '',
 
+  -- User-selected name for this credential
+  name          VARCHAR(32)             NOT NULL DEFAULT '',
+
   PRIMARY KEY           (`userAuthId`),
   KEY `ua_triple`       (`userId`, `authType`, `credential`),
   KEY `ua_userId`       (`userId`),

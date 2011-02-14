@@ -464,7 +464,7 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
             }
             else if (is_array($tags))
             {
-                if (is_int($tags[0]))
+                if (isset($tags[0]) && is_int($tags[0]))
                 {
                     $secSelect->where('tagId IN ?', $tags);
                 }

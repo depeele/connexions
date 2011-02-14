@@ -152,7 +152,7 @@ $.widget("connexions.collapsable", {
             return;
         }
 
-        // Load remove content.
+        // Load remote content.
         self.xhr = $.ajax($.extend({}, opts.ajaxOptions, {
             url:     url,
             success: function(res, stat) {

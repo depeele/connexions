@@ -251,7 +251,14 @@ abstract class Connexions_Model
      */
     public function toArray(array $props    = array())
     {
-        if ( $props['dirty'] === true )
+        /*
+        Connexions::log("Connexions_Model::toArray(): props[ %s ]",
+                        $props);
+        Connexions::log("Connexions_Model::toArray(): props[ %s ]",
+                        Connexions::varExport($props));
+        // */
+
+        if ( isset($props['dirty']) && ($props['dirty'] === true) )
         {
             $ret = array();
             foreach ($this->_data as $key => $val)
@@ -266,6 +273,11 @@ abstract class Connexions_Model
         {
             $ret = $this->_data;
         }
+
+        /*
+        Connexions::log("Connexions_Model::toArray(): return[ %s ]",
+                        Connexions::varExport($ret));
+        // */
 
         return $ret;
     }
@@ -630,6 +642,11 @@ abstract class Connexions_Model
      */
     public function delete()
     {
+        /*
+        Connexions::log("Connexions_Model::delete(): [ %s ]",
+                        $this->debugDump());
+        // */
+
         $this->getMapper()->delete( $this );
     }
 

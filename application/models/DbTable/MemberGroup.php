@@ -8,7 +8,7 @@ class Model_DbTable_MemberGroup extends Zend_Db_Table_Abstract
             'Owner'  => array(
                 'columns'       => 'ownerId',
                 'refTableClass' => 'Model_DbTable_User',
-                'refColumns'    => 'ownerId',
+                'refColumns'    => 'userId',
                 'onDelete'      => 'cascade',
             ),
             'Members' => array(

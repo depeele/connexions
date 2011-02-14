@@ -177,6 +177,15 @@ abstract class Connexions_Model_Mapper_DbTable
         // */
 
         $uid = $this->getId($id);
+
+        /*
+        Connexions::log("Connexions_Model_Mapper_DbTable[%s]::find(): "
+                        .   "id[ %s ] == uid[ %s ]",
+                        get_class($this),
+                        Connexions::varExport($id),
+                        Connexions::varExport($uid));
+        // */
+
         if ($this->_hasIdentity($uid))
         {
             /*
@@ -198,6 +207,7 @@ abstract class Connexions_Model_Mapper_DbTable
                         Connexions::varExport($uid));
         // */
 
+        // :XXX: Should this be $this->_find($uid) ??
         $accessorModel = $this->_find($id);
         if ($accessorModel === null)
             return null;
@@ -524,7 +534,8 @@ abstract class Connexions_Model_Mapper_DbTable
      *
      *  @return The matching Accessor Model (null if no match).
      */
-    public function _find($id)
+    //public function _find(array $id)
+    public function _find(array $id)
     {
         $accessor = $this->getAccessor();
         $select   = $accessor->select();

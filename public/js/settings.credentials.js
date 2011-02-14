@@ -130,7 +130,7 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
 
 
         // Add item
-        opts.$add       = self.element.find('.add');
+        opts.$add         = self.element.find('.add');
 
         /********************************
          * Instantiate any sub-widgets
@@ -251,11 +251,14 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
         // Perform a JSON-RPC call to perform the update.
         $.jsonRpc(opts.jsonRpc, 'user.updateCredentials', params, {
             success:    function(data, textStatus, req) {
-                if (data.error !== null)
+                if ((data === null) || (data.error !== null))
                 {
-                    self._status(false,
-                                 'Credential update failed',
-                                 data.error.message);
+                    self._trigger('status', null, 
+                                  [ false,
+                                    'Credential update failed',
+                                    (data === null
+                                        ? 'Invalid JSON-RPC structure returned'
+                                        : data.error.message) ]);
 
                     return;
                 }
@@ -396,16 +399,16 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
         html        +=  "</div>"
                     +  "</div>\n"
                     +  "<div class='field name'>"
-                    +   "<label for='name[]'>Name</label>"
+                    +   "<label for='name'>Name</label>"
                     +   "<input type='text' "
-                    +          "name='name[]' "
+                    +          "name='name' "
                     +         "class='text' "
                     +         "value='' />"
                     +  "</div>\n"
                     +  "<div class='field credential'>"
-                    +   "<label for='credential[]'>Credential</label>"
+                    +   "<label for='credential'>Credential</label>"
                     +   "<input type='text' "
-                    +          "name='credential[]' "
+                    +          "name='credential' "
                     +         "class='text required' "
                     +         "value='' />"
                     +  "</div>\n"

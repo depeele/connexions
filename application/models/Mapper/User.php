@@ -162,11 +162,15 @@ class Model_Mapper_User extends Model_Mapper_Base
         $groupMapper = Connexions_Model_Mapper::factory(
                                                     'Model_Mapper_Group');
         $group       = $groupMapper->find( $id );
+
+        /* If $group === null it MAY be becuase of privacy restrictions so DO
+         * NOT create an empty instance here.
         if ($group === null)
         {
             // Create an empty group for the identified user's network
             $group = $groupMapper->makeModel( $id );
         }
+         */
 
         /*
         Connexions::log("Model_Mapper_User::getNetwork(): "

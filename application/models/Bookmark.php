@@ -243,7 +243,7 @@ class Model_Bookmark extends Model_Base
     {
         $data = parent::toArray($props);
 
-        if ($props['deep'] !== false)
+        if ( (! isset($props['deep'])) || ($props['deep'] !== false) )
         {
             // User: Force resolution via '->user' vs '->_user'
             if ($this->user !== null)
@@ -266,7 +266,7 @@ class Model_Bookmark extends Model_Base
                 $data['tags'] = $reducedTags;
             }
         }
-        else if ($props['public'] !== false)
+        else if ( (! isset($props['public'])) || ($props['public'] !== false) )
         {
             // Convert "private" data to a public representation
             if ($this->user !== null)

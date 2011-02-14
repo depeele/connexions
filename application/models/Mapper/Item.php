@@ -218,7 +218,7 @@ class Model_Mapper_Item extends Model_Mapper_Base
         }
         else
         {
-            $item = $this->find( array('itemId' => $id));
+            $item = $this->find( $id ); //array('itemId' => $id));
         }
 
         if (! $item)

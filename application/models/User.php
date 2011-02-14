@@ -249,7 +249,7 @@ class Model_User extends Model_Taggable
     {
         $data = parent::toArray($props);
 
-        if ($props['public'] !== false)
+        if ( (! isset($props['public'])) || ($props['public'] !== false) )
         {
             unset($data['apiKey']);
         }
@@ -549,7 +549,10 @@ class Model_User extends Model_Taggable
 
         /*
         Connexions::log("Model_User::getNetwork(): user[ %s ], network[ %s ]",
-                        $this, $this->_network);
+                        $this,
+                        ($this->_network !== null
+                            ? $this->_network->debugDump()
+                            : 'null') );
         // */
 
         return $this->_network;

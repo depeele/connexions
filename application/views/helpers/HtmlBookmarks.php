@@ -418,26 +418,30 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 
     /** @brief  Render HTML to represent a Bookmark within this list.
      *  @param  item        The Model_Bookmark instance to render.
+     *  @param  params  If provided, parameters to pass to the partial
+     *                  [ {namespace, bookmark, viewer} ];
      *
      *  @return The HTML of the rendered bookmark.
      */
-    public function renderItem($item)
+    public function renderItem($item, $params = array())
     {
         /*
         Connexions::log("View_Helper_HtmlBookmarks::renderItem(): "
                         . "item[ %s ], showParts[ %s ]",
                         $item, Connexions::varExport($this->_showParts));
         // */
+        if (empty($params))
+        {
+            $params = array('namespace'  => $this->namespace,
+                            'bookmark'   => $item,
+                            'viewer'     => $this->viewer,
+                            'showParts'  => $this->_showParts,
+                            'sortBy'     => $this->sortBy,
+                            'tags'       => $this->tags,
+                      );
+        }
 
-        return parent::renderItem($item,
-                                  array(
-                                    'namespace'  => $this->namespace,
-                                    'bookmark'   => $item,
-                                    'viewer'     => $this->viewer,
-                                    'showParts'  => $this->_showParts,
-                                    'sortBy'     => $this->sortBy,
-                                    'tags'       => $this->tags,
-                                  ));
+        return parent::renderItem($item, $params);
     }
 
     /** @brief  Render the HTML of a group header.

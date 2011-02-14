@@ -324,7 +324,10 @@ class UserServiceTest extends DbTestCase
 
         // User1's Network is private
         $network = $user->getNetwork();
-        //printf ("User[ %s ] network[ %s ]", $user, $network->getId());
+        /*
+        printf ("User[ %s ] network[ %s ]",
+                $user, ($network === null ? 'null' : $network->debugDump()) );
+        // */
 
         $this->assertEquals($expected, $network);
     }
@@ -667,7 +670,8 @@ class UserServiceTest extends DbTestCase
         $expected   = array('userAuthId' => 4,
                             'userId'     => $user->userId,
                             'authType'   => Model_UserAuth::AUTH_DEFAULT,
-                            'credential' => $credential);
+                            'credential' => $credential,
+                            'name'       => '');
 
         $auth = $user->addAuthenticator($expected['credential']);
         $this->assertNotEquals(null, $auth);

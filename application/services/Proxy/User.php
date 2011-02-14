@@ -121,4 +121,26 @@ class Service_Proxy_User extends Connexions_Service_Proxy
                     ? $user->apiKey
                     : false);
     }
+
+    /** @brief  Update the user's credentials
+     *  @param  credentials An array of credentials of the form:
+     *                          { userAuthId:   (if updating an existing
+     *                                           credential),
+     *                            authType:     ( Model_UserAuth::AUTH_OPENID |
+     *                                            Model_UserAuth::AUTH_PKI    |
+     *                                            Model_UserAuth::AUTH_PASSWORD
+     *                                          )
+     *                            name:         The name of the credential,
+     *                            credential:   The credential data }
+     *  @param  apiKey      The apiKey for the currently authenticated user
+     *                      (REQUIRED if the transport method is NOT POST);
+     *
+     *  @return The updated user.
+     */
+    public function updateCredentials($credentials, $apiKey = null)
+    {
+        $user = $this->_authenticate($apiKey);
+
+        return ($this->_service->updateCredentials($user, $credentials));
+    }
 }

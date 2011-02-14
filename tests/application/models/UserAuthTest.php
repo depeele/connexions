@@ -11,6 +11,7 @@ class UserAuthTest extends BaseTestCase
             'userId'        => null,
             'authType'      => 'password',
             'credential'    => '',
+            'name'          => '',
         );
 
         $userAuth = new Model_UserAuth( );

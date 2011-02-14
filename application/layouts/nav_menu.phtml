@@ -60,7 +60,12 @@ $iterator->rewind();
 
 $authenticated = ( ($this->viewer instanceof Model_User) &&
                     $this->viewer->isAuthenticated() );
-$inboxUrl      = '/inbox/'. $viewer->name;
+$inboxUrl      = '/inbox/'
+               . ( ($this->viewer instanceof Model_User)
+                       ? ($authenticated
+                           ? $this->viewer->name
+                           : 'anonymous')
+                       : 'anonymous');
 $prevDepth     = -1;
 $liFirst       = false;
 $ulClass       = 'nav';

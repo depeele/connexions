@@ -138,7 +138,7 @@ class Model_Group extends Model_Base
             break;
 
         case 'members':
-            $val = $this->_data['members'];
+            $val = $this->_members;
             if ( $val === null )
             {
                 // Load the Model_Set_User now.
@@ -148,7 +148,7 @@ class Model_Group extends Model_Base
             break;
 
         case 'items':
-            $val = $this->_data['items'];
+            $val = $this->_items;
             if ( $val === null )
             {
                 // Load the Connexions_Model_Set now.

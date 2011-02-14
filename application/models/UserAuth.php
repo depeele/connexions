@@ -21,6 +21,7 @@ class Model_UserAuth extends Model_Base
             'userId'        => null,
             'authType'      => self::AUTH_DEFAULT,
             'credential'    => '',
+            'name'          => '',
     );
 
     // Properties not directly backed by our Mapper/DAO
