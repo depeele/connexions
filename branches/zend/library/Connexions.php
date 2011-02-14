@@ -98,6 +98,8 @@ class Connexions
         else if (is_array($var))
         {
             $parts = array();
+            $open  = '';
+            $close = '';
             foreach ($var as $key => $val)
             {
                 if (empty($parts))

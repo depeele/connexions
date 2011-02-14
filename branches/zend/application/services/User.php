@@ -326,7 +326,7 @@ class Service_User extends Connexions_Service
      *  @return The updated user.
      */
     public function updateCredentials(Model_User   $user,
-                                                   $credentials)
+                                      array        $credentials)
     {
         if (! $user->isAuthenticated())
         {
@@ -334,13 +334,63 @@ class Service_User extends Connexions_Service
                                 .   'unauthenticated user.');
         }
 
-        Connexions::log("Service_User::updateCredentials(): "
-                        .   "authType[ %s ], authAdapter[ %s ]",
-                        $authType,
-                        (is_object($authAdapter)
-                            ? get_class($authAdapter)
-                            : gettype($authAdapter)));
+        $credMapper = $this->_getMapper('Model_UserAuth');
+        $credSet    = $credMapper->makeEmptySet();
+        $errors     = array();
+        foreach ($credentials as $idex => $info)
+        {
+            Connexions::log("Service_User::updateCredentials(): "
+                            .   "#%d [ %s ], userAuthId[ %d ]",
+                            $idex,
+                            Connexions::varExport($info),
+                            $info['userAuthId']);
 
-        return $user;
+            if ( ! $info['userAuthId'])
+            {
+                // Create a new record
+                $cred = $credMapper->getModel( $info );
+
+                $cred->validate();
+            }
+            else
+            {
+                // Update an existing record
+                $cred = $credMapper->getModel( array('userAuthId' =>
+                                                        $info['userAuthId']) );
+
+                $cred->populate($info);
+            }
+
+            // /*
+            Connexions::log("Service_User::updateCredentials(): "
+                            .   "#%d == [ %s ]",
+                            $idex,
+                            ($cred ? $cred->debugDump() : 'null'));
+            // */
+
+            // See if the updated instance is valid
+            if (! $cred->isValid())
+            {
+                $errors[$idex] = $cred->getValidationMessages();
+                continue;
+            }
+
+            $cred->save();
+            $credSet->append($cred);
+        }
+
+        if (count($errors) > 0)
+        {
+            // :XXX: One or more validation errors
+            Connexions::log("Service_User::updateCredentials(): "
+                            . "errors[ %s ]",
+                            Connexions::varExport($errors));
+        }
+
+        Connexions::log("Service_User::updateCredentials(): "
+                        . "final set[ %s ]",
+                        $credSet->debugDump());
+
+        return $credSet;
     }
 }

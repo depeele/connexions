@@ -33,6 +33,12 @@ $.widget("ui.validationForm", {
                                      * to present a default value for the field
                                      * [ true ];
                                      */
+        disableSubmitOnUnchanged:
+                        true,       /* Should the submit button be disabled
+                                     * if the fields are valid but have not
+                                     * changed from the initial values
+                                     * [ true ];
+                                     */
 
         $status:        null        /* The element to present validation
                                      * information in [:sibling
@@ -270,7 +276,8 @@ $.widget("ui.validationForm", {
             }
         }
 
-        if (hasChanged && isValid)
+        if (isValid &&
+            ( (opts.disableSubmitOnUnchanged === false) || hasChanged) )
         {
             opts.$submit.button('enable');
         }

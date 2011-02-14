@@ -34,6 +34,9 @@ class Model_Mapper_UserAuth extends Model_Mapper_Base
      */
     public function normalizeId($id)
     {
+        Connexions::log("Model_Mapper_UserAuth::normalizeId(): id[ %s ]",
+                        Connexions::varExport($id));
+
         if (is_string($id))
         {
             list($userId, $authType, $credential)   =
@@ -81,6 +84,11 @@ class Model_Mapper_UserAuth extends Model_Mapper_Base
 
             // We should now have a valid, new identifier.
             $id = $normId;
+        }
+        else if (is_array($id) && isset($id['userAuthId']))
+        {
+            // Reduce the id to the bare minimum
+            $id = array('userAuthId' => $id['userAuthId']);
         }
         else
         {

@@ -46,8 +46,8 @@ class Connexions_Controller_Action extends Zend_Controller_Action
     public function init()
     {
         // Initialize action controller here
-        $this->_viewer  =& Zend_Registry::get('user');
-        $this->_request =& $this->getRequest();
+        $this->_viewer  =  Zend_Registry::get('user');
+        $this->_request =  $this->getRequest();
         $this->_rootUrl =  $this->_request->getBasePath();
         $this->_baseUrl =  $this->_rootUrl;
         $this->_url     =  $this->_baseUrl

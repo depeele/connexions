@@ -102,8 +102,8 @@
             var $overlay    = $('<div></div>')
                                     .addClass('ui-widget-overlay')
                                     .appendTo($el)
-                                    .css({width:    $el.width(),
-                                          height:   $el.height(),
+                                    .css({width:    $el.outerWidth(),
+                                          height:   $el.outerHeight(),
                                           'z-index':zIndex});
 
             var url = $spin.attr('src');

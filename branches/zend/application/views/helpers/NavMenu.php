@@ -34,6 +34,7 @@ class View_Helper_NavMenu extends Zend_View_Helper_Abstract
     public static       $defaultContext     = 'all';
 
     protected static    $_disableSearch     = false;
+    protected static    $_disableViewSearch = false;
     protected static    $_disabled          = array();
 
     /** @brief  Initialize view variables related to rendering the
@@ -56,27 +57,17 @@ class View_Helper_NavMenu extends Zend_View_Helper_Abstract
                                        'View_Helper_NavMenu::begin');
         // */
 
-        $viewer =& $this->view->viewer; //Zend_Registry::get('user');
+        $viewer = ($this->view->viewer
+                    ? $this->view-viewer
+                    : Zend_Registry::get('user'));
 
-        /*
-        $searchContexts = Zend_Registry::get('config')->searchContext;
-        if ($searchContexts instanceof Zend_Config)
-        {
-            $searchContexts = $searchContexts->toArray();
-        }
-        else
-        {
-            $searchContexts = array();
-        }
-        */
- 
         $config = array(
             'inbox'     => null,
             'search'    => array(
-                'disabled'  => $this->_disableSearch,
+                'disabled'  => self::$_disableSearch,   //$this->_disableSearch,
                 'contextualSearchdisabled'
-                            => $this->_disableViewSearch,
-                'contexts'  => self::$searchContexts,   //$searchContexts,
+                            => self::$_disableViewSearch,
+                'contexts'  => self::$searchContexts,
                 'context'   => ($this->view->searchContext !== null
                                     ? $this->view->searchContext
                                     : self::$defaultContext),
@@ -129,7 +120,7 @@ class View_Helper_NavMenu extends Zend_View_Helper_Abstract
      */
     public function disableSearch($disable = true)
     {
-        $this->_disableSearch = $disable;
+        self::$_disableSearch = $disable;   //$this->_disableSearch = $disable;
         return $this;
     }
 
@@ -141,23 +132,23 @@ class View_Helper_NavMenu extends Zend_View_Helper_Abstract
      */
     public function disableSearchContext($id, $disable = true)
     {
-        $this->_disabled[$id] = $disable;
+        self::$_disabled[$id] = $disable;
         return $this;
     }
 
 
     /** @brief  Determine whether or not the requested search id is presentable
      *          to the current user.
-     *  @param  id      The search id (from $this->searchContexts);
+     *  @param  id      The search id (from self::$searchContexts);
      *
      *  @return true | false
      */
     public function searchAccept($id)
     {
         $res = false;
-        if ( $this->_disableSearch ||
-             (isset($this->_disabled[$id]) &&
-              ($this->_disabled[$id] !== false)) )
+        if ( self::$_disableSearch ||
+             (isset(self::$_disabled[$id]) &&
+              (self::$_disabled[$id] !== false)) )
         {
             // Directly disabled item(s)
             $res = false;

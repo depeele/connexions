@@ -6,7 +6,8 @@ $this->headTitle('Sign In');
 $jQuery = $this->jQuery();
 $jQuery->addStylesheet($this->baseUrl('css/auth.css'))
        ->addOnLoad('$("#auth form").validationForm({'
-                   .    'submitSelector:"button[name=method]"});');
+                   .    'submitSelector:"button[name=method]",'
+                   .    'disableSubmitOnUnchanged:false});');
 ?>
 <div class="line"><!-- { -->
  <div id="auth" class='ui-validation-form ribbon-form'>

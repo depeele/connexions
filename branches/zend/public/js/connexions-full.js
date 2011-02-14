@@ -102,8 +102,8 @@
             var $overlay    = $('<div></div>')
                                     .addClass('ui-widget-overlay')
                                     .appendTo($el)
-                                    .css({width:    $el.width(),
-                                          height:   $el.height(),
+                                    .css({width:    $el.outerWidth(),
+                                          height:   $el.outerHeight(),
                                           'z-index':zIndex});
 
             var url = $spin.attr('src');
@@ -1713,6 +1713,12 @@ $.widget("ui.validationForm", {
                                      * to present a default value for the field
                                      * [ true ];
                                      */
+        disableSubmitOnUnchanged:
+                        true,       /* Should the submit button be disabled
+                                     * if the fields are valid but have not
+                                     * changed from the initial values
+                                     * [ true ];
+                                     */
 
         $status:        null        /* The element to present validation
                                      * information in [:sibling
@@ -1950,7 +1956,8 @@ $.widget("ui.validationForm", {
             }
         }
 
-        if (hasChanged && isValid)
+        if (isValid &&
+            ( (opts.disableSubmitOnUnchanged === false) || hasChanged) )
         {
             opts.$submit.button('enable');
         }
@@ -2132,7 +2139,7 @@ $.widget("connexions.collapsable", {
             return;
         }
 
-        // Load remove content.
+        // Load remote content.
         self.xhr = $.ajax($.extend({}, opts.ajaxOptions, {
             url:     url,
             success: function(res, stat) {

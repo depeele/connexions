@@ -298,12 +298,14 @@ $.widget("settings.credential", {
         // Perform a JSON-RPC call to perform the update.
         $.jsonRpc(opts.jsonRpc, 'user.deleteCredential', params, {
             success:    function(data, textStatus, req) {
-                if (data.error !== null)
+                if ((data === null) || (data.error !== null))
                 {
                     self._trigger('status', null, 
                                   [ false,
                                     'Credential deletion failed',
-                                    data.error.message ]);
+                                    (data === null
+                                        ? 'Invalid JSON-RPC structure returned'
+                                        : data.error.message) ]);
 
                     return;
                 }

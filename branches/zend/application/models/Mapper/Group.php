@@ -124,20 +124,56 @@ class Model_Mapper_Group extends Model_Mapper_Base
     /** @brief  Retrieve the set of members for this group.
      *  @param  group   The Model_Group instance.
      *
-     *  @return A Model_Set_Tag instance.
+     *  @return A Model_Set_User instance.
      */
     public function getMembers(Model_Group $group)
     {
-        $row     = $this->_find( array('groupId' => $group->groupId) );
-        //$members = $row->findDependentRowset('Model_DbTable_GroupMember');
+        // /*
+        Connexions::log('Model_Mapper_Group::getMembers(): '
+                        .   'groupId[ %s ], type[ %s ]',
+                        Connexions::varExport($group->groupId),
+                        $group->groupType);
+        // */
+
+        if ($group->groupId !== null)
+        {
+            $row = $this->_find( array('groupId' => $group->groupId) );
+        }
+        else
+        {
+            $row = null;
+        }
+
+        /*
+        Connexions::log("Model_Mapper_Group::getMembers(): "
+                        .   "groupId[ %s ], row[ %s ]",
+                        $group->groupId,
+                        Connexions::varExport($row));
+        // */
 
         /* This does NOT return a Zend_Db_Table_Rowset but rather a simple
          * array of Zend_Db_Table_Row objects...
          */
-        $members = $row->findManyToManyRowset('Model_DbTable_User',
-                                              'Model_DbTable_GroupMember');
-        $users = new Model_Set_User( array('totalCount' => count($members),
-                                           'results'    => $members) );
+        if ($row !== null)
+        {
+            $members = $row->findManyToManyRowset('Model_DbTable_User',
+                                                  'Model_DbTable_GroupMember');
+            $users = new Model_Set_User( array('totalCount' => count($members),
+                                               'results'    => $members) );
+        }
+        else
+        {
+            $users = Connexions_Model_Mapper::factory('Model_Mapper_User')
+                        ->makeEmptySet();
+
+            /*
+            Connexions::log('Model_Mapper_Group::getMembers(): '
+                            .   'groupId[ %s ], type[ %s ]: empty set[ %s ]',
+                            Connexions::varExport($group->groupId),
+                            $group->groupType,
+                            $users->debugDump());
+            // */
+        }
 
         return $users;
     }
@@ -149,18 +185,29 @@ class Model_Mapper_Group extends Model_Mapper_Base
      */
     public function getItems(Model_Group $group)
     {
+        // /*
+        Connexions::log('Model_Mapper_Group::getItems(): '
+                        .   'groupId[ %s ], type[ %s ]',
+                        Connexions::varExport($group->groupId),
+                        $group->groupType);
+        // */
+
         switch ($group->groupType)
         {
         case 'user':        $accessorName = 'Model_DbTable_User';
+                            $mapperName   = 'Model_Mapper_User';
                             $setName      = 'Model_Set_User';
                             break;
         case 'tag':         $accessorName = 'Model_DbTable_Tag';
+                            $mapperName   = 'Model_Mapper_Tag';
                             $setName      = 'Model_Set_Tag';
                             break;
         case 'item':        $accessorName = 'Model_DbTable_Item';
+                            $mapperName   = 'Model_Mapper_Item';
                             $setName      = 'Model_Set_Item';
                             break;
         case 'bookmark':    $accessorName = 'Model_DbTable_UserItem';
+                            $mapperName   = 'Model_Mapper_Bookmark';
                             $setName      = 'Model_Set_Bookmark';
                             break;
         default:
@@ -168,10 +215,18 @@ class Model_Mapper_Group extends Model_Mapper_Base
             break;
         }
 
-        /* This does NOT return a Zend_Db_Table_Rowset but rather a simple
-         * array of Zend_Db_Table_Row objects...
-         */
-        $row   = $this->_find( array('groupId' => $group->groupId) );
+        if ($group->groupId !== null)
+        {
+            /* This does NOT return a Zend_Db_Table_Rowset but rather a simple
+             * array of Zend_Db_Table_Row objects...
+             */
+            $row = $this->_find( array('groupId' => $group->groupId) );
+        }
+        else
+        {
+            $row = null;
+        }
+
         if ($row !== null)
         {
             $items = $row->findManyToManyRowset($accessorName,
@@ -183,7 +238,16 @@ class Model_Mapper_Group extends Model_Mapper_Base
         {
             //$set = new $setName( array('mapper'    => $mapperName,
             //                           'modelName' => $modelName ) );
-            $set = new $setName( array('totalCount' => 0) );
+            //$set = new $setName( array('totalCount' => 0) );
+            $set = Connexions_Model_Mapper::factory($mapperName)
+                        ->makeEmptySet();
+
+            /*
+            Connexions::log('Model_Mapper_Group::getItems(): '
+                            .   'groupId[ %s ]: empty set[ %s ]',
+                            Connexions::varExport($group->groupId),
+                            $set->debugDump());
+            // */
         }
 
         return $set;

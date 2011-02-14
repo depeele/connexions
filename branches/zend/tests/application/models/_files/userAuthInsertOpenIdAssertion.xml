@@ -2,13 +2,17 @@
 <dataset>
 <!-- userAuth Records -->
  <userAuth userAuthId="1" userId="1" authType="openid"
-                        credential="https://google.com/profile/User.1" />
+                        credential="https://google.com/profile/User.1"
+                        name='' />
  <userAuth userAuthId="2" userId="1" authType="password"
-                        credential="77c3d13750c0a0a59b0a2cf1bc189f61" />
+                        credential="77c3d13750c0a0a59b0a2cf1bc189f61"
+                        name='' />
  <userAuth userAuthId="3" userId="1" authType="pki"
-                        credential="C=US, ST=Maryland, L=Baltimore, O=City Government, OU=Public Works, CN=User 1/emailAddress=User1@home.com" />
+                        credential="C=US, ST=Maryland, L=Baltimore, O=City Government, OU=Public Works, CN=User 1/emailAddress=User1@home.com"
+                        name='' />
  <userAuth userAuthId="4" userId="2" authType="openid"
-                        credential="https://google.com/profile/me" />
+                        credential="https://google.com/profile/me"
+                        name='' />
 </dataset>
 
 

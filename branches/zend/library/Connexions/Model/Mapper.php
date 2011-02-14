@@ -382,15 +382,20 @@ abstract class Connexions_Model_Mapper
         foreach ($this->_keyNames as $key)
         {
             if (isset($model[$key]))
+            {
                 array_push($uid, $model[$key]);
+            }
             else
+            {
                 array_push($uid, 0);
+            }
         }
 
         /*
         Connexions::log("Connexions_Model_Mapper[%s]::getId(): "
-                        .   "uid[ %s ]",
+                        .   "keyNames[ %s ], uid[ %s ]",
                         get_class($this),
+                        Connexions::varExport($this->_keyNames),
                         Connexions::varExport($uid));
         // */
 

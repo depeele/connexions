@@ -24,6 +24,7 @@ connexions.css: main.scss		\
 		grids.scss		\
 		content.scss		\
 		sprites.scss		\
+		urls.scss		\
 		tabs.scss		\
 		ui-form.scss		\
 		tagCloud.scss		\
@@ -32,6 +33,7 @@ connexions.css: main.scss		\
 		displayOptions.scss	\
 		ui.notify.scss		\
 		validationForm.scss	\
+		uiStars.scss		\
 		post.scss		\
 		ribbon-form.scss
 	sass -t compact main.scss:connexions.css

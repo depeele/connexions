@@ -1,15 +1,10 @@
 .ui-stars-wrapper { display: block; width: 96px; overflow: hidden; }
 .ui-stars-wrapper input.ui-stars-rating { width: 0; height: 0; padding: 0; margin: 0; }
 .ui-stars-wrapper .ui-stars { display: block; float: left; overflow: hidden; text-indent: 999em; }
-.ui-stars-wrapper .ui-stars a { background: url("sprites/connexions.gif") no-repeat scroll 0 0; display: block; width: 16px; height: 16px; }
-.ui-stars-wrapper .ui-stars-star-off a, .ui-stars-wrapper .ui-stars-star a, .ui-stars-wrapper .ui-stars-star-disabled a { background-position: -72px -58px; }
+.ui-stars-wrapper .ui-stars a { background-image: url("sprites/connexions.gif"); background-attachment: scroll; background-repeat: no-repeat; background-color: transparent; display: block; }
 .ui-stars-wrapper .ui-stars-star { cursor: pointer; }
 .ui-stars-wrapper .ui-stars-star a { cursor: pointer; }
-.ui-stars-wrapper .ui-stars-star-on a { background-position: -104px -58px; }
-.ui-stars-wrapper .ui-stars-star-hover a { background-position: -88px -58px; }
 .ui-stars-wrapper .ui-stars-cancel { padding: 1px; }
-.ui-stars-wrapper .ui-stars-cancel a { width: 14px; height: 14px; background-position: -72px -44px; }
-.ui-stars-wrapper .ui-stars-cancel-hover a { background-position: -86px -44px; }
 .ui-stars-wrapper .ui-stars-cancel-disabled a { background-image: none; }
 .ui-stars-wrapper .ui-stars-star-disabled, .ui-stars-wrapper .ui-stars-cancel-disabled { cursor: default; }
 

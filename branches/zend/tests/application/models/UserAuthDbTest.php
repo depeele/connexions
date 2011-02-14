@@ -30,18 +30,21 @@ class UserAuthDbTest extends DbTestCase
             'userId'        => 1,
             'authType'      => 'openid',
             'credential'    => 'https://google.com/profile/User.1',
+            'name'          => '',
         ),
         'password'  => array(
             'userAuthId'    => 2,
             'userId'        => 1,
             'authType'      => 'password',
             'credential'    => '77c3d13750c0a0a59b0a2cf1bc189f61',
+            'name'          => '',
         ),
         'pki'       => array(
             'userAuthId'    => 3,
             'userId'        => 1,
             'authType'      => 'pki',
             'credential'    => 'C=US, ST=Maryland, L=Baltimore, O=City Government, OU=Public Works, CN=User 1/emailAddress=User1@home.com',
+            'name'          => '',
         ),
     );
 
@@ -191,6 +194,7 @@ class UserAuthDbTest extends DbTestCase
             'authType'      => 'password',
                                // md5( 'User441:' )
             'credential'    => '60766ed79ea8ac6e58c88683a62c2b9d',
+            'name'          => '',
         );
         $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
         $userAuth = $mapper->getModel( array(

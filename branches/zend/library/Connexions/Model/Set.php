@@ -397,9 +397,27 @@ abstract class Connexions_Model_Set
     {
         if (! is_string($source))
         {
-            $newSource = (is_array($source)
-                            ? implode(',', $source)
-                            : strval($source));
+            if (is_array($source))
+            {
+                /* Handle a single level of array of arrays
+                 * (e.g. for Bookmarks where the identifier MAY be an array of
+                 *       two integers [ userId, itemId ]).
+                 */
+                if (isset($source[0]) && is_array($source[0]))
+                {
+                    $newSource = array();
+                    foreach ($source as $val)
+                    {
+                        array_push($newSource, implode(':', $val));
+                    }
+                    $source = $newSource;
+                }
+                $newSource = implode(',', $source);
+            }
+            else
+            {
+                $newSource = strval($source);
+            }
 
             /*
             Connexions::log("Connexions_Model_Set[%s]::setSource(): "

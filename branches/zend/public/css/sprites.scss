@@ -28,8 +28,10 @@
 
 // connexions_sprites
 .connexions_sprites {
-  background: $connexions_sprites_url unquote("no-repeat scroll 0px 0px transparent");
-  background-image: $connexions_sprites_url unquote("!important");
+  background-image:       $connexions_sprites_url;
+  background-attachment:  scroll;
+  background-repeat:      no-repeat;
+  background-color:       transparent;
 }
 
 // Corners
@@ -153,6 +155,7 @@
   height: 14px;
   background-position: -86px -32px;
 }
+
 
 // Rating stars - star 1 == star
 .star_1 {
