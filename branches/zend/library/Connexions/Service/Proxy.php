@@ -13,9 +13,11 @@ class Connexions_Service_Proxy
         $serviceName = $this->_service;
         if (empty($serviceName))
         {
-            /* Use the model name to construct a Model Mapper
+            /* The associated service was NOT directly provided.
+             *
+             * Use the name of this class to construct the associated Service
              * class name:
-             *      Model_<Class> => Model_Mapper_<Class>
+             *      Service_Proxy_<Class> => Service_<Class>
              */
             $serviceName = str_replace('_Proxy', '', get_class($this));
         }
