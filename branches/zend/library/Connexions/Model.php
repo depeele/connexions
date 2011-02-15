@@ -151,6 +151,12 @@ abstract class Connexions_Model
                                 . "data MUST be an array or object");
         }
 
+        /*
+        Connexions::log("Connexions_Model[%s]::populate(): data[ %s ]",
+                        get_class($this),
+                        Connexions::varExport($data));
+        // */
+
         $this->_delayValidation = true;
         foreach ($data as $key => $val)
         {
@@ -169,6 +175,12 @@ abstract class Connexions_Model
         // Perform full validation of the populated data
         $this->validate();
 
+        /*
+        Connexions::log("Connexions_Model[%s]::populate(): complete[ %s ]",
+                        get_class($this),
+                        $this->debugDump());
+        // */
+
         return $this;
     }
 
@@ -179,8 +191,20 @@ abstract class Connexions_Model
      */
     public function __get($name)
     {
+        /*
+        Connexions::log("Connexions_Model[%s]::__get( %s ): "
+                        .   "val[ %s ]",
+                        get_class($this),
+                        $name,
+                        (isset($this->_data[$name])
+                            ? Connexions::varExport($this->_data[$name])
+                            : 'undefined'));
+        // */
+
         if (array_key_exists($name, $this->_data))
+        {
             return $this->_data[$name];
+        }
 
         //return null;
     }
@@ -413,6 +437,14 @@ abstract class Connexions_Model
      */
     public function setIsBacked($value = true)
     {
+        /*
+        Connexions::log("Connexions_Model[%s]::setIsBacked(): "
+                        .   "id[ %s ], val[ %s ]",
+                        get_class($this),
+                        Connexions::varExport( $this->getId() ),
+                        Connexions::varExport($value));
+        // */
+
         $this->_isBacked = (bool)$value;
 
         return $this;
@@ -693,14 +725,20 @@ abstract class Connexions_Model
                                 . "Invalid property '{$name}'");
         }
 
+        if ($this->_data[$name] !== $value)
+        {
+            $this->_dirty[$name] = true;
+        }
+
         /*
-        Connexions::log("Connexions_Model::__set(%s, %s, %s)",
-                        $name, $value,
-                        ($validate === true ? 'true' : 'false'));
+        Connexions::log("Connexions_Model[%s]::__set(%s, %s, %s): dirty[ %s ]",
+                        get_class($this),
+                        $name,
+                        Connexions::varExport($value),
+                        Connexions::varExport($validate),
+                        (isset($this->_dirty[$name]) ? 'true' : 'false') );
         // */
 
-        if ($this->_data[$name] !== $value)
-            $this->_dirty[$name] = true;
 
         // Assign the new value
         $this->_data[$name] = $value;

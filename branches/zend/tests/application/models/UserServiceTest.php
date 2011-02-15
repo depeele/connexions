@@ -635,6 +635,81 @@ class UserServiceTest extends DbTestCase
     }
     */ 
 
+    public function testUserServiceGetAuth1()
+    {
+        $service    = Connexions_Service::factory('Model_User');
+        $user       = $service->find( $this->_user1['userId'] );
+        $this->assertNotEquals(null, $user);
+
+        $expected   = array(1, 2, 3);
+
+        $auth = $user->getAuthenticator();
+        $this->assertNotEquals(null, $auth);
+
+        $this->assertEquals($expected, $auth->getIds());
+
+        //printf ("user1 auths[ %s ]", $auth->debugDump());
+    }
+
+    public function testUserServiceGetAuth2()
+    {
+        $service    = Connexions_Service::factory('Model_User');
+        $user       = $service->find( $this->_user1['userId'] );
+        $this->assertNotEquals(null, $user);
+
+        $expected   = array(2);
+
+        $auth = $user->getAuthenticator('password');
+        $this->assertNotEquals(null, $auth);
+
+        $this->assertEquals($expected, $auth->getIds());
+    }
+
+    public function testUserServiceGetAuth3()
+    {
+        $service    = Connexions_Service::factory('Model_User');
+        $user       = $service->find( $this->_user1['userId'] );
+        $this->assertNotEquals(null, $user);
+
+        $expected   = array(2);
+
+        $auth = $user->getAuthenticator('password',
+                                        '77c3d13750c0a0a59b0a2cf1bc189f61');
+        $this->assertNotEquals(null, $auth);
+
+        $this->assertEquals($expected, $auth->getIds());
+    }
+
+    public function testUserServiceGetAuth4()
+    {
+        $service    = Connexions_Service::factory('Model_User');
+        $user       = $service->find( $this->_user1['userId'] );
+        $this->assertNotEquals(null, $user);
+
+        $expected   = array();
+
+        $auth = $user->getAuthenticator('password',
+                                        'xxxxx');
+        $this->assertNotEquals(null, $auth);
+
+        $this->assertEquals($expected, $auth->getIds());
+    }
+
+    public function testUserServiceGetAuth5()
+    {
+        $service    = Connexions_Service::factory('Model_User');
+        $user       = $service->find( $this->_user1['userId'] );
+        $this->assertNotEquals(null, $user);
+
+        $expected   = 3;
+
+        // Retrieve by a specific userAuthId
+        $auth = $user->getAuthenticator( 3 );
+        $this->assertNotEquals(null, $auth);
+
+        $this->assertEquals($expected, $auth->getId());
+    }
+
     public function testUserServiceInvalidAddAuth1()
     {
         $service    = Connexions_Service::factory('Model_User');
@@ -696,6 +771,142 @@ class UserServiceTest extends DbTestCase
         $this->assertEquals(array($expected),
                             $authSet->toArray(self::$toArray_shallow_all));
     }
+
+    public function testUserServiceUpdateAuth1()
+    {
+        $service    = Connexions_Service::factory('Model_User');
+        $user       = $service->find( $this->_user2['userId'] );
+        $this->assertNotEquals(null, $user);
+
+        $params     = array(
+            array(
+                'userAuthId' => 4,
+                'name'       => 'Credential4 Name',
+            )
+        );
+
+        try
+        {
+            $auth = $service->updateCredentials($user, $params);
+
+            // FAILURE!
+        }
+        catch (Exception $e)
+        {
+            $this->assertEquals(
+                    'Operation prohibited for an unauthenticated user.',
+                    $e->getMessage());
+        }
+    }
+
+    public function testUserServiceUpdateAuth2()
+    {
+        $service    = Connexions_Service::factory('Model_User');
+        $user       = $service->find( $this->_user1['userId'] );
+        $this->assertNotEquals(null, $user);
+
+        $expected   = array(
+            array(
+                'userAuthId' => 2,
+                'userId'     => $user->userId,
+                'authType'   => Model_UserAuth::AUTH_PASSWORD,
+                'credential' => '77c3d13750c0a0a59b0a2cf1bc189f61',
+                'name'       => 'Credential2 Name',
+            )
+        );
+
+        $params = array();
+        foreach ($expected as $info)
+        {
+            array_push($params, array('userAuthId' => $info['userAuthId'],
+                                      'name'       => $info['name']));
+        }
+
+        // Mark the user as 'authenticated'
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue ($user->isAuthenticated());
+
+        $auth = $service->updateCredentials($user, $params);
+        $this->assertNotEquals(null, $auth);
+
+        //printf ("auth[ %s ]", $auth->debugDump());
+
+        $this->assertEquals($expected,
+                            $auth->toArray(self::$toArray_shallow_all));
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
+    }
+
+    public function testUserServiceUpdateAuth3()
+    {
+        $service    = Connexions_Service::factory('Model_User');
+        $user       = $service->find( $this->_user1['userId'] );
+        $this->assertNotEquals(null, $user);
+
+        $params     = array(
+            array(
+                'userAuthId' => 1,
+                'name'       => 'Credential1 Name',
+            ),
+            array(
+                'userAuthId' => 2,
+                'name'       => 'Credential2 Name',
+            ),
+            array(
+                'userAuthId' => 3,
+                'name'       => 'Credential3 Name',
+            ),
+            array(
+                'authType'   => Model_UserAuth::AUTH_PASSWORD,
+                'credential' => '369',
+                'name'       => 'Credential4 Name',
+            ),
+        );
+
+        //printf ("params[ %s ]\n", Connexions::varExport($params));
+
+        // Mark the user as 'authenticated'
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue ($user->isAuthenticated());
+
+        /*
+        Connexions::log("----------------------");
+        Connexions::log("full auths 1[ %s ]",
+                        $user->getAuthenticator()->debugDump());
+        Connexions::log("----------------------");
+        // */
+
+        $auth = $service->updateCredentials($user, $params);
+        $this->assertNotEquals(null, $auth);
+
+        /*
+        Connexions::log("----------------------");
+        Connexions::log("full auths 2[ %s ]",
+                        $user->getAuthenticator()->debugDump());
+        Connexions::log("----------------------");
+        // */
+
+        //printf ("auth[ %s ]\n", $auth->debugDump());
+        //printf ("full auths 2[ %s ]\n", $user->getAuthenticator()->debugDump());
+
+        // Check the database consistency
+        $ds = new Zend_Test_PHPUnit_Db_DataSet_QueryDataSet(
+                    $this->getConnection()
+        );
+        $ds->addTable('userAuth', 'SELECT * FROM userAuth');
+
+        //printf ("dataset[ %s ]\n", $ds->__toString());
+
+        $this->assertDataSetsEqual(
+            $this->createFlatXmlDataSet(
+              dirname(__FILE__) .'/_files/userServiceAuthUpdate3Assertion.xml'),
+            $ds);
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
+    }
+
 
     public function testUserServiceRemoveAuth1()
     {

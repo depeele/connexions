@@ -61,7 +61,7 @@ class Model_Set_UserAuth extends Connexions_Model_Set
      */
     public function compare($credential)
     {
-        // /*
+        /*
         Connexions::log("Model_Set_UserAuth::compare(%s): "
                         . "%d members...",
                         $credential, count($this));

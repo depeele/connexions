@@ -237,9 +237,16 @@ abstract class Connexions_Model_Mapper
         // No existing entry.  Create a new instance.
         $modelName   = $this->getModelName();
         $domainModel = new $modelName(array('mapper'    => $this,
+                                            'data'      => $data,
+                                            /*
                                             'isBacked'  => $isBacked,
                                             'isValid'   => $isBacked,
-                                            'data'      => $data));
+                                            // */
+                                            ));
+        // /* Set these directly
+        $domainModel->setIsBacked($isBacked);
+        $domainModel->setIsValid($isBacked);
+        // */
 
         /*
         $dId = $this->getId($domainModel);
