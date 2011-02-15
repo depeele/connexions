@@ -8,17 +8,17 @@
  *  items to be ui.input instances BEFORE being instantiated.
  *
  *    <li>
- *     <input type='hidden' name='userAuthId[]' ... />
+ *     <input type='hidden' name='userAuthId' ... />
  *     <div class='type'>
  *      <div class=' %authType% ' title=' %authType% '> %authType% </div>
  *     </div>
  *     <div class='field name'>
- *      <label  for='name[]'>Name</label>
- *      <input name='name[]' type='text' class='text' />
+ *      <label  for='name'>Name</label>
+ *      <input name='name' type='text' class='text' />
  *     </div>
  *     <div class='field credential'>
- *      <label  for='credential[]'>Credential</label>
- *      <input name='credential[]' type='text' class='text' />
+ *      <label  for='credential'>Credential</label>
+ *      <input name='credential' type='text' class='text' />
  *     </div>
  *    </li>
  *
@@ -203,7 +203,7 @@ $.widget("settings.credential", {
                             +           (newType === 'password'
                                             ? 'password'
                                             : 'text') +"' "
-                            +        "name='credential[]' "
+                            +        "name='credential' "
                             +       "class='text required' "
                             +       "value='"+ val +"' />";
                 var $new    = $(html);
@@ -220,6 +220,9 @@ $.widget("settings.credential", {
                 {
                     self._activatePassword();
                 }
+
+                // Trickle a 'rebind' event up to our parent...
+                self._trigger('rebind');
             }
 
             $types.removeClass('current');

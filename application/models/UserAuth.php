@@ -80,6 +80,7 @@ class Model_UserAuth extends Model_Base
                 throw new Exception("user MUST be a Model_User instance");
             }
             $this->_user = $value;
+            $this->userId = $this->_user->getId();
             return;
 
             break;
