@@ -4,7 +4,7 @@
               groupType="tag"
               controlMembers="owner" controlItems="owner" visibility="private"
               canTransfer="0" ownerId="1" />
- <memberGroup groupId="2" name="Network"
+ <memberGroup groupId="2" name="System:Network"
               groupType="user"
               controlMembers="owner" controlItems="owner" visibility="private"
               canTransfer="0" ownerId="1" />
@@ -12,7 +12,7 @@
               groupType="item"
               controlMembers="owner" controlItems="owner" visibility="group"
               canTransfer="0" ownerId="1" />
- <memberGroup groupId="4" name="Network"
+ <memberGroup groupId="4" name="System:Network"
               groupType="user"
               controlMembers="owner" controlItems="owner" visibility="public"
               canTransfer="0" ownerId="2" />

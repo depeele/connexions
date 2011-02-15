@@ -19,7 +19,7 @@ class GroupDbTest extends DbTestCase
 
     private $_group1u= array(
                         'groupId'        => 2,
-                        'name'           => 'Network',
+                        'name'           => 'System:Network',
                         'groupType'      => 'user',
                         'ownerId'        => 1,
 

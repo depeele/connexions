@@ -31,7 +31,7 @@ class GroupServiceTest extends DbTestCase
         ),
         array(
             'groupId'           => 2,
-            'name'              => 'Network',
+            'name'              => 'System:Network',
             'groupType'         => 'user',
             'ownerId'           => 1,
 
@@ -53,7 +53,7 @@ class GroupServiceTest extends DbTestCase
         ),
         array(
             'groupId'           => 4,
-            'name'              => 'Network',
+            'name'              => 'System:Network',
             'groupType'         => 'user',
             'ownerId'           => 2,
 
