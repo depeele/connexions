@@ -395,7 +395,7 @@ abstract class Connexions_Service
         }
 
         /*
-        Connexions::log("Connexions_Service_Proxy::_csOrder2array( %s ): "
+        Connexions::log("Connexions_Service::_csOrder2array( %s ): "
                         . "array[ %s ]",
                         $order,
                         Connexions::varExport($orderAr));
@@ -419,7 +419,7 @@ abstract class Connexions_Service
         }
 
         /*
-        Connexions::log("Connexions_Service_Proxy::_csOrder2array( %s ): "
+        Connexions::log("Connexions_Service::_csOrder2array( %s ): "
                         . "order[ %s ]",
                         $order,
                         Connexions::varExport($newOrder));
