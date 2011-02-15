@@ -123,7 +123,7 @@ class Model_Mapper_User extends Model_Mapper_Base
      *  @param  user    The Model_User instance.
      *
      *  A user's network is a 'Model_Group' with the following characteristics:
-     *      name            'Network'
+     *      name            'System:Network'
      *      groupType       'user'
      *      controlMembers  'owner'
      *      controlItems    'owner'
@@ -138,7 +138,7 @@ class Model_Mapper_User extends Model_Mapper_Base
     {
         $authUser = Connexions::getUser();
         $id = array(
-            'name'              => 'Network',
+            'name'              => 'System:Network',
             'ownerId'           => $user->getId(),
             'groupType'         => 'user',
             'controlMembers'    => 'owner',
