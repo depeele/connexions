@@ -140,19 +140,31 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
                 return false;
             }
 
-            /* Now that we have a Model_User, attempt to locate the
-             * Model_UserAuth instance matching the identified user AND
-             * current authentication type.
+            /* Now that we have a Model_User, attempt to locate all
+             * Model_UserAuth instances that match the identified user AND
+             * current authentication type.  This allows multiple
+             * authentication entries if the authentication type supports it
+             * (e.g. OpenId, multiple PKI certificates representing a single
+             *       Connexions user).
              */
-            $userAuth = $uaMapper->find( array(
-                            'userId'    => $user->userId,
-                            'authType'  => $this->getAuthType(),
+            $userAuth = $uaMapper->fetch( array(
+                            'userId'     => $user->userId,
+                            'authType'   => $this->getAuthType(),
                         ));
+
+            /*
+            Connexions::log("Connexions_Auth_Abstract::_matchAndCompare(): "
+                            . "userId[ %s ], authType[ %s ], set[ %s ]",
+                            $user->userId,
+                            $this->getAuthType(),
+                            ($userAuth ? $userAuth->debugDump() : 'null'));
+            // */
         }
         else
         {
             /* We weren't given 'identity', so perform a lookup by 'credential'
-             * AND current authentication type.
+             * AND current authentication type to locate the SINGLE matching
+             * Model_UserAuth instance.
              *
              * This makes sense for authentication methods that have a unique
              * 'credential' per user (e.g. OpenId, PKI).  Authentication

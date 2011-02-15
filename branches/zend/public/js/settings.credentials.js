@@ -9,17 +9,17 @@
  *  <ul class='credentials'>
  *   <form>
  *    <li>
- *     <input type='hidden' name='userAuthId[]' ... />
+ *     <input type='hidden' name='userAuthId' ... />
  *     <div class='type'>
  *      <div class=' %authType% ' title=' %authType% '> %authType% </div>
  *     </div>
  *     <div class='field name'>
- *      <label  for='name[]'>Name</label>
- *      <input name='name[]' type='text' class='text' />
+ *      <label  for='name'>Name</label>
+ *      <input name='name' type='text' class='text' />
  *     </div>
  *     <div class='field credential'>
- *      <label  for='credential[]'>Credential</label>
- *      <input name='credential[]' type='text' class='text' />
+ *      <label  for='credential'>Credential</label>
+ *      <input name='credential' type='text' class='text' />
  *     </div>
  *    </li>
  *    ...
@@ -206,6 +206,10 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
         opts.$submit.bind('click.settingsCredentials',  _save_click);
         opts.$add.bind('click.settingsCredentials',     _add_item);
         self.element.bind('status.settingsCredentials', _status);
+
+        self.element.bind('rebind.settingsCredentials', function() {
+            self.rebind();
+        });
     },
 
     _performUpdate: function()
@@ -424,7 +428,7 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
         // Activate the new item.
         self._activateCredential($div);
 
-        // Refresh theh list of credentials
+        // Refresh the list of credentials
         opts.$credentials = self.element
                                     .find('li:has(input[name^=credential])');
 
@@ -440,6 +444,7 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
         // Cleanup
 
         // Unbind events
+        self.element.unbind('.settingsCredentials');
         opts.$submit.unbind('.settingsCredentials');
         opts.$add.unbind('.settingsCredentials');
 

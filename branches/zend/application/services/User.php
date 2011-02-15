@@ -339,16 +339,21 @@ class Service_User extends Connexions_Service
         $errors     = array();
         foreach ($credentials as $idex => $info)
         {
-            Connexions::log("Service_User::updateCredentials(): "
-                            .   "#%d [ %s ], userAuthId[ %d ]",
-                            $idex,
-                            Connexions::varExport($info),
-                            $info['userAuthId']);
-
             if ( ! $info['userAuthId'])
             {
-                // Create a new record
-                $cred = $credMapper->getModel( $info );
+                /* Create a new record
+                 *
+                 * Explicit ordering to ensure that everything is set BEFORE
+                 * 'credential' so it will be properly normalized.
+                 */
+                $cred = $credMapper->getModel( array(
+                    'user'          => $user,
+                    'authType'      => $info['authType'],
+                    'credential'    => $info['credential'],
+                    'name'          => (isset($info['name'])
+                                            ? $info['name']
+                                            : ''),
+                ));
 
                 $cred->validate();
             }
@@ -361,10 +366,11 @@ class Service_User extends Connexions_Service
                 $cred->populate($info);
             }
 
-            // /*
+            /*
             Connexions::log("Service_User::updateCredentials(): "
-                            .   "#%d == [ %s ]",
+                            .   "#%d [ %s ] == [ %s ]",
                             $idex,
+                            Connexions::varExport($info),
                             ($cred ? $cred->debugDump() : 'null'));
             // */
 
@@ -375,7 +381,14 @@ class Service_User extends Connexions_Service
                 continue;
             }
 
-            $cred->save();
+            /* :XXX: Somewhere BEFORE here it seems, a new record is being
+             *       saved.  If we do a save() here of a brand new record, we
+             *       end up with two identical records in the database.  On the
+             *       other hand, for an update, without this save() the update
+             *       is never saved...
+             *
+             * $cred->save();
+             */
             $credSet->append($cred);
         }
 
