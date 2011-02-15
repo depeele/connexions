@@ -274,7 +274,7 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
                              + (params.credentials.length === 1
                                     ? ''
                                     : 's')
-                             + 'updated.');
+                             + ' updated.');
 
                 if (data.result === null)
                 {

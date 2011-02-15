@@ -281,7 +281,7 @@ class Service_User extends Connexions_Service
             throw new Exception('Invalid user data: '. implode(', ', $msgStrs));
         }
 
-        $user->save();
+        $user = $user->save();
 
         return $user;
     }
@@ -304,7 +304,7 @@ class Service_User extends Connexions_Service
 
         if ($user->isValid())
         {
-            $user->save();
+            $user = $user->save();
         }
 
         return $user;
@@ -323,7 +323,7 @@ class Service_User extends Connexions_Service
      *                            name:         The name of the credential,
      *                            credential:   The credential data }
      *
-     *  @return The updated user.
+     *  @return The updated Model_Set_UserAuth.
      */
     public function updateCredentials(Model_User   $user,
                                       array        $credentials)
@@ -334,62 +334,80 @@ class Service_User extends Connexions_Service
                                 .   'unauthenticated user.');
         }
 
-        $credMapper = $this->_getMapper('Model_UserAuth');
-        $credSet    = $credMapper->makeEmptySet();
-        $errors     = array();
+        $uaMapper = $this->_getMapper('Model_UserAuth');
+        $uaSet    = $uaMapper->makeEmptySet();
+        $errors   = array();
         foreach ($credentials as $idex => $info)
         {
-            if ( ! $info['userAuthId'])
+            /*
+            Connexions::log("Service_User::updateCredentials(): "
+                            .   "#%d info[ %s ]",
+                            $idex,
+                            Connexions::varExport($info));
+            // */
+
+            if ( ! @is_numeric($info['userAuthId']))
             {
                 /* Create a new record
                  *
                  * Explicit ordering to ensure that everything is set BEFORE
                  * 'credential' so it will be properly normalized.
                  */
-                $cred = $credMapper->getModel( array(
-                    'user'          => $user,
-                    'authType'      => $info['authType'],
-                    'credential'    => $info['credential'],
-                    'name'          => (isset($info['name'])
-                                            ? $info['name']
-                                            : ''),
-                ));
-
-                $cred->validate();
+                $ua = $user->addAuthenticator($info['credential'],
+                                              (@isset($info['authType'])
+                                                ? $info['authType']
+                                                : Model_UserAuth::AUTH_DEFAULT
+                                              ));
+                /* If a name was provided AND the new credential is valid so
+                 * far, set the name.
+                 */
+                if ( isset($info['name']) )
+                {
+                    $ua->name = $info['name'];
+                }
             }
             else
             {
                 // Update an existing record
-                $cred = $credMapper->getModel( array('userAuthId' =>
-                                                        $info['userAuthId']) );
+                $ua = $user->getAuthenticator( $info['userAuthId'] );
 
-                $cred->populate($info);
+                if ($ua !== null)
+                {
+                    // Update the authenticator with the new information
+                    if ( isset($info['authType']) &&
+                         $ua->validateAuthType($info['authType']))
+                    {
+                        $ua->authType = $info['authType'];
+                    }
+
+                    if ( isset($info['name']) )
+                    {
+                        $ua->name = $info['name'];
+                    }
+
+                    if ( isset($info['credential']) )
+                    {
+                        $ua->credential = $info['credential'];
+                    }
+
+                    $ua = $ua->save();
+                }
             }
 
-            /*
-            Connexions::log("Service_User::updateCredentials(): "
-                            .   "#%d [ %s ] == [ %s ]",
-                            $idex,
-                            Connexions::varExport($info),
-                            ($cred ? $cred->debugDump() : 'null'));
-            // */
-
-            // See if the updated instance is valid
-            if (! $cred->isValid())
+            if ($ua)
             {
-                $errors[$idex] = $cred->getValidationMessages();
-                continue;
+                // Attempt to save any changes
+                $ua = $ua->save();
+
+                // See if the updated instance is valid
+                if (! $ua->isValid() )
+                {
+                    $errors[$idex] = $ua->getValidationMessages();
+                    continue;
+                }
             }
 
-            /* :XXX: Somewhere BEFORE here it seems, a new record is being
-             *       saved.  If we do a save() here of a brand new record, we
-             *       end up with two identical records in the database.  On the
-             *       other hand, for an update, without this save() the update
-             *       is never saved...
-             *
-             * $cred->save();
-             */
-            $credSet->append($cred);
+            $uaSet->append($ua);
         }
 
         if (count($errors) > 0)
@@ -400,10 +418,38 @@ class Service_User extends Connexions_Service
                             Connexions::varExport($errors));
         }
 
+        /*
         Connexions::log("Service_User::updateCredentials(): "
                         . "final set[ %s ]",
-                        $credSet->debugDump());
+                        $uaSet->debugDump());
+        // */
 
-        return $credSet;
+        return $uaSet;
+    }
+
+    /** @brief  Delete a specific credential for the given user.
+     *  @param  user        The Model_User instance for which this dlete
+     *                      is intended (MUST be authenticated);
+     *  @param  credential  The credential identifier.
+     *
+     *  @return The updated Model_UserAuth.
+     */
+    public function deleteCredential(Model_User   $user,
+                                                  $credential)
+    {
+        if (! $user->isAuthenticated())
+        {
+            throw new Exception('Operation prohibited for an '
+                                .   'unauthenticated user.');
+        }
+
+        // /*
+        Connexions::log("Service_User::deleteCredential(): "
+                        .   "user[ %s ], credential[ %s ]",
+                        $user,
+                        Connexions::varExport($credential));
+        // */
+
+        //$ua = $user->removeCredential($credential);
     }
 }

@@ -167,11 +167,18 @@ class SettingsController extends Connexions_Controller_Action
                         Connexions::varExport($this->_partials));
         // */
 
-        if ($this->_partials[1] !== 'credentials')
-            return;
+        switch ($this->_partials[1])
+        {
+        case 'info':
+        case 'apikey':
+            // All information available via $this->view->viewer
+            break;
 
-        // Retrieve all credentials for the current user.
-        $this->view->credentials = $this->_viewer->getAuthenticator();
+        case 'credentials':
+            // Retrieve all credentials for the current user.
+            $this->view->credentials = $this->_viewer->getAuthenticator();
+            break;
+        }
     }
 
     protected function _prepareBookmarks()

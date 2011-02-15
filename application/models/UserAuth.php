@@ -72,6 +72,13 @@ class Model_UserAuth extends Model_Base
      */
     public function __set($name, $value)
     {
+        /*
+        Connexions::log("Model_UserAuth::__set(%s, %s) from '%s'",
+                        $name,
+                        Connexions::varExport($value),
+                        Connexions::varExport($this->__get($name)) );
+        // */
+
         switch ($name)
         {
         case 'user':
@@ -86,14 +93,8 @@ class Model_UserAuth extends Model_Base
             break;
 
         case 'authType':
-            switch ($value)
+            if (! self::validateAuthType($value))
             {
-            case self::AUTH_PASSWORD:
-            case self::AUTH_OPENID:
-            case self::AUTH_PKI:
-                break;
-
-            default:
                 throw new Exception("Model_UserAuth::__set({$name}, {$value}): "
                                     . "Invalid authentication type");
             }

@@ -400,17 +400,21 @@ class Model_User extends Model_Taggable
                                 false); // not-yet-backed
 
         if ($auth !== null)
+        {
             $auth = $auth->save();
+        }
 
         return $auth;
     }
 
     /** @brief  Retrieve authenticator(s) (Model_UserAuth entry) for this user.
-     *  @param  type            The authentication type       [ null for all ];
+     *  @param  type            The authentication type OR userAuthId
+     *                          [ null for all ];
      *  @param  credential      The authentication credential [ null for all ].
      *
      *  @return The Model_Set_UserAuth instance containing all matching
-     *          authenticators (null if none found).
+     *          authenticators, the Model_UserAuth instance matching the
+     *          userAuthId provided via 'type', or null if no match found.
      */
     public function getAuthenticator($authType   = null,
                                      $credential = null)
@@ -420,22 +424,57 @@ class Model_User extends Model_Taggable
             return null;
         }
 
-        $criteria = array('userId' => $this->userId);
-        if ($authType !== null)
-        {
-            if (! $this->validateAuthType($authType))
-            {
-                return null;
-            }
-            $criteria['authType'] = $authType;
-        }
-        if ($credential !== null)
-            $criteria['credential'] = $credential;
-
         $authMapper =
                 Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
 
-        return $authMapper->fetch( $criteria );
+        if (is_numeric($authType))
+        {
+            // Find a Model_UserAuth instance by userAuthId.
+            $res = $authMapper->find( array('userAuthId' => $authType) );
+
+            /*
+            Connexions::log("Model_User::getAuthenticator(): "
+                            .   "by userAuthId[ %s ] == [ %s ]",
+                            $authType,
+                            ($res ? $res->debugDump() : 'null'));
+            // */
+
+            if (($res !== null) && ($res->userId !== $this->userId))
+            {
+                /* Found a matching instance but it does NOT belong to this
+                 * user.  Return null.
+                 */
+                /*
+                Connexions::log("Model_User::getAuthenticator(): "
+                                .   "userId[ %s ] !== auth.userId[ %s ]",
+                                $this->userId, $res->userId);
+                // */
+
+                $res = null;
+            }
+        }
+        else
+        {
+            $criteria = array('userId' => $this->userId);
+            if ($authType !== null)
+            {
+                if (! $this->validateAuthType($authType))
+                {
+                    // Invalid authType.
+                    return null;
+                }
+
+                $criteria['authType'] = $authType;
+            }
+            if ($credential !== null)
+            {
+                $criteria['credential'] = $credential;
+            }
+
+            $res = $authMapper->fetch( $criteria );
+        }
+
+        return $res;
     }
 
     /** @brief  Remove one or more authenticators (Model_UserAuth entry) for
@@ -451,17 +490,27 @@ class Model_User extends Model_Taggable
                                         $authType =
                                             Model_UserAuth::AUTH_DEFAULT)
     {
-        $set = $this->getAuthenticator($authType, $credential);
-        if ($set !== null)
+        $res = $this->getAuthenticator($authType, $credential);
+        if ($res !== null)
         {
-            foreach ($set as $item)
+            if ($res instanceof Connexions_Model_Set)
             {
-                $item->delete();
+                // A set of instances.
+                foreach ($res as $item)
+                {
+                    $item->delete();
+                }
+            }
+            else
+            {
+                // A single instance.
+                $res->delete();
             }
         }
 
         return $this;
     }
+
 
     /*************************************************************************
      * Zend_Tag_Taggable Interface (via Model_Taggable)
