@@ -82,6 +82,69 @@
     };
 
     /*************************************************************************
+     * Simple password validation.
+     *
+     */
+
+    /** @brief  Given two ui.input widgets and the one which cause the
+     *          validation routine to trigger, area, check if the passwords are
+     *          equivalent and more than 1 and mark BOTH passwords either valid
+     *          or invalid.
+     *  @param  $active     The ui.input widget (either $pass1 or $pass2) that
+     *                      triggered the validation check.
+     *  @param  $pass1      The ui.input widget representing password #1.
+     *  @param  $pass2      The ui.input widget representing password #2.
+     *
+     *  @return
+     */
+    $.validatePasswords = function($active, $pass1, $pass2) {
+        var pass1       = $pass1.val();
+        var pass2       = $pass2.val();
+        var res         = true;
+
+        if ((pass1.length < 1) || (pass2.length < 1))
+        {
+            // Neither valid nor ivnalid
+            res = undefined;
+
+            // Also clear the validation status for the other field
+            if ($active[0] === $pass1[0])
+                $pass2.input('valid');  //, undefined);
+            else
+                $pass1.input('valid');  //, undefined);
+        }
+        else if (pass1 !== pass2)
+        {
+            // Invalid -- with message
+            res = 'Passwords do not match.';
+
+            // Only report errors on 'password2'
+            if ($active[0] === $pass1[0])
+            {
+                $pass2.input('valid', res);
+                res = undefined;
+            }
+            else
+            {
+                /* But we still  want to clear the validation status for
+                 * password1
+                 */
+                $pass1.input('valid');  //, undefined);
+            }
+        }
+        else
+        {
+            // Also report success for the other field.
+            if ($active[0] === $pass1[0])
+                $pass2.input('valid', true);
+            else
+                $pass1.input('valid', true);
+        }
+
+        return res;
+    };
+
+    /*************************************************************************
      * Overlay any element.
      *
      */

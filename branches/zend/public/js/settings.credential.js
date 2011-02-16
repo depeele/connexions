@@ -256,12 +256,82 @@ $.widget("settings.credential", {
             return;
         }
 
-        opts.$credential.bind('focus', function() {
-                            var a   = 1;
-                         })
-                        .bind('blur', function() {
-                            var b   = 1;
-                         });
+
+        function validatePasswords($el)
+        {
+            var res = $.validatePasswords($el, opts.$pw_new1, opts.$pw_new2);
+            if (res === true)
+            {
+                opts.$credential.val( opts.$pw_new1.val() );
+                opts.$pw_change.slideUp();
+            }
+
+            return res;
+        }
+
+        opts.$credential
+                .bind('focus', function() {
+                    //opts.$credential.hide();
+
+                    if (opts.$pw_change === undefined)
+                    {
+                        var html    = "<div class='change'>"
+                                    /*
+                                    +  "<div class='field pw_current'>"
+                                    +   "<label for='pw_current'>"
+                                    +    "Current Password"
+                                    +   "</label>"
+                                    +   "<input type='password' "
+                                    +         "class='text required' "
+                                    +          "name='pw_current' />"
+                                    +  "</div>"
+                                    */
+                                    +  "<div class='field pw_new'>"
+                                    +   "<label for='pw_new1'>"
+                                    +    "New Password"
+                                    +   "</label>"
+                                    +   "<input type='password' "
+                                    +         "class='text required' "
+                                    +          "name='pw_new1' />"
+                                    +  "</div>"
+                                    +  "<div class='field pw_new'>"
+                                    +   "<label for='pw_new2'>"
+                                    +    "Verify New Password"
+                                    +   "</label>"
+                                    +   "<input type='password' "
+                                    +         "class='text required' "
+                                    +          "name='pw_new2' />"
+                                    +  "</div>"
+                                    + "</div>";
+
+                        opts.$pw_change  = $(html).hide();
+                        opts.$credential.after( opts.$pw_change );
+
+                        /*
+                        opts.$pw_current =
+                            opts.$pw_change
+                                    .find('.pw_current input[name=pw_current]')
+                                    .input({hideLabel:opts.hideLabels});
+                        */
+                        opts.$pw_new =
+                            opts.$pw_change
+                                    .find('.pw_new input[name^=pw_new]');
+
+                        opts.$pw_new1 = opts.$pw_new.first();
+                        opts.$pw_new2 = opts.$pw_new.last();
+
+                        opts.$pw_new.input({
+                                        hideLabel:  opts.hideLabels,
+                                        validation: function() {
+                                            return validatePasswords( $(this) );
+                                        }
+                                    });
+                    }
+
+                    opts.$pw_change.slideDown(400, function() {
+                        opts.$pw_new1.focus();
+                    });
+                });
     },
 
     _bindEvents: function()
