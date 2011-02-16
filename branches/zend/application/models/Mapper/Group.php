@@ -128,7 +128,7 @@ class Model_Mapper_Group extends Model_Mapper_Base
      */
     public function getMembers(Model_Group $group)
     {
-        // /*
+        /*
         Connexions::log('Model_Mapper_Group::getMembers(): '
                         .   'groupId[ %s ], type[ %s ]',
                         Connexions::varExport($group->groupId),
@@ -185,7 +185,7 @@ class Model_Mapper_Group extends Model_Mapper_Base
      */
     public function getItems(Model_Group $group)
     {
-        // /*
+        /*
         Connexions::log('Model_Mapper_Group::getItems(): '
                         .   'groupId[ %s ], type[ %s ]',
                         Connexions::varExport($group->groupId),

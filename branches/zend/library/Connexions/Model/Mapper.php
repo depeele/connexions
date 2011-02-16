@@ -202,7 +202,9 @@ abstract class Connexions_Model_Mapper
     {
         $model = $this->find($data);
         if ($model !== null)
+        {
             return $model;
+        }
 
         // Create a new, un-backed Domain Model.
         return $this->makeModel($data, false);
@@ -237,15 +239,17 @@ abstract class Connexions_Model_Mapper
         // No existing entry.  Create a new instance.
         $modelName   = $this->getModelName();
         $domainModel = new $modelName(array('mapper'    => $this,
-                                            'data'      => $data,
-                                            /*
                                             'isBacked'  => $isBacked,
-                                            'isValid'   => $isBacked,
-                                            // */
+                                            //'isValid'   => $isBacked,
+                                            'data'      => $data,
                                             ));
-        // /* Set these directly
-        $domainModel->setIsBacked($isBacked);
-        $domainModel->setIsValid($isBacked);
+
+        /*
+        Connexions::log("Connexions_Model_Mapper::makeModel(): "
+                        .   "isBacked[ %s ], data[ %s ], model[ %s ]",
+                        ($isBacked === true ? 'true' : 'false'),
+                        Connexions::varExport($data),
+                        $domainModel->debugDump());
         // */
 
         /*

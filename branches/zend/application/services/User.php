@@ -265,6 +265,14 @@ class Service_User extends Connexions_Service
                                 .   'unauthenticated user.');
         }
 
+        /*
+        Connexions::log("Service_User::update() config [ %s, %s ]",
+                        get_class($this),
+                        $key, (is_object($val)
+                                ? get_class($val)
+                                : Connexions::varExport($val)));
+        // */
+
         if (! empty($fullName))     $user->fullName   = $fullName;
         if (! empty($email))        $user->email      = $email;
         if (! empty($pictureUrl))   $user->pictureUrl = $pictureUrl;
@@ -281,9 +289,16 @@ class Service_User extends Connexions_Service
             throw new Exception('Invalid user data: '. implode(', ', $msgStrs));
         }
 
-        $user = $user->save();
+        /*
+        Connexions::log("Service_User::update() config [ %s, %s ]",
+                        get_class($this),
+                        $key, (is_object($val)
+                                ? get_class($val)
+                                : Connexions::varExport($val)));
+        // */
 
-        return $user;
+        //$user = $user->save();
+        return $user->save();
     }
 
     /** @brief  Regenerate the user's API Key

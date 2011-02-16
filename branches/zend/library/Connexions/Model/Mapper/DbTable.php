@@ -116,6 +116,15 @@ abstract class Connexions_Model_Mapper_DbTable
 
         $newModel = $this->find( $id );
 
+        if ($newModel !== null)
+        {
+            /* Give the new concrete instance access to the concrete instance
+             * being replace to allow duplication of any non-backed
+             * meta-properties (e.g.  authentication state).
+             */
+            $newModel->cloneOf($domainModel);
+        }
+
         /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::save() "
                         . "%s 'new' model[ %s ]: id[ %s ]",
