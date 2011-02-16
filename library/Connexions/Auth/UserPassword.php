@@ -41,7 +41,7 @@ class Connexions_Auth_UserPassword extends Connexions_Auth_Abstract
         $userName = $request->getParam('username', null);
         $password = $request->getParam('password', null);
 
-        // /*
+        /*
         Connexions::log("Connexions_Auth_UserPassword::authenticate: "
                         . "username[ %s ], password[ %s ]",
                         $userName, $password);

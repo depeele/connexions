@@ -77,7 +77,16 @@ abstract class Connexions_Service
      */
     public function get($id)
     {
-        return $this->_mapper->getModel( $this->_mapper->normalizeId($id) );
+        $res = $this->_mapper->getModel( $this->_mapper->normalizeId($id) );
+
+        /*
+        Connexions::log("Connexions_Service[%s]::get( %s ): [ %s ]",
+                        get_class($tis),
+                        Connexions::varExport($id),
+                        ($res ? $res->debugDump()
+                              : 'null'));
+        // */
+        return $res;
     }
 
     /** @brief  Retrieve a single, existing Domain Model instance.

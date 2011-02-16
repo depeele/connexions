@@ -120,6 +120,8 @@ class GroupServiceTest extends DbTestCase
 
         $this->assertTrue( $group instanceof Model_Group );
 
+        //printf ("new group[ %s ]", $group->debugDump());
+
         $this->assertFalse(  $group->isBacked() );
         $this->assertTrue(   $group->isValid() );
 

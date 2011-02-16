@@ -86,25 +86,36 @@ abstract class Connexions_Model
             $config  = (array)$config;
         }
 
-        $populated = false;
-        foreach ($config as $key => $val)
+        if (isset($config['data']))
         {
-            /*
-            Connexions::log("Connexions_Model[%s]: config [ %s, %s ]",
-                            get_class($this),
-                            $key, (is_object($val)
-                                    ? get_class($val)
-                                    : Connexions::varExport($val)));
-            // */
-
-            if ($key === 'data')
+            if (isset($config['isValid']) && ($config['isValid'] === true))
             {
-                // Record data -- populate
-                $this->populate($val);
-                $populated = true;
+                /* We have an assertion that this data is valid so do NOT
+                 * perform validation in populate()
+                 */
+                $this->_delayValidation = true;
             }
-            else
+
+            $this->populate($config['data']);
+
+            $this->_delayValidation = false;
+
+            // Include any meta-settings
+            foreach ($config as $key => $val)
             {
+                if ($key === 'data')
+                {
+                    continue;
+                }
+
+                /*
+                Connexions::log("Connexions_Model[%s]: config [ %s, %s ]",
+                                get_class($this),
+                                $key, (is_object($val)
+                                        ? get_class($val)
+                                        : Connexions::varExport($val)));
+                // */
+
                 $method = 'set'. ucfirst($key);
                 if (method_exists( $this, $method ))
                 {
@@ -116,8 +127,7 @@ abstract class Connexions_Model
                 }
             }
         }
-
-        if (! $populated)
+        else
         {
             // ASSUME the 'config' data IS record data and simply set it.
             $this->populate( $config );
@@ -157,6 +167,7 @@ abstract class Connexions_Model
                         Connexions::varExport($data));
         // */
 
+        $skipValidation = $this->_delayValidation;
         $this->_delayValidation = true;
         foreach ($data as $key => $val)
         {
@@ -170,10 +181,13 @@ abstract class Connexions_Model
 
             $this->__set($key, $val);
         }
-        $this->_delayValidation = false;
+        $this->_delayValidation = $skipValidation;
 
-        // Perform full validation of the populated data
-        $this->validate();
+        if ($skipValidation !== true)
+        {
+            // Perform full validation of the populated data
+            $this->validate();
+        }
 
         /*
         Connexions::log("Connexions_Model[%s]::populate(): complete[ %s ]",
@@ -649,6 +663,18 @@ abstract class Connexions_Model
      *
      */
 
+    /** @brief  Invoked after save() with the new, now-backed instance to allow
+     *          concrete models to copy over any non-backed meta-propeties
+     *          (e.g.  authentication state).
+     *  @param  model   The model instance being cloned.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function cloneOf(Connexions_Model $model)
+    {
+        return $this;
+    }
+
     /** @brief  Save this instancne.
      *
      *  @return The (updated) instance.
@@ -663,7 +689,9 @@ abstract class Connexions_Model
 
         $res = $this;
         if (! empty($this->_dirty))
+        {
             $res = $this->getMapper()->save( $this );
+        }
 
         return $res;
     }

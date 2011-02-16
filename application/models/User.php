@@ -296,8 +296,8 @@ class Model_User extends Model_Taggable
         $str = parent::debugDump($indent, true);
 
         // Include authentication status at the top
-        $str = preg_replace('/valid \[/',
-                            'valid, '
+        $str = preg_replace('/dirty \[/',
+                            'dirty, '
                             . ($this->isAuthenticated() ? '' : 'NOT ')
                             . 'authenticated [',
                             $str);
@@ -358,6 +358,22 @@ class Model_User extends Model_Taggable
         return ($this->_authResult !== null
                     ? $this->_authResult->isValid()
                     : false);
+    }
+
+    /** @brief  Invoked after save() with the new, now-backed instance to allow
+     *          concrete models to copy over any non-backed meta-propeties
+     *          (e.g.  authentication state).
+     *  @param  model   The model instance being cloned.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function cloneOf(Connexions_Model $model)
+    {
+        $this->_authType   = $model->_authType;
+        $this->_authResult = $model->_authResult;
+        $this->_credential = $model->_credential;
+
+        return $this;
     }
 
     /**********************************************

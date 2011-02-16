@@ -80,6 +80,9 @@ class UserServiceTest extends DbTestCase
         $bMapper = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
         $bMapper->flushIdentityMap();
 
+        $uaMapper = Connexions_Model_Mapper::factory('Model_Mapper_UserAuth');
+        $uaMapper->flushIdentityMap();
+
 
         parent::tearDown();
     }
@@ -1389,6 +1392,8 @@ class UserServiceTest extends DbTestCase
         $this->_setAuthenticatedUser($user1);
         $this->assertTrue ($user1->isAuthenticated());
 
+        //Connexions::log("user1[ %s ]", $user1->debugDump());
+
         /*******************************************************
          * Now, as an authenticated user, attempt to update
          */
@@ -1403,6 +1408,9 @@ class UserServiceTest extends DbTestCase
                                       $expected['profile'] );
 
         $this->assertTrue(  $user2 instanceof Model_User );
+
+        //Connexions::log("user2[ %s ]", $user2->debugDump());
+
         $this->assertTrue(  $user2->isBacked() );
         $this->assertTrue(  $user2->isValid() );
         $this->assertTrue(  $user2->isAuthenticated() );
