@@ -330,6 +330,12 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceFetchByTagsAny1()
     {
+        /*
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $user     = $mapper->find( array('userId' => 1) );
+        printf ("User1[ %s ]\n", $user->debugDump());
+        // */
+
         $expected   = '1:2,1:4,1:5,4:15,3:4';
         $expectedAr = array( array(1,2),
                              array(1,4),
