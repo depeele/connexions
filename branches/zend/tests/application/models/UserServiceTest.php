@@ -1193,6 +1193,9 @@ class UserServiceTest extends DbTestCase
         // Rename tags
         $res      = $service->renameTags($user, $renames);
         $this->assertEquals($expected, $res);
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
 
@@ -1345,6 +1348,9 @@ class UserServiceTest extends DbTestCase
         // Delete the tags.
         $res      = $service->deleteTags($user, $tags);
         $this->assertEquals($expected, $res);
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
     public function testUserServiceUpdate_unauth()
