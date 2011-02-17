@@ -436,11 +436,19 @@ $.widget("ui.input", {
         {
             newVal = $.trim(newVal);
 
-            this.element.data('value.uiinput', newVal);
+            // Unset the current validation status
+            this.element.removeClass('ui-state-valid');
+            delete this.options.valid;
+
             var ret = this.element.val( newVal );
 
             // Invoke _blur() to validate
             this._blur();
+
+            /* Do NOT set 'value.uiinput' here.  It's supposed to represent the
+             * original value of the input for change purposes.
+             */
+
             return ret;
         }
 

@@ -41,7 +41,7 @@ function authRegister_onLoad()
     $form.find('input[name='+ pass1Name +'],'+
                'input[name='+ pass2Name +']').input({
         validation: function() {
-            return validate_passwords($(this), $pass1, $pass2);
+            return $.validatePasswords($(this), $pass1, $pass2);
         }
     });
 
@@ -78,55 +78,6 @@ function validate_user($user, name)
     // Regardless, don't change the current validation.
     return stat;
 }
-
-function validate_passwords($el, $pass1, $pass2)
-{
-    var pass1       = $pass1.val();
-    var pass2       = $pass2.val();
-    var res         = true;
-
-    if ((pass1.length < 1) || (pass2.length < 1))
-    {
-        // Neither valid nor ivnalid
-        res = undefined;
-
-        // Also clear the validation status for the other field
-        if ($el[0] === $pass1[0])
-            $pass2.input('valid');  //, undefined);
-        else
-            $pass1.input('valid');  //, undefined);
-    }
-    else if (pass1 !== pass2)
-    {
-        // Invalid -- with message
-        res = 'Passwords do not match.';
-
-        // Only report errors on 'password2'
-        if ($el[0] === $pass1[0])
-        {
-            $pass2.input('valid', res);
-            res = undefined;
-        }
-        else
-        {
-            /* But we still  want to clear the validation status for
-             * password1
-             */
-            $pass1.input('valid');  //, undefined);
-        }
-    }
-    else
-    {
-        // Also report success for the other field.
-        if ($el[0] === $pass1[0])
-            $pass2.input('valid', true);
-        else
-            $pass1.input('valid', true);
-    }
-
-    return res;
-}
-
 <?php
 $jQuery->javascriptCaptureEnd();
 

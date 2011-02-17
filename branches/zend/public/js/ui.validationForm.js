@@ -104,6 +104,9 @@ $.widget("ui.validationForm", {
         opts.$reset.button({priority:'secondary'});
 
         self._bindEvents();
+
+        // Perform an initial validation
+        self.validate();
     },
 
     _bindEvents: function()
@@ -124,9 +127,6 @@ $.widget("ui.validationForm", {
 
         opts.$inputs.bind('validation_change.uivalidationform', _validate);
         opts.$reset.bind('click.uivalidationform', _reset);
-
-        // Perform an initial validation
-        self.validate();
     },
 
     /************************

@@ -262,15 +262,25 @@ $.widget("settings.credential", {
             var res = $.validatePasswords($el, opts.$pw_new1, opts.$pw_new2);
             if (res === true)
             {
-                opts.$credential.val( opts.$pw_new1.val() );
-                opts.$pw_change.slideUp();
+                if (opts.$pw_change.data('closing.settingsCredential') !== true)
+                {
+                    //$.log("validatePassword() MATCH");
+                    opts.$credential.input('val', opts.$pw_new1.val() );
+                    opts.$pw_change.data('closing.settingsCredential', true);
+                    opts.$pw_change.slideUp(400, function() {
+                        // Blur the element that cause this validation.
+                        $el.blur();
+                        opts.$pw_change
+                                .removeData('closing.settingsCredential');
+                    });
+                }
             }
 
             return res;
         }
 
         opts.$credential
-                .bind('focus', function() {
+                .bind('focus.settingsCredential', function() {
                     //opts.$credential.hide();
 
                     if (opts.$pw_change === undefined)
@@ -326,9 +336,46 @@ $.widget("settings.credential", {
                                             return validatePasswords( $(this) );
                                         }
                                     });
+
+                        var blurTimer   = null;
+                        opts.$pw_new
+                                .bind('blur.settingsCredential', function(e) {
+                                    /* If, after a short delay, neither of
+                                     * the new password fields are the current
+                                     * focus, hide the change area.
+                                     */
+                                    //$.log("pw_new blur...");
+                                    blurTimer = setTimeout(function() {
+                                        var $focus =
+                                            opts.$pw_new
+                                                    .filter('.ui-state-focus');
+
+                                        /*
+                                        $.log("pw_new blur nFocus[ %s ]...",
+                                              $focus.length);
+                                        // */
+                                        if ($focus.length < 1)
+                                        {
+                                            // Hide the password change area.
+                                            opts.$pw_change.slideUp();
+                                        }
+                                    }, 200);
+                                })
+                                .bind('focus.settingsCredential', function(e) {
+                                    if (blurTimer !== null)
+                                    {
+                                        clearTimeout(blurTimer);
+                                        blurTimer = null;
+
+                                        /*
+                                        $.log("pw_new focus/timer cleared...");
+                                        // */
+                                    }
+                                });
                     }
 
                     opts.$pw_change.slideDown(400, function() {
+                        opts.$credential.blur();
                         opts.$pw_new1.focus();
                     });
                 });
@@ -344,7 +391,7 @@ $.widget("settings.credential", {
             e.preventDefault();
             e.stopPropagation();
 
-            $.log('settings.credential::_delete()');
+            //$.log('settings.credential::_delete()');
 
             self._delete(this);
         };
@@ -505,7 +552,10 @@ $.widget("settings.credential", {
         // Cleanup
 
         // Unbind events
+        if (opts.$pw_new)   opts.$pw_new.unbind('.settingsCredential');
+
         opts.$delete.unbind('.settingsCredential');
+        self.element.unbind('.settingsCredential');
 
         // Remove added elements
         opts.$name.input('destroy');

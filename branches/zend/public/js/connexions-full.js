@@ -1202,11 +1202,19 @@ $.widget("ui.input", {
         {
             newVal = $.trim(newVal);
 
-            this.element.data('value.uiinput', newVal);
+            // Unset the current validation status
+            this.element.removeClass('ui-state-valid');
+            delete this.options.valid;
+
             var ret = this.element.val( newVal );
 
             // Invoke _blur() to validate
             this._blur();
+
+            /* Do NOT set 'value.uiinput' here.  It's supposed to represent the
+             * original value of the input for change purposes.
+             */
+
             return ret;
         }
 
@@ -1847,6 +1855,9 @@ $.widget("ui.validationForm", {
         opts.$reset.button({priority:'secondary'});
 
         self._bindEvents();
+
+        // Perform an initial validation
+        self.validate();
     },
 
     _bindEvents: function()
@@ -1867,9 +1878,6 @@ $.widget("ui.validationForm", {
 
         opts.$inputs.bind('validation_change.uivalidationform', _validate);
         opts.$reset.bind('click.uivalidationform', _reset);
-
-        // Perform an initial validation
-        self.validate();
     },
 
     /************************
