@@ -175,7 +175,7 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
             e.preventDefault();
             e.stopPropagation();
 
-            $.log('settings.credentials::_save_click('+ data +')');
+            //$.log('settings.credentials::_save_click('+ data +')');
 
             self._performUpdate();
 
@@ -187,7 +187,7 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
             e.preventDefault();
             e.stopPropagation();
 
-            $.log('settings.credentials::_add_item()');
+            //$.log('settings.credentials::_add_item()');
 
             self.addItem();
         };
@@ -360,14 +360,17 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
         var self    = this;
         var opts    = self.options;
 
-        $cred.credential('destroy');
+        $cred.hide('fast', function() {
+            $cred.remove(); //credential('destroy');
 
-        // Refresh the list of credentials
-        opts.$credentials = self.element
+            // Refresh the list of credentials
+            opts.$credentials = self.element
                                     .find('li:has(input[name^=credential])');
 
-        // Re-bind to account for the destroyed inputs
-        self.rebind();  //$.ui.validationForm.prototype.rebind.call(this);
+            // Re-bind and re-validate to account for the destroyed inputs
+            self.rebind();  //$.ui.validationForm.prototype.rebind.call(this);
+            self.validate();
+        });
     },
 
     /************************
