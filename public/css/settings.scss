@@ -2,6 +2,7 @@
 @import "colors";
 @import "mixins";
 @import "urls";
+@import 'jquery_Jcrop';
 
 /****** settings.sass ****** */
 // Styling for the settings
@@ -13,6 +14,7 @@
   }
 }
 .settings {
+
   margin-right:  1em;
 
   .ui-tabs-panel ul {
@@ -252,6 +254,43 @@
       padding:      0;
       font-size:    1.5em;
       font-weight:  bold;
+    }
+  }
+}
+
+#account-info-avatar {
+  .avatar-preview {
+    height:         212px;
+    min-width:      320px;
+    padding-bottom: 10px;
+    z-index:        5;
+
+    .avatar-full {
+      max-width:  266px;
+      max-height: 200px;
+      width:      266px;
+      height:     200px;
+      border:     1px solid #ccc;
+      z-index:    6;
+    }
+    .avatar-crop {
+      position:   absolute;
+      top:        0;
+      right:      0;
+
+      width:      50px;
+      height:     50px;
+      border:     1px solid #ccc;
+
+      overflow:   hidden;
+      z-index:    6;
+    }
+  }
+
+  #avatar-type-file, #avatar-type-url {
+    position: relative;
+    .field input {
+      width:  100%;
     }
   }
 }

@@ -1,7 +1,8 @@
 #
 # NOTE: This requires sass >= 3.0
 #
-YUI_COMP	= yuicompressor
+#YUI_COMP	= yuicompressor
+YUI_COMP	= yui-compressor
 
 
 all: connexions.min.css bookmarks.min.css users.min.css 	\
@@ -77,7 +78,7 @@ search.css: mixins.scss search.scss colors.scss ribbon-form.scss
 searchResults.css: mixins.scss searchResults.scss colors.scss
 	sass -t compact searchResults.scss:searchResults.css
 
-settings.css: mixins.scss settings.scss colors.scss
+settings.css: mixins.scss settings.scss colors.scss jquery_Jcrop.scss
 	sass -t compact settings.scss:settings.css
 
 sprites.scss:	urls.scss
@@ -96,4 +97,4 @@ clean:
 	sass -t compact $<:$@
 
 %.min.css : %.css
-	$(YUI_COMP) $<
+	$(YUI_COMP) $< -o $@

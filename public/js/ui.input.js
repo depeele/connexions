@@ -69,8 +69,8 @@ $.widget("ui.input", {
         var self    = this;
         var opts    = this.options;
 
-        // Remember the original value
-        self.saved();
+        // Remember the original value (no validation)
+        self.saved( true );
 
         opts.enabled = self.element.attr('disabled') ? false : true;
 
@@ -424,10 +424,18 @@ $.widget("ui.input", {
     /** @brief  This field has been successfully saved.  Update the "original"
      *          value to the current value so changes can be properly
      *          reflected.
+     *  @param  noValidation    (Internal use) do NOT perform validation
+     *                          [ false ];
      */
-    saved: function()
+    saved: function(noValidation)
     {
         this.element.data('value.uiinput', this.val() );
+        if (noValidation !== true)
+        {
+            // Force valid() to reset any CSS classes
+            this.options.valid = undefined;
+            this.validate();
+        }
     },
 
     val: function(newVal)

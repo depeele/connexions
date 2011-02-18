@@ -84,7 +84,7 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
      *      'canceled'
      *      'complete'
      */
-    _create: function()
+    _init: function()
     {
         var self        = this;
         var opts        = self.options;
@@ -99,7 +99,7 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
                                     opts);
 
         // Invoke our superclass
-        $.ui.validationForm.prototype._create.call(this);
+        $.ui.validationForm.prototype._init.call(this);
 
         opts = self.options;
 
