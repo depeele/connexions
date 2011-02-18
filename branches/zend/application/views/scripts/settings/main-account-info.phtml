@@ -38,97 +38,18 @@ $jQuery->addOnLoad('$.account_info_onLoad();')
        ->javascriptCaptureStart();
 ?>
 (function($) {
-    var api     = null;
-    var $ai     = null;
-    var $submit = null;
-
-    function account_info_submit()
-    {
-        var $fullName   = $ai.find('.user-fullName input');
-        var $email      = $ai.find('.user-email input');
-        var $profile    = $ai.find('.user-profile input');
-        var $avatar     = $ai.find('.avatar img');
-        var params  = {
-            'fullName':   $fullName.val(),
-            'email':      $email.val(),
-            'profile':    $profile.val()
-        };
-
-        if ($avatar.length > 0)
-        {
-            params.pictureUrl = $avatar.attr('src');
-        }
-
-        $ai.mask();
-
-        // Perform an json-rpc call to save the new information.
-        $.jsonRpc(api.jsonRpc, 'user.update', params, {
-            success: function(data) {
-                if ( (! data) || (data.error !== null))
-                {
-                    $.notify({
-                        title:  'Information Update failed',
-                        text:   '<p class="error">'
-                              +   (data ? data.error.message : '')
-                              + '</p>'
-                    });
-                }
-                else
-                {
-                    $.notify({
-                        title:  'Information Updated',
-                        text:   ''
-                    });
-
-                    $ai.validationForm('saved');
-                }
-            },
-            error: function(req, textStatus, err) {
-                $.notify({
-                    title:  'Information Update failed',
-                    text:   '<p class="error">'
-                          +   textStatus
-                          + '</p>'
-                });
-            },
-            complete: function(req, textStatus) {
-                $ai.unmask();
-                $submit.button('disable');
-            }
-        });
-    }
 
     $.account_info_onLoad = function() {
-        api     = $.registry('api');
-        $ai     = $('#account-info .ui-validation-form');
-        $submit = $ai.find('button[name=submit]');
-        
-        $ai.validationForm({hideLabels:false})
-                .bind('submit', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    if ($ai.validationForm('isValid'))
-                    {
-                        account_info_submit();
-                    }
-                });
-
-        $ai.find('.avatar div,.avatar img')
-                .attr('title', 'click-to-edit')
-                .bind('click', function() {
-                    // Popup an image selection dialog
-                });
+        $('#account-info').accountInfo();
     };
 
 }(jQuery));
 <?php
 $jQuery->javascriptCaptureEnd();
 
-
 ?>
-<div id='account-info' class='line'>
- <form class='ui-validation-form'>
+<div id='account-info' class='line'><!-- account-info { -->
+ <form class='ui-validation-form'><!-- ui-validation-form { -->
   <div class='legend unit'>
    <div class='avatar ui-corner-all'>
     <?= $avatar ?>
@@ -140,7 +61,7 @@ $jQuery->javascriptCaptureEnd();
     <?= substr($this->viewer->lastVisit, 0, 10) ?>
    </div>
   </div>
-  <div class='userInput lastUnit'>
+  <div class='userInput lastUnit'><!-- userInput { -->
    <h3 class='user-fullName field' title='Full Name'>
     <label for='fullName'>Full Name</label>
     <input name='fullName' type='text' class='text required' autocomplete='off'
@@ -168,10 +89,49 @@ $jQuery->javascriptCaptureEnd();
     <button name='reset'  tabindex='4'>Reset</button>
     <button name='submit' tabindex='5'>Save</button>
    </div>
-  </div>
- </form>
-</div>
+  </div><!-- userInput } -->
+ </form><!-- ui-validation-form } -->
 
+ <div id='account-info-avatar'
+            title='Avatar Selection'
+            style='display:none;'><!-- account-info-avatar { -->
+  <form method='POST'><!-- account-info-avatar form { -->
+   <div class='avatar-preview'>
+    <div class='avatar-full'><img /></div>
+    <div class='avatar-crop'><img /></div>
+   </div>
+   <div class='avatar-type-selection'>
+    <ul>
+      <li><a href='#avatar-type-file'>Upload</a></li>
+      <li><a href='#avatar-type-url'>Url</a></li>
+    </ul>
+    <div id='avatar-type-file'>
+     <div class='field'>
+      <!-- label  for='avatarFile'>File</label -->
+      <input name='avatarFile' type='file' class='text required' />
+     </div>
+    </div>
+    <div id='avatar-type-url'>
+     <div class='field'>
+      <label  for='avatarUrl'>URL</label>
+      <input name='avatarUrl' type='text' class='text required' />
+     </div>
+    </div>
+   </div>
+   <div class='buttons'>
+    <button name='cancel' tabindex='4'>Cancel</button>
+    <button name='submit' tabindex='5'>Save</button>
+   </div>
+  </form><!-- account-info-avatar form } -->
+ </div><!-- account-info-avatar } -->
+
+</div><!-- account-info } -->
+
+<?php
+
+/*
 <!-- pre style='padding:1em; font-size:0.9em;'>
  <?= $this->viewer->debugDump() ?>
 </pre -->
+ */
+

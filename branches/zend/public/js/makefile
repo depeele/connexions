@@ -1,4 +1,5 @@
-YUI_COMP	= yuicompressor
+#YUI_COMP	= yuicompressor
+YUI_COMP	= yui-compressor
 
 SRCS =	connexions.js jquery.registry.js jquery.cookie.js 		\
 	jquery.pngFix.js						\
@@ -13,7 +14,11 @@ SRCS =	connexions.js jquery.registry.js jquery.cookie.js 		\
 	connexions.bookmarkPost.js connexions.autocomplete.js		\
 	connexions.bookmark.js connexions.user.js
 
-SETTINGS_SRCS	= settings.credential.js settings.credentials.js
+SETTINGS_SRCS	= jquery.Jcrop.js					\
+		  settings.avatarChooser.js				\
+		  settings.accountInfo.js				\
+		  settings.credential.js settings.credentials.js	\
+		  settings.apiKey.js
 
 #all: connexions.min.css bookmarks.min.css users.min.css 	\
 #	urlItems.min.css inbox.min.css				\
@@ -31,4 +36,4 @@ settings-full.js: $(SETTINGS_SRCS)
 #----------------------------------------------------------------------------
 
 %.min.js : %.js
-	$(YUI_COMP) $<
+	$(YUI_COMP) $< -o $@

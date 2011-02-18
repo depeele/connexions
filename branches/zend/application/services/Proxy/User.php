@@ -143,4 +143,26 @@ class Service_Proxy_User extends Connexions_Service_Proxy
 
         return ($this->_service->updateCredentials($user, $credentials));
     }
+
+    /** @brief  Upload and crop a user's avatar image
+     *  @param  url         The URL of the source avatar image
+     *                      (null if a file to be uploaded).
+     *  @param  coords      Crop coordinates
+     *  @param  apiKey      The apiKey for the currently authenticated user
+     *                      (REQUIRED if the transport method is NOT POST);
+     *
+     *  @return The URL of the cropped image.
+     */
+    public function cropAvatar($url, $coords, $apiKey = null)
+    {
+        $user = $this->_authenticate($apiKey);
+
+        Connexions::log("Service_Proxy_User::cropAvatar(): "
+                        .   "url[ %s ], coords[ %s ], _FILES[ %s ]",
+                        Connexions::varExport($url),
+                        Connexions::varExport($coords),
+                        Connexions::varExport($_FILES));
+
+        return null;
+    }
 }

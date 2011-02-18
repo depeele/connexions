@@ -104,6 +104,8 @@ $.widget("settings.credential", {
             }
         }
 
+        opts.hideLabels = (opts.hideLabels === false ? false : true);
+
         /********************************
          * Locate our parts.
          */
