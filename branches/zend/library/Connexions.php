@@ -11,6 +11,8 @@ class Connexions
     protected static    $_db        = null;
     protected static    $_log       = null;
     protected static    $_request   = null;
+    protected static    $_config    = null;
+    protected static    $_urlMap    = array();
 
     /** @brief  Provide a general logging mechanism.
      *  @param  fmt     The sprintf-like format string
@@ -312,6 +314,19 @@ class Connexions
         return $val;
     }
 
+    /** @brief  Return the current Configuration data.
+     *
+     *  @return The current Configuration data.
+     */
+    public static function getConfig($force = false)
+    {
+        if ( ($force === true) || (self::$_config === null))
+        {
+            self::$_config = Zend_Registry::get('config');
+        }
+
+        return self::$_config;
+    }
     /** @brief  Retrive Json-RPC api information from our application
      * configuration (application/configs/application.ini : api.jsonRpc)
      *
@@ -320,10 +335,11 @@ class Connexions
     {
         try
         {
-            $jsonRpc = Zend_Registry::get('config')
-                                        ->get('api')
-                                            ->get('jsonRpc')
-                                                ->toArray();
+            //$jsonRpc = Zend_Registry::get('config')
+            $jsonRpc = self::getConfig()
+                                ->get('api')
+                                    ->get('jsonRpc')
+                                        ->toArray();
         }
         catch (Exception $e)
         {
@@ -350,9 +366,10 @@ class Connexions
                 // $baseUrl = $front->getBaseUrl();
                 try
                 {
-                    $baseUrl = Zend_Registry::get('config')
-                                                ->get('urls')
-                                                    ->get('base');
+                    //$baseUrl = Zend_Registry::get('config')
+                    $baseUrl = self::getConfig()
+                                        ->get('urls')
+                                            ->get('base');
                 }
                 catch (Exception $e)
                 {
@@ -393,6 +410,45 @@ class Connexions
                             ? "class='". $cssClass ."'"
                             : ''),
                         $name);
+    }
+
+    /** @breif  Retrieve or establish a named URL to Path mapping.
+     *  @param  key     The name of the mapping.
+     *  @param  entry   null for retrieval or an array of
+     *                  {url: %url%, path: %path%} to set.
+     *
+     *  @return The named map entry.
+     */
+    public static function urlPathMap($key, $entry = null)
+    {
+        if (is_array($entry))
+        {
+            self::$_urlMap[ $key ] = $entry;
+        }
+
+        return self::$_urlMap[ $key ];
+    }
+
+    /** @brief  Given a site URL, convert it to a local, absolute file path.
+     *  @param  url     The site URL.
+     *
+     *  @return The local, absolute file path.
+     */
+    public static function url2path($url)
+    {
+        $url       = self::url($url);
+        $baseEntry = self::urlPathMap('base');
+
+        $path = $baseEntry['path']
+              . preg_replace('#^'. $baseEntry['url'] .'#', '', $url);
+        
+        /*
+        Connexions::log("Connexions::url2path( %s ): "
+                        .   "baseUrl[ %s ], basePath[ %s ] == [ %s ]",
+                        $url, $baseEntry['url'], $baseEntry['path'], $path);
+        // */
+
+        return $path;
     }
 
     /** @brief  Given a previous depth and current depth, close all tags until 

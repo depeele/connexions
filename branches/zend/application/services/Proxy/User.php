@@ -144,25 +144,52 @@ class Service_Proxy_User extends Connexions_Service_Proxy
         return ($this->_service->updateCredentials($user, $credentials));
     }
 
-    /** @brief  Upload and crop a user's avatar image
-     *  @param  url         The URL of the source avatar image
-     *                      (null if a file to be uploaded).
-     *  @param  coords      Crop coordinates
+    /** @brief  Delete a specific credential for the given user.
+     *  @param  credential  The credential identifier.
      *  @param  apiKey      The apiKey for the currently authenticated user
      *                      (REQUIRED if the transport method is NOT POST);
      *
-     *  @return The URL of the cropped image.
+     *  @return The updated user.
      */
-    public function cropAvatar($url, $coords, $apiKey = null)
+    public function deleteCredential($credential, $apiKey = null)
     {
         $user = $this->_authenticate($apiKey);
 
-        Connexions::log("Service_Proxy_User::cropAvatar(): "
-                        .   "url[ %s ], coords[ %s ], _FILES[ %s ]",
-                        Connexions::varExport($url),
-                        Connexions::varExport($coords),
-                        Connexions::varExport($_FILES));
+        return ($this->_service->deleteCredential($user, $credential));
+    }
 
-        return null;
+    /** @brief  Given a *local* URL to an avatar image along with cropping
+     *          information, perform the image manipulation to accomplish the
+     *          crop and move the resulting image to the avatar directory with
+     *          a name based upon the authenticated user.
+     *
+     *  @param  url     The URL of the source avatar image
+     *                  (it is expected to be a URL that is local to this
+     *                   server).
+     *  @param  crop    Cropping information of the form:
+     *                      {ul:     [ upper-left  x, upper-left  y ], (0, 0)
+     *                       lr:     [ lower-right x, lower-right y ], (50, 50)
+     *                       width:  crop width,                       ( 50 )
+     *                       height: crop height}                      ( 50 )
+     *  @param  apiKey  The apiKey for the currently authenticated user
+     *                  (REQUIRED if the transport method is NOT POST);
+     *
+     *  @return The URL of the cropped image.
+     */
+    public function cropAvatar($url, $crop, $apiKey = null)
+    {
+        // /*
+        Connexions::log("Service_Proxy_User::cropAvatar(): "
+                        .   "url[ %s ], "
+                        .   "crop[ %s ], "
+                        .   "apiKey[ %s ]",
+                        Connexions::varExport($url),
+                        Connexions::varExport($crop),
+                        Connexions::varExport($apiKey) );
+        // */
+
+        $user = $this->_authenticate($apiKey);
+
+        return ($this->_service->cropAvatar($user, $url, $crop));
     }
 }
