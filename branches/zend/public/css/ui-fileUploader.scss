@@ -1,0 +1,36 @@
+@import "mixins";
+@import "colors";
+
+.ui-fileUploader {
+  .status {
+    font-size:  0.9em;
+    padding:    0.5em 0 0 7em;
+    height:     2em;
+
+    .message {
+    }
+    .progress {
+      display:  none;
+    }
+  }
+
+  .success {
+    .message {
+      color:  $successColor;
+    }
+  }
+  .error {
+    .message {
+      color:  $errorColor;
+    }
+  }
+  .in-progress {
+    .message {
+      color:  $controlColor;
+    }
+
+    .progress {
+      display:  block;
+    }
+  }
+}

@@ -40,6 +40,8 @@ $jQuery->addOnLoad('$.account_info_onLoad();')
 (function($) {
 
     $.account_info_onLoad = function() {
+        var $info   = $('#account-info');
+
         $('#account-info').accountInfo();
     };
 
@@ -50,7 +52,7 @@ $jQuery->javascriptCaptureEnd();
 ?>
 <div id='account-info' class='line'><!-- account-info { -->
  <form class='ui-validation-form'><!-- ui-validation-form { -->
-  <div class='legend unit'>
+  <div class='legend unit'><!-- legend { -->
    <div class='avatar ui-corner-all'>
     <?= $avatar ?>
    </div>
@@ -60,7 +62,7 @@ $jQuery->javascriptCaptureEnd();
    <div class='user-date' title='Last visit'>
     <?= substr($this->viewer->lastVisit, 0, 10) ?>
    </div>
-  </div>
+  </div><!-- legend } -->
   <div class='userInput lastUnit'><!-- userInput { -->
    <h3 class='user-fullName field' title='Full Name'>
     <label for='fullName'>Full Name</label>
@@ -95,34 +97,36 @@ $jQuery->javascriptCaptureEnd();
  <div id='account-info-avatar'
             title='Avatar Selection'
             style='display:none;'><!-- account-info-avatar { -->
-  <form method='POST'><!-- account-info-avatar form { -->
-   <div class='avatar-preview'>
-    <div class='avatar-full'><img /></div>
-    <div class='avatar-crop'><img /></div>
-   </div>
-   <div class='avatar-type-selection'>
-    <ul>
-      <li><a href='#avatar-type-file'>Upload</a></li>
-      <li><a href='#avatar-type-url'>Url</a></li>
-    </ul>
-    <div id='avatar-type-file'>
-     <div class='field'>
-      <!-- label  for='avatarFile'>File</label -->
-      <input name='avatarFile' type='file' class='text required' />
-     </div>
-    </div>
-    <div id='avatar-type-url'>
-     <div class='field'>
-      <label  for='avatarUrl'>URL</label>
-      <input name='avatarUrl' type='text' class='text required' />
-     </div>
+  <div class='avatar-preview'>
+   <div class='avatar-full'><img /></div>
+   <div class='avatar-crop'><img /></div>
+  </div>
+  <div class='avatar-type-selection'>
+   <ul>
+     <li><a href='#avatar-type-file'>Upload</a></li>
+     <li><a href='#avatar-type-url'>Url</a></li>
+   </ul>
+   <div id='avatar-type-file'>
+    <div class='field'>
+     <!-- label  for='avatarFile'>File</label -->
+     <form  action='avatar-upload.php'
+            method='POST'
+           enctype="multipart/form-data"><!-- account-info-avatar upload form { -->
+      <input name='avatarFile' type='file' class='text' />
+     </form><!-- account-info-avatar upload form } -->
     </div>
    </div>
-   <div class='buttons'>
-    <button name='cancel' tabindex='4'>Cancel</button>
-    <button name='submit' tabindex='5'>Save</button>
+   <div id='avatar-type-url'>
+    <div class='field'>
+     <label  for='avatarUrl'>URL</label>
+     <input name='avatarUrl' type='text' class='text required' />
+    </div>
    </div>
-  </form><!-- account-info-avatar form } -->
+  </div>
+  <div class='buttons'>
+   <button name='cancel' tabindex='4'>Cancel</button>
+   <button name='submit' tabindex='5'>Save</button>
+  </div>
  </div><!-- account-info-avatar } -->
 
 </div><!-- account-info } -->

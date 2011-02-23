@@ -7,7 +7,6 @@
  *      (application/views/scripts/settings/main-account-info.phtml)
  *
  *  <div id='account-info-avatar'>
- *   <form>
  *    <div class='avatar-full'><img /></div>    // Full image preview
  *    <div class='avatar-crop'><img /></div>    // Image crop preview
  *
@@ -17,8 +16,15 @@
  *    </div>
  *
  *    <div class='avatar-file'>
- *     <label  for='avatarFile'>File</label>
- *     <input name='avatarFile' type='file' />
+ *     <form  action='avatar-upload.php'
+ *            method='POST'
+ *           enctype="multipart/form-data">
+ *      <input name='avatarFile' type='file' class='text' />
+ *      <div class='buttons'>
+ *       <input type='submit' value='Upload' id='pxUpload' />
+ *       <input type='reset'  value='Clear'  id='pxClear' />
+ *      </div>
+ *     </form>
  *    </div>
  *
  *    <div class='avatar-url'>
@@ -26,13 +32,14 @@
  *     <input name='avatarUrl' type='text' />
  *    </div>
  *
- *   </form>
  *  </div>
  *
  *  Requires:
  *      ui.core.js
  *      ui.widget.js
+ *
  *      jquery.Jcrop.js
+ *      jquery.fileUploader.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false */
@@ -49,10 +56,11 @@ $.widget("settings.avatarChooser", $.extend({}, $.ui.dialog.prototype, {
     widgetEventPrefix:    '',
 
     options: {
-        width:      400,
-        height:     400,
-        minWidth:   400,
-        minHeight:  400,
+        width:          400,
+        height:         450,
+        minWidth:       400,
+        minHeight:      450,
+        imageLoader:    'images/image_upload.gif',
 
         /* General Json-RPC information:
          *  {version:   Json-RPC version,
@@ -107,26 +115,40 @@ $.widget("settings.avatarChooser", $.extend({}, $.ui.dialog.prototype, {
          * Locate pieces not collected
          * by our superclass.
          */
-        opts.$form          = self.element.find('form');
-        opts.$previewFull   = opts.$form.find('.avatar-full');
-        opts.$previewCrop   = opts.$form.find('.avatar-crop');
+        opts.$previewFull   = self.element.find('.avatar-full');
+        opts.$previewCrop   = self.element.find('.avatar-crop');
 
         opts.$imageFull     = opts.$previewFull.find('img');
         opts.$imageCrop     = opts.$previewCrop.find('img');
 
-        opts.$types         = opts.$form.find('.avatar-type-selection');
+        opts.$types         = self.element.find('.avatar-type-selection');
 
         opts.$inputFile     = opts.$types.find('input[name=avatarFile]');
         opts.$inputUrl      = opts.$types.find('input[name=avatarUrl]');
 
-        opts.$types.tabs({
-            selected:   (opts.avatar ? 1 : 0)
-        });
-        opts.$form.validationForm({
-            hideLabels:                 true,
-            disableSubmitOnUnchanged:   false,
-            validate:                   function() {self._validate.call(self);}
-        });
+        opts.$buttons       = self.element.find('> .buttons button');
+
+        opts.$buttons.button();
+        opts.$types.tabs({ selected:(opts.avatar ? 1 : 0) });
+        opts.$inputUrl.input({ hideLabel:true });
+        opts.$inputFile.fileUploader({ imageLoader:opts.imageLoader });
+
+        opts.avatarSizes    = {
+            full:       {
+                width:  0,
+                height: 0
+            },
+            preview:    {
+                width:  parseInt(opts.$previewCrop.css('width')),
+                height: parseInt(opts.$previewCrop.css('height'))
+            },
+            max:        {
+                width:  parseInt(opts.$previewFull.css('maxWidth')),
+                        //opts.$previewFull.width(),
+                height: parseInt(opts.$previewFull.css('maxHeight'))
+                        //opts.$previewFull.height()
+            }
+        };
 
         /********************************
          * Bind to interesting events.
@@ -179,108 +201,102 @@ $.widget("settings.avatarChooser", $.extend({}, $.ui.dialog.prototype, {
         var self        = this;
         var opts        = self.options;
 
-        opts.$inputUrl
-                .bind('validation_change.avatarChooser', function() {
-                    var url = opts.$inputUrl.val();
-
-                    self.initPreview( url );
-                });
-
-        opts.$inputFile
-                .bind('change.avatarChooser', function() {
-                    var url = opts.$inputFile.val();
-
-                    /* :TODO:
-                     *
-                     * For local files, due to browser security issues
-                     * (particularly in Chrome), we MUST upload the file to the
-                     * server in order to present a preview.
-                     */
-                    self.initPreview( url );
-                });
-
-        opts.$form
-                .bind('submit.avatarChooser', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    self.save();
-                })
-                .bind('cancel.avatarChooser', function(e) {
-                    self.close();
-                });
-
-        /******************************************************************
-         * Handle updates of the cropped, thumbnail area
+        /* 'success' is triggered on the $inputFile DOM element whenever
+         * a valid image has been selected and successfully uploaded.
          *
+         * The incoming 'ui' element contains:
+         *  { msg:  %Completion message from the server%,
+         *    url:  %Site-absolute URL to the uploaded image% }
          */
-        var fullSize    = {width:   0,
-                           height:  0};
-        var avatar      = {width:   parseInt(opts.$previewCrop.css('width')),
-                           height:  parseInt(opts.$previewCrop.css('height'))};
+        opts.$inputFile
+                .bind('success.avatarChooser', function(e,ui) {
+                    // Update the $inputUrl, initiating jCrop and preview
+                    opts.$inputUrl.input('val', ui.url);
 
+                    // Switch to the URL tab
+                    opts.$types.tabs('select', 1);
+                });
+
+        opts.$inputUrl
+                .bind('validation_change.avatarChooser', function(e, isValid) {
+                    if (isValid === true)
+                    {
+                        var $el = $(this);
+                        var url = opts.$inputUrl.val();
+
+                        self.initPreview( url );
+                    }
+                });
+
+        opts.$buttons.bind('click.avatarChooser', function(e) {
+            e.preventDefault();
+
+            var $el = $(this);
+            switch ($el.attr('name'))
+            {
+            case 'submit':  self.save();   break;
+            case 'cancel':  self.close();   break;
+            }
+        });
+
+        self._cropper();
+    },
+
+    _cropper: function()
+    {
+        var self        = this;
+        var opts        = self.options;
+        var size        = opts.avatarSizes;
+
+        // Handle updating the cropped preview.
         function previewCrop(coords)
         {
-            var rx  = avatar.width  / coords.w;
-            var ry  = avatar.height / coords.h;
+            var rx  = size.preview.width  / coords.w;
+            var ry  = size.preview.height / coords.h;
 
             // Remember these coordinates
-            //opts.cropCoords = coords;
             self.options.cropCoords = coords;
             opts.$imageCrop.css({
-                width:      Math.round(rx * fullSize.width)  + 'px',
-                height:     Math.round(ry * fullSize.height) + 'px',
+                width:      Math.round(rx * size.full.width)  + 'px',
+                height:     Math.round(ry * size.full.height) + 'px',
                 marginLeft: '-'+ Math.round(rx * coords.x) + 'px',
                 marginTop:  '-'+ Math.round(ry * coords.y) + 'px'
             });
         }
 
-        /******************************************************************
-         * Whenever the $imageFull changes (i.e. we receive a load event),
-         * adjust the size to fit within our full image preview area
-         * and establish a jCrop instance.
-         */
-        var max = {
-            width:   parseInt(opts.$previewFull.css('maxWidth')),
-                     //opts.$previewFull.width(),
-            height:  parseInt(opts.$previewFull.css('maxHeight'))
-                     //opts.$previewFull.height()
-        };
-
-        // Whenever a new image is loaded into $imageFull, adjust...
-        opts.$imageFull.bind('load.avatarChooser', function() {
-            fullSize.width  = opts.$imageFull.width();
-            fullSize.height = opts.$imageFull.height();
+        function avatarChange()
+        {
+            size.full.width  = opts.$imageFull.width();
+            size.full.height = opts.$imageFull.height();
 
             // Adjust the image to fit nicely
             var diffs   = {
-                width:   max.width  - fullSize.width,
-                height:  max.height - fullSize.height
+                width:   size.max.width  - size.full.width,
+                height:  size.max.height - size.full.height
             };
             if ( (diffs.width < 0) || (diffs.height < 0) )
             {
                 if (diffs.width < diffs.height)
                 {
                     // Width is further off
-                    opts.$imageFull.width( max.width );
+                    opts.$imageFull.width( size.max.width );
                     opts.$imageFull.height('auto');
                 }
                 else
                 {
                     // Height is further off
-                    opts.$imageFull.height( max.height );
+                    opts.$imageFull.height( size.max.height );
                     opts.$imageFull.width('auto');
                 }
 
-                fullSize.width  = opts.$imageFull.width();
-                fullSize.height = opts.$imageFull.height();
+                size.full.width  = opts.$imageFull.width();
+                size.full.height = opts.$imageFull.height();
             }
 
             /*
-            opts.$previewFull.width(fullSize.width);
-            opts.$previewFull.height(fullSize.height);
+            opts.$previewFull.width(size.full.width);
+            opts.$previewFull.height(size.full.height);
             // */
-
 
             // Destroy any existing jCrop instance
             if (opts.jcrop)
@@ -300,29 +316,19 @@ $.widget("settings.avatarChooser", $.extend({}, $.ui.dialog.prototype, {
                 aspectRatio:    1,
                 zIndex:         opts.zIndex + 5
             });
-        });
-    },
-
-    _validate: function()
-    {
-        var self    = this;
-        var opts    = self.options;
-        var tab     = opts.$types.tabs('option', 'selected');
-        var isValid = false;
-
-        switch (tab)
-        {
-        case 0:     // File
-            isValid = (opts.$inputFile.val().length > 0);
-            break;
-
-        case 1:     // URL
-            isValid = (opts.$inputUrl.val().length > 0);
-            break;
-
         }
 
-        return isValid;
+        /******************************************************************
+         * Whenever the $imageFull received a 'load' event, adjust the size to
+         * fit within our full image preview area and establish a jCrop
+         * instance.
+         */
+        opts.$imageFull.bind('load.avatarChooser', function() {
+            /* Separate from the main UI thread and pause a short bit to ensure
+             * that the image is fully loaded and sized.
+             */
+            setTimeout( function() { avatarChange(); }, 100 );
+        });
     },
 
     /************************
@@ -334,29 +340,12 @@ $.widget("settings.avatarChooser", $.extend({}, $.ui.dialog.prototype, {
     {
         var self    = this;
         var opts    = self.options;
-        var tab     = opts.$types.tabs('option', 'selected');
         var params  = {
-            url:    null,
+            url:    opts.$inputUrl.val(),
             coords: opts.cropCoords
         };
 
-        switch (tab)
-        {
-        case 0:     // File
-            /* :TODO: Retrieve the jCrop information, and perform an upload
-             * with the cropping information.
-            url = opts.$inputFile.val();
-             */
-            break;
-
-        case 1:     // URL
-            /* :TODO: No upload required, simply save the avatar URL
-             */
-            params.url = opts.$inputUrl.val();
-            break;
-        }
-
-        opts.$form.mask();
+        self.element.mask();
 
         $.jsonRpc(opts.jsonRpc, 'user.cropAvatar', params, {
             success: function(data) {
@@ -389,7 +378,7 @@ $.widget("settings.avatarChooser", $.extend({}, $.ui.dialog.prototype, {
                 });
             },
             complete: function(req, textStatus) {
-                opts.$form.unmask();
+                self.element.unmask();
             }
         });
     },
@@ -402,8 +391,8 @@ $.widget("settings.avatarChooser", $.extend({}, $.ui.dialog.prototype, {
         if (url != opts.$imageFull.attr('src'))
         {
             // Attempt to load (after re-setting width and height to auto)...
-            opts.$imageFull.width('auto');  //max.width);
-            opts.$imageFull.height('auto'); //max.height);
+            opts.$imageFull.width('auto');  //opts.avatarSizes.max.width);
+            opts.$imageFull.height('auto'); //opts.avatarSizes.max.height);
 
             opts.$imageFull.attr('src', url);
             opts.$imageCrop.attr('src', url);
@@ -421,7 +410,7 @@ $.widget("settings.avatarChooser", $.extend({}, $.ui.dialog.prototype, {
         opts.$imageFull.unbind('.avatarChooser');
         opts.$inputUrl.unbind('.avatarChooser');
         opts.$inputFile.unbind('.avatarChooser');
-        opts.$form.unbind('.avatarChooser');
+        opts.$buttons.unbind('.avatarChooser');
 
         // Remove added elements
         opts.$types.tabs('destroy');
