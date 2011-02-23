@@ -14,7 +14,7 @@ SRCS =	connexions.js jquery.registry.js jquery.cookie.js 		\
 	connexions.bookmarkPost.js connexions.autocomplete.js		\
 	connexions.bookmark.js connexions.user.js
 
-SETTINGS_SRCS	= jquery.Jcrop.js					\
+SETTINGS_SRCS	= jquery.Jcrop.js ui.fileUploader.js			\
 		  settings.avatarChooser.js				\
 		  settings.accountInfo.js				\
 		  settings.credential.js settings.credentials.js	\
@@ -32,6 +32,10 @@ connexions-full.js: $(SRCS)
 
 settings-full.js: $(SETTINGS_SRCS)
 	cat $(SETTINGS_SRCS) > $@
+
+clean:
+	rm -f connexions-full.js connexions-full.min.js \
+	      settings-full.js settings-full.min.js
 
 #----------------------------------------------------------------------------
 

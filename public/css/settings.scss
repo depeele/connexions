@@ -3,6 +3,7 @@
 @import "mixins";
 @import "urls";
 @import 'jquery_Jcrop';
+@import 'ui-fileUploader';
 
 /****** settings.sass ****** */
 // Styling for the settings
@@ -289,6 +290,8 @@
 
   #avatar-type-file, #avatar-type-url {
     position: relative;
+    height:   6em;
+
     .field input {
       width:  100%;
     }

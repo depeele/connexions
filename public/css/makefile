@@ -78,7 +78,8 @@ search.css: mixins.scss search.scss colors.scss ribbon-form.scss
 searchResults.css: mixins.scss searchResults.scss colors.scss
 	sass -t compact searchResults.scss:searchResults.css
 
-settings.css: mixins.scss settings.scss colors.scss jquery_Jcrop.scss
+settings.css: mixins.scss settings.scss colors.scss \
+  	      jquery_Jcrop.scss ui-fileUploader.scss
 	sass -t compact settings.scss:settings.css
 
 sprites.scss:	urls.scss
@@ -89,9 +90,15 @@ ie8.scss:	sizes.scss colors.scss
 
 #----------------------------------------------------------------------------
 clean:
-	rm -f connexions.css bookmarks.css users.css urlItems.css 	\
-	      ui-form.css inbox.css validationForm.css post.css auth.css\
-	      ie.css ie8.css
+	rm -f connexions.css items.css bookmarks.css users.css \
+	      bookmark-users.css urlItems.css inbox.css validationForm.css \
+	      post.css auth.css url-chooser.css search.css searchResults.css \
+	      settings.css sprites.css ie.css ie8.css \
+	      connexions.min.css items.min.css bookmarks.min.css users.min.css \
+	      bookmark-users.min.css urlItems.min.css inbox.min.css \
+	      validationForm.min.css post.min.css auth.min.css \
+	      url-chooser.min.css search.min.css searchResults.min.css \
+	      settings.min.css sprites.min.css ie.min.css ie8.min.css
 
 %.css : %.scss
 	sass -t compact $<:$@

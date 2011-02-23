@@ -36,7 +36,7 @@
  *      ui.validationForm.js
  *      ui.input.js
  *
- *      jquery.Jcrop.js
+ *      settings.avatarChooser.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false */
