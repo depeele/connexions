@@ -342,7 +342,12 @@ $.widget("settings.avatarChooser", $.extend({}, $.ui.dialog.prototype, {
         var opts    = self.options;
         var params  = {
             url:    opts.$inputUrl.val(),
-            coords: opts.cropCoords
+            crop: {
+                ul:     [ opts.cropCoords.x,  opts.cropCoords.y  ],
+                lr:     [ opts.cropCoords.x2, opts.cropCoords.y2 ],
+                width:  opts.cropCoords.w,
+                height: opts.cropCoords.h
+            }
         };
 
         self.element.mask();

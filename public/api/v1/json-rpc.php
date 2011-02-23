@@ -3,7 +3,7 @@ define('RPC_DIR', realpath(dirname(__FILE__)));
 
 require_once(RPC_DIR. '/bootstrap.php');
 
-/*
+// /*
 $json = file_get_contents('php://input');
 Connexions::log("json-rpc: begin: method[ %s ], request[ %s ], json[ %s ]",
                 $_SERVER['REQUEST_METHOD'],
@@ -21,7 +21,7 @@ $server->setClass('Service_Proxy_User',     'user')
 // (Re)Set the server request
 $req = new Connexions_Json_Server_Request_Http();
 
-/*
+// /*
 Connexions::log("json-rpc: json[ %s ], request method[ %s ], params[ %s ]",
                 $req->getRawJson(), $req->getRequestMethod(),
                 print_r($req->getParams(), true));
@@ -51,7 +51,7 @@ if ($req->isGet() && ($req->getParam('serviceDescription')))
     return;
 }
 
-/*
+// /*
 Connexions::log("json-rpc: Handle non-GET  request...");
 // */
 

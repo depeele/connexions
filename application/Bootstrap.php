@@ -35,6 +35,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
              ->_commonSession()
              ->_commonAutoload()
              ->_commonLogging()
+             ->_commonPaths()
              ->_commonDb()
              ->_commonAuth();
 
@@ -308,6 +309,40 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         Connexions_Profile::init($log);
         Connexions_Profile::start('Connexions',
                                   'Bootstrap::Logging initialized');
+
+        return $this;
+    }
+
+    /** @brief  Initialize configuration path information.
+     *
+     *  Establish the Configuration 'paths' entries to support
+     *  Connexions::url2path()
+     */
+    protected function _commonPaths()
+    {
+        define('APPLICATION_WEBROOT',
+                realpath(APPLICATION_PATH .'/../public'));
+
+        /*
+        Connexions::log("Bootstrap::_commonPaths: APPLICATION_WEBROOT [ %s ]",
+                        APPLICATION_WEBROOT);
+        // */
+
+        $config  = Connexions::getConfig();
+        $baseUrl = $config->urls->base;
+        foreach ($config->urls as $name => $url)
+        {
+            $path = APPLICATION_WEBROOT
+                  . preg_replace('#^'. $baseUrl .'#', '', $url);
+
+            /*
+            Connexions::log("Bootstrap::_commonPaths: url.%s [ %s ] == [ %s ]",
+                            $name, $url, $path);
+            // */
+
+            Connexions::urlPathMap($name, array('url'   => $url,
+                                                'path'  => $path) );
+        }
 
         return $this;
     }

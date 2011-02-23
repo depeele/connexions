@@ -190,11 +190,14 @@ class Service_User extends Connexions_Service
     public function renameTags(Model_User   $user,
                                             $renames)
     {
+        /* SHOULD be handled by the Proxy for any API path.
+         *
         if (! $user->isAuthenticated())
         {
             throw new Exception('Operation prohibited for an '
                                 .   'unauthenticated user.');
         }
+         */
 
         if (is_string($renames))
         {
@@ -231,11 +234,14 @@ class Service_User extends Connexions_Service
     public function deleteTags(Model_User   $user,
                                             $tags)
     {
+        /* SHOULD be handled by the Proxy for any API path.
+         *
         if (! $user->isAuthenticated())
         {
             throw new Exception('Operation prohibited for an '
                                 .   'unauthenticated user.');
         }
+         */
 
         // Rely on Service_Tag to properly interpret 'tags'
         $tags = $this->factory('Service_Tag')->csList2set($tags);
@@ -259,11 +265,14 @@ class Service_User extends Connexions_Service
                                         $pictureUrl = null,
                                         $profileUrl = null)
     {
+        /* SHOULD be handled by the Proxy for any API path.
+         *
         if (! $user->isAuthenticated())
         {
             throw new Exception('Operation prohibited for an '
                                 .   'unauthenticated user.');
         }
+         */
 
         /*
         Connexions::log("Service_User::update() config [ %s, %s ]",
@@ -309,11 +318,14 @@ class Service_User extends Connexions_Service
      */
     public function regenerateApiKey(Model_User   $user)
     {
+        /* SHOULD be handled by the Proxy for any API path.
+         *
         if (! $user->isAuthenticated())
         {
             throw new Exception('Operation prohibited for an '
                                 .   'unauthenticated user.');
         }
+         */
 
         $user->apiKey = Model_User::genApiKey();
 
@@ -343,11 +355,14 @@ class Service_User extends Connexions_Service
     public function updateCredentials(Model_User   $user,
                                       array        $credentials)
     {
+        /* SHOULD be handled by the Proxy for any API path.
+         *
         if (! $user->isAuthenticated())
         {
             throw new Exception('Operation prohibited for an '
                                 .   'unauthenticated user.');
         }
+         */
 
         $uaMapper = $this->_getMapper('Model_UserAuth');
         $uaSet    = $uaMapper->makeEmptySet();
@@ -443,7 +458,7 @@ class Service_User extends Connexions_Service
     }
 
     /** @brief  Delete a specific credential for the given user.
-     *  @param  user        The Model_User instance for which this dlete
+     *  @param  user        The Model_User instance for which this delete
      *                      is intended (MUST be authenticated);
      *  @param  credential  The credential identifier.
      *
@@ -452,11 +467,14 @@ class Service_User extends Connexions_Service
     public function deleteCredential(Model_User   $user,
                                                   $credential)
     {
+        /* SHOULD be handled by the Proxy for any API path.
+         *
         if (! $user->isAuthenticated())
         {
             throw new Exception('Operation prohibited for an '
                                 .   'unauthenticated user.');
         }
+         */
 
         // /*
         Connexions::log("Service_User::deleteCredential(): "
@@ -465,6 +483,183 @@ class Service_User extends Connexions_Service
                         Connexions::varExport($credential));
         // */
 
-        //$ua = $user->removeCredential($credential);
+        $ua = $user->getAuthenticator( $credential );
+        if ($ua === null)
+        {
+            $ua = $ua->destroy();
+        }
+
+        return $ua;
+    }
+
+    /** @brief  Given a *local* URL to an avatar image along with cropping
+     *          information, perform the image manipulation to accomplish the
+     *          crop and move the resulting image to the avatar directory with
+     *          a name based upon the authenticated user.
+     *  @param  user    The Model_User instance to which the successfully
+     *                  cropped avatar should be attached.
+     *  @param  srcUrl  The *local* URL of the source image.
+     *  @param  crop    Cropping information of the form:
+     *                      {ul:     [ upper-left  x, upper-left  y ], (0, 0)
+     *                       lr:     [ lower-right x, lower-right y ], (50, 50)
+     *                       width:  crop width,                       ( 50 )
+     *                       height: crop height}                      ( 50 )
+     *
+     *  @return The URL of the cropped image.
+     */
+    public function cropAvatar(Model_User   $user,
+                                            $srcUrl,
+                                            $crop)
+    {
+        $config  = Zend_Registry::get('config');
+
+        $srcPath = realpath( $config->paths->base   // APPLICATION_WEBROOT
+                             .'/'
+                             .  preg_replace('#'. $config->urls->base .'#',
+                                             '',
+                                             $srcUrl) );
+        // /*
+        Connexions::log("Service_User::cropAvatar(): "
+                        .   "user[ %s ], srcUrl[ %s ], srcPath[ %s ], "
+                        .   "crop[ %s ]",
+                        $user,
+                        Connexions::varExport($srcUrl),
+                        Connexions::varExport($srcPath),
+                        Connexions::varExport($crop) );
+        // */
+
+        $dstUrl  = $config->urls->avatar .'/'. $user->name;
+        $dstPath = realpath( $config->paths->base   //APPLICATION_WEBROOT
+                             .'/'
+                             .  preg_replace('#'. $config->urls->base .'#',
+                                             '',
+                                             $dstUrl) );
+        // /*
+        Connexions::log("Service_User::cropAvatar(): "
+                        .   "dstUrl[ %s ], dstPath[ %s ]",
+                        Connexions::varExport($dstUrl),
+                        Connexions::varExport($dstPath) );
+        // */
+
+
+        // Retrieve information about the source image.
+        $srcInfo   = getimagesize($srcPath);
+
+        // /*
+        Connexions::log("Service_User::cropAvatar(): "
+                        .   "srcPath[ %s ], info[ %s ]",
+                        Connexions::varExport($srcPath),
+                        Connexions::varExport($srcInfo) );
+        // */
+
+        $srcWidth  = $srcInfo[0];
+        $srcHeight = $srcInfo[1];
+        $srcMime   = $srcInfo['mime'];
+
+        if (! isset($crop['width']))    $crop['width']  = 50;
+        if (! isset($crop['height']))   $crop['height'] = 50;
+        if (! is_array($crop['ul']))    $crop['ul']     = array(0, 0);
+        if (! is_array($crop['lr']))    $crop['lr']     = array( $srcWidth,
+                                                                 $srcHeight );
+
+
+        $thumbnail = imagecreatetruecolor($crop['width'],
+                                          $crop['height']);
+        switch ($srcMime)
+        {
+        case 'image/gif':
+            $src     = imagecreatefromgif($srcPath);
+            $dstUrl .= '.gif';
+            break;
+
+        case 'image/pjpeg':
+        case 'image/jpeg':
+        case 'image/jpg':
+            $srcMime = 'image/jpg';
+
+            $src     = imagecreatefromjpeg($srcPath);
+            $dstUrl .= '.jpg';
+            break;
+
+        case 'image/png':
+        case 'image/x-png':
+            $srcMime = 'image/png';
+
+            $src     = imagecreatefrompng($srcPath);
+            $dstUrl .= '.png';
+            break;
+
+        default:
+            throw new Exception("Unsupported image type[ {$srcMime} ]");
+            break;
+        }
+
+        /* source width / height
+         *
+         * (actually seems to need the coordinates of the lower-right corner).
+         *
+         * Using the computed width/height based upon the corners results in
+         * pulling the wrong size section from the source.
+         */
+        $srcSize = array('width'    => $crop['lr'][0],  // - $crop['ul'][0],
+                         'height'   => $crop['lr'][1],  // - $crop['ul'][1],
+        );
+
+        // /*
+        Connexions::log("Service_User::cropAvatar(): "
+                        .   "src type[ %s ], "
+                        .   "size[ %d, %d ], "
+                        .   "crop( [ %d, %d ], [ %d, %d ] => [ %d, %d ]",
+                        $srcMime,
+                        $crop['ul'][0], $crop['ul'][1],
+                        $crop['lr'][0], $crop['lr'][1],
+                        $crop['width'], $crop['height'] );
+        // */
+
+        imagecopyresampled($thumbnail, $src,
+                           // destination x / y
+                           0, 0,
+
+                           // source x / y
+                           $crop['ul'][0], $crop['ul'][1],
+
+                           // destination width / height
+                           $crop['width'], $crop['height'],
+
+                           // source width / height
+                           $srcSize['width'], $srcSize['height']);
+
+        imagedestroy($src);
+
+        switch ($srcMime)
+        {
+        case 'image/gif':
+            imagegif($thumbnail, $dstPath);
+            break;
+
+        case 'image/jpg':
+            imagejpeg($thumbnail, $dstPath, 90);
+            break;
+
+        case 'image/png':
+            imagepng($thumbnail, $dstPath);
+            break;
+
+        }
+
+        chmod($dstPath, 0644);
+
+        /* Set the URL to the new Avatar
+        $user->pictureUrl = $dstUrl;
+        $user->save();
+        // */
+
+        // /*
+        Connexions::log("Service_User::cropAvatar(): "
+                        .   "return destination url[ %s ]",
+                        $dstUrl);
+        // */
+
+        return $dstUrl;
     }
 }
