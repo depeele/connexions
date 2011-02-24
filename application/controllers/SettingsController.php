@@ -89,7 +89,7 @@ class SettingsController extends Connexions_Controller_Action
              (! $viewer->isAuthenticated()) )
         {
             // Unauthenticated user -- Redirect to signIn
-            return $this->_helper->redirector('signIn','auth');
+            return $this->_redirectToSignIn();
         }
 
         $request =& $this->_request;
