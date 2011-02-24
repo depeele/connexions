@@ -564,39 +564,7 @@ $.widget("connexions.bookmark", {
                     return;
                 }
 
-                self._squelch = true;
-
-                // Include the updated data
-                self.$itemId.val(           data.result.itemId );
-                self.$name.text(            data.result.name );
-                self.$description.text(     data.result.description );
-
-                self.$tags.text(            data.result.tags );
-
-                self.$rating.stars('select',data.result.rating);
-
-                self.$favorite.checkbox(    (data.result.isFavorite
-                                                ? 'check'
-                                                : 'uncheck') );
-                self.$private.checkbox(     (data.result.isPrivate
-                                                ? 'check'
-                                                : 'uncheck') );
-                self.$url.attr('href',      data.result.url);
-
-                // Alter our parent to reflect 'isPrivate'
-                var parent  = self.element.parent();
-                if (data.result.isPrivate)
-                {
-                    parent.addClass('private');
-                }
-                else
-                {
-                    parent.removeClass('private');
-                }
-                self._squelch = false;
-
-                // set state
-                self._setState();
+                self._refreshBookmark(data.result);
             },
             error:      function(req, textStatus, err) {
                 $.notify({
@@ -614,8 +582,54 @@ $.widget("connexions.bookmark", {
          });
     },
 
+    /** @brief  Given new bookmark data from either an update or an edit,
+     *          refresh the bookmark presentationi from the provided data.
+     *  @param  data    Result data representing the bookmark.
+     */
+    _refreshBookmark: function(data)
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        self._squelch = true;
+
+        // Include the updated data
+        self.$itemId.val(           data.itemId );
+        self.$name.text(            data.name );
+        self.$description.text(     data.description );
+
+        self.$tags.text(            data.tags );
+
+        self.$rating.stars('select',data.rating);
+
+        self.$favorite.checkbox(    (data.isFavorite
+                                        ? 'check'
+                                        : 'uncheck') );
+        self.$private.checkbox(     (data.isPrivate
+                                        ? 'check'
+                                        : 'uncheck') );
+        self.$url.attr('href',      data.url);
+
+        // Alter our parent to reflect 'isPrivate'
+        var parent  = self.element.parent();
+        if (data.isPrivate)
+        {
+            parent.addClass('private');
+        }
+        else
+        {
+            parent.removeClass('private');
+        }
+        self._squelch = false;
+
+        // set state
+        self._setState();
+    },
+
     _showBookmarkDialog: function(title, html)
     {
+        var self    = this;
+
         html = '<div class="ui-validation-form" style="padding:0;">'
              +  '<div class="userInput lastUnit">'
              +   html
@@ -638,7 +652,7 @@ $.widget("connexions.bookmark", {
                         /* Update the presented bookmark with the newly saved
                          * data.
                          */
-                        var a   = 1;
+                        self._refreshBookmark(data);
                     },
                     complete:   function() {
                         $form.dialog('close');
