@@ -109,7 +109,7 @@ $jQuery->javascriptCaptureEnd();
    <div id='avatar-type-file'>
     <div class='field'>
      <!-- label  for='avatarFile'>File</label -->
-     <form  action='avatar-upload.php'
+     <form  action='<?= Connexions::url('/avatar-upload.php') ?>'
             method='POST'
            enctype="multipart/form-data"><!-- account-info-avatar upload form { -->
       <input name='avatarFile' type='file' class='text' />

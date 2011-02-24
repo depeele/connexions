@@ -53,6 +53,8 @@ $.widget("settings.accountInfo", {
     widgetEventPrefix:    '',
 
     options: {
+        imageLoader:    'images/image_upload.gif',
+
         /* General Json-RPC information:
          *  {version:   Json-RPC version,
          *   target:    URL of the Json-RPC endpoint,
@@ -83,12 +85,23 @@ $.widget("settings.accountInfo", {
          * Initialize jsonRpc
          *
          */
-        if ( (opts.jsonRpc === null) && $.isFunction($.registry))
+        if ( $.isFunction($.registry) )
         {
-            var api = $.registry('api');
-            if (api && api.jsonRpc)
+            if (opts.jsonRpc === null)
             {
-                opts.jsonRpc = $.extend({}, api.jsonRpc, opts.jsonRpc);
+                var api = $.registry('api');
+                if (api && api.jsonRpc)
+                {
+                    opts.jsonRpc = $.extend({}, api.jsonRpc, opts.jsonRpc);
+                }
+            }
+
+            if (opts.imageLoader[0] !== '/')
+            {
+                // Prepend any base URL to the avatar image loader
+                opts.imageLoader = $.registry('urls').base
+                                 + '/'
+                                 + opts.imageLoader;
             }
         }
 
@@ -134,8 +147,12 @@ $.widget("settings.accountInfo", {
             var $img    = opts.$avatar.find('img');
 
             opts.$chooser.avatarChooser( {
-                avatar: ($img.length > 0 ? $img.attr('src') : null),
-                modal:  true
+                avatar:     ($img.length > 0 ? $img.attr('src') : null),
+                modal:      true,
+                imageLoader:opts.imageLoader,
+                success:    function(e, url) {
+                    $img.attr('src', url);
+                }
             } );
         });
     },

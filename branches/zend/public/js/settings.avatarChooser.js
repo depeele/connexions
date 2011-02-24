@@ -42,7 +42,7 @@
  *      jquery.fileUploader.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
-/*global jQuery:false */
+/*global jQuery:false, setTimeout:false */
 (function($) {
 
 $.widget("settings.avatarChooser", $.extend({}, $.ui.dialog.prototype, {
@@ -61,6 +61,11 @@ $.widget("settings.avatarChooser", $.extend({}, $.ui.dialog.prototype, {
         minWidth:       400,
         minHeight:      450,
         imageLoader:    'images/image_upload.gif',
+
+        /* On successful avatar selection, trigger 'success' with the final URL
+         * of the new avatar.
+         */
+        success:        function(url) {},
 
         /* General Json-RPC information:
          *  {version:   Json-RPC version,
@@ -138,14 +143,18 @@ $.widget("settings.avatarChooser", $.extend({}, $.ui.dialog.prototype, {
                 width:  0,
                 height: 0
             },
+            scaled:     {
+                width:  0,
+                height: 0
+            },
             preview:    {
-                width:  parseInt(opts.$previewCrop.css('width')),
-                height: parseInt(opts.$previewCrop.css('height'))
+                width:  parseInt(opts.$previewCrop.css('width'), 10),
+                height: parseInt(opts.$previewCrop.css('height'), 10)
             },
             max:        {
-                width:  parseInt(opts.$previewFull.css('maxWidth')),
+                width:  parseInt(opts.$previewFull.css('maxWidth'), 10),
                         //opts.$previewFull.width(),
-                height: parseInt(opts.$previewFull.css('maxHeight'))
+                height: parseInt(opts.$previewFull.css('maxHeight'), 10)
                         //opts.$previewFull.height()
             }
         };
@@ -251,23 +260,53 @@ $.widget("settings.avatarChooser", $.extend({}, $.ui.dialog.prototype, {
         // Handle updating the cropped preview.
         function previewCrop(coords)
         {
-            var rx  = size.preview.width  / coords.w;
-            var ry  = size.preview.height / coords.h;
+            /* Compute coordinates within the target image based upon the
+             * current scaling.
+             */
+            var rx          = size.full.width  / size.scaled.width;
+            var ry          = size.full.height / size.scaled.height;
+            var fx          = Math.round(rx * coords.x);
+            var fy          = Math.round(ry * coords.y);
+            var fullCoords  = {
+                x:  fx,
+                y:  fy,
+
+                x2: fx + Math.round(rx * coords.w),
+                y2: fy + Math.round(ry * coords.h),
+
+                // Pass the width and height of the target avatar
+                w:  size.preview.width, //Math.round(rx * coords.w),
+                h:  size.preview.height //Math.round(ry * coords.h)
+            };
+
+            /*
+            $.log('avatarChooser: full coords[ %s, %s - %s, %s: %s, %s ]',
+                  fullCoords.x,  fullCoords.y,
+                  fullCoords.x2, fullCoords.y2,
+                  fullCoords.w,  fullCoords.h);
+            // */
 
             // Remember these coordinates
-            self.options.cropCoords = coords;
+            self.options.cropCoords = fullCoords;
+
+            // Now, adjust the crop image to present the potential avatar
+            rx = size.preview.width  / coords.w;
+            ry = size.preview.height / coords.h;
+
             opts.$imageCrop.css({
-                width:      Math.round(rx * size.full.width)  + 'px',
-                height:     Math.round(ry * size.full.height) + 'px',
-                marginLeft: '-'+ Math.round(rx * coords.x) + 'px',
-                marginTop:  '-'+ Math.round(ry * coords.y) + 'px'
+                marginLeft: '-'+ Math.round(rx * coords.x)     +'px',
+                marginTop:  '-'+ Math.round(ry * coords.y)     +'px',
+                width:      Math.round(rx * size.scaled.width) +'px',
+                height:     Math.round(ry * size.scaled.height) +'px'
             });
         }
 
         function avatarChange()
         {
-            size.full.width  = opts.$imageFull.width();
-            size.full.height = opts.$imageFull.height();
+            size.full.width    = opts.$imageFull.width();
+            size.full.height   = opts.$imageFull.height();
+            size.scaled.width  = size.full.width;
+            size.scaled.height = size.full.height;
 
             // Adjust the image to fit nicely
             var diffs   = {
@@ -289,9 +328,15 @@ $.widget("settings.avatarChooser", $.extend({}, $.ui.dialog.prototype, {
                     opts.$imageFull.width('auto');
                 }
 
-                size.full.width  = opts.$imageFull.width();
-                size.full.height = opts.$imageFull.height();
+                size.scaled.width  = opts.$imageFull.width();
+                size.scaled.height = opts.$imageFull.height();
             }
+
+            /*
+            $.log('avatarChooser: size.full[ %s, %s ], scaled[ %s, %s ]',
+                  size.full.width, size.full.height,
+                  size.scaled.width, size.scaled.height);
+            // */
 
             /*
             opts.$previewFull.width(size.full.width);
@@ -371,6 +416,7 @@ $.widget("settings.avatarChooser", $.extend({}, $.ui.dialog.prototype, {
                         text:   ''
                     });
 
+                    self._trigger('success', null, data.result);
                     self.close();
                 }
             },
@@ -393,11 +439,23 @@ $.widget("settings.avatarChooser", $.extend({}, $.ui.dialog.prototype, {
         var self        = this;
         var opts        = self.options;
 
-        if (url != opts.$imageFull.attr('src'))
+        if (url !== opts.$imageFull.attr('src'))
         {
+            // Destroy any existing jCrop instance
+            if (opts.jcrop)
+            {
+                opts.jcrop.destroy();
+                opts.jcrop = null;
+            }
+
             // Attempt to load (after re-setting width and height to auto)...
             opts.$imageFull.width('auto');  //opts.avatarSizes.max.width);
             opts.$imageFull.height('auto'); //opts.avatarSizes.max.height);
+
+            /* The image MUST be visible in order to fire the 'load' event
+             * required by _cropper().
+             */
+            opts.$imageFull.show();
 
             opts.$imageFull.attr('src', url);
             opts.$imageCrop.attr('src', url);

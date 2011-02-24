@@ -505,6 +505,10 @@ class Service_User extends Connexions_Service
      *                       width:  crop width,                       ( 50 )
      *                       height: crop height}                      ( 50 )
      *
+     *  Note: 'crop.width' / 'crop.height' represent the final width/height of
+     *        the avatar image.  'crop.ul' and 'crop.lr' are used to determine
+     *        the width / height of the area to retrieve from the source image.
+     *
      *  @return The URL of the cropped image.
      */
     public function cropAvatar(Model_User   $user,
@@ -512,12 +516,18 @@ class Service_User extends Connexions_Service
                                             $crop)
     {
         $config  = Zend_Registry::get('config');
+        $srcInfo = parse_url($srcUrl);
+        if (! isset($srcInfo['scheme']))
+        {
+            // The incoming URL is relative.  Convert it to a local file path
+            $srcPath = Connexions::url2path( $srcUrl );
+        }
+        else
+        {
+            // The incoming URL has a scheme.  Keep it as a URL.
+            $srcPath = $srcUrl;
+        }
 
-        $srcPath = realpath( $config->paths->base   // APPLICATION_WEBROOT
-                             .'/'
-                             .  preg_replace('#'. $config->urls->base .'#',
-                                             '',
-                                             $srcUrl) );
         // /*
         Connexions::log("Service_User::cropAvatar(): "
                         .   "user[ %s ], srcUrl[ %s ], srcPath[ %s ], "
@@ -529,11 +539,8 @@ class Service_User extends Connexions_Service
         // */
 
         $dstUrl  = $config->urls->avatar .'/'. $user->name;
-        $dstPath = realpath( $config->paths->base   //APPLICATION_WEBROOT
-                             .'/'
-                             .  preg_replace('#'. $config->urls->base .'#',
-                                             '',
-                                             $dstUrl) );
+        $dstPath = Connexions::url2path( $dstUrl );
+
         // /*
         Connexions::log("Service_User::cropAvatar(): "
                         .   "dstUrl[ %s ], dstPath[ %s ]",
@@ -569,7 +576,7 @@ class Service_User extends Connexions_Service
         {
         case 'image/gif':
             $src     = imagecreatefromgif($srcPath);
-            $dstUrl .= '.gif';
+            $ext     = '.gif';
             break;
 
         case 'image/pjpeg':
@@ -578,7 +585,7 @@ class Service_User extends Connexions_Service
             $srcMime = 'image/jpg';
 
             $src     = imagecreatefromjpeg($srcPath);
-            $dstUrl .= '.jpg';
+            $ext     = '.jpg';
             break;
 
         case 'image/png':
@@ -586,7 +593,7 @@ class Service_User extends Connexions_Service
             $srcMime = 'image/png';
 
             $src     = imagecreatefrompng($srcPath);
-            $dstUrl .= '.png';
+            $ext     = '.png';
             break;
 
         default:
@@ -594,15 +601,13 @@ class Service_User extends Connexions_Service
             break;
         }
 
-        /* source width / height
-         *
-         * (actually seems to need the coordinates of the lower-right corner).
-         *
-         * Using the computed width/height based upon the corners results in
-         * pulling the wrong size section from the source.
-         */
-        $srcSize = array('width'    => $crop['lr'][0],  // - $crop['ul'][0],
-                         'height'   => $crop['lr'][1],  // - $crop['ul'][1],
+        // Include the file-type extension
+        $dstPath .= $ext;
+        $dstUrl  .= $ext;
+
+        // source width / height (lr - ul)
+        $srcSize = array('width'    => $crop['lr'][0] - $crop['ul'][0],
+                         'height'   => $crop['lr'][1] - $crop['ul'][1],
         );
 
         // /*
@@ -611,6 +616,7 @@ class Service_User extends Connexions_Service
                         .   "size[ %d, %d ], "
                         .   "crop( [ %d, %d ], [ %d, %d ] => [ %d, %d ]",
                         $srcMime,
+                        $srcSize['width'], $srcSize['height'],
                         $crop['ul'][0], $crop['ul'][1],
                         $crop['lr'][0], $crop['lr'][1],
                         $crop['width'], $crop['height'] );
@@ -649,16 +655,22 @@ class Service_User extends Connexions_Service
 
         chmod($dstPath, 0644);
 
-        /* Set the URL to the new Avatar
+        // /*
+        Connexions::log("Service_User::cropAvatar(): "
+                        .   "final destination url[ %s ]",
+                        $dstUrl);
+        // */
+
+        // Set the user's pictureUrl to the URL of this new Avatar
         $user->pictureUrl = $dstUrl;
         $user->save();
-        // */
 
         // /*
         Connexions::log("Service_User::cropAvatar(): "
-                        .   "return destination url[ %s ]",
-                        $dstUrl);
+                        .   "user avatar changed to [ %s ]",
+                        $user->pictureUrl);
         // */
+
 
         return $dstUrl;
     }
