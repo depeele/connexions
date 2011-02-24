@@ -412,7 +412,7 @@ $.widget("settings.credential", {
         var self    = this;
         var opts    = self.options;
         var params  = {
-            userAuthId: opts.$userAuthId.val()
+            credential: opts.$userAuthId.val()
         };
 
         self.element.mask();

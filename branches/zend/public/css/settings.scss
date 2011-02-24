@@ -57,6 +57,25 @@
   #tabs-left > div {
     height:     35em;
   }
+
+  .warning {
+    text-align: center;
+    color:      $controlColor;
+    font-size:  0.9em;
+
+    p {
+      @include inlineBlock();
+      margin-left:  8em;
+      text-align:   left;
+
+      .title {
+        position: absolute;
+        font-size:    1.2em;
+        font-weight:  bold;
+        left:         -5em;
+      }
+    }
+  }
 }
 
 .account {
@@ -227,6 +246,16 @@
           width:      3em;
           padding:    0.1em;
         }
+      }
+    }
+
+    .warning {
+      @include       inlineBlock();
+      left:           10em;
+      vertical-align: top;
+
+      p {
+        width:        20em;
       }
     }
 

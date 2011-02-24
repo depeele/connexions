@@ -476,7 +476,7 @@ class Service_User extends Connexions_Service
         }
          */
 
-        // /*
+        /*
         Connexions::log("Service_User::deleteCredential(): "
                         .   "user[ %s ], credential[ %s ]",
                         $user,
@@ -484,9 +484,16 @@ class Service_User extends Connexions_Service
         // */
 
         $ua = $user->getAuthenticator( $credential );
-        if ($ua === null)
+        if ($ua !== null)
         {
-            $ua = $ua->destroy();
+            $ua->delete();
+
+            /*
+            Connexions::log("Service_User::deleteCredential(): "
+                            .   "user[ %s ], deleted userAuthenticator[ %s ]",
+                            $user,
+                            $ua->debugDump());
+            // */
         }
 
         return $ua;
