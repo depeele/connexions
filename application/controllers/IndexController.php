@@ -61,7 +61,8 @@ class IndexController extends Connexions_Controller_Action
             }
 
             // Redirect to the viewer's bookmarks
-            return $this->_helper->redirector($this->_viewer->name);
+            $url = $this->_viewer->name .'/'. $reqTags;
+            return $this->_helper->redirector( $url );
         }
 
         if ($reqOwner === '*')

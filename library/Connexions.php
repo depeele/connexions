@@ -451,6 +451,49 @@ class Connexions
         return $path;
     }
 
+    /** @brief  Retrieve the maximum upload size.
+     *
+     *  @return The maximum upload size (in bytes).
+     */
+    public static function getMaxUploadSize()
+    {
+        $sizes = array( ini_get('upload_max_filesize'),
+                        ini_get('post_max_size'),
+        );
+
+        $maxSize = 0;
+        foreach ($sizes as $size)
+        {
+            if (preg_match('/([0-9]+)\s*([KMGTB])?/', $size, $parts))
+            {
+                $size = (int)$parts[1];
+
+                switch (strtolower($parts[2]))
+                {
+                case 'k':   // kilo-bytes
+                    $size *= 1024;
+                    break;
+
+                case 'm':   // mega-bytes
+                    $size *= 1024 * 1024;
+                    break;
+
+                case 'g':   // giga-bytes
+                    $size *= 1024 * 1024 * 1024;
+                    break;
+
+                case 't':   // tera-bytes
+                    $size *= 1024 * 1024 * 1024 * 1024;
+                    break;
+                }
+            }
+
+            if ($size > $maxSize)   $maxSize = $size;
+        }
+
+        return $maxSize;
+    }
+
     /** @brief  Given a previous depth and current depth, close all tags until 
      *          we're back to the current tag depth.
      *  @param  indent          The indent for the current depth;
