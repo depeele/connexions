@@ -323,3 +323,63 @@
     }
   }
 }
+
+#bookmark-import {
+  .section {
+    border-bottom:  1px dashed #ccc;
+
+    p, .field {
+      padding:  0.5em 2em 1em;
+    }
+  }
+
+  h3 {
+    font-size:    1.2em;
+    font-weight:  bold;
+
+    padding:      1em 1em 0 1em;
+  }
+
+  .field {
+    label {
+      display:  block;
+    }
+    input {
+      margin-left:  1em;
+    }
+
+    .field {
+      /* Field within a field (radio / checkbox group) */
+      padding:  0;
+
+      label {
+        @include inlineBlock();
+        padding:  0 0.25em;
+      }
+    }
+  }
+
+  ul.steps {
+    list-style: disc;
+
+    li {
+      list-style:   disc;
+      margin-left:  3em;
+    }
+
+    .field {
+      padding-left: 0;
+    }
+  }
+
+  .note {
+    font-size:  0.9em;
+    color:      $controlColor;
+
+    padding:    0.5em 3em 0;
+  }
+
+  .buttons {
+    padding:  0.5em 2em 1em;
+  }
+}

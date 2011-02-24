@@ -29,4 +29,122 @@
  *                          }
  */
 
-printf ("<div>Import...</div>");
+$maxSize = Connexions::getMaxUploadSize();
+
+?>
+<div id='bookmark-import'><!-- bookmark-import { -->
+ <form target='bookmark-import-results'><!-- form { -->
+  <div class='section'><!-- section { -->
+   <h3>Step 1: Save your browser bookmarks to a file</h3>
+   <p id='bookmark-import-browser-instructions'>
+     Use your browsers export bookmarks option and save to a file, remembering
+     where the file was saved.
+   </p>
+   <p class='alternatives note'>Show instructions for
+        <a href='?ua=ff'>Firefox</a>,
+        <a href='?ua=ie6'>Internet Explorer 6</a>,
+        <a href='?ua=ie7'>Internet Explorer 7</a>,
+        <a href='?ua=op'>Opera</a>,
+        <a href='?ua=sf'>Safari</a>,
+        <a href='?ua=ch'>Chrome</a>.
+   </p>
+  </div><!-- section } -->
+  <div class='section'><!-- section { -->
+   <h3>Step 2: Establish the settings for your import</h3>
+   <ul class='steps'><!-- steps { -->
+    <li class='field'><!-- field { -->
+     <label for='bookmark_file'>Click browser and select the file you exported in <b>Step 1</b></label>
+     <input name='MAX_FILE_SIZE' type='hidden' value='<?= $maxSize ?>' />
+     <input   id='bookmark_file' name='bookmark_file'
+            type='file' />
+     <div class='note'>Maximum file size of <?php
+        $pows = array(
+            'TB'    => (1024 * 1024 * 1024 * 1024),
+            'GB'    => (1024 * 1024 * 1024),
+            'MB'    => (1024 * 1024),
+            'KB'    => (1024),
+            'Bytes' => 1
+        );
+        foreach ($pows as $label => $val)
+        {
+            if ($maxSize > $val)
+            {
+                if ($val > 1)
+                {
+                    printf ("%3.2f %s", $maxSize / $val, $label);
+                }
+                else
+                {
+                    printf ("%u %s", $maxSize, $label);
+                }
+                break;
+            }
+        }
+
+            ?>.</div>
+    </li><!-- field } -->
+
+    <li class='field'><!-- field { -->
+     <label for='tags'>Tags will be added to your imported bookmarks based upon the folder structure of your bookmarks.  For example, a bookmark in the "recipes" folder within the "household" folder will be tagged with both "household" and "recipes".  You can also choose additional tags here that will be applied to <b>all</b> the bookmarks importes.</label>
+     <input   id='tags' name='tags'
+            type='text' value='imported'/>
+     <div class='note'>This is a comma separated list of tags.  It is recommended that you use the default tag "imported" to make it easier to view all imported bookmarks in one list by visiting <?= Connexions::anchor('/mine/ajax', 'your imported bookmarks') ?><!-- <?= Connexions::anchor('/'. $this->viewer->name .'/ajax', 'your imported bookmarks') ?> -->.</div>
+    </li><!-- field } -->
+
+    <li class='field'><!-- field { -->
+     <label for='visibility'>Should imported bookmarks be marked <i>private</i> or <i>shared</i>?</label>
+     <div id='visibility'><!-- visibility { -->
+      <div class='field'>
+       <input type='radio' id='visibility_private'
+              name='visibility' value='private' checked='true' /><label for='visibility_private'>Private</label>
+      </div>
+      <div class='field'>
+       <input type='radio' id='visibility_public'
+              name='visibility' value='public' /><label for='visibility_public'>Public</label>
+      </div>
+     </div><!-- visibility } -->
+     <div class='note'>If privacy is set within the incoming bookmarks (e.g. the items have <tt>PRIVATE="yes/no"</tt>, that will override this setting.  Otherwise, all imported bookmarks will be marked according to this setting.  In either case, you may change the privacy setting for any item individually after the import is complete.  You are encouraged to share a many bookmarks as possible to benefit the community.</div>
+    </li><!-- field } -->
+
+    <li class='field'><!-- field { -->
+     <label for='conflict'>What should happen if an imported bookmark already exists in your set of bookmarks (matched by url)?</label>
+     <div id='conflict'><!-- conflict { -->
+      <div class='field'>
+       <input type='radio' id='conflict_replace'
+              name='conflict' value='replace' /><label for='conflict_replace'>Replace with the imported bookmark</label>
+      </div>
+      <div class='field'>
+       <input type='radio' id='conflict_ignore'
+              name='conflict' value='ignore' checked='true' /><label for='conflict_ignore'>Keep the existing bookmark</label>
+      </div>
+     </div><!-- conflict } -->
+    </li><!-- field } -->
+
+    <li class='field'><!-- field { -->
+     <label for='test'>Would you like to test the import before actually importing?</label>
+     <div id='test'><!-- test { -->
+      <div class='field'>
+       <input type='radio' id='test_yes'
+              name='test' value='yes' /><label for='test_yes'>Yes, please!</label>
+      </div>
+      <div class='field'>
+       <input type='radio' id='test_no'
+              name='test' value='no' checked='true' /><label for='test_no'>No, just do it!</label>
+      </div>
+     </div><!-- test } -->
+    </li><!-- field } -->
+
+   </ul><!-- steps } -->
+  </div><!-- section } -->
+  <div class='section'><!-- section { -->
+   <div class='buttons'>
+    <button name='submit'>Import</button>
+   </div>
+  </div><!-- section } -->
+ </form><!-- form } -->
+
+ <iframe id='bookmark-import-results'
+       name='bookmark-import-results'
+        src='about:blank'
+      style='display:none'></iframe>
+</div><!-- bookmark-import } -->
