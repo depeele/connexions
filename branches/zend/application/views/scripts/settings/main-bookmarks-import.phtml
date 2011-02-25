@@ -31,9 +31,34 @@
 
 $maxSize = Connexions::getMaxUploadSize();
 
+$jQuery = $this->jQuery();
+$jQuery->addOnLoad('$.bookmark_import_onLoad();')
+       ->javascriptCaptureStart();
+?>
+(function($) {
+
+    $.bookmark_import_onLoad = function() {
+        var $el     = $('#bookmark-import');
+        var $input  = $el.find('input');
+
+        $input.filter('[type=text],[type=file]').input();
+        $input.filter('[type=radio]').parent().buttonset();
+
+        //$el.find('button').button();
+        $input.filter('[type=submit]').button();
+    };
+
+}(jQuery));
+<?php
+$jQuery->javascriptCaptureEnd();
+
+
 ?>
 <div id='bookmark-import'><!-- bookmark-import { -->
- <form target='bookmark-import-results'><!-- form { -->
+ <form  action='<?= Connexions::url('/bookmark-import.php') ?>'
+        method='POST'
+       enctype="multipart/form-data"
+        target='bookmark-import-results'><!-- form { -->
   <div class='section'><!-- section { -->
    <h3>Step 1: Save your browser bookmarks to a file</h3>
    <p id='bookmark-import-browser-instructions'>
@@ -53,9 +78,9 @@ $maxSize = Connexions::getMaxUploadSize();
    <h3>Step 2: Establish the settings for your import</h3>
    <ul class='steps'><!-- steps { -->
     <li class='field'><!-- field { -->
-     <label for='bookmark_file'>Click browser and select the file you exported in <b>Step 1</b></label>
+     <label for='bookmarkFile'>Click browser and select the file you exported in <b>Step 1</b></label>
      <input name='MAX_FILE_SIZE' type='hidden' value='<?= $maxSize ?>' />
-     <input   id='bookmark_file' name='bookmark_file'
+     <input   id='bookmarkFile' name='bookmarkFile'
             type='file' />
      <div class='note'>Maximum file size of <?php
         $pows = array(
@@ -97,8 +122,6 @@ $maxSize = Connexions::getMaxUploadSize();
       <div class='field'>
        <input type='radio' id='visibility_private'
               name='visibility' value='private' checked='true' /><label for='visibility_private'>Private</label>
-      </div>
-      <div class='field'>
        <input type='radio' id='visibility_public'
               name='visibility' value='public' /><label for='visibility_public'>Public</label>
       </div>
@@ -112,8 +135,6 @@ $maxSize = Connexions::getMaxUploadSize();
       <div class='field'>
        <input type='radio' id='conflict_replace'
               name='conflict' value='replace' /><label for='conflict_replace'>Replace with the imported bookmark</label>
-      </div>
-      <div class='field'>
        <input type='radio' id='conflict_ignore'
               name='conflict' value='ignore' checked='true' /><label for='conflict_ignore'>Keep the existing bookmark</label>
       </div>
@@ -126,8 +147,6 @@ $maxSize = Connexions::getMaxUploadSize();
       <div class='field'>
        <input type='radio' id='test_yes'
               name='test' value='yes' /><label for='test_yes'>Yes, please!</label>
-      </div>
-      <div class='field'>
        <input type='radio' id='test_no'
               name='test' value='no' checked='true' /><label for='test_no'>No, just do it!</label>
       </div>
@@ -138,7 +157,8 @@ $maxSize = Connexions::getMaxUploadSize();
   </div><!-- section } -->
   <div class='section'><!-- section { -->
    <div class='buttons'>
-    <button name='submit'>Import</button>
+    <!-- button name='submit'>Import</button -->
+    <input type='submit' name='submit' value='Import' />
    </div>
   </div><!-- section } -->
  </form><!-- form } -->

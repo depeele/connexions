@@ -320,8 +320,9 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
      */
     protected function _commonPaths()
     {
-        define('APPLICATION_WEBROOT',
-                realpath(APPLICATION_PATH .'/../public'));
+        defined('APPLICATION_WEBROOT')
+            || define('APPLICATION_WEBROOT',
+                      realpath(APPLICATION_PATH .'/../public'));
 
         /*
         Connexions::log("Bootstrap::_commonPaths: APPLICATION_WEBROOT [ %s ]",
