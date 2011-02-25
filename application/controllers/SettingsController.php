@@ -93,8 +93,38 @@ class SettingsController extends Connexions_Controller_Action
         }
 
         $request =& $this->_request;
+
         $section =  $request->getParam('section', null);
         $cmd     =  $request->getParam('cmd',     null);
+
+        /*
+        Connexions::log("SettingsController::indexAction(): "
+                        . "section[ %s ], cmd[ %s ]",
+                        $section, $cmd);
+        // */
+
+        if ($request->isPost())
+        {
+            $method = "_post_{$section}_{$cmd}";
+
+            /*
+            Connexions::log("SettingsController::indexAction(): "
+                            . "POST -- check method[ %s ]",
+                            $method);
+            // */
+
+            if (method_exists( $this, $method ))
+            {
+                $this->{$method}();
+
+                $this->layout->setLayout('partial');
+                $this->view->isPartial = true;
+                $this->_partials       = array($section, $cmd);
+
+                $script = 'post-' . implode('-', $this->_partials);
+                return $this->render($script);
+            }
+        }
 
         $this->view->sections = self::$sections;
         $this->view->section  = $section;
@@ -257,5 +287,73 @@ class SettingsController extends Connexions_Controller_Action
     protected function _renderSidebar($usePlaceholder = true)
     {
         // NO sidebar
+    }
+
+    /***********************************************************************
+     * Request POST handlers
+     *
+     */
+    protected function _post_account_avatar()
+    {
+        $config       = Zend_Registry::get('config');
+        $urlBase      = $config->urls->base;
+        $urlAvatar    = $config->urls->avatar;
+        $urlAvatarTmp = $config->urls->avatarTmp;
+
+        $file         = $_FILES['avatarFile'];
+
+        $uploadDir    = realpath( APPLICATION_WEBROOT .'/'
+                                  . preg_replace("#^{$urlBase}#",
+                                                 '',
+                                                 $urlAvatarTmp) );
+        $avatarFile   = basename( $file['name']);
+        $uploadFile   = $uploadDir .'/'. $avatarFile;
+        $uploadUrl    = $urlAvatarTmp .'/'. $avatarFile;
+
+        /*
+        Connexions::log("SettingsController::_post_account_avatar(): "
+                        .   "file[ %s ]",
+                        Connexions::varExport($file));
+        Connexions::log("SettingsController::_post_account_avatar(): "
+                        .   "uploadDir[ %s ]",
+                        $uploadDir);
+        Connexions::log("SettingsController::_post_account_avatar(): "
+                        .   "avatarFile[ %s ]",
+                        $avatarFile);
+        Connexions::log("SettingsController::_post_account_avatar(): "
+                        .   "uploadFile[ %s ]",
+                        $uploadFile);
+        Connexions::log("SettingsController::_post_account_avatar(): "
+                        .   "uploadUrl[ %s ]",
+                        $uploadUrl);
+        // */
+
+        $this->view->file = $file;
+        $this->view->url  = $uploadUrl;
+
+        if (! move_uploaded_file($file['tmp_name'], $uploadFile))
+        {
+            $this->view->error = true;
+        }
+    }
+
+    protected function _post_bookmarks_import()
+    {
+        $config       = Zend_Registry::get('config');
+        $file         = $_FILES['bookmarkFile'];
+
+        // /*
+        Connexions::log("SettingsController::_post_bookmarks_import(): "
+                        .   "file[ %s ]",
+                        Connexions::varExport($file));
+        // */
+
+        $html = file_get_contents($file['tmp_name']);
+
+        $this->view->results = $html;
+    }
+
+    protected function _post_bookmarks_export()
+    {
     }
 }
