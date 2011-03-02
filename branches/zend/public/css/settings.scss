@@ -340,6 +340,43 @@
     padding:      1em 1em 0 1em;
   }
 
+  .import-status {
+    margin: 0 2em;
+
+    // Status / Progress table
+    table {
+      border: unquote("1px solid") $controlColor;
+
+      th,td {
+        padding:          0.25em;
+        border:           unquote("1px solid") $controlColor;
+        vertical-align:   top;
+      }
+      td {
+        text-align:   right;
+        width:        5em;
+      }
+
+      .empty {
+        background-color: $controlColor;
+      }
+
+      thead {
+        th {
+          font-weight:      bold;
+          text-align:       center;
+          background-color: $borderColor;
+        }
+      }
+      tbody {
+        th {
+          font-weight:      bold;
+          background-color: $borderColor;
+        }
+      }
+    }
+  }
+
   .field {
     label {
       display:  block;

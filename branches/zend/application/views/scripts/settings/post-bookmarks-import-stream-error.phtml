@@ -20,3 +20,9 @@
   <li class='bookmark-import item error'>
    <?= $this->error ?>
   </li>
+  <script type='text/javascript'>
+(function($) {
+    // Update the stats
+    $.bookmarksImport_update( <?= Zend_Json::encode($this->state) ?> );
+ }(jQuery));
+  </script>

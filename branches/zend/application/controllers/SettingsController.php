@@ -364,6 +364,9 @@ class SettingsController extends Connexions_Controller_Action
             'conflict'      => $conflict,   // replace | ignore
             'test'          => $test,       // yes     | no
 
+            'fileSize'      => 0,           // File size (in bytes)
+            'filePos'       => 0,           // Current offset in the file.
+
             'lineNum'       => 0,           // Current line in the import file
             'level'         => 0,           // Current folder level
 
@@ -387,6 +390,8 @@ class SettingsController extends Connexions_Controller_Action
                                      * already existed for this user.
                                      * (iff 'conflict' === 'ignore')
                                      */
+            'numErrors'     => 0,   // Total number of errors.
+            'numWarnings'   => 0,   // Total number of warnings.
 
             'numNew'        => 0,   /* Of 'numImported', how many were
                                      * completely new
@@ -441,6 +446,10 @@ class SettingsController extends Connexions_Controller_Action
             return;
         }
 
+        // Retrieve the file size.
+        $info = fstat($fh);
+        $state['fileSize'] = $info['size'];
+
         /**************************************************************
          * Walk through the import file one line at a time.
          *
@@ -456,6 +465,7 @@ class SettingsController extends Connexions_Controller_Action
 
                 continue;
             }
+            $state['filePos'] = ftell($fh);
             $state['lineNum']++;
             $state['line'] =& $line;
 
@@ -643,12 +653,19 @@ class SettingsController extends Connexions_Controller_Action
             'conflict'      => $state['conflict'],
             'test'          => $state['test'],
 
+            'fileSize'      => $state['fileSize'],
+            'filePos'       => $state['filePos'],
+
+            'lineNum'       => $state['lineNum'],
+
             'numBookmarks'  => $state['numBookmarks'],
             'numFolders'    => $state['numFolders'],
             'numImported'   => $state['numImported'],
             'numIgnored'    => $state['numIgnored'],
             'numNew'        => $state['numNew'],
             'numUpdated'    => $state['numUpdated'],
+            'numErrors'     => $state['numErrors'],
+            'numWarnings'   => $state['numWarnings'],
 
             /*
             'errors'        => $state['errors'],
@@ -676,6 +693,8 @@ class SettingsController extends Connexions_Controller_Action
 
     private function _bookmarksImport_error(&$state, $msg)
     {
+        $state['numErrors']++;
+
         $this->view->state = $state;
         $this->view->error = $msg;
         $this->render($state['importError']);
@@ -698,6 +717,8 @@ class SettingsController extends Connexions_Controller_Action
 
     private function _bookmarksImport_warning(&$state, $msg)
     {
+        $state['numWarnings']++;
+
         $this->view->state   = $state;
         $this->view->warning = $msg;
         $this->render($state['importWarning']);

@@ -26,14 +26,18 @@ $conflict   = ($this->state['conflict'] === 'replace'
                 ? 'replacing'
                 : 'keeping');
 
+$links = $this->headLink();
+$links->appendStylesheet($this->baseUrl('/css/settings.css'))
+      ->appendStylesheet($this->baseUrl('/css/bookmarks.css'));
 
-/*******************************************************************
- * Handled by layout/header.phtml for non-streaming view scripts
+$this->headTitle("Import");
+
+/* Include the base-header information directly.
  *
+ * Since layouts have been disabled, we must explicitly include these.
  */
-$baseUrl = $this->baseUrl('/');
-
 echo $this->render('base-header.phtml');
+
 ?>
 <div id='bookmark-import'>
  <h3><?= $test ?>Import of bookmarks using default <?= $tagLabel ?>
@@ -42,21 +46,24 @@ echo $this->render('base-header.phtml');
         <span class='privacy <?= $visibility ?>'><?= $visibility ?></span>,
     <?= $conflict ?> existing bookmarks.</h3>
  <div class='import-status'>
-  <div id='progressbar'></div>
   <table>
    <thead>
     <tr>
-     <th colspan='2' rowspan='2'>&nbsp;</th>
+     <th>lines</th><td id='line-count'>0</td>
      <th colspan='2'>imported</th>
      <th rowspan='2'>ignored</th>
      <th rowspan='2'>errors</th>
      <th rowspan='2'>warnings</th>
     </tr>
-    <tr><th>new</th><th>updated</th></tr>
+    <tr>
+     <th>folders</th><td id='folder-count'>0</td>
+     <th>new</th>
+     <th>updated</th>
+    </tr>
    </thead>
    <tbody>
     <tr>
-     <th>bookmarks:</th>
+     <th>bookmarks</th>
      <td id='bookmarks-count'>0</td>
      <td id='bookmarks-new'>0</td>
      <td id='bookmarks-updated'>0</td>
@@ -65,11 +72,51 @@ echo $this->render('base-header.phtml');
      <td id='bookmarks-warning'>0</td>
     </tr>
     <tr>
-     <th>folders:</th>
-     <td id='folder-count'>0</td>
-     <td colspan='5'>&nbsp;</td>
+     <td colspan='7'>
+      <div id='progressbar'></div>
+     </td>
     </tr>
    </tbody>
   </table>
  </div>
+ <script type='text/javascript'>
+(function($) {
+    var $status = $('#bookmark-import .import-status');
+    var $stats  = {
+        progress:           $status.find('#progressbar').progressbar(),
+        lineCount:          $status.find('#line-count'),
+        folderCount:        $status.find('#folder-count'),
+        bookmarksCount:     $status.find('#bookmarks-count'),
+        bookmarksNew:       $status.find('#bookmarks-new'),
+        bookmarksUpdated:   $status.find('#bookmarks-updated'),
+        bookmarksIgnored:   $status.find('#bookmarks-ignored'),
+        bookmarksError:     $status.find('#bookmarks-error'),
+        bookmarksWarning:   $status.find('#bookmarks-warning')
+    };
+
+    $.bookmarksImport_update = function( state ) {
+        /*
+            <td id='line-count'>0</td>
+            <td id='folder-count'>0</td>
+            <td id='bookmarks-count'>0</td>
+            <td id='bookmarks-new'>0</td>
+            <td id='bookmarks-updated'>0</td>
+            <td id='bookmarks-ignored'>0</td>
+            <td id='bookmarks-error'>0</td>
+            <td id='bookmarks-warning'>0</td>
+         */
+        var complete    = (state.filePos / state.fileSize) * 100;
+        $stats.progress.progressbar('value', complete);
+
+        $stats.lineCount.text(state.lineNum);
+        $stats.folderCount.text(state.numFolders);
+        $stats.bookmarksCount.text(state.numBookmarks);
+        $stats.bookmarksNew.text(state.numNew);
+        $stats.bookmarksUpdated.text(state.numUpdated);
+        $stats.bookmarksIgnored.text(state.numIgnored);
+        $stats.bookmarksError.text(state.numErrors);
+        $stats.bookmarksWarning.text(state.numWarnings);
+    };
+}(jQuery));
+ </script>
  <ul class='items bookmarks'>
