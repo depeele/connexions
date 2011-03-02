@@ -62,6 +62,7 @@ $.widget("settings.bookmarksImport", {
 
         opts.$form       = self.element.find('form:first');
 
+        opts.$file       = $inputs.filter('[type=file]');
         opts.$inputs     = $inputs.filter('[type=text],[type=file],textarea');
         opts.$buttonSets = $inputs.filter('[type=radio]').parent();
         opts.$submit     = $inputs.filter('[type=submit]');
@@ -72,7 +73,7 @@ $.widget("settings.bookmarksImport", {
         // Create sub-widgets
         opts.$inputs.input({ hideLabel: false });
         opts.$buttonSets.buttonset();
-        opts.$submit.button();
+        opts.$submit.button({disabled:true});
 
         self._bindEvents();
     },
@@ -86,6 +87,16 @@ $.widget("settings.bookmarksImport", {
         var self    = this;
         var opts    = self.options;
 
+        opts.$file.bind('change.settingsBookmarksImport', function(e) {
+            if (opts.$file.val().length > 0)
+            {
+                opts.$submit.button('enable');
+            }
+            else
+            {
+                opts.$submit.button('disable');
+            }
+        });
         opts.$form.bind('submit.settingsBookmarksImport', function(e) {
             opts.$form.mask();
 
@@ -119,6 +130,7 @@ $.widget("settings.bookmarksImport", {
 
         // Unbind events
         opts.$form.unbind('.settingsBookmarksImport');
+        opts.$file.unbind('.settingsBookmarksImport');
         opts.$iframe.unbind('.settingsBookmarksImport');
 
         // Remove added elements

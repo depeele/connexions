@@ -418,7 +418,15 @@
       border:           unquote("1px solid") $privateColorBorder;
     }
   }
+
+  #filter-label {
+    font-size:  1.2em;
+    padding:    2em 0.5em 0;
+  }
+
   ul.bookmarks {
+    border: none;
+
     .item {
     }
 

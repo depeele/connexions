@@ -50,20 +50,20 @@ echo $this->render('base-header.phtml');
    <thead>
     <tr>
      <th>lines</th><td id='line-count'>0</td>
-     <th colspan='2'>imported</th>
-     <th rowspan='2'>ignored</th>
-     <th rowspan='2'>errors</th>
-     <th rowspan='2'>warnings</th>
+     <th colspan='2'><a href='#imported'>imported</a></th>
+     <th rowspan='2'><a href='#ignored'>ignored</a></th>
+     <th rowspan='2'><a href='#error'>errors</a></th>
+     <th rowspan='2'><a href='#warning'>warnings</a></th>
     </tr>
     <tr>
      <th>folders</th><td id='folder-count'>0</td>
-     <th>new</th>
-     <th>updated</th>
+     <th><a href='#new'>new</a></th>
+     <th><a href='#updated'>updated</a></th>
     </tr>
    </thead>
    <tbody>
     <tr>
-     <th>bookmarks</th>
+     <th><a href='#all'>bookmarks</a></th>
      <td id='bookmarks-count'>0</td>
      <td id='bookmarks-new'>0</td>
      <td id='bookmarks-updated'>0</td>
@@ -82,6 +82,8 @@ echo $this->render('base-header.phtml');
  <script type='text/javascript'>
 (function($) {
     var $status = $('.import-status');
+    var $label  = null;
+    var $items  = null;
     var $stats  = {
         progress:           $status.find('#progressbar').progressbar(),
         lineCount:          $status.find('#line-count'),
@@ -94,16 +96,76 @@ echo $this->render('base-header.phtml');
         bookmarksWarning:   $status.find('#bookmarks-warning')
     };
 
+    var timeout = null;
+    $status.delegate('a', 'click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (timeout !== null)
+        {
+            clearTimeout(timeout);
+            timeout = null;
+        }
+
+        if ($items === null)
+        {
+            $label = $('#filter-label');
+
+            // Remove all 'script' tags from the item list
+            $('ul.items').children('script').remove();
+
+            $items = $('ul.items').children();  //find('> li');
+        }
+
+        var $a      = $(this);
+        var type    = $a.attr('href').replace('#', '');
+
+        // Hide all element EXCEPT those with a CSS class of 'type'
+        var label   = 'Bookmarks';
+        switch (type)
+        {
+        case 'all':         label = null;                   break;
+        case 'new':         label = 'New Bookmarks';        break;
+        case 'updated':     label = 'Updated Bookmarks';    break;
+        case 'imported':    label = 'Imported Bookmarks';   break;
+        case 'ignored':     label = 'Ignored Bookmarks';    break;
+        case 'error':       label = 'Import Errors';        break;
+        case 'warning':     label = 'Import Warnings';      break;
+        default:
+            // Unknown 'type'
+            return;
+        }
+
+        var $show   = null;
+        if (label !== null)
+        {
+            $show   = $items.filter('.'+ type);
+            label += ' ('+ $show.length +' items)';
+        }
+
+        // Separate the visibility filtering from the UI thread.
+        timeout = setTimeout(function() {
+            if ($show === null)
+            {
+                // Show ALL
+                $label.css('visibility', 'hidden');
+                $items.show();
+            }
+            else
+            {
+                // Show JUST a specific type
+                $label.text( label )
+                      .css('visibility', 'visible');
+                setTimeout(function() { $show.show(); }, 1);
+                setTimeout(function() { $items.not('.'+ type).hide(); }, 10);
+            }
+            timeout = null;
+        }, 10);
+    });
+
     $.bookmarksImport_update = function( state ) {
-        /*
-            <td id='line-count'>0</td>
-            <td id='folder-count'>0</td>
-            <td id='bookmarks-count'>0</td>
-            <td id='bookmarks-new'>0</td>
-            <td id='bookmarks-updated'>0</td>
-            <td id='bookmarks-ignored'>0</td>
-            <td id='bookmarks-error'>0</td>
-            <td id='bookmarks-warning'>0</td>
+        /* If this is a valid bookmark, state.html will be the server-renderd
+         * version of the bookmark.
          */
         var complete    = (state.filePos / state.fileSize) * 100;
         $stats.progress.progressbar('value', complete);
@@ -119,4 +181,5 @@ echo $this->render('base-header.phtml');
     };
 }(jQuery));
  </script>
+ <h3 id='filter-label' style='visibility:hidden;'>Imported Bookmarks</h3>
  <ul class='items bookmarks'>

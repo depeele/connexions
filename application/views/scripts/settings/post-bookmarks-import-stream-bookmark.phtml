@@ -20,8 +20,11 @@
 $bookmark =& $this->bookmark;
 
 $css = array('mine', $this->importState);
+if ($this->importState !== 'ignored')   array_push($css, 'imported');
+
 if ($bookmark->isFavorite)  array_push($css, 'favorite');
 if ($bookmark->isPrivate)   array_push($css, 'private');
+
 ?>
   <li class='item <?= implode(' ', $css) ?>'>
    <div class='bookmark'><?php // bookmark { ?>
