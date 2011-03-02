@@ -30,13 +30,35 @@ $navBorder: unquote("1px dotted") $navColorBorder;
     //height =  !tabHeight
     padding: 0;
     background-color: transparent;
+  }
+  .nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 0;
+    width: $navWidth;
+    *width: $navWidth + 1;
+
+    @include corners(0, 0, 0, 20px);
+
+    background: $navColorBackground unquote("url(themes/default/images/ui-bg_gloss-wave_10_172322_500x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/");
+
+    li {
+      float:            left;
+      width:            $navWidthItem;
+      text-align:       center;
+      padding:          $navPadSubItem_tb unquote("0");
+      //background-color: $navColorBackground;
+      height:           $tabHeight;
+    }
+
     a {
       padding: 2px;
       color: $navColor;
       font-weight: normal;
       text-decoration: none;
     }
-    li.active a, a:hover {
+    li.active a, li:hover, a:hover {
       color: $navColorHover;
     }
 
@@ -46,11 +68,15 @@ $navBorder: unquote("1px dotted") $navColorBorder;
       border-right:   $navBorder;
       padding-left:   10px;
       padding-right:  20px;
+
       @include corners(0, 0, 0, 20px);
     }
 
     li.welcome {
       //background-color =    !navColorWelcomeBackground
+      background-color:       $navColorWelcomeBackground;
+      border-left:            unquote("2px solid") $navColorBackground;
+      border-bottom:          unquote("2px solid") $navColorBackground;
       ul.sub {
         left: 28px;
       }
@@ -63,22 +89,6 @@ $navBorder: unquote("1px dotted") $navColorBorder;
           color: $navColorBackground;
         }
       }
-    }
-  }
-  .nav {
-    position: absolute;
-    top: 0;
-    left: 0;
-    padding: 0;
-    width: $navWidth;
-    *width: $navWidth + 1;
-    li {
-      float:            left;
-      width:            $navWidthItem;
-      text-align:       center;
-      padding:          $navPadSubItem_tb unquote("0");
-      background-color: $navColorBackground;
-      height:           $tabHeight;
     }
 
     .inbox-indicator {
@@ -118,16 +128,16 @@ $navBorder: unquote("1px dotted") $navColorBorder;
   }
   /* Sub-menu */
   ul.sub {
-    display: none;
+    display:  none;
     position: absolute;
-    top: $navTopSub;
-    left: 2px;
-    color: $navColor;
-    padding: 0;
-    margin: 0;
+    top:      $navTopSub;
+    left:     2px;
+    color:    $navColor;
+    padding:  0;
+    margin:   0;
   }
   li:hover ul.sub {
-    display: block;
+    display:  block;
   }
 }
 
@@ -135,13 +145,13 @@ $navBorder: unquote("1px dotted") $navColorBorder;
   ul.sub {
     li {
       background-color: $navColorBackground;
-      width: $navWidthSub;
-      height: auto;
-      padding: unquote("0") $navPadSubItem_lr;
-      float: left;
-      margin: 0;
-      cursor: pointer;
-      text-align: left;
+      width:            $navWidthSub;
+      height:           auto;
+      padding:          unquote("0") $navPadSubItem_lr;
+      float:            left;
+      margin:           0;
+      cursor:           pointer;
+      text-align:       left;
 
     }
     li a:hover, li:hover span {
@@ -204,7 +214,10 @@ $navBorder: unquote("1px dotted") $navColorBorder;
   padding: $navPadItem $searchPad_r unquote("0 0");
   width: $navWidthSearch;
   height: $tabHeight;
-  background-color: $navColorBackground;
+
+  // Same as .nav
+  background: $navColorBackground unquote("url(themes/default/images/ui-bg_gloss-wave_10_172322_500x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/");
+
   .searchBox {
     float: right;
   }

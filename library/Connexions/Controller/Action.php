@@ -41,8 +41,12 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                                          * controller based upon validation of
                                          * restrictions (e.g. tags, users).
                                          */
-
-
+    protected   $_streaming = false;    /* Did the current request include
+                                         * 'streaming=true'?
+                                         *
+                                         * If so, Bootstrap will have disabled
+                                         * output buffering and layouts.
+                                         */
     public function init()
     {
         // Initialize action controller here
@@ -68,6 +72,9 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                         .   "request params[ %s ]",
                         Connexions::varExport($this->_request->getParams()));
         // */
+
+        $this->_streaming = Connexions::to_bool(
+                                $this->_request->getParam('streaming', false));
 
 
         // Default view variables that we can set early
@@ -270,9 +277,10 @@ class Connexions_Controller_Action extends Zend_Controller_Action
              * paginator.
              *
              *  part=(content                                           |
-             *        main   ([.:-](tags  ([.:-](recommended | top))? |
+             *        main   ([.:-](tags  ([.:-](recommended | top))?   |
              *                      people([.:-](network))? )? )        |
-             *        sidebar([.:-](tags | people | items))? )
+             *        sidebar([.:-](tags | people | items))? )          |
+             *        post([.:-]%section%[.:-]%command% )
              *
              * Note: The separation for 'main' is primarily to support
              *       the PostController.
@@ -302,7 +310,6 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                             Connexions::varExport($this->_partials));
             // */
 
-
             switch ($primePart)
             {
             case 'sidebar':
@@ -318,6 +325,13 @@ class Connexions_Controller_Action extends Zend_Controller_Action
             case 'main':
                 // Render JUST the main pane.
                 $this->_renderMain('main', $htmlNamespace);
+                break;
+
+            case 'post':
+                /* Render JUST the post "pane":
+                 *      post-(implode('-', _partials)).phtml
+                 */
+                $this->_renderPost('post', $htmlNamespace);
                 break;
 
             case 'content':
@@ -579,6 +593,42 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         $this->view->sidebar = $sidebar;
     }
 
+    /** @brief  Prepare for rendering the post view, regardless of format.
+     *  @param  namespace   The namespace for this rendering;
+     *
+     *  This will verify that this is a POST request.
+     *
+     *  @return true (is POST) or false (is NOT POST).
+     */
+    protected function _preparePost($namespace  = '')
+    {
+        $request          =& $this->_request;
+
+        if (! $request->isPost())
+        {
+            $this->view->error = 'Invalid Post';
+            return false;
+        }
+
+        /* By default, see if a method exists in the concrete class with the
+         * name:
+         *      _post_{$partial[0] == section)_{$partial[1] == command}
+         */
+        $method = "_post_{$this->_partials[0]}_{$this->_partials[1]}";
+        /*
+        Connexions::log("Connexions_Controller_Action::_preparePost(): "
+                        . "namespace[ %s ], format[ %s ], method[ %s ]",
+                        $namespace, $this->_format, $method);
+        // */
+
+        if (method_exists( $this, $method ))
+        {
+            $this->{$method}();
+        }
+
+        return true;
+    }
+
     /** @brief  Prepare and render the main view using the provided view script.
      *  @param  script      The view script to use for rendering;
      *  @param  namespace   The namespace for this rendering;
@@ -604,6 +654,33 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         $this->render($script);
 
     }
+
+    /** @brief  Prepare and render the post view using the provided view script.
+     *  @param  script      The view script to use for rendering;
+     *  @param  namespace   The namespace for this rendering;
+     *
+     */
+    protected function _renderPost($script, $namespace = '')
+    {
+        $this->_namespace = $namespace;
+
+        $this->_preparePost($namespace);
+
+        if ( count($this->_partials) > 0)
+        {
+            $script .= '-' . implode('-', $this->_partials);
+        }
+
+        /*
+        Connexions::log("Connexions_Controller_Action::_renderPost(): "
+                        . "script[ %s ]",
+                        $script);
+        // */
+
+        $this->render($script);
+
+    }
+
 
     /** @brief  Render the sidebar based upon the incoming request.
      *  @param  usePlaceholder      Should the rendering be performed

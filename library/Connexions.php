@@ -55,6 +55,15 @@ class Connexions
         $argc = count($argv);
         if ($argc > 1)
         {
+            /*
+            $nSlots = count(explode('%', $fmt));
+            if ($nSlots > $argc)
+            {
+                throw new Exception("Too few arguments: {$nSlots} > {$argc}");
+            }
+            // */
+
+
             /*$fmt = */   array_shift($argv);
             $message = vsprintf($fmt, $argv);
         }

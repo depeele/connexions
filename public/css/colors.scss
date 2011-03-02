@@ -5,17 +5,21 @@ $pageColorBackground: $lightest;
 
 $linkColor:           #06c;
 $linkColorVisited:    #005a9c;
-$linkColorSubdued:    #396C9B;
+$linkColorSubdued:    #369;  //#396C9B;
 $controlColor:        #999;
 $borderColor:         #ccc;
 
 // From css/themes/base/jquery-ui.css : .ui-state-error
-$errorColor:                  #cd0a0a;
+$errorColor:                  #cd0a0a;  // jquery-ui.css fcError
+$warningColor:                #363636;  // jquery-ui.css fcHighlight
 $successColor:                #667e32;
 $confirmColor:                $errorColor;
 
+$errorColorBackground:        #fef1ec;  // jquery-ui.css bgColorError
+$warningColorBackground:      #fbec88;  // jquery-ui.css bgColorHighlight
+
 $navColorBackground:          $darkest;
-$navColorWelcomeBackground:   #142940;
+$navColorWelcomeBackground:   $linkColorSubdued; //#3d7cc2; //#142940;
 $navColorJoinBackground:      #9fc54e;
 $navColor:                    $lightest;
 $navColorHover:               #b0d730;
@@ -24,7 +28,7 @@ $navColorSub:                 #2786c2;
 $navColorSubHover:            #7fcdfe;
 $navColorBorder:              #666;
 
-$groupHeaderColorBackground:  #eef;
+$groupHeaderColorBackground:  #edf4fb;        //#eef;
 $groupHeaderColor:            $controlColor;
 $groupHeaderYearColor:        $groupHeaderColorBackground - #111100;
 $groupHeaderAlphaColor:       $groupHeaderColorBackground - #333300;

@@ -47,18 +47,7 @@ abstract class Connexions_Service
         }
 
         // Resolve our mapper
-        $mapperName = $this->_mapper;
-        if (empty($mapperName))
-        {
-            /* Use the model name to construct a Model Mapper
-             * class name:
-             *      Model_<Class> => Model_Mapper_<Class>
-             */
-            $mapperName = str_replace('Model_', 'Model_Mapper_',
-                                      $this->_modelName);
-        }
-
-        $this->_mapper = $this->_getMapper($mapperName);
+        $this->_mapper = $this->_getMapper();
     }
 
     /** @brief  Find an existing Domain Model instance, or Create a new Domain
@@ -373,6 +362,20 @@ abstract class Connexions_Service
                     ? array()
                     : preg_split('/\s*,\s*/', $str));
 
+        /* :TODO: If the target model has a filter, apply it to each of the
+         *        provide items.
+        $filter = $this->_getFilter( );
+        if (is_object($filter))
+        {
+            foreach($list as $item)
+            {
+                // But we need to know what it is we've split:
+                //  'userId', 'user.name', 'tagId', 'tag.name', ...
+                $filter->setData( array('%id%' => $item) );
+            }
+        }
+         */
+
         /*
         Connexions::log("Connexions_Service::_csList2array( %s ): "
                         . "[ %s ]",
@@ -437,15 +440,49 @@ abstract class Connexions_Service
         return $newOrder;
     }
 
+    /** @brief  Retrieve an instance of the named filter.
+     *  @param  filterName  The specific filter to retrieve
+     *                      (MAY be the name of the Model handled by the
+     *                       desired filter, null == _modelName).
+     *
+     *  @return The Connexions_Model_Filter instance.
+     */
+    protected function _getFilter($filterName = null)
+    {
+        if ($filterName === null)   $filterName = $this->_modelName;
+
+        // Locate a specific filter
+        $name = ( (strpos($filterName, 'Model_Filter') === false)
+                    ? str_replace('Model_', 'Model_Filter_', $filterName)
+                    : $filterName );
+
+        $filter = Connexions_Model_Filter::factory( $name );
+
+        /*
+        Connexions::log("Connexions_Service::_getFilter(): "
+                        .   "name[ %s ], filter[ %s ]",
+                        $name, get_class($filter));
+        // */
+
+        return $filter;
+    }
+
     /** @brief  Retrieve an instance of the named mapper.
      *  @param  mapperName  The specific mapper to retrieve
      *                      (MAY be the name of the Model handled by the
-     *                       desired mapper).
+     *                       desired mapper, null == _modelName).
      *
      *  @return The Connexions_Model_Mapper instance.
      */
-    protected function _getMapper($mapperName)
+    protected function _getMapper($mapperName = null)
     {
+        if ($mapperName === null)
+        {
+            if ($this->_mapper !== null)    return $this->_mapper;
+
+            $mapperName = $this->_modelName;
+        }
+
         // Locate a specific mapper
         $name = ( (strpos($mapperName, 'Model_Mapper_') === false)
                     ? str_replace('Model_', 'Model_Mapper_', $mapperName)
