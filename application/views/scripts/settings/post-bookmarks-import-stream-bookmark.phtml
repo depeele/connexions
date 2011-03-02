@@ -251,3 +251,9 @@ if ($bookmark->isPrivate)   array_push($css, 'private');
     </div><?php // data } ?>
    </div><?php // bookmark } ?>
   </li>
+  <script type='text/javascript'>
+(function($) {
+    // Update the stats
+    $.bookmarksImport_update( <?= Zend_Json::encode($this->state) ?> );
+ }(jQuery));
+  </script>
