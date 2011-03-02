@@ -15,8 +15,11 @@ class Model_Filter_Bookmark extends Connexions_Model_Filter
         'userId'        => array('int'),
         'itemId'        => array('int'),
 
-        'name'          => array('stripTags', 'stringTrim'),
-        'description'   => array('stripTags', 'stringTrim'),
+        /* 'decodeEntities' requires the addFilterPrefixPath() from the
+         * __construct() of our parent class (Connexions_Model_Filter).
+         */
+        'name'          => array('decodeEntities', 'stripTags', 'stringTrim'),
+        'description'   => array('decodeEntities', 'stripTags', 'stringTrim'),
 
         'rating'        => array('int'),
 
