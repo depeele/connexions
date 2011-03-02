@@ -94,41 +94,15 @@ class SettingsController extends Connexions_Controller_Action
 
         $request =& $this->_request;
 
-        $section =  $request->getParam('section', null);
-        $cmd     =  $request->getParam('cmd',     null);
-
         /*
         Connexions::log("SettingsController::indexAction(): "
                         . "section[ %s ], cmd[ %s ]",
                         $section, $cmd);
         // */
 
-        if ($request->isPost())
-        {
-            $method = "_post_{$section}_{$cmd}";
-
-            /*
-            Connexions::log("SettingsController::indexAction(): "
-                            . "POST -- check method[ %s ]",
-                            $method);
-            // */
-
-            if (method_exists( $this, $method ))
-            {
-                $this->{$method}();
-
-                $this->layout->setLayout('partial');
-                $this->view->isPartial = true;
-                $this->_partials       = array($section, $cmd);
-
-                $script = 'post-' . implode('-', $this->_partials);
-                return $this->render($script);
-            }
-        }
-
         $this->view->sections = self::$sections;
-        $this->view->section  = $section;
-        $this->view->cmd      = $cmd;
+        $this->view->section  = $request->getParam('section', null);
+        $this->view->cmd      = $request->getParam('cmd',     null);
 
         $this->_handleFormat('settings');
     }
@@ -333,7 +307,7 @@ class SettingsController extends Connexions_Controller_Action
 
         if (! move_uploaded_file($file['tmp_name'], $uploadFile))
         {
-            $this->view->error = true;
+            $this->view->error = "Cannot move temporary file";
         }
     }
 
@@ -352,7 +326,7 @@ class SettingsController extends Connexions_Controller_Action
         $test       = strtolower($this->_request->getParam('test',
                                                                 'no'));
 
-        // Normalize the tags
+        // Normalize the tag list
         $tags = implode(',', preg_split('#\s*[/,+]\s*#', $tags));
 
         // Normalize visibility, conflict, and test
@@ -381,18 +355,12 @@ class SettingsController extends Connexions_Controller_Action
                         $conflict, $test);
         // */
 
-        $fh = fopen($file['tmp_name'], 'r');
-        if ($fh === false)
-        {
-            $this->view->error = 'Cannot access the uploaded file';
-            return;
-        }
-
-        /**************************************************************
-         * Walk through the import file one line at a time.
+        /********************************************************************
+         * Establish the bookmark import processing state.
          *
          */
         $state = array(
+            'visibility'    => $visibility, // public  | private
             'conflict'      => $conflict,   // replace | ignore
             'test'          => $test,       // yes     | no
 
@@ -428,19 +396,73 @@ class SettingsController extends Connexions_Controller_Action
                                      * (iff 'conflict' == 'replace')
                                      */
 
+            'importBegin'   => 'post-bookmarks-import-stream-begin',
+            'importError'   => 'post-bookmarks-import-stream-error',
+                             //$this->getViewScript('post-bookmarks-error'),
+            'importWarning' => 'post-bookmarks-import-stream-warning',
+                             //$this->getViewScript('post-bookmarks-warning'),
+            'importBookmark'=> 'post-bookmarks-import-stream-bookmark',
+                             //$this->getViewScript('post-bookmarks-bookmark'),
+
+            /*
             'errors'        => array(),
             'warnings'      => array(),
+            'bookmarks'     => array(),
+            // */
         );
+
+        /* Begin the import
+         *  (terminated with the final 'post-bookmarks-import.phtml').
+         */
+        $this->view->state = $state;
+        $this->render($state['importBegin']);
+
+
+        if ($this->_streaming === true)
+        {
+            /**************************************************************
+             * This is a "streaming" request so begin sending the response
+             * now.
+             *
+             * Bootstrap::_controllerRequest() has already disableed output
+             * buffering and layouts.
+             */
+            $this->_response = $this->getResponse();
+            $this->_response->sendResponse();
+            $this->_response->clearBody();
+        }
+
+
+        // Open the uploaded bookmarks file
+        $fh = fopen($file['tmp_name'], 'r');
+        if ($fh === false)
+        {
+            $this->view->error = 'Cannot access the uploaded file';
+            return;
+        }
+
+        /**************************************************************
+         * Walk through the import file one line at a time.
+         *
+         */
+        $this->_maxTime = ini_get('max_execution_time');
         while (! feof($fh))
         {
             $line = trim(fgets($fh));
             if ($line === false)
             {
-                array_push($state['errors'],
-                           "Read error on line {$state['lineNum']}");
+                $error = "Read error on line {$state['lineNum']}";
+                $this->_bookmarksImport_error($state, $error);
+
                 continue;
             }
             $state['lineNum']++;
+            $state['line'] =& $line;
+
+            if (empty($line))
+            {
+                continue;
+            }
 
             /**********************************************
              * A typical bookmark entry:
@@ -455,16 +477,18 @@ class SettingsController extends Connexions_Controller_Action
              * if this is an export file from Connexions:
              *           RATING="%0-5%"
              *         FAVORITE="%0 | 1%"
+             *
+             * Note: the bookmark file format does NOT
+             *       generally use ending tags.
+             *
              */
-            if (preg_match('/^<DT><A HREF="([^"]+)([^>]*?)>([^<]+)<\/A>/i',
+            if (preg_match('/^<DT><A HREF="([^"]+)"([^>]*?)>([^<]+)<\/A>/i',
                                                             $line, $markInfo))
             {
-                $state['inDD'] = false;
-                if (is_array($state['bookmark']))
-                {
-                    // Delayed bookmark - add it now.
-                    $this->_addBookmark($state);
-                }
+                // Add any delayed bookmark.
+                $this->_addBookmark($state);
+
+                // Prepare this new bookmark
                 $state['numBookmarks']++;
 
                 /* markInfo:
@@ -473,144 +497,85 @@ class SettingsController extends Connexions_Controller_Action
                  *  3   == boomkark name
                  */
                 $url   = $markInfo[1];
-                $attrs = $markInfo[2];
+                $attrs = trim($markInfo[2]);
                 $name  = $markInfo[3];
 
-                $state['bookmark'] = array(
-                    'userId'        => $this->_viewer->getId(),
-                    'itemId'        => $url,
+                $this->_parseBookmarkInfo($state, $url, $name, $attrs);
 
-                    'name'          => $name,
-                    'description'   => '',
-                    'tags'          => $state['tagStack'],
-                    'rating'        => 0,
-                    'isFavorite'    => false,
-                    'isPrivate'     => ($visibility !== 'public'),
-                );
+                continue;
+            }
 
-                // Process any of the additional <a> attributes
-                if (! empty($attrs))
+            /**********************************************
+             * The (beginning of the) description of the
+             * previous bookmark.
+             *
+             */
+            if (preg_match('/^<DD>(.*)/', $line, $markInfo))
+            {
+                if (! is_array($state['bookmark']))
                 {
-                    $pairs = preg_split('/\s+/', $attrs);
-                    foreach ($pairs as $pair)
-                    {
-                        list($key, $val) = split('=', $pair);
-                        $val = preg_replace('/"/', '', $val);
-
-                        /* Valid attribute keys:
-                         *      ADD_DATE    Unix Timestamp
-                         *      PRIVATE     0 | 1
-                         *      TAGS        Comma-separated string
-                         *      RATING      0-5
-                         *      FAVORITE    0 | 1
-                         */
-                        switch (strtolower($key))
-                        {
-                        case 'add_date':
-                            $iVal = (int)$val;
-                            if ($iVal > 0)
-                            {
-                                $state['bookmark']['taggedOn'] =
-                                        date('Y-m-d H:i:s', $iVal);
-                            }
-                            else
-                            {
-                                array_push($state['warnings'],
-                                           "Line {$state['lineNum']}: "
-                                            . "Ignored invalid "
-                                            . "ADD_DATE '{$val}'");
-                            }
-                            break;
-
-                        case 'private':
-                            $val = strtolower($val);
-                            if ( ($val === 'yes')  ||
-                                 ($val === 'true') ||
-                                 ($val === '1'))
-                            {
-                                $state['bookmark']['isPrivate'] = true;
-                            }
-                            else
-                            {
-                                $state['bookmark']['isPrivate'] = false;
-                            }
-                            break;
-
-                        case 'tags':
-                            // Normalize the provided tags
-                            $val = implode(',',
-                                           preg_split('#\s*[/,+]\s*#', $val));
-
-                            array_push($state['bookmark']['tags'], $val);
-                            break;
-
-                        case 'rating':
-                            $iVal = (int)$val;
-                            if ( ($iVal >= 0) && ($iVal <= 5) )
-                            {
-                                $state['bookmark']['rating'] = $iVal;
-                            }
-                            else
-                            {
-                                array_push($state['warnings'],
-                                           "Line {$state['lineNum']}: "
-                                            . "Ignored invalid "
-                                            . "RATING '{$val}'");
-                            }
-                            break;
-
-                        case 'favorite':
-                            $val = strtolower($val);
-                            if ( ($val === 'yes')  ||
-                                 ($val === 'true') ||
-                                 ($val === '1'))
-                            {
-                                $state['bookmark']['isFavorite'] = true;
-                            }
-                            else
-                            {
-                                $state['bookmark']['isFavorite'] = false;
-                            }
-                            break;
-
-                        default:
-                            Connexions::log("Line %s: Ignore attribute "
-                                            . "key[ %s ], value[ %s ], "
-                                            . "line[ %s ]",
-                                            $state['lineNum'],
-                                            $key, $val,
-                                            $line);
-                            /*
-                            array_push($state['warnings'],
-                                       "Line {$state['lineNum']}: "
-                                        . "Ignored attribute "
-                                        . "'{$key}' with value '{$val}'");
-                            // */
-                            break;
-                        }
-                    }
+                    $warn = "Line {$state['lineNum']}: "
+                          . "Ignored bookmark description since there "
+                          . "was no preceeding bookmark.";
+                    $this->_bookmarksImport_warning($state, $warn);
+                }
+                else
+                {
+                    $state['inDD'] = true;
+                    $state['bookmark']['description'] .= $markInfo[1];
                 }
 
                 continue;
             }
 
             /**********************************************
-             * The description of the previous bookmark.
+             * The Beginning of a folder.
+             *
+             * <DL>...
+             *  <DT><H3 %attrs%>%title%</H3>
+             *
+             *  Valid H3 attributes:
+             *      ADD_DATE
+             *      LAST_MODIFIED
              *
              */
-            if (preg_match('/^<DD>(.*)/', $line, $markInfo))
+
+            // Technical start of a folder
+            if (preg_match('/^<DL>/', $line))
             {
-                $state['inDD'] = true;
-                if (! is_array($state['bookmark']))
-                {
-                    array_push($state['warnings'],
-                               "Line {$state['lineNum']}: "
-                               . "Ignored DD with no preceeding DT.");
-                }
-                else
-                {
-                    $state['bookmark']['description'] .= $markInfo[1];
-                }
+                // Add any delayed bookmark.
+                $this->_addBookmark($state);
+
+                $state['level']++;
+                continue;
+            }
+
+            // Real start of a folder
+            if (preg_match('/^<DT><H3([^>]+)>([^<]+)<\/H3>/i',
+                                                    $line, $folderInfo))
+            {
+                // Add any delayed bookmark.
+                $this->_addBookmark($state);
+
+                /* folderInfo:
+                 *  1   == remainder of <h3> attributes
+                 *  2   == folder name
+                 */
+                $attrs = $folderInfo[1];
+                $name  = $folderInfo[2];
+
+                $state['numFolders']++;
+
+                array_push($state['tagStack'], $name);
+
+                /*
+                Connexions::log("SettingsController::"
+                                . "_post_bookmarks_import(): "
+                                . "new folder '%s', level %d -- tagStack[ %s ]",
+                                $name,
+                                $state['level'],
+                                implode(', ', $state['tagStack']));
+                // */
 
                 continue;
             }
@@ -621,64 +586,37 @@ class SettingsController extends Connexions_Controller_Action
              */
             if (preg_match('/^<\/DL>/', $line))
             {
-                if (is_array($state['bookmark']))
-                {
-                    // Delayed bookmark - add it now.
-                    $this->_addBookmark($state);
-                }
+                // Add any delayed bookmark.
+                $this->_addBookmark($state);
 
                 if ($state['level'] > 0)
                 {
                     array_pop($state['tagStack']);
                     $state['level']--;
+
+                    /*
+                    Connexions::log("SettingsController::"
+                                    . "_post_bookmarks_import(): "
+                                    . "END folder, level %d -- tagStack[ %s ]",
+                                    $state['level'],
+                                    implode(', ', $state['tagStack']));
+                    // */
+
                 }
                 else
                 {
-                    array_push($state['warnings'],
-                               "Line {$state['lineNum']}: "
-                               . "Ignored mis-matched DL.");
+                    $warn = "Line {$state['lineNum']}: "
+                          . "Ignored mis-matched DL.";
+                    $this->_bookmarksImport_warning($state, $warn);
                 }
                 continue;
             }
 
             /**********************************************
-             * The Beginning of a folder.
-             *
-             *  <DT><H3 %attrs%>%title%</H3>
-             *
-             *  Valid H3 attributes:
-             *      ADD_DATE
-             *      LAST_MODIFIED
-             *
-             */
-            if (preg_match('/^<DT><H3([^>]+)>([^<]+)<\/H3>/i',
-                                                    $line, $folderInfo))
-            {
-                if (is_array($state['bookmark']))
-                {
-                    // Delayed bookmark - add it now.
-                    $this->_addBookmark($state);
-                }
-
-                /* folderInfo:
-                 *  1   == remainder of <h3> attributes
-                 *  2   == folder name
-                 */
-                $attrs = $folderInfo[1];
-                $name  = $folderInfo[2];
-
-                $state['numFolders']++;
-                $state['level']++;
-
-                array_push($state['tagStack'], $name);
-
-                continue;
-            }
-
-            /**********************************************
-             * If we're currently "in" a DD tag, add
-             * any line that hasn't matched anything else
-             * to the description.
+             * If we're currently "in" a DD tag
+             * (bookmark description), add any line that
+             * hasn't matched anything else to the
+             * description.
              */
             if ($state['inDD'] === true)
             {
@@ -691,7 +629,40 @@ class SettingsController extends Connexions_Controller_Action
 
         fclose($fh);
 
-        $this->view->results = $html;
+        /*
+        Connexions::log("SettingsController::_post_bookmarks_import(): "
+                        .   "complete.  Final state[ %s ]",
+                        print_r($state, true));
+        // */
+
+        /* Pull out the portions of state that are useful for presentation
+         * of final results
+         */
+        $this->view->results = array(
+            'visibility'    => $state['visibility'],
+            'conflict'      => $state['conflict'],
+            'test'          => $state['test'],
+
+            'numBookmarks'  => $state['numBookmarks'],
+            'numFolders'    => $state['numFolders'],
+            'numImported'   => $state['numImported'],
+            'numIgnored'    => $state['numIgnored'],
+            'numNew'        => $state['numNew'],
+            'numUpdated'    => $state['numUpdated'],
+
+            /*
+            'errors'        => $state['errors'],
+            'warnings'      => $state['warnings'],
+            'bookmarks'     => $state['bookmarks'],
+            // */
+        );
+
+        // /*
+        Connexions::log("SettingsController::_post_bookmarks_import(): "
+                        .   "complete.  Results[ %s ]",
+                        print_r($this->view->results, true));
+        // */
+
     }
 
     protected function _post_bookmarks_export()
@@ -703,10 +674,225 @@ class SettingsController extends Connexions_Controller_Action
      *
      */
 
+    private function _bookmarksImport_error(&$state, $msg)
+    {
+        $this->view->state = $state;
+        $this->view->error = $msg;
+        $this->render($state['importError']);
+
+        if ($this->_streaming === true)
+        {
+            /* Perform an immediate output and clear (flush) of any
+             * accumulated body content.
+             */
+            $this->_response->outputBody();
+            $this->_response->clearBody();
+        }
+
+        /*
+        echo $this->view->render($state['importError']);
+         */
+
+        //array_push($state['errors'], $msg);
+    }
+
+    private function _bookmarksImport_warning(&$state, $msg)
+    {
+        $this->view->state   = $state;
+        $this->view->warning = $msg;
+        $this->render($state['importWarning']);
+
+        if ($this->_streaming === true)
+        {
+            /* Perform an immediate output and clear (flush) of any
+             * accumulated body content.
+             */
+            $this->_response->outputBody();
+            $this->_response->clearBody();
+        }
+
+        /*
+        echo $this->view->render($state['importWarning']);
+         */
+
+        //array_push($state['warnings'], $msg);
+    }
+
+    /** @brief  Output a successfully processed bookmark.
+     *  @param  state       The overall processing state.
+     *  @param  importState The import state of THIS bookmark
+     *                      ('ignored' | 'new' | 'updated')
+     *  @param  bookmark    The processed bookmark.
+     */
+    private function _bookmarksImport_bookmark(&$state, $importState, $bookmark)
+    {
+        // /*
+        Connexions::log("_bookmarksImport_bookmark(): "
+                        . "import state[ %s ], "
+                        . "bookmark[ %s ]",
+                        $importState, $bookmark->debugDump());
+        // */
+
+        $this->view->state       = $state;
+        $this->view->importState = $importState;
+        $this->view->bookmark    = $bookmark;
+        $this->render($state['importBookmark']);
+
+        if ($this->_streaming === true)
+        {
+            /* Perform an immediate output and clear (flush) of any
+             * accumulated body content.
+             */
+            $this->_response->outputBody();
+            $this->_response->clearBody();
+        }
+
+        /*
+        echo $this->view->render($state['importBookmark']);
+         */
+    }
+
+    /** @brief  Given the current processing state, and information from
+     *          a new bookmark entry, begin gathering new bookmark information.
+     *  @param  state       The current processing state;
+     *  @param  url         The URL        of the new bookmark;
+     *  @param  name        The name/title of the new bookmark;
+     *  @param  attrs       Additional bookmark attributes provided by the
+     *                      bookmark entries anchor;
+     */
+    private function _parseBookmarkInfo(&$state, $url, $name, $attrs)
+    {
+        $state['bookmark'] = array(
+            'userId'        => $this->_viewer->getId(),
+
+            'name'          => $name,
+            'url'           => $url,
+            'description'   => '',
+            'tags'          => $state['tagStack'],
+            'rating'        => 0,
+            'isFavorite'    => false,
+            'isPrivate'     => ($state['visibility'] !== 'public'),
+        );
+
+        // Process any of the additional <a> attributes
+        if (! empty($attrs))
+        {
+            $pairs = preg_split('/\s+/', $attrs);
+            foreach ($pairs as $pair)
+            {
+                list($key, $val) = explode('=', $pair);
+                $val = preg_replace('/"/', '', $val);
+
+                /*
+                Connexions::log("Line %s: pair[ %s ] == key[ %s ], val[ %s ]",
+                                $state['lineNum'],
+                                $pair,
+                                $key, $val);
+                // */
+
+                /* Valid attribute keys:
+                 *      ADD_DATE    Unix Timestamp
+                 *      PRIVATE     0 | 1
+                 *      TAGS        Comma-separated string
+                 *      RATING      0-5
+                 *      FAVORITE    0 | 1
+                 */
+                switch (strtolower($key))
+                {
+                case 'add_date':
+                    $iVal = (int)$val;
+                    if ($iVal > 0)
+                    {
+                        $state['bookmark']['taggedOn'] =
+                                date('Y-m-d H:i:s', $iVal);
+                    }
+                    else
+                    {
+                        $warn = "Line {$state['lineNum']}: "
+                              . "Ignored invalid "
+                              . "ADD_DATE '{$val}'";
+                        $this->_bookmarksImport_warning($state, $warn);
+                    }
+                    break;
+
+                case 'private':
+                    $val = strtolower($val);
+                    if ( ($val === 'yes')  ||
+                         ($val === 'true') ||
+                         ($val === '1'))
+                    {
+                        $state['bookmark']['isPrivate'] = true;
+                    }
+                    else
+                    {
+                        $state['bookmark']['isPrivate'] = false;
+                    }
+                    break;
+
+                case 'tags':
+                    // Normalize the provided tags
+                    $val = implode(',',
+                                   preg_split('#\s*[/,+]\s*#', $val));
+
+                    array_push($state['bookmark']['tags'], $val);
+                    break;
+
+                case 'rating':
+                    $iVal = (int)$val;
+                    if ( ($iVal >= 0) && ($iVal <= 5) )
+                    {
+                        $state['bookmark']['rating'] = $iVal;
+                    }
+                    else
+                    {
+                        $warn = "Line {$state['lineNum']}: "
+                              . "Ignored invalid "
+                              . "RATING '{$val}'";
+                        $this->_bookmarksImport_warning($state, $warn);
+                    }
+                    break;
+
+                case 'favorite':
+                    $val = strtolower($val);
+                    if ( ($val === 'yes')  ||
+                         ($val === 'true') ||
+                         ($val === '1'))
+                    {
+                        $state['bookmark']['isFavorite'] = true;
+                    }
+                    else
+                    {
+                        $state['bookmark']['isFavorite'] = false;
+                    }
+                    break;
+
+                case 'icon':
+                    // Silently ignore
+                    break;
+
+                default:
+                    // Ignore all others with a warning
+                    $warn = "Line {$state['lineNum']}: "
+                          . "Ignored attribute "
+                          . "'{$key}' with value '{$val}'";
+                    $this->_bookmarksImport_warning($state, $warn);
+                    break;
+                }
+            }
+        }
+    }
+
     /** @brief  Given bookmark data, attempt to add it.
      */
     private function _addBookmark(& $state)
     {
+        $state['inDD'] = false;
+        if (! is_array($state['bookmark']))
+        {
+            // No bookmark to save.
+            return;
+        }
+
         /*
         Connexions::log("SettingsController::_addBookmark(): "
                         . "state[ %s ]",
@@ -722,45 +908,59 @@ class SettingsController extends Connexions_Controller_Action
         {
             // The bookmark already exists -- IGNORE this one.
             $state['numIgnored']++;
+
+            $this->_bookmarksImport_bookmark($state, 'ignored', $bookmark);
         }
         else
         {
-            $isNew = $bookmark->isBacked();
+            $isNew = ($bookmark->isBacked() !== true);
 
             // Attempt to save this new bookmark
             if ($state['test'] === 'yes')
             {
                 /* ONLY a test
-                 *  Do NOT actually save (but record how things WOULD have
+                 *  Do NOT actually save, but record how things WOULD have
                  *  gone.
                  */
                 $state['numImported']++;
 
                 if ($isNew) $state['numNew']++;
                 else        $state['numUpdated']++;
+
+                $this->_bookmarksImport_bookmark($state,
+                                                 ($isNew ? 'new' : 'updated'),
+                                                 $bookmark);
             }
             else
             {
                 // Attempt to save this bookmark (new or updated).
                 try
                 {
-                    $bookmark = $bookmark->save();
+                    $bookmarkSaved = $bookmark->save();
 
                     $state['numImported']++;
 
                     if ($isNew) $state['numNew']++;
                     else        $state['numUpdated']++;
+
+                    $this->_bookmarksImport_bookmark($state,
+                                                     ($isNew
+                                                        ? 'new' : 'updated'),
+                                                     $bookmarkSaved);
                 }
                 catch (Exception $e)
                 {
-                    array_push($state['errors'],
-                               "Line {$state['lineNum']}: "
-                               . "Error saving bookmark: "
-                               . $e->getMessage());
+                    $error = "Line {$state['lineNum']}: "
+                           . "Error saving bookmark: "
+                           . $e->getMessage();
+                    $this->_bookmarksImport_error($state, $error);
                 }
             }
         }
 
         $state['bookmark'] = null;
+
+        // Re-set the execution timeout.
+        set_time_limit($this->_maxTime);
     }
 }

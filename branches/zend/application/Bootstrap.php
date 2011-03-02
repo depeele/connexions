@@ -531,6 +531,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $front   = Zend_Controller_Front::getInstance();
         $request = Connexions::getRequest();
 
+
         /* DEBUG: Disable output buffering...
         $front->getDispatcher()
                     ->setParam('disableOutputBuffering', true);
@@ -552,6 +553,38 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
             Connexions::setRequest($request);
         }
+
+        // Should buffering be disabled?
+        $isStreaming = Connexions::to_bool(
+                            $request->getParam('streaming', false) );
+
+        // /*
+        Connexions::log("_controllerRequest: is %sStreaming",
+                        ($isStreaming === true ? '' : 'NOT '));
+        // */
+
+        if ($isStreaming === true)
+        {
+            // /*
+            Connexions::log("_controllerRequest: Streaming -- "
+                            .   "disable output buffering and layout");
+            // */
+
+            $front->setParam('disableOutputBuffering', true);
+            $front->getDispatcher()
+                    ->setParam('disableOutputBuffering', true);
+
+            $layout       = Zend_Layout::getMvcInstance();
+            if ($layout instanceof Zend_Layout)
+            {
+                // /*
+                Connexions::log("_controllerRequest: disable layout");
+                // */
+
+                $layout->disableLayout();
+            }
+        }
+
 
         // Make the request available as a Bootstrap Resource
         $this->setResource('request', $request);

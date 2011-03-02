@@ -32,13 +32,21 @@ class Service_Tag extends Connexions_Service
         $ids = $this->_csList2array($csList);
 
         /*
-        Connexions::log("Service_Tag::csList2set( %s ): [ %s ]",
+        Connexions::log("Service_Tag::csList2set( %s, create=%s ): "
+                        . "ids[ %s ]",
                         Connexions::varExport($csList),
+                        Connexions::varExport($create),
                         Connexions::varExport($ids));
         // */
 
         // Generate the set of all matches
         $set = parent::csList2set($ids, $order);
+
+        /*
+        Connexions::log("Service_Tag::csList2set(): set[ %s ]",
+                        $set->debugDump());
+        // */
+
         $set->setSource($csList);
 
         if ( ($set->count() > 0) && $create )
@@ -66,19 +74,40 @@ class Service_Tag extends Connexions_Service
                 throw new Exception('Cannot create when providing tagIds');
             }
 
-            /* See if any of the requested tags were not found...
-             *
-             * First, flip the array so it's keyed by tagName.
+            /* Now that we know we have an array of tags, use our filter
+             * to ensure that each tag is in a valid form (normalized).
              */
-            $ids = array_flip($ids);
-
-            // Remove all tags that we successfully retrieved
-            foreach ($set as $tag)
+            $filter  = $this->_getFilter(); // 'Model_Filter_Tag'
+            if ( is_object($filter) )
             {
-                unset($ids[ $tag->tag ]);
+                $normIds = array();
+                foreach($ids as $tag)
+                {
+                    $filter->setData( array('tag' => $tag) );
+                    if ($filter->isValid('tag'))
+                    {
+                        $normTag = $filter->getEscaped('tag');
+
+                        /*
+                        Connexions::log("Service_Tag::csList2set(): "
+                                        .   "tag[ %s ] == [ %s ]",
+                                        $tag, $normTag);
+                        // */
+
+                        // Only add tags that we need to create
+                        if (! $set->in_array($normTag))
+                        {
+                            $normIds[ $normTag ] = true;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                throw new Exception('Model_Tag SHOULD have a Filter...');
             }
 
-            if (count($ids) > 0)
+            if (count($normIds) > 0)
             {
                 /* There is one or more tag that does not yet exist.
                  *
@@ -88,14 +117,15 @@ class Service_Tag extends Connexions_Service
                 /*
                 Connexions::log("Service_Tag::csList2set(): "
                                 .   "create %d tags [ %s ]",
-                                count($ids),
-                                implode(', ', array_keys($ids)));
+                                count($normIds),
+                                implode(', ', array_keys($normIds)));
                 // */
 
-                $tMapper = $this->_getMapper('Model_Mapper_Tag');
-                foreach ($ids as $tagName => $idex)
+                $tMapper = $this->_getMapper(); // 'Model_Mapper_Tag'
+                foreach ($normIds as $tagName => $idex)
                 {
                     $tag = $tMapper->getModel( array('tag' => $tagName) );
+                    //if (($tag !== null) && (! $tag->isBacked()) )
                     if ($tag !== null)
                     {
                         $tag = $tag->save();

@@ -964,6 +964,11 @@ abstract class Connexions_Model_Set
         $this->_prepareSort();
         return uksort($this->_members, $cmp);
     }
+    public function in_array($needle)
+    {
+        $this->_prepareSort();
+        return in_array($needle, $this->_members);
+    }
 
     /*************************************************************************
      * Protected Helpers

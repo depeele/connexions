@@ -18,7 +18,8 @@ SETTINGS_SRCS	= jquery.Jcrop.js ui.fileUploader.js			\
 		  settings.avatarChooser.js				\
 		  settings.accountInfo.js				\
 		  settings.credential.js settings.credentials.js	\
-		  settings.apiKey.js
+		  settings.apiKey.js					\
+		  settings.bookmarksImport.js
 
 #all: connexions.min.css bookmarks.min.css users.min.css 	\
 #	urlItems.min.css inbox.min.css				\

@@ -38,14 +38,7 @@ $jQuery->addOnLoad('$.bookmark_import_onLoad();')
 (function($) {
 
     $.bookmark_import_onLoad = function() {
-        var $el     = $('#bookmark-import');
-        var $input  = $el.find('input');
-
-        $input.filter('[type=text],[type=file]').input();
-        $input.filter('[type=radio]').parent().buttonset();
-
-        //$el.find('button').button();
-        $input.filter('[type=submit]').button();
+        $('#bookmark-import').bookmarksImport();
     };
 
 }(jQuery));
@@ -55,7 +48,8 @@ $jQuery->javascriptCaptureEnd();
 
 ?>
 <div id='bookmark-import'><!-- bookmark-import { -->
- <form  action='?section=bookmarks&cmd=import'
+ <!-- form  action='?section=bookmarks&cmd=import' -->
+ <form  action='?format=partial&part=post-bookmarks-import&streaming=true'
         method='POST'
        enctype="multipart/form-data"
         target='bookmark-import-results'><!-- form { -->
@@ -111,9 +105,9 @@ $jQuery->javascriptCaptureEnd();
 
     <li class='field'><!-- field { -->
      <label for='tags'>Tags will be added to your imported bookmarks based upon the folder structure of your bookmarks.  For example, a bookmark in the "recipes" folder within the "household" folder will be tagged with both "household" and "recipes".  You can also choose additional tags here that will be applied to <b>all</b> the bookmarks importes.</label>
-     <input   id='tags' name='tags'
-            type='text' value='imported'/>
-     <div class='note'>This is a comma separated list of tags.  It is recommended that you use the default tag "imported" to make it easier to view all imported bookmarks in one list by visiting <?= Connexions::anchor('/mine/ajax', 'your imported bookmarks') ?><!-- <?= Connexions::anchor('/'. $this->viewer->name .'/ajax', 'your imported bookmarks') ?> -->.</div>
+     <textarea   id='tags' name='tags'
+               type='text'>imported</textarea>
+     <div class='note'>This is a comma separated list of tags.  It is recommended that you use the default tag "imported" to make it easier to view all imported bookmarks in one list by visiting <?= Connexions::anchor('/mine/imported', 'your imported bookmarks') ?><!-- <?= Connexions::anchor('/'. $this->viewer->name .'/imported', 'your imported bookmarks') ?> -->.</div>
     </li><!-- field } -->
 
     <li class='field'><!-- field { -->
@@ -163,6 +157,7 @@ $jQuery->javascriptCaptureEnd();
   </div><!-- section } -->
  </form><!-- form } -->
 
+ <!-- Target for form submission / bookmark file upload -->
  <iframe id='bookmark-import-results'
        name='bookmark-import-results'
         src='about:blank'

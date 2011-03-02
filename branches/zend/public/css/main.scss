@@ -172,6 +172,7 @@
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/*
 .ui-state-default a, .ui-state-default a:link {
   color: $linkColor;
 }
@@ -179,6 +180,7 @@
 .ui-state-default a:visited {
   color: $linkColorVisited;
 }
+*/
 
 .ui-tabs .ui-tabs-nav {
   font-size: 0.7em;
@@ -280,11 +282,15 @@
     background-color: $collapsableColorBackground;
     cursor:           pointer;
     font-size:        0.9em;
+    font-weight:      bold;
     padding:          0.2em;
     margin:           0.5em 0 0 0;
 
     border:           1px solid $borderColor;
 
+    a {
+      color:          $collapsableColor;
+    }
     .ui-icon {
       @include inlineBlock();
       float:  left;

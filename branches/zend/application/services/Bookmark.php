@@ -62,7 +62,7 @@ class Service_Bookmark extends Connexions_Service
         if (! isset($normId['itemId']))
         {
             // No existing item was found.  Can we create one now?
-            if ( empty($normId['url']) )
+            if ( empty($id['url']) )
             {
                 throw new Exception("Cannot create the missing item from "
                                     . "[ "
@@ -78,7 +78,7 @@ class Service_Bookmark extends Connexions_Service
 
             // Create a NEW item!
             $iService = $this->factory('Service_Item');
-            $item     = $iService->get( array('url' => $normId['url'] ));
+            $item     = $iService->get( array('url' => $id['url'] ));
             if (! $item->isBacked())
                 $item = $item->save();
 
