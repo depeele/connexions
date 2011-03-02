@@ -648,36 +648,12 @@ class SettingsController extends Connexions_Controller_Action
         /* Pull out the portions of state that are useful for presentation
          * of final results
          */
-        $this->view->results = array(
-            'visibility'    => $state['visibility'],
-            'conflict'      => $state['conflict'],
-            'test'          => $state['test'],
+        $this->view->state = $state;
 
-            'fileSize'      => $state['fileSize'],
-            'filePos'       => $state['filePos'],
-
-            'lineNum'       => $state['lineNum'],
-
-            'numBookmarks'  => $state['numBookmarks'],
-            'numFolders'    => $state['numFolders'],
-            'numImported'   => $state['numImported'],
-            'numIgnored'    => $state['numIgnored'],
-            'numNew'        => $state['numNew'],
-            'numUpdated'    => $state['numUpdated'],
-            'numErrors'     => $state['numErrors'],
-            'numWarnings'   => $state['numWarnings'],
-
-            /*
-            'errors'        => $state['errors'],
-            'warnings'      => $state['warnings'],
-            'bookmarks'     => $state['bookmarks'],
-            // */
-        );
-
-        // /*
+        /*
         Connexions::log("SettingsController::_post_bookmarks_import(): "
                         .   "complete.  Results[ %s ]",
-                        print_r($this->view->results, true));
+                        print_r($this->view->state, true));
         // */
 
     }
