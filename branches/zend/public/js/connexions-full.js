@@ -169,8 +169,11 @@
                                           height:   $el.outerHeight(),
                                           'z-index':zIndex});
 
-            var url = $spin.attr('src');
-            $spin.attr('src', url.replace('.gif', '-spinner.gif') );
+            if ($spin.length > 0)
+            {
+                var url = $spin.attr('src');
+                $spin.attr('src', url.replace('.gif', '-spinner.gif') );
+            }
 
             if ($.fn.bgiframe)
             {
@@ -187,8 +190,11 @@
 
             $overlay.remove();
 
-            var url = $spin.attr('src');
-            $spin.attr('src', url.replace('-spinner.gif', '.gif') );
+            if ($spin.length > 0)
+            {
+                var url = $spin.attr('src');
+                $spin.attr('src', url.replace('-spinner.gif', '.gif') );
+            }
         });
     };
 

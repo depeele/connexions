@@ -809,6 +809,11 @@ class Connexions
         }
         $summary = htmlentities($summary, ENT_QUOTES);
 
+        /*
+        Connexions::log("getSummary(): text[ %s ], max[ %d ] == [ %s ]",
+                        $text, $maxChars, $summary);
+        // */
+
         return $summary;
     }
 

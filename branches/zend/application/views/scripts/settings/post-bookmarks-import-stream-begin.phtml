@@ -79,11 +79,20 @@ echo $this->render('base-header.phtml');
    </tbody>
   </table>
  </div>
+ <?php
+ if ($this->state['test'] === 'yes')
+ {
+     ?>
+ <p class='note'><b>Note:</b> Once you're satisfied with the results of the test import, select "No, just do it!" above and then click "Import" again.</p>
+     <?php
+ }
+ ?>
  <script type='text/javascript'>
 (function($) {
     var $status = $('.import-status');
     var $label  = null;
-    var $items  = null;
+    var $ul     = null;
+    var $items  = null; // Cache of loaded items
     var $stats  = {
         progress:           $status.find('#progressbar').progressbar(),
         lineCount:          $status.find('#line-count'),
@@ -109,10 +118,12 @@ echo $this->render('base-header.phtml');
 
         if ($items === null)
         {
+            // Cache elements
             $label = $('#filter-label');
 
             // Remove all 'script' tags from the item list
-            $('ul.items').children('script').remove();
+            $ul    = $('ul.items');
+            $ul.children('script').remove();
 
             $items = $('ul.items').children();  //find('> li');
         }
@@ -144,19 +155,23 @@ echo $this->render('base-header.phtml');
         }
 
         // Separate the visibility filtering from the UI thread.
+        $ul.mask();
         timeout = setTimeout(function() {
             if ($show === null)
             {
                 // Show ALL
                 $label.css('visibility', 'hidden');
-                $items.show();
+                $items.show('fast', function() { $ul.unmask() });
             }
             else
             {
                 // Show JUST a specific type
                 $label.text( label )
                       .css('visibility', 'visible');
-                setTimeout(function() { $show.show(); }, 1);
+                setTimeout(function() { $show.show('fast',
+                                                   function() {
+                                                    $ul.unmask(); });
+                                                   }, 1);
                 setTimeout(function() { $items.not('.'+ type).hide(); }, 10);
             }
             timeout = null;

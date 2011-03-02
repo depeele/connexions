@@ -313,7 +313,7 @@ class SettingsController extends Connexions_Controller_Action
 
     protected function _post_bookmarks_import()
     {
-        // /*
+        /*
         Connexions::log("SettingsController::_post_bookmarks_import():");
         // */
 
@@ -344,7 +344,7 @@ class SettingsController extends Connexions_Controller_Action
         }
 
 
-        // /*
+        /*
         Connexions::log("SettingsController::_post_bookmarks_import(): "
                         .   "file[ %s ]",
                         Connexions::varExport($file));
@@ -723,7 +723,7 @@ class SettingsController extends Connexions_Controller_Action
      */
     private function _bookmarksImport_bookmark(&$state, $importState, $bookmark)
     {
-        // /*
+        /*
         Connexions::log("_bookmarksImport_bookmark(): "
                         . "import state[ %s ], "
                         . "bookmark[ %s ]",

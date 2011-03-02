@@ -273,17 +273,8 @@ if ($showParts['minimized'])
         ?><div class='description'><?php    // description {
         if ($showParts['item:data:description:summary'] === true)
         {
-            $summary = html_entity_decode($bookmark->description, $summaryMax);
-            if (strlen($summary) > $summaryMax)
-            {
-                $summary  = substr($summary, 0,
-                                   strrpos($summary, ' ', $summaryMax));
-
-                // Trim any white-space and/or punctuation from the end...
-                $summary  = rtrim($summary, " \t\n\r.!?:;,-");
-                $summary .= '...';
-            }
-            $summary = htmlentities($summary, ENT_QUOTES);
+            $summary = Connexions::getSummary($bookmark->description,
+                                              $summaryMax);
 
             if ( (! empty($summary)) && ($showParts['minimized'] === true) )
                 $summary = '&mdash; '. $summary;

@@ -18,6 +18,12 @@ abstract class Connexions_Model_Filter extends Zend_Filter_Input
     /** @brief  Create a new User Domain Model Filter. */
     public function __construct(array $data = null)
     {
+        /* Add a prefix path entry for special Connexions Filters
+         *  (e.g. decodeEntities).
+         */
+        $this->addFilterPrefixPath('Connexions_Filter_',
+                                   'Connexions/Filter/');
+
         $this->setOptions(array(
             self::ALLOW_EMPTY       => false,
             self::MISSING_MESSAGE   => "'%field%' is missing",
