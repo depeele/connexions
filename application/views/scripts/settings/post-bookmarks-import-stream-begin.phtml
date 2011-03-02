@@ -25,23 +25,51 @@ $visibility = $this->state['visibility'];
 $conflict   = ($this->state['conflict'] === 'replace'
                 ? 'replacing'
                 : 'keeping');
+
+
+/*******************************************************************
+ * Handled by layout/header.phtml for non-streaming view scripts
+ *
+ */
+$baseUrl = $this->baseUrl('/');
+
+echo $this->render('base-header.phtml');
 ?>
-<html>
-<head>
- <title>Bookmark Import</title>
- <link href='<?= Connexions::url('/css/themes/default/jquery-ui.css') ?>'
-       media='screen' rel='stylesheet' type='text/css' />
- <link href='<?= Connexions::url('/css/connexions.css') ?>'
-       media='screen' rel='stylesheet' type='text/css' />
- <link href='<?= Connexions::url('/css/settings.css') ?>'
-       media='screen' rel='stylesheet' type='text/css' />
- <link href='<?= Connexions::url('/css/bookmarks.css') ?>'
-       media='screen' rel='stylesheet' type='text/css' />
-</head>
-<body id='bookmark-import'>
+<div id='bookmark-import'>
  <h3><?= $test ?>Import of bookmarks using default <?= $tagLabel ?>
         <span class='tags'><?= $tagStr ?></span>,
     default visibility of
         <span class='privacy <?= $visibility ?>'><?= $visibility ?></span>,
     <?= $conflict ?> existing bookmarks.</h3>
+ <div class='import-status'>
+  <div id='progressbar'></div>
+  <table>
+   <thead>
+    <tr>
+     <th colspan='2' rowspan='2'>&nbsp;</th>
+     <th colspan='2'>imported</th>
+     <th rowspan='2'>ignored</th>
+     <th rowspan='2'>errors</th>
+     <th rowspan='2'>warnings</th>
+    </tr>
+    <tr><th>new</th><th>updated</th></tr>
+   </thead>
+   <tbody>
+    <tr>
+     <th>bookmarks:</th>
+     <td id='bookmarks-count'>0</td>
+     <td id='bookmarks-new'>0</td>
+     <td id='bookmarks-updated'>0</td>
+     <td id='bookmarks-ignored'>0</td>
+     <td id='bookmarks-error'>0</td>
+     <td id='bookmarks-warning'>0</td>
+    </tr>
+    <tr>
+     <th>folders:</th>
+     <td id='folder-count'>0</td>
+     <td colspan='5'>&nbsp;</td>
+    </tr>
+   </tbody>
+  </table>
+ </div>
  <ul class='items bookmarks'>
