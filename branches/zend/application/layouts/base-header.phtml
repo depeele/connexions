@@ -1,0 +1,124 @@
+<?php
+$config  = Zend_Registry::get('config');
+$request = Connexions::getRequest();
+$baseUrl = $this->baseUrl('/'); //Connexions::url('/');
+
+// Force latest IE rendering engine (even in intranet) & Chrome Frame
+//$this->headMeta()->appendHttpEquiv('X-UA-Compatible', 'IE=edge,chrome=1');
+
+/*
+Connexions::log("application/laytouts/base.phtml: api[ %s ]",
+                Connexions::varExport($config->api));
+// */
+
+//ZendX_JQuery_View_Helper_JQuery::enableNoConflictMode();
+
+$jQuery = $this->jQuery();
+
+$links  = $this->headLink();
+
+$links->prependStylesheet($baseUrl .'css/connexions.css')
+      ->prependStylesheet($baseUrl .'css/themes/default/jquery-ui.css')
+      ->appendStylesheet($baseUrl .'css/ie.min.css',  'screen,projection',
+                         'lt IE 8')
+      ->appendStylesheet($baseUrl .'css/ie8.min.css', 'screen,projection',
+                         'IE 8')
+      ->headLink(array('rel'  => 'apple-touch-icon',
+                       'href' => $baseUrl .'/images/apple-touch-icon.png'),
+                       'PREPEND')
+      ->headLink(array('rel'  => 'shortcut icon',
+                       'href' => $baseUrl .'/images/favicon.png'),
+                       'PREPEND');
+
+$jQuery->addJavascriptFile($this->baseurl('js/connexions-full.js'));
+
+if ( @isset($config->cdn) && $config->cdn->use )
+{
+    /* Use the google CDN.  By default, we will load directly from google.
+     * If we want to use the new Google AJAX API Loader, call:
+     */
+    if ( $config->cdn->use->loader )
+    {
+        $jQuery->setAjaxApiLoader(true);
+    }
+}
+else
+{
+    // Use our local jQuery / jQuery.ui
+    $jQuery->setLocalPath($baseUrl   .'js/jquery.min.js')
+           ->setUiLocalPath($baseUrl .'js/jquery-ui.js');
+}
+
+$jQuery->setVersion('1.4.4')
+       ->setUiVersion('1.8.10')
+       ->enable()
+       ->uiEnable();
+
+/* The following MUST appear before any other Javascript.  To force this,
+ * retrieve all existing javascript, clear, add this javascript and then re-add
+ * the retrieved Javascript.
+ */
+$js = $jQuery->getJavascript();
+
+$jQuery->clearJavascript()
+       ->javascriptCaptureStart();
+  ?>
+(function ($) {
+    // Initialize global Javascript registry entries.
+    $.registry("api",  <?= json_encode($config->api->toArray()) ?>);
+    $.registry("urls", <?= json_encode($config->urls->toArray()) ?>);
+
+    /** @brief  Given an argument list of image urls, load them all but don't
+     *          display.
+     *  @param  arguments   A list of image urls.
+     *
+     *  Images are store globally in '_imageCache' but are not rendered.
+     */
+    var _imageCache  = [];
+    function preloadImages()
+    {
+        var args_len    = arguments.length;
+        for (var idex = args_len; idex--;)
+        {
+            var img = document.createElement('img');
+            img.src = arguments[idex];
+            _imageCache.push(img);
+        }
+    }
+
+    // Immediately Preload images that we use everywhere.
+    preloadImages('<?= $baseUrl ?>images/logo.gif',
+                  '<?= $baseUrl ?>images/logo-spinner.gif',
+                  '<?= $baseUrl ?>css/sprites/connexions.gif');
+ }(jQuery));
+  <?php
+$jQuery->javascriptCaptureEnd();
+
+$jQuery->addJavascript(implode('', $js));
+
+
+/***************************************************************************
+ * Begin Page Generation
+ *
+ */
+
+?>
+<?= $this->doctype() ?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <?= $this->headMeta() ?>
+
+  <?= $this->headTitle() ?>
+
+  <!--[if IE]><![endif]-->
+
+  <?= $this->headLink() ?>
+
+  <?= $this->headStyle() ?>
+
+  <?= $this->headScript() ?>
+
+  <?= $this->jQuery() ?>
+
+</head>
+<body>

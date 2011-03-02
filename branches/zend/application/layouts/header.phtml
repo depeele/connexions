@@ -1,206 +1,92 @@
 <?php
-$config  = Zend_Registry::get('config');
-$request = Connexions::getRequest();
 $baseUrl = $this->baseUrl('/'); //Connexions::url('/');
-
-// Force latest IE rendering engine (even in intranet) & Chrome Frame
-//$this->headMeta()->appendHttpEquiv('X-UA-Compatible', 'IE=edge,chrome=1');
-
-/*
-Connexions::log("application/laytouts/header.phtml: api[ %s ]",
-                Connexions::varExport($config->api));
-// */
-
-//ZendX_JQuery_View_Helper_JQuery::enableNoConflictMode();
-
 $jQuery = $this->jQuery();
 
-$links  = $this->headLink();
-
-$links->prependStylesheet($baseUrl .'css/connexions.css')
-      ->prependStylesheet($baseUrl .'css/themes/default/jquery-ui.css')
-      ->headLink(array('rel'  => 'apple-touch-icon',
-                       'href' => $baseUrl .'/images/apple-touch-icon.png'),
-                       'PREPEND')
-      ->headLink(array('rel'  => 'shortcut icon',
-                       'href' => $baseUrl .'/images/favicon.png'),
-                       'PREPEND');
-
-$jQuery->addJavascriptFile($this->baseurl('js/connexions-full.js'));
-
-/* Initialize global Javascript registry entries:
- *      api     Specifies the base API URL and specific format parameters.
- */
-$jQuery->javascriptCaptureStart();
-?>
-(function ($) {
-    $.registry("api",  <?= json_encode($config->api->toArray()) ?>);
-    $.registry("urls", <?= json_encode($config->urls->toArray()) ?>);
- }(jQuery));
-
-<?php
-$jQuery->javascriptCaptureEnd();
-
-$links->appendStylesheet($baseUrl .'css/ie.min.css',  'screen,projection',
-                         'lt IE 8');
-$links->appendStylesheet($baseUrl .'css/ie8.min.css', 'screen,projection',
-                         'IE 8');
-
-
-if ( @isset($config->cdn) && $config->cdn->use )
-{
-    /* Use the google CDN.  By default, we will load directly from google.
-     * If we want to use the new Google AJAX API Loader, call:
-     */
-    if ( $config->cdn->use->loader )
-    {
-        $jQuery->setAjaxApiLoader(true);
-    }
-}
-else
-{
-    // Use our local jQuery / jQuery.ui
-    $jQuery->setLocalPath($baseUrl   .'js/jquery.min.js')
-           ->setUiLocalPath($baseUrl .'js/jquery-ui.js');
-}
-
-$jQuery->setVersion('1.4.2')
-       ->setUiVersion('1.8.0')
-       ->enable()
-       ->uiEnable()
-       ->addOnLoad('body_initHandlers();')
+$jQuery->addOnLoad('$.body_initHandlers();')
        ->javascriptCaptureStart();
   ?>
+(function ($) {
 
-/** @brief  Given an argument list of image urls, load them all but don't
- *          display.
- *  @param  arguments   A list of image urls.
- *
- *  Images are store globally in '_imageCache' but are not rendered.
- */
-var _imageCache  = [];
-function preloadImages()
-{
-    var args_len    = arguments.length;
-    for (var idex = args_len; idex--;)
-    {
-        var img = document.createElement('img');
-        img.src = arguments[idex];
-        _imageCache.push(img);
-    }
-}
-
-// Immediately Preload images that we use everywhere.
-preloadImages('<?= $baseUrl ?>images/logo.gif',
-              '<?= $baseUrl ?>images/logo-spinner.gif',
-              '<?= $baseUrl ?>css/sprites/connexions.gif');
-
-/************************************************
- * Iniitalize PNG-fix for the document.
- *
- * Note: Only effects IE5.5 and IE6.  All others
- *       will return immediately and shouldn't
- *       be impacted.
- */
-function doc_pngFix()
-{
-    if (! $.isFunction($.fn.pngFix))
-        return;
-
-    $(document).pngFix( {blankgif: '<?= $baseUrl ?>images/bkank.gif'} );
-}
-
-/************************************************
- * Iniitalize effects for elements in '.body'
- *
- */
-function body_initHandlers()
-{
-    doc_pngFix();
-
-    // Create a ui.notify widget
-    $.notify = function(vars, opts, template) {
-        $('#notifications').notify('create', template, vars, opts);
-    };
-    $('#notifications').notify();
-
-    if (true)
-    {
-    /* Handle hover events for any current and future items with the class
-     * .ui-state-default
+    /************************************************
+     * Iniitalize PNG-fix for the document.
+     *
+     * Note: Only effects IE5.5 and IE6.  All others
+     *       will return immediately and shouldn't
+     *       be impacted.
      */
-    $('.body .ui-state-default').live('mouseenter',
-                    function(e) {
-                        /*
-                        window.console.debug("in: orig[ "+
-                                                this.localName +":"+
-                                                this.className +" ], "+
-                                                e.relatedTarget.localName +":"+
-                                                e.relatedTarget.className);
-                        // */
-                        e.stopPropagation();
-                        
-                        var $el = $(this);
+    function doc_pngFix()
+    {
+        if (! $.isFunction($.fn.pngFix))
+            return;
 
-                        if (! $el.attr('disabled'))
-                        {
-                            // remove all others and hover here
-                            $('.ui-state-hover').removeClass('ui-state-hover');
-
-                            $el.addClass('ui-state-hover');
-                        }
-                    });
-
-    $('.body .ui-state-default').live('mouseleave',
-                    function(e) {
-                        /*
-                        window.console.debug("out: orig[ "+
-                                                this.localName +":"+
-                                                this.className +" ], "+
-                                                e.relatedTarget.localName +":"+
-                                                e.relatedTarget.className);
-                        // */
-
-                        e.stopPropagation();
-                        
-                        // remove hover
-                        $(this).removeClass('ui-state-hover');
-                    });
+        $(document).pngFix( {blankgif: '<?= $baseUrl ?>images/bkank.gif'} );
     }
 
-    $('#search').search();
-}
+    /************************************************
+     * Iniitalize effects for elements in '.body'
+     *
+     */
+    $.body_initHandlers = function() {
+        doc_pngFix();
+
+        // Create a ui.notify widget
+        $.notify = function(vars, opts, template) {
+            $('#notifications').notify('create', template, vars, opts);
+        };
+        $('#notifications').notify();
+
+        /* Handle hover events for any current and future items with the class
+         * .ui-state-default
+         */
+        $('.body .ui-state-default').live('mouseenter', function(e) {
+            /*
+            window.console.debug("in: orig[ "+
+                                 this.localName +":"+
+                                 this.className +" ], "+
+                                 e.relatedTarget.localName +":"+
+                                 e.relatedTarget.className);
+            // */
+            e.stopPropagation();
+                        
+            var $el = $(this);
+
+            if (! $el.attr('disabled'))
+            {
+                // remove all others and hover here
+                $('.ui-state-hover').removeClass('ui-state-hover');
+
+                $el.addClass('ui-state-hover');
+            }
+        });
+
+        $('.body .ui-state-default').live('mouseleave', function(e) {
+            /*
+            window.console.debug("out: orig[ "+
+                                 this.localName +":"+
+                                 this.className +" ], "+
+                                 e.relatedTarget.localName +":"+
+                                 e.relatedTarget.className);
+            // */
+
+            e.stopPropagation();
+                        
+            // remove hover
+            $(this).removeClass('ui-state-hover');
+        });
+
+        $('#search').search();
+    };
+ }(jQuery));
   <?php
 $jQuery->javascriptCaptureEnd();
 
-
-
 /***************************************************************************
- * Begin Page Generation
+ * Begin the page.
  *
  */
+echo $this->render('base-header.phtml');
 
 ?>
-<?= $this->doctype() ?>
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-  <?= $this->headMeta() ?>
-
-  <?= $this->headTitle() ?>
-
-  <!--[if IE]><![endif]-->
-
-  <?= $this->headLink() ?>
-
-  <?= $this->headStyle() ?>
-
-  <?= $this->headScript() ?>
-
-  <?= $this->jQuery() ?>
-
-</head>
-
-<body>
  <div class="page liquid"><!-- { page -->
   <div id="pageHeader" class="head" role="banner"><!-- { head -->
    <h1 id='siteName'>
