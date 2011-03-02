@@ -22,10 +22,12 @@
  *
  *    <input type='submit' name='submit' value='Import' />
  *   </form>
- *   <iframe id='bookmark-import-results'
- *         name='bookmark-import-results'
- *          src='about:blank'
- *        style='display:none'></iframe>
+ *   <div class='results-section section'>
+ *    <iframe id='bookmark-import-results'
+ *          name='bookmark-import-results'
+ *           src='about:blank'
+ *         style='display:none'></iframe>
+ *   </div>
  *  </div>
  *
  *  Requires:
@@ -63,7 +65,9 @@ $.widget("settings.bookmarksImport", {
         opts.$inputs     = $inputs.filter('[type=text],[type=file],textarea');
         opts.$buttonSets = $inputs.filter('[type=radio]').parent();
         opts.$submit     = $inputs.filter('[type=submit]');
-        opts.$iframe     = self.element.find('iframe:first');
+
+        opts.$results    = self.element.find('.results-section');
+        opts.$iframe     = opts.$results.find('iframe:first');
 
         // Create sub-widgets
         opts.$inputs.input({ hideLabel: false });
@@ -86,7 +90,10 @@ $.widget("settings.bookmarksImport", {
             opts.$form.mask();
 
             opts.$iframe.contents().find('body').empty();
-            opts.$iframe.show();
+            opts.$results.show('fast', function() {
+                // Scroll down so the results are visible
+                $.scrollTo( opts.$submit.parent(), {duration: 800} );
+            });
 
             // Allow the event to propagate
         });
@@ -94,8 +101,7 @@ $.widget("settings.bookmarksImport", {
         opts.$iframe.bind('load.settingsBookmarksImport', function(e) {
             opts.$form.unmask();
 
-            var content = opts.$iframe.contents();
-            var a       = 5;
+            //var content = opts.$iframe.contents();
         });
     },
 

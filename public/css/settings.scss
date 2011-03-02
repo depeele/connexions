@@ -340,6 +340,102 @@
     padding:      1em 1em 0 1em;
   }
 
+  .field {
+    label {
+      display:  block;
+    }
+    input,textarea {
+      margin-left:  1em;
+    }
+
+    .field {
+      /* Field within a field (radio / checkbox group) */
+      padding:  0 0 0 1em !important;
+
+      label {
+        @include inlineBlock();
+        padding:  0 0.25em;
+      }
+    }
+  }
+
+  ul.steps {
+    list-style: disc;
+
+    li {
+      list-style:   disc;
+      margin-left:  3em;
+    }
+
+    .field {
+      padding-left: 0;
+    }
+  }
+
+  #tags {
+    width:          25em;
+    height:         3em;
+    padding:        0.25em;
+    vertical-align: top;
+  }
+
+  .note {
+    font-size:  0.9em;
+    color:      $controlColor;
+
+    padding:    0.5em 3em 0;
+  }
+
+  .buttons {
+    padding:  0.5em 2em 1em;
+  }
+
+  .results-section iframe {
+    width:      95%;
+    height:     50em;
+    margin:     1em 2%;
+
+    border:     unquote("1px solid") $borderColor;
+
+    overflow-x: hidden;
+    overflow-y: scroll;
+  }
+}
+
+// For the iframe contents
+#bookmark-import-results {
+  overflow-x: hidden;
+
+  h3 {
+    .tags {
+      @include inlineBlock();
+      background-color: $tagColorBackground;
+      color:            $tagColor;
+    }
+    .private {
+      @include inlineBlock();
+      background-color: $privateColorBackground;
+      border:           unquote("1px solid") $privateColorBorder;
+    }
+  }
+  ul.bookmarks {
+    .item {
+    }
+
+    .new {
+    }
+
+    .ignored {
+      color:            $warningColor;
+      background-color: $warningColorBackground;
+    }
+
+    .error {
+      color:            $errorColor;
+      background-color: $errorColorBackground;
+    }
+  }
+
   .import-status {
     margin: 0 2em;
 
@@ -374,92 +470,6 @@
           background-color: $borderColor;
         }
       }
-    }
-  }
-
-  .field {
-    label {
-      display:  block;
-    }
-    input,textarea {
-      margin-left:  1em;
-    }
-
-    .field {
-      /* Field within a field (radio / checkbox group) */
-      padding:  0 0 0 1em !important;
-
-      label {
-        @include inlineBlock();
-        padding:  0 0.25em;
-      }
-    }
-  }
-
-  #tags {
-    width:          25em;
-    height:         3em;
-    padding:        0.25em;
-    vertical-align: top;
-  }
-
-
-  ul.steps {
-    list-style: disc;
-
-    li {
-      list-style:   disc;
-      margin-left:  3em;
-    }
-
-    .field {
-      padding-left: 0;
-    }
-  }
-
-  .note {
-    font-size:  0.9em;
-    color:      $controlColor;
-
-    padding:    0.5em 3em 0;
-  }
-
-  .buttons {
-    padding:  0.5em 2em 1em;
-  }
-
-  #bookmark-import-results {  // iframe
-    width:    100%;
-    height:   50em;
-  }
-
-  h3 {
-    .tags {
-      @include inlineBlock();
-      background-color: $tagColorBackground;
-      color:            $tagColor;
-    }
-    .private {
-      @include inlineBlock();
-      background-color: $privateColorBackground;
-      border:           unquote("1px solid") $privateColorBorder;
-    }
-  }
-  ul.bookmarks {
-    .item {
-    }
-
-    .new {
-    }
-
-    .ignored {
-      color:            $warningColor;
-      background-color: $warningColorBackground;
-    }
-
-    .error {
-      color:            $errorColor;
-      background-color: $errorColorBackground;
     }
   }
 }

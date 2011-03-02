@@ -39,7 +39,7 @@ $this->headTitle("Import");
 echo $this->render('base-header.phtml');
 
 ?>
-<div id='bookmark-import'>
+<div id='bookmark-import-results'>
  <h3><?= $test ?>Import of bookmarks using default <?= $tagLabel ?>
         <span class='tags'><?= $tagStr ?></span>,
     default visibility of
@@ -81,7 +81,7 @@ echo $this->render('base-header.phtml');
  </div>
  <script type='text/javascript'>
 (function($) {
-    var $status = $('#bookmark-import .import-status');
+    var $status = $('.import-status');
     var $stats  = {
         progress:           $status.find('#progressbar').progressbar(),
         lineCount:          $status.find('#line-count'),

@@ -14,7 +14,8 @@ SRCS =	connexions.js jquery.registry.js jquery.cookie.js 		\
 	connexions.bookmarkPost.js connexions.autocomplete.js		\
 	connexions.bookmark.js connexions.user.js
 
-SETTINGS_SRCS	= jquery.Jcrop.js ui.fileUploader.js			\
+SETTINGS_SRCS	= jquery.Jcrop.js jquery.scrollTo.js			\
+		  ui.fileUploader.js					\
 		  settings.avatarChooser.js				\
 		  settings.accountInfo.js				\
 		  settings.credential.js settings.credentials.js	\
