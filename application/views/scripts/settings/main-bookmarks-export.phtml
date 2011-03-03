@@ -29,4 +29,62 @@
  *                          }
  */
 
-printf ("<div>Export...</div>");
+$jQuery = $this->jQuery();
+$jQuery->addOnLoad('$.bookmark_export_onLoad();')
+       ->javascriptCaptureStart();
+?>
+(function($) {
+
+    $.bookmark_export_onLoad = function() {
+        $('#bookmark-export').find('form input[type=submit]').button({
+            priority:   'primary',
+            enabled:    true
+        });
+    };
+
+}(jQuery));
+<?php
+$jQuery->javascriptCaptureEnd();
+
+/* Set 'streaming=true' below so the post-bookmarks-export.pthml view script
+ * will be rendered directly with no layout.
+ */
+?>
+<div id='bookmark-export'><!-- bookmark-export { -->
+ <form  action='?format=partial&part=post-bookmarks-export&streaming=true'
+        method='POST'
+       enctype="multipart/form-data"><!-- form { -->
+  <div class='section'><!-- section { -->
+   <h3>Export / Download your Connexions Bookmarks</h3>
+   <p id='bookmark-export-browser-instructions'>
+     This tool generates an HTML version of your bookmarks that is
+     understandable by most browsers.  You can then save the generated page as
+     HTML and import it into your browser, or any other application that
+     accepts bookmarks in a standard format.
+   </p>
+   <div class='field'><!-- field { -->
+    <input type='checkbox'
+             id='includeTags'
+           name='includeTags' checked='true' /><label for='includeTags'>Include tags?</label>
+   </div><!-- field } -->
+
+   <div class='field'><!-- field { -->
+    <input type='checkbox'
+             id='includeMeta'
+           name='includeMeta' checked='true' /><label for='includeMeta'>Include notes, privacy, favorite, and rating information?</label>
+   </div><!-- field } -->
+  </div><!-- section } -->
+  <div class='buttons'><!-- buttons { -->
+   <!-- button name='submit'>Export</button -->
+   <input type='submit' name='submit' value='Export' />
+  </div><!-- buttons } -->
+ </form><!-- form } -->
+
+ <div class='results-section section' style='display:none'>
+  <h3>Export Results:</h3>
+  <!-- Target for form submission / bookmark file upload / export results -->
+  <iframe id='bookmark-export-results'
+        name='bookmark-export-results'
+         src='about:blank'></iframe>
+ </div>
+</div><!-- bookmark-export } -->

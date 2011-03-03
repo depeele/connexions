@@ -18,6 +18,28 @@
 
   margin-right:  1em;
 
+  .section {
+    padding-bottom: 1em;
+    border-bottom:  1px dashed #ccc;
+
+    p, .field {
+      padding:  0.5em 2em 1em;
+    }
+  }
+
+  ul.steps {
+    list-style: disc;
+
+    li {
+      list-style:   disc;
+      margin-left:  3em;
+    }
+
+    .field {
+      padding-left: 0;
+    }
+  }
+
   .ui-tabs-panel ul {
     padding:  0;
 
@@ -56,6 +78,13 @@
   }
   #tabs-left > div {
     height:     35em;
+  }
+
+  .note {
+    font-size:  0.9em;
+    color:      $controlColor;
+
+    padding:    0.5em 3em 0;
   }
 
   .warning {
@@ -324,23 +353,31 @@
   }
 }
 
-#bookmark-import {
-  overflow-x: hidden;
-
-  .section {
-    border-bottom:  1px dashed #ccc;
-
-    p, .field {
-      padding:  0.5em 2em 1em;
-    }
-  }
-
+#bookmark-import, #bookmark-export {
   h3 {
     font-size:    1.2em;
     font-weight:  bold;
-
     padding:      1em 1em 0 1em;
   }
+
+  .buttons {
+    padding:  0.5em 2em 1em;
+  }
+}
+
+#bookmark-export {
+  .field {
+    padding:  0 2em;
+
+    label {
+      display:  inline;
+      padding:  0 0.5em;
+    }
+  }
+}
+
+#bookmark-import {
+  overflow-x: hidden;
 
   .field {
     label {
@@ -361,35 +398,11 @@
     }
   }
 
-  ul.steps {
-    list-style: disc;
-
-    li {
-      list-style:   disc;
-      margin-left:  3em;
-    }
-
-    .field {
-      padding-left: 0;
-    }
-  }
-
   #tags {
     width:          25em;
     height:         3em;
     padding:        0.25em;
     vertical-align: top;
-  }
-
-  .note {
-    font-size:  0.9em;
-    color:      $controlColor;
-
-    padding:    0.5em 3em 0;
-  }
-
-  .buttons {
-    padding:  0.5em 2em 1em;
   }
 
   .results-section iframe {

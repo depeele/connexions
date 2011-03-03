@@ -14,7 +14,7 @@ class View_Helper_FeedUser extends Zend_View_Helper_Abstract
      */
     public function feedUser(Model_User $user)
     {
-        $updated    = $this->_date2time($user->lastVisit);
+        $updated    = Connexions::date2time($user->lastVisit);
         $authorLink = sprintf("<a href='%s'>%s</a>",
                               $this->_url(array('controller' => 'index',
                                                 'action'     => $user->name)),
@@ -95,13 +95,6 @@ class View_Helper_FeedUser extends Zend_View_Helper_Abstract
      * Protected helpers
      *
      */
-
-    protected function _date2time($str)
-    {
-        $date = new Zend_Date($str);
-
-        return $date->getTimestamp();
-    }
 
     protected function _url($config)
     {

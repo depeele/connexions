@@ -1,0 +1,82 @@
+<?php
+/** @file
+ *
+ *  This is used for the final rendering of an export.
+ *
+ *  The incoming view parameters should be:
+ *      bookmarks   The bookmarks to export.
+ *      includeTags Should tags be included?
+ *      includeMeta Should notes, privacy, favorite and rating information be
+ *                  included?
+ */
+
+?>
+<!DOCTYPE NETSCAPE-Bookmark-file-1>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+<!-- This is an automatically generated file.
+     It will be read and overwritten.
+     DO NOT EDIT! -->
+<TITLE>Bookmarks</TITLE>
+<H1>Bookmarks</H1>
+<DL><p>
+<?php
+
+/*
+$table = get_html_translation_table(HTML_ENTITIES, ENT_NOQUOTES, 'UTF-8');
+Connexions::log("HTML Translation Table: %s", print_r( $table, true ));
+// */
+
+function safeStr($str)
+{
+    // Decode any existing entities and then (re)encode all entities.
+    $int = html_entity_decode($str, ENT_NOQUOTES, 'UTF-8');
+    $res = htmlentities($int, ENT_NOQUOTES, 'UTF-8', false);
+
+    if (empty($res))
+    {
+        // Decode or Encode error
+        Connexions::log("safeStr( %s ) == [ %s ] == [ %s ]", $str, $int, $res);
+    }
+    return $res;
+}
+
+foreach ($this->bookmarks as $bookmark)
+{
+    $desc  = '';
+    $attrs = array(
+        'HREF="'.     $bookmark->item->url .'"',
+        'ADD_DATE="'. Connexions::date2time($bookmark->taggedOn) .'"',
+    );
+
+    if ($this->includeMeta)
+    {
+        /* See SettingsController::_parseBookmarkInfo() for the recognized
+         * meta-data fields.
+         */
+        array_push($attrs, 'PRIVATE="'. ($bookmark->isPrivate  ? '1':'0').'"');
+        array_push($attrs, 'FAVORITE="'.($bookmark->isFavorite ? '1':'0').'"');
+        array_push($attrs, 'RATING="'.  $bookmark->rating                .'"');
+
+        if (! empty($bookmark->description))
+        {
+            $desc = '    <DD>'
+                  .         safeStr($bookmark->description)
+                  . "\n";
+        }
+    }
+
+    if ($this->includeTags)
+    {
+        $tags = preg_replace('/,\s+/', ',', $bookmark->tags->__toString());
+
+        array_push($attrs, 'TAGS="'.    $tags .'"');
+    }
+
+    echo '  <DT><A '. implode(' ', $attrs) .'>',
+                  safeStr($bookmark->name),
+                "</A>\n",
+                $desc;
+}
+
+?>
+</DL><p><!-- Generated <?= date('Y-m-d H:i:sO') ?> -->

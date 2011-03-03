@@ -16,7 +16,7 @@ class View_Helper_FeedBookmark extends Zend_View_Helper_Abstract
      */
     public function feedBookmark(Model_Bookmark $bookmark)
     {
-        $updated    = $this->_date2time(empty($bookmark->updatedOn)
+        $updated    = Connexions::date2time(empty($bookmark->updatedOn)
                                             ? $bookmark->taggedOn
                                             : $bookmark->updatedOn);
         $authorLink = sprintf("<a href='%s'>%s</a>",
@@ -97,13 +97,6 @@ class View_Helper_FeedBookmark extends Zend_View_Helper_Abstract
      * Protected helpers
      *
      */
-
-    protected function _date2time($str)
-    {
-        $date = new Zend_Date($str);
-
-        return $date->getTimestamp();
-    }
 
     protected function _url($config)
     {
