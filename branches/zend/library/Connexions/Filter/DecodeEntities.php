@@ -14,7 +14,7 @@ class Connexions_Filter_DecodeEntities implements Zend_Filter_Interface
         Connexions::log("DeocdeEntities::filter( %s )", $value);
         // */
 
-        $res = html_entity_decode($value, ENT_QUOTES);
+        $res = html_entity_decode($value, ENT_QUOTES, 'UTF-8');
 
         /*
         Connexions::log("DeocdeEntities::filter( %s ) == [ %s ]",

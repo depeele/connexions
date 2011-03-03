@@ -266,6 +266,12 @@ class SettingsController extends Connexions_Controller_Action
     /***********************************************************************
      * Request POST handlers
      *
+     * Triggered via
+     *  Connexions_Controller_Action::_handleFormat()
+     *      Connexions_Controller_Action::_renderPost()
+     *          Connexions_Controller_Action::_preparePost()
+     *
+     *  iff 'format=partial&part=post-*' AND the request method is 'POST'
      */
     protected function _post_account_avatar()
     {
@@ -669,6 +675,14 @@ class SettingsController extends Connexions_Controller_Action
 
     protected function _post_bookmarks_export()
     {
+        $request =& $this->_request;
+
+        // Retrieve all user-related bookmarks params: order, count, offset
+        $this->view->bookmarks   = $this->_viewer->getBookmarks();
+        $this->view->includeTags = Connexions::to_bool(
+                                    $request->getParam('includeTags', false));
+        $this->view->includeMeta = Connexions::to_bool(
+                                    $request->getParam('includeMeta', false));
     }
 
     /***********************************************************************

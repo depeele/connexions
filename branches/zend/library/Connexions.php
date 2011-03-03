@@ -848,6 +848,30 @@ class Connexions
         return $url;
     }
 
+    /** @brief  Given a date/time string, convert it to a Unix timestamp.
+     *  @param  str     The date/time string.
+     *
+     *  This is used for RSS feed generation as well as bookmark exports.
+     *
+     *  @return The Unix timestamp.
+     */
+    public static function date2time($str)
+    {
+        $res    = 0;
+        try
+        {
+            $date = new Zend_Date($str);
+            $res = $date->getTimestamp();
+        }
+        catch (Zend_Date_Exception $e)
+        {
+            Connexions::log("Connexions::date2time(): str[ %s ], Exception: %s",
+                            $str, $e->getMessage());
+        }
+
+        return $res;
+    }
+
     /** @brief  Search for 'needle' in 'haystack' including any sub-arrays
      *          within 'haystack'.
      *  @param  needle      The item to locate (mixed).
