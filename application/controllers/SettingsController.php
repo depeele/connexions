@@ -368,6 +368,12 @@ class SettingsController extends Connexions_Controller_Action
             'filePos'       => 0,           // Current offset in the file.
 
             'lineNum'       => 0,           // Current line in the import file
+            'firstLine'     => 0,           /* The first line of the current
+                                             * bookmark.
+                                             */
+            'lastLine'      => 0,           /* The last line of the current
+                                             * bookmark.
+                                             */
             'level'         => 0,           // Current folder level
 
             'inDD'          => false,       /* Are we currently in a 'DD' /
@@ -499,6 +505,7 @@ class SettingsController extends Connexions_Controller_Action
                 $this->_addBookmark($state);
 
                 // Prepare this new bookmark
+                $state['firstLine'] = $state['lastLine'] = $state['lineNum'];
                 $state['numBookmarks']++;
 
                 /* markInfo:
@@ -533,6 +540,7 @@ class SettingsController extends Connexions_Controller_Action
                 {
                     $state['inDD'] = true;
                     $state['bookmark']['description'] .= $markInfo[1];
+                    $state['lastLine'] = $state['lineNum'];
                 }
 
                 continue;
@@ -631,6 +639,7 @@ class SettingsController extends Connexions_Controller_Action
             if ($state['inDD'] === true)
             {
                 $state['bookmark']['description'] .= $line;
+                $state['lastLine'] = $state['lineNum'];
                 continue;
             }
 
