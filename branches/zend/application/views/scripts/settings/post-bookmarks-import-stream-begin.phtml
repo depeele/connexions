@@ -50,20 +50,24 @@ echo $this->render('base-header.phtml');
    <thead>
     <tr>
      <th>lines</th><td id='line-count'>0</td>
-     <th colspan='2'><a href='#imported'>imported</a></th>
-     <th rowspan='2'><a href='#ignored'>ignored</a></th>
-     <th rowspan='2'><a href='#error'>errors</a></th>
-     <th rowspan='2'><a href='#warning'>warnings</a></th>
+     <th colspan='2'><a href='#imported'
+                       title='Imported Bookmarks'>imported</a></th>
+     <th rowspan='2'><a href='#ignored'
+                       title='Ignored Bookmarks'>ignored</a></th>
+     <th rowspan='2'><a href='#error'
+                       title='Import Errors'>errors</a></th>
+     <th rowspan='2'><a href='#warning'
+                       title='Import Warnings'>warnings</a></th>
     </tr>
     <tr>
      <th>folders</th><td id='folder-count'>0</td>
-     <th><a href='#new'>new</a></th>
-     <th><a href='#updated'>updated</a></th>
+     <th><a href='#new' title='New Bookmarks'>new</a></th>
+     <th><a href='#updated' title='Updated Bookmarks'>updated</a></th>
     </tr>
    </thead>
    <tbody>
     <tr>
-     <th><a href='#all'>bookmarks</a></th>
+     <th><a href='#all' title='All Items'>bookmarks</a></th>
      <td id='bookmarks-count'>0</td>
      <td id='bookmarks-new'>0</td>
      <td id='bookmarks-updated'>0</td>
@@ -87,13 +91,15 @@ echo $this->render('base-header.phtml');
      <?php
  }
  ?>
+ <h3 id='filter-label' style='visibility:hidden;'>Imported Bookmarks</h3>
  <script type='text/javascript'>
 (function($) {
-    var $status = $('.import-status');
-    var $label  = null;
-    var $ul     = null;
-    var $items  = null; // Cache of loaded items
-    var $stats  = {
+    var $status     = $('.import-status');
+    var $label      = $('#filter-label');
+    var $container  = $('#bookmark-import-results');
+    var $items      = null; // Cache of loaded items
+    var timeout     = null;
+    var $stats      = {
         progress:           $status.find('#progressbar').progressbar(),
         lineCount:          $status.find('#line-count'),
         folderCount:        $status.find('#folder-count'),
@@ -105,8 +111,8 @@ echo $this->render('base-header.phtml');
         bookmarksWarning:   $status.find('#bookmarks-warning')
     };
 
-    var timeout = null;
-    $status.delegate('a', 'click', function(e) {
+    //$status.delegate('a', 'click', function(e)
+    $status.find('a').click( function(e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -116,69 +122,42 @@ echo $this->render('base-header.phtml');
             timeout = null;
         }
 
-        if ($items === null)
-        {
-            // Cache elements
-            $label = $('#filter-label');
-
-            // Remove all 'script' tags from the item list
-            $ul    = $('ul.items');
-            $ul.children('script').remove();
-
-            $items = $('ul.items').children();  //find('> li');
-        }
-
         var $a      = $(this);
         var type    = $a.attr('href').replace('#', '');
 
         // Hide all element EXCEPT those with a CSS class of 'type'
-        var label   = 'Bookmarks';
-        switch (type)
-        {
-        case 'all':         label = null;                   break;
-        case 'new':         label = 'New Bookmarks';        break;
-        case 'updated':     label = 'Updated Bookmarks';    break;
-        case 'imported':    label = 'Imported Bookmarks';   break;
-        case 'ignored':     label = 'Ignored Bookmarks';    break;
-        case 'error':       label = 'Import Errors';        break;
-        case 'warning':     label = 'Import Warnings';      break;
-        default:
-            // Unknown 'type'
-            return;
-        }
-
+        var label   = $a.attr('title');
         var $show   = null;
-        if (label !== null)
+        if (type !== 'all')
         {
-            $show   = $items.filter('.'+ type);
+            $show  = $items.filter('.'+ type);
             label += ' ('+ $show.length +' items)';
         }
 
         // Separate the visibility filtering from the UI thread.
-        $ul.mask();
+        $container.mask();
         timeout = setTimeout(function() {
+            timeout = null;
             if ($show === null)
             {
                 // Show ALL
                 $label.css('visibility', 'hidden');
-                $items.show('fast', function() { $ul.unmask() });
+                $items.show();
             }
             else
             {
                 // Show JUST a specific type
                 $label.text( label )
                       .css('visibility', 'visible');
-                setTimeout(function() { $show.show('fast',
-                                                   function() {
-                                                    $ul.unmask(); });
-                                                   }, 1);
-                setTimeout(function() { $items.not('.'+ type).hide(); }, 10);
+                $show.show();
+                $items.filter(':not(.'+ type +')').hide();
             }
-            timeout = null;
-        }, 10);
+
+            $container.unmask();
+        }, 1);
     });
 
-    $.bookmarksImport_update = function( state ) {
+    $.bookmarksImport_update = function( state, isFinal ) {
         /* If this is a valid bookmark, state.html will be the server-renderd
          * version of the bookmark.
          */
@@ -193,8 +172,20 @@ echo $this->render('base-header.phtml');
         $stats.bookmarksIgnored.text(state.numIgnored);
         $stats.bookmarksError.text(state.numErrors);
         $stats.bookmarksWarning.text(state.numWarnings);
+
+        if (isFinal === true)
+        {
+            $.log('bookmarksImport_update: isFinal -- '
+                    + 'remove scripts from ul.items');
+
+            // Remove all scripts from the final list
+            var $ul = $container.children('ul.items');
+            $ul.children('script').remove();
+
+            // Cache the list of items
+            $items = $ul.children('li');
+        }
     };
 }(jQuery));
  </script>
- <h3 id='filter-label' style='visibility:hidden;'>Imported Bookmarks</h3>
  <ul class='items bookmarks'>
