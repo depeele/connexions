@@ -13,10 +13,13 @@ $borderColor:         #ccc;
 $errorColor:                  #cd0a0a;  // jquery-ui.css fcError
 $warningColor:                #363636;  // jquery-ui.css fcHighlight
 $successColor:                #667e32;
-$confirmColor:                $errorColor;
+$confirmColor:                #d1e3a9;
 
 $errorColorBackground:        #fef1ec;  // jquery-ui.css bgColorError
-$warningColorBackground:      #fbec88;  // jquery-ui.css bgColorHighlight
+$warningColorBackground:      #ffd;     // #fbec88
+                                        // jquery-ui.css bgColorHighlight
+$successColorBackground:      #fbec88;  // jquery-ui.css bgColorHighlight
+$updateColorBackground:       #eee;
 
 $navColorBackground:          $darkest;
 $navColorWelcomeBackground:   $linkColorSubdued; //#3d7cc2; //#142940;

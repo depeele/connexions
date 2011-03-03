@@ -26,9 +26,11 @@ $conflict   = ($this->state['conflict'] === 'replace'
                 ? 'replacing'
                 : 'keeping');
 
-$links = $this->headLink();
-$links->appendStylesheet($this->baseUrl('/css/settings.css'))
-      ->appendStylesheet($this->baseUrl('/css/bookmarks.css'));
+$this->headLink()
+        ->appendStylesheet($this->baseUrl('/css/settings.css'));
+        //->appendStylesheet($this->baseUrl('/css/bookmarks.css'));
+$this->headStyle()
+        ->appendStyle("body { min-width: 500px; }");
 
 $this->headTitle("Import");
 
@@ -45,6 +47,14 @@ echo $this->render('base-header.phtml');
     default visibility of
         <span class='privacy <?= $visibility ?>'><?= $visibility ?></span>,
     <?= $conflict ?> existing bookmarks.</h3>
+ <?php
+ if ($this->state['test'] === 'yes')
+ {
+     ?>
+ <p class='note'><b>Note:</b> Once you're satisfied with the results of the test import, select "No, just do it!" above and then click "Import" again.</p>
+     <?php
+ }
+ ?>
  <div class='import-status'>
   <table>
    <thead>
@@ -83,15 +93,7 @@ echo $this->render('base-header.phtml');
    </tbody>
   </table>
  </div>
- <?php
- if ($this->state['test'] === 'yes')
- {
-     ?>
- <p class='note'><b>Note:</b> Once you're satisfied with the results of the test import, select "No, just do it!" above and then click "Import" again.</p>
-     <?php
- }
- ?>
- <h3 id='filter-label' style='visibility:hidden;'>Imported Bookmarks</h3>
+ <h3 id='filter-label'>All Items</h3>
  <script type='text/javascript'>
 (function($) {
     var $status     = $('.import-status');
@@ -138,19 +140,18 @@ echo $this->render('base-header.phtml');
         $container.mask();
         timeout = setTimeout(function() {
             timeout = null;
+
+            $label.text( label );
             if ($show === null)
             {
                 // Show ALL
-                $label.css('visibility', 'hidden');
-                $items.show();
+                $items.filter(':hidden').show();
             }
             else
             {
                 // Show JUST a specific type
-                $label.text( label )
-                      .css('visibility', 'visible');
-                $show.show();
-                $items.filter(':not(.'+ type +')').hide();
+                $show.filter(':hidden').show();
+                $items.filter(':not(.'+ type +'):visible').hide();
             }
 
             $container.unmask();

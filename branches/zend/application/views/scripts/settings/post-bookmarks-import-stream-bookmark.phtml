@@ -26,7 +26,7 @@ if ($bookmark->isFavorite)  array_push($css, 'favorite');
 if ($bookmark->isPrivate)   array_push($css, 'private');
 
 ?>
-  <li class='item <?= implode(' ', $css) ?>'>
+  <li class='item <?= implode(' ', $css) ?>'><?php // item { ?>
    <div class='bookmark'><?php // bookmark { ?>
     <div class='status'><?php // status {
 
@@ -89,6 +89,7 @@ if ($bookmark->isPrivate)   array_push($css, 'private');
      </div>
     </div><?php // status } ?>
     <div class='stats'><?php // stats {
+        /*
         $countValue = $bookmark->item->userCount;
         $countTitle = 'user'. ($countValue !== 1 ? 's' : '');
         $href       = $this->url(array(
@@ -99,9 +100,11 @@ if ($bookmark->isPrivate)   array_push($css, 'private');
         ?><a class='count ui-corner-bottom'
              title='<?= $countTitle ?>'
               href='<?= $href ?>'><?= $countValue ?></a><?php
+        */
 
         ?><div class='rating'><?php   // rating {
 
+        /*
         $ratingAvg = (isset($bookmark->item->ratingAvg)
                         ? $bookmark->item->ratingAvg
                         : ($bookmark->item->ratingCount > 0
@@ -122,6 +125,10 @@ if ($bookmark->isPrivate)   array_push($css, 'private');
         {
             $ratingTitle = 'No ratings';
         }
+        // */
+
+        printf ("<div class='stars'>%s</div>",
+                $this->htmlStarRating($bookmark->rating, 'owner') );
 
         ?></div><?php // rating } ?>
     </div><?php // stats }
@@ -132,24 +139,6 @@ if ($bookmark->isPrivate)   array_push($css, 'private');
      */
     ?>
     <div class='data'><?php  // data {
-
-    /**************************
-     * Html Controls
-     *  watch the white-space!
-     *
-     */
-    ?><div class='control'><a 
-        class='item-edit'
-         href='<?= $this->url(array('action' => 'post'))
-                   . '?url='. urlencode($bookmark->item->url) ?>'
-       target='_blank'>EDIT</a><!-- | <a   
-
-        class='item-delete' 
-         href='<?= $this->url(array('action' => 'itemDelete',
-                                    'item'   =>
-                                          $bookmark->user->userId .'.'
-                                          . $bookmark->itemId)) ?>'
-       target='_blank'>DELETE</a --></div><?
 
     /*****************************
      * Item Name
@@ -186,7 +175,7 @@ if ($bookmark->isPrivate)   array_push($css, 'private');
      * Item Tags
      *
      */
-    ?><ul class='tags'><?php
+     ?><ul class='tags'><?php
 
     foreach ($bookmark->tags as $tag)
     {
@@ -203,57 +192,39 @@ if ($bookmark->isPrivate)   array_push($css, 'private');
                 href='<?= $tagUrl ?>'><?= $tag->tag ?></a></li><?php
     }
 
-    ?></ul><?php
-
-    // .userId moves things left, so we need at least the container...
-    ?><div class='userId'></div><?
+     ?></ul><?php
 
     /*****************************
      * Item Dates
      *
      */
-    ?><div class='dates icon-highlight'><?php   // dates {
-
-    $date = $bookmark->taggedOn;
-    if ($this->sortBy === 'taggedOn')
-    {
-        /* We are sorting (and thus grouping) by tag date so don't
-         * repeat the date in the display.  Just include the time.
-         */
-        $info = explode(' ', $date);
-        $date = $info[1];
-    }
-
-    $dTitle = "Date tagged";
-    if ( ($showParts['item:data:dates:updated'] === true) &&
-         ($bookmark->taggedOn === $bookmark->updatedOn) )
-    {
-        $dTitle .= '/updated';
-    }
-
-    ?><div class='tagged'
-           title='<?= $dTitle ?>'><?= $date ?></div><?php
-
-    $date = $bookmark->updatedOn;
-    if ($this->sortBy === 'updatedOn')
-    {
-        /* We are sorting (and thus grouping) by tag date so don't
-         * repeat the date in the display.  Just include the time.
-         */
-        $info = explode(' ', $date);
-        $date = $info[1];
-    }
-
-    ?><div class='updated' 
-           title='Date updated'><?= $date ?></div><?php
-
-    ?></div><?php   // dates }
-    ?></div><?php       // meta }
+     ?><div class='dates'><?php   // dates {
+      ?><div class='tagged'
+             title='Date tagged'><?= $bookmark->taggedOn ?></div><?php
+      ?></div><?php   // dates }
+     ?></div><?php   // meta }
 
    ?>
     </div><?php // data } ?>
+    <div class='import-stats'><?php // import-stats { ?>
+     <div class='import-lines'>
+      <?php
+        if ($this->state['firstLine'] == $this->state['lastLine'])
+        {
+            printf ("Line %d: ", $this->state['firstLine']);
+        }
+        else
+        {
+            printf ("Lines %d - %d: ",
+                    $this->state['firstLine'],
+                    $this->state['lastLine']);
+        }
+      ?>
+     </div>
+     <div class='state'><?= $this->importState ?></div>
+    </div><?php // import-stats } ?>
    </div><?php // bookmark } ?>
-  </li>
+  </li><?php // item } ?>
   <script type='text/javascript'>
 (function($) {
     // Update the stats

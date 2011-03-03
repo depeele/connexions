@@ -325,6 +325,8 @@
 }
 
 #bookmark-import {
+  overflow-x: hidden;
+
   .section {
     border-bottom:  1px dashed #ccc;
 
@@ -398,13 +400,14 @@
     border:     unquote("1px solid") $borderColor;
 
     overflow-x: hidden;
-    overflow-y: scroll;
+    overflow-y: hidden;
   }
 }
 
 // For the iframe contents
 #bookmark-import-results {
   overflow-x: hidden;
+  overflow-y: hidden;
 
   h3 {
     .tags {
@@ -419,28 +422,189 @@
     }
   }
 
+  .note {
+    padding:    0.5em;
+    float:      right;
+  }
+
   #filter-label {
     font-size:  1.2em;
-    padding:    2em 0.5em 0;
+    padding:    1em 0.5em 0;
   }
 
   ul.bookmarks {
-    border: none;
+    clear:      right;
+    border:     unquote("1px solid") $borderColor;
+    height:     35em;
+    margin:     0 1em 1em;
+    overflow-y: scroll;
+    overflow-x: hidden;
 
     .item {
+      z-index:    1;
+      border-top: unquote("1px solid") $borderColor;
+
+      .status {
+        position: absolute;
+        top:      0;
+        left:     0;
+        width:    $controlBoxWidth;
+        height:   100%;
+        z-index:  2;
+        .favorite, .private {
+          @include inlineBlock();
+        }
+      }
+
+      .stats {
+        @include    clearFix();
+        position:   relative;
+        float:      right;
+        width:      $countBoxWidth;
+        padding:    0 0 0 4px;
+        text-align: right;
+        z-index:    3;
+        .count {
+          display: block;
+          background-color:   $controlColor;
+          color:              $pageColorBackground;
+          padding:            0.25em;
+          font-weight:        bold;
+          text-align:         center;
+          text-decoration:    none;
+          &:hover {
+            background-color: $navColorHover;
+          }
+        }
+        .rating {
+          display:    block;
+          position:   relative;
+          .stars {
+            display:  block;
+            height:   18px;
+          }
+        }
+      }
+
+      .data {
+        position:     relative;
+        margin-left:  $controlBoxWidth;
+        padding:      0 0.5em;
+
+        // Item Name / title
+        .itemName {
+          padding:  0;
+          a {
+            display:      inline;
+            font-weight:  normal;
+            font-size:    1.2em;
+          }
+        }
+        // Item Url
+        .url {
+          padding:  0 0 0 1em;
+          clear:    right;
+          a {
+            display:      inline;
+            font-size:    0.75em;
+            font-weight:  bold;
+            //color:        $linkColorSubdued;
+          }
+        }
+        // Item Description / Description Summary
+        .description {
+          padding:  0 0 0 1em;
+          margin:   0 175px 0 0;
+          color:    $controlColor;
+          .full, .summary {
+            display: block;
+          }
+        }
+        // Item meta-information (tags and dates)
+        .meta {
+          @include clearFix();
+          clear:        both;
+          margin-left:  14em;
+          padding-top:  0.25em;
+
+          // List of tags for this item
+          .tags {
+            display:        block;
+            vertical-align: top;
+            float:          right;
+            text-align:     right;
+            padding:        0;
+    
+            // Ensure we receive hover events by being ABOVE stats
+            z-index:        5;
+    
+            .tag {
+              font-size:  0.9em;
+            }
+          }
+
+          // Dates (tagged, updated)
+          .dates {
+            @include inlineBlock();
+            vertical-align: top;
+            color:          $controlColor;
+            width:          7.5em;
+            text-align:     right;
+            .tagged,.updated {
+              font-size:      0.8em;
+              padding-right:  0.1em;
+            }
+          }
+        }
+      }
+
+      .import-stats {
+        clear:        all;
+        margin-left:  $controlBoxWidth;
+        padding:      0 0.5em 0.5em 16em;
+        text-align:   left;
+
+        color:        $controlColor;
+
+        .state, .import-lines {
+          @include inlineBlock();
+          font-size:    0.9em;
+        }
+      }
+    }
+
+    .private {
+      .status {
+        background-color: $privateColorBackground;
+        border-left:      unquote("1px dotted") $privateColorBorder;
+      }
     }
 
     .new {
+      .import-stats {
+        color:  $successColor;
+      }
+    }
+
+    .updated {
+      background-color: $updateColorBackground;
+      .import-stats {
+        color:  $successColor;
+      }
     }
 
     .ignored {
-      color:            $warningColor;
       background-color: $warningColorBackground;
+      color:            $warningColor;
     }
 
     .error {
-      color:            $errorColor;
       background-color: $errorColorBackground;
+      color:            $errorColor;
+    }
+    .warning {
+      background-color: $warningColorBackground;
+      color:            $warningColor;
     }
   }
 
