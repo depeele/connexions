@@ -222,6 +222,9 @@ class SettingsController extends Connexions_Controller_Action
         {
         case 'rename':
         case 'delete':
+            $reqTags = $this->_request->getParam('tags', null);
+            $this->view->tags = $this->service('Tag')->csList2set($reqTags);
+
             /*
             // Retrieve all user-related tags
             $order = array('tag '.       Connexions_Service::SORT_DIR_ASC,
@@ -232,10 +235,16 @@ class SettingsController extends Connexions_Controller_Action
              *  (mirrors TagsController::_prepareMain)
              */
             $extra = array(
-                'panePartial'   => 'main-'. implode('-', $this->_partials),
+                'users'         => $this->_viewer,
+                'cookieUrl'     => $this->_rootUrl,
+
                 'showRelation'  => false,
+                'panePartial'   => 'main-'. implode('-', $this->_partials),
+
                 'itemType'      => View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM,
-                'itemBaseUrl'   => $this->view->baseUrl('/bookmarks/'),
+                'itemBaseUrl'   => $this->view->baseUrl(
+                                        '/'. $this->_viewer->name .'/' ),
+
                 'weightName'    => 'userItemCount',
                 'weightTitle'   => 'Bookmarks with this tag',
                 'titleTitle'    => 'Tag',
@@ -267,9 +276,15 @@ class SettingsController extends Connexions_Controller_Action
                             $offset, $count, $fetchOrder);
             // */
 
-            $config['items'] = $this->_viewer->getTags($fetchOrder,
-                                                       $count,
-                                                       $offset);
+            //$tags    = $this->service('Tag')->csList2set($reqTags);
+
+            // All tags for the currently authenticated user
+            $userTags = $this->_viewer->getTags($fetchOrder,
+                                                $count,
+                                                $offset);
+
+            // :TODO: Filter the userTags by 'reqTags'
+            $config['items'] = $userTags;
 
             $paginator = new Zend_Paginator($config['items']
                                                 ->getPaginatorAdapter());

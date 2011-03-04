@@ -642,10 +642,10 @@ a:visited { color: #005a9c; }
 
 .ui-tabs .ui-tabs-panel { padding: 1em; }
 
-.ui-widget-content { border-color: #cccccc; }
-.ui-widget-content a { color: #0066cc; }
-.ui-widget-content a:visited { color: #005a9c; }
-
+/*
+.ui-widget-content { border-color: $borderColor; a { color: $linkColor; } a:visited { color: $linkColorVisited; }
+}
+*/
 .ui-autocomplete .ui-menu-item a { position: relative; display: block; }
 .ui-autocomplete .ui-menu-item a .count { position: absolute; top: 0.4em; right: 0.4em; font-size: 0.8em; font-weight: normal; }
 

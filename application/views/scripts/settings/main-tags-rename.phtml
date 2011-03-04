@@ -11,6 +11,8 @@
  *                      with differentiating parameters;
  *      viewer          The Model_User instance representing the current
  *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any tag restrictions / filters;
  *
  *      section         The settings section;
  *      cmd             The specific settings command;
@@ -65,12 +67,13 @@
 // Prepare the HTML Item Cloud helper and present the current set of tags.
 $htmlCloud = $this->htmlItemCloud( $this->main );
 
-/*
+// /*
 // Prepare the Html Item Scope helper
-$scopePath = array('Tags' => $this->baseUrl('/tags'));
+$scopePath = array('Tags' => $this->baseUrl('/tags/'
+                                            . $this->viewer->name));
 
 $scopeRpc = Connexions::getJsonRpcInfo();
-$scopeRpc['method'] = 'bookmarks.autocompleteTag';
+$scopeRpc['method'] = 'bookmark.autocompleteTag';
 $scopeRpc['params'] = array('tags'   => (count($this->tags) < 1
                                             ? null
                                             : $this->tags->__toString()),
@@ -88,7 +91,7 @@ $htmlItemScope = $this->htmlItemScope( array(
                  ));
 
 // Render the scope
-$htmlItemScope->render();
+echo $htmlItemScope->render();
 // */
 
 // Render the tag cloud.
