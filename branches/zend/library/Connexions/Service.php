@@ -499,6 +499,64 @@ abstract class Connexions_Service
         return $mapper;
     }
 
+    /** @brief  Given an ordering, include additional ordering criteria that
+     *          will help make result sets consistent.
+     *  @param  order   The incoming order criteria.
+     *
+     *  @return A new order criteria array.
+     */
+    protected function _extraOrder($order)
+    {
+        if (! isset($this->_defaultOrdering))
+            return $order;
+
+        /* Include any of the default ordering values that haven't been
+         * overridden.
+         */
+        $newOrder = (is_array($order)
+                        ? $order
+                        : (is_string($order)
+                            ? array($order)
+                            : array()));
+
+        /* First, split apart the current orderings into 'field' and 
+         * 'direction'
+         */
+        $orderMap = array();
+        foreach ($newOrder as $ord)
+        {
+            list($by, $dir) = preg_split('/\s+/', $ord);
+            $orderMap[$by] = $dir;
+        }
+
+        /* Now, walk through '_defaultOrdering' and add any that haven't been 
+         * overridden.
+         */
+        foreach ($this->_defaultOrdering as $by => $dir)
+        {
+            if (! isset($orderMap[ $by ]))
+            {
+                array_push($newOrder, $by .' '. $dir);
+            }
+
+        }
+
+        return $newOrder;
+    }
+
+    /** @brief  Retrieve the currently identified user.
+     *
+     *  @return A Model_User instance or null if none.
+     */
+    protected function _curUser()
+    {
+        $user = Connexions::getUser();
+        if ($user === false)
+            $user = null;
+
+        return $user;
+    }
+
     /*********************************************************************
      * Static methods
      *
@@ -591,63 +649,5 @@ abstract class Connexions_Service
         }
 
         return $service;
-    }
-
-    /** @brief  Given an ordering, include additional ordering criteria that
-     *          will help make result sets consistent.
-     *  @param  order   The incoming order criteria.
-     *
-     *  @return A new order criteria array.
-     */
-    protected function _extraOrder($order)
-    {
-        if (! isset($this->_defaultOrdering))
-            return $order;
-
-        /* Include any of the default ordering values that haven't been
-         * overridden.
-         */
-        $newOrder = (is_array($order)
-                        ? $order
-                        : (is_string($order)
-                            ? array($order)
-                            : array()));
-
-        /* First, split apart the current orderings into 'field' and 
-         * 'direction'
-         */
-        $orderMap = array();
-        foreach ($newOrder as $ord)
-        {
-            list($by, $dir) = preg_split('/\s+/', $ord);
-            $orderMap[$by] = $dir;
-        }
-
-        /* Now, walk through '_defaultOrdering' and add any that haven't been 
-         * overridden.
-         */
-        foreach ($this->_defaultOrdering as $by => $dir)
-        {
-            if (! isset($orderMap[ $by ]))
-            {
-                array_push($newOrder, $by .' '. $dir);
-            }
-
-        }
-
-        return $newOrder;
-    }
-
-    /** @brief  Retrieve the currently identified user.
-     *
-     *  @return A Model_User instance or null if none.
-     */
-    protected function _curUser()
-    {
-        $user = Connexions::getUser();
-        if ($user === false)
-            $user = null;
-
-        return $user;
     }
 }

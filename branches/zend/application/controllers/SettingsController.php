@@ -38,7 +38,8 @@ class SettingsController extends Connexions_Controller_Action
                         'async'     => true,
                         'script'    => 'main-bookmarks-import'),
                   array('title'     => 'Export',
-                        'async'     => true,
+                        //'async'     => true,
+                        'expanded'  => true,
                         'script'    => 'main-bookmarks-export'),
                   /*
                   array('title'     => 'Groups',
@@ -221,8 +222,65 @@ class SettingsController extends Connexions_Controller_Action
         {
         case 'rename':
         case 'delete':
+            /*
             // Retrieve all user-related tags
-            $this->view->tags = $this->_viewer->getTags();
+            $order = array('tag '.       Connexions_Service::SORT_DIR_ASC,
+                           'itemCount '. Connexions_Service::SORT_DIR_DESC);
+            $this->view->tags = $this->_viewer->getTags($order);
+             */
+            /* Prepare to present a tag list or cloud
+             *  (mirrors TagsController::_prepareMain)
+             */
+            $extra = array(
+                'panePartial'   => 'main-'. implode('-', $this->_partials),
+                'showRelation'  => false,
+                'itemType'      => View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM,
+                'itemBaseUrl'   => $this->view->baseUrl('/bookmarks/'),
+                'weightName'    => 'userItemCount',
+                'weightTitle'   => 'Bookmarks with this tag',
+                'titleTitle'    => 'Tag',
+            );
+            $config = array_merge($this->view->main, $extra);
+
+            // Defaults
+            if ( ($config['perPage'] = (int)$config['perPage']) < 1)
+                $config['perPage'] = 250;
+            if ( ($config['page'] = (int)$config['page']) < 1)
+                $config['page'] = 1;
+            if ( empty($config['sortBy']) || ($config['sortBy'] === 'title') )
+                $config['sortBy'] = 'tag';
+            if ( empty($config['sortOrder']) )
+                $config['sortOrder'] = Connexions_Service::SORT_DIR_ASC;
+            if ( empty($config['displayStyle']) )
+                $config['displayStyle'] = View_Helper_HtmlItemCloud::STYLE_LIST;
+            if ( empty($config['highlightCount']) )
+                $config['highlightCount'] = 0;
+
+            // Retrieve the set of tags to be presented
+            $count      = $config['perPage'];
+            $offset     = ($config['page'] - 1) * $count;
+            $fetchOrder = $config['sortBy'] .' '. $config['sortOrder'];
+
+            // /*
+            Connexions::log("SettingsController::_prepareTags(): "
+                            . "offset[ %d ], count[ %d ], order[ %s ]",
+                            $offset, $count, $fetchOrder);
+            // */
+
+            $config['items'] = $this->_viewer->getTags($fetchOrder,
+                                                       $count,
+                                                       $offset);
+
+            $paginator = new Zend_Paginator($config['items']
+                                                ->getPaginatorAdapter());
+            $paginator->setItemCountPerPage(  $config['perPage'] );
+            $paginator->setCurrentPageNumber( $config['page'] );
+
+            $config['paginator']        = $paginator;
+            $config['currentSortBy']    = $config['sortBy'];
+            $config['currentSortOrder'] = $config['sortOrder'];
+
+            $this->view->main = $config;
             break;
 
         case 'groups':

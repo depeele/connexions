@@ -26,7 +26,7 @@ SETTINGS_SRCS	= jquery.Jcrop.js jquery.scrollTo.js			\
 #	urlItems.min.css inbox.min.css				\
 # 	validationForm.min.css post.min.css auth.min.css 	\
 #	inbox.min.css
-all:	connexions-full.js connexions-full.min.js	\
+all:	jquery-ui.min.js connexions-full.js connexions-full.min.js	\
 	settings-full.js   settings-full.min.js
 
 connexions-full.js: $(SRCS)
@@ -34,6 +34,8 @@ connexions-full.js: $(SRCS)
 
 settings-full.js: $(SETTINGS_SRCS)
 	cat $(SETTINGS_SRCS) > $@
+
+jquery-ui.min.js: jquery-ui.js
 
 clean:
 	rm -f connexions-full.js connexions-full.min.js \
