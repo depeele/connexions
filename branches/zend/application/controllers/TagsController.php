@@ -106,6 +106,10 @@ class TagsController extends Connexions_Controller_Action
     {
         parent::_prepareMain($htmlNamespace);
 
+        $itemBaseUrl = (count($this->_users) === 1
+                        ? $this->view->baseUrl('/'. $this->_users .'/')
+                        : $this->view->baseUrl('/bookmarks/'));
+
         $extra = array(
             'users'         => $this->_users,
             'cookieUrl'     => $this->_rootUrl,
@@ -113,7 +117,7 @@ class TagsController extends Connexions_Controller_Action
             'showRelation'  => false,
 
             'itemType'      => View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM,
-            'itemBaseUrl'   => $this->view->baseUrl('/bookmarks/'),
+            'itemBaseUrl'   => $itemBaseUrl,
 
             'weightName'    => 'userItemCount',
             'weightTitle'   => 'Bookmarks with this tag',
@@ -320,8 +324,16 @@ class TagsController extends Connexions_Controller_Action
             $config['items']            =& $tags;
             $config['itemsType']        =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
+
+            /*
             $config['itemBaseUrl']      =  $this->_helper->url(null,
                                                                'bookmarks');
+            // */
+            $config['itemBaseUrl']      =
+                (count($this->_users) === 1
+                    ? $this->view->baseUrl('/'. $this->_users .'/')
+                    : $this->view->baseUrl('/bookmarks/'));
+
 
             /* :NOTE: In this context, userItemCount can also represent
              *        the total user count.
