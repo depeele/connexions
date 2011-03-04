@@ -69,7 +69,10 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
         'displayStyle'      => self::STYLE_CLOUD,
 
-        // HTML to prepend/append to the inner container.
+        /* An hash containing HTML to prepend/append to the inner container:
+         *  array('prepend' => %html to prepend%,
+         *        'append'  => %html to append%)
+         */
         'html'              => null,
     );
 

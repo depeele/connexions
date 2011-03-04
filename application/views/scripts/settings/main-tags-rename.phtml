@@ -11,8 +11,6 @@
  *                      with differentiating parameters;
  *      viewer          The Model_User instance representing the current
  *                      viewer;
- *      tags            The Model_Set_Tag instance representing all tags
- *                      for the current user;
  *
  *      section         The settings section;
  *      cmd             The specific settings command;
@@ -29,9 +27,71 @@
  *                           },
  *                           ...
  *                          }
+ *
+ *      main            An array of settings for the main body:
+ *          namespace       The cookie/parameters/settings namespace for
+ *                          the the main body;
+ *          viewer          The Model_User instance representing the current
+ *                          viewer (typically a reference to $view->viewer);
+ *
+ *          displayStyle    Indicates the current presentation style --
+ *                          if this is an array, the style is 'custom';
+ *          perPage         The number of results on a single page;
+ *          page            The desired page of results;
+ *          sortBy          The desired sort field;
+ *          sortOrder       The desired sort order;
+ *          highlightCount  The number of tags to highlight;
+ *
+ *          showRelation    Show the relation indicator?;
+ *          itemType        The type of item being presented
+ *                          (View_Helper_HtmlItemCloud::ITEM_TYPE_*);
+ *
+ *          items           The Model_Set_Tag instance representing the
+ *                          tag(s) to be presented;
+ *          paginator       The item paginator;
+ *
+ *          itemBaseUrl     The baseUrl for item links;
+ *
+ *          weightName      The name to use for item weights;
+ *          weightTitle     The title of item weights;
+ *          titleTitle      The title of item names/titles;
+ *
+ *          currentSortBy   The current sortBy for 'items';
+ *          currentSortOrder
+ *                          The current sortOrder for 'items';
+ *
  */
 
-?>
-<pre>
- <?= $this->tags->debugDump() ?>
-</pre>
+// Prepare the HTML Item Cloud helper and present the current set of tags.
+$htmlCloud = $this->htmlItemCloud( $this->main );
+
+/*
+// Prepare the Html Item Scope helper
+$scopePath = array('Tags' => $this->baseUrl('/tags'));
+
+$scopeRpc = Connexions::getJsonRpcInfo();
+$scopeRpc['method'] = 'bookmarks.autocompleteTag';
+$scopeRpc['params'] = array('tags'   => (count($this->tags) < 1
+                                            ? null
+                                            : $this->tags->__toString()),
+                            'users'  => $this->viewer->name,
+                      );
+
+$htmlItemScope = $this->htmlItemScope( array(
+                    'namespace'         =>  $this->main->namespace,
+                    'items'             =>  $htmlCloud->paginator,
+                    'scope'             =>  $this->tags,
+                    'inputLabel'        =>  'Tags',
+                    'inputName'         =>  'Tags',
+                    'path'              =>  $scopePath,
+                    'jsonRpc'           =>  $scopeRpc,
+                 ));
+
+// Render the scope
+$htmlItemScope->render();
+// */
+
+// Render the tag cloud.
+echo $htmlCloud->render();
+
+return;
