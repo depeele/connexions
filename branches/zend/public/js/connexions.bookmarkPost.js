@@ -524,7 +524,7 @@ $.widget("connexions.bookmarkPost", {
                                                 _validation_change);
 
         opts.$save.bind('click.bookmarkPost',   _save_click);
-        opts.$cancel.bind('click.bookmarkPost', _reset_click);//_cancel_click);
+        opts.$cancel.bind('click.bookmarkPost', _cancel_click);
         opts.$reset.bind('click.bookmarkPost',  _reset_click);
 
         opts.$url.bind('validation_change.bookmarkPost',
