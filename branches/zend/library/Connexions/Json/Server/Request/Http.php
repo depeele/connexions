@@ -369,6 +369,13 @@ class Connexions_Json_Server_Request_Http extends Zend_Json_Server_Request
         {
             $query = substr($requestUri, $pos+1);
 
+            /*
+            Connexions::log("Connexions_Json_Server_Request_Http::"
+                            . "setRequestUri(): "
+                            . "Query [ %s ]",
+                            $query);
+            // */
+
             // Allow the query to be a JSON-encoded string.
             if (($query[0] === '{') && ($query[strlen($query)-1] === '}'))
             {
@@ -394,6 +401,11 @@ class Connexions_Json_Server_Request_Http extends Zend_Json_Server_Request
                 catch (Exception $e)
                 {
                     // NOT valid JSON - just set it as a parameter
+                    Connexions::log("Connexions_Json_Server_Request_Http::"
+                                    . "setRequestUri(): "
+                                    . "Query is NOT valid JSON [ %s ]: %s",
+                                    $json, $e->getMessage());
+
                 }
             }
 

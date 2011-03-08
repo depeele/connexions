@@ -346,6 +346,11 @@ abstract class Connexions_Service
     {
         if (! is_string($str))
         {
+            if ($str === null)
+            {
+                return null;
+            }
+
             if (is_object($str))
             {
                 if (method_exists($str, 'getIds'))

@@ -229,10 +229,25 @@ class Service_Bookmark extends Connexions_Service
                           $since    = null)
     {
         $ids     = $this->_csList2array($id);
-        $normIds = $this->_mapper->normalizeIds($ids);
+        $normIds = ($id === null ? null : $this->_mapper->normalizeIds($ids));
         $order   = $this->_csOrder2array($order);
 
-        $normIds = $this->_includeSince($normIds, $since);
+        if ($since !== null)
+        {
+            $normIds = $this->_includeSince(($normIds === null
+                                                ? array()
+                                                : $normIds), $since);
+        }
+
+        /*
+        Connexions::log("Service_Bookmark::fetch(): "
+                        . "id[ %s ], "
+                        . "ids[ %s ], "
+                        . "normIds[ %s ]",
+                        Connexions::varExport($id),
+                        Connexions::varExport($ids),
+                        Connexions::varExport($normIds));
+        // */
 
         return $this->_mapper->fetch( $normIds,
                                       $order,
