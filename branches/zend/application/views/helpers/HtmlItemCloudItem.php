@@ -6,6 +6,35 @@
 class View_Helper_HtmlItemCloudItem
                     extends Zend_Tag_Cloud_Decorator_HtmlTag
 {
+    protected   $_view          = null;
+    protected   $_showControls  = false;
+
+    public function setView(Zend_View   $view)
+    {
+        /*
+        Connexions::log("View_Helper_HtmlItemCloudItem::setView()");
+        // */
+
+        $this->_view = $view;
+        return $this;
+    }
+
+    public function getView()
+    {
+        return $this->_view;
+    }
+
+    public function setShowControls($showControls)
+    {
+        $this->_showControls = $showControls;
+        return $this;
+    }
+
+    public function getShowControls()
+    {
+        return $this->_showControls;
+    }
+
     /** @brief  Render an HTML version of a single Item.
      *
      *  Note: This helper makes use of several 'view' variables:
@@ -16,16 +45,14 @@ class View_Helper_HtmlItemCloudItem
      */
     public function render(Zend_Tag_ItemList $items)
     {
-        $fontUnit  = null;
         $classList = $weightValues = $this->getClassList();
         if ($weightValues === null)
         {
-            $fontUnit     = $this->getFontSizeUnit();
-            $weightValues = range($this->getMinFontSize(),
-                                  $this->getMaxFontSize());
+            $weightValues   = range($this->getMinFontSize(),
+                                    $this->getMaxFontSize());
         }
 
-        // /*
+        /*
         Connexions::log("View_Helper_HtmlItemCloudItem::render %d items, "
                         . "weight values[ %s ]...",
                         count($items),
@@ -34,107 +61,14 @@ class View_Helper_HtmlItemCloudItem
 
         $items->spreadWeightValues($weightValues);
 
-        // Process the HTML tags once
-        $tags = array();
-        $enc  = $this->getEncoding();
-        foreach ($this->getHtmlTags() as $key => $data)
-        {
-            if (is_array($data))
-            {
-                $htmlTag    = $key;
-                $attributes = '';
+        $res  = array(
+            $this->getView()->partial('itemCloud_items.phtml',
+                                      array(
+                                        'helper' => $this,
+                                        'items'  => &$items,
+                                      )),
+        );
 
-                foreach ($data as $param => $value)
-                {
-                    $attributes .= ' '
-                               . $param . '="'
-                               .    htmlspecialchars($value, ENT_COMPAT, $enc)
-                               . '"';
-                }
-            }
-            else
-            {
-                $htmlTag    = $data;
-                $attributes = '';
-            }
-
-            array_push($tags, array('tag'   => $htmlTag,
-                                    'attrs' => $attributes));
-        }
-
-
-        // Generate HTML results
-        $result = array();
-        foreach ($items as $item)
-        {
-            $url        = $item->getParam('url');
-            $title      = $item->getTitle();
-            $weight     = number_format($item->getWeight());
-            $isSelected = ($item->getParam('selected') === true);
-            $cssClass   = ($isSelected
-                                ? 'selected ui-corner-all ui-state-highlight '
-                                : '');
-            $weightVal  = $item->getParam('weightValue');
-            $attribute  = '';
-
-            // /*
-            Connexions::log('View_Helper_HtmlItemCloudItem: '
-                            . 'title[ %s ], url[ %s ], '
-                            . 'weight[ %s ], weight value[ %s ], '
-                            . '%sselected',
-                            $title, $url,
-                            $weight, $weightVal,
-                            ($isSelected ? '' : 'NOT '));
-            // */
-
-            if ($classList === null)
-            {
-                $attribute = sprintf('style="font-size: %d%s;"',
-                                        $weightVal, $fontUnit);
-            }
-            else
-            {
-                $cssClass .= htmlspecialchars($weightVal, ENT_COMPAT, $enc);
-            }
-
-            if (! empty($cssClass))
-                $cssClass = ' class="'. $cssClass .'"';
-
-            if (empty($url))
-            {
-                $itemHtml = sprintf('<span title="%s" %s%s>%s</span>',
-                                    $weight,
-                                    $cssClass,
-                                    $attribute,
-                                    $title);
-            }
-            else
-            {
-                $itemHtml = sprintf('<a href="%s" title="%s" %s%s>%s</a>',
-                                    htmlspecialchars($url, ENT_COMPAT, $enc),
-                                    $weight,
-                                    $cssClass,
-                                    $attribute,
-                                    $title);
-            }
-
-            /*
-            Connexions::log("View_Helper_HtmlItemCloudItem::render() "
-                            . "title[ %s ], weight[ %s ], weight title[ %s ]",
-                            $title,
-                            $item->getWeight(),
-                            $weight);
-            // */
-
-            foreach ($tags as $html)
-            {
-                $itemHtml = sprintf('<%1$s%3$s>%2$s</%1$s>',
-                                   $html['tag'], $itemHtml, $html['attrs']);
-            }
-
-            $result[] = $itemHtml;
-        }
-
-        return $result;
+        return $res;
     }
 }

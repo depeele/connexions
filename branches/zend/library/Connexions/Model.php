@@ -710,6 +710,28 @@ abstract class Connexions_Model
         $this->getMapper()->delete( $this );
     }
 
+    /** @brief  Simple comparision to see if the current model instance is the
+     *          "same as" the provided model instance.
+     *  @param  as      The model instance to compare against.
+     *
+     *  This simple comparison is completely based upon the equivalence of the
+     *  primary ids of the two instances.
+     *
+     *  @return true | false
+     */
+    public function isSame(Connexions_Model $as)
+    {
+        $id1 = $this->getId();
+        if (is_array($id1)) $str1 = implode(',', $id1);
+        else                $str1 = (String)$id1;
+
+        $id2 = $as->getId();
+        if (is_array($id2)) $str2 = implode(',', $id2);
+        else                $str2 = (String)$id2;
+
+        return ($id1 == $id2);
+    }
+
     /*********************************************************************
      * Abstract methods
      *

@@ -376,6 +376,12 @@ class IndexController extends Connexions_Controller_Action
                                  View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
             $config['currentSortOrder'] =
                                  Connexions_Service::SORT_DIR_DESC;
+
+            /* Include the information required to determine whether or not to
+             * show tag-edit controls.
+             */
+            $config['viewer']           = $this->_viewer;
+            $config['users']            = $this->_owner;
             break;
 
         /*************************************************************

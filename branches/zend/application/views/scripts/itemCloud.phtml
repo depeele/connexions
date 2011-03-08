@@ -4,11 +4,19 @@
  *  HTML rendering of an Item Cloud (may actually present a list).
  *
  *  Incoming parameters:
- *      helper          The View_Helper_HtmlItemScope instance;
+ *      helper          The View_Helper_HtmlItemCloud instance;
  *
  *
  *  The 'helper' provides access to the following:
  *      namespace       The form namespace for this paginator;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      users           The Model_Set_User instance representing the user(s)
+ *                      that define the scope for this view.
+ *                      If ((count(users) === 1) && (users[0] == viewer))
+ *                          we're presenting a set of items owned by the
+ *                          current viewer;
+ *
  *      perPageChoices  The set of valid per-page values;
  *      itemType        The type of item
  *                      (View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM |
@@ -69,6 +77,26 @@ if ($paginator instanceof Zend_Paginator)
     $uiPagination->setPerPageChoices($helper->perPageChoices);
 }
 
+$users  = $this->helper->users;
+$viewer = $this->helper->viewer;
+if ( ($viewer !== null) &&
+     ( (($users instanceof Connexions_Model)     &&
+            ($viewer->isSame($users)) )             ||
+       (($users instanceof Connexions_Model_Set) &&
+            (count($users) === 1)    &&
+            ($viewer->isSame($users[0]))) ) )
+{
+    $showControls = true;
+}
+else
+{
+    $showControls = false;
+}
+/*
+Connexions::log('views/scripts/itemCloud: show controls [ %s ]',
+                Connexions::varExport($showControls));
+// */
+
 ?>
 <div    id='<?= $namespace ?>Cloud'
      class='<?= $itemType ?>Items pane'>
@@ -120,6 +148,7 @@ if ($paginator instanceof Zend_Paginator)
                 'CloudDecorator'        => array(
                     'decorator'         => 'htmlCloud',
                     'options'           => array(
+                        'View'          => $this,
                         'HtmlTags'      => array(
                             'ul'        => array(
                                 'class' => 'Item_Cloud',
@@ -132,6 +161,8 @@ if ($paginator instanceof Zend_Paginator)
                 'TagDecorator'          => array(
                     'decorator'         => 'htmlItemCloudItem',
                     'options'           => array(
+                        'ShowControls'  => $showControls,
+                        'View'          => $this,
                         'HtmlTags'      => array(
                             'li'        => array(
                                 'class' => 'cloudItem',
@@ -194,6 +225,7 @@ if ($paginator instanceof Zend_Paginator)
                                       'titleName'   => $helper->titleName,
                                       'titleTitle'  => $helper->titleTitle,
                                       'itemType'    => $helper->itemType,
+                                      'showControls'=> $showControls,
                                ));
             // */
 

@@ -8,9 +8,9 @@
  *      url             The full url for the main controller of this page;
  *      viewer          The Model_User instance representing the current
  *                      viewer;
- *      tags            A Model_Set_Tag instance containing information about
- *                      any requested tags (i.e. tag restrictions);
- *      item            The item being presented in the main view;
+ *      users           A Model_Set_User instance containing information about
+ *                      any requested users (i.e. tag owners);
+ *      items           The items being presented in the main view;
  *
  *      main            An array of settings for the main content panel:
  *      sidebar         An array of settings for the sidebar:
@@ -24,7 +24,11 @@
    <p>Summary of <?php
 
     $nUsers = count($this->users);
-    if ( $nUsers > 0)
+    if ( ($nUsers === 1) && ($this->viewer->isSame($this->users[0])) )
+    {
+        echo "your tags.";
+    }
+    else if ( $nUsers > 0)
     {
         printf ("tags used by<span class='restrictions'>%s %d %s.</span>",
                 ($nUsers === 1 ? 'this'   : 'these'),

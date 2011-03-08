@@ -35,7 +35,7 @@ class TagsController extends Connexions_Controller_Action
      */
     public function indexAction()
     {
-        Connexions::log("TagsController::indexAction(): - start");
+        //Connexions::log("TagsController::indexAction(): - start");
 
         $request  =& $this->_request;
 
@@ -71,7 +71,7 @@ class TagsController extends Connexions_Controller_Action
         // Handle this request based on the current context / format
         $this->_handleFormat('tags');
 
-        Connexions::log("TagsController::indexAction(): - complete");
+        //Connexions::log("TagsController::indexAction(): - complete");
     }
 
     /** @brief Redirect all other actions to 'index'
@@ -149,9 +149,12 @@ class TagsController extends Connexions_Controller_Action
         $offset     = ($config['page'] - 1) * $count;
         $fetchOrder = $config['sortBy'] .' '. $config['sortOrder'];
 
+        /*
         Connexions::log("TagsController::_prepareMain(): "
                         . "offset[ %d ], count[ %d ], order[ %s ]",
                         $offset, $count, $fetchOrder);
+        // */
+
         $config['items'] = Connexions_Service::factory('Model_Tag')
                                     ->fetchByUsers($this->_users,
                                                    $fetchOrder,
@@ -219,6 +222,12 @@ class TagsController extends Connexions_Controller_Action
         $paneTags['sortOrder']      =
                         $this->_request->getParam($paramNs .'SortOrder',
                                     Connexions_Service::SORT_DIR_DESC);
+
+        /* Include the information required to determine whether or not to show
+         * tag-edit controls.
+         */
+        $paneTags['viewer']         = $this->_viewer;
+        $paneTags['users']          = $this->_users;
 
         /******************************************************************
          * Create a Sidebar Helper using the configuration information
@@ -325,21 +334,22 @@ class TagsController extends Connexions_Controller_Action
             $config['itemsType']        =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
 
-            /*
-            $config['itemBaseUrl']      =  $this->_helper->url(null,
-                                                               'bookmarks');
-            // */
-            $config['itemBaseUrl']      =
-                (count($this->_users) === 1
-                    ? $this->view->baseUrl('/'. $this->_users .'/')
-                    : $this->view->baseUrl('/bookmarks/'));
-
+            $config['weightName']  =  'userItemCount';
+            $config['weightTitle'] =  'Tagged items';
+            if (count($this->_users) === 1)
+            {
+                $config['itemBaseUrl'] =
+                    $this->view->baseUrl('/'. $this->_users .'/');
+            }
+            else
+            {
+                $config['itemBaseUrl']      =
+                    $this->view->baseUrl('/bookmarks/');
+            }
 
             /* :NOTE: In this context, userItemCount can also represent
              *        the total user count.
              */
-            $config['weightName']       =  'userItemCount';
-            $config['weightTitle']      =  'Users of this tag';
             $config['titleTitle']       =  'Tag';
             $config['currentSortBy']    =
                                  View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
@@ -364,7 +374,7 @@ class TagsController extends Connexions_Controller_Action
                  * retrieval so, for the sidebar, retrieve ALL users.
                  */
 
-                // /*
+                /*
                 Connexions::log("TagsController::_prepareSidebarPane( %s ): "
                                 .   "Fetch all people %d-%d",
                                 $pane,
