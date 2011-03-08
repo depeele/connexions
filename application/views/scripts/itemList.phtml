@@ -14,6 +14,11 @@
  *      itemType        The type of item
  *                      (View_Helper_HtmlItemCloud::ITEM_TYPE_USER |
  *                                                  ITEM_TYPE_ITEM);
+ *      showControls    Whether or not management controls should be presented
+ *                      (i.e. the viewer is also the owner of the items being
+ *                            presented).
+ *                      This is used primarily when
+ *                          itemType === ITEM_TYPE_ITEM.
  *
  */
 $itemList      =& $this->itemList;
@@ -31,6 +36,20 @@ $weightTitle   =  ($this->weightTitle !== null
                     ? $this->weightTitle
                     : 'Weight');
 
+/*
+Connexions::log('view/scripts/itemList: '
+                . 'showControls[ %s ], '
+                . 'itemType[ %s ], '
+                . 'includeWeight[ %s ], '
+                . 'title Title[ %s ] / Weight[ %s ]',
+                Connexions::varExport($this->showControls),
+                ($itemType === View_Helper_HtmlItemCloud::ITEM_TYPE_USER
+                    ? 'user'
+                    : 'item'),
+                Connexions::varExport($includeWeight),
+                $titleTitle,
+                $weightTitle);
+// */
 ?>
 <ul class='Item_List'>
  <li class='header'><span class='item'><?= $titleTitle ?></span><?php

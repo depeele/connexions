@@ -6,6 +6,31 @@
 class View_Helper_HtmlItemCloudUser
                     extends Zend_Tag_Cloud_Decorator_HtmlTag
 {
+    protected   $_view          = null;
+    protected   $_showControls  = false;
+
+    public function setView(Zend_View   $view)
+    {
+        $this->_view = $view;
+        return $this;
+    }
+
+    public function getView()
+    {
+        return $this->_view;
+    }
+
+    public function setShowControls($showControls)
+    {
+        $this->_showControls = $showControls;
+        return $this;
+    }
+
+    public function getShowControls()
+    {
+        return $this->_showControls;
+    }
+
     /** @brief  Render an HTML version of a single user item.
      *  @param  users   A Zend_Tag_ItemList / Connexions_Set_ItemList instance
      *                  representing the users to be presented.
