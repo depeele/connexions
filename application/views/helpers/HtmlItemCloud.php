@@ -69,6 +69,11 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
         'displayStyle'      => self::STYLE_CLOUD,
 
+        /* Should item management controls be presented
+         *  (i.e. is the current, authenticated view the owner of all items?)
+         */
+        'showControls'      => false,
+
         /* An hash containing HTML to prepend/append to the inner container:
          *  array('prepend' => %html to prepend%,
          *        'append'  => %html to append%)
@@ -183,13 +188,50 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
     public function populate(array $config)
     {
         // Variables that MUST be set BEFORE 'namespace'...
-        foreach (array('cookieUrl', 'panePartial', 'paneVars') as $key)
+        $setControls = false;
+        foreach (array('cookieUrl', 'panePartial', 'paneVars',
+                       'viewer', 'users') as $key)
         {
             if (isset($config[$key]))
             {
+                if ( ($key === 'viewer') || ($key === 'users') )
+                {
+                    $setControls = true;
+                }
+
                 $this->__set($key, $config[$key]);
+                unset($config[$key]);
             }
         }
+
+        if ($setControls === true)
+        {
+            // (Re)Set 'showControls' based upon 'users' and 'viewer'
+            $users  = $this->users;
+            $viewer = $this->viewer;
+            if ( ($viewer !== null) &&
+                 ( (($users instanceof Connexions_Model)     &&
+                        ($viewer->isSame($users)) )             ||
+                   (($users instanceof Connexions_Model_Set) &&
+                        (count($users) === 1)    &&
+                        ($viewer->isSame($users[0]))) ) )
+            {
+                $this->__set('showControls', true);
+            }
+            else
+            {
+                $this->__set('showControls', false);
+            }
+
+            /*
+            Connexions::log("View_Helper_HtmlItemCloud::populate(): "
+                            . "viewer[ %s ], users[ %s ], showControls[ %s ]",
+                            Connexions::varExport($viewer),
+                            Connexions::varExport($users),
+                            Connexions::varExport($this->showControls));
+            // */
+        }
+
 
         foreach ($config as $key => $value)
         {
@@ -288,6 +330,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     public function render()
     {
+        // Render HTML used by connexions.cloudPane.js
         $res = $this->view->partial('itemCloud.phtml',
                                     array('helper' => $this));
         return $res;
@@ -349,6 +392,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                             'partial'           => $this->panePartial,
                             'hiddenVars'        => $this->paneVars,
                             'displayOptions'    => $dsConfig,
+                            'showControls'      => $this->showControls,
                       );
             $call   = "$('#{$namespace}Cloud').cloudPane("
                     .               Zend_Json::encode($config) .");";

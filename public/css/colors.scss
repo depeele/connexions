@@ -8,12 +8,13 @@ $linkColorVisited:    #005a9c;
 $linkColorSubdued:    #369;  //#396C9B;
 $controlColor:        #999;
 $borderColor:         #ccc;
+$lightGrey:           #ddd;
 
 // From css/themes/base/jquery-ui.css : .ui-state-error
 $errorColor:                  #cd0a0a;  // jquery-ui.css fcError
 $warningColor:                #363636;  // jquery-ui.css fcHighlight
 $successColor:                #667e32;
-$confirmColor:                #d1e3a9;
+$confirmColor:                $darkest; //#d1e3a9;
 
 $errorColorBackground:        #fef1ec;  // jquery-ui.css bgColorError
 $warningColorBackground:      #ffd;     // #fbec88

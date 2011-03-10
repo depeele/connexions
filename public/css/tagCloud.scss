@@ -78,7 +78,8 @@
 }
 
 .cloud {
-  padding: 1em 0 2em 0.25em;
+  z-index:  1;
+  padding:  1em 0 2em 0.25em;
   clear: both;
   .highlights {
     float: right;
@@ -87,13 +88,52 @@
     padding: 0.25em;
     margin: 0 0 0.25em 1em;
     font-size: 0.9em;
-    z-index: 1;
+    z-index: 2;
     h4 {
       font-size: 1em;
       font-weight: bold;
       padding: 0;
       text-align: center;
       color: $highlightTopHeaderColor;
+    }
+  }
+
+  .Item_List, .Item_Cloud {
+    li {
+      .control {
+        @include inlineBlock();
+        text-align:       center;
+        vertical-align:   middle;
+        margin:           0;
+
+        visibility:       hidden;
+        z-index:          3;
+
+        .item-edit, .item-delete {
+          .title {
+            display:  none;
+          }
+        }
+      }
+      .confirm {
+        position:         absolute;
+        min-width:        8em;
+        padding:          0.2em;
+
+        @include          corners(0.3em);
+        background-color: $darkest;
+        color:            $lightest;
+        font-size:        0.7em;
+        z-index:          4;
+
+        text-align:       center;
+      }
+
+      &:hover {
+        .control {
+          visibility: visible;
+        }
+      }
     }
   }
 }
@@ -125,6 +165,16 @@
     margin-right: 3em;
     .img {
       @include inlineBlock();
+    }
+  }
+
+  li {
+    .control {
+      position: absolute;
+      top:      0;
+
+      // Based on .item:margin-right
+      right:    2.5em;
     }
   }
   .itemCount {
@@ -160,10 +210,10 @@
   text-align: justify;
   padding: 0;
   .cloudItem {
-    display: inline;
+    @include inlineBlock();
     //line-height:  1.25em
     font-size: 100%;
-    margin: 0.25em;
+    margin: 0 0.25em;
     a {
       @include inlineBlock();
       vertical-align: middle;
@@ -172,6 +222,28 @@
         text-decoration: none;
         background-color: $linkColor;
         color: $pageColorBackground;
+      }
+    }
+    &:hover {
+      a {
+        text-decoration: none;
+        background-color: $linkColor;
+        color: $pageColorBackground;
+      }
+    }
+    .control {
+      position:         absolute;
+      left:             0;
+      bottom:           -20px;
+      // width == 2 icons (16px each) + 1px left/right margin
+      min-width:        40px;
+      width:            100%;
+
+      background-color: $lightGrey;
+      @include          corners(0 0 5px 5px);
+
+      .item-edit, .item-delete {
+        @include inlineBlock();
       }
     }
     .avatar {

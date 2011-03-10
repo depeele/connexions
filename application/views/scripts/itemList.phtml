@@ -64,12 +64,15 @@ if ($includeWeight)
 $idex = 0;
 foreach ($itemList as $item)
 {
-    $oddEven = (++$idex % 2 ? 'even' : 'odd');
-    $url     = $item->getParam('url');
-    $weight  = number_format(round($item->getWeight()));
-    $title   = $item->getTitle();
+    $oddEven    = (++$idex % 2 ? 'even' : 'odd');
+    $url        = $item->getParam('url');
+    $weight     = number_format(round($item->getWeight()));
+    $title      = $item->getTitle();
+    $attributes = "data-id='{$item}'";
 
-    ?><li class='<?= $oddEven ?>'><?php
+    //echo "<li class='{$oddEven}' data-id='{$item->getId()}'>";
+    //echo "<li class='{$oddEven}' data-id='{$item->__toString()}'>";
+    ?><li class='<?= $oddEven ?>' data-id='<?= $item ?>'><?php
 
     $img = '';
     if ($item instanceof Model_User)
@@ -87,16 +90,39 @@ foreach ($itemList as $item)
         $img .= '</div>';
     }
 
+    $itemContent = $img . $title;
+
     if (empty($url))
     {
-        ?><span class='item'><?= $img . $title ?></span><?php
+        ?><span class='item' <?= $attributes ?>><?= $itemContent ?></span><?php
 
     }
     else
     {
         ?><a class='item' 
-              href='<?= htmlSpecialChars($url) ?>'><?= $img . $title ?></a><?php
+              href='<?= htmlSpecialChars($url) ?>'
+              <?= $attributes ?>><?= $itemContent ?></a><?php
     }
+
+    if ($this->showControls === true)
+    {
+        ?>
+        <div class="control">
+           <span class="item-edit" title="edit">
+              <span class="title">EDIT</span>
+              <span class="icon connexions_sprites 
+                                          item-edit">
+              </span>
+           </span>
+           <span class="item-delete" title="delete">
+              <span class="title">DELETE</span>
+              <span class="icon connexions_sprites 
+                                          item-delete">
+              </span>
+           </span>
+          </div><?php
+    }
+
 
     if ($includeWeight)
     {

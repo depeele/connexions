@@ -188,6 +188,44 @@
   background-position: -104px -30px;
 }
 
+// Controls
+.item-edit-on {
+  width: 16px;
+  height: 16px;
+  background-position: -120px -56px;
+}
+.item-edit-off {
+  width: 16px;
+  height: 16px;
+  background-position: -136px -56px;
+}
+
+.control {
+  .icon {
+    @include  inlineBlock();
+  }
+  .item-edit {
+    .icon {
+      @extend .item-edit-off;
+    }
+    &:hover {
+      .icon {
+        @extend .item-edit-on;
+      }
+    }
+  }
+  .item-delete {
+    .icon {
+      @extend .button_delete_off;
+    }
+    &:hover {
+      .icon {
+        @extend .button_delete_on;
+      }
+    }
+  }
+}
+
 // Inbox
 .envelope {
   width: 17px;
