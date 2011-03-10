@@ -9,6 +9,7 @@ $linkColorSubdued:    #369;  //#396C9B;
 $controlColor:        #999;
 $borderColor:         #ccc;
 $lightGrey:           #ddd;
+$lightestGrey:        #eee;
 
 // From css/themes/base/jquery-ui.css : .ui-state-error
 $errorColor:                  #cd0a0a;  // jquery-ui.css fcError
@@ -20,7 +21,7 @@ $errorColorBackground:        #fef1ec;  // jquery-ui.css bgColorError
 $warningColorBackground:      #ffd;     // #fbec88
                                         // jquery-ui.css bgColorHighlight
 $successColorBackground:      #fbec88;  // jquery-ui.css bgColorHighlight
-$updateColorBackground:       #eee;
+$updateColorBackground:       $lightestGrey;
 
 $navColorBackground:          $darkest;
 $navColorWelcomeBackground:   $linkColorSubdued; //#3d7cc2; //#142940;

@@ -108,13 +108,43 @@
 
         visibility:       hidden;
         z-index:          3;
+        cursor:           pointer;
 
+        .icon {
+          @include  inlineBlock();
+        }
         .item-edit, .item-delete {
           .title {
             display:  none;
           }
         }
+        .item-edit {
+          .icon {
+            @extend .control-edit-grey;
+          }
+          &:hover {
+            .icon {
+              @extend .control-edit;
+            }
+          }
+        }
+        .item-delete {
+          .icon {
+            @extend .control-delete-grey;
+          }
+          &:hover {
+            .icon {
+              @extend .control-delete;
+            }
+          }
+        }
       }
+      &:hover {
+        .control {
+          visibility: visible;
+        }
+      }
+
       .confirm {
         position:         absolute;
         min-width:        8em;
@@ -127,11 +157,60 @@
         z-index:          4;
 
         text-align:       center;
+
+        button {
+          cursor:         pointer;
+        }
       }
 
-      &:hover {
-        .control {
-          visibility: visible;
+      .edit-item {
+        position:         absolute;
+        padding:          1px;
+        text-align:       center;
+
+        @include          corners(0.3em);
+        border:           unquote("1px solid") $borderColor;
+        background-color: $lightestGrey;
+        color:            $lightest;
+        //font-size:        0.7em;
+        z-index:          4;
+
+        text-align:       center;
+
+        .buttons {
+          font-size:    0.5em;
+          padding:      0.5em 0 0;
+
+          .icon {
+            @include  inlineBlock();
+          }
+          .item-save, .item-cancel {
+            margin: 0 1px;
+            cursor: pointer;
+            .title {
+              display:  none;
+            }
+          }
+          .item-save {
+            .icon {
+              @extend .confirm-yes-grey;
+            }
+            &:hover {
+              .icon {
+                @extend .confirm-yes;
+              }
+            }
+          }
+          .item-cancel {
+            .icon {
+              @extend .confirm-no-grey;
+            }
+            &:hover {
+              .icon {
+                @extend .confirm-no;
+              }
+            }
+          }
         }
       }
     }
@@ -244,6 +323,14 @@
 
       .item-edit, .item-delete {
         @include inlineBlock();
+      }
+    }
+    .edit-item {
+      input {
+        text-align:     center;
+      }
+      .buttons {
+        min-width:    40px;
       }
     }
     .avatar {

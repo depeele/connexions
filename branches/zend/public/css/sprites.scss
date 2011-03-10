@@ -188,43 +188,50 @@
   background-position: -104px -30px;
 }
 
-// Controls
-.item-edit-on {
-  width: 16px;
+// Controls and Confirmations
+.confirm-yes {
+  width:  16px;
   height: 16px;
-  background-position: -120px -56px;
+  background-position: -160px -40px;
 }
-.item-edit-off {
-  width: 16px;
+.confirm-yes-grey {
+  width:  16px;
   height: 16px;
-  background-position: -136px -56px;
+  background-position: -176px -40px;
+}
+.confirm-no {
+  width:  16px;
+  height: 16px;
+  background-position: -160px -56px;
+}
+.confirm-no-grey {
+  width:  16px;
+  height: 16px;
+  background-position: -176px -56px;
 }
 
-.control {
-  .icon {
-    @include  inlineBlock();
-  }
-  .item-edit {
-    .icon {
-      @extend .item-edit-off;
-    }
-    &:hover {
-      .icon {
-        @extend .item-edit-on;
-      }
-    }
-  }
-  .item-delete {
-    .icon {
-      @extend .button_delete_off;
-    }
-    &:hover {
-      .icon {
-        @extend .button_delete_on;
-      }
-    }
-  }
+.control-edit {
+  width:  16px;
+  height: 16px;
+  background-position: -56px -74px;
 }
+.control-edit-grey {
+  width:  16px;
+  height: 16px;
+  background-position: -72px -74px;
+}
+
+.control-delete {
+  width:  16px;
+  height: 16px;
+  background-position: -56px -90px;
+}
+.control-delete-grey {
+  width:  16px;
+  height: 16px;
+  background-position: -72px -90px;
+}
+
 
 // Inbox
 .envelope {

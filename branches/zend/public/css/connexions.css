@@ -170,9 +170,9 @@ a:visited { color: #005a9c; }
 
 .star_fill { width: 15px; height: 15px; background-position: -15px -44px; }
 
-.button_delete_on, .control .item-delete:hover .icon { width: 16px; height: 16px; background-position: -72px 0; }
+.button_delete_on { width: 16px; height: 16px; background-position: -72px 0; }
 
-.button_delete_off, .control .item-delete .icon { width: 16px; height: 16px; background-position: -88px 0; }
+.button_delete_off { width: 16px; height: 16px; background-position: -88px 0; }
 
 .status_ok { width: 15px; height: 15px; background-position: -72px -16px; }
 
@@ -196,11 +196,21 @@ a:visited { color: #005a9c; }
 
 .star_1_owner { width: 16px; height: 16px; background-position: -104px -30px; }
 
-.item-edit-on, .control .item-edit:hover .icon { width: 16px; height: 16px; background-position: -120px -56px; }
+.confirm-yes, .cloud .Item_List li .edit-item .buttons .item-save:hover .icon, .cloud .Item_Cloud li .edit-item .buttons .item-save:hover .icon { width: 16px; height: 16px; background-position: -160px -40px; }
 
-.item-edit-off, .control .item-edit .icon { width: 16px; height: 16px; background-position: -136px -56px; }
+.confirm-yes-grey, .cloud .Item_List li .edit-item .buttons .item-save .icon, .cloud .Item_Cloud li .edit-item .buttons .item-save .icon { width: 16px; height: 16px; background-position: -176px -40px; }
 
-.control .icon { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
+.confirm-no, .cloud .Item_List li .edit-item .buttons .item-cancel:hover .icon, .cloud .Item_Cloud li .edit-item .buttons .item-cancel:hover .icon { width: 16px; height: 16px; background-position: -160px -56px; }
+
+.confirm-no-grey, .cloud .Item_List li .edit-item .buttons .item-cancel .icon, .cloud .Item_Cloud li .edit-item .buttons .item-cancel .icon { width: 16px; height: 16px; background-position: -176px -56px; }
+
+.control-edit, .cloud .Item_List li .control .item-edit:hover .icon, .cloud .Item_Cloud li .control .item-edit:hover .icon { width: 16px; height: 16px; background-position: -56px -74px; }
+
+.control-edit-grey, .cloud .Item_List li .control .item-edit .icon, .cloud .Item_Cloud li .control .item-edit .icon { width: 16px; height: 16px; background-position: -72px -74px; }
+
+.control-delete, .cloud .Item_List li .control .item-delete:hover .icon, .cloud .Item_Cloud li .control .item-delete:hover .icon { width: 16px; height: 16px; background-position: -56px -90px; }
+
+.control-delete-grey, .cloud .Item_List li .control .item-delete .icon, .cloud .Item_Cloud li .control .item-delete .icon { width: 16px; height: 16px; background-position: -72px -90px; }
 
 .envelope { width: 17px; height: 13px; background-position: -32px -28px; }
 
@@ -370,10 +380,17 @@ a:visited { color: #005a9c; }
 .cloud { z-index: 1; padding: 1em 0 2em 0.25em; clear: both; }
 .cloud .highlights { float: right; border: 1px solid #cccccc; background-color: #f3f3ff; padding: 0.25em; margin: 0 0 0.25em 1em; font-size: 0.9em; z-index: 2; }
 .cloud .highlights h4 { font-size: 1em; font-weight: bold; padding: 0; text-align: center; color: #172322; }
-.cloud .Item_List li .control, .cloud .Item_Cloud li .control { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; text-align: center; vertical-align: middle; margin: 0; visibility: hidden; z-index: 3; }
+.cloud .Item_List li .control, .cloud .Item_Cloud li .control { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; text-align: center; vertical-align: middle; margin: 0; visibility: hidden; z-index: 3; cursor: pointer; }
+.cloud .Item_List li .control .icon, .cloud .Item_Cloud li .control .icon { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
 .cloud .Item_List li .control .item-edit .title, .cloud .Item_List li .control .item-delete .title, .cloud .Item_Cloud li .control .item-edit .title, .cloud .Item_Cloud li .control .item-delete .title { display: none; }
-.cloud .Item_List li .confirm, .cloud .Item_Cloud li .confirm { position: absolute; min-width: 8em; padding: 0.2em; -moz-border-radius: 0.3em 0.3em 0.3em 0.3em; -webkit-border-radius: 0.3em 0.3em 0.3em 0.3em; -ms-border-radius: 0.3em 0.3em 0.3em 0.3em; -khtml-border-radius: 0.3em 0.3em 0.3em 0.3em; border-radius: 0.3em 0.3em 0.3em 0.3em; background-color: #172322; color: white; font-size: 0.7em; z-index: 4; text-align: center; }
 .cloud .Item_List li:hover .control, .cloud .Item_Cloud li:hover .control { visibility: visible; }
+.cloud .Item_List li .confirm, .cloud .Item_Cloud li .confirm { position: absolute; min-width: 8em; padding: 0.2em; -moz-border-radius: 0.3em 0.3em 0.3em 0.3em; -webkit-border-radius: 0.3em 0.3em 0.3em 0.3em; -ms-border-radius: 0.3em 0.3em 0.3em 0.3em; -khtml-border-radius: 0.3em 0.3em 0.3em 0.3em; border-radius: 0.3em 0.3em 0.3em 0.3em; background-color: #172322; color: white; font-size: 0.7em; z-index: 4; text-align: center; }
+.cloud .Item_List li .confirm button, .cloud .Item_Cloud li .confirm button { cursor: pointer; }
+.cloud .Item_List li .edit-item, .cloud .Item_Cloud li .edit-item { position: absolute; padding: 1px; text-align: center; -moz-border-radius: 0.3em 0.3em 0.3em 0.3em; -webkit-border-radius: 0.3em 0.3em 0.3em 0.3em; -ms-border-radius: 0.3em 0.3em 0.3em 0.3em; -khtml-border-radius: 0.3em 0.3em 0.3em 0.3em; border-radius: 0.3em 0.3em 0.3em 0.3em; border: 1px solid #cccccc; background-color: #eeeeee; color: white; z-index: 4; text-align: center; }
+.cloud .Item_List li .edit-item .buttons, .cloud .Item_Cloud li .edit-item .buttons { font-size: 0.5em; padding: 0.5em 0 0; }
+.cloud .Item_List li .edit-item .buttons .icon, .cloud .Item_Cloud li .edit-item .buttons .icon { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
+.cloud .Item_List li .edit-item .buttons .item-save, .cloud .Item_List li .edit-item .buttons .item-cancel, .cloud .Item_Cloud li .edit-item .buttons .item-save, .cloud .Item_Cloud li .edit-item .buttons .item-cancel { margin: 0 1px; cursor: pointer; }
+.cloud .Item_List li .edit-item .buttons .item-save .title, .cloud .Item_List li .edit-item .buttons .item-cancel .title, .cloud .Item_Cloud li .edit-item .buttons .item-save .title, .cloud .Item_Cloud li .edit-item .buttons .item-cancel .title { display: none; }
 
 .Item_List { padding: 0; }
 .Item_List li.header { background-color: #f3f3ff; border-bottom: 1px solid #e3e3ff; padding: 0.25em; }
@@ -397,6 +414,8 @@ a:visited { color: #005a9c; }
 .Item_Cloud .cloudItem:hover a { text-decoration: none; background-color: #0066cc; color: white; }
 .Item_Cloud .cloudItem .control { position: absolute; left: 0; bottom: -20px; min-width: 40px; width: 100%; background-color: #dddddd; -moz-border-radius: 0 0 5px 5px 0 0 5px 5px 0 0 5px 5px 0 0 5px 5px; -webkit-border-radius: 0 0 5px 5px 0 0 5px 5px 0 0 5px 5px 0 0 5px 5px; -ms-border-radius: 0 0 5px 5px 0 0 5px 5px 0 0 5px 5px 0 0 5px 5px; -khtml-border-radius: 0 0 5px 5px 0 0 5px 5px 0 0 5px 5px 0 0 5px 5px; border-radius: 0 0 5px 5px 0 0 5px 5px 0 0 5px 5px 0 0 5px 5px; }
 .Item_Cloud .cloudItem .control .item-edit, .Item_Cloud .cloudItem .control .item-delete { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
+.Item_Cloud .cloudItem .edit-item input { text-align: center; }
+.Item_Cloud .cloudItem .edit-item .buttons { min-width: 40px; }
 .Item_Cloud .cloudItem .avatar { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; vertical-align: middle; margin: 2px; border: none; }
 .Item_Cloud .cloudItem .avatar img { width: 16px; height: 16px; }
 .Item_Cloud .cloudItem .name { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; vertical-align: middle; }

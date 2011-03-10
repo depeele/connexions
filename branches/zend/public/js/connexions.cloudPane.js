@@ -10,10 +10,11 @@
  *  Requires:
  *      ui.core.js
  *      ui.widget.js
+ *      ui.position.js
  *      connexions.pane.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
-/*global jQuery:false */
+/*global jQuery:false, setTimeout:false, clearTimeout:false */
 (function($) {
 
 $.widget("connexions.cloudPane", $.connexions.pane, {
@@ -43,7 +44,7 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
         /* If the JSON-RPC method is GET, the apiKey for the authenticated user
          * is required for any methods that modify data.
          */
-        apiKey:     null,
+        apiKey:     null
     },
 
     /** @brief  Initialize a new instance.
@@ -139,6 +140,222 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
         });
     },
 
+    /** @brief  The 'edit' control item was clicked.  Present item editing
+     *          along with edit save/cancel options.
+     *
+     *  @param  $el     The jQuery/DOM element that was clicked upon
+     *                  (i.e. the '.item-edit' element);
+     */
+    _edit_item: function($el) {
+        var self    = this;
+        var $ctl    = $el.parents('.control:first');
+        if ($ctl.attr('disabled') !== undefined)
+        {
+            return;
+        }
+        $ctl.attr('disabled', true);
+
+        var opts    = self.options;
+        var $li     = $el.parents('li:first');
+        var $a      = $li.find('.item:first');
+        var tag     = $a.data('id');
+
+        // Present a confirmation dialog and delete.
+        var html    = '<div class="edit-item">'
+                    +  '<input type="text" class="text" value="'+ tag +'" />'
+                    +  '<div class="buttons">'
+                    +   '<span class="item-save" title="save">'
+                    +    '<span class="title">Save</span>'
+                    +    '<span class="icon connexions_sprites status-ok">'
+                    +    '</span>'
+                    +   '</span>'
+                    +   '<span class="item-cancel" title="cancel">'
+                    +    '<span class="title">Cancel</span>'
+                    +    '<span class="icon connexions_sprites star_0_off">'
+                    +    '</span>'
+                    +   '</span>'
+                    +  '</div>'
+                    + '</div>';
+        var $div    = $(html);
+
+        $ctl.hide();
+
+        // Activate the input area
+        var width   = parseInt($a.width(), 10);
+        var $input  = $div.find('input');
+
+        $input.input()
+               /* Set the font-size and width of the input control based upon
+                * the tag anchor
+                */
+              .css('font-size', $a.css('font-size'))
+              .width( width + 16 );
+
+        // Insert and position
+        $div.appendTo( $li )
+            .position({
+                of:     $a,
+                my:     'center top',
+                at:     'center top',
+                offset: '0 -5' //'0 -8'
+            });
+
+
+        $input.focus();
+
+        function _reEnable(e)
+        {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+
+            /* Wait a bit to remove the element so the click doesn't
+             * inadvertenely hit any underlying tag element.
+             */
+            setTimeout(function() {
+                        $ctl.removeAttr('disabled')
+                            .show();
+
+                        $div.remove();
+                       }, 100);
+        }
+
+        function _doSave(e)
+        {
+        }
+
+        var $save   = $div.find('.item-save');
+        var $cancel = $div.find('.item-cancel');
+        
+        $save.click( function(e) {
+            if ($input.input('hasChanged') !== true)
+            {
+                _reEnable(e);
+                return;
+            }
+
+            self._perform_rename($el, function(result) {
+                if (result !== false)
+                {
+                    // Change the tag.
+                    var orig    = $input.input('getOrigValue');
+                    var url     = $a.attr('href')
+                                        .replace(/\/([^\/]+)$/, '/'+ result);
+
+                    $a.attr('href', url)
+                      .text(result)
+                      .data('id', result);
+
+                    _reEnable(e);
+                }
+            });
+        });
+        $cancel.click(function(e) {
+            _reEnable(e);
+        });
+
+        // Handle 'Enter' and 'ESC' in the input element
+        $input.keydown(function(e) {
+            if (e.keyCode === 13)       // return
+            {
+                $save.click();
+            }
+            else if (e.keyCode === 27)  // ESC
+            {
+                $cancel.click();
+            }
+        });
+    },
+
+    /** @brief  Attempt to save a edited/renamed tag.
+     *  @param  $el             The jQuery/DOM element that was originally
+     *                          clicked upon to initiate this rename
+     *                          (i.e. the '.item-edit' element);
+     *  @param  completionCb    A callback to invoke when the rename attempt is
+     *                          complete:
+     *                              function(result);
+     *                                  false == failure
+     *                                  else  == new Tag value
+     */
+    _perform_rename: function($el, completionCb) {
+        var self    = this;
+        var opts    = self.options;
+        var $li     = $el.parents('li:first');
+        var $input  = $li.find('.edit-item input');
+        var $a      = $li.find('.item:first');
+        var oldTag  = $a.data('id');
+        var newTag  = $input.val();
+        var result  = false;
+
+        /* method:  user.deleteTags,
+         * tags:    id,
+         *
+         * Service Returns:
+         *  { %oldTag% => %status == true | message string%, ... }
+         */
+        var params  = {
+            renames:    oldTag +':'+ newTag
+        };
+        if (opts.apiKey !== null)
+        {
+            params.apiKey = opts.apiKey;
+        }
+
+        // Perform a JSON-RPC call to perform the update.
+        $.jsonRpc(opts.jsonRpc, 'user.renameTags', params, {
+            success:    function(data, textStatus, req) {
+                if ( (! data) || (data.error !== null))
+                {
+                    $.notify({
+                        title: 'Tag rename failed',
+                        text:  '<p class="error">'
+                             +   (data ? data.error.message : '')
+                             + '</p>'
+                    });
+
+                    return;
+                }
+
+                if (data.result === null)   { return; }
+
+                if (data.result[oldTag] !== true)
+                {
+                    $.notify({
+                        title: 'Tag rename failed',
+                        text:  '<p class="error">'
+                             +   (data ? data.result[oldTag] : '')
+                             + '</p>'
+                    });
+
+                    return;
+                }
+
+                $.notify({
+                    title: 'Tag renamed',
+                    text:  oldTag +' renamed to '+ newTag
+                });
+
+                result = newTag;
+            },
+            error:      function(req, textStatus, err) {
+                $.notify({
+                    title: 'Tag rename failed',
+                    text:  '<p class="error">'
+                         +   textStatus
+                         + '</p>'
+                });
+            },
+            complete:   function(req, textStatus) {
+                completionCb(result);
+            }
+         });
+    },
+
+    /** @brief  The 'delete' control item was clicked.  Present a delete
+     *          confirmation.
+     *  @param  $el     The jQuery/DOM element that was clicked upon
+     *                  (i.e. the '.item-delete' element);
+     */
     _delete_confirm: function($el) {
         var self    = this;
         var $ctl    = $el.parents('.control:first');
@@ -164,29 +381,7 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
                     + '</div>';
         var $div    = $(html);
 
-        var $options    = $ctl.find('> span');
-        $options.hide();
-
-        var cOffset     = $ctl.offset();
-        var lOffset     = $li.offset();
-        cOffset.right = cOffset.left + $ctl.width();
-        lOffset.right = lOffset.left + $li.width();
-
-        var pos         = {
-            of: $ctl,
-            // By default, my left/center at the right/center of $li
-            my: 'top center',
-            at: 'top center'
-        };
-        if (cOffset.right <= lOffset.right)
-        {
-            // ctl is IN $li, so set my right/center at the right/center of $li
-            pos.my = 'right center';
-            pos.at = 'right center';
-        }
-
-        $div.appendTo( $li )
-            .position( pos );
+        self._placeConfirmation($ctl, $div);
 
         function _reEnable(e)
         {
@@ -200,21 +395,41 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
             setTimeout(function() {
                         $ctl.removeAttr('disabled');
                         $div.remove();
-                        $options.show();
                        }, 100);
         }
 
-        $div.find('button[name=yes]').click(function(e) {
+        var $yes    = $div.find('button[name=yes]');
+        var $no     = $div.find('button[name=no]');
+
+        $yes.click(function(e) {
             _reEnable(e);
 
-            self._performDelete($el);
+            self._perform_delete($el);
         });
-        $div.find('button[name=no]').click(function(e) {
+        $no.click(function(e) {
             _reEnable(e);
+        });
+
+        // Handle 'Enter' and 'ESC' in the input element
+        $(document).keydown(function(e) {
+            if (e.keyCode === 13)       // return
+            {
+                $yes.click();
+            }
+            else if (e.keyCode === 27)  // ESC
+            {
+                $no.click();
+            }
         });
     },
 
-    _performDelete: function($el) {
+    /** @brief  Item deletion has been confirmed, attempt to delete the
+     *          identified item.
+     *  @param  $el     The jQuery/DOM element that was originally clicked upon
+     *                  to initiate this deletion
+     *                  (i.e. the '.item-delete' element);
+     */
+    _perform_delete: function($el) {
         var self    = this;
         var opts    = self.options;
         var $li     = $el.parents('li:first');
@@ -250,7 +465,7 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
                     return;
                 }
 
-                if (data.result === null)   return;
+                if (data.result === null)   { return; }
 
                 if (data.result[tag] !== true)
                 {
@@ -287,12 +502,40 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
          });
     },
 
-    _edit_item: function($el) {
-        var self    = this;
-        var opts    = self.options;
-        var $li     = $el.parents('li:first');
-        var $a      = $li.find('.item:first');
-        var tag     = $a.data('id');
+    /** @brief  Given a control DOM element and a new confirmation DOM element,
+     *          figure out the best positioning for the confirmation and append
+     *          it to the parent li.
+     *  @param  $ctl            The control jQuery/DOM element;
+     *  @param  $confirmation   The new confirmation jQuery/DOM element;
+     */
+    _placeConfirmation: function($ctl, $confirmation) {
+        var $li         = $ctl.parents('li:first');
+
+        // Figure out the best place to put the confirmation.
+        var cOffset     = $ctl.offset();
+        var lOffset     = $li.offset();
+        var pos         = {
+            of: $ctl
+        };
+        if (cOffset.top <= lOffset.top)
+        {
+            /* ctl is IN $li (i.e. in a list view)
+             *  set my right/center at the right/center of $ctl
+             */
+            pos.my = 'right bottom';
+            pos.at = 'right bottom';
+        }
+        else
+        {
+            /* ctl is NOT IN $li (i.e. in a cloud view)
+             *  set my top/center at the top/center of $ctl
+             */
+            pos.my = 'center top';
+            pos.at = 'center top';
+        }
+
+        $confirmation.appendTo( $li )
+                     .position( pos );
     },
 
     /************************
