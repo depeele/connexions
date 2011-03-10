@@ -1,0 +1,162 @@
+<?php
+/** @file
+ *
+ *  HTML rendering of Item Cloud items.
+ *
+ *  Incoming parameters:
+ *      helper          The View_Helper_HtmlItemCloudItem instance;
+ *      items           The Connexions_Set_ItemList instance representing the
+ *                      items to be presented.
+ *
+ *  The 'helper' provides access to the following:
+ *      getShowControls()   Whether or not management controls should be
+ *                          presented (i.e. the viewer is also the owner of the
+ *                                          items being presented);
+ *      getClassList()      The set of classes to use for the different tag
+ *                          weights;
+ *      getHtmlTags()       The HTML tag information to use for rendering;
+ *      getEncoding()       The current HTML encoding value;
+ *      getFontSizeUnit()   The font-size unit to use
+ *                          (iff there are no CSS classes defined for tag
+ *                           weights);
+ */
+$helper       = $this->helper;
+$showControls = $helper->getShowControls();
+$fontUnit     = null;
+$classList    = $helper->getClassList();
+if ($classList === null)
+{
+    $fontUnit = $helper->getFontSizeUnit();
+}
+
+// Process the HTML tags once
+$tags = array();
+$enc  = $helper->getEncoding();
+foreach ($helper->getHtmlTags() as $key => $data)
+{
+    if (is_array($data))
+    {
+        $htmlTag    = $key;
+        $attributes = '';
+
+        foreach ($data as $param => $value)
+        {
+            $attributes .= ' '
+                       . $param . '="'
+                       .    htmlspecialchars($value, ENT_COMPAT, $enc)
+                       . '"';
+        }
+    }
+    else
+    {
+        $htmlTag    = $data;
+        $attributes = '';
+    }
+
+    array_push($tags, array('tag'   => $htmlTag,
+                            'attrs' => $attributes));
+}
+
+// /*
+Connexions::log('view/scripts/itemCloud_item: '
+                . 'showControls[ %s ], '
+                . 'fontUnit[ %s ], '
+                . 'classList[ %s ], '
+                . 'HTML tags[ %s ]',
+                Connexions::varExport($showControls),
+                Connexions::varExport($fontUnit),
+                Connexions::varExport($classList),
+                Connexions::varExport($tags));
+// */
+
+
+// Generate HTML results
+foreach ($this->items as $item)
+{
+    $url        = $item->getParam('url');
+    $title      = $item->getTitle();
+    $weight     = number_format($item->getWeight());
+    $isSelected = ($item->getParam('selected') === true);
+    $cssClass   = ($isSelected
+                        ? 'item selected ui-corner-all ui-state-highlight '
+                        : 'item ');
+    $weightVal  = $item->getParam('weightValue');
+    $attributes = "data-id='{$item}'";
+
+    /*
+    Connexions::log('view/scripts/itemCloud_item: '
+                    . 'title[ %s ], url[ %s ], '
+                    . 'weight[ %s ], weight value[ %s ], '
+                    . '%sselected',
+                    $title, $url,
+                    $weight, $weightVal,
+                    ($isSelected ? '' : 'NOT '));
+    // */
+
+    if ($classList === null)
+    {
+        $attributes .= sprintf(' style="font-size: %d%s;"',
+                                $weightVal, $fontUnit);
+    }
+    else
+    {
+        $cssClass .= htmlspecialchars($weightVal, ENT_COMPAT, $enc);
+    }
+
+    if (! empty($cssClass))
+        $cssClass = ' class="'. $cssClass .'"';
+
+    $itemContent = $title;
+    if (empty($url))
+    {
+        $itemHtml = sprintf('<span title="%s" %s%s>%s</span>',
+                            $weight,
+                            $cssClass,
+                            $attributes,
+                            $itemContent);
+    }
+    else
+    {
+        $itemHtml = sprintf('<a href="%s" title="%s" %s%s>%s</a>',
+                            htmlspecialchars($url, ENT_COMPAT, $enc),
+                            $weight,
+                            $cssClass,
+                            $attributes,
+                            $itemContent);
+    }
+
+    if ($showControls === true)
+    {
+        $itemHtml    .= '<div class="control">'
+                     .   '<span class="item-edit" title="edit">'
+                     .      '<span class="title">EDIT</span>'
+                     .      '<span class="icon connexions_sprites '
+                     .                                  'item-edit">'
+                     .      '</span>'
+                     .   '</span>'
+                     .   '<span class="item-delete" title="delete">'
+                     .      '<span class="title">DELETE</span>'
+                     .      '<span class="icon connexions_sprites '
+                     .                                  'item-delete">'
+                     .      '</span>'
+                     .   '</span>'
+                     .  '</div>';
+    }
+
+
+    /*
+    Connexions::log("view/scripts/itemCloud_item: "
+                    . "title[ %s ], weight[ %s ], weight title[ %s ]",
+                    $title,
+                    $item->getWeight(),
+                    $weight);
+    // */
+
+    foreach ($tags as $html)
+    {
+        $itemHtml = sprintf('<%1$s%3$s>%2$s</%1$s>',
+                           $html['tag'], $itemHtml, $html['attrs']);
+    }
+
+    echo $itemHtml;
+}

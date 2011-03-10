@@ -31,7 +31,8 @@ $highlightTags = ($this->tags && ($this->tags instanceof Model_Set_Tag)
                     : null);
 
 $isOwner    =  ( $viewer &&
-                ($viewer->userId === $bookmark->user->userId)
+                //($viewer->userId === $bookmark->user->userId)
+                $viewer->isSame($bookmark->user)
                     ? true
                     : false );
 

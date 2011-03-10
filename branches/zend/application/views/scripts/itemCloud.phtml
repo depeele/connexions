@@ -38,6 +38,10 @@
  *      itemBaseUrl     The base URL to use for item completion;
  *      weightName      The name of the field/member to use for weight;
  *
+ *      showControls    Should item management controls be presented
+ *                      (i.e. is the current, authenticated view the owner
+ *                            of all items?)
+ *
  */
 $helper       = $this->helper;
 $namespace    = $helper->namespace;
@@ -77,24 +81,9 @@ if ($paginator instanceof Zend_Paginator)
     $uiPagination->setPerPageChoices($helper->perPageChoices);
 }
 
-$users  = $this->helper->users;
-$viewer = $this->helper->viewer;
-if ( ($viewer !== null) &&
-     ( (($users instanceof Connexions_Model)     &&
-            ($viewer->isSame($users)) )             ||
-       (($users instanceof Connexions_Model_Set) &&
-            (count($users) === 1)    &&
-            ($viewer->isSame($users[0]))) ) )
-{
-    $showControls = true;
-}
-else
-{
-    $showControls = false;
-}
 /*
 Connexions::log('views/scripts/itemCloud: show controls [ %s ]',
-                Connexions::varExport($showControls));
+                Connexions::varExport($helper->showControls));
 // */
 
 ?>
@@ -161,7 +150,7 @@ Connexions::log('views/scripts/itemCloud: show controls [ %s ]',
                 'TagDecorator'          => array(
                     'decorator'         => 'htmlItemCloudItem',
                     'options'           => array(
-                        'ShowControls'  => $showControls,
+                        'ShowControls'  => $helper->showControls,
                         'View'          => $this,
                         'HtmlTags'      => array(
                             'li'        => array(
@@ -225,7 +214,7 @@ Connexions::log('views/scripts/itemCloud: show controls [ %s ]',
                                       'titleName'   => $helper->titleName,
                                       'titleTitle'  => $helper->titleTitle,
                                       'itemType'    => $helper->itemType,
-                                      'showControls'=> $showControls,
+                                      'showControls'=> $helper->showControls,
                                ));
             // */
 
