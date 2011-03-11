@@ -393,14 +393,17 @@ a:visited { color: #005a9c; }
 .cloud .Item_List li .edit-item .buttons .item-save .title, .cloud .Item_List li .edit-item .buttons .item-cancel .title, .cloud .Item_Cloud li .edit-item .buttons .item-save .title, .cloud .Item_Cloud li .edit-item .buttons .item-cancel .title { display: none; }
 
 .Item_List { padding: 0; }
-.Item_List li.header { background-color: #f3f3ff; border-bottom: 1px solid #e3e3ff; padding: 0.25em; }
-.Item_List li.header .item, .Item_List li.header .itemCount { padding: 0; font-weight: bold; }
-.Item_List li.header .itemCount { top: 0.5em; }
+.Item_List li.header, .Item_List li.footer { background-color: #f3f3ff; padding: 0.25em; }
+.Item_List li.header .item, .Item_List li.header .itemCount, .Item_List li.footer .item, .Item_List li.footer .itemCount { padding: 0; font-weight: bold; }
+.Item_List li.header .itemCount, .Item_List li.footer .itemCount { top: 0.5em; }
+.Item_List li.header { border-bottom: 1px solid #e3e3ff; }
+.Item_List li.footer { border-top: 1px solid #e3e3ff; }
 .Item_List li.odd { background-color: #f3f3ff; }
 .Item_List li.even { background-color: none; }
 .Item_List .item { display: block; font-weight: normal; color: #2786c2; margin-right: 3em; }
 .Item_List .item .img { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
 .Item_List li .control { position: absolute; top: 0; right: 2.5em; }
+.Item_List li .edit-item .buttons { text-align: right; }
 .Item_List .itemCount { display: block; position: absolute; top: 0; right: 0; padding: 0.15em 0 0.15em; color: #999999; font-size: 0.8em; }
 
 #sbItemsCloud .Item_List li.header .item { padding: 0; }

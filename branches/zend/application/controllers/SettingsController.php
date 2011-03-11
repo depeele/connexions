@@ -53,12 +53,10 @@ class SettingsController extends Connexions_Controller_Action
             'cssClass'  => 'settingsTags',
             'script'    => 'main-tags',
             'cmds'      => array(
-                  array('title' => 'Rename',
+                  array('title' => 'Manage',
                         'async'     => true,
-                        'script'    => 'main-tags-rename'),
-                  array('title'     => 'Delete',
-                        'async'     => true,
-                        'script'    => 'main-tags-delete'),
+                        //'expanded'  => true,
+                        'script'    => 'main-tags-manage'),
                   /*
                   array('title'     => 'Groups',
                         'async'     => true,
@@ -220,8 +218,7 @@ class SettingsController extends Connexions_Controller_Action
 
         switch ($this->_partials[1])
         {
-        case 'rename':
-        case 'delete':
+        case 'manage':
             $reqTags = $this->_request->getParam('tags', null);
             $this->view->tags = $this->service('Tag')->csList2set($reqTags);
 
@@ -239,7 +236,8 @@ class SettingsController extends Connexions_Controller_Action
                 'cookieUrl'     => $this->_rootUrl,
 
                 'showRelation'  => false,
-                'panePartial'   => 'main-'. implode('-', $this->_partials),
+                                   // 'main-'. implode('-', $this->_partials),
+                'panePartial'   => 'main-tags-manage-list',
 
                 'itemType'      => View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM,
                 'itemBaseUrl'   => $this->view->baseUrl(
@@ -250,6 +248,13 @@ class SettingsController extends Connexions_Controller_Action
                 'titleTitle'    => 'Tag',
             );
             $config = array_merge($this->view->main, $extra);
+
+            // /*
+            Connexions::log("SettingsController::_prepareTags(): "
+                            . "panePartial[ %s ], partials[ %s ]",
+                            $config['panePartial'],
+                            implode('-', $this->_partials));
+            // */
 
             // Defaults
             if ( ($config['perPage'] = (int)$config['perPage']) < 1)

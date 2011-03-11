@@ -219,9 +219,8 @@
 
 .Item_List {
   padding: 0;
-  li.header {
+  li.header, li.footer {
     background-color: $tagsHeaderColorBackground;
-    border-bottom:    1px solid $tagsHeaderColorBorder;
     padding:          0.25em;
     .item,.itemCount {
       padding:      0;
@@ -231,6 +230,13 @@
       top:          0.5em;
     }
   }
+  li.header {
+    border-bottom:    1px solid $tagsHeaderColorBorder;
+  }
+  li.footer {
+    border-top:       1px solid $tagsHeaderColorBorder;
+  }
+
   li.odd {
     background-color: $li_oddColor;
   }
@@ -254,6 +260,11 @@
 
       // Based on .item:margin-right
       right:    2.5em;
+    }
+    .edit-item {
+      .buttons {
+        text-align: right;
+      }
     }
   }
   .itemCount {

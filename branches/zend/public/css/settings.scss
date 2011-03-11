@@ -658,3 +658,67 @@
     }
   }
 }
+
+#tags-manage {
+  .tagFilter {
+    border-bottom:  unquote('1px solid') $borderColor;
+    margin-bottom:  0.25em;
+    padding-bottom: 0.25em;
+
+    input,button {
+      vertical-align: middle;
+    }
+
+    .field {
+      @include  inlineBlock();
+      width:    50%;
+
+      input {
+        width:  100%;
+      }
+    }
+  }
+  .paginator-top {
+    .pager, .info {
+      @include        inlineBlock();
+      vertical-align: top;
+    }
+    .info {
+      padding:        0 0 0 1em;
+
+      .perPage, .itemRange {
+        @include      inlineBlock();
+      }
+    }
+  }
+  .cloud {
+    font-size:  100%;
+    padding:    0.25em 2em;
+  }
+  .Item_List {
+    li {
+      padding:    0.1em 0.25em;
+      .check-action {
+        @include        inlineBlock();
+        vertical-align: middle;
+        margin:         0 1em 0 0;
+      }
+      .item {
+        @include        inlineBlock();
+        vertical-align: middle;
+        margin-right:   1em;
+      }
+      .control {
+        position:       relative;
+        top:            auto;
+        right:          auto;
+        vertical-align: middle;
+      }
+      .edit-item {
+        .buttons {
+          text-align: center;
+        }
+      }
+    }
+  }
+}
