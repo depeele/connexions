@@ -356,7 +356,7 @@ abstract class Connexions_Model_Mapper
             }
             $id = $normalized;
         }
-        else
+        else if (! is_null($id))
         {
             // Use the first key to construct the normalized id.
             $id = array($this->_keyNames[0] => $id);

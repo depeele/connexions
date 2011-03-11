@@ -216,8 +216,7 @@ abstract class Connexions_Model_Mapper_DbTable
                         Connexions::varExport($uid));
         // */
 
-        // :XXX: Should this be $this->_find($uid) ??
-        $accessorModel = $this->_find($id);
+        $accessorModel = $this->_find( (is_null($id) ? array() : $id ) );
         if ($accessorModel === null)
             return null;
 

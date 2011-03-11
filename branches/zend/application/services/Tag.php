@@ -151,6 +151,7 @@ class Service_Tag extends Connexions_Service
      *  @param  offset  Optional LIMIT offset
      *  @param  exact   Tags MUST be associated with ALL provided users
      *                  [ false ];
+     *  @param  where   Additional condition(s) [ null ];
      *
      *  @return A new Model_Set_Tag instance.
      */
@@ -158,7 +159,8 @@ class Service_Tag extends Connexions_Service
                                  $order   = null,
                                  $count   = null,
                                  $offset  = null,
-                                 $exact   = false)
+                                 $exact   = false,
+                                 $where   = null)
     {
         if ($order === null)
         {
@@ -169,6 +171,11 @@ class Service_Tag extends Connexions_Service
 
         $to = array('users'      => $users,
                     'exactUsers' => $exact);
+
+        if ($where !== null)
+        {
+            $to['where'] = $where;
+        }
 
         return $this->fetchRelated( $to,
                                     $order,

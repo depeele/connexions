@@ -190,14 +190,16 @@ class Service_User extends Connexions_Service
     public function renameTags(Model_User   $user,
                                             $renames)
     {
-        /* SHOULD be handled by the Proxy for any API path.
-         *
+        /* SHOULD be handled by the Proxy for any API path
+         * but double-check here for extra protection
+         * (and since the current tests require it).
+         */
         if (! $user->isAuthenticated())
         {
             throw new Exception('Operation prohibited for an '
                                 .   'unauthenticated user.');
         }
-         */
+        // */
 
         if (is_string($renames))
         {
@@ -234,19 +236,56 @@ class Service_User extends Connexions_Service
     public function deleteTags(Model_User   $user,
                                             $tags)
     {
-        /* SHOULD be handled by the Proxy for any API path.
-         *
+        /* SHOULD be handled by the Proxy for any API path
+         * but double-check here for extra protection
+         * (and since the current tests require it).
+         */
         if (! $user->isAuthenticated())
         {
             throw new Exception('Operation prohibited for an '
                                 .   'unauthenticated user.');
         }
-         */
+        // */
 
         // Rely on Service_Tag to properly interpret 'tags'
         $tags = $this->factory('Service_Tag')->csList2set($tags);
 
         return $user->deleteTags($tags);
+    }
+
+    /** @brief  Perform tag autocompletion for the given user.
+     *  @param  user        The Model_User instance that provide the context
+     *                      for tag autocompletion
+     *                      (should we require authentication?);
+     *  @param  term        The string to autocomplete.
+     *  @param  limit       The maximum number of tags to return;
+     *
+     *  @return Model_Set_Tag
+     */
+    public function autocompleteTag(Model_User  $user,
+                                    $term       = null,
+                                    $limit      = 50)
+    {
+        // /*
+        Connexions::log("Service_User::autocompleteTag(): "
+                        .   "user[ %s ], term[ %s ], limit[ %d ]",
+                        $user, $term, $limit);
+        // */
+
+        /* Rely on Service_Tag/Service_User to properly interpret
+         * 'tags' and 'users'
+         */
+        $tService = $this->factory('Service_Tag');
+
+        return $tService->fetchByUsers($user,
+                                       null,        // default order
+                                       $limit,
+                                       null,        // default offset
+                                       false,       /* A single user doesn't
+                                                     * require exact match
+                                                     * logic.
+                                                     */
+                                       array('tag=*' => $term));
     }
 
     /** @brief  Update a user.
@@ -265,14 +304,16 @@ class Service_User extends Connexions_Service
                                         $pictureUrl = null,
                                         $profileUrl = null)
     {
-        /* SHOULD be handled by the Proxy for any API path.
-         *
+        /* SHOULD be handled by the Proxy for any API path
+         * but double-check here for extra protection
+         * (and since the current tests require it).
+         */
         if (! $user->isAuthenticated())
         {
             throw new Exception('Operation prohibited for an '
                                 .   'unauthenticated user.');
         }
-         */
+        // */
 
         /*
         Connexions::log("Service_User::update() config [ %s, %s ]",
@@ -319,13 +360,15 @@ class Service_User extends Connexions_Service
     public function regenerateApiKey(Model_User   $user)
     {
         /* SHOULD be handled by the Proxy for any API path.
-         *
+         * but double-check here for extra protection
+         * (and since the current tests require it).
+         */
         if (! $user->isAuthenticated())
         {
             throw new Exception('Operation prohibited for an '
                                 .   'unauthenticated user.');
         }
-         */
+        // */
 
         $user->apiKey = Model_User::genApiKey();
 
@@ -355,14 +398,16 @@ class Service_User extends Connexions_Service
     public function updateCredentials(Model_User   $user,
                                       array        $credentials)
     {
-        /* SHOULD be handled by the Proxy for any API path.
-         *
+        /* SHOULD be handled by the Proxy for any API path
+         * but double-check here for extra protection
+         * (and since the current tests require it).
+         */
         if (! $user->isAuthenticated())
         {
             throw new Exception('Operation prohibited for an '
                                 .   'unauthenticated user.');
         }
-         */
+        // */
 
         $uaMapper = $this->_getMapper('Model_UserAuth');
         $uaSet    = $uaMapper->makeEmptySet();
@@ -467,14 +512,15 @@ class Service_User extends Connexions_Service
     public function deleteCredential(Model_User   $user,
                                                   $credential)
     {
-        /* SHOULD be handled by the Proxy for any API path.
-         *
+        /* SHOULD be handled by the Proxy for any API path
+         * though the current tests require this check.
+         */
         if (! $user->isAuthenticated())
         {
             throw new Exception('Operation prohibited for an '
                                 .   'unauthenticated user.');
         }
-         */
+        // */
 
         /*
         Connexions::log("Service_User::deleteCredential(): "

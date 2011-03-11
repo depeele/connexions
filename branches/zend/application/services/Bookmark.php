@@ -572,6 +572,9 @@ class Service_Bookmark extends Connexions_Service
                         $bookmarks);
         // */
 
+        /* :NOTE: To match a string in any position within the tag, use:
+         *          'tag=*'
+         */
         return $tService->fetchByBookmarks($bookmarks,
                                            null,        // default order
                                            $limit,
