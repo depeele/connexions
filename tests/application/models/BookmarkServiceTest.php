@@ -1488,6 +1488,13 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceAutocompleteTag1()
     {
+        /* If Service_Bookmark::autocompleteTag() uses
+         *  'tag=*', this list should be:
+         *      'tiddlywiki,collection,decoration,documentation,identity,tiddlywikiplugin'
+         *
+         *  'tag=^', the list should be:
+         *      'tiddlywiki,tiddlywikiplugin'
+         */
         $expected = 'tiddlywiki,tiddlywikiplugin';
         $service  = Connexions_Service::factory('Model_Bookmark');
         $tags     = $service->autocompleteTag('ti');

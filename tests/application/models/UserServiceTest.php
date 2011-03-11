@@ -1386,7 +1386,6 @@ class UserServiceTest extends DbTestCase
     public function testUserServiceUpdate_auth()
     {
         $expected = $this->_user1;
-        $service  = Connexions_Service::factory('Model_User');
 
         // Retrieve the target user.
         $service  = Connexions_Service::factory('Model_User');
@@ -1431,5 +1430,22 @@ class UserServiceTest extends DbTestCase
 
         // De-authenticate $user
         $this->_unsetAuthenticatedUser($user1);
+    }
+
+    public function testUserServiceAutocompleteTag1()
+    {
+        $expected = 'javascript,password,passwords';
+        // Retrieve the target user.
+        $service  = Connexions_Service::factory('Model_User');
+
+        $user1    = $service->find( array('userId'=> $this->_user1['userId']));
+        $this->assertNotEquals(null, $user1);
+
+        $tags = $service->autocompleteTag($user1, 'as'); //'pa');
+        $this->assertNotEquals(null, $tags);
+
+        //Connexions::log("tags[ %s ]", $tags);
+
+        $this->assertEquals($expected, $tags->__toString());
     }
 }
