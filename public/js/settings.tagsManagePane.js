@@ -5,7 +5,7 @@
  *
  *  This is class extends connexions.pane to include unobtrusive activation of
  *  any contained, pre-rendered ul.cloud generated via
- *  View_Helper_Html_HtmlItemCloud.
+ *      view/scripts/settings/main-tags-manage-list.phtml
  *
  *  Requires:
  *      ui.core.js
@@ -17,7 +17,7 @@
 /*global jQuery:false, setTimeout:false, clearTimeout:false, document:false */
 (function($) {
 
-$.widget("connexions.cloudPane", $.connexions.pane, {
+$.widget("settings.tagsManagePane", $.connexions.pane, {
     version: "0.0.1",
     options: {
         // Defaults
@@ -79,6 +79,12 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
 
         self.$optionsForm = self.element.find('.displayOptions form');
 
+        self.$controls = self.element.find('.list-controls');
+        self.$deletes  = self.$controls.find('button[name=delete]');
+        self.$deletes.button({disabled: true});
+
+        self.$list = self.element.find('.Item_List');
+
         self._bindEvents();
     },
 
@@ -98,7 +104,7 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
          *       with information about the selected display group when a
          *       change is made.
          */
-        this.$optionsForm.bind('change.cloudPane',
+        self.$optionsForm.bind('change.tagsManagePane',
                 function(e, info) {
                     var $field  = $(this).find('.field.highlightCount');
 
@@ -118,8 +124,55 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
                     }
                 });
 
+        self.$deletes.click(function(e) {
+            // Attempt to delete all checked tags
+            var $checked    = self.$list.find('li:not(.header,.footer) '
+                                                                + ':checked')
+                                        .siblings('.item');
+            if ($checked.length < 1) { return; }
+
+            self._perform_delete($checked);
+        });
+        self.$controls.find(':checkbox').change(function(e) {
+            var $el      = $(this);
+            if ($el.is(':checked'))
+            {
+                // Check all items
+                self.$list.find('li:not(.header,.footer) :checkbox')
+                            .attr('checked', true);
+                self.$deletes.button('enable');
+            }
+            else
+            {
+                // Uncheck all items
+                self.$list.find('li:not(.header,.footer) :checkbox')
+                            .removeAttr('checked');
+                self.$deletes.button('disable');
+            }
+        });
+
+        /* On any checkbox click, see if the 'delete' button should be
+         * disabled or enabled.
+         *
+         * :NOTE: Do NOT use 'change' since we directly set/remote the
+         *        'checked' attribute when the checkbox in the header/footer is
+         *        clicked.
+         */
+        self.$list.delegate(':checkbox', 'click', function(e) {
+            var $checked    = self.$list.find('li:not(.header,.footer) '
+                                                                + ':checked');
+            if ($checked.length > 0)
+            {
+                self.$deletes.button('enable');
+            }
+            else
+            {
+                self.$deletes.button('disable');
+            }
+        });
+
         // Delegate any click within a '.control' element
-        this.element.delegate('.item-edit, .item-delete',
+        self.element.delegate('.item-edit, .item-delete',
                               'click', function(e) {
             var $el = $(this);
 
@@ -189,14 +242,14 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
                 * the tag anchor
                 */
               .css('font-size', $a.css('font-size'))
-              .width( width + 16 );
+              .width( width * 2.5 );
 
         // Insert and position
         $div.appendTo( $li )
             .position({
                 of:     $a,
-                my:     'center top',
-                at:     'center top',
+                my:     'left top',
+                at:     'left top',
                 offset: '0 -5' //'0 -8'
             });
 
@@ -367,6 +420,7 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
         $ctl.attr('disabled', true);
 
         var $li = $el.parents('li:first');
+        //var $a  = $li.find('.item:first');
 
         // Present a confirmation dialog and delete.
         var html    = '<div class="confirm">'
@@ -380,8 +434,12 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
                     +  '<button name="no" >No</button>'
                     + '</div>';
         var $div    = $(html);
-
-        self._placeConfirmation($ctl, $div);
+        $div.appendTo( $li )
+            .position( {
+                of: $ctl,
+                my: 'left middle',
+                at: 'left middle'
+            });
 
         function _reEnable(e)
         {
@@ -404,7 +462,9 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
         $yes.click(function(e) {
             _reEnable(e);
 
-            self._perform_delete($el);
+            var $a  = $li.find('.item:first');
+
+            self._perform_delete($a);
         });
         $no.click(function(e) {
             _reEnable(e);
@@ -425,25 +485,34 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
 
     /** @brief  Item deletion has been confirmed, attempt to delete the
      *          identified item.
-     *  @param  $el     The jQuery/DOM element that was originally clicked upon
-     *                  to initiate this deletion
-     *                  (i.e. the '.item-delete' element);
+     *  @param  $a      The jQuery/DOM anchor representing the tag(s) to be
+     *                  deleted.
      */
-    _perform_delete: function($el) {
+    _perform_delete: function($a) {
         var self    = this;
         var opts    = self.options;
-        var $li     = $el.parents('li:first');
-        var $a      = $li.find('.item:first');
-        var tag     = $a.data('id');
+        var $li     = $a.parents('li:first');
+        var tags    = [];
+        var $aMap   = {};
+
+        /* Gather the tags to be deleted along with generating a map between
+         * tag and the matching jQuery/DOM node.
+         */
+        $a.each(function() {
+            var $el = $(this);
+            var id  = $el.data('id');
+            tags.push( id );
+            $aMap[ id ] = $el;
+        });
 
         /* method:  user.deleteTags,
-         * tags:    id,
+         * tags:    'tag, tag, tag, ...'
          *
          * Service Returns:
          *  { %tag% => %status == true | message string%, ... }
          */
         var params  = {
-            tags:   tag
+            tags:   tags.join(',')
         };
         if (opts.apiKey !== null)
         {
@@ -467,27 +536,60 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
 
                 if (data.result === null)   { return; }
 
-                if (data.result[tag] !== true)
+                // Consolidate all errors and successes
+                var errors      = [];
+                var successes   = [];
+                $.each(data.result, function( tag, val ) {
+                    if (val !== true)
+                    {
+                        errors.push( tag +': '+ val );
+
+                        /* Remove this tag from the $aMap which will be used to
+                         * remove successfully deleted items from our presented
+                         * list.
+                         */
+                        delete $aMap[ tag ];
+                    }
+                    else
+                    {
+                        successes.push( tag );
+                    }
+                });
+
+                if (errors.length > 0)
                 {
+                    // Report any deletion failures
                     $.notify({
                         title: 'Tag deletion failed',
-                        text:  '<p class="error">'
-                             +   (data ? data.result[tag] : '')
-                             + '</p>'
+                        text:  $.map(errors, function(val, idex) {
+                                    return '<p class="error">'+ val +'</p>';
+                               }).join('')
                     });
-
-                    return;
                 }
 
-                $.notify({
-                    title: 'Tag deleted',
-                    text:  tag
-                });
+                if (successes.length > 0)
+                {
+                    // Report any deletion successes
+                    $.notify({
+                        title: 'Tag'+ (successes.length > 1 ? 's' :'')
+                                    +' deleted',
+                        text:  successes.join(', ')
+                    });
 
-                // Trigger a deletion event for our parent
-                $li.hide('fast', function() {
-                    $li.remove();
-                });
+                    /* Initiate the removal of all successfully deleted tags
+                     * from our presented list.
+                     */
+                    $.each(successes, function(idex, val) {
+                        var $elA    = $aMap[ val ];
+                        if ($elA === undefined) { return; }
+
+                        var $elLi   = $elA.parents('li:first');
+                        $elLi.hide('fast', function() {
+                            $(this).remove();
+                        });
+                    });
+                }
+
             },
             error:      function(req, textStatus, err) {
                 $.notify({
@@ -502,42 +604,6 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
          });
     },
 
-    /** @brief  Given a control DOM element and a new confirmation DOM element,
-     *          figure out the best positioning for the confirmation and append
-     *          it to the parent li.
-     *  @param  $ctl            The control jQuery/DOM element;
-     *  @param  $confirmation   The new confirmation jQuery/DOM element;
-     */
-    _placeConfirmation: function($ctl, $confirmation) {
-        var $li         = $ctl.parents('li:first');
-
-        // Figure out the best place to put the confirmation.
-        var cOffset     = $ctl.offset();
-        var lOffset     = $li.offset();
-        var pos         = {
-            of: $ctl
-        };
-        if (cOffset.top <= lOffset.top)
-        {
-            /* ctl is IN $li (i.e. in a list view)
-             *  set my right/center at the right/center of $ctl
-             */
-            pos.my = 'right bottom';
-            pos.at = 'right bottom';
-        }
-        else
-        {
-            /* ctl is NOT IN $li (i.e. in a cloud view)
-             *  set my top/center at the top/center of $ctl
-             */
-            pos.my = 'center top';
-            pos.at = 'center top';
-        }
-
-        $confirmation.appendTo( $li )
-                     .position( pos );
-    },
-
     /************************
      * Public methods
      *
@@ -546,7 +612,10 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
         var self    = this;
 
         // Unbind events
-        self.$optionsForm.unbind('.cloudPane');
+        self.$optionsForm.unbind('.tagsManagePane');
+
+        // Destroy sub-widgets
+        self.$deletes.button('destroy');
 
         self._paneDestroy();
     }
@@ -554,6 +623,7 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
 
 
 }(jQuery));
+
 
 
 

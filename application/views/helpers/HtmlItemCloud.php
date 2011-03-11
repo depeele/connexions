@@ -17,7 +17,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                                              * Javascript 'cloudPane' which, in
                                              * turn, effects the cookie path
                                              * passed to the contained
-                                             * 'dropdownForm' presneting
+                                             * 'dropdownForm' presenting
                                              * Display Options.
                                              */
         'panePartial'       => 'main',

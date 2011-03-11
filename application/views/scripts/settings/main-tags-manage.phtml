@@ -1,7 +1,7 @@
 <?php
 /** @file
  *
- *  Render the Tags Rename section.
+ *  Render the Tags Manage section.
  *
  *  Incoming members:
  *      baseUrl         The base url for the main controller of this page
@@ -64,6 +64,56 @@
  *
  */
 
+if (true)
+{
+$config      = &$this->main;
+$namespace   = $config['namespace'];
+$panePartial = $config['panePartial'];
+$paginator   = $config['paginator'];
+
+Connexions::log('views/scripts/settings/main-tags-manage.phtml: '
+                . 'namespace[ %s ], panePartial[ %s ]',
+                $namespace, $panePartial);
+
+$jQuery      = $this->jQuery();
+$jQuery->addOnLoad('$.tags_manage_onLoad()')
+       ->javascriptCaptureStart();
+?>
+(function($) {
+    $.tags_manage_onLoad = function() {
+        var $filter = $('#tags-manage .tagFilter');
+
+        // Convert the filter controls to widgets
+        $filter.find(':text').input({hideLabel: true});
+        $filter.find(':button').button();
+
+        /* :TODO: Make the input area an auto-completion widget which will
+         *        reload the pane with any selected tag filter
+         */
+    };
+ }(jQuery));
+<?php
+$jQuery->javascriptCaptureEnd();
+
+
+// Top-level, static, non-paginated content
+?>
+<div id='tags-manage'><!-- tags-manage { -->
+ <div class='tagFilter ui-form'>
+   <div class='field'>
+    <label for='tagFilter-input'>Tag Filter</label>
+    <input  id='tagFilter-input' type='text' class='text' />
+   </div>
+   <button name='filter'>filter</button>
+ </div>
+ <!-- Dynamic, paginated content -->
+ <?= $this->partial('settings/'. $this->main['panePartial'] .'.phtml', $this) ?>
+</div><!-- tags-manage } -->
+<?php
+
+return;
+}
+
 // Prepare the HTML Item Cloud helper and present the current set of tags.
 $htmlCloud = $this->htmlItemCloud( $this->main );
 
@@ -94,7 +144,6 @@ $htmlItemScope = $this->htmlItemScope( array(
 echo $htmlItemScope->render();
 // */
 
-// Render the tag cloud.
-echo $htmlCloud->render();
+$this->cloudHelper = $htmlCloud;
 
-return;
+echo $this->partial('settings/'. $this->main['panePartial'] .'.phtml', $this);

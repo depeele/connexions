@@ -1,0 +1,164 @@
+<?php
+/** @file
+ *
+ *  Render the Cloud portion of the Tags Manage section.
+ *
+ *  Incoming members:
+ *      baseUrl         The base url for the main controller of this page
+ *                      without any differentiating parameters
+ *                      (e.g. tag restrictions);
+ *      url             The full url for the main controller of this page
+ *                      with differentiating parameters;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any tag restrictions / filters;
+ *
+ *      section         The settings section;
+ *      cmd             The specific settings command;
+ *      sections        An array of avaialble sections and commands of the
+ *                      form:
+ *                          {section: {
+ *                              'title':    section title,
+ *                              'script':   section render script
+ *                              'cmds':     [
+ *                                  {'title':   command title,
+ *                                   'script':  command render script},
+ *                                  ...
+ *                              ],
+ *                           },
+ *                           ...
+ *                          }
+ *
+ *      main            An array of settings for the main body:
+ *          namespace       The cookie/parameters/settings namespace for
+ *                          the the main body;
+ *          viewer          The Model_User instance representing the current
+ *                          viewer (typically a reference to $view->viewer);
+ *
+ *          displayStyle    Indicates the current presentation style --
+ *                          if this is an array, the style is 'custom';
+ *          perPage         The number of results on a single page;
+ *          page            The desired page of results;
+ *          sortBy          The desired sort field;
+ *          sortOrder       The desired sort order;
+ *          highlightCount  The number of tags to highlight;
+ *
+ *          showRelation    Show the relation indicator?;
+ *          itemType        The type of item being presented
+ *                          (View_Helper_HtmlItemCloud::ITEM_TYPE_*);
+ *
+ *          items           The Model_Set_Tag instance representing the
+ *                          tag(s) to be presented;
+ *          paginator       The item paginator;
+ *
+ *          itemBaseUrl     The baseUrl for item links;
+ *
+ *          weightName      The name to use for item weights;
+ *          weightTitle     The title of item weights;
+ *          titleTitle      The title of item names/titles;
+ *
+ *          currentSortBy   The current sortBy for 'items';
+ *          currentSortOrder
+ *                          The current sortOrder for 'items';
+ *
+ */
+$config      = &$this->main;
+$namespace   = $config['namespace'];
+$panePartial = $config['panePartial'];
+$paginator   = $config['paginator'];
+
+$jQuery      = $this->jQuery();
+$jsConfig    = array(
+                'namespace'         => $namespace,
+                'partial'           => $panePartial,
+                //'displayOptions'    => $dsConfig,
+                'showControls'      => true,
+               );
+$call        = "$('#{$namespace}Cloud').tagsManagePane("
+             .               Zend_Json::encode($jsConfig) .");";
+$jQuery->addOnLoad($call);
+
+// $this->main->paginator : paginated set of tags
+$uiPagination = $this->htmlPaginationControl();
+$uiPagination->setNamespace($namespace);
+
+?>
+<div    id='<?= $namespace ?>Cloud'
+     class='itemItems pane'><!-- pane { -->
+ <?= $uiPagination->render($paginator, 'paginator-top') ?>
+ <div class='cloud'><!-- cloud { -->
+  <?php
+    if (count($paginator) < 1)  //$paginator->count() 
+    {
+        echo 'No matching tags.';
+    }
+    else
+    {
+        ?>
+  <ul class='Item_List'><!-- Item_List { -->
+   <li class='header list-controls'>
+     <input  name='all'    title='check/uncheck all tags on this page'
+             type='checkbox' />
+     <button name='delete' title='delete checked tags'>delete</button>
+     <span class='itemCount'>Uses</span></li>
+   <?php
+        $idex = 0;
+        foreach ($paginator as $tag)
+        {
+            $oddEven = (++$idex % 2 ? 'even' : 'odd');
+            $tagName = $tag->tag;
+            $weight  = $tag->__get($config['weightName']);
+
+            ?><li class='<?= $oddEven ?>'
+               ><input type='checkbox' class='check-action' name='action' /
+               ><a class='item'
+                    href='<?= $config['itemBaseUrl'] . $tagName ?>'
+                 data-id='<?= $tagName ?>'
+                ><?= $tagName ?></a
+               ><div class="control"
+                ><span class="item-edit" title="edit"
+                 ><span class="title">EDIT</span
+                 ><span class="icon connexions_sprites 
+                                                item-edit"></span
+                ></span
+                ><span class="item-delete" title="delete"
+                 ><span class="title">DELETE</span
+                 ><span class="icon connexions_sprites 
+                                                item-delete"></span
+                 ></span
+               ></div
+               ><span class='itemCount' title='uses'><?= $weight ?></span
+             ></li><?php
+        }
+   ?>
+   <li class='footer list-controls'>
+     <input  name='all'    title='check/uncheck all tags on this page'
+             type='checkbox' />
+     <button name='delete' title='delete checked tags'>delete</button>
+     <span class='itemCount'>Uses</span></li>
+  </ul><!-- Item_List } -->
+<?php
+    }
+  ?>
+ </div><!-- cloud } -->
+ <?= $uiPagination->render($paginator) ?>
+ <br class='clear' />
+</div><!-- pane } -->
+<?php
+
+
+/*
+ *      cloudHelper     If set, the configured HTML Item Cloud helper to be
+ *                      used for rendering.  If not set, use $this->main to
+ *                      configure an HTML Item Cloud helper for rendering.
+ *
+// Prepare the HTML Item Cloud helper and present the current set of tags.
+$htmlCloud = ( ! isset($this->cloudHelper)
+                ? $this->htmlItemCloud( $this->main )
+                : $this->cloudHelper );
+
+// Render the tag cloud.
+echo $htmlCloud->render();
+
+// */

@@ -3891,10 +3891,11 @@ $.widget("connexions.itemsPane", $.connexions.pane, {
  *  Requires:
  *      ui.core.js
  *      ui.widget.js
+ *      ui.position.js
  *      connexions.pane.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
-/*global jQuery:false, setTimeout:false, clearTimeout:false */
+/*global jQuery:false, setTimeout:false, clearTimeout:false, document:false */
 (function($) {
 
 $.widget("connexions.cloudPane", $.connexions.pane, {
