@@ -219,15 +219,9 @@ class SettingsController extends Connexions_Controller_Action
         switch ($this->_partials[1])
         {
         case 'manage':
-            $reqTags = $this->_request->getParam('tags', null);
-            $this->view->tags = $this->service('Tag')->csList2set($reqTags);
+            $filter = $this->_request->getParam('filter', null);
+            $this->view->filter = $filter;
 
-            /*
-            // Retrieve all user-related tags
-            $order = array('tag '.       Connexions_Service::SORT_DIR_ASC,
-                           'itemCount '. Connexions_Service::SORT_DIR_DESC);
-            $this->view->tags = $this->_viewer->getTags($order);
-             */
             /* Prepare to present a tag list or cloud
              *  (mirrors TagsController::_prepareMain)
              */
@@ -286,7 +280,8 @@ class SettingsController extends Connexions_Controller_Action
             // All tags for the currently authenticated user
             $userTags = $this->_viewer->getTags($fetchOrder,
                                                 $count,
-                                                $offset);
+                                                $offset,
+                                                $filter);
 
             // :TODO: Filter the userTags by 'reqTags'
             $config['items'] = $userTags;

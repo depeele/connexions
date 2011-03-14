@@ -489,4 +489,36 @@ class UserDbTest extends DbTestCase
 
         $this->assertDataSetsEqual( $es, $ds );
     }
+
+    public function testUserGetTags1()
+    {
+        $expected   = 'security,passwords,privacy,identity,web2.0,online,password,storage,ajax,tools,javascript,framework,library,oat,widgets,demo,graph,chart,diagram,graphics,generator,php,test,cryptography';
+
+        // Retrieve the target user
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $user   = $mapper->find( array('userId' => 1 ));
+        $this->assertNotEquals(null, $user);
+
+        $res    = $user->getTags(null,  // order
+                                 null,  // count
+                                 null,  // offset
+                                 null); // term
+        $this->assertEquals($expected, $res->__toString());
+    }
+
+    public function testUserGetTags2()
+    {
+        $expected   = 'passwords,password,storage,framework,generator';
+
+        // Retrieve the target user
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $user   = $mapper->find( array('userId' => 1 ));
+        $this->assertNotEquals(null, $user);
+
+        $res    = $user->getTags(null,  // order
+                                 null,  // count
+                                 null,  // offset
+                                 'or'); // term
+        $this->assertEquals($expected, $res->__toString());
+    }
 }

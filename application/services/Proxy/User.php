@@ -83,6 +83,29 @@ class Service_Proxy_User extends Connexions_Service_Proxy
         return $this->_service->deleteTags($user, $tags);
     }
 
+    /** @brief  Perform tag autocompletion for the given user.
+     *  @param  term        The string to autocomplete.
+     *  @param  limit       The maximum number of tags to return;
+     *  @param  apiKey      The apiKey for the currently authenticated user
+     *                      (REQUIRED if the transport method is NOT POST);
+     *
+     *  @return Model_Set_Tag
+     */
+    public function autocompleteTag($term       = null,
+                                    $limit      = 50,
+                                    $apiKey     = null)
+    {
+        $user = $this->_authenticate($apiKey);
+
+        // /*
+        Connexions::log("Service_Proxy_User::autocompleteTag(): "
+                        .   "user[ %s ], term[ %s ], limit[ %d ]",
+                        $user, $term, $limit);
+        // */
+
+        return $this->_service->autocompleteTag($user, $term, $limit);
+    }
+
     /** @brief  Update the currently authenticated user.
      *  @param  fullName    The new 'fullName'   (null for no change);
      *  @param  email       The new 'email'      (null for no change);

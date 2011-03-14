@@ -608,6 +608,43 @@ $.widget("settings.tagsManagePane", $.connexions.pane, {
      * Public methods
      *
      */
+
+    /** @brief  Get/set the current filter.
+     *  @param  filter      If provided, set the filter.
+     *
+     *  @return The current/new filter.
+     */
+    filter: function(filter) {
+        var self    = this;
+        var opts    = self.options;
+        if (opts.hiddenVars === null)   opts.hiddenVars = {};
+
+        if (filter === undefined)
+        {
+            filter = opts.hiddenVars.filter;
+        }
+        else
+        {
+            opts.hiddenVars.filter = filter;
+        }
+
+        return filter;
+    },
+
+    /** @brief  Remove any filter.
+     *
+     *  @return this for a fluent interface.
+     */
+    removeFilter: function() {
+        var self    = this;
+        var opts    = self.options;
+        if (opts.hiddenVars === null)   opts.hiddenVars = {};
+
+        delete opts.hiddenVars.filter;
+
+        return this;
+    },
+
     destroy: function() {
         var self    = this;
 

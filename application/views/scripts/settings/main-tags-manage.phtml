@@ -81,15 +81,9 @@ $jQuery->addOnLoad('$.tags_manage_onLoad()')
 ?>
 (function($) {
     $.tags_manage_onLoad = function() {
-        var $filter = $('#tags-manage .tagFilter');
-
-        // Convert the filter controls to widgets
-        $filter.find(':text').input({hideLabel: true});
-        $filter.find(':button').button();
-
-        /* :TODO: Make the input area an auto-completion widget which will
-         *        reload the pane with any selected tag filter
-         */
+        var $section    = $('#tags-manage');
+        var $pane       = $section.find('.pane:first');
+        $section.find('.tagFilter').tagsFilter({pane:$pane});
     };
  }(jQuery));
 <?php
@@ -104,7 +98,8 @@ $jQuery->javascriptCaptureEnd();
     <label for='tagFilter-input'>Tag Filter</label>
     <input  id='tagFilter-input' type='text' class='text' />
    </div>
-   <button name='filter'>filter</button>
+   <button name='submit'>filter</button>
+   <button name='reset' >clear</button>
  </div>
  <!-- Dynamic, paginated content -->
  <?= $this->partial('settings/'. $this->main['panePartial'] .'.phtml', $this) ?>
