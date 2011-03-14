@@ -64,8 +64,6 @@
  *
  */
 
-if (true)
-{
 $config      = &$this->main;
 $namespace   = $config['namespace'];
 $panePartial = $config['panePartial'];
@@ -104,41 +102,3 @@ $jQuery->javascriptCaptureEnd();
  <!-- Dynamic, paginated content -->
  <?= $this->partial('settings/'. $this->main['panePartial'] .'.phtml', $this) ?>
 </div><!-- tags-manage } -->
-<?php
-
-return;
-}
-
-// Prepare the HTML Item Cloud helper and present the current set of tags.
-$htmlCloud = $this->htmlItemCloud( $this->main );
-
-// /*
-// Prepare the Html Item Scope helper
-$scopePath = array('Tags' => $this->baseUrl('/tags/'
-                                            . $this->viewer->name));
-
-$scopeRpc = Connexions::getJsonRpcInfo();
-$scopeRpc['method'] = 'bookmark.autocompleteTag';
-$scopeRpc['params'] = array('tags'   => (count($this->tags) < 1
-                                            ? null
-                                            : $this->tags->__toString()),
-                            'users'  => $this->viewer->name,
-                      );
-
-$htmlItemScope = $this->htmlItemScope( array(
-                    'namespace'         =>  $this->main->namespace,
-                    'items'             =>  $htmlCloud->paginator,
-                    'scope'             =>  $this->tags,
-                    'inputLabel'        =>  'Tags',
-                    'inputName'         =>  'Tags',
-                    'path'              =>  $scopePath,
-                    'jsonRpc'           =>  $scopeRpc,
-                 ));
-
-// Render the scope
-echo $htmlItemScope->render();
-// */
-
-$this->cloudHelper = $htmlCloud;
-
-echo $this->partial('settings/'. $this->main['panePartial'] .'.phtml', $this);

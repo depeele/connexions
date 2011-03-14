@@ -269,7 +269,11 @@ abstract class Connexions_Model_Set
                         get_class($this), count($results));
         // */
 
-        $this->_members = $results;
+        // Ensure that the new 'members' is an array.
+        $this->_members = ( is_object($results) &&
+                            method_exists($results, 'toArray')
+                                ? $results->toArray()
+                                : (array)($results) );
 
         return $this;
     }
@@ -835,8 +839,10 @@ abstract class Connexions_Model_Set
         }
 
         /*
-        Connexions::log("Connexions_Model_Set::getItems(%d, %d): %d total",
-                        $offset, $itemCountPerPage, count($this->_members));
+        Connexions::log("Connexions_Model_Set::getItems(%d, %d): "
+                        .   "%d items of %d total",
+                        $offset, $itemCountPerPage,
+                        $numItems, count($this->_members));
         // */
 
         // Ensure that each item in the range is a Model instance
@@ -998,12 +1004,15 @@ abstract class Connexions_Model_Set
                         $offset, $count);
         // */
         if (($offset + $count) > $this->count())
+        {
             $count = $this->count() - $offset;
+        }
 
         $mapper = $this->getMapper();
+        $class  = $this->getModelName();
         for ($idex = $offset; $idex < $count; $idex++)
         {
-            $item =& $this->_members[$idex];
+            $item = $this->_members[$idex];
 
             /*
             Connexions::log("Connexions_Model_Set::_makeMembers(%d, %d): "
@@ -1019,19 +1028,41 @@ abstract class Connexions_Model_Set
                 // One or more members are missing...
                 $this->_fillMembers($idex, ($count - $idex));
 
-                $item =& $this->_members[$idex];
+                $item = $this->_members[$idex];
             }
 
-            if ( is_array($item) )
+            if ( is_array($item) ||
+                 (is_object($item) && (get_class($item) != $class)) )
             {
                 /* Create a new instance of the member class using the record.
                  *
                  * Note: This ASSUMES that all raw data is from the database,
                  *       hence the missing second parameter to makeModel().
+                 *
+                 * First, attempt to ensure that the configuration data is in
+                 * the form of an array.  This is of particular use if the set
+                 * was created using a Zend_Db_Table_Rowset instance
+                 * (e.g. the item or member set of a Model_Group).
                  */
-                $this->_members[$idex] =
-                        $mapper->makeModel( $item );
+                $data  = (! is_array($item)
+                            ? ( method_exists($item, 'toArray')
+                                ? $item->toArray()
+                                : (array)($item) )
+                            : $item );
+                $model = $mapper->makeModel( $data );
+
+                /*
+                Connexions::log("Connexions_Model_Set::_makeMembers(): "
+                                . "%d, create %s using [ %s ] == [ %s ]",
+                                $idex, $class,
+                                Connexions::varExport($data),
+                                $model->debugDump());
+                // */
+
+                $item = $model;
             }
+
+            $this->_members[ $idex ] = $item;
         }
 
         return $this;
