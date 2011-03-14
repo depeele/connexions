@@ -162,7 +162,7 @@ $.widget("connexions.pane", {
      * Public methods
      *
      */
-    reload: function(page) {
+    reload: function(completionCb) {
         var self    = this;
         var opts    = self.options;
         var re      = new RegExp(opts.pageVar +'='+ opts.pageCur);
@@ -222,6 +222,10 @@ $.widget("connexions.pane", {
                     },
                     complete:   function() {
                         self.element.unmask();
+                        if ($.isFunction(completionCb))
+                        {
+                            completionCb.call(self.element);
+                        }
                     }
             });
         }

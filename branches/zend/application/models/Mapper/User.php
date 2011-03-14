@@ -47,22 +47,35 @@ class Model_Mapper_User extends Model_Mapper_Base
      *  @param  order   Optional ORDER clause (string, array);
      *  @param  count   Optional LIMIT count;
      *  @param  offset  Optional LIMIT offset;
+     *  @param  term    Optional tag term to match (tag=*);
      *
      *  @return A Model_Tag_Set
      */
     public function getTags(Model_User  $user,
                                         $order  = null,
                                         $count  = null,
-                                        $offset = null)
+                                        $offset = null,
+                                        $term   = null)
     {
         $tagMapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
-        $tags      = $tagMapper->fetchRelated( array(
-                                    'users'     => array($user->userId),
-                                    'order'     => $order,
-                                    'count'     => $count,
-                                    'offset'    => $offset,
-                                ));
+        $id        = array(
+            'users'     => array($user->userId),
+            'order'     => $order,
+            'count'     => $count,
+            'offset'    => $offset,
+        );
+        if ($term !== null)
+        {
+            $id['where'] = array('tag=*' => $term);
+        }
 
+        /*
+        Connexions::log("Model_Mapper_User::getTags(): "
+                        . "id[ %s ]",
+                        Connexions::varExport($id));
+        // */
+
+        $tags = $tagMapper->fetchRelated( $id );
         return $tags;
     }
 

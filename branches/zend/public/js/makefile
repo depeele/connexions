@@ -21,6 +21,7 @@ SETTINGS_SRCS	= jquery.Jcrop.js jquery.scrollTo.js			\
 		  settings.credential.js settings.credentials.js	\
 		  settings.apiKey.js					\
 		  settings.bookmarksImport.js				\
+		  settings.tagsFilter.js				\
 		  settings.tagsManagePane.js
 
 #all: connexions.min.css bookmarks.min.css users.min.css 	\

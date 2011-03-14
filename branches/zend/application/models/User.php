@@ -632,22 +632,38 @@ class Model_User extends Model_Taggable
      *  @param  order   Optional ORDER clause (string, array);
      *  @param  count   Optional LIMIT count;
      *  @param  offset  Optional LIMIT offset;
+     *  @param  term    Optional tag term to match (tag=*);
      *
      *  @return A Model_Tag_Set
      */
     public function getTags($order  = null,
                             $count  = null,
-                            $offset = null)
+                            $offset = null,
+                            $term   = null)
     {
-        if ($this->_tags === null)
+        $res = null;
+        if ($term !== null)
         {
-            $this->_tags = $this->getMapper()->getTags( $this,
-                                                        $order,
-                                                        $count,
-                                                        $offset );
+            $res = $this->getMapper()->getTags( $this,
+                                                 $order,
+                                                 $count,
+                                                 $offset,
+                                                 $term);
+        }
+        else
+        {
+            if ($this->_tags === null)
+            {
+                $this->_tags = $this->getMapper()->getTags( $this,
+                                                            $order,
+                                                            $count,
+                                                            $offset );
+            }
+
+            $res = $this->_tags;
         }
 
-        return $this->_tags;
+        return $res;
     }
 
     /** @brief  Given an array of tag rename information, rename tags for the
