@@ -49,94 +49,70 @@ class Service_Tag extends Connexions_Service
 
         $set->setSource($csList);
 
-        if ( ($set->count() > 0) && $create )
+        /* Now, if the size of 'set' is less than the size of 'ids', locate the
+         * missing entries and create a representative model instance for each.
+         *
+         * If 'create' is true, ensure that the representative model instances
+         * have been saved.
+         */
+        if ( count($set) < count($ids) )
         {
-            /* See if there are any tags that we need to create.  This can only
-             * succeed if the list we have represents tag names as opposed to
-             * tagIds.  Look through the list to see if at least one is
-             * non-numeric.
-             */
-            $by  = 'tagId';
-            foreach ($ids as $val)
-            {
-                if (! is_numeric($val))
-                {
-                    $by = 'tag';
-                    break;
-                }
-            }
-
-            /* If 'by' is NOT 'tag', then we appear to have a list of tag
-             * identifiers.  Creation doesn't make sense.
-             */
-            if ($by !== 'tag')
-            {
-                throw new Exception('Cannot create when providing tagIds');
-            }
-
-            /* Now that we know we have an array of tags, use our filter
-             * to ensure that each tag is in a valid form (normalized).
-             */
+            /*
             $filter  = $this->_getFilter(); // 'Model_Filter_Tag'
-            if ( is_object($filter) )
-            {
-                $normIds = array();
-                foreach($ids as $tag)
-                {
-                    $filter->setData( array('tag' => $tag) );
-                    if ($filter->isValid('tag'))
-                    {
-                        $normTag = $filter->getEscaped('tag');
-
-                        /*
-                        Connexions::log("Service_Tag::csList2set(): "
-                                        .   "tag[ %s ] == [ %s ]",
-                                        $tag, $normTag);
-                        // */
-
-                        // Only add tags that we need to create
-                        if (! $set->in_array($normTag))
-                        {
-                            $normIds[ $normTag ] = true;
-                        }
-                    }
-                }
-            }
-            else
+            if (! is_object($filter) )
             {
                 throw new Exception('Model_Tag SHOULD have a Filter...');
             }
+            // */
 
-            if (count($normIds) > 0)
+            /*
+            Connexions::log("Service_Tag::csList2set(): "
+                                . "%d tags seem to be missing...",
+                            count($ids) - count($set));
+            // */
+
+            // Normalize all tags in 'ids'
+            foreach($ids as $tag)
             {
-                /* There is one or more tag that does not yet exist.
-                 *
-                 * Create all that are missing, adding them to the set.
-                 */
+                // Skip any tagId's
+                if (is_int($tag))   continue;
 
-                /*
-                Connexions::log("Service_Tag::csList2set(): "
-                                .   "create %d tags [ %s ]",
-                                count($normIds),
-                                implode(', ', array_keys($normIds)));
-                // */
+                $data = array(
+                    'tag' => $tag,
+                );
 
-                $tMapper = $this->_getMapper(); // 'Model_Mapper_Tag'
-                foreach ($normIds as $tagName => $idex)
+                // Create an un-backed model instance.
+                $model = $this->_mapper->makeModel( $data, false );
+
+                // See if the normalized tag already exists in the set.
+                if (! $set->in_array($model->tag))
                 {
-                    $tag = $tMapper->getModel( array('tag' => $tagName) );
-                    //if (($tag !== null) && (! $tag->isBacked()) )
-                    if ($tag !== null)
+                    /* The normalized tag does NOT exist in the set.
+                     *
+                     * If we've been asked to create, save this model now.
+                     *
+                     * Regardless, append it to the set.
+                     */
+                    if ($create === true)
                     {
-                        $tag = $tag->save();
-                        $set->append($tag);
+                        $model = $model->save();
                     }
-                }
+                    $set->append( $model );
 
-                // Sort the final set by tag.
-                $set->usort('Service_Tag::sort_by_tag');
+                    /*
+                    Connexions::log("Service_Tag::csList2set(): "
+                                        . "append[ %s ]",
+                                    $model->debugDump());
+                    // */
+                }
             }
         }
+
+        /*
+        Connexions::log("Service_Tag::csList2set(): "
+                            . "resulting set[ %s ]",
+                        $set->debugDump());
+        // */
 
         return $set;
     }

@@ -37,6 +37,18 @@ class Model_Mapper_User extends Model_Mapper_Base
         else if (is_string($id))
         {
             $id = array('name'   => $id);
+
+            // Apply the filter to the name to fully normalize
+            $filter = $this->getFilter();
+            $filter->setData( $id );
+
+            /*
+            Connexions::log("Model_Mapper_User::normalizeId(): "
+                            .   "name[ %s ] == [ %s ]",
+                            $id['name'], $filter->getUnescaped('name'));
+            // */
+
+            $id['name'] = $filter->getUnescaped('name');
         }
 
         return $id;

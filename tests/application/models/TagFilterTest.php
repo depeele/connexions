@@ -158,8 +158,12 @@ class TagFilterTest extends BaseTestCase
             'tagId'         => 1,
             'tag'           => 'Test Tag-'. str_repeat('.', 30),
         );
+        $expected        = $data;
+        $expected['tag'] = strtolower( substr($expected['tag'],0,30) );
+
         $filter  = new Model_Filter_Tag($data);
 
+        /*
         $this->assertTrue ( $filter->hasInvalid() );
         $this->assertFalse( $filter->hasMissing() );
         $this->assertFalse( $filter->hasUnknown() );
@@ -168,6 +172,63 @@ class TagFilterTest extends BaseTestCase
         $this->assertFalse( $filter->isValid()  );
 
         //$this->_outputInfo($filter, $data);
+        // */
+
+        $this->assertFalse( $filter->hasInvalid() );
+        $this->assertFalse( $filter->hasMissing() );
+        $this->assertFalse( $filter->hasUnknown() );
+
+        $this->assertTrue ( $filter->hasValid() );
+        $this->assertTrue ( $filter->isValid()  );
+
+        $this->assertEquals($expected, $this->_getParsed($filter));
+
+        //$this->_outputInfo($filter, $data);
+    }
+
+    public function testTagFilterNormalize1()
+    {
+        $data       = array(
+            'tagId'         => 1,
+            'tag'           => "Tag\nToo\r&nbsp;Long123456789012345678 &nbsp; with newlines and entities",
+        );
+        $expected        = $data;
+        $expected['tag'] = 'tag too long123456789012345678';
+
+        $filter  = new Model_Filter_Tag($data);
+
+        $this->assertFalse( $filter->hasInvalid() );
+        $this->assertFalse( $filter->hasMissing() );
+        $this->assertFalse( $filter->hasUnknown() );
+
+        $this->assertTrue ( $filter->hasValid() );
+        $this->assertTrue ( $filter->isValid()  );
+
+        $this->assertEquals($expected, $this->_getParsed($filter));
+
+        //$this->_outputInfo($filter, $data);
+    }
+
+    public function testTagFilterNormalize2()
+    {
+        $data       = array(
+            'tagId'         => 1,
+            'tag'           => 'Tag1&nbsp;&shy;',
+        );
+        $expected        = $data;
+        $expected['tag'] = 'tag1';
+
+        $filter  = new Model_Filter_Tag($data);
+
+        $this->assertFalse( $filter->hasInvalid() );
+        $this->assertFalse( $filter->hasMissing() );
+        $this->assertFalse( $filter->hasUnknown() );
+
+        $this->assertTrue ( $filter->hasValid() );
+        $this->assertTrue ( $filter->isValid()  );
+
+        $this->assertEquals($expected, $this->_getParsed($filter));
+
+        //$this->_outputInfo($filter, $data);
     }
 }
-

@@ -231,10 +231,12 @@ class TagServiceTest extends DbTestCase
     public function testTagServicecsList2set()
     {
         //                  vv SHOULD BE ordered by 'tag ASC'
-        $expected   = array(10, 1, 49);      // vv unknown tags
+        //                  except for the tags that didn't already exist
+        //                  these will be at the end of the list with id 0
+        $expected   = array(10, 1, 49, 0, 0);// vv unknown tags
         $tags       = "security, ajax,  wii,    tag12345, tag91828";
         $service    = Connexions_Service::factory('Model_Tag');
-        $tags      = $service->csList2set( $tags );
+        $tags       = $service->csList2set( $tags );
         $this->assertNotEquals(null, $tags);
 
         $ids        = $tags->getIds();
@@ -252,7 +254,9 @@ class TagServiceTest extends DbTestCase
     public function testTagServiceSetString()
     {
         //             vv SHOULD BE ordered by 'tag ASC'
-        $expected   = "ajax,security,wii";  // vv unknown tags
+        //                  except for the tags that didn't already exist
+        //                  these will be at the end of the list.
+        $expected   = "ajax,security,wii,tag12345,tag91828";
         $tags       = "security, ajax,  wii,   tag12345, tag91828";
         $service    = Connexions_Service::factory('Model_Tag');
         $tags       = $service->csList2set( $tags );
@@ -436,5 +440,65 @@ class TagServiceTest extends DbTestCase
         //printf ("Tags: [ %s ]\n", $tags);
 
         $this->assertEquals($expected, $tags);
+    }
+
+    public function testTagServiceNormalize1()
+    {
+        $tagStr   = 'Tag1,Tag Too Long123456789012345678901234, Tag  3  ';
+        $expected = 'tag1,tag too long123456789012345678,tag 3';
+
+        $service  = Connexions_Service::factory('Model_Tag');
+        $tags     = $service->csList2set( $tagStr );
+        $this->assertNotEquals(null, $tags);
+
+        $this->assertEquals($expected, $tags->__toString());
+    }
+
+    public function testTagServiceNormalize2()
+    {
+        $tagStr   = "Tag1,Tag\nToo\r&nbsp;Long123456789012345678 &nbsp; with newlines and entities, Tag  3  ";
+        $expected = 'tag1,tag too long123456789012345678,tag 3';
+
+        $service  = Connexions_Service::factory('Model_Tag');
+        $tags     = $service->csList2set( $tagStr );
+        $this->assertNotEquals(null, $tags);
+
+        $this->assertEquals($expected, $tags->__toString());
+    }
+
+    public function testTagServiceNormalize3()
+    {
+        $tagStr   = '<b>Tag1</b>,<b>Tag2,Tag3</b>';
+        $expected = 'tag1,tag2,tag3';
+
+        $service  = Connexions_Service::factory('Model_Tag');
+        $tags     = $service->csList2set( $tagStr );
+        $this->assertNotEquals(null, $tags);
+
+        $this->assertEquals($expected, $tags->__toString());
+    }
+
+    public function testTagServiceNormalize4()
+    {
+        $tagStr   = '[Tag1],"Tag2",\\Tag3\,Tag(4), tag\'5\', tag&quot;6';
+        $expected = '[tag1],tag2,tag3,tag(4),tag5,tag6';
+
+        $service  = Connexions_Service::factory('Model_Tag');
+        $tags     = $service->csList2set( $tagStr );
+        $this->assertNotEquals(null, $tags);
+
+        $this->assertEquals($expected, $tags->__toString());
+    }
+
+    public function testTagServiceNormalize5()
+    {
+        $tagStr   = 'Tag1&nbsp;&shy;';
+        $expected = 'tag1';
+
+        $service  = Connexions_Service::factory('Model_Tag');
+        $tags     = $service->csList2set( $tagStr );
+        $this->assertNotEquals(null, $tags);
+
+        $this->assertEquals($expected, $tags->__toString());
     }
 }

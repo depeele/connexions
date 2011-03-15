@@ -35,6 +35,11 @@ abstract class Connexions_Model_Mapper
     // The name of the Model Set class to use when retrieving multiple items.
     protected           $_modelSetName  = null;
 
+    /* The Connexions_Model_Filter associated with the Model class of this
+     * mapper (Connexions_Model_Filter::NO_INSTANCE if none).
+     */
+    protected           $_filter        = null;
+
     /** @brief  Create a new mapper.
      *  @param  config  Configuration:
      *                      accessor        The name of a Data Accessor class,
@@ -189,6 +194,28 @@ abstract class Connexions_Model_Mapper
         }
 
         return $this->_modelSetName;
+    }
+
+    /** @brief  Retrieve the Connexions_Model_Filter instance associated with
+     *          the Domain Model handled by this mapper.
+     *
+     *  @return The Connexions_Model_Filter instance for this mapper
+     *          (Connexions_Model_Filter::NO_INSTANCE if none exists).
+     */
+    public function getFilter()
+    {
+        if ($this->_filter === null)
+        {
+            /* Use the name of the current class to construct a Model Set
+             * class name:
+             *      Model_Mapper_<Class> => Model_Set_<Class>
+             */
+            $filterName = str_replace('Model_Mapper_', 'Model_Filter_',
+                                      get_class($this));
+            $this->_filter = Connexions_Model_Filter::factory($filterName);
+        }
+
+        return $this->_filter;
     }
 
     /** @brief  Find a matching Domain Model or create a new one given raw
