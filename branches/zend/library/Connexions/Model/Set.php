@@ -924,9 +924,13 @@ abstract class Connexions_Model_Set
             $item = $this->getMapper()->getModel( $item );
         }
 
-        // If the incoming item is not yet backed, save it now.
-        if (! $item->isBacked())
-            $item = $item->save();
+        /* :NOTE: Do NOT automatically save appended items!
+         *        There are cases (e.g. normalzing for validation) where we
+         *        need to include non-backed items in a set AS non-backed
+         *        items...
+         *  if (! $item->isBacked())
+         *      $item = $item->save();
+         */
 
         array_push($this->_members, $item);
 

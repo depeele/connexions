@@ -51,7 +51,7 @@ abstract class Connexions_Model_Filter extends Zend_Filter_Input
      */
     public static function factory($filter)
     {
-        if ($filter instanceof Connexions_Filter)
+        if ($filter instanceof Connexions_Model_Filter)
         {
             $filterName = get_class($filter);
         }

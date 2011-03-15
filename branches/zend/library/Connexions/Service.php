@@ -367,20 +367,6 @@ abstract class Connexions_Service
                     ? array()
                     : preg_split('/\s*,\s*/', $str));
 
-        /* :TODO: If the target model has a filter, apply it to each of the
-         *        provide items.
-        $filter = $this->_getFilter( );
-        if (is_object($filter))
-        {
-            foreach($list as $item)
-            {
-                // But we need to know what it is we've split:
-                //  'userId', 'user.name', 'tagId', 'tag.name', ...
-                $filter->setData( array('%id%' => $item) );
-            }
-        }
-         */
-
         /*
         Connexions::log("Connexions_Service::_csList2array( %s ): "
                         . "[ %s ]",
@@ -402,7 +388,7 @@ abstract class Connexions_Service
         if (! is_array($order))
         {
             // Convert any comma-separated string into an array.
-            $orderAr = $this->_csList2array($order, false);
+            $orderAr = $this->_csList2array($order);
             if (! is_array($orderAr))
                 return $order;
         }

@@ -37,6 +37,18 @@ class Model_Mapper_Tag extends Model_Mapper_Base
         else if (is_string($id))
         {
             $id = array('tag'   => $id);
+
+            // Apply the filter to the tag to fully normalize
+            $filter = $this->getFilter();
+            $filter->setData( $id );
+
+            /*
+            Connexions::log("Model_Mapper_Tag::normalizeId(): "
+                            .   "tag[ %s ] == [ %s ]",
+                            $id['tag'], $filter->getUnescaped('tag'));
+            // */
+
+            $id['tag'] = $filter->getUnescaped('tag');
         }
 
         return $id;
