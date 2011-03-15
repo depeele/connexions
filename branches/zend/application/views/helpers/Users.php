@@ -134,8 +134,10 @@ class View_Helper_Users extends View_Helper_List
             /*
             Connexions::log("View_Helper_Users::getUsers(): "
                             . "Retrieve users: "
+                            . "listname[ %s ], "
                             . "to[ %s ], "
                             . "order[ %s ], count[ %d ], offset[ %d ]",
+                            $key,
                             Connexions::varExport($to),
                             $fetchOrder, $count, $offset);
             // */
@@ -151,14 +153,6 @@ class View_Helper_Users extends View_Helper_List
         $val = $this->_params[$key];
 
         return $val;
-    }
-
-    public function __set($key, $val)
-    {
-        if ($key === 'users')
-            $key = 'items';
-
-        return parent::__set($key, $val);
     }
 
     public function __get($key)

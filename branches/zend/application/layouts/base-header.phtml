@@ -30,7 +30,7 @@ $links->prependStylesheet($baseUrl .'css/connexions.css')
                        'href' => $baseUrl .'/images/favicon.png'),
                        'PREPEND');
 
-$jQuery->addJavascriptFile($this->baseurl('js/connexions-full.js'));
+$jQuery->addJavascriptFile($this->baseUrl('js/connexions-full.js'));
 
 if ( @isset($config->cdn) && $config->cdn->use )
 {

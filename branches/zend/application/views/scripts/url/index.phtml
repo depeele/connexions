@@ -40,7 +40,7 @@
 $htmlBookmarks = $this->htmlBookmarks( $this->main );
 
 // Prepare the Html Item Scope helper
-$scopePath = array('Url' => $this->baseurl('/url'));
+$scopePath = array('Url' => $this->baseUrl('/url'));
 
 $scopeRpc = Connexions::getJsonRpcInfo();
 $scopeRpc['method'] = 'bookmark.autocompleteTag';

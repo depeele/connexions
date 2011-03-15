@@ -4,6 +4,7 @@
 @import "urls";
 @import 'jquery_Jcrop';
 @import 'ui-fileUploader';
+@import 'users';
 
 /****** settings.sass ****** */
 // Styling for the settings
@@ -678,19 +679,6 @@
       }
     }
   }
-  .paginator-top {
-    .pager, .info {
-      @include        inlineBlock();
-      vertical-align: top;
-    }
-    .info {
-      padding:        0 0 0 1em;
-
-      .perPage, .itemRange {
-        @include      inlineBlock();
-      }
-    }
-  }
   .cloud {
     font-size:  100%;
     padding:    0.25em 2em;
@@ -722,3 +710,44 @@
     }
   }
 }
+
+#tags-manage {
+  .paginator-top {
+    .pager, .info {
+      @include        inlineBlock();
+      vertical-align: top;
+    }
+    .info {
+      padding:        0 0 0 1em;
+
+      .perPage, .itemRange {
+        @include      inlineBlock();
+      }
+    }
+  }
+
+  .person {
+    font-size:      0.8em;
+
+    a {
+      font-weight:  normal;
+    }
+
+    .avatar, .userId, .fullName, .email, .email .ui-icon, .dates {
+      @include        inlineBlock();
+      vertical-align: middle;
+    }
+
+    .email {
+      .ui-icon {
+      }
+    }
+  }
+}
+
+#people-network {
+  .users {
+    padding-left: 18px;
+  }
+}
+

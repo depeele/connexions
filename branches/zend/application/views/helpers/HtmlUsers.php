@@ -338,21 +338,26 @@ class View_Helper_HtmlUsers extends View_Helper_Users
     }
 
     /** @brief  Render HTML to represent a User within this list.
-     *  @param  item        The Model_User instance to render.
+     *  @param  item    The Model_User instance to render.
+     *  @param  params  If provided, parameters to pass to the partial
+     *                  [ {namespace, bookmark, viewer} ];
      *
      *  @return The HTML of the rendered user.
      */
-    public function renderItem($item)
+    public function renderItem($item, $params = array())
     {
-        return parent::renderItem($item,
-                                  array(
-                                    'namespace'  => $this->namespace,
-                                    'user'       => $item,
-                                    'viewer'     => $this->viewer,
-                                    'showParts'  => $this->_showParts,
-                                    'sortBy'     => $this->sortBy,
-                                    'tags'       => $this->tags,
-                                  ));
+        $defaults = array(
+            'namespace'  => $this->namespace,
+            'user'       => $item,
+            'viewer'     => $this->viewer,
+            'showParts'  => $this->_showParts,
+            'sortBy'     => $this->sortBy,
+            'tags'       => $this->tags,
+        );
+
+        $params = array_merge($defaults, $params);
+
+        return parent::renderItem($item, $params);
     }
 
     /** @brief  Render the HTML of a group header.

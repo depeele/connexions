@@ -79,7 +79,7 @@ searchResults.css: mixins.scss searchResults.scss colors.scss
 	sass -t compact searchResults.scss:searchResults.css
 
 settings.css: mixins.scss settings.scss colors.scss \
-  	      jquery_Jcrop.scss ui-fileUploader.scss
+  	      jquery_Jcrop.scss ui-fileUploader.scss users.scss
 	sass -t compact settings.scss:settings.css
 
 sprites.scss:	urls.scss

@@ -79,6 +79,7 @@ $html = $helper->html;
  ?>
  </ul>
  <?= $uiPagination->render($paginator) ?>
+ <br class='clear' />
  <?= (is_array($html) && isset($html['append'])
          ? $html['append']
          : '') ?>

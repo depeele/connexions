@@ -227,7 +227,6 @@ class SettingsController extends Connexions_Controller_Action
              */
             $extra = array(
                 'users'         => $this->_viewer,
-                'cookieUrl'     => $this->_rootUrl,
 
                 'showRelation'  => false,
                                    // 'main-'. implode('-', $this->_partials),
@@ -317,6 +316,33 @@ class SettingsController extends Connexions_Controller_Action
         {
         case 'network':
             // Retrieve the current users network
+            $this->view->network = $this->_viewer->getNetwork();
+
+            /* Prepare to present a tag list or cloud
+             *  (mirrors NetworkController::_prepareMain and
+             *           NetworkController::_prepareSidebarPane('people')
+             */
+            $extra = array(
+                                   // 'main-'. implode('-', $this->_partials),
+                'panePartial'   => 'main-people-network-list',
+                'users'         => $this->view->network->items,
+            );
+            /*
+            Connexions::log("SettingsController::_preparePeople(): "
+                            . "extra[ %s ]",
+                            Connexions::varExport($extra));
+            // */
+
+            $config = array_merge($this->view->main, $extra);
+
+            /*
+            Connexions::log("SettingsController::_preparePeople(): "
+                            . "panePartial[ %s ], partials[ %s ]",
+                            $config['panePartial'],
+                            implode('-', $this->_partials));
+            // */
+
+            $this->view->main = $config;
             break;
 
         case 'groups':
