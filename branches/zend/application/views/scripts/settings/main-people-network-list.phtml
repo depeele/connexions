@@ -66,6 +66,10 @@
  *                          The current sortOrder for 'items';
  *
  */
+Connexions::log('views/scripts/settings/main-people-network-list.phtml: '
+                . 'main[ %s ]',
+                Connexions::varExport($this->main));
+
 $htmlUsers = $this->htmlUsers( $this->main );
 echo $htmlUsers->render();
 return;

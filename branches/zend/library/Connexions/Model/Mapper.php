@@ -121,6 +121,36 @@ abstract class Connexions_Model_Mapper
         return $this->_accessor;
     }
 
+    /** @brief  Get the name of the underlying database table.
+     *
+     *  @return The name of the underlying database table.
+     */
+    public function getTableName()
+    {
+        // ::NAME, ::COLS
+        return $this->getAccessor()->info(Zend_Db_Table_Abstract::NAME);
+    }
+
+    /** @brief  Get the columns of the underlying database table.
+     *
+     *  @return The columns of the underlying database table.
+     */
+    public function getTableColumns()
+    {
+        // ::NAME, ::COLS
+        return $this->getAccessor()->info(Zend_Db_Table_Abstract::COLS);
+    }
+
+    /** @brief  Retrieve a Zend_Db_Select instance for the underlying
+     *          accessor.
+     *
+     *  @return The Zend_Db_Select instance targeting the underlying table.
+     */
+    public function select()
+    {
+        return $this->getAccessor()->select();
+    }
+
     /** @brief  Set the name of the domain model.
      *  @param  name    The name of the domain model.
      *

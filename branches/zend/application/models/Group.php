@@ -142,7 +142,7 @@ class Model_Group extends Model_Base
             if ( $val === null )
             {
                 // Load the Model_Set_User now.
-                $val = $this->getMapper()->getMembers( $this );
+                $val = $this->getMembers( );
                 $this->_members = $val; //$this->_data['members'] = $val;
             }
             break;
@@ -152,7 +152,7 @@ class Model_Group extends Model_Base
             if ( $val === null )
             {
                 // Load the Connexions_Model_Set now.
-                $val = $this->getMapper()->getItems( $this );
+                $val = $this->getItems( );
                 $this->_items = $val; //$this->_data['items'] = $val;
             }
             break;
@@ -163,6 +163,26 @@ class Model_Group extends Model_Base
         }
 
         return $val;
+    }
+
+    /** @brief  Retrieve the set of members for this group.
+     *  @param  order   Optional ORDER clause (string, array);
+     *
+     *  @return A Model_Set_User instance.
+     */
+    public function getMembers($order   = null)
+    {
+        return $this->getMapper()->getMembers( $this, $order );
+    }
+
+    /** @brief  Retrieve the set of items for this group.
+     *  @param  order   Optional ORDER clause (string, array);
+     *
+     *  @return A Model_Set_(User|Tag|Item|Bookmark) instance.
+     */
+    public function getItems($order = null)
+    {
+        return $this->getMapper()->getItems( $this, $order );
     }
 
     /** @brief  Return a string representation of this instance.

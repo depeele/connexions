@@ -85,7 +85,8 @@ class Model_Filter_Tag extends Connexions_Model_Filter
         $value = preg_replace('/[,"\'`\\\\]/', '', $value);
 
         // Lower-case
-        $value = mb_strtolower($value, self::ENCODING);
+        //$value = mb_strtolower($value, self::ENCODING);
+        $value = strtolower($value);
 
         // Filter down to the proper length
         $value = preg_replace('/(.{'. self::MIN_LENGTH .','

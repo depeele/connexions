@@ -253,8 +253,9 @@ abstract class Connexions_Model_Mapper_DbTable
         }
         else
         {
-            $accessor   = $this->getAccessor();
-            $select     = $accessor->select();
+            //$accessor = $this->getAccessor();
+            //$select   = $accessor->select();
+            $select = $this->select();
 
             if ($id !== null)
             {

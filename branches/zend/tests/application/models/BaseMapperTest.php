@@ -44,4 +44,21 @@ class BaseMapperDbTest extends DbTestCase
 
         //echo $set->debugDump(), "\n";
     }
+
+    public function testBaseMapperTableName()
+    {
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
+
+        $this->assertEquals('userItem', $mapper->getTableName());
+    }
+
+    public function testBaseMapperTableColumns()
+    {
+        $expected = array('userId', 'itemId', 'name', 'description', 'rating',
+                          'isFavorite', 'isPrivate', 'taggedOn', 'updatedOn');
+
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
+
+        $this->assertEquals($expected, $mapper->getTableColumns());
+    }
 }
