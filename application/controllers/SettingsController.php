@@ -335,6 +335,11 @@ class SettingsController extends Connexions_Controller_Action
 
             $config = array_merge($this->view->main, $extra);
 
+            // /*
+            Connexions::log("SettingsController::_preparePeople(): "
+                            . "config[ %s ]",
+                            Connexions::varExport($config));
+            // */
             /*
             Connexions::log("SettingsController::_preparePeople(): "
                             . "panePartial[ %s ], partials[ %s ]",

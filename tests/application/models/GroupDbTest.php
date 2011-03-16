@@ -166,7 +166,7 @@ class GroupDbTest extends DbTestCase
                             $group->owner->toArray(self::$toArray_shallow_all));
     }
 
-    public function testGroupMembers()
+    public function testGroupMembers1()
     {
         /* Retrieve the members that SHOULD be part of the group identified by
          * _group1 (i.e. Users 1 and 4)
@@ -216,7 +216,28 @@ class GroupDbTest extends DbTestCase
         $expected['members'] = $memberMin;
     }
 
-    public function testTagGroupItems()
+    public function testGroupMembers2()
+    {
+        $expected = array(1,4);
+
+        // Retrieve the target group by name
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('name' => $this->_group1['name'] ));
+        $this->assertNotEquals(null,   $group );
+
+        // Retrieve the group members
+        $members = $group->getMembers( array('name ASC'));
+
+        $this->assertNotEquals(null,   $members );
+
+        /*
+        printf ("\nGroup Members:\n%s\n", $members->debugDump());
+        // */
+
+        $this->assertEquals($expected, $members->getIds());
+    }
+
+    public function testTagGroupItems1()
     {
         /* Retrieve the items that SHOULD be part of the group identified by
          * _group1
@@ -273,7 +294,57 @@ class GroupDbTest extends DbTestCase
         $expected['items'] = $itemMin;
     }
 
-    public function testUserGroupItems()
+    public function testTagGroupItems2()
+    {
+        $expected = array(10,12,6);
+
+        // Retrieve the target group by name
+        $group  = $this->_group1;
+
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('name'     => $group['name'],
+                                      'groupType' => $group['groupType']));
+        $this->assertNotEquals(null,   $group );
+
+        // Retrieve the group items
+        $items = $group->getItems( array('tag ASC'));
+
+        $this->assertNotEquals(null,            $items );
+        $this->assertEquals(   'Model_Set_Tag', get_class($items));
+
+        /*
+        printf ("\nGroup Items:\n%s\n", $items->debugDump());
+        // */
+
+        $this->assertEquals($expected, $items->getIds());
+    }
+
+    public function testTagGroupItems3()
+    {
+        $expected = array(6,12,10);
+
+        // Retrieve the target group by name
+        $group  = $this->_group1;
+
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('name'     => $group['name'],
+                                      'groupType' => $group['groupType']));
+        $this->assertNotEquals(null,   $group );
+
+        // Retrieve the group items
+        $items = $group->getItems( array('tag DESC'));
+
+        $this->assertNotEquals(null,            $items );
+        $this->assertEquals(   'Model_Set_Tag', get_class($items));
+
+        /*
+        printf ("\nGroup Items:\n%s\n", $items->debugDump());
+        // */
+
+        $this->assertEquals($expected, $items->getIds());
+    }
+
+    public function testUserGroupItems1()
     {
         /* Retrieve the items that SHOULD be part of the group identified by
          * _group1u
@@ -330,7 +401,57 @@ class GroupDbTest extends DbTestCase
         $expected['items'] = $itemMin;
     }
 
-    public function testItemGroupItems()
+    public function testUserGroupItems2()
+    {
+        $expected = array(1,4,3);
+
+        // Retrieve the target group by name
+        $group  = $this->_group1u;
+
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('name'     => $group['name'],
+                                      'groupType' => $group['groupType']));
+        $this->assertNotEquals(null,   $group );
+
+        // Retrieve the group items
+        $items = $group->getItems( array('name ASC'));
+
+        $this->assertNotEquals(null,             $items );
+        $this->assertEquals(   'Model_Set_User', get_class($items));
+
+        /*
+        printf ("\nGroup Items:\n%s\n", $items->debugDump());
+        // */
+
+        $this->assertEquals($expected, $items->getIds());
+    }
+
+    public function testUserGroupItems3()
+    {
+        $expected = array(4,1,3);
+
+        // Retrieve the target group by name
+        $group  = $this->_group1u;
+
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('name'     => $group['name'],
+                                      'groupType' => $group['groupType']));
+        $this->assertNotEquals(null,   $group );
+
+        // Retrieve the group items
+        $items = $group->getItems( array('totalTags DESC'));
+
+        $this->assertNotEquals(null,             $items );
+        $this->assertEquals(   'Model_Set_User', get_class($items));
+
+        /*
+        printf ("\nGroup Items:\n%s\n", $items->debugDump());
+        // */
+
+        $this->assertEquals($expected, $items->getIds());
+    }
+
+    public function testItemGroupItems1()
     {
         /* Retrieve the items that SHOULD be part of the group identified by
          * _group1i
@@ -387,6 +508,55 @@ class GroupDbTest extends DbTestCase
         $expected['items'] = $itemMin;
     }
 
+    public function testItemGroupItems2()
+    {
+        $expected = array(4,3,2);
+
+        // Retrieve the target group by name
+        $group  = $this->_group1i;
+
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('name'     => $group['name'],
+                                      'groupType' => $group['groupType']));
+        $this->assertNotEquals(null,   $group );
+
+        // Retrieve the group items
+        $items = $group->getItems( array('url ASC'));
+
+        $this->assertNotEquals(null,             $items );
+        $this->assertEquals(   'Model_Set_Item', get_class($items));
+
+        /*
+        printf ("\nGroup Items:\n%s\n", $items->debugDump());
+        // */
+
+        $this->assertEquals($expected, $items->getIds());
+    }
+
+    public function testItemGroupItems3()
+    {
+        $expected = array(2,3,4);
+
+        // Retrieve the target group by name
+        $group  = $this->_group1i;
+
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('name'     => $group['name'],
+                                      'groupType' => $group['groupType']));
+        $this->assertNotEquals(null,   $group );
+
+        // Retrieve the group items
+        $items = $group->getItems( array('userCount ASC'));
+
+        $this->assertNotEquals(null,             $items );
+        $this->assertEquals(   'Model_Set_Item', get_class($items));
+
+        /*
+        printf ("\nGroup Items:\n%s\n", $items->debugDump());
+        // */
+
+        $this->assertEquals($expected, $items->getIds());
+    }
 
     public function testGroupInsertedIntoDatabase()
     {

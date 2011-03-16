@@ -67,7 +67,6 @@
 $config      = &$this->main;
 $namespace   = $config['namespace'];
 $panePartial = $config['panePartial'];
-$paginator   = $config['paginator'];
 
 Connexions::log('views/scripts/settings/main-people-network.phtml: '
                 . 'namespace[ %s ], panePartial[ %s ]',
@@ -78,5 +77,5 @@ Connexions::log('views/scripts/settings/main-people-network.phtml: '
 ?>
 <div id='people-network'><!-- people-network { -->
  <!-- Dynamic, paginated content -->
- <?= $this->partial('settings/'. $this->main['panePartial'] .'.phtml', $this) ?>
+ <?= $this->partial('settings/'. $panePartial .'.phtml', $this) ?>
 </div><!-- people-network } -->
