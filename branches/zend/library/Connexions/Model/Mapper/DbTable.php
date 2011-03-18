@@ -255,7 +255,8 @@ abstract class Connexions_Model_Mapper_DbTable
         {
             //$accessor = $this->getAccessor();
             //$select   = $accessor->select();
-            $select = $this->select();
+            // Retrieve the Zend_Db_Table_Select (vice Zend_Db_Select).
+            $select = $this->select( false );
 
             if ($id !== null)
             {

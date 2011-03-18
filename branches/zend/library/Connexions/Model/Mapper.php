@@ -143,12 +143,24 @@ abstract class Connexions_Model_Mapper
 
     /** @brief  Retrieve a Zend_Db_Select instance for the underlying
      *          accessor.
+     *  @param  baseSelect  Should the lowest-level / base select
+     *                      (e.g. Zend_Db_Select) be returned (true), or the
+     *                      accessor-based select (e.g.  Zend_Db_Table_Select)
+     *                      (false)
+     *                      [ true ];
      *
-     *  @return The Zend_Db_Select instance targeting the underlying table.
+     *  @return A Zend_Db_Select (or possibly Zend_Db_Table_Select) instance.
      */
-    public function select()
+    public function select( $baseSelect = true )
     {
-        return $this->getAccessor()->select();
+        $accessor = $this->getAccessor();
+        $select   = ($baseSelect === true
+                          // The lowest-level   'select' (Zend_Db_Select)
+                        ? $accessor->getAdapter()->select()
+                          // The accessor-based 'select' (Zend_Db_Table_Select)
+                        : $accessor->select() );
+
+        return $select;
     }
 
     /** @brief  Set the name of the domain model.
