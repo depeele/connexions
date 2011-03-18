@@ -210,7 +210,7 @@ class View_Helper_HtmlUsers extends View_Helper_Users
                 $dsConfig['cookiePath'] = rtrim($this->cookieUrl, '/');
             }
 
-            // /*
+            /*
             Connexions::log("View_Helper_HtmlUsers::setNamespace(): "
                             . "new namespace: config[ %s ]",
                             Connexions::varExport($dsConfig));
