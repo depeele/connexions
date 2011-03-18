@@ -580,5 +580,147 @@ class GroupDbTest extends DbTestCase
         $this->assertEquals($expected,
                             $group->toArray(self::$toArray_shallow_all));
     }
-}
 
+    public function testTagGroupAdd1()
+    {
+        $expected = 'web2.0,ajax,javascript,newtag';
+
+        // Retrieve the target group by name
+        $group  = $this->_group1;
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('name'      => $group['name'],
+                                       'groupType' => $group['groupType']));
+
+        $this->assertNotEquals(null, $group );
+        $this->assertNotEquals(null, $group->items );
+
+        /*
+        printf ("\nGroup items:\n%s\n", $group->items->debugDump());
+        // */
+
+        $tService = Connexions_Service::factory('Service_Tag');
+        $tag      = $tService->get(array('tag' => 'NewTag'));
+
+
+        $group->addItem($tag);
+        $this->assertEquals($expected, $group->items->__toString());
+    }
+
+    public function testTagGroupAdd2()
+    {
+        $expected = '';
+
+        // Retrieve the target group by name
+        $group  = $this->_group1;
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('name'      => $group['name'],
+                                       'groupType' => $group['groupType']));
+
+        $this->assertNotEquals(null, $group );
+        $this->assertNotEquals(null, $group->items );
+
+        /*
+        printf ("\nGroup items:\n%s\n", $group->items->debugDump());
+        // */
+
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->get(array('userId' => 1));
+        $this->assertNotEquals(null, $user );
+
+
+        try
+        {
+            $group->addItem($user);
+        }
+        catch (Exception $e)
+        {
+            $this->assertEquals("Unexpected model instance for 'tag' group",
+                                $e->getMessage());
+        }
+    }
+
+    public function testTagGroupRemove1()
+    {
+        $expected = 'web2.0,javascript';
+
+        // Retrieve the target group by name
+        $group  = $this->_group1;
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('name'      => $group['name'],
+                                       'groupType' => $group['groupType']));
+
+        $this->assertNotEquals(null, $group );
+        $this->assertNotEquals(null, $group->items );
+
+        /*
+        printf ("\nGroup items:\n%s\n", $group->items->debugDump());
+        // */
+
+        $tService = Connexions_Service::factory('Service_Tag');
+        $tag      = $tService->get(array('tag' => 'ajax'));
+
+        $group->removeItem($tag);
+        $this->assertEquals($expected, $group->items->__toString());
+    }
+
+    public function testTagGroupRemove2()
+    {
+        $expected = '';
+
+        // Retrieve the target group by name
+        $group  = $this->_group1;
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('name'      => $group['name'],
+                                       'groupType' => $group['groupType']));
+
+        $this->assertNotEquals(null, $group );
+        $this->assertNotEquals(null, $group->items );
+
+        /*
+        printf ("\nGroup items:\n%s\n", $group->items->debugDump());
+        // */
+
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->get(array('userId' => 1));
+        $this->assertNotEquals(null, $user );
+
+        try
+        {
+            $group->removeItem($user);
+        }
+        catch (Exception $e)
+        {
+            $this->assertEquals("Unexpected model instance for 'tag' group",
+                                $e->getMessage());
+        }
+    }
+
+    public function testTagGroupRemove3()
+    {
+        // Retrieve the target group by name
+        $group  = $this->_group1;
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('name'      => $group['name'],
+                                       'groupType' => $group['groupType']));
+
+        $this->assertNotEquals(null, $group );
+        $this->assertNotEquals(null, $group->items );
+
+        /*
+        printf ("\nGroup items:\n%s\n", $group->items->debugDump());
+        // */
+
+        $tService = Connexions_Service::factory('Service_Tag');
+        $tag      = $tService->get(array('tag' => 'no matching tag'));
+
+        try
+        {
+            $group->removeItem($tag);
+        }
+        catch (Exception $e)
+        {
+            $this->assertEquals("Non-backed item cannot be removed",
+                                $e->getMessage());
+        }
+    }
+}
