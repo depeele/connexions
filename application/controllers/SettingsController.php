@@ -325,7 +325,7 @@ class SettingsController extends Connexions_Controller_Action
             $extra = array(
                                    // 'main-'. implode('-', $this->_partials),
                 'panePartial'   => 'main-people-network-list',
-                'users'         => $this->view->network->items,
+                'group'         => $this->view->network,
             );
             /*
             Connexions::log("SettingsController::_preparePeople(): "
@@ -335,11 +335,6 @@ class SettingsController extends Connexions_Controller_Action
 
             $config = array_merge($this->view->main, $extra);
 
-            // /*
-            Connexions::log("SettingsController::_preparePeople(): "
-                            . "config[ %s ]",
-                            Connexions::varExport($config));
-            // */
             /*
             Connexions::log("SettingsController::_preparePeople(): "
                             . "panePartial[ %s ], partials[ %s ]",

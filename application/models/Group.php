@@ -167,22 +167,30 @@ class Model_Group extends Model_Base
 
     /** @brief  Retrieve the set of members for this group.
      *  @param  order   Optional ORDER clause (string, array);
+     *  @param  count   Optional LIMIT count;
+     *  @param  offset  Optional LIMIT offset;
      *
      *  @return A Model_Set_User instance.
      */
-    public function getMembers($order   = null)
+    public function getMembers($order   = null,
+                               $count   = null,
+                               $offset  = null)
     {
-        return $this->getMapper()->getMembers( $this, $order );
+        return $this->getMapper()->getMembers( $this, $order, $count, $offset );
     }
 
     /** @brief  Retrieve the set of items for this group.
      *  @param  order   Optional ORDER clause (string, array);
+     *  @param  count   Optional LIMIT count;
+     *  @param  offset  Optional LIMIT offset;
      *
      *  @return A Model_Set_(User|Tag|Item|Bookmark) instance.
      */
-    public function getItems($order = null)
+    public function getItems($order     = null,
+                             $count     = null,
+                             $offset    = null)
     {
-        return $this->getMapper()->getItems( $this, $order );
+        return $this->getMapper()->getItems( $this, $order, $count, $offset );
     }
 
     /** @brief  Return a string representation of this instance.

@@ -124,11 +124,15 @@ class Model_Mapper_Group extends Model_Mapper_Base
     /** @brief  Retrieve the set of members for this group.
      *  @param  group   The Model_Group instance.
      *  @param  order   Optional ORDER clause (string, array);
+     *  @param  count   Optional LIMIT count;
+     *  @param  offset  Optional LIMIT offset;
      *
      *  @return A Model_Set_User instance.
      */
     public function getMembers(Model_Group $group,
-                                           $order   = null)
+                                           $order   = null,
+                                           $count   = null,
+                                           $offset  = null)
     {
         $mapperName = 'Model_Mapper_User';
 
@@ -157,6 +161,10 @@ class Model_Mapper_Group extends Model_Mapper_Base
             {
                 $select->order($order);
             }
+            if (($count !== null) || ($offset !== null))
+            {
+                $select->limit($count, $offset);
+            }
 
             /*
             Connexions::log("Model_Mapper_Group::getMembers(): "
@@ -165,6 +173,7 @@ class Model_Mapper_Group extends Model_Mapper_Base
             // */
 
             $members = $mapper->fetch($select);
+            $members->setContext($select);
         }
         else
         {
@@ -185,17 +194,25 @@ class Model_Mapper_Group extends Model_Mapper_Base
     /** @brief  Retrieve the set of items for this group.
      *  @param  group   The Model_Group instance;
      *  @param  order   Optional ORDER clause (string, array);
+     *  @param  count   Optional LIMIT count;
+     *  @param  offset  Optional LIMIT offset;
      *
      *  @return A Model_Set_(User|Tag|Item|Bookmark) instance.
      */
     public function getItems(Model_Group $group,
-                                         $order = null)
+                                         $order     = null,
+                                         $count     = null,
+                                         $offset    = null)
     {
         /*
         Connexions::log('Model_Mapper_Group::getItems(): '
-                        .   'groupId[ %s ], type[ %s ]',
+                        .   'groupId[ %s ], type[ %s ], '
+                        .   'order[ %s ], count[ %s ], offset[ %s ]',
                         Connexions::varExport($group->groupId),
-                        $group->groupType);
+                        $group->groupType,
+                        Connexions::varExport($order),
+                        Connexions::varExport($count),
+                        Connexions::varExport($offset));
         // */
 
         switch ($group->groupType)
@@ -223,19 +240,26 @@ class Model_Mapper_Group extends Model_Mapper_Base
                    ->join(array('i' => $tableName),
                           "gt.itemId=i.{$tableName}Id")
                    ->reset(Zend_Db_Select::COLUMNS)
-                   ->columns('i.*');
+                   ->columns('i.*')
+                   ->group("i.{$tableName}Id");
             if ($order !== null)
             {
                 $select->order($order);
             }
+            if (($count !== null) || ($offset !== null))
+            {
+                $select->limit($count, $offset);
+            }
 
             /*
             Connexions::log("Model_Mapper_Group::getItems(): "
-                            .   "select[ %s ]",
+                            .   "%s:select[ %s ]",
+                            get_class($select),
                             $select->assemble());
             // */
 
             $items = $mapper->fetch($select);
+            $items->setContext($select);
         }
         else
         {
