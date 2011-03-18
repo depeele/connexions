@@ -92,11 +92,11 @@ class Model_Group extends Model_Base
             break;
 
         case 'items':
-            /* :XXX: Ensure that $value is the proper TYPE of Model_Set
-             *       based upon 'groupType' (user, item, tag)
-             */
+            // (! $value instanceof Model_Set_User) )
             if ( (  $value !== null )             &&
-                 (! $value instanceof Connexions_Model_Set) )
+                 //(! $value instanceof Connexions_Model_Set) )
+                 (get_class($value) !==
+                                'Model_Set_'. ucfirst($this->groupType)) )
             {
                 throw new Exception('Items must be a Connexions_Model_Set '
                                     . 'or null '
@@ -105,6 +105,10 @@ class Model_Group extends Model_Base
                                                 : gettype($value))
                                     . ')');
             }
+
+            /* :XXX: Ensure that $value is the proper TYPE of Model_Set
+             *       based upon 'groupType' (user, item, tag)
+             */
 
             // Direct set, no further filtering or validation
             $this->_items = $value;
@@ -192,6 +196,81 @@ class Model_Group extends Model_Base
     {
         return $this->getMapper()->getItems( $this, $order, $count, $offset );
     }
+
+    /**********************************************
+     * Member management
+     *
+     */
+
+    /** @brief  Add the given user to this group.
+     *  @param  user    The Model_User instance to add.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function addMember(Model_User    $user)
+    {
+        $res = $this->getMapper()->addMember( $this, $user );
+
+        // Force the re-caching of the members
+        $this->_members = null;
+
+        return $res;
+    }
+
+    /** @brief  Remove the given user from this group.
+     *  @param  user    The Model_User instance to remove.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function removeMember(Model_User $user)
+    {
+        $res = $this->getMapper()->removeMember( $this, $user );
+
+        // Force the re-caching of the members
+        $this->_members = null;
+
+        return $res;
+    }
+
+    /**********************************************
+     * Item management
+     *
+     */
+
+    /** @brief  Add the given item to this group.
+     *  @param  item    The item to add.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function addItem(Connexions_Model $item)
+    {
+        $res = $this->getMapper()->addItem( $this, $item );
+
+        // Force the re-caching of the items
+        $this->_items = null;
+
+        return $res;
+    }
+
+    /** @brief  Remove the given item from this group.
+     *  @param  item    The item to remove.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function removeItem(Connexions_Model $item)
+    {
+        $res = $this->getMapper()->removeItem( $this, $item );
+
+        // Force the re-caching of the items
+        $this->_items = null;
+
+        return $res;
+    }
+
+    /**********************************************
+     * Conversions and caching
+     *
+     */
 
     /** @brief  Return a string representation of this instance.
      *
