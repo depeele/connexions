@@ -302,6 +302,152 @@ class Model_Mapper_Group extends Model_Mapper_Base
     }
      */
 
+    /**********************************************
+     * Member management
+     *
+     */
+
+    /** @brief  Add the given user to the provided group.
+     *  @param  group   The Model_Group instance;
+     *  @param  user    The Model_User instance to add.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function addMember(Model_Group   $group,
+                              Model_User    $user)
+    {
+        /* We can only add 'backed' users (since we rely on the database
+         * id for the join table), so ensure that it's backed now.
+         */
+        if (! $user->isBacked())
+        {
+            $user = $user->save();
+            if (! $user->isBacked())
+            {
+                throw new Exception("Non-backed user cannot be added");
+            }
+        }
+
+        $table = $this->getAccessor('Model_DbTable_GroupMember');
+        $table->insert( array('groupId' => $group->getId(),
+                              'userId'  => $user->getId()) );
+
+        return $this;
+    }
+
+    /** @brief  Remove the given user to the provided group.
+     *  @param  group   The Model_Group instance;
+     *  @param  user    The Model_User instance to remove.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function removeMember(Model_Group    $group,
+                                 Model_User     $user)
+    {
+        /* We can only remove 'backed' users (since we rely on the
+         * database id for the join table).
+         */
+        if (! $user->isBacked())
+        {
+            throw new Exception("Non-backed user cannot be removed");
+        }
+
+        $table = $this->getAccessor('Model_DbTable_GroupMember');
+        $table->delete( array('groupId=?' => $group->getId(),
+                              'userId=?'  => $user->getId()) );
+
+        return $this;
+    }
+
+    /**********************************************
+     * Item management
+     *
+     */
+
+    /** @brief  Add the given item to the provided group.
+     *  @param  group   The Model_Group instance;
+     *  @param  item    The item to add.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function addItem(Model_Group      $group,
+                            Connexions_Model $item)
+    {
+        /*
+        Connexions::log("Model_Mapper_Group::addItem(): "
+                        .   "group[ %s ], type[ %s ], class[ %s ]",
+                        $group, $group->groupType, get_class($item));
+        // */
+
+        /* Ensure that $item is the proper TYPE of Connexions_Model based upon
+         * 'groupType' (user, item, tag)
+         */
+        if ( get_class($item) !== 'Model_'. ucfirst($group->groupType) )
+        {
+            throw new Exception("Unexpected model instance for "
+                                . "'". $group->groupType ."' group");
+
+        }
+
+        /* We can only add 'backed' items (since we rely on the item's database
+         * id for the join table), so ensure that it's backed now.
+         */
+        if (! $item->isBacked())
+        {
+            $item = $item->save();
+            if (! $item->isBacked())
+            {
+                throw new Exception("Non-backed item cannot be added");
+            }
+        }
+
+        $table = $this->getAccessor('Model_DbTable_GroupItem');
+        $table->insert( array('groupId' => $group->getId(),
+                              'itemId'  => $item->getId()) );
+
+        return $this;
+    }
+
+    /** @brief  Remove the given item to the provided group.
+     *  @param  group   The Model_Group instance;
+     *  @param  item    The item to remove.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function removeItem(Model_Group      $group,
+                               Connexions_Model $item)
+    {
+        /*
+        Connexions::log("Model_Mapper_Group::removeItem(): "
+                        .   "group[ %s ], type[ %s ], class[ %s ]",
+                        $group, $group->groupType, get_class($item));
+        // */
+
+        /* Ensure that $item is the proper TYPE of Connexions_Model based upon
+         * 'groupType' (user, item, tag)
+         */
+        if ( get_class($item) !== 'Model_'. ucfirst($group->groupType) )
+        {
+            throw new Exception("Unexpected model instance for "
+                                . "'". $group->groupType ."' group");
+
+        }
+
+        /* We can only remove 'backed' items (since we rely on the item's
+         * database id for the join table).
+         */
+        if (! $item->isBacked())
+        {
+            throw new Exception("Non-backed item cannot be removed");
+        }
+
+        $table = $this->getAccessor('Model_DbTable_GroupItem');
+        $table->delete( array('groupId=?' => $group->getId(),
+                              'itemId=?'  => $item->getId()) );
+
+        return $this;
+    }
+
     /*********************************************************************
      * Protected helpers
      *
