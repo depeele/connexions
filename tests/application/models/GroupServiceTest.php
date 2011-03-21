@@ -27,7 +27,7 @@ class GroupServiceTest extends DbTestCase
             'controlMembers'    => 'owner',
             'controlItems'      => 'owner',
             'visibility'        => 'private',
-            'canTransfer'       => 0,
+            'canTransfer'       => 1,
         ),
         array(
             'groupId'           => 2,
@@ -49,7 +49,7 @@ class GroupServiceTest extends DbTestCase
             'controlMembers'    => 'owner',
             'controlItems'      => 'owner',
             'visibility'        => 'group',
-            'canTransfer'       => 0,
+            'canTransfer'       => 1,
         ),
         array(
             'groupId'           => 4,
@@ -155,9 +155,9 @@ class GroupServiceTest extends DbTestCase
      */
     public function testGroupServiceFind1()
     {
-        $expected        = $this->_groups[1];
+        $expected        = $this->_groups[3];
         $expectedMembers = array(1,4);
-        $expectedItems   = array(6,10,12);
+        $expectedItems   = array(2,3,4);
         $service         = Connexions_Service::factory('Model_Group');
         $id              = array( 'groupId' => $expected['groupId']);
 
@@ -174,8 +174,16 @@ class GroupServiceTest extends DbTestCase
         $this->assertEquals($expected,
                             $group->toArray(self::$toArray_shallow_all));
 
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->find( $group->ownerId );
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue($user->isAuthenticated());
+
         $this->assertEquals($expectedMembers, $group->members->getIds());
         $this->assertEquals($expectedItems,   $group->items->getIds());
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
     public function testGroupServiceFind2()
@@ -245,8 +253,8 @@ class GroupServiceTest extends DbTestCase
                 $groups->getCurrentPageNumber());
         // */
 
-        $this->assertEquals(4, $groups->getTotalItemCount());
-        $this->assertEquals(4, $groups->getCurrentItemCount());
+        $this->assertEquals(5, $groups->getTotalItemCount());
+        $this->assertEquals(5, $groups->getCurrentItemCount());
         $this->assertEquals(1,  count($groups));
 
         /*
@@ -310,7 +318,7 @@ class GroupServiceTest extends DbTestCase
     public function testGroupServiceFetchByOwners3()
     {
                     // vv ordered by 'name ASC, visibility DESC, groupType DESC'
-        $expected   = array(4, 2, 1, 3);
+        $expected   = array(4, 5, 2, 1, 3);
         $users      = array(1, 2, 3);
         $service    = Connexions_Service::factory('Model_Group');
         $groups     = $service->fetchByOwners( $users,
@@ -330,7 +338,7 @@ class GroupServiceTest extends DbTestCase
     public function testGroupServiceFetchByOwners4()
     {
                     // vv ordered by 'name ASC, visibility DESC, groupType DESC'
-        $expected   = array(4, 2, 1, 3);
+        $expected   = array(4, 5, 2, 1, 3);
         $users      = array('User1', 'User441', 'User83');
         $service    = Connexions_Service::factory('Model_Group');
         $groups     = $service->fetchByOwners( $users,
@@ -350,7 +358,7 @@ class GroupServiceTest extends DbTestCase
     public function testGroupServiceFetchByOwners5()
     {
                     // vv ordered by 'userCount DESC'
-        $expected   = array(4, 2, 1, 3);
+        $expected   = array(4, 5, 2, 1, 3);
         $users      = 'User1,User441, User83';
         $service    = Connexions_Service::factory('Model_Group');
         $groups     = $service->fetchByOwners( $users,

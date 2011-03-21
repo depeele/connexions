@@ -161,22 +161,34 @@ class Model_Mapper_User extends Model_Mapper_Base
      */
     public function getNetwork(Model_User $user)
     {
-        $authUser = Connexions::getUser();
         $id = array(
             'name'              => 'System:Network',
             'ownerId'           => $user->getId(),
             'groupType'         => 'user',
+            /*
             'controlMembers'    => 'owner',
             'controlItems'      => 'owner',
             'canTransfer'       => false,
             'visibility'        => 'public'
+            // */
         );
 
+        /* :XXX: This doesn't seem the proper place to enforce visibility
+         *       restrictions.  The group itself (i.e. meta-data) should be
+         *       visible from most anywhere.  Visibility/access restrictions
+         *       really come into play when we try to do something to modify
+         *       the meta-data or access the members or items.
+         *
+         *       These restrictions are best handled in Model_Mapper_Group.
+         *
+        $authUser = Connexions::getUser();
+        $id['visibility'] = 'public';
         if ($authUser->isAuthenticated())
         {
             // Allow 'visibility' to be anything IF ownerId == authUser
             $id['+|ownerId'] = $authUser->getId();
         }
+        // */
 
         /*
         Connexions::log("Model_Mapper_User::getNetwork(): "

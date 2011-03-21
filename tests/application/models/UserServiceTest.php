@@ -314,7 +314,7 @@ class UserServiceTest extends DbTestCase
 
     public function testUserServiceRelatedNetwork1()
     {
-        $expected = null;
+        $expected = 2;
         $service  = Connexions_Service::factory('Model_User');
         $id       = array( 'userId' => $this->_user1['userId']);
 
@@ -325,14 +325,40 @@ class UserServiceTest extends DbTestCase
         $this->assertTrue(  $user->isValid() );
         $this->assertFalse( $user->isAuthenticated() );
 
-        // User1's Network is private
+        /* User1's Network is private -- we should be able to retrieve the
+         * general group information, but not any members or items.
+         */
         $network = $user->getNetwork();
+        $this->assertNotEquals(null, $network);
+
         /*
         printf ("User[ %s ] network[ %s ]",
                 $user, ($network === null ? 'null' : $network->debugDump()) );
         // */
 
-        $this->assertEquals($expected, $network);
+        $this->assertEquals($expected, $network->getId());
+
+        try
+        {
+            $network->getMembers();
+            $this->fail("Unauthenticated user retrieved members");
+        }
+        catch (Exception $e)
+        {
+            $this->assertEquals('User does not have the required permission',
+                                $e->getMessage());
+        }
+
+        try
+        {
+            $network->getItems();
+            $this->fail("Unauthenticated user retrieved items");
+        }
+        catch (Exception $e)
+        {
+            $this->assertEquals('User does not have the required permission',
+                                $e->getMessage());
+        }
     }
 
     public function testUserServiceRelatedNetwork2()
@@ -793,6 +819,7 @@ class UserServiceTest extends DbTestCase
             $auth = $service->updateCredentials($user, $params);
 
             // FAILURE!
+            $this->fail("Unauthenticated update permitted");
         }
         catch (Exception $e)
         {

@@ -189,7 +189,7 @@
  <memberGroup groupId="1" name="Tags"
               groupType="tag"
               controlMembers="owner" controlItems="owner" visibility="private"
-              canTransfer="0" ownerId="1" />
+              canTransfer="1" ownerId="1" />
  <memberGroup groupId="2" name="System:Network"
               groupType="user"
               controlMembers="owner" controlItems="owner" visibility="private"
@@ -197,26 +197,28 @@
  <memberGroup groupId="3" name="Urls"
               groupType="item"
               controlMembers="owner" controlItems="owner" visibility="group"
-              canTransfer="0" ownerId="1" />
+              canTransfer="1" ownerId="1" />
  <memberGroup groupId="4" name="System:Network"
               groupType="user"
-              controlMembers="owner" controlItems="owner" visibility="public"
+              controlMembers="group" controlItems="group" visibility="public"
               canTransfer="0" ownerId="2" />
+ <memberGroup groupId="5" name="System:Network"
+              groupType="user"
+              controlMembers="group" controlItems="group" visibility="group"
+              canTransfer="0" ownerId="3" />
 
 <!-- groupMember joins / Group Members -->
- <groupMember groupId="1" userId="1" />
- <groupMember groupId="1" userId="4" />
-
- <groupMember groupId="2" userId="1" />
- <groupMember groupId="2" userId="4" />
-
  <groupMember groupId="3" userId="1" />
  <groupMember groupId="3" userId="4" />
 
  <groupMember groupId="4" userId="1" />
  <groupMember groupId="4" userId="2" />
 
-<!-- groupItem joins / Group Items : tags -->
+ <groupMember groupId="5" userId="2" />
+ <groupMember groupId="5" userId="3" />
+ <groupMember groupId="5" userId="4" />
+
+<!-- groupItem joins / Group Items -->
  <groupItem groupId="1" itemId="6" />
  <groupItem groupId="1" itemId="10" />
  <groupItem groupId="1" itemId="12" />
@@ -231,6 +233,11 @@
 
  <groupItem groupId="4" itemId="1" />
  <groupItem groupId="4" itemId="2" />
+
+ <groupItem groupId="5" itemId="1" />
+ <groupItem groupId="5" itemId="2" />
+ <groupItem groupId="5" itemId="3" />
+ <groupItem groupId="5" itemId="4" />
 
 <!-- userAuth Records -->
  <userAuth userAuthId="1" userId="1" authType="openid"

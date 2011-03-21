@@ -13,7 +13,7 @@ class GroupDbTest extends DbTestCase
                         'controlMembers' => 'owner',
                         'controlItems'   => 'owner',
                         'visibility'     => 'private',
-                        'canTransfer'    => 0,
+                        'canTransfer'    => 1,
     );
     private $_group1_items      = array(6,10,12);
 
@@ -39,14 +39,26 @@ class GroupDbTest extends DbTestCase
                         'controlMembers' => 'owner',
                         'controlItems'   => 'owner',
                         'visibility'     => 'group',
-                        'canTransfer'    => 0,
+                        'canTransfer'    => 1,
     );
     private $_group1i_items     = array(2,3,4);
 
     /* In the test dataset, all groups name 'Group1' have the same list of
      * members
      */
-    private $_group1_members    = array(1,4);
+    private $_group3 = array(
+                        'groupId'        => 3,
+                        'name'           => 'Urls',
+                        'groupType'      => 'item',
+                        'ownerId'        => 1,
+
+                        'controlMembers' => 'owner',
+                        'controlItems'   => 'owner',
+                        'visibility'     => 'group',
+                        'canTransfer'    => 1,
+    );
+    private $_group3_items      = array(2,3,4);
+    private $_group3_members    = array(1,4);
 
     private $_user1 = array(
                         'userId'        => 1,
@@ -91,7 +103,7 @@ class GroupDbTest extends DbTestCase
     public function testGroupRetrieveByUnknownId()
     {
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
-        $group  = $mapper->find( array('groupId' => 5) );
+        $group  = $mapper->find( array('groupId' => 6) );
 
         $this->assertEquals(null, $group);
     }
@@ -169,10 +181,10 @@ class GroupDbTest extends DbTestCase
     public function testGroupMembers1()
     {
         /* Retrieve the members that SHOULD be part of the group identified by
-         * _group1 (i.e. Users 1 and 4)
+         * _group3 (i.e. Users 1 and 4)
          */
         $mapper  = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $members = $mapper->fetch( array('userId' => $this->_group1_members));
+        $members = $mapper->fetch( array('userId' => $this->_group3_members));
         $this->assertEquals(2, $members->count() );
         $memberMin = array();
         foreach ($members as $member)
@@ -195,13 +207,18 @@ class GroupDbTest extends DbTestCase
         echo "\n\n";
         // */
 
-        $expected = $this->_group1;
+        $expected = $this->_group3;
 
         // Retrieve the target group by name
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
         $group  = $mapper->find( array('name' => $expected['name'] ));
 
         $this->assertNotEquals(null,   $group );
+
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->find( $group->ownerId );
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue($user->isAuthenticated());
 
         // Retrieve the group members
         $this->assertNotEquals(null,   $group->members );
@@ -214,6 +231,9 @@ class GroupDbTest extends DbTestCase
                             $group->toArray(self::$toArray_shallow_all));
 
         $expected['members'] = $memberMin;
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
     public function testGroupMembers2()
@@ -222,8 +242,13 @@ class GroupDbTest extends DbTestCase
 
         // Retrieve the target group by name
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
-        $group  = $mapper->find( array('name' => $this->_group1['name'] ));
+        $group  = $mapper->find( array('name' => $this->_group3['name'] ));
         $this->assertNotEquals(null,   $group );
+
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->find( $group->ownerId );
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue($user->isAuthenticated());
 
         // Retrieve the group members
         $members = $group->getMembers( array('name ASC'));
@@ -235,6 +260,9 @@ class GroupDbTest extends DbTestCase
         // */
 
         $this->assertEquals($expected, $members->getIds());
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
     public function testTagGroupItems1()
@@ -266,7 +294,9 @@ class GroupDbTest extends DbTestCase
         echo "\n\n";
         // */
 
-        // Retrieve the target group by name
+        /* Retrieve the target group by name -- this group is private so we
+         * must authenticate as the owner before attempting a retrieval.
+         */
         $expected = $this->_group1;
 
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
@@ -280,6 +310,10 @@ class GroupDbTest extends DbTestCase
                $expected['groupType'], $expected['name'], $group->debugDump());
         // */
 
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->find( $group->ownerId );
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue($user->isAuthenticated());
 
         // Retrieve the group items
         $this->assertNotEquals(null, $group->items );
@@ -292,6 +326,9 @@ class GroupDbTest extends DbTestCase
                             $group->toArray(self::$toArray_shallow_all));
 
         $expected['items'] = $itemMin;
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
     public function testTagGroupItems2()
@@ -306,6 +343,12 @@ class GroupDbTest extends DbTestCase
                                       'groupType' => $group['groupType']));
         $this->assertNotEquals(null,   $group );
 
+
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->find( $group->ownerId );
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue($user->isAuthenticated());
+
         // Retrieve the group items
         $items = $group->getItems( array('tag ASC'));
 
@@ -317,6 +360,9 @@ class GroupDbTest extends DbTestCase
         // */
 
         $this->assertEquals($expected, $items->getIds());
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
     public function testTagGroupItems3()
@@ -331,6 +377,12 @@ class GroupDbTest extends DbTestCase
                                       'groupType' => $group['groupType']));
         $this->assertNotEquals(null,   $group );
 
+
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->find( $group->ownerId );
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue($user->isAuthenticated());
+
         // Retrieve the group items
         $items = $group->getItems( array('tag DESC'));
 
@@ -342,6 +394,9 @@ class GroupDbTest extends DbTestCase
         // */
 
         $this->assertEquals($expected, $items->getIds());
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
     public function testUserGroupItems1()
@@ -388,6 +443,12 @@ class GroupDbTest extends DbTestCase
         // */
 
 
+
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->find( $group->ownerId );
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue($user->isAuthenticated());
+
         // Retrieve the group items
         $this->assertNotEquals(null, $group->items );
 
@@ -399,6 +460,9 @@ class GroupDbTest extends DbTestCase
                             $group->toArray(self::$toArray_shallow_all));
 
         $expected['items'] = $itemMin;
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
     public function testUserGroupItems2()
@@ -413,6 +477,12 @@ class GroupDbTest extends DbTestCase
                                       'groupType' => $group['groupType']));
         $this->assertNotEquals(null,   $group );
 
+
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->find( $group->ownerId );
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue($user->isAuthenticated());
+
         // Retrieve the group items
         $items = $group->getItems( array('name ASC'));
 
@@ -424,6 +494,9 @@ class GroupDbTest extends DbTestCase
         // */
 
         $this->assertEquals($expected, $items->getIds());
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
     public function testUserGroupItems3()
@@ -438,6 +511,12 @@ class GroupDbTest extends DbTestCase
                                       'groupType' => $group['groupType']));
         $this->assertNotEquals(null,   $group );
 
+
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->find( $group->ownerId );
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue($user->isAuthenticated());
+
         // Retrieve the group items
         $items = $group->getItems( array('totalTags DESC'));
 
@@ -449,6 +528,9 @@ class GroupDbTest extends DbTestCase
         // */
 
         $this->assertEquals($expected, $items->getIds());
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
     public function testItemGroupItems1()
@@ -494,6 +576,10 @@ class GroupDbTest extends DbTestCase
                $expected['groupType'], $expected['name'], $group->debugDump());
         // */
 
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->find( $group->ownerId );
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue($user->isAuthenticated());
 
         // Retrieve the group items
         $this->assertNotEquals(null, $group->items );
@@ -506,6 +592,9 @@ class GroupDbTest extends DbTestCase
                             $group->toArray(self::$toArray_shallow_all));
 
         $expected['items'] = $itemMin;
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
     public function testItemGroupItems2()
@@ -520,6 +609,11 @@ class GroupDbTest extends DbTestCase
                                       'groupType' => $group['groupType']));
         $this->assertNotEquals(null,   $group );
 
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->find( $group->ownerId );
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue($user->isAuthenticated());
+
         // Retrieve the group items
         $items = $group->getItems( array('url ASC'));
 
@@ -531,6 +625,9 @@ class GroupDbTest extends DbTestCase
         // */
 
         $this->assertEquals($expected, $items->getIds());
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
     public function testItemGroupItems3()
@@ -545,6 +642,12 @@ class GroupDbTest extends DbTestCase
                                       'groupType' => $group['groupType']));
         $this->assertNotEquals(null,   $group );
 
+
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->find( $group->ownerId );
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue($user->isAuthenticated());
+
         // Retrieve the group items
         $items = $group->getItems( array('userCount ASC'));
 
@@ -556,24 +659,28 @@ class GroupDbTest extends DbTestCase
         // */
 
         $this->assertEquals($expected, $items->getIds());
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
     public function testGroupInsertedIntoDatabase()
     {
         $expected = array(
-            'groupId'        => 5,
+            'groupId'        => 6,
             'name'           => 'Group2',
             'groupType'      => 'tag',
             'ownerId'        => 1,
             'controlMembers' => 'owner',
             'controlItems'   => 'owner',
             'visibility'     => 'private',
-            'canTransfer'    => 0,
+            'canTransfer'    => 1,
         );
 
         $group = new Model_Group( array(
-                        'name'    => $expected['name'],
-                        'ownerId' => $expected['ownerId'],
+                        'name'        => $expected['name'],
+                        'ownerId'     => $expected['ownerId'],
+                        'canTransfer' => $expected['canTransfer'],
                      ));
         $group = $group->save();
 
@@ -592,6 +699,12 @@ class GroupDbTest extends DbTestCase
                                        'groupType' => $group['groupType']));
 
         $this->assertNotEquals(null, $group );
+
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->find( $group->ownerId );
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue($user->isAuthenticated());
+
         $this->assertNotEquals(null, $group->items );
 
         /*
@@ -604,6 +717,9 @@ class GroupDbTest extends DbTestCase
 
         $group->addItem($tag);
         $this->assertEquals($expected, $group->items->__toString());
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
     public function testTagGroupAdd2()
@@ -617,6 +733,12 @@ class GroupDbTest extends DbTestCase
                                        'groupType' => $group['groupType']));
 
         $this->assertNotEquals(null, $group );
+
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->find( $group->ownerId );
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue($user->isAuthenticated());
+
         $this->assertNotEquals(null, $group->items );
 
         /*
@@ -637,6 +759,9 @@ class GroupDbTest extends DbTestCase
             $this->assertEquals("Unexpected model instance for 'tag' group",
                                 $e->getMessage());
         }
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
     public function testTagGroupRemove1()
@@ -650,6 +775,12 @@ class GroupDbTest extends DbTestCase
                                        'groupType' => $group['groupType']));
 
         $this->assertNotEquals(null, $group );
+
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->find( $group->ownerId );
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue($user->isAuthenticated());
+
         $this->assertNotEquals(null, $group->items );
 
         /*
@@ -661,6 +792,9 @@ class GroupDbTest extends DbTestCase
 
         $group->removeItem($tag);
         $this->assertEquals($expected, $group->items->__toString());
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
     public function testTagGroupRemove2()
@@ -674,6 +808,12 @@ class GroupDbTest extends DbTestCase
                                        'groupType' => $group['groupType']));
 
         $this->assertNotEquals(null, $group );
+
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->find( $group->ownerId );
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue($user->isAuthenticated());
+
         $this->assertNotEquals(null, $group->items );
 
         /*
@@ -693,6 +833,9 @@ class GroupDbTest extends DbTestCase
             $this->assertEquals("Unexpected model instance for 'tag' group",
                                 $e->getMessage());
         }
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
     public function testTagGroupRemove3()
@@ -704,6 +847,12 @@ class GroupDbTest extends DbTestCase
                                        'groupType' => $group['groupType']));
 
         $this->assertNotEquals(null, $group );
+
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->find( $group->ownerId );
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue($user->isAuthenticated());
+
         $this->assertNotEquals(null, $group->items );
 
         /*
@@ -722,5 +871,8 @@ class GroupDbTest extends DbTestCase
             $this->assertEquals("Non-backed item cannot be removed",
                                 $e->getMessage());
         }
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 }

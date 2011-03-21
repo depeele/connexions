@@ -180,7 +180,7 @@ class Model_Group extends Model_Base
                                $count   = null,
                                $offset  = null)
     {
-        return $this->getMapper()->getMembers( $this, $order, $count, $offset );
+        return $this->_getMembers( $order, $count, $offset );
     }
 
     /** @brief  Retrieve the set of items for this group.
@@ -195,6 +195,136 @@ class Model_Group extends Model_Base
                              $offset    = null)
     {
         return $this->getMapper()->getItems( $this, $order, $count, $offset );
+    }
+
+    /**********************************************
+     * Visibility and Control checks
+     *
+     */
+
+    /** @brief  Is the provided user permitted to view this group?
+     *  @param  user    The Model_User instance to check.
+     *
+     *  @return true | false
+     */
+    public function canView(Model_User $user)
+    {
+        $res = false;
+
+        switch ($this->visibility)
+        {
+        case 'group':
+            // 'user' MUST be 'owner' OR in the set of members
+            if ($this->ownerId == $user->getId())
+            {
+                $res = true;
+            }
+            else
+            {
+                $members = $this->_getMembers(null,     // order
+                                              null,     // count
+                                              null,     // offset
+                                              true);    // noAuth
+                if ($members !== null)
+                {
+                    $res = $members->in_array( $user );
+                }
+            }
+            break;
+
+        case 'public':
+            // All users.
+            $res = true;
+            break;
+
+        case 'private':
+        default:
+            // 'user' MUST be the owner
+            $res = ($this->ownerId == $user->getId());
+            break;
+        }
+
+        return $res;
+    }
+
+    /** @brief  Is the provided user permitted to add/remove items to this
+     *          group?
+     *  @param  user    The Model_User instance to check.
+     *
+     *  @return true | false
+     */
+    public function canControlItems(Model_User $user)
+    {
+        $res = false;
+        switch ($this->controlItems)
+        {
+        case 'group':
+            // 'user' MUST be in the set of members
+            if ($this->ownerId == $user->getId())
+            {
+                $res = true;
+            }
+            else
+            {
+                $members = $this->_getMembers(null,     // order
+                                              null,     // count
+                                              null,     // offset
+                                              true);    // noAuth
+                if ($members !== null)
+                {
+                    $res = $members->in_array( $user );
+                }
+            }
+            break;
+
+        case 'owner':
+        default:
+            // 'user' MUST be the owner
+            $res = ($this->ownerId == $user->getId());
+            break;
+        }
+
+        return $res;
+    }
+
+    /** @brief  Is the provided user permitted to add/remove items to this
+     *          group?
+     *  @param  user    The Model_User instance to check.
+     *
+     *  @return true | false
+     */
+    public function canControlMembers(Model_User $user)
+    {
+        $res = false;
+        switch ($this->controlMembers)
+        {
+        case 'group':
+            // 'user' MUST be in the set of members
+            if ($this->ownerId == $user->getId())
+            {
+                $res = true;
+            }
+            else
+            {
+                $members = $this->_getMembers(null,     // order
+                                              null,     // count
+                                              null,     // offset
+                                              true);    // noAuth
+                if ($members !== null)
+                {
+                    $res = $members->in_array( $user );
+                }
+            }
+            break;
+
+        case 'owner':
+        default:
+            // 'user' MUST be the owner
+            $res = ($this->ownerId == $user->getId());
+            break;
+        }
+
+        return $res;
     }
 
     /**********************************************
@@ -420,4 +550,26 @@ class Model_Group extends Model_Base
         return $str;
     }
 
+    /*********************************************************************
+     * Protected helpers
+     *
+     */
+
+    /** @brief  Retrieve the set of members for this group.
+     *  @param  order   Optional ORDER clause (string, array);
+     *  @param  count   Optional LIMIT count;
+     *  @param  offset  Optional LIMIT offset;
+     *  @param  noAuth  If 'true', do NOT perform an visibility/authentication
+     *                  checks.
+     *
+     *  @return A Model_Set_User instance.
+     */
+    protected function _getMembers($order   = null,
+                                   $count   = null,
+                                   $offset  = null,
+                                   $noAuth  = false)
+    {
+        return $this->getMapper()->getMembers( $this, $order, $count, $offset,
+                                               $noAuth );
+    }
 }
