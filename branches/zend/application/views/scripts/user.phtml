@@ -24,10 +24,8 @@ $highlightTags = ($this->tags && ($this->tags instanceof Model_Set_Tag)
                         ? $this->tags->__toString()
                         : null);
 
-$isMe          =  ( $viewer &&
-                    ($viewer->userId === $user->userId)
-                        ? true
-                        : false );
+$isMe          = ( $viewer && $viewer->isSame($user) );
+//$relation      = $user->networkRelation( $viewer );
 $userUrl       = $this->url(array('controller' => 'index',
                                 'action'     => 'index',
                                 'owner'      => $user->name));

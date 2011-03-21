@@ -60,6 +60,20 @@ class GroupDbTest extends DbTestCase
     private $_group3_items      = array(2,3,4);
     private $_group3_members    = array(1,4);
 
+    private $_group4 = array(
+                        'groupId'        => 4,
+                        'name'           => 'System:Network',
+                        'groupType'      => 'user',
+                        'ownerId'        => 2,
+
+                        'controlMembers' => 'group',
+                        'controlItems'   => 'group',
+                        'visibility'     => 'public',
+                        'canTransfer'    => 0,
+    );
+    private $_group4_members    = array(1,2);
+    private $_group4_items      = array(1,2);
+
     private $_user1 = array(
                         'userId'        => 1,
                         'name'          => 'User1',
@@ -103,7 +117,7 @@ class GroupDbTest extends DbTestCase
     public function testGroupRetrieveByUnknownId()
     {
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
-        $group  = $mapper->find( array('groupId' => 6) );
+        $group  = $mapper->find( array('groupId' => 32) );
 
         $this->assertEquals(null, $group);
     }
@@ -667,7 +681,7 @@ class GroupDbTest extends DbTestCase
     public function testGroupInsertedIntoDatabase()
     {
         $expected = array(
-            'groupId'        => 6,
+            'groupId'        => 7,
             'name'           => 'Group2',
             'groupType'      => 'tag',
             'ownerId'        => 1,
@@ -874,5 +888,75 @@ class GroupDbTest extends DbTestCase
 
         // De-authenticate $user
         $this->_unsetAuthenticatedUser($user);
+    }
+
+    public function testGroupIsMember1()
+    {
+        // Retrieve the target group by name
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('groupId' => $this->_group4['groupId']));
+
+        $this->assertNotEquals(null,   $group );
+
+        $uService = Connexions_Service::factory('Service_User');
+        $user1    = $uService->find( 1 );
+
+        $this->assertTrue( $group->isMember($user1));
+    }
+
+    public function testGroupIsMember2()
+    {
+        // Retrieve the target group by name
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('groupId' => $this->_group4['groupId']));
+
+        $this->assertNotEquals(null,   $group );
+
+        $uService = Connexions_Service::factory('Service_User');
+        $user3    = $uService->find( 3 );
+
+        $this->assertFalse($group->isMember($user3));
+    }
+
+    public function testGroupIsItem1()
+    {
+        // Retrieve the target group by name
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('groupId' => $this->_group4['groupId']));
+
+        $this->assertNotEquals(null,   $group );
+
+        $uService = Connexions_Service::factory('Service_User');
+        $user1    = $uService->find( 1 );
+
+        $this->assertTrue( $group->isItem($user1));
+    }
+
+    public function testGroupIsItem2()
+    {
+        // Retrieve the target group by name
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('groupId' => $this->_group4['groupId']));
+
+        $this->assertNotEquals(null,   $group );
+
+        $uService = Connexions_Service::factory('Service_User');
+        $user3    = $uService->find( 3 );
+
+        $this->assertFalse($group->isItem($user3));
+    }
+
+    public function testGroupIsItem3()
+    {
+        // Retrieve the target group by name
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Group');
+        $group  = $mapper->find( array('groupId' => $this->_group4['groupId']));
+
+        $this->assertNotEquals(null,   $group );
+
+        $tService = Connexions_Service::factory('Service_Tag');
+        $tag1     = $tService->find( 1 );
+
+        $this->assertFalse($group->isItem($tag1));
     }
 }

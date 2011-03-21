@@ -11,8 +11,6 @@
  *                      with differentiating parameters;
  *      viewer          The Model_User instance representing the current
  *                      viewer;
- *      network         A Model_Set_User instance containing information about
- *                      the Network of 'viewer';
  *
  *      section         The settings section;
  *      cmd             The specific settings command;
@@ -29,16 +27,14 @@
  *                           },
  *                           ...
  *                          }
- *      network         A Model_Set_User instance containing all people in
- *                      the network of 'viewer'.
  *
  *      main            An array of settings for the main body:
  *          namespace       The cookie/parameters/settings namespace for
  *                          the the main body;
  *          viewer          The Model_User instance representing the current
  *                          viewer (typically a reference to $view->viewer);
- *          users           The Model_Set_User instance representing the
- *                          network to be presented;
+ *          group           A Model_Set_User instance containing information
+ *                          about the Network of 'viewer';
  *
  *
  *          displayStyle    Indicates the current presentation style --

@@ -253,8 +253,8 @@ class GroupServiceTest extends DbTestCase
                 $groups->getCurrentPageNumber());
         // */
 
-        $this->assertEquals(5, $groups->getTotalItemCount());
-        $this->assertEquals(5, $groups->getCurrentItemCount());
+        $this->assertEquals(6, $groups->getTotalItemCount());
+        $this->assertEquals(6, $groups->getCurrentItemCount());
         $this->assertEquals(1,  count($groups));
 
         /*
