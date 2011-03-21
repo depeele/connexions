@@ -126,14 +126,27 @@ class Model_Mapper_Group extends Model_Mapper_Base
      *  @param  order   Optional ORDER clause (string, array);
      *  @param  count   Optional LIMIT count;
      *  @param  offset  Optional LIMIT offset;
+     *  @param  noAuth  If 'true', do NOT perform an visibility/authentication
+     *                  checks (used by Model_Group when checking
+     *                  visibility/management restrictions).
      *
      *  @return A Model_Set_User instance.
      */
     public function getMembers(Model_Group $group,
                                            $order   = null,
                                            $count   = null,
-                                           $offset  = null)
+                                           $offset  = null,
+                                           $noAuth  = false)
     {
+        /* :CAUTION: If 'noAuth' is not used properly, we can end up with an
+         *           infinitely recursive loop of calls.
+         */
+        if ( ($noAuth === false) &&
+             (! $group->canView( Connexions::getUser() )) )
+        {
+            throw new Exception('User does not have the required permission');
+        }
+
         $mapperName = 'Model_Mapper_User';
 
         /*
@@ -204,6 +217,12 @@ class Model_Mapper_Group extends Model_Mapper_Base
                                          $count     = null,
                                          $offset    = null)
     {
+        // Require that the authenticated user can view the group
+        if (! $group->canView( Connexions::getUser() ))
+        {
+            throw new Exception('User does not have the required permission');
+        }
+
         /*
         Connexions::log('Model_Mapper_Group::getItems(): '
                         .   'groupId[ %s ], type[ %s ], '
@@ -316,6 +335,12 @@ class Model_Mapper_Group extends Model_Mapper_Base
     public function addMember(Model_Group   $group,
                               Model_User    $user)
     {
+        // Require that the authenticated user can control members.
+        if (! $group->canControlMembers( Connexions::getUser() ))
+        {
+            throw new Exception('User does not have the required permission');
+        }
+
         /* We can only add 'backed' users (since we rely on the database
          * id for the join table), so ensure that it's backed now.
          */
@@ -329,8 +354,19 @@ class Model_Mapper_Group extends Model_Mapper_Base
         }
 
         $table = $this->getAccessor('Model_DbTable_GroupMember');
-        $table->insert( array('groupId' => $group->getId(),
-                              'userId'  => $user->getId()) );
+        try
+        {
+            $table->insert( array('groupId' => $group->getId(),
+                                  'userId'  => $user->getId()) );
+        }
+        catch (Zend_Db_Statement_Exception $e)
+        {
+            if (preg_match('/Duplicate entry/', $e->getMessage()) < 1)
+            {
+                // Re-throw...
+                throw $e;
+            }
+        }
 
         return $this;
     }
@@ -344,6 +380,12 @@ class Model_Mapper_Group extends Model_Mapper_Base
     public function removeMember(Model_Group    $group,
                                  Model_User     $user)
     {
+        // Require that the authenticated user can control members.
+        if (! $group->canControlMembers( Connexions::getUser() ))
+        {
+            throw new Exception('User does not have the required permission');
+        }
+
         /* We can only remove 'backed' users (since we rely on the
          * database id for the join table).
          */
@@ -373,6 +415,12 @@ class Model_Mapper_Group extends Model_Mapper_Base
     public function addItem(Model_Group      $group,
                             Connexions_Model $item)
     {
+        // Require that the authenticated user can control items.
+        if (! $group->canControlItems( Connexions::getUser() ))
+        {
+            throw new Exception('User does not have the required permission');
+        }
+
         /*
         Connexions::log("Model_Mapper_Group::addItem(): "
                         .   "group[ %s ], type[ %s ], class[ %s ]",
@@ -402,8 +450,19 @@ class Model_Mapper_Group extends Model_Mapper_Base
         }
 
         $table = $this->getAccessor('Model_DbTable_GroupItem');
-        $table->insert( array('groupId' => $group->getId(),
-                              'itemId'  => $item->getId()) );
+        try
+        {
+            $table->insert( array('groupId' => $group->getId(),
+                                  'itemId'  => $item->getId()) );
+        }
+        catch (Zend_Db_Statement_Exception $e)
+        {
+            if (preg_match('/Duplicate entry/', $e->getMessage()) < 1)
+            {
+                // Re-throw...
+                throw $e;
+            }
+        }
 
         return $this;
     }
@@ -417,6 +476,12 @@ class Model_Mapper_Group extends Model_Mapper_Base
     public function removeItem(Model_Group      $group,
                                Connexions_Model $item)
     {
+        // Require that the authenticated user can control items.
+        if (! $group->canControlItems( Connexions::getUser() ))
+        {
+            throw new Exception('User does not have the required permission');
+        }
+
         /*
         Connexions::log("Model_Mapper_Group::removeItem(): "
                         .   "group[ %s ], type[ %s ], class[ %s ]",

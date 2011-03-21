@@ -42,7 +42,7 @@ class UserDbTest extends DbTestCase
     protected function getDataSet()
     {
         return $this->createFlatXmlDataSet(
-                        dirname(__FILE__) .'/_files/5users.xml');
+                        dirname(__FILE__) .'/_files/5users+groups.xml');
                         //dirname(__FILE__) .'/_files/userSeed.xml');
     }
 
@@ -520,5 +520,307 @@ class UserDbTest extends DbTestCase
                                  null,  // offset
                                  'or'); // term
         $this->assertEquals($expected, $res->__toString());
+    }
+
+    public function testUserGetNetwork1()
+    {
+        $expected = 2;
+        $service  = Connexions_Service::factory('Model_User');
+        $id       = array( 'userId' => 1 );
+
+        $user     = $service->find( $id );
+
+        $this->assertTrue(  $user instanceof Model_User );
+        $this->assertTrue(  $user->isBacked() );
+        $this->assertTrue(  $user->isValid() );
+        $this->assertFalse( $user->isAuthenticated() );
+
+        // User1's Network is private
+        $network = $user->getNetwork();
+        $this->assertNotEquals(null, $network);
+
+        /*
+        printf ("User[ %s ] network[ %s ]",
+                $user, ($network === null ? 'null' : $network->debugDump()) );
+        // */
+
+        $this->assertEquals($expected, $network->getId());
+    }
+
+    public function testUserGetNetwork2()
+    {
+        $expected = 4;
+        $service  = Connexions_Service::factory('Model_User');
+
+        $user     = $service->find(array( 'userId' => 2 ));
+
+        $this->assertTrue(  $user instanceof Model_User );
+        $this->assertTrue(  $user->isBacked() );
+        $this->assertTrue(  $user->isValid() );
+        $this->assertFalse( $user->isAuthenticated() );
+
+        /*
+        // Mark the user as 'authenticated'
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue($user->isAuthenticated());
+        // */
+
+        $network = $user->getNetwork();
+        $this->assertNotEquals(null, $network);
+
+        /*
+        printf ("User[ %s ] network[ %s ]",
+                $user, ($network === null ? 'null' : $network->debugDump()) );
+        // */
+
+        $this->assertEquals($expected, $network->getId());
+
+        // De-authenticate $user
+        //$this->_unsetAuthenticatedUser($user);
+    }
+
+    public function testUserGetNetwork3()
+    {
+        $expected = 2;
+        $service  = Connexions_Service::factory('Model_User');
+
+        $user1     = $service->find(array( 'userId' => 1 ));
+        $this->assertTrue(  $user1 instanceof Model_User );
+        $this->assertTrue(  $user1->isBacked() );
+        $this->assertTrue(  $user1->isValid() );
+        $this->assertFalse( $user1->isAuthenticated() );
+
+        $user2    = $service->find(array( 'userId' => 2 ));
+        $this->assertTrue(  $user2 instanceof Model_User );
+        $this->assertTrue(  $user2->isBacked() );
+        $this->assertTrue(  $user2->isValid() );
+        $this->assertFalse( $user2->isAuthenticated() );
+
+        $user4    = $service->find(array( 'userId' => 4 ));
+        $this->assertTrue(  $user4 instanceof Model_User );
+        $this->assertTrue(  $user4->isBacked() );
+        $this->assertTrue(  $user4->isValid() );
+        $this->assertFalse( $user4->isAuthenticated() );
+
+
+        // Mark the user as 'authenticated'
+        $this->_setAuthenticatedUser($user1);
+        $this->assertTrue($user1->isAuthenticated());
+
+        // User1's Network is private
+        $network = $user1->getNetwork();
+        $this->assertNotEquals(null, $network);
+
+        /*
+        printf ("User[ %s ] network[ %s ]",
+                $user1, ($network === null ? 'null' : $network->debugDump()) );
+        // */
+
+        $this->assertEquals($expected, $network->getId());
+
+        /*
+        printf ("Group %d: items [ %s ]\n",
+                $network->getId(), $network->items);
+        printf ("-- %s in network[ %s ]\n",
+                $user2,
+                ($network->items->in_array( $user2 )
+                    ? 'yes' : 'no'));
+        printf ("-- %s in network[ %s ]\n",
+                $user4,
+                ($network->items->in_array( $user4 )
+                    ? 'yes' : 'no'));
+        // */
+
+        $this->assertFalse($network->items->in_array( $user2 ));
+        $this->assertTrue( $network->items->in_array( $user4 ));
+
+        // De-authenticate $user1
+        $this->_unsetAuthenticatedUser($user1);
+    }
+
+    public function testUserCanNetwork1()
+    {
+        $service  = Connexions_Service::factory('Model_User');
+
+        $user1    = $service->find( array('userId' => 1) );
+        $this->assertTrue(  $user1 instanceof Model_User );
+        $this->assertTrue(  $user1->isBacked() );
+        $this->assertTrue(  $user1->isValid() );
+        $this->assertFalse( $user1->isAuthenticated() );
+
+        $user2    = $service->find( array('userId' => 2) );
+        $this->assertTrue(  $user2 instanceof Model_User );
+        $this->assertTrue(  $user2->isBacked() );
+        $this->assertTrue(  $user2->isValid() );
+        $this->assertFalse( $user2->isAuthenticated() );
+
+        $user3    = $service->find( array('userId' => 3) );
+        $this->assertTrue(  $user2 instanceof Model_User );
+        $this->assertTrue(  $user2->isBacked() );
+        $this->assertTrue(  $user2->isValid() );
+        $this->assertFalse( $user2->isAuthenticated() );
+
+
+        /* User1's Network is 'visibility     = private',
+         *                    'controlMembers = owner',
+         *                    'controlItems   = owner'
+         */
+        $network = $user1->getNetwork();
+        $this->assertNotEquals(null, $network);
+
+        // User1's Network is private: viewable only by user1.
+        $this->assertTrue( $network->canView( $user1 ));
+        $this->assertFalse($network->canView( $user2 ));
+        $this->assertFalse($network->canView( $user3 ));
+
+        // User1's Network has 'controlMembers' of 'owner'
+        $this->assertTrue( $network->canControlMembers( $user1 ));
+        $this->assertFalse($network->canControlMembers( $user2 ));
+        $this->assertFalse($network->canControlMembers( $user3 ));
+
+        // User1's Network has 'controlItems' of 'owner'
+        $this->assertTrue( $network->canControlItems( $user1 ));
+        $this->assertFalse($network->canControlItems( $user2 ));
+        $this->assertFalse($network->canControlItems( $user3 ));
+    }
+
+    public function testUserCanNetwork2()
+    {
+        $service  = Connexions_Service::factory('Model_User');
+
+        $user1    = $service->find( array('userId' => 1) );
+        $user2    = $service->find( array('userId' => 2) );
+        $user3    = $service->find( array('userId' => 3) );
+
+
+        /* User2's Network is 'visibility     = public',
+         *                    'controlMembers = group',
+         *                    'controlItems   = group'
+         *
+         *  Members: User 1, 2
+         */
+        $network = $user2->getNetwork();
+        $this->assertNotEquals(null, $network);
+
+
+        // User2's Network is public.
+        $this->assertTrue( $network->canView( $user1 ));
+        $this->assertTrue( $network->canView( $user2 ));
+        $this->assertTrue( $network->canView( $user3 ));
+
+        // User2's Network has 'controlMembers' of 'group'
+        $this->assertTrue( $network->canControlMembers( $user1 ));
+        $this->assertTrue( $network->canControlMembers( $user2 ));
+        $this->assertFalse($network->canControlMembers( $user3 ));
+
+        // User2's Network has 'controlItems' of 'group'
+        $this->assertTrue( $network->canControlItems( $user1 ));
+        $this->assertTrue( $network->canControlItems( $user2 ));
+        $this->assertFalse($network->canControlItems( $user3 ));
+    }
+
+    public function testUserCanNetwork3()
+    {
+        $service  = Connexions_Service::factory('Model_User');
+
+        $user1    = $service->find( array('userId' => 1) );
+        $user2    = $service->find( array('userId' => 2) );
+        $user3    = $service->find( array('userId' => 3) );
+
+
+        /* User3's Network is 'visibility     = group',
+         *                    'controlMembers = group',
+         *                    'controlItems   = group'
+         *
+         *  Members: User 2, 3, 4
+         */
+        $network = $user3->getNetwork();
+        $this->assertNotEquals(null, $network);
+
+
+        // User2's Network is group.
+        $this->assertFalse($network->canView( $user1 ));
+        $this->assertTrue( $network->canView( $user2 ));
+        $this->assertTrue( $network->canView( $user3 ));
+
+        // User2's Network has 'controlMembers' of 'group'
+        $this->assertFalse($network->canControlMembers( $user1 ));
+        $this->assertTrue( $network->canControlMembers( $user2 ));
+        $this->assertTrue( $network->canControlMembers( $user3 ));
+
+        // User2's Network has 'controlItems' of 'group'
+        $this->assertFalse($network->canControlItems( $user1 ));
+        $this->assertTrue( $network->canControlItems( $user2 ));
+        $this->assertTrue( $network->canControlItems( $user3 ));
+    }
+
+    public function testUserNetworkAddMember1()
+    {
+        $expected = array(1,2,3,4);
+        $service  = Connexions_Service::factory('Model_User');
+
+        $user1    = $service->find( array('userId' => 1) );
+        $user2    = $service->find( array('userId' => 2) );
+        $user3    = $service->find( array('userId' => 3) );
+
+
+        /* User3's Network is 'visibility     = group',
+         *                    'controlMembers = group',
+         *                    'controlItems   = group'
+         *
+         *  Members: User 2, 3, 4
+         */
+        $network = $user3->getNetwork();
+        $this->assertNotEquals(null, $network);
+
+        $this->_setAuthenticatedUser($user3);
+        $this->assertTrue($user3->isAuthenticated());
+
+        $network->addMember($user1);
+        $this->assertEquals($expected, $network->members->getIds());
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user3);
+    }
+
+    public function testUserNetworkAddItem1()
+    {
+        $expected = array(1,2,3);
+        $uService = Connexions_Service::factory('Model_User');
+        $tService = Connexions_Service::factory('Model_Tag');
+
+        $user2    = $uService->find( 2 );
+        $user1    = $uService->find( 1 );
+        $user3    = $uService->find( 3 );
+        $tag1     = $tService->find( 1 );
+
+
+        $network = $user2->getNetwork();
+        $this->assertNotEquals(null, $network);
+
+        $this->_setAuthenticatedUser($user2);
+        $this->assertTrue($user2->isAuthenticated());
+
+        // Already added item...
+        $network->addItem($user1);
+
+        // Adding new item...
+        $network->addItem($user3);
+
+        // Adding an item of the wrong type...
+        try
+        {
+            $network->addItem($tag1);
+        }
+        catch (Exception $e)
+        {
+            $this->assertEquals("Unexpected model instance for 'user' group",
+                                $e->getMessage());
+        }
+
+        $this->assertEquals($expected, $network->items->getIds());
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user2);
     }
 }
