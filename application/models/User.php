@@ -597,9 +597,71 @@ class Model_User extends Model_Taggable
      *
      */
 
+    /** @brief  Retrieve the "Network Relationship" of the user represented by
+     *          this Model_User instance with the user represented by the
+     *          incoming user (which SHOULD be a Model_User instance).
+     *  @param  user    The user to retrieve the "Network Relationship" with
+     *                  (SHOULD be a Model_User instance).
+     *
+     *  We do NOT specifically require the 'user' parameter to be Model_User to
+     *  allow the caller to ignore the case where the target "user" is not
+     *  available (i.e. null).  In this case, the returned relation array will
+     *  be:
+     *      [ ]
+     *
+     *
+     *  @return An array of "Network Relationship" indicators:
+     *              'none'      - no relationship;
+     *              'self'      - 'user' is the same as $this;
+     *              'isIn'      - 'user' is in the network of this user;
+     *              'amIn'      - this user is in the network of 'user';
+     *              'mutual'    - 'isIn' + 'amIn';
+     *
+     *              empty array indicates "unknown"
+     */
+    public function networkRelation( $user )
+    {
+        $res = array();
+        if ( is_object($user) && ($user instanceof Model_User))
+        {
+            if ($this->isSame($user))
+            {
+                array_push($res, 'self');
+            }
+            else
+            {
+                $myNetwork   = $this->getNetwork();
+                $userNetwork = $user->getNetwork();
+
+                $mutual = 0;
+                if ( ($myNetwork !== null) && $myNetwork->isItem( $user ))
+                {
+                    array_push($res, 'isIn');
+                    $mutual++;
+                }
+                if ( ($userNetwork !== null) && $userNetwork->isItem( $this ))
+                {
+                    array_push($res, 'amIn');
+                    $mutual++;
+                }
+
+                if ($mutual === 2)
+                {
+                    array_push($res, 'mutual');
+                }
+                else if ($mutual === 0)
+                {
+                    array_push($res, 'none');
+                }
+            }
+        }
+
+        return $res;
+    }
+
     /** @brief  Retrieve the set of users in this user's network.
      *
-     *  @return A Model_Group or null if the network is not visibile
+     *  @return A Model_Group.
      */
     public function getNetwork()
     {
@@ -621,6 +683,38 @@ class Model_User extends Model_Taggable
         // */
 
         return $this->_network;
+    }
+
+    /** @brief  Add a new user to the network of this user.
+     *  @param  user    The user to add.
+     *
+     *  @return $this for a fluent interface
+     */
+    public function addToNetwork(Model_User  $user)
+    {
+        //$this->getMapper()->addToNetwork($this, $user);
+        $this->getNetwork()->addItem($user);
+
+        // Force a re-cache of the user network
+        $this->_network = null;
+
+        return $this;
+    }
+
+    /** @brief  Remove a user from the network of this user.
+     *  @param  user    The user to remove.
+     *
+     *  @return $this for a fluent interface
+     */
+    public function removeFromNetwork(Model_User  $user)
+    {
+        //$this->getMapper()->removeFromNetwork($this, $user);
+        $this->getNetwork()->removeItem($user);
+
+        // Force a re-cache of the user network
+        $this->_network = null;
+
+        return $this;
     }
 
     /**********************************************

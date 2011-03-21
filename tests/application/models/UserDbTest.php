@@ -823,4 +823,85 @@ class UserDbTest extends DbTestCase
         // De-authenticate $user
         $this->_unsetAuthenticatedUser($user2);
     }
+
+    public function testUserNetworkRelation1()
+    {
+        $expected = array('self');
+        $service  = Connexions_Service::factory('Model_User');
+
+        $user     = $service->find(array( 'userId' => 2 ));
+
+        $this->assertTrue(  $user instanceof Model_User );
+        $this->assertTrue(  $user->isBacked() );
+        $this->assertTrue(  $user->isValid() );
+        $this->assertFalse( $user->isAuthenticated() );
+
+        $relation = $user->networkRelation( $user );
+
+        $this->assertEquals($expected, $relation);
+    }
+
+    public function testUserNetworkRelation2()
+    {
+        $expected = array('amIn');
+        $service  = Connexions_Service::factory('Model_User');
+
+        $user1    = $service->find( 1 );
+        $user2    = $service->find( 2 );
+
+        $relation = $user1->networkRelation( $user2 );
+
+        $this->assertEquals($expected, $relation);
+    }
+
+    public function testUserNetworkRelation3()
+    {
+        $expected = array('isIn');
+        $service  = Connexions_Service::factory('Model_User');
+
+        $user1    = $service->find( 1 );
+        $user2    = $service->find( 2 );
+
+        $relation = $user2->networkRelation( $user1 );
+
+        $this->assertEquals($expected, $relation);
+    }
+
+    public function testUserNetworkRelation4()
+    {
+        $expected = array('isIn', 'amIn', 'mutual');
+        $service  = Connexions_Service::factory('Model_User');
+
+        $user1    = $service->find( 1 );
+        $user3    = $service->find( 3 );
+
+        $relation = $user1->networkRelation( $user3 );
+
+        $this->assertEquals($expected, $relation);
+    }
+
+    public function testUserNetworkRelation5()
+    {
+        $expected = array('none');
+        $service  = Connexions_Service::factory('Model_User');
+
+        $user2    = $service->find( 2 );
+        $user4    = $service->find( 4 );
+
+        $relation = $user2->networkRelation( $user4 );
+
+        $this->assertEquals($expected, $relation);
+    }
+
+    public function testUserNetworkRelation6()
+    {
+        $expected = array();
+        $service  = Connexions_Service::factory('Model_User');
+
+        $user1    = $service->find( 1 );
+
+        $relation = $user1->networkRelation( null );
+
+        $this->assertEquals($expected, $relation);
+    }
 }

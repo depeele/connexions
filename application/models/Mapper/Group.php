@@ -209,16 +209,21 @@ class Model_Mapper_Group extends Model_Mapper_Base
      *  @param  order   Optional ORDER clause (string, array);
      *  @param  count   Optional LIMIT count;
      *  @param  offset  Optional LIMIT offset;
+     *  @param  noAuth  If 'true', do NOT perform an visibility/authentication
+     *                  checks (used by Model_Group when checking
+     *                  visibility/management restrictions).
      *
      *  @return A Model_Set_(User|Tag|Item|Bookmark) instance.
      */
     public function getItems(Model_Group $group,
                                          $order     = null,
                                          $count     = null,
-                                         $offset    = null)
+                                         $offset    = null,
+                                         $noAuth    = false)
     {
         // Require that the authenticated user can view the group
-        if (! $group->canView( Connexions::getUser() ))
+        if ( ($noAuth === false) &&
+             (! $group->canView( Connexions::getUser() )) )
         {
             throw new Exception('User does not have the required permission');
         }

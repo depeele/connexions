@@ -202,6 +202,48 @@ class Model_Group extends Model_Base
      *
      */
 
+    /** @brief  Is the given user a member of this group?
+     *  @param  user    The user to check.
+     *
+     *  @return true | false
+     */
+    public function isMember(Model_User $user)
+    {
+        $members = $this->_getMembers(null,     // order
+                                      null,     // count
+                                      null,     // offset
+                                      true);    // noAuth
+
+        return ( ($members !== null)                  &&
+                 //($members instanceof Model_User_Set) &&
+                 $members->in_array($user) );
+    }
+
+    /** @brief  Is the given Model instance an item in this group?
+     *  @param  item    The item to check.
+     *
+     *  @return true | false
+     */
+    public function isItem(Connexions_Model $item)
+    {
+        if (get_class($item) !== 'Model_'. ucfirst($this->groupType))
+        {
+            return false;
+        }
+
+        $items = $this->_getItems(null,     // order
+                                  null,     // count
+                                  null,     // offset
+                                  true);    // noAuth
+
+        return ( ($items !== null)                                       &&
+                 // /*
+                 (get_class($items) ===
+                                'Model_Set_'. ucfirst($this->groupType)) &&
+                 // */
+                 $items->in_array($item) );
+    }
+
     /** @brief  Is the provided user permitted to view this group?
      *  @param  user    The Model_User instance to check.
      *
@@ -571,5 +613,23 @@ class Model_Group extends Model_Base
     {
         return $this->getMapper()->getMembers( $this, $order, $count, $offset,
                                                $noAuth );
+    }
+
+    /** @brief  Retrieve the set of items for this group.
+     *  @param  order   Optional ORDER clause (string, array);
+     *  @param  count   Optional LIMIT count;
+     *  @param  offset  Optional LIMIT offset;
+     *  @param  noAuth  If 'true', do NOT perform an visibility/authentication
+     *                  checks.
+     *
+     *  @return A Model_Set_(User|Tag|Item|Bookmark) instance.
+     */
+    protected function _getItems($order   = null,
+                                 $count   = null,
+                                 $offset  = null,
+                                 $noAuth  = false)
+    {
+        return $this->getMapper()->getItems( $this, $order, $count, $offset,
+                                             $noAuth );
     }
 }

@@ -28,14 +28,15 @@
  *                           ...
  *                          }
  *
- *      network         A Model_Set_User instance containing all people in
- *                      the network of 'viewer'.
- *
  *      main            An array of settings for the main body:
  *          namespace       The cookie/parameters/settings namespace for
  *                          the the main body;
  *          viewer          The Model_User instance representing the current
  *                          viewer (typically a reference to $view->viewer);
+ *          group           A Model_Set_User instance containing information
+ *                          about the Network of 'viewer';
+ *          panePartial     The partial script to use to render the paginated
+ *                          contents of 'group';
  *
  *          displayStyle    Indicates the current presentation style --
  *                          if this is an array, the style is 'custom';
@@ -48,21 +49,6 @@
  *          showRelation    Show the relation indicator?;
  *          itemType        The type of item being presented
  *                          (View_Helper_HtmlItemCloud::ITEM_TYPE_*);
- *
- *          items           The Model_Set_User instance representing the
- *                          people to be presented;
- *          paginator       The item paginator;
- *
- *          itemBaseUrl     The baseUrl for item links;
- *
- *          weightName      The name to use for item weights;
- *          weightTitle     The title of item weights;
- *          titleTitle      The title of item names/titles;
- *
- *          currentSortBy   The current sortBy for 'items';
- *          currentSortOrder
- *                          The current sortOrder for 'items';
- *
  */
 $config      = &$this->main;
 $namespace   = $config['namespace'];

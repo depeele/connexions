@@ -20,4 +20,8 @@
               groupType="user"
               controlMembers="group" controlItems="group" visibility="group"
               canTransfer="0" ownerId="3" />
+ <memberGroup groupId="6" name="System:Network"
+              groupType="user"
+              controlMembers="owner" controlItems="owner" visibility="private"
+              canTransfer="0" ownerId="4" />
 </dataset>
