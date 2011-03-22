@@ -192,44 +192,87 @@
 .confirm-yes {
   width:  16px;
   height: 16px;
-  background-position: -160px -40px;
+  background-position: -160px -42px;
 }
 .confirm-yes-grey {
   width:  16px;
   height: 16px;
-  background-position: -176px -40px;
+  background-position: -176px -42px;
 }
 .confirm-no {
   width:  16px;
   height: 16px;
-  background-position: -160px -56px;
+  background-position: -160px -58px;
 }
 .confirm-no-grey {
   width:  16px;
   height: 16px;
-  background-position: -176px -56px;
+  background-position: -176px -58px;
 }
 
+.control-add {
+  width:  16px;
+  height: 16px;
+  background-position: -68px -62px;
+}
+.control-add-grey {
+  width:  16px;
+  height: 16px;
+  background-position: -84px -62px;
+}
 .control-edit {
   width:  16px;
   height: 16px;
-  background-position: -56px -74px;
+  background-position: -68px -78px;
 }
 .control-edit-grey {
   width:  16px;
   height: 16px;
-  background-position: -72px -74px;
+  background-position: -84px -78px;
 }
 
 .control-delete {
   width:  16px;
   height: 16px;
-  background-position: -56px -90px;
+  background-position: -68px -94px;
 }
 .control-delete-grey {
   width:  16px;
   height: 16px;
-  background-position: -72px -90px;
+  background-position: -84px -94px;
+}
+
+// Network relations
+.relation-amIn {
+  width:  32px;
+  height: 12px;
+  background-position:  -176px -12px;
+}
+.relation-isIn {
+  width:  32px;
+  height: 12px;
+  background-position:  -176px -24px;
+}
+.relation-mutual {
+  width:  32px;
+  height: 12px;
+  background-position:  -176px 0px;
+}
+.relation-none, .relation-self {
+  width:  32px;
+  height: 12px;
+  background-position:  -128px -48px;
+}
+
+.relation-add {
+  width:  32px;
+  height: 12px;
+  background-position: -36px -86px;
+}
+.relation-remove {
+  width:  32px;
+  height: 12px;
+  background-position: -36px -98px;
 }
 
 
@@ -255,7 +298,7 @@
 .magnifier_small {
   width: 15px;
   height: 15px;
-  background-position: -20px -71px;
+  background-position: -16px -71px;
 }
 
 // Settings

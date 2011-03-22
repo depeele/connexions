@@ -25,7 +25,6 @@ $highlightTags = ($this->tags && ($this->tags instanceof Model_Set_Tag)
                         : null);
 
 $isMe          = ( $viewer && $viewer->isSame($user) );
-//$relation      = $user->networkRelation( $viewer );
 $userUrl       = $this->url(array('controller' => 'index',
                                 'action'     => 'index',
                                 'owner'      => $user->name));
@@ -114,12 +113,88 @@ if ($showParts['minimized'])    array_push($css, 'minimized');
         else
         {
             echo "<div class='ui-icon ui-icon-person'>&nbsp;</div>";
+            //echo "<img src='", $this->baseUrl('/images/user.gif'), "' />";
         }
 
         echo   "</div>",
               "</a>",
              "</div>";
     }
+
+    /*****************************
+     * Network-relation
+     *
+     */
+    if ( $showParts['user:data:relation'] === true )
+    {
+        /* 'user' SHOULD always be a Model_User instance while 'viewer' MAY be
+         * null
+         */
+        $relation = $viewer->networkRelation( $user );
+        $show     = array(
+            'add'   => false,
+            'del'   => false,
+        );
+
+        if (empty($relation) || in_array('none', $relation))
+        {
+            $relationStr = 'no relation';
+            $spriteCss   = 'relation-none';
+            $show['add'] = true;
+        }
+        else if (in_array('self', $relation))
+        {
+            $relationStr = 'you';
+            $spriteCss   = 'relation-self';
+        }
+        else if (in_array('mutual', $relation))
+        {
+            $relationStr = 'mutual followers';
+            $spriteCss   = 'relation-mutual';
+            $show['del'] = true;
+        }
+        else if (in_array('amIn', $relation))
+        {
+            $relationStr = 'follower';
+            $spriteCss   = 'relation-amIn';
+            $show['add'] = true;
+        }
+        else
+        {
+            $relationStr = 'following';
+            $spriteCss   = 'relation-isIn';
+            $show['del'] = true;
+        }
+
+        echo "<div class='control'>",   // control {
+              "<div class='relation' title='{$relationStr}'>",
+               "<!-- ". implode(' ', $relation) ." -->",
+               "<div class='connexions_sprites {$spriteCss}'>",
+                $relationStr,
+               "</div>",
+              "</div>";
+
+        if ($show['add'])
+        {
+            echo '<span class="item-add" title="add">',
+                    '<span class="title">ADD</span>',
+                    '<span class="icon connexions_sprites ',
+                                                'item-add">',
+                    '</span>',
+                 '</span>';
+        }
+        if ($show['del'])
+        {
+            echo '<span class="item-delete" title="delete">',
+                    '<span class="title">DELETE</span>',
+                    '<span class="icon connexions_sprites ',
+                                                'item-delete">',
+                    '</span>',
+                 '</span>';
+        }
+        echo "</div>";                  // control }
+    }
+
 
     /*****************************
      * UserId

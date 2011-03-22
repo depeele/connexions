@@ -974,10 +974,42 @@ abstract class Connexions_Model_Set
         $this->_prepareSort();
         return uksort($this->_members, $cmp);
     }
-    public function in_array($needle)
+
+    public function contains($needle)
     {
         $this->_prepareSort();
-        return in_array($needle, $this->_members);
+
+        $cmp = (is_object($needle) && ($needle instanceof Connexions_Model)
+                    ? 'inst'
+                    : 'str');
+
+        $res = false;
+        foreach ($this->_members as $member)
+        {
+            if ($cmp === 'str')
+            {
+                if ((string)$member == $needle)
+                {
+                    $res = true;
+                    break;
+                }
+            }
+            else if ($member->isSame( $needle ))
+            {
+                $res = true;
+                break;
+            }
+        }
+
+        /*
+        Connexions::log("Connexions_Model_Set::contains(): "
+                        . "needle[ %s ] %s members[ %s ]",
+                        Connexions::varExport($needle),
+                        ($res ? 'is in' : 'is NOT in'),
+                        Connexions::varExport($this->_members));
+        // */
+
+        return $res;
     }
 
     /*************************************************************************

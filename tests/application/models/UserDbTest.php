@@ -623,16 +623,16 @@ class UserDbTest extends DbTestCase
                 $network->getId(), $network->items);
         printf ("-- %s in network[ %s ]\n",
                 $user2,
-                ($network->items->in_array( $user2 )
+                ($network->items->contains( $user2 )
                     ? 'yes' : 'no'));
         printf ("-- %s in network[ %s ]\n",
                 $user4,
-                ($network->items->in_array( $user4 )
+                ($network->items->contains( $user4 )
                     ? 'yes' : 'no'));
         // */
 
-        $this->assertFalse($network->items->in_array( $user2 ));
-        $this->assertTrue( $network->items->in_array( $user4 ));
+        $this->assertFalse($network->items->contains( $user2 ));
+        $this->assertTrue( $network->items->contains( $user4 ));
 
         // De-authenticate $user1
         $this->_unsetAuthenticatedUser($user1);

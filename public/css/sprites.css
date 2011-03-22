@@ -1,58 +1,172 @@
-/* connexions.gif */
-.connexions_sprites   {background:url('sprites/connexions.gif')
-                                        no-repeat scroll 0px 0px transparent;
-                       background-image:url('sprites/connexions.gif')
-                                        !important;}
-.corner_inner_left    {width:12px;height:10px;background-position:0     0;}
-.corner_inner_right   {width:12px;height:10px;background-position:-12px 0px;}
+/****** sprites.sass ****** */
+.icon-normal .ui-icon { background-image: url(themes/base/images/ui-icons_222222_256x240.png); }
 
-.corner_outter_left   {width:16px;height:18px;background-position:0     -10px;}
-.corner_outter_right  {width:16px;height:18px;background-position:-16px -10px;}
-.corner_outter_middle {height:18px;}
+.icon-default .ui-icon { background-image: url(themes/base/images/ui-icons_888888_256x240.png); }
 
-.corner_green_left    {width:16px;height:18px;background-position:-32px -10px;}
-.corner_green_right   {width:16px;height:18px;background-position:-48px -10px;}
-.corner_green_middle  {height:18px;}
+.icon-hover .ui-icon { background-image: url(themes/base/images/ui-icons_454545_256x240.png); }
 
-.lock_empty           {width:13px;height:16px;background-position:0     -28px;}
-.lock_fill            {width:13px;height:16px;background-position:-13px -28px;}
+.icon-active .ui-icon { background-image: url(themes/base/images/ui-icons_454545_256x240.png); }
 
-.status_ok            {width:15px;height:15px;background-position:-72px  -28px;}
-.status_error         {width:15px;height:15px;background-position:-87px  -28px;}
-.status_empty         {width:15px;height:15px;background-position:-104px -28px;}
+.icon-highlight .ui-icon { background-image: url(themes/base/images/ui-icons_2e83ff_256x240.png); }
 
-.star_0               {width:14px;height:14px;background-position:-72px  -44px;}
-.star_0_off           {width:14px;height:14px;background-position:-72px  -44px;}
-.star_0_hover         {width:14px;height:14px;background-position:-86px  -44px;}
+.icon-error .ui-icon { background-image: url(themes/base/images/ui-icons_cd0a0a_256x240.png); }
 
-.star_1               {width:16px;height:16px;background-position:-72px  -58px;}
-.star_1_off           {width:16px;height:16px;background-position:-72px  -58px;}
-.star_1_hover         {width:16px;height:16px;background-position:-88px  -58px;}
-.star_1_on            {width:16px;height:16px;background-position:-104px -58px;}
+.connexions_sprites { background-image: url("sprites/connexions.gif"); background-attachment: scroll; background-repeat: no-repeat; background-color: transparent; }
 
-.star_empty           {width:15px;height:15px;background-position:0     -44px;}
-.star_fill            {width:15px;height:15px;background-position:-15px -44px;}
+.corner_inner_left { width: 12px; height: 10px; background-position: 0 0; }
 
-.star_small_empty     {width:13px;height:12px;background-position:0     -59px;}
-.star_small_fill      {width:13px;height:12px;background-position:-13px -59px;}
+.corner_inner_right { width: 12px; height: 10px; background-position: -12px 0px; }
 
-.magnifier            {width:17px;height:16px;background-position:0     -71px;}
-.magnifier_small      {width:15px;height:15px;background-position:-45px -59px;}
+.corner_outter_left { width: 16px; height: 18px; background-position: 0 -10px; }
 
-.search_bg            {width:173px;height:23px;background-position:0    -87px;}
+.corner_outter_right { width: 16px; height: 18px; background-position: -16px -10px; }
 
-.welcome_bg           {width:100px;height:64px;background-position:0   -110px;}
+.corner_outter_middle { height: 18px; }
 
-.join_bg              {width:100px;height:64px;background-position:0   -174px;}
+.corner_green_left { width: 16px; height: 18px; background-position: -32px -10px; }
+
+.corner_green_right { width: 16px; height: 18px; background-position: -48px -10px; }
+
+.corner_green_middle { height: 18px; }
+
+.lock_empty { width: 13px; height: 16px; background-position: 0 -28px; }
+
+.lock_fill { width: 13px; height: 16px; background-position: -13px -28px; }
+
+.star_empty { width: 15px; height: 15px; background-position: 0 -44px; }
+
+.star_fill { width: 15px; height: 15px; background-position: -15px -44px; }
+
+.button_delete_on { width: 16px; height: 16px; background-position: -72px 0; }
+
+.button_delete_off { width: 16px; height: 16px; background-position: -88px 0; }
+
+.status_ok { width: 15px; height: 15px; background-position: -72px -16px; }
+
+.status_error { width: 15px; height: 15px; background-position: -87px -16px; }
+
+.status_empty { width: 15px; height: 15px; background-position: -104px -16px; }
+
+.star_0 { width: 14px; height: 14px; background-position: -72px -32px; }
+
+.star_0_off { width: 14px; height: 14px; background-position: -72px -32px; }
+
+.star_0_hover { width: 14px; height: 14px; background-position: -86px -32px; }
+
+.star_1 { width: 16px; height: 16px; background-position: -72px -46px; }
+
+.star_1_off { width: 16px; height: 16px; background-position: -72px -46px; }
+
+.star_1_hover { width: 16px; height: 16px; background-position: -88px -46px; }
+
+.star_1_on { width: 16px; height: 16px; background-position: -104px -46px; }
+
+.star_1_owner { width: 16px; height: 16px; background-position: -104px -30px; }
+
+.confirm-yes { width: 16px; height: 16px; background-position: -160px -42px; }
+
+.confirm-yes-grey { width: 16px; height: 16px; background-position: -176px -42px; }
+
+.confirm-no { width: 16px; height: 16px; background-position: -160px -58px; }
+
+.confirm-no-grey { width: 16px; height: 16px; background-position: -176px -58px; }
+
+.control-add { width: 16px; height: 16px; background-position: -68px -62px; }
+
+.control-add-grey { width: 16px; height: 16px; background-position: -84px -62px; }
+
+.control-edit { width: 16px; height: 16px; background-position: -68px -78px; }
+
+.control-edit-grey { width: 16px; height: 16px; background-position: -84px -78px; }
+
+.control-delete { width: 16px; height: 16px; background-position: -68px -94px; }
+
+.control-delete-grey { width: 16px; height: 16px; background-position: -84px -94px; }
+
+.relation-amIn { width: 32px; height: 12px; background-position: -176px -12px; }
+
+.relation-isIn { width: 32px; height: 12px; background-position: -176px -24px; }
+
+.relation-mutual { width: 32px; height: 12px; background-position: -176px 0px; }
+
+.relation-none, .relation-self { width: 32px; height: 12px; background-position: -128px -48px; }
+
+.relation-add { width: 32px; height: 12px; background-position: -36px -86px; }
+
+.relation-remove { width: 32px; height: 12px; background-position: -36px -98px; }
+
+.envelope { width: 17px; height: 13px; background-position: -32px -28px; }
+
+.envelope_dim { width: 17px; height: 13px; background-position: -32px -44px; }
+
+.magnifier { width: 17px; height: 16px; background-position: 0 -71px; }
+
+.magnifier_small { width: 15px; height: 15px; background-position: -16px -71px; }
+
+.type-certificate { width: 16px; height: 16px; background-position: -120px 0; }
+
+.type-openId { width: 16px; height: 16px; background-position: -136px 0; }
+
+.type-password { width: 16px; height: 16px; background-position: -152px 0; }
+
+.setting-private { width: 16px; height: 16px; background-position: -120px -16px; }
+
+.setting-public { width: 16px; height: 16px; background-position: -136px -16px; }
+
+.setting-restricted { width: 16px; height: 16px; background-position: -120px -32px; }
+
+.setting-group { width: 16px; height: 16px; background-position: -136px -32px; }
+
+.settings_bg { background-position: -100px -74px; width: 48px; height: 48px; }
+
+.people_bg, .network_bg { background-position: -150px -74px; width: 48px; height: 48px; }
+
+.bookmark_bg { background-position: -100px -123px; width: 48px; height: 48px; }
+
+.user_bg { background-position: -150px -123px; width: 48px; height: 48px; }
+
+.tag_bg { background-position: -100px -172px; width: 48px; height: 48px; }
+
+.inbox_bg { background-position: -150px -172px; width: 48px; height: 48px; }
+
+.item_bg { background-position: -100px -221px; width: 48px; height: 48px; }
+
+.search_bg { background-position: -150px -221px; width: 48px; height: 48px; }
+
+.relation_ltr { background-position: 0px -240px; width: 20px; height: 20px; }
+
+.join_bg { width: 100px; height: 64px; background-position: 0 -174px; }
+
+.welcome_gradient { background-position: -110px -110px; }
+
+.welcome_bg { background-position: 0 -270px; }
+
+.old_welcome_bg { width: 100px; height: 64px; background-position: 0 -110px; }
+
+.scope_root { height: 24px; width: 16px; background-position: -24px -240px; }
+
+.scope_go { height: 24px; width: 16px; background-position: -44px -240px; }
+
+.scope_root_item { height: 24px; width: 16px; background-position: -64px -240px; }
+
+.star_small_empty { width: 13px; height: 12px; background-position: 0 -59px; }
+
+.star_small_fill { width: 13px; height: 12px; background-position: -13px -59px; }
 
 /* smallIcons.gif 15x44 */
-.smallIcon_bookmark { background: url('sprites/smallIcons.gif') no-repeat scroll 3px 0px transparent; }
-.smallIcon_magnify { background: url('sprites/smallIcons.gif') no-repeat scroll 3px -1956px transparent; }
+.smallIcon_bookmark { background: url("sprites/smallIcons.gif") no-repeat scroll 3px 0px transparent; }
+
+.smallIcon_magnify { background: url("sprites/smallIcons.gif") no-repeat scroll 3px -1956px transparent; }
 
 /* arrows.gif     12x36 */
-.arrow_down1 { background: url('sprites/arrows.gif') no-repeat scroll 15px 0px transparent; }
-.arrow_left1 { background: url('sprites/arrows.gif') no-repeat scroll 15px 0px transparent; }
-.arrow_down5 { background: url('sprites/arrows.gif') no-repeat scroll 15px -313px transparent; }
-.arrow_down6 { background: url('sprites/arrows.gif') no-repeat scroll 15px -390px transparent; }
-.arrow_down7 { background: url('sprites/arrows.gif') no-repeat scroll 15px -474px transparent; }
-.arrow_down8 { background: url('sprites/arrows.gif') no-repeat scroll 15px -514px transparent; }
+.arrow_down1 { background: url("sprites/arrows.gif") no-repeat scroll 15px 0px transparent; }
+
+.arrow_left1 { background: url("sprites/arrows.gif") no-repeat scroll 15px 0px transparent; }
+
+.arrow_down5 { background: url("sprites/arrows.gif") no-repeat scroll 15px -313px transparent; }
+
+.arrow_down6 { background: url("sprites/arrows.gif") no-repeat scroll 15px -390px transparent; }
+
+.arrow_down7 { background: url("sprites/arrows.gif") no-repeat scroll 15px -474px transparent; }
+
+.arrow_down8 { background: url("sprites/arrows.gif") no-repeat scroll 15px -514px transparent; }

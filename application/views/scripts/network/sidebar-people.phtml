@@ -19,6 +19,25 @@
  *      tags            A Model_Set_Tag instance containing information about
  *                      any requested tags (i.e. tag restrictions);
  */
+$config = $this->sidebarHelper->getPane('people');
+
+$viewer = $this->viewer;    //$config->viewer;
+$owner  = $this->owner;     //$config->owner;
+
+$label = 'People in ';
+if ($viewer->isSame($owner))
+{
+    $label .= 'your network';
+}
+else
+{
+    $label .= 'the network of '. $owner;
+}
+
+if (count($this->tags) > 0)
+{
+    $label .= 'related to these bookmarks';
+}
 
 ?>
   <div class='columnHeader'>
@@ -26,13 +45,15 @@
     &nbsp;
    </div>
    <?php
-    echo "<p>People in related to these bookmarks.</p>\n";
+    echo "<p>", $label , ".</p>\n";
   ?>
   </div>
   <?php
 
     // Tag-related users
-    $config        = $this->sidebarHelper->getPane('people');
+    Connexions::log("network/sidebar-people.phtml: config[ %s ]",
+                    Connexions::varExport($config));
+
     $htmlItemCloud = $this->htmlItemCloud($config);
 
     echo $htmlItemCloud->render();

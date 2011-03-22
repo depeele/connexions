@@ -186,7 +186,8 @@ class PeopleController extends Connexions_Controller_Action
     {
         $config  = $sidebar->getPane($pane);
 
-        $config['cookieUrl'] = $this->_rootUrl;
+        $config['viewer']    =& $this->_viewer;
+        $config['cookieUrl'] =  $this->_rootUrl;
 
 
         $perPage = ((int)$config['perPage'] > 0

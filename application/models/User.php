@@ -656,6 +656,11 @@ class Model_User extends Model_Taggable
             }
         }
 
+        /*
+        Connexions::log("Model_User::networkRelation(): '%s' to '%s' [ %s ]",
+                        $this, $user, implode(', ', $res));
+        // */
+
         return $res;
     }
 

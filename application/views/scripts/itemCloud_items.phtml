@@ -12,6 +12,8 @@
  *      getShowControls()   Whether or not management controls should be
  *                          presented (i.e. the viewer is also the owner of the
  *                                          items being presented);
+ *      getItemType()       The type of item being presented
+ *                          (View_Helper_HtmlItemCloud::ITEM_TYPE_*);
  *      getClassList()      The set of classes to use for the different tag
  *                          weights;
  *      getHtmlTags()       The HTML tag information to use for rendering;
@@ -22,6 +24,7 @@
  */
 $helper       = $this->helper;
 $showControls = $helper->getShowControls();
+$itemType     = $helper->getItemType();
 $fontUnit     = null;
 $classList    = $helper->getClassList();
 if ($classList === null)
@@ -55,6 +58,21 @@ foreach ($helper->getHtmlTags() as $key => $data)
 
     array_push($tags, array('tag'   => $htmlTag,
                             'attrs' => $attributes));
+}
+
+if ($itemType === View_Helper_HtmlItemCloud::ITEM_TYPE_USER)
+{
+    //$showControls = false;
+
+    $viewer        = $helper->getViewer();
+    $showRelations = ( ($showControls === true)  &&
+                       is_object($viewer)        &&
+                       ($viewer->isAuthenticated()) );
+
+    if (! $showRelations)
+    {
+        $showControls = false;
+    }
 }
 
 // /*
@@ -127,20 +145,90 @@ foreach ($this->items as $item)
 
     if ($showControls === true)
     {
-        $itemHtml    .= '<div class="control">'
-                     .   '<span class="item-edit" title="edit">'
-                     .      '<span class="title">EDIT</span>'
-                     .      '<span class="icon connexions_sprites '
-                     .                                  'item-edit">'
-                     .      '</span>'
-                     .   '</span>'
-                     .   '<span class="item-delete" title="delete">'
-                     .      '<span class="title">DELETE</span>'
-                     .      '<span class="icon connexions_sprites '
-                     .                                  'item-delete">'
-                     .      '</span>'
-                     .   '</span>'
-                     .  '</div>';
+        $show     = array(
+            'add'   => false,
+            'edit'  => false,
+            'del'   => false,
+        );
+
+        $itemHtml .= '<div class="control">';
+        if ( $showRelations )
+        {
+            // Show user relations
+            $relation = $viewer->networkRelation( $item );
+
+            if (empty($relation) || in_array('none', $relation))
+            {
+                $relationStr = 'no relation';
+                $spriteCss   = 'relation-none';
+                $show['add'] = true;
+            }
+            else if (in_array('self', $relation))
+            {
+                $relationStr = 'you';
+                $spriteCss   = 'relation-self';
+            }
+            else if (in_array('mutual', $relation))
+            {
+                $relationStr = 'mutual followers';
+                $spriteCss   = 'relation-mutual';
+                $show['del'] = true;
+            }
+            else if (in_array('amIn', $relation))
+            {
+                $relationStr = 'follower';
+                $spriteCss   = 'relation-amIn';
+                $show['add'] = true;
+            }
+            else
+            {
+                $relationStr = 'following';
+                $spriteCss   = 'relation-isIn';
+                $show['del'] = true;
+            }
+
+            $itemHtml .=  "<div class='relation' title='{$relationStr}'>"
+                      .    "<!-- ". implode(' ', $relation) ." -->"
+                      .    "<div class='connexions_sprites {$spriteCss}'>"
+                      .    $relationStr
+                      .    "</div>"
+                      .   "</div>";
+        }
+        else
+        {
+            $show['edit'] = true;
+            $show['del']  = true;
+        }
+
+        if ($show['edit'])
+        {
+            $itemHtml .=  '<span class="item-edit" title="edit">'
+                      .      '<span class="title">EDIT</span>'
+                      .      '<span class="icon connexions_sprites '
+                      .                                  'item-edit">'
+                      .      '</span>'
+                      .   '</span>';
+        }
+        if ($show['add'])
+        {
+            $itemHtml .=  '<span class="item-add" title="add">'
+                      .      '<span class="title">ADD</span>'
+                      .      '<span class="icon connexions_sprites '
+                      .                                  'item-add">'
+                      .      '</span>'
+                      .   '</span>';
+        }
+        if ($show['del'])
+        {
+            $itemHtml .=  '<span class="item-delete" title="delete">'
+                      .      '<span class="title">DELETE</span>'
+                      .      '<span class="icon connexions_sprites '
+                      .                                  'item-delete">'
+                      .      '</span>'
+                      .   '</span>';
+        }
+
+        $itemHtml .= '</div>';
     }
 
 

@@ -85,7 +85,7 @@ class Service_Tag extends Connexions_Service
                 $model = $this->_mapper->makeModel( $data, false );
 
                 // See if the normalized tag already exists in the set.
-                if (! $set->in_array($model->tag))
+                if (! $set->contains($model->tag))
                 {
                     /* The normalized tag does NOT exist in the set.
                      *

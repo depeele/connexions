@@ -61,6 +61,13 @@ if ($includeWeight)
 
 ?></li><?php
 
+//$this->showRelations = false;
+$showRelations =
+    ( ($this->showControls === true)                                    &&
+      ($this->itemType === View_Helper_HtmlItemCloud::ITEM_TYPE_USER)   &&
+      is_object($this->viewer)                                          &&
+      ($this->viewer->isAuthenticated()) );
+
 $idex = 0;
 foreach ($itemList as $item)
 {
@@ -106,21 +113,92 @@ foreach ($itemList as $item)
 
     if ($this->showControls === true)
     {
-        ?>
-        <div class="control">
-           <span class="item-edit" title="edit">
-              <span class="title">EDIT</span>
-              <span class="icon connexions_sprites 
-                                          item-edit">
-              </span>
-           </span>
-           <span class="item-delete" title="delete">
-              <span class="title">DELETE</span>
-              <span class="icon connexions_sprites 
-                                          item-delete">
-              </span>
-           </span>
-          </div><?php
+        $show     = array(
+            'add'   => false,
+            'edit'  => false,
+            'del'   => false,
+        );
+
+        $ctlHtml  = '<div class="control">';
+        if ( $showRelations )
+        {
+            // Show user relations
+            $relation = $this->viewer->networkRelation( $item );
+
+            if (empty($relation) || in_array('none', $relation))
+            {
+                $relationStr = 'no relation';
+                $spriteCss   = 'relation-none';
+                $show['add'] = true;
+            }
+            else if (in_array('self', $relation))
+            {
+                $relationStr = 'you';
+                $spriteCss   = 'relation-self';
+            }
+            else if (in_array('mutual', $relation))
+            {
+                $relationStr = 'mutual followers';
+                $spriteCss   = 'relation-mutual';
+                $show['del'] = true;
+            }
+            else if (in_array('amIn', $relation))
+            {
+                $relationStr = 'follower';
+                $spriteCss   = 'relation-amIn';
+                $show['add'] = true;
+            }
+            else
+            {
+                $relationStr = 'following';
+                $spriteCss   = 'relation-isIn';
+                $show['del'] = true;
+            }
+
+            $ctlHtml  .=  "<div class='relation' title='{$relationStr}'>"
+                      .    "<!-- ". implode(' ', $relation) ." -->"
+                      .    "<div class='connexions_sprites {$spriteCss}'>"
+                      .    $relationStr
+                      .    "</div>"
+                      .   "</div>";
+        }
+        else
+        {
+            $show['edit'] = true;
+            $show['del']  = true;
+        }
+
+        if ($show['edit'])
+        {
+            $ctlHtml  .=  '<span class="item-edit" title="edit">'
+                      .      '<span class="title">EDIT</span>'
+                      .      '<span class="icon connexions_sprites '
+                      .                                  'item-edit">'
+                      .      '</span>'
+                      .   '</span>';
+        }
+        if ($show['add'])
+        {
+            $ctlHtml  .=  '<span class="item-add" title="add">'
+                      .      '<span class="title">ADD</span>'
+                      .      '<span class="icon connexions_sprites '
+                      .                                  'item-add">'
+                      .      '</span>'
+                      .   '</span>';
+        }
+        if ($show['del'])
+        {
+            $ctlHtml  .=  '<span class="item-delete" title="delete">'
+                      .      '<span class="title">DELETE</span>'
+                      .      '<span class="icon connexions_sprites '
+                      .                                  'item-delete">'
+                      .      '</span>'
+                      .   '</span>';
+        }
+        $ctlHtml .= '</div>';
+
+
+        echo $ctlHtml;
     }
 
 

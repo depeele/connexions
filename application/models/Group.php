@@ -216,7 +216,7 @@ class Model_Group extends Model_Base
 
         return ( ($members !== null)                  &&
                  //($members instanceof Model_User_Set) &&
-                 $members->in_array($user) );
+                 $members->contains($user) );
     }
 
     /** @brief  Is the given Model instance an item in this group?
@@ -236,12 +236,24 @@ class Model_Group extends Model_Base
                                   null,     // offset
                                   true);    // noAuth
 
-        return ( ($items !== null)                                       &&
-                 // /*
+        $res = ( ($items !== null)                                       &&
+                 /*
                  (get_class($items) ===
                                 'Model_Set_'. ucfirst($this->groupType)) &&
                  // */
-                 $items->in_array($item) );
+                 $items->contains($item) );
+
+        /*
+        Connexions::log("Model_Group::isItem(): "
+                        .   "group[ %s id:%s ], items[ %s ] %s item[ %s ]",
+                        $this, $this->getId(),
+                        Connexions::varExport($items),
+                        ($res ? 'contains' : 'DOES NOT contain'),
+                        Connexions::varExport($item));
+        // */
+
+        return $res;
+
     }
 
     /** @brief  Is the provided user permitted to view this group?
@@ -269,7 +281,7 @@ class Model_Group extends Model_Base
                                               true);    // noAuth
                 if ($members !== null)
                 {
-                    $res = $members->in_array( $user );
+                    $res = $members->contains( $user );
                 }
             }
             break;
@@ -314,7 +326,7 @@ class Model_Group extends Model_Base
                                               true);    // noAuth
                 if ($members !== null)
                 {
-                    $res = $members->in_array( $user );
+                    $res = $members->contains( $user );
                 }
             }
             break;
@@ -354,7 +366,7 @@ class Model_Group extends Model_Base
                                               true);    // noAuth
                 if ($members !== null)
                 {
-                    $res = $members->in_array( $user );
+                    $res = $members->contains( $user );
                 }
             }
             break;

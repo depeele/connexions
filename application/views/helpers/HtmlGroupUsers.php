@@ -50,7 +50,7 @@ class View_Helper_HtmlGroupUsers extends View_Helper_HtmlUsers
             $count      = $perPage;
             $offset     = ($page - 1) * $perPage;
 
-            // /*
+            /*
             Connexions::log("View_Helper_HtmlGroupUsers::getUsers(): "
                             . "Retrieve users: "
                             . "listname[ %s ], "
