@@ -168,7 +168,17 @@ class NetworkController extends Connexions_Controller_Action
         if (! $this->_networkUsers)
         {
             // groupType === 'user' thus Model_Set_User
-            $this->_networkUsers = &$this->_network->items;
+            try
+            {
+                $this->_networkUsers = &$this->_network->items;
+            }
+            catch (Exception $e)
+            {
+                // No access
+                $this->_networkUsers = $this->service('User')->makeEmptySet();
+                $this->view->error   =
+                                "You do not have access to this network.";
+            }
         }
 
         $extra = array(
@@ -213,7 +223,17 @@ class NetworkController extends Connexions_Controller_Action
         if (! $this->_networkUsers)
         {
             // groupType === 'user' thus Model_Set_User
-            $this->_networkUsers = &$this->_network->items;
+            try
+            {
+                $this->_networkUsers = &$this->_network->items;
+            }
+            catch (Exception $e)
+            {
+                // No access
+                $this->_networkUsers = $this->service('User')->makeEmptySet();
+                $this->view->error   =
+                                "You do not have access to this network.";
+            }
         }
 
         $extra = array(
@@ -299,7 +319,8 @@ class NetworkController extends Connexions_Controller_Action
     {
         $config  = $sidebar->getPane($pane);
 
-        $config['cookieUrl'] = $this->_rootUrl;
+        $config['viewer']    =& $this->_viewer;
+        $config['cookieUrl'] =  $this->_rootUrl;
 
         $perPage = ((int)$config['perPage'] > 0
                         ? (int)$config['perPage']
@@ -518,6 +539,7 @@ class NetworkController extends Connexions_Controller_Action
 
             }
 
+            $config['showControls']     = true;
             $config['itemsType']        =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_USER;
             $config['itemBaseUrl']      =  $this->_helper->url(null, 'network');

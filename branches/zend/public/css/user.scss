@@ -90,21 +90,100 @@ $displaySortOffset: 5px;
         height: 32px;
         a {
           .img {
-            display: block;
+            display:  block;
             position: relative;
-            border: 0;
+            border:   0;
             background-color: transparent;
+
             img {
-              width: 32px;
-              height: 32px;
+              width:    32px;
+              height:   32px;
             }
+
             .ui-icon {
               position: relative;
-              left: 8px;
+              left:     8px;
+              top:      8px;
             }
           }
         }
       }
+
+      // Network relation / control
+      .control {
+        position:   absolute;
+        left:       2px;
+        top:        33px;
+        font-size:  0.75em;
+        text-align: center;
+        cursor:     pointer;
+
+        .relation {
+          @include inlineBlock();
+
+          .connexions_sprites {
+            width:        32px;
+            height:       12px;
+            text-indent:  -9999px;
+          }
+        }
+
+        .item-add, .item-delete {
+          @include inlineBlock();
+          visibility: hidden;
+
+          .title {
+            display:  none;
+          }
+        }
+        .item-add {
+          .icon {
+            @extend .control-add-grey;
+          }
+          &:hover {
+            .icon {
+              @extend .control-add;
+            }
+          }
+        }
+        .item-delete {
+          .icon {
+            @extend .control-delete-grey;
+          }
+          &:hover {
+            .icon {
+              @extend .control-delete;
+            }
+          }
+        }
+
+        &:hover {
+          .item-add, .item-delete {
+            visibility: visible;
+          }
+        }
+      }
+
+      .confirm {
+        position:         absolute;
+        top:              -4px;
+        left:             -4px;
+        min-width:        8em;
+        padding:          0.2em;
+
+        @include          corners(0.3em);
+        background-color: $darkest;
+        color:            $lightest;
+        font-size:        0.9em;
+        z-index:          4;
+
+        text-align:       center;
+
+        button {
+          cursor:         pointer;
+        }
+      }
+
       // UserId
       .userId {
         float: left;
@@ -154,29 +233,6 @@ $displaySortOffset: 5px;
         color:      $controlColor;
         .lastVisit {
           display: block;
-        }
-      }
-      // Item controls: edit, delete, save
-      .control {
-        display: inline;
-        font-size: 0.65em;
-        border: 0;
-        padding: 0 0 0 2em;
-        margin: 0;
-        font-weight: normal;
-        white-space: pre;
-        z-index: 3;
-        color: $controlColor;
-        a {
-          display: inline;
-          font-weight: normal;
-          text-decoration: none;
-          padding: 0.1em;
-        }
-        a:hover {
-          background-color: $linkColor;
-          color: $pageColorBackground;
-          text-decoration: none;
         }
       }
     }

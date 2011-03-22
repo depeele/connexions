@@ -51,6 +51,9 @@ class View_Helper_HtmlUsers extends View_Helper_Users
             'containerTitle'=> 'avatar',
             'extraPre'      => "<div class='img icon-highlight'><div class='ui-icon ui-icon-person'>&nbsp;</div></div>"
         ),
+        'user:data:relation'                => array(
+            'label'         => 'relation',
+        ),
         'user:data:userId'                  => array(
             'label'         => 'User Id',
             'containerEl'   => 'h4'
@@ -75,6 +78,7 @@ class View_Helper_HtmlUsers extends View_Helper_Users
             'options'   => array('user:stats:countItems',
                                  'user:stats:countTags',
                                  'user:data:avatar',
+                                 'user:data:relation',
                                  'user:data:userId',
                                  'user:data:fullName',
                                  'user:data:email'
@@ -85,6 +89,7 @@ class View_Helper_HtmlUsers extends View_Helper_Users
             'options'   => array('user:stats:countItems',
                                  'user:stats:countTags',
                                  'user:data:avatar',
+                                 'user:data:relation',
                                  'user:data:userId',
                                  'user:data:fullName',
                                  'user:data:email',
@@ -98,6 +103,7 @@ class View_Helper_HtmlUsers extends View_Helper_Users
             'options'   => array('user:stats:countItems',
                                  'user:stats:countTags',
                                  'user:data:avatar',
+                                 'user:data:relation',
                                  'user:data:userId',
                                  'user:data:fullName',
                                  'user:data:email',

@@ -157,6 +157,21 @@
           top:      0;
         }
       }
+      .relation {
+        @include inlineBlock();
+        padding:  0 0.75em 0 0;
+        top:      18px;
+        left:     0px;
+
+        label {
+          padding-left: 14px;
+        }
+        .img {
+          position: absolute;
+          left:     14px;
+          top:      0;
+        }
+      }
 
       .itemName {
         @include inlineBlock();

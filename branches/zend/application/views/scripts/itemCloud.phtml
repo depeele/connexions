@@ -52,6 +52,8 @@ $html         = $helper->html; // Holder for any additional HTML to be included
 
 //printf ("<!-- displayStyle [ %s ] -->\n", $displayStyle);
 
+Connexions::log("itemCloud.phtml: viewer[ %s ]", $helper->viewer);
+
 if ($helper->items !== null)
 {
     $itemList = new Connexions_Model_Set_Adapter_ItemList(
@@ -152,6 +154,8 @@ Connexions::log('views/scripts/itemCloud: show controls [ %s ]',
                     'options'           => array(
                         'ShowControls'  => $helper->showControls,
                         'View'          => $this,
+                        'ItemType'      => $helper->itemType,
+                        'Viewer'        => $helper->viewer,
                         'HtmlTags'      => array(
                             'li'        => array(
                                 'class' => 'cloudItem',
@@ -208,13 +212,14 @@ Connexions::log('views/scripts/itemCloud: show controls [ %s ]',
 
             // /*
             echo $this->partial('itemList.phtml',
-                                array('itemList'    => $sortedList,
-                                      'weightName'  => $helper->weightName,
-                                      'weightTitle' => $helper->weightTitle,
-                                      'titleName'   => $helper->titleName,
-                                      'titleTitle'  => $helper->titleTitle,
-                                      'itemType'    => $helper->itemType,
-                                      'showControls'=> $helper->showControls,
+                                array('itemList'     => $sortedList,
+                                      'viewer'       => $helper->viewer,
+                                      'weightName'   => $helper->weightName,
+                                      'weightTitle'  => $helper->weightTitle,
+                                      'titleName'    => $helper->titleName,
+                                      'titleTitle'   => $helper->titleTitle,
+                                      'itemType'     => $helper->itemType,
+                                      'showControls' => $helper->showControls,
                                ));
             // */
 

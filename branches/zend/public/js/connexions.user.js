@@ -33,6 +33,11 @@
  *           </div>
  *         </div>
  *
+ *         <!-- item:data:relation -->
+ *         <div class='relation'>
+ *           <div class='%relation%'>%relationStr%</div>
+ *         </div>
+ *
  *         <!-- item:data:userId -->
  *         <div class='userId'>
  *           <a ...> user-name </a>
@@ -157,8 +162,9 @@ $.widget("connexions.user", {
         self.$fullName    = self.element.find('.fullName');
         self.$email       = self.element.find('.email a');
 
-        self.$edit        = self.element.find('.control .item-edit');
-        self.$delete      = self.element.find('.control .item-delete');
+        self.$relation    = self.element.find('.relation');
+        self.$edit        = self.element.find('.control > .item-edit');
+        self.$delete      = self.element.find('.control > .item-delete');
 
         /********************************
          * Instantiate our sub-widgets

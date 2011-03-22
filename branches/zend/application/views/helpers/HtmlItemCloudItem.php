@@ -8,6 +8,8 @@ class View_Helper_HtmlItemCloudItem
 {
     protected   $_view          = null;
     protected   $_showControls  = false;
+    protected   $_itemType      = null;
+    protected   $_viewer        = null;
 
     public function setView(Zend_View   $view)
     {
@@ -33,6 +35,28 @@ class View_Helper_HtmlItemCloudItem
     public function getShowControls()
     {
         return $this->_showControls;
+    }
+
+    public function setItemType($itemType)
+    {
+        $this->_itemType = $itemType;
+        return $this;
+    }
+
+    public function getItemType()
+    {
+        return $this->_itemType;
+    }
+
+    public function setViewer($viewer)
+    {
+        $this->_viewer = $viewer;
+        return $this;
+    }
+
+    public function getViewer()
+    {
+        return $this->_viewer;
     }
 
     /** @brief  Render an HTML version of a single Item.

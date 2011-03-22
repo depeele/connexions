@@ -196,21 +196,37 @@ a:visited { color: #005a9c; }
 
 .star_1_owner { width: 16px; height: 16px; background-position: -104px -30px; }
 
-.confirm-yes, .cloud .Item_List li .edit-item .buttons .item-save:hover .icon, .cloud .Item_Cloud li .edit-item .buttons .item-save:hover .icon { width: 16px; height: 16px; background-position: -160px -40px; }
+.confirm-yes, .cloud .Item_List li .edit-item .buttons .item-save:hover .icon, .cloud .Item_Cloud li .edit-item .buttons .item-save:hover .icon { width: 16px; height: 16px; background-position: -160px -42px; }
 
-.confirm-yes-grey, .cloud .Item_List li .edit-item .buttons .item-save .icon, .cloud .Item_Cloud li .edit-item .buttons .item-save .icon { width: 16px; height: 16px; background-position: -176px -40px; }
+.confirm-yes-grey, .cloud .Item_List li .edit-item .buttons .item-save .icon, .cloud .Item_Cloud li .edit-item .buttons .item-save .icon { width: 16px; height: 16px; background-position: -176px -42px; }
 
-.confirm-no, .cloud .Item_List li .edit-item .buttons .item-cancel:hover .icon, .cloud .Item_Cloud li .edit-item .buttons .item-cancel:hover .icon { width: 16px; height: 16px; background-position: -160px -56px; }
+.confirm-no, .cloud .Item_List li .edit-item .buttons .item-cancel:hover .icon, .cloud .Item_Cloud li .edit-item .buttons .item-cancel:hover .icon { width: 16px; height: 16px; background-position: -160px -58px; }
 
-.confirm-no-grey, .cloud .Item_List li .edit-item .buttons .item-cancel .icon, .cloud .Item_Cloud li .edit-item .buttons .item-cancel .icon { width: 16px; height: 16px; background-position: -176px -56px; }
+.confirm-no-grey, .cloud .Item_List li .edit-item .buttons .item-cancel .icon, .cloud .Item_Cloud li .edit-item .buttons .item-cancel .icon { width: 16px; height: 16px; background-position: -176px -58px; }
 
-.control-edit, .cloud .Item_List li .control .item-edit:hover .icon, .cloud .Item_Cloud li .control .item-edit:hover .icon { width: 16px; height: 16px; background-position: -56px -74px; }
+.control-add, .cloud .Item_List li .control .item-add:hover .icon, .cloud .Item_Cloud li .control .item-add:hover .icon { width: 16px; height: 16px; background-position: -68px -62px; }
 
-.control-edit-grey, .cloud .Item_List li .control .item-edit .icon, .cloud .Item_Cloud li .control .item-edit .icon { width: 16px; height: 16px; background-position: -72px -74px; }
+.control-add-grey, .cloud .Item_List li .control .item-add .icon, .cloud .Item_Cloud li .control .item-add .icon { width: 16px; height: 16px; background-position: -84px -62px; }
 
-.control-delete, .cloud .Item_List li .control .item-delete:hover .icon, .cloud .Item_Cloud li .control .item-delete:hover .icon { width: 16px; height: 16px; background-position: -56px -90px; }
+.control-edit, .cloud .Item_List li .control .item-edit:hover .icon, .cloud .Item_Cloud li .control .item-edit:hover .icon { width: 16px; height: 16px; background-position: -68px -78px; }
 
-.control-delete-grey, .cloud .Item_List li .control .item-delete .icon, .cloud .Item_Cloud li .control .item-delete .icon { width: 16px; height: 16px; background-position: -72px -90px; }
+.control-edit-grey, .cloud .Item_List li .control .item-edit .icon, .cloud .Item_Cloud li .control .item-edit .icon { width: 16px; height: 16px; background-position: -84px -78px; }
+
+.control-delete, .cloud .Item_List li .control .item-delete:hover .icon, .cloud .Item_Cloud li .control .item-delete:hover .icon { width: 16px; height: 16px; background-position: -68px -94px; }
+
+.control-delete-grey, .cloud .Item_List li .control .item-delete .icon, .cloud .Item_Cloud li .control .item-delete .icon { width: 16px; height: 16px; background-position: -84px -94px; }
+
+.relation-amIn { width: 32px; height: 12px; background-position: -176px -12px; }
+
+.relation-isIn { width: 32px; height: 12px; background-position: -176px -24px; }
+
+.relation-mutual { width: 32px; height: 12px; background-position: -176px 0px; }
+
+.relation-none, .relation-self { width: 32px; height: 12px; background-position: -128px -48px; }
+
+.relation-add { width: 32px; height: 12px; background-position: -36px -86px; }
+
+.relation-remove { width: 32px; height: 12px; background-position: -36px -98px; }
 
 .envelope { width: 17px; height: 13px; background-position: -32px -28px; }
 
@@ -218,7 +234,7 @@ a:visited { color: #005a9c; }
 
 .magnifier { width: 17px; height: 16px; background-position: 0 -71px; }
 
-.magnifier_small { width: 15px; height: 15px; background-position: -20px -71px; }
+.magnifier_small { width: 15px; height: 15px; background-position: -16px -71px; }
 
 .type-certificate { width: 16px; height: 16px; background-position: -120px 0; }
 
@@ -380,10 +396,9 @@ a:visited { color: #005a9c; }
 .cloud { z-index: 1; padding: 1em 0 2em 0.25em; clear: both; }
 .cloud .highlights { float: right; border: 1px solid #cccccc; background-color: #f3f3ff; padding: 0.25em; margin: 0 0 0.25em 1em; font-size: 0.9em; z-index: 2; }
 .cloud .highlights h4 { font-size: 1em; font-weight: bold; padding: 0; text-align: center; color: #172322; }
-.cloud .Item_List li .control, .cloud .Item_Cloud li .control { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; text-align: center; vertical-align: middle; margin: 0; visibility: hidden; z-index: 3; cursor: pointer; }
+.cloud .Item_List li .control, .cloud .Item_Cloud li .control { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; text-align: center; vertical-align: middle; margin: 0; z-index: 3; cursor: pointer; }
 .cloud .Item_List li .control .icon, .cloud .Item_Cloud li .control .icon { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
-.cloud .Item_List li .control .item-edit .title, .cloud .Item_List li .control .item-delete .title, .cloud .Item_Cloud li .control .item-edit .title, .cloud .Item_Cloud li .control .item-delete .title { display: none; }
-.cloud .Item_List li:hover .control, .cloud .Item_Cloud li:hover .control { visibility: visible; }
+.cloud .Item_List li .control .item-add .title, .cloud .Item_List li .control .item-edit .title, .cloud .Item_List li .control .item-delete .title, .cloud .Item_Cloud li .control .item-add .title, .cloud .Item_Cloud li .control .item-edit .title, .cloud .Item_Cloud li .control .item-delete .title { display: none; }
 .cloud .Item_List li .confirm, .cloud .Item_Cloud li .confirm { position: absolute; min-width: 8em; padding: 0.2em; -moz-border-radius: 0.3em 0.3em 0.3em 0.3em; -webkit-border-radius: 0.3em 0.3em 0.3em 0.3em; -ms-border-radius: 0.3em 0.3em 0.3em 0.3em; -khtml-border-radius: 0.3em 0.3em 0.3em 0.3em; border-radius: 0.3em 0.3em 0.3em 0.3em; background-color: #172322; color: white; font-size: 0.7em; z-index: 4; text-align: center; }
 .cloud .Item_List li .confirm button, .cloud .Item_Cloud li .confirm button { cursor: pointer; }
 .cloud .Item_List li .edit-item, .cloud .Item_Cloud li .edit-item { position: absolute; padding: 1px; text-align: center; -moz-border-radius: 0.3em 0.3em 0.3em 0.3em; -webkit-border-radius: 0.3em 0.3em 0.3em 0.3em; -ms-border-radius: 0.3em 0.3em 0.3em 0.3em; -khtml-border-radius: 0.3em 0.3em 0.3em 0.3em; border-radius: 0.3em 0.3em 0.3em 0.3em; border: 1px solid #cccccc; background-color: #eeeeee; color: white; z-index: 4; text-align: center; }
@@ -391,6 +406,15 @@ a:visited { color: #005a9c; }
 .cloud .Item_List li .edit-item .buttons .icon, .cloud .Item_Cloud li .edit-item .buttons .icon { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
 .cloud .Item_List li .edit-item .buttons .item-save, .cloud .Item_List li .edit-item .buttons .item-cancel, .cloud .Item_Cloud li .edit-item .buttons .item-save, .cloud .Item_Cloud li .edit-item .buttons .item-cancel { margin: 0 1px; cursor: pointer; }
 .cloud .Item_List li .edit-item .buttons .item-save .title, .cloud .Item_List li .edit-item .buttons .item-cancel .title, .cloud .Item_Cloud li .edit-item .buttons .item-save .title, .cloud .Item_Cloud li .edit-item .buttons .item-cancel .title { display: none; }
+.cloud .Item_Cloud li .control { visibility: hidden; }
+.cloud .Item_Cloud li:hover .control { visibility: visible; }
+.cloud .Item_Cloud li .relation { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; font-size: 0.75em; text-align: center; background-color: white; padding: 1px; }
+.cloud .Item_Cloud li .relation .connexions_sprites { width: 18px; height: 8px; text-indent: -9999px; }
+.cloud .Item_Cloud li .relation .relation-amIn { background-position: -181px -14px; }
+.cloud .Item_Cloud li .relation .relation-isIn { background-position: -181px -26px; }
+.cloud .Item_Cloud li .relation .relation-mutual { background-position: -181px -2px; }
+.cloud .Item_Cloud li .relation .relation-self { background-position: -133px -50px; }
+.cloud .Item_Cloud li .relation .relation-none { background-position: -133px -50px; }
 
 .Item_List { padding: 0; }
 .Item_List li.header, .Item_List li.footer { background-color: #f3f3ff; padding: 0.25em; }
@@ -403,7 +427,19 @@ a:visited { color: #005a9c; }
 .Item_List .item { display: block; font-weight: normal; color: #2786c2; margin-right: 3em; }
 .Item_List .item .img { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
 .Item_List li .control { position: absolute; top: 0; right: 2.5em; }
+.Item_List li .control .item-add, .Item_List li .control .item-edit, .Item_List li .control .item-delete { visibility: hidden; }
+.Item_List li:hover .control .item-add, .Item_List li:hover .control .item-edit, .Item_List li:hover .control .item-delete { visibility: visible; }
 .Item_List li .edit-item .buttons { text-align: right; }
+.Item_List li .relation { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; position: absolute; top: 1px; right: 14px; font-size: 0.75em; text-align: center; padding: 1px; /*
+&:hover { .relation-amIn, .relation-none { //@extend .relation-add; background-position: -36px -86px; } .relation-isIn, .relation-mutual { //@extend .relation-remove; background-position: -36px -98px; }
+}
+*/ }
+.Item_List li .relation .connexions_sprites { width: 32px; height: 12px; text-indent: -9999px; }
+.Item_List li .relation .relation-amIn { background-position: -176px -12px; }
+.Item_List li .relation .relation-isIn { background-position: -176px -24px; }
+.Item_List li .relation .relation-mutual { background-position: -176px 0px; }
+.Item_List li .relation .relation-self { background-position: -128px -48px; }
+.Item_List li .relation .relation-none { background-position: -128px -48px; }
 .Item_List .itemCount { display: block; position: absolute; top: 0; right: 0; padding: 0.15em 0 0.15em; color: #999999; font-size: 0.8em; }
 
 #sbItemsCloud .Item_List li.header .item { padding: 0; }
@@ -519,6 +555,9 @@ a:visited { color: #005a9c; }
 .pane .displayOptions .displayStyle fieldset.options .item .data .avatar, .pane .displayOptions .displayStyle fieldset.options .user .data .avatar { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; padding: 0 0.75em 0 0; }
 .pane .displayOptions .displayStyle fieldset.options .item .data .avatar label, .pane .displayOptions .displayStyle fieldset.options .user .data .avatar label { padding-left: 14px; }
 .pane .displayOptions .displayStyle fieldset.options .item .data .avatar .img, .pane .displayOptions .displayStyle fieldset.options .user .data .avatar .img { position: absolute; left: 14px; top: 0; }
+.pane .displayOptions .displayStyle fieldset.options .item .data .relation, .pane .displayOptions .displayStyle fieldset.options .user .data .relation { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; padding: 0 0.75em 0 0; top: 18px; left: 0px; }
+.pane .displayOptions .displayStyle fieldset.options .item .data .relation label, .pane .displayOptions .displayStyle fieldset.options .user .data .relation label { padding-left: 14px; }
+.pane .displayOptions .displayStyle fieldset.options .item .data .relation .img, .pane .displayOptions .displayStyle fieldset.options .user .data .relation .img { position: absolute; left: 14px; top: 0; }
 .pane .displayOptions .displayStyle fieldset.options .item .data .itemName, .pane .displayOptions .displayStyle fieldset.options .user .data .itemName { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; font-size: 1.2em; padding-bottom: 0.5em; }
 .pane .displayOptions .displayStyle fieldset.options .item .data .url, .pane .displayOptions .displayStyle fieldset.options .item .data .description, .pane .displayOptions .displayStyle fieldset.options .item .data .description .full, .pane .displayOptions .displayStyle fieldset.options .item .data .description .summary, .pane .displayOptions .displayStyle fieldset.options .user .data .url, .pane .displayOptions .displayStyle fieldset.options .user .data .description, .pane .displayOptions .displayStyle fieldset.options .user .data .description .full, .pane .displayOptions .displayStyle fieldset.options .user .data .description .summary { margin: 0; }
 .pane .displayOptions .displayStyle fieldset.options .item .data .description, .pane .displayOptions .displayStyle fieldset.options .user .data .description { padding-bottom: 1em; }

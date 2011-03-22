@@ -60,10 +60,36 @@ Connexions::log('views/scripts/settings/main-people-network.phtml: '
                 $namespace, $panePartial);
 // */
 
+$jQuery      = $this->jQuery();
+$jQuery->addOnLoad('$.people_network_onLoad()')
+       ->javascriptCaptureStart();
+?>
+(function($) {
+    $.people_network_onLoad = function() {
+        var $section    = $('#people-network');
+        var $pane       = $section.find('.pane:first');
+        var $addUser    = $section.find('.addUser');
+
+        $addUser.find('input').input();
+        $addUser.find('button').button();
+
+        //$addUser.networkAdd({pane:$pane});
+    };
+ }(jQuery));
+<?php
+$jQuery->javascriptCaptureEnd();
+
 
 // Top-level, static, non-paginated content
 ?>
 <div id='people-network'><!-- people-network { -->
+ <div class='addUser ui-form'>
+   <div class='field'>
+    <label for='addUser-input'>Follow User</label>
+    <input  id='addUser-input' type='text' class='text' />
+   </div>
+   <button name='submit'>add</button>
+ </div>
  <!-- Dynamic, paginated content -->
  <?= $this->partial('settings/'. $panePartial .'.phtml', $this) ?>
 </div><!-- people-network } -->

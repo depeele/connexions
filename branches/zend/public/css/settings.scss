@@ -2,6 +2,7 @@
 @import "colors";
 @import "mixins";
 @import "urls";
+@import "sprites";
 @import 'jquery_Jcrop';
 @import 'ui-fileUploader';
 @import 'users';
@@ -665,6 +666,7 @@
     border-bottom:  unquote('1px solid') $borderColor;
     margin-bottom:  0.25em;
     padding-bottom: 0.25em;
+    padding-left:   1em;
 
     input,button {
       vertical-align: middle;
@@ -709,9 +711,7 @@
       }
     }
   }
-}
 
-#tags-manage {
   .paginator-top {
     .pager, .info {
       @include        inlineBlock();
@@ -746,6 +746,26 @@
 }
 
 #people-network {
+  .addUser {
+    border-bottom:  unquote('1px solid') $borderColor;
+    margin-bottom:  0.25em;
+    padding-bottom: 0.25em;
+    padding-left:   1em;
+
+    input,button {
+      vertical-align: middle;
+    }
+
+    .field {
+      @include  inlineBlock();
+      width:    50%;
+
+      input {
+        width:  100%;
+      }
+    }
+  }
+
   .users {
     padding-left: 18px;
   }
