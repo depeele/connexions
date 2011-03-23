@@ -83,6 +83,45 @@ class Service_Proxy_User extends Connexions_Service_Proxy
         return $this->_service->deleteTags($user, $tags);
     }
 
+    /** @brief  Add a new user to the network of this user.
+     *  @param  users       A Model_Set_User instance, simple array of user
+     *                      identifiers, or comma-separated list of user
+     *                      identifiers.
+     *  @param  apiKey      The apiKey for the currently authenticated user
+     *                      (REQUIRED if the transport method is NOT POST);
+     *
+     *  @return An array of status information, keyed by user name:
+     *              { '%userName%'  => true (success) |
+     *                                 String explanation of failure,
+     *                 ... }
+     */
+    public function addToNetwork($users, $apiKey = null)
+    {
+        $user = $this->_authenticate($apiKey);
+
+        return $this->_service->addToNetwork($user, $users);
+    }
+
+    /** @brief  Remove one or more users from the network of the identified
+     *          user.
+     *  @param  users       A Model_Set_User instance, simple array of user
+     *                      identifiers, or comma-separated list of user
+     *                      identifiers.
+     *  @param  apiKey      The apiKey for the currently authenticated user
+     *                      (REQUIRED if the transport method is NOT POST);
+     *
+     *  @return An array of status information, keyed by user name:
+     *              { '%userName%'  => true (success) |
+     *                                 String explanation of failure,
+     *                 ... }
+     */
+    public function removeFromNetwork($users, $apiKey = null)
+    {
+        $user = $this->_authenticate($apiKey);
+
+        return $this->_service->removeFromNetwork($user, $users);
+    }
+
     /** @brief  Perform user autocompletion.
      *  @param  term        The string to autocomplete.
      *  @param  limit       The maximum number of tags to return;

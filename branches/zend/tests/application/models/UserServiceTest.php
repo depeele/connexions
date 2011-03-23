@@ -1406,7 +1406,6 @@ class UserServiceTest extends DbTestCase
             $this->assertEquals(
                     'Operation prohibited for an unauthenticated user.',
                     $e->getMessage());
-            //$this->assertEquals(null, $auth);
         }
     }
 
@@ -1516,5 +1515,134 @@ class UserServiceTest extends DbTestCase
         //printf ("users[ %s ]\n", Connexions::varExport($users));
 
         $this->assertEquals($expected, $users->__toString());
+    }
+
+    public function testUserServiceAddToNetwork1()
+    {
+        $service  = Connexions_Service::factory('Model_User');
+        $user     = $service->find( $this->_user1['userId']  );
+                            //array( 'userId' => $this->_user1['userId']));
+
+        $this->assertTrue(  $user instanceof Model_User );
+        $this->assertTrue(  $user->isBacked() );
+        $this->assertTrue(  $user->isValid() );
+        $this->assertFalse( $user->isAuthenticated() );
+
+        try
+        {
+            $res = $service->addToNetwork( $user, 'User441, User?' );
+            $this->fail("Unauthenticated update permitted");
+        }
+        catch (Exception $e)
+        {
+            $this->assertEquals(
+                    'Operation prohibited for an unauthenticated user.',
+                    $e->getMessage());
+        }
+    }
+
+    public function testUserServiceAddToNetwork2()
+    {
+        // Authenticate as User1 to add
+        $expected = array('user?'   => 'Unknown user',
+                          'User441' => true,
+                          'User83'  => true);
+        $service  = Connexions_Service::factory('Model_User');
+        $user     = $service->find( $this->_user1['userId']  );
+                            //array( 'userId' => $this->_user1['userId']));
+
+        $this->assertTrue(  $user instanceof Model_User );
+        $this->assertTrue(  $user->isBacked() );
+        $this->assertTrue(  $user->isValid() );
+        $this->assertFalse( $user->isAuthenticated() );
+
+        // Mark the user as 'authenticated'
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue ($user->isAuthenticated());
+
+        $res = $service->addToNetwork( $user, 'user441, user?, user83' );
+        //printf ("add results[ %s ]", Connexions::varExport($res));
+
+        $this->assertEquals($expected, $res);
+
+        // Make sure it was actually added
+        $user2 = $service->find( 'User441' );
+        $this->assertTrue(  $user2 instanceof Model_User );
+
+        $network = $user->getNetwork();
+        $this->assertTrue($network->isItem($user2));
+        $this->assertEquals(array(1,2,3,4), $network->getItems()->getIds());
+
+        /*
+        printf ("user1 network[ %s ]",
+                    Connexions::varExport($network->getItems()) );
+        // */
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
+    }
+
+    public function testUserServiceRemoveFromNetwork1()
+    {
+        $service  = Connexions_Service::factory('Model_User');
+        $user     = $service->find( $this->_user1['userId']  );
+                            //array( 'userId' => $this->_user1['userId']));
+
+        $this->assertTrue(  $user instanceof Model_User );
+        $this->assertTrue(  $user->isBacked() );
+        $this->assertTrue(  $user->isValid() );
+        $this->assertFalse( $user->isAuthenticated() );
+
+        try
+        {
+            $res = $service->removeFromNetwork( $user, 'User83, User?' );
+            $this->fail("Unauthenticated update permitted");
+        }
+        catch (Exception $e)
+        {
+            $this->assertEquals(
+                    'Operation prohibited for an unauthenticated user.',
+                    $e->getMessage());
+        }
+    }
+
+    public function testUserServiceRemoveFromNetwork2()
+    {
+        // Authenticate as User1 to add
+        $expected = array('user?'   => 'Unknown user',
+                          'User83'  => true);
+        $service  = Connexions_Service::factory('Model_User');
+        $user     = $service->find( $this->_user1['userId']  );
+                            //array( 'userId' => $this->_user1['userId']));
+
+        $this->assertTrue(  $user instanceof Model_User );
+        $this->assertTrue(  $user->isBacked() );
+        $this->assertTrue(  $user->isValid() );
+        $this->assertFalse( $user->isAuthenticated() );
+
+        // Mark the user as 'authenticated'
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue ($user->isAuthenticated());
+
+        $res = $service->removeFromNetwork( $user, 'user83, user?' );
+        //printf ("add results[ %s ]", Connexions::varExport($res));
+
+        $this->assertEquals($expected, $res);
+
+        // Make sure it was actually added
+        $user2 = $service->find( 'User83' );
+        $this->assertTrue(  $user2 instanceof Model_User );
+
+        $network = $user->getNetwork();
+        $this->assertFalse($network->isItem($user2));
+        $this->assertEquals(array(1,4), $network->getItems()->getIds());
+
+        /*
+        printf ("user1 network[ %s ]",
+                    Connexions::varExport($network->getItems()) );
+        // */
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 }
