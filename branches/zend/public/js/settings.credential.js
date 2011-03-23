@@ -395,7 +395,7 @@ $.widget("settings.credential", {
 
             //$.log('settings.credential::_delete()');
 
-            self._delete(this);
+            self._delete_confirm(this);
         };
 
         /**********************************************************************
@@ -407,7 +407,7 @@ $.widget("settings.credential", {
 
     /** @brief  Request the deletion of an existing credential
      */
-    _deleteCredential: function()
+    _perform_delete: function()
     {
         var self    = this;
         var opts    = self.options;
@@ -462,20 +462,40 @@ $.widget("settings.credential", {
      *  @param  item    The targeted delete item.
      *
      */
-    _delete: function(item)
+    _delete_confirm: function(item)
     {
         var self    = this;
         var opts    = self.options;
         var $el     = $(item);
         var $cred   = self.element;
 
+        if ($cred.attr('disabled') !== undefined)
+        {
+            return;
+        }
+        $cred.attr('disabled', true);
+
+        $el.confirmation({
+            question:   'Really delete?',
+            //position:   self._confirmationPosition($ctl),
+            confirmed:  function() {
+                if ( $cred.hasClass('new'))
+                {
+                    // This was an unsaved, new credential so just remove it
+                    $cred.remove();
+                    return;
+                }
+
+                self._perform_delete();
+            },
+            closed:     function() {
+                $cred.removeAttr('disabled');
+            }
+        });
+
+        /*
         // Present a confirmation dialog.
         var html    = '<div class="confirm">'
-                    /*
-                    +  '<span class="ui-icon ui-icon-alert" '
-                    +        'style="float:left; margin:0 7px 20px 0;">'
-                    +  '</span>'
-                    */
                     +  'Really delete?<br />'
                     +  '<button name="yes">Yes</button>'
                     +  '<button name="no" >No</button>'
@@ -497,13 +517,13 @@ $.widget("settings.credential", {
             }
 
             // This was an existing credential, so perform a server-side delete
-            self._deleteCredential();
+            self._perform_delete();
         });
         $div.find('button[name=no]').click(function() {
             $el.removeAttr('disabled');
             $div.remove();
         });
-
+        // */
     },
 
     /************************

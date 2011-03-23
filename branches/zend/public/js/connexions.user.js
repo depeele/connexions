@@ -71,6 +71,7 @@
  *  Requires:
  *      ui.core.js
  *      ui.widget.js
+ *      ui.confirmation.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false */
@@ -221,32 +222,16 @@ $.widget("connexions.user", {
             {
                 return;
             }
+            self.disable();
 
-            // Present a confirmation dialog and delete.
-            var html    = '<div class="confirm">'
-                        /*
-                        +  '<span class="ui-icon ui-icon-alert" '
-                        +        'style="float:left; margin:0 7px 20px 0;">'
-                        +  '</span>'
-                        */
-                        +  'Really delete?<br />'
-                        +  '<button name="yes">Yes</button>'
-                        +  '<button name="no" >No</button>'
-                        + '</div>';
-            var $div    = $(html);
-
-            self.$delete.after( $div );
-            self.$delete.attr('disabled', true);
-
-            $div.find('button[name=yes]').click(function(e) {
-                self.$delete.removeAttr('disabled');
-                $div.remove();
-
-                self._performDelete();
-            });
-            $div.find('button[name=no]').click(function() {
-                self.$delete.removeAttr('disabled');
-                $div.remove();
+            self.$delete.confirmation({
+                question:   'Really delete?',
+                confirmed:  function() {
+                    self._performDelete();
+                },
+                closed:     function() {
+                    self.enable();
+                }
             });
         };
 

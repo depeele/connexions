@@ -420,65 +420,20 @@ $.widget("settings.tagsManagePane", $.connexions.pane, {
         $ctl.attr('disabled', true);
 
         var $li = $el.parents('li:first');
-        //var $a  = $li.find('.item:first');
+        var $a  = $li.find('.item:first');
 
-        // Present a confirmation dialog and delete.
-        var html    = '<div class="confirm">'
-                    /*
-                    +  '<span class="ui-icon ui-icon-alert" '
-                    +        'style="float:left; margin:0 7px 20px 0;">'
-                    +  '</span>'
-                    */
-                    +  'Really delete?<br />'
-                    +  '<button name="yes">Yes</button>'
-                    +  '<button name="no" >No</button>'
-                    + '</div>';
-        var $div    = $(html);
-        $div.appendTo( $li )
-            .position( {
-                of: $ctl,
+        $ctl.confirmation({
+            question:   'Really delete?',
+            primary:    'confirm',
+            position:   {
                 my: 'left middle',
                 at: 'left middle'
-            });
-
-        function _reEnable(e)
-        {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-
-            /* Wait a bit to remove the element so the click doesn't
-             * inadvertenely hit any underlying tag element.
-             */
-            setTimeout(function() {
-                        $ctl.removeAttr('disabled');
-                        $div.remove();
-                       }, 100);
-        }
-
-        var $yes    = $div.find('button[name=yes]');
-        var $no     = $div.find('button[name=no]');
-
-        $yes.click(function(e) {
-            _reEnable(e);
-
-            var $a  = $li.find('.item:first');
-
-            self._perform_delete($a);
-        });
-        $no.click(function(e) {
-            _reEnable(e);
-        });
-
-        // Handle 'Enter' and 'ESC' in the input element
-        $(document).keydown(function(e) {
-            if (e.keyCode === 13)       // return
-            {
-                $yes.click();
-            }
-            else if (e.keyCode === 27)  // ESC
-            {
-                $no.click();
+            },
+            confirmed:  function() {
+                self._perform_delete($a);
+            },
+            closed:     function() {
+                $ctl.removeAttr('disabled');
             }
         });
     },

@@ -1765,6 +1765,190 @@ $.extend($.ui.notify.instance.prototype, {
 }(jQuery));
 /** @file
  *
+ *  Javascript interface for a confirmation mini-dialog.
+ *
+ *  The mini-dialog will be place over the element used in it's creation.
+ *
+ *  Requires:
+ *      ui.core.js
+ *      ui.widget.js
+ */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false */
+(function($) {
+
+$.widget("ui.confirmation", {
+    version: "0.0.1",
+
+    /* Remove the strange ui.widget._trigger() class name prefix for events.
+     *
+     * If you need to know which widget the event was triggered from, either
+     * bind directly to the widget or look at the event object.
+     */
+    widgetEventPrefix:      '',
+
+    options: {
+        question:   'Really?',
+        answers:    {
+            confirm:    'Yes',
+            cancel:     'No'
+        },
+        primary:    'cancel',   // Which button receives 'Enter',
+                                // ('confirm' or 'cancel')?
+        position:   {
+            my: 'center middle',
+            at: 'center middle'
+        },
+
+        // Completion callbacks
+        confirmed:  function() {},
+        canceled:   function() {},
+        closed:     function() {}
+    },
+
+    /** @brief  Create a new instance.
+     *
+     *  @triggers:
+     *      'enabled'
+     *      'disabled'
+     */
+    _init: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        // Position the confirmation relative to the target element.
+        if (opts.position.of === undefined)
+        {
+            opts.position.of = self.element;
+        }
+
+        /* Figure out the z-index that will allow the confirmation to appear
+         * above all others.
+         */
+        var zIndex  = 0;
+        self.element.parents().each(function() {
+            if ((! this) || (this.length < 1))  return;
+
+            var zi  = parseInt($(this).css('z-index'), 10);
+            if (zi > zIndex)    zIndex = zi;
+        });
+
+
+        // Present a confirmation mini-dialog.
+        var html    = '<div class="ui-confirmation">'
+                    /*
+                    +  '<span class="ui-icon ui-icon-alert" '
+                    +        'style="float:left; margin:0 7px 20px 0;">'
+                    +  '</span>'
+                    */
+                    +  opts.question +'<br />'
+                    +  '<button name="yes" class="'
+                    +       (opts.primary === 'confirm'
+                                ? 'ui-priority-primary'
+                                : 'ui-priority-secondary')
+                    +       '">'+ opts.answers.confirm +'</button>'
+                    +  '<button name="no" class="'
+                    +       (opts.primary !== 'confirm'
+                                ? ' class="ui-priority-primary"'
+                                : 'ui-priority-secondary')
+                    +       '">'+ opts.answers.cancel  +'</button>'
+                    + '</div>';
+        opts.$dialog = $(html).css({'position': 'absolute',
+                                    'z-index':  zIndex + 1})
+                              .appendTo('body')
+                              .position( opts.position );
+
+        self.element.attr('disabled', true);
+
+        /********************************
+         * Locate our pieces.
+         *
+         */
+        opts.$confirm = opts.$dialog.find('button[name=yes]');
+        opts.$cancel  = opts.$dialog.find('button[name=no]');
+        
+        /********************************
+         * Bind to interesting events.
+         *
+         */
+        self._bindEvents();
+    },
+
+    /************************
+     * Private methods
+     *
+     */
+    _bindEvents: function()
+    {
+        var self        = this;
+        var opts        = self.options;
+
+        opts.$confirm.bind('click.confirmation', function(e) {
+            self._trigger('confirmed');
+
+            opts.$dialog.remove();
+            self._trigger('closed');
+            self.destroy();
+        });
+        opts.$cancel.bind('click.confirmation', function() {
+            self._trigger('canceled');
+
+            opts.$dialog.remove();
+            self._trigger('closed');
+            self.destroy();
+        });
+
+        // Handle 'ESC' as 'cancel'
+        $(document).bind('keydown.confirmation', function(e) {
+            switch (e.keyCode)
+            {
+            case 13:    // return
+                switch (opts.primary)
+                {
+                case 'confirm':
+                    opts.$confirm.click();
+                    break;
+
+                case 'cancel':
+                default:
+                    opts.$cancel.click();
+                    break;
+                }
+                break;
+
+            case 27:    // ESC
+                opts.$cancel.click();
+                break;
+            }
+        });
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+
+    destroy: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        // Cleanup
+
+        // Unbind events
+        opts.$confirm.unbind('.confirmation');
+        opts.$cancel.unbind('.confirmation');
+        $(document).unbind('.confirmation');
+
+        // Remove added elements
+        opts.$dialog.remove();
+    }
+});
+
+}(jQuery));
+/** @file
+ *
  *  Provide a ui-styled validation form.
  *
  *  Requires:
@@ -3896,6 +4080,7 @@ $.widget("connexions.itemsPane", $.connexions.pane, {
  *      ui.core.js
  *      ui.widget.js
  *      ui.position.js
+ *      ui.confirmation.js
  *      connexions.pane.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
@@ -4251,59 +4436,14 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
         }
         $ctl.attr('disabled', true);
 
-        var $li = $el.parents('li:first');
-
-        // Present a confirmation dialog and delete.
-        var html    = '<div class="confirm">'
-                    /*
-                    +  '<span class="ui-icon ui-icon-alert" '
-                    +        'style="float:left; margin:0 7px 20px 0;">'
-                    +  '</span>'
-                    */
-                    +  'Really delete?<br />'
-                    +  '<button name="yes">Yes</button>'
-                    +  '<button name="no" >No</button>'
-                    + '</div>';
-        var $div    = $(html);
-
-        self._placeConfirmation($ctl, $div);
-
-        function _reEnable(e)
-        {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-
-            /* Wait a bit to remove the element so the click doesn't
-             * inadvertenely hit any underlying tag element.
-             */
-            setTimeout(function() {
-                        $ctl.removeAttr('disabled');
-                        $div.remove();
-                       }, 100);
-        }
-
-        var $yes    = $div.find('button[name=yes]');
-        var $no     = $div.find('button[name=no]');
-
-        $yes.click(function(e) {
-            _reEnable(e);
-
-            self._perform_delete($el);
-        });
-        $no.click(function(e) {
-            _reEnable(e);
-        });
-
-        // Handle 'Enter' and 'ESC' in the input element
-        $(document).keydown(function(e) {
-            if (e.keyCode === 13)       // return
-            {
-                $yes.click();
-            }
-            else if (e.keyCode === 27)  // ESC
-            {
-                $no.click();
+        $ctl.confirmation({
+            question:   'Really delete?',
+            //position:   self._confirmationPosition($ctl),
+            confirmed:  function() {
+                self._perform_delete($el);
+            },
+            closed:     function() {
+                $ctl.removeAttr('disabled');
             }
         });
     },
@@ -4392,8 +4532,10 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
      *          it to the parent li.
      *  @param  $ctl            The control jQuery/DOM element;
      *  @param  $confirmation   The new confirmation jQuery/DOM element;
+     *
+     *  @return The proper position information.
      */
-    _placeConfirmation: function($ctl, $confirmation) {
+    _confirmationPosition: function($ctl, $confirmation) {
         var $li         = $ctl.parents('li:first');
 
         // Figure out the best place to put the confirmation.
@@ -4419,8 +4561,13 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
             pos.at = 'center top';
         }
 
-        $confirmation.appendTo( $li )
-                     .position( pos );
+        if ($confirmation !== undefined)
+        {
+            $confirmation.appendTo( $li )
+                         .position( pos );
+        }
+
+        return pos;
     },
 
     /************************
@@ -6519,32 +6666,16 @@ $.widget("connexions.bookmark", {
             {
                 return;
             }
+            self.disable();
 
-            // Present a confirmation dialog and delete.
-            var html    = '<div class="confirm">'
-                        /*
-                        +  '<span class="ui-icon ui-icon-alert" '
-                        +        'style="float:left; margin:0 7px 20px 0;">'
-                        +  '</span>'
-                        */
-                        +  'Really delete?<br />'
-                        +  '<button name="yes">Yes</button>'
-                        +  '<button name="no" >No</button>'
-                        + '</div>';
-            var $div    = $(html);
-
-            self.$delete.after( $div );
-            self.$delete.attr('disabled', true);
-
-            $div.find('button[name=yes]').click(function(e) {
-                self.$delete.removeAttr('disabled');
-                $div.remove();
-
-                self._performDelete();
-            });
-            $div.find('button[name=no]').click(function() {
-                self.$delete.removeAttr('disabled');
-                $div.remove();
+            self.$delete.confirmation({
+                question:   'Really delete?',
+                confirmed:  function() {
+                    self._performDelete();
+                },
+                closed:     function() {
+                    self.enable();
+                }
             });
         };
 
@@ -7052,6 +7183,7 @@ $.widget("connexions.bookmark", {
  *  Requires:
  *      ui.core.js
  *      ui.widget.js
+ *      ui.confirmation.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false */
@@ -7202,32 +7334,16 @@ $.widget("connexions.user", {
             {
                 return;
             }
+            self.disable();
 
-            // Present a confirmation dialog and delete.
-            var html    = '<div class="confirm">'
-                        /*
-                        +  '<span class="ui-icon ui-icon-alert" '
-                        +        'style="float:left; margin:0 7px 20px 0;">'
-                        +  '</span>'
-                        */
-                        +  'Really delete?<br />'
-                        +  '<button name="yes">Yes</button>'
-                        +  '<button name="no" >No</button>'
-                        + '</div>';
-            var $div    = $(html);
-
-            self.$delete.after( $div );
-            self.$delete.attr('disabled', true);
-
-            $div.find('button[name=yes]').click(function(e) {
-                self.$delete.removeAttr('disabled');
-                $div.remove();
-
-                self._performDelete();
-            });
-            $div.find('button[name=no]').click(function() {
-                self.$delete.removeAttr('disabled');
-                $div.remove();
+            self.$delete.confirmation({
+                question:   'Really delete?',
+                confirmed:  function() {
+                    self._performDelete();
+                },
+                closed:     function() {
+                    self.enable();
+                }
             });
         };
 
