@@ -127,6 +127,14 @@ abstract class Connexions_Service
         $normIds = $this->_mapper->normalizeIds($ids);
         $order   = $this->_csOrder2array($order);
 
+        /*
+        Connexions::log("Connexions_Service::fetch() "
+                        . "id[ %s ], ids[ %s ], normIds[ %s ]",
+                        Connexions::varExport($id),
+                        Connexions::varExport($ids),
+                        Connexions::varExport($normIds));
+        // */
+
         return $this->_mapper->fetch( $normIds,
                                       $order,
                                       $count,

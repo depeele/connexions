@@ -1475,4 +1475,46 @@ class UserServiceTest extends DbTestCase
 
         $this->assertEquals($expected, $tags->__toString());
     }
+
+    public function testUserServiceAutocompleteUser1()
+    {
+        $expected = 'User441,User478';
+        $service  = Connexions_Service::factory('Model_User');
+
+        // By user name (e.g. Use%r4%41)
+        $users    = $service->autocomplete('r4');
+        $this->assertNotEquals(null, $users);
+
+        //printf ("users[ %s ]\n", Connexions::varExport($users));
+
+        $this->assertEquals($expected, $users->__toString());
+    }
+
+    public function testUserServiceAutocompleteUser2()
+    {
+        $expected = 'User1,User441,User83,User478';
+        $service  = Connexions_Service::factory('Model_User');
+
+        // By email address (e.g. user441@%home%)
+        $users    = $service->autocomplete('home');
+        $this->assertNotEquals(null, $users);
+
+        //printf ("users[ %s ]\n", Connexions::varExport($users));
+
+        $this->assertEquals($expected, $users->__toString());
+    }
+
+    public function testUserServiceAutocompleteUser3()
+    {
+        $expected = 'User83';
+        $service  = Connexions_Service::factory('Model_User');
+
+        // By name (e.g. Random Use%r 4%41)
+        $users    = $service->autocomplete('User 8');
+        $this->assertNotEquals(null, $users);
+
+        //printf ("users[ %s ]\n", Connexions::varExport($users));
+
+        $this->assertEquals($expected, $users->__toString());
+    }
 }

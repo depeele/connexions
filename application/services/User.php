@@ -253,6 +253,41 @@ class Service_User extends Connexions_Service
         return $user->deleteTags($tags);
     }
 
+    /** @brief  Perform user autocompletion.
+     *  @param  term        The string to autocomplete.
+     *  @param  limit       The maximum number of tags to return;
+     *
+     *  @return Model_Set_User
+     */
+    public function autocomplete($term,
+                                 $limit = 50)
+    {
+        if ($limit === null)    $limit = 50;
+
+        /*
+        Connexions::log("Service_User::autocomplete(): "
+                        .   "term[ %s ], limit[ %d ]",
+                        $term, $limit);
+        // */
+
+        $id = array('name=*'        => $term,
+                    '+|fullName=*'  => $term,
+                    '+|email=*'     => $term,
+        );
+
+        $users = $this->fetch($id,
+                              null,     // default order
+                              $limit);
+
+        /*
+        Connexions::log("Service_User::autocomplete(): "
+                        .   "term[ %s ], limit[ %d ] == [ %s ]",
+                        $term, $limit, $users);
+        // */
+
+        return $users;
+    }
+
     /** @brief  Perform tag autocompletion for the given user.
      *  @param  user        The Model_User instance that provide the context
      *                      for tag autocompletion

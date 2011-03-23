@@ -83,6 +83,18 @@ class Service_Proxy_User extends Connexions_Service_Proxy
         return $this->_service->deleteTags($user, $tags);
     }
 
+    /** @brief  Perform user autocompletion.
+     *  @param  term        The string to autocomplete.
+     *  @param  limit       The maximum number of tags to return;
+     *
+     *  @return Model_Set_User
+     */
+    public function autocomplete($term,
+                                 $limit = 50)
+    {
+        return $this->_service->autocomplete($term, $limit);
+    }
+
     /** @brief  Perform tag autocompletion for the given user.
      *  @param  term        The string to autocomplete.
      *  @param  limit       The maximum number of tags to return;
