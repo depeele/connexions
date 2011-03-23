@@ -988,7 +988,7 @@ abstract class Connexions_Model_Set
         {
             if ($cmp === 'str')
             {
-                if ((string)$member == $needle)
+                if (strcasecmp($member, $needle) === 0)
                 {
                     $res = true;
                     break;

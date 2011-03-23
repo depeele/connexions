@@ -253,6 +253,146 @@ class Service_User extends Connexions_Service
         return $user->deleteTags($tags);
     }
 
+    /** @brief  Add a new user to the network of this user.
+     *  @param  user        The Model_User instance for which network add
+     *                      should be performed (MUST be authenticated);
+     *  @param  users       A Model_Set_User instance, simple array of user
+     *                      identifiers, or comma-separated list of user
+     *                      identifiers.
+     *
+     *  @return An array of status information, keyed by user name:
+     *              { '%userName%'  => true (success) |
+     *                                 String explanation of failure,
+     *                 ... }
+     */
+    public function addToNetwork(Model_User $user,
+                                            $users)
+    {
+        /* SHOULD be handled by the Proxy for any API path
+         * but double-check here for extra protection
+         * (and since the current tests require it).
+         */
+        if (! $user->isAuthenticated())
+        {
+            throw new Exception('Operation prohibited for an '
+                                .   'unauthenticated user.');
+        }
+        // */
+
+        /* We grab both an array and set so we can check to see if any of the
+         * identified user's are unknown and mark them as such
+         */
+        $ids           = $this->_csList2array($users);
+        $userInstances = $this->csList2set($users);
+
+        /*
+        Connexions::log("Service_User::addToNetwork(): user[ %s ], "
+                        . "users[ %s ] == ids[ %s ] == set[ %s ], source[ %s ]",
+                        $user,
+                        Connexions::varExport($users),
+                        Connexions::varExport($ids),
+                        Connexions::varExport($userInstances),
+                        Connexions::varExport($userInstances->getSource()));
+        // */
+
+
+        $res           = array();
+        if (count($ids) > count($userInstances))
+        {
+            /* One or more target users are invalid.  Mark those that are
+             * invalid.
+             */
+            foreach ($ids as $id)
+            {
+                if (! $userInstances->contains($id))
+                {
+                    $res[ $id ] = 'Unknown user';
+                }
+            }
+        }
+
+        // Now, attempt to add all those user that are valid.
+        foreach ($userInstances as $newUser)
+        {
+            $res[ $newUser->__toString() ] = $user->addToNetwork( $newUser );
+        }
+
+        /*
+        Connexions::log("Service_User::addToNetwork(): res[ %s ]",
+                        Connexions::varExport($res));
+        // */
+
+        return $res;
+    }
+
+    /** @brief  Remove one or more users from the network of the identified
+     *          user.
+     *  @param  user        The Model_User instance for which network remove
+     *                      should be performed (MUST be authenticated);
+     *  @param  users       A Model_Set_User instance, simple array of user
+     *                      identifiers, or comma-separated list of user
+     *                      identifiers.
+     *
+     *  @return An array of status information, keyed by user name:
+     *              { '%userName%'  => true (success) |
+     *                                 String explanation of failure,
+     *                 ... }
+     */
+    public function removeFromNetwork(Model_User $user,
+                                                 $users)
+    {
+        /* SHOULD be handled by the Proxy for any API path
+         * but double-check here for extra protection
+         * (and since the current tests require it).
+         */
+        if (! $user->isAuthenticated())
+        {
+            throw new Exception('Operation prohibited for an '
+                                .   'unauthenticated user.');
+        }
+        // */
+
+        /* We grab both an array and set so we can check to see if any of the
+         * identified user's are unknown and mark them as such
+         */
+        $ids           = $this->_csList2array($users);
+        $userInstances = $this->csList2set($users);
+
+        /*
+        Connexions::log("Service_User::addToNetwork(): user[ %s ], "
+                        . "users[ %s ] == ids[ %s ] == set[ %s ], source[ %s ]",
+                        $user,
+                        Connexions::varExport($users),
+                        Connexions::varExport($ids),
+                        Connexions::varExport($userInstances),
+                        Connexions::varExport($userInstances->getSource()));
+        // */
+
+
+        $res           = array();
+        if (count($ids) > count($userInstances))
+        {
+            /* One or more target users are invalid.  Mark those that are
+             * invalid.
+             */
+            foreach ($ids as $id)
+            {
+                if (! $userInstances->contains($id))
+                {
+                    $res[ $id ] = 'Unknown user';
+                }
+            }
+        }
+
+        // Now, attempt to add all those user that are valid.
+        foreach ($userInstances as $remUser)
+        {
+            $res[ ''.$remUser ] = $user->removeFromNetwork( $remUser );
+        }
+
+        return $res;
+    }
+
     /** @brief  Perform user autocompletion.
      *  @param  term        The string to autocomplete.
      *  @param  limit       The maximum number of tags to return;

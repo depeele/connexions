@@ -693,33 +693,51 @@ class Model_User extends Model_Taggable
     /** @brief  Add a new user to the network of this user.
      *  @param  user    The user to add.
      *
-     *  @return $this for a fluent interface
+     *  @return true (success) else a failure message (string).
      */
     public function addToNetwork(Model_User  $user)
     {
-        //$this->getMapper()->addToNetwork($this, $user);
-        $this->getNetwork()->addItem($user);
+        $res = false;
+        try
+        {
+            //$this->getMapper()->removeFromNetwork($this, $user);
+            $this->getNetwork()->addItem($user);
+            $res = true;
 
-        // Force a re-cache of the user network
-        $this->_network = null;
+            // Force a re-cache of the user network
+            $this->_network = null;
+        }
+        catch (Exception $e)
+        {
+            $res = $e->getMessage();
+        }
 
-        return $this;
+        return $res;
     }
 
     /** @brief  Remove a user from the network of this user.
      *  @param  user    The user to remove.
      *
-     *  @return $this for a fluent interface
+     *  @return true (success) else a failure message (string).
      */
     public function removeFromNetwork(Model_User  $user)
     {
-        //$this->getMapper()->removeFromNetwork($this, $user);
-        $this->getNetwork()->removeItem($user);
+        $res = false;
+        try
+        {
+            //$this->getMapper()->removeFromNetwork($this, $user);
+            $this->getNetwork()->removeItem($user);
+            $res = true;
 
-        // Force a re-cache of the user network
-        $this->_network = null;
+            // Force a re-cache of the user network
+            $this->_network = null;
+        }
+        catch (Exception $e)
+        {
+            $res = $e->getMessage();
+        }
 
-        return $this;
+        return $res;
     }
 
     /**********************************************
