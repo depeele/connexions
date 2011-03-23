@@ -82,17 +82,13 @@ $.widget("settings.networkAdd", {
             opts.jsonRpc.params.apiKey = opts.apiKey;
         }
 
-        if (opts.jsonRpc.params.limit === undefined)
-        {
-            opts.jsonRpc.params.limit = 25;
-        }
-
         /********************************
          * Locate the pieces
          *
          */
         self.$input    = self.element.find(':text');
         self.$submit   = self.element.find(':button[name=submit]');
+        self.$parent   = self.element.parent();
         self.$pane     = self.element.siblings('.pane');
 
         /********************************
@@ -145,13 +141,12 @@ $.widget("settings.networkAdd", {
         });
 
         self.$submit.bind('click.networkAdd', function(e) {
-            // Attempt to add the identified user
-            var user    = self.$input.val();
+            self._add_users();
+        });
 
-            // ... and then request a 'reload' of our presentation pane
-            self.$pane.pane('reload', function() {
-                self.$pane = self.element.siblings('.pane');
-            });
+        self.$parent.delegate('.users', 'itemDeleted', function() {
+            // On item delete, reload the pane
+            self.reload();
         });
     },
 
@@ -162,6 +157,7 @@ $.widget("settings.networkAdd", {
         var params  = opts.jsonRpc.params;
         
         params.term  = self.$input.autocomplete('option', 'term');
+        params.limit = 25;
 
         // Perform a JSON-RPC call to perform the update.
         $.jsonRpc(opts.jsonRpc, 'user.autocomplete', params, {
@@ -196,10 +192,91 @@ $.widget("settings.networkAdd", {
         });
     },
 
+    _add_users: function() {
+        var self    = this;
+        var opts    = self.options;
+        var users   = self.$input.val();
+        var params  = opts.jsonRpc.params;
+        
+        params.users  = self.$input.val().replace(/\s*,\s*$/, '');
+
+        // Perform a JSON-RPC call to perform the update.
+        $.jsonRpc(opts.jsonRpc, 'user.addToNetwork', params, {
+            success:    function(data, txtStatus, req){
+                if ( (! data) || (data.error !== null))
+                {
+                    $.notify({
+                        title:  'User addition failed',
+                        text:   '<p class="error">'
+                              +  (data ? data.error.message : '')
+                              + '</p>'
+                    });
+                    return;
+                }
+
+                // Consolidate all errors and successes
+                var errors      = [];
+                var successes   = [];
+                $.each(data.result, function( user, val ) {
+                    if (val !== true)
+                    {
+                        errors.push( user +': '+ val );
+                    }
+                    else
+                    {
+                        successes.push( user );
+                    }
+                });
+
+                if (errors.length > 0)
+                {
+                    // Report any deletion failures
+                    $.notify({
+                        title: 'User addition failed',
+                        text:  $.map(errors, function(val, idex) {
+                                    return '<p class="error">'+ val +'</p>';
+                               }).join('')
+                    });
+                }
+
+                if (successes.length > 0)
+                {
+                    // Report any deletion successes
+                    $.notify({
+                        title: 'User'+ (successes.length > 1 ? 's' :'')
+                                    +' added',
+                        text:  successes.join(', ')
+                    });
+
+                    // Ask the pane to reload to present the new users
+                    self.reload();
+                }
+            },
+            error:      function(req, txtStatus, e) {
+                $.notify({
+                    title: 'User addition failed',
+                    text:  '<p class="error">'
+                         +   txtStatus
+                         + '</p>'
+                });
+            }
+        });
+    },
+
     /************************
      * Public methods
      *
      */
+    reload: function() {
+        var self    = this;
+        var opts    = self.options;
+
+        // Request a reload of our associated presentation pane.
+        self.$pane.itemsPane('reload', function() {
+            self.$pane = self.element.siblings('.pane');
+        });
+    },
+
     destroy: function() {
         var self    = this;
 
@@ -214,6 +291,7 @@ $.widget("settings.networkAdd", {
         // Unbind events
         self.$input.unbind('.networkAdd');
         self.$submit.unbind('.networkAdd');
+        self.$parent.undelegate('.users', '.networkAdd');
     }
 });
 

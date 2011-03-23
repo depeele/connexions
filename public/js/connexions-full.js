@@ -4819,6 +4819,8 @@ $.widget("connexions.itemList", {
 
     _itemDeleted: function($item)
     {
+        var self        = this;
+
         /* Remove the given item, also removing the group header if this
          * item is the last in the group.
          */
@@ -4835,7 +4837,12 @@ $.widget("connexions.itemList", {
         $item.slideUp('fast', function() {
             $parentLi.slideUp('normal', function() {
                 // Destroy the widget and remove the containing 'li.item'
-                $item.item('destroy');
+                if ($item.item) $item.item('destroy');
+                if ($item.user) $item.user('destroy');
+
+                // Trigger an 'itemDeleted' event.
+                self.element.trigger('itemDeleted', [ $item ]);
+
                 $parentLi.remove();
 
                 if (($group.length > 0) && (! $next.hasClass('item')) )
@@ -7363,17 +7370,12 @@ $.widget("connexions.user", {
         var self    = this;
         var opts    = self.options;
 
-        if (opts.enabled !== true)
-        {
-            return;
-        }
-
         var params  = {
-            id: { userId: opts.userId }
+            users:  opts.userId
         };
 
         // Perform a JSON-RPC call to perform the update.
-        $.jsonRpc(opts.jsonRpc, 'user.delete', params, {
+        $.jsonRpc(opts.jsonRpc, 'user.removeFromNetwork', params, {
             success:    function(data, textStatus, req) {
                 if ( (! data) || (data.error !== null))
                 {
@@ -7387,7 +7389,11 @@ $.widget("connexions.user", {
                     return;
                 }
 
-                // Trigger a deletion event for our parent
+                $.notify({
+                    title: 'User deleted'
+                });
+
+                // Trigger a 'deleted' event for our parent.
                 self._trigger('deleted');
             },
             error:      function(req, textStatus, err) {
