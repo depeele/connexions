@@ -105,6 +105,8 @@ $.widget("connexions.itemList", {
 
     _itemDeleted: function($item)
     {
+        var self        = this;
+
         /* Remove the given item, also removing the group header if this
          * item is the last in the group.
          */
@@ -121,7 +123,12 @@ $.widget("connexions.itemList", {
         $item.slideUp('fast', function() {
             $parentLi.slideUp('normal', function() {
                 // Destroy the widget and remove the containing 'li.item'
-                $item.item('destroy');
+                if ($item.item) $item.item('destroy');
+                if ($item.user) $item.user('destroy');
+
+                // Trigger an 'itemDeleted' event.
+                self.element.trigger('itemDeleted', [ $item ]);
+
                 $parentLi.remove();
 
                 if (($group.length > 0) && (! $next.hasClass('item')) )

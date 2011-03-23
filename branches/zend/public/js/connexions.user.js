@@ -251,17 +251,12 @@ $.widget("connexions.user", {
         var self    = this;
         var opts    = self.options;
 
-        if (opts.enabled !== true)
-        {
-            return;
-        }
-
         var params  = {
-            id: { userId: opts.userId }
+            users:  opts.userId
         };
 
         // Perform a JSON-RPC call to perform the update.
-        $.jsonRpc(opts.jsonRpc, 'user.delete', params, {
+        $.jsonRpc(opts.jsonRpc, 'user.removeFromNetwork', params, {
             success:    function(data, textStatus, req) {
                 if ( (! data) || (data.error !== null))
                 {
@@ -275,7 +270,11 @@ $.widget("connexions.user", {
                     return;
                 }
 
-                // Trigger a deletion event for our parent
+                $.notify({
+                    title: 'User deleted'
+                });
+
+                // Trigger a 'deleted' event for our parent.
                 self._trigger('deleted');
             },
             error:      function(req, textStatus, err) {
