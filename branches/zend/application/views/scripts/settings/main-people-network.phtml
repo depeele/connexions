@@ -67,13 +67,10 @@ $jQuery->addOnLoad('$.people_network_onLoad()')
 (function($) {
     $.people_network_onLoad = function() {
         var $section    = $('#people-network');
-        var $pane       = $section.find('.pane:first');
-        var $addUser    = $section.find('.addUser');
+        var $networkAdd = $section.find('.networkAdd');
+        //var $pane       = $section.find('.pane:first');
 
-        $addUser.find('input').input();
-        $addUser.find('button').button();
-
-        //$addUser.networkAdd({pane:$pane});
+        $networkAdd.networkAdd();
     };
  }(jQuery));
 <?php
@@ -83,10 +80,10 @@ $jQuery->javascriptCaptureEnd();
 // Top-level, static, non-paginated content
 ?>
 <div id='people-network'><!-- people-network { -->
- <div class='addUser ui-form'>
+ <div class='networkAdd ui-form'>
    <div class='field'>
-    <label for='addUser-input'>Follow User</label>
-    <input  id='addUser-input' type='text' class='text' />
+    <label for='networkAdd-input'>Follow User</label>
+    <input  id='networkAdd-input' type='text' class='text' />
    </div>
    <button name='submit'>add</button>
  </div>
