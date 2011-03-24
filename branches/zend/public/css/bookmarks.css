@@ -61,8 +61,6 @@
 .bookmarks .item .data .control:after, .pane .displayStyle fieldset.options .item .data .control:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; *display: inline-block; zoom: 1; *display: block; }
 .bookmarks .item .data .control a, .pane .displayStyle fieldset.options .item .data .control a { display: inline; font-weight: normal; text-decoration: none; padding: 0.1em; }
 .bookmarks .item .data .control a:hover, .pane .displayStyle fieldset.options .item .data .control a:hover { background-color: #0066cc; color: white; text-decoration: none; }
-.bookmarks .item .data .control .confirm, .pane .displayStyle fieldset.options .item .data .control .confirm { position: absolute; top: -8px; left: -8px; min-width: 8em; width: 100%; padding: 0.2em; -moz-border-radius: 0.3em 0.3em 0.3em 0.3em; -webkit-border-radius: 0.3em 0.3em 0.3em 0.3em; -ms-border-radius: 0.3em 0.3em 0.3em 0.3em; -khtml-border-radius: 0.3em 0.3em 0.3em 0.3em; border-radius: 0.3em 0.3em 0.3em 0.3em; background-color: #172322; color: white; text-align: center; }
-.bookmarks .item .data .control .confirm button, .pane .displayStyle fieldset.options .item .data .control .confirm button { width: 3.5em; }
 .bookmarks .item:hover .control, .pane .displayStyle fieldset.options .item:hover .control { visibility: visible; }
 .bookmarks .item:hover .status .favorite .star_empty, .pane .displayStyle fieldset.options .item:hover .status .favorite .star_empty { visibility: visible; }
 .bookmarks .item:hover .status .private .lock_empty, .pane .displayStyle fieldset.options .item:hover .status .private .lock_empty { visibility: visible; }
