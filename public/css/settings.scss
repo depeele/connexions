@@ -260,24 +260,6 @@
         font-weight:  normal;
         color:        $controlColor;
       }
-
-      .confirm {
-        position:         absolute;
-        top:              -0.75em;
-        white-space:      pre;
-        width:            auto;
-
-        text-align:       center;
-
-        color:            $confirmColor;
-        background-color: $pageColorBackground;
-        font-size:        0.8em;
-
-        button {
-          width:      3em;
-          padding:    0.1em;
-        }
-      }
     }
 
     .warning {

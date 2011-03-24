@@ -266,24 +266,6 @@ $displaySortOffset: 5px;
           color: $pageColorBackground;
           text-decoration: none;
         }
-        .confirm {
-          position:         absolute;
-          top:              -8px;
-          left:             -8px;
-          min-width:        8em;
-          width:            100%;
-          padding:          0.2em;
-
-          @include          corners(0.3em);
-          background-color: $darkest;
-          color:            $lightest;
-
-          text-align:       center;
-
-          button {
-            width:      3.5em;
-          }
-        }
       }
     }
   }

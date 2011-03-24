@@ -190,26 +190,6 @@ $displaySortOffset: 5px;
         }
       }
 
-      .confirm {
-        position:         absolute;
-        top:              -4px;
-        left:             -4px;
-        min-width:        8em;
-        padding:          0.2em;
-
-        @include          corners(0.3em);
-        background-color: $darkest;
-        color:            $lightest;
-        font-size:        0.9em;
-        z-index:          4;
-
-        text-align:       center;
-
-        button {
-          cursor:         pointer;
-        }
-      }
-
       // UserId
       .userId {
         float: left;
