@@ -13,6 +13,8 @@
  *                      rendered in a list;
  *      tags            A Model_Set_Tag instance of tags that should be
  *                      highlighted;
+ *      noAvatar        If set, use this URL for the avatar of any user that
+ *                      has no avatar set;
  */
 $user          =& $this->user;
 $viewer        =  $this->viewer;    // MAY be unset, hence the missing '=&'
@@ -105,10 +107,16 @@ if ($showParts['minimized'])    array_push($css, 'minimized');
         echo "<div class='avatar'>",
               "<a href='{$userUrl}' title='{$user->fullName}'>",
                "<div class='img icon-highlight'>";
-
-        if (! empty($user->pictureUrl))
+        $avatarUrl = $user->pictureUrl;
+        
+        if (empty($avatarUrl) && (! empty($this->noAvatar)) )
         {
-            echo "<img src='", $user->pictureUrl, "' />";
+            $avatarUrl = $this->noAvatar;
+        }
+
+        if (! empty($avatarUrl))
+        {
+            echo "<img src='", $avatarUrl, "' />";
         }
         else
         {
@@ -136,63 +144,72 @@ if ($showParts['minimized'])    array_push($css, 'minimized');
             'del'   => false,
         );
 
+        $haveRelation = false;
+        $extraHtml    = '';
         if (empty($relation) || in_array('none', $relation))
         {
-            $relationStr = 'no relation';
-            $spriteCss   = 'relation-none';
-            $show['add'] = true;
+            $relationStr  = 'no relation';
+            $spriteCss    = 'none';
+            $show['add']  = true;
         }
         else if (in_array('self', $relation))
         {
-            $relationStr = 'you';
-            $spriteCss   = 'relation-self';
+            $relationStr  = 'you';
+            $spriteCss    = 'self';
+            $extraHtml    = "<a href='{$this->baseUrl('/settings')}' "
+                          .    "class='item-edit' "
+                          .    "title='your settings'>edit profile</a>";
         }
         else if (in_array('mutual', $relation))
         {
-            $relationStr = 'mutual followers';
-            $spriteCss   = 'relation-mutual';
-            $show['del'] = true;
+            $haveRelation = true;
+            $relationStr  = 'mutual followers';
+            $spriteCss    = 'mutual';
+            $show['del']  = true;
         }
         else if (in_array('amIn', $relation))
         {
-            $relationStr = 'follower';
-            $spriteCss   = 'relation-amIn';
-            $show['add'] = true;
+            $haveRelation = true;
+            $relationStr  = 'follower';
+            $spriteCss    = 'amIn';
+            $show['add']  = true;
         }
         else
         {
-            $relationStr = 'following';
-            $spriteCss   = 'relation-isIn';
-            $show['del'] = true;
+            $haveRelation = true;
+            $relationStr  = 'following';
+            $spriteCss    = 'isIn';
+            $show['del']  = true;
         }
 
         echo "<div class='control'>",   // control {
-              "<div class='relation' title='{$relationStr}'>",
+              $extraHtml,
+              "<div class='relation' title='{$relationStr}' ",
+                                    "data-relation='{$spriteCss}'>",
                "<!-- ". implode(' ', $relation) ." -->",
-               "<div class='connexions_sprites {$spriteCss}'>",
+               "<div class='connexions_sprites relation-{$spriteCss}'>",
                 $relationStr,
                "</div>",
-              "</div>";
-
-        if ($show['add'])
-        {
-            echo '<span class="item-add" title="add">',
-                    '<span class="title">ADD</span>',
-                    '<span class="icon connexions_sprites ',
-                                                'item-add">',
-                    '</span>',
-                 '</span>';
-        }
-        if ($show['del'])
-        {
-            echo '<span class="item-delete" title="delete">',
-                    '<span class="title">DELETE</span>',
-                    '<span class="icon connexions_sprites ',
-                                                'item-delete">',
-                    '</span>',
-                 '</span>';
-        }
-        echo "</div>";                  // control }
+              "</div>",
+              '<span class="item-add',
+                 ($haveRelation ? '' : ' item-add-none'),
+                                                 '" ',
+                 ($show['add'] ? '' : ' style="display:none;" '),
+                                       'title="add to my network">',
+                 '<span class="title">ADD</span>',
+                 '<span class="icon connexions_sprites ',
+                                             'item-add">',
+                 '</span>',
+              '</span>',
+              '<span class="item-delete" ',
+                 ($show['del'] ? '' : ' style="display:none;" '),
+                                       'title="remove from my network">',
+                 '<span class="title">REMOVE</span>',
+                 '<span class="icon connexions_sprites ',
+                                             'item-delete">',
+                 '</span>',
+              '</span>',
+             "</div>";                  // control }
     }
 
 

@@ -14,6 +14,7 @@
 if (! isset($this->showParts))
 {
     // The portions of the user information to present
+    $this->noAvatar  = $this->baseUrl('/images/User.gif');
     $this->showParts = array(
         'user:stats'                => true,
         'user:stats:countItems'     => true,
@@ -29,10 +30,24 @@ if (! isset($this->showParts))
     );
 }
 
+$jQuery = $this->jQuery();
+$jQuery->addOnLoad('$.sidebar_user_onLoad();')
+       ->javascriptCaptureStart();
 ?>
-<div id='usersList' class='userItems'>
+(function($) {
+    $.sidebar_user_onLoad = function() {
+        // Activate the user item.
+        $('#usersList ul.sidebar li > form').user();
+    };
+}(jQuery));
+
+<?php
+$jQuery->javascriptCaptureEnd();
+
+?>
+<div id='usersList' class='userItems single-user'>
   <div class='cloudRelation connexions_sprites relation_ltr'>&nbsp;</div>
-  <ul class='users'>
+  <ul class='users sidebar'>
     <?= $this->partial('user.phtml', $this) ?>
     <br class='clear' />
   </ul>

@@ -51,7 +51,7 @@ Connexions::log('view/scripts/itemList: '
                 $weightTitle);
 // */
 ?>
-<ul class='Item_List'>
+<ul class='Item_List' data-type='<?= $this->itemType ?>'>
  <li class='header'><span class='item'><?= $titleTitle ?></span><?php
 
 if ($includeWeight)
@@ -129,7 +129,10 @@ foreach ($itemList as $item)
             {
                 $relationStr = 'no relation';
                 $spriteCss   = 'relation-none';
-                $show['add'] = true;
+                $show['add'] = array(
+                    'title' => 'add to my network',
+                    'text'  => 'ADD',
+                );
             }
             else if (in_array('self', $relation))
             {
@@ -140,19 +143,28 @@ foreach ($itemList as $item)
             {
                 $relationStr = 'mutual followers';
                 $spriteCss   = 'relation-mutual';
-                $show['del'] = true;
+                $show['del'] = array(
+                    'title' => 'remove from my network',
+                    'text'  => 'REMOVE',
+                );
             }
             else if (in_array('amIn', $relation))
             {
                 $relationStr = 'follower';
                 $spriteCss   = 'relation-amIn';
-                $show['add'] = true;
+                $show['add'] = array(
+                    'title' => 'add to my network',
+                    'text'  => 'ADD',
+                );
             }
             else
             {
                 $relationStr = 'following';
                 $spriteCss   = 'relation-isIn';
-                $show['del'] = true;
+                $show['del'] = array(
+                    'title' => 'remove from my network',
+                    'text'  => 'REMOVE',
+                );
             }
 
             $ctlHtml  .=  "<div class='relation' title='{$relationStr}'>"
@@ -164,32 +176,47 @@ foreach ($itemList as $item)
         }
         else
         {
-            $show['edit'] = true;
-            $show['del']  = true;
+            $show['edit'] = array(
+                'title' => 'rename',
+                'text'  => 'RENAME',
+            );
+            $show['del']  = array(
+                'title' => 'delete',
+                'text'  => 'DELETE',
+            );
         }
 
-        if ($show['edit'])
+        if ($show['edit'] !== false)
         {
-            $ctlHtml  .=  '<span class="item-edit" title="edit">'
-                      .      '<span class="title">EDIT</span>'
+            $ctlHtml  .=  '<span class="item-edit" '
+                      .         'title="'. $show['edit']['title'] .'">'
+                      .      '<span class="title">'
+                      .          $show['edit']['text']
+                      .      '</span>'
                       .      '<span class="icon connexions_sprites '
                       .                                  'item-edit">'
                       .      '</span>'
                       .   '</span>';
         }
-        if ($show['add'])
+        if ($show['add'] !== false)
         {
-            $ctlHtml  .=  '<span class="item-add" title="add">'
-                      .      '<span class="title">ADD</span>'
+            $ctlHtml  .=  '<span class="item-add" '
+                      .         'title="'. $show['add']['title'] .'">'
+                      .      '<span class="title">'
+                      .          $show['add']['text']
+                      .      '</span>'
                       .      '<span class="icon connexions_sprites '
                       .                                  'item-add">'
                       .      '</span>'
                       .   '</span>';
         }
-        if ($show['del'])
+        if ($show['del'] !== false)
         {
-            $ctlHtml  .=  '<span class="item-delete" title="delete">'
-                      .      '<span class="title">DELETE</span>'
+            $ctlHtml  .=  '<span class="item-delete" '
+                      .         'title="'. $show['del']['title'] .'">'
+                      .      '<span class="title">'
+                      .          $show['del']['text']
+                      .      '</span>'
                       .      '<span class="icon connexions_sprites '
                       .                                  'item-delete">'
                       .      '</span>'
