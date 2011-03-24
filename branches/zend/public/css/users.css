@@ -14,7 +14,7 @@
 
 .users .user { position: relative; z-index: 1; margin-bottom: 1em; border-top: 1px solid #cccccc; }
 
-.users .person, .pane .displayStyle fieldset.options .person { clear: both; min-height: 45px; }
+.users .person, .pane .displayStyle fieldset.options .person { clear: both; min-height: 55px; }
 .users .user, .pane .displayStyle fieldset.options .user { position: relative; z-index: 1; border-top: 1px solid #cccccc; }
 .users .user .stats, .pane .displayStyle fieldset.options .user .stats { position: relative; float: right; width: 100px; background-color: #999999; padding: 0; z-index: 2; }
 .users .user .stats .countItems, .pane .displayStyle fieldset.options .user .stats .countItems { display: block; color: white; padding: 0.25em; font-weight: normal; text-align: center; text-decoration: none; }
