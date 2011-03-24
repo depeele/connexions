@@ -224,9 +224,9 @@ a:visited { color: #005a9c; }
 
 .relation-none, .relation-self { width: 32px; height: 12px; background-position: -128px -48px; }
 
-.relation-add { width: 32px; height: 12px; background-position: -36px -86px; }
+.relation-add { width: 12px; height: 12px; background-position: -46px -86px; }
 
-.relation-remove { width: 32px; height: 12px; background-position: -36px -98px; }
+.relation-remove { width: 12px; height: 12px; background-position: -46px -98px; }
 
 .envelope { width: 17px; height: 13px; background-position: -32px -28px; }
 
@@ -402,8 +402,6 @@ a:visited { color: #005a9c; }
 .cloud .Item_List li .control, .cloud .Item_Cloud li .control { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; text-align: center; vertical-align: middle; margin: 0; z-index: 3; cursor: pointer; }
 .cloud .Item_List li .control .icon, .cloud .Item_Cloud li .control .icon { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
 .cloud .Item_List li .control .item-add .title, .cloud .Item_List li .control .item-edit .title, .cloud .Item_List li .control .item-delete .title, .cloud .Item_Cloud li .control .item-add .title, .cloud .Item_Cloud li .control .item-edit .title, .cloud .Item_Cloud li .control .item-delete .title { display: none; }
-.cloud .Item_List li .confirm, .cloud .Item_Cloud li .confirm { position: absolute; min-width: 8em; padding: 0.2em; -moz-border-radius: 0.3em 0.3em 0.3em 0.3em; -webkit-border-radius: 0.3em 0.3em 0.3em 0.3em; -ms-border-radius: 0.3em 0.3em 0.3em 0.3em; -khtml-border-radius: 0.3em 0.3em 0.3em 0.3em; border-radius: 0.3em 0.3em 0.3em 0.3em; background-color: #172322; color: white; font-size: 0.7em; z-index: 4; text-align: center; }
-.cloud .Item_List li .confirm button, .cloud .Item_Cloud li .confirm button { cursor: pointer; }
 .cloud .Item_List li .edit-item, .cloud .Item_Cloud li .edit-item { position: absolute; padding: 1px; text-align: center; -moz-border-radius: 0.3em 0.3em 0.3em 0.3em; -webkit-border-radius: 0.3em 0.3em 0.3em 0.3em; -ms-border-radius: 0.3em 0.3em 0.3em 0.3em; -khtml-border-radius: 0.3em 0.3em 0.3em 0.3em; border-radius: 0.3em 0.3em 0.3em 0.3em; border: 1px solid #cccccc; background-color: #eeeeee; color: white; z-index: 4; text-align: center; }
 .cloud .Item_List li .edit-item .buttons, .cloud .Item_Cloud li .edit-item .buttons { font-size: 0.5em; padding: 0.5em 0 0; }
 .cloud .Item_List li .edit-item .buttons .icon, .cloud .Item_Cloud li .edit-item .buttons .icon { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
@@ -702,7 +700,7 @@ a:visited { color: #005a9c; }
 .columnHeader .restrictions { display: block; padding: 0 0 0 2em; text-align: left; font-size: 0.9em; }
 .columnHeader .context-bg { position: absolute; left: 5px; top: -4px; opacity: 0.4; filter: alpha(opacity=40); -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=40)'; -khtml-opacity: 0.4; -moz-opacity: 0.4; }
 .columnHeader .avatar { position: absolute; width: 20px; height: 20px; top: -3px; left: 33px; opacity: 0.6; filter: alpha(opacity=60); -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=60)'; -khtml-opacity: 0.6; -moz-opacity: 0.6; }
-.columnHeader .url { font-size: 0.7em; padding: 0 0 0 1em; float: right; max-width: 40%; }
+.columnHeader .url { font-size: 0.7em; padding: 0 0 0 1em; float: right; max-width: 40%; z-index: 2; }
 .columnHeader .url .favicon { display: inline; width: 0.8em; height: 0.8em; }
 
 .rightCol { padding-left: 2em; padding-right: 0.2em; }

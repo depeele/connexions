@@ -30,8 +30,14 @@
 .users .user .data .control, .pane .displayStyle fieldset.options .user .data .control { position: absolute; left: 2px; top: 33px; font-size: 0.75em; text-align: center; cursor: pointer; }
 .users .user .data .control .relation, .pane .displayStyle fieldset.options .user .data .control .relation { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
 .users .user .data .control .relation .connexions_sprites, .pane .displayStyle fieldset.options .user .data .control .relation .connexions_sprites { width: 32px; height: 12px; text-indent: -9999px; }
-.users .user .data .control .item-add, .users .user .data .control .item-delete, .pane .displayStyle fieldset.options .user .data .control .item-add, .pane .displayStyle fieldset.options .user .data .control .item-delete { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; visibility: hidden; }
+.users .user .data .control .item-add, .users .user .data .control .item-delete, .pane .displayStyle fieldset.options .user .data .control .item-add, .pane .displayStyle fieldset.options .user .data .control .item-delete { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; visibility: hidden; top: 1px; left: -2px; z-index: 10; }
 .users .user .data .control .item-add .title, .users .user .data .control .item-delete .title, .pane .displayStyle fieldset.options .user .data .control .item-add .title, .pane .displayStyle fieldset.options .user .data .control .item-delete .title { display: none; }
+.users .user .data .control .item-add-none, .pane .displayStyle fieldset.options .user .data .control .item-add-none { position: absolute; left: 8px; }
+.users .user .data .control .item-add .icon, .pane .displayStyle fieldset.options .user .data .control .item-add .icon { width: 16px; height: 16px; background-position: -84px -62px; }
+.users .user .data .control .item-add:hover .icon, .pane .displayStyle fieldset.options .user .data .control .item-add:hover .icon { width: 16px; height: 16px; background-position: -68px -62px; }
+.users .user .data .control .item-delete .icon, .pane .displayStyle fieldset.options .user .data .control .item-delete .icon { width: 16px; height: 16px; background-position: -84px -94px; }
+.users .user .data .control .item-delete:hover .icon, .pane .displayStyle fieldset.options .user .data .control .item-delete:hover .icon { width: 16px; height: 16px; background-position: -68px -94px; }
+.users .user .data .control .item-edit, .pane .displayStyle fieldset.options .user .data .control .item-edit { display: block; font-size: 0.9em; }
 .users .user .data .control:hover .item-add, .users .user .data .control:hover .item-delete, .pane .displayStyle fieldset.options .user .data .control:hover .item-add, .pane .displayStyle fieldset.options .user .data .control:hover .item-delete { visibility: visible; }
 .users .user .data .confirm, .pane .displayStyle fieldset.options .user .data .confirm { position: absolute; top: -4px; left: -4px; min-width: 8em; padding: 0.2em; -moz-border-radius: 0.3em 0.3em 0.3em 0.3em; -webkit-border-radius: 0.3em 0.3em 0.3em 0.3em; -ms-border-radius: 0.3em 0.3em 0.3em 0.3em; -khtml-border-radius: 0.3em 0.3em 0.3em 0.3em; border-radius: 0.3em 0.3em 0.3em 0.3em; background-color: #172322; color: white; font-size: 0.9em; z-index: 4; text-align: center; }
 .users .user .data .confirm button, .pane .displayStyle fieldset.options .user .data .confirm button { cursor: pointer; }
@@ -47,3 +53,13 @@
 .users .user .data .dates .lastVisit, .pane .displayStyle fieldset.options .user .data .dates .lastVisit { display: block; }
 .users .mine, .pane .displayStyle fieldset.options .mine { min-height: 45px; }
 .users .mine .status, .pane .displayStyle fieldset.options .mine .status { display: block; min-height: 45px; }
+
+.rightCol .single-user { border: none; }
+.rightCol .single-user .cloudRelation { display: none; }
+.rightCol .single-user .users { border: none; padding: 0; }
+.rightCol .single-user .users .person .stats { width: 50px; }
+.rightCol .single-user .users .person .data { padding-left: 55px; }
+.rightCol .single-user .users .person .data .avatar { width: 50px; height: 50px; border: 1px solid #dddddd; }
+.rightCol .single-user .users .person .data .avatar img { width: 48px; height: 48px; }
+.rightCol .single-user .users .person .data .control { top: 50px; left: 0px; width: 50px; }
+.rightCol .single-user .users .person .data .control .item-add-none { position: relative; left: auto; }

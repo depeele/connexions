@@ -120,7 +120,7 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
                 });
 
         // Delegate any click within a '.control' element
-        this.element.delegate('.item-edit, .item-delete',
+        this.element.delegate('.item-edit, .item-delete, .item-add',
                               'click', function(e) {
             var $el = $(this);
 
@@ -132,6 +132,11 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
             {
                 // Edit
                 self._edit_item($el);
+            }
+            else if ($el.hasClass('item-add'))
+            {
+                // Delete
+                self._add_user($el);
             }
             else
             {
@@ -288,8 +293,8 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
         var newTag  = $input.val();
         var result  = false;
 
-        /* method:  user.deleteTags,
-         * tags:    id,
+        /* method:  user.renameTags,
+         * renames  '%old%:%new%',
          *
          * Service Returns:
          *  { %oldTag% => %status == true | message string%, ... }
@@ -380,12 +385,37 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
     },
 
     /** @brief  Item deletion has been confirmed, attempt to delete the
-     *          identified item.
+     *          identified item
+     *          (tag OR a person in the authenticated user's network).
      *  @param  $el     The jQuery/DOM element that was originally clicked upon
      *                  to initiate this deletion
      *                  (i.e. the '.item-delete' element);
      */
     _perform_delete: function($el) {
+        var self    = this;
+        var opts    = self.options;
+        var $ul     = $el.parents('ul:first');
+        var type    = $ul.data('type');
+
+        switch (type)
+        {
+        case 'user':
+            self._remove_user($el);
+            break;
+
+        case 'tag':
+        default:
+            self._delete_tag($el);
+            break;
+        }
+    },
+
+    /** @brief  Delete a tag.
+     *  @param  $el     The jQuery/DOM element that was originally clicked upon
+     *                  to initiate this deletion
+     *                  (i.e. the '.item-delete' element);
+     */
+    _delete_tag: function($el) {
         var self    = this;
         var opts    = self.options;
         var $li     = $el.parents('li:first');
@@ -448,6 +478,157 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
             error:      function(req, textStatus, err) {
                 $.notify({
                     title: 'Tag deletion failed',
+                    text:  '<p class="error">'
+                         +   textStatus
+                         + '</p>'
+                });
+            },
+            complete:   function(req, textStatus) {
+            }
+         });
+    },
+
+    /** @brief  Add a user to the authenticated user's network.
+     *  @param  $el     The jQuery/DOM element that was originally clicked upon
+     *                  to initiate this deletion
+     *                  (i.e. the '.item-delete' element);
+     */
+    _add_user: function($el) {
+        var self    = this;
+        var opts    = self.options;
+        var $li     = $el.parents('li:first');
+        var $a      = $li.find('.item:first');
+        var user    = $a.data('id');
+
+        /* method: user.removeFromNetwork,
+         * users:  id,
+         *
+         * Service Returns:
+         *  { %user% => %status == true | message string%, ... }
+         */
+        var params  = {
+            users:  user
+        };
+        if (opts.apiKey !== null)
+        {
+            params.apiKey = opts.apiKey;
+        }
+
+        // Perform a JSON-RPC call to perform the update.
+        $.jsonRpc(opts.jsonRpc, 'user.addToNetwork', params, {
+            success:    function(data, textStatus, req) {
+                if ( (! data) || (data.error !== null))
+                {
+                    $.notify({
+                        title: 'User addition failed',
+                        text:  '<p class="error">'
+                             +   (data ? data.error.message : '')
+                             + '</p>'
+                    });
+
+                    return;
+                }
+
+                if (data.result === null)   { return; }
+
+                if (data.result[user] !== true)
+                {
+                    $.notify({
+                        title: 'User addition failed',
+                        text:  '<p class="error">'
+                             +   (data ? data.result[user] : '')
+                             + '</p>'
+                    });
+
+                    return;
+                }
+
+                $.notify({
+                    title: 'User added',
+                    text:  user
+                });
+            },
+            error:      function(req, textStatus, err) {
+                $.notify({
+                    title: 'User addition failed',
+                    text:  '<p class="error">'
+                         +   textStatus
+                         + '</p>'
+                });
+            },
+            complete:   function(req, textStatus) {
+            }
+         });
+    },
+
+    /** @brief  Remove a user from the authenticated user's network.
+     *  @param  $el     The jQuery/DOM element that was originally clicked upon
+     *                  to initiate this deletion
+     *                  (i.e. the '.item-delete' element);
+     */
+    _remove_user: function($el) {
+        var self    = this;
+        var opts    = self.options;
+        var $li     = $el.parents('li:first');
+        var $a      = $li.find('.item:first');
+        var user    = $a.data('id');
+
+        /* method: user.removeFromNetwork,
+         * users:  id,
+         *
+         * Service Returns:
+         *  { %user% => %status == true | message string%, ... }
+         */
+        var params  = {
+            users:  user
+        };
+        if (opts.apiKey !== null)
+        {
+            params.apiKey = opts.apiKey;
+        }
+
+        // Perform a JSON-RPC call to perform the update.
+        $.jsonRpc(opts.jsonRpc, 'user.removeFromNetwork', params, {
+            success:    function(data, textStatus, req) {
+                if ( (! data) || (data.error !== null))
+                {
+                    $.notify({
+                        title: 'User removal failed',
+                        text:  '<p class="error">'
+                             +   (data ? data.error.message : '')
+                             + '</p>'
+                    });
+
+                    return;
+                }
+
+                if (data.result === null)   { return; }
+
+                if (data.result[user] !== true)
+                {
+                    $.notify({
+                        title: 'User removal failed',
+                        text:  '<p class="error">'
+                             +   (data ? data.result[user] : '')
+                             + '</p>'
+                    });
+
+                    return;
+                }
+
+                $.notify({
+                    title: 'User removed',
+                    text:  user
+                });
+
+                // Trigger a deletion event for our parent
+                $li.hide('fast', function() {
+                    $li.remove();
+                });
+            },
+            error:      function(req, textStatus, err) {
+                $.notify({
+                    title: 'User removal failed',
                     text:  '<p class="error">'
                          +   textStatus
                          + '</p>'

@@ -164,8 +164,8 @@ $.widget("connexions.user", {
         self.$email       = self.element.find('.email a');
 
         self.$relation    = self.element.find('.relation');
-        self.$edit        = self.element.find('.control > .item-edit');
-        self.$delete      = self.element.find('.control > .item-delete');
+        self.$add         = self.element.find('.control > .item-add');
+        self.$remove      = self.element.find('.control > .item-delete');
 
         /********************************
          * Instantiate our sub-widgets
@@ -193,7 +193,7 @@ $.widget("connexions.user", {
         self._squelch = false;
 
         // Handle a direct click on one of the status indicators
-        var _update_item      = function(e, data) {
+        var _update_user      = function(e, data) {
             e.stopImmediatePropagation();
             e.preventDefault();
             e.stopPropagation();
@@ -202,18 +202,7 @@ $.widget("connexions.user", {
         };
 
         // Handle item-edit
-        var _edit_click  = function(e) {
-            if (self.options.enabled === true)
-            {
-                self._showModifyDialog();
-            }
-
-            e.preventDefault();
-            e.stopPropagation();
-        };
-
-        // Handle item-delete
-        var _delete_click  = function(e) {
+        var _add_click  = function(e) {
             e.stopImmediatePropagation();
             e.preventDefault();
             e.stopPropagation();
@@ -224,7 +213,25 @@ $.widget("connexions.user", {
             }
             self.disable();
 
-            self.$delete.confirmation({
+            // Add this user to our network
+            self._performAdd();
+
+            self.enable();
+        };
+
+        // Handle item-delete
+        var _remove_click  = function(e) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (self.options.enabled !== true)
+            {
+                return;
+            }
+            self.disable();
+
+            self.$remove.confirmation({
                 question:   'Really delete?',
                 confirmed:  function() {
                     self._performDelete();
@@ -240,28 +247,28 @@ $.widget("connexions.user", {
          *
          */
 
-        self.element.bind('change.user',    _update_item);
+        self.element.bind('change.user',    _update_user);
 
-        self.$edit.bind('click.user',       _edit_click);
-        self.$delete.bind('click.user',     _delete_click);
+        self.$add.bind(   'click.user',     _add_click);
+        self.$remove.bind('click.user',     _remove_click);
     },
 
-    _performDelete: function( )
+    _performAdd: function( )
     {
         var self    = this;
         var opts    = self.options;
 
         var params  = {
-            users:  opts.userId
+            users:  opts.name   //opts.userId
         };
 
         // Perform a JSON-RPC call to perform the update.
-        $.jsonRpc(opts.jsonRpc, 'user.removeFromNetwork', params, {
+        $.jsonRpc(opts.jsonRpc, 'user.addToNetwork', params, {
             success:    function(data, textStatus, req) {
                 if ( (! data) || (data.error !== null))
                 {
                     $.notify({
-                        title: 'User delete failed',
+                        title: 'User addition failed',
                         text:  '<p class="error">'
                              +   (data ? data.error.message : '')
                              + '</p>'
@@ -270,16 +277,93 @@ $.widget("connexions.user", {
                     return;
                 }
 
+                if (data.result === null)   { return; }
+
+                if (data.result[opts.name] !== true)
+                {
+                    $.notify({
+                        title: 'User addition failed',
+                        text:  '<p class="error">'
+                             +   (data ? data.result[opts.name] : '')
+                             + '</p>'
+                    });
+
+                    return;
+                }
+
                 $.notify({
-                    title: 'User deleted'
+                    title: 'User added',
+                    text:  opts.name
                 });
+
+                // Adjust the relation information.
+                self._updateRelation('add');
+            },
+            error:      function(req, textStatus, err) {
+                $.notify({
+                    title: 'User addition failed',
+                    text:  '<p class="error">'
+                         +   textStatus
+                         + '</p>'
+                });
+            },
+            complete:   function(req, textStatus) {
+            }
+         });
+    },
+
+    _performDelete: function( )
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        var params  = {
+            users:  opts.name
+        };
+
+        // Perform a JSON-RPC call to perform the update.
+        $.jsonRpc(opts.jsonRpc, 'user.removeFromNetwork', params, {
+            success:    function(data, textStatus, req) {
+                if ( (! data) || (data.error !== null))
+                {
+                    $.notify({
+                        title: 'User removal failed',
+                        text:  '<p class="error">'
+                             +   (data ? data.error.message : '')
+                             + '</p>'
+                    });
+
+                    return;
+                }
+
+                if (data.result === null)   { return; }
+
+                if (data.result[opts.name] !== true)
+                {
+                    $.notify({
+                        title: 'User removal failed',
+                        text:  '<p class="error">'
+                             +   (data ? data.result[opts.name] : '')
+                             + '</p>'
+                    });
+
+                    return;
+                }
+
+                $.notify({
+                    title: 'User removed',
+                    text:  opts.name
+                });
+
+                // Adjust the relation information.
+                self._updateRelation('remove');
 
                 // Trigger a 'deleted' event for our parent.
                 self._trigger('deleted');
             },
             error:      function(req, textStatus, err) {
                 $.notify({
-                    title: 'User delete failed',
+                    title: 'User removal failed',
                     text:  '<p class="error">'
                          +   textStatus
                          + '</p>'
@@ -398,12 +482,100 @@ $.widget("connexions.user", {
          });
     },
 
-    _showModifyDialog: function()
-    {
-        /* :TODO: Create and present a dialog (or in-line editor) for
-         *        modification
+    /** @brief  Update the relation indicator as well as the controls
+     *          based upon a successful add or remove operation.
+     *  @param  op      The operation which succeeded ( 'add' | 'remove' );
+     */
+    _updateRelation: function(op) {
+        var self            = this;
+        var opts            = self.options;
+        // self, mutual, amIn, isIn
+        var prevRelation    = self.$relation.data('relation');
+
+        /* The prevRelation should be one of:
+         *  mutual  (amIn / isIn)
+         *  isIn    (following)
+         *
+         *  'self' and 'amIn' SHOULD NOT be seen here since relation controls
+         *  SHOULD be hidden/inactive in those cases.
          */
-        return;
+        if (op === 'add')
+        {
+            /* Added to the authenticated users network
+             *
+             * Transition:
+             *  mutual:     *no change*
+             *  none:       isIn
+             *  amIn:       mutual
+             *
+             * In either case, deactivate the 'add' and active the 'del'
+             * controls.
+             */
+            if (prevRelation === 'none')
+            {
+                var title   = 'following';
+                self.$relation.attr('title', title)
+                               .data('relation', 'isIn');
+                self.$relation.find('.relation-none')
+                              .removeClass('relation-none')
+                              .addClass('relation-isIn')
+                              .text(title);
+            }
+            else if (prevRelation === 'amIn')
+            {
+                var title   = 'mutual followers';
+                self.$relation.attr('title', title)
+                               .data('relation', 'mutual');
+                self.$relation.find('.relation-amIn')
+                              .removeClass('relation-amIn')
+                              .addClass('relation-mutual')
+                              .text(title);
+            }
+
+            self.$add.attr('disabled', true)
+                     .hide();
+            self.$remove
+                     .removeAttr('disabled')
+                     .show();
+        }
+        else
+        {
+            /* Deleted from the authenticated users network
+             *
+             * Transition:
+             *  mutual:     amIn
+             *  isIn:       none
+             *
+             * In either case, deactivate the 'del' and active the 'add'
+             * controls.
+             */
+            if (prevRelation === 'mutual')
+            {
+                var title   = 'follower';
+                self.$relation.attr('title', title)
+                              .data('relation', 'amIn');
+                self.$relation.find('.relation-mutual')
+                              .removeClass('relation-mutual')
+                              .addClass('relation-amIn')
+                              .text(title);
+            }
+            else if (prevRelation === 'isIn')
+            {
+                var title   = 'no relation';
+                self.$relation.attr('title', title)
+                              .data('relation', 'none');
+                self.$relation.find('.relation-isIn')
+                              .removeClass('relation-isIn')
+                              .addClass('relation-none')
+                              .text(title);
+            }
+
+            self.$remove
+                     .attr('disabled', true)
+                     .hide();
+            self.$add.removeAttr('disabled')
+                     .show();
+        }
     },
 
     _setState: function()
@@ -479,8 +651,8 @@ $.widget("connexions.user", {
         var opts    = self.options;
 
         // Unbind events
-        self.$edit.unbind('.user');
-        self.$delete.unbind('.user');
+        self.$add.unbind('.user');
+        self.$remove.unbind('.user');
 
         // Remove added elements
     }

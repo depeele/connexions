@@ -131,30 +131,56 @@ $displaySortOffset: 5px;
         .item-add, .item-delete {
           @include inlineBlock();
           visibility: hidden;
+          top:        1px;
+          left:       -2px;
+          z-index:    10;
 
           .title {
             display:  none;
           }
         }
+        .item-add-none {
+          // item-add for a user with whom there is NO relation
+          position:   absolute;
+          left:       8px;
+        }
         .item-add {
           .icon {
-            @extend .control-add-grey;
+            //@extend .control-add-grey;
+            width:  16px;
+            height: 16px;
+            background-position: -84px -62px;
           }
           &:hover {
             .icon {
-              @extend .control-add;
+              //@extend .control-add;
+              width:  16px;
+              height: 16px;
+              background-position: -68px -62px;
             }
           }
         }
         .item-delete {
           .icon {
-            @extend .control-delete-grey;
+            //@extend .control-delete-grey;
+            width:  16px;
+            height: 16px;
+            background-position: -84px -94px;
           }
           &:hover {
             .icon {
-              @extend .control-delete;
+              //@extend .control-delete;
+              width:  16px;
+              height: 16px;
+              background-position: -68px -94px;
             }
           }
+        }
+
+        .item-edit {
+          // For 'self' to edit profile
+          display:    block;
+          font-size:  0.9em;
         }
 
         &:hover {
@@ -243,6 +269,52 @@ $displaySortOffset: 5px;
     .status {
       display: block;
       min-height: 45px;
+    }
+  }
+}
+
+
+// For the People sidebar tag when presenting bookmarks for a single user
+.rightCol {
+  .single-user {
+    border: none;
+
+    .cloudRelation {
+      display:  none;
+    }
+
+    .users {
+      border:   none;
+      padding:  0;
+
+      .person {
+        .stats {
+          width:        50px;
+        }
+        .data {
+          padding-left: 55px;
+
+          .avatar {
+            width:      50px;
+            height:     50px;
+            border:     unquote("1px solid") $lightGrey;
+            img {
+                width:  48px;
+                height: 48px;
+            }
+          }
+          .control {
+            top:        50px;
+            left:       0px;
+            width:      50px;
+
+            .item-add-none {
+              position: relative;
+              left:     auto;
+            }
+          }
+        }
+      }
     }
   }
 }
