@@ -73,6 +73,7 @@
   position: absolute;
   top:      2.5em;
   right:    0.25em;
+  z-index:  99999;
 }
 
 /* Page Footer */
@@ -308,4 +309,10 @@
     border-left:      1px solid $borderColor;
     border-right:     1px solid $borderColor;
   }
+}
+
+// Hidden HTML templates used by the Javascript so it doesn't need to directly
+// know how to render the HTML
+.template {
+  display:  none;
 }

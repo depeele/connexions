@@ -99,7 +99,16 @@ class PeopleController extends Connexions_Controller_Action
         parent::_prepareMain($htmlNamespace);
 
         $extra = array(
-            'tags'  => &$this->_tags,
+            'tags'          => &$this->_tags,
+
+            /* Pass down that 'deleted' events should NOT cause the item to be
+             * removed from the list:
+             *  views/scripts/people/main.phtml
+             *      -> views/helpers/HtmlUsers.php
+             *          -> JavaScript:connexions.itemsPane
+             *              -> JavaScript:connexions.itemList
+             */
+            'ignoreDeleted' => true,
         );
         $this->view->main = array_merge($this->view->main, $extra);
 

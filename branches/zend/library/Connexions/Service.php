@@ -370,7 +370,13 @@ abstract class Connexions_Service
             return (array)$str;
         }
 
-        $str  = trim($str);
+        // Remove any empty items (e.g. ",,")
+        $str  = preg_replace('/,\s*,/', ',', $str);
+
+        // Include ',' in the trim
+        $str  = trim($str, " \t\n\r\0\x0B,");
+
+        // Split out the items
         $list = (empty($str)
                     ? array()
                     : preg_split('/\s*,\s*/', $str));
