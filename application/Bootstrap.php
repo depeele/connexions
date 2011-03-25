@@ -558,9 +558,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $isStreaming = Connexions::to_bool(
                             $request->getParam('streaming', false) );
 
-        // /*
+        /*
         Connexions::log("_controllerRequest: is %sStreaming",
                         ($isStreaming === true ? '' : 'NOT '));
+        Connexions::log("_controllerRequest: url[ %s ], params[ %s ]",
+                        Connexions::varExport($request->getRequestUri()),
+                        Connexions::varExport($request->getParams()));
         // */
 
         if ($isStreaming === true)

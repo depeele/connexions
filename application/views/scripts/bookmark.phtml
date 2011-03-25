@@ -307,13 +307,21 @@ if ($showParts['minimized'])
      */
     if ($showParts['item:data:tags'] === true)
     {
+        $tagUrl = $this->url(array('action' => 'index',
+                                   'owner'  => $bookmark->user->name,
+                                   'tag'    => '%tag%'));
+
         ?><ul class='tags'><?php
+         ?><div class='tag-template'
+            ><li class='tag'><a href='<?= $tagUrl ?>'>%tag%</a></li
+          ></div><?php
 
         foreach ($bookmark->tags as $tag)
         {
-            $tagUrl = $this->url(array('action' => 'index',
-                                       'owner'  => $bookmark->user->name,
-                                       'tag'    => $tag->tag));
+            if (empty($tag->tag))
+            {
+                $tag->tag = '_empty_';
+            }
 
             $cssExtra = ( ($highlightTags !== null) &&
                           (strpos($highlightTags, $tag->tag) !== false)
@@ -321,7 +329,8 @@ if ($showParts['minimized'])
                             : '');
 
             ?><li class='tag<?= $cssExtra ?>'><a 
-                    href='<?= $tagUrl ?>'><?= $tag->tag ?></a></li><?php
+                    href='<?= preg_replace('/%tag%/', $tag->tag, $tagUrl)
+                                        ?>'><?= $tag->tag ?></a></li><?php
         }
 
         ?></ul><?php
@@ -367,18 +376,37 @@ if ($showParts['minimized'])
      */
     if ($showParts['item:data:dates'] === true)
     {
-        ?><div class='dates icon-highlight'><?php   // dates {
+        $tagged  = explode(' ', $bookmark->taggedOn);
+        $updated = explode(' ', $bookmark->updatedOn);
+        $group   = null;
+
+        if ( $this->sortBy === 'taggedOn' )
+        {
+            $group = $tagged[0];
+        }
+        else if ( $this->sortBy === 'updatedOn' )
+        {
+            $group = $updated[0];
+        }
+
+        $groupData = ($group !== null
+                        ? " data-groupBy='{$group}'"
+                        : '');
+
+        ?><div class='dates icon-highlight'<?= $groupData ?>><?php  // dates {
 
         if ($showParts['item:data:dates:tagged'] === true)
         {
             $date = $bookmark->taggedOn;
-            if ($this->sortBy === 'taggedOn')
+            if ( $tagged[0] == $group )
             {
                 /* We are sorting (and thus grouping) by tag date so don't
                  * repeat the date in the display.  Just include the time.
                  */
-                $info = explode(' ', $date);
-                $date = $info[1];
+                $reduce = $tagged;
+
+                array_shift( $reduce );
+                $date   = implode(' ', $reduce);
             }
 
             $dTitle = "Date tagged";
@@ -389,6 +417,7 @@ if ($showParts['minimized'])
             }
 
             ?><div class='tagged'
+                   data-utcDate='<?= $bookmark->taggedOn ?>'
                    title='<?= $dTitle ?>'><?= $date ?></div><?php
         }
 
@@ -397,16 +426,20 @@ if ($showParts['minimized'])
               ($bookmark->taggedOn !== $bookmark->updatedOn)) )
         {
             $date = $bookmark->updatedOn;
-            if ($this->sortBy === 'updatedOn')
+            if ( ($this->sortBy === 'updatedOn') ||
+                 (($this->sortBy === 'taggedOn') &&
+                  ($tagged[0] == $updated[0])) )
             {
                 /* We are sorting (and thus grouping) by tag date so don't
                  * repeat the date in the display.  Just include the time.
                  */
-                $info = explode(' ', $date);
-                $date = $info[1];
+                $reduce = $updated;
+                $group  = array_shift( $reduce );
+                $date   = implode(' ', $reduce);
             }
 
             ?><div class='updated' 
+                   data-utcDate='<?= $bookmark->updatedOn ?>'
                    title='Date updated'><?= $date ?></div><?php
         }
 

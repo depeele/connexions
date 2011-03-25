@@ -30,6 +30,16 @@ class View_Helper_HtmlUsers extends View_Helper_Users
         'panePartial'       => 'main',
         'ulCss'             => 'users',     // view/scripts/list.phtml
 
+        /* Should the pane ignore the 'deleted' event from items
+         * (i.e. NOT remove them from the list)?
+         *
+         * This is used for the general 'people' list where the 'deleted' event
+         * is triggered when a person is removed from the authenticated users
+         * network.  In this case, 'deleted' simply means "deleted from
+         * network" and not deleted from the list.
+         */
+        'ignoreDeleted'     => false,
+
         // HTML to prepend/append to the inner container.
         'html'              => null,
     );
@@ -156,7 +166,8 @@ class View_Helper_HtmlUsers extends View_Helper_Users
      */
     public function populate(array $config)
     {
-        foreach (array('cookieUrl', 'panePartial', 'paneVars') as $key)
+        foreach (array('cookieUrl', 'panePartial', 'paneVars', 'ignoreDeleted')
+                            as $key)
         {
             if (isset($config[$key]))
             {
@@ -238,13 +249,14 @@ class View_Helper_HtmlUsers extends View_Helper_Users
                             'partial'           => $this->panePartial,
                             'hiddenVars'        => $this->paneVars,
                             'displayOptions'    => $dsConfig,
-                            /* Rely on the CSS class of rendered items
-                             * (see View_Helper_HtmlUsersUser)
-                             * to determine their Javascript objClass
-                            'uiOpts'            => array(
+                            'itemList'          => array(
+                                /* Rely on the CSS class of rendered items
+                                 * (see View_Helper_HtmlUsersUser)
+                                 * to determine their Javascript objClass
                                 'objClass'      => 'user',
+                                 */
+                                'ignoreDeleted' => $this->ignoreDeleted,
                             ),
-                             */
                       );
 
             $call   = "$('#{$namespace}List').itemsPane("

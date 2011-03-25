@@ -109,9 +109,13 @@
 
             // Also clear the validation status for the other field
             if ($active[0] === $pass1[0])
+            {
                 $pass2.input('valid');  //, undefined);
+            }
             else
+            {
                 $pass1.input('valid');  //, undefined);
+            }
         }
         else if (pass1 !== pass2)
         {
@@ -136,12 +140,623 @@
         {
             // Also report success for the other field.
             if ($active[0] === $pass1[0])
+            {
                 $pass2.input('valid', true);
+            }
             else
+            {
                 $pass1.input('valid', true);
+            }
         }
 
         return res;
+    };
+
+    /*************************************************************************
+     * String extensions
+     *
+     */
+
+    /** @brief  Left pad the provided string to the specified number of
+     *          characters using the provided padding character.
+     *  @param  str         The string to pad;
+     *  @param  numChars    The total number of charcters desired [ 2 ];
+     *  @param  padChar     The desired padding character         [ '0' ];
+     *
+     *  @return A new, padded string.
+     */
+    $.padString = function(str, numChars, padChar) {
+        numChars = numChars || 2;
+        padChar  = padChar  || '0';
+
+        // Ensure 'str' is actually a string
+        str = ''+ str;
+
+        while (str.length < numChars)
+        {
+            str = padChar + str;
+        }
+
+        return str;
+    };
+
+    /** @brief  Given a string, convert HTML special characters to entities.
+     *  @param  str     The original string.
+     *
+     *  :NOTE: This should be functionally similar to PHP:htmlspecialchars()
+     *
+     *  @return The escaped string.
+     */
+    $.esc = function(str) {
+        return $.htmlspecialchars(str);
+
+        /*
+        return str.replace(/&(?!amp;)/g, '&amp;')
+                  .replace(/</g,         '&lt;')
+                  .replace(/>/g,         '&gt;');
+        // */
+    };
+
+    /** @brief  Generate a "summary" of the provided text.  This simply
+     *          shortens the text to the last full word before the 'maxChars'th
+     *          character.
+     *  @param  text        The text to "summarize";
+     *  @param  maxChars    The maximum number of characters [ 40 ];
+     *
+     *  :NOTE: This should be functionally similar to
+     *          PHP:Connexions::getSummary()
+     *
+     *  @return The summary string.
+     */
+    $.summarize = function(text, maxChars) {
+        if (maxChars === undefined) { maxChars = 40; }
+
+        // Decode any HTML entities
+        var summary = $.html_entity_decode(text, 'ENT_QUOTES');
+        if (summary.length > maxChars)
+        {
+            // Shorten to no more than 'maxChars' characters
+            summary = summary.substr(0, maxChars);
+
+            // Shorten to the last remaining white-space
+            summary = summary.substr(0, summary.lastIndexOf(' '));
+
+            // Trim any white-space or punctuation from the end
+            summary = summary.replace(/[\s\.\!\?:;\,\-]+$/, '');
+
+            // Append '...' to indicate we've truncated.
+            summary += '...';
+        }
+
+        summary = $.htmlentities(summary, 'ENT_QUOTES');
+
+        return summary;
+    };
+
+    /**********************************
+     * Borrowed from php.js
+     *  http://phpjs.org/
+     *
+     */
+    $.get_html_translation_table = function (table, quote_style) {
+        // Returns the internal translation table used by htmlspecialchars and
+        // htmlentities  
+        // 
+        // version: 1103.1210
+        // discuss at: http://phpjs.org/functions/get_html_translation_table
+        // +   original by: Philip Peterson
+        // +    revised by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+        // +   bugfixed by: noname
+        // +   bugfixed by: Alex
+        // +   bugfixed by: Marco
+        // +   bugfixed by: madipta
+        // +   improved by: KELAN
+        // +   improved by: Brett Zamir (http://brett-zamir.me)
+        // +   bugfixed by: Brett Zamir (http://brett-zamir.me)
+        // +      input by: Frank Forte
+        // +   bugfixed by: T.Wild
+        // +      input by: Ratheous
+        // %          note: It has been decided that we're not going to add
+        //                  global dependencies to php.js, meaning the
+        //                  constants are not real constants, but strings
+        //                  instead. Integers are also supported if someone
+        // %          note: chooses to create the constants themselves.
+        // *     example 1: get_html_translation_table('HTML_SPECIALCHARS');
+        // *     returns 1: {'"': '&quot;', '&': '&amp;', '<': '&lt;',
+        //                   '>': '&gt;'}
+        var entities = {},
+            hash_map = {},
+            decimal = 0,
+            symbol = '';
+        var constMappingTable = {},
+            constMappingQuoteStyle = {};
+        var useTable = {},
+            useQuoteStyle = {};
+     
+        // Translate arguments
+        constMappingTable[0] = 'HTML_SPECIALCHARS';
+        constMappingTable[1] = 'HTML_ENTITIES';
+        constMappingQuoteStyle[0] = 'ENT_NOQUOTES';
+        constMappingQuoteStyle[2] = 'ENT_COMPAT';
+        constMappingQuoteStyle[3] = 'ENT_QUOTES';
+     
+        useTable      = (!isNaN(table)
+                            ? constMappingTable[table]
+                            : (table
+                                ? table.toUpperCase()
+                                : 'HTML_SPECIALCHARS'));
+        useQuoteStyle = (!isNaN(quote_style)
+                            ? constMappingQuoteStyle[quote_style]
+                            : (quote_style
+                                ? quote_style.toUpperCase()
+                                : 'ENT_COMPAT'));
+     
+        if ((useTable !== 'HTML_SPECIALCHARS') &&
+            (useTable !== 'HTML_ENTITIES'))
+        {
+            throw new Error("Table: " + useTable + ' not supported');
+            // return false;
+        }
+     
+        entities['38'] = '&amp;';
+        if (useTable === 'HTML_ENTITIES')
+        {
+            entities['160'] = '&nbsp;';
+            entities['161'] = '&iexcl;';
+            entities['162'] = '&cent;';
+            entities['163'] = '&pound;';
+            entities['164'] = '&curren;';
+            entities['165'] = '&yen;';
+            entities['166'] = '&brvbar;';
+            entities['167'] = '&sect;';
+            entities['168'] = '&uml;';
+            entities['169'] = '&copy;';
+            entities['170'] = '&ordf;';
+            entities['171'] = '&laquo;';
+            entities['172'] = '&not;';
+            entities['173'] = '&shy;';
+            entities['174'] = '&reg;';
+            entities['175'] = '&macr;';
+            entities['176'] = '&deg;';
+            entities['177'] = '&plusmn;';
+            entities['178'] = '&sup2;';
+            entities['179'] = '&sup3;';
+            entities['180'] = '&acute;';
+            entities['181'] = '&micro;';
+            entities['182'] = '&para;';
+            entities['183'] = '&middot;';
+            entities['184'] = '&cedil;';
+            entities['185'] = '&sup1;';
+            entities['186'] = '&ordm;';
+            entities['187'] = '&raquo;';
+            entities['188'] = '&frac14;';
+            entities['189'] = '&frac12;';
+            entities['190'] = '&frac34;';
+            entities['191'] = '&iquest;';
+            entities['192'] = '&Agrave;';
+            entities['193'] = '&Aacute;';
+            entities['194'] = '&Acirc;';
+            entities['195'] = '&Atilde;';
+            entities['196'] = '&Auml;';
+            entities['197'] = '&Aring;';
+            entities['198'] = '&AElig;';
+            entities['199'] = '&Ccedil;';
+            entities['200'] = '&Egrave;';
+            entities['201'] = '&Eacute;';
+            entities['202'] = '&Ecirc;';
+            entities['203'] = '&Euml;';
+            entities['204'] = '&Igrave;';
+            entities['205'] = '&Iacute;';
+            entities['206'] = '&Icirc;';
+            entities['207'] = '&Iuml;';
+            entities['208'] = '&ETH;';
+            entities['209'] = '&Ntilde;';
+            entities['210'] = '&Ograve;';
+            entities['211'] = '&Oacute;';
+            entities['212'] = '&Ocirc;';
+            entities['213'] = '&Otilde;';
+            entities['214'] = '&Ouml;';
+            entities['215'] = '&times;';
+            entities['216'] = '&Oslash;';
+            entities['217'] = '&Ugrave;';
+            entities['218'] = '&Uacute;';
+            entities['219'] = '&Ucirc;';
+            entities['220'] = '&Uuml;';
+            entities['221'] = '&Yacute;';
+            entities['222'] = '&THORN;';
+            entities['223'] = '&szlig;';
+            entities['224'] = '&agrave;';
+            entities['225'] = '&aacute;';
+            entities['226'] = '&acirc;';
+            entities['227'] = '&atilde;';
+            entities['228'] = '&auml;';
+            entities['229'] = '&aring;';
+            entities['230'] = '&aelig;';
+            entities['231'] = '&ccedil;';
+            entities['232'] = '&egrave;';
+            entities['233'] = '&eacute;';
+            entities['234'] = '&ecirc;';
+            entities['235'] = '&euml;';
+            entities['236'] = '&igrave;';
+            entities['237'] = '&iacute;';
+            entities['238'] = '&icirc;';
+            entities['239'] = '&iuml;';
+            entities['240'] = '&eth;';
+            entities['241'] = '&ntilde;';
+            entities['242'] = '&ograve;';
+            entities['243'] = '&oacute;';
+            entities['244'] = '&ocirc;';
+            entities['245'] = '&otilde;';
+            entities['246'] = '&ouml;';
+            entities['247'] = '&divide;';
+            entities['248'] = '&oslash;';
+            entities['249'] = '&ugrave;';
+            entities['250'] = '&uacute;';
+            entities['251'] = '&ucirc;';
+            entities['252'] = '&uuml;';
+            entities['253'] = '&yacute;';
+            entities['254'] = '&thorn;';
+            entities['255'] = '&yuml;';
+        }
+     
+        if (useQuoteStyle !== 'ENT_NOQUOTES')
+        {
+            entities['34'] = '&quot;';
+        }
+        if (useQuoteStyle === 'ENT_QUOTES')
+        {
+            entities['39'] = '&#39;';
+        }
+        entities['60'] = '&lt;';
+        entities['62'] = '&gt;';
+     
+     
+        // ascii decimals to real symbols
+        for (decimal in entities)
+        {
+            symbol = String.fromCharCode(decimal);
+            hash_map[symbol] = entities[decimal];
+        }
+     
+        return hash_map;
+    };
+
+    $.htmlentities = function(string, quote_style) {
+        // Convert all applicable characters to HTML entities  
+        // 
+        // version: 1103.1210
+        // discuss at: http://phpjs.org/functions/htmlentities
+        // +   original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+        // +    revised by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+        // +   improved by: nobbler
+        // +    tweaked by: Jack
+        // +   bugfixed by: Onno Marsman
+        // +    revised by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+        // +    bugfixed by: Brett Zamir (http://brett-zamir.me)
+        // +      input by: Ratheous
+        // -    depends on: get_html_translation_table
+        // *     example 1: htmlentities('Kevin & van Zonneveld');
+        // *     returns 1: 'Kevin &amp; van Zonneveld'
+        // *     example 2: htmlentities("foo'bar","ENT_QUOTES");
+        // *     returns 2: 'foo&#039;bar'
+        var hash_map = {},
+            symbol = '',
+            tmp_str = '',
+            entity = '';
+        tmp_str = string.toString();
+     
+        if (false ===
+               (hash_map = $.get_html_translation_table('HTML_ENTITIES',
+                                                        quote_style)))
+        {
+            return false;
+        }
+
+        hash_map["'"] = '&#039;';
+        for (symbol in hash_map)
+        {
+            entity  = hash_map[symbol];
+            tmp_str = tmp_str.split(symbol).join(entity);
+        }
+     
+        return tmp_str;
+    };
+
+    $.html_entity_decode = function(string, quote_style) {
+        // Convert all HTML entities to their applicable characters  
+        // 
+        // version: 1103.1210
+        // discuss at: http://phpjs.org/functions/html_entity_decode
+        // +   original by: john (http://www.jd-tech.net)
+        // +      input by: ger
+        // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+        // +    revised by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+        // +   bugfixed by: Onno Marsman
+        // +   improved by: marc andreu
+        // +    revised by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+        // +      input by: Ratheous
+        // +   bugfixed by: Brett Zamir (http://brett-zamir.me)
+        // +      input by: Nick Kolosov (http://sammy.ru)
+        // +   bugfixed by: Fox
+        // -    depends on: get_html_translation_table
+        // *     example 1: html_entity_decode('Kevin &amp; van Zonneveld');
+        // *     returns 1: 'Kevin & van Zonneveld'
+        // *     example 2: html_entity_decode('&amp;lt;');
+        // *     returns 2: '&lt;'
+        var hash_map = {},
+            symbol = '',
+            tmp_str = '',
+            entity = '';
+        tmp_str = string.toString();
+     
+        if (false ===
+               (hash_map = $.get_html_translation_table('HTML_ENTITIES',
+                                                        quote_style)))
+        {
+            return false;
+        }
+     
+        // fix &amp; problem
+        // http://phpjs.org/functions/get_html_translation_table:416#comment_97660
+        delete(hash_map['&']);
+        hash_map['&'] = '&amp;';
+     
+        for (symbol in hash_map)
+        {
+            entity = hash_map[symbol];
+            tmp_str = tmp_str.split(entity).join(symbol);
+        }
+        tmp_str = tmp_str.split('&#039;').join("'");
+     
+        return tmp_str;
+    };
+
+    $.htmlspecialchars = function(string, quote_style, charset, double_encode){
+        // Convert special characters to HTML entities  
+        // 
+        // version: 1103.1210
+        // discuss at: http://phpjs.org/functions/htmlspecialchars
+        // +   original by: Mirek Slugen
+        // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+        // +   bugfixed by: Nathan
+        // +   bugfixed by: Arno
+        // +    revised by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+        // +    bugfixed by: Brett Zamir (http://brett-zamir.me)
+        // +      input by: Ratheous
+        // +      input by: Mailfaker (http://www.weedem.fr/)
+        // +      reimplemented by: Brett Zamir (http://brett-zamir.me)
+        // +      input by: felix
+        // +    bugfixed by: Brett Zamir (http://brett-zamir.me)
+        // %        note 1: charset argument not supported
+        // *     example 1: htmlspecialchars("<a href='test'>Test</a>",
+        //                                   'ENT_QUOTES');
+        // *     returns 1: '&lt;a href=&#039;test&#039;&gt;Test&lt;/a&gt;'
+        // *     example 2: htmlspecialchars("ab\"c'd",
+        //                                  ['ENT_NOQUOTES', 'ENT_QUOTES']);
+        // *     returns 2: 'ab"c&#039;d'
+        // *     example 3: htmlspecialchars("my "&entity;" is still here",
+        //                                  null, null, false);
+        // *     returns 3: 'my &quot;&entity;&quot; is still here'
+        var optTemp = 0,
+            i = 0,
+            noquotes = false;
+        if (quote_style === undefined || quote_style === null)
+        {
+            quote_style = 2;
+        }
+        string = string.toString();
+        if (double_encode !== false)
+        {   // Put this first to avoid double-encoding
+            string = string.replace(/&/g, '&amp;');
+        }
+        string = string.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+     
+        var OPTS = {
+            'ENT_NOQUOTES': 0,
+            'ENT_HTML_QUOTE_SINGLE': 1,
+            'ENT_HTML_QUOTE_DOUBLE': 2,
+            'ENT_COMPAT': 2,
+            'ENT_QUOTES': 3,
+            'ENT_IGNORE': 4
+        };
+        if (quote_style === 0)
+        {
+            noquotes = true;
+        }
+        if (typeof quote_style !== 'number')
+        {   // Allow for a single string or an array of string flags
+            quote_style = [].concat(quote_style);
+            for (i = 0; i < quote_style.length; i++)
+            {
+                // Resolve string input to bitwise
+                // e.g. 'PATHINFO_EXTENSION' becomes 4
+                if (OPTS[quote_style[i]] === 0)
+                {
+                    noquotes = true;
+                }
+                else if (OPTS[quote_style[i]])
+                {
+                    optTemp = optTemp | OPTS[quote_style[i]];
+                }
+            }
+            quote_style = optTemp;
+        }
+        if (quote_style & OPTS.ENT_HTML_QUOTE_SINGLE)
+        {
+            string = string.replace(/'/g, '&#039;');
+        }
+        if (!noquotes)
+        {
+            string = string.replace(/"/g, '&quot;');
+        }
+     
+        return string;
+    };
+
+    $.htmlspecialchars_decode = function(string, quote_style) {
+        // Convert special HTML entities back to characters  
+        // 
+        // version: 1103.1210
+        // discuss at: http://phpjs.org/functions/htmlspecialchars_decode
+        // +   original by: Mirek Slugen
+        // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+        // +   bugfixed by: Mateusz "loonquawl" Zalega
+        // +      input by: ReverseSyntax
+        // +      input by: Slawomir Kaniecki
+        // +      input by: Scott Cariss
+        // +      input by: Francois
+        // +   bugfixed by: Onno Marsman
+        // +    revised by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+        // +   bugfixed by: Brett Zamir (http://brett-zamir.me)
+        // +      input by: Ratheous
+        // +      input by: Mailfaker (http://www.weedem.fr/)
+        // +      reimplemented by: Brett Zamir (http://brett-zamir.me)
+        // +    bugfixed by: Brett Zamir (http://brett-zamir.me)
+        // *     example 1: htmlspecialchars_decode("<p>this -&gt; &quot;</p>",
+        //                                          'ENT_NOQUOTES');
+        // *     returns 1: '<p>this -> &quot;</p>'
+        // *     example 2: htmlspecialchars_decode("&amp;quot;");
+        // *     returns 2: '&quot;'
+        var optTemp = 0,
+            i = 0,
+            noquotes = false;
+        if (quote_style === undefined)
+        {
+            quote_style = 2;
+        }
+        string = string.toString().replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+        var OPTS = {
+            'ENT_NOQUOTES': 0,
+            'ENT_HTML_QUOTE_SINGLE': 1,
+            'ENT_HTML_QUOTE_DOUBLE': 2,
+            'ENT_COMPAT': 2,
+            'ENT_QUOTES': 3,
+            'ENT_IGNORE': 4
+        };
+        if (quote_style === 0)
+        {
+            noquotes = true;
+        }
+        if (typeof quote_style !== 'number')
+        {   // Allow for a single string or an array of string flags
+            quote_style = [].concat(quote_style);
+            for (i = 0; i < quote_style.length; i++)
+            {
+                // Resolve string input to bitwise
+                // e.g. 'PATHINFO_EXTENSION' becomes 4
+                if (OPTS[quote_style[i]] === 0)
+                {
+                    noquotes = true;
+                }
+                else if (OPTS[quote_style[i]])
+                {
+                    optTemp = optTemp | OPTS[quote_style[i]];
+                }
+            }
+            quote_style = optTemp;
+        }
+        if (quote_style & OPTS.ENT_HTML_QUOTE_SINGLE)
+        {
+            // PHP doesn't currently escape if more than one 0, but it should
+            string = string.replace(/&#0*39;/g, "'");
+
+            // This would also be useful here, but not a part of PHP
+            // string = string.replace(/&apos;|&#x0*27;/g, "'");
+        }
+        if (!noquotes)
+        {
+            string = string.replace(/&quot;/g, '"');
+        }
+        // Put this in last place to avoid escape being double-decoded
+        string = string.replace(/&amp;/g, '&');
+     
+        return string;
+    };
+
+    /*************************************************************************
+     * Date extensions
+     *
+     */
+
+    /** @brief  Convert a Date instance to a client-localized string of the
+     *          form:
+     *              YYYY-MM-DD g:mm a
+     *  @param  date        The Date instance to convert.  If not provided, use
+     *                      the current date/time.
+     *
+     *  @param  timeOnly    Exclude the date information? [ false ]
+     *
+     *  @return The string representation of the given date.
+     */
+    $.date2str = function(date, timeOnly) {
+        if ( (date === undefined) || (! date instanceof Date) )
+        {
+            date = new Date();
+        }
+
+        var dateStr = '';
+        if (timeOnly !== true)
+        {
+            dateStr = date.getFullYear()
+                    + '-'+ $.padString((date.getMonth() + 1))
+                    + '-'+ $.padString(date.getDate())
+                    + ' ';
+        }
+
+        var hour        = date.getHours();
+        var meridian    = 'am';
+        if (hour === 0)
+        {
+            hour     = 12;
+        }
+        else if (hour === 12)
+        {
+            meridian = 'pm';
+        }
+        else if (hour > 12)
+        {
+            hour     -= 12;
+            meridian  = 'pm';
+        }
+
+                   /* Using a string for padding works here because we'll only
+                    * ever need to add 1 character at most.
+                    *
+                    * We use the span to try and ensure that we'll always align
+                    * properly since the only value that MIGHT be in the empty
+                    * field is 1.
+                    */
+        dateStr += $.padString(hour, 2,
+                               "<span style='visibility:hidden;'>1</span>")
+                + ':'+ $.padString(date.getMinutes())
+                + ' '+ meridian;
+
+        return dateStr;
+    };
+
+    /** @brief  Convert the given string into a Date instance.
+     *  @param  str     The date string to convert
+     *                      (MUST be GMT in the form 'YYYY-MM-DD HH:MM:SS')
+     *
+     *  @return The Date instance (null if invalid).
+     */
+    $.str2date = function(str) {
+        // Ensure 'str' is a string
+        str = ''+str;
+
+        var parts       = str.split(' ');
+        var dateParts   = parts[0].split('-');
+        var timeParts   = parts[1].split(':');
+        var date        = new Date();
+
+        date.setUTCFullYear(dateParts[0] );
+        date.setUTCMonth(   parseInt(dateParts[1], 10) - 1 );
+        date.setUTCDate(    dateParts[2] );
+        date.setUTCHours(   timeParts[0] );
+        date.setUTCMinutes( timeParts[1] );
+        date.setUTCSeconds( timeParts[2] );
+
+        return date;
     };
 
     /*************************************************************************
@@ -4935,9 +5550,12 @@ $.widget("connexions.itemList", {
 
     options: {
         // Defaults
-        namespace:  '',
-        objClass:   null,
-        dimOpacity: 0.5
+        namespace:      '',
+        objClass:       null,
+        dimOpacity:     0.5,
+
+        // Should item 'deleted' events be ignored?
+        ignoreDeleted:  false
     },
 
     /** @brief  Initialize a new instance.
@@ -4949,7 +5567,6 @@ $.widget("connexions.itemList", {
     {
         var self        = this;
         var opts        = self.options;
-        var objClass    = opts.objClass;
 
         // Items
         self.$items = self.element.find('li > form');
@@ -4957,22 +5574,18 @@ $.widget("connexions.itemList", {
         // Group Headers
         self.$headers = self.element.find('.groupHeader .groupType');
 
-        if (objClass === null)
+        if (opts.objClass === null)
         {
             /* Determine the type/class of item by the CSS class of the
              * representative form
              */
-            objClass = opts.objClass = self.$items.attr('class');
+            opts.objClass = self.$items.attr('class');
         }
 
         if (self.$items.length > 0)
         {
-            self.$items[objClass]({
-                'deleted': function(e, data) {
-                    // Remove this item
-                    self._itemDeleted( $(this) );
-                }
-            });
+            // Instantiate each item using the identified 'objClass'
+            self.$items[opts.objClass]();
         }
 
         self.$headers
@@ -4996,6 +5609,21 @@ $.widget("connexions.itemList", {
     {
         var self    = this;
         var opts    = self.options;
+
+        if (opts.ignoreDeleted !== true)
+        {
+            /* Include a handler for the 'deleted' event that will be
+             * emitted by the instance when it believes it has been
+             * "deleted".  In most cases, this belief is justified, but if
+             * 'ignoreDeleted' is set, we need to ignore that belief.
+             */
+
+            // Use an event delegate
+            self.element.delegate('li > form', 'deleted.itemList', function(e) {
+                self._itemDeleted( $(this) );
+            });
+            // */
+        }
     },
 
     _itemDeleted: function($item)
@@ -5018,8 +5646,8 @@ $.widget("connexions.itemList", {
         $item.slideUp('fast', function() {
             $parentLi.slideUp('normal', function() {
                 // Destroy the widget and remove the containing 'li.item'
-                if ($item.item) $item.item('destroy');
-                if ($item.user) $item.user('destroy');
+                if ($item.item) { $item.item('destroy'); }
+                if ($item.user) { $item.user('destroy'); }
 
                 // Trigger an 'itemDeleted' event.
                 self.element.trigger('itemDeleted', [ $item ]);
@@ -5049,6 +5677,7 @@ $.widget("connexions.itemList", {
 
         // Unbind events
         self.$headers.unbind('hover');
+        self.element.undelegate('li > form', '.itemList');
 
         // Remove added elements
         if (self.$items.length > 0)
@@ -5348,6 +5977,15 @@ $.widget("connexions.bookmarkPost", {
          */
         apiKey:     null,
 
+        /* Is this an edit of an existing user bookmark (true) or a user saving
+         * the bookmark of another user (false)?
+         *
+         * If 'isEdit' is false, changes are NOT required to data fields before
+         * saving AND ALL fields will be included in the update regardless of
+         * whether they've changed.
+         */
+        isEdit:     true,
+
         // Widget state
         enabled:    true
     },
@@ -5559,6 +6197,11 @@ $.widget("connexions.bookmarkPost", {
         {
             opts.rating  = opts.$rating.stars('value');
         }
+
+        if (opts.tags.length > 0)
+        {
+            self._highlightTags();
+        }
     },
 
     _setFormFromState: function()
@@ -5744,6 +6387,9 @@ $.widget("connexions.bookmarkPost", {
         _validate_form();
     },
 
+    /** @brief  Perform a Json-RPC call to "update" (possibly save) the
+     *          bookmark represented by this dialog.
+     */
     _performUpdate: function()
     {
         var self    = this;
@@ -5758,67 +6404,81 @@ $.widget("connexions.bookmarkPost", {
         // Gather the current data about this item.
         var nonEmpty    = false;
         var params      = {
-            id:     { userId: opts.userId, itemId: opts.itemId }
+            /* id is required: For 'Edit' is should be the userId/itemId of
+             * this bookmark
+             */
+            id: {
+                userId: opts.userId,
+                itemId: opts.itemId
+            }
         };
 
+        if (opts.isEdit !== true)
+        {
+            /* For 'Save', userId MUST be empty/null to notify Service_Bookmark
+             * to use the authenticated user's id.
+             */
+            params.id.userId = null;
+        }
+
         // Include all fields that have changed.
-        if (opts.$name.val() !== opts.name)
+        if ( (opts.isEdit !== true) ||
+             (opts.$name.val() !== opts.name) )
         {
             params.name = opts.$name.val();
             nonEmpty    = true;
         }
 
-        if (opts.$description.val() !== opts.description)
+        if ( (opts.isEdit !== true) ||
+             (opts.$description.val() !== opts.description) )
         {
             params.description = opts.$description.val();
             nonEmpty           = true;
         }
 
-        if ( (opts.$tags.length > 0) &&
-             (opts.$tags.val() !== opts.tags) )
+        if ( (opts.isEdit !== true) ||
+             ((opts.$tags.length > 0) &&
+              (opts.$tags.val() !== opts.tags)) )
         {
             params.tags = opts.$tags.val();
             nonEmpty    = true;
         }
 
-        if (opts.$favorite.checkbox('isChecked') !== opts.isFavorite)
+        if ( (opts.isEdit !== true) ||
+             (opts.$favorite.checkbox('isChecked') !== opts.isFavorite) )
         {
             params.isFavorite = opts.$favorite.checkbox('isChecked');
             nonEmpty          = true;
         }
 
-        if (opts.$private.checkbox('isChecked') !== opts.isPrivate)
+        if ( (opts.isEdit !== true) ||
+             (opts.$private.checkbox('isChecked') !== opts.isPrivate) )
         {
             params.isPrivate = opts.$private.checkbox('isChecked');
             nonEmpty         = true;
         }
 
-        if ( (opts.$rating.length > 0) &&
-             (opts.$rating.stars('value') !== opts.rating) )
+        if ( (opts.isEdit !== true) ||
+             ((opts.$rating.length > 0) &&
+              (opts.$rating.stars('value') !== opts.rating)) )
         {
             params.rating = opts.$rating.stars('value');
             nonEmpty      = true;
         }
 
-        if (opts.$url.val() !== opts.url)
+        if ( (opts.isEdit !== true) ||
+             (opts.$url.val() !== opts.url) )
         {
             // The URL has changed -- pass it in
             params.url = opts.$url.val();
             nonEmpty   = true;
         }
+
         if (nonEmpty !== true)
         {
             // Nothing to save.
             self._trigger('complete');
             return;
-        }
-
-        // If no itemId was provided, use the final URL.
-        if (params.id.itemId === null)
-        {
-            params.id.itemId = (params.url !== undefined
-                                ? params.url
-                                : opts.url);
         }
 
         if (opts.apiKey !== null)
@@ -5828,23 +6488,31 @@ $.widget("connexions.bookmarkPost", {
 
         self.element.mask();
 
+        var verb    = (opts.isEdit === true
+                        ? 'update'
+                        : 'save');
+
         // Perform a JSON-RPC call to perform the update.
         $.jsonRpc(opts.jsonRpc, 'bookmark.update', params, {
             success:    function(data, textStatus, req) {
                 if (data.error !== null)
                 {
                     self._status(false,
-                                 'Bookmark update failed',
+                                 'Bookmark '+ verb +' failed',
                                  data.error.message);
 
                     return;
                 }
 
                 self._status(true,
-                             'Bookmark update succeeded',
-                             'Bookmark '+ (opts.itemId === null
+                             'Bookmark '+ verb +' succeeded',
+                             'Bookmark '+ verb +'d'
+                             /*
+                                          (opts.itemId === null
                                             ? 'created'
-                                            : 'updated'));
+                                            : 'updated')
+                             */
+                );
 
                 if (data.result === null)
                 {
@@ -5872,7 +6540,7 @@ $.widget("connexions.bookmarkPost", {
             },
             error:      function(req, textStatus, err) {
                 self._status(false,
-                             'Bookmark update failed',
+                             'Bookmark '+ verb +' failed',
                              textStatus);
 
                 // :TODO: "Error" notification??
@@ -6261,7 +6929,7 @@ $.widget("connexions.bookmarkPost", {
             }
         }
 
-        if (hasChanged && isValid)
+        if ( isValid && ((opts.isEdit !== true) || hasChanged) )
         {
             opts.$save.button('enable');
         }
@@ -6744,13 +7412,25 @@ $.widget("connexions.bookmark", {
         self.$favorite    = self.element.find('input[name=isFavorite]');
         self.$private     = self.element.find('input[name=isPrivate]');
 
-        self.$tags        = self.element.find('input[name=tags]');
+        self.$dates       = self.element.find('.dates');
+        self.$dateTagged  = self.$dates.find('.tagged');
+        self.$dateUpdated = self.$dates.find('.updated');
+
+        //self.$tags        = self.element.find('input[name=tags]');
+        self.$tags        = self.element.find('.tags');
+        self.tagTmpl      = self.$tags.find('.tag-template').html();
 
         self.$edit        = self.element.find('.control .item-edit');
         self.$delete      = self.element.find('.control .item-delete');
         self.$save        = self.element.find('.control .item-save');
 
         self.$url         = self.element.find('.itemName a,.url a');
+
+        /********************************
+         * Localize dates
+         *
+         */
+        self._localizeDates();
 
         /********************************
          * Instantiate our sub-widgets
@@ -6836,7 +7516,7 @@ $.widget("connexions.bookmark", {
 
                 $.get(formUrl,
                       function(data) {
-                        self._showBookmarkDialog('Edit', data);
+                        self._showBookmarkDialog(data, true /*isEdit*/);
                       });
             }
 
@@ -6867,12 +7547,16 @@ $.widget("connexions.bookmark", {
             });
         };
 
-        // Handle save-delete
+        // Handle item-save
         var _save_click  = function(e) {
             if (self.options.enabled === true)
             {
                 // Popup a dialog with a post form for this item.
-                var formUrl;
+                var formUrl = self.$save.attr('href')
+                            +   '&format=partial'
+                            +   '&part=main';
+
+                /*
                 try
                 {
                     formUrl = $.registry('urls').base +'/post'
@@ -6888,10 +7572,11 @@ $.widget("connexions.bookmark", {
                     // return and let the click propagate
                     return;
                 }
+                // */
 
                 $.get(formUrl,
                       function(data) {
-                        self._showBookmarkDialog('Save', data);
+                        self._showBookmarkDialog(data);
                       });
             }
 
@@ -6917,16 +7602,62 @@ $.widget("connexions.bookmark", {
         self.$save.bind('click.bookmark',       _save_click);
     },
 
+
+    /** @brief  Given a date/time string, localize it to the client-side
+     *          timezone.
+     *  @param  utcStr      The date/time string in UTC and in the form:
+     *                          YYYY-MM-DD HH:mm:ss
+     *
+     *  @return The localized time string.
+     */
+    _localizeDate: function(utcStr, groupBy)
+    {
+        var self        = this;
+        groupBy         = (groupBy === undefined
+                            ? self.$dates.data('groupBy')
+                            : groupBy);
+
+        var timeOnly    = ((groupBy === undefined) ||
+                           (groupBy.indexOf(utcStr.substr(0,10)) < 0)
+                            ? false // NOT timeOnly
+                            : true  // timeOnly
+        );
+
+        return $.date2str( $.str2date( utcStr ), timeOnly );
+    },
+    // */
+
+    /** @brief  Update presented dates to the client-side timezone.
+     */
+    _localizeDates: function()
+    {
+        var self    = this;
+        var groupBy = self.$dates.data('groupBy');
+        var utcStr;
+        var newStr;
+        var timeOnly;
+
+        if (self.$dateTagged.length > 0)
+        {
+            newStr = self._localizeDate(self.$dateTagged.data('utcDate'),
+                                        groupBy);
+
+            self.$dateTagged.html( newStr );
+        }
+
+        if (self.$dateUpdated.length > 0)
+        {
+            newStr = self._localizeDate(self.$dateUpdated.data('utcDate'),
+                                        groupBy);
+
+            self.$dateUpdated.html( newStr );
+        }
+    },
+
     _performDelete: function( )
     {
         var self    = this;
         var opts    = self.options;
-
-        if (opts.enabled !== true)
-        {
-            return;
-        }
-
         var params  = {
             id:     { userId: opts.userId, itemId: opts.itemId }
         };
@@ -6979,9 +7710,13 @@ $.widget("connexions.bookmark", {
         // Gather the current data about this item.
         var nonEmpty    = false;
         var params      = {
-            id:     { userId: opts.userId, itemId: opts.itemId }
+            id: {
+                userId: opts.userId,
+                itemId: opts.itemId
+            }
         };
 
+        // Only include those portions that have changed
         if (self.$name.text() !== opts.name)
         {
             params.name = self.$name.text();
@@ -6994,12 +7729,14 @@ $.widget("connexions.bookmark", {
             nonEmpty           = true;
         }
 
+        /* Tags are currently NOT directly editable, so ignore them for now.
         if ( (self.$tags.length > 0) &&
              (self.$tags.text() !== opts.tags) )
         {
             params.tags = self.$tags.text();
             nonEmpty    = true;
         }
+        // */
 
         if (self.$favorite.checkbox('isChecked') !== opts.isFavorite)
         {
@@ -7095,7 +7832,7 @@ $.widget("connexions.bookmark", {
     },
 
     /** @brief  Given new bookmark data from either an update or an edit,
-     *          refresh the bookmark presentationi from the provided data.
+     *          refresh the bookmark presentation from the provided data.
      *  @param  data    Result data representing the bookmark.
      */
     _refreshBookmark: function(data)
@@ -7106,11 +7843,37 @@ $.widget("connexions.bookmark", {
         self._squelch = true;
 
         // Include the updated data
-        self.$itemId.val(           data.itemId );
-        self.$name.text(            data.name );
-        self.$description.text(     data.description );
+        self.$itemId.val( data.itemId );
+        self.$name.text(  data.name );
 
-        self.$tags.text(            data.tags );
+        // Update description (both full and summary if they're presented)
+        var $desc_full  = self.$description.find('.full');
+        var $desc_sum   = self.$description.find('.summary');
+        if ($desc_sum.length > 0)
+        {
+            // summarize will perform an $.htmlentities() on the result.
+            $desc_sum.html( '&mdash; '+ $.summarize( data.description ) );
+        }
+        if ($desc_full.length > 0)
+        {
+            $desc_full.html( $.esc(data.description) );
+        }
+
+        // Update tags
+        if ($.isArray(data.tags) && (self.tagTmpl.length > 0))
+        {
+            /* Update the tag using the '.tag-template' DOM element that SHOULD
+             * have been found in the tags area.
+             */
+            var tagHtml = '';
+
+            $.each(data.tags, function() {
+                tagHtml += self.tagTmpl.replace(/%tag%/g, this.tag);
+            });
+
+            // Replace the existing tags with the new.
+            self.$tags.html( tagHtml );
+        }
 
         self.$rating.stars('select',data.rating);
 
@@ -7121,6 +7884,11 @@ $.widget("connexions.bookmark", {
                                         ? 'check'
                                         : 'uncheck') );
         self.$url.attr('href',      data.url);
+
+        // Update and localize the dates
+        self.$dateTagged.data( 'utcDate', data.taggedOn  );
+        self.$dateUpdated.data('utcDate', data.updatedOn );
+        self._localizeDates();
 
         // Alter our parent to reflect 'isPrivate'
         var parent  = self.element.parent();
@@ -7136,11 +7904,16 @@ $.widget("connexions.bookmark", {
 
         // set state
         self._setState();
+
+        // Animate a highlight of this bookmark
+        self.element.effect('highlight', {}, 2000);
     },
 
-    _showBookmarkDialog: function(title, html)
+    _showBookmarkDialog: function(html, isEdit)
     {
         var self    = this;
+        var opts    = self.options;
+        var title   = (isEdit === true ? 'Edit' : 'Save');
 
         html = '<div class="ui-validation-form" style="padding:0;">'
              +  '<div class="userInput lastUnit">'
@@ -7152,6 +7925,7 @@ $.widget("connexions.bookmark", {
 
         //$form.find('form').bookmarkPost();
 
+        self.disable();
         $form.dialog({
             autoOpen:   true,
             title:      title +' bookmark',
@@ -7160,6 +7934,9 @@ $.widget("connexions.bookmark", {
             modal:      true,
             open:       function(event, ui) {
                 $form.find('form').bookmarkPost({
+                    userId:     opts.userId,
+                    itemId:     opts.itemId,
+                    isEdit:     (isEdit === true ? true : false),
                     saved:      function(event, data) {
                         /* Update the presented bookmark with the newly saved
                          * data.
@@ -7174,6 +7951,7 @@ $.widget("connexions.bookmark", {
             close:      function(event, ui) {
                 $form.dialog('destroy');
                 $form.remove();
+                self.enable();
             }
         });
 

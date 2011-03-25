@@ -160,6 +160,25 @@ class Model_User extends Model_Taggable
         case 'tags':          $val = $this->getTags();        break;
         case 'bookmarks':     $val = $this->getBookmarks();   break;
         case 'network':       $val = $this->getNetwork();     break;
+
+        /*
+        case 'lastVisit':
+            // Convert dates to a user-specified locale
+            $val = parent::__get($name);
+            try
+            {
+                $date = new DateTime( $val );
+                $date->setTimezone(new DateTimeZone('US/Eastern'));
+
+                $val  = $date->format('Y-m-d H:i:s');
+            }
+            catch (Exception $e)
+            {
+                // Simply use the database date/time string...
+            }
+            break;
+        // */
+
         default:              $val = parent::__get($name);    break;
         }
 

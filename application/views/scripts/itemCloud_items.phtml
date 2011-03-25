@@ -75,8 +75,8 @@ if ($itemType === View_Helper_HtmlItemCloud::ITEM_TYPE_USER)
     }
 }
 
-// /*
-Connexions::log('view/scripts/itemCloud_item: '
+/*
+Connexions::log('view/scripts/itemCloud_items: '
                 . 'showControls[ %s ], '
                 . 'fontUnit[ %s ], '
                 . 'classList[ %s ], '
@@ -102,7 +102,7 @@ foreach ($this->items as $item)
     $attributes = "data-id='{$item}'";
 
     /*
-    Connexions::log('view/scripts/itemCloud_item: '
+    Connexions::log('view/scripts/itemCloud_items: '
                     . 'title[ %s ], url[ %s ], '
                     . 'weight[ %s ], weight value[ %s ], '
                     . '%sselected',
@@ -260,7 +260,7 @@ foreach ($this->items as $item)
 
 
     /*
-    Connexions::log("view/scripts/itemCloud_item: "
+    Connexions::log("view/scripts/itemCloud_items: "
                     . "title[ %s ], weight[ %s ], weight title[ %s ]",
                     $title,
                     $item->getWeight(),

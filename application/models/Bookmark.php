@@ -205,6 +205,26 @@ class Model_Bookmark extends Model_Base
             }
             break;
 
+        /*
+        case 'taggedOn':
+        case 'updatedOn':
+            // Convert dates to a user-specified locale
+            $val = parent::__get($name);
+            try
+            {
+                $date = new DateTime( $val );
+                $date->setTimezone(new DateTimeZone('US/Eastern'));
+
+                //$val  = $date->format('Y-m-d H:i:s');
+                $val  = $date->format('Y-m-d g:i a');
+            }
+            catch (Exception $e)
+            {
+                // Simply use the database date/time string...
+            }
+            break;
+        // */
+
         default:
             $val = parent::__get($name);
             break;

@@ -179,6 +179,12 @@ $displaySortOffset: 5px;
           float:          right;
           text-align:     right;
           padding-top:    0;
+
+          // Hidden HTML templates used by the Javascript so it doesn't need to
+          // directly know how to render the HTML
+          .tag-template {
+            display:  none;
+          }
   
           // Ensure we receive hover events by being ABOVE stats
           z-index:        5;

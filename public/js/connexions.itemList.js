@@ -40,9 +40,12 @@ $.widget("connexions.itemList", {
 
     options: {
         // Defaults
-        namespace:  '',
-        objClass:   null,
-        dimOpacity: 0.5
+        namespace:      '',
+        objClass:       null,
+        dimOpacity:     0.5,
+
+        // Should item 'deleted' events be ignored?
+        ignoreDeleted:  false
     },
 
     /** @brief  Initialize a new instance.
@@ -54,7 +57,6 @@ $.widget("connexions.itemList", {
     {
         var self        = this;
         var opts        = self.options;
-        var objClass    = opts.objClass;
 
         // Items
         self.$items = self.element.find('li > form');
@@ -62,22 +64,18 @@ $.widget("connexions.itemList", {
         // Group Headers
         self.$headers = self.element.find('.groupHeader .groupType');
 
-        if (objClass === null)
+        if (opts.objClass === null)
         {
             /* Determine the type/class of item by the CSS class of the
              * representative form
              */
-            objClass = opts.objClass = self.$items.attr('class');
+            opts.objClass = self.$items.attr('class');
         }
 
         if (self.$items.length > 0)
         {
-            self.$items[objClass]({
-                'deleted': function(e, data) {
-                    // Remove this item
-                    self._itemDeleted( $(this) );
-                }
-            });
+            // Instantiate each item using the identified 'objClass'
+            self.$items[opts.objClass]();
         }
 
         self.$headers
@@ -101,6 +99,21 @@ $.widget("connexions.itemList", {
     {
         var self    = this;
         var opts    = self.options;
+
+        if (opts.ignoreDeleted !== true)
+        {
+            /* Include a handler for the 'deleted' event that will be
+             * emitted by the instance when it believes it has been
+             * "deleted".  In most cases, this belief is justified, but if
+             * 'ignoreDeleted' is set, we need to ignore that belief.
+             */
+
+            // Use an event delegate
+            self.element.delegate('li > form', 'deleted.itemList', function(e) {
+                self._itemDeleted( $(this) );
+            });
+            // */
+        }
     },
 
     _itemDeleted: function($item)
@@ -123,8 +136,8 @@ $.widget("connexions.itemList", {
         $item.slideUp('fast', function() {
             $parentLi.slideUp('normal', function() {
                 // Destroy the widget and remove the containing 'li.item'
-                if ($item.item) $item.item('destroy');
-                if ($item.user) $item.user('destroy');
+                if ($item.item) { $item.item('destroy'); }
+                if ($item.user) { $item.user('destroy'); }
 
                 // Trigger an 'itemDeleted' event.
                 self.element.trigger('itemDeleted', [ $item ]);
@@ -154,6 +167,7 @@ $.widget("connexions.itemList", {
 
         // Unbind events
         self.$headers.unbind('hover');
+        self.element.undelegate('li > form', '.itemList');
 
         // Remove added elements
         if (self.$items.length > 0)

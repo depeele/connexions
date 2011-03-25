@@ -216,13 +216,25 @@ $.widget("connexions.bookmark", {
         self.$favorite    = self.element.find('input[name=isFavorite]');
         self.$private     = self.element.find('input[name=isPrivate]');
 
-        self.$tags        = self.element.find('input[name=tags]');
+        self.$dates       = self.element.find('.dates');
+        self.$dateTagged  = self.$dates.find('.tagged');
+        self.$dateUpdated = self.$dates.find('.updated');
+
+        //self.$tags        = self.element.find('input[name=tags]');
+        self.$tags        = self.element.find('.tags');
+        self.tagTmpl      = self.$tags.find('.tag-template').html();
 
         self.$edit        = self.element.find('.control .item-edit');
         self.$delete      = self.element.find('.control .item-delete');
         self.$save        = self.element.find('.control .item-save');
 
         self.$url         = self.element.find('.itemName a,.url a');
+
+        /********************************
+         * Localize dates
+         *
+         */
+        self._localizeDates();
 
         /********************************
          * Instantiate our sub-widgets
@@ -308,7 +320,7 @@ $.widget("connexions.bookmark", {
 
                 $.get(formUrl,
                       function(data) {
-                        self._showBookmarkDialog('Edit', data);
+                        self._showBookmarkDialog(data, true /*isEdit*/);
                       });
             }
 
@@ -339,12 +351,16 @@ $.widget("connexions.bookmark", {
             });
         };
 
-        // Handle save-delete
+        // Handle item-save
         var _save_click  = function(e) {
             if (self.options.enabled === true)
             {
                 // Popup a dialog with a post form for this item.
-                var formUrl;
+                var formUrl = self.$save.attr('href')
+                            +   '&format=partial'
+                            +   '&part=main';
+
+                /*
                 try
                 {
                     formUrl = $.registry('urls').base +'/post'
@@ -360,10 +376,11 @@ $.widget("connexions.bookmark", {
                     // return and let the click propagate
                     return;
                 }
+                // */
 
                 $.get(formUrl,
                       function(data) {
-                        self._showBookmarkDialog('Save', data);
+                        self._showBookmarkDialog(data);
                       });
             }
 
@@ -389,16 +406,62 @@ $.widget("connexions.bookmark", {
         self.$save.bind('click.bookmark',       _save_click);
     },
 
+
+    /** @brief  Given a date/time string, localize it to the client-side
+     *          timezone.
+     *  @param  utcStr      The date/time string in UTC and in the form:
+     *                          YYYY-MM-DD HH:mm:ss
+     *
+     *  @return The localized time string.
+     */
+    _localizeDate: function(utcStr, groupBy)
+    {
+        var self        = this;
+        groupBy         = (groupBy === undefined
+                            ? self.$dates.data('groupBy')
+                            : groupBy);
+
+        var timeOnly    = ((groupBy === undefined) ||
+                           (groupBy.indexOf(utcStr.substr(0,10)) < 0)
+                            ? false // NOT timeOnly
+                            : true  // timeOnly
+        );
+
+        return $.date2str( $.str2date( utcStr ), timeOnly );
+    },
+    // */
+
+    /** @brief  Update presented dates to the client-side timezone.
+     */
+    _localizeDates: function()
+    {
+        var self    = this;
+        var groupBy = self.$dates.data('groupBy');
+        var utcStr;
+        var newStr;
+        var timeOnly;
+
+        if (self.$dateTagged.length > 0)
+        {
+            newStr = self._localizeDate(self.$dateTagged.data('utcDate'),
+                                        groupBy);
+
+            self.$dateTagged.html( newStr );
+        }
+
+        if (self.$dateUpdated.length > 0)
+        {
+            newStr = self._localizeDate(self.$dateUpdated.data('utcDate'),
+                                        groupBy);
+
+            self.$dateUpdated.html( newStr );
+        }
+    },
+
     _performDelete: function( )
     {
         var self    = this;
         var opts    = self.options;
-
-        if (opts.enabled !== true)
-        {
-            return;
-        }
-
         var params  = {
             id:     { userId: opts.userId, itemId: opts.itemId }
         };
@@ -451,9 +514,13 @@ $.widget("connexions.bookmark", {
         // Gather the current data about this item.
         var nonEmpty    = false;
         var params      = {
-            id:     { userId: opts.userId, itemId: opts.itemId }
+            id: {
+                userId: opts.userId,
+                itemId: opts.itemId
+            }
         };
 
+        // Only include those portions that have changed
         if (self.$name.text() !== opts.name)
         {
             params.name = self.$name.text();
@@ -466,12 +533,14 @@ $.widget("connexions.bookmark", {
             nonEmpty           = true;
         }
 
+        /* Tags are currently NOT directly editable, so ignore them for now.
         if ( (self.$tags.length > 0) &&
              (self.$tags.text() !== opts.tags) )
         {
             params.tags = self.$tags.text();
             nonEmpty    = true;
         }
+        // */
 
         if (self.$favorite.checkbox('isChecked') !== opts.isFavorite)
         {
@@ -567,7 +636,7 @@ $.widget("connexions.bookmark", {
     },
 
     /** @brief  Given new bookmark data from either an update or an edit,
-     *          refresh the bookmark presentationi from the provided data.
+     *          refresh the bookmark presentation from the provided data.
      *  @param  data    Result data representing the bookmark.
      */
     _refreshBookmark: function(data)
@@ -578,11 +647,37 @@ $.widget("connexions.bookmark", {
         self._squelch = true;
 
         // Include the updated data
-        self.$itemId.val(           data.itemId );
-        self.$name.text(            data.name );
-        self.$description.text(     data.description );
+        self.$itemId.val( data.itemId );
+        self.$name.text(  data.name );
 
-        self.$tags.text(            data.tags );
+        // Update description (both full and summary if they're presented)
+        var $desc_full  = self.$description.find('.full');
+        var $desc_sum   = self.$description.find('.summary');
+        if ($desc_sum.length > 0)
+        {
+            // summarize will perform an $.htmlentities() on the result.
+            $desc_sum.html( '&mdash; '+ $.summarize( data.description ) );
+        }
+        if ($desc_full.length > 0)
+        {
+            $desc_full.html( $.esc(data.description) );
+        }
+
+        // Update tags
+        if ($.isArray(data.tags) && (self.tagTmpl.length > 0))
+        {
+            /* Update the tag using the '.tag-template' DOM element that SHOULD
+             * have been found in the tags area.
+             */
+            var tagHtml = '';
+
+            $.each(data.tags, function() {
+                tagHtml += self.tagTmpl.replace(/%tag%/g, this.tag);
+            });
+
+            // Replace the existing tags with the new.
+            self.$tags.html( tagHtml );
+        }
 
         self.$rating.stars('select',data.rating);
 
@@ -593,6 +688,11 @@ $.widget("connexions.bookmark", {
                                         ? 'check'
                                         : 'uncheck') );
         self.$url.attr('href',      data.url);
+
+        // Update and localize the dates
+        self.$dateTagged.data( 'utcDate', data.taggedOn  );
+        self.$dateUpdated.data('utcDate', data.updatedOn );
+        self._localizeDates();
 
         // Alter our parent to reflect 'isPrivate'
         var parent  = self.element.parent();
@@ -608,11 +708,16 @@ $.widget("connexions.bookmark", {
 
         // set state
         self._setState();
+
+        // Animate a highlight of this bookmark
+        self.element.effect('highlight', {}, 2000);
     },
 
-    _showBookmarkDialog: function(title, html)
+    _showBookmarkDialog: function(html, isEdit)
     {
         var self    = this;
+        var opts    = self.options;
+        var title   = (isEdit === true ? 'Edit' : 'Save');
 
         html = '<div class="ui-validation-form" style="padding:0;">'
              +  '<div class="userInput lastUnit">'
@@ -624,6 +729,7 @@ $.widget("connexions.bookmark", {
 
         //$form.find('form').bookmarkPost();
 
+        self.disable();
         $form.dialog({
             autoOpen:   true,
             title:      title +' bookmark',
@@ -632,6 +738,9 @@ $.widget("connexions.bookmark", {
             modal:      true,
             open:       function(event, ui) {
                 $form.find('form').bookmarkPost({
+                    userId:     opts.userId,
+                    itemId:     opts.itemId,
+                    isEdit:     (isEdit === true ? true : false),
                     saved:      function(event, data) {
                         /* Update the presented bookmark with the newly saved
                          * data.
@@ -646,6 +755,7 @@ $.widget("connexions.bookmark", {
             close:      function(event, ui) {
                 $form.dialog('destroy');
                 $form.remove();
+                self.enable();
             }
         });
 

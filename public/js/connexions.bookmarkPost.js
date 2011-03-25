@@ -142,6 +142,15 @@ $.widget("connexions.bookmarkPost", {
          */
         apiKey:     null,
 
+        /* Is this an edit of an existing user bookmark (true) or a user saving
+         * the bookmark of another user (false)?
+         *
+         * If 'isEdit' is false, changes are NOT required to data fields before
+         * saving AND ALL fields will be included in the update regardless of
+         * whether they've changed.
+         */
+        isEdit:     true,
+
         // Widget state
         enabled:    true
     },
@@ -353,6 +362,11 @@ $.widget("connexions.bookmarkPost", {
         {
             opts.rating  = opts.$rating.stars('value');
         }
+
+        if (opts.tags.length > 0)
+        {
+            self._highlightTags();
+        }
     },
 
     _setFormFromState: function()
@@ -538,6 +552,9 @@ $.widget("connexions.bookmarkPost", {
         _validate_form();
     },
 
+    /** @brief  Perform a Json-RPC call to "update" (possibly save) the
+     *          bookmark represented by this dialog.
+     */
     _performUpdate: function()
     {
         var self    = this;
@@ -552,67 +569,81 @@ $.widget("connexions.bookmarkPost", {
         // Gather the current data about this item.
         var nonEmpty    = false;
         var params      = {
-            id:     { userId: opts.userId, itemId: opts.itemId }
+            /* id is required: For 'Edit' is should be the userId/itemId of
+             * this bookmark
+             */
+            id: {
+                userId: opts.userId,
+                itemId: opts.itemId
+            }
         };
 
+        if (opts.isEdit !== true)
+        {
+            /* For 'Save', userId MUST be empty/null to notify Service_Bookmark
+             * to use the authenticated user's id.
+             */
+            params.id.userId = null;
+        }
+
         // Include all fields that have changed.
-        if (opts.$name.val() !== opts.name)
+        if ( (opts.isEdit !== true) ||
+             (opts.$name.val() !== opts.name) )
         {
             params.name = opts.$name.val();
             nonEmpty    = true;
         }
 
-        if (opts.$description.val() !== opts.description)
+        if ( (opts.isEdit !== true) ||
+             (opts.$description.val() !== opts.description) )
         {
             params.description = opts.$description.val();
             nonEmpty           = true;
         }
 
-        if ( (opts.$tags.length > 0) &&
-             (opts.$tags.val() !== opts.tags) )
+        if ( (opts.isEdit !== true) ||
+             ((opts.$tags.length > 0) &&
+              (opts.$tags.val() !== opts.tags)) )
         {
             params.tags = opts.$tags.val();
             nonEmpty    = true;
         }
 
-        if (opts.$favorite.checkbox('isChecked') !== opts.isFavorite)
+        if ( (opts.isEdit !== true) ||
+             (opts.$favorite.checkbox('isChecked') !== opts.isFavorite) )
         {
             params.isFavorite = opts.$favorite.checkbox('isChecked');
             nonEmpty          = true;
         }
 
-        if (opts.$private.checkbox('isChecked') !== opts.isPrivate)
+        if ( (opts.isEdit !== true) ||
+             (opts.$private.checkbox('isChecked') !== opts.isPrivate) )
         {
             params.isPrivate = opts.$private.checkbox('isChecked');
             nonEmpty         = true;
         }
 
-        if ( (opts.$rating.length > 0) &&
-             (opts.$rating.stars('value') !== opts.rating) )
+        if ( (opts.isEdit !== true) ||
+             ((opts.$rating.length > 0) &&
+              (opts.$rating.stars('value') !== opts.rating)) )
         {
             params.rating = opts.$rating.stars('value');
             nonEmpty      = true;
         }
 
-        if (opts.$url.val() !== opts.url)
+        if ( (opts.isEdit !== true) ||
+             (opts.$url.val() !== opts.url) )
         {
             // The URL has changed -- pass it in
             params.url = opts.$url.val();
             nonEmpty   = true;
         }
+
         if (nonEmpty !== true)
         {
             // Nothing to save.
             self._trigger('complete');
             return;
-        }
-
-        // If no itemId was provided, use the final URL.
-        if (params.id.itemId === null)
-        {
-            params.id.itemId = (params.url !== undefined
-                                ? params.url
-                                : opts.url);
         }
 
         if (opts.apiKey !== null)
@@ -622,23 +653,31 @@ $.widget("connexions.bookmarkPost", {
 
         self.element.mask();
 
+        var verb    = (opts.isEdit === true
+                        ? 'update'
+                        : 'save');
+
         // Perform a JSON-RPC call to perform the update.
         $.jsonRpc(opts.jsonRpc, 'bookmark.update', params, {
             success:    function(data, textStatus, req) {
                 if (data.error !== null)
                 {
                     self._status(false,
-                                 'Bookmark update failed',
+                                 'Bookmark '+ verb +' failed',
                                  data.error.message);
 
                     return;
                 }
 
                 self._status(true,
-                             'Bookmark update succeeded',
-                             'Bookmark '+ (opts.itemId === null
+                             'Bookmark '+ verb +' succeeded',
+                             'Bookmark '+ verb +'d'
+                             /*
+                                          (opts.itemId === null
                                             ? 'created'
-                                            : 'updated'));
+                                            : 'updated')
+                             */
+                );
 
                 if (data.result === null)
                 {
@@ -666,7 +705,7 @@ $.widget("connexions.bookmarkPost", {
             },
             error:      function(req, textStatus, err) {
                 self._status(false,
-                             'Bookmark update failed',
+                             'Bookmark '+ verb +' failed',
                              textStatus);
 
                 // :TODO: "Error" notification??
@@ -1055,7 +1094,7 @@ $.widget("connexions.bookmarkPost", {
             }
         }
 
-        if (hasChanged && isValid)
+        if ( isValid && ((opts.isEdit !== true) || hasChanged) )
         {
             opts.$save.button('enable');
         }

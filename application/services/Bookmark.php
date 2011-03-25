@@ -128,11 +128,16 @@ class Service_Bookmark extends Connexions_Service
                             . "create new bookmark...");
             // */
 
-            // When creating a bookmark, there MUST be tags.
+            /* When creating a bookmark, there MUST be tags.
+             *
+             * :XXX: Though this is best handled later, in validation.
+             *
             if (empty($tags))
             {
+                Connexions::log("Service_Bookmark::get(): NO tags!");
                 throw new Exception("No tags provided.");
             }
+            */
 
             /* Merge the normalized id information back into the original,
              * incoming id data.
