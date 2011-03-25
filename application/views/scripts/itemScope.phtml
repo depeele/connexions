@@ -76,9 +76,13 @@ if ( $scope && (count($scope) > 0) )
     $reqUrl = Connexions::getRequestUri();
     $src    = $scope->getSource();
 
+    //Connexions::log("views/script/itemScope.phtml: 1- reqUrl[ %s ]", $reqUrl);
+
     // Remove the query/fragment
     $reqUrl = preg_replace('/[\?#].*$/', '', $reqUrl);
     $reqUrl = urldecode($reqUrl);
+
+    //Connexions::log("views/script/itemScope.phtml: 2- reqUrl[ %s ]", $reqUrl);
 
     // Collapse white-space
     $reqUrl = preg_replace('/\s\s+/', ' ', $reqUrl);
@@ -87,7 +91,10 @@ if ( $scope && (count($scope) > 0) )
     $reqUrl = rtrim($reqUrl, " \t\n\r\0\x0B/");
 
     // Remove the current source component
-    $reqUrl = str_replace('/'. $src, '', $reqUrl);
+    //$reqUrl = str_replace('/'. $src, '', $reqUrl);
+    $reqUrl = preg_replace('#/'. $src .'([^/]*)$#', '$1', $reqUrl);
+
+    //Connexions::log("views/script/itemScope.phtml: 3- reqUrl[ %s ]", $reqUrl);
 
     $validList = preg_split('/\s*,\s*/', $scope->__toString());
     $nItems    = count($validList);
