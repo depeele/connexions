@@ -742,10 +742,13 @@ $.widget("connexions.bookmark", {
                     itemId:     opts.itemId,
                     isEdit:     (isEdit === true ? true : false),
                     saved:      function(event, data) {
-                        /* Update the presented bookmark with the newly saved
-                         * data.
-                         */
-                        self._refreshBookmark(data);
+                        if (isEdit === true)
+                        {
+                            /* Update the presented bookmark with the newly
+                             * saved data.
+                             */
+                            self._refreshBookmark(data);
+                        }
                     },
                     complete:   function() {
                         $form.dialog('close');
