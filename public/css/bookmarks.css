@@ -48,7 +48,6 @@
 .bookmarks .item .data .meta, .pane .displayStyle fieldset.options .item .data .meta { clear: both; margin-left: 14em; padding-top: 0.25em; }
 .bookmarks .item .data .meta:after, .pane .displayStyle fieldset.options .item .data .meta:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; *display: inline-block; zoom: 1; *display: block; }
 .bookmarks .item .data .meta .tags, .pane .displayStyle fieldset.options .item .data .meta .tags { display: block; vertical-align: top; float: right; text-align: right; padding-top: 0; z-index: 5; }
-.bookmarks .item .data .meta .tags .tag-template, .pane .displayStyle fieldset.options .item .data .meta .tags .tag-template { display: none; }
 .bookmarks .item .data .meta .tags .tag, .pane .displayStyle fieldset.options .item .data .meta .tags .tag { font-size: 0.9em; }
 .bookmarks .item .data .meta .userId, .pane .displayStyle fieldset.options .item .data .meta .userId { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; vertical-align: top; margin-left: -13em; min-width: 5em; }
 .bookmarks .item .data .meta .userId a, .pane .displayStyle fieldset.options .item .data .meta .userId a { font-size: 0.85em; font-weight: normal; color: #336699; }
