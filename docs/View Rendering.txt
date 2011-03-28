@@ -173,7 +173,7 @@ View_Helper_HtmlBookmarks           extends View_Helper_Bookmarks
                 renderGroupHeader()
                 renderItem()
 
-    application/views/scripts/bookmark.phtml
+    application/views/scripts/user.phtml
 
 
     Methods
