@@ -294,13 +294,13 @@ View_Helper_HtmlUsers               extends View_Helper_Users
                 setPerPageChoices()
                 render()
 
-            View_Helper_HtmlBookmarks
+            View_Helper_HtmlUsers
                 renderDisplayOptions()
                 groupValue()
                 renderGroupHeader()
                 renderItem()
 
-    application/views/scripts/bookmark.phtml
+    application/views/scripts/user.phtml
 
 
     Methods
@@ -355,7 +355,32 @@ View_Helper_FeedUsers               extends View_Helper_Users
 
 
 
-Cleanup
+:TODO: Helpers
+===============
+View_Helper_HtmlGroupUsers          extends ???
+View_Helper_HtmlItemCloud           extends ???
+View_Helper_HtmlItemCloudItem       extends ???
+View_Helper_HtmlItemCloudUser       extends ???
+View_Helper_HtmlItemScope           extends ???
+View_Helper_HtmlSidebar             extends ???
+View_Helper_HtmlStarRating          extends ???
+
+
+:TODO: Scripts
+===============
+highlights.phtml
+itemCloud.phtml
+itemCloud_items.phtml
+itemScope.phtml
+list_group.phtml
+list_groupAlpha.phtml
+list_groupDate.phtml
+list_groupNumeric.phtml
+sidebar-user.phtml
+
+
+
+:TODO: Cleanup
 ===============
 Move Javascript out of helpers into view scripts
     - Simplifies View_Helper_HtmlBookmarks removing the need for
@@ -364,20 +389,3 @@ Move Javascript out of helpers into view scripts
 Move 'ulCss' down to View_Helper_List since it is used by the default
     _listScript ('list.phtml') OR, remove 'list.phtml' as the default in
     View_Helper_List ??
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
