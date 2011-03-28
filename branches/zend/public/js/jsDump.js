@@ -12,8 +12,16 @@ var jsDump;
 
 (function(){
 	function quote( str ){
+        var html    = str.toString().replace(/"/g, '\\"')
+                                    .replace(/&/g, '&amp;')
+                                    .replace(/</g, '&lt;')
+                                    .replace(/>/g, '&gt;');
+
+		return '<span class="string">"'+ html +'"</span>';
+        /*
 		return '<span class="string">"'
                 + str.toString().replace(/"/g, '\\"') + '"</span>';
+        // */
 	}
 	function literal( o ){
 		return '<span class="literal">'+ o + '</span>';
