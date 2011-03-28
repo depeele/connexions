@@ -11,6 +11,12 @@
  *        <div > ... </div>
  *      </ dom container >
  *
+ *         <a href='/settings/account'
+ *            data-panel.tabs='#account'
+ *            data-load.tabs='/settings?format=partial&section=account'>
+ *           <span>Account</span>
+ *         </a>
+ *
  *  Requires:
  *      ui.core.js
  *      ui.widget.js
@@ -29,7 +35,8 @@ $.widget("connexions.collapsable", {
         ajaxOptions:    null,
         cookie:         null,
         idPrefix:       'connexions-collapsable-',
-        panelTemplate:  '<div></div>'
+        panelTemplate:  '<div></div>',
+        spinner:        "<em>Loading&#8230;</em>"
     },
 
     /** @brief  Initialize a new instance.
@@ -51,19 +58,34 @@ $.widget("connexions.collapsable", {
             {
                 // remote tab -- save the original URL
                 self.$a.data('href.collapsable', href);
-                self.$a.data('load.collapsable', href.replace(/#.*$/, ''));
+                var loadUrl = self.$a.data('load.collapsable');
+                if (loadUrl === undefined)
+                {
+                    self.$a.data('load.collapsable', href.replace(/#.*$/, ''));
+                }
 
-                var id  = ((self.$a.title &&
-                            self.$a.title.replace(/\s/g, '_')
-                                         .replace(/[^A-Za-z0-9\-_:\.]/g, '')) ||
-                           opts.idPrefix + (++collapsableId));
-                self.$a.attr('href', '#'+ id);
 
-                self.$content = $('#'+ id);
+                var contentId   = self.$a.data('cache.collapsable');
+                if (contentId === undefined)
+                {
+                    contentId = self.$a.data('content.collapsable');
+                }
+
+                if (contentId === undefined)
+                {
+                    // Generate a contentId
+                    contentId   = ((self.$a.title &&
+                                    self.$a.title.replace(/\s/g, '_')
+                                       .replace(/[^A-Za-z0-9\-_:\.]/g, '')) ||
+                                   opts.idPrefix + (++collapsableId));
+                    self.$a.attr('href', '#'+ contentId);
+                }
+
+                self.$content = $('#'+ contentId);
                 if (self.$content.length < 1)
                 {
                     self.$content = $(opts.panelTemplate)
-                                        .attr('id', id)
+                                        .attr('id', contentId)
                                         .addClass('ui-corner-bottom')
                                         .insertAfter(self.$toggle);
                     self.$content.data('destroy.collapsable', true);
@@ -110,7 +132,9 @@ $.widget("connexions.collapsable", {
     _bindEvents: function() {
         var self    = this;
 
-        self.$toggle.bind('click.collapsable', function() {
+        self.$toggle.bind('click.collapsable', function(e) {
+            e.preventDefault();
+
             if (self.$content.is(":hidden"))
             {
                 // Show the content / open
@@ -152,9 +176,42 @@ $.widget("connexions.collapsable", {
             return;
         }
 
+        $.log('connexions.collapsable: load url[ '+ url +' ]');
+
         // Load remote content.
         self.xhr = $.ajax($.extend({}, opts.ajaxOptions, {
             url:     url,
+            beforeSend: function(xhr, textStatus) {
+                self.element.addClass('ui-state-processing');
+                if ( opts.spinner )
+                {
+                    var $span = self.$a.find('span:first');
+                    $span.data( "label.collapsable", $span.html() )
+                                    .html( opts.spinner );
+                }
+
+                if ($.isFunction(opts.ajaxOptions.beforeSend))
+                {
+                    opts.ajaxOptions.beforeSend.call(self.element,
+                                                     xhr, textStatus);
+                }
+            },
+            complete: function(xhr, textStatus) {
+                if ($.isFunction(opts.ajaxOptions.complete))
+                {
+                    opts.ajaxOptions.complete.call(self.element,
+                                                   xhr, textStatus);
+                }
+
+                if ( opts.spinner )
+                {
+                    var $span = self.$a.find('span:first');
+                    $span.html( $span.data( "label.collapsable" ) )
+                         .removeData( 'label.collapsable' );
+                }
+
+                self.element.removeClass('ui-state-processing');
+            },
             success: function(res, stat) {
                 self.$content.html(res);
 

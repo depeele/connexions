@@ -2,35 +2,35 @@
 /** @file
  *
  *  A connexions router to handle the strange routing rules:
- *      /                                       === '/bookmarks'
- *      /:owner          [/:tags]               Bookmarks of the given owner,
- *                                              possibly limited by a set of
- *                                              tags
- *      /bookmarks       [/:tags]               Bookmarks of any owner,
- *                                              possibly limited by a set of
- *                                              tags
+ *      /                                           === '/bookmarks'
+ *      /:owner          [/:tags]                   Bookmarks of the given
+ *                                                  owner, possibly limited by
+ *                                                  a set of tags
+ *      /bookmarks       [/:tags]                   Bookmarks of any owner,
+ *                                                  possibly limited by a set
+ *                                                  of tags
  *
- *      /tags            [/:owners]             Tags, possibly limited by a set
- *                                              of owner(s).
+ *      /tags            [/:owners]                 Tags, possibly limited by a
+ *                                                  set of owner(s).
  *
- *      /network         /:owner    [/:tags]    Owner network
+ *      /network         /:owner    [/:tags]        Owner network
  *
- *      /subscriptions   /:owner    [/:tags]    Owner subscriptions
- *      /inbox           /:owner    [/:tags]    Owner inbox
+ *      /subscriptions   /:owner    [/:tags]        Owner subscriptions
+ *      /inbox           /:owner    [/:tags]        Owner inbox
  *
- *      /url             /:url      [/:tags]    Lookup url
- *      /people          [/:tags]               People list
+ *      /url             /:url      [/:tags]        Lookup url
+ *      /people          [/:tags]                   People list
  *
- *      /settings       [/:section  [/:cmd]]    Viewer settings
+ *      /settings       [/:section  [/:setting]]    Viewer settings
  *
- *      /help           [/*]                    Help
+ *      /help           [/*]                        Help
  *
  *      /api            [/:cmd      [/:subCmd   [/:params]]]
- *                                              RESTful API (or JsonRPC)
+ *                                                  RESTful API (or JsonRPC)
  *
- *      /post           [/:params]              Post a new bookmark
+ *      /post           [/:params]                  Post a new bookmark
  *
- *      /search         [/:context  [/:terms]]  Search
+ *      /search         [/:context  [/:terms]]      Search
  *
  *      /auth           /signIn
  *                      /signOut
@@ -48,7 +48,7 @@ class Connexions_Controller_Route
         '/'             => array(':controller'  => 'index',
                                  ':action'      => 'index',
                                  ':owner'       => array(
-                                    ':tags'    => false)
+                                    ':tags'     => false)
                            ),
         'bookmarks'     => array(':controller'  => 'index',
                                  ':action'      => 'index',
@@ -58,23 +58,23 @@ class Connexions_Controller_Route
         'tags'          => array(':owners'  => false),
 
         'network'       => array(':owner'   => array(
-                                    ':tags'    => false)
+                                    ':tags'     => false)
                            ),
         'subscriptions' => array(':owner'   => array(
-                                    ':tags'    => false)
+                                    ':tags'     => false)
                            ),
 
         'inbox'         => array(':owner'   => array(
-                                    ':tags'    => false)
+                                    ':tags'     => false)
                            ),
   
         'url'           => array(':url'     => array(
-                                    ':tags'    => false)
+                                    ':tags'     => false)
                            ),
         'people'        => array(':tags'    => false),
   
         'settings'      => array(':section' => array(
-                                    ':cmd'     => false)
+                                    ':setting'  => false)
                            ),
   
         'help'          => array(':topic'   => false),
