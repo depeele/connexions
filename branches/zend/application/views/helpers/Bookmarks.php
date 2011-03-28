@@ -285,7 +285,9 @@ class View_Helper_Bookmarks extends View_Helper_List
     public function groupValue($value, $groupBy = null)
     {
         if ($groupBy === null)
+        {
             $groupBy = $this->sortBy;
+        }
 
         $orig    = $value;
         switch ($groupBy)

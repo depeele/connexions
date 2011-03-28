@@ -45,7 +45,7 @@ abstract class View_Helper_List extends Zend_View_Helper_Abstract
      *          By default we use the HTML render scripts
      *              (found in application/view/scripts).
      */
-    protected   $_listScript        = 'list.phtml';
+    protected   $_listScript        = null; // depends on the sub-class
     protected   $_itemScript        = null; // depends on the sub-class
 
     /** @brief  Construct a new Bookmarks helper.
@@ -279,5 +279,34 @@ abstract class View_Helper_List extends Zend_View_Helper_Abstract
         }
 
         return $this->view->partial($this->_itemScript, $params);
+    }
+
+    /** @brief  Given a value, return the group (accoroding to 'groupBy') into
+     *          which the value falls.
+     *  @param  value       The value;
+     *  @param  groupBy     The field by which to group [ $this->sortBy ];
+     *
+     *  Typically invoked from within a list-rendering view script.
+     *
+     *  @return  The value of the group into which the value falls.
+     */
+    public function groupValue($value, $groupBy = null)
+    {
+        if ($groupBy === null)
+        {
+            $groupBy = $this->sortBy;
+        }
+
+        // By default, use a simple grouping by the first character of $value
+        $orig  = $value;
+        $value = strtoupper(substr($value, 0, 1));
+
+        /*
+        Connexions::log("View_Helper_List::_groupValue(%s, %s) == [ %s ]",
+                        $groupBy, Connexions::varExport($orig),
+                        $value);
+        // */
+
+        return $value;
     }
 }
