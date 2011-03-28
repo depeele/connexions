@@ -3,7 +3,7 @@
  *
  *  This controller controls access to an authenticated Users settings and is
  *  accessed via the url/routes:
- *      /settings       [/:type     [/:cmd]]    Viewer settings
+ *      /settings       [/:section  [/:setting]]    Viewer settings
  */
 
 
@@ -19,62 +19,82 @@ class SettingsController extends Connexions_Controller_Action
         'account'   => array(
             'title'     => 'Account',
             'script'    => 'main-account',
-            'cmds'      => array(
-                  array('title'     => 'Info',
-                        'expanded'  => true,
-                        'script'    => 'main-account-info'),
-                  array('title'     => 'Credentials',
-                        'async'     => true,
-                        'script'    => 'main-account-credentials'),
-                  array('title'     => 'API Key',
-                        'script'    => 'main-account-apikey'),
+            'settings'  => array(
+                'info'          => array(
+                    'title'     => 'Info',
+                    'expanded'  => true,
+                    'script'    => 'main-account-info'
+                ),
+                'credentials'   => array(
+                    'title'     => 'Credentials',
+                    'async'     => true,
+                    'script'    => 'main-account-credentials'
+                ),
+                'apikey'        => array(
+                    'title'     => 'API Key',
+                    'script'    => 'main-account-apikey'
+                ),
               ),
         ),
         'bookmarks' => array(
             'title'     => 'Bookmarks',
             'script'    => 'main-bookmarks',
-            'cmds'      => array(
-                  array('title'     => 'Import',
-                        'async'     => true,
-                        'script'    => 'main-bookmarks-import'),
-                  array('title'     => 'Export',
-                        //'async'     => true,
-                        'expanded'  => true,
-                        'script'    => 'main-bookmarks-export'),
-                  /*
-                  array('title'     => 'Groups',
-                        'async'     => true,
-                        'script'    => 'main-bookmarks-groups'),
-                  // */
+            'settings'  => array(
+                'import'        => array(
+                    'title'     => 'Import',
+                    //'async'     => true,
+                    'script'    => 'main-bookmarks-import'
+                ),
+                'export'        => array(
+                    'title'     => 'Export',
+                    //'async'     => true,
+                    'expanded'  => true,
+                    'script'    => 'main-bookmarks-export'
+                ),
+                /*
+                'groups'        => array(
+                    'title'     => 'Groups',
+                    'async'     => true,
+                    'script'    => 'main-bookmarks-groups'
+                ),
+                // */
               ),
         ),
         'tags'      => array(
             'title'     => 'Tags',
             'cssClass'  => 'settingsTags',
             'script'    => 'main-tags',
-            'cmds'      => array(
-                  array('title' => 'Manage',
-                        'async'     => true,
-                        //'expanded'  => true,
-                        'script'    => 'main-tags-manage'),
-                  /*
-                  array('title'     => 'Groups',
-                        'async'     => true,
-                        'script'    => 'main-tags-groups'),
-                  // */
+            'settings'  => array(
+                'manage'        => array(
+                    'title'     => 'Manage',
+                    'async'     => true,
+                    //'expanded'  => true,
+                    'script'    => 'main-tags-manage'
+                ),
+                /*
+                'groups'        => array(
+                    'title'     => 'Groups',
+                    'async'     => true,
+                    'script'    => 'main-tags-groups'
+                ),
+                // */
               ),
         ),
         'people'    => array('title'   => 'People',
-              'script'  => 'main-people',
-              'cmds'    => array(
-                  array('title'     => 'Network',
-                        'async'     => true,
-                        'script'    => 'main-people-network'),
-                  /*
-                  array('title'     => 'Groups',
-                        'async'     => true,
-                        'script'    => 'main-people-groups'),
-                  // */
+            'script'  => 'main-people',
+            'settings'  => array(
+                'network'       => array(
+                    'title'     => 'Network',
+                    'async'     => true,
+                    'script'    => 'main-people-network'
+                ),
+                /*
+                'groups'        => array(
+                    'title'     => 'Groups',
+                    'async'     => true,
+                    'script'    => 'main-people-groups'
+                ),
+                // */
               ),
         ),
     );
@@ -93,15 +113,16 @@ class SettingsController extends Connexions_Controller_Action
 
         $request =& $this->_request;
 
-        /*
-        Connexions::log("SettingsController::indexAction(): "
-                        . "section[ %s ], cmd[ %s ]",
-                        $section, $cmd);
-        // */
-
         $this->view->sections = self::$sections;
         $this->view->section  = $request->getParam('section', null);
-        $this->view->cmd      = $request->getParam('cmd',     null);
+        $this->view->setting  = $request->getParam('setting', null);
+
+        /*
+        Connexions::log("SettingsController::indexAction(): "
+                        . "section[ %s ], setting[ %s ]",
+                        $this->view->section, $this->view->setting);
+        // */
+
 
         $this->_handleFormat('settings');
     }
@@ -165,7 +186,7 @@ class SettingsController extends Connexions_Controller_Action
     {
         /*
         Connexions::log("SettingsController::_prepareAccount(): "
-                        . "cmd[ %s ], partials[ %s ]",
+                        . "setting[ %s ], partials[ %s ]",
                         $this->_partials[1],
                         Connexions::varExport($this->_partials));
         // */
@@ -188,7 +209,7 @@ class SettingsController extends Connexions_Controller_Action
     {
         /*
         Connexions::log("SettingsController::_prepareBookmarks(): "
-                        . "cmd[ %s ], partials[ %s ]",
+                        . "setting[ %s ], partials[ %s ]",
                         $this->_partials[1],
                         Connexions::varExport($this->_partials));
         // */
@@ -211,7 +232,7 @@ class SettingsController extends Connexions_Controller_Action
     {
         /*
         Connexions::log("SettingsController::_prepareTags(): "
-                        . "cmd[ %s ], partials[ %s ]",
+                        . "setting[ %s ], partials[ %s ]",
                         $this->_partials[1],
                         Connexions::varExport($this->_partials));
         // */
@@ -242,7 +263,7 @@ class SettingsController extends Connexions_Controller_Action
             );
             $config = array_merge($this->view->main, $extra);
 
-            // /*
+            /*
             Connexions::log("SettingsController::_prepareTags(): "
                             . "panePartial[ %s ], partials[ %s ]",
                             $config['panePartial'],
@@ -268,7 +289,7 @@ class SettingsController extends Connexions_Controller_Action
             $offset     = ($config['page'] - 1) * $count;
             $fetchOrder = $config['sortBy'] .' '. $config['sortOrder'];
 
-            // /*
+            /*
             Connexions::log("SettingsController::_prepareTags(): "
                             . "offset[ %d ], count[ %d ], order[ %s ]",
                             $offset, $count, $fetchOrder);
@@ -307,7 +328,7 @@ class SettingsController extends Connexions_Controller_Action
     {
         /*
         Connexions::log("SettingsController::_preparePeople(): "
-                        . "cmd[ %s ], partials[ %s ]",
+                        . "setting[ %s ], partials[ %s ]",
                         $this->_partials[1],
                         Connexions::varExport($this->_partials));
         // */
