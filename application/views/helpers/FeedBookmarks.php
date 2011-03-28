@@ -116,8 +116,14 @@ class View_Helper_FeedBookmarks extends View_Helper_Bookmarks
 
         foreach ($this->paginator as $item)
         {
-            array_push($feedInfo['entries'],
-                       $view->feedBookmark($item));
+            $feedItem = $view->feedBookmark($item);
+
+            /*
+            Connexions::log("View_Helper_FeedBookmarks::genFeed(): item[ %s ]",
+                            Connexions::varExport($feedItem));
+            // */
+
+            array_push($feedInfo['entries'], $feedItem);
         }
 
         $feed = Zend_Feed::importArray($feedInfo, $type);

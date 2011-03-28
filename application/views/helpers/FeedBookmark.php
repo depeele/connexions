@@ -48,7 +48,7 @@ class View_Helper_FeedBookmark extends Zend_View_Helper_Abstract
         $entryInfo = array(
             'title'         => $title,
             'link'          => $itemUrl,
-            'description'   => $$descr,
+            'description'   => $descr,
 
             'author'        => $bookmark->user->fullName,
             'guid'          => $localUrl,
