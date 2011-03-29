@@ -410,8 +410,8 @@ View_Helper_FeedUsers               extends View_Helper_Users
 ===============================================================================
 View_Helper_HtmlItemCloud           extends Zend_View_Helper_Abstract
 ===============================================================================
-  Base class for presenting a generic, "cloud" of items in either a word cloud
-  or simple list form.
+  Helper for presenting a generic, "cloud" of items in either a word cloud or
+  simple list form.
 
     namespace           State namespace, primarily for forms and cookies
                                                 [ 'tags' ];
@@ -537,6 +537,8 @@ View_Helper_HtmlItemCloud           extends Zend_View_Helper_Abstract
 ===============================================================================
 View_Helper_HtmlItemCloudItem       extends Zend_Tag_Cloud_Decorator_HtmlTag
 ===============================================================================
+  Helper for rendering the items of an HTML word cloud.
+
     showControls        Should item management controls be presented
                         (i.e. is the current, authenticated viewer the owner of
                               all items)?       [ false ];
@@ -564,6 +566,17 @@ View_Helper_HtmlItemCloudItem       extends Zend_Tag_Cloud_Decorator_HtmlTag
     getViewer()             - retrieve the current viewer;
     render()                - return a rendered representation of all items;
 
+
+===============================================================================
+View_Helper_HtmlItemCloudItem       extends Zend_Tag_Cloud_Decorator_HtmlTag
+===============================================================================
+    showControls        Should item management controls be presented
+
+    View Scripts
+    ---------------------------------------------------------------------------
+
+    Methods
+    ---------------------------------------------------------------------------
 
 
 :TODO: Helpers
