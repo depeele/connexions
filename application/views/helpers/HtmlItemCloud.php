@@ -20,11 +20,37 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                                              * 'dropdownForm' presenting
                                              * Display Options.
                                              */
+
+        // Pagination values
+        'page'              => 1,
+        'perPage'           => 100,
+
+        // The desired sort order
+        'sortBy'            => self::SORT_BY_TITLE,
+        'sortOrder'         => Connexions_Service::SORT_DIR_ASC,
+
+        // The current sort order of 'items'
+        'currentSortBy'     => null,
+        'currentSortOrder'  => null,
+
+
         'panePartial'       => 'main',
 
-        'showRelation'      => true,
-        'showOptions'       => true,
+        'showRelation'      => true,        // Show sidebar relation indicator?
+        'showOptions'       => true,        // Show display options?
+        'showControls'      => false,       /* Should item management controls
+                                             * be presented (i.e. is the
+                                             * current, authenticated viewer
+                                             * the owner of all items)?
+                                             */
+
         'itemType'          => self::ITEM_TYPE_ITEM,
+        'displayStyle'      => self::STYLE_CLOUD,
+        'highlightCount'    => 5,           /* The number of items to highlight
+                                             * in a top-level "quick-view".
+                                             */
+
+
 
         'items'             => null,        /* A Connexions_Model_Set
                                              * containing the items to present
@@ -34,12 +60,12 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                                              * should be rendered.
                                              */
                                                
+
         'selected'          => null,        /* A Connexions_Model_Set, that
                                              * SHOULD be a sub-set of 'items',
                                              * containing those items that are
                                              * currently selected.
                                              */
-
         'itemBaseUrl'       => null,        /* The base url to use for
                                              * completed items
                                              */
@@ -54,25 +80,6 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                                              * title.
                                              */
 
-
-        // The desired sort order
-        'sortBy'            => self::SORT_BY_TITLE,
-        'sortOrder'         => Connexions_Service::SORT_DIR_ASC,
-
-        // The current sort order
-        'currentSortBy'     => null,
-        'currentSortOrder'  => null,
-
-        'page'              => 1,
-        'perPage'           => 100,
-        'highlightCount'    => 5,
-
-        'displayStyle'      => self::STYLE_CLOUD,
-
-        /* Should item management controls be presented
-         *  (i.e. is the current, authenticated view the owner of all items?)
-         */
-        'showControls'      => false,
 
         /* An hash containing HTML to prepend/append to the inner container:
          *  array('prepend' => %html to prepend%,
