@@ -150,6 +150,7 @@ Connexions::log('views/scripts/itemCloud: show controls [ %s ]',
 
                 // Setup the tag decorator
                 'TagDecorator'          => array(
+                                           // View_Helper_HtmlItemCloudItem
                     'decorator'         => 'htmlItemCloudItem',
                     'options'           => array(
                         'ShowControls'  => $helper->showControls,
@@ -158,7 +159,12 @@ Connexions::log('views/scripts/itemCloud: show controls [ %s ]',
                         'Viewer'        => $helper->viewer,
                         'HtmlTags'      => array(
                             'li'        => array(
-                                'class' => 'cloudItem',
+                                'class' => 'cloudItem'
+                                           . (($itemType ===
+                                                View_Helper_HtmlItemCloud::
+                                                                ITEM_TYPE_USER)
+                                                ? ' user'
+                                                : ''),
                             ),
                         ),
                         'ClassList'     => array(
@@ -174,15 +180,6 @@ Connexions::log('views/scripts/itemCloud: show controls [ %s ]',
                     'path'              => APPLICATION_PATH .'/views/helpers/',
                 ),
             );
-
-            if ($itemType === View_Helper_HtmlItemCloud::ITEM_TYPE_USER)
-            {
-                $cloudConfig['TagDecorator']
-                                ['options']
-                                    ['HtmlTags']
-                                        ['li']
-                                            ['class']   .= ' user';
-            }
 
             $cloud = new Zend_Tag_Cloud( $cloudConfig );
 

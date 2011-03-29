@@ -69,6 +69,13 @@
        <class>local</class>
        <resource>member</resource>
       </mine>
+      <network>
+       <label>My network</label>
+       <controller>network</controller>
+       <action>%user.name%</action>
+       <class>local</class>
+       <resource>member</resource>
+      </network>
       <explore>
        <label>Explore</label>
        <controller>bookmarks</controller>
@@ -89,13 +96,6 @@
      <controller>people</controller>
      <action>index</action>
      <pages>
-      <mine>
-       <label>My network</label>
-       <controller>network</controller>
-       <action>%user.name%</action>
-       <class>local</class>
-       <resource>member</resource>
-      </mine>
       <explore>
        <label>Explore</label>
        <controller>people</controller>

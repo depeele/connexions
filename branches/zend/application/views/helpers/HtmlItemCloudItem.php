@@ -1,7 +1,7 @@
 <?php
 /** @file
  *
- *  View helper to render a single Item within an HTML item cloud.
+ *  View helper to render a set of Items within an HTML item cloud.
  */
 class View_Helper_HtmlItemCloudItem
                     extends Zend_Tag_Cloud_Decorator_HtmlTag
