@@ -47,8 +47,5 @@ Connexions::log("scripts/people/main.phtml: paginator with %d users [ %s ]",
                     : gettype($users)) );
 // */
 
-// Notify the sidebar about the items rendered in the main view.
-$this->htmlSidebar(array('items' => $users));
-
 // Render the main view.
 echo $htmlUsers->render();

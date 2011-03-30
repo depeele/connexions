@@ -35,7 +35,8 @@
  *          sortOrder       Indicates the sort order used to retrieve the
  *                          current bookmark set;
  */
-Connexions::log('script/index/index.phtml');
+Connexions::log('script/index/index.phtml: main[ %s ]',
+                Connexions::varExport($this->main));
 
 /* Initialize the HTML Bookmarks helper, needed here because the Scope Helper
  * needs access to the bookmarks for count.

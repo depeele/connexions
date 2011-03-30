@@ -5,9 +5,6 @@
  *  sidebar (i.e. the 'Items' tab).
  *
  *  Incoming members:
- *      sidebarHelper   A View_Helper_HtmlSidebar instance configured with
- *                      information about the 'items' sidebar pane;
- *
  *      url             The full url for the main controller of this page;
  *      owner           The owner of the current item set -- either a string or
  *                      a Model_User instance;
@@ -15,7 +12,14 @@
  *                      viewer;
  *      tags            A Model_Set_Tag instance containing information about
  *                      any requested tags AND the 'for:%user%' for this inbox;
+ *      sidebar         Configuration for the sidebar presentation;
  */
+$paneName = 'items';
+$config   =  (is_array($this->sidebar['panes']) &&
+              is_array($this->sidebar['panes'][$paneName])
+                ? $this->sidebar['panes'][$paneName]
+                : array());
+
 
 ?>
   <div class='columnHeader'>
@@ -26,7 +30,6 @@
   </div>
   <?php
 
-    $config        = $this->sidebarHelper->getPane('items');
     $htmlItemCloud = $this->htmlItemCloud($config);
 
     echo $htmlItemCloud->render();

@@ -19,6 +19,8 @@ class AuthController extends Connexions_Controller_Action
 
     protected   $_flashMessenger    = null;
     protected   $_redirector        = null;
+    protected   $_noFormatHandling  = true;
+
 
     public function init()
     {

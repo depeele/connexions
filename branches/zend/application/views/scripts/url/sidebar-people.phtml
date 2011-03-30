@@ -15,6 +15,11 @@
  *      main            An array of settings for the main content panel:
  *      sidebar         An array of settings for the sidebar:
  */
+$paneName = 'people';
+$config   =  (is_array($this->sidebar['panes']) &&
+              is_array($this->sidebar['panes'][$paneName])
+                ? $this->sidebar['panes'][$paneName]
+                : array());
 
 $nTags = count($this->tags);
 ?>
@@ -41,9 +46,6 @@ $nTags = count($this->tags);
     ?></p>
   </div>
   <?php
-
-    $htmlSidebar = $this->htmlSidebar( $this->sidebar );
-    $config      = $htmlSidebar->getPane('people');
 
     /*
     Connexions::log("index/sidebar-people.phtml: config[ %s ]",

@@ -11,8 +11,9 @@ class SettingsController extends Connexions_Controller_Action
 {
     // Tell Connexions_Controller_Action_Helper_ResourceInjector which
     // Bootstrap resources to make directly available
-    public  $dependencies   = array('db','layout');
-    public  $contexts       = array('index' => array('partial'));
+    public    $dependencies = array('db','layout');
+    public    $contexts     = array('index' => array('partial'));
+    protected $_noSidebar   = true;
 
 
     public static   $sections   = array(
@@ -124,7 +125,8 @@ class SettingsController extends Connexions_Controller_Action
         // */
 
 
-        $this->_handleFormat('settings');
+        // HTML form/cookie namespace
+        $this->_namespace = 'settings';
     }
 
     /** @brief Redirect all other actions to 'index'
@@ -147,51 +149,44 @@ class SettingsController extends Connexions_Controller_Action
      *
      *  This will collect the variables needed to render the main view, placing
      *  them in $view->main as a configuration array.
-     */
-    protected function _prepareMain($htmlNamespace  = '')
+    protected function _prepare_main()
     {
-        parent::_prepareMain($htmlNamespace);
+        parent::_prepare_main();
 
-        if ( count($this->_partials) > 0 )
+        if ( count($this->_partials) > 1 )
         {
-            /*
-            Connexions::log("SettingsController::_prepareMain(): "
-                            . "section[ %s ], partials[ %s ]",
-                            $this->_partials[0],
-                            Connexions::varExport($this->_partials));
-            // */
-
-            switch ($this->_partials[0])
+            switch ($this->_partials[2])
             {
             case 'account':
-                $this->_prepareAccount();
+                $this->_prepare_main_account();
                 break;
 
             case 'bookmarks':
-                $this->_prepareBookmarks();
+                $this->_prepare_main_bookmarks();
                 break;
 
             case 'tags':
-                $this->_prepareTags();
+                $this->_prepare_main_tags();
                 break;
 
             case 'people':
-                $this->_preparePeople();
+                $this->_prepare_main_people();
                 break;
             }
         }
     }
+     */
 
-    protected function _prepareAccount()
+    protected function _prepare_main_account()
     {
         /*
-        Connexions::log("SettingsController::_prepareAccount(): "
+        Connexions::log("SettingsController::_prepare_main_account(): "
                         . "setting[ %s ], partials[ %s ]",
                         $this->_partials[1],
                         Connexions::varExport($this->_partials));
         // */
 
-        switch ($this->_partials[1])
+        switch ($this->_partials[2])
         {
         case 'info':
         case 'apikey':
@@ -205,16 +200,16 @@ class SettingsController extends Connexions_Controller_Action
         }
     }
 
-    protected function _prepareBookmarks()
+    protected function _prepare_main_bookmarks()
     {
         /*
-        Connexions::log("SettingsController::_prepareBookmarks(): "
+        Connexions::log("SettingsController::_prepare_main_bookmarks(): "
                         . "setting[ %s ], partials[ %s ]",
-                        $this->_partials[1],
+                        $this->_partials[2],
                         Connexions::varExport($this->_partials));
         // */
 
-        switch ($this->_partials[1])
+        switch ($this->_partials[2])
         {
         case 'import':
             break;
@@ -228,23 +223,23 @@ class SettingsController extends Connexions_Controller_Action
         }
     }
 
-    protected function _prepareTags()
+    protected function _prepare_main_tags()
     {
         /*
-        Connexions::log("SettingsController::_prepareTags(): "
+        Connexions::log("SettingsController::_prepare_main_tags(): "
                         . "setting[ %s ], partials[ %s ]",
-                        $this->_partials[1],
+                        $this->_partials[2],
                         Connexions::varExport($this->_partials));
         // */
 
-        switch ($this->_partials[1])
+        switch ($this->_partials[2])
         {
         case 'manage':
             $filter = $this->_request->getParam('filter', null);
             $this->view->filter = $filter;
 
             /* Prepare to present a tag list or cloud
-             *  (mirrors TagsController::_prepareMain)
+             *  (mirrors TagsController::_prepare_main)
              */
             $extra = array(
                 'users'         => $this->_viewer,
@@ -264,7 +259,7 @@ class SettingsController extends Connexions_Controller_Action
             $config = array_merge($this->view->main, $extra);
 
             /*
-            Connexions::log("SettingsController::_prepareTags(): "
+            Connexions::log("SettingsController::_prepare_main_tags(): "
                             . "panePartial[ %s ], partials[ %s ]",
                             $config['panePartial'],
                             implode('-', $this->_partials));
@@ -290,7 +285,7 @@ class SettingsController extends Connexions_Controller_Action
             $fetchOrder = $config['sortBy'] .' '. $config['sortOrder'];
 
             /*
-            Connexions::log("SettingsController::_prepareTags(): "
+            Connexions::log("SettingsController::_prepare_main_tags(): "
                             . "offset[ %d ], count[ %d ], order[ %s ]",
                             $offset, $count, $fetchOrder);
             // */
@@ -324,24 +319,24 @@ class SettingsController extends Connexions_Controller_Action
         }
     }
 
-    protected function _preparePeople()
+    protected function _prepare_main_people()
     {
         /*
-        Connexions::log("SettingsController::_preparePeople(): "
+        Connexions::log("SettingsController::_prepare_main_people(): "
                         . "setting[ %s ], partials[ %s ]",
-                        $this->_partials[1],
+                        $this->_partials[2],
                         Connexions::varExport($this->_partials));
         // */
 
-        switch ($this->_partials[1])
+        switch ($this->_partials[2])
         {
         case 'network':
             // Retrieve the current users network
             $this->view->network = $this->_viewer->getNetwork();
 
             /* Prepare to present a tag list or cloud
-             *  (mirrors NetworkController::_prepareMain and
-             *           NetworkController::_prepareSidebarPane('people')
+             *  (mirrors NetworkController::_prepare_main and
+             *           NetworkController::_prepare_sidebarPane('people')
              */
             $extra = array(
                                    // 'main-'. implode('-', $this->_partials),
@@ -349,7 +344,7 @@ class SettingsController extends Connexions_Controller_Action
                 'group'         => $this->view->network,
             );
             /*
-            Connexions::log("SettingsController::_preparePeople(): "
+            Connexions::log("SettingsController::_prepare_main_people(): "
                             . "extra[ %s ]",
                             Connexions::varExport($extra));
             // */
@@ -357,7 +352,7 @@ class SettingsController extends Connexions_Controller_Action
             $config = array_merge($this->view->main, $extra);
 
             /*
-            Connexions::log("SettingsController::_preparePeople(): "
+            Connexions::log("SettingsController::_prepare_main_people(): "
                             . "panePartial[ %s ], partials[ %s ]",
                             $config['panePartial'],
                             implode('-', $this->_partials));
@@ -372,28 +367,17 @@ class SettingsController extends Connexions_Controller_Action
         }
     }
 
-    /** @brief  Render the sidebar based upon the incoming request.
-     *  @param  usePlaceholder      Should the rendering be performed
-     *                              immediately into a placeholder?
-     *                              [ true, into the 'right' placeholder ]
-     *
-     */
-    protected function _renderSidebar($usePlaceholder = true)
-    {
-        // NO sidebar
-    }
-
     /***********************************************************************
      * Request POST handlers
      *
      * Triggered via
      *  Connexions_Controller_Action::_handleFormat()
-     *      Connexions_Controller_Action::_renderPost()
-     *          Connexions_Controller_Action::_preparePost()
+     *      Connexions_Controller_Action::_render_post()
+     *          Connexions_Controller_Action::_prepare_post()
      *
      *  iff 'format=partial&part=post-*' AND the request method is 'POST'
      */
-    protected function _post_account_avatar()
+    protected function _prepare_post_account_avatar()
     {
         $config       = Zend_Registry::get('config');
         $urlBase      = $config->urls->base;
@@ -411,19 +395,19 @@ class SettingsController extends Connexions_Controller_Action
         $uploadUrl    = $urlAvatarTmp .'/'. $avatarFile;
 
         /*
-        Connexions::log("SettingsController::_post_account_avatar(): "
+        Connexions::log("SettingsController::_prepare_post_account_avatar(): "
                         .   "file[ %s ]",
                         Connexions::varExport($file));
-        Connexions::log("SettingsController::_post_account_avatar(): "
+        Connexions::log("SettingsController::_prepare_post_account_avatar(): "
                         .   "uploadDir[ %s ]",
                         $uploadDir);
-        Connexions::log("SettingsController::_post_account_avatar(): "
+        Connexions::log("SettingsController::_prepare_post_account_avatar(): "
                         .   "avatarFile[ %s ]",
                         $avatarFile);
-        Connexions::log("SettingsController::_post_account_avatar(): "
+        Connexions::log("SettingsController::_prepare_post_account_avatar(): "
                         .   "uploadFile[ %s ]",
                         $uploadFile);
-        Connexions::log("SettingsController::_post_account_avatar(): "
+        Connexions::log("SettingsController::_prepare_post_account_avatar(): "
                         .   "uploadUrl[ %s ]",
                         $uploadUrl);
         // */
@@ -437,10 +421,10 @@ class SettingsController extends Connexions_Controller_Action
         }
     }
 
-    protected function _post_bookmarks_import()
+    protected function _prepare_post_bookmarks_import()
     {
         /*
-        Connexions::log("SettingsController::_post_bookmarks_import():");
+        Connexions::log("SettingsController::_prepare_post_bookmarks_import():");
         // */
 
         $file       = $_FILES['bookmarkFile'];
@@ -471,10 +455,10 @@ class SettingsController extends Connexions_Controller_Action
 
 
         /*
-        Connexions::log("SettingsController::_post_bookmarks_import(): "
+        Connexions::log("SettingsController::_prepare_post_bookmarks_import(): "
                         .   "file[ %s ]",
                         Connexions::varExport($file));
-        Connexions::log("SettingsController::_post_bookmarks_import(): "
+        Connexions::log("SettingsController::_prepare_post_bookmarks_import(): "
                         .   "tags[ %s ], visibility[ %s ], "
                         .   "conflict[ %s ], test[ %s ]",
                         $tags, $visibility,
@@ -714,7 +698,7 @@ class SettingsController extends Connexions_Controller_Action
 
                 /*
                 Connexions::log("SettingsController::"
-                                . "_post_bookmarks_import(): "
+                                . "_prepare_post_bookmarks_import(): "
                                 . "new folder '%s', level %d -- tagStack[ %s ]",
                                 $name,
                                 $state['level'],
@@ -740,7 +724,7 @@ class SettingsController extends Connexions_Controller_Action
 
                     /*
                     Connexions::log("SettingsController::"
-                                    . "_post_bookmarks_import(): "
+                                    . "_prepare_post_bookmarks_import(): "
                                     . "END folder, level %d -- tagStack[ %s ]",
                                     $state['level'],
                                     implode(', ', $state['tagStack']));
@@ -775,7 +759,7 @@ class SettingsController extends Connexions_Controller_Action
         fclose($fh);
 
         /*
-        Connexions::log("SettingsController::_post_bookmarks_import(): "
+        Connexions::log("SettingsController::_prepare_post_bookmarks_import(): "
                         .   "complete.  Final state[ %s ]",
                         print_r($state, true));
         // */
@@ -786,14 +770,14 @@ class SettingsController extends Connexions_Controller_Action
         $this->view->state = $state;
 
         /*
-        Connexions::log("SettingsController::_post_bookmarks_import(): "
+        Connexions::log("SettingsController::_prepare_post_bookmarks_import(): "
                         .   "complete.  Results[ %s ]",
                         print_r($this->view->state, true));
         // */
 
     }
 
-    protected function _post_bookmarks_export()
+    protected function _prepare_post_bookmarks_export()
     {
         $request =& $this->_request;
 

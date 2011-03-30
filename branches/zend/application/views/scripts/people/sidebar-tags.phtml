@@ -5,16 +5,19 @@
  *  sidebar (i.e. the 'Tags' tab).
  *
  *  Incoming members:
- *      sidebarHelper   A View_Helper_HtmlSidebar instance configured with
- *                      information about the 'tags' sidebar pane;
- *
  *      url             The full url for the main controller of this page;
  *      viewer          The Model_User instance representing the current
  *                      viewer;
  *      tags            A Model_Set_Tag instance containing information about
  *                      any requested tags (i.e. tag restrictions);
  *      main            An array of settings for the main content panel:
+ *      sidebar         Configuration for the sidebar presentation;
  */
+$paneName = 'tags';
+$config   =  (is_array($this->sidebar['panes']) &&
+              is_array($this->sidebar['panes'][$paneName])
+                ? $this->sidebar['panes'][$paneName]
+                : array());
 
 ?>
   <div class='columnHeader'>
@@ -39,7 +42,6 @@
   </div>
   <?php
 
-    $config        = $this->sidebarHelper->getPane('tags');
     $htmlItemCloud = $this->htmlItemCloud($config);
 
     echo $htmlItemCloud->render();

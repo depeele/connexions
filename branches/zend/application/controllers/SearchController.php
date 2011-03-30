@@ -19,10 +19,12 @@ class SearchController extends Connexions_Controller_Action
 {
     // Tell Connexions_Controller_Action_Helper_ResourceInjector which
     // Bootstrap resources to make directly available
-    public  $dependencies = array('db','layout');
-    public  $contexts     = array('index' => array('partial', 'json',
-                                                   'rss',     'atom'),
-                            );
+    public  $dependencies   = array('db','layout');
+    public  $contexts       = array(
+                                'index' => array(
+                                    'partial', 'json', 'rss',     'atom'),
+                              );
+    protected $_noSidebar   = true;
 
 
     protected $_referer = null; // connexions URL from which a search was
@@ -49,9 +51,6 @@ class SearchController extends Connexions_Controller_Action
         $this->view->referer = $this->_referer;
         $this->view->context = $this->_context;
         $this->view->terms   = $this->_terms;
-
-        // Handle this request based on the current context / format
-        $this->_handleFormat();
     }
 
     /*************************************************************************
@@ -59,15 +58,21 @@ class SearchController extends Connexions_Controller_Action
      *
      */
 
-    /** @brief  Prepare and render the main view using the provided view script.
-     *  @param  script      The view script to use for rendering;
-     *  @param  namespace   The namespace for this rendering;
+    /** @brief  Prepare and render a partial view.
      *
+     *  Override Connexions_Controller_Action in order to adjust the rendering
+     *  based upon the search context.
+     *
+     *  For this controller, all preparation is post poned until here.
+     *
+     *  The individual search methods will also make use of _prepare_main() to
+     *  adjust '_namespace' in order to retrieve display parameters associated
+     *  with the section, which is why we don't just over-ride _prepare_main().
      */
-    protected function _renderMain($script, $namespace = '')
+    protected function _renderPartial()
     {
-        /*
-        Connexions::log("SearchController::_renderMain: "
+        // /*
+        Connexions::log("SearchController::_renderPartial: "
                         . "referer[ %s ], context[ %s ], terms[ %s ]",
                         $this->_referer,
                         $this->_context,
@@ -95,37 +100,15 @@ class SearchController extends Connexions_Controller_Action
             }
 
             $this->view->results = $this->_results;
-
-            if ( count($this->_partials) > 0)
-            {
-                $script .= '-' . implode('-', $this->_partials);
-            }
         }
         else
         {
-            // Render the search form.
-            $script = 'form';
+            // No results - revert to the simple search form.
+            $this->_partials = array('form');
         }
 
-        /*
-        Connexions::log("SearchController::_renderMain(): "
-                        . "script[ %s ]",
-                        $script);
-        // */
-
+        $script = implode('-', $this->_partials);
         $this->render($script);
-
-    }
-
-    /** @brief  Render the sidebar based upon the incoming request.
-     *  @param  usePlaceholder      Should the rendering be performed
-     *                              immediately into a placeholder?
-     *                              [ true, into the 'right' placeholder ]
-     *
-     */
-    protected function _renderSidebar($usePlaceholder = true)
-    {
-        // NO sidebar
     }
 
     /** @brief  Perform a search regardless of authentication.
@@ -171,26 +154,32 @@ class SearchController extends Connexions_Controller_Action
              *  - people    - name, fullName, email, pictureUrl, profile
              *  - items     - url
              */
-            $partial = ( count($this->_partials) > 0
+            $partial = ( count($this->_partials) > 1
                             ? implode('-', $this->_partials)
                             : null );
 
-            if ( ($partial === null) || ($partial === 'bookmarks') )
+            /*
+            Connexions::log("SearchController::_search(): all, partial[ %s ]",
+                            $partial);
+            // */
+
+            if ( ($partial === null) || ($partial === 'main-bookmarks') )
             {
                 $this->_searchBookmarks();
             }
 
-            if ( ($partial === null) || ($partial === 'tags') )
+            if ( ($partial === null) || ($partial === 'main-tags') )
             {
                 /*****************************************
-                 * Use _prepareMain to retrieve display
+                 * Use _prepare_main to retrieve display
                  * parameters for the 'tags' section
                  * and retrieve the tags.
                  *
                  */
-                $this->_prepareMain('tags');
+                $this->_namespace = 'tags';
+                $this->_prepare_main();
                 $tags = $this->view->main;
-                $tags['namespace']   = 'tags';
+                $tags['namespace']   = $this->_namespace;   //'tags';
                 $tags['panePartial'] = 'main-tags';
                 $tags['paneVars']    = array(
                     'referer'   => $this->_referer,
@@ -218,23 +207,24 @@ class SearchController extends Connexions_Controller_Action
                                     'userCount     DESC',
                                     'itemCount     DESC',
                                     'tag           ASC');
-                $tags = $this->_prepareCloud($tags, 'Model_Tag',
-                                             $where, $fetchOrder);
+                $tags = $this->_prepare_cloud($tags, 'Model_Tag',
+                                              $where, $fetchOrder);
 
                 $this->_results['tags'] = $tags;
             }
 
-            if ( ($partial === null) || ($partial === 'people') )
+            if ( ($partial === null) || ($partial === 'main-people') )
             {
                 /*****************************************
-                 * Use _prepareMain to retrieve display
+                 * Use _prepare_main to retrieve display
                  * parameters for the 'people' section
                  * and retrieve the people.
                  *
                  */
-                $this->_prepareMain('people');
+                $this->_namespace = 'people';
+                $this->_prepare_main();
                 $people = $this->view->main;
-                $people['namespace']   = 'people';
+                $people['namespace']   = $this->_namespace; //'people';
                 $people['panePartial'] = 'main-people';
                 $people['paneVars']    = array(
                     'referer'   => $this->_referer,
@@ -252,17 +242,18 @@ class SearchController extends Connexions_Controller_Action
                 $this->_results['people'] = $people;
             }
 
-            if ( ($partial === null) || ($partial === 'items') )
+            if ( ($partial === null) || ($partial === 'main-items') )
             {
                 /*****************************************
-                 * Use _prepareMain to retrieve display
+                 * Use _prepare_main to retrieve display
                  * parameters for the 'items' section
                  * and retrieve the items.
                  *
                  */
-                $this->_prepareMain('items');
+                $this->_namespace = 'items';
+                $this->_prepare_main();
                 $items = $this->view->main;
-                $items['namespace']   = 'items';
+                $items['namespace']   = $this->_namespace;  //'items';
                 $items['panePartial'] = 'main-items';
                 $items['paneVars']    = array(
                     'referer'   => $this->_referer,
@@ -295,8 +286,8 @@ class SearchController extends Connexions_Controller_Action
                 $fetchOrder = array('ratingAvg DESC',
                                     'url       ASC');
 
-                $items = $this->_prepareCloud($items, 'Model_Item',
-                                              $where, $fetchOrder);
+                $items = $this->_prepare_cloud($items, 'Model_Item',
+                                               $where, $fetchOrder);
 
                 $this->_results['items'] = $items;
             }
@@ -314,13 +305,13 @@ class SearchController extends Connexions_Controller_Action
      *
      *  @return New configuration.
      */
-    protected function _prepareCloud(array &$config,
+    protected function _prepare_cloud(array &$config,
                                             $modelName,
                                             $where,
                                             $fetchOrder)
     {
         /*
-        Connexions::log("SearchController::_prepareCloud(): "
+        Connexions::log("SearchController::_prepare_cloud(): "
                         . "config[ %s ], modelName[ %s ], "
                         . "where[ %s ], fetchOrder[ %s ]",
                         Connexions::varExport($config),
@@ -359,7 +350,7 @@ class SearchController extends Connexions_Controller_Action
         $offset     = ($config['page'] - 1) * $count;
 
         /*
-        Connexions::log("SearchController::_prepareCloud(): "
+        Connexions::log("SearchController::_prepare_cloud(): "
                         . "page[ %d ], perPage[ %d ], "
                         . "offset[ %d ], count[ %d ], order[ %s ]",
                         $config['page'], $config['perPage'],
@@ -374,6 +365,7 @@ class SearchController extends Connexions_Controller_Action
                                                    $fetchOrder,
                                                    $count,
                                                    $offset);
+
 
         $paginator       =  new Zend_Paginator($config['items']
                                                 ->getPaginatorAdapter());
@@ -577,12 +569,13 @@ class SearchController extends Connexions_Controller_Action
         // */
 
         /*****************************************
-         * Use _prepareMain to retrieve display
+         * Use _prepare_main to retrieve display
          * parameters for the 'bookmarks' section
          * and retrieve the bookmarks.
          *
          */
-        $this->_prepareMain('bookmarks');
+        $this->_namespace = 'bookmarks';
+        $this->_prepare_main();
         $bookmarks = $this->view->main;
         $bookmarks['namespace']   = 'bookmarks';
         $bookmarks['panePartial'] = 'main-bookmarks';

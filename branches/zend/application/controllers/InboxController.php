@@ -169,8 +169,9 @@ class InboxController extends Connexions_Controller_Action
         }
 
 
-        // Handle this request based on the current context / format
-        $this->_handleFormat('bookmarks');
+        // HTML form/cookie namespace
+        $this->_namespace = 'bookmarks';
+        //$this->_handleFormat('bookmarks');
     }
 
     /*************************************************************************
@@ -183,9 +184,9 @@ class InboxController extends Connexions_Controller_Action
      *  This will collect the variables needed to render the main view, placing
      *  them in $view->main as a configuration array.
      */
-    protected function _prepareMain($htmlNamespace  = '')
+    protected function _prepare_main()
     {
-        parent::_prepareMain($htmlNamespace);
+        parent::_prepare_main();
 
         $extra = array(
             'tags'   => &$this->_allTags,
@@ -193,27 +194,28 @@ class InboxController extends Connexions_Controller_Action
         $this->view->main = array_merge($this->view->main, $extra);
 
         /*
-        Connexions::log("InboxController::_prepareMain(): "
+        Connexions::log("InboxController::_prepare_main(): "
                         .   "main[ %s ]",
                         Connexions::varExport($this->view->main));
         // */
     }
 
     /** @brief  Prepare for rendering the sidebar view.
-     *  @param  async   Should we setup to do an asynchronous render
-     *                  (i.e. tab callbacks will request tab pane contents when 
-     *                        needed)?
      *
      *  This will collect the variables needed to render the sidebar view,
      *  placing them in $view->sidebar as a configuration array.
      */
-    protected function _prepareSidebar($async   = false)
+    protected function _prepare_sidebar()
     {
+        $async = ($this->_format === 'partial'
+                        ? false
+                        : true);
+
         /*
-        Connexions::log("InboxController::_prepareSidebar( %s )",
+        Connexions::log("InboxController::_prepare_sidebar( %s )",
                         ($async ? "async" : "sync"));
         // */
-        parent::_prepareSidebar($async);
+        parent::_prepare_sidebar($async);
 
         $extra = array(
             'tags'  => &$this->_allTags,
@@ -226,7 +228,6 @@ class InboxController extends Connexions_Controller_Action
          * that we've gathered thus far.
          *
          */
-        $sidebar = $this->view->htmlSidebar( $this->view->sidebar );
         if ($async === false)
         {
             /* Finialize sidebar preparations by retrieving the necessary model 
@@ -239,37 +240,34 @@ class InboxController extends Connexions_Controller_Action
              */
 
             /*
-            Connexions::log("InboxController::_prepareSidebar(): "
+            Connexions::log("InboxController::_prepare_sidebar(): "
                             . "!async, partials %sarray [ %s ]",
                             (is_array($this->_partials) ? "" : "!"),
                             Connexions::varExport($this->_partials));
             // */
 
             $part = (is_array($this->_partials)
-                        ? $this->_partials[0]
+                        ? $this->_partials[1]
                         : null);
 
             if ( ($part === null) || ($part === 'tags') )
             {
-                $this->_prepareSidebarPane('tags', $sidebar);
+                $this->_prepare_sidebarPane('tags');
             }
 
             if ( ($part === null) || ($part === 'people') )
             {
-                $this->_prepareSidebarPane('people', $sidebar);
+                $this->_prepare_sidebarPane('people');
             }
 
             if ( ($part === null) || ($part === 'items') )
             {
-                $this->_prepareSidebarPane('items', $sidebar);
+                $this->_prepare_sidebarPane('items');
             }
         }
 
-        // Pass the configured instance of the sidebar helper to the views
-        $this->view->sidebarHelper = $sidebar;
-
         /*
-        Connexions::log("InboxController::_prepareSidebar(): "
+        Connexions::log("InboxController::_prepare_sidebar(): "
                         .   "sidebar[ %s ]",
                         Connexions::varExport($this->view->sidebar));
         // */
@@ -281,16 +279,11 @@ class InboxController extends Connexions_Controller_Action
      *          presented.
      *  @param  pane    The portion of the sidebar to render
      *                  (tags | people | items);
-     *  @param  sidebar The View_Helper_HtmlSidebar instance;
      *
      */
-    protected function _prepareSidebarPane(                        $pane,
-                                           View_Helper_HtmlSidebar &$sidebar)
+    protected function _prepare_sidebarPane($pane)
     {
-        $config  = $sidebar->getPane($pane);
-
-        $config['viewer']    =& $this->_viewer;
-        $config['cookieUrl'] =  $this->_rootUrl;
+        $config =& $this->view->sidebar['panes'][$pane];
 
         $perPage = ((int)$config['perPage'] > 0
                         ? (int)$config['perPage']
@@ -318,7 +311,7 @@ class InboxController extends Connexions_Controller_Action
             // Tags related to the bookmarks with the given set of tags.
 
             /*
-            Connexions::log("InboxController::_prepareSidebarPane( %s ): "
+            Connexions::log("InboxController::_prepare_sidebarPane( %s ): "
                             .   "Fetch tags %d-%d related to bookmarks "
                             .   "with tags[ %s ]",
                             $pane,
@@ -334,10 +327,13 @@ class InboxController extends Connexions_Controller_Action
              */
             if (! isset($this->view->main))
             {
-                $this->_prepareMain();
+                $this->_prepare_main();
             }
 
-            if ($sidebar->items === null)
+            $bookmarks = (isset($main['items'])
+                            ? $main['items']
+                            : null);
+            if ($bookmarks === null)
             {
                 /* The set of bookmarks presented in the main view has not 
                  * been communicated to the sidebar helper.  We need to 
@@ -354,34 +350,18 @@ class InboxController extends Connexions_Controller_Action
 
 
                 /*
-                Connexions::log("InboxController::_prepareSidebarPane( %s ): "
+                Connexions::log("InboxController::_prepare_sidebarPane( %s ): "
                                 .   "%d bookmarks in main view",
                                 $pane,
                                 count($bookmarks));
                 // */
-
-
-                /* Notify the sidebar helper of the main-view 
-                 * items/bookmarks
-                 *
-                 * :NOTE: This does NOT seem to actually set the value of
-                 *        $sidebar->items...  Hence the regression to
-                 *        $bookmarks below.
-                 */
-                $sidebar->items = $bookmarks;
-            }
-            else
-            {
-                $bookmarks =& $sidebar->items;
             }
 
             /*
-            Connexions::log("InboxController::_prepareSidebarPane( %s ): "
-                            .   "bookmarks are %sempty, "
-                            .   "sidebar items are %sempty",
+            Connexions::log("InboxController::_prepare_sidebarPane( %s ): "
+                            .   "bookmarks are %sempty, ",
                             $pane,
-                            (empty($bookmarks) ? '' : 'NOT '),
-                            (empty($sidebar->items) ? '' : 'NOT '));
+                            (empty($bookmarks) ? '' : 'NOT '));
             // */
 
             if (! empty($bookmarks))
@@ -424,7 +404,7 @@ class InboxController extends Connexions_Controller_Action
              */
 
             /*
-            Connexions::log("InboxController::_prepareSidebarPane( %s ): "
+            Connexions::log("InboxController::_prepare_sidebarPane( %s ): "
                             .   "Fetch people %d-%d related to tags[ %s ]",
                             $pane,
                             $offset, $offset + $count,
@@ -487,8 +467,6 @@ class InboxController extends Connexions_Controller_Action
                                  Connexions_Service::SORT_DIR_DESC;
             break;
         }
-
-        $sidebar->setPane($pane, $config);
     }
 
 }
