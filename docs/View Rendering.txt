@@ -582,13 +582,13 @@ View_Helper_HtmlItemCloudItem       extends Zend_Tag_Cloud_Decorator_HtmlTag
 :TODO: Helpers
 ===============
 View_Helper_HtmlItemScope           extends ???
-View_Helper_HtmlSidebar             extends ???
 View_Helper_HtmlStarRating          extends ???
 
 
 :TODO: Scripts
 ===============
 itemScope.phtml
+sidebar.phtml
 sidebar-user.phtml
 
 

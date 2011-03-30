@@ -8,9 +8,6 @@
  *  before this view is rendered.
  *
  *  Incoming members:
- *      sidebarHelper   A View_Helper_HtmlSidebar instance configured with
- *                      information about the 'people' sidebar pane;
- *
  *      url             The full url for the main controller of this page;
  *      owner           The owner of the current item set -- either a string or
  *                      a Model_User instance;
@@ -18,7 +15,14 @@
  *                      viewer;
  *      tags            A Model_Set_Tag instance containing information about
  *                      any requested tags AND the 'for:%user%' for this inbox;
+ *      sidebar         Configuration for the sidebar presentation;
  */
+$paneName = 'people';
+$config   =  (is_array($this->sidebar['panes']) &&
+              is_array($this->sidebar['panes'][$paneName])
+                ? $this->sidebar['panes'][$paneName]
+                : array());
+
 
 ?>
   <div class='columnHeader'>
@@ -43,7 +47,6 @@
 <?php
 
 // Tag-related users
-$config        = $this->sidebarHelper->getPane('people');
 $htmlItemCloud = $this->htmlItemCloud($config);
 
 echo $htmlItemCloud->render();

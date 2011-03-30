@@ -11,6 +11,12 @@ class Connexions_Controller_Action extends Zend_Controller_Action
     protected   $_request   = null;
     protected   $_viewer    = null;
 
+    protected   $_noSidebar = false;    /* Should the sidebar be ignored? */
+    protected   $_noFormatHandling
+                            = false;    /* Should format handling in render()
+                                         * be ignored?
+                                         */
+
     protected   $_format    = 'html';   // Render format
     protected   $_partials  = null;     /* If '_format' is 'partial', this MAY 
                                          * be an array of partial rendering 
@@ -19,7 +25,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                                          *       have '_partials' of
                                          *       [ 'tags', 'recommended' ] )
                                          */
-    protected   $_namespace = null;     /* The cookie namespace for HTML 
+    protected   $_namespace = '';       /* The cookie namespace for HTML 
                                          * rendering.
                                          */
 
@@ -49,7 +55,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                                          */
     public function init()
     {
-        // Initialize action controller here
+        // Initialize common members
         $this->_viewer  =  Zend_Registry::get('user');
         $this->_request =  $this->getRequest();
         $this->_rootUrl =  $this->_request->getBasePath();
@@ -77,7 +83,9 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                                 $this->_request->getParam('streaming', false));
 
 
-        // Default view variables that we can set early
+        // Default view variables that can be set early
+        $this->view->controller    = $this->_request->getParam('controller');
+        $this->view->action        = $this->_request->getParam('action');
         $this->view->rootUrl       = $this->_rootUrl;
         $this->view->baseUrl       = $this->_baseUrl;
         $this->view->url           = $this->_url;
@@ -130,6 +138,33 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                             . "format[ %s ]",
                             $format);
             // */
+        }
+    }
+
+    /** @brief  Override Zend_Controller_Action::render so we can invoke
+     *          _handleFormat() consistently across controllers.
+     *  @param  action          The desired action
+     *                          [ null == the action registered in
+     *                                    the request object ];
+     *  @param  name            Response object named path segment to use
+     *                          [ null ];
+     *  @param  noController    Use controller name as subdirectory [ false ];
+     *
+     *  @return void
+    public function render($action = null, $name = null, $noController = false)
+     */
+    public function postDispatch()
+    {
+        /*
+        Connexions::log("Connexions_Controller_Action(%s)::postDispatch(): "
+                        .   "url[ %s ]",
+                        get_class($this),
+                        $this->_request->getRequestUri());
+        // */
+
+        if ($this->_noFormatHandling !== true)
+        {
+            $this->_handleFormat();
         }
     }
 
@@ -251,18 +286,24 @@ class Connexions_Controller_Action extends Zend_Controller_Action
      *              json/rss/atom - alternate format rendering of JUST the main
      *                              content via 'index-%format%';
      *
-     *  @param  htmlNamespace   The namespace for this rendering if HTML;
      *
      *  All others are handled by the 'contextSwitch' established in
      *  this controller's init method.
      */
-    protected function _handleFormat($htmlNamespace = '')
+    protected function _handleFormat()
     {
-        /*
-        Connexions::log("Connexions_Controller_Action::_handleFormat(%s): "
-                        . "_format[ %s ]",
-                        $htmlNamespace, $this->_format);
+        // /*
+        Connexions::log("Connexions_Controller_Action(%s)::_handleFormat(): "
+                        . "_format[ %s ], _namespace[ %s ], url[ %s ]",
+                        get_class($this),
+                        $this->_format, $this->_namespace,
+                        $this->_request->getRequestUri());
         // */
+
+
+        // By default, render the 'index.phtml' view script
+        $this->_partials = array('index');
+
 
         /* All actual rendering is via one of the scripts in:
          *      application / views / scripts / %controller% /
@@ -273,17 +314,40 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         switch ($this->_format)
         {
         case 'partial':
-            /* Render just PART of the page and MAY not require the item
-             * paginator.
+            /* Partial page rendering defined by 'part':
+             *      format=partial&part=%part%
              *
-             *  part=(content                                           |
-             *        main   ([.:-](tags  ([.:-](recommended | top))?   |
-             *                      people([.:-](network))? )? )        |
-             *        sidebar([.:-](tags | people | items))? )          |
-             *        post([.:-]%section%[.:-]%command% )
+             * The desired %part% is a delimiter separated (.:-) string
+             * that identifies the specific part of a page that is to be
+             * rendered.
              *
-             * Note: The separation for 'main' is primarily to support
-             *       the PostController.
+             * The part typically MUST have an associated view script and MAY
+             * have methods in the concrete class for view preparation.
+             *
+             * Example parts and associated view scripts and preparation
+             * methods (all view scripts have a starting path of
+             *          'application/view/scripts'):
+             *      main
+             *        view script:  %controller%/main.phtml
+             *        prep methods: %Controller%::_prepare_main()
+             *
+             *      sidebar-items
+             *        view script:  %controller%/sidebar-items.phtml
+             *        prep methods: %Controller%::_prepare_sidebar()
+             *                      %Controller%::_prepare_sidebar_items()
+             *
+             *      main-tags-manage
+             *        view script:  %controller%/main-tags-manage.phtml
+             *        prep methods: %Controller%::_prepare_main()
+             *                      %Controller%::_prepare_main_tags()
+             *                      %Controller%::_prepare_main_tags_manage()
+             *
+             *      post-account-avatar
+             *        view script:  %controller%/post-account-avatar.phtml
+             *        prep methods: %Controller%::_prepare_post()
+             *                      %Controller%::_prepare_post_account()
+             *                      %Controller%::_prepare_post_account_avatar()
+             *
              *
              * Change the layout script to:
              *      partial.phtml
@@ -296,67 +360,20 @@ class Connexions_Controller_Action extends Zend_Controller_Action
              */
             $this->view->isPartial = true;
 
-            $part  = $this->_request->getParam('part', 'content');
-            $parts = preg_split('/\s*[\.:\-]\s*/', $part);
+            $part   = $this->_request->getParam('part', 'content');
+            $parts  = preg_split('/\s*[\.:\-]\s*/', $part);
 
-            $primePart       = array_shift($parts);
-            $this->_partials = $parts;
-
-            /*
-            Connexions::log("Connexions_Controller_Action::_handleFormat(): "
-                            . "part[ %s ] == primePart[ %s ], partials[ %s ]",
-                            $part,
-                            $primePart,
-                            Connexions::varExport($this->_partials));
-            // */
-
-            switch ($primePart)
+            if ($parts[0] !== 'content')
             {
-            case 'sidebar':
-                /* Render JUST the sidebar:
-                 *      sidebar.phtml
-                 *
-                 * OR a single pane of the sidebar:
-                 *      sidebar-(implode('-', _partials)).phtml
-                 */
-                $this->_renderSidebar(false);
-                break;
-
-            case 'main':
-                // Render JUST the main pane.
-                $this->_renderMain('main', $htmlNamespace);
-                break;
-
-            case 'post':
-                /* Render JUST the post "pane":
-                 *      post-(implode('-', _partials)).phtml
-                 */
-                $this->_renderPost('post', $htmlNamespace);
-                break;
-
-            case 'content':
-            default:
-                /* Render JUST the main content section, that includes
-                 * the main pane:
-                 *      index.phtml
-                 */
-                break;
+                $this->_partials = $parts;
             }
-            break;
-
-        case 'html':
-            /* Normal HTML rendering - both the main pane (via 'index') and the
-             * sidebar.
-             */
-            $this->_renderMain('index', $htmlNamespace);
-            $this->_renderSidebar();
+            $this->_renderPartial();
             break;
 
         case 'json':
         case 'rss':
         case 'atom':
-        default:
-            /* Render a non-HTML format, based upon $this->_format.
+            /* Render a (possibly) non-HTML format, based upon $this->_format.
              *
              * RSS and Atom are consolidated to:
              *      index-feed.pthml  with 'feedType' set appropriately.
@@ -377,23 +394,149 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                 $this->_format = 'feed';
             }
 
-            $this->_renderMain('index-'. $this->_format);
+            $this->_partials = array('index', $this->_format);
 
+            $this->_renderPartial();
+            break;
+
+        case 'html':
+        default:
+            /* Normal HTML rendering - both the main pane (via 'index') and the
+             * sidebar.
+             */
+            $this->_renderPartial();
+
+            if ($this->_noSidebar !== true)
+            {
+                /* Directly include preparation and rendering of the sidebar to
+                 * a placeholder
+                 */
+                $this->_prepare_sidebar();
+                $this->_renderSidebar();
+            }
             break;
         }
     }
 
+    /** @brief  Prepare for rendering a partial view, regardless of format.
+     *
+     *  This will attempt to invoke '_prepare_*' methods in the concrete class
+     *  based upon $this->_partials.  If any one returns false, terminate.
+     *
+     *  @return true (prepared) or false (NOT prepared / cancel).
+     */
+    protected function _preparePartial()
+    {
+        /* See if the concrete class has a method to prepare this partial
+         *  Check '_prepare_%part0%'
+         *        '_prepare_%part0%_%part1%'
+         *        ...
+         */
+        $res    = true;
+        $method = "_prepare";
+        foreach ($this->_partials as $idex => $part)
+        {
+            // If the first part is 'index', replace it with 'main'
+            $method .= '_'. (($idex === 0) && ($part === 'index')
+                                ? 'main'
+                                : $part);
+
+            /*
+            Connexions::log("Connexions_Controller_Action(%s)::"
+                            . "_preparePartial(): "
+                            . "Check method [ %s ]",
+                            get_class($this),
+                            $method);
+            // */
+
+            if (method_exists( $this, $method ))
+            {
+                // /*
+                Connexions::log("Connexions_Controller_Action(%s)::"
+                                . "_preparePartial(): "
+                                . "Invoke [ %s ]",
+                                get_class($this),
+                                $method);
+                // */
+
+                $res = $this->{$method}();
+                if ($res === false)
+                {
+                    break;
+                }
+            }
+        }
+
+        return $res;
+    }
+
+    /** @brief  Prepare and render a partial view.
+     *
+     *  The final, rendered view script is based upon '_partials'.
+     *
+     */
+    protected function _renderPartial()
+    {
+        if ($this->_preparePartial() === false)
+        {
+            return;
+        }
+
+        // Perform direct rendering of the script indicated by '_partials'.
+        $script = implode('-', $this->_partials);
+
+        // /*
+        Connexions::log("Connexions_Controller_Action(%s)::"
+                        . "_renderPartial(): "
+                        . "render view script [ %s ]",
+                        get_class($this),
+                        $script);
+        // */
+
+        $this->render($script);
+    }
+
+    /** @brief  Render the sidebar based upon the incoming request.
+     *
+     */
+    protected function _renderSidebar()
+    {
+        if ($this->_noSidebar === true)
+        {
+            return;
+        }
+
+        /* Use the 'sidebar.phtml' script associated with the current
+         * controller:
+         *      application/views/scripts/%controller%/sidebar.html
+         */
+        $controller = '';   //$this->_request->getParam('controller');
+        $script     = $controller .'/sidebar.phtml';
+
+        // /*
+        Connexions::log("Connexions_Controller_Action(%s)::"
+                        . "_renderSidebar(): entire sidebar via "
+                        . "controller script [ %s ], view.sidebar[ %s ]",
+                        get_class($this),
+                        $script,
+                        Connexions::varExport($this->view->sidebar));
+        // */
+
+        // Render the sidebar into the 'right' placeholder
+        $this->view->renderToPlaceholder($script, 'right');
+    }
+
     /** @brief  Prepare for rendering the main view, regardless of format.
-     *  @param  namespace   The namespace for this rendering;
      *
      *  This will collect the variables needed to render the main view, placing
      *  them in $view->main as a configuration array.
      */
-    protected function _prepareMain($namespace  = '')
+    protected function _prepare_main()
     {
-        $request          =& $this->_request;
+        $request    =& $this->_request;
+        $namespace  =  $this->_namespace;
 
-        /*
+        // /*
         Connexions::log("Connexions_Controller_Action::_prepareMain(): "
                         . "namespace[ %s ], format[ %s ]",
                         $namespace, $this->_format);
@@ -461,16 +604,20 @@ class Connexions_Controller_Action extends Zend_Controller_Action
     }
 
     /** @brief  Prepare for rendering the sidebar view.
-     *  @param  async   Should we setup to do an asynchronous render
-     *                  (i.e. tab callbacks will request tab pane contents when 
-     *                        needed)?
      *
      *  This will collect the variables needed to render the sidebar view,
      *  placing them in $view->sidebar as a configuration array.
      */
-    protected function _prepareSidebar($async   = false)
+    protected function _prepare_sidebar()
     {
         $request =& $this->_request;
+
+        /* If this is being rendered as a partial, treat all pans as
+         * synchronous, otherwise make then asynchronous.
+         */
+        $async = ($this->_format === 'partial'
+                    ? false
+                    : true);
 
         $sidebar = array(
             'namespace' => 'sidebar-tab',
@@ -494,6 +641,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                      * render the tag cloud or list.
                      *
                      */
+                    'viewer'        => &$this->_viewer,
                     'cookieUrl'     => $this->_rootUrl,
                     'namespace'     => 'sbTags',
                     'title'         => 'Tags',
@@ -524,6 +672,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                      * render the people cloud or list.
                      *
                      */
+                    'viewer'        => &$this->_viewer,
                     'cookieUrl'     => $this->_rootUrl,
                     'namespace'     => 'sbPeople',
                     'title'         => 'People',
@@ -555,12 +704,16 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                      * render the item cloud or list.
                      *
                      */
+                    'viewer'        => &$this->_viewer,
                     'cookieUrl'     => $this->_rootUrl,
                     'namespace'     => 'sbItems',
                     'title'         => 'Items',
+                    'weightName'    => 'userCount',
 
                     // 'related' will be set by the main view renderer
                     // 'selected'      => $this->_owner,
+                    'itemType'      =>
+                                View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM,
                     'itemBaseUrl'   => $this->_url,
 
                     'page'          => $request->getParam("sbItemsPage"),
@@ -594,15 +747,15 @@ class Connexions_Controller_Action extends Zend_Controller_Action
     }
 
     /** @brief  Prepare for rendering the post view, regardless of format.
-     *  @param  namespace   The namespace for this rendering;
      *
      *  This will verify that this is a POST request.
      *
      *  @return true (is POST) or false (is NOT POST).
      */
-    protected function _preparePost($namespace  = '')
+    protected function _prepare_post()
     {
-        $request          =& $this->_request;
+        $request   =& $this->_request;
+        $namespace =  $this->_namespace;
 
         if (! $request->isPost())
         {
@@ -610,131 +763,6 @@ class Connexions_Controller_Action extends Zend_Controller_Action
             return false;
         }
 
-        /* By default, see if a method exists in the concrete class with the
-         * name:
-         *      _post_{$partial[0] == section)_{$partial[1] == command}
-         */
-        $method = "_post_{$this->_partials[0]}_{$this->_partials[1]}";
-        /*
-        Connexions::log("Connexions_Controller_Action::_preparePost(): "
-                        . "namespace[ %s ], format[ %s ], method[ %s ]",
-                        $namespace, $this->_format, $method);
-        // */
-
-        if (method_exists( $this, $method ))
-        {
-            $this->{$method}();
-        }
-
         return true;
-    }
-
-    /** @brief  Prepare and render the main view using the provided view script.
-     *  @param  script      The view script to use for rendering;
-     *  @param  namespace   The namespace for this rendering;
-     *
-     */
-    protected function _renderMain($script, $namespace = '')
-    {
-        $this->_namespace = $namespace;
-
-        $this->_prepareMain($namespace);
-
-        if ( count($this->_partials) > 0)
-        {
-            $script .= '-' . implode('-', $this->_partials);
-        }
-
-        /*
-        Connexions::log("Connexions_Controller_Action::_renderMain(): "
-                        . "script[ %s ]",
-                        $script);
-        // */
-
-        $this->render($script);
-
-    }
-
-    /** @brief  Prepare and render the post view using the provided view script.
-     *  @param  script      The view script to use for rendering;
-     *  @param  namespace   The namespace for this rendering;
-     *
-     */
-    protected function _renderPost($script, $namespace = '')
-    {
-        $this->_namespace = $namespace;
-
-        $this->_preparePost($namespace);
-
-        if ( count($this->_partials) > 0)
-        {
-            $script .= '-' . implode('-', $this->_partials);
-        }
-
-        /*
-        Connexions::log("Connexions_Controller_Action::_renderPost(): "
-                        . "script[ %s ]",
-                        $script);
-        // */
-
-        $this->render($script);
-
-    }
-
-
-    /** @brief  Render the sidebar based upon the incoming request.
-     *  @param  usePlaceholder      Should the rendering be performed
-     *                              immediately into a placeholder?
-     *                              [ true, into the 'right' placeholder ]
-     *
-     */
-    protected function _renderSidebar($usePlaceholder = true)
-    {
-        /*
-        Connexions::log("Connexions_Controller_Action::_renderSidebar(): "
-                        . "usePlaceholder[ %s ]",
-                        Connexions::varExport($usePlaceholder));
-        // */
-
-        $this->_prepareSidebar( $usePlaceholder );
-
-        if ($this->_partials !== null)
-        {
-            // Render just the requested part
-            $script = 'sidebar-'. implode('-', $this->_partials);
-
-            /*
-            Connexions::log("Connexions_Controller_Action::_renderSidebar(): "
-                            . "script [ %s ]",
-                            $script);
-            // */
-
-
-            $this->render($script);
-        }
-        else
-        {
-            // Render the entire sidebar
-            if ($usePlaceholder === true)
-            {
-                $controller = $this->_request->getParam('controller');
-
-                /*
-                Connexions::log("Connexions_Controller_Action::"
-                                . "_renderSidebar(): "
-                                . "render sidebar for controller [ %s ]",
-                                $controller);
-                // */
-
-                // Render the sidebar into the 'right' placeholder
-                $script = $controller .'/sidebar.phtml';
-                $this->view->renderToPlaceholder($script, 'right');
-            }
-            else
-            {
-                $script = 'sidebar';
-                $this->render($script);
-            }
-        }
     }
 }

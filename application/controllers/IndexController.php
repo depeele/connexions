@@ -137,8 +137,8 @@ class IndexController extends Connexions_Controller_Action
         $this->view->tags      = $this->_tags;
 
 
-        // Handle this request based on the current context / format
-        $this->_handleFormat('bookmarks');
+        // HTML form/cookie namespace
+        $this->_namespace = 'bookmarks';
     }
 
     /*************************************************************************
@@ -151,9 +151,9 @@ class IndexController extends Connexions_Controller_Action
      *  This will collect the variables needed to render the main view, placing
      *  them in $view->main as a configuration array.
      */
-    protected function _prepareMain($htmlNamespace  = '')
+    protected function _prepare_main()
     {
-        parent::_prepareMain($htmlNamespace);
+        parent::_prepare_main();
 
         $extra = array(
             'users' => ($this->_owner !== '*'
@@ -163,28 +163,29 @@ class IndexController extends Connexions_Controller_Action
         );
         $this->view->main = array_merge($this->view->main, $extra);
 
-        /*
-        Connexions::log("IndexController::_prepareMain(): "
+        // /*
+        Connexions::log("IndexController::_prepare_main(): "
                         .   "main[ %s ]",
                         Connexions::varExport($this->view->main));
         // */
     }
 
     /** @brief  Prepare for rendering the sidebar view.
-     *  @param  async   Should we setup to do an asynchronous render
-     *                  (i.e. tab callbacks will request tab pane contents when 
-     *                        needed)?
      *
      *  This will collect the variables needed to render the sidebar view,
      *  placing them in $view->sidebar as a configuration array.
      */
-    protected function _prepareSidebar($async   = false)
+    protected function _prepare_sidebar()
     {
+        $async   = ($this->_format === 'partial'
+                        ? false
+                        : true);
+
         /*
-        Connexions::log("IndexController::_prepareSidebar( %s )",
+        Connexions::log("IndexController::_prepare_sidebar(): %s",
                         ($async ? "async" : "sync"));
         // */
-        parent::_prepareSidebar($async);
+        parent::_prepare_sidebar();
 
         $extra = array(
             'users' => ($this->_owner !== '*'
@@ -200,7 +201,6 @@ class IndexController extends Connexions_Controller_Action
          * that we've gathered thus far.
          *
          */
-        $sidebar = $this->view->htmlSidebar( $this->view->sidebar );
         if ($async === false)
         {
             /* Finialize sidebar preparations by retrieving the necessary model 
@@ -213,37 +213,34 @@ class IndexController extends Connexions_Controller_Action
              */
 
             /*
-            Connexions::log("IndexController::_prepareSidebar(): "
-                            . "!async, partials %sarray [ %s ]",
+            Connexions::log("IndexController::_prepare_sidebar(): "
+                            . "sync, partials %sarray [ %s ]",
                             (is_array($this->_partials) ? "" : "!"),
                             Connexions::varExport($this->_partials));
             // */
 
-            $part = (is_array($this->_partials)
-                        ? $this->_partials[0]
+            $part = (count($this->_partials) > 1
+                        ? $this->_partials[1]
                         : null);
 
             if ( ($part === null) || ($part === 'tags') )
             {
-                $this->_prepareSidebarPane('tags', $sidebar);
+                $this->_prepare_sidebarPane('tags');
             }
 
             if ( ($part === null) || ($part === 'people') )
             {
-                $this->_prepareSidebarPane('people', $sidebar);
+                $this->_prepare_sidebarPane('people');
             }
 
             if ( ($part === null) || ($part === 'items') )
             {
-                $this->_prepareSidebarPane('items', $sidebar);
+                $this->_prepare_sidebarPane('items');
             }
         }
 
-        // Pass the configured instance of the sidebar helper to the views
-        $this->view->sidebarHelper = $sidebar;
-
         /*
-        Connexions::log("IndexController::_prepareSidebar(): "
+        Connexions::log("IndexController::_prepare_sidebar(): "
                         .   "sidebar[ %s ]",
                         Connexions::varExport($this->view->sidebar));
         // */
@@ -255,16 +252,11 @@ class IndexController extends Connexions_Controller_Action
      *          presented.
      *  @param  pane    The portion of the sidebar to render
      *                  (tags | people | items);
-     *  @param  sidebar The View_Helper_HtmlSidebar instance;
      *
      */
-    protected function _prepareSidebarPane(                        $pane,
-                                           View_Helper_HtmlSidebar &$sidebar)
+    protected function _prepare_sidebarPane($pane)
     {
-        $config  = $sidebar->getPane($pane);
-
-        $config['viewer']    =& $this->_viewer;
-        $config['cookieUrl'] =  $this->_rootUrl;
+        $config =& $this->view->sidebar['panes'][$pane];
 
         $perPage = ((int)$config['perPage'] > 0
                         ? (int)$config['perPage']
@@ -297,7 +289,7 @@ class IndexController extends Connexions_Controller_Action
                  */
 
                 /*
-                Connexions::log("IndexController::_prepareSidebarPane( %s ): "
+                Connexions::log("IndexController::_prepare_sidebarPane( %s ): "
                                 .   "Fetch tags %d-%d by user [ %s ]",
                                 $pane,
                                 $offset, $offset + $count,
@@ -316,7 +308,7 @@ class IndexController extends Connexions_Controller_Action
                 // Tags related to the bookmarks with the given set of tags.
 
                 /*
-                Connexions::log("IndexController::_prepareSidebarPane( %s ): "
+                Connexions::log("IndexController::_prepare_sidebarPane( %s ): "
                                 .   "Fetch tags %d-%d related to bookmarks "
                                 .   "with tags[ %s ]",
                                 $pane,
@@ -332,10 +324,13 @@ class IndexController extends Connexions_Controller_Action
                  */
                 if (! isset($this->view->main))
                 {
-                    $this->_prepareMain();
+                    $this->_prepare_main();
                 }
 
-                if ($sidebar->items === null)
+                $bookmarks = (isset($this->view->main['items'])
+                                ? $this->view->main['items']
+                                : null);
+                if ($boomkarks === null)
                 {
                     /* The set of bookmarks presented in the main view has not 
                      * been communicated to the sidebar helper.  We need to 
@@ -349,17 +344,12 @@ class IndexController extends Connexions_Controller_Action
 
                     $helper    = $this->view->bookmarks( $overRides );
                     $bookmarks = $helper->bookmarks;
-
-                    /* Notify the sidebar helper of the main-view 
-                     * items/bookmarks
-                     */
-                    $sidebar->items = $bookmarks;
                 }
 
                 /* Retrieve the set of tags that are related to the presented 
                  * bookmarks.
                  */
-                $tags = $service->fetchByBookmarks($sidebar->items,
+                $tags = $service->fetchByBookmarks($bookmarks,
                                                    $fetchOrder,
                                                    $count,
                                                    $offset);
@@ -399,7 +389,7 @@ class IndexController extends Connexions_Controller_Action
                  */
 
                 /*
-                Connexions::log("IndexController::_prepareSidebarPane( %s ): "
+                Connexions::log("IndexController::_prepare_sidebarPane( %s ): "
                                 .   "Fetch people %d-%d related to tags[ %s ]",
                                 $pane,
                                 $offset, $offset + $count,
@@ -435,7 +425,7 @@ class IndexController extends Connexions_Controller_Action
                 // A single user's bookmarks -- show just the "owner"
 
                 /*
-                Connexions::log("IndexController::_prepareSidebarPane( %s ): "
+                Connexions::log("IndexController::_prepare_sidebarPane( %s ): "
                                 .   "Present JUST the owner [ %s ]",
                                 $pane,
                                 Connexions::varExport($this->_owner));
@@ -461,7 +451,7 @@ class IndexController extends Connexions_Controller_Action
                 $config['weightTitle'] = 'Bookmarks';
 
                 /*
-                Connexions::log("IndexController::_prepareSidebarPane( %s ): "
+                Connexions::log("IndexController::_prepare_sidebarPane( %s ): "
                                 .   "Fetch items %d-%d for all users "
                                 .   "related to tags [ %s ]",
                                 $pane,
@@ -481,7 +471,7 @@ class IndexController extends Connexions_Controller_Action
                 $config['weightTitle'] =  'Average Rating';
 
                 /*
-                Connexions::log("IndexController::_prepareSidebarPane( %s ): "
+                Connexions::log("IndexController::_prepare_sidebarPane( %s ): "
                                 .   "Fetch items %d-%d for owner[ %s ] "
                                 .   "related to tags [ %s ]",
                                 $pane,
@@ -511,7 +501,5 @@ class IndexController extends Connexions_Controller_Action
                                  Connexions_Service::SORT_DIR_DESC;
             break;
         }
-
-        $sidebar->setPane($pane, $config);
     }
 }

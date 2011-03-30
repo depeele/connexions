@@ -48,9 +48,7 @@ Connexions::log("inbox/main.phtml: paginator with %d bookmarks [ %s ]",
                     ? get_class($bookmarks)
                     : gettype($bookmarks)) );
 // */
-
-// Notify the sidebar about the items rendered in the main view.
-$this->htmlSidebar(array('items' => $htmlBookmarks->bookmarks));
+$this->main['items'] = $htmlBookmarks;
 
 // Render the main view.
 echo $htmlBookmarks->render();

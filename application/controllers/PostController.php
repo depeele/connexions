@@ -10,14 +10,14 @@ class PostController extends Connexions_Controller_Action
 {
     // Tell Connexions_Controller_Action_Helper_ResourceInjector which
     // Bootstrap resources to make directly available
-    public  $dependencies = array('db','layout');
-
-    public      $contexts   = array(
+    public    $dependencies = array('db','layout');
+    public    $contexts     = array(
                                 'index' => array('json', 'partial'),
                               );
+    protected $_noSidebar   = true;
 
-    protected   $_maxTagsRecommended    = 20;
-    protected   $_maxTagsViewer         = 20;
+    protected $_maxTagsRecommended    = 20;
+    protected $_maxTagsViewer         = 20;
 
     public function init()
     {
@@ -49,8 +49,6 @@ class PostController extends Connexions_Controller_Action
         }
 
         $this->view->headTitle('Save a Bookmark');
-
-        $this->_handleFormat();
     }
 
     /*************************************************************************
@@ -63,11 +61,11 @@ class PostController extends Connexions_Controller_Action
      *  This will collect the variables needed to render the main view, placing
      *  them in $view->main as a configuration array.
      */
-    protected function _prepareMain($htmlNamespace  = '')
+    protected function _prepare_main()
     {
-        Connexions::log("PostController::_prepareMain():");
+        //Connexions::log("PostController::_prepare_main():");
 
-        parent::_prepareMain($htmlNamespace);
+        parent::_prepare_main();
 
         $request  =& $this->_request;
         $bookmark =  null;
@@ -119,7 +117,7 @@ class PostController extends Connexions_Controller_Action
         if (Connexions::to_bool($request->getParam('excludeSuggestions',
                                                    false)) !== true)
         {
-            $this->view->suggest = $this->_prepareSuggestions($postInfo);
+            $this->view->suggest = $this->_prepare_suggestions($postInfo);
         }
     }
 
@@ -129,13 +127,13 @@ class PostController extends Connexions_Controller_Action
      *
      *  @return An array of suggestion configuration data.
      */
-    protected function _prepareSuggestions(array &$postInfo)
+    protected function _prepare_suggestions(array &$postInfo)
     {
-        Connexions::log("PostController::_prepareSuggestions():");
+        //Connexions::log("PostController::_prepare_suggestions():");
 
         $suggest        = array(
-            'tags'      => $this->_prepareSuggestions_Tags($postInfo),
-            'people'    => $this->_prepareSuggestions_People($postInfo),
+            'tags'      => $this->_prepare_suggestions_Tags($postInfo),
+            'people'    => $this->_prepare_suggestions_People($postInfo),
         );
 
         return $suggest;
@@ -147,10 +145,10 @@ class PostController extends Connexions_Controller_Action
      *
      *  @return An array of tags pane configuration data.
      */
-    protected function _prepareSuggestions_Tags(array &$postInfo)
+    protected function _prepare_suggestions_Tags(array &$postInfo)
     {
-        // /*
-        Connexions::log("PostController::_prepareSuggestions_Tags(): "
+        /*
+        Connexions::log("PostController::_prepare_suggestions_Tags(): "
                         . "partials[ %s ]",
                         Connexions::varExport($this->_partials));
         // */
@@ -160,8 +158,8 @@ class PostController extends Connexions_Controller_Action
          * already be extracted leaving '_partials' containing
          * [ tags, recommended ]
          */
-        if ( (count($this->_partials) > 0) &&
-             ($this->_partials[0] !== 'tags'))
+        if ( (count($this->_partials) > 1) &&
+             ($this->_partials[1] !== 'tags'))
         {
             /* We're not rendering the 'tags' portion so no configuration is 
              * needed
@@ -170,8 +168,8 @@ class PostController extends Connexions_Controller_Action
         }
 
         // We are rendering the 'tags' portion, possibly just a certain section
-        $section = (count($this->_partials) > 1
-                        ? $this->_partials[1]
+        $section = (count($this->_partials) > 2
+                        ? $this->_partials[2]
                         : null);
         $config  = array();
         $service = $this->service('Tag');
@@ -180,8 +178,8 @@ class PostController extends Connexions_Controller_Action
         {
             // Rendering all tabs/all sections OR 'tabs/recommended'
 
-            // /*
-            Connexions::log("PostController::_prepareSuggestions_Tags(): "
+            /*
+            Connexions::log("PostController::_prepare_suggestions_Tags(): "
                             . "prepare 'recommended' section, url[ %s ]",
                             Connexions::varExport($postInfo['url']));
             // */
@@ -213,6 +211,12 @@ class PostController extends Connexions_Controller_Action
                                                 $fetchOrder,
                                                 $this->_maxTagsRecommended);
 
+                /*
+                Connexions::log("PostController::_prepare_suggestions_Tags(): "
+                                . "tags[ %s ]",
+                                Connexions::varExport($tags));
+                // */
+
                 if ($tags !== null)
                 {
                     $sConfig['items']            = $tags;
@@ -237,8 +241,8 @@ class PostController extends Connexions_Controller_Action
         {
             // Rendering all tabs/all sections OR 'tabs/top'
 
-            // /*
-            Connexions::log("PostController::_prepareSuggestions_Tags(): "
+            /*
+            Connexions::log("PostController::_prepare_suggestions_Tags(): "
                             . "prepare 'top' section, viewer[ %s ]",
                             Connexions::varExport($this->_viewer));
             // */
@@ -290,10 +294,10 @@ class PostController extends Connexions_Controller_Action
      *
      *  @return An array of tags pane configuration data.
      */
-    protected function _prepareSuggestions_People(array &$postInfo)
+    protected function _prepare_suggestions_People(array &$postInfo)
     {
-        // /*
-        Connexions::log("PostController::_prepareSuggestions_People(): "
+        /*
+        Connexions::log("PostController::_prepare_suggestions_People(): "
                         . "partials[ %s ]",
                         Connexions::varExport($this->_partials));
         // */
@@ -303,8 +307,8 @@ class PostController extends Connexions_Controller_Action
          * already be extracted leaving '_partials' containing
          * [ tags, recommended ]
          */
-        if ( (count($this->_partials) > 0) &&
-             ($this->_partials[0] !== 'people'))
+        if ( (count($this->_partials) > 1) &&
+             ($this->_partials[1] !== 'people'))
         {
             /* We're not rendering the 'people' portion so no configuration is 
              * needed
@@ -315,8 +319,8 @@ class PostController extends Connexions_Controller_Action
         /* We are rendering the 'people' portion, possibly just a certain 
          * section
          */
-        $section = (count($this->_partials) > 1
-                        ? $this->_partials[1]
+        $section = (count($this->_partials) > 2
+                        ? $this->_partials[2]
                         : null);
         $config  = array();
         $service = $this->service('User');
@@ -494,18 +498,5 @@ class PostController extends Connexions_Controller_Action
         }
 
         return $bookmark;
-    }
-
-    /** @brief  Render the sidebar based upon the incoming request.
-     *  @param  usePlaceholder      Should the rendering be performed
-     *                              immediately into a placeholder?
-     *                              [ true, into the 'right' placeholder ]
-     *
-     *
-     *  :XXX: Override to produce nothing since Post currently has no sidebar.
-     */
-    protected function _renderSidebar($userPlaceholde = true)
-    {
-        return;
     }
 }

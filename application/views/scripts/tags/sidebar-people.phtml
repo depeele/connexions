@@ -5,15 +5,18 @@
  *  sidebar (i.e. the 'People' tab).
  *
  *  Incoming members:
- *      sidebarHelper   A View_Helper_HtmlSidebar instance configured with
- *                      information about the 'people' sidebar pane;
- *
  *      url             The full url for the main controller of this page;
  *      viewer          The Model_User instance representing the current
  *                      viewer;
  *      users           A Model_Set_User instance containing information about
  *                      any requested users (i.e. user restrictions);
+ *      sidebar         Configuration for the sidebar presentation;
  */
+$paneName = 'people';
+$config   =  (is_array($this->sidebar['panes']) &&
+              is_array($this->sidebar['panes'][$paneName])
+                ? $this->sidebar['panes'][$paneName]
+                : array());
 
 ?>
   <div class='columnHeader'>
@@ -25,7 +28,6 @@
   <?php
 
     // Tag-related users
-    $config        = $this->sidebarHelper->getPane('people');
     $htmlItemCloud = $this->htmlItemCloud($config);
 
     echo $htmlItemCloud->render();

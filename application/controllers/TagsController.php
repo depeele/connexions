@@ -68,10 +68,8 @@ class TagsController extends Connexions_Controller_Action
 
         $this->view->users  = $this->_users;
 
-        // Handle this request based on the current context / format
-        $this->_handleFormat('tags');
-
-        //Connexions::log("TagsController::indexAction(): - complete");
+        // HTML form/cookie namespace
+        $this->_namespace = 'tags';
     }
 
     /** @brief Redirect all other actions to 'index'
@@ -102,9 +100,9 @@ class TagsController extends Connexions_Controller_Action
      *  This will collect the variables needed to render the main view, placing
      *  them in $view->main as a configuration array.
      */
-    protected function _prepareMain($htmlNamespace  = '')
+    protected function _prepare_main()
     {
-        parent::_prepareMain($htmlNamespace);
+        parent::_prepare_main();
 
         $itemBaseUrl = (count($this->_users) === 1
                         ? $this->view->baseUrl('/'. $this->_users .'/')
@@ -150,7 +148,7 @@ class TagsController extends Connexions_Controller_Action
         $fetchOrder = $config['sortBy'] .' '. $config['sortOrder'];
 
         /*
-        Connexions::log("TagsController::_prepareMain(): "
+        Connexions::log("TagsController::_prepare_main(): "
                         . "offset[ %d ], count[ %d ], order[ %s ]",
                         $offset, $count, $fetchOrder);
         // */
@@ -174,16 +172,13 @@ class TagsController extends Connexions_Controller_Action
         $this->view->main = $config;
 
         /*
-        Connexions::log("TagsController::_prepareMain(): "
+        Connexions::log("TagsController::_prepare_main(): "
                         .   "main[ %s ]",
                         Connexions::varExport($this->view->main));
         // */
     }
 
     /** @brief  Prepare for rendering the sidebar view.
-     *  @param  async   Should we setup to do an asynchronous render
-     *                  (i.e. tab callbacks will request tab pane contents when 
-     *                        needed)?
      *
      *  This will collect the variables needed to render the sidebar view,
      *  placing them in $view->sidebar as a configuration array.
@@ -194,9 +189,13 @@ class TagsController extends Connexions_Controller_Action
      *        particular, it will notify the sidbar helper of the items that
      *        are being presented in the main view.
      */
-    protected function _prepareSidebar($async   = false)
+    protected function _prepare_sidebar()
     {
-        parent::_prepareSidebar($async);
+        parent::_prepare_sidebar();
+
+        $async   = ($this->_format === 'partial'
+                        ? false
+                        : true);
 
         $extra = array(
             'users' => $this->_users,
@@ -234,7 +233,6 @@ class TagsController extends Connexions_Controller_Action
          * that we've gathered thus far.
          *
          */
-        $sidebar = $this->view->htmlSidebar( $this->view->sidebar );
         if ($async === false)
         {
             /* Finialize sidebar preparations by retrieving the necessary model 
@@ -247,33 +245,31 @@ class TagsController extends Connexions_Controller_Action
              */
             if (! isset($this->view->main))
             {
-                $this->_prepareMain();
+                $this->_prepare_main();
             }
 
             $part = (is_array($this->_partials)
-                        ? $this->_partials[0]
+                        ? $this->_partials[1]
                         : null);
 
             if ( ($part === null) || ($part === 'tags') )
             {
-                $this->_prepareSidebarPane('tags', $sidebar);
+                $this->_prepare_sidebarPane('tags');
             }
 
             if ( ($part === null) || ($part === 'people') )
             {
-                $this->_prepareSidebarPane('people', $sidebar);
+                $this->_prepare_sidebarPane('people');
             }
 
             if ( ($part === null) || ($part === 'items') )
             {
-                $this->_prepareSidebarPane('items', $sidebar);
+                $this->_prepare_sidebarPane('items');
             }
         }
 
-        // Pass the configured instance of the sidebar helper to the views
-        $this->view->sidebarHelper = $sidebar;
         /*
-        Connexions::log("TagsController::_prepareSidebar(): "
+        Connexions::log("TagsController::_prepare_sidebar(): "
                         .   "sidebar[ %s ]",
                         Connexions::varExport($this->view->sidebar));
         // */
@@ -285,16 +281,13 @@ class TagsController extends Connexions_Controller_Action
      *          presented.
      *  @param  pane    The portion of the sidebar to render
      *                  (tags | people | items);
-     *  @param  sidebar The View_Helper_HtmlSidebar instance;
      *
      */
-    protected function _prepareSidebarPane(                        $pane,
-                                           View_Helper_HtmlSidebar &$sidebar)
+    protected function _prepare_sidebarPane($pane)
     {
-        $config  = $sidebar->getPane($pane);
+        $config =& $this->view->sidebar['panes'][$pane];
 
-        $config['viewer']    =& $this->_viewer;
-        $config['cookieUrl'] =  $this->_rootUrl;
+        $config['viewer'] =& $this->_viewer;
 
         $perPage = ((int)$config['perPage'] > 0
                         ? (int)$config['perPage']
@@ -331,11 +324,7 @@ class TagsController extends Connexions_Controller_Action
 
             //$config['selected']         =& $this->_users;
 
-            $config['items']            =& $tags;
-            $config['itemsType']        =
-                                 View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
-
-            $config['weightName']  =  'userItemCount';
+            $config['items']       =& $tags;
             $config['weightTitle'] =  'Tagged items';
             if (count($this->_users) === 1)
             {
@@ -376,7 +365,7 @@ class TagsController extends Connexions_Controller_Action
                  */
 
                 /*
-                Connexions::log("TagsController::_prepareSidebarPane( %s ): "
+                Connexions::log("TagsController::_prepare_sidebarPane( %s ): "
                                 .   "Fetch all people %d-%d",
                                 $pane,
                                 $offset, $offset + $count);
@@ -389,7 +378,7 @@ class TagsController extends Connexions_Controller_Action
                 // Users related to the tags used by the given set of user.
 
                 // /*
-                Connexions::log("TagsController::_prepareSidebarPane( %s ): "
+                Connexions::log("TagsController::_prepare_sidebarPane( %s ): "
                                 .   "Fetch users %d-%d related to tags "
                                 .   "used by users[ %s ]",
                                 $pane,
@@ -405,7 +394,7 @@ class TagsController extends Connexions_Controller_Action
                  */
                 if (! isset($this->view->main))
                 {
-                    $this->_prepareMain();
+                    $this->_prepare_main();
                 }
 
                 $tags = $this->view->main['tags'];
@@ -424,9 +413,8 @@ class TagsController extends Connexions_Controller_Action
 
 
             $config['items']            =& $users;
-            $config['itemsType']        =
-                                 View_Helper_HtmlItemCloud::ITEM_TYPE_USER;
-            $config['itemBaseUrl']      =  $this->_helper->url(null, 'tags');
+            //$config['itemBaseUrl']      =  $this->_helper->url(null, 'tags');
+            $config['itemBaseUrl']      =  $this->view->baseUrl('/tags/');
             $config['weightName']       =  'totalItems';
             $config['weightTitle']      =  'Total Bookmarks';
             $config['titleTitle']       =  'User';
@@ -451,9 +439,8 @@ class TagsController extends Connexions_Controller_Action
                                                  $offset);
 
             $config['items']            =& $items;
-            $config['itemsType']        =
-                                 View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
-            $config['itemBaseUrl']      =  $this->_helper->url(null, 'url');
+            //$config['itemBaseUrl']      =  $this->_helper->url(null, 'url');
+            $config['itemBaseUrl']      =  $this->view->baseUrl('/url/');
             $config['weightName']       =  'userCount';
             $config['weightTitle']      =  'Taggers';
             $config['titleTitle']       =  'Item Url';
@@ -463,7 +450,5 @@ class TagsController extends Connexions_Controller_Action
                                  Connexions_Service::SORT_DIR_DESC;
             break;
         }
-
-        $sidebar->setPane($pane, $config);
     }
 }
