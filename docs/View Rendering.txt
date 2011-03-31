@@ -1,4 +1,61 @@
 ===============================================================================
+Connexions_Controller_Action        extends Zend_Controller_Action
+===============================================================================
+  The base Connexions controller, used as the super class of nearly all
+  Connexions controllers.  This provides primary rendering for all controllers
+  and actions, triggering most of the other view helpers documented here.
+
+    _request    The incoming request;
+    _viewer     The current viewer, possibly authenticated;
+
+    _rootUrl    The site's base URL (same as _baseUrl);
+    _baseUrl    The site's base URL (same as _rootUrl);
+    _url        The current request URL;
+
+    _streaming  Does the current request include 'streaming=true'.  If so,
+                Bootstrap will have disabled output buffering and layouts;
+
+    _format     The rendering format [ "html" ];
+    _partials   An array of partial rendering information used to select the
+                view script to render as well as controller methods to invoke
+                in prepration of that rendering.  Initialized by
+                _handleFormat(), if '_format' is "partial", this will be take
+                from the value of "part".  Otherwise, it will be [ "index" ];
+    _namespace  The form/cookie namespace [ '' ];
+
+
+    View Scripts
+    ---------------------------------------------------------------------------
+    application/views/scripts/%controller%/%partial-parts%.phtml
+    application/views/scripts/sidebar.phtml
+
+
+    Methods
+    ---------------------------------------------------------------------------
+    postDispatch()      - invoked after dispatch of the target action via the
+                          Zend dispatcher, this is used to centralize the
+                          invokation of _handleFormat();
+    _handleFormat()     - generate '_partials' and handle the processing of
+                          '_format' via _renderPartial()
+                          (invoked automatically via postDispatch());
+    _renderPartial()    - performs view preparation and rendering based upon
+                          '_partials'
+                          (invoked automatically via _handleFormat());
+    _renderSidebar()    - performs sidebar rendering for the top-level "index"
+                          page (invoked automatically);
+    _preparePartial()   - performs view preparation based upon '_partials'
+                          (invoked automatically via _renderPartial());
+
+    _prepare_main()     - provides common preparation for the rendering of the
+                          main view (invoked automatically);
+    _prepare_sidebar()  - provides common preparation for the rendering of the
+                          theh sidebar (invoked automatically);
+    _prepare_post()     - provides common validation of the request method for
+                          any "post" partial (invoked automatically);
+
+
+
+===============================================================================
 View_Helper_HtmlPaginationControl   extends Zend_View_Helper_Abstract
 ===============================================================================
   Present an HTML version of a pagination control.
@@ -35,6 +92,22 @@ View_Helper_HtmlDisplayOptions      extends Zend_View_Helper_Abstract
   Present user-selectable display options used to adjust the presentation of
   a list.
 
+    namespace           State namespace for displayOption-related cookies;
+
+    fields              An array of namespaced form fields, indexed by CSS
+                        class with the requored HTML, used to present option
+                        controls;
+
+    groups              The available display groups -- named groupings of
+                        presentation components that allow quick selection of a
+                        pre-defined group;
+
+    definitions         An array of key/value pairs representing the available
+                        presentation components and the string used to identify
+                        each
+                        (i.e. the portions of items that can be shown/hidden);
+
+
     View Scripts
     ---------------------------------------------------------------------------
     application/views/scripts/displayOptions.phtml
@@ -45,7 +118,25 @@ View_Helper_HtmlDisplayOptions      extends Zend_View_Helper_Abstract
 
     Methods
     ---------------------------------------------------------------------------
-    *** MANY / complex ***
+    getGroup()              - given an identification string, retrieve the
+                              matching group;
+    getGroupSelector()      - given an identification string, retrieve the
+                              CSS selector string representing the matching
+                              group;
+    getGroupsMap()          - retrieve a key/value array, keyed by group name
+                              with the CSS selector of each;
+    getGroupValue()         - retrieve the current value of an identified
+                              field;
+    getBestGroupMatch()     - retrieve the group that best matches the current
+                              set of values;
+    getGroupValues()        - retrieve the current values;
+
+    addFormField()          - add a new, namespaced form field;
+
+    render()                - render the HTML of the display options control;
+
+    renderOptionGroupsElement()
+                            - render a single element;
 
 
 
@@ -602,10 +693,6 @@ Move Javascript out of helpers into view scripts
 Rename 'displayStyles' to 'displayOptions' in:   ??
     View_Helper_HtmlBookmarks
     View_Helper_HtmlUsers
-
-Move 'ulCss' down to View_Helper_List since it is used by the default
-    _listScript ('list.phtml') OR, remove 'list.phtml' as the default in
-    View_Helper_List ??
 
 Expand Cloud Item types (View_Helper_HtmlItemCloud):
     'user', 'tag', 'item'
