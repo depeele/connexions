@@ -151,7 +151,6 @@ class Connexions_Controller_Action extends Zend_Controller_Action
      *  @param  noController    Use controller name as subdirectory [ false ];
      *
      *  @return void
-    public function render($action = null, $name = null, $noController = false)
      */
     public function postDispatch()
     {
