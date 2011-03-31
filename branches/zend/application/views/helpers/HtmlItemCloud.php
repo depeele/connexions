@@ -359,31 +359,6 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     public function render()
     {
-        if ($this->includeScript !== false)
-        {
-            /* Prepare configuration for the Javascript widget that will handle
-             * client-side interactions.
-             */
-            $do        = $this->getDisplayOptions();
-            $dsConfig  = $do->getConfig();
-            $namespace = $dsConfig['namespace'];
-            $config    = array('namespace'      => $namespace,
-                               'partial'        => $this->panePartial,
-                               'hiddenVars'     => $this->paneVars,
-                               'displayOptions' => $dsConfig,
-                               'showControls'   => $this->showControls,
-                         );
-
-            /*
-            Connexions::log("View_Helper_HtmlItemCloud::render(): config[ %s ]",
-                            Connexions::varExport($config));
-            // */
-
-            $call   = "$('#{$namespace}Cloud').cloudPane("
-                    .               Zend_Json::encode($config) .");";
-            $this->view->jQuery()->addOnLoad($call);
-        }
-
         // Render HTML used by connexions.cloudPane.js
         $res = $this->view->partial('itemCloud.phtml',
                                     array('helper' => $this));
@@ -423,6 +398,16 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         }
 
         return $this->_displayOptions;
+    }
+
+    /** @brief  Retrieve the DisplayOptions configiration data. */
+    public function getDisplayOptionsConfig()
+    {
+        $do = $this->getDisplayOptions();
+
+        return ($do === null
+                    ? array()
+                    : $do->getConfig());
     }
 
     /** @brief  Establish the set of hidden items.

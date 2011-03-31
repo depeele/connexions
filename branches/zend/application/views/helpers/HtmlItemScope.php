@@ -12,14 +12,12 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
 {
     /** @brief  Set-able parameters . */
     protected   $_params    = array(
-        'namespace'         => null,
+        'namespace'         => '',
 
         'hideInput'         => false,
         'inputLabel'        => 'Items', /* The text to present when the
                                          * input box is empty;
                                          */
-        'includeScript'     => true,        // Include Javascript?
-
         'inputName'         => 'items', // The form-name for the input box;
 
         'path'              => null,    /*  A simple array containing the names
@@ -63,7 +61,9 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
     {
         //Connexions::log("View_Helper_HtmlItemScope::__construct()");
         if (! empty($config))
+        {
             $this->populate($config);
+        }
     }
 
     /** @brief  Given an array of configuration data, populate the parameter of
@@ -107,6 +107,21 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
                         Connexions::varExport($this->_params));
 
         // */
+
+        return $this;
+    }
+
+    /** @brief  Set the namespace, converting null to ''.
+     *  @param  namespace   The (new) namespace.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function setNamespace($namespace)
+    {
+        if ($namespace === null)
+            $namespace = '';
+
+        $this->_params['namespace'] = $namespace;
 
         return $this;
     }
@@ -215,6 +230,15 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
                     : null);
     }
 
+    /** @brief  Return all current parameters.
+     *
+     *  @return An array of parameters
+     */
+    public function getParams()
+    {
+        return $this->_params;
+    }
+
     /** @brief  Render an HTML version of Item Scope.
      *  @param  config  A configuration array (see populate());
      *
@@ -237,19 +261,6 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
      */
     public function render()
     {
-        $namespace = $this->namespace;
-
-        if ($this->includeScript !== false)
-        {
-            if ($namespace === null)
-                $namespace = '';
-
-            $jQuery = $this->view->jQuery();
-
-            $jQuery->addOnLoad("$('.{$namespace}ItemScope').itemScope("
-                                .    json_encode($this->_params) .');');
-        }
-
         $res = $this->view->partial('itemScope.phtml',
                                      array('helper' => $this));
         return $res;
