@@ -38,11 +38,12 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
         'showRelation'      => true,        // Show sidebar relation indicator?
         'showOptions'       => true,        // Show display options?
-        'showControls'      => false,       /* Should item management controls
+        'showControls'      => null,        /* Should item management controls
                                              * be presented (i.e. is the
                                              * current, authenticated viewer
                                              * the owner of all items)?
                                              */
+        'includeScript'     => true,        // Include Javascript?
 
         'itemType'          => self::ITEM_TYPE_ITEM,
         'displayStyle'      => self::STYLE_CLOUD,
@@ -135,8 +136,6 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
     protected       $_currentSortBy     = null;
     protected       $_currentSortOrder  = null;
 
-    static protected $_initialized      = array();
-
     /** @brief  Construct a new Bookmarks helper.
      *  @param  config  A configuration array (see populate());
      */
@@ -144,16 +143,17 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
     {
         //Connexions::log("View_Helper_HtmlItemCloud::__construct()");
 
+        // Include defaults for any option that isn't directly set
         foreach (self::$defaults as $key => $value)
         {
-            if (! isset($this->_params[$key]))
-                $this->_params[$key] = $value;
+            if (! isset($config[$key]))
+            {
+                $config[$key] = $value;
+            }
         }
 
-        if (! empty($config))
-            $this->populate($config);
+        $this->populate($config);
     }
-
 
     /** @brief  Configure and retrive this helper instance.
      *  @param  config  A configuration array (see populate());
@@ -194,24 +194,39 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     public function populate(array $config)
     {
-        // Variables that MUST be set BEFORE 'namespace'...
-        $setControls = false;
-        foreach (array('cookieUrl', 'panePartial', 'paneVars',
-                       'viewer', 'users') as $key)
+        foreach ($config as $key => $value)
         {
-            if (isset($config[$key]))
-            {
-                if ( ($key === 'viewer') || ($key === 'users') )
-                {
-                    $setControls = true;
-                }
-
-                $this->__set($key, $config[$key]);
-                unset($config[$key]);
-            }
+            $this->__set($key, $value);
         }
 
-        if ($setControls === true)
+        return $this;
+    }
+
+    public function __set($key, $value)
+    {
+        $method = 'set'. ucfirst($key);
+
+        /*
+        Connexions::log("View_Helper_HtmlItemCloud::__set(): "
+                        . "key[ %s ], value[ %s ]",
+                        $key,
+                        (is_object($value) &&
+                         ($value instanceof Zend_Paginator)
+                            ? 'Zend_Paginator'
+                            : Connexions::varExport($value)) );
+        // */
+
+        if (method_exists($this, $method))
+        {
+            $this->{$method}($value);
+        }
+        else
+        {
+            $this->_params[$key] = $value;
+        }
+
+        /* Make this late-bound via getShowControls()
+        if (($key === 'viewer') || ($key === 'users'))
         {
             // (Re)Set 'showControls' based upon 'users' and 'viewer'
             $users  = $this->users;
@@ -229,64 +244,71 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
             {
                 $this->__set('showControls', false);
             }
-
-            /*
-            Connexions::log("View_Helper_HtmlItemCloud::populate(): "
-                            . "viewer[ %s ], users[ %s ], showControls[ %s ]",
-                            Connexions::varExport($viewer),
-                            Connexions::varExport($users),
-                            Connexions::varExport($this->showControls));
-            // */
         }
-
-
-        foreach ($config as $key => $value)
-        {
-            if ($key === 'hiddenItems')
-            {
-                $list = (is_array($value)
-                            ? $value
-                            : preg_split('/\s*,\s*/', trim($value)) );
-
-                foreach ($list as $value)
-                {
-                    $this->addHiddenItem($value);
-                }
-
-                continue;
-            }
-
-            $this->__set($key, $value);
-            //$this->_params[$key] = $value;
-        }
-
-        /*
-        Connexions::log("View_Helper_HtmlItemCloud::populate(): params[ %s ]",
-                        print_r($this->_params, true));
-
         // */
-
-        return $this;
-    }
-
-    public function __set($key, $value)
-    {
-        $method = 'set'. ucfirst($key);
-        if (method_exists($this, $method))
-        {
-            $this->{$method}($value);
-        }
-        else
-        {
-            $this->_params[$key] = $value;
-        }
     }
 
     public function __get($key)
     {
-        return (isset($this->_params[$key])
-                    ? $this->_params[$key]
-                    : null);
+        $method = 'get'. ucfirst($key);
+        $value  = null;
+
+        if (method_exists($this, $method))
+        {
+            $value = $this->{$method}();
+        }
+        else
+        {
+            $value = (isset($this->_params[$key])
+                        ? $this->_params[$key]
+                        : null);
+        }
+
+        return $value;
+    }
+
+    /** @brief  Retrieve the 'showControls' parameter.
+     *
+     *  If 'showControls' is not yet a boolean, attempt to establish the value
+     *  based upon 'users' and 'viewer'.
+     *
+     *  Note: This should NOT be invoked BEFORE 'users' and 'viewer' are set to
+     *        their final values.
+     *
+     *  @return true | false
+     */
+    public function getShowControls()
+    {
+        if (! is_bool($this->_params['showControls']))
+        {
+            // set 'showControls' based upon 'users' and 'viewer'
+            $users  = $this->users;
+            $viewer = $this->viewer;
+            if ( ($viewer !== null) &&
+                 ( (($users instanceof Connexions_Model)     &&
+                        ($viewer->isSame($users)) )             ||
+                   (($users instanceof Connexions_Model_Set) &&
+                        (count($users) === 1)    &&
+                        ($viewer->isSame($users[0]))) ) )
+            {
+                $this->__set('showControls', true);
+            }
+            else
+            {
+                $this->__set('showControls', false);
+            }
+
+            /*
+            Connexions::log("View_Helper_HtmlItemCloud::getShowControls(): "
+                            . "viewer[ %s ], users[ %s ], showControls[ %s ]",
+                            Connexions::varExport($viewer),
+                            Connexions::varExport($users),
+                            Connexions::varExport(
+                                            $this->_params['showControls']));
+            // */
+        }
+
+        return $this->_params['showControls'];
     }
 
     /** @brief  Are there hidden items?
@@ -337,36 +359,45 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     public function render()
     {
+        if ($this->includeScript !== false)
+        {
+            /* Prepare configuration for the Javascript widget that will handle
+             * client-side interactions.
+             */
+            $do        = $this->getDisplayOptions();
+            $dsConfig  = $do->getConfig();
+            $namespace = $dsConfig['namespace'];
+            $config    = array('namespace'      => $namespace,
+                               'partial'        => $this->panePartial,
+                               'hiddenVars'     => $this->paneVars,
+                               'displayOptions' => $dsConfig,
+                               'showControls'   => $this->showControls,
+                         );
+
+            /*
+            Connexions::log("View_Helper_HtmlItemCloud::render(): config[ %s ]",
+                            Connexions::varExport($config));
+            // */
+
+            $call   = "$('#{$namespace}Cloud').cloudPane("
+                    .               Zend_Json::encode($config) .");";
+            $this->view->jQuery()->addOnLoad($call);
+        }
+
         // Render HTML used by connexions.cloudPane.js
         $res = $this->view->partial('itemCloud.phtml',
                                     array('helper' => $this));
         return $res;
     }
 
-    /** @brief  Set the namespace, primarily for forms and cookies.
-     *  @param  namespace   The new namespace.
-     *
-     *  @return $this for a fluent interface.
-     */
-    public function setNamespace($namespace)
+    /** @brief  Retrieve the DisplayOptions helper. */
+    public function getDisplayOptions()
     {
-        $this->_params['namespace'] = $namespace;
-
-        /*
-        Connexions::log("View_Helper_HtmlItemCloud::setNamespace( %s )",
-                        $namespace);
-        // */
-
-        if ( ($this->showOptions !== false) &&
-             (! @isset(self::$_initialized[$namespace])) &&
-             is_object($this->view) )
+        if ( ($this->_displayOptions === null) &&
+             ($this->showOptions !== false) )
         {
-            // Set / Update our displayOptions namespace.
-            $view   = $this->view;
-            $jQuery = $view->jQuery();
-
             $dsConfig = array(
-                            'namespace' => $namespace,
+                            'namespace' => $this->namespace,
                             'groups'    => self::$styleGroups,
                         );
 
@@ -375,15 +406,10 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                 $dsConfig['cookiePath'] = rtrim($this->cookieUrl, '/');
             }
 
-            /*
-            Connexions::log("View_Helper_HtmlItemCloud::setNamespace(): "
-                            . "new namespace: config[ %s ]",
-                            Connexions::varExport($dsConfig));
-            // */
-
             if ($this->_displayOptions === null)
             {
-                $this->_displayOptions = $view->htmlDisplayOptions($dsConfig);
+                $this->_displayOptions =
+                    $this->view->htmlDisplayOptions($dsConfig);
 
                 /* Ensure that the current display style is properly reflected
                  * in the new display options instance.
@@ -392,22 +418,31 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
             }
             else
             {
-                $this->_displayOptions->setNamespace($namespace);
+                $this->_displayOptions->setNamespace($this->namespace);
             }
+        }
 
-            $config = array('namespace'         => $namespace,
-                            'partial'           => $this->panePartial,
-                            'hiddenVars'        => $this->paneVars,
-                            'displayOptions'    => $dsConfig,
-                            'showControls'      => $this->showControls,
-                      );
-            $call   = "$('#{$namespace}Cloud').cloudPane("
-                    .               Zend_Json::encode($config) .");";
-            $jQuery->addOnLoad($call);
+        return $this->_displayOptions;
+    }
 
-            //$jQuery->addOnLoad("init_CloudOptions('{$namespace}');");
+    /** @brief  Establish the set of hidden items.
+     *  @param  items   An array OR comma-separated string of hidden item
+     *                  strings;
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function setHiddenItems($items)
+    {
+        // Reset the list.
+        $this->_hiddenItems = array();
 
-            self::$_initialized[$namespace] = true;
+        $list = (is_array($items)
+                    ? $items
+                    : preg_split('/\s*,\s*/', trim($items)) );
+
+        foreach ($list as $item)
+        {
+            $this->addHiddenItem($item);
         }
 
         return $this;
@@ -421,18 +456,21 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     public function setItems($items)
     {
-        if ($items instanceof Zend_Paginator)
+        if ($items !== null)
         {
-            /* We've been given a partially initiallzed paginator.
-             *
-             * Make sure the 'perPage' setting matches ours.
-             */
-            $items->setItemCountPerPage( $this->perPage );
-            $items->setCurrentPageNumber($this->page );
-        }
-        else if (! $items instanceof Connexions_Model_Set)
-        {
-            throw new Exception("Invalid class[ ". get_class($items) ." ]");
+            if ($items instanceof Zend_Paginator)
+            {
+                /* We've been given a partially initiallzed paginator.
+                 *
+                 * Make sure the 'perPage' setting matches ours.
+                 */
+                $items->setItemCountPerPage( $this->perPage );
+                $items->setCurrentPageNumber($this->page );
+            }
+            else if (! $items instanceof Connexions_Model_Set)
+            {
+                throw new Exception("Invalid class[ ". get_class($items) ." ]");
+            }
         }
 
         $this->_params['items'] = $items;
@@ -486,67 +524,28 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         return $this;
     }
 
-    /** @brief  Set the current style.
-     *  @param  style   A style value (self::STYLE_*)
-     *  @param  values  If provided, an array of field values for this style.
+    /** @brief  Get the name of the current display style value.
      *
-     *  @return $this for a fluent interface.
+     *  @return The style name (self::STYLE_*).
      */
-    public function setDisplayStyle($style, array $values = null)
+    public function getDisplayStyleName()
     {
-        /*
-        Connexions::log("View_Helper_HtmlItemCloud:"
-                        . "setDisplayStyle(): "
-                        .   "style[ %s ], values[ %s ]",
-                        $style, print_r($values, true));
-        // */
-
-        $reqStyle = $style;
-        if ($values !== null)
-        {
-            if ($this->_displayOptions !== null)
-            {
-                $this->_displayOptions->setGroupValues($values);
-            }
-        }
-        else
-        {
-            switch ($style)
-            {
-            case self::STYLE_LIST:
-            case self::STYLE_CLOUD:
-                break;
-
-            default:
-                $style = self::$defaults['displayStyle'];
-                break;
-            }
-
-            $this->_params['displayStyle'] = $style;
-            if ($this->_displayOptions !== null)
-            {
-                $this->_displayOptions->setGroup($style);
-            }
-        }
-
-        /*
-        Connexions::log('View_Helper_HtmlItemCloud::'
-                            . "setDisplayStyle({$reqStyle}) == [ "
-                            .   $this->_displayOptions->getGroup() ." ]");
-        // */
-    
-        return $this;
-    }
-
-    /** @brief  Get the current style value.
-     *
-     *  @return The style value (self::STYLE_*).
-     */
-    public function getDisplayStyle()
-    {
-        return ($this->_displayOptions !== null
+        $style = ( ($this->_displayOptions !== null)
                     ? $this->_displayOptions->getGroup()
-                    : $this->_params['displayStyle']);
+                    : (is_array($this->displayStyle)
+                        ? self::STYLE_CUSTOM
+                        : $this->displayStyle) );
+
+        /*
+        Connexions::log("View_Helper_HtmlItemCloud::getDisplayStyleName(): "
+                        . "_displayOptions %snull, "
+                        . "displayStyle[ %s ] == [ %s ]",
+                        ($this->_displayOptions !== null ? 'NOT ' : ''),
+                        Connexions::varExport($this->displayStyle),
+                        Connexions::varExport($style));
+        // */
+
+        return $style;
     }
 
     /** @brief  Set the desired sortBy.
@@ -683,7 +682,9 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     public function renderDisplayOptions()
     {
-        if ($this->showOptions === false)
+        $do = $this->getDisplayOptions();
+
+        if ($do === null)
         {
             return '';
         }
@@ -728,7 +729,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
         $html .= "</select>";
 
-        $this->_displayOptions->addFormField('sortBy', $html);
+        $do->addFormField('sortBy', $html);
 
 
         /**************************************************************
@@ -753,7 +754,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
         $html .=   "<br class='clear' />";
 
-        $this->_displayOptions->addFormField('sortOrder', $html);
+        $do->addFormField('sortOrder', $html);
 
 
         /**************************************************************
@@ -781,7 +782,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
         $hlClasses = 'field highlightCount';
         $formState = '';
-        if ($this->getDisplayStyle() !== self::STYLE_CLOUD)
+        if ($this->getDisplayStyleName() !== self::STYLE_CLOUD)
         {
             // Disable the highlightCount
             $formState  = ' disabled=true';
@@ -814,13 +815,13 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
               .    "</div>"                             // highlightCount }
               .    "<br class='clear' />";
 
-        $this->_displayOptions->addFormField('itemCounts', $html);
+        $do->addFormField('itemCounts', $html);
 
         /* _displayOptions->render will use the previously added fields, along
          * with the available display styles to render the complete display
          * options form.
          */
-        return $this->_displayOptions->render()
+        return $do->render()
                . "<br class='clear' />";
     }
 

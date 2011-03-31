@@ -45,14 +45,15 @@
  */
 $helper       = $this->helper;
 $namespace    = $helper->namespace;
-$displayStyle = $helper->getDisplayStyle(); //displayStyle;
+$displayStyle = $helper->getDisplayStyleName(); //displayStyle;
 $itemType     = $helper->itemType;
 $paginator    = $helper->paginator;
 $html         = $helper->html; // Holder for any additional HTML to be included
 
 //printf ("<!-- displayStyle [ %s ] -->\n", $displayStyle);
 
-Connexions::log("itemCloud.phtml: viewer[ %s ]", $helper->viewer);
+Connexions::log("itemCloud.phtml: displayStyle[ %s ], viewer[ %s ]",
+                Connexions::varExport($displayStyle), $helper->viewer);
 
 if ($helper->items !== null)
 {

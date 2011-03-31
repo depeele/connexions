@@ -122,8 +122,6 @@ class View_Helper_HtmlUsers extends View_Helper_Users
         )
     );
 
-    static protected $_initialized  = array();
-
     /** @brief  Set-able parameters. */
     protected       $_displayOptions    = null;
 
@@ -149,10 +147,13 @@ class View_Helper_HtmlUsers extends View_Helper_Users
      */
     public function __construct(array $config = array())
     {
+        // Include defaults for any option that isn't directly set
         foreach (self::$defaults as $key => $value)
         {
-            if (! isset($this->_params[$key]))
-                $this->_params[$key] = $value;
+            if (! isset($config[$key]))
+            {
+                $config[$key] = $value;
+            }
         }
 
         parent::__construct($config);
@@ -196,126 +197,62 @@ class View_Helper_HtmlUsers extends View_Helper_Users
         return $this->render();
     }
 
-    /** @brief  Set the namespace, primarily for forms and cookies.
-     *  @param  namespace   A string namespace.
-     *
-     *  @return View_Helper_HtmlUsers for a fluent interface.
-     */
-    public function setNamespace($namespace)
+    /** @brief  Retrieve the DisplayOptions helper. */
+    public function getDisplayOptions()
     {
-        /*
-        Connexions::log("View_Helper_HtmlUsers::"
-                            .   "setNamespace( {$namespace} )");
-        // */
-
-        parent::setNamespace($namespace);
-
-        if ($this->includeScript !== true)
-            return $this;
-
-        if (! @isset(self::$_initialized[$namespace]))
+        if ( ($this->_displayOptions === null) &&
+             ($this->view            !== null) &&
+             ($this->showOptions     !== false) )
         {
-            $view       = $this->view;
-            $dsConfig   = array(
-                                'namespace'     => $namespace,
-                                'definition'    => self::$displayStyles,
-                                'groups'        => self::$styleGroups
-                          );
+            $style    = $this->getDisplayStyleName();
+            $dsConfig = array(
+                            'namespace'  => $this->namespace,
+                            'definition' => self::$displayStyles,
+                            'groups'     => self::$styleGroups,
+                        );
 
             if ($this->cookieUrl !== null)
             {
                 $dsConfig['cookiePath'] = rtrim($this->cookieUrl, '/');
             }
 
-            /*
-            Connexions::log("View_Helper_HtmlUsers::setNamespace(): "
-                            . "new namespace: config[ %s ]",
-                            Connexions::varExport($dsConfig));
-            // */
+            $this->_displayOptions =
+                    $this->view->htmlDisplayOptions($dsConfig);
 
-
-            // Set / Update our displayOptions namespace.
-            if ($this->_displayOptions === null)
-            {
-                $this->_displayOptions = $view->htmlDisplayOptions($dsConfig);
-            }
-            else
-            {
-                $this->_displayOptions->setNamespace($namespace);
-            }
-
-            // Include required jQuery
-            $config = array('namespace'         => $namespace,
-                            'partial'           => $this->panePartial,
-                            'hiddenVars'        => $this->paneVars,
-                            'displayOptions'    => $dsConfig,
-                            'itemList'          => array(
-                                /* Rely on the CSS class of rendered items
-                                 * (see View_Helper_HtmlUsersUser)
-                                 * to determine their Javascript objClass
-                                'objClass'      => 'user',
-                                 */
-                                'ignoreDeleted' => $this->ignoreDeleted,
-                            ),
-                      );
-
-            $call   = "$('#{$namespace}List').itemsPane("
-                    .               Zend_Json::encode($config) .");";
-            $view->jQuery()->addOnLoad($call);
+            /* Ensure that the current display style is properly reflected
+             * in the new display options instance.
+             */
+            $this->_displayOptions->setGroup( $style,
+                                              ($style === self::STYLE_CUSTOM
+                                                ? $this->displayStyle
+                                                : null) );
         }
 
-        return $this;
+        return $this->_displayOptions;
     }
 
-    /** @brief  Set the current style.
-     *  @param  style   A style value (self::STYLE_*)
-     *  @param  values  If provided, an array of field values for this style.
+    /** @brief  Get the name of the current display style value.
      *
-     *  @return View_Helper_HtmlUsers for a fluent interface.
+     *  @return The style name (self::STYLE_*).
      */
-    public function setDisplayStyle($style, array $values = null)
+    public function getDisplayStyleName()
     {
-        if ($this->_displayOptions !== null)
-        {
-            if (is_array($style))
-            {
-                $values = $style;
-                $style  = self::STYLE_CUSTOM;
-            }
-
-            switch ($style)
-            {
-            case self::STYLE_REGULAR:
-            case self::STYLE_FULL:
-            case self::STYLE_CUSTOM:
-                break;
-
-            default:
-                $style = self::$defaults['displayStyle'];
-                break;
-            }
-
-            $this->_displayOptions->setGroup($style, $values);
-
-            /*
-            Connexions::log('View_Helper_HtmlUsers::'
-                            . "setDisplayStyle({$style}) == [ "
-                            .   $this->_displayOptions->getGroup() ." ]");
-            // */
-        }
-    
-        return $this;
-    }
-
-    /** @brief  Get the current style value.
-     *
-     *  @return The style value (self::STYLE_*).
-     */
-    public function getDisplayStyle()
-    {
-        return ($this->_displayOptions
+        $style = ( ($this->_displayOptions !== null)
                     ? $this->_displayOptions->getGroup()
-                    : self::$defaults['displayStyle']);
+                    : (is_array($this->displayStyle)
+                        ? self::STYLE_CUSTOM
+                        : $this->displayStyle) );
+
+        /*
+        Connexions::log("View_Helper_HtmlUsers::getDisplayStyleName(): "
+                        . "_displayOptions %snull, "
+                        . "displayStyle[ %s ] == [ %s ]",
+                        ($this->_displayOptions !== null ? 'NOT ' : ''),
+                        Connexions::varExport($this->displayStyle),
+                        Connexions::varExport($style));
+        // */
+
+        return $style;
     }
 
     /** @brief  Get the current showMeta value.
@@ -324,7 +261,8 @@ class View_Helper_HtmlUsers extends View_Helper_Users
      */
     public function getShowMeta()
     {
-        $val = $this->_displayOptions->getGroupValues();
+        $do  = $this->getDisplayOptions();
+        $val = $do->getGroupValues();
 
         if (! @is_bool($val['minimized']))
         {
@@ -350,7 +288,31 @@ class View_Helper_HtmlUsers extends View_Helper_Users
      */
     public function render()
     {
-        $this->_showParts = $this->getShowMeta();
+        if ($this->includeScript !== false)
+        {
+            /* Prepare configuration for the Javascript widget that will handle
+             * client-side interactions.
+             */
+            $do        = $this->getDisplayOptions();
+            $dsConfig  = $do->getConfig();
+            $namespace = $dsConfig['namespace'];
+            $config    = array('namespace'      => $namespace,
+                               'partial'        => $this->panePartial,
+                               'hiddenVars'     => $this->paneVars,
+                               'displayOptions' => $dsConfig,
+                               'itemList'       => array(
+                                    /* Rely on the CSS class of rendered items
+                                     * (see View_Helper_HtmlUsersUser)
+                                     * to determine their Javascript objClass
+                                    'objClass'      => 'user',
+                                     */
+                                    'ignoreDeleted' => $this->ignoreDeleted,
+                            ),
+                         );
+            $call   = "$('#{$namespace}List').itemsPane("
+                    .               Zend_Json::encode($config) .");";
+            $this->view->jQuery()->addOnLoad($call);
+        }
 
         return parent::render();
     }
@@ -364,6 +326,11 @@ class View_Helper_HtmlUsers extends View_Helper_Users
      */
     public function renderItem($item, $params = array())
     {
+        if ($this->_showParts === null)
+        {
+            $this->_showParts = $this->getShowMeta();
+        }
+
         $defaults = array(
             'namespace'  => $this->namespace,
             'user'       => $item,
@@ -444,6 +411,7 @@ class View_Helper_HtmlUsers extends View_Helper_Users
         if ($paginator === null)
             $paginator =& $this->paginator;
 
+        $do               = $this->getDisplayOptions();
         $namespace        = $this->namespace;
         $itemCountPerPage = $paginator->getItemCountPerPage();
 
@@ -483,7 +451,7 @@ class View_Helper_HtmlUsers extends View_Helper_Users
 
         $html .= "</select>";
 
-        $this->_displayOptions->addFormField('sortBy', $html);
+        $do->addFormField('sortBy', $html);
 
 
         /**************************************************************
@@ -508,7 +476,7 @@ class View_Helper_HtmlUsers extends View_Helper_Users
 
         $html .= "<br class='clear' />";
 
-        $this->_displayOptions->addFormField('sortOrder', $html);
+        $do->addFormField('sortOrder', $html);
 
         /**************************************************************
          * PerPage
@@ -531,12 +499,12 @@ class View_Helper_HtmlUsers extends View_Helper_Users
         $html .= "</select>"
               .  "<br class='clear' />";
 
-        $this->_displayOptions->addFormField('perPage', $html);
+        $do->addFormField('perPage', $html);
 
         /* _displayOptions->render will use the previously added fields, along
          * with the available display styles to render the complete display
          * options form.
          */
-        return $this->_displayOptions->render();
+        return $do->render();
     }
 }

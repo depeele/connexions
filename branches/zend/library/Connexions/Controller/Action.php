@@ -291,7 +291,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
      */
     protected function _handleFormat()
     {
-        // /*
+        /*
         Connexions::log("Connexions_Controller_Action(%s)::_handleFormat(): "
                         . "_format[ %s ], _namespace[ %s ], url[ %s ]",
                         get_class($this),
@@ -450,7 +450,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
 
             if (method_exists( $this, $method ))
             {
-                // /*
+                /*
                 Connexions::log("Connexions_Controller_Action(%s)::"
                                 . "_preparePartial(): "
                                 . "Invoke [ %s ]",
@@ -484,7 +484,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         // Perform direct rendering of the script indicated by '_partials'.
         $script = implode('-', $this->_partials);
 
-        // /*
+        /*
         Connexions::log("Connexions_Controller_Action(%s)::"
                         . "_renderPartial(): "
                         . "render view script [ %s ]",
@@ -512,7 +512,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         $controller = '';   //$this->_request->getParam('controller');
         $script     = $controller .'/sidebar.phtml';
 
-        // /*
+        /*
         Connexions::log("Connexions_Controller_Action(%s)::"
                         . "_renderSidebar(): entire sidebar via "
                         . "controller script [ %s ], view.sidebar[ %s ]",
@@ -535,43 +535,58 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         $request    =& $this->_request;
         $namespace  =  $this->_namespace;
 
-        // /*
-        Connexions::log("Connexions_Controller_Action::_prepareMain(): "
-                        . "namespace[ %s ], format[ %s ]",
-                        $namespace, $this->_format);
+        /*
+        Connexions::log("Connexions_Controller_Action::_prepare_main(): "
+                        . "namespace[ %s ], format[ %s ], all params[ %s ]",
+                        $namespace, $this->_format,
+                        Connexions::varExport($request->getParams()));
         // */
+
+        $config = array(
+            'namespace'     => $namespace,
+            'cookieUrl'     => $this->_rootUrl,
+            'viewer'        => &$this->_viewer,
+            'displayStyle'  => null,
+        );
 
         if (($this->_format === 'html') || ($this->_format === 'partial'))
         {
             /* HTML and Partial will typically be requested via click on a
              * pre-defined URL.
+             *
+             * "displayStyle" is indicated by a combination of
+             *  '%namespace%OptionGroup' and '%namespace%OptionsGroups_option'
              */
             $displayStyle = $request->getParam($namespace ."OptionGroup");
             $dsCustom     = $request->getParam($namespace
                                                     ."OptionGroups_option");
 
-            $perPage      = $request->getParam($namespace ."PerPage");
-            $page         = $request->getParam($namespace ."Page");
-            $sortBy       = $request->getParam($namespace ."SortBy");
-            $sortOrder    = $request->getParam($namespace ."SortOrder");
-
-            /*
-            Connexions::log("Connexions_Controller_Action::_prepareMain(): "
-                            . "displayStyle[ %s ], perPage[ %s ], page[ %s ], "
-                            . "sortBy[ %s ], sortOrder[ %s ]",
-                            $displayStyle, $perPage, $page,
-                            $sortBy, $sortOrder);
-            // */
-
             if ( ($displayStyle === 'custom') && (is_array($dsCustom)) )
                 $displayStyle = $dsCustom;
+
+            $config['displayStyle'] = $displayStyle;
+
+            /* Include ALL namespaced parameters
+             *  (i.e. ALL parameters with a prefix of %namespace%)
+             */
+            $params   = $request->getParams();
+            $nsLen    = strlen($namespace);
+            foreach ($params as $key => $val)
+            {
+                if (substr($key, 0, $nsLen) == $namespace)
+                {
+                    $nsKey = substr($key, $nsLen);
+                    $nsKey[0] = strtolower($nsKey[0]);
+
+                    $config[ $nsKey ] = $val;
+                }
+            }
         }
         else
         {
             /* All the rest are more subject to variability since they are
              * likely added by a user.
              */
-            $displayStyle = null;
             $perPage      = $request->getParam("perPage");
             $page         = $request->getParam("page");
             $sortBy       = $request->getParam("sortBy");
@@ -585,21 +600,23 @@ class Connexions_Controller_Action extends Zend_Controller_Action
 
             if (empty($perPage))    $perPage   = $request->getParam("limit");
             if (empty($page))       $page      = $request->getParam("offset");
+
+
+            $config['perPage']    = $perPage;
+            $config['page']       = $page;
+            $config['sortBy']     = $sortBy;
+            $config['sortOrder']  = $sortOrder;
         }
 
+        /*
+        Connexions::log("Connexions_Controller_Action::_prepare_main(): "
+                        . "namespace[ %s ], final config[ %s ]",
+                        $namespace,
+                        Connexions::varExport($config));
+        // */
+
         // Additional view variables for the HTML view.
-        $this->view->main = array(
-            'cookieUrl'     => $this->_rootUrl,
-            'namespace'     => $namespace,
-            'viewer'        => &$this->_viewer,
-
-            'perPage'       => $perPage,
-            'page'          => $page,
-            'sortBy'        => $sortBy,
-            'sortOrder'     => $sortOrder,
-
-            'displayStyle'  => $displayStyle,
-        );
+        $this->view->main = $config;
     }
 
     /** @brief  Prepare for rendering the sidebar view.

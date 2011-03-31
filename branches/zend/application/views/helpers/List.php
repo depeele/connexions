@@ -53,17 +53,12 @@ abstract class View_Helper_List extends Zend_View_Helper_Abstract
      */
     public function __construct(array $config = array())
     {
+        // Include defaults for any option that isn't directly set
         foreach (self::$defaults as $key => $value)
         {
-            if (! isset($this->_params[$key]))
+            if (! isset($config[$key]))
             {
-                /*
-                Connexions::log("View_Helper_List::__construct(): "
-                                . "'%s', default value '%s'",
-                                $key, $value);
-                // */
-
-                $this->_params[$key] = $value;
+                $config[$key] = $value;
             }
         }
 
@@ -74,8 +69,7 @@ abstract class View_Helper_List extends Zend_View_Helper_Abstract
                         Connexions::varExport($config));
         // */
 
-        if (! empty($config))
-            $this->populate($config);
+        $this->populate($config);
 
         return $this;
     }
@@ -107,7 +101,6 @@ abstract class View_Helper_List extends Zend_View_Helper_Abstract
         foreach ($config as $key => $value)
         {
             $this->__set($key, $value);
-            //$this->_params[$key] = $value;
         }
 
         return $this;
@@ -252,9 +245,7 @@ abstract class View_Helper_List extends Zend_View_Helper_Abstract
     public function render()
     {
         $res = $this->view->partial($this->_listScript,
-                                     array(
-                                         'helper' => $this,
-                                     ));
+                                     array('helper' => $this));
         return $res;
     }
 

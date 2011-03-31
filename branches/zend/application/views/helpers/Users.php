@@ -39,13 +39,16 @@ class View_Helper_Users extends View_Helper_List
      */
     public function __construct(array $config = array())
     {
-        // To allow parent::setSortOrder() to use the default we're overriding
+        // To allow parent::setSortOrder() use the default we're overriding
         parent::$defaults['sortOrder'] = self::$defaults['sortOrder'];
 
+        // Include defaults for any option that isn't directly set
         foreach (self::$defaults as $key => $value)
         {
-            if (! isset($this->_params[$key]))
-                $this->_params[$key] = $value;
+            if (! isset($config[$key]))
+            {
+                $config[$key] = $value;
+            }
         }
 
         parent::__construct($config);

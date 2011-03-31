@@ -42,16 +42,6 @@ $htmlBookmarks = $this->htmlBookmarks( $this->main );
 // Prepare the Html Item Scope helper
 $scopePath = array('Url' => $this->baseUrl('/url'));
 
-$scopeRpc = Connexions::getJsonRpcInfo();
-$scopeRpc['method'] = 'bookmark.autocompleteTag';
-$scopeRpc['params'] = array('tags'   => (count($this->tags) < 1
-                                            ? null
-                                            : $this->tags->__toString()),
-                            'items'  => ( (! $this->item)
-                                            ? null
-                                            : $this->item->urlHash),
-                     );
-
 $htmlItemScope = $this->htmlItemScope( array(
                     'namespace'         => $this->namespace,
                     'items'             => $htmlBookmarks->paginator,
@@ -59,7 +49,17 @@ $htmlItemScope = $this->htmlItemScope( array(
                     'inputLabel'        => 'Tags',
                     'inputName'         => 'Tags',
                     'path'              => $scopePath,
-                    'jsonRpc'           => $scopeRpc,
+                    'jsonRpc'           =>  array(
+                        'method'    =>   'bookmark.autocompleteTag',
+                        'params'    =>   array(
+                            'tags'  => (count($this->tags) < 1
+                                            ? null
+                                            : $this->tags->__toString()),
+                            'items'  => ( (! $this->item)
+                                            ? null
+                                            : $this->item->urlHash),
+                        ),
+                    ),
                  ));
 
 $links = $this->headLink();

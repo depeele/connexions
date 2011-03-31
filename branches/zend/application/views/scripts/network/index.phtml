@@ -45,14 +45,6 @@ $ownerStr = $this->owner->name;
 
 $scopePath = array($ownerStr => $this->baseUrl($ownerStr));
 
-$scopeRpc = Connexions::getJsonRpcInfo();
-$scopeRpc['method'] = 'bookmark.autocompleteTag';
-$scopeRpc['params'] = array('tags'   => (count($this->tags) < 1
-                                            ? null
-                                            : $this->tags->__toString()),
-                            'users'  => $this->owner->name,
-                     );
-
 $htmlItemScope = $this->htmlItemScope( array(
                     'namespace'         => $this->namespace,
                     'items'             => $htmlBookmarks->paginator,
@@ -60,7 +52,17 @@ $htmlItemScope = $this->htmlItemScope( array(
                     'inputLabel'        => 'Tags',
                     'inputName'         => 'Tags',
                     'path'              => $scopePath,
-                    'jsonRpc'           => $scopeRpc,
+                    'jsonRpc'           =>  array(
+                        'method'    =>   'bookmark.autocompleteTag',
+                        'params'    =>   array(
+                            'tags'  => (count($this->tags) < 1
+                                            ? null
+                                            : $this->tags->__toString()),
+                            // SHOULD be the users of the network
+                            'users' => $this->owner->__toString(),
+                                       // $this->owner->name
+                        ),
+                    ),
                  ));
 
 

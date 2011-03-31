@@ -77,6 +77,7 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
     protected           $_fieldMap      = array();
     protected           $_groups        = array();
 
+    protected           $_cookiePath    = null;
     protected           $_currentGroup  = null;
 
     /** @brief  Retrieve the HtmlDisplayOptions instance.
@@ -113,12 +114,12 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
                 // Different namespace!
                 if (@isset(self::$_initialized[$namespace]))
                 {
-                    /*
-                    Connexions::log(
-                            "View_Helper_HtmlDisplayOptions::"
-                            . "htmlDisplayOptions(): auto-switch "
-                            . "namespaces: '{$this->_namespace}' -> "
-                            .             "'{$namespace}'");
+                    // /*
+                    Connexions::log("View_Helper_HtmlDisplayOptions::"
+                                    . "htmlDisplayOptions(): auto-switch "
+                                    . "namespaces: '%s' -> '%s'",
+                                    $this->_namespace,
+                                    $namespace);
                     // */
 
                     /* An instance exists for this namespace; use and return
@@ -131,13 +132,13 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
                 }
                 else
                 {
-                    /*
+                    // /*
                     Connexions::log(
                             "View_Helper_HtmlDisplayOptions::"
                             . "htmlDisplayOptions(): new namespace: "
-                            .   " old[ {$this->_namespace} ], "
-                            .   " config[ "
-                            .       print_r($config, true) ." ]");
+                            .   " old[ %s ], config[ %s ]",
+                            $this->_namespace,
+                            Connexions::varExport($config));
                     // */
 
                     /* Create and initialize for this namespace; use and return
@@ -154,6 +155,9 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
 
             // Coopt the initial instance for this namespace...
         }
+
+        if (is_array($config['cookiePath']))
+            $this->cookiePath = $config['cookiePath'];
 
         if (is_array($config['definition']))
             $this->setDefinition($config['definition']);
@@ -210,12 +214,38 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
             $val =& $this->_groups;
             break;
 
+        case 'cookiePath':
+            $val = $this->_cookiePath;
+            break;
+
         default:
             $val = parent::__get($name);
             break;
         }
 
         return $val;
+    }
+
+    /** @brief  Retrieve the primary configuration information.
+     *
+     *  @return An array containing:
+     *              namespace
+     *              groups
+     *              definition
+     */
+    public function getConfig()
+    {
+        $config = array(
+            'namespace'  => $this->getNamespace(),
+            'groups'     => $this->getGroups(),
+            'definition' => $this->getDefinition(),
+        );
+        if ($this->_cookiePath !== null)
+        {
+            $config['cookiePath'] = $this->_cookiePath;
+        }
+
+        return $config;
     }
 
     /** @brief  Retrieve the current namespace.
@@ -483,6 +513,10 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
             $this->setGroups($val);
             break;
 
+        case 'cookiePath':
+            $this->_cookiePath = $val;
+            break;
+
         default:
             $val = parent::__get($name);
             break;
@@ -508,7 +542,10 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
         // */
 
         if (! isset($this->_groups[$groupName]))
+        {
+            //throw new Exception("setGroup() INVALID group '{$groupName}'");
             return null;
+        }
 
         $this->_currentGroup = $groupName;
 
@@ -939,6 +976,15 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
         }
 
         return $this;
+    }
+
+    /** @brief  Retrieve the current groups.
+     *
+     *  @return The current groups.
+     */
+    public function getGroups()
+    {
+        return $this->_groups;
     }
 
     /** @brief  Set a predefined group of options with a specific name.

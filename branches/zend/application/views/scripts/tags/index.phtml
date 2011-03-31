@@ -45,21 +45,21 @@ $htmlCloud = $this->htmlItemCloud( $this->main );
 // Prepare the Html Item Scope helper
 $scopePath = array('Tags' => $this->baseUrl('/tags'));
 
-$scopeRpc = Connexions::getJsonRpcInfo();
-$scopeRpc['method'] = 'tags.autocompleteUser';
-$scopeRpc['params'] = array('users'  => (count($this->users) < 1
-                                            ? null
-                                            : $this->users->__toString()),
-                      );
-
 $htmlItemScope = $this->htmlItemScope( array(
                     'namespace'         =>  $this->namespace,
-                    'items'             =>  $htmlCloud->paginator,  //&$this->main['tags'],
+                    'items'             =>  $htmlCloud->paginator,
                     'scope'             =>  $this->users,
                     'inputLabel'        =>  'Users',
                     'inputName'         =>  'Users',
                     'path'              =>  $scopePath,
-                    'jsonRpc'           =>  $scopeRpc,
+                    'jsonRpc'           =>  array(
+                        'method'    =>   'tag.autocompleteUser',
+                        'params'    =>   array(
+                            'users' => (count($this->users) < 1
+                                            ? null
+                                            : $this->users->__toString()),
+                        ),
+                    ),
                  ));
 
 $links = $this->headLink();
