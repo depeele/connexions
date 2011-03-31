@@ -19,6 +19,11 @@ class View_Helper_Bookmarks extends View_Helper_List
     static public   $defaults       = array(
         'listName'                  => 'bookmarks',
 
+        'sortBy'                    => self::SORT_BY_DATE_TAGGED,
+        'sortOrder'                 => Connexions_Service::SORT_DIR_DESC,
+
+        'multipleUsers'             => true,
+
         /* Connexions_Model_Set instances that the retrieved bookmarks should 
          * be related to
          */
@@ -29,10 +34,6 @@ class View_Helper_Bookmarks extends View_Helper_List
         // Additional 'where' conditions for the retrieved bookmarks
         'where'                     => null,
 
-        'sortBy'                    => self::SORT_BY_DATE_TAGGED,
-        'sortOrder'                 => Connexions_Service::SORT_DIR_DESC,
-
-        'multipleUsers'             => true,
     );
 
     static public   $sortTitles     = array(
