@@ -22,6 +22,10 @@ $excludeInfo    =  (isset($this->excludeInfo)
 $pages = $paginator->getPages();
 $pages = get_object_vars($pages);
 
+/* :NOTE: In most cases, Javascript activation/instantation of
+ *        connexions.paginator is handled by the container -- usually a
+ *        connexions.pane widget.
+ */
 ?>
 <form class='paginator<?= $cssForm ?>'>
  <div class='pager'><?
