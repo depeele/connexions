@@ -127,10 +127,10 @@ if ( $scope && (count($scope) > 0) )
 if ($helper->hideInput !== true)
 {
     $liHtml .= "<li class='scopeEntry'>"
-            .   "<label  for='{$helper->inputName}'>"
+            .   "<label  for='{$helper->inputName}' style='display:none;'>"
             .     $helper->inputLabel
             .   "</label>"
-            .   "<input name='{$helper->inputName}' />"
+            .   "<input name='{$helper->inputName}' class='ui-input' />"
             .   "<button type='submit'>&rang;</button>"
             .  "</li>";
 }
@@ -142,6 +142,14 @@ if ($itemCount !== null)
             .  "</li>";
 }
 
+
+/* Establish configuration for and schedule instantiation of a new Javascript
+ * connexions.itemScope() instance targeting the 'itemScope' form rendered just
+ * below.
+ */
+$widgetConfig = Zend_Json::encode( $helper->getParams() );
+$this->jQuery()->addOnLoad("$('.{$namespace}ItemScope')"
+                                    . ".itemScope({$widgetConfig});");
 
 /*********************************************************************
  * Assemble and render the final HTML

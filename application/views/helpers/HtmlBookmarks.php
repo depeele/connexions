@@ -27,7 +27,6 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
                                              */
 
         'displayStyle'      => self::STYLE_REGULAR,
-        'includeScript'     => true,
         'panePartial'       => 'main',
         'ulCss'             => 'bookmarks', // view/scripts/list.phtml
 
@@ -146,9 +145,6 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
      *                      - displayStyle      Desired display style
      *                                          (if an array, STYLE_CUSTOM)
      *                                          [ STYLE_REGULAR ];
-     *                      - includeScript     Should Javascript related to
-     *                                          bookmark presentation be
-     *                                          included?  [ true ];
      */
     public function __construct(array $config = array())
     {
@@ -225,6 +221,26 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         return $this->_displayOptions;
     }
 
+    /** @brief  Retrieve the DisplayOptions configiration data. */
+    public function getDisplayOptionsConfig()
+    {
+        $do = $this->getDisplayOptions();
+
+        return ($do === null
+                    ? array()
+                    : $do->getConfig());
+    }
+
+    /** @brief  Return any special configuration information that should be
+     *          passed to the Javascript connexions.itemList widget.
+     *
+     *  @return An array of configuration information.
+     */
+    public function getItemListConfig()
+    {
+        return array();
+    }
+
     /** @brief  Get the name of the current display style value.
      *
      *  @return The style name (self::STYLE_*).
@@ -292,31 +308,6 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         // */
     
         return $val;
-    }
-
-    /** @brief  Render an HTML version of a paginated set of bookmarks.
-     *
-     *  @return The HTML representation of the bookmarks.
-     */
-    public function render()
-    {
-        if ($this->includeScript !== false)
-        {
-            // Set / Update our displayOptions namespace.
-            $do        = $this->getDisplayOptions();
-            $dsConfig  = $do->getConfig();
-            $namespace = $dsConfig['namespace'];
-            $config    = array('namespace'      => $namespace,
-                               'partial'        => $this->panePartial,
-                               'hiddenVars'     => $this->paneVars,
-                               'displayOptions' => $dsConfig,
-                         );
-            $call   = "$('#{$namespace}List').itemsPane("
-                    .               Zend_Json::encode($config) .");";
-            $this->view->jQuery()->addOnLoad($call);
-        }
-
-        return parent::render();
     }
 
     /** @brief  Render HTML to represent a Bookmark within this list.

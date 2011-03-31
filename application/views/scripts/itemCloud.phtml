@@ -84,6 +84,21 @@ if ($paginator instanceof Zend_Paginator)
     $uiPagination->setPerPageChoices($helper->perPageChoices);
 }
 
+/* Establish configuration for and schedule instantiation of a new Javascript
+ * connexions.cloudPane() instance targeting the 'pane' div rendered just
+ * below.
+ */
+$paneConfig = array(
+    'namespace'      => $namespace,
+    'partial'        => $helper->panePartial,
+    'hiddenVars'     => $helper->paneVars,
+    'displayOptions' => $helper->getDisplayOptionsConfig(),
+    'showControls'   => $helper->showControls,
+);
+$paneConfig = Zend_Json::encode($paneConfig);
+$this->jQuery()->addOnLoad("$('#{$namespace}Cloud')"
+                                    . ".cloudPane({$paneConfig});");
+
 /*
 Connexions::log('views/scripts/itemCloud: show controls [ %s ]',
                 Connexions::varExport($helper->showControls));

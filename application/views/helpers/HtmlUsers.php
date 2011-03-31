@@ -26,7 +26,6 @@ class View_Helper_HtmlUsers extends View_Helper_Users
                                              */
 
         'displayStyle'      => self::STYLE_REGULAR,
-        'includeScript'     => true,
         'panePartial'       => 'main',
         'ulCss'             => 'users',     // view/scripts/list.phtml
 
@@ -141,9 +140,6 @@ class View_Helper_HtmlUsers extends View_Helper_Users
      *                      - displayStyle      Desired display style
      *                                          (if an array, STYLE_CUSTOM)
      *                                          [ STYLE_REGULAR ];
-     *                      - includeScript     Should Javascript related to
-     *                                          bookmark presentation be
-     *                                          included?  [ true ];
      */
     public function __construct(array $config = array())
     {
@@ -231,6 +227,33 @@ class View_Helper_HtmlUsers extends View_Helper_Users
         return $this->_displayOptions;
     }
 
+    /** @brief  Retrieve the DisplayOptions configiration data. */
+    public function getDisplayOptionsConfig()
+    {
+        $do = $this->getDisplayOptions();
+
+        return ($do === null
+                    ? array()
+                    : $do->getConfig());
+    }
+
+    /** @brief  Return any special configuration information that should be
+     *          passed to the Javascript connexions.itemList widget.
+     *
+     *  @return An array of configuration information.
+     */
+    public function getItemListConfig()
+    {
+        return array(
+            /* Rely on the CSS class of rendered items
+             * (see View_Helper_HtmlUsersUser)
+             * to determine their Javascript objClass
+            'objClass'      => 'user',
+             */
+            'ignoreDeleted' => $this->ignoreDeleted,
+        );
+    }
+
     /** @brief  Get the name of the current display style value.
      *
      *  @return The style name (self::STYLE_*).
@@ -280,41 +303,6 @@ class View_Helper_HtmlUsers extends View_Helper_Users
         // */
     
         return $val;
-    }
-
-    /** @brief  Render an HTML version of a paginated set of Users.
-     *
-     *  @return The HTML representation of the users.
-     */
-    public function render()
-    {
-        if ($this->includeScript !== false)
-        {
-            /* Prepare configuration for the Javascript widget that will handle
-             * client-side interactions.
-             */
-            $do        = $this->getDisplayOptions();
-            $dsConfig  = $do->getConfig();
-            $namespace = $dsConfig['namespace'];
-            $config    = array('namespace'      => $namespace,
-                               'partial'        => $this->panePartial,
-                               'hiddenVars'     => $this->paneVars,
-                               'displayOptions' => $dsConfig,
-                               'itemList'       => array(
-                                    /* Rely on the CSS class of rendered items
-                                     * (see View_Helper_HtmlUsersUser)
-                                     * to determine their Javascript objClass
-                                    'objClass'      => 'user',
-                                     */
-                                    'ignoreDeleted' => $this->ignoreDeleted,
-                            ),
-                         );
-            $call   = "$('#{$namespace}List').itemsPane("
-                    .               Zend_Json::encode($config) .");";
-            $this->view->jQuery()->addOnLoad($call);
-        }
-
-        return parent::render();
     }
 
     /** @brief  Render HTML to represent a User within this list.

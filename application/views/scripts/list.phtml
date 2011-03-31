@@ -28,6 +28,20 @@ $uiPagination = $this->htmlPaginationControl();
 $uiPagination->setNamespace($namespace);
 $uiPagination->setPerPageChoices($helper->perPageChoices);
 
+/* Establish configuration for and schedule instantiation of a new
+ * Javascript connexions.itemPane() instance targeting the 'pane' div rendered
+ * just below.
+ */
+$paneConfig = array(
+    'namespace'      => $namespace,
+    'partial'        => $helper->panePartial,
+    'hiddenVars'     => $helper->paneVars,
+    'displayOptions' => $helper->getDisplayOptionsConfig(),
+    'itemList'       => $helper->getItemListConfig(),
+);
+$paneConfig = Zend_Json::encode($paneConfig);
+$this->jQuery()->addOnLoad("$('#{$namespace}List').itemsPane({$paneConfig});");
+
 // Holder for any additional HTML to be included
 $html = $helper->html;
 
