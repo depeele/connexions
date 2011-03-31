@@ -118,6 +118,8 @@ View_Helper_HtmlDisplayOptions      extends Zend_View_Helper_Abstract
 
     Methods
     ---------------------------------------------------------------------------
+    getConfig()             - Retrieve primary configuration information;
+    getNamespace()          - Retrieve a non-null namespace;
     getGroup()              - given an identification string, retrieve the
                               matching group;
     getGroupSelector()      - given an identification string, retrieve the
@@ -133,7 +135,8 @@ View_Helper_HtmlDisplayOptions      extends Zend_View_Helper_Abstract
 
     addFormField()          - add a new, namespaced form field;
 
-    render()                - render the HTML of the display options control;
+    render()                - render the HTML of the display options control
+                                (via the displayOptions.phtml partial)
 
     renderOptionGroupsElement()
                             - render a single element;
@@ -162,7 +165,7 @@ View_Helper_List                    extends Zend_View_Helper_Abstract
                         and 'sortOrder'         [ null ];
 
     _listScript         View script to use for rendering the list
-                                                [ 'list.phtml' ];
+                                                [ null ];
     _itemScript         View script to use for rendering each item within the
                         list (MUST be set BEFORE invoking render())
                                                 [ null ];
@@ -175,9 +178,11 @@ View_Helper_List                    extends Zend_View_Helper_Abstract
     Methods
     ---------------------------------------------------------------------------
     render()        - return a rendered representation of the list
-                        (NOT used for all views, e.g. Feeds);
+                        (via the partial identified by '_listScript';
+                         NOT used for all views, e.g. Feeds);
     renderItem()    - return a rendered representation of a single item
-                        (NOT used for all views, e.g. Feeds);
+                        (via the partial identified by '_itemScript';
+                         NOT used for all views, e.g. Feeds);
     groupValue()    - provides the ability to group
                         (NOT used for all views, e.g. Feeds);
 
@@ -282,6 +287,13 @@ View_Helper_HtmlBookmarks           extends View_Helper_Bookmarks
 
     Methods
     ---------------------------------------------------------------------------
+    getDisplayOptions()     - Retrieve a configured HtmlDisplayOptions helper;
+    getDisplayOptionsConfig()
+                            - Retrieve configuration information for the
+                              HtmlDisplayOptions;
+    getItemListConfig()     - Retrieve any special configuration information
+                              that should be passed to the Javascript
+                              connexions.itemList widget;
     getShowMeta()           - Retrieve meta information about what the display
                                options say should be presented
                                (_displayOptions->getGroupValues());
@@ -421,6 +433,13 @@ View_Helper_HtmlUsers               extends View_Helper_Users
 
     Methods
     ---------------------------------------------------------------------------
+    getDisplayOptions()     - Retrieve a configured HtmlDisplayOptions helper;
+    getDisplayOptionsConfig()
+                            - Retrieve configuration information for the
+                              HtmlDisplayOptions;
+    getItemListConfig()     - Retrieve any special configuration information
+                              that should be passed to the Javascript
+                              connexions.itemList widget;
     getShowMeta()           - Retrieve meta information about what the display
                                options say should be presented
                                (_displayOptions->getGroupValues());
