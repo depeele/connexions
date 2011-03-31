@@ -60,13 +60,6 @@ if (count($this->tags) > 0)
 }
 */
 
-$scopeRpc = Connexions::getJsonRpcInfo();
-$scopeRpc['method'] = 'user.autocompleteTag';
-$scopeRpc['params'] = array('tags'   => (count($this->tags) < 1
-                                            ? null
-                                            : $this->tags->__toString()),
-                     );
-
 $htmlItemScope = $this->htmlItemScope( array(
                     'namespace'         => $this->namespace,
                     'items'             => $htmlUsers->paginator,
@@ -74,7 +67,14 @@ $htmlItemScope = $this->htmlItemScope( array(
                     'inputLabel'        => 'Tags',
                     'inputName'         => 'Tags',
                     'path'              => $scopePath,
-                    'jsonRpc'           => $scopeRpc,
+                    'jsonRpc'           =>  array(
+                        'method'    =>   'user.autocompleteTag',
+                        'params'    =>   array(
+                            'tags'  => (count($this->tags) < 1
+                                            ? null
+                                            : $this->tags->__toString()),
+                        ),
+                    ),
                  ));
 
 $baseUrl = $this->baseUrl('/'); //Connexions::url('/');

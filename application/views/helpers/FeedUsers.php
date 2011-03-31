@@ -21,10 +21,13 @@ class View_Helper_FeedUsers extends View_Helper_Users
      */
     public function __construct(array $config = array())
     {
+        // Include defaults for any option that isn't directly set
         foreach (self::$defaults as $key => $value)
         {
-            if (! isset($this->_params[$key]))
-                $this->_params[$key] = $value;
+            if (! isset($config[$key]))
+            {
+                $config[$key] = $value;
+            }
         }
 
         parent::__construct($config);

@@ -20,9 +20,8 @@ class View_Helper_HtmlPaginationControl
 
 
 
-    protected static    $_initialized       = false;
-    protected           $_namespace         = '';
-    protected           $_perPageChoices    = array(10, 25, 50, 100, 250, 500);
+    protected       $_namespace         = '';
+    protected       $_perPageChoices    = array(10, 25, 50, 100, 250, 500);
 
     public function setPerPageChoices($choices)
     {

@@ -46,12 +46,6 @@ $name = $this->owner->name;
 $scopePath = array($name    => $this->baseUrl('/'. $name),
                    'inbox'  => $this->baseUrl('/inbox/'. $name));
 
-$scopeRpc = Connexions::getJsonRpcInfo();
-$scopeRpc['method'] = 'bookmark.autocompleteTag';
-$scopeRpc['params'] = array('tags'   => $this->allTags->__toString(),
-                            'users'  => $this->owner->name,
-                     );
-
 $htmlItemScope = $this->htmlItemScope( array(
                     'namespace'         => $this->namespace,
                     'items'             => $htmlBookmarks->paginator,
@@ -59,7 +53,14 @@ $htmlItemScope = $this->htmlItemScope( array(
                     'inputLabel'        => 'Tags',
                     'inputName'         => 'Tags',
                     'path'              => $scopePath,
-                    'jsonRpc'           => $scopeRpc,
+                    'jsonRpc'           =>  array(
+                        'method'    =>   'bookmark.autocompleteTag',
+                        'params'    =>   array(
+                            'tags'  => $this->allTags->__toString(),
+                            'users' => $this->owner->__toString(),
+                                       // $this->owner->name,
+                        ),
+                    ),
                  ));
 
 

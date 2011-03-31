@@ -123,6 +123,11 @@ class TagsController extends Connexions_Controller_Action
         );
         $config = array_merge($this->view->main, $extra);
 
+        /*
+        Connexions::log("TagsController::_prepare_main(): config[ %s ]",
+                        Connexions::varExport($config));
+        // */
+
         // Defaults
         if ( ($config['perPage'] = (int)$config['perPage']) < 1)
             $config['perPage'] = 250;
@@ -377,7 +382,7 @@ class TagsController extends Connexions_Controller_Action
             {
                 // Users related to the tags used by the given set of user.
 
-                // /*
+                /*
                 Connexions::log("TagsController::_prepare_sidebarPane( %s ): "
                                 .   "Fetch users %d-%d related to tags "
                                 .   "used by users[ %s ]",

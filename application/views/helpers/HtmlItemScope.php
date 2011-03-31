@@ -18,6 +18,7 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
         'inputLabel'        => 'Items', /* The text to present when the
                                          * input box is empty;
                                          */
+        'includeScript'     => true,        // Include Javascript?
 
         'inputName'         => 'items', // The form-name for the input box;
 
@@ -54,9 +55,6 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
     );
 
     protected       $_hiddenItems       = array();
-
-    /** @brief  Variable Namespace/Prefix initialization indicators. */
-    static protected $_initialized  = array();
 
     /** @brief  Construct a new Bookmarks helper.
      *  @param  config  A configuration array (see populate());
@@ -102,7 +100,6 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
         foreach ($config as $key => $value)
         {
             $this->__set($key, $value);
-            //$this->_params[$key] = $value;
         }
 
         /*
@@ -114,48 +111,37 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
         return $this;
     }
 
-    /** @brief  Set the namespace, primarily for forms and cookies.
-     *  @param  namespace   A string prefix.
-     *  @param  force       Should initialization be forced even if the
-     *                      auto-completion url has not yet been set? [ false ]
+    /** @brief  Set jsonRpc settings, mixing with the system default values
+     *          (Connexions::getJsonRpcInfo()).
+     *  @param  config  An array of JsonRpc configuration information
+     *                  (e.g. method, params)
      *
      *  @return $this for a fluent interface.
      */
-    public function setNamespace($namespace, $force = false)
+    public function setJsonRpc($config)
     {
         /*
-        Connexions::log("View_Helper_HtmlItemScope::"
-                            .   "setNamespace( {$namespace} )");
+        Connexions::log("View_Helper_HtmlItemScope::setJsonRpc( %s ):",
+                        Connexions::varExport($config));
         // */
 
-        $this->_params['namespace'] = $namespace;
-
-        if (! @isset(self::$_initialized[$namespace]))
+        $defaults = Connexions::getJsonRpcInfo();
+        if (is_array($config))
         {
-            if ( ($this->_params['jsonRpc'] === null) && ($force !== true) )
-                /* Postpone initialization to see if the 'jsonRpc' is
-                 * set before we render.
-                 */
-                return $this;
-
-            $view   =& $this->view;
-
-            /*
-            $view->headLink()
-                    ->appendStylesheet($view->baseUrl('css/autoSuggest.css'));
-             */
-
-            $jQuery = $view->jQuery();
-
-            /* Now done in application/layouts/header.phtml
-            else
-                $jQuery->addJavascriptFile($baseUrl.'js/ui.input.min.js');
-             */
-            $jQuery->addOnLoad("$('.{$namespace}ItemScope').itemScope("
-                                .    json_encode($this->_params) .');');
-
-            self::$_initialized[$namespace] = true;
+            $config = array_merge($defaults, $config);
         }
+        else
+        {
+            $config = $defaults;
+        }
+
+        /*
+        Connexions::log("View_Helper_HtmlItemScope::setJsonRpc(): "
+                        . "final config[ %s ]",
+                        Connexions::varExport($config));
+        // */
+
+        $this->_params['jsonRpc'] = $config;
 
         return $this;
     }
@@ -211,6 +197,7 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
     public function __set($key, $value)
     {
         $method = 'set'. ucfirst($key);
+
         if (method_exists($this, $method))
         {
             $this->{$method}($value);
@@ -251,19 +238,20 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
     public function render()
     {
         $namespace = $this->namespace;
-        if ($namespace === null)
-            $this->setNamespace('');
 
-        if (! @isset(self::$_initialized[$namespace]))
+        if ($this->includeScript !== false)
         {
-            // Initialization has been postponed.  Force it.
-            $this->setNamespace($namespace, true);
+            if ($namespace === null)
+                $namespace = '';
+
+            $jQuery = $this->view->jQuery();
+
+            $jQuery->addOnLoad("$('.{$namespace}ItemScope').itemScope("
+                                .    json_encode($this->_params) .');');
         }
 
         $res = $this->view->partial('itemScope.phtml',
-                                     array(
-                                         'helper'     =>  $this,
-                                     ));
+                                     array('helper' => $this));
         return $res;
     }
 }

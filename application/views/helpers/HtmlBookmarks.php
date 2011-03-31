@@ -127,8 +127,6 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         )
     );
 
-    static protected $_initialized  = array();
-
     /** @brief  Set-able parameters. */
     protected       $_displayOptions    = null;
 
@@ -154,48 +152,16 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
      */
     public function __construct(array $config = array())
     {
+        // Include defaults for any option that isn't directly set
         foreach (self::$defaults as $key => $value)
         {
-            if (! isset($this->_params[$key]))
+            if (! isset($config[$key]))
             {
-                /*
-                Connexions::log("View_Helper_HtmlBookmarks::__construct(): "
-                                . "'%s', default value '%s'",
-                                $key, $value);
-                // */
-
-                $this->_params[$key] = $value;
+                $config[$key] = $value;
             }
         }
 
         parent::__construct($config);
-    }
-
-    /** @brief  Over-ride to ensure that those variables that should be set
-     *          BEFORE 'namespace' are.
-     *  @param  config  A configuration array that may include:
-     *
-     *  @return $this for a fluent interface.
-     */
-    public function populate(array $config)
-    {
-        /*
-        Connexions::log("View_Helper_HtmlBookmarks::populate(): "
-                        .   "config[ %s ], backtrace:\n%s\n",
-                        Connexions::varExport($config),
-                        Connexions::backtrace(true));
-        // */
-
-        // Variables that MUST be set BEFORE 'namespace'...
-        foreach (array('cookieUrl', 'panePartial', 'paneVars') as $key)
-        {
-            if (isset($config[$key]))
-            {
-                $this->__set($key, $config[$key]);
-            }
-        }
-
-        return parent::populate($config);
     }
 
     /** @brief  Configure and retrive this helper instance OR, if no
@@ -208,11 +174,6 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
      */
     public function htmlBookmarks(array $config = array())
     {
-        /*
-        Connexions::log("View_Helper_HtmlBookmarks::htmlBookmarks( %s )",
-                        Connexions::varExport($config));
-        // */
-
         if (! empty($config))
         {
             $rc = $this->populate($config);
@@ -223,143 +184,70 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         return $this->render();
     }
 
-    /** @brief  Set the namespace, primarily for forms and cookies.
-     *  @param  namespace   A string namespace.
-     *
-     *  @return View_Helper_HtmlBookmarks for a fluent interface.
-     */
-    public function setNamespace($namespace)
+    /** @brief  Retrieve the DisplayOptions helper. */
+    public function getDisplayOptions()
     {
-        /*
-        Connexions::log("View_Helper_HtmlBookmarks::"
-                        .   "setNamespace( %s ): includeScript[ %s ], "
-                        .   "panePartial[ %s ]",
-                        $namespace,
-                        Connexions::varExport($this->includeScript),
-                        $this->panePartial);
-        // */
-
-        parent::setNamespace($namespace);
-
-        if ($this->includeScript !== true)
-            return $this;
-
-        if (! @isset(self::$_initialized[$namespace]))
+        if ( ($this->_displayOptions === null) &&
+             ($this->view            !== null) &&
+             ($this->showOptions     !== false) )
         {
-            $view       = $this->view;
-            $dsConfig   = array(
-                                'namespace'     => $namespace,
-                                'definition'    => self::$displayStyles,
-                                'groups'        => self::$styleGroups,
-                          );
+            $style    = $this->getDisplayStyleName();
+            $dsConfig = array(
+                            'namespace'  => $this->namespace,
+                            'definition' => self::$displayStyles,
+                            'groups'     => self::$styleGroups,
+                        );
 
             if ($this->cookieUrl !== null)
             {
                 $dsConfig['cookiePath'] = rtrim($this->cookieUrl, '/');
             }
 
+            $this->_displayOptions =
+                    $this->view->htmlDisplayOptions($dsConfig);
 
             /*
-            Connexions::log("View_Helper_HtmlBookmarks::setNamespace(): "
-                            . "new namespace: config[ %s ]",
-                            Connexions::varExport($dsConfig));
+            Connexions::log("getDisplayOptions(): "
+                            .   "config[ %s ], displayStyle[ %s ]",
+                            Connexions::varExport($dsConfig),
+                            Connexions::varExport($style));
             // */
 
-            // Set / Update our displayOptions namespace.
-            if ($this->_displayOptions === null)
-            {
-                $this->_displayOptions = $view->htmlDisplayOptions($dsConfig);
-            }
-            else
-            {
-                $this->_displayOptions->setNamespace($namespace);
-            }
-
-            // Include required jQuery
-            $config = array('namespace'         => $namespace,
-                            'partial'           => $this->panePartial,
-                            'hiddenVars'        => $this->paneVars,
-                            'displayOptions'    => $dsConfig,
-                            /* Rely on the CSS class of rendered items
-                             * (see View_Helper_HtmlBookmark)
-                             * to determine their Javascript objClass
-                            'uiOpts'            => array(
-                                'objClass'      => 'bookmark',
-                            ),
-                             */
-                      );
-
-            $call   = "$('#{$namespace}List').itemsPane("
-                    .               Zend_Json::encode($config) .");";
-            $view->jQuery()->addOnLoad($call);
+            /* Ensure that the current display style is properly reflected
+             * in the new display options instance.
+             */
+            $this->_displayOptions->setGroup( $style,
+                                              ($style === self::STYLE_CUSTOM
+                                                ? $this->displayStyle
+                                                : null) );
         }
 
-        return $this;
+        return $this->_displayOptions;
     }
 
-    /** @brief  Set the current style.
-     *  @param  style   A style value (self::STYLE_*) -- if an array if
-     *                  provided, it will be used as 'values' and the style
-     *                  will be set to self::STYLE_CUSTOM;
-     *  @param  values  If provided, an array of field values for this style.
+    /** @brief  Get the name of the current display style value.
      *
-     *  @return View_Helper_HtmlBookmarks for a fluent interface.
+     *  @return The style name (self::STYLE_*).
      */
-    public function setDisplayStyle($style, array $values = null)
+    public function getDisplayStyleName()
     {
+        $style = ( ($this->_displayOptions !== null)
+                    ? $this->_displayOptions->getGroup()
+                    : (is_array($this->displayStyle)
+                        ? self::STYLE_CUSTOM
+                        : $this->displayStyle) );
+
         /*
-        Connexions::log("View_Helper_HtmlBookmarks::setDisplayStyle(): "
-                        . "_displayOptions is %snull, "
-                        . "style[ %s ], values[ %s ]",
-                        ($this->_displayOptions === null ? '' : 'NOT '),
-                        print_r($style, true), print_r($values, true));
+        Connexions::log("View_Helper_HtmlBookmarks::getDisplayStyleName(): "
+                        . "_displayOptions %snull, "
+                        . "displayStyle[ %s ] == [ %s ]",
+                        ($this->_displayOptions !== null ? 'NOT ' : ''),
+                        Connexions::varExport($this->displayStyle),
+                        Connexions::varExport($style));
         // */
 
-        if ($this->_displayOptions !== null)
-        {
-            if (is_array($style))
-            {
-                $values = $style;
-                $style  = self::STYLE_CUSTOM;
-            }
-
-            switch ($style)
-            {
-            case self::STYLE_TITLE:
-            case self::STYLE_REGULAR:
-            case self::STYLE_FULL:
-            case self::STYLE_CUSTOM:
-                break;
-
-            default:
-                $style = self::$defaults['displayStyle'];
-                break;
-            }
-
-            $this->_displayOptions->setGroup($style, $values);
-
-            /*
-            Connexions::log('View_Helper_HtmlBookmarks::'
-                                . "setDisplayStyle({$style}) == [ "
-                                .   $this->_displayOptions->getGroup() ." ]");
-            // */
-    
-        }
-
-        return $this;
+        return $style;
     }
-
-    /** @brief  Get the current display style value.
-     *
-     *  @return The style value (self::STYLE_*).
-     */
-    public function getDisplayStyle()
-    {
-        return ($this->_displayOptions
-                    ? $this->_displayOptions->getGroup()
-                    : self::$defaults['displayStyle']);
-    }
-
 
     /** @brief  Get the current showMeta value.
      *
@@ -367,22 +255,23 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
      */
     public function getShowMeta()
     {
+        $do = $this->getDisplayOptions();
+
         if (! $this->multipleUsers)
         {
             /* If we're only showing information for a single user, mark 
              * 'userId' as 'hide' (not true nor false).
              */
-            $this->_displayOptions
-                    ->setGroupValue('item:data:avatar',    'hide')
-                    ->setGroupValue('item:data:userId:id', 'hide');
+            $do->setGroupValue('item:data:avatar',    'hide')
+               ->setGroupValue('item:data:userId:id', 'hide');
         }
 
-        $val = $this->_displayOptions->getGroupValues();
+        $val = $do->getGroupValues();
 
         /*
         Connexions::log("View_Helper_HtmlBookmarks::"
-                            . "getShowMeta(): "
-                            . "[ ". print_r($val, true) ." ]");
+                            . "getShowMeta(): [ %s ]",
+                        Connexions::varExport($val));
         // */
 
         if (! @is_bool($val['minimized']))
@@ -398,8 +287,8 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 
         /*
         Connexions::log('View_Helper_HtmlBookmarks::'
-                            . 'getShowMeta(): return[ '
-                            .       print_r($val, true) .' ]');
+                            . 'getShowMeta(): return[ %s ]',
+                         Connexions::varExport($val));
         // */
     
         return $val;
@@ -411,7 +300,21 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
      */
     public function render()
     {
-        $this->_showParts = $this->getShowMeta();
+        if ($this->includeScript !== false)
+        {
+            // Set / Update our displayOptions namespace.
+            $do        = $this->getDisplayOptions();
+            $dsConfig  = $do->getConfig();
+            $namespace = $dsConfig['namespace'];
+            $config    = array('namespace'      => $namespace,
+                               'partial'        => $this->panePartial,
+                               'hiddenVars'     => $this->paneVars,
+                               'displayOptions' => $dsConfig,
+                         );
+            $call   = "$('#{$namespace}List').itemsPane("
+                    .               Zend_Json::encode($config) .");";
+            $this->view->jQuery()->addOnLoad($call);
+        }
 
         return parent::render();
     }
@@ -425,21 +328,21 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
      */
     public function renderItem($item, $params = array())
     {
-        /*
-        Connexions::log("View_Helper_HtmlBookmarks::renderItem(): "
-                        . "item[ %s ], showParts[ %s ]",
-                        $item, Connexions::varExport($this->_showParts));
-        // */
-        if (empty($params))
+        if ($this->_showParts === null)
         {
-            $params = array('namespace'  => $this->namespace,
-                            'bookmark'   => $item,
-                            'viewer'     => $this->viewer,
-                            'showParts'  => $this->_showParts,
-                            'sortBy'     => $this->sortBy,
-                            'tags'       => $this->tags,
-                      );
+            $this->_showParts = $this->getShowMeta();
         }
+
+        $defaults = array(
+            'namespace'  => $this->namespace,
+            'bookmark'   => $item,
+            'viewer'     => $this->viewer,
+            'showParts'  => $this->_showParts,
+            'sortBy'     => $this->sortBy,
+            'tags'       => $this->tags,
+        );
+
+        $params = array_merge($defaults, $params);
 
         return parent::renderItem($item, $params);
     }
@@ -510,6 +413,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         if ($paginator === null)
             $paginator =& $this->paginator;
 
+        $do               = $this->getDisplayOptions();
         $namespace        = $this->namespace;
         $itemCountPerPage = $paginator->getItemCountPerPage();
 
@@ -549,7 +453,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 
         $html .= "</select>";
 
-        $this->_displayOptions->addFormField('sortBy', $html);
+        $do->addFormField('sortBy', $html);
 
 
         /**************************************************************
@@ -574,7 +478,7 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 
         $html .= "<br class='clear' />";
 
-        $this->_displayOptions->addFormField('sortOrder', $html);
+        $do->addFormField('sortOrder', $html);
 
         /**************************************************************
          * PerPage
@@ -597,12 +501,12 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         $html .= "</select>"
               .  "<br class='clear' />";
 
-        $this->_displayOptions->addFormField('perPage', $html);
+        $do->addFormField('perPage', $html);
 
         /* _displayOptions->render will use the previously added fields, along
          * with the available display styles to render the complete display
          * options form.
          */
-        return $this->_displayOptions->render();
+        return $do->render();
     }
 }
