@@ -56,10 +56,10 @@ $.widget("settings.avatarChooser", $.extend({}, $.ui.dialog.prototype, {
     widgetEventPrefix:    '',
 
     options: {
-        width:          400,
-        height:         450,
-        minWidth:       400,
-        minHeight:      450,
+        width:          575,
+        height:         575,
+        minWidth:       575,
+        minHeight:      575,
         imageLoader:    'images/image_upload.gif',
 
         /* On successful avatar selection, trigger 'success' with the final URL
