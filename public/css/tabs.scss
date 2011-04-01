@@ -41,7 +41,7 @@ $navBorder: unquote("1px dotted") $navColorBorder;
 
     @include corners(0, 0, 0, 20px);
 
-    background: $navColorBackground unquote("url(themes/default/images/ui-bg_gloss-wave_10_172322_500x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/");
+    background: $navColorBackground unquote("url(themes/connexions/images/ui-bg_gloss-wave_10_172322_500x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/");
 
     li {
       float:            left;
@@ -216,7 +216,7 @@ $navBorder: unquote("1px dotted") $navColorBorder;
   height: $tabHeight;
 
   // Same as .nav
-  background: $navColorBackground unquote("url(themes/default/images/ui-bg_gloss-wave_10_172322_500x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/");
+  background: $navColorBackground unquote("url(themes/connexions/images/ui-bg_gloss-wave_10_172322_500x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/");
 
   .searchBox {
     float: right;
