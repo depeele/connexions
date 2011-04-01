@@ -1,1 +1,1 @@
-jquery-1.5.1.js
+jquery-1.5.2.js
