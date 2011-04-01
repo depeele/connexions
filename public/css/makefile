@@ -11,7 +11,8 @@ all: connexions.min.css bookmarks.min.css users.min.css 	\
  	validationForm.min.css post.min.css auth.min.css 	\
 	ribbon-form.min.css url-choose.min.css			\
 	search.min.css searchResults.min.css inbox.min.css	\
-	settings.min.css sprites.min.css ie.min.css ie8.min.css
+	settings.min.css sprites.min.css ie.min.css ie8.min.css \
+	themes/connexions/jquery-ui.min.css
 
 #all: connexions.css bookmarks.css users.css urlItems.css inbox.css	\
 # 	validationForm.css post.css auth.css inbox.css
