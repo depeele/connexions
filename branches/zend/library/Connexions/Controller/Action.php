@@ -156,12 +156,27 @@ class Connexions_Controller_Action extends Zend_Controller_Action
     {
         /*
         Connexions::log("Connexions_Controller_Action(%s)::postDispatch(): "
-                        .   "url[ %s ]",
+                        .   "url[ %s ], action[ %s ], "
+                        .   "is %sdispatched, is %sredirect",
                         get_class($this),
-                        $this->_request->getRequestUri());
+                        $this->_request->getRequestUri(),
+                        $this->_request->getActionName(),
+                        ($this->_request->isDispatched()    ? '' : 'NOT '),
+                        ($this->getResponse()->isRedirect() ? '' : 'NOT '));
         // */
 
-        if ($this->_noFormatHandling !== true)
+        /* Only perform format handling if:
+         *  - '_noFormatHandling' is NOT explicitly set to true;
+         *  - the request is marked as "dispatched"
+         *    (i.e. the controller/action is NOT forwarding to another
+         *          controller/action);
+         *  - the response is NOT marked as "redirect"
+         *    (i.e. the controller/action is redirecting to another
+         *          controller/action);
+         */
+        if ( (  $this->_noFormatHandling !== true) &&
+             (  $this->_request->isDispatched())   &&
+             (! $this->getResponse()->isRedirect()) )
         {
             $this->_handleFormat();
         }
@@ -293,15 +308,19 @@ class Connexions_Controller_Action extends Zend_Controller_Action
     {
         /*
         Connexions::log("Connexions_Controller_Action(%s)::_handleFormat(): "
-                        . "_format[ %s ], _namespace[ %s ], url[ %s ]",
+                        . "_format[ %s ], _namespace[ %s ], "
+                        . "url[ %s ], action[ %s ]",
                         get_class($this),
                         $this->_format, $this->_namespace,
-                        $this->_request->getRequestUri());
+                        $this->_request->getRequestUri(),
+                        $this->_request->getActionName());
         // */
 
 
-        // By default, render the 'index.phtml' view script
-        $this->_partials = array('index');
+        /* By default, render the view script associated with the current
+         * action
+         */
+        $this->_partials = array( $this->_request->getActionName() );
 
 
         /* All actual rendering is via one of the scripts in:
@@ -375,10 +394,10 @@ class Connexions_Controller_Action extends Zend_Controller_Action
             /* Render a (possibly) non-HTML format, based upon $this->_format.
              *
              * RSS and Atom are consolidated to:
-             *      index-feed.pthml  with 'feedType' set appropriately.
+             *      %action%-feed.pthml  with 'feedType' set appropriately.
              *
              * JSON is rendered via:
-             *      index-json.phtml
+             *      %action%-json.phtml
              */
             if ($this->_format === 'rss')
             {
@@ -393,15 +412,15 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                 $this->_format = 'feed';
             }
 
-            $this->_partials = array('index', $this->_format);
+            $this->_partials = array( $this->_request->getActionName(),
+                                      $this->_format);
 
             $this->_renderPartial();
             break;
 
         case 'html':
         default:
-            /* Normal HTML rendering - both the main pane (via 'index') and the
-             * sidebar.
+            /* Normal HTML rendering - both the main pane and the sidebar.
              */
             $this->_renderPartial();
 

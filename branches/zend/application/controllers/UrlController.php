@@ -39,8 +39,15 @@ class UrlController extends Connexions_Controller_Action
         $request =& $this->_request;
         $url     =  $request->getParam('url',  null);
 
+        /*
+        Connexions::log("UrlController::indexAction(): url[ %s ]",
+                        Connexions::varExport($url));
+        // */
+
         if (empty($url))
+        {
             return $this->_forward('choose');
+        }
 
         /* If the incoming URL is NOT an MD5 hash (32 hex characters), convert
          * it to a normalzed hash now
@@ -49,6 +56,12 @@ class UrlController extends Connexions_Controller_Action
         if ($this->_urlHash !== $url)
         {
             // Redirect using the URL hash
+            /*
+            Connexions::log("UrlController::indexAction(): "
+                            . "redirect using url hash[ %s ]",
+                            $this->_urlHash);
+            // */
+
             return $this->_helper->redirector
                                     ->setGotoRoute(array('url',
                                                          $this->_urlHash));
@@ -112,6 +125,8 @@ class UrlController extends Connexions_Controller_Action
     {
         // Nothing much to do -- let the view script render...
         Connexions::log('UrlController::chooseAction');
+        //$this->_noFormatHandling = true;
+        $this->_noSidebar = true;
     }
 
     /** @brief Redirect all other actions to 'index'
@@ -147,6 +162,7 @@ class UrlController extends Connexions_Controller_Action
         parent::_prepare_main();
 
         $extra = array(
+            'item'  => &$this->_item,
             'items' => &$this->_item,
             'tags'  => &$this->_tags,
         );

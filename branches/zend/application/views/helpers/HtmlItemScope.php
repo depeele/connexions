@@ -178,11 +178,11 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
 
     /** @brief  Establish the set of items that define the scope.
      *  @param  scope   The Connexions_Model_Set instance containing the set of
-     *                  items that define the scope.
+     *                  items that define the scope (or null).
      *
      *  @return $this for a fluent interface.
      */
-    public function setScope(Connexions_Model_Set $scope)
+    public function setScope($scope)
     {
         $this->_params['scope'] = $scope;
 
