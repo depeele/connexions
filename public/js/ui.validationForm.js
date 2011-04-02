@@ -136,20 +136,7 @@ $.widget("ui.validationForm", {
         };
 
         opts.$inputs.bind('validation_change.uivalidationform', _validate);
-        opts.$reset.bind('click.uivalidationform', _reset);
-
-        opts.$submit.bind('click.uivalidationform', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            self._trigger('submit');
-        });
-        opts.$cancel.bind('click.uivalidationform', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            self._trigger('cancel');
-        });
+        opts.$reset.bind('click.uivalidationform',              _reset);
     },
 
     /** @brief  Default callback for _trigger('validate')

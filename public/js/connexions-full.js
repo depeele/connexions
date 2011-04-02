@@ -2700,8 +2700,9 @@ $.widget("ui.validationForm", {
         };
 
         opts.$inputs.bind('validation_change.uivalidationform', _validate);
-        opts.$reset.bind('click.uivalidationform', _reset);
+        opts.$reset.bind('click.uivalidationform',              _reset);
 
+        /*
         opts.$submit.bind('click.uivalidationform', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -2714,6 +2715,7 @@ $.widget("ui.validationForm", {
 
             self._trigger('cancel');
         });
+        // */
     },
 
     /** @brief  Default callback for _trigger('validate')
