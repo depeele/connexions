@@ -8,10 +8,10 @@
  *  REQUIRES:
  *      application/view/scripts/itemScope.phtml
  */
-class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
+class View_Helper_HtmlItemScope extends View_Helper_Abstract
 {
-    /** @brief  Set-able parameters . */
-    protected   $_params    = array(
+    /** @brief  Defaults for set-able parameters . */
+    protected   $_defaults  = array(
         'namespace'         => '',
 
         'hideInput'         => false,
@@ -53,63 +53,6 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
     );
 
     protected       $_hiddenItems       = array();
-
-    /** @brief  Construct a new Bookmarks helper.
-     *  @param  config  A configuration array (see populate());
-     */
-    public function __construct(array $config = array())
-    {
-        //Connexions::log("View_Helper_HtmlItemScope::__construct()");
-        if (! empty($config))
-        {
-            $this->populate($config);
-        }
-    }
-
-    /** @brief  Given an array of configuration data, populate the parameter of
-     *          this instance.
-     *  @param  config  A configuration array that may include:
-     *                      - namespace         The namespace to use for all
-     *                                          cookies/parameters/settings
-     *                                          [ '' ];
-     *                      - hideInput         Hide the input area? [ false ];
-     *                      - inputLabel        The text to present when the
-     *                                          input box is empty [ 'Items' ];
-     *                      - inputName         The form-name for the input box
-     *                                          [ 'items' ];
-     *                      - path              A simple array containing the
-     *                                          names and urls of the path
-     *                                          items to the current scope:
-     *                                            array(root-name => root-url,
-     *                                                  item-name => item-url,
-     *                                                  ...)
-     *                      - jsonRpc           Json-Rpc call data of the form:
-     *                                              {version:   % RPC version %,
-     *                                               target:    % RPC URL %,
-     *                                               transport: % POST | GET %,
-     *                                               method:    % RPC method %,
-     *                                               params:    {
-     *                                                  rpc parameter(s)
-     *                                               }
-     *                                              }
-     *
-     *  @return $this for a fluent interface.
-     */
-    public function populate(array $config)
-    {
-        foreach ($config as $key => $value)
-        {
-            $this->__set($key, $value);
-        }
-
-        /*
-        Connexions::log("View_Helper_HtmlItemScope::populate(): params[ %s ]",
-                        Connexions::varExport($this->_params));
-
-        // */
-
-        return $this;
-    }
 
     /** @brief  Set the namespace, converting null to ''.
      *  @param  namespace   The (new) namespace.
@@ -207,36 +150,6 @@ class View_Helper_HtmlItemScope extends Zend_View_Helper_Abstract
     public function isHiddenItem($name)
     {
         return (in_array($name, $this->_hiddenItems));
-    }
-
-    public function __set($key, $value)
-    {
-        $method = 'set'. ucfirst($key);
-
-        if (method_exists($this, $method))
-        {
-            $this->{$method}($value);
-        }
-        else
-        {
-            $this->_params[$key] = $value;
-        }
-    }
-
-    public function __get($key)
-    {
-        return (isset($this->_params[$key])
-                    ? $this->_params[$key]
-                    : null);
-    }
-
-    /** @brief  Return all current parameters.
-     *
-     *  @return An array of parameters
-     */
-    public function getParams()
-    {
-        return $this->_params;
     }
 
     /** @brief  Render an HTML version of Item Scope.

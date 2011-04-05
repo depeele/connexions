@@ -53,6 +53,16 @@ abstract class View_Helper_Abstract
         return $this;
     }
 
+    /** @brief  Return all current parameters.
+     *
+     *  @return An array of parameters
+     */
+    public function getParams()
+    {
+        return $this->_params;
+    }
+
+
     /** @brief  Member Setter - checks if the class has a 'set' method for the
      *          given key.  If so, invoke the method, otherwise directly set
      *          the '_params[$key]' value.
