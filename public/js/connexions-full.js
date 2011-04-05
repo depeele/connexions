@@ -3950,14 +3950,18 @@ $.widget("connexions.dropdownForm", {
 
         // Handle a click outside of the display options form.
         var _body_click     = function(e) {
+            /* Ignore this click if:
+             *  - our form is currently hidden;
+             *  - the target is one of the controls in OUR widget;
+             */
             if (self.$form.is(':visible') &&
-                (! $.contains(self.$form[0], e.target)) )
+                (! $.contains(self.element[0], e.target)) )
             {
                 /* Hide the form by triggering self.$control.click and then
                  * mouseleave
                  */
-                self.$control.trigger('click')
-                             .trigger('mouseleave', e);
+                self.$control.triggerHandler('click');
+                self.$control.trigger('mouseleave', e);
             }
         };
 
@@ -3978,13 +3982,13 @@ $.widget("connexions.dropdownForm", {
 
         var _control_click  = function(e) {
             // Toggle the displayOptions pane
-            e.preventDefault();
-            e.stopPropagation();
+            //e.preventDefault();
+            //e.stopPropagation();
 
             self.$form.toggle();
             self.$button.toggleClass('ui-state-active');
 
-            return false;
+            //return false;
         };
 
         var _prevent_default    = function(e) {
