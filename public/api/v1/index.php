@@ -1,7 +1,16 @@
+<?php
+define('RPC_DIR', realpath(dirname(__FILE__)));
+
+require_once(RPC_DIR. '/bootstrap.php');
+
+$config  = Connexions::getConfig();
+$baseUrl = $config->urls->base;
+
+?>
 <html>
  <head>
   <title>Json-Rpc tester</title>
-  <link type='text/css' rel='stylesheet' href='/connexions/css/themes/default/jquery-ui.css' />
+  <link type='text/css' rel='stylesheet' href='<?= $baseUrl ?>/css/themes/connexions/jquery-ui.css' />
   <style type='text/css'>
   body {
     font-family:    sans-serif;
@@ -31,6 +40,9 @@
   #services {
     height:             75%;
     overflow:           auto;
+  }
+  .ui-accordion .ui-accordion-header .ui-icon {
+    display:            inline-block;
   }
   .ui-accordion .ui-accordion-content {
     padding:            0 1em 0.5em;
@@ -80,10 +92,10 @@
 
   </style>
 
-  <script type='text/javascript' src='../../js/jquery.min.js'></script>
-  <script type='text/javascript' src='../../js/jquery-ui.min.js'></script>
-  <script type='text/javascript' src='../../js/json2.js'></script>
-  <script type='text/javascript' src='../../js/jsDump.js'></script>
+  <script type='text/javascript' src='<?= $baseUrl ?>/js/jquery.min.js'></script>
+  <script type='text/javascript' src='<?= $baseUrl ?>/js/jquery-ui.min.js'></script>
+  <script type='text/javascript' src='<?= $baseUrl ?>/js/json2.js'></script>
+  <script type='text/javascript' src='<?= $baseUrl ?>/js/jsDump.js'></script>
   <script type='text/javascript'>
     (function($) {
         $(document).ready(function() {
@@ -154,8 +166,8 @@
                                           +  rpc.method +': '+ txtStatus
                                           + '</h3>'
                                           + '<pre>'
-                                          + jsDump.parse( data )
-                                          /*
+                                          //+ jsDump.parse( data )
+                                          // /*
                                           +  JSON.stringify(data, null, '  ')
                                                  .replace(/</, '&lt;')
                                                  .replace(/>/, '&gt;')
@@ -284,7 +296,8 @@
                                               + 'ui-accordion-content '
                                               + 'ui-helper-reset '
                                               + 'ui-widget-content '
-                                              + 'ui-corner-bottom' );
+                                              + 'ui-corner-bottom' )
+                                 .hide();
 
                         $ul.append( $li.append($section) );
 

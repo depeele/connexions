@@ -6975,13 +6975,20 @@ $.widget("connexions.bookmarkPost", {
         var self    = this;
         var opts    = self.options;
 
-        opts.$name.val(opts.name);
-        opts.$description.val(opts.description);
-        opts.$tags.val(opts.tags);
+        /* Set the value of the underlying controls as well as notifying the
+         * ui.input widget of the new value
+         */
+        opts.$name.val(opts.name).input('val', opts.name);
+        opts.$description.val(opts.description).input('val', opts.description);
+        opts.$tags.val(opts.tags).input('val', opts.tags);
 
         opts.$favorite.checkbox( opts.isFavorite ? 'check' : 'uncheck' );
         opts.$private.checkbox(  opts.isPrivate  ? 'check' : 'uncheck' );
 
+        /* Do NOT use opts.$url.input('val', opts.url) since this will fire a
+         * 'change' event, causing _url_changed() to be invoked, resulting in
+         * another call to this method, ...
+         */
         opts.$url.val(opts.url);
 
         if (opts.$userId.length > 0)
@@ -6996,7 +7003,9 @@ $.widget("connexions.bookmarkPost", {
 
         if (opts.$rating.length > 0)
         {
-            opts.$rating.stars('value', opts.rating);
+            //opts.$rating.stars('value', opts.rating);
+            opts.$rating.stars('option', 'value', opts.rating)
+                        .stars('select', opts.rating);
         }
     },
 
@@ -7059,16 +7068,10 @@ $.widget("connexions.bookmarkPost", {
             var $el = $(this);
             if ($el.hasClass('ui-state-valid'))
             {
-                /* We have a valid URL.  If any of name, description, or tags
-                 * are empty, perform a HEAD request to fill in target-based
-                 * suggestions.
+                /* We have a new, valid URL.  See if there is a bookmark
+                 * that matches.
                  */
-                if ( (! opts.$name.input('hasChanged')) ||
-                     (! opts.$description.input('hasChanged')) ||
-                     (! opts.$tags.input('hasChanged')) )
-                {
-                    self._headers(opts.$url.val());
-                }
+                self._url_changed();
             }
         };
 
@@ -7296,6 +7299,10 @@ $.widget("connexions.bookmarkPost", {
 
                     opts.tags = tags.join(',');
                 }
+                if ($.isPlainObject(opts.item))
+                {
+                    opts.url = opts.item.url;
+                }
 
                 self._setFormFromState();
 
@@ -7312,6 +7319,119 @@ $.widget("connexions.bookmarkPost", {
             },
             complete:   function(req, textStatus) {
                 self.element.unmask();
+            }
+         });
+    },
+
+    /** @brief  After a change to the item's URL, first check to see if there
+     *          is a matching bookmark.  If not, perform a HEAD request to
+     *          retrieve information.
+     */
+    _url_changed: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        if (opts.enabled !== true)
+        {
+            return;
+        }
+
+
+        // Gather the current data about this item.
+        var url     = opts.$url.val();
+        var params  = {
+            /* id is required: For 'Edit' is should be the userId/itemId of
+             * this bookmark
+             */
+            id: { userId: opts.userId, itemId: url }
+        };
+
+        if (opts.apiKey !== null)
+        {
+            params.apiKey = opts.apiKey;
+        }
+
+        self.element.mask();
+
+        /* Perform a JSON-RPC call to attempt to retrieve new bookmark
+         * information.
+         */
+        var bookmarkFound   = false;
+        $.jsonRpc(opts.jsonRpc, 'bookmark.get', params, {
+            success:    function(data, textStatus, req) {
+                if (data.error !== null)
+                {
+                    // Let 'bookmarkFound' remain false
+                    $.notify({title: 'Cannot retrieve bookmark',
+                              text:  data.error.message});
+                    /*
+                    self._status(false,
+                                 'Cannot retrieve bookmark',
+                                 data.error.message);
+                    // */
+                    return;
+                }
+                if (data.result === null)
+                {
+                    // Let 'bookmarkFound' remain false
+                    return;
+                }
+
+                bookmarkFound = true;
+
+                // Update the presentation with the new bookmark data.
+                self.options = $.extend(self.options, data.result);
+                opts = self.options;
+
+                if ($.isArray(opts.tags))
+                {
+                    var tags    = [];
+                    $.each(opts.tags, function() {
+                        tags.push(this.tag);
+                    });
+
+                    opts.tags = tags.join(',');
+                }
+                if ($.isPlainObject(opts.item))
+                {
+                    opts.url = opts.item.url;
+                }
+
+                self._setFormFromState();
+                self.validate();
+            },
+            error:      function(req, textStatus, err) {
+                $.notify({title: 'Cannot retrieve bookmark',
+                          text:  textStatus});
+                /*
+                self._status(false,
+                             'Cannot retrieve bookmark',
+                             textStatus);
+                // */
+
+                // :TODO: "Error" notification??
+            },
+            complete:   function(req, textStatus) {
+                self.element.unmask();
+
+                // If a matching bookmark wasn't found, perform a HEAD request.
+                if (bookmarkFound === false)
+                {
+                    $.notify({title: 'Pulling information',
+                              text:  'Performing a HEAD request on URL<br />'
+                                     +  "<tt>'"+ url +"'</tt>"});
+                    self._headers( url );
+                }
+                else
+                {
+                    /********************************************************
+                     * Also, update the recommended tags section in the
+                     * suggestions area.
+                     *
+                     */
+                    self._update_recommendedTags( url );
+                }
             }
          });
     },
@@ -7441,6 +7561,18 @@ $.widget("connexions.bookmarkPost", {
          * suggestions area.
          *
          */
+        self._update_recommendedTags(url);
+    },
+
+    /** @brief  Make a request to our server for the retrieval of recommended
+     *          tags for the given 'url'.
+     *  @param  url     The desired URL.
+     */
+    _update_recommendedTags: function(url)
+    {
+        var self    = this;
+        var opts    = self.options;
+
         $.ajax({
             url:    ($.registry('urls')).base +'/post/',
             data:   {
