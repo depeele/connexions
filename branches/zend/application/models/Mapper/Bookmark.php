@@ -45,6 +45,12 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         {
             list($userId, $itemId)  = preg_split('/\s*:\s*/', $id, 2);
 
+            /*
+            Connexions::log("Model_Mapper_Bookmark::normalizeId( %s ) == "
+                            .   "[ %s, %s ]",
+                            $id, $userId, $itemId);
+            // */
+
             $userId = $this->_normalizeUserId( $userId );
             $itemId = $this->_normalizeItemId( $itemId );
         }
@@ -64,13 +70,13 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
                   );
 
         /*
-        Connexions::log("Model_Mapper_Bookmark::normalizedId( %s ): "
+        Connexions::log("Model_Mapper_Bookmark::normalizeId( %s ): "
                         . "userId[ %s ], itemId[ %s ]",
                         Connexions::varExport($id),
                         Connexions::varExport($userId),
                         Connexions::varExport($itemId));
 
-        Connexions::log("Model_Mapper_Bookmark::normalizedId( %s ): "
+        Connexions::log("Model_Mapper_Bookmark::normalizeId( %s ): "
                         . "normId[ %s ]",
                         Connexions::varExport($id),
                         Connexions::varExport($normId));

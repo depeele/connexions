@@ -59,7 +59,7 @@ class Service_Util
                     $count = preg_match_all($re, $html, $matches,
                                             PREG_PATTERN_ORDER);
 
-                    // /*
+                    /*
                     Connexions::log("Service_Util::getHead(): well-formed: "
                                     . "%d matches for tag '%s': [ %s ]",
                                     $count, $tag,
@@ -81,7 +81,7 @@ class Service_Util
                     $count = preg_match_all($re, $html, $matches,
                                             PREG_PATTERN_ORDER);
 
-                    // /*
+                    /*
                     Connexions::log("Service_Util::getHead(): mal-formed: "
                                     . "%d matches for tag '%s': [ %s ]",
                                     $count, $tag,

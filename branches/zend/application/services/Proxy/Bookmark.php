@@ -217,6 +217,62 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
         return $this->_service->autocompleteTag($str, $tags, $users, $limit);
     }
 
+    /** @brief  Retrieve an existing bookmark.
+     *  @param  id      Identification value(s) (string, integer, array).
+     *                  MAY be an associative array that specifically
+     *                  identifies attribute/value pairs.
+     *                  For a Model_Bookmark, there are a few special
+     *                  attributes supported:
+     *                      1) The user/owner may be identified in one of three
+     *                         ways:
+     *                          - 'userId'  as an integer identifier;
+     *                          - 'userId'  as a  string user-name;
+     *
+     *                      2) The referenced Item may be identified in one of
+     *                         seven ways:
+     *                          - 'itemId'  as an integer identifier;
+     *                          - 'itemId'  as a  string url;
+     *                          - 'itemId'  as a  string url-hash;
+     *
+     *  @return Model_Bookmark (or null if not found).
+     */
+    public function get($id,
+                        $apiKey = null)
+    {
+        $user     = $this->_authenticate($apiKey);
+        if (is_array($id))
+        {
+            if ( (is_numeric($id['userId']) &&
+                  ($id['userId'] == $user->getId()))    ||
+                 (is_string($id['userId']) &&
+                  ($id['userId'] == $user->name))       ||
+                 empty($id['userId']) )
+            {
+                unset($id['userId']);
+                $id['user'] = $user;
+            }
+        }
+
+        // Attempt to retrieve the bookmark
+        $bookmark = $this->_service->get($id);
+
+        /*
+        Connexions::log("Service_Proxy_Bookmark::get(): "
+                        .   "id[ %s ], apiKey[ %s ] == [ %s ]",
+                        Connexions::varExport($id),
+                        Connexions::varExport($apiKey),
+                        ($bookmark ? $bookmark->debugDump() : 'null'));
+        // */
+
+        if ( ($bookmark !== null) && (! $bookmark->isBacked()) )
+        {
+            // NOT a backed instance -- return null
+            $bookmark = null;
+        }
+
+        return $bookmark;
+    }
+
     /** @brief  Update/Create a bookmark.
      *  @param  id          Identification value(s) (string, integer, array).
      *                      MAY be an associative array that specifically

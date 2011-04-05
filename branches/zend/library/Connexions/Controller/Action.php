@@ -726,7 +726,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                 $config['page']      = $request->getParam("offset");
         }
 
-        // /*
+        /*
         Connexions::log("Connexions_Controller_Action(%s)::_prepare_main(): "
                         . "all params[ %s ]",
                         get_class($this),
@@ -857,7 +857,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
             $pane = array_merge($pane, $params);
         }
 
-        // /*
+        /*
         Connexions::log("Connexions_Controller_Action(%s)::_prepare_sidebar(): "
                         . "namespace[ %s ], final config[ %s ]",
                         get_class($this),
