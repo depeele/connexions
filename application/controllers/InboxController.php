@@ -169,9 +169,13 @@ class InboxController extends Connexions_Controller_Action
         }
 
 
-        // HTML form/cookie namespace
+        /* HTML form/cookie namespace
+         * (same as IndexController since we're presenting bookmarks)
+         *
+         * Set this to a different value, or change 'cookiePath', to allow
+         * independent settings for paging and displayOptions.
+         */
         $this->_namespace = 'bookmarks';
-        //$this->_handleFormat('bookmarks');
     }
 
     /*************************************************************************

@@ -63,7 +63,7 @@
  *                          The current sortOrder for 'items';
  *
  */
-$config      = &$this->main;
+$config      = $this->main;
 $namespace   = $config['namespace'];
 $panePartial = $config['panePartial'];
 $paginator   = $config['paginator'];
@@ -79,14 +79,23 @@ $call        = "$('#{$namespace}Cloud').tagsManagePane("
              .               Zend_Json::encode($jsConfig) .");";
 $jQuery->addOnLoad($call);
 
-// $this->main->paginator : paginated set of tags
-$uiPagination = $this->htmlPaginationControl();
-$uiPagination->setNamespace($namespace);
+Connexions::log('scripts/settings/main-tags-manage-list.phtml: '
+                . 'paginator: page count[ %d ]',
+                count($paginator));
+
+$pagerConfig = array(
+    'namespace'      => $namespace,
+    //'perPageChoices' => $helper->perPageChoices,
+    'paginator'      => $paginator,
+);
+$uiPagination = $this->htmlPaginationControl( $pagerConfig );
 
 ?>
 <div    id='<?= $namespace ?>Cloud'
      class='itemItems pane'><!-- pane { -->
- <?= $uiPagination->render($paginator, 'paginator-top') ?>
+ <?= ($uiPagination !== null
+         ? $uiPagination->render('paginator-top')
+         : '') ?>
  <div class='cloud'><!-- cloud { -->
   <?php
     if (count($paginator) < 1)  //$paginator->count() 
@@ -142,7 +151,9 @@ $uiPagination->setNamespace($namespace);
     }
   ?>
  </div><!-- cloud } -->
- <?= $uiPagination->render($paginator) ?>
+ <?= ($uiPagination !== null
+         ? $uiPagination->render()
+         : '') ?>
  <br class='clear' />
 </div><!-- pane } -->
 <?php

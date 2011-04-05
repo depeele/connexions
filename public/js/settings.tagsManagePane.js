@@ -52,9 +52,12 @@ $.widget("settings.tagsManagePane", $.connexions.pane, {
      *  @triggers:
      *      'change.bookmark'  when something about the bookmark is changed;
      */
-    _create: function() {
+    _init: function() {
         var self        = this;
         var opts        = self.options;
+
+        // Invoke our super-class
+        $.connexions.pane.prototype._init.apply(this, arguments);
 
         /********************************
          * Initialize jsonRpc
@@ -73,9 +76,6 @@ $.widget("settings.tagsManagePane", $.connexions.pane, {
          * Instantiate our sub-widgets
          *
          */
-
-        //self._init_cloud();
-        self._paneInit();
 
         self.$optionsForm = self.element.find('.displayOptions form');
 
@@ -609,7 +609,8 @@ $.widget("settings.tagsManagePane", $.connexions.pane, {
         // Destroy sub-widgets
         self.$deletes.button('destroy');
 
-        self._paneDestroy();
+        // Invoke our super-class
+        $.connexions.pane.prototype.destroy.apply(this, arguments);
     }
 });
 

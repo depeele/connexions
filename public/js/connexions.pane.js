@@ -58,20 +58,11 @@ $.widget("connexions.pane", {
         displayOptions: {}
     },
 
-    /** @brief  Initialize a new instance.
-     *
-     *  @triggers:
-     *      'change.bookmark'  when something about the bookmark is changed;
-     */
-    _create: function() {
-        this._paneInit();
-    },
-
     /************************
      * Private methods
      *
      */
-    _paneInit: function() {
+    _init: function() {
         this._init_paginators();
         this._init_displayOptions();
     },
@@ -85,10 +76,19 @@ $.widget("connexions.pane", {
         self.$paginators.each(function(idex) {
             var $pForm  = $(this);
 
-            $pForm.paginator({namespace:    opts.namespace,
-                              form:         $pForm,
-                              disableHover: (idex !== 0)
-                              });
+            if ($pForm.data('paginator') === undefined)
+            {
+                // Not yet instantiated
+                $pForm.paginator({namespace:    opts.namespace,
+                                  form:         $pForm,
+                                  disableHover: (idex !== 0)
+                                  });
+            }
+            else if (idex !== 0)
+            {
+                // Already instantiated but we need to modify 'disableHover'
+                $pForm.paginator('option', 'disableHover', true);
+            }
 
             if (opts.page === null)
             {
@@ -122,36 +122,39 @@ $.widget("connexions.pane", {
         }
 
         var opts    = self.options;
-        var uiOpts  = (opts.displayOptions === undefined
-                        ? {}
-                        : opts.displayOptions);
 
-        if (uiOpts.namespace === undefined)
+        if (self.$displayOptions.data('dropdownForm') === undefined)
         {
-            uiOpts.namespace = opts.namespace;
+            // Not yet instantiated
+            var dOpts   = (opts.displayOptions === undefined
+                            ? {}
+                            : opts.displayOptions);
+
+            if (dOpts.namespace === undefined)
+            {
+                dOpts.namespace = opts.namespace;
+            }
+
+            // Instantiate the connexions.dropdownForm widget
+            self.$displayOptions.dropdownForm(dOpts);
         }
 
-        if (! $.isFunction(uiOpts.apply))
-        {
-            uiOpts.apply = function(e) {
-                /* dropdownForm sets cookies for any form values, so we can
-                 * simplify the form submission process (ensuring a clean url)
-                 * by simply re-loading the window.  The reload will cause the
-                 * new cookie values to be applied.
-                 */
-                e.stopImmediatePropagation();
-                e.preventDefault();
-                e.stopPropagation();
+        self.$displayOptions.bind('submit.uipane', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
 
-                self.reload();
-            };
-        }
-
-        // Instantiate the connexions.dropdownForm widget
-        self.$displayOptions.dropdownForm(uiOpts);
+            // reload
+            self.reload();
+        });
     },
+
     _paneDestroy: function() {
         var self    = this;
+
+        // Unbind events
+        self.$paginators.unbind('.uipane');
+        self.$displayOptions.unbind('.uipane');
 
         // Remove added elements
         self.$paginators.paginator('destroy');

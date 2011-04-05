@@ -5,29 +5,58 @@
  *      (typically via View_Helper_HtmlPaginationControl).
  *
  *  Incoming parameters:
- *      namespace   The form namespace for this paginator;
- *      paginator   A Zend_Paginator instance;
- *      cssForm     Additional CSS class(es) to apply to the paginator form
- *                  [ null ];
- *      excludeInfo Should paging information be excluded [ false ];
+ *      namespace       The form namespace for this paginator;
+ *      paginator       A Zend_Paginator instance;
+ *      perPageChoices
+ *      cssForm         Additional CSS class(es) to apply to the paginator form
+ *                      [ null ];
+ *      excludeInfo     Should paging information be excluded [ false ];
  */
-$perPageChoices =  array(10, 25, 50, 100, 250, 500);
-
-$paginator      =& $this->paginator;
-$cssForm        =  (isset($this->cssForm)    ? ' '.$this->cssForm : '');
-$excludeInfo    =  (isset($this->excludeInfo)
+$namespace   = (empty($this->namespace)   ? '' : $this->namespace);
+$cssForm     = (isset($this->cssForm)     ? ' '. $this->cssForm : '');
+$excludeInfo = (isset($this->excludeInfo)
                         ? ($this->excludeInfo ? true : false)
                         : false);
 
-$pages = $paginator->getPages();
+/*
+Connexions::log('scripts/paginator.phtml: '
+                . 'paginator: page count[ %d ]',
+                count($this->paginator));
+// */
+
+$pages = $this->paginator->getPages();
 $pages = get_object_vars($pages);
 
 /* :NOTE: In most cases, Javascript activation/instantation of
  *        connexions.paginator is handled by the container -- usually a
  *        connexions.pane widget.
  */
+$id = ((! empty($namespace)) ? $namespace .'-' : '') . 'paginator';
+if ($excludeInfo)
+{
+    $id .= '-noInfo';
+}
+
+/** @brief  Generate a namespaced form variable name depending on the current
+ *          namespace.
+ *  @param  view    The view;
+ *  @param  name    The form variable name;
+ *
+ *  @return A properly namespaced form variable name.
+ */
+function nsParamName($view, $name)
+{
+    $res  = $name;
+    if ( ! empty($view->namespace))
+    {
+        $res = $view->namespace . ucfirst($name);
+    }
+
+    return $res;
+}
+
 ?>
-<form class='paginator<?= $cssForm ?>'>
+<form id='<?= $id ?>' class='paginator<?= $cssForm ?>'>
  <div class='pager'><?
 
     if ($pages['pageCount'] > 1)
@@ -46,7 +75,7 @@ $pages = get_object_vars($pages);
                     : '');
 
 ?><button type='submit'
-          name='<?= $this->namespace ?>Page'
+          name='<?= nsParamName($this, 'page') ?>'
          class='ends-left ui-state-<?= $state ?> ui-corner-all'
          value='<?= $prev ?>'
          title='Previous Page'
@@ -64,7 +93,7 @@ $pages = get_object_vars($pages);
              * Render a button for the first page.
              */
 ?><button type='submit'
-          name='<?= $this->namespace ?>Page'
+          name='<?= nsParamName($this, 'page') ?>'
          class='ui-state-default ui-corner-all'
          value='<?= $pages['first'] ?>'
          title='Page <?= $pages['first'] ?>'
@@ -77,7 +106,7 @@ $pages = get_object_vars($pages);
              * so include a button for it.
              */
 ?><button type='submit'
-          name='<?= $this->namespace ?>Page'
+          name='<?= nsParamName($this, 'page') ?>'
          class='ui-state-default ui-corner-all'
          value='<?= $pages['first']+1 ?>'
          title='Page <?= $pages['first']+1 ?>'
@@ -103,7 +132,7 @@ $pages = get_object_vars($pages);
                         : 'default');
 
 ?><button type='submit'
-          name='<?= $this->namespace ?>Page'
+          name='<?= nsParamName($this, 'page') ?>'
          class='ui-state-<?= $state ?> ui-corner-all'
          value='<?= $page ?>'
          title='Page <?= $page ?>'
@@ -132,7 +161,7 @@ $pages = get_object_vars($pages);
              * presented so include a button for it.
              */
 ?><button type='submit'
-          name='<?= $this->namespace ?>Page'
+          name='<?= nsParamName($this, 'page') ?>'
          class='ui-state-default ui-corner-all'
          value='<?= $pages['last']-1 ?>'
          title='Page <?= $pages['last']-1 ?>'
@@ -143,7 +172,7 @@ $pages = get_object_vars($pages);
         {
             /* Render the last page. */
 ?><button type='submit'
-          name='<?= $this->namespace ?>Page'
+          name='<?= nsParamName($this, 'page') ?>'
          class='ui-state-default ui-corner-all'
          value='<?= $pages['last'] ?>'
          title='Page <?= $pages['last'] ?>'
@@ -163,7 +192,7 @@ $pages = get_object_vars($pages);
                     : '');
 
 ?><button type='submit'
-          name='<?= $this->namespace ?>Page'
+          name='<?= nsParamName($this, 'page') ?>'
          class='ends-right ui-state-<?= $state ?> ui-corner-all'
          value='<?= $next ?>'
          title='Next Page'
@@ -192,9 +221,9 @@ $pages = get_object_vars($pages);
    item<?= ($totalItemCount === 1 ? '' : 's') ?>
    with
    <select class='ui-input ui-state-default count ui-corner-all'
-            name='<?= $this->namespace ?>PerPage'><?php
+            name='<?= nsParamName($this, 'perPage') ?>'><?php
 
-        foreach ($perPageChoices as $perPage)
+        foreach ($this->perPageChoices as $perPage)
         {
             $selected = ($perPage == $itemCountPerPage
                             ? ' selected'
@@ -223,3 +252,25 @@ $pages = get_object_vars($pages);
 
     ?>
 </form>
+<?php
+
+$jsWait = true;
+if ($jsWait === false)
+{
+    $pagerConfig = array(
+        'namespace'     => $namespace,
+    );
+    $pagerConfig = Zend_Json::encode($pagerConfig);
+
+    $jsLoad = "$('#{$id}').paginator( $pagerConfig );";
+
+    ?>
+<script type='text/javascript'>
+(function($) {
+    //$.spawn( function() {
+                <?= $jsLoad ?>
+    //         } );
+ }(jQuery));
+</script>
+    <?php
+}

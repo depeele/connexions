@@ -110,7 +110,6 @@ class TagsController extends Connexions_Controller_Action
 
         $extra = array(
             'users'         => $this->_users,
-            'cookieUrl'     => $this->_rootUrl,
 
             'showRelation'  => false,
 
@@ -217,14 +216,11 @@ class TagsController extends Connexions_Controller_Action
         $paneTags =& $this->view->sidebar['panes']['tags'];
 
         $paneTags['showRelation']   = false;
-        $paneTags['displayStyle']   =
-                        $this->_request->getParam($paramNs .'OptionGroup',
-                                    View_Helper_HtmlItemCloud::STYLE_LIST);
-        $paneTags['sortBy']         =
-                        $this->_request->getParam($paramNs .'SortBy',
+        $paneTags['displayStyle']   = $this->_getDisplayStyle($paramNs,
+                                        View_Helper_HtmlItemCloud::STYLE_LIST);
+        $paneTags['sortBy']         = $this->_getParam('sortBy', $paramNs,
                                     View_Helper_HtmlItemCloud::SORT_BY_WEIGHT);
-        $paneTags['sortOrder']      =
-                        $this->_request->getParam($paramNs .'SortOrder',
+        $paneTags['sortOrder']      = $this->_getParam('sortOrder', $paramNs,
                                     Connexions_Service::SORT_DIR_DESC);
 
         /* Include the information required to determine whether or not to show

@@ -50,6 +50,14 @@
     }
 
     /*************************************************************************
+     * Simple utilities
+     *
+     */
+    $.spawn = function(callback, timeout) {
+        setTimeout( callback, (timeout === undefined ? 0 : timeout) );
+    };
+
+    /*************************************************************************
      * JSON-RPC helper.
      *
      */
@@ -914,12 +922,27 @@ jQuery.cookie = function(name, value, options) {
             }
             expires = '; expires=' + date.toUTCString(); // use expires attribute, max-age is not supported by IE
         }
+        if (options.path === undefined) {
+            options.path = window.location.pathname;
+        }
+
+        if (options.path)
+        {
+            // Strip any trailing '/'
+            options.path = options.path.replace(/\/+$/, '');
+        }
+        if ((options.secure           === undefined) &&
+            (window.location.protocol === 'https'))
+        {
+            options.secure = true;
+        }
+
         // CAUTION: Needed to parenthesize options.path and options.domain
         // in the following expressions, otherwise they evaluate to undefined
         // in the packed version for some reason...
-        var path = options.path ? '; path=' + (options.path) : '';
-        var domain = options.domain ? '; domain=' + (options.domain) : '';
-        var secure = options.secure ? '; secure' : '';
+        var path   = options.path   ? '; path='   + options.path   : '';
+        var domain = options.domain ? '; domain=' + options.domain : '';
+        var secure = options.secure ? '; secure'                   : '';
         document.cookie = [name, '=', encodeURIComponent(value), expires, path, domain, secure].join('');
     } else { // only name given, get cookie
         var cookieValue = null;
@@ -2701,21 +2724,6 @@ $.widget("ui.validationForm", {
 
         opts.$inputs.bind('validation_change.uivalidationform', _validate);
         opts.$reset.bind('click.uivalidationform',              _reset);
-
-        /*
-        opts.$submit.bind('click.uivalidationform', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            self._trigger('submit');
-        });
-        opts.$cancel.bind('click.uivalidationform', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            self._trigger('cancel');
-        });
-        // */
     },
 
     /** @brief  Default callback for _trigger('validate')
@@ -3873,7 +3881,6 @@ $.widget("connexions.dropdownForm", {
 
     options: {
         // Defaults
-        cookiePath: null,   // Cookie path (defaults to window.location.pathname)
         namespace:  null,   // Form/cookie namespace
         form:       null,   // Our parent/controlling form
         groups:     null    // Display style groups.
@@ -3888,7 +3895,7 @@ $.widget("connexions.dropdownForm", {
      *  @triggers:
      *      'apply.uidropdownform'  when the form is submitted;
      */
-    _create: function() {
+    _init: function() {
         var self        = this;
         var opts        = self.options;
 
@@ -3923,7 +3930,6 @@ $.widget("connexions.dropdownForm", {
         self.element
                 .find('.ui-optionGroups')
                     .optionGroups({
-                        cookiePath: opts.cookiePath,
                         namespace:  opts.namespace,
                         form:       self.$form
                     });
@@ -3950,10 +3956,8 @@ $.widget("connexions.dropdownForm", {
                 /* Hide the form by triggering self.$control.click and then
                  * mouseleave
                  */
-                self.$control.trigger('click');
-
-                self._trigger('mouseleave', e);
-                //self.element.trigger('mouseleave');
+                self.$control.trigger('click')
+                             .trigger('mouseleave', e);
             }
         };
 
@@ -3963,7 +3967,7 @@ $.widget("connexions.dropdownForm", {
         };
 
         var _mouse_leave    = function(e) {
-            if (self.$form.is(':visible'))
+            if ((e && e.type === 'mouseleave') && self.$form.is(':visible'))
             {
                 // Don't fade if the form is currently visible
                 return;
@@ -4014,16 +4018,12 @@ $.widget("connexions.dropdownForm", {
         var _form_submit        = function(e) {
             // Serialize all form values to an array...
             var settings    = self.$form.serializeArray();
-            var cookieOpts  = {
-                path: (opts.cookiePath === null
-                        ? window.location.pathname
-                        : opts.cookiePath)
-            };
-            //e.preventDefault();
+            var cookieOpts  = {};
+            var cookiePath  = $.registry('cookiePath');
 
-            if (window.location.protocol === 'https')
+            if (cookiePath)
             {
-                cookieOpts.secure = true;
+                cookieOpts.path = cookiePath;
             }
 
             /* ...and set a cookie for each
@@ -4036,7 +4036,8 @@ $.widget("connexions.dropdownForm", {
              */
             $(settings).each(function() {
                 /*
-                $.log("Add Cookie: name[%s], value[%s]",
+                $.log("connexions.dropdownForm: Add Cookie: "
+                      + "name[%s], value[%s]",
                       this.name, this.value);
                 // */
                 $.cookie(this.name, this.value, cookieOpts);
@@ -4260,7 +4261,6 @@ $.widget("connexions.optionGroups", {
     version: "0.1.1",
     options: {
         // Defaults
-        cookiePath: null,   // Cookie path (defaults to window.location.pathname)
         namespace:  null,   // Form/cookie namespace
         form:       null    // Our parent/controlling form
     },
@@ -4430,14 +4430,12 @@ $.widget("connexions.optionGroups", {
 
         // Bind to submit.
         var _form_submit        = function(e) {
-            var cookieOpts  = {
-                path: (opts.cookiePath === null
-                        ? window.location.pathname
-                        : opts.cookiePath)
-            };
-            if (window.location.protocol === 'https')
+            var cookieOpts  = {};
+            var cookiePath  = $.registry('cookiePath');
+
+            if (cookiePath)
             {
-                cookieOpts.secure = true;
+                cookieOpts.path = cookiePath;
             }
 
             /* Remove all cookies directly identifying options.  This is
@@ -4950,9 +4948,11 @@ $.widget("connexions.paginator", {
      *      'submit'    on the controlling form when 'PerPage' select element
      *                  is changed.
      */
-    _create: function() {
+    _init: function() {
         var self        = this;
         var opts        = self.options;
+
+        if (opts.namespace === null)    opts.namespace = '';
 
         if (opts.form === null)
         {
@@ -5000,14 +5000,24 @@ $.widget("connexions.paginator", {
         }
 
         // Attach to any PerPage selection box
-        self.element.find('select[name='+ opts.namespace +'PerPage]')
+        self.element.find('.perPage select')
                 .bind('change.paginator', function(e) {
                         /* On change of the PerPage select:
                          *  - set a cookie for the %ns%PerPage value...
                          */
-                        $.log("Add Cookie: name[%s], value[%s]",
-                              this.name, this.value);
-                        $.cookie(this.name, this.value);
+                        var cookieOpts  = {};
+                        var cookiePath  = $.registry('cookiePath');
+
+                        if (cookiePath)
+                        {
+                            cookieOpts.path = cookiePath;
+                        }
+
+                        $.log("connexions.paginator: Add Cookie: "
+                              + "path[%s], name[%s], value[%s]",
+                              cookiePath, this.name, this.value);
+
+                        $.cookie(this.name, this.value, cookieOpts);
 
                         //  - and trigger 'submit' on the pagination form.
                         self.element.submit();
@@ -5022,6 +5032,49 @@ $.widget("connexions.paginator", {
                             // Allow the event to bubble
                         }
                 );
+    },
+
+    /** @brief  Over-ride jQuery-ui so we can handle toggling 'disableHover'
+     *  @param  key     The name of the option;
+     *  @param  value   The new option value;
+     *
+     *  @return this for a fluent interface.
+     */
+    _setOption: function( key, value ) {
+        var self    = this;
+        var opts    = self.options;
+
+        switch (key)
+        {
+        case 'disableHover':
+            if (opts.disableHover != value)
+            {
+                if (! value )
+                {
+                    // Add an opacity hover effect
+                    self.element
+                        .fadeTo(100, 0.5)
+                        .bind('mouseenter.paginator', function() {
+                                $(this).fadeTo(100, 1.0);
+                              })
+                        .bind('mouseleave.paginator', function() {
+                                $(this).fadeTo(100, 0.5);
+                              });
+                }
+                else
+                {
+                    // Remove the opacity hover effect
+                    self.element
+                        .fadeTo(100, 1.0)
+                        .unbind('mouseenter.paginator')
+                        .unbind('mouseleave.paginator');
+                }
+            }
+            break;
+        }
+
+        // Invoke our superclass
+        $.Widget.prototype._setOption.apply(this, arguments);
     },
 
     /************************
@@ -5040,11 +5093,13 @@ $.widget("connexions.paginator", {
     },
 
     enable: function() {
-        this.find(':button').removeAttr('disabled');
+        this.element.find(':button').removeAttr('disabled');
     },
 
     disable: function() {
-        this.find(':button').attr('disabled', true);
+        this.element.find(':button').attr('disabled', true);
+        this.element.fadeTo(100, 1.0)
+                    .unbind('.paginator');
     },
 
     destroy: function() {
@@ -5113,20 +5168,11 @@ $.widget("connexions.pane", {
         displayOptions: {}
     },
 
-    /** @brief  Initialize a new instance.
-     *
-     *  @triggers:
-     *      'change.bookmark'  when something about the bookmark is changed;
-     */
-    _create: function() {
-        this._paneInit();
-    },
-
     /************************
      * Private methods
      *
      */
-    _paneInit: function() {
+    _init: function() {
         this._init_paginators();
         this._init_displayOptions();
     },
@@ -5140,10 +5186,19 @@ $.widget("connexions.pane", {
         self.$paginators.each(function(idex) {
             var $pForm  = $(this);
 
-            $pForm.paginator({namespace:    opts.namespace,
-                              form:         $pForm,
-                              disableHover: (idex !== 0)
-                              });
+            if ($pForm.data('paginator') === undefined)
+            {
+                // Not yet instantiated
+                $pForm.paginator({namespace:    opts.namespace,
+                                  form:         $pForm,
+                                  disableHover: (idex !== 0)
+                                  });
+            }
+            else if (idex !== 0)
+            {
+                // Already instantiated but we need to modify 'disableHover'
+                $pForm.paginator('option', 'disableHover', true);
+            }
 
             if (opts.page === null)
             {
@@ -5177,36 +5232,39 @@ $.widget("connexions.pane", {
         }
 
         var opts    = self.options;
-        var uiOpts  = (opts.displayOptions === undefined
-                        ? {}
-                        : opts.displayOptions);
 
-        if (uiOpts.namespace === undefined)
+        if (self.$displayOptions.data('dropdownForm') === undefined)
         {
-            uiOpts.namespace = opts.namespace;
+            // Not yet instantiated
+            var dOpts   = (opts.displayOptions === undefined
+                            ? {}
+                            : opts.displayOptions);
+
+            if (dOpts.namespace === undefined)
+            {
+                dOpts.namespace = opts.namespace;
+            }
+
+            // Instantiate the connexions.dropdownForm widget
+            self.$displayOptions.dropdownForm(dOpts);
         }
 
-        if (! $.isFunction(uiOpts.apply))
-        {
-            uiOpts.apply = function(e) {
-                /* dropdownForm sets cookies for any form values, so we can
-                 * simplify the form submission process (ensuring a clean url)
-                 * by simply re-loading the window.  The reload will cause the
-                 * new cookie values to be applied.
-                 */
-                e.stopImmediatePropagation();
-                e.preventDefault();
-                e.stopPropagation();
+        self.$displayOptions.bind('submit.uipane', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
 
-                self.reload();
-            };
-        }
-
-        // Instantiate the connexions.dropdownForm widget
-        self.$displayOptions.dropdownForm(uiOpts);
+            // reload
+            self.reload();
+        });
     },
+
     _paneDestroy: function() {
         var self    = this;
+
+        // Unbind events
+        self.$paginators.unbind('.uipane');
+        self.$displayOptions.unbind('.uipane');
 
         // Remove added elements
         self.$paginators.paginator('destroy');
@@ -5329,13 +5387,14 @@ $.widget("connexions.itemsPane", $.connexions.pane, {
 
     /** @brief  Initialize a new instance.
      */
-    _create: function() {
+    _init: function() {
         var self        = this;
         var opts        = self.options;
 
-        self._init_itemList();
+        // Invoke our super-class
+        $.connexions.pane.prototype._init.apply(this, arguments);
 
-        self._paneInit();
+        self._init_itemList();
     },
 
     /************************
@@ -5375,7 +5434,8 @@ $.widget("connexions.itemsPane", $.connexions.pane, {
         // Remove added elements
         self.$itemList.itemList('destroy');
 
-        self._paneDestroy();
+        // Invoke our super-class
+        $.connexions.pane.prototype.destroy.apply(this, arguments);
     }
 });
 
@@ -5436,9 +5496,12 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
      *  @triggers:
      *      'change.bookmark'  when something about the bookmark is changed;
      */
-    _create: function() {
+    _init: function() {
         var self        = this;
         var opts        = self.options;
+
+        // Invoke our super-class
+        $.connexions.pane.prototype._init.apply(this, arguments);
 
         /********************************
          * Initialize jsonRpc
@@ -5454,14 +5517,12 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
         }
 
         /********************************
-         * Instantiate our sub-widgets
+         * Locate our pieces and
+         * bind events
          *
          */
-
-        //self._init_cloud();
-        self._paneInit();
-
-        self.$optionsForm = self.element.find('.displayOptions form');
+        //self.$doForm = self.element.find('.displayOptions form');
+        self.$doForm = self.$displayOptions.find('form:first');
 
         self._bindEvents();
     },
@@ -5482,7 +5543,7 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
          *       with information about the selected display group when a
          *       change is made.
          */
-        this.$optionsForm.bind('change.cloudPane',
+        this.$doForm.bind('change.cloudPane',
                 function(e, info) {
                     var $field  = $(this).find('.field.highlightCount');
 
@@ -6073,9 +6134,10 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
         var self    = this;
 
         // Unbind events
-        self.$optionsForm.unbind('.cloudPane');
+        self.$doForm.unbind('.cloudPane');
 
-        self._paneDestroy();
+        // Invoke our super-class
+        $.connexions.pane.prototype.destroy.apply(this, arguments);
     }
 });
 

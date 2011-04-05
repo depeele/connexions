@@ -15,15 +15,6 @@
 class View_Helper_HtmlUsers extends View_Helper_Users
 {
     static public   $defaults               = array(
-        'cookieUrl'         => null,        /* The URL to use when setting
-                                             * cookies.  This is used to set
-                                             * the cookie path for the attached
-                                             * Javascript 'itemPane' which, in
-                                             * turn, effects the cookie path
-                                             * passed to the contained
-                                             * 'dropdownForm' presneting
-                                             * Display Options.
-                                             */
 
         'displayStyle'      => self::STYLE_REGULAR,
         'panePartial'       => 'main',
@@ -155,26 +146,6 @@ class View_Helper_HtmlUsers extends View_Helper_Users
         parent::__construct($config);
     }
 
-    /** @brief  Over-ride to ensure that those variables that should be set
-     *          BEFORE 'namespace' are.
-     *  @param  config  A configuration array that may include:
-     *
-     *  @return $this for a fluent interface.
-     */
-    public function populate(array $config)
-    {
-        foreach (array('cookieUrl', 'panePartial', 'paneVars', 'ignoreDeleted')
-                            as $key)
-        {
-            if (isset($config[$key]))
-            {
-                $this->__set($key, $config[$key]);
-            }
-        }
-
-        return parent::populate($config);
-    }
-
     /** @brief  Configure and retrive this helper instance OR, if no
      *          configuration is provided, perform a render.
      *  @param  config  A configuration array (see populate());
@@ -193,6 +164,31 @@ class View_Helper_HtmlUsers extends View_Helper_Users
         return $this->render();
     }
 
+    /** @brief  Enforce a non-null display style.
+     *  @param  value   The new display style (null === default);
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function setDisplayStyle( $value )
+    {
+        $origVal = $value;
+        if ($value === null)
+        {
+            $value = self::$defaults['displayStyle'];
+        }
+
+        /*
+        Connexions::log("View_Helper_HtmlUsers::setDisplayStyle( %s ) "
+                        .   "== [ %s ]",
+                        Connexions::varExport($origValue),
+                        Connexions::varExport($value));
+        // */
+
+        $this->_params['displayStyle'] = $value;
+
+        return $this;
+    }
+
     /** @brief  Retrieve the DisplayOptions helper. */
     public function getDisplayOptions()
     {
@@ -206,11 +202,6 @@ class View_Helper_HtmlUsers extends View_Helper_Users
                             'definition' => self::$displayStyles,
                             'groups'     => self::$styleGroups,
                         );
-
-            if ($this->cookieUrl !== null)
-            {
-                $dsConfig['cookiePath'] = rtrim($this->cookieUrl, '/');
-            }
 
             $this->_displayOptions =
                     $this->view->htmlDisplayOptions($dsConfig);

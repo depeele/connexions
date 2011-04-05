@@ -11,15 +11,6 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
 
     static public   $defaults               = array(
         'namespace'         => 'tags',
-        'cookieUrl'         => null,        /* The URL to use when setting
-                                             * cookies.  This is used to set
-                                             * the cookie path for the attached
-                                             * Javascript 'cloudPane' which, in
-                                             * turn, effects the cookie path
-                                             * passed to the contained
-                                             * 'dropdownForm' presenting
-                                             * Display Options.
-                                             */
 
         // Pagination values
         'page'              => 1,
@@ -375,11 +366,6 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                             'namespace' => $this->namespace,
                             'groups'    => self::$styleGroups,
                         );
-
-            if ($this->cookieUrl !== null)
-            {
-                $dsConfig['cookiePath'] = rtrim($this->cookieUrl, '/');
-            }
 
             if ($this->_displayOptions === null)
             {

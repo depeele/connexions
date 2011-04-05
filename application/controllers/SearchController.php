@@ -321,7 +321,6 @@ class SearchController extends Connexions_Controller_Action
         // */
 
         $extra = array(
-            'cookieUrl'     => $this->_rootUrl,
             'showRelation'  => false,
         );
         $config = array_merge($config, $extra);

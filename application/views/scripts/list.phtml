@@ -21,12 +21,19 @@ Connexions::log("view/scripts/list.phtml: "
 
 
 $namespace  =  $helper->namespace;
-$paginator  =& $helper->paginator;
+$paginator  = $helper->paginator;
 
 
-$uiPagination = $this->htmlPaginationControl();
-$uiPagination->setNamespace($namespace);
-$uiPagination->setPerPageChoices($helper->perPageChoices);
+$uiPagination = null;
+if ($paginator instanceof Zend_Paginator)
+{
+    $pagerConfig = array(
+        'namespace'      => $namespace,
+        'perPageChoices' => $helper->perPageChoices,
+        'paginator'      => $paginator,
+    );
+    $uiPagination = $this->htmlPaginationControl( $pagerConfig );
+}
 
 /* Establish configuration for and schedule instantiation of a new
  * Javascript connexions.itemPane() instance targeting the 'pane' div rendered
@@ -50,7 +57,9 @@ $html = $helper->html;
  <?= (is_array($html) && isset($html['prepend'])
          ? $html['prepend']
          : '') ?>
- <?= $uiPagination->render($paginator, 'paginator-top', true) ?>
+ <?= ($uiPagination !== null
+         ? $uiPagination->render('paginator-top', true)
+         : '') ?>
  <?= $helper->renderDisplayOptions($paginator) ?>
  <ul class='items <?= $helper->ulCss ?>'>
  <?php
@@ -92,7 +101,9 @@ $html = $helper->html;
 
  ?>
  </ul>
- <?= $uiPagination->render($paginator) ?>
+ <?= ($uiPagination !== null
+         ? $uiPagination->render()
+         : '') ?>
  <br class='clear' />
  <?= (is_array($html) && isset($html['append'])
          ? $html['append']

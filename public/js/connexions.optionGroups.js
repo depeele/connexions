@@ -61,7 +61,6 @@ $.widget("connexions.optionGroups", {
     version: "0.1.1",
     options: {
         // Defaults
-        cookiePath: null,   // Cookie path (defaults to window.location.pathname)
         namespace:  null,   // Form/cookie namespace
         form:       null    // Our parent/controlling form
     },
@@ -231,14 +230,12 @@ $.widget("connexions.optionGroups", {
 
         // Bind to submit.
         var _form_submit        = function(e) {
-            var cookieOpts  = {
-                path: (opts.cookiePath === null
-                        ? window.location.pathname
-                        : opts.cookiePath)
-            };
-            if (window.location.protocol === 'https')
+            var cookieOpts  = {};
+            var cookiePath  = $.registry('cookiePath');
+
+            if (cookiePath)
             {
-                cookieOpts.secure = true;
+                cookieOpts.path = cookiePath;
             }
 
             /* Remove all cookies directly identifying options.  This is

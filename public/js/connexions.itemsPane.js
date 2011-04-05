@@ -26,13 +26,14 @@ $.widget("connexions.itemsPane", $.connexions.pane, {
 
     /** @brief  Initialize a new instance.
      */
-    _create: function() {
+    _init: function() {
         var self        = this;
         var opts        = self.options;
 
-        self._init_itemList();
+        // Invoke our super-class
+        $.connexions.pane.prototype._init.apply(this, arguments);
 
-        self._paneInit();
+        self._init_itemList();
     },
 
     /************************
@@ -72,7 +73,8 @@ $.widget("connexions.itemsPane", $.connexions.pane, {
         // Remove added elements
         self.$itemList.itemList('destroy');
 
-        self._paneDestroy();
+        // Invoke our super-class
+        $.connexions.pane.prototype.destroy.apply(this, arguments);
     }
 });
 
