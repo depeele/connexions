@@ -23,7 +23,6 @@ $.widget("connexions.dropdownForm", {
 
     options: {
         // Defaults
-        cookiePath: null,   // Cookie path (defaults to window.location.pathname)
         namespace:  null,   // Form/cookie namespace
         form:       null,   // Our parent/controlling form
         groups:     null    // Display style groups.
@@ -38,7 +37,7 @@ $.widget("connexions.dropdownForm", {
      *  @triggers:
      *      'apply.uidropdownform'  when the form is submitted;
      */
-    _create: function() {
+    _init: function() {
         var self        = this;
         var opts        = self.options;
 
@@ -73,7 +72,6 @@ $.widget("connexions.dropdownForm", {
         self.element
                 .find('.ui-optionGroups')
                     .optionGroups({
-                        cookiePath: opts.cookiePath,
                         namespace:  opts.namespace,
                         form:       self.$form
                     });
@@ -100,10 +98,8 @@ $.widget("connexions.dropdownForm", {
                 /* Hide the form by triggering self.$control.click and then
                  * mouseleave
                  */
-                self.$control.trigger('click');
-
-                self._trigger('mouseleave', e);
-                //self.element.trigger('mouseleave');
+                self.$control.trigger('click')
+                             .trigger('mouseleave', e);
             }
         };
 
@@ -113,7 +109,7 @@ $.widget("connexions.dropdownForm", {
         };
 
         var _mouse_leave    = function(e) {
-            if (self.$form.is(':visible'))
+            if ((e && e.type === 'mouseleave') && self.$form.is(':visible'))
             {
                 // Don't fade if the form is currently visible
                 return;
@@ -164,16 +160,12 @@ $.widget("connexions.dropdownForm", {
         var _form_submit        = function(e) {
             // Serialize all form values to an array...
             var settings    = self.$form.serializeArray();
-            var cookieOpts  = {
-                path: (opts.cookiePath === null
-                        ? window.location.pathname
-                        : opts.cookiePath)
-            };
-            //e.preventDefault();
+            var cookieOpts  = {};
+            var cookiePath  = $.registry('cookiePath');
 
-            if (window.location.protocol === 'https')
+            if (cookiePath)
             {
-                cookieOpts.secure = true;
+                cookieOpts.path = cookiePath;
             }
 
             /* ...and set a cookie for each
@@ -186,7 +178,8 @@ $.widget("connexions.dropdownForm", {
              */
             $(settings).each(function() {
                 /*
-                $.log("Add Cookie: name[%s], value[%s]",
+                $.log("connexions.dropdownForm: Add Cookie: "
+                      + "name[%s], value[%s]",
                       this.name, this.value);
                 // */
                 $.cookie(this.name, this.value, cookieOpts);

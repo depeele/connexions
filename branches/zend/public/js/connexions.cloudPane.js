@@ -53,9 +53,12 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
      *  @triggers:
      *      'change.bookmark'  when something about the bookmark is changed;
      */
-    _create: function() {
+    _init: function() {
         var self        = this;
         var opts        = self.options;
+
+        // Invoke our super-class
+        $.connexions.pane.prototype._init.apply(this, arguments);
 
         /********************************
          * Initialize jsonRpc
@@ -71,14 +74,12 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
         }
 
         /********************************
-         * Instantiate our sub-widgets
+         * Locate our pieces and
+         * bind events
          *
          */
-
-        //self._init_cloud();
-        self._paneInit();
-
-        self.$optionsForm = self.element.find('.displayOptions form');
+        //self.$doForm = self.element.find('.displayOptions form');
+        self.$doForm = self.$displayOptions.find('form:first');
 
         self._bindEvents();
     },
@@ -99,7 +100,7 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
          *       with information about the selected display group when a
          *       change is made.
          */
-        this.$optionsForm.bind('change.cloudPane',
+        this.$doForm.bind('change.cloudPane',
                 function(e, info) {
                     var $field  = $(this).find('.field.highlightCount');
 
@@ -690,9 +691,10 @@ $.widget("connexions.cloudPane", $.connexions.pane, {
         var self    = this;
 
         // Unbind events
-        self.$optionsForm.unbind('.cloudPane');
+        self.$doForm.unbind('.cloudPane');
 
-        self._paneDestroy();
+        // Invoke our super-class
+        $.connexions.pane.prototype.destroy.apply(this, arguments);
     }
 });
 

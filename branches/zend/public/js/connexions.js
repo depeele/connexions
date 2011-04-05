@@ -50,6 +50,14 @@
     }
 
     /*************************************************************************
+     * Simple utilities
+     *
+     */
+    $.spawn = function(callback, timeout) {
+        setTimeout( callback, (timeout === undefined ? 0 : timeout) );
+    };
+
+    /*************************************************************************
      * JSON-RPC helper.
      *
      */

@@ -16,15 +16,6 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
 {
     static public   $defaults           = array(
         'namespace'         => 'bookmarks',
-        'cookieUrl'         => null,        /* The URL to use when setting
-                                             * cookies.  This is used to set
-                                             * the cookie path for the attached
-                                             * Javascript 'itemPane' which, in
-                                             * turn, effects the cookie path
-                                             * passed to the contained
-                                             * 'dropdownForm' presneting
-                                             * Display Options.
-                                             */
 
         'displayStyle'      => self::STYLE_REGULAR,
         'panePartial'       => 'main',
@@ -180,6 +171,31 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
         return $this->render();
     }
 
+    /** @brief  Enforce a non-null display style.
+     *  @param  value   The new display style (null === default);
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function setDisplayStyle( $value )
+    {
+        $origVal = $value;
+        if ($value === null)
+        {
+            $value = self::$defaults['displayStyle'];
+        }
+
+        /*
+        Connexions::log("View_Helper_HtmlBookmarks::setDisplayStyle( %s ) "
+                        .   "== [ %s ]",
+                        Connexions::varExport($origValue),
+                        Connexions::varExport($value));
+        // */
+
+        $this->_params['displayStyle'] = $value;
+
+        return $this;
+    }
+
     /** @brief  Retrieve the DisplayOptions helper. */
     public function getDisplayOptions()
     {
@@ -193,11 +209,6 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
                             'definition' => self::$displayStyles,
                             'groups'     => self::$styleGroups,
                         );
-
-            if ($this->cookieUrl !== null)
-            {
-                $dsConfig['cookiePath'] = rtrim($this->cookieUrl, '/');
-            }
 
             $this->_displayOptions =
                     $this->view->htmlDisplayOptions($dsConfig);

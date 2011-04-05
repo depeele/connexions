@@ -1,6 +1,5 @@
 <?php
 $config  = Zend_Registry::get('config');
-$request = Connexions::getRequest();
 $baseUrl = $this->baseUrl('/'); //Connexions::url('/');
 
 // Force latest IE rendering engine (even in intranet) & Chrome Frame
@@ -67,6 +66,7 @@ $jQuery->clearJavascript()
     // Initialize global Javascript registry entries.
     $.registry("api",  <?= json_encode($config->api->toArray()) ?>);
     $.registry("urls", <?= json_encode($config->urls->toArray()) ?>);
+    $.registry("cookiePath", <?= json_encode($this->cookiePath) ?>);
 
     /** @brief  Given an argument list of image urls, load them all but don't
      *          display.

@@ -77,7 +77,6 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
     protected           $_fieldMap      = array();
     protected           $_groups        = array();
 
-    protected           $_cookiePath    = null;
     protected           $_currentGroup  = null;
 
     /** @brief  Retrieve the HtmlDisplayOptions instance.
@@ -156,9 +155,6 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
             // Coopt the initial instance for this namespace...
         }
 
-        if (is_array($config['cookiePath']))
-            $this->cookiePath = $config['cookiePath'];
-
         if (is_array($config['definition']))
             $this->setDefinition($config['definition']);
 
@@ -214,10 +210,6 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
             $val =& $this->_groups;
             break;
 
-        case 'cookiePath':
-            $val = $this->_cookiePath;
-            break;
-
         default:
             $val = parent::__get($name);
             break;
@@ -240,10 +232,6 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
             'groups'     => $this->getGroups(),
             'definition' => $this->getDefinition(),
         );
-        if ($this->_cookiePath !== null)
-        {
-            $config['cookiePath'] = $this->_cookiePath;
-        }
 
         return $config;
     }
@@ -511,10 +499,6 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
                 throw new Exception("'groups' MUST be an array");
 
             $this->setGroups($val);
-            break;
-
-        case 'cookiePath':
-            $this->_cookiePath = $val;
             break;
 
         default:

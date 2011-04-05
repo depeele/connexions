@@ -57,9 +57,11 @@ $.widget("connexions.paginator", {
      *      'submit'    on the controlling form when 'PerPage' select element
      *                  is changed.
      */
-    _create: function() {
+    _init: function() {
         var self        = this;
         var opts        = self.options;
+
+        if (opts.namespace === null)    opts.namespace = '';
 
         if (opts.form === null)
         {
@@ -107,14 +109,24 @@ $.widget("connexions.paginator", {
         }
 
         // Attach to any PerPage selection box
-        self.element.find('select[name='+ opts.namespace +'PerPage]')
+        self.element.find('.perPage select')
                 .bind('change.paginator', function(e) {
                         /* On change of the PerPage select:
                          *  - set a cookie for the %ns%PerPage value...
                          */
-                        $.log("Add Cookie: name[%s], value[%s]",
-                              this.name, this.value);
-                        $.cookie(this.name, this.value);
+                        var cookieOpts  = {};
+                        var cookiePath  = $.registry('cookiePath');
+
+                        if (cookiePath)
+                        {
+                            cookieOpts.path = cookiePath;
+                        }
+
+                        $.log("connexions.paginator: Add Cookie: "
+                              + "path[%s], name[%s], value[%s]",
+                              cookiePath, this.name, this.value);
+
+                        $.cookie(this.name, this.value, cookieOpts);
 
                         //  - and trigger 'submit' on the pagination form.
                         self.element.submit();
@@ -129,6 +141,49 @@ $.widget("connexions.paginator", {
                             // Allow the event to bubble
                         }
                 );
+    },
+
+    /** @brief  Over-ride jQuery-ui so we can handle toggling 'disableHover'
+     *  @param  key     The name of the option;
+     *  @param  value   The new option value;
+     *
+     *  @return this for a fluent interface.
+     */
+    _setOption: function( key, value ) {
+        var self    = this;
+        var opts    = self.options;
+
+        switch (key)
+        {
+        case 'disableHover':
+            if (opts.disableHover != value)
+            {
+                if (! value )
+                {
+                    // Add an opacity hover effect
+                    self.element
+                        .fadeTo(100, 0.5)
+                        .bind('mouseenter.paginator', function() {
+                                $(this).fadeTo(100, 1.0);
+                              })
+                        .bind('mouseleave.paginator', function() {
+                                $(this).fadeTo(100, 0.5);
+                              });
+                }
+                else
+                {
+                    // Remove the opacity hover effect
+                    self.element
+                        .fadeTo(100, 1.0)
+                        .unbind('mouseenter.paginator')
+                        .unbind('mouseleave.paginator');
+                }
+            }
+            break;
+        }
+
+        // Invoke our superclass
+        $.Widget.prototype._setOption.apply(this, arguments);
     },
 
     /************************
@@ -147,11 +202,13 @@ $.widget("connexions.paginator", {
     },
 
     enable: function() {
-        this.find(':button').removeAttr('disabled');
+        this.element.find(':button').removeAttr('disabled');
     },
 
     disable: function() {
-        this.find(':button').attr('disabled', true);
+        this.element.find(':button').attr('disabled', true);
+        this.element.fadeTo(100, 1.0)
+                    .unbind('.paginator');
     },
 
     destroy: function() {

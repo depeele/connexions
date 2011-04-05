@@ -39,6 +39,14 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                                          * root URL but should be changed by
                                          * the controller.
                                          */
+    protected   $_cookiePath= null;     /* The URL path to use when setting
+                                         * cookies.  This is used to set the
+                                         * cookie path for the attached
+                                         * Javascript 'itemPane' which, in
+                                         * turn, effects the cookie path passed
+                                         * to the contained 'dropdownForm'
+                                         * presneting Display Options.
+                                         */
     protected   $_url       = null;     /* The page's URL with
                                          * differentiating parameters but
                                          * minus any query.
@@ -56,12 +64,23 @@ class Connexions_Controller_Action extends Zend_Controller_Action
     public function init()
     {
         // Initialize common members
-        $this->_viewer  =  Zend_Registry::get('user');
-        $this->_request =  $this->getRequest();
-        $this->_rootUrl =  $this->_request->getBasePath();
-        $this->_baseUrl =  $this->_rootUrl;
-        $this->_url     =  $this->_baseUrl
-                        .  $this->_request->getPathInfo();
+        $this->_viewer      =  Zend_Registry::get('user');
+        $this->_request     =  $this->getRequest();
+
+        $this->_rootUrl     =  $this->_request->getBasePath();
+
+        if ($this->_baseUrl === null)
+        {
+            $this->_baseUrl =  $this->_rootUrl;
+        }
+        if ($this->_cookiePath === null)
+        {
+            $this->_cookiePath = $this->_baseUrl;
+        }
+
+        $this->_url         =  $this->_baseUrl
+                            .  $this->_request->getPathInfo();
+
 
         if (! preg_match('#/\s*$#', $this->_url))
         {
@@ -88,6 +107,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         $this->view->action        = $this->_request->getParam('action');
         $this->view->rootUrl       = $this->_rootUrl;
         $this->view->baseUrl       = $this->_baseUrl;
+        $this->view->cookiePath    = $this->_cookiePath;
         $this->view->url           = $this->_url;
         $this->view->viewer        = $this->_viewer;
         $this->view->searchContext = $this->_request->getParam('searchContext',
@@ -288,6 +308,106 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         }
 
         return $res;
+    }
+
+    /** @brief  Retrieve a request parameter based upon the current namespace.
+     *  @param  name        The name of the request parameter;
+     *  @param  namespace   Override the current namespace when retrieving
+     *                      this parameter [ null == use $this->_namspace ];
+     *  @param  default     The default value if the request parameter doesn't
+     *                      exist [ null ];
+     *
+     *  @return The value of the named parameter.
+     */
+    protected function _getParam($name, $namespace = null, $default = null)
+    {
+        $origName      = $name;
+        $origNamespace = $namespace;
+        if ($namespace === null)    $namespace = $this->_namespace;
+        if (! empty($namespace))    $name      = $namespace . ucfirst($name);
+
+        $val = $this->_request->getParam( $name, $default );
+
+        /*
+        Connexions::log("Connexions_Controller_Action::_getParam(%s, %s, %s): "
+                        . "full name[ %s ] == [ %s ]",
+                        $origName,
+                        Connexions::varExport($origNamespace),
+                        Connexions::varExport($default),
+                        $name,
+                        Connexions::varExport($val));
+        // */
+
+        return $val;
+    }
+    /** @brief  Retrieve all request parameters based upon the current
+     *          namespace.
+     *  @param  namespace   Override the current namespace when retrieving
+     *                      these parameters [ null == use $this->_namspace ];
+     *
+     *  @return All parameters in the target namespace.
+     */
+    protected function _getParams($namespace = null)
+    {
+        $origNamespace = $namespace;
+        if ($namespace === null)    $namespace = $this->_namespace;
+
+        /* Include ALL namespaced parameters
+         *  (i.e. ALL parameters with a prefix of %namespace%)
+         */
+        $params   = $this->_request->getParams();
+
+        /*
+        Connexions::log("Connexions_Controller_Action::_getParams(%s): "
+                        . "namespace[ %s ], ALL parameters[ %s ]",
+                        Connexions::varExport($origNamespace),
+                        Connexions::varExport($namespace),
+                        Connexions::varExport($params));
+        // */
+
+        $nsParams = array();
+        $nsLen    = strlen($namespace);
+        foreach ($params as $key => $val)
+        {
+            if (substr($key, 0, $nsLen) == $namespace)
+            {
+                $nsKey = substr($key, $nsLen);
+                $nsKey[0] = strtolower($nsKey[0]);
+
+                $nsParams[ $nsKey ] = $val;
+            }
+        }
+
+        /*
+        Connexions::log("Connexions_Controller_Action::_getParams(): "
+                        . "namespace[ %s ] parameters[ %s ]",
+                        Connexions::varExport($namespace),
+                        Connexions::varExport($nsParams));
+        // */
+
+        return $nsParams;
+    }
+
+    /** @brief  The current display style.  The display style is indicated by a
+     *          combination of 'optionGroup' and 'optionGroups_option'.
+     *
+     *  @param  namespace   Override the current namespace when retrieving
+     *                      this parameter [ null == use $this->_namspace ];
+     *  @param  default     The default value if the request parameter doesn't
+     *                      exist [ null ];
+     *
+     *  @return The 'displayStyle'.
+     */
+    protected function _getDisplayStyle($namespace = null, $default = null)
+    {
+        $group  = $this->_getParam('optionGroup',        $namespace, $default);
+        $option = $this->_getParam('optionGroup_option', $namespace);
+        if ( ($group === 'custom') && (is_array($option)) )
+        {
+            $group = $option;
+        }
+
+        return $group;
     }
 
     /** @brief  Determine the proper rendering format.  The only ones we deal
@@ -551,86 +671,71 @@ class Connexions_Controller_Action extends Zend_Controller_Action
      */
     protected function _prepare_main()
     {
-        $request    =& $this->_request;
         $namespace  =  $this->_namespace;
 
         /*
         Connexions::log("Connexions_Controller_Action::_prepare_main(): "
                         . "namespace[ %s ], format[ %s ], all params[ %s ]",
                         $namespace, $this->_format,
-                        Connexions::varExport($request->getParams()));
+                        Connexions::varExport($this->_request->getParams()));
         // */
 
-        $config = array(
-            'namespace'     => $namespace,
-            'cookieUrl'     => $this->_rootUrl,
-            'viewer'        => &$this->_viewer,
-            'displayStyle'  => null,
-        );
+        $config = $this->_getParams();
+
+        if (empty($config['namespace']))
+            $config['namespace'] = $this->_namespace;
+        if (empty($config['viewer']))
+            $config['viewer'] = &$this->_viewer;
 
         if (($this->_format === 'html') || ($this->_format === 'partial'))
         {
-            /* HTML and Partial will typically be requested via click on a
-             * pre-defined URL.
-             *
-             * "displayStyle" is indicated by a combination of
-             *  '%namespace%OptionGroup' and '%namespace%OptionsGroups_option'
-             */
-            $displayStyle = $request->getParam($namespace ."OptionGroup");
-            $dsCustom     = $request->getParam($namespace
-                                                    ."OptionGroups_option");
-
-            if ( ($displayStyle === 'custom') && (is_array($dsCustom)) )
-                $displayStyle = $dsCustom;
-
-            $config['displayStyle'] = $displayStyle;
-
-            /* Include ALL namespaced parameters
-             *  (i.e. ALL parameters with a prefix of %namespace%)
-             */
-            $params   = $request->getParams();
-            $nsLen    = strlen($namespace);
-            foreach ($params as $key => $val)
-            {
-                if (substr($key, 0, $nsLen) == $namespace)
-                {
-                    $nsKey = substr($key, $nsLen);
-                    $nsKey[0] = strtolower($nsKey[0]);
-
-                    $config[ $nsKey ] = $val;
-                }
-            }
+            // For HTML rendering, include 'cookiePath' and 'displayStyle'
+            $config['cookiePath']   = $this->_cookiePath;
+            $config['displayStyle'] = $this->_getDisplayStyle();
         }
         else
         {
             /* All the rest are more subject to variability since they are
              * likely added by a user.
              */
-            $perPage      = $request->getParam("perPage");
-            $page         = $request->getParam("page");
-            $sortBy       = $request->getParam("sortBy");
-            $sortOrder    = $request->getParam("sortOrder");
+            $request      = &$this->_request;
+
+            if (empty($config['perPage']))
+                $config['perPage']   = $request->getParam("perPage");
+            if (empty($config['page']))
+                $config['page']      = $request->getParam("page");
+            if (empty($config['sortBy']))
+                $config['sortBy']    = $request->getParam("sortBy");
+            if (empty($config['sortOrder']))
+                $config['sortOrder'] = $request->getParam("sortOrder");
+
 
             // Alternative names
-            if (empty($perPage))    $perPage   = $request->getParam("perpage");
-            if (empty($sortBy))     $sortBy    = $request->getParam("sortby");
-            if (empty($sortOrder))  $sortOrder =
-                                            $request->getParam("sortorder");
+            if (empty($config['perPage']))
+                $config['perPage']   = $request->getParam("perpage");
+            if (empty($config['page']))
+                $config['page']      = $request->getParam("Page");
+            if (empty($config['sortBy']))
+                $config['sortBy']    = $request->getParam("sortby");
+            if (empty($config['sortOrder']))
+                $config['sortOrder'] = $request->getParam("sortorder");
 
-            if (empty($perPage))    $perPage   = $request->getParam("limit");
-            if (empty($page))       $page      = $request->getParam("offset");
-
-
-            $config['perPage']    = $perPage;
-            $config['page']       = $page;
-            $config['sortBy']     = $sortBy;
-            $config['sortOrder']  = $sortOrder;
+            if (empty($config['perPage']))
+                $config['perPage']   = $request->getParam("limit");
+            if (empty($config['page']))
+                $config['page']      = $request->getParam("offset");
         }
 
-        /*
-        Connexions::log("Connexions_Controller_Action::_prepare_main(): "
+        // /*
+        Connexions::log("Connexions_Controller_Action(%s)::_prepare_main(): "
+                        . "all params[ %s ]",
+                        get_class($this),
+                        Connexions::varExport($this->_request->getParams()));
+
+        Connexions::log("Connexions_Controller_Action(%s)::_prepare_main(): "
                         . "namespace[ %s ], final config[ %s ]",
-                        $namespace,
+                        get_class($this),
+                        $this->_namespace,
                         Connexions::varExport($config));
         // */
 
@@ -645,8 +750,6 @@ class Connexions_Controller_Action extends Zend_Controller_Action
      */
     protected function _prepare_sidebar()
     {
-        $request =& $this->_request;
-
         /* If this is being rendered as a partial, treat all pans as
          * synchronous, otherwise make then asynchronous.
          */
@@ -677,7 +780,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                      *
                      */
                     'viewer'        => &$this->_viewer,
-                    'cookieUrl'     => $this->_rootUrl,
+                    'cookiePath'    => $this->_rootUrl,
                     'namespace'     => 'sbTags',
                     'title'         => 'Tags',
                     'weightName'    => 'userItemCount',
@@ -688,15 +791,9 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                                 View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM,
                     'itemBaseUrl'   => $this->_url,
 
-                    'sortBy'        => $request->getParam("sbTagsSortBy"),
-                    'sortOrder'     => $request->getParam("sbTagsSortOrder"),
 
-                    'page'          => $request->getParam("sbTagsPage"),
-                    'perPage'       => $request->getParam("sbTagsPerPage"),
-                    'highlightCount'=> $request->getParam(
-                                                    "sbTagsHighlightCount"),
-
-                    'displayStyle'  => $request->getParam("sbTagsOptionGroup"),
+                    // Default displayStyle
+                    'displayStyle'  => View_Helper_HtmlItemCloud::STYLE_CLOUD,
                 ),
 
                 'people'  => array(
@@ -708,7 +805,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                      *
                      */
                     'viewer'        => &$this->_viewer,
-                    'cookieUrl'     => $this->_rootUrl,
+                    'cookiePath'    => $this->_rootUrl,
                     'namespace'     => 'sbPeople',
                     'title'         => 'People',
                     'weightName'    => 'userItemCount',
@@ -719,16 +816,8 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                                 View_Helper_HtmlItemCloud::ITEM_TYPE_USER,
                     'itemBaseUrl'   => Connexions::url('/'),    // $this->_url,
 
-                    'sortBy'        => $request->getParam("sbPeopleSortBy"),
-                    'sortOrder'     => $request->getParam("sbPeopleSortOrder"),
-
-                    'page'          => $request->getParam("sbPeoplePage"),
-                    'perPage'       => $request->getParam("sbPeoplePerPage"),
-                    'highlightCount'=> $request->getParam(
-                                                    "sbPeopleHighlightCount"),
-
-                    'displayStyle'  => $request->getParam(
-                                                    "sbPeopleOptionGroup"),
+                    // Default displayStyle
+                    'displayStyle'  => View_Helper_HtmlItemCloud::STYLE_LIST,
                 ),
 
                 'items'   => array(
@@ -740,7 +829,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                      *
                      */
                     'viewer'        => &$this->_viewer,
-                    'cookieUrl'     => $this->_rootUrl,
+                    'cookiePath'    => $this->_rootUrl,
                     'namespace'     => 'sbItems',
                     'title'         => 'Items',
                     'weightName'    => 'userCount',
@@ -751,32 +840,30 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                                 View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM,
                     'itemBaseUrl'   => $this->_url,
 
-                    'page'          => $request->getParam("sbItemsPage"),
-                    'perPage'       => $request->getParam("sbItemsPerPage"),
-                    'highlightCount'=> $request->getParam(
-                                                    "sbItemsHighlightCount"),
-
-                    /************************************
-                     * Adjust the default for this pane
-                     *      list style,
-                     *      sorted in descending order
-                     *      by weight
-                     *
-                     */
-                    'sortBy'        =>
-                        $request->getParam("sbItemsSortBy",
-                                    View_Helper_HtmlItemCloud::SORT_BY_WEIGHT),
-
-                    'sortOrder'     =>
-                        $request->getParam("sbItemsSortOrder",
-                                    Connexions_Service::SORT_DIR_DESC),
-
-                    'displayStyle'  =>
-                        $request->getParam("sbItemsOptionGroup",
-                                    View_Helper_HtmlItemCloud::STYLE_LIST),
+                    // Default displayStyle
+                    'displayStyle'  => View_Helper_HtmlItemCloud::STYLE_LIST,
                 ),
             ),
         );
+
+        // Include namespaced and displayStyle parameters for each pane
+        foreach ($sidebar['panes'] as $name => &$pane)
+        {
+            $params       = $this->_getParams($pane['namespace']);
+            $params['displayStyle'] =
+                $this->_getDisplayStyle($pane['namespace'],
+                                        $pane['displayStyle']);
+
+            $pane = array_merge($pane, $params);
+        }
+
+        // /*
+        Connexions::log("Connexions_Controller_Action(%s)::_prepare_sidebar(): "
+                        . "namespace[ %s ], final config[ %s ]",
+                        get_class($this),
+                        $this->_namespace,
+                        Connexions::varExport($sidebar));
+        // */
 
         $this->view->sidebar = $sidebar;
     }
@@ -789,10 +876,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
      */
     protected function _prepare_post()
     {
-        $request   =& $this->_request;
-        $namespace =  $this->_namespace;
-
-        if (! $request->isPost())
+        if (! $this->_request->isPost())
         {
             $this->view->error = 'Invalid Post';
             return false;

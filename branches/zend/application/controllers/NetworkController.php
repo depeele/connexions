@@ -147,8 +147,13 @@ class NetworkController extends Connexions_Controller_Action
         $this->view->tags      = $this->_tags;
 
 
-        // HTML form/cookie namespace
-        $this->_namespace = 'network';
+        /* HTML form/cookie namespace
+         * (same as IndexController since we're presenting bookmarks)
+         *
+         * Set this to a different value, or change 'cookiePath', to allow
+         * independent settings for paging and displayOptions.
+         */
+        $this->_namespace = 'bookmarks';
     }
 
     /*************************************************************************

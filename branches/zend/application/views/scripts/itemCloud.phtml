@@ -79,9 +79,12 @@ if ($helper->items !== null)
 $uiPagination = null;
 if ($paginator instanceof Zend_Paginator)
 {
-    $uiPagination = $this->htmlPaginationControl();
-    $uiPagination->setNamespace($namespace);
-    $uiPagination->setPerPageChoices($helper->perPageChoices);
+    $pagerConfig = array(
+        'namespace'      => $namespace,
+        'perPageChoices' => $helper->perPageChoices,
+        'paginator'      => $paginator,
+    );
+    $uiPagination = $this->htmlPaginationControl( $pagerConfig );
 }
 
 /* Establish configuration for and schedule instantiation of a new Javascript
@@ -127,7 +130,7 @@ Connexions::log('views/scripts/itemCloud: show controls [ %s ]',
     if ($uiPagination !== null)
     {
          echo " ",
-              $uiPagination->render($paginator, 'paginator-top', true),
+              $uiPagination->render('paginator-top', true),
               "\n";
     }
 
@@ -245,7 +248,7 @@ Connexions::log('views/scripts/itemCloud: show controls [ %s ]',
  ?>
  </div>
  <?= ($uiPagination !== null
-         ? $uiPagination->render($paginator)
+         ? $uiPagination->render()
          : '') ?>
  <?= (is_array($html) && isset($html['append'])
          ? $html['append']

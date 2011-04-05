@@ -7,7 +7,7 @@
  *      application/view/scripts/paginator.phtml
  */
 class View_Helper_HtmlPaginationControl
-                                    extends Zend_View_Helper_Abstract
+                                    extends View_Helper_Abstract
 {
     public static   $marker             = array(
                         'first' => '&laquo;',   //'&#x00ab',    //'&laquo;',
@@ -18,15 +18,25 @@ class View_Helper_HtmlPaginationControl
     public static   $cssClassForm       = 'paginator';
     public static   $cssClassButton     = 'ui-corner-all';
 
+    protected       $_defaults          = array(
+        'namespace'         => '',          /* The namespace to use for all
+                                             * cookies/parameters/settings;
+                                             */
+        'paginator'         => null,        /* The Zend_Paginator representing
+                                             * the items to be presented;
+                                             */
+        'perPageChoices'    => array(10, 25, 50, 100, 250, 500),
+    );
 
-
-    protected       $_namespace         = '';
-    protected       $_perPageChoices    = array(10, 25, 50, 100, 250, 500);
-
+    /** @brief  Set the array of valid 'perPageChoices'.
+     *  @param  choices     The new set of valid choices.  SHOULD be an array.
+     *
+     *  @return this for a fluent interface.
+     */
     public function setPerPageChoices($choices)
     {
         if (@is_array($choices))
-            $this->_perPageChoices = $choices;
+            $this->_params['perPageChoices'] = $choices;
 
         return $this;
     }
@@ -34,17 +44,11 @@ class View_Helper_HtmlPaginationControl
     /** @brief  Set the namespace, primarily for forms and cookies.
      *  @param  namespace   A string prefix.
      *
-     *  @return View_Helper_HtmlPaginationControl
-     *              for a fluent interface.
+     *  @return this for a fluent interface.
      */
     public function setNamespace($namespace)
     {
-        /*
-        Connexions::log("View_Helper_HtmlPaginationControl::"
-                            . "setNamespace( {$namespace} )");
-        // */
-
-        $this->_namespace = $namespace;
+        $this->_params['namespace'] = $namespace;
 
         return $this;
     }
@@ -55,62 +59,46 @@ class View_Helper_HtmlPaginationControl
      */
     public function getNamespace()
     {
-        return $this->_namespace;
+        return $this->_params['namespace'];
     }
 
-    /** @brief  Render an HTML version of a paginated set of User Items or,
-     *          if no arguments, this helper instance.
-     *  @param  paginator       The Zend_Paginator representing the items to
-     *                          be presented.
-     *  @param  cssClassExtra   Additional CSS class(es) [ null ];
-     *  @param  excludeInfo     Should paging information be excluded [false].
+    /** @brief  Configure and retrive this helper instance OR, if no
+     *          configuration is provided, perform a render.
+     *  @param  config  A configuration array (see populate());
      *
-     *  @return The HTML representation of the pagination control or
-     *          View_Helper_HtmlPaginationControl.
+     *  @return A (partially) configured instance of $this.
      */
-    public function htmlPaginationControl(Zend_Paginator    $paginator  = null,
-                                          $cssClassExtra    = null,
-                                          $excludeInfo      = false)
+    public function htmlPaginationControl(array $config = array())
     {
-        if ($paginator === null)    //! $paginator instanceof Zend_Paginator )
+        if (! empty($config))
         {
-            /*
-            Connexions::log("View_Helper_HtmlPaginationControl:: "
-                                . "return instance");
-            // */
-
-            return $this;
+            $this->populate($config);
         }
 
-        return $this->render($paginator, $cssClassExtra, $excludeInfo);
+        return $this;
     }
 
     /** @brief  Render an HTML representation of the pagination control.
-     *  @param  paginator       The Zend_Paginator representing the items to
-     *                          be presented;
      *  @param  cssClassExtra   Additional CSS class(es) [ null ];
      *  @param  excludeInfo     Should paging information be excluded [ false ].
      *
      *  @return The HTML representation of the pagination control.
      */
-    public function render(Zend_Paginator   $paginator      = null,
-                                            $cssClassExtra  = null,
-                                            $excludeInfo    = false)
+    public function render($cssClassExtra  = null,
+                           $excludeInfo    = false)
     {
-        if (($paginator             === null) &&
-            isset($this->view->paginator)     &&
-            ($this->view->paginator !== null) &&
-            ($this->view->paginator instanceof Zend_Paginator) )
-        {
-            $paginator = $this->view->paginator;
-        }
+        /*
+        Connexions::log('View_Helper_HtmlPaginationControl::render(): '
+                        . 'paginator: page count[ %d ]',
+                        count($this->paginator));
+        // */
 
-        return $this->view->partial('paginator.phtml',
-                                     array(
-                                        'namespace'   => $this->_namespace,
-                                        'paginator'   => $paginator,
-                                        'cssForm'     => $cssClassExtra,
-                                        'excludeInfo' => $excludeInfo,
-                                    ));
+        return $this->view->partial('paginator.phtml', array(
+                    'namespace'      => $this->namespace,
+                    'paginator'      => $this->paginator,
+                    'perPageChoices' => $this->perPageChoices,
+                    'cssForm'        => $cssClassExtra,
+                    'excludeInfo'    => $excludeInfo,
+               ));
     }
 }

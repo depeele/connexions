@@ -100,6 +100,14 @@ class SettingsController extends Connexions_Controller_Action
         ),
     );
 
+    public function init()
+    {
+        $this->_baseUrl    = $this->_helper->url(null, 'settings');
+        $this->_cookiePath = $this->_baseUrl;
+
+        parent::init();
+    }
+
     public function indexAction()
     {
         $viewer =& $this->_viewer;
@@ -144,38 +152,6 @@ class SettingsController extends Connexions_Controller_Action
 
         throw new Exception('Invalid method "'. $method .'" called', 500);
     }
-
-    /** @brief  Prepare for rendering the main view, regardless of format.
-     *
-     *  This will collect the variables needed to render the main view, placing
-     *  them in $view->main as a configuration array.
-    protected function _prepare_main()
-    {
-        parent::_prepare_main();
-
-        if ( count($this->_partials) > 1 )
-        {
-            switch ($this->_partials[2])
-            {
-            case 'account':
-                $this->_prepare_main_account();
-                break;
-
-            case 'bookmarks':
-                $this->_prepare_main_bookmarks();
-                break;
-
-            case 'tags':
-                $this->_prepare_main_tags();
-                break;
-
-            case 'people':
-                $this->_prepare_main_people();
-                break;
-            }
-        }
-    }
-     */
 
     protected function _prepare_main_account()
     {
@@ -235,13 +211,16 @@ class SettingsController extends Connexions_Controller_Action
         switch ($this->_partials[2])
         {
         case 'manage':
-            $filter = $this->_request->getParam('filter', null);
+            $this->_namespace = 'stm';
+
+            $filter = $this->_getParam('filter');
             $this->view->filter = $filter;
 
             /* Prepare to present a tag list or cloud
              *  (mirrors TagsController::_prepare_main)
              */
             $extra = array(
+                'namespace'     => $this->_namespace,
                 'users'         => $this->_viewer,
 
                 'showRelation'  => false,
@@ -256,19 +235,20 @@ class SettingsController extends Connexions_Controller_Action
                 'weightTitle'   => 'Bookmarks with this tag',
                 'titleTitle'    => 'Tag',
             );
-            $config = array_merge($this->view->main, $extra);
+            $config = array_merge($this->_getParams(), $extra);
 
             /*
             Connexions::log("SettingsController::_prepare_main_tags(): "
-                            . "panePartial[ %s ], partials[ %s ]",
+                            . "panePartial[ %s ], partials[ %s ], config[ %s ]",
                             $config['panePartial'],
-                            implode('-', $this->_partials));
+                            implode('-', $this->_partials),
+                            Connexions::varExport($config));
             // */
 
             // Defaults
-            if ( ($config['perPage'] = (int)$config['perPage']) < 1)
+            if ( ((int)$config['perPage']) < 1)
                 $config['perPage'] = 250;
-            if ( ($config['page'] = (int)$config['page']) < 1)
+            if ( ((int)$config['page']) < 1)
                 $config['page'] = 1;
             if ( empty($config['sortBy']) || ($config['sortBy'] === 'title') )
                 $config['sortBy'] = 'tag';
@@ -306,6 +286,16 @@ class SettingsController extends Connexions_Controller_Action
             $paginator->setItemCountPerPage(  $config['perPage'] );
             $paginator->setCurrentPageNumber( $config['page'] );
 
+            /*
+            Connexions::log("SettingsController::_prepare_main_tags(): "
+                            . "offset[ %d ], count[ %d ], order[ %s ], "
+                            . "paginator: pages[ %d ], total items[ %d ]",
+                            $offset, $count, $fetchOrder,
+                            $paginator->count(),
+                            $paginator->getTotalItemCount());
+            // */
+
+
             $config['paginator']        = $paginator;
             $config['currentSortBy']    = $config['sortBy'];
             $config['currentSortOrder'] = $config['sortOrder'];
@@ -331,6 +321,8 @@ class SettingsController extends Connexions_Controller_Action
         switch ($this->_partials[2])
         {
         case 'network':
+            $this->_namespace = 'spn';
+
             // Retrieve the current users network
             $this->view->network = $this->_viewer->getNetwork();
 
@@ -339,9 +331,12 @@ class SettingsController extends Connexions_Controller_Action
              *           NetworkController::_prepare_sidebarPane('people')
              */
             $extra = array(
+                'namespace'     => $this->_namespace,
                                    // 'main-'. implode('-', $this->_partials),
                 'panePartial'   => 'main-people-network-list',
+                'displayStyle'  => $this->_getDisplayStyle(),
                 'group'         => $this->view->network,
+                'viewer'        => $this->_viewer,
             );
             /*
             Connexions::log("SettingsController::_prepare_main_people(): "
@@ -349,13 +344,15 @@ class SettingsController extends Connexions_Controller_Action
                             Connexions::varExport($extra));
             // */
 
-            $config = array_merge($this->view->main, $extra);
+            $config = array_merge($this->_getParams(),
+                                  $extra);
 
             /*
             Connexions::log("SettingsController::_prepare_main_people(): "
-                            . "panePartial[ %s ], partials[ %s ]",
+                            . "panePartial[ %s ], partials[ %s ], config[ %s ]",
                             $config['panePartial'],
-                            implode('-', $this->_partials));
+                            implode('-', $this->_partials),
+                            Connexions::varExport($config));
             // */
 
             $this->view->main = $config;
@@ -428,12 +425,12 @@ class SettingsController extends Connexions_Controller_Action
         // */
 
         $file       = $_FILES['bookmarkFile'];
-        $tags       = $this->_request->getParam('tags',       null);
-        $visibility = strtolower($this->_request->getParam('visibility',
+        $tags       = $this->_getParam('tags');
+        $visibility = strtolower($this->_getParam('visibility', null,
                                                                 'private'));
-        $conflict   = strtolower($this->_request->getParam('conflict',
+        $conflict   = strtolower($this->_getParam('conflict',   null,
                                                                 'ignore'));
-        $test       = strtolower($this->_request->getParam('test',
+        $test       = strtolower($this->_getParam('test',       null,
                                                                 'no'));
 
         // Normalize the tag list
@@ -784,9 +781,9 @@ class SettingsController extends Connexions_Controller_Action
         // Retrieve all user-related bookmarks params: order, count, offset
         $this->view->bookmarks   = $this->_viewer->getBookmarks();
         $this->view->includeTags = Connexions::to_bool(
-                                    $request->getParam('includeTags', false));
+                                    $this->_getParam('includeTags'));
         $this->view->includeMeta = Connexions::to_bool(
-                                    $request->getParam('includeMeta', false));
+                                    $this->_getParam('includeMeta'));
     }
 
     /***********************************************************************

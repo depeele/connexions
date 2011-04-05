@@ -29,6 +29,15 @@ Connexions_Controller_Action        extends Zend_Controller_Action
     application/views/scripts/%controller%/%partial-parts%.phtml
     application/views/scripts/sidebar.phtml
 
+        Uses the 'sidebar' view variables, in particular the 'panes'
+        definition, to render the panes of the sidebar.  If sidebar['async'] is
+        false, this will directly invoke the partial responsible for each pane:
+            application/view/scripts/%controller%/sidebar-%id%.phtml
+
+        Invokes Javascript class(es):
+            connexions.sidebar.js
+                ui.tabs
+
 
     Methods
     ---------------------------------------------------------------------------
@@ -274,6 +283,13 @@ View_Helper_HtmlBookmarks           extends View_Helper_Bookmarks
                 groupValue()
                 renderGroupHeader()
                 renderItem()
+
+        Invokes Javascript class(es):
+            connexions.itemsPane.js     subclass of connexions.pane.js
+                connexions.paginator.js
+                connexions.dropdownForm.js          (for Display Options)
+                    connexions.optionGroups.js
+                
 
     application/views/scripts/user.phtml
 
@@ -625,6 +641,13 @@ View_Helper_HtmlItemCloud           extends Zend_View_Helper_Abstract
         For display type 'list':
             application/views/script/itemList.phtml
 
+        Invokes Javascript class(es):
+            connexions.cloudPane.js     subclass of connexions.pane.js
+                connexions.paginator.js
+                connexions.dropdownForm.js          (for Display Options)
+                    connexions.optionGroups.js
+                
+
 
     Methods
     ---------------------------------------------------------------------------
@@ -689,6 +712,41 @@ View_Helper_HtmlItemCloudItem       extends Zend_Tag_Cloud_Decorator_HtmlTag
     ---------------------------------------------------------------------------
 
 
+===============================================================================
+View_Helper_HtmlItemScope           extends Zend_View_Helper_Abstract
+===============================================================================
+    namespace           State namespace for paging-related cookies
+                                                [ '' ];
+    hideInput           Should the scope input control be hidden?
+                                                [ false ];
+    inputLabel          The text to present when the scope input control is
+                        empty                   [ 'Items' ];
+    inputName           The form-name for the input control
+                                                [ 'items' ];
+    path                An associative array of name/url pairs representing the
+                        "path" to the current scope.  Similar to a bread crumb
+                                                [ null ];
+    jsonRpc             JSON-RPC call data to use for auto-completion within
+                        the input control       [ null ];
+    items               The set of items to be presented.  This MUST implement
+                        either getTotalItemCount() or getTotalCount() method
+                                                [ null ];
+    scope               A Connexions_Model_Set of items that define the current
+                        scope.  MUST implement the getSource() method
+                                                [ null ];
+
+    _hiddenItems        An array of simple strings containing any items
+
+
+
+
+    View Scripts
+    ---------------------------------------------------------------------------
+
+    Methods
+    ---------------------------------------------------------------------------
+
+
 :TODO: Helpers
 ===============
 View_Helper_HtmlItemScope           extends ???
@@ -698,8 +756,16 @@ View_Helper_HtmlStarRating          extends ???
 :TODO: Scripts
 ===============
 itemScope.phtml
-sidebar.phtml
+        Invokes Javascript class(es):
+            connexions.itemScope.js
+                connexions.paginator.js
+                connexions.dropdownForm.js          (for Display Options)
+                    connexions.optionGroups.js
+                
 sidebar-user.phtml
+        Invokes Javascript class(es):
+            connexions.user.js
+                
 
 
 
