@@ -4,71 +4,70 @@
  *  View helper to render an Item Cloud, possibly paginated, in HTML.
  *
  */
-class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
+class View_Helper_HtmlItemCloud extends View_Helper_Abstract
 {
-    static public   $perPageChoices         = array(10, 25, 50, 100, 250, 500);
-    static public   $highlightCountChoices  = array(0,  5,   10);
-
-    static public   $defaults               = array(
-        'namespace'         => 'tags',
+    protected $_defaults               = array(
+        'namespace'             => 'tags',
+        'perPageChoices'        => array(10, 25, 50, 100, 250, 500),
+        'highlightCountChoices' => array(0,  5,   10),
 
         // Pagination values
-        'page'              => 1,
-        'perPage'           => 100,
+        'page'                  => 1,
+        'perPage'               => 100,
 
         // The desired sort order
-        'sortBy'            => self::SORT_BY_TITLE,
-        'sortOrder'         => Connexions_Service::SORT_DIR_ASC,
+        'sortBy'                => self::SORT_BY_TITLE,
+        'sortOrder'             => Connexions_Service::SORT_DIR_ASC,
 
         // The current sort order of 'items'
-        'currentSortBy'     => null,
-        'currentSortOrder'  => null,
+        'currentSortBy'         => null,
+        'currentSortOrder'      => null,
 
 
-        'panePartial'       => 'main',
+        'panePartial'           => 'main',
 
-        'showRelation'      => true,        // Show sidebar relation indicator?
-        'showOptions'       => true,        // Show display options?
-        'showControls'      => null,        /* Should item management controls
+        'showRelation'          => true,    // Show sidebar relation indicator?
+        'showOptions'           => true,    // Show display options?
+        'showControls'          => null,    /* Should item management controls
                                              * be presented (i.e. is the
                                              * current, authenticated viewer
                                              * the owner of all items)?
                                              */
-        'includeScript'     => true,        // Include Javascript?
+        'includeScript'         => true,    // Include Javascript?
 
-        'itemType'          => self::ITEM_TYPE_ITEM,
-        'displayStyle'      => self::STYLE_CLOUD,
-        'highlightCount'    => 5,           /* The number of items to highlight
+        'itemType'              => self::ITEM_TYPE_ITEM,
+        'displayStyle'          => self::STYLE_CLOUD,
+        'highlightCount'        => 5,       /* The number of items to highlight
                                              * in a top-level "quick-view".
                                              */
 
 
 
-        'items'             => null,        /* A Connexions_Model_Set
+        'items'                 => null,    /* A Connexions_Model_Set
                                              * containing the items to present
                                              */
-        'paginator'         => null,        /* A paginated version of 'items'.
+        'paginator'             => null,    /* A paginated version of 'items'.
                                              * Provide if a paginator control
                                              * should be rendered.
                                              */
                                                
 
-        'selected'          => null,        /* A Connexions_Model_Set, that
+        'selected'              => null,    /* A Connexions_Model_Set, that
                                              * SHOULD be a sub-set of 'items',
                                              * containing those items that are
                                              * currently selected.
                                              */
-        'itemBaseUrl'       => null,        /* The base url to use for
+        'itemBaseUrl'           => null,    /* The base url to use for
                                              * completed items
                                              */
 
-        'weightName'        => null,        /* The name of the field/member
+        'weightName'            => null,    /* The name of the field/member
                                              * to use for weight.
                                              */
-        'weightTitle'       => null,        /* The title describing the item's
+        'weightTitle'           => null,    /* The title describing the item's
                                              * weight.
                                              */
-        'titleTitle'        => null,        /* The title describing the item's
+        'titleTitle'            => null,    /* The title describing the item's
                                              * title.
                                              */
 
@@ -77,7 +76,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
          *  array('prepend' => %html to prepend%,
          *        'append'  => %html to append%)
          */
-        'html'              => null,
+        'html'                  => null,
     );
 
     /** @brief  Cloud Item type -- determines the item decorator
@@ -116,35 +115,11 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
                 );
 
 
-    /** @brief  Set-able parameters -- initialized from self::$defaults in
+    /** @brief  Set-able parameters -- initialized from $this->_defaults in
      *          __construct().
      */
-    protected       $_params            = array();
-
     protected       $_displayOptions    = null;
     protected       $_hiddenItems       = array();
-
-    protected       $_currentSortBy     = null;
-    protected       $_currentSortOrder  = null;
-
-    /** @brief  Construct a new Bookmarks helper.
-     *  @param  config  A configuration array (see populate());
-     */
-    public function __construct(array $config = array())
-    {
-        //Connexions::log("View_Helper_HtmlItemCloud::__construct()");
-
-        // Include defaults for any option that isn't directly set
-        foreach (self::$defaults as $key => $value)
-        {
-            if (! isset($config[$key]))
-            {
-                $config[$key] = $value;
-            }
-        }
-
-        $this->populate($config);
-    }
 
     /** @brief  Configure and retrive this helper instance.
      *  @param  config  A configuration array (see populate());
@@ -159,103 +134,6 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         }
 
         return $this;
-    }
-
-    /** @brief  Given an array of configuration data, populate the parameter of
-     *          this instance.
-     *  @param  config  A configuration array that may include:
-     *                      namespace       [tags];
-     *                      showRelation    [true];
-     *                      showOptions     [true];
-     *                      itemType        [self::ITEM_TYPE_ITEM];
-     *                      items           The Connexions_Model_Set containing
-     *                                      the items to present;
-     *                      selected        The Connexions_Model_Set containing
-     *                                      the items that are currently
-     *                                      selected;
-     *                      itemBaseUrl     [null];
-     *                      sortBy          [self::SORT_BY_TITLE];
-     *                      sortOrder       [Connexions_Service::SORT_DIR_ASC];
-     *                      page            [1];
-     *                      perPage         [50];
-     *                      highlightCount  [5];
-     *                      displayStyle    [self::STYLE_CLOUD];
-     *
-     *  @return $this for a fluent interface.
-     */
-    public function populate(array $config)
-    {
-        foreach ($config as $key => $value)
-        {
-            $this->__set($key, $value);
-        }
-
-        return $this;
-    }
-
-    public function __set($key, $value)
-    {
-        $method = 'set'. ucfirst($key);
-
-        /*
-        Connexions::log("View_Helper_HtmlItemCloud::__set(): "
-                        . "key[ %s ], value[ %s ]",
-                        $key,
-                        (is_object($value) &&
-                         ($value instanceof Zend_Paginator)
-                            ? 'Zend_Paginator'
-                            : Connexions::varExport($value)) );
-        // */
-
-        if (method_exists($this, $method))
-        {
-            $this->{$method}($value);
-        }
-        else
-        {
-            $this->_params[$key] = $value;
-        }
-
-        /* Make this late-bound via getShowControls()
-        if (($key === 'viewer') || ($key === 'users'))
-        {
-            // (Re)Set 'showControls' based upon 'users' and 'viewer'
-            $users  = $this->users;
-            $viewer = $this->viewer;
-            if ( ($viewer !== null) &&
-                 ( (($users instanceof Connexions_Model)     &&
-                        ($viewer->isSame($users)) )             ||
-                   (($users instanceof Connexions_Model_Set) &&
-                        (count($users) === 1)    &&
-                        ($viewer->isSame($users[0]))) ) )
-            {
-                $this->__set('showControls', true);
-            }
-            else
-            {
-                $this->__set('showControls', false);
-            }
-        }
-        // */
-    }
-
-    public function __get($key)
-    {
-        $method = 'get'. ucfirst($key);
-        $value  = null;
-
-        if (method_exists($this, $method))
-        {
-            $value = $this->{$method}();
-        }
-        else
-        {
-            $value = (isset($this->_params[$key])
-                        ? $this->_params[$key]
-                        : null);
-        }
-
-        return $value;
     }
 
     /** @brief  Retrieve the 'showControls' parameter.
@@ -481,7 +359,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
             break;
 
         default:
-            $itemType = self::$defaults['itemType'];
+            $itemType = $this->_defaults['itemType'];
             break;
         }
 
@@ -599,15 +477,18 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     public function setPerPage($perPage)
     {
+        $choices = $this->perPageChoices;
+
         if (($perPage !== null) &&
-            in_array($perPage, self::$perPageChoices))
+            is_array($choices)  &&
+            in_array($perPage, $choices))
         {
             $this->_params['perPage'] = $perPage;
         }
         else
         {
             // Default
-            $this->_params['perPage'] = self::$defaults['perPage'];
+            $this->_params['perPage'] = $this->_defaults['perPage'];
         }
 
         return $this;
@@ -621,8 +502,11 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
      */
     public function setHighlightCount($highlightCount)
     {
+        $choices = $this->highlightCountChoices;
+
         if (($highlightCount !== null) &&
-            in_array($highlightCount, self::$highlightCountChoices))
+            is_array($choices)         &&
+            in_array($highlightCount, $choices))
         {
             $this->_params['highlightCount'] = $highlightCount;
         }
@@ -630,7 +514,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
         {
             // Default
             $this->_params['highlightCount'] =
-                                self::$defaults['highlightCount'];
+                                $this->_defaults['highlightCount'];
         }
 
         return $this;
@@ -738,7 +622,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
               .                   "count' name='{$namespace}PerPage'>"
               .      "<!-- {$namespace}PerPage: {$this->perPage} -->";
 
-        foreach (self::$perPageChoices as $countOption)
+        foreach ($this->perPageChoices as $countOption)
         {
             $html .= "<option value='{$countOption}'"
                   .           ($countOption == $this->perPage
@@ -769,7 +653,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
               .                   "count' name='{$namespace}HighlightCount' "
               .                   "{$formState}>";
 
-        foreach (self::$highlightCountChoices as $countOption)
+        foreach ($this->highlightCountChoices as $countOption)
         {
             $countTitle = ($countOption === 0
                             ? 'none'
@@ -921,7 +805,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
             break;
 
         default:
-            $sortBy = self::$defaults['sortBy'];
+            $sortBy = $this->_defaults['sortBy'];
             break;
         }
 
@@ -944,7 +828,7 @@ class View_Helper_HtmlItemCloud extends Zend_View_Helper_Abstract
             break;
 
         default:
-            $sortOrder = self::$defaults['sortOrder'];
+            $sortOrder = $this->_defaults['sortOrder'];
             break;
         }
 
