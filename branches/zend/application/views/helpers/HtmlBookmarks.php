@@ -214,10 +214,12 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
                     $this->view->htmlDisplayOptions($dsConfig);
 
             /*
-            Connexions::log("getDisplayOptions(): "
-                            .   "config[ %s ], displayStyle[ %s ]",
-                            Connexions::varExport($dsConfig),
+            Connexions::log("getDisplayOptions(): config[ %s ]",
+                            Connexions::varExport($dsConfig));
+            Connexions::log("getDisplayOptions(): style[ %s ]",
                             Connexions::varExport($style));
+            Connexions::log("getDisplayOptions(): displayStyle[ %s ]",
+                            Connexions::varExport($this->displayStyle));
             // */
 
             /* Ensure that the current display style is properly reflected
