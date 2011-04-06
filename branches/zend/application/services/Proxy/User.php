@@ -134,7 +134,25 @@ class Service_Proxy_User extends Connexions_Service_Proxy
         return $this->_service->autocomplete($term, $limit);
     }
 
-    /** @brief  Perform tag autocompletion for the given user.
+    /** @brief  Perform tag autocompletion, possibly based upon a set of
+     *          seleted tags.
+     *  @param  term        The string to autocomplete.
+     *  @param  tags        A Model_Set_Tag instance, array, or comma-separated
+     *                      string of tags that restrict the bookmarks that
+     *                      should be used to select related tags -- defines
+     *                      the 'context';
+     *  @param  limit       The maximum number of tags to return;
+     *
+     *  @return Model_Set_Tag
+     */
+    public function autocompleteTag($term       = null,
+                                    $tags       = null,
+                                    $limit      = 50)
+    {
+        return $this->_service->autocompleteTag($term, $tags, $limit);
+    }
+
+    /** @brief  Perform tag autocompletion for the (authenticated) user.
      *  @param  term        The string to autocomplete.
      *  @param  limit       The maximum number of tags to return;
      *  @param  apiKey      The apiKey for the currently authenticated user
@@ -142,19 +160,13 @@ class Service_Proxy_User extends Connexions_Service_Proxy
      *
      *  @return Model_Set_Tag
      */
-    public function autocompleteTag($term       = null,
-                                    $limit      = 50,
-                                    $apiKey     = null)
+    public function autocompleteMyTags($term    = null,
+                                       $limit   = 50,
+                                       $apiKey  = null)
     {
         $user = $this->_authenticate($apiKey);
 
-        // /*
-        Connexions::log("Service_Proxy_User::autocompleteTag(): "
-                        .   "user[ %s ], term[ %s ], limit[ %d ]",
-                        $user, $term, $limit);
-        // */
-
-        return $this->_service->autocompleteTag($user, $term, $limit);
+        return $this->_service->autocompleteTag($term, $user, $limit);
     }
 
     /** @brief  Update the currently authenticated user.

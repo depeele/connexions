@@ -1041,6 +1041,29 @@ class Connexions
     }
 
     /*************************************************************************
+     * Form helpers
+     *
+     */
+
+    /** @brief  Generate a namespaced form variable name depending on the
+     *          given namespace.
+     *  @param  namespace   The namespace;
+     *  @param  name        The form variable name;
+     *
+     *  @return A properly namespaced form variable name.
+     */
+    public static function nsParamName($namespace, $name)
+    {
+        $res  = $name;
+        if ( ! empty($namespace))
+        {
+            $res = $namespace . ucfirst($name);
+        }
+
+        return $res;
+    }
+
+    /*************************************************************************
      * Protected helpers
      *
      */

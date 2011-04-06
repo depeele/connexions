@@ -58,9 +58,10 @@ $htmlItemScope = $this->htmlItemScope( array(
                             'tags'  => (count($this->tags) < 1
                                             ? null
                                             : $this->tags->__toString()),
-                            // SHOULD be the users of the network
-                            'users' => $this->owner->__toString(),
-                                       // $this->owner->name
+                            'users' => (count($this->main['users']) < 1
+                                            ? null
+                                            : $this->main['users']
+                                                        ->__toString()),
                         ),
                     ),
                  ));

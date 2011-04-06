@@ -31,7 +31,7 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
                           $offset   = null,
                           $since    = null)
     {
-        return $this->_service->fetch($ids, $order, $count, $offset, $since);
+        return $this->_service->fetch($id, $order, $count, $offset, $since);
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Tags.
@@ -205,16 +205,22 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
      *                      comma-separated string of users that restrict the
      *                      bookmarks that should be used to select related
      *                      tags -- a second component of 'context';
+     *  @param  items       A Model_Set_Item instance, array, or
+     *                      comma-separated string of items that restrict the
+     *                      bookmarks that should be used to select related
+     *                      tags -- a third component of 'context';
      *  @param  limit       The maximum number of tags to return;
      *
      *  @return Model_Set_Tag
      */
-    public function autocompleteTag($str,
+    public function autocompleteTag($term,
                                     $tags   = null,
                                     $users  = null,
+                                    $items  = null,
                                     $limit  = 50)
     {
-        return $this->_service->autocompleteTag($str, $tags, $users, $limit);
+        return $this->_service->autocompleteTag($term, $tags, $users, $items,
+                                                $limit);
     }
 
     /** @brief  Retrieve an existing bookmark.
@@ -233,31 +239,22 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
      *                          - 'itemId'  as an integer identifier;
      *                          - 'itemId'  as a  string url;
      *                          - 'itemId'  as a  string url-hash;
+     *  @param  apiKey  The apiKey for the currently authenticated user
+     *                  (REQUIRED if the transport method is NOT POST);
      *
      *  @return Model_Bookmark (or null if not found).
      */
-    public function get($id,
-                        $apiKey = null)
+    public function find($id,
+                         $apiKey = null)
     {
+        // Require 'apiKey' authentication if GET
         $user     = $this->_authenticate($apiKey);
-        if (is_array($id))
-        {
-            if ( (is_numeric($id['userId']) &&
-                  ($id['userId'] == $user->getId()))    ||
-                 (is_string($id['userId']) &&
-                  ($id['userId'] == $user->name))       ||
-                 empty($id['userId']) )
-            {
-                unset($id['userId']);
-                $id['user'] = $user;
-            }
-        }
 
         // Attempt to retrieve the bookmark
-        $bookmark = $this->_service->get($id);
+        $bookmark = $this->_service->find($id);
 
         /*
-        Connexions::log("Service_Proxy_Bookmark::get(): "
+        Connexions::log("Service_Proxy_Bookmark::find(): "
                         .   "id[ %s ], apiKey[ %s ] == [ %s ]",
                         Connexions::varExport($id),
                         Connexions::varExport($apiKey),

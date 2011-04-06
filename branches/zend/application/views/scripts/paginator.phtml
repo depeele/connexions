@@ -37,24 +37,6 @@ if ($excludeInfo)
     $id .= '-noInfo';
 }
 
-/** @brief  Generate a namespaced form variable name depending on the current
- *          namespace.
- *  @param  view    The view;
- *  @param  name    The form variable name;
- *
- *  @return A properly namespaced form variable name.
- */
-function nsParamName($view, $name)
-{
-    $res  = $name;
-    if ( ! empty($view->namespace))
-    {
-        $res = $view->namespace . ucfirst($name);
-    }
-
-    return $res;
-}
-
 ?>
 <form id='<?= $id ?>' class='paginator<?= $cssForm ?>'>
  <div class='pager'><?
@@ -75,7 +57,7 @@ function nsParamName($view, $name)
                     : '');
 
 ?><button type='submit'
-          name='<?= nsParamName($this, 'page') ?>'
+          name='<?= Connexions::nsParamName($namespace, 'page') ?>'
          class='ends-left ui-state-<?= $state ?> ui-corner-all'
          value='<?= $prev ?>'
          title='Previous Page'
@@ -93,7 +75,7 @@ function nsParamName($view, $name)
              * Render a button for the first page.
              */
 ?><button type='submit'
-          name='<?= nsParamName($this, 'page') ?>'
+          name='<?= Connexions::nsParamName($namespace, 'page') ?>'
          class='ui-state-default ui-corner-all'
          value='<?= $pages['first'] ?>'
          title='Page <?= $pages['first'] ?>'
@@ -106,7 +88,7 @@ function nsParamName($view, $name)
              * so include a button for it.
              */
 ?><button type='submit'
-          name='<?= nsParamName($this, 'page') ?>'
+          name='<?= Connexions::nsParamName($namespace, 'page') ?>'
          class='ui-state-default ui-corner-all'
          value='<?= $pages['first']+1 ?>'
          title='Page <?= $pages['first']+1 ?>'
@@ -132,7 +114,7 @@ function nsParamName($view, $name)
                         : 'default');
 
 ?><button type='submit'
-          name='<?= nsParamName($this, 'page') ?>'
+          name='<?= Connexions::nsParamName($namespace, 'page') ?>'
          class='ui-state-<?= $state ?> ui-corner-all'
          value='<?= $page ?>'
          title='Page <?= $page ?>'
@@ -161,7 +143,7 @@ function nsParamName($view, $name)
              * presented so include a button for it.
              */
 ?><button type='submit'
-          name='<?= nsParamName($this, 'page') ?>'
+          name='<?= Connexions::nsParamName($namespace, 'page') ?>'
          class='ui-state-default ui-corner-all'
          value='<?= $pages['last']-1 ?>'
          title='Page <?= $pages['last']-1 ?>'
@@ -172,7 +154,7 @@ function nsParamName($view, $name)
         {
             /* Render the last page. */
 ?><button type='submit'
-          name='<?= nsParamName($this, 'page') ?>'
+          name='<?= Connexions::nsParamName($namespace, 'page') ?>'
          class='ui-state-default ui-corner-all'
          value='<?= $pages['last'] ?>'
          title='Page <?= $pages['last'] ?>'
@@ -192,7 +174,7 @@ function nsParamName($view, $name)
                     : '');
 
 ?><button type='submit'
-          name='<?= nsParamName($this, 'page') ?>'
+          name='<?= Connexions::nsParamName($namespace, 'page') ?>'
          class='ends-right ui-state-<?= $state ?> ui-corner-all'
          value='<?= $next ?>'
          title='Next Page'
@@ -221,7 +203,7 @@ function nsParamName($view, $name)
    item<?= ($totalItemCount === 1 ? '' : 's') ?>
    with
    <select class='ui-input ui-state-default count ui-corner-all'
-            name='<?= nsParamName($this, 'perPage') ?>'><?php
+            name='<?= Connexions::nsParamName($namespace, 'perPage') ?>'><?php
 
         foreach ($this->perPageChoices as $perPage)
         {

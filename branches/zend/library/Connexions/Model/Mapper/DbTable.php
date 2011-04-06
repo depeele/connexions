@@ -555,8 +555,9 @@ abstract class Connexions_Model_Mapper_DbTable
 
         /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::_find(): "
-                        .   "sql[ %s ]",
+                        .   "id[ %s ], sql[ %s ]",
                         get_class($this),
+                        Connexions::varExport($id),
                         $select->assemble());
         // */
 
@@ -1091,6 +1092,14 @@ abstract class Connexions_Model_Mapper_DbTable
         $tmpWhere = array();
         foreach ($id as $condition => $value)
         {
+            /*
+            Connexions::log("Connexions_Model_Mapper_DbTable[%s]::_where():"
+                            .   "condition[ %s ], value[ %s ]...",
+                            get_class($this),
+                            Connexions::varExport($condition),
+                            Connexions::varExport($value));
+            // */
+
             if (is_int($condition))
             {
                 /* 'condition' is an integer, meaning this is a non-associative 
@@ -1146,6 +1155,16 @@ abstract class Connexions_Model_Mapper_DbTable
              *
              */
             $res = $this->_whereCondition($condition, $value);
+
+            /*
+            Connexions::log("Connexions_Model_Mapper_DbTable[%s]::_where(): "
+                            . "condition[ %s ], value[ %s ] == [ %s ]",
+                            get_class($this),
+                            Connexions::varExport($condition),
+                            Connexions::varExport($value),
+                            Connexions::varExport($res));
+            // */
+
             if ($res === null)
             {
                 // INVALID - skip it (or throw an error)...
@@ -1217,6 +1236,15 @@ abstract class Connexions_Model_Mapper_DbTable
                 $where[ $statement['condition'] ] = $statement['value'];
             }
         }
+
+        /*
+        Connexions::log("Connexions_Model_Mapper_DbTable[%s]::"
+                        . "_where(%s, %sempty): where[ %s ]",
+                        get_class($this),
+                        Connexions::varExport($id),
+                        ($nonEmpty ? 'non-' : ''),
+                        Connexions::varExport($where));
+        // */
 
         return $where;
     }

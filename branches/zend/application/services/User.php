@@ -429,37 +429,69 @@ class Service_User extends Connexions_Service
     }
 
     /** @brief  Perform tag autocompletion for the given user.
-     *  @param  user        The Model_User instance that provide the context
-     *                      for tag autocompletion
-     *                      (should we require authentication?);
-     *  @param  term        The string to autocomplete.
-     *  @param  limit       The maximum number of tags to return;
+     *  @param  term    The string to autocomplete.
+     *  @param  context The context of completion:
+     *                      - A Model_User instance, definine the specific user
+     *                        to perform autocomplete for;
+     *                      - A Model_Set_Tag instance, array, or
+     *                        comma-separated string of tags that restrict the
+     *                        bookmarks that should be used to select related
+     *                        tags;
+     *  @param  limit   The maximum number of tags to return;
      *
      *  @return Model_Set_Tag
      */
-    public function autocompleteTag(Model_User  $user,
-                                    $term       = null,
+    public function autocompleteTag($term       = null,
+                                    $context    = null,
                                     $limit      = 50)
     {
-        // /*
+        /*
         Connexions::log("Service_User::autocompleteTag(): "
-                        .   "user[ %s ], term[ %s ], limit[ %d ]",
-                        $user, $term, $limit);
+                        .   "term[ %s ], context[ %s ], limit[ %d ]",
+                        $term, $context, $limit);
         // */
 
-        /* Rely on Service_Tag/Service_User to properly interpret
-         * 'tags' and 'users'
+        /* Retrieve the users that define the scope for this
+         * autocompletion
+         */
+        $exactUsers = false;
+        if ( ! empty($context))
+        {
+            if ($context instanceof Model_User)
+            {
+                $users      = $context;
+                $exactUsers = true;
+            }
+            else
+            {
+                /* ASSUME 'context' represets a set of tags that should be used
+                 * to retrieve the tag-related users that will serve as the
+                 * scope for the autocompletion.
+                 */
+                $users = $this->fetchByTags($context);
+            }
+        }
+        else
+        {
+            // No user limits.
+            $users = null;
+        }
+
+        /*
+        Connexions::log("Service_User::autocompleteTag(): "
+                        .   "users[ %s ]",
+                        $users);
+        // */
+
+        /* :NOTE: To match a string in any position within the tag, use:
+         *          'tag=*'
          */
         $tService = $this->factory('Service_Tag');
-
-        return $tService->fetchByUsers($user,
+        return $tService->fetchByUsers($users,      // users
                                        null,        // default order
                                        $limit,
                                        null,        // default offset
-                                       false,       /* A single user doesn't
-                                                     * require exact match
-                                                     * logic.
-                                                     */
+                                       $exactUsers, // How to match users.
                                        array('tag=*' => $term));
     }
 

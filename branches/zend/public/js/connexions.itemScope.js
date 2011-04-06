@@ -42,7 +42,11 @@
 
 $.widget("connexions.itemScope", {
     options: {
-        namespace:          '',     // Cookie/parameter namespace
+        namespace:          '',                 // Cookie/parameter namespace
+        weightName:         'userItemCount',    /* The property to present
+                                                 * as the autocompletion
+                                                 * match weight.
+                                                 */
 
         /* General Json-RPC information:
          *  {version:   Json-RPC version,
@@ -118,7 +122,7 @@ $.widget("connexions.itemScope", {
         var opts    = self.options;
         var params  = opts.jsonRpc.params;
         
-        params.str  = self.$input.autocomplete('option', 'term');
+        params.term  = self.$input.autocomplete('option', 'term');
 
         // Perform a JSON-RPC call to perform the update.
         $.jsonRpc(opts.jsonRpc, opts.jsonRpc.method, params, {
@@ -129,15 +133,23 @@ $.widget("connexions.itemScope", {
                     return;
                 }
 
+                var re  = new RegExp(params.term, 'gi');
                 response(
                     $.map(ret.result,
                           function(item) {
+                            var str     = item.tag.replace(re,
+                                                           '<b>'+ params.term
+                                                                +'</b>' );
+                            var weight  = (item[opts.weightName] === undefined
+                                            ? ''
+                                            : item[opts.weightName]);
+
                             return {
                                 label:   '<span class="name">'
-                                       +  item.tag
+                                       +  str
                                        + '</span>'
                                        +' <span class="count">'
-                                       +  item.userItemCount
+                                       +  weight
                                        + '</span>',
                                 value: item.tag
                             };

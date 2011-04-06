@@ -182,6 +182,9 @@ abstract class Connexions_Service
                         Connexions::varExport($to));
         // */
 
+        /* Request the inclusion of a privacy filter based upon the current
+         * user wherever necessary.
+         */
         $config = array('order'   => $this->_extraOrder($order),
                         'count'   => $count,
                         'offset'  => $offset,

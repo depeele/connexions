@@ -189,7 +189,7 @@ class Service_Bookmark extends Connexions_Service
      */
     public function find($id)
     {
-        $normId = $this->_mapper->normalizeId($id);
+        $normId  = $this->_mapper->normalizeId($id);
 
         /*
         Connexions::log("Service_Bookmark::find(): normalized id[ %s ]",
@@ -201,10 +201,27 @@ class Service_Bookmark extends Connexions_Service
             return null;
         }
 
-        return parent::find(array(
-                                'userId' => $normId['userId'],
-                                'itemId' => $normId['itemId'],
-                            ));
+        $user = $this->_curUser();
+        if ( (empty($user))               ||
+             (! $user->isAuthenticated()) ||
+             ($user->userId != $normId['userId']) )
+        {
+            /* The authenticated user is NOT the target user so include a
+             * privacy filter.
+             */
+            $normId['isPrivate'] = 0;
+        }
+
+        /*
+        Connexions::log("Service_Bookmark::find() "
+                        . "id[ %s ], normId[ %s ]",
+                        Connexions::varExport($id),
+                        Connexions::varExport($normId));
+        // */
+
+
+        //return parent::find($normId);
+        return $this->_mapper->find( $normId );
     }
 
     /** @brief  Retrieve a set of Domain Model instances.
@@ -225,6 +242,8 @@ class Service_Bookmark extends Connexions_Service
      *  @param  since   Limit the results to bookmarks updated after this
      *                  date/time [ null == no time limits ];
      *
+     *  Override Connexions_Service::fetch() to add a privacy filter.
+     *
      *  @return A new Connexions_Model_Set.
      */
     public function fetch($id       = null,
@@ -234,21 +253,29 @@ class Service_Bookmark extends Connexions_Service
                           $since    = null)
     {
         $ids     = $this->_csList2array($id);
-        $normIds = ($id === null ? null : $this->_mapper->normalizeIds($ids));
+        $normIds = $this->_mapper->normalizeIds($ids);
         $order   = $this->_csOrder2array($order);
 
-        if ($since !== null)
+        // Include any time limits
+        $normIds = $this->_includeSince($normIds, $since);
+
+        // Include a privacy filter
+        $normIds['isPrivate'] = 0;
+
+        $user = $this->_curUser();
+        if ( (! empty($user))              &&
+             ($user instanceof Model_User) &&
+             $user->isAuthenticated() )
         {
-            $normIds = $this->_includeSince(($normIds === null
-                                                ? array()
-                                                : $normIds), $since);
+            /* Allow the authenticated user to see their own private
+             * bookmarks.
+             */
+            $normIds['+|userId'] = $user->userId;
         }
 
         /*
-        Connexions::log("Service_Bookmark::fetch(): "
-                        . "id[ %s ], "
-                        . "ids[ %s ], "
-                        . "normIds[ %s ]",
+        Connexions::log("Service_Bookmark::fetch() "
+                        . "id[ %s ], ids[ %s ], normIds[ %s ]",
                         Connexions::varExport($id),
                         Connexions::varExport($ids),
                         Connexions::varExport($normIds));
@@ -282,12 +309,28 @@ class Service_Bookmark extends Connexions_Service
         $normIds = $ids;    //$this->_mapper->normalizeIds($ids);
         $order   = $this->_csOrder2array($order);
 
+        // Include any time limits
         $normIds = $this->_includeSince($normIds, $since);
+
+        // Include a privacy filter
+        $normIds['isPrivate'] = 0;
+
+        $user = $this->_curUser();
+        if ( (! empty($user))              &&
+             ($user instanceof Model_User) &&
+             $user->isAuthenticated() )
+        {
+            /* Allow the authenticated user to see their own private
+             * bookmarks.
+             */
+            $normIds['+|userId'] = $user->userId;
+        }
+
 
         $set = $this->_mapper->fetch( $normIds, $order );
         return new Zend_Paginator( $set->getPaginatorAdapter() );
     }
-                                      
+
     /** @brief  Retrieve a set of bookmarks related by a set of Tags.
      *  @param  tags    A Model_Set_Tag instance, array, or comma-separated
      *                  string of tags to match.
@@ -314,6 +357,7 @@ class Service_Bookmark extends Connexions_Service
     {
         $to = array('tags'      => $tags,
                     'exactTags' => $exact,
+                    // Include any time limits
                     'where'     => $this->_includeSince(array(), $since) );
 
         return $this->fetchRelated( $to,
@@ -345,6 +389,7 @@ class Service_Bookmark extends Connexions_Service
     {
         $to = array('users'      => $users,
                     'exactUsers' => false,  // userCount doesn't matter
+                    // Include any time limits
                     'where'      => $this->_includeSince(array(), $since) );
 
         return $this->fetchRelated( $to,
@@ -376,6 +421,7 @@ class Service_Bookmark extends Connexions_Service
     {
         $to = array('items'      => $items,
                     'exactItems' => false,  // itemCount doesn't matter
+                    // Include any time limits
                     'where'      => $this->_includeSince(array(), $since) );
 
         return $this->fetchRelated( $to,
@@ -418,6 +464,7 @@ class Service_Bookmark extends Connexions_Service
                     'tags'       => $tags,
                     'exactUsers' => $exactUsers,
                     'exactTags'  => $exactTags,
+                    // Include any time limits
                     'where'      => $this->_includeSince(array(), $since) );
 
         return $this->fetchRelated( $to,
@@ -457,6 +504,7 @@ class Service_Bookmark extends Connexions_Service
                     'tags'       => $tags,
                     'exactItems' => false,  // itemCount doesn't matter
                     'exactTags'  => $exact,
+                    // Include any time limits
                     'where'      => $this->_includeSince(array(), $since) );
 
         return $this->fetchRelated( $to,
@@ -526,6 +574,7 @@ class Service_Bookmark extends Connexions_Service
          */
         $to = array('tags'       => $tags,
                     'exactTags'  => true,
+                    // Include any time limits
                     'where'      => $this->_includeSince(array(), $since) );
 
         return $this->fetchRelated( $to );
@@ -541,50 +590,72 @@ class Service_Bookmark extends Connexions_Service
      *                      comma-separated string of users that restrict the
      *                      bookmarks that should be used to select related
      *                      tags -- a second component of 'context';
+     *  @param  items       A Model_Set_Item instance, array, or
+     *                      comma-separated string of items that restrict the
+     *                      bookmarks that should be used to select related
+     *                      tags -- a third component of 'context';
      *  @param  limit       The maximum number of tags to return;
      *
      *  @return Model_Set_Tag
      */
-    public function autocompleteTag($str,
+    public function autocompleteTag($term,
                                     $tags   = null,
                                     $users  = null,
+                                    $items  = null,
                                     $limit  = 50)
     {
         /*
         Connexions::log("Service_Bookmark::autocompleteTag(): "
-                        .   "str[ %s ], tags[ %s ], users[ %s ], limit[ %d ]",
-                        $str, $tags, $users, $limit);
+                        .   "term[ %s ], "
+                        .   "tags[ %s ], users[ %s ], items[ %s ], "
+                        .   "limit[ %d ]",
+                        $term, $tags, $users, $items, $limit);
         // */
 
-        /* Rely on Service_Tag/Service_User to properly interpret 'tags' and
-         * 'users'
+        /* Retrieve the bookmarks that define the scope for this
+         * autocompletion
          */
-        $tService = $this->factory('Service_Tag');
-
-        if ( (! empty($tags)) || (! empty($users)) )
+        if ( ! empty($users))
         {
-            // Retrieve the set of bookmarks that we need related tags for
-            $bookmarks = $this->fetchByUsersAndTags($users, $tags);
+            /* Retrieve the current scope (i.e. presented bookmarks)
+             * by users and/or tags.
+             */
+            $scope = $this->fetchByUsersAndTags($users, $tags);
+        }
+        else if ( ! empty($items))
+        {
+            /* Retrieve the current scope (i.e. presented bookmarks)
+             * by items and/or tags.
+             */
+            $scope = $this->fetchByItemsAndTags($items, $tags);
+        }
+        else if ( ! empty($tags))
+        {
+            /* Retrieve the current scope (i.e. presented bookmarks)
+             * by tags.
+             */
+            $scope = $this->fetchByTags($tags);
         }
         else
         {
-            $bookmarks = null;
+            $scope = null;
         }
 
         /*
         Connexions::log("Service_Bookmark::autocompleteTag(): "
-                        .   "bookmarks[ %s ]",
-                        $bookmarks);
+                        .   "scope[ %s ]",
+                        $scope);
         // */
 
         /* :NOTE: To match a string in any position within the tag, use:
          *          'tag=*'
          */
-        return $tService->fetchByBookmarks($bookmarks,
+        $tService = $this->factory('Service_Tag');
+        return $tService->fetchByBookmarks($scope,      // bookmarks
                                            null,        // default order
                                            $limit,
                                            null,        // default offset
-                                           array('tag=^' => $str));
+                                           array('tag=*' => $term));
     }
 
     /** @brief  Update/Create a bookmark.
