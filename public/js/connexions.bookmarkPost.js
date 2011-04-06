@@ -758,7 +758,7 @@ $.widget("connexions.bookmarkPost", {
          * information.
          */
         var bookmarkFound   = false;
-        $.jsonRpc(opts.jsonRpc, 'bookmark.get', params, {
+        $.jsonRpc(opts.jsonRpc, 'bookmark.find', params, {
             success:    function(data, textStatus, req) {
                 if (data.error !== null)
                 {
@@ -1057,13 +1057,13 @@ $.widget("connexions.bookmarkPost", {
          * URL value.
          */
         if ( (params.id.itemId === null) ||
-             (opts.$url.val()       !== opts.url) )
+             (opts.$url.val()  !== opts.url) )
         {
             // The URL has changed -- pass it in
             params.id.itemId = opts.$url.val();
         }
 
-        params.str = opts.$tags.autocomplete('option', 'term');
+        params.term = opts.$tags.autocomplete('option', 'term');
 
         $.jsonRpc(opts.jsonRpc, 'bookmark.autocompleteTag', params, {
             success:    function(ret, txtStatus, req){
@@ -1076,9 +1076,12 @@ $.widget("connexions.bookmarkPost", {
                 response(
                     $.map(ret.result,
                           function(item) {
+                            var str = item.tag.replace(
+                                                params.term,
+                                                '<b>'+ params.term +'</b>' );
                             return {
                                 label:   '<span class="name">'
-                                       +  item.tag
+                                       +  str
                                        + '</span>'
                                        +' <span class="count">'
                                        +  item.userItemCount

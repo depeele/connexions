@@ -126,13 +126,16 @@ if ( $scope && (count($scope) > 0) )
 
 if ($helper->hideInput !== true)
 {
+    /* &rang; == &#9002; == &#x232A;
+     *  Chrome on Windows doesn't seem to handle &rang; properly...
+     */
     $liHtml .= "<li class='scopeEntry'>"
             .   "<label  for='{$helper->inputName}' style='display:none;'>"
             .     $helper->inputLabel
             .   "</label>"
             .   "<input type='text' "
             .          "name='{$helper->inputName}' class='ui-input' />"
-            .   "<button type='submit'>&rang;</button>"
+            .   "<button type='submit'>&#9002;</button>"
             .  "</li>";
 }
 

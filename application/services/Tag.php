@@ -153,6 +153,12 @@ class Service_Tag extends Connexions_Service
             $to['where'] = $where;
         }
 
+        /*
+        Connexions::log("Service_Tag::fetchByUsers(): %d users, to[ %s ]",
+                        count($users),
+                        Connexions::varExport($to));
+        // */
+
         return $this->fetchRelated( $to,
                                     $order,
                                     $count,

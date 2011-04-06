@@ -179,7 +179,7 @@ $.widget("settings.tagsFilter", {
         params.term  = self.$input.autocomplete('option', 'term');
 
         // Perform a JSON-RPC call to perform the update.
-        $.jsonRpc(opts.jsonRpc, 'user.autocompleteTag', params, {
+        $.jsonRpc(opts.jsonRpc, 'user.autocompleteMyTags', params, {
             success:    function(ret, txtStatus, req){
                 if (ret.error !== null)
                 {
@@ -190,12 +190,12 @@ $.widget("settings.tagsFilter", {
                 response(
                     $.map(ret.result,
                           function(item) {
-                            var tag = item.tag.replace(
+                            var str = item.tag.replace(
                                                 params.term,
                                                 '<b>'+ params.term +'</b>' );
                             return {
                                 label:   '<span class="name">'
-                                       +  tag
+                                       +  str
                                        + '</span>'
                                        +' <span class="count">'
                                        +  item.userItemCount

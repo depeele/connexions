@@ -71,16 +71,7 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      */
     public function fetchRelated( array $params = array())
     {
-        $modelName = $this->getModelName();
-
-        /* Convert the model class name to an abbreviation composed of all
-         * upper-case characters following the first '_', then converted to
-         * lower-case (e.g. Model_UserAuth == 'ua').
-         */
-        $as       = strtolower(preg_replace('/^[^_]+_([A-Z])[a-z]+'
-                                            . '(?:([A-Z])[a-z]+)?'
-                                            . '(?:([A-Z])[a-z]+)?$/',
-                                            '$1$2$3', $modelName));
+        $as       = $this->_getModelAlias();
         $accessor = $this->getAccessor();
         $db       = $accessor->getAdapter();
 
@@ -151,6 +142,26 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      * Protected helpers
      *
      */
+
+    /** @brief  Generate an alias for the model name.
+     *
+     *  @return An alias string.
+     */
+    protected function _getModelAlias()
+    {
+        $modelName = $this->getModelName();
+
+        /* Convert the model class name to an abbreviation composed of all
+         * upper-case characters following the first '_', then converted to
+         * lower-case (e.g. Model_UserAuth == 'ua').
+         */
+        $as       = strtolower(preg_replace('/^[^_]+_([A-Z])[a-z]+'
+                                            . '(?:([A-Z])[a-z]+)?'
+                                            . '(?:([A-Z])[a-z]+)?$/',
+                                            '$1$2$3', $modelName));
+
+        return $as;
+    }
 
     /** @brief  Given an array containing field values, see if any of the
      *          fields are "special" fields of the form 'table:field'.
