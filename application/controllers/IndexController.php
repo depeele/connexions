@@ -153,6 +153,11 @@ class IndexController extends Connexions_Controller_Action
      */
     protected function _prepare_main()
     {
+        /*
+        Connexions::log("IndexController::_prepare_main(): namespace[ %s ]",
+                        $this->_namespace);
+        // */
+
         parent::_prepare_main();
 
         $extra = array(

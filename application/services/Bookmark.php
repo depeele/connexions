@@ -185,6 +185,8 @@ class Service_Bookmark extends Connexions_Service
      *                          - 'itemUrl'     as a  string url;
      *                          - 'url'         as a  string url;
      *
+     *  Override Connexions_Service::fetch() to add a privacy filter.
+     *
      *  @return A Domain Model instance, or null if not found.
      */
     public function find($id)
@@ -196,14 +198,32 @@ class Service_Bookmark extends Connexions_Service
                         Connexions::varExport($normId));
         // */
 
-        if ( empty($normId['userId']) || empty($normId['itemId']) )
+        // We MUST have a valid itemId
+        if ( empty($normId['itemId']) )
         {
             return null;
         }
 
+        // Now, check the userId.
         $user = $this->_curUser();
-        if ( (empty($user))               ||
-             (! $user->isAuthenticated()) ||
+        if (empty($normId['userId']))
+        {
+            /* No userId was provided.  if the current user is authenticated,
+             * use their userId
+             */
+            if ( $user->isAuthenticated() )
+            {
+                // Fill in the userId of the authenticated user.
+                $normId['userId'] = $user->userId;
+            }
+            else
+            {
+                // No userId and no authenticated user === no bookmark
+                return null;
+            }
+        }
+
+        if ( (! $user->isAuthenticated()) ||
              ($user->userId != $normId['userId']) )
         {
             /* The authenticated user is NOT the target user so include a
@@ -220,7 +240,6 @@ class Service_Bookmark extends Connexions_Service
         // */
 
 
-        //return parent::find($normId);
         return $this->_mapper->find( $normId );
     }
 
@@ -298,6 +317,8 @@ class Service_Bookmark extends Connexions_Service
      *                  used [ no specified order ];
      *  @param  since   Limit the results to bookmarks updated after this
      *                  date/time [ null == no time limits ];
+     *
+     *  Override Connexions_Service::fetch() to add a privacy filter.
      *
      *  @return A new Connexions_Model_Set.
      */

@@ -400,12 +400,33 @@ class Connexions_Controller_Action extends Zend_Controller_Action
      */
     protected function _getDisplayStyle($namespace = null, $default = null)
     {
-        $group  = $this->_getParam('optionGroup',        $namespace, $default);
-        $option = $this->_getParam('optionGroup_option', $namespace);
+        $origNamespace = $namespace;
+        if ($namespace === null)    $namespace = $this->_namespace;
+
+        $group  = $this->_getParam('optionGroup',         $namespace, $default);
+        $option = $this->_getParam('optionGroups_option', $namespace);
+
+        /*
+        Connexions::log("Connexions_Controller_Action(%s)::_getDisplayStyle(): "
+                        . "namespace[ %s ], group[ %s ], option[ %s ]",
+                        get_class($this),
+                        $namespace,
+                        Connexions::varExport($group),
+                        Connexions::varExport($option));
+        // */
+
         if ( ($group === 'custom') && (is_array($option)) )
         {
             $group = $option;
         }
+
+        /*
+        Connexions::log("Connexions_Controller_Action(%s)::_getDisplayStyle(): "
+                        . "namespace[ %s ] return [ %s ]",
+                        get_class($this),
+                        $namespace,
+                        Connexions::varExport($group));
+        // */
 
         return $group;
     }
