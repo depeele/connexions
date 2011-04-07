@@ -317,8 +317,16 @@ abstract class Zend_Controller_Response_Abstract
     {
         $ok = headers_sent($file, $line);
         if ($ok && $throw && $this->headersSentThrowsException) {
+            // Connexions {
+            // Don't throw another exception if we're already IN an exception
+            if (! $this->isException())
+            {
+            // Connexions }
             require_once 'Zend/Controller/Response/Exception.php';
             throw new Zend_Controller_Response_Exception('Cannot send headers; headers already sent in ' . $file . ', line ' . $line);
+            // Connexions {
+            }
+            // Connexions }
         }
 
         return !$ok;
