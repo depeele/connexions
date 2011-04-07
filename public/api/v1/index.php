@@ -99,7 +99,35 @@ $baseUrl = $config->urls->base;
   <script type='text/javascript'>
     (function($) {
         $(document).ready(function() {
-            var rpcId   = 1;
+            var rpcId       = 1;
+            var useJsDump   = true;
+            var rawData     = null;
+            var $result     = $('#result');
+
+            // Format 'data' according to 'useJsDump'
+            function data2html(data)
+            {
+                if (data === undefined) data    = rawData;
+                else                    rawData = data;
+
+                return (data === null
+                        ? ''
+                        : (useJsDump
+                            ? jsDump.parse( data )
+                            : JSON.stringify(data, null, '  ')
+                                  .replace(/</, '&lt;')
+                                  .replace(/>/, '&gt;')
+                                  .replace(/&/, '&amp;')) );
+            }
+
+            $result.click(function() {
+                // Clicking on the result area will toggle the formatting.
+                var $pre    = $result.find('pre');
+
+                useJsDump = (useJsDump === false ? true : false);
+
+                $pre.html( data2html() );
+            });
 
             /** @brief  On form submission, generate and initiate a Json-RPC.
              *  @param  e   The form submit event.
@@ -161,28 +189,20 @@ $baseUrl = $config->urls->base;
                     success: function(data, txtStatus, req) {
                         $form.trigger('success', [data, txtStatus, req]);
 
-                        // /*
-                        $('#result').html(  '<h3 class="success">'
-                                          +  rpc.method +': '+ txtStatus
-                                          + '</h3>'
-                                          + '<pre>'
-                                          //+ jsDump.parse( data )
-                                          // /*
-                                          +  JSON.stringify(data, null, '  ')
-                                                 .replace(/</, '&lt;')
-                                                 .replace(/>/, '&gt;')
-                                                 .replace(/&/, '&amp;')
-                                          // */
-                                          + '</pre>');
-                        // */
+                        $result.html(  '<h3 class="success">'
+                                     +  rpc.method +': '+ txtStatus
+                                     + '</h3>'
+                                     + '<pre>'
+                                     +  data2html(data)
+                                     + '</pre>');
                     },
                     error: function(req, txtStatus, e) {
                         $form.trigger('error', [txtStatus, req]);
 
                         // /*
-                        $('#result').html(  '<h3 class="error">'
-                                          +  rpc.method +': '+ txtStatus
-                                          + '</h3>');
+                        $result.html(  '<h3 class="error">'
+                                     +  rpc.method +': '+ txtStatus
+                                     + '</h3>');
                         // */
                     }
                 });
@@ -316,17 +336,17 @@ $baseUrl = $config->urls->base;
                     .bind('submit.rpc',  rpc_submit);
                 /*
                     .bind('success.rpc', function(e, data, txtStatus, req) {
-                        $('#result').html(  '<pre class="status">'
-                                          +  txtStatus
-                                          + '</pre>'
-                                          + '<pre>'
-                                          +  JSON.stringify(data)
-                                          + '</pre>');
+                        $result.html(  '<pre class="status">'
+                                     +  txtStatus
+                                     + '</pre>'
+                                     + '<pre>'
+                                     +  JSON.stringify(data)
+                                     + '</pre>');
                     })
                     .bind('error.rpc',   function(e, txtStatus, req) {
-                        $('#result').html(  '<pre class="error">'
-                                          +  txtStatus
-                                          + '</pre>');
+                        $result.html(  '<pre class="error">'
+                                     +  txtStatus
+                                     + '</pre>');
                     });
                 */
             }
