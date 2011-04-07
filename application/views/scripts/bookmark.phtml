@@ -45,7 +45,14 @@ if ($showParts['minimized'])
 {
     array_push($css, 'minimized');
     if ($showParts['item:data:userId'] !== true)
+    {
         array_push($css, 'no-userId');
+    }
+}
+if ( ($showParts['item:data:avatar'] !== true) ||
+     empty($bookmark->user->pictureUrl) )
+{
+    array_push($css, 'no-avatar');
 }
 
 ?>

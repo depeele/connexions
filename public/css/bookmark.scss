@@ -326,4 +326,16 @@ $displaySortOffset: 5px;
       }
     }
   }
+
+  // No UserId (bookmarks of a single user OR the user has no avatar)
+  .no-avatar {
+    .status {
+      .favorite {
+        top:  4px;
+      }
+      .private {
+        top:  24px;
+      }
+    }
+  }
 }
