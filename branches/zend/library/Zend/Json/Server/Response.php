@@ -178,7 +178,8 @@ class Zend_Json_Server_Response
                 'id'     => $this->getId(),
             );
         } else {
-            // :XXX: patch: if the result can be simplified, do it {
+            // :XXX: Connexions patch: {
+            //       if the result can be simplified, do it
             $result   = $this->getResult();
             if (is_object($result))
             {
@@ -187,7 +188,7 @@ class Zend_Json_Server_Response
                 else if (method_exists($result, '__toString'))
                     $result = $result->__toString();
             }
-            // :XXX: patch: }
+            // :XXX: Connexions patch: }
 
             $response = array(
                 'result' => $result,
