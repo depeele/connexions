@@ -70,3 +70,5 @@
 .bookmarks .mine .status, .pane .displayStyle fieldset.options .mine .status { display: block; min-height: 45px; }
 .bookmarks .minimized .data .itemName, .bookmarks .minimized .data .description, .bookmarks .minimized .data .description .summary, .bookmarks .minimized .data .description .full, .pane .displayStyle fieldset.options .minimized .data .itemName, .pane .displayStyle fieldset.options .minimized .data .description, .pane .displayStyle fieldset.options .minimized .data .description .summary, .pane .displayStyle fieldset.options .minimized .data .description .full { display: inline; margin: 0; }
 .bookmarks .minimized .data .description, .pane .displayStyle fieldset.options .minimized .data .description { padding: 0 0 0 0.5em; }
+.bookmarks .no-avatar .status .favorite, .pane .displayStyle fieldset.options .no-avatar .status .favorite { top: 4px; }
+.bookmarks .no-avatar .status .private, .pane .displayStyle fieldset.options .no-avatar .status .private { top: 24px; }
