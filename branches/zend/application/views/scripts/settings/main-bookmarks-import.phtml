@@ -72,9 +72,9 @@ $jQuery->javascriptCaptureEnd();
    <h3>Step 2: Establish the settings for your import</h3>
    <ul class='steps'><!-- steps { -->
     <li class='field'><!-- field { -->
-     <label for='bookmarkFile'>Click browser and select the file you exported in <b>Step 1</b></label>
+     <label for='bookmarks-import-file'>Click browser and select the file you exported in <b>Step 1</b></label>
      <input name='MAX_FILE_SIZE' type='hidden' value='<?= $maxSize ?>' />
-     <input   id='bookmarkFile' name='bookmarkFile'
+     <input   id='bookmarks-import-file' name='bookmarkFile'
             type='file' />
      <div class='note'>Maximum file size of <?php
         $pows = array(
@@ -104,15 +104,15 @@ $jQuery->javascriptCaptureEnd();
     </li><!-- field } -->
 
     <li class='field'><!-- field { -->
-     <label for='tags'>Tags will be added to your imported bookmarks based upon the folder structure of your bookmarks.  For example, a bookmark in the "recipes" folder within the "household" folder will be tagged with both "household" and "recipes".  You can also choose additional tags here that will be applied to <b>all</b> the bookmarks importes.</label>
-     <textarea   id='tags' name='tags'
+     <label for='bookmarks-import-tags'>Tags will be added to your imported bookmarks based upon the folder structure of your bookmarks.  For example, a bookmark in the "recipes" folder within the "household" folder will be tagged with both "household" and "recipes".  You can also choose additional tags here that will be applied to <b>all</b> the bookmarks importes.</label>
+     <textarea   id='bookmarks-import-tags' name='tags'
                type='text'>imported</textarea>
      <div class='note'>This is a comma separated list of tags.  It is recommended that you use the default tag "imported" to make it easier to view all imported bookmarks in one list by visiting <?= Connexions::anchor('/mine/imported', 'your imported bookmarks') ?><!-- <?= Connexions::anchor('/'. $this->viewer->name .'/imported', 'your imported bookmarks') ?> -->.</div>
     </li><!-- field } -->
 
     <li class='field'><!-- field { -->
-     <label for='visibility'>Should imported bookmarks be marked <i>private</i> or <i>shared</i>?</label>
-     <div id='visibility'><!-- visibility { -->
+     <label for='bookmarks-import-visibility'>Should imported bookmarks be marked <i>private</i> or <i>shared</i>?</label>
+     <div id='bookmarks-import-visibility'><!-- visibility { -->
       <div class='field'>
        <input type='radio' id='visibility_private'
               name='visibility' value='private' checked='true' /><label for='visibility_private'>Private</label>
@@ -124,8 +124,8 @@ $jQuery->javascriptCaptureEnd();
     </li><!-- field } -->
 
     <li class='field'><!-- field { -->
-     <label for='conflict'>What should happen if an imported bookmark already exists in your set of bookmarks (matched by url)?</label>
-     <div id='conflict'><!-- conflict { -->
+     <label for='bookmarks-import-conflict'>What should happen if an imported bookmark already exists in your set of bookmarks (matched by url)?</label>
+     <div id='bookmarks-import-conflict'><!-- conflict { -->
       <div class='field'>
        <input type='radio' id='conflict_replace'
               name='conflict' value='replace' /><label for='conflict_replace'>Replace with the imported bookmark</label>
@@ -136,8 +136,8 @@ $jQuery->javascriptCaptureEnd();
     </li><!-- field } -->
 
     <li class='field'><!-- field { -->
-     <label for='test'>Would you like to test the import before actually importing?</label>
-     <div id='test'><!-- test { -->
+     <label for='bookmarks-import-test'>Would you like to test the import before actually importing?</label>
+     <div id='bookmarks-import-test'><!-- test { -->
       <div class='field'>
        <input type='radio' id='test_yes'
               name='test' value='yes' /><label for='test_yes'>Yes, please!</label>
