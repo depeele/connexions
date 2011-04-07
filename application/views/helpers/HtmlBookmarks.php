@@ -86,7 +86,8 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
                                  'item:data:avatar',
                                  'item:data:userId:id',
                                  'item:data:tags',
-                                 'item:data:dates:tagged'
+                                 'item:data:dates:tagged',
+                                 'item:data:dates:updated',
             )
         ),
         self::STYLE_FULL    => array(

@@ -30,25 +30,30 @@ if (! isset($this->showParts))
     );
 }
 
-$jQuery = $this->jQuery();
-$jQuery->addOnLoad('$.sidebar_user_onLoad();')
-       ->javascriptCaptureStart();
+$id = 'sidebar-user'
 ?>
-(function($) {
-    $.sidebar_user_onLoad = function() {
-        // Activate the user item.
-        $('#usersList ul.sidebar li > form').user();
-    };
-}(jQuery));
-
-<?php
-$jQuery->javascriptCaptureEnd();
-
-?>
-<div id='usersList' class='userItems single-user'>
+<div id='<?= $id ?>' class='userItems single-user'>
   <div class='cloudRelation connexions_sprites relation_ltr'>&nbsp;</div>
   <ul class='users sidebar'>
     <?= $this->partial('user.phtml', $this) ?>
     <br class='clear' />
   </ul>
 </div>
+<?php
+
+$jsWait = false;
+$jsLoad = "$('#{$id} li > form').user();";
+if ($jsWait === false)
+{
+    ?>
+<script type='text/javascript'>
+(function($) {
+    <?= $jsLoad ?>
+ }(jQuery));
+</script>
+    <?php
+}
+else
+{
+    $this->jQuery()->addOnLoad( $jsLoad );
+}

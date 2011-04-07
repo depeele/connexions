@@ -37,12 +37,8 @@
  *                          itemType
  *              
  */
-$params =& $this->sidebar;
-
-// Include jQuery to initialize the sidebar
+$params   =& $this->sidebar;
 $baseUrl  = $this->baseUrl('/');
-$jQuery   = $this->jQuery();
-$jQuery->addOnLoad("$('#{$params['namespace']}').sidebar();");
 
 if (isset($this->owner) && ($this->owner !== '*'))
 {
@@ -81,22 +77,23 @@ else
     $paneUrl = '#sidebar-';
 }
 
+$id = $params['namespace'];
 ?>
-<div id='<?= $params['namespace'] ?>'>
+<div id='<?= $id ?>'>
  <ul><?php
 
-foreach ($params['panes'] as $id => $config)
+foreach ($params['panes'] as $paneId => $config)
 {
     ?>
-  <li><a href='<?= $paneUrl ?><?= $id ?>'><span><?=
+  <li><a href='<?= $paneUrl ?><?= $paneId ?>'><span><?=
         (! empty($config['title'])
             ? $config['title']
-            : ucfirst($id)) ?></span></a></li><?php
+            : ucfirst($paneId)) ?></span></a></li><?php
 
     if ($params['async'] !== true)
     {
         // Controller-specific, synchronous rendering
-        $script = "{$this->controller}/sidebar-{$id}.phtml";
+        $script = "{$this->controller}/sidebar-{$paneId}.phtml";
 
         /*
         Connexions::log("View_Helper_HtmlSidebar::render() "
@@ -104,7 +101,7 @@ foreach ($params['panes'] as $id => $config)
                         $script);
         // */
 
-        $paneHtml .= "<div id='sidebar-{$id}'>"
+        $paneHtml .= "<div id='sidebar-{$paneId}'>"
                   .    $this->render($script)
                   .  "</div>\n";
     }
@@ -114,3 +111,21 @@ foreach ($params['panes'] as $id => $config)
  </ul>
  <?= $paneHtml ?>
 </div>
+<?php
+
+$jsWait = false;
+$jsLoad = "$('#{$id}').sidebar();";
+if ($jsWait === false)
+{
+    ?>
+<script type='text/javascript'>
+(function($) {
+    <?= $jsLoad ?>
+ }(jQuery));
+</script>
+    <?php
+}
+else
+{
+    $this->jQuery()->addOnLoad( $jsLoad );
+}

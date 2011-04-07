@@ -147,21 +147,15 @@ if ($itemCount !== null)
 }
 
 
-/* Establish configuration for and schedule instantiation of a new Javascript
- * connexions.itemScope() instance targeting the 'itemScope' form rendered just
- * below.
- */
-$widgetConfig = Zend_Json::encode( $helper->getParams() );
-$this->jQuery()->addOnLoad("$('.{$namespace}ItemScope')"
-                                    . ".itemScope({$widgetConfig});");
-
 /*********************************************************************
  * Assemble and render the final HTML
  *
  */
+$id = $namespace .'ItemScope';
 ?>
 <form action='<?= $action ?>'
-       class='itemScope <?= $namespace ?>ItemScope ui-form'>
+      id='<?= $id ?>'
+       class='itemScope <?= $id ?> ui-form'>
  <input type='hidden'
         name='scopeCurrent'
        value='<?= implode(',', $curScope) ?>' />
@@ -170,3 +164,27 @@ $this->jQuery()->addOnLoad("$('.{$namespace}ItemScope')"
   <br class='clear' />
  </ul>
 </form>
+<?php
+
+/* Establish configuration for and schedule instantiation of a new Javascript
+ * connexions.itemScope() instance targeting the 'itemScope' form rendered just
+ * below.
+ */
+$widgetConfig = Zend_Json::encode( $helper->getParams() );
+
+$jsWait = false;
+$jsLoad = "$('#{$id}').itemScope({$widgetConfig});";
+if ($jsWait === false)
+{
+    ?>
+<script type='text/javascript'>
+(function($) {
+    <?= $jsLoad ?>
+ }(jQuery));
+</script>
+    <?php
+}
+else
+{
+    $this->jQuery()->addOnLoad( $jsLoad );
+}

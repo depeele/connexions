@@ -89,28 +89,15 @@ if ($paginator instanceof Zend_Paginator)
     $uiPagination = $this->htmlPaginationControl( $pagerConfig );
 }
 
-/* Establish configuration for and schedule instantiation of a new Javascript
- * connexions.cloudPane() instance targeting the 'pane' div rendered just
- * below.
- */
-$paneConfig = array(
-    'namespace'      => $namespace,
-    'partial'        => $helper->panePartial,
-    'hiddenVars'     => $helper->paneVars,
-    'displayOptions' => $helper->getDisplayOptionsConfig(),
-    'showControls'   => $helper->showControls,
-);
-$paneConfig = Zend_Json::encode($paneConfig);
-$this->jQuery()->addOnLoad("$('#{$namespace}Cloud')"
-                                    . ".cloudPane({$paneConfig});");
-
 /*
 Connexions::log('views/scripts/itemCloud: show controls [ %s ]',
                 Connexions::varExport($helper->showControls));
 // */
 
+$id = $namespace .'Cloud';
+
 ?>
-<div    id='<?= $namespace ?>Cloud'
+<div    id='<?= $id ?>'
      class='<?= $itemType ?>Items pane'>
  <?php
     if ($helper->showRelation)
@@ -256,3 +243,34 @@ Connexions::log('views/scripts/itemCloud: show controls [ %s ]',
          ? $html['append']
          : '') ?>
 </div>
+<?php
+
+/* Establish configuration for and schedule instantiation of a new Javascript
+ * connexions.cloudPane() instance targeting the 'pane' div we've just
+ * rendered.
+ */
+$paneConfig = array(
+    'namespace'      => $namespace,
+    'partial'        => $helper->panePartial,
+    'hiddenVars'     => $helper->paneVars,
+    'displayOptions' => $helper->getDisplayOptionsConfig(),
+    'showControls'   => $helper->showControls,
+);
+$paneConfig = Zend_Json::encode($paneConfig);
+
+$jsWait = false;
+$jsLoad = "$('#{$id}').cloudPane({$paneConfig});";
+if ($jsWait === false)
+{
+    ?>
+<script type='text/javascript'>
+(function($) {
+    <?= $jsLoad ?>
+ }(jQuery));
+</script>
+    <?php
+}
+else
+{
+    $this->jQuery()->addOnLoad( $jsLoad );
+}
