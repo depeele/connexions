@@ -615,7 +615,7 @@ class Service_Bookmark extends Connexions_Service
      *                      comma-separated string of items that restrict the
      *                      bookmarks that should be used to select related
      *                      tags -- a third component of 'context';
-     *  @param  limit       The maximum number of tags to return;
+     *  @param  limit       The maximum number of tags to return [ 15 ];
      *
      *  @return Model_Set_Tag
      */
@@ -623,8 +623,10 @@ class Service_Bookmark extends Connexions_Service
                                     $tags   = null,
                                     $users  = null,
                                     $items  = null,
-                                    $limit  = 50)
+                                    $limit  = 15)
     {
+        if ($limit < 1) $limit = 15;
+
         /*
         Connexions::log("Service_Bookmark::autocompleteTag(): "
                         .   "term[ %s ], "

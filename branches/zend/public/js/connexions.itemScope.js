@@ -43,6 +43,16 @@
 $.widget("connexions.itemScope", {
     options: {
         namespace:          '',                 // Cookie/parameter namespace
+
+        termName:           'tag',              /* The propert(ies)
+                                                 * representing the
+                                                 * autocompletion match string.
+                                                 *
+                                                 * MAY be an array if multiple
+                                                 * properties were used in the
+                                                 * autocomplete and should be
+                                                 * presented.
+                                                 */
         weightName:         'userItemCount',    /* The property to present
                                                  * as the autocompletion
                                                  * match weight.
@@ -122,7 +132,9 @@ $.widget("connexions.itemScope", {
         var opts    = self.options;
         var params  = opts.jsonRpc.params;
         
-        params.term  = self.$input.autocomplete('option', 'term');
+        params.term = self.$input.autocomplete('option', 'term');
+
+        var re      = new RegExp(params.term, 'gi');
 
         // Perform a JSON-RPC call to perform the update.
         $.jsonRpc(opts.jsonRpc, opts.jsonRpc.method, params, {
@@ -133,16 +145,35 @@ $.widget("connexions.itemScope", {
                     return;
                 }
 
-                var re  = new RegExp(params.term, 'gi');
                 response(
                     $.map(ret.result,
                           function(item) {
-                            var str     = item.tag.replace(re,
-                                                           '<b>'+ params.term
-                                                                +'</b>' );
+                            var str     = '';
                             var weight  = (item[opts.weightName] === undefined
                                             ? ''
                                             : item[opts.weightName]);
+
+                            if ($.isArray(opts.termName))
+                            {
+                                // Multiple match keys
+                                var parts   = [];
+                                $.each(opts.termName, function() {
+                                    if (item[ this ] === undefined) return;
+
+                                    str = item[this]
+                                            .replace(re,
+                                                     '<b>'+params.term+'</b>');
+
+                                    parts.push( str );
+                                });
+
+                                str = parts.join(', ');
+                            }
+                            else
+                            {
+                                str = item[ opts.termName ]
+                                        .replace(re, '<b>'+params.term+'</b>');
+                            }
 
                             return {
                                 label:   '<span class="name">'

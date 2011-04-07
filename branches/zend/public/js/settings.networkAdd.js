@@ -157,7 +157,6 @@ $.widget("settings.networkAdd", {
         var params  = opts.jsonRpc.params;
         
         params.term  = self.$input.autocomplete('option', 'term');
-        params.limit = 25;
 
         // Perform a JSON-RPC call to perform the update.
         $.jsonRpc(opts.jsonRpc, 'user.autocomplete', params, {
