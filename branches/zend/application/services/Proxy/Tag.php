@@ -81,13 +81,13 @@ class Service_Proxy_Tag extends Connexions_Service_Proxy
      *  @param  users   A Model_Set_User instance, array, or comma-separated
      *                  string of users that restrict the tags that should
      *                  be used to select related users;
-     *  @param  limit   The maximum number of users to return;
+     *  @param  limit   The maximum number of users to return [ 15 ];
      *
      *  @return Model_Set_User
      */
     public function autocompleteUser($term,
                                      $users = null,
-                                     $limit = 50)
+                                     $limit = 15)
     {
         return $this->_service->autocompleteUser($term, $users, $limit);
     }
