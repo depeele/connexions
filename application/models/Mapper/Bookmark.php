@@ -307,7 +307,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
             $params = $this->_addPrivacy($params);
         }
 
-        // /*
+        /*
         Connexions::log("Model_Mapper_Bookmark::fetchRelated(): "
                         .   "params[ %s ]",
                         Connexions::varExport($params));
@@ -663,9 +663,17 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
     protected function _addPrivacy(array $params)
     {
         $as      = $this->_getModelAlias();
-        $privacy = array("{$as}.isPrivate"    => 0);
+        $privacy = array("{$as}.isPrivate" => 0);
 
-        $user = Connexions::getUser();
+        $user = (isset($params['privacy'])
+                    ? $params['privacy']
+                    : Connexions::getUser());
+
+        /*
+        Connexions::log("Model_Mapper_Bookmark::_addPrivacy(): user[ %s ]",
+                        $user->debugDump());
+        // */
+
         if ( $user->isAuthenticated() )
         {
             $privacy["+|{$as}.userId"] = $user->userId;
@@ -673,8 +681,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
 
         if (isset($params['where']))
         {
-            $where = (array)$params['where'];
-            array_merge($where, $privacy);
+            $where = array_merge((array)$params['where'], $privacy);
         }
         else
         {
@@ -682,6 +689,13 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         }
 
         $params['where'] = $where;
+
+        /*
+        Connexions::log("Model_Mapper_Bookmark::_addPrivacy(): "
+                        . "where[ %s ], params[ %s ]",
+                        Connexions::varExport($where),
+                        Connexions::varExport($params));
+        // */
 
         return $params;
     }
