@@ -344,8 +344,7 @@ class SettingsController extends Connexions_Controller_Action
                             Connexions::varExport($extra));
             // */
 
-            $config = array_merge($this->_getParams(),
-                                  $extra);
+            $config = array_merge($this->_getParams(), $extra);
 
             /*
             Connexions::log("SettingsController::_prepare_main_people(): "
@@ -424,14 +423,13 @@ class SettingsController extends Connexions_Controller_Action
         Connexions::log("SettingsController::_prepare_post_bookmarks_import():");
         // */
 
+        $request    =& $this->_request;
+
         $file       = $_FILES['bookmarkFile'];
-        $tags       = $this->_getParam('tags');
-        $visibility = strtolower($this->_getParam('visibility', null,
-                                                                'private'));
-        $conflict   = strtolower($this->_getParam('conflict',   null,
-                                                                'ignore'));
-        $test       = strtolower($this->_getParam('test',       null,
-                                                                'no'));
+        $tags       = $request->getParam('tags', '');
+        $visibility = strtolower($request->getParam('visibility', 'private'));
+        $conflict   = strtolower($request->getParam('conflict',   'ignore'));
+        $test       = strtolower($request->getParam('test',       'no'));
 
         // Normalize the tag list
         $tags = implode(',', preg_split('#\s*[/,+]\s*#', $tags));
@@ -451,7 +449,7 @@ class SettingsController extends Connexions_Controller_Action
         }
 
 
-        /*
+        // /*
         Connexions::log("SettingsController::_prepare_post_bookmarks_import(): "
                         .   "file[ %s ]",
                         Connexions::varExport($file));
@@ -781,9 +779,9 @@ class SettingsController extends Connexions_Controller_Action
         // Retrieve all user-related bookmarks params: order, count, offset
         $this->view->bookmarks   = $this->_viewer->getBookmarks();
         $this->view->includeTags = Connexions::to_bool(
-                                    $this->_getParam('includeTags'));
+                                    $request->getParam('includeTags', true));
         $this->view->includeMeta = Connexions::to_bool(
-                                    $this->_getParam('includeMeta'));
+                                    $request->getParam('includeMeta', true));
     }
 
     /***********************************************************************
