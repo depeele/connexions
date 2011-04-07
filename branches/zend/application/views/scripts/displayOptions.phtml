@@ -27,9 +27,11 @@ $namespace  =  $helper->namespace;
 $fields     =& $helper->fields;
 $groups     =& $helper->groups;
 $definition =& $helper->definition;
+$id         =  $namespace .'-displayOptions';
 
 ?>
-<div    class='displayOptions ui-form <?= $namespace ?>-displayOptions'>
+<div id='<?= $id ?>'
+     class='displayOptions ui-form <?= $id ?>'>
  <form method='POST'
         class='ui-state-active ui-corner-all' style='display:none;'>
   <?php
@@ -43,7 +45,7 @@ $definition =& $helper->definition;
         }
     }
 
-    $fName = $namespace .'OptionGroup';
+    $fName = Connexions::nsParamName($namespace, 'optionGroup');
   ?>
   <div class='field displayStyle ui-optionGroups <?= $namespace ?>OptionGroups'>
    <label for='<?= $fName ?>'>Display</label>
@@ -105,3 +107,18 @@ $definition =& $helper->definition;
   </div>
  </form>
 </div>
+<?php
+
+$jsWait = false;
+if ($jsWait === false)
+{
+    $doConfig = Zend_Json::encode( $helper->getConfig() );
+    $jsLoad   = "$('#{$id}').dropdownForm( $doConfig );";
+    ?>
+<script type='text/javascript'>
+(function($) {
+    <?= $jsLoad ?>
+ }(jQuery));
+</script>
+    <?php
+}

@@ -239,6 +239,7 @@ if ($excludeInfo)
 $jsWait = true;
 if ($jsWait === false)
 {
+    // Instantiate the Javascript widget immediately
     $pagerConfig = array(
         'namespace'     => $namespace,
     );
@@ -249,9 +250,7 @@ if ($jsWait === false)
     ?>
 <script type='text/javascript'>
 (function($) {
-    //$.spawn( function() {
-                <?= $jsLoad ?>
-    //         } );
+    <?= $jsLoad ?>
  }(jQuery));
 </script>
     <?php
