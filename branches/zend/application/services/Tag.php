@@ -69,6 +69,12 @@ class Service_Tag extends Connexions_Service
             Connexions::log("Service_Tag::csList2set(): "
                                 . "%d tags seem to be missing...",
                             count($ids) - count($set));
+            Connexions::log("Service_Tag::csList2set(): "
+                                . "ids[ %s ]",
+                            Connexions::varExport($ids));
+            Connexions::log("Service_Tag::csList2set(): "
+                                . "set[ %s ]",
+                            Connexions::varExport($set));
             // */
 
             // Normalize all tags in 'ids'
@@ -81,8 +87,14 @@ class Service_Tag extends Connexions_Service
                     'tag' => $tag,
                 );
 
-                // Create an un-backed model instance.
-                $model = $this->_mapper->makeModel( $data, false );
+                $model = $this->_mapper->getModel( $data );
+
+                /*
+                Connexions::log("Service_Tag::csList2set(): "
+                                    . "getModel for tag '%s': %sbacked",
+                                $tag,
+                                ($model->isBacked() ? '' : 'NOT '));
+                // */
 
                 // See if the normalized tag already exists in the set.
                 if (! $set->contains($model->tag))
@@ -93,7 +105,7 @@ class Service_Tag extends Connexions_Service
                      *
                      * Regardless, append it to the set.
                      */
-                    if ($create === true)
+                    if (($create === true) && (! $model->isBacked()) )
                     {
                         $model = $model->save();
                     }
@@ -106,6 +118,14 @@ class Service_Tag extends Connexions_Service
                     // */
                 }
             }
+
+            /*
+            Connexions::log("Service_Tag::csList2set(): "
+                                . "ids[ %s ] == final set[ %s ]",
+                            Connexions::varExport($ids),
+                            Connexions::varExport($set));
+            // */
+
         }
 
         /*

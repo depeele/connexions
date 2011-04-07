@@ -629,6 +629,7 @@ abstract class Connexions_Model_Mapper
          */
         $newIds     = array();
         $isMultiKey = -1;
+        $isSimple   = false;
         foreach ($ids as $id)
         {
             $norm = $this->normalizeId($id);
@@ -637,9 +638,55 @@ abstract class Connexions_Model_Mapper
                 $keys = array_keys($norm);
                 if (count($keys) === 1)
                 {
-                    // Simple { 'key': [1,2,3,4, ...] }
+                    /* Simple { 'key': [1,2,3,4, ...] }
+                     *
+                     * We still need to normalize each item, but it's a simple
+                     * key/value.
+                     */
+                    $isSimple = true;
+                    $key      = $keys[0];
+                    $val      = $norm[$key];
+
+                    /*
+                    Connexions::log("Connexions_Model_Mapper::normalizeIds(): "
+                                    . "simple for key[ %s ], value[ %s ]: "
+                                    . "add to [ %s ]",
+                                    $key,
+                                    Connexions::varExport($val),
+                                    Connexions::varExport($newIds[$key]));
+                    // */
+
+                    if ( isset($newIds[$key]) && (! is_array($newIds[$key])) )
+                    {
+                        /* We already have one value, make it an array so we
+                         * can add this value.
+                         */
+                        $newIds[$key] = array($newIds[$key]);
+                    }
+
+                    if (is_array($newIds[$key]))
+                    {
+                        // Add this new value to an existing array of values
+                        array_push($newIds[$key], $val);
+                    }
+                    else
+                    {
+                        $newIds[$key] = $val;
+                    }
+                    continue;
+
+                    /*
                     $newIds = array( $keys[0] => $ids );
                     break;
+                    // */
+                }
+
+                if ($isSimple === true)
+                {
+                    /* ARRGH - thought it was simple, but now we found an entry
+                     *         that appears to be a multi-key...
+                     */
+                    throw new Exception("Mixed simple/complex key/values");
                 }
 
                 // Complex { '(key1,key2)': [ [1,2], [3,4], ... ] }
