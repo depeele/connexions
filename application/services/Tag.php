@@ -239,6 +239,61 @@ class Service_Tag extends Connexions_Service
                                     $offset );
     }
 
+    /** @brief  Perform user autocompletion given a set of already selected
+     *          users from which we need to locate the current set of
+     *          user-related tags and, from that, tag-related users.
+     *  @param  term    The string to autocomplete.
+     *  @param  users   A Model_Set_User instance, array, or comma-separated
+     *                  string of users that restrict the tags that should
+     *                  be used to select related users;
+     *  @param  limit   The maximum number of users to return [ 15 ];
+     *
+     *  @return Model_Set_User
+     */
+    public function autocompleteUser($term,
+                                     $users = null,
+                                     $limit = 15)
+    {
+        if ($limit < 1) $limit = 15;
+
+        /*
+        Connexions::log("Service_Tag::autocompleteUser(): "
+                        .   "term[ %s ], users[ %s ], limit[ %d ]",
+                        $term, $users, $limit);
+        // */
+
+        /* Retrieve the tags that define the scope for this
+         * autocompletion
+         */
+        $tags = null;
+        if (! empty($users))
+        {
+            $tags = $this->fetchByUsers($users);
+
+            /*
+            Connexions::log("Service_Tag::autocompleteUser(): "
+                            .   "tags[ %s ]",
+                            $tags);
+            // */
+        }
+
+        /* Match any user with a match in:
+         *  name, fullName, or email
+         */
+        $where = array(
+            'name=*'        => $term,
+            '+|fullName=*'  => $term,
+            '+|email=*'     => $term,
+        );
+        $uService = $this->factory('Service_User');
+        return $uService->fetchByTags($tags,
+                                      false,        // NOT exact tags
+                                      null,         // default order
+                                      $limit,
+                                      null,        // default offset
+                                      $where);
+    }
+
     /*********************************************************************
      * Static methods
      *

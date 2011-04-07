@@ -207,6 +207,8 @@
 
 .ui-autocomplete {
   .ui-menu-item {
+    border-bottom:  unquote("1px solid") $lightestGrey;
+
     a {
       position:     relative;
       display:      block;

@@ -107,20 +107,23 @@ class Service_User extends Connexions_Service
      *                      [ 'tagCount DESC' ];
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
+     *  @param  where   Additional condition(s) [ null ];
      *
      *  @return A new Model_Set_User instance.
      */
     public function fetchByTags($tags,
-                                $exact   = true,
-                                $order   = null,
-                                $count   = null,
-                                $offset  = null)
+                                $exact  = true,
+                                $order  = null,
+                                $count  = null,
+                                $offset = null,
+                                $where  = null)
     {
         if ($order === null)
             $order = 'tagCount DESC';
 
         $to = array('tags'       => $tags,
-                    'exactTags'  => $exact);
+                    'exactTags'  => $exact,
+                    'where'      => $where);
 
         return $this->fetchRelated( $to,
                                     $order,
@@ -395,16 +398,16 @@ class Service_User extends Connexions_Service
 
     /** @brief  Perform user autocompletion.
      *  @param  term        The string to autocomplete.
-     *  @param  limit       The maximum number of tags to return;
+     *  @param  limit       The maximum number of tags to return [ 15 ];
      *
      *  @return Model_Set_User
      */
     public function autocomplete($term,
-                                 $limit = 50)
+                                 $limit = 15)
     {
-        if ($limit === null)    $limit = 50;
+        if ($limit < 1) $limit = 15;
 
-        /*
+        // /*
         Connexions::log("Service_User::autocomplete(): "
                         .   "term[ %s ], limit[ %d ]",
                         $term, $limit);
@@ -437,14 +440,16 @@ class Service_User extends Connexions_Service
      *                        comma-separated string of tags that restrict the
      *                        bookmarks that should be used to select related
      *                        tags;
-     *  @param  limit   The maximum number of tags to return;
+     *  @param  limit   The maximum number of tags to return [ 15 ];
      *
      *  @return Model_Set_Tag
      */
     public function autocompleteTag($term       = null,
                                     $context    = null,
-                                    $limit      = 50)
+                                    $limit      = 15)
     {
+        if ($limit < 1) $limit = 15;
+
         /*
         Connexions::log("Service_User::autocompleteTag(): "
                         .   "term[ %s ], context[ %s ], limit[ %d ]",
