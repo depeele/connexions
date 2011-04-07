@@ -209,7 +209,7 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
      *                      comma-separated string of items that restrict the
      *                      bookmarks that should be used to select related
      *                      tags -- a third component of 'context';
-     *  @param  limit       The maximum number of tags to return;
+     *  @param  limit       The maximum number of tags to return [ 15 ];
      *
      *  @return Model_Set_Tag
      */
@@ -217,7 +217,7 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
                                     $tags   = null,
                                     $users  = null,
                                     $items  = null,
-                                    $limit  = 50)
+                                    $limit  = 15)
     {
         return $this->_service->autocompleteTag($term, $tags, $users, $items,
                                                 $limit);

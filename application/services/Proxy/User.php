@@ -124,12 +124,12 @@ class Service_Proxy_User extends Connexions_Service_Proxy
 
     /** @brief  Perform user autocompletion.
      *  @param  term        The string to autocomplete.
-     *  @param  limit       The maximum number of tags to return;
+     *  @param  limit       The maximum number of tags to return [ 15 ];
      *
      *  @return Model_Set_User
      */
     public function autocomplete($term,
-                                 $limit = 50)
+                                 $limit = 15)
     {
         return $this->_service->autocomplete($term, $limit);
     }
@@ -141,27 +141,27 @@ class Service_Proxy_User extends Connexions_Service_Proxy
      *                      string of tags that restrict the bookmarks that
      *                      should be used to select related tags -- defines
      *                      the 'context';
-     *  @param  limit       The maximum number of tags to return;
+     *  @param  limit       The maximum number of tags to return [ 15 ];
      *
      *  @return Model_Set_Tag
      */
     public function autocompleteTag($term       = null,
                                     $tags       = null,
-                                    $limit      = 50)
+                                    $limit      = 15)
     {
         return $this->_service->autocompleteTag($term, $tags, $limit);
     }
 
     /** @brief  Perform tag autocompletion for the (authenticated) user.
      *  @param  term        The string to autocomplete.
-     *  @param  limit       The maximum number of tags to return;
+     *  @param  limit       The maximum number of tags to return [ 15 ];
      *  @param  apiKey      The apiKey for the currently authenticated user
      *                      (REQUIRED if the transport method is NOT POST);
      *
      *  @return Model_Set_Tag
      */
     public function autocompleteMyTags($term    = null,
-                                       $limit   = 50,
+                                       $limit   = 15,
                                        $apiKey  = null)
     {
         $user = $this->_authenticate($apiKey);
