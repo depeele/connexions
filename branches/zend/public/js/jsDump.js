@@ -11,13 +11,17 @@
 var jsDump;
 
 (function(){
-	function quote( str ){
+	function quote( str, isKey ){
         var html    = str.toString().replace(/"/g, '\\"')
                                     .replace(/&/g, '&amp;')
                                     .replace(/</g, '&lt;')
                                     .replace(/>/g, '&gt;');
 
-		return '<span class="string">"'+ html +'"</span>';
+		return '<span class="'+ (isKey === true ? 'key' : 'string') +'">'
+               + '"'    //(isKey === true ? '' : '"')
+               + html
+               + '"'    //(isKey === true ? '' : '"')
+               +'</span>';
         /*
 		return '<span class="string">"'
                 + str.toString().replace(/"/g, '\\"') + '"</span>';
@@ -49,16 +53,55 @@ var jsDump;
 
 	var reName = /^function (\w+)/;
 
+    // Populate the class2type map
+    var class2type  = {
+        '[object Boolean]': 'boolean',
+        '[object Number]':  'number',
+        '[object String]':  'string',
+        '[object Function]':'function',
+        '[object Array]':   'array',
+        '[object Date]':    'date',
+        '[object RegExp]':  'regexp',
+        '[object Object]':  'object'
+    };
+
 	jsDump = {
 		parse:function( obj, type ){//type is used mostly internally, you can fix a (custom)type in advance
 			var parser = this.parsers[ type || this.typeOf(obj) ];
-			type = typeof parser;
+			var ptype  = typeof parser;
 
-			return type == 'function' ? parser.call( this, obj ) :
-				type == 'string' ? parser :
-				this.parsers.error;
+			return (ptype == 'function'
+                        ? parser.call( this, obj )
+                        : (ptype == 'string'
+                            ? parser
+                            : this.parsers.error
+                        )
+            );
 		},
 		typeOf:function( obj ){
+            var type    = (obj == null
+                            ? String(obj)
+                            : class2type[ toString.call(obj) ] || 'object');
+
+            if (false)  //type === 'object')
+            {
+                // some browsers (FF) consider regexps functions
+				if      (obj.exec)                      type = 'regexp';
+                else if (obj.scrollBy)                  type = 'window';
+                else if (obj.nodeName == '#document')   type = 'document';
+                else if (obj.nodeName)                  type = 'node';
+                else if (obj.item)                      type = 'nodelist';
+                else if (obj.callee)                    type = 'arguments';
+                //IE reports functions like alert, as objects
+                else if (obj.call ||
+                        (obj.constructor != Array) &&
+                        //an array would also fall on this hack
+					    (obj+'').indexOf(f) != -1)      type = 'function';
+                else if ('length' in obj)               type = 'array';
+            }
+            return type;
+
+
 			var type = typeof obj,
 				f = 'function';//we'll use it 3 times, save it
 			return type != 'object' && type != f ? type :
@@ -123,8 +166,10 @@ var jsDump;
 			object:function( map ){
 				var ret = [ ];
 				this.up();
-				for( var key in map )
+				for( var key in map ) {
+                  if (/__$/.test(key)) { continue; }
 					ret.push( this.parse(key,'key') + ': ' + this.parse(map[key]) );
+                }
 				this.down();
 				return join( '{', ret, '}' );
 			},
@@ -134,6 +179,7 @@ var jsDump;
 				var tag = node.nodeName.toLowerCase(),
 					ret = open + tag;
 				for( var a in this.DOMAttrs ){
+                  if (/__$/.test(a)) { continue; }
 					var val = node[this.DOMAttrs[a]];
 					if( val )
 						ret += ' ' + a + '=' + this.parse( val, 'attribute' );
@@ -148,7 +194,10 @@ var jsDump;
 					args[l] = String.fromCharCode(97+l);//97 is 'a'
 				return ' ' + args.join(', ') + ' ';
 			},
-			key:quote, //object calls it internally, the key part of an item in a map
+			key:function(str) {
+                //object calls it internally, the key part of an item in a map
+	            return quote( str, true );
+            },
 			functionCode:'[code]', //function calls it internally, it's the content of the function
 			attribute:quote, //node calls it internally, it's an html attribute value
 			string:quote,
@@ -163,7 +212,7 @@ var jsDump;
 			'class':'className'
 		},
 		HTML:false,//if true, entities are escaped ( <, >, \t, space and \n )
-		indentChar:'   ',//indentation unit
+		indentChar:'  ',//indentation unit
 		multiline:true //if true, items in a collection, are separated by a \n, else just a space.
 	};
 
