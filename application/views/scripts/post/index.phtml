@@ -4,8 +4,10 @@ if (! @is_array($this->postInfo))
 
 //$noConflict = Zend_JQuery_View_Helper_JQuery::getJQueryHandler();
 
+/*
 $jQuery = $this->jQuery();
 $jQuery->addOnLoad('$("#post form").bookmarkPost({$status: ".status"});');
+// */
 
 if (isset($this->postInfo['itemId']) && ($this->postInfo['mode'] !== 'post'))
 {
@@ -18,9 +20,10 @@ else
     $adj  = 'new';
 }
 
+$id = 'post';
 ?>
 <div class="line"><!-- { -->
- <div id="post" class='ui-validation-form ribbon-form'>
+ <div id="<?= $id ?>" class='ui-validation-form ribbon-form'>
   <div class='context-ribbon'>&nbsp;</div>
   <div class="legend unit"><!-- { -->
    <div class='context-bg connexions_sprites bookmark_bg'>
@@ -38,3 +41,24 @@ else
   <br class='clear' />
  </div>
 </div><!-- line } -->
+<script type='text/javascript'>
+/* Include an event delegate to adjust our legend if the bookmarkPost widget
+ * changes the 'isEdit' state.
+ */
+(function($) {
+    var $post   = $('#<?= $id ?>');
+    $post.delegate('form', 'isEditChanged', function(e, newValue) {
+        var title       = 'Post';
+        var subTitle    = 'a new bookmark';
+        if (newValue)
+        {
+            title       = 'Update';
+            subTitle    = 'a bookmark';
+        }
+
+        var $legend = $post.find('.legend:first');
+        $legend.find('h1:first').text(title);
+        $legend.find('p:first').text(subTitle);
+    });
+ }(jQuery));
+</script>

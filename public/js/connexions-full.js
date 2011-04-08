@@ -1317,11 +1317,6 @@ $.widget("ui.checkbox", {
 
     toggle: function()
     {
-        if (! this.options.enabled)
-        {
-            return;
-        }
-
         if (this.options.checked)
         {
             this.uncheck();
@@ -1334,7 +1329,8 @@ $.widget("ui.checkbox", {
 
     check: function()
     {
-        if (this.options.enabled && (! this.options.checked))
+        //if (this.options.enabled && (! this.options.checked))
+        if (! this.options.checked)
         {
             this.options.checked = true;
 
@@ -1351,7 +1347,8 @@ $.widget("ui.checkbox", {
 
     uncheck: function()
     {
-        if (this.options.enabled && this.options.checked)
+        //if (this.options.enabled && this.options.checked)
+        if (this.options.checked)
         {
             this.options.checked = false;
 
@@ -5247,7 +5244,7 @@ $.widget("connexions.pane", {
                 $pForm.paginator('option', 'disableHover', true);
             }
 
-            if (opts.page === null)
+            if (opts.pageCur === null)
             {
                 opts.pageCur = $pForm.paginator('getPage');
                 opts.pageVar = $pForm.paginator('getPageVar');
@@ -5326,7 +5323,9 @@ $.widget("connexions.pane", {
         var self    = this;
         var opts    = self.options;
         var re      = new RegExp(opts.pageVar +'='+ opts.pageCur);
-        var rep     = opts.pageVar +'='+ opts.page;
+        var rep     = opts.pageVar +'='+ (opts.page !== null
+                                            ? opts.page
+                                            : opts.pageCur);
         var loc     = window.location;
         var url     = loc.toString();
 
@@ -5403,9 +5402,6 @@ $.widget("connexions.pane", {
 
 
 }(jQuery));
-
-
-
 /** @file
  *
  *  Javascript interface/wrapper for the presentation of a configurable pane
@@ -5440,6 +5436,11 @@ $.widget("connexions.itemsPane", $.connexions.pane, {
 
         // Invoke our super-class
         $.connexions.pane.prototype._init.apply(this, arguments);
+
+        // If a 'saved' event reaches us, reload the pane
+        self.element.delegate('form', 'saved.itemsPane', function() {
+            setTimeout(function() { self.reload(); }, 50);
+        });
 
         self._init_itemList();
     },
@@ -5477,6 +5478,9 @@ $.widget("connexions.itemsPane", $.connexions.pane, {
      */
     destroy: function() {
         var self    = this;
+
+        // Unbind events
+        self.element.undelegate('form', '.itemsPane');
 
         // Remove added elements
         self.$itemList.itemList('destroy');
@@ -6761,7 +6765,7 @@ $.widget("connexions.bookmarkPost", {
         /* An element or element selector to be used to present general status
          * information.  If not provided, $.notify will be used.
          */
-        $status:    null,
+        $status:    null,   //'.status',
 
         /* General Json-RPC information:
          *  {version:   Json-RPC version,
@@ -6803,11 +6807,13 @@ $.widget("connexions.bookmarkPost", {
      *  @triggers:
      *      'enabled'
      *      'disabled'
+     *      'urlChanged'        -- new URL/bookmark data
+     *      'isEditChanged'     -- new URL/bookmark data
      *      'saved'
      *      'canceled'
      *      'complete'
      */
-    _create: function()
+    _init: function()
     {
         var self        = this;
         var opts        = self.options;
@@ -7010,6 +7016,17 @@ $.widget("connexions.bookmarkPost", {
         {
             self._highlightTags();
         }
+
+        /* If the value of 'isEdit' is changing, trigger 'isEditChanged' making
+         * sure this.options.isEdit reflects the new  value BEFORE triggering.
+         */
+        var oldIsEdit   = opts.isEdit;
+        opts.isEdit     = (opts.userId === null ? false : true);
+
+        if (oldIsEdit !== opts.isEdit)
+        {
+            self.element.trigger('isEditChanged', opts.isEdit);
+        }
     },
 
     _setFormFromState: function()
@@ -7049,6 +7066,17 @@ $.widget("connexions.bookmarkPost", {
             //opts.$rating.stars('value', opts.rating);
             opts.$rating.stars('option', 'value', opts.rating)
                         .stars('select', opts.rating);
+        }
+
+        /* If the value of 'isEdit' is changing, trigger 'isEditChanged' making
+         * sure this.options.isEdit reflects the new  value BEFORE triggering.
+         */
+        var oldIsEdit   = opts.isEdit;
+        opts.isEdit     = (opts.userId === null ? false : true);
+
+        if (oldIsEdit !== opts.isEdit)
+        {
+            self.element.trigger('isEditChanged', opts.isEdit);
         }
     },
 
@@ -7347,10 +7375,19 @@ $.widget("connexions.bookmarkPost", {
                     opts.url = opts.item.url;
                 }
 
-                self._setFormFromState();
-
                 // "Save" notification
                 self._trigger('saved',    null, data.result);
+
+                /* Finally, update the form state
+                 *
+                 * :XXX: We doe this AFTER triggering 'saved' so any
+                 *       'isEditChanged' event won't confuse anyone listeing to
+                 *       both 'saved' and 'isEventChanged' events since
+                 *       technically, the 'saved' event should reflect the
+                 *       'isEdit' value BEFORE the new form data is applied.
+                 */
+                self._setFormFromState();
+
                 self._trigger('complete');
             },
             error:      function(req, textStatus, err) {
@@ -7443,6 +7480,8 @@ $.widget("connexions.bookmarkPost", {
 
                 self._setFormFromState();
                 self.validate();
+
+                self.element.trigger('urlChanged');
             },
             error:      function(req, textStatus, err) {
                 $.notify({title: 'Cannot retrieve bookmark',
@@ -8442,20 +8481,10 @@ $.widget("connexions.bookmark", {
             if (self.options.enabled === true)
             {
                 // Popup a dialog with a post form for this item.
-                var formUrl;
-                try
-                {
-                    formUrl = $.registry('urls').base +'/post'
-                            +       '?format=partial'
-                            +       '&part=main'
-                            +       '&url='+ opts.url
-                            +       '&excludeSuggestions=true';
-                }
-                catch(err)
-                {
-                    // return and let the click propagate
-                    return;
-                }
+                var formUrl = self.$edit.attr('href')
+                            +   '&format=partial'
+                            +   '&part=main';
+                            //+   '&excludeSuggestions=true';
 
                 $.get(formUrl,
                       function(data) {
@@ -8498,24 +8527,6 @@ $.widget("connexions.bookmark", {
                 var formUrl = self.$save.attr('href')
                             +   '&format=partial'
                             +   '&part=main';
-
-                /*
-                try
-                {
-                    formUrl = $.registry('urls').base +'/post'
-                            +       '?format=partial'
-                            +       '&part=main'
-                            +       '&url='+ opts.url
-                            // Include suggestions
-                            //+       '&excludeSuggestions=true'
-                            ;
-                }
-                catch(err)
-                {
-                    // return and let the click propagate
-                    return;
-                }
-                // */
 
                 $.get(formUrl,
                       function(data) {
@@ -8820,13 +8831,9 @@ $.widget("connexions.bookmark", {
 
         self.$rating.stars('select',data.rating);
 
-        self.$favorite.checkbox(    (data.isFavorite
-                                        ? 'check'
-                                        : 'uncheck') );
-        self.$private.checkbox(     (data.isPrivate
-                                        ? 'check'
-                                        : 'uncheck') );
-        self.$url.attr('href',      data.url);
+        self.$favorite.checkbox((data.isFavorite ? 'check' : 'uncheck') );
+        self.$private.checkbox( (data.isPrivate  ? 'check' : 'uncheck') );
+        self.$url.attr('href',  data.url);
 
         // Update and localize the dates
         self.$dateTagged.data( 'utcDate', data.taggedOn  );
@@ -8856,47 +8863,83 @@ $.widget("connexions.bookmark", {
     {
         var self    = this;
         var opts    = self.options;
-        var title   = (isEdit === true ? 'Edit' : 'Save');
+        var title   = (isEdit === true ? 'Edit' : 'Save')
+                    + ' bookmark';
+        var dialog  = '<div>'      // dialog {
+                    +  '<div class="ui-validation-form">'  // validation-form {
+                    +   '<div class="userInput lastUnit">'
+                           // bookmarkPost HTML goes here
+                    +   '</div>'
+                    +  '</div>'                            // validation-form }
+                    + '</div>';    // dialog }
 
-        html = '<div class="ui-validation-form" style="padding:0;">'
-             +  '<div class="userInput lastUnit">'
-             +   html
-             +  '</div>'
-             + '</div>';
+        var $pane   = self.element.parents('.pane:first');
+        var $html   = $(dialog).hide()
+                               .appendTo( 'body' );
+        var $dialog = $html.first();
 
-        var $form   = $(html);
+        /* Establish an event delegate for the 'isEditChanged' event BEFORE
+         * evaluating the incoming HTML 
+         */
+        $dialog.delegate('form', 'isEditChanged.bookmark', function() {
+            // Update the dialog header
+            isEdit = $dialog.find('form:first')
+                            .bookmarkPost('option', 'isEdit');
+            title  = (isEdit === true ? 'Edit YOUR' : 'Save')
+                   + ' bookmark';
+            if ($dialog.data('dialog'))
+            {
+                // Update the dialog title
+                $dialog.dialog('option', 'title', title);
+            }
+        });
 
-        //$form.find('form').bookmarkPost();
+        /* Now, include the incoming bookmarkPost HTML -- this MAY cause the
+         * 'isEditChanged' event to be fired if the widget finds that the
+         * URL is already bookmarked by the current user.
+         */
+        $dialog.find('.userInput').html( html );
+        var $form       = $dialog.find('form:first');
 
         self.disable();
-        $form.dialog({
+        $dialog.dialog({
             autoOpen:   true,
-            title:      title +' bookmark',
+            title:      title,
+            dialogClass:'ui-dialog-bookmarkPost',
             width:      480,
             resizable:  false,
             modal:      true,
             open:       function(event, ui) {
-                $form.find('form').bookmarkPost({
-                    userId:     opts.userId,
-                    itemId:     opts.itemId,
-                    isEdit:     (isEdit === true ? true : false),
-                    saved:      function(event, data) {
-                        if (isEdit === true)
-                        {
-                            /* Update the presented bookmark with the newly
-                             * saved data.
-                             */
-                            self._refreshBookmark(data);
-                        }
-                    },
-                    complete:   function() {
-                        $form.dialog('close');
+                // Event bindings that can wait
+                $form.bind('saved.bookmark', function(e, data) {
+                    if (isEdit === true)
+                    {
+                        /* Update the presented bookmark with the newly
+                         * saved data.
+                         */
+                        self._refreshBookmark(data);
+
+                        // We've handled this event, so stop it.
+                        e.stopPropagation();
                     }
+                    else if ($pane.length > 0)
+                    {
+                        /* Pass this event into OUR widget so it can propagate
+                         * up OUR heirarchy as well
+                         */
+                        self.element.trigger('saved', data);
+                    }
+                });
+
+                $form.bind('complete.bookmark', function() {
+                    $dialog.dialog('close');
                 });
             },
             close:      function(event, ui) {
-                $form.dialog('destroy');
-                $form.remove();
+                $form.unbind('.bookmark')
+                     .bookmarkPost('destroy');
+                $dialog.dialog('destroy');
+                $html.remove();
                 self.enable();
             }
         });

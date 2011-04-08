@@ -5,14 +5,16 @@
  *
  *  Incoming data:
  *      postInfo        POST form initialization data, if any.
+ *                          [ userId ]
  *                          [ itemId ]
- *                          name
  *                          url
+ *                          name
  *                          description
- *                          tags
+ *                          rating
  *                          isFavorite
  *                          isPrivate
- *                          rating
+ *                          tags
+ *                          mode        'post' | null ('edit')
  *
  *      suggest         If suggestions should be included, this is an array of
  *                      configuration for suggestions comprised of:
@@ -35,8 +37,9 @@
 if (! @is_array($this->postInfo))
     $this->postInfo = array();
 
+$id = 'bookmarkPost';
 ?>
-   <form method='post'><!-- { -->
+   <form id='<?= $id ?>' method='post'><!-- { -->
     <?php if (isset($this->postInfo['userId'])): ?>
     <input name='userId' type='hidden'
           value='<?= $this->postInfo['userId'] ?>' />
@@ -215,3 +218,36 @@ if (! @is_array($this->postInfo))
 <? endif ?>
 
    </form><!-- form } -->
+<?php
+
+/* Establish configuration for and schedule instantiation of a new
+ * Javascript connexions.bookmarkPost() instance targeting the form rendered
+ * just above.
+ */
+$postConfig = array(
+    'isEdit'        => ($this->postInfo['mode'] === 'post'
+                            ? false
+                            : true),
+);
+$postConfig = array_merge($postConfig, $this->postInfo);
+
+$postConfig = Zend_Json::encode($postConfig);
+
+$jsWait = false;
+$jsLoad = "$('#{$id}').bookmarkPost({$postConfig});";
+if ($jsWait === false)
+{
+    // Instantiate the Javascript widget immediately
+    ?>
+<script type='text/javascript'>
+(function($) {
+    <?= $jsLoad ?>
+ }(jQuery));
+</script>
+    <?php
+}
+else
+{
+    // Wait until DOM-ready to instantiate the Javascript widget
+    $this->jQuery()->addOnLoad( $jsLoad );
+}

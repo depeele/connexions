@@ -22,3 +22,6 @@
 #post .suggestions .cloud .cloudItem .size4, .ui-validation-form .suggestions .cloud .cloudItem .size4 { font-size: 1.05em; }
 #post .suggestions .cloud .cloudItem .size5, .ui-validation-form .suggestions .cloud .cloudItem .size5 { font-size: 1.10em; }
 #post .suggestions .cloud .cloudItem .size6, .ui-validation-form .suggestions .cloud .cloudItem .size6 { font-size: 1.25em; }
+
+.ui-dialog-bookmarkPost .ui-dialog-content { padding: 0; }
+.ui-dialog-bookmarkPost .ui-validation-form { padding: 0; border: none; float: none; }
