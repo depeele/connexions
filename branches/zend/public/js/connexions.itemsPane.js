@@ -33,6 +33,11 @@ $.widget("connexions.itemsPane", $.connexions.pane, {
         // Invoke our super-class
         $.connexions.pane.prototype._init.apply(this, arguments);
 
+        // If a 'saved' event reaches us, reload the pane
+        self.element.delegate('form', 'saved.itemsPane', function() {
+            setTimeout(function() { self.reload(); }, 50);
+        });
+
         self._init_itemList();
     },
 
@@ -69,6 +74,9 @@ $.widget("connexions.itemsPane", $.connexions.pane, {
      */
     destroy: function() {
         var self    = this;
+
+        // Unbind events
+        self.element.undelegate('form', '.itemsPane');
 
         // Remove added elements
         self.$itemList.itemList('destroy');

@@ -90,7 +90,7 @@ $.widget("connexions.pane", {
                 $pForm.paginator('option', 'disableHover', true);
             }
 
-            if (opts.page === null)
+            if (opts.pageCur === null)
             {
                 opts.pageCur = $pForm.paginator('getPage');
                 opts.pageVar = $pForm.paginator('getPageVar');
@@ -169,7 +169,9 @@ $.widget("connexions.pane", {
         var self    = this;
         var opts    = self.options;
         var re      = new RegExp(opts.pageVar +'='+ opts.pageCur);
-        var rep     = opts.pageVar +'='+ opts.page;
+        var rep     = opts.pageVar +'='+ (opts.page !== null
+                                            ? opts.page
+                                            : opts.pageCur);
         var loc     = window.location;
         var url     = loc.toString();
 
@@ -246,6 +248,3 @@ $.widget("connexions.pane", {
 
 
 }(jQuery));
-
-
-

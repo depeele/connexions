@@ -118,7 +118,7 @@ $.widget("connexions.bookmarkPost", {
         /* An element or element selector to be used to present general status
          * information.  If not provided, $.notify will be used.
          */
-        $status:    null,
+        $status:    null,   //'.status',
 
         /* General Json-RPC information:
          *  {version:   Json-RPC version,
@@ -160,11 +160,13 @@ $.widget("connexions.bookmarkPost", {
      *  @triggers:
      *      'enabled'
      *      'disabled'
+     *      'urlChanged'        -- new URL/bookmark data
+     *      'isEditChanged'     -- new URL/bookmark data
      *      'saved'
      *      'canceled'
      *      'complete'
      */
-    _create: function()
+    _init: function()
     {
         var self        = this;
         var opts        = self.options;
@@ -367,6 +369,17 @@ $.widget("connexions.bookmarkPost", {
         {
             self._highlightTags();
         }
+
+        /* If the value of 'isEdit' is changing, trigger 'isEditChanged' making
+         * sure this.options.isEdit reflects the new  value BEFORE triggering.
+         */
+        var oldIsEdit   = opts.isEdit;
+        opts.isEdit     = (opts.userId === null ? false : true);
+
+        if (oldIsEdit !== opts.isEdit)
+        {
+            self.element.trigger('isEditChanged', opts.isEdit);
+        }
     },
 
     _setFormFromState: function()
@@ -406,6 +419,17 @@ $.widget("connexions.bookmarkPost", {
             //opts.$rating.stars('value', opts.rating);
             opts.$rating.stars('option', 'value', opts.rating)
                         .stars('select', opts.rating);
+        }
+
+        /* If the value of 'isEdit' is changing, trigger 'isEditChanged' making
+         * sure this.options.isEdit reflects the new  value BEFORE triggering.
+         */
+        var oldIsEdit   = opts.isEdit;
+        opts.isEdit     = (opts.userId === null ? false : true);
+
+        if (oldIsEdit !== opts.isEdit)
+        {
+            self.element.trigger('isEditChanged', opts.isEdit);
         }
     },
 
@@ -704,10 +728,19 @@ $.widget("connexions.bookmarkPost", {
                     opts.url = opts.item.url;
                 }
 
-                self._setFormFromState();
-
                 // "Save" notification
                 self._trigger('saved',    null, data.result);
+
+                /* Finally, update the form state
+                 *
+                 * :XXX: We doe this AFTER triggering 'saved' so any
+                 *       'isEditChanged' event won't confuse anyone listeing to
+                 *       both 'saved' and 'isEventChanged' events since
+                 *       technically, the 'saved' event should reflect the
+                 *       'isEdit' value BEFORE the new form data is applied.
+                 */
+                self._setFormFromState();
+
                 self._trigger('complete');
             },
             error:      function(req, textStatus, err) {
@@ -800,6 +833,8 @@ $.widget("connexions.bookmarkPost", {
 
                 self._setFormFromState();
                 self.validate();
+
+                self.element.trigger('urlChanged');
             },
             error:      function(req, textStatus, err) {
                 $.notify({title: 'Cannot retrieve bookmark',

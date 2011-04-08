@@ -240,11 +240,6 @@ $.widget("ui.checkbox", {
 
     toggle: function()
     {
-        if (! this.options.enabled)
-        {
-            return;
-        }
-
         if (this.options.checked)
         {
             this.uncheck();
@@ -257,7 +252,8 @@ $.widget("ui.checkbox", {
 
     check: function()
     {
-        if (this.options.enabled && (! this.options.checked))
+        //if (this.options.enabled && (! this.options.checked))
+        if (! this.options.checked)
         {
             this.options.checked = true;
 
@@ -274,7 +270,8 @@ $.widget("ui.checkbox", {
 
     uncheck: function()
     {
-        if (this.options.enabled && this.options.checked)
+        //if (this.options.enabled && this.options.checked)
+        if (this.options.checked)
         {
             this.options.checked = false;
 
