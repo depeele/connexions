@@ -491,16 +491,16 @@
       font-weight: normal;
       color: #2359ff;
     }
-    .selected {
-      //background-color: #ddd
-      color: black;
-    }
+  }
+}
+.Item_Cloud, .Item_List {
+  .cloudItem,li {
     a.selected {
       background-image: none;
       background-color: $linkColor;
-      color: $pageColorBackground;
+      color:            $pageColorBackground;
       &:hover {
-        color: $linkColor;
+        color:            $linkColor;
         background-color: $pageColorBackground;
       }
     }

@@ -466,9 +466,9 @@ a:visited { color: #005a9c; }
 .Item_Cloud .cloudItem .size4 { font-size: 1.333em; font-weight: normal; color: #235994; }
 .Item_Cloud .cloudItem .size5 { font-size: 1.542em; font-weight: normal; color: #2359aa; }
 .Item_Cloud .cloudItem .size6 { font-size: 1.75em; font-weight: normal; color: #2359ff; }
-.Item_Cloud .cloudItem .selected { color: black; }
-.Item_Cloud .cloudItem a.selected { background-image: none; background-color: #0066cc; color: white; }
-.Item_Cloud .cloudItem a.selected:hover { color: #0066cc; background-color: white; }
+
+.Item_Cloud .cloudItem a.selected, .Item_Cloud li a.selected, .Item_List .cloudItem a.selected, .Item_List li a.selected { background-image: none; background-color: #0066cc; color: white; }
+.Item_Cloud .cloudItem a.selected:hover, .Item_Cloud li a.selected:hover, .Item_List .cloudItem a.selected:hover, .Item_List li a.selected:hover { color: #0066cc; background-color: white; }
 
 .main .cloud { font-size: 1.25em; }
 
