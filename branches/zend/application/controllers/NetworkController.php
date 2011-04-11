@@ -433,7 +433,7 @@ class NetworkController extends Connexions_Controller_Action
             }
 
             $config['items']            =& $tags;
-            $config['itemsType']        =
+            $config['itemType']         =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
             $config['weightName']       =  'userItemCount';
             $config['weightTitle']      =  'Bookmarks with this tag';
@@ -542,7 +542,7 @@ class NetworkController extends Connexions_Controller_Action
             }
 
             $config['showControls']     = true;
-            $config['itemsType']        =
+            $config['itemType']         =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_USER;
             $config['itemBaseUrl']      =  $this->_helper->url(null, 'network');
                                             //$this->view->baseUrl('/url/');
@@ -607,7 +607,7 @@ class NetworkController extends Connexions_Controller_Action
             }
 
             $config['items']            =& $items;
-            $config['itemsType']        =
+            $config['itemType']         =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
             $config['itemBaseUrl']      =  $this->_helper->url(null, 'url');
                                             //$this->view->baseUrl('/url/');

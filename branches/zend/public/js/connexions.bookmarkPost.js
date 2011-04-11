@@ -529,7 +529,7 @@ $.widget("connexions.bookmarkPost", {
             var tag     = $item.data('id');
             var tags    = opts.$tags.val();
 
-            if (! $li.hasClass('cloudItem'))
+            if ($li.hasClass('user'))
             {
                 // This is a 'user' item, likely in the 'People' tab.
                 tag = 'for:'+ tag;

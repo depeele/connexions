@@ -363,7 +363,7 @@ class IndexController extends Connexions_Controller_Action
             }
 
             $config['items']            =& $tags;
-            $config['itemsType']        =
+            $config['itemType']         =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
             $config['weightName']       =  'userItemCount';
             $config['weightTitle']      =  'Bookmarks with this tag';
@@ -416,7 +416,7 @@ class IndexController extends Connexions_Controller_Action
 
 
                 $config['items']            =& $users;
-                $config['itemsType']        =
+                $config['itemType']         =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_USER;
                 $config['weightName']       =  'userItemCount';
                 $config['weightTitle']      =  'Bookmarks';
@@ -496,7 +496,7 @@ class IndexController extends Connexions_Controller_Action
                                                      $offset);
 
             $config['items']            =& $items;
-            $config['itemsType']        =
+            $config['itemType']         =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
             $config['itemBaseUrl']      =  $this->_helper->url(null, 'url');
                                             //$this->view->baseUrl('/url/');
