@@ -684,24 +684,31 @@ class Model_User extends Model_Taggable
     }
 
     /** @brief  Retrieve the set of users in this user's network.
+     *  @param  create  Should the network be created if it doesn't exist?
+     *                  [ false ];
      *
      *  @return A Model_Group.
      */
-    public function getNetwork()
+    public function getNetwork($create = false)
     {
         /*
-        Connexions::log("Model_User::getNetwork(): user[ %s ]", $this);
+        Connexions::log("Model_User::getNetwork( %s ): user[ %s ]",
+                        Connexions::varExport($create),
+                        $this);
         // */
 
         if ($this->_network === null)
         {
-            $this->_network = $this->getMapper()->getNetwork( $this );
+            $this->_network = $this->getMapper()->getNetwork( $this, $create );
         }
 
         /*
         Connexions::log("Model_User::getNetwork(): user[ %s ], network[ %s ]",
                         $this,
                         ($this->_network !== null
+                            // :XXX: will throw an exception if the current
+                            //       viewer is not permitted to view this
+                            //       network.
                             ? $this->_network->debugDump()
                             : 'null') );
         // */
@@ -720,7 +727,7 @@ class Model_User extends Model_Taggable
         try
         {
             //$this->getMapper()->removeFromNetwork($this, $user);
-            $this->getNetwork()->addItem($user);
+            $this->getNetwork(true)->addItem($user);
             $res = true;
 
             // Force a re-cache of the user network

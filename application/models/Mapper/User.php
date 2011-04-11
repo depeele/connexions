@@ -146,6 +146,8 @@ class Model_Mapper_User extends Model_Mapper_Base
      *          (i.e. all users in the 'user' Group owned by the given
      *                user, and named 'network').
      *  @param  user    The Model_User instance.
+     *  @param  create  Should the network be created if it doesn't exist?
+     *                  [ false ];
      *
      *  A user's network is a 'Model_Group' with the following characteristics:
      *      name            'System:Network'
@@ -159,7 +161,7 @@ class Model_Mapper_User extends Model_Mapper_Base
      *
      *  @return A Model_Group
      */
-    public function getNetwork(Model_User $user)
+    public function getNetwork(Model_User $user, $create = false)
     {
         $id = array(
             'name'              => 'System:Network',
@@ -198,7 +200,18 @@ class Model_Mapper_User extends Model_Mapper_Base
 
         $groupMapper = Connexions_Model_Mapper::factory(
                                                     'Model_Mapper_Group');
-        $group       = $groupMapper->find( $id );
+        if ($create === true)
+        {
+            $group = $groupMapper->getModel( $id );
+            if (! $group->isBacked())
+            {
+                $group = $group->save();
+            }
+        }
+        else
+        {
+            $group = $groupMapper->find( $id );
+        }
 
         /* If $group === null it MAY be becuase of privacy restrictions so DO
          * NOT create an empty instance here.

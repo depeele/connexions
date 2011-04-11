@@ -60,26 +60,10 @@ Connexions::log('views/scripts/settings/main-people-network.phtml: '
                 $namespace, $panePartial);
 // */
 
-$jQuery      = $this->jQuery();
-$jQuery->addOnLoad('$.people_network_onLoad()')
-       ->javascriptCaptureStart();
-?>
-(function($) {
-    $.people_network_onLoad = function() {
-        var $section    = $('#people-network');
-        var $networkAdd = $section.find('.networkAdd');
-        //var $pane       = $section.find('.pane:first');
-
-        $networkAdd.networkAdd();
-    };
- }(jQuery));
-<?php
-$jQuery->javascriptCaptureEnd();
-
-
 // Top-level, static, non-paginated content
+$id = 'people-network';
 ?>
-<div id='people-network'><!-- people-network { -->
+<div id='<?= $id ?>'><!-- people-network { -->
  <div class='networkAdd ui-form'>
    <div class='field'>
     <label for='networkAdd-input'>Follow User</label>
@@ -90,3 +74,23 @@ $jQuery->javascriptCaptureEnd();
  <!-- Dynamic, paginated content -->
  <?= $this->partial('settings/'. $panePartial .'.phtml', $this) ?>
 </div><!-- people-network } -->
+<?php
+
+$jsWait = false;
+$jsLoad = "$('#{$id} .networkAdd').networkAdd();";
+if ($jsWait === false)
+{
+    // Instantiate the Javascript widget immediately
+    ?>
+<script type='text/javascript'>
+(function($) {
+    <?= $jsLoad ?>
+ }(jQuery));
+</script>
+    <?php
+}
+else
+{
+    // Wait until DOM-reay to instantiate the Javascript widget
+    $this->jQuery()->addOnLoad( $jsLoad );
+}

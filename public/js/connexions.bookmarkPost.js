@@ -1018,7 +1018,7 @@ $.widget("connexions.bookmarkPost", {
             success: function(data) {
                 var $content    = opts.$suggestions
                                         .find('#suggestions-tags '
-                                                +'.recommended .content');
+                                                +'.tags-recommended .content');
 
                 // Unbind current tag click handler
                 opts.$suggestions.find('.cloud .cloudItem a')

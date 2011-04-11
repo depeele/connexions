@@ -298,6 +298,15 @@ class Model_Group extends Model_Base
             break;
         }
 
+        /*
+        Connexions::log("Model_Group::canView(): "
+                        . "group[ %s ] (owner[ %s ], visibility[ %s ]), "
+                        . "user[ %s ]:id[ %s ] -- result[ %s ]",
+                        $this, $this->ownerId, $this->visibility,
+                        $user, $user->getId(),
+                        Connexions::varExport($res));
+        // */
+
         return $res;
     }
 

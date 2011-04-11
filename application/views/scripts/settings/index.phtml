@@ -14,16 +14,18 @@
  *
  *      section         The settings section;
  *      setting         The specific setting;
- *      sections        An array of avaialble sections and commands of the
+ *      tabs            An array of avaialble tabs and configuration of the
  *                      form:
- *                          {section: {
- *                              'title':    section title,
- *                              'script':   section render script
- *                              'settings': [
- *                                  {'title':   command title,
- *                                   'script':  command render script},
+ *                          {%tabId%: {
+ *                              'title':    tab title,
+ *                              'script':   tab render script
+ *                              'sections': {
+ *                                  %sectionId%: {
+ *                                      'title':   command title,
+ *                                      'script':  command render script,
+ *                                  },
  *                                  ...
- *                              ],
+ *                              },
  *                           },
  *                           ...
  *                          }
@@ -47,68 +49,68 @@ $this->headLink()->appendStylesheet($this->baseUrl('/css/settings.css'));
     $paneHtml    = '';
     $tabSelected = 0;
     $tabNum      = 0;
-    foreach ($this->sections as $id => $section)
+    foreach ($this->tabs as $tabId => $tab)
     {
-        if ($id === $this->section)
+        if ($tabId === $this->section)
         {
             $tabSelected = $tabNum;
         }
 
-        $paneUrl = $this->baseUrl('/settings/'. $id);
+        $paneUrl = $this->baseUrl('/settings/'. $tabId);
         $loadUrl = $this->view->url
                  .  '?format=partial'
-                 .  '&part='. $section['script'];
-        #$paneUrl = "#{$id}";
-        $paneCss = (! empty($section['cssClass'])
-                        ? $section['cssClass']
-                        : $id);
+                 .  '&part='. $tab['script'];
+        #$paneUrl = "#{$tabId}";
+        $paneCss = (! empty($tab['cssClass'])
+                        ? $tab['cssClass']
+                        : $tabId);
 
         ?>
   <li><a href='<?= $paneUrl ?>'
-         data-panel.tabs='#<?= $id ?>'
-         data-load.tabs='<?= $loadUrl ?>'><span><?= $section['title'] ?></span></a></li><?php
+         data-panel.tabs='#<?= $tabId ?>'
+         data-load.tabs='<?= $loadUrl ?>'><span><?= $tab['title'] ?></span></a></li><?php
 
-        $paneHtml .= "<div id='{$id}'>"
-                  .    "<ul id='{$id}-settings' class='{$paneCss}'>";
-        foreach ($section['settings'] as $settingId => $setting)
+        $paneHtml .= "<div id='{$tabId}'>"
+                  .    "<ul id='{$tabId}-settings' class='{$paneCss}'>";
+        foreach ($tab['sections'] as $sectionId => $section)
         {
-            $fullId  = $id .'-'. $settingId;
+            $fullId  = $tabId .'-'. $sectionId;
 
             $state   = ((empty($this->setting) &&
-                        ($setting['expanded'] === true)) ||
-                           ($this->setting === $settingId)
+                        ($section['expanded'] === true)) ||
+                           ($this->setting === $sectionId)
                                 ? 'expanded'
                                 : 'collapsed');
 
             /*
             Connexions::log("view/scripts/settings/index.phtml: "
                             . "section[ %s ], setting[ %s ], state[ %s ]",
-                            $id, Connexions::varExport($setting), $state);
+                            $tabId, Connexions::varExport($section), $state);
             // */
 
             $sectHtml    = '';
-            $settingUrl  = $paneUrl .'/'. $settingId;
-            $settingData = " data-content.collapsable='{$fullId}-content'";
-            if (isset($setting['async']) && ($setting['async'] === true))
+            $sectionUrl  = $paneUrl .'/'. $sectionId;
+            $sectionData = " data-content.collapsable='{$fullId}-content'";
+            if (isset($section['async']) && ($section['async'] === true))
             {
                 // Asynchronously loaded
                 $loadUrl      = $this->view->url
                               .   '?format=partial'
-                              .   '&part='. $setting['script'];
+                              .   '&part='. $section['script'];
 
-                $settingData .= " data-load.collapsable='{$loadUrl}'";
+                $sectionData .= " data-load.collapsable='{$loadUrl}'";
 
                 /*
                 Connexions::log("view/scripts/settings/index.phtml: "
                                 . "section[ %s ], setting[ %s ]: loadUrl[ %s ]",
-                                $id, $setting['title'], $loadUrl);
+                                $tabId, $section['title'], $loadUrl);
                 // */
             }
             else
             {
                 // Pre-rendered
-                $script       = 'settings/'. $setting['script'] .'.phtml';
-                $settingData .= " data-cache.collapsable='{$fullId}-content'";
+                $script       = 'settings/'. $section['script'] .'.phtml';
+                $sectionData .= " data-cache.collapsable='{$fullId}-content'";
 
                 $sectHtml     = "<div id='{$fullId}-content'>"
                               .  $this->render($script)
@@ -117,8 +119,8 @@ $this->headLink()->appendStylesheet($this->baseUrl('/css/settings.css'));
 
             $paneHtml .= "<li class='collapsable {$fullId}'>"
                       .   "<h3 class='toggle {$state}'>"
-                      .    "<a href='{$settingUrl}'{$settingData}>"
-                      .     "<span>{$setting['title']}</span>"
+                      .    "<a href='{$sectionUrl}'{$sectionData}>"
+                      .     "<span>{$section['title']}</span>"
                       .    "</a>"
                       .   "</h3>"
                       .   $sectHtml

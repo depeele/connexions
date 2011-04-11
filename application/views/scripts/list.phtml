@@ -20,7 +20,7 @@ Connexions::log("view/scripts/list.phtml: "
 // */
 
 
-$namespace  =  $helper->namespace;
+$namespace  = $helper->namespace;
 $paginator  = $helper->paginator;
 
 
@@ -47,9 +47,13 @@ $id = $namespace .'List';
  <?= ($uiPagination !== null
          ? $uiPagination->render('paginator-top', true)
          : '') ?>
- <?= $helper->renderDisplayOptions($paginator) ?>
+ <?= ($paginator !== null
+         ? $helper->renderDisplayOptions($paginator)
+         : '') ?>
  <ul class='items <?= $helper->ulCss ?>'>
  <?php
+if ($paginator !== null)
+{
     /* Group by the field identified as the primary sort field.
      *
      * This grouping MAY be a "special field", indicated by the presense of onr
@@ -85,6 +89,7 @@ $id = $namespace .'List';
 
         echo $helper->renderItem($item);
     }
+}
 
  ?>
  </ul>
