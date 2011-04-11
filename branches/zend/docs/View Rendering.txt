@@ -94,7 +94,6 @@ View_Helper_HtmlPaginationControl   extends Zend_View_Helper_Abstract
                               control;
 
 
-
 ===============================================================================
 View_Helper_HtmlDisplayOptions      extends Zend_View_Helper_Abstract
 ===============================================================================
@@ -196,6 +195,7 @@ View_Helper_List                    extends Zend_View_Helper_Abstract
                         (NOT used for all views, e.g. Feeds);
 
 
+
 ===============================================================================
 View_Helper_Bookmarks               extends View_Helper_List
 ===============================================================================
@@ -238,6 +238,7 @@ View_Helper_Bookmarks               extends View_Helper_List
     getBookmarks()      - a late-binding retrieval of the set of bookmarks to
                           be presented using 'sortBy', 'sortOrder', 'perPage',
                           'page', 'where', 'users', 'tags';
+
 
 
 ===============================================================================
@@ -291,6 +292,10 @@ View_Helper_HtmlBookmarks           extends View_Helper_Bookmarks
                     connexions.optionGroups.js
                 
 
+    application/views/scripts/bookmark.phtml
+        Uses helpers:
+            View_Helper_HtmlStarRating
+
     application/views/scripts/user.phtml
 
     application/views/scripts/list_group.phtml
@@ -337,6 +342,7 @@ View_Helper_FeedBookmark            extends Zend_View_Helper_Abstract
     feedBookmark()          - Set the desired bookmark and render;
 
 
+
 ===============================================================================
 View_Helper_FeedBookmarks           extends View_Helper_Bookmarks
 ===============================================================================
@@ -356,6 +362,7 @@ View_Helper_FeedBookmarks           extends View_Helper_Bookmarks
     ---------------------------------------------------------------------------
     setFeedType()           - Set the desired feed type;
     getFeedType()           - Get the current feed type;
+
 
 
 ===============================================================================
@@ -388,6 +395,7 @@ View_Helper_Users                   extends View_Helper_List
     getUsers()          - a late-binding retrieval of the set of users to
                           be presented using 'sortBy', 'sortOrder', 'perPage',
                           'page', 'where', 'tags';
+
 
 
 ===============================================================================
@@ -465,6 +473,7 @@ View_Helper_HtmlUsers               extends View_Helper_Users
                                 (_displayOptions->render());
 
 
+
 ===============================================================================
 View_Helper_HtmlGroupUsers          extends View_Helper_HtmlUsers
 ===============================================================================
@@ -509,6 +518,7 @@ View_Helper_FeedUser                extends Zend_View_Helper_Abstract
     Methods
     ---------------------------------------------------------------------------
     feedUser()              - Set the desired user and render;
+
 
 
 ===============================================================================
@@ -667,6 +677,7 @@ View_Helper_HtmlItemCloud           extends Zend_View_Helper_Abstract
     render()                - return a rendered representation of the list;
 
 
+
 ===============================================================================
 View_Helper_HtmlItemCloudItem       extends Zend_Tag_Cloud_Decorator_HtmlTag
 ===============================================================================
@@ -700,17 +711,6 @@ View_Helper_HtmlItemCloudItem       extends Zend_Tag_Cloud_Decorator_HtmlTag
     render()                - return a rendered representation of all items;
 
 
-===============================================================================
-View_Helper_HtmlItemCloudItem       extends Zend_Tag_Cloud_Decorator_HtmlTag
-===============================================================================
-    showControls        Should item management controls be presented
-
-    View Scripts
-    ---------------------------------------------------------------------------
-
-    Methods
-    ---------------------------------------------------------------------------
-
 
 ===============================================================================
 View_Helper_HtmlItemScope           extends Zend_View_Helper_Abstract
@@ -738,31 +738,58 @@ View_Helper_HtmlItemScope           extends Zend_View_Helper_Abstract
     _hiddenItems        An array of simple strings containing any items
 
 
-
-
     View Scripts
     ---------------------------------------------------------------------------
+    application/views/script/itemScope.phtml
+        Uses helpers:
+            View_Helper_HtmlItemScope
+                isHiddenItem()
 
-    Methods
-    ---------------------------------------------------------------------------
-
-
-:TODO: Helpers
-===============
-View_Helper_HtmlItemScope           extends ???
-View_Helper_HtmlStarRating          extends ???
-
-
-:TODO: Scripts
-===============
-itemScope.phtml
-        Invokes Javascript class(es):
+        Invokes/Uses Javascript class(es):
             connexions.itemScope.js
                 connexions.paginator.js
                 connexions.dropdownForm.js          (for Display Options)
                     connexions.optionGroups.js
-                
+
+    Methods
+    ---------------------------------------------------------------------------
+    addHiddenItem()         - Add the name/string of a scope item that should
+                              be hidden;
+    isHiddenItem()          - Does the given name/string match a hidden item?
+    render()                - return a rendered representation of the item
+                              scope (via the itemScope.phtml view script);
+
+
+===============================================================================
+View_Helper_HtmlStarRating          extends Zend_View_Helper_Abstract
+===============================================================================
+  Present an HTML version of a star rating control.
+
+    ratingTitles        An array of titles related to the indexed value
+                                                [ array('Terrible', 'Fair',
+                                                        'Average',  'Good',
+                                                        'Excellent') ];
+
+
+    View Scripts
+    ---------------------------------------------------------------------------
+    * none *
+
+
+    Methods
+    ---------------------------------------------------------------------------
+    htmlStarRating()        - render using the provided parameters
+                              (rating, css, titles, readOnly, count,
+                               starWidth);
+
+
+
+===============================================================================
+Additional View Scripts
+===============================================================================
 sidebar-user.phtml
+    Used by IndexController when rendering the sidebar-people partial IF
+    presenting the bookmarks of a single owner.
         Invokes Javascript class(es):
             connexions.user.js
                 
@@ -771,9 +798,7 @@ sidebar-user.phtml
 
 :TODO: Cleanup
 ===============
-Move Javascript out of helpers into view scripts
-    - Simplifies View_Helper_HtmlBookmarks and View_Helper_HtmlItemCloud
-      removing the need for setNamespace(), 'panePartial', and 'includeScript';
+Move HTML from View_Helper_HtmlStarRating to a view script.
 
 Rename 'displayStyles' to 'displayOptions' in:   ??
     View_Helper_HtmlBookmarks
