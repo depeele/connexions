@@ -7173,11 +7173,18 @@ $.widget("connexions.bookmarkPost", {
             event.preventDefault();
             event.stopPropagation();
 
-            var $el     = $(this);
-            var tag     = $el.text();
+            var $li     = $(this);
+            var $item   = $li.find('a:first');
+            var tag     = $item.data('id');
             var tags    = opts.$tags.val();
 
-            if ($el.hasClass('selected'))
+            if (! $li.hasClass('cloudItem'))
+            {
+                // This is a 'user' item, likely in the 'People' tab.
+                tag = 'for:'+ tag;
+            }
+
+            if ($item.hasClass('selected'))
             {
                 // De-select / remove
                 var re  = new RegExp('\\s*'+ tag +'\\s*[,]?');
@@ -7222,8 +7229,10 @@ $.widget("connexions.bookmarkPost", {
 
         opts.$tags.bind('keydown.bookmarkPost', _tagInput);
 
-        opts.$suggestions.find('.cloud .cloudItem a')
-                    .bind('click.bookmarkPost', self._tagClick);
+        opts.$suggestions.delegate('.cloud .cloudItem,'
+                                   + '.cloud .Item_List li:not(.header)',
+                                   'click.bookmarkPost',
+                                                self._tagClick);
 
         _validate_form();
     },
@@ -7669,15 +7678,7 @@ $.widget("connexions.bookmarkPost", {
                                         .find('#suggestions-tags '
                                                 +'.tags-recommended .content');
 
-                // Unbind current tag click handler
-                opts.$suggestions.find('.cloud .cloudItem a')
-                    .unbind('.bookmarkPost');
-
                 $content.html( data );
-
-                // Re-bind tag click handler to the new content
-                opts.$suggestions.find('.cloud .cloudItem a')
-                    .bind('click.bookmarkPost', self._tagClick);
 
                 self._highlightTags();
             }
@@ -7696,7 +7697,8 @@ $.widget("connexions.bookmarkPost", {
         }
 
         // Find all tags in the suggestions area
-        var $cloudTags  = opts.$suggestions.find('.cloud .cloudItem a');
+        var $cloudTags  = opts.$suggestions.find('.cloud .cloudItem a,'
+                                                 + '.cloud .Item_List li a');
 
         // Remove any existing highlights
         $cloudTags.filter('.selected').removeClass('selected');
@@ -7713,18 +7715,35 @@ $.widget("connexions.bookmarkPost", {
 
         tags  = tags.split(/\s*,\s*/);
         nTags = tags.length;
+
+        var forRe   = /^for:/;
         for (var idex = 0; idex < nTags; idex++)
         {
-            tag = tags[idex].toLowerCase();
+            tag = tags[idex];
             if (tag.length < 1)
             {
                 continue;
             }
 
             tag = tag.replace('"', '\"');
-            $.log('connexions.bookmarkPost::_highlightTags('+ tag +')');
+            if (forRe.test(tag))
+            {
+                // 'for:' user sharing tag
+                tag = tag.replace(forRe, '');
+            }
+            else
+            {
+                tag = tag.toLowerCase();
+            }
+            //$.log('connexions.bookmarkPost::_highlightTags('+ tag +')');
 
-            $cloudTags.filter(':contains("'+ tag +'")').addClass('selected');
+            $cloudTags.filter('.item[data-id="'+ tag +'"]')
+                      .addClass('selected');
+
+            /*
+            $cloudTags.filter(':contains("'+ tag +'")')
+                      .addClass('selected');
+            // */
         }
     },
 
@@ -7980,8 +7999,9 @@ $.widget("connexions.bookmarkPost", {
         opts.$url.unbind('.bookmarkPost');
         opts.$tags.unbind('.bookmarkPost');
 
-        opts.$suggestions.find('.cloud .cloudItem a')
-                    .unbind('.bookmarkPost');
+        opts.$suggestions.undelegate('.cloud .cloudItem,'
+                                     + '.cloud .Item_List li:not(.header)',
+                                     '.bookmarkPost');
 
         // Remove added elements
         opts.$favorite.checkbox('destroy');
