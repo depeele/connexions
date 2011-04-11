@@ -16,11 +16,12 @@ class SettingsController extends Connexions_Controller_Action
     protected $_noSidebar   = true;
 
 
-    public static   $sections   = array(
+    // Settings tabs with collapsible sections
+    public static   $tabs       = array(
         'account'   => array(
             'title'     => 'Account',
             'script'    => 'main-account',
-            'settings'  => array(
+            'sections'  => array(
                 'info'          => array(
                     'title'     => 'Info',
                     'expanded'  => true,
@@ -40,7 +41,7 @@ class SettingsController extends Connexions_Controller_Action
         'bookmarks' => array(
             'title'     => 'Bookmarks',
             'script'    => 'main-bookmarks',
-            'settings'  => array(
+            'sections'  => array(
                 'import'        => array(
                     'title'     => 'Import',
                     //'async'     => true,
@@ -65,7 +66,7 @@ class SettingsController extends Connexions_Controller_Action
             'title'     => 'Tags',
             'cssClass'  => 'settingsTags',
             'script'    => 'main-tags',
-            'settings'  => array(
+            'sections'  => array(
                 'manage'        => array(
                     'title'     => 'Manage',
                     'async'     => true,
@@ -83,7 +84,7 @@ class SettingsController extends Connexions_Controller_Action
         ),
         'people'    => array('title'   => 'People',
             'script'  => 'main-people',
-            'settings'  => array(
+            'sections'  => array(
                 'network'       => array(
                     'title'     => 'Network',
                     'async'     => true,
@@ -122,7 +123,7 @@ class SettingsController extends Connexions_Controller_Action
 
         $request =& $this->_request;
 
-        $this->view->sections = self::$sections;
+        $this->view->tabs     = self::$tabs;
         $this->view->section  = $request->getParam('section', null);
         $this->view->setting  = $request->getParam('setting', null);
 

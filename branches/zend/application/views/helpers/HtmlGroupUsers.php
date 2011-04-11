@@ -62,12 +62,20 @@ class View_Helper_HtmlGroupUsers extends View_Helper_HtmlUsers
             if ((! @isset($this->_params['group'])) ||
                 ($this->_params['group'] === null))
             {
-                throw new Exception("Missing 'group'");
-            }
+                /*
+                Connexions::log("View_Helper_HtmlGroupUsers::getUsers(): "
+                                . "Missing group");
+                // */
 
-            $users = $this->_params['group']->getItems($fetchOrder,
-                                                       $count,
-                                                       $offset);
+                //throw new Exception("Missing 'group'");
+                $users = null;
+            }
+            else
+            {
+                $users = $this->_params['group']->getItems($fetchOrder,
+                                                           $count,
+                                                           $offset);
+            }
 
             $this->_params[$key] = $users;
         }

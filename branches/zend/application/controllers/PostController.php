@@ -21,6 +21,9 @@ class PostController extends Connexions_Controller_Action
 
     public function init()
     {
+        $this->_baseUrl    = $this->_helper->url(null, 'post');
+        $this->_cookiePath = $this->_baseUrl;
+
         parent::init();
 
         // Initialize context switching (via $this->contexts)
@@ -117,7 +120,7 @@ class PostController extends Connexions_Controller_Action
         if (Connexions::to_bool($request->getParam('excludeSuggestions',
                                                    false)) !== true)
         {
-            $this->view->suggest = $this->_prepare_suggestions($postInfo);
+            $this->view->tabs = $this->_prepare_suggestions($postInfo);
         }
     }
 
@@ -131,9 +134,20 @@ class PostController extends Connexions_Controller_Action
     {
         //Connexions::log("PostController::_prepare_suggestions():");
 
+        // Suggestion tabs with collapsible sections
         $suggest        = array(
-            'tags'      => $this->_prepare_suggestions_Tags($postInfo),
-            'people'    => $this->_prepare_suggestions_People($postInfo),
+            'tags'      => array(
+                'title'     => 'Tags',
+                'script'    => 'main-tags',
+                'cssClass'  => 'suggested-tags',
+                'sections'  => $this->_prepare_suggestions_Tags($postInfo),
+            ),
+            'people'    => array(
+                'title'     => 'People',
+                'script'    => 'main-people',
+                'cssClass'  => 'suggested-people',
+                'sections'  => $this->_prepare_suggestions_People($postInfo),
+            ),
         );
 
         return $suggest;
@@ -154,9 +168,8 @@ class PostController extends Connexions_Controller_Action
         // */
 
         /* '_partials' represents any partial portion of a page we are
-         * rendering.  For example, 'main-tags-recommended' where 'main' has 
-         * already be extracted leaving '_partials' containing
-         * [ tags, recommended ]
+         * rendering.  For example, 'main-tags-recommended' would result in
+         * '_partials' of [ 'main', 'tags', 'recommended' ].
          */
         if ( (count($this->_partials) > 1) &&
              ($this->_partials[1] !== 'tags'))
@@ -168,15 +181,15 @@ class PostController extends Connexions_Controller_Action
         }
 
         // We are rendering the 'tags' portion, possibly just a certain section
-        $section = (count($this->_partials) > 2
+        $section  = (count($this->_partials) > 2
                         ? $this->_partials[2]
                         : null);
-        $config  = array();
-        $service = $this->service('Tag');
+        $sections = array();
+        $service  = $this->service('Tag');
 
         if ( ($section === null) || ($section === 'recommended') )
         {
-            // Rendering all tabs/all sections OR 'tabs/recommended'
+            // Rendering all tabs/all sections OR 'tags/recommended'
 
             /*
             Connexions::log("PostController::_prepare_suggestions_Tags(): "
@@ -184,13 +197,18 @@ class PostController extends Connexions_Controller_Action
                             Connexions::varExport($postInfo['url']));
             // */
 
-
-            $sConfig    = array(
-                //'namespace'     => 'suggest:tags:recommended',
-                'showRelation'  => false,
-                'showOptions'   => false,
-                'highlightCount'=> 0,
+            $sections['recommended'] = array(
+                'title'     => 'Recommended',
+                'expanded'  => true,
+                'script'    => 'main-tags-recommended',
+                'config'    => array(
+                    'namespace'     => 'suggest:tags:recommended',
+                    'showRelation'  => false,
+                    'showOptions'   => false,
+                    'highlightCount'=> 0,
+                ),
             );
+            $config =& $sections['recommended']['config'];
 
             if (! empty($postInfo['url']))
             {
@@ -219,42 +237,44 @@ class PostController extends Connexions_Controller_Action
 
                 if ($tags !== null)
                 {
-                    $sConfig['items']            = $tags;
-                    $sConfig['itemsType']        =
+                    $config['items']            = $tags;
+                    $config['itemsType']        =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
-                    $sConfig['weightName']       = 'userItemCount';
-                    $sConfig['weightTitle']      = 'Bookmarks with this tag';
-                    $sConfig['titleTitle']       = 'Tag';
-                    $sConfig['currentSortBy']    =
+                    $config['weightName']       = 'userItemCount';
+                    $config['weightTitle']      = 'Bookmarks with this tag';
+                    $config['titleTitle']       = 'Tag';
+                    $config['currentSortBy']    =
                                  View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
-                    $sConfig['currentSortOrder'] =
+                    $config['currentSortOrder'] =
                                  Connexions_Service::SORT_DIR_DESC;
-                    $sConfig['displayStyle']     =
+                    $config['displayStyle']     =
                                  View_Helper_HtmlItemCloud::STYLE_CLOUD;
                 }
             }
-
-            $config['recommended'] = $sConfig;
         }
 
         if ( ($section === null) || ($section === 'top') )
         {
-            // Rendering all tabs/all sections OR 'tabs/top'
+            // Rendering all tabs/all sections OR 'tags/top'
 
             /*
             Connexions::log("PostController::_prepare_suggestions_Tags(): "
                             . "prepare 'top' section, viewer[ %s ]",
                             Connexions::varExport($this->_viewer));
             // */
-
-            $sConfig    = array(
-                //'namespace'     => 'suggest:tags:top',
-                'showRelation'  => false,
-                'showOptions'   => false,
-                'highlightCount'=> 0,
-                'title'         => 'Your top '.  $this->_maxTagsViewer,
-                'expanded'      => false,
+            //
+            $sections['top'] = array(
+                'title'     => 'Your top '. $this->_maxTagsViewer,
+                'expanded'  => false,
+                'script'    => 'main-tags-top',
+                'config'    => array(
+                    'namespace'     => 'suggest:tags:top',
+                    'showRelation'  => false,
+                    'showOptions'   => false,
+                    'highlightCount'=> 0,
+                ),
             );
+            $config =& $sections['top']['config'];
 
             // Retrieve the top '_maxTagsViewer' tags for '_viewer'
             $fetchOrder = array('userItemCount DESC',
@@ -268,24 +288,22 @@ class PostController extends Connexions_Controller_Action
 
             if ($tags !== null)
             {
-                $sConfig['items']            = $tags;
-                $sConfig['itemsType']        =
+                $config['items']            = $tags;
+                $config['itemsType']        =
                              View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
-                $sConfig['weightName']       = 'userItemCount';
-                $sConfig['weightTitle']      = 'Bookmarks with this tag';
-                $sConfig['titleTitle']       = 'Tag';
-                $sConfig['currentSortBy']    =
+                $config['weightName']       = 'userItemCount';
+                $config['weightTitle']      = 'Bookmarks with this tag';
+                $config['titleTitle']       = 'Tag';
+                $config['currentSortBy']    =
                              View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
-                $sConfig['currentSortOrder'] =
+                $config['currentSortOrder'] =
                              Connexions_Service::SORT_DIR_DESC;
-                $sConfig['displayStyle']     =
+                $config['displayStyle']     =
                              View_Helper_HtmlItemCloud::STYLE_CLOUD;
             }
-
-            $config['top'] = $sConfig;
         }
 
-        return $config;
+        return $sections;
     }
 
     /** @brief  Given incoming bookmark-related data, prepare the 'people' pane 
@@ -303,9 +321,8 @@ class PostController extends Connexions_Controller_Action
         // */
 
         /* '_partials' represents any partial portion of a page we are
-         * rendering.  For example, 'main-tags-recommended' where 'main' has 
-         * already be extracted leaving '_partials' containing
-         * [ tags, recommended ]
+         * rendering.  For example, 'main-people-network' would result in
+         * '_partials' of [ 'main', 'people', 'network' ].
          */
         if ( (count($this->_partials) > 1) &&
              ($this->_partials[1] !== 'people'))
@@ -319,50 +336,65 @@ class PostController extends Connexions_Controller_Action
         /* We are rendering the 'people' portion, possibly just a certain 
          * section
          */
-        $section = (count($this->_partials) > 2
+        $section  = (count($this->_partials) > 2
                         ? $this->_partials[2]
                         : null);
-        $config  = array();
-        $service = $this->service('User');
+        $sections = array();
+        $service  = $this->service('User');
 
         if ( ($section === null) || ($section === 'network') )
         {
-            // Rendering all tabs/all sections OR 'tabs/recommended'
-
-            $sConfig    = array(
-                //'namespace'     => 'suggest:tags:recommended',
-                'showRelation'  => false,
-                'showOptions'   => false,
-                'highlightCount'=> 0,
+            // Rendering all tabs/all sections OR 'people/network'
+            $sections['network'] = array(
+                'title'     => 'Network',
+                'expanded'  => false,
+                'async'     => true,
+                'script'    => 'main-people-network',
+                'config'    => array(
+                    'namespace'     => 'suggest:people:network',
+                    'showRelation'  => false,
+                    'showOptions'   => false,
+                    'highlightCount'=> 0,
+                ),
             );
+            $config =& $sections['network']['config'];
 
             // :TODO: Retrieve the viewer's network.
-            $fetchOrder = array('totalItems DESC',
+            $network    = $this->_viewer->getNetwork();
+
+            // /*
+            Connexions::log("PostController::_prepare_suggestions_People(): "
+                            .   "viewer[ %s ], network[ %s ]",
+                            $this->_viewer,
+                            Connexions::varExport($network));
+            // */
+
+            $fetchOrder = array('name       ASC',
+                                'totalItems DESC',
                                 'totalTags  DESC',
-                                'lastVisit  DESC',
-                                'name       ASC');
-            $people     = null;
+                                'lastVisit  DESC');
+            $people     = ($network
+                            ? $network->getitems($fetchOrder)
+                            : null);
 
             if ($people !== null)
             {
-                $sConfig['items']            = $people;
-                $sConfig['itemsType']        =
+                $config['items']            = $people;
+                $config['itemsType']        =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_USER;
-                $sConfig['weightName']       = 'totalItems';
-                $sConfig['weightTitle']      = 'Total Bookmarks';
-                $sConfig['titleTitle']       = 'Person';
-                $sConfig['currentSortBy']    =
-                                 View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
-                $sConfig['currentSortOrder'] =
-                                 Connexions_Service::SORT_DIR_DESC;
-                $sConfig['displayStyle']     =
+                $config['weightName']       = 'totalItems';
+                $config['weightTitle']      = 'Total Bookmarks';
+                $config['titleTitle']       = 'Person';
+                $config['currentSortBy']    =
+                                 View_Helper_HtmlItemCloud::SORT_BY_TITLE;
+                $config['currentSortOrder'] =
+                                 Connexions_Service::SORT_DIR_ASC;
+                $config['displayStyle']     =
                                  View_Helper_HtmlItemCloud::STYLE_LIST;
             }
-
-            $config['network'] = $sConfig;
         }
 
-        return $config;
+        return $sections;
     }
 
     /** @brief  Given incoming POST data, attempt to create/update a bookmark.

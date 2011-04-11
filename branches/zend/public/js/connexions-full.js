@@ -3596,7 +3596,7 @@ $.widget("connexions.collapsable", {
      *  @triggers:
      *      'collapse', 'expand', 'toggle'
      */
-    _create: function() {
+    _init: function() {
         var self    = this;
         var opts    = self.options;
 
@@ -3742,14 +3742,16 @@ $.widget("connexions.collapsable", {
                                     .html( opts.spinner );
                 }
 
-                if ($.isFunction(opts.ajaxOptions.beforeSend))
+                if (opts.ajaxOptions &&
+                    $.isFunction(opts.ajaxOptions.beforeSend))
                 {
                     opts.ajaxOptions.beforeSend.call(self.element,
                                                      xhr, textStatus);
                 }
             },
             complete: function(xhr, textStatus) {
-                if ($.isFunction(opts.ajaxOptions.complete))
+                if (opts.ajaxOptions &&
+                    $.isFunction(opts.ajaxOptions.complete))
                 {
                     opts.ajaxOptions.complete.call(self.element,
                                                    xhr, textStatus);
@@ -7665,7 +7667,7 @@ $.widget("connexions.bookmarkPost", {
             success: function(data) {
                 var $content    = opts.$suggestions
                                         .find('#suggestions-tags '
-                                                +'.recommended .content');
+                                                +'.tags-recommended .content');
 
                 // Unbind current tag click handler
                 opts.$suggestions.find('.cloud .cloudItem a')
