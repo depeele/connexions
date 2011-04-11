@@ -238,7 +238,7 @@ class PostController extends Connexions_Controller_Action
                 if ($tags !== null)
                 {
                     $config['items']            = $tags;
-                    $config['itemsType']        =
+                    $config['itemType']         =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
                     $config['weightName']       = 'userItemCount';
                     $config['weightTitle']      = 'Bookmarks with this tag';
@@ -289,7 +289,7 @@ class PostController extends Connexions_Controller_Action
             if ($tags !== null)
             {
                 $config['items']            = $tags;
-                $config['itemsType']        =
+                $config['itemType']         =
                              View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
                 $config['weightName']       = 'userItemCount';
                 $config['weightTitle']      = 'Bookmarks with this tag';
@@ -380,7 +380,7 @@ class PostController extends Connexions_Controller_Action
             if ($people !== null)
             {
                 $config['items']            = $people;
-                $config['itemsType']        =
+                $config['itemType']         =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_USER;
                 $config['weightName']       = 'totalItems';
                 $config['weightTitle']      = 'Total Bookmarks';

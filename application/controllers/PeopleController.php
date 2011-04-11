@@ -289,7 +289,7 @@ class PeopleController extends Connexions_Controller_Action
             }
 
             $config['items']            =& $tags;
-            $config['itemsType']        =
+            $config['itemType']         =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
             $config['weightName']       =  'userCount';
             $config['weightTitle']      =  'Users of this tag';
@@ -339,7 +339,7 @@ class PeopleController extends Connexions_Controller_Action
 
 
             $config['items']            =& $users;
-            $config['itemsType']        =
+            $config['itemType']         =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_USER;
             $config['weightName']       =  'userItemCount';
             $config['weightTitle']      =  'Bookmarks';
@@ -443,7 +443,7 @@ class PeopleController extends Connexions_Controller_Action
 
 
             $config['items']            =& $items;
-            $config['itemsType']        =
+            $config['itemType']         =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
             $config['itemBaseUrl']      =  $this->_helper->url(null, 'url');
                                             //$this->view->baseUrl('/url/');

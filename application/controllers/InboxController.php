@@ -383,7 +383,7 @@ class InboxController extends Connexions_Controller_Action
             $config['selected']         =& $this->_tags;
             $config['hiddenItems']      = array( $this->_forTag->tag );
 
-            $config['itemsType']        =
+            $config['itemType']         =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
             $config['itemBaseUrl']      =  $this->_url;
 
@@ -430,7 +430,7 @@ class InboxController extends Connexions_Controller_Action
 
 
             $config['items']            =& $users;
-            $config['itemsType']        =
+            $config['itemType']         =
                              View_Helper_HtmlItemCloud::ITEM_TYPE_USER;
             $config['weightName']       =  'userItemCount';
             $config['weightTitle']      =  'Bookmarks';
@@ -461,7 +461,7 @@ class InboxController extends Connexions_Controller_Action
                                               $offset);
 
             $config['items']            =& $items;
-            $config['itemsType']        =
+            $config['itemType']         =
                                  View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM;
             $config['itemBaseUrl']      =  $this->_helper->url(null, 'url');
                                             //$this->view->baseUrl('/url/');

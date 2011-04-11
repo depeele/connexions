@@ -36,6 +36,10 @@ $weightTitle   =  ($this->weightTitle !== null
                     ? $this->weightTitle
                     : 'Weight');
 
+$itemClass     = ($this->itemType ===
+                            View_Helper_HtmlItemCloud::ITEM_TYPE_USER
+                    ? 'user'
+                    : 'item');
 /*
 Connexions::log('view/scripts/itemList: '
                 . 'showControls[ %s ], '
@@ -79,7 +83,7 @@ foreach ($itemList as $item)
 
     //echo "<li class='{$oddEven}' data-id='{$item->getId()}'>";
     //echo "<li class='{$oddEven}' data-id='{$item->__toString()}'>";
-    ?><li class='<?= $oddEven ?>' data-id='<?= $item ?>'><?php
+    ?><li class='<?= $oddEven ?> <?= $itemClass ?>' data-id='<?= $item ?>'><?php
 
     $img = '';
     if ($item instanceof Model_User)
