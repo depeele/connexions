@@ -671,10 +671,10 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
 
         /*
         Connexions::log("Model_Mapper_Bookmark::_addPrivacy(): user[ %s ]",
-                        $user->debugDump());
+                        Connexions::varExport($user));
         // */
 
-        if ( $user->isAuthenticated() )
+        if ( $user && $user->isAuthenticated() )
         {
             $privacy["+|{$as}.userId"] = $user->userId;
         }

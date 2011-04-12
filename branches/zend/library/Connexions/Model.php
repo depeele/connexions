@@ -676,21 +676,44 @@ abstract class Connexions_Model
     }
 
     /** @brief  Save this instancne.
+     *  @param  noLog   Should the activity log be bypassed?
      *
      *  @return The (updated) instance.
      */
-    public function save()
+    public function save($noLog = false)
     {
         /*
-        Connexions::log("Connexions_Model[%s]::save(): %s",
+        Connexions::log("Connexions_Model[%s]::save(): noLog[ %s ]: %s",
                         get_class($this),
+                        Connexions::varExport($noLog),
                         $this->debugDump());
         // */
 
         $res = $this;
         if (! empty($this->_dirty))
         {
+            if ($noLog !== true)
+            {
+                if ( $this->isBacked())
+                {
+                    $operation  = 'update';
+                    $properties = $this->toArray(array('deep'  => false,
+                                                       'dirty' => true));
+                }
+                else
+                {
+                    $operation  = 'save';
+                    $properties = $this->toArray(array('deep'  => false,
+                                                       'dirty' => false));
+                }
+            }
+
             $res = $this->getMapper()->save( $this );
+
+            if (($noLog !== true) && $res->isBacked())
+            {
+                $this->_logActivity($operation, $properties);
+            }
         }
 
         return $res;
@@ -706,6 +729,10 @@ abstract class Connexions_Model
         Connexions::log("Connexions_Model::delete(): [ %s ]",
                         $this->debugDump());
         // */
+        if ( $this->isBacked())
+        {
+            $this->_logActivity('delete');
+        }
 
         $this->getMapper()->delete( $this );
     }
@@ -749,6 +776,51 @@ abstract class Connexions_Model
      * Protected methods
      *
      */
+
+    /** @brief  Log activity
+     *  @param  operation   The activity/operation
+     *                      ('save', 'update', 'delete');
+     *  @param  properties  An array of key/value pairs representing the object
+     *                      properties to include;
+     *
+     *  @return this for a fluent interface.
+     */
+    protected function _logActivity(      $operation,
+                                    array $properties = array())
+    {
+        /**************************************************
+         * Store this operation in the activities table
+         *
+         */
+        $objectType = strtolower(str_replace('Model_', '',
+                                             get_class($this)));
+        $objectId   = $this->getId();
+
+        if (is_array($objectId))    $objectId = implode(':', $objectId);
+        else                        $objectId = (String)$objectId;
+
+        $activity   = array(
+            'actorId'       => null,
+            'objectId'      => $objectId,
+            'operation'     => $operation,
+            'objectType'    => $objectType,
+            'properties'    => $properties,
+        );
+
+        $actor = Connexions::getUser();
+        if ($actor)
+        {
+            $activity['actorId'] = $actor->getId();
+        }
+
+        // /*
+        Connexions::log("Connexions_Model::_logActivity(): "
+                        . "[ %s ]",
+                        Connexions::varExport($activity));
+        // */
+
+        return $this;
+    }
 
     /** @brief  Set the value of the given field.
      *  @param  name        The field name.

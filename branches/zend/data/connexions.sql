@@ -177,3 +177,40 @@ CREATE TABLE userTagItem (
   KEY `uti_tagId`   (`tagId`),
   KEY `uti_itemId`  (`itemId`)
 ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- activity table (for activity streams)
+--
+CREATE TABLE activity (
+  activityId    INT(10)     UNSIGNED    NOT NULL AUTO_INCREMENT,
+
+  -- The userId of the user initiating this activity
+  userId        INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
+
+  -- An objectType is the lower-case name of the target Model instance
+  -- (bookmark, group, item, tag, user, userauth) though we don't
+  -- explicitly limit (via ENUM) here.
+  objectType    VARCHAR(16)            	NOT NULL DEFAULT 'bookmark',
+
+  -- objectId is the string representation of an object identifier
+  -- For a 'bookmark', this would be '%userId%:%itemId%'
+  objectId      VARCHAR(32)             NOT NULL DEFAULT '',
+
+  -- The activity/operation - maps to an activity stream verb
+  -- 	'save'	 => 'post' | 'save'
+  --	'update' => 'update'
+  --	'delete' => 'delete'
+  operation		ENUM('save', 'update',
+  					 'delete')			NOT NULL DEFAULT 'save',
+
+  -- The time of the activity
+  time          TIMESTAMP               NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  -- A JSON-encoded string of object properties
+  properties    TEXT                    NOT NULL DEFAULT '',
+
+  PRIMARY KEY               (`activityId`),
+  KEY       `a_userId`      (`userId`),
+  KEY       `a_objectId`    (`objectType`, `objectId`)
+
+) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;

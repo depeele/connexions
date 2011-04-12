@@ -444,7 +444,7 @@ class Model_Mapper_User extends Model_Mapper_Base
 
         $user->totalTags  = $row->totalTags;
         $user->totalItems = $row->totalItems;
-        $user = $user->save();
+        $user = $user->save(true);  // noLog
 
         return $this;
     }

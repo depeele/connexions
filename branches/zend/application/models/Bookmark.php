@@ -50,12 +50,13 @@ class Model_Bookmark extends Model_Base
      */
 
     /** @brief  Save this instancne.
+     *  @param  noLog   Should the activity log be bypassed?
      *
      *  Override to update 'updatedOn'
      *
      *  @return The (updated) instance.
      */
-    public function save()
+    public function save($noLog = false)
     {
         // On save, modify 'updatedOn' to NOW.
         $this->updatedOn = date('Y-m-d H:i:s');
@@ -73,7 +74,7 @@ class Model_Bookmark extends Model_Base
             $this->_tags = $this->_tags->save();
         }
 
-        $bookmark = parent::save();
+        $bookmark = parent::save($noLog);
 
         if ($tags !== null)
         {
