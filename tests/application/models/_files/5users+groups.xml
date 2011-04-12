@@ -261,7 +261,7 @@
       name="More than a password manager | Clipperz"
       description="Testing 1,2 3, 4..."
       rating="1" isFavorite="0" isPrivate="1"
-      taggedOn="2010-04-05 17:25:19" updatedOn="2010-02-22 10:00:00" />
+      taggedOn="2010-04-05 17:25:19" updatedOn="2010-07-22 10:00:00" />
  <userItem
       userId="1" itemId="2"
       name="OAT Framework"
@@ -533,5 +533,23 @@
  <userTagItem userId="4" itemId="16" tagId="68"/>
  <userTagItem userId="4" itemId="16" tagId="69"/>
  <userTagItem userId="4" itemId="16" tagId="70"/>
+
+<!-- Activities -->
+ <activity
+    activityId="1"
+    userId="1"
+    objectType="bookmark"
+    objectId="1:1"
+    operation="save"
+    time="2010-04-05 17:25:19"
+    properties='{"userId":1,"itemId":1,"name":"More than a password manager | CLipperz","description":"Testing 1,2...","rating":0,"isFavorite":0,"isPrivate":0,"taggedOn":"2010-04-05 17:25:19","updatedOn":"2010-04-05 17:25:19"}' />
+ <activity
+    activityId="2"
+    userId="1"
+    objectType="bookmark"
+    objectId="1:1"
+    operation="update"
+    time="2010-07-22 10:00:00"
+    properties='{"description":"Testing 1,2 3, 4...","rating":1,"isPrivate":1,"updatedOn":"2010-04-05 17:25:19"}' />
 
 </dataset>

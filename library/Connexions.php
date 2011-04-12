@@ -248,8 +248,14 @@ class Connexions
                 /* :XXX: Should we create an 'anonymous', non-backed,
                  *       unauthenticated user in this case??
                  *       Currently handled in application/Bootstrap.php
+                 *
+                 *       Do NOT set $_user to false.  We use this method
+                 *       early (via Connexions_Model::_logActivity()) BEFORE
+                 *       Bootstrap has completed.  If we set it to false here,
+                 *       it won't be properly retrieved/cached when it finally
+                 *       IS available.
                  */
-                self::$_user = false;
+                //self::$_user = false;
             }
         }
 

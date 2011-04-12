@@ -457,7 +457,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
                 // Update the 'lastVisit' time for this user.
                 $user->updateLastVisit();
-                $user->save();
+                $user->save(true);  // noLog
             }
         }
 

@@ -143,7 +143,7 @@ class BookmarkServiceTest extends DbTestCase
             'isFavorite'    => 0,
             'isPrivate'     => 1,
             'taggedOn'      => '2010-04-05 17:25:19',
-            'updatedOn'     => '2010-02-22 10:00:00',
+            'updatedOn'     => '2010-07-22 10:00:00',
     );
 
     protected function getDataSet()
@@ -1225,7 +1225,7 @@ class BookmarkServiceTest extends DbTestCase
             'isFavorite'    => 0,
             'isPrivate'     => 0,
             'taggedOn'      => '2010-04-05 17:25:19',
-            'updatedOn'     => '2010-02-22 10:00:00',
+            'updatedOn'     => '2010-07-22 10:00:00',
             'userId'        => $user['userId'],
             'itemId'        => $item['itemId'],
 
@@ -1292,7 +1292,7 @@ class BookmarkServiceTest extends DbTestCase
             'isFavorite'    => 0,
             'isPrivate'     => 0,
             'taggedOn'      => '2010-04-05 17:25:19',
-            'updatedOn'     => '2010-02-22 10:00:00',
+            'updatedOn'     => '2010-07-22 10:00:00',
             'userId'        => $user['userId'],
             'itemId'        => $item['itemId'],
 
@@ -1360,7 +1360,7 @@ class BookmarkServiceTest extends DbTestCase
             'isFavorite'    => 0,
             'isPrivate'     => 0,
             'taggedOn'      => '2010-04-05 17:25:19',
-            'updatedOn'     => '2010-02-22 10:00:00',
+            'updatedOn'     => '2010-07-22 10:00:00',
             'userId'        => $user['userId'],
             'itemId'        => $item['itemId'],
 
@@ -1438,7 +1438,7 @@ class BookmarkServiceTest extends DbTestCase
             'isFavorite'    => 0,
             'isPrivate'     => 0,
             'taggedOn'      => '2010-04-05 17:25:19',
-            'updatedOn'     => '2010-02-22 10:00:00',
+            'updatedOn'     => '2010-07-22 10:00:00',
             'userId'        => $user['userId'],
             'itemId'        => $item['itemId'],
 
