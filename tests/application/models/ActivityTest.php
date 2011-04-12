@@ -45,7 +45,6 @@ class ActivityTest extends BaseTestCase
         $this->assertEquals($expected, $activity->getId());
     }
 
-
     public function testActivityGetMapper()
     {
         $item = new Model_Activity( );

@@ -126,6 +126,59 @@ class ActivityDbTest extends DbTestCase
                             $activity->toArray(self::$toArray_shallow_all));
     }
 
+    public function testActivityStr1()
+    {
+        // Unauthenticated
+        $expected = '@2010-04-05 17:25:19: User1 saved bookmark 1:1 ()';
+
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Activity');
+        $activity = $mapper->find( array(
+                            'activityId' => $this->_activity1['activityId']
+        ));
+
+        /*
+        printf ("Activity by id %d: '%s'\n",
+                $this->_activity1['activityid'],
+                $activity);
+        // */
+
+        $this->assertNotEquals(null, $activity);
+        $this->assertTrue  ( $activity->isBacked() );
+        $this->assertTrue  ( $activity->isValid() );
+
+        $this->assertEquals($expected, $activity->__toString());
+    }
+
+    public function testActivityStr2()
+    {
+        // Authenticated
+        $expected = '@2010-04-05 17:25:19: User1 saved bookmark 1:1 '
+                 .      '(More than a password manager | Clipperz)';
+
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Activity');
+        $activity = $mapper->find( array(
+                            'activityId' => $this->_activity1['activityId']
+        ));
+
+        // Authenticate as the owner
+        $this->_setAuthenticatedUser($activity->userId);
+
+        /*
+        printf ("Activity by id %d: '%s'\n",
+                $this->_activity1['activityid'],
+                $activity);
+        // */
+
+        $this->assertNotEquals(null, $activity);
+        $this->assertTrue  ( $activity->isBacked() );
+        $this->assertTrue  ( $activity->isValid() );
+
+        $this->assertEquals($expected, $activity->__toString());
+
+        // De-authenticate
+        $this->_unsetAuthenticatedUser();
+    }
+
     public function testActivityIdentityMap()
     {
         $mapper    = Connexions_Model_Mapper::factory('Model_Mapper_Activity');

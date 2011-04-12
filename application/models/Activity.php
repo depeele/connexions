@@ -154,6 +154,22 @@ class Model_Activity extends Model_Base
         return $this;
     }
 
+    /** @brief  Return a string representation of this instance.
+     *
+     *  @return The string-based representation.
+     */
+    public function __toString()
+    {
+        $str = '@'. $this->time  .': '
+             . $this->user       .' '
+             . $this->operation  .'d '
+             . $this->objectType .' '
+             . $this->objectId
+             . ' ('. $this->getObject() .')';
+
+        return $str;
+    }
+
     /** @brief  Return the referenced object.
      *
      *  @return A Connexions_Model instance (or null if not found).
