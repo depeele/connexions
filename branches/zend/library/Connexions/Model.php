@@ -794,6 +794,12 @@ abstract class Connexions_Model
          */
         $objectType = strtolower(str_replace('Model_', '',
                                              get_class($this)));
+        if ($objectType === 'activity')
+        {
+            // Don't go recursive!!
+            return $this;
+        }
+
         $objectId   = $this->getId();
 
         if (is_array($objectId))    $objectId = implode(':', $objectId);
@@ -804,7 +810,7 @@ abstract class Connexions_Model
             'objectId'      => $objectId,
             'operation'     => $operation,
             'objectType'    => $objectType,
-            'properties'    => $properties,
+            'properties'    =>  Zend_Json::encode($properties),
         );
 
         $actor = Connexions::getUser();
@@ -813,11 +819,22 @@ abstract class Connexions_Model
             $activity['actorId'] = $actor->getId();
         }
 
-        // /*
+        /*
         Connexions::log("Connexions_Model::_logActivity(): "
                         . "[ %s ]",
                         Connexions::varExport($activity));
         // */
+
+        $activityInst = Connexions_Service::factory('Model_Activity')
+                            ->get( $activity )
+                            ->save();
+
+        /*
+        Connexions::log("Connexions_Model::_logActivity(): "
+                        . "[ %s ]",
+                        Connexions::varExport($activityInst));
+        // */
+
 
         return $this;
     }
