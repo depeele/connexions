@@ -3899,6 +3899,7 @@ $.widget("connexions.dropdownForm", {
         var opts        = self.options;
 
         self.$form      = self.element.find('form:first');
+        self.$reset     = self.element.find(':reset');
         self.$submit    = self.element.find(':submit');
 
         /* Convert selects to buttons
@@ -4018,6 +4019,43 @@ $.widget("connexions.dropdownForm", {
                     .addClass('ui-state-default');
         };
 
+        var _form_reset         = function(e) {
+            // Serialize all form values to an array...
+            var settings    = self.$form.serializeArray();
+            var cookieOpts  = {};
+            var cookiePath  = $.registry('cookiePath');
+
+            if (cookiePath)
+            {
+                cookieOpts.path = cookiePath;
+            }
+
+            /* ...and UNSET any cookie related to each
+             *      namespace +'SortBy'
+             *      namespace +'SortOrder'
+             *      namespace +'PerPage'
+             *      namespace +'Style'
+             *      and possibly
+             *          namespace +'StyleCustom[ ... ]'
+             */
+            $(settings).each(function() {
+                // /*
+                $.log("connexions.dropdownForm: Delete Cookie: "
+                      + "name[%s]",
+                      this.name);
+                // */
+                $.cookie(this.name, null, cookieOpts);
+            });
+
+            if (! self._trigger('apply', e))
+            {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        };
+
         var _form_submit        = function(e) {
             // Serialize all form values to an array...
             var settings    = self.$form.serializeArray();
@@ -4053,21 +4091,6 @@ $.widget("connexions.dropdownForm", {
                 e.stopPropagation();
                 return false;
             }
-
-            /*
-            var callback    = self.options.apply;
-            if ($.isFunction(callback))
-            {
-                callback.call( self.element[0], e);
-                //self.options.submitCb(e, self);
-            }
-            else
-            {
-                // Reload so our URL won't be polluted with form variables that
-                // we've just placed into cookies.
-                window.location.reload();
-            }
-            */
         };
 
         var _form_clickSubmit   = function(e) {
@@ -4099,6 +4122,8 @@ $.widget("connexions.dropdownForm", {
         self.$submit
                 .bind('click.uidropdownform', _form_clickSubmit);
 
+        self.$reset
+                .bind('click.uidropdownform', _form_reset);
     },
 
     /************************
@@ -4190,6 +4215,9 @@ $.widget("connexions.dropdownForm", {
                      .unbind('.uidropdownform');
 
         self.$form.unbind('.uidropdownform');
+
+        self.$submit.unbind('.uidropdownform');
+        self.$reset.unbind( '.uidropdownform');
 
         // Remove added elements
         self.$button.button('destroy');
@@ -5296,11 +5324,15 @@ $.widget("connexions.pane", {
         }
 
         self.$displayOptions.bind('submit.uipane', function(e) {
+            // STOP the submit event
             e.preventDefault();
             e.stopPropagation();
             e.stopImmediatePropagation();
 
-            // reload
+            // WAIT for the 'apply' event before we reload
+        });
+
+        self.$displayOptions.bind('apply.uipane', function(e) {
             self.reload();
         });
     },

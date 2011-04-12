@@ -17,12 +17,15 @@
   .control {
     z-index: 10;
     cursor: pointer;
+    .ui-button-text {
+      padding:  0.15em 1.5em 0.2em 0.5em;
+    }
     a {
       font-weight: normal;
     }
     .ui-icon {
-      //margin-top:   2px
-      float: right;
+      right:  0.2em;
+      //float: right;
     }
   }
   .buttons {

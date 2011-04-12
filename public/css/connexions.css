@@ -524,8 +524,9 @@ a:visited { color: #005a9c; }
 .displayOptions form { position: absolute; top: 1.75em; right: 0; padding: 0.5em; width: 20em; z-index: 11; }
 .displayOptions form select { font-size: 0.9em; font-weight: normal !important; }
 .displayOptions .control { z-index: 10; cursor: pointer; }
+.displayOptions .control .ui-button-text { padding: 0.15em 1.5em 0.2em 0.5em; }
 .displayOptions .control a { font-weight: normal; }
-.displayOptions .control .ui-icon { float: right; }
+.displayOptions .control .ui-icon { right: 0.2em; }
 .displayOptions .buttons { text-align: right; }
 .displayOptions .buttons button { display: inline; padding: 0.25em; }
 .displayOptions #buttons-global { padding: 0.5em 0.5em 0; border-top: 1px dotted #cccccc; }
