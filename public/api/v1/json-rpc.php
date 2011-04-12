@@ -16,6 +16,7 @@ $server->setClass('Service_Proxy_User',     'user')
        ->setClass('Service_Proxy_Item',     'item')
        ->setClass('Service_Proxy_Tag',      'tag')
        ->setClass('Service_Proxy_Bookmark', 'bookmark')
+       ->setClass('Service_Proxy_Activity', 'activity')
        ->setClass('Service_Util',           'util');
 
 // (Re)Set the server request
