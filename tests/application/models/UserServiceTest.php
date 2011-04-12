@@ -1467,7 +1467,7 @@ class UserServiceTest extends DbTestCase
         $user1    = $service->find( array('userId'=> $this->_user1['userId']));
         $this->assertNotEquals(null, $user1);
 
-        $tags = $service->autocompleteTag($user1, 'as'); //'pa');
+        $tags = $service->autocompleteTag('as', $user1); //'pa');
         $this->assertNotEquals(null, $tags);
 
         //Connexions::log("tags[ %s ]", $tags);

@@ -146,6 +146,19 @@ class BookmarkServiceTest extends DbTestCase
             'updatedOn'     => '2010-07-22 10:00:00',
     );
 
+    protected   $_bookmark2 = array(
+            'userId'        => 1,
+            'itemId'        => 2,
+
+            'name'          => 'OAT Framework',
+            'description'   => '',
+            'rating'        => 2,
+            'isFavorite'    => 1,
+            'isPrivate'     => 0,
+            'taggedOn'      => "2007-03-30 14:39:52",
+            'updatedOn'     => "2007-03-30 14:39:52",
+    );
+
     protected function getDataSet()
     {
         return $this->createFlatXmlDataSet(
@@ -189,6 +202,26 @@ class BookmarkServiceTest extends DbTestCase
     public function testBookmarkRetrieveById1()
     {
         $expected               = $this->_bookmark1;
+        $expected['isFavorite'] = ($expected['isFavorite'] ? 1 : 0);
+        $expected['isPrivate']  = ($expected['isPrivate']  ? 1 : 0);
+        $id                     = array( $expected['userId'],
+                                         $expected['itemId']);
+
+        /* Bookmark 1 is private -- retrieval should FAIL unless we're
+         * authenticated as the owner (user1)
+         */
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $bookmark = $service->find( $id );
+
+        $this->assertEquals(null, $bookmark);
+    }
+
+    public function testBookmarkRetrieveById2()
+    {
+        // Establish User1 as the authenticated, visiting user.
+        $this->_setAuthenticatedUser(1);
+
+        $expected               = $this->_bookmark1;
         $expected['userId']     = $this->_user1['userId'];
         $expected['itemId']     = $this->_item1['itemId'];
         $expected['user']       = $this->_user1;
@@ -199,22 +232,39 @@ class BookmarkServiceTest extends DbTestCase
         $id                     = array( $expected['userId'],
                                          $expected['itemId']);
 
+        /* Bookmark 1 is private -- retrieval should FAIL unless we're
+         * authenticated as the owner (user1)
+         */
         $service  = Connexions_Service::factory('Model_Bookmark');
         $bookmark = $service->find( $id );
 
         $this->assertNotEquals(null, $bookmark);
         $this->assertEquals($expected,
                             $bookmark->toArray(self::$toArray_deep_all));
+
+        // De-Establish User1 as the authenticated, visiting user.
+        $this->_unsetAuthenticatedUser();
     }
 
-    public function testBookmarkRetrieveById2()
+    public function testBookmarkRetrieveById3()
     {
-        $expected               = $this->_bookmark1;
-        $expected['userId']     = $this->_user1['userId'];
-        $expected['itemId']     = $this->_item1['itemId'];
-        $expected['user']       = $this->_user1;
-        $expected['item']       = $this->_item1;
-        $expected['tags']       = $this->_tags1;
+        $expected               = $this->_bookmark2;
+        $expected['isFavorite'] = ($expected['isFavorite'] ? 1 : 0);
+        $expected['isPrivate']  = ($expected['isPrivate']  ? 1 : 0);
+        $id                     = array( $expected['userId'],
+                                         $expected['itemId']);
+
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $bookmark = $service->find( $id );
+
+        $this->assertNotEquals(null, $bookmark);
+        $this->assertEquals($expected,
+                            $bookmark->toArray(self::$toArray_shallow_all));
+    }
+
+    public function testBookmarkRetrieveById4()
+    {
+        $expected               = $this->_bookmark2;
         $expected['isFavorite'] = ($expected['isFavorite'] ? 1 : 0);
         $expected['isPrivate']  = ($expected['isPrivate']  ? 1 : 0);
         $id                     = array( 'userId' => $expected['userId'],
@@ -225,17 +275,12 @@ class BookmarkServiceTest extends DbTestCase
 
         $this->assertNotEquals(null, $bookmark);
         $this->assertEquals($expected,
-                            $bookmark->toArray(self::$toArray_deep_all));
+                            $bookmark->toArray(self::$toArray_shallow_all));
     }
 
-    public function testBookmarkRetrieveById3()
+    public function testBookmarkRetrieveById5()
     {
-        $expected               = $this->_bookmark1;
-        $expected['userId']     = $this->_user1['userId'];
-        $expected['itemId']     = $this->_item1['itemId'];
-        $expected['user']       = $this->_user1;
-        $expected['item']       = $this->_item1;
-        $expected['tags']       = $this->_tags1;
+        $expected               = $this->_bookmark2;
         $expected['isFavorite'] = ($expected['isFavorite'] ? 1 : 0);
         $expected['isPrivate']  = ($expected['isPrivate']  ? 1 : 0);
         $id                     = $expected['userId']
@@ -247,7 +292,7 @@ class BookmarkServiceTest extends DbTestCase
 
         $this->assertNotEquals(null, $bookmark);
         $this->assertEquals($expected,
-                            $bookmark->toArray(self::$toArray_deep_all));
+                            $bookmark->toArray(self::$toArray_shallow_all));
     }
 
     public function testBookmarkServiceFetch1()
@@ -1495,7 +1540,7 @@ class BookmarkServiceTest extends DbTestCase
          *  'tag=^', the list should be:
          *      'tiddlywiki,tiddlywikiplugin'
          */
-        $expected = 'tiddlywiki,tiddlywikiplugin';
+        $expected = 'tiddlywiki,collection,decoration,documentation,identity,tiddlywikiplugin';
         $service  = Connexions_Service::factory('Model_Bookmark');
         $tags     = $service->autocompleteTag('ti');
 

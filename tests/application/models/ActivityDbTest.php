@@ -51,23 +51,6 @@ class ActivityDbTest extends DbTestCase
         parent::tearDown();
     }
 
-    protected function _authAs($userId)
-    {
-        $service  = Connexions_Service::factory('Model_User');
-        $user     = $service->find( $userId  );
-
-        $this->assertTrue(  $user instanceof Model_User );
-        $this->assertTrue(  $user->isBacked() );
-        $this->assertTrue(  $user->isValid() );
-        $this->assertFalse( $user->isAuthenticated() );
-
-        // Mark the user as 'authenticated'
-        $this->_setAuthenticatedUser($user);
-        $this->assertTrue ($user->isAuthenticated());
-
-        return $user;
-    }
-
     public function testActivityInsertedIntoDatabase()
     {
         $expected = $this->_activity3;
@@ -216,7 +199,7 @@ class ActivityDbTest extends DbTestCase
         $this->assertTrue(  $activity->isValid() );
 
         // Authenticate as the owner
-        $user = $this->_authAs($activity->userId);
+        $this->_setAuthenticatedUser($activity->userId);
 
         /* Retrieve the referenced object -- the bookmark is private so, unless
          * authenticated as user1, this should return null
@@ -236,7 +219,7 @@ class ActivityDbTest extends DbTestCase
 
         $this->assertEquals($expected, $object->getId());
 
-        // De-authenticate $user
-        $this->_unsetAuthenticatedUser($user);
+        // De-authenticate
+        $this->_unsetAuthenticatedUser();
     }
 }
