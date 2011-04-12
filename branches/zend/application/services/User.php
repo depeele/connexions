@@ -407,7 +407,7 @@ class Service_User extends Connexions_Service
     {
         if ($limit < 1) $limit = 15;
 
-        // /*
+        /*
         Connexions::log("Service_User::autocomplete(): "
                         .   "term[ %s ], limit[ %d ]",
                         $term, $limit);
