@@ -192,7 +192,7 @@ class Model_Mapper_Item extends Model_Mapper_Base
                         $item->debugDump());
         // */
 
-        $item = $item->save();
+        $item = $item->save(true);  // noLog
 
         return $this;
     }
