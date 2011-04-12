@@ -1,7 +1,7 @@
 <?php
 /** @file
  *
- *  HTML rendering of display options.
+ *  HTML rendering of display options (connexions.dropdownForm.js).
  *
  *  Incoming parameters:
  *      helper          The View_Helper_HtmlDisplayOptions instance;
@@ -100,6 +100,9 @@ $id         =  $namespace .'-displayOptions';
    ?>
   </div>
   <div id='buttons-global' class='buttons'>
+   <button type='reset'
+          class='ui-button ui-corner-all ui-state-default'
+          value='custom'>reset</button>
    <button type='submit'
           class='ui-button ui-corner-all ui-state-default ui-state-disabled'
           value='custom'

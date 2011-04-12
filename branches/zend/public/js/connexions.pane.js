@@ -140,11 +140,15 @@ $.widget("connexions.pane", {
         }
 
         self.$displayOptions.bind('submit.uipane', function(e) {
+            // STOP the submit event
             e.preventDefault();
             e.stopPropagation();
             e.stopImmediatePropagation();
 
-            // reload
+            // WAIT for the 'apply' event before we reload
+        });
+
+        self.$displayOptions.bind('apply.uipane', function(e) {
             self.reload();
         });
     },
