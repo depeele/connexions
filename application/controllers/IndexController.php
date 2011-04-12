@@ -168,7 +168,7 @@ class IndexController extends Connexions_Controller_Action
         );
         $this->view->main = array_merge($this->view->main, $extra);
 
-        // /*
+        /*
         Connexions::log("IndexController::_prepare_main(): "
                         .   "main[ %s ]",
                         Connexions::varExport($this->view->main));
