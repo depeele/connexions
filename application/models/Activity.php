@@ -254,27 +254,25 @@ class Model_Activity extends Model_Base
     {
         if (isset($props['raw']) && ($props['raw'] === true))
         {
-            // Use our parent
-            $ret = parent::toArray($props);
+            // Nothing special, simply use our parent
+            return parent::toArray($props);
         }
-        else
+
+        /* March through _data and invoke the getter for each, possibly
+         * only if the field is listed as "dirty"
+         */
+        $dirtyOnly = ( isset($props['dirty']) &&
+                       ($props['dirty'] === true) );
+        $ret       = array();
+        foreach ($this->_data as $key => $val)
         {
-            /* March through _data and invoke the getter for each, possibly
-             * only if the field is listed as "dirty"
-             */
-            $dirtyOnly = ( isset($props['dirty']) &&
-                           ($props['dirty'] === true) );
-            $ret       = array();
-            foreach ($this->_data as $key => $val)
+            if ( ($dirtyOnly === false) || (isset($this->_dirty[$key])) )
             {
-                if ( ($dirtyOnly === false) || (isset($this->_dirty[$key])) )
-                {
-                    $ret[$key] = $this->__get($key);
-                }
+                $ret[$key] = $this->__get($key);
             }
         }
 
-        // /*
+        /*
         Connexions::log("Model_Activity::toArray(): "
                         .   "props[ %s ], return[ %s ]",
                         Connexions::varExport($props),

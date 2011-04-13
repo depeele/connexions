@@ -437,6 +437,7 @@ abstract class Connexions_Service
 
             array_push($newOrder, $name .' '. $dir);
         }
+        $newOrder = $this->_extraOrder($newOrder);
 
         /*
         Connexions::log("Connexions_Service::_csOrder2array( %s ): "
