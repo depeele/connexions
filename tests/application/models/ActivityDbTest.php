@@ -45,8 +45,14 @@ class ActivityDbTest extends DbTestCase
          * we need to clean-up any Identity Maps that are used in order to 
          * maintain test validity.
          */
-        $uMapper = Connexions_Model_Mapper::factory('Model_Mapper_Activity');
-        $uMapper->flushIdentityMap();
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Activity');
+        $mapper->flushIdentityMap();
+
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
+        $mapper->flushIdentityMap();
+
+        $mapper = Connexions_Model_Mapper::factory('Model_Mapper_Bookmark');
+        $mapper->flushIdentityMap();
 
         parent::tearDown();
     }

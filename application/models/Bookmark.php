@@ -74,6 +74,14 @@ class Model_Bookmark extends Model_Base
             $this->_tags = $this->_tags->save();
         }
 
+        if ($this->isPrivate)
+        {
+            /* Since activity logs are not privacy protected, and this bookmark
+             * is NOW private, do NOT log this activity.
+             */
+            $noLog = true;
+        }
+
         $bookmark = parent::save($noLog);
 
         if ($tags !== null)

@@ -196,6 +196,7 @@ abstract class DbTestCase extends Zend_Test_PHPUnit_DatabaseTestCase
 
         // Restore the previous user.
         Zend_Registry::set('user', $this->_oldUser);
+        $this->_oldUser = null;
 
         // So next Connexions::getUser() call will re-get from the registry
         Connexions::clearUser();
