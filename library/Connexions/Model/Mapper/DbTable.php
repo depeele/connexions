@@ -234,18 +234,22 @@ abstract class Connexions_Model_Mapper_DbTable
      *  @param  order   Optional ORDER clause (string, array)
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
+     *  @param  raw     Should the raw records be returned instead of a
+     *                  Connexions_Model_Set instance? [ false ];
      *
      *  Note: 'id' can contain properties prefixed with '|' to indicate 'OR' 
      *        verses 'AND'.
      *
      *
-     *  @return A Connexions_Model_Set instance that provides access to all
-     *          matching Domain Model instances.
+     *  @return If 'raw' is false, a Connexions_Model_Set instance that
+     *          provides access to all matching Domain Model instances,
+     *          otherwise, and array of raw records.
      */
     public function fetch($id      = null,
                           $order   = null,
                           $count   = null,
-                          $offset  = null)
+                          $offset  = null,
+                          $raw     = false)
     {
         if ( $id instanceof Zend_Db_Select )
         {
@@ -279,6 +283,38 @@ abstract class Connexions_Model_Mapper_DbTable
 
         /*
         Connexions::log("Connexions_Model_Mapper_DbTable[%s]::fetch() "
+                        . "initial sql[ %s ]...",
+                        get_class($this),
+                        $select->assemble());
+        // */
+
+        if (is_array($raw))
+        {
+            // Force assembly so we can get information about the select
+            $select->assemble();
+
+            list($correlationName, $column, $alias) =
+                array_shift($select->getPart(Zend_Db_Select::COLUMNS));
+
+            /*
+            Connexions::log("Connexions_Model_Mapper_DbTable[%s]::fetch(): "
+                            .   "initial col[ %s:%s:%s ], "
+                            .   "columns[ %s ]",
+                            get_class($this),
+                            $correlationName, $column, $alias,
+                            Connexions::varExport(
+                                $select->getPart(Zend_Db_Select::COLUMNS)) );
+            // */
+
+            /* Clear out the current column selection and include ONLY those
+             * specified by 'raw'
+             */
+            $select->reset(Zend_Db_Select::COLUMNS)
+                   ->columns($raw, $correlationName);
+        }
+
+        /*
+        Connexions::log("Connexions_Model_Mapper_DbTable[%s]::fetch() "
                         . "sql[ %s ]...",
                         get_class($this),
                         $select->assemble());
@@ -294,13 +330,19 @@ abstract class Connexions_Model_Mapper_DbTable
                         count($accessorModels));
         // */
 
-        // Create a Connexions_Model_Set to contain these results
-        $setName = $this->getModelSetName();
-        $set     = new $setName( array('mapper'     => $this,
-                                      #'modelName'  => $this->getModelName(),
-                                       'context'    => $select,
-                                       'offset'     => $offset,
-                                       'results'    => $accessorModels) );
+        if ($raw !== false)
+        {
+            $set = $accessorModels;
+        }
+        else
+        {
+            // Create a Connexions_Model_Set to contain these results
+            $setName = $this->getModelSetName();
+            $set     = new $setName( array('mapper'     => $this,
+                                           'context'    => $select,
+                                           'offset'     => $offset,
+                                           'results'    => $accessorModels) );
+        }
 
         return $set;
     }

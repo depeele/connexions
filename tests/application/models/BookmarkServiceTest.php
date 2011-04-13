@@ -1574,4 +1574,104 @@ class BookmarkServiceTest extends DbTestCase
 
         $this->assertEquals($expected, $tags->__toString() );
     }
+
+    public function testBookmarkServiceTimeline1()
+    {
+        $expected = array(
+            "2010-04-05 17:25:19",
+            "2007-03-30 14:39:52",
+            "2007-03-30 14:35:51",
+            "2007-03-30 14:33:27",
+            "2007-03-30 13:11:57",
+        );
+        $users    = "1";
+        $items    = null;
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $timeline = $service->getTimeline($users, $items);
+
+        $this->assertEquals($expected, $timeline);
+    }
+
+    public function testBookmarkServiceTimeline2()
+    {
+        $expected = array(
+            "2006-06-30 18:21:47",
+            "2006-04-09 23:59:27",
+            "0000-00-00 00:00:00",
+        );
+        $users    = null;
+        $items    = '6';
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $timeline = $service->getTimeline($users, $items);
+
+        //echo Connexions::varExport($timeline) ."\n";
+
+        $this->assertEquals($expected, $timeline);
+    }
+
+    public function testBookmarkServiceTimeline3()
+    {
+        $expected = array(
+            "2010-04-05 17:25:19",
+            "2007-03-30 14:35:51",
+            "2007-03-30 14:33:27",
+        );
+        $users    = "1,2";
+        $items    = "1,3,4";
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $timeline = $service->getTimeline($users, $items);
+
+        $this->assertEquals($expected, $timeline);
+    }
+
+    public function testBookmarkServiceTimeline4()
+    {
+        $expected = array(
+            "2010-04-05 17:25:19",
+            "2007-03-30 14:35:51",
+        );
+        $users    = "1,2";
+        $items    = "1,3,4";
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $timeline = $service->getTimeline($users, $items,
+                                          null, // order
+                                          2);   // count
+
+        $this->assertEquals($expected, $timeline);
+    }
+
+    public function testBookmarkServiceTimeline5()
+    {
+        $expected = array(
+            "2007-03-30 14:35:51",
+            "2007-03-30 14:33:27",
+        );
+        $users    = "1,2";
+        $items    = "1,3,4";
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $timeline = $service->getTimeline($users, $items,
+                                          null, // order
+                                          2,    // count
+                                          1);   // offset
+
+        $this->assertEquals($expected, $timeline);
+    }
+
+    public function testBookmarkServiceTimeline6()
+    {
+        $expected = array(
+            "2010-04-05 17:25:19",
+            "2007-03-30 14:35:51",
+        );
+        $users    = "1,2";
+        $items    = "1,3,4";
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $timeline = $service->getTimeline($users, $items,
+                                          null,                     // order
+                                          null,                     // count
+                                          null,                     // offset
+                                          '2007-03-30 14:35:00');   // since
+
+        $this->assertEquals($expected, $timeline);
+    }
 }

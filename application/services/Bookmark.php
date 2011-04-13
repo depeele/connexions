@@ -889,19 +889,93 @@ class Service_Bookmark extends Connexions_Service
         $bookmark->delete();
     }
 
+    /** @brief  Retrieve the taggedOn date/times for the given user(s) and/or
+     *          item(s).
+     *  @param  users   A Model_Set_User instance, array, or comma-separated
+     *                  string of users to match.
+     *  @param  items   A Model_Set_Item instance, array, or comma-separated
+     *                  string of items to match.
+     *  @param  order   An array of name/direction pairs representing the
+     *                  desired sorting order.  The 'name's MUST be valid for
+     *                  the target Domain Model and the directions a
+     *                  Connexions_Service::SORT_DIR_* constant.  If an order
+     *                  is omitted, Connexions_Service::SORT_DIR_ASC will be
+     *                  used [ {taggedOn: 'ASC'} ];
+     *  @param  count   The maximum number of items from the full set of
+     *                  matching items that should be returned
+     *                  [ null == all ];
+     *  @param  offset  The starting offset in the full set of matching items
+     *                  [ null == 0 ].
+     *  @param  since   Limit the results to date/times after this date/time [
+     *                  null == no time limits ];
+     *
+     *  @return An array of date/time strings.
+     */
+    public function getTimeline($users,
+                                $items  = null,
+                                $order  = null,
+                                $count  = null,
+                                $offset = null,
+                                $since  = null)
+    {
+        $users = $this->_csList2array($users);
+        $items = $this->_csList2array($items);
+        $order = $this->_csOrder2array($order);
+        if ($order === null)
+        {
+            $order = 'taggedOn '. Connexions_Service::SORT_DIR_DESC;
+        }
+
+        $ids = array();
+        if (is_array($users))   $ids['userId']  = $users;
+        if (is_array($items))
+        {
+            if (empty($ids))    $ids['itemId']  = $items;
+            else                $ids['+itemId'] = $items;
+        }
+        $ids = $this->_includeSince($ids, $since, true /* taggedOn */);
+
+        /*
+        Connexions::log("Service_Bookmark::getTimeline(): "
+                        . "ids[ %s ], order[ %s ]",
+                        Connexions::varExport($ids),
+                        Connexions::varExport($order));
+        // */
+
+        $rows = $this->_mapper->fetch( $ids,
+                                       $order,
+                                       $count,
+                                       $offset,
+                                       /* Raw records, ONLY the taggedOn
+                                        * field
+                                        */
+                                       array('taggedOn'));
+
+        // Reduce to a simple array of date/times
+        $timeline = array();
+        foreach ($rows as $row)
+        {
+            array_push($timeline, $row['taggedOn']);
+        }
+
+        return $timeline;
+    }
+
     /*************************************************************************
      * Protected helpers
      *
      */
 
     /** @brief  Include a date/time restriction.
-     *  @param  id      The identifier to add date/time restrictions to;
-     *  @param  since   Limit the results to bookmarks updated after this
-     *                  date/time [ null == no time limits ];
+     *  @param  id          The identifier to add date/time restrictions to;
+     *  @param  since       Limit the results to bookmarks updated after this
+     *                      date/time [ null == no time limits ];
+     *  @param  taggedOn    Use 'taggedOn' for the restriction (true) or
+     *                          'updatedOn' (false) [ false ];
      *
      *  @return The (possibly) modified 'id'.
      */
-    protected function _includeSince(array $id, $since)
+    protected function _includeSince(array $id, $since, $taggedOn = false)
     {
         if (is_string($since))
         {
@@ -909,7 +983,15 @@ class Service_Bookmark extends Connexions_Service
             if ($since !== false)
             {
                 // Include an additional condition in 'normIds'
-                $id['updatedOn >='] = strftime('%Y-%m-%d %H:%M:%S', $since);
+                $since = strftime('%Y-%m-%d %H:%M:%S', $since);
+                if ($taggedOn === true)
+                {
+                    $id['taggedOn >='] = $since;
+                }
+                else
+                {
+                    $id['updatedOn >='] = $since;
+                }
             }
         }
 
