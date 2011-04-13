@@ -849,7 +849,7 @@ class Service_Bookmark extends Connexions_Service
      */
     public function delete($id)
     {
-        // /*
+        /*
         Connexions::log("Service_Bookmark::delete(): id[ %s ]",
                         Connexions::varExport($id));
         // */
@@ -881,7 +881,7 @@ class Service_Bookmark extends Connexions_Service
                                 . Connexions::varExport($id) .' ]');
         }
 
-        // /*
+        /*
         Connexions::log("Service_Bookmark::delete(): bokmark [ %s ]",
                         $bookmark->debugDump());
         // */
