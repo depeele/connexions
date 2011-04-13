@@ -23,12 +23,13 @@ class Model_Activity extends Model_Base
             'objectId'      => '',
             'operation'     => self::ACTIVITY_DEFAULT,
             'time'          => '',
-            'properties'    => '',
+            'properties'    => '',      // Serialized, JSON version
     );
 
     // Properties not directly backed by our Mapper/DAO
-    protected   $_user      = null;
-    protected   $_object    = null;
+    protected   $_user          = null;
+    protected   $_object        = null;
+    protected   $_properties    = null; // Unserialized, non-JSON version
 
     /*************************************************************************
      * Connexions_Model abstract method implementations
@@ -63,6 +64,7 @@ class Model_Activity extends Model_Base
         case 'user':        $val = $this->getUser();        break;
 
         case 'object':      $val = $this->getObject();      break;
+        case 'properties':  $val = $this->getProperties();  break;
         default:            $val = parent::__get($name);    break;
         }
 
@@ -124,6 +126,14 @@ class Model_Activity extends Model_Base
             {
                 throw new Exception("Model_Activity::__set({$name}, {$value}): "
                                     . "Invalid operation");
+            }
+            break;
+
+        case 'properties':
+            if (! is_string($value))
+            {
+                // Convert incoming properties to JSON
+                $value = Zend_Json::encode($value);
             }
             break;
         }
@@ -196,6 +206,82 @@ class Model_Activity extends Model_Base
         }
 
         return $this->_user;
+    }
+
+    /** @brief  Return the unserialized version of properties.
+     *
+     *  @return A unserialized properties object.
+     */
+    public function getProperties()
+    {
+        if ($this->_properties === null)
+        {
+            $this->_properties = Zend_Json::decode($this->_data['properties']);
+        }
+
+        /*
+        Connexions::log("Model_Activity::getProperties(): [ %s ]",
+                        Connexions::varExport($this->_properties));
+        // */
+
+        return $this->_properties;
+    }
+
+    /** @brief  Return an array version of this instance.
+     *  @param  props   Generation properties:
+     *                      - deep      Deep traversal (true)
+     *                                    or   shallow (false)
+     *                                    [true];
+     *                      - public    Include only public fields (true)
+     *                                    or  also include private (false)
+     *                                    [true];
+     *                      - dirty     Include only dirty fields (true)
+     *                                    or           all fields (false);
+     *                                    [false];
+     *                      - raw       Return the RAW, unprocessed data of the
+     *                                  fields (true) or the processed data of
+     *                                  the fields (false);
+     *                                    [false];
+     *
+     *  Override Connexions_Model::toArray() in order to force the use of
+     *  __get() for each property.  This will in-turn use getProperties() to
+     *  retrieve the 'properties' value, providing an unserialized version
+     *  of the properties for use in the json-rpc calls.
+     *
+     *  @return An array representation of this Domain Model.
+     */
+    public function toArray(array $props    = array())
+    {
+        if (isset($props['raw']) && ($props['raw'] === true))
+        {
+            // Use our parent
+            $ret = parent::toArray($props);
+        }
+        else
+        {
+            /* March through _data and invoke the getter for each, possibly
+             * only if the field is listed as "dirty"
+             */
+            $dirtyOnly = ( isset($props['dirty']) &&
+                           ($props['dirty'] === true) );
+            $ret       = array();
+            foreach ($this->_data as $key => $val)
+            {
+                if ( ($dirtyOnly === false) || (isset($this->_dirty[$key])) )
+                {
+                    $ret[$key] = $this->__get($key);
+                }
+            }
+        }
+
+        // /*
+        Connexions::log("Model_Activity::toArray(): "
+                        .   "props[ %s ], return[ %s ]",
+                        Connexions::varExport($props),
+                        Connexions::varExport($ret));
+        // */
+
+        return $ret;
     }
 
     /*************************************************************************
