@@ -15,9 +15,8 @@ class Service_Bookmark extends Connexions_Service
      */
     protected   $_defaultOrdering   = array(
         'taggedOn'  => 'DESC',
+        'updatedOn' => 'DESC',
         'name'      => 'ASC',
-        'userCount' => 'DESC',
-        'tagCount'  => 'DESC',
     );
 
     /** @brief  Find an existing Domain Model instance, updating it with the
