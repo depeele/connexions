@@ -381,12 +381,12 @@ class BookmarkServiceTest extends DbTestCase
         printf ("User1[ %s ]\n", $user->debugDump());
         // */
 
-        $expected   = '1:2,1:4,1:5,4:15,3:4';
+        $expected   = '1:2,1:4,1:5,3:4,4:15';
         $expectedAr = array( array(1,2),
                              array(1,4),
                              array(1,5),
-                             array(4,15),
                              array(3,4),
+                             array(4,15),
                       );
         $service    = Connexions_Service::factory('Model_Bookmark');
         $ids        = array( 6, 12 );
@@ -407,12 +407,12 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceFetchByTagsAny2()
     {
-        $expected   = '1:2,1:4,1:5,4:15,3:4';
+        $expected   = '1:2,1:4,1:5,3:4,4:15';
         $expectedAr = array( array(1,2),
                              array(1,4),
                              array(1,5),
-                             array(4,15),
                              array(3,4),
+                             array(4,15),
                       );
         $service    = Connexions_Service::factory('Model_Bookmark');
         $ids        = array( 'web2.0', 'javascript' );
@@ -433,12 +433,12 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceFetchByTagsAny3()
     {
-        $expected   = '1:2,1:4,1:5,4:15,3:4';
+        $expected   = '1:2,1:4,1:5,3:4,4:15';
         $expectedAr = array( array(1,2),
                              array(1,4),
                              array(1,5),
-                             array(4,15),
                              array(3,4),
+                             array(4,15),
                       );
         $service    = Connexions_Service::factory('Model_Bookmark');
         $ids        = 'web2.0,javascript';
@@ -462,7 +462,7 @@ class BookmarkServiceTest extends DbTestCase
         // Establish User1 as the authenticated, visiting user.
         $this->_setAuthenticatedUser(1);
 
-        $expected   = '1:1,1:2,1:3,1:4,1:5,4:15,3:4';
+        $expected   = '1:1,1:2,1:3,1:4,1:5,3:4,4:15';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $bookmarks  = $service->fetchByTags( array( 6, 12 ), false );
         $this->assertNotEquals(null, $bookmarks);
@@ -519,7 +519,7 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceFetchByUsers1()
     {
-        $expected   = '1:2,1:4,1:5,3:9,3:10,3:6,3:8,3:4';
+        $expected   = '1:2,1:4,1:5,3:9,3:4,3:6,3:8,3:10';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $bookmarks  = $service->fetchByUsers( array( 1, 3 ) );
         $this->assertNotEquals(null, $bookmarks);
@@ -538,7 +538,7 @@ class BookmarkServiceTest extends DbTestCase
         // Establish User1 as the authenticated, visiting user.
         $this->_setAuthenticatedUser(1);
 
-        $expected   = '1:1,1:2,1:3,1:4,1:5,3:9,3:10,3:6,3:8,3:4';
+        $expected   = '1:1,1:2,1:3,1:4,1:5,3:9,3:4,3:6,3:8,3:10';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $bookmarks  = $service->fetchByUsers( array( 1, 3 ) );
         $this->assertNotEquals(null, $bookmarks);
@@ -557,7 +557,7 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceFetchByItems()
     {
-        $expected   = '4:6,2:6,3:6,4:12';
+        $expected   = '4:6,2:6,4:12,3:6';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $bookmarks  = $service->fetchByItems( array( 6, 12 ) );
         $this->assertNotEquals(null, $bookmarks);
@@ -576,7 +576,7 @@ class BookmarkServiceTest extends DbTestCase
         // Establish User1 as the authenticated, visiting user.
         $this->_setAuthenticatedUser(1);
 
-        $expected   = '4:6,2:6,3:6,4:12';
+        $expected   = '4:6,2:6,4:12,3:6';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $bookmarks  = $service->fetchByItems( array( 6, 12 ) );
         $this->assertNotEquals(null, $bookmarks);
@@ -639,7 +639,7 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceFetchByUsersAndTagsAny()
     {
-        $expected   = '1:2,1:4,1:5,4:15,3:4';
+        $expected   = '1:2,1:4,1:5,3:4,4:15';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $bookmarks  = $service->fetchByUsersAndTags( array( 1, 3, 4 ), // users
                                                      array( 12, 13 ),  // tags
@@ -661,7 +661,7 @@ class BookmarkServiceTest extends DbTestCase
         // Establish User1 as the authenticated, visiting user.
         $this->_setAuthenticatedUser(1);
 
-        $expected   = '1:2,1:3,1:4,1:5,4:15,3:4';
+        $expected   = '1:2,1:3,1:4,1:5,3:4,4:15';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $bookmarks  = $service->fetchByUsersAndTags( array( 1, 3, 4 ), // users
                                                      array( 12, 13 ),  // tags
@@ -683,7 +683,7 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceFetchByItemsAndTagsExact()
     {
-        $expected   = '4:15,3:4';
+        $expected   = '3:4,4:15';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $bookmarks  = $service->fetchByItemsAndTags(
                                     // items
@@ -706,7 +706,7 @@ class BookmarkServiceTest extends DbTestCase
         // Establish User1 as the authenticated, visiting user.
         $this->_setAuthenticatedUser(1);
 
-        $expected   = '4:15,3:4';
+        $expected   = '3:4,4:15';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $bookmarks  = $service->fetchByItemsAndTags(
                                     // items
@@ -729,7 +729,7 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceFetchByItemsAndTagsAny()
     {
-        $expected   = '1:4,3:9,2:6,3:10,4:15,3:8,2:7,3:4,2:11,2:13';
+        $expected   = '1:4,3:9,2:6,2:7,3:4,2:13,4:15,3:8,2:11,3:10';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $bookmarks  = $service->fetchByItemsAndTags(
                                     // items
@@ -753,7 +753,7 @@ class BookmarkServiceTest extends DbTestCase
         // Establish User1 as the authenticated, visiting user.
         $this->_setAuthenticatedUser(1);
 
-        $expected   = '1:3,1:4,3:9,2:6,3:10,4:15,3:8,2:7,3:4,2:11,2:13';
+        $expected   = '1:3,1:4,3:9,2:6,2:7,3:4,2:13,4:15,3:8,2:11,3:10';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $bookmarks  = $service->fetchByItemsAndTags(
                                     // items
@@ -777,7 +777,7 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceFetchRelated1()
     {
-        $expected   = '1:2,1:4,1:5,4:15,3:4';
+        $expected   = '1:2,1:4,1:5,3:4,4:15';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $config     = array('tags'      => array( 6, 12 ),
                             'exactTags' => false);
@@ -797,7 +797,7 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceFetchRelated2()
     {
-        $expected   = '1:2,1:4,1:5,4:15,3:4';
+        $expected   = '1:2,1:4,1:5,3:4,4:15';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $config     = array('tags'      => array( 'web2.0', 'javascript' ),
                             'exactTags' => false);
@@ -817,7 +817,7 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceFetchRelated3()
     {
-        $expected   = '1:2,1:4,1:5,4:15,3:4';
+        $expected   = '1:2,1:4,1:5,3:4,4:15';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $config     = array('tags'      => 'web2.0,javascript',
                             'exactTags' => false,
@@ -841,7 +841,7 @@ class BookmarkServiceTest extends DbTestCase
         // Establish User1 as the authenticated, visiting user.
         $this->_setAuthenticatedUser(1);
 
-        $expected   = '1:1,1:2,1:3,1:4,1:5,4:15,3:4';
+        $expected   = '1:1,1:2,1:3,1:4,1:5,3:4,4:15';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $config     = array('tags'      => array( 6, 12 ),
                             'exactTags' => false,
@@ -910,7 +910,7 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceFetchRelated5()
     {
-        $expected   = '1:2,1:4,1:5,3:9,3:10,3:6,3:8,3:4';
+        $expected   = '1:2,1:4,1:5,3:9,3:4,3:6,3:8,3:10';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $config     = array('users'      => array( 1, 3 ),
                             'exactUsers' => false,
@@ -933,7 +933,7 @@ class BookmarkServiceTest extends DbTestCase
         // Establish User1 as the authenticated, visiting user.
         $this->_setAuthenticatedUser(1);
 
-        $expected   = '1:1,1:2,1:3,1:4,1:5,3:9,3:10,3:6,3:8,3:4';
+        $expected   = '1:1,1:2,1:3,1:4,1:5,3:9,3:4,3:6,3:8,3:10';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $config     = array('users'      => array( 1, 3 ),
                             'exactUsers' => false,
@@ -956,7 +956,7 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceFetchRelated6()
     {
-        $expected   = '4:6,2:6,3:6,4:12';
+        $expected   = '4:6,2:6,4:12,3:6';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $config     = array( 'items' => array( 6, 12 ) );
 
@@ -977,7 +977,7 @@ class BookmarkServiceTest extends DbTestCase
         // Establish User1 as the authenticated, visiting user.
         $this->_setAuthenticatedUser(1);
 
-        $expected   = '4:6,2:6,3:6,4:12';
+        $expected   = '4:6,2:6,4:12,3:6';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $config     = array( 'items' => array( 6, 12 ) );
 
@@ -1046,7 +1046,7 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceFetchRelated8()
     {
-        $expected   = '1:2,1:4,1:5,4:15,3:4';
+        $expected   = '1:2,1:4,1:5,3:4,4:15';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $config     = array( 'users'      => array( 1, 3, 4 ),
                              'tags'       => array(12,13 ),
@@ -1070,7 +1070,7 @@ class BookmarkServiceTest extends DbTestCase
         // Establish User1 as the authenticated, visiting user.
         $this->_setAuthenticatedUser(1);
 
-        $expected   = '1:2,1:3,1:4,1:5,4:15,3:4';
+        $expected   = '1:2,1:3,1:4,1:5,3:4,4:15';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $config     = array( 'users'     => array( 1, 3, 4 ),
                              'tags'      => array(12,13 ),
@@ -1094,7 +1094,7 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceFetchRelated9()
     {
-        $expected   = '4:15,3:4';
+        $expected   = '3:4,4:15';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $config     = array(
                         'items'     => array( 3, 4, 6, 7, 8, 9, 10, 11, 13, 15),
@@ -1119,7 +1119,7 @@ class BookmarkServiceTest extends DbTestCase
         // Establish User1 as the authenticated, visiting user.
         $this->_setAuthenticatedUser(1);
 
-        $expected   = '4:15,3:4';
+        $expected   = '3:4,4:15';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $config     = array(
                         'items'     => array( 3, 4, 6, 7, 8, 9, 10, 11, 13, 15),
@@ -1144,7 +1144,7 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceFetchRelated10()
     {
-        $expected   = '1:4,3:9,2:6,3:10,4:15,3:8,2:7,3:4,2:11,2:13';
+        $expected   = '1:4,3:9,2:6,2:7,3:4,2:13,4:15,3:8,2:11,3:10';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $config     = array(
                         'items'     => array( 3, 4, 6, 7, 8, 9, 10, 11, 13, 15),
@@ -1169,7 +1169,7 @@ class BookmarkServiceTest extends DbTestCase
         // Establish User1 as the authenticated, visiting user.
         $this->_setAuthenticatedUser(1);
 
-        $expected   = '1:3,1:4,3:9,2:6,3:10,4:15,3:8,2:7,3:4,2:11,2:13';
+        $expected   = '1:3,1:4,3:9,2:6,2:7,3:4,2:13,4:15,3:8,2:11,3:10';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $config     = array(
                         'items'     => array( 3, 4, 6, 7, 8, 9, 10, 11, 13, 15),
@@ -1194,7 +1194,7 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceFetchInbox1()
     {
-        $expected   = '3:9,2:6,3:10,4:15,3:8,2:7,3:4,2:14,2:11,2:13';
+        $expected   = '3:9,2:6,2:7,2:14,3:4,2:13,4:15,3:8,2:11,3:10';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $bookmarks  = $service->fetchInbox( 'User1',
                                             null,   // No tags
@@ -1212,7 +1212,7 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceFetchInbox2()
     {
-        $expected   = '3:9,2:7,3:4,2:14,2:13';
+        $expected   = '3:9,2:7,2:14,3:4,2:13';
         $service    = Connexions_Service::factory('Model_Bookmark');
         $bookmarks  = $service->fetchInbox( 'User1',
                                             null,   // No tags
