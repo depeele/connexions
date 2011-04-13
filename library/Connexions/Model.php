@@ -819,6 +819,9 @@ abstract class Connexions_Model
             $activity['userId'] = $actor->getId();
         }
 
+        // If 'userId' is STILL null, set it to 0.
+        if ($activity['userId'] === null)   $activity['userId'] = 0;
+
         /*
         Connexions::log("Connexions_Model::_logActivity(): "
                         . "[ %s ]",
