@@ -16,6 +16,56 @@ class Service_Activity extends Connexions_Service
         'time'      => 'DESC',
     );
 
+    /** @brief  Retrieve a set of Domain Model instances.
+     *  @param  id      Identification value(s), null to retrieve all.
+     *                  MAY be an associative array that specifically
+     *                  identifies attribute/value(s) pairs.
+     *  @param  order   An array of name/direction pairs representing the
+     *                  desired sorting order.  The 'name's MUST be valid for
+     *                  the target Domain Model and the directions a
+     *                  Connexions_Service::SORT_DIR_* constant.  If an order
+     *                  is omitted, Connexions_Service::SORT_DIR_ASC will be
+     *                  used [ no specified order ];
+     *  @param  count   The maximum number of items from the full set of
+     *                  matching items that should be returned
+     *                  [ null == all ];
+     *  @param  offset  The starting offset in the full set of matching items
+     *                  [ null == 0 ].
+     *  @param  since   Limit the results to activities that occurred after
+     *                  this date/time [ null == no time limits ];
+     *
+     *  @return A new Connexions_Model_Set.
+     */
+    public function fetch($id       = null,
+                          $order    = null,
+                          $count    = null,
+                          $offset   = null,
+                          $since    = null)
+    {
+        $ids     = $this->_csList2array($id);
+        $normIds = $this->_mapper->normalizeIds($ids);
+        $order   = $this->_csOrder2array($order);
+
+        if ($since !== null)
+        {
+            $normIds = $this->_includeSince($normIds, $since);
+        }
+
+        /*
+        Connexions::log("Connexions_Service::fetch() "
+                        . "id[ %s ], ids[ %s ], normIds[ %s ]",
+                        Connexions::varExport($id),
+                        Connexions::varExport($ids),
+                        Connexions::varExport($normIds));
+        // */
+
+        return $this->_mapper->fetch( $normIds,
+                                      $order,
+                                      $count,
+                                      $offset );
+
+    }
+
     /** @brief  Retrieve a set of activities related to a set of Users.
      *  @param  users   A Model_Set_User instance, array, or comma-separated
      *                  string of users to match.

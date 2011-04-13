@@ -806,7 +806,7 @@ abstract class Connexions_Model
         else                        $objectId = (String)$objectId;
 
         $activity   = array(
-            'actorId'       => null,
+            'userId'        => null,
             'objectId'      => $objectId,
             'operation'     => $operation,
             'objectType'    => $objectType,
@@ -816,7 +816,7 @@ abstract class Connexions_Model
         $actor = Connexions::getUser();
         if ($actor)
         {
-            $activity['actorId'] = $actor->getId();
+            $activity['userId'] = $actor->getId();
         }
 
         /*

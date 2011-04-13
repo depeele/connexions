@@ -4,6 +4,19 @@ require_once APPLICATION_PATH .'/services/Activity.php';
 
 class ActivityServiceTest extends DbTestCase
 {
+    protected static    $toArray_deep_all       = array(
+        'deep'      => true,
+        'public'    => false,
+        'dirty'     => false,
+        'raw'       => true,
+    );
+    protected static    $toArray_shallow_all    = array(
+        'deep'      => false,
+        'public'    => false,
+        'dirty'     => false,
+        'raw'       => true,
+    );
+
     protected   $_activity1 = array(
         'activityId'    => "1",
         'userId'        => "1",
