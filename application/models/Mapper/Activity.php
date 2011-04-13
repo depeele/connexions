@@ -16,6 +16,26 @@ class Model_Mapper_Activity extends Model_Mapper_Base
     //protected   $_modelName = 'Model_Activity';
     //protected   $_accessor  = 'Model_DbTable_Activity';
 
+    /** @brief  Convert the incoming model into an array containing only 
+     *          data that should be directly persisted.  This method may also
+     *          be used to update dynamic values
+     *          (e.g. update date/time, last visit date/time).
+     *  @param  model   The Domain Model to reduce to an array.
+     *
+     *  Over-ride Connexions_Model_Mapper since our model's toArray() is a
+     *  little special.
+     *
+     *  @return A filtered associative array containing data that should 
+     *          be directly persisted.
+     */
+    public function reduceModel(Connexions_Model $model)
+    {
+        return $model->toArray( array('deep'    => false,
+                                      'public'  => false,
+                                      'dirty'   => true,
+                                      'raw'     => true) );
+    }
+
     /** @brief  Retrieve the user related to this activity.
      *  @param  activity    The Model_Activity instance.
      *
