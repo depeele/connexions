@@ -362,7 +362,7 @@ class PostController extends Connexions_Controller_Action
             // :TODO: Retrieve the viewer's network.
             $network    = $this->_viewer->getNetwork();
 
-            // /*
+            /*
             Connexions::log("PostController::_prepare_suggestions_People(): "
                             .   "viewer[ %s ], network[ %s ]",
                             $this->_viewer,

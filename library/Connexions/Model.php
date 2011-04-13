@@ -796,7 +796,7 @@ abstract class Connexions_Model
                                              get_class($this)));
         if ($objectType === 'activity')
         {
-            // Don't go recursive!!
+            // Don't go recursive by logging the activity of logging activity!!
             return $this;
         }
 
@@ -828,14 +828,14 @@ abstract class Connexions_Model
                         Connexions::varExport($activity));
         // */
 
-        $activityInst = Connexions_Service::factory('Model_Activity')
-                            ->get( $activity )
-                            ->save();
+        // Create a new instance and save.
+        $activityInst = new Model_Activity($activity);
+        $activityInst = $activityInst->save();
 
         /*
         Connexions::log("Connexions_Model::_logActivity(): "
                         . "[ %s ]",
-                        Connexions::varExport($activityInst));
+                        $activityInst->debugDump());
         // */
 
 
