@@ -1577,6 +1577,26 @@ class BookmarkServiceTest extends DbTestCase
 
     public function testBookmarkServiceTimeline1()
     {
+        // Private bookmarks aren't included
+        $expected = array(
+            "2007-03-30 14:39:52",
+            "2007-03-30 14:33:27",
+            "2007-03-30 13:11:57",
+        );
+        $users    = "1";
+        $items    = null;
+        $tags     = null;
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $timeline = $service->getTimeline($users, $items, $tags);
+
+        $this->assertEquals($expected, $timeline);
+    }
+
+    public function testBookmarkServiceTimeline2()
+    {
+        // Establish User1 as the authenticated, visiting user.
+        $this->_setAuthenticatedUser(1);
+
         $expected = array(
             "2010-04-05 17:25:19",
             "2007-03-30 14:39:52",
@@ -1586,13 +1606,17 @@ class BookmarkServiceTest extends DbTestCase
         );
         $users    = "1";
         $items    = null;
+        $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
-        $timeline = $service->getTimeline($users, $items);
+        $timeline = $service->getTimeline($users, $items, $tags);
 
         $this->assertEquals($expected, $timeline);
+
+        // De-Establish User1 as the authenticated, visiting user.
+        $this->_unsetAuthenticatedUser();
     }
 
-    public function testBookmarkServiceTimeline2()
+    public function testBookmarkServiceTimeline3()
     {
         $expected = array(
             "2006-06-30 18:21:47",
@@ -1601,77 +1625,88 @@ class BookmarkServiceTest extends DbTestCase
         );
         $users    = null;
         $items    = '6';
+        $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
-        $timeline = $service->getTimeline($users, $items);
+        $timeline = $service->getTimeline($users, $items, $tags);
 
         //echo Connexions::varExport($timeline) ."\n";
 
         $this->assertEquals($expected, $timeline);
     }
 
-    public function testBookmarkServiceTimeline3()
+    public function testBookmarkServiceTimeline4()
     {
+        // Private bookmarks aren't included
         $expected = array(
-            "2010-04-05 17:25:19",
-            "2007-03-30 14:35:51",
             "2007-03-30 14:33:27",
         );
         $users    = "1,2";
         $items    = "1,3,4";
+        $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
-        $timeline = $service->getTimeline($users, $items);
-
-        $this->assertEquals($expected, $timeline);
-    }
-
-    public function testBookmarkServiceTimeline4()
-    {
-        $expected = array(
-            "2010-04-05 17:25:19",
-            "2007-03-30 14:35:51",
-        );
-        $users    = "1,2";
-        $items    = "1,3,4";
-        $service  = Connexions_Service::factory('Model_Bookmark');
-        $timeline = $service->getTimeline($users, $items,
-                                          null, // order
-                                          2);   // count
+        $timeline = $service->getTimeline($users, $items, $tags);
 
         $this->assertEquals($expected, $timeline);
     }
 
     public function testBookmarkServiceTimeline5()
     {
+        // Establish User1 as the authenticated, visiting user.
+        $this->_setAuthenticatedUser(1);
+
         $expected = array(
+            "2010-04-05 17:25:19",
             "2007-03-30 14:35:51",
             "2007-03-30 14:33:27",
         );
         $users    = "1,2";
         $items    = "1,3,4";
+        $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
-        $timeline = $service->getTimeline($users, $items,
-                                          null, // order
-                                          2,    // count
-                                          1);   // offset
+        $timeline = $service->getTimeline($users, $items, $tags);
 
         $this->assertEquals($expected, $timeline);
+
+        // De-Establish User1 as the authenticated, visiting user.
+        $this->_unsetAuthenticatedUser();
     }
 
     public function testBookmarkServiceTimeline6()
     {
+        // Private bookmarks aren't included
+        $expected = array(
+        );
+        $users    = "1,2";
+        $items    = "1,3,4";
+        $tags     = null;
+        $service  = Connexions_Service::factory('Model_Bookmark');
+        $timeline = $service->getTimeline($users, $items, $tags,
+                                          null,                     // order
+                                          '2007-03-30 14:35:00');   // from
+
+        $this->assertEquals($expected, $timeline);
+    }
+
+    public function testBookmarkServiceTimeline7()
+    {
+        // Establish User1 as the authenticated, visiting user.
+        $this->_setAuthenticatedUser(1);
+
         $expected = array(
             "2010-04-05 17:25:19",
             "2007-03-30 14:35:51",
         );
         $users    = "1,2";
         $items    = "1,3,4";
+        $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
-        $timeline = $service->getTimeline($users, $items,
+        $timeline = $service->getTimeline($users, $items, $tags,
                                           null,                     // order
-                                          null,                     // count
-                                          null,                     // offset
-                                          '2007-03-30 14:35:00');   // since
+                                          '2007-03-30 14:35:00');   // from
 
         $this->assertEquals($expected, $timeline);
+
+        // De-Establish User1 as the authenticated, visiting user.
+        $this->_unsetAuthenticatedUser();
     }
 }

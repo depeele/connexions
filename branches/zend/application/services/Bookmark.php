@@ -895,69 +895,47 @@ class Service_Bookmark extends Connexions_Service
      *                  string of users to match.
      *  @param  items   A Model_Set_Item instance, array, or comma-separated
      *                  string of items to match.
-     *  @param  order   An array of name/direction pairs representing the
-     *                  desired sorting order.  The 'name's MUST be valid for
-     *                  the target Domain Model and the directions a
-     *                  Connexions_Service::SORT_DIR_* constant.  If an order
-     *                  is omitted, Connexions_Service::SORT_DIR_ASC will be
-     *                  used [ {taggedOn: 'ASC'} ];
-     *  @param  count   The maximum number of items from the full set of
-     *                  matching items that should be returned
-     *                  [ null == all ];
-     *  @param  offset  The starting offset in the full set of matching items
-     *                  [ null == 0 ].
-     *  @param  since   Limit the results to date/times after this date/time [
+     *  @param  tags    A Model_Set_Tag  instance, array, or comma-separated
+     *                  string of tags to match.
+     *  @param  order   An order string:
+     *                      'taggedOn ASC|DESC'
+     *                      'updatedOn ASC|DESC'
+     *                  used [ 'taggedOn ASC' ];
+     *  @param  from    Limit the results to date/times AFTER this date/time
+     *                  [ null == no starting time limit ];
+     *  @param  until   Limit the results to date/times BEFORE this date/time
+     *                  [ null == no ending time limit ];
      *                  null == no time limits ];
      *
      *  @return An array of date/time strings.
      */
     public function getTimeline($users,
                                 $items  = null,
+                                $tags   = null,
                                 $order  = null,
-                                $count  = null,
-                                $offset = null,
-                                $since  = null)
+                                $from   = null,
+                                $until  = null)
     {
-        $users = $this->_csList2array($users);
-        $items = $this->_csList2array($items);
-        $order = $this->_csOrder2array($order);
-        if ($order === null)
-        {
-            $order = 'taggedOn '. Connexions_Service::SORT_DIR_DESC;
-        }
-
-        $ids = array();
-        if (is_array($users))   $ids['userId']  = $users;
-        if (is_array($items))
-        {
-            if (empty($ids))    $ids['itemId']  = $items;
-            else                $ids['+itemId'] = $items;
-        }
-        $ids = $this->_includeSince($ids, $since, true /* taggedOn */);
+        $users = $this->factory('Service_User')->csList2set($users);
+        $items = $this->factory('Service_Item')->csList2set($items);
+        $tags  = $this->factory('Service_Tag')->csList2set($tags);
+        $order = $this->_csOrder2array($order, true /* noExtras */);
 
         /*
         Connexions::log("Service_Bookmark::getTimeline(): "
-                        . "ids[ %s ], order[ %s ]",
-                        Connexions::varExport($ids),
+                        . "users[ %s ], items[ %s ], tags[ %s ], order[ %s ]",
+                        Connexions::varExport($users),
+                        Connexions::varExport($items),
+                        Connexions::varExport($tags),
                         Connexions::varExport($order));
         // */
 
-        $rows = $this->_mapper->fetch( $ids,
-                                       $order,
-                                       $count,
-                                       $offset,
-                                       /* Raw records, ONLY the taggedOn
-                                        * field
-                                        */
-                                       array('taggedOn'));
-
-        // Reduce to a simple array of date/times
-        $timeline = array();
-        foreach ($rows as $row)
-        {
-            array_push($timeline, $row['taggedOn']);
-        }
-
+        $timeline = $this->_mapper->getTimeline( $users,
+                                                 $items,
+                                                 $tags,
+                                                 $order,
+                                                 $from,
+                                                 $until);
         return $timeline;
     }
 
