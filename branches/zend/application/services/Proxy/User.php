@@ -278,4 +278,23 @@ class Service_Proxy_User extends Connexions_Service_Proxy
 
         return ($this->_service->cropAvatar($user, $url, $crop));
     }
+
+    /** @brief  Retrieve the Model_Set_User instance representing
+     *          "contributors" who have at least 'min' bookmarks.
+     *  @param  min     The minimum number of bookmarks required to be
+     *                  considered a "contributor"  [ 1 ];
+     *  @param  count   Optional LIMIT count        [ 50 ];
+     *  @param  offset  Optional LIMIT offset       [ 0 ];
+     *
+     *  @return A Model_Set_User instance representing the "contributors";
+     */
+    public function getContributors($min    = 1,
+                                    $count  = 50,
+                                    $offset = null)
+    {
+        if ($min   < 1) $min   = 1;
+        if ($count < 1) $count = 50;
+
+        return ($this->_service->getContributors($min, $count, $offset));
+    }
 }
