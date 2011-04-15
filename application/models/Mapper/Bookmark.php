@@ -441,8 +441,17 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
      *                  items to match.
      *  @param  tags    A Model_Set_Tag instance (or null) representing the
      *                  tags to match.
+     *  @param  group   How entries should be grouped / rolled-up.  A string
+     *                  specifying an ISO 8601 duration
+     *                  (e.g. 'P2Y4DT6H8M' == 2 years, 4 days, 6 hours, 8
+     *                        minutes).
+     *                  If not specified, no grouping will be performed.  Note
+     *                  that if grouping is employed, the returned data will be
+     *                  reduced to single date/time instances using the FIRST
+     *                  field indicated by any 'order' parameter [ null ];
      *  @param  order   An array of name/value pairs representing the fields
-     *                  and sort directions to use;
+     *                  and sort directions to use
+     *                  [ null == {'taggedOn' => 'DESC'} ];
      *  @param  from    Limit the results to date/times AFTER this date/time
      *                  [ null == no starting time limit ];
      *  @param  until   Limit the results to date/times BEFORE this date/time
@@ -454,6 +463,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
     public function getTimeline($users,
                                 $items  = null,
                                 $tags   = null,
+                                $group  = null,
                                 $order  = null,
                                 $from   = null,
                                 $until  = null)
@@ -520,7 +530,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         if (! empty($where))    $params['where']  = $where;
 
 
-        /*
+        // /*
         Connexions::log("Model_Mapper_Bookmark::getTimeline(): "
                         . "params[ %s ]",
                         Connexions::varExport($params));
@@ -528,25 +538,67 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
 
         $rows = $this->fetchRelated( $params );
 
-        if (count($fields) > 1)
+        if ((! empty($group)) || (count($fields) < 2))
+        {
+            /* Return a single field
+             *  Reduce the rows to a simple array of date/times
+             */
+            $grouping = $this->_normalizeGroup($group);
+
+            // /*
+            Connexions::log("Model_Mapper_Bookmark::getTimeline(): "
+                            . "group[ %s ] == grouping[ %s ]",
+                            Connexions::varExport($group),
+                            Connexions::varExport($grouping));
+            // */
+
+            $timeline = array();
+            $field    = $fields[0];
+            foreach ($rows as $row)
+            {
+                if ($grouping)
+                {
+                    // Determine the grouping "bin" to place this entry into.
+                    $time = strtotime($row[ $field ]);
+                    if ($time === false)
+                    {
+                        continue;
+                    }
+
+                    $mod  = floor($time / $grouping['mod']);
+                    if ($grouping['mod'] == 31536000)
+                    {
+                        /* For years, we don't want to 'bin' into the PREVIOUS
+                         * year but rather in the "current" year.
+                         */
+                        $mod++;
+                    }
+                    $mod  *= $grouping['mod'];
+                    $bin   = strftime($grouping['fmt'], $mod);
+
+                    Connexions::log("Model_Mapper_Bookmark::getTimeline(): "
+                                    . "row[ %s ][ %s ] == mod[ %s ], bin[ %s ]",
+                                    $row[ $field ], $time,
+                                    $mod, $bin);
+
+                    if (isset($timeline[$bin]))
+                        $timeline[$bin]++;
+                    else
+                        $timeline[$bin] = 1;
+                }
+                else
+                {
+                    array_push($timeline, $row[ $field ]);
+                }
+            }
+        }
+        else
         {
             /* Multiple fields
              *  Return the rows directly (an array of objects containing
              *  name/value pairs for each field).
              */
             $timeline = $rows;
-        }
-        else
-        {
-            /* Single field
-             *  Reduce the rows to a simple array of date/times
-             */
-            $timeline = array();
-            $field    = $fields[0];
-            foreach ($rows as $row)
-            {
-                array_push($timeline, $row[ $field ]);
-            }
         }
 
         return $timeline;
@@ -581,6 +633,49 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
      * Protected helpers
      *
      */
+
+    /** @brief  Given a grouping string, convert it to a 'unit' and 'count';
+     *  @param  group   The grouping string of the form:
+     *                      'Pn'
+     *                  Where 'P' represents the grouping unit ('S'econds,
+     *                  'M'inutes, 'H'ours, 'd'ays, 'w'eeks, 'm'onths, 'y'ears)
+     *                  followed by an optional 'n' specifying the number of
+     *                  units, defaulting to 1.
+     *
+     *  @return A simple object containing 'fmt' and 'mod';
+     */
+    protected function _normalizeGroup($group)
+    {
+        $res      = null;
+        $interval = (! empty($group)
+                        ? new DateInterval($group)
+                        : null);
+        if ($interval !== null)
+        {
+            // Return the number of seconds in the specified interval.
+            $secs = ($interval->y * 31536000)   // 365 * 24 * 60 * 60 years
+                  + ($interval->m *  2592000)   //  30 * 24 * 60 * 60 months
+                  + ($interval->d *    86400)   //       24 * 60 * 60 days
+                  + ($interval->h *     3600)   //            60 * 60 hours
+                  + ($interval->i *       60)   //                 60 minutes
+                  +  $interval->s;              //                    seconds
+
+            $fmt = '%Y';
+            if ($secs < 31536000)   $fmt .= '-%m';
+            if ($secs <  2592000)   $fmt .= '-%d';
+            if ($secs <    86400)   $fmt .= ' %H';
+            if ($secs <     3600)   $fmt .= ':%M';
+            else if($secs <86400)   $fmt .= ':00';
+            if ($secs <       60)   $fmt .= ':%S';
+
+            $res = array(
+                'fmt' => $fmt,
+                'mod' => $secs,
+            );
+        }
+
+        return $res;
+    }
 
     /** @brief  Given identification value(s) that will be used for retrieval,
      *          normalize the values for 'user'.

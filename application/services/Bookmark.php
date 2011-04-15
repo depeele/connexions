@@ -897,6 +897,14 @@ class Service_Bookmark extends Connexions_Service
      *                  string of items to match.
      *  @param  tags    A Model_Set_Tag  instance, array, or comma-separated
      *                  string of tags to match.
+     *  @param  group   How entries should be grouped / rolled-up.  A string
+     *                  specifying an ISO 8601 duration
+     *                  (e.g. 'P2Y4DT6H8M' == 2 years, 4 days, 6 hours, 8
+     *                        minutes).
+     *                  If not specified, no grouping will be performed.  Note
+     *                  that if grouping is employed, the returned data will be
+     *                  reduced to single date/time instances using the FIRST
+     *                  field indicated by any 'order' parameter [ null ];
      *  @param  order   An order string:
      *                      'taggedOn ASC|DESC'
      *                      'updatedOn ASC|DESC'
@@ -912,6 +920,7 @@ class Service_Bookmark extends Connexions_Service
     public function getTimeline($users,
                                 $items  = null,
                                 $tags   = null,
+                                $group  = null,
                                 $order  = null,
                                 $from   = null,
                                 $until  = null)
@@ -933,6 +942,7 @@ class Service_Bookmark extends Connexions_Service
         $timeline = $this->_mapper->getTimeline( $users,
                                                  $items,
                                                  $tags,
+                                                 $group,
                                                  $order,
                                                  $from,
                                                  $until);
