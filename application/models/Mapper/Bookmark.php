@@ -433,6 +433,125 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         return $this;
     }
 
+    /** @brief  Retrieve the taggedOn date/times for the given user(s),
+     *          item(s), and/or tag(s).
+     *  @param  users   A Model_Set_User instance (or null) representing the
+     *                  users to match;
+     *  @param  items   A Model_Set_Item instance (or null) representing the
+     *                  items to match.
+     *  @param  tags    A Model_Set_Tag instance (or null) representing the
+     *                  tags to match.
+     *  @param  order   An array of name/value pairs representing the fields
+     *                  and sort directions to use;
+     *  @param  from    Limit the results to date/times AFTER this date/time
+     *                  [ null == no starting time limit ];
+     *  @param  until   Limit the results to date/times BEFORE this date/time
+     *                  [ null == no ending time limit ];
+     *                  null == no time limits ];
+     *
+     *  @return An array of date/time strings.
+     */
+    public function getTimeline($users,
+                                $items  = null,
+                                $tags   = null,
+                                $order  = null,
+                                $from   = null,
+                                $until  = null)
+    {
+        if (empty($order))
+        {
+            // Default ordering with the 'taggedOn' field
+            $order  = array('taggedOn '. Connexions_Service::SORT_DIR_DESC);
+            $fields = array('taggedOn');
+        }
+        else
+        {
+            // Use the incoming 'order' to determine which fields to include
+            $fields     = array();
+            $orderParts = (is_array($order)
+                            ? $order
+                            : preg_split('/\s*,\s*/', $order));
+
+            foreach ($orderParts as $part)
+            {
+                if (preg_match('/^(.*?)\s+/', $part, $matches))
+                {
+                    array_push($fields, $matches[1]);
+                }
+            }
+        }
+
+        // Include any time-range restrictions
+        $where = array();
+        if (is_string($from) && (! empty($from)) )
+        {
+            $fromTime = strtotime($from);
+            if ($fromTime !== false)
+            {
+                $field = $fields[0] .' >=';
+                $where[ $field ] = strftime('%Y-%m-%d %H:%M:%S', $fromTime);
+            }
+        }
+        if (is_string($until) && (! empty($until)) )
+        {
+            $untilTime = strtotime($until);
+            if ($untilTime !== false)
+            {
+                $field = (empty($where)
+                            ? $fields[0]
+                            : '+'. $fields[0]) .' <=';
+
+                $where[ $field ] = strftime('%Y-%m-%d %H:%M:%S', $untilTime);
+            }
+        }
+
+        $params = array(
+            'order'         => $order,
+            'fields'        => $fields,
+            'excludeStats'  => true,
+            'rawRows'       => true,
+            'exactUsers'    => false,
+            'exactItems'    => false,
+            'exactTags'     => false,
+        );
+        if (! empty($users))    $params['users']  = $users;
+        if (! empty($items))    $params['items']  = $items;
+        if (! empty($tags))     $params['tags']   = $tags;
+        if (! empty($where))    $params['where']  = $where;
+
+
+        /*
+        Connexions::log("Model_Mapper_Bookmark::getTimeline(): "
+                        . "params[ %s ]",
+                        Connexions::varExport($params));
+        // */
+
+        $rows = $this->fetchRelated( $params );
+
+        if (count($fields) > 1)
+        {
+            /* Multiple fields
+             *  Return the rows directly (an array of objects containing
+             *  name/value pairs for each field).
+             */
+            $timeline = $rows;
+        }
+        else
+        {
+            /* Single field
+             *  Reduce the rows to a simple array of date/times
+             */
+            $timeline = array();
+            $field    = $fields[0];
+            foreach ($rows as $row)
+            {
+                array_push($timeline, $row[ $field ]);
+            }
+        }
+
+        return $timeline;
+    }
+
     /** @brief  Create a new instance of the Domain Model given raw data, 
      *          typically from a persistent store.
      *  @param  data        The raw data.

@@ -294,7 +294,7 @@ abstract class Connexions_Model_Mapper_DbTable
             $select->assemble();
 
             list($correlationName, $column, $alias) =
-                array_shift($select->getPart(Zend_Db_Select::COLUMNS));
+                @array_shift($select->getPart(Zend_Db_Select::COLUMNS));
 
             /*
             Connexions::log("Connexions_Model_Mapper_DbTable[%s]::fetch(): "

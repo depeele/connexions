@@ -396,11 +396,13 @@ abstract class Connexions_Service
 
     /** @brief  Convert a comma-separated string or order criterian into an
      *          order array acceptable to Connexions_Service::fetch().
-     *  @param  order   The order value (comma-separated string or array).
+     *  @param  order       The order value (comma-separated string or array).
+     *  @param  noExtras    If true, do NOT include extra, default ordering
+     *                      [ false ];
      *
      *  @return A matching array.
      */
-    protected function _csOrder2array($order)
+    protected function _csOrder2array($order, $noExtras = false)
     {
         if (! is_array($order))
         {
@@ -437,7 +439,11 @@ abstract class Connexions_Service
 
             array_push($newOrder, $name .' '. $dir);
         }
-        $newOrder = $this->_extraOrder($newOrder);
+
+        if ((! empty($newOrder)) && ($noExtras !== true) )
+        {
+            $newOrder = $this->_extraOrder($newOrder);
+        }
 
         /*
         Connexions::log("Connexions_Service::_csOrder2array( %s ): "

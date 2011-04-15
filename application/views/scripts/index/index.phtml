@@ -86,39 +86,38 @@ $links->appendStylesheet($this->baseUrl('/css/bookmarks.css'));
 <div class='columnHeader'>
  <div class='context-bg connexions_sprites bookmark_bg
              ui-corner-left ui-corner-tr'>&nbsp;</div>
- <p>Bookmarks of <?php
+ <p><?php
+    if ($this->owner === '*')
+    {
+        echo "All bookmarks";
+    }
+    else
+    {
+        printf ("%s's bookmarks", $this->owner);
 
-        echo ($this->owner === '*'
-                ? 'all users'
-                : $this->owner);
-
-        if (($this->owner instanceof Model_User) &&
-            (! empty($this->owner->pictureUrl)) )
+        if (! empty($this->owner->pictureUrl))
         {
             printf ("<img class='avatar' src='%s' title='%s' />",
                     $this->owner->pictureUrl,
                     $this->owner->fullName);
         }
+    }
 
-        // /*
-        $nTags = count($this->tags);
-        if ( $nTags > 1 )
-        {
-            printf ("<span class='restrictions'>with tags '%s'.</span>",
-                    $this->tags);
-        }
-        else if ( $nTags > 0 )
-        {
-            printf ("<span class='restrictions'>with tag '%s'.</span>",
-                    $this->tags);
-        }
-        else
-        {
-            echo ".";
-        }
-        // */
-    ?>
- </p>
+
+    // /*
+    $nTags = count($this->tags);
+    if ($nTags > 0)
+    {
+        printf ("<span class='restrictions'>with tag%s '%s'.</span>",
+                ($nTags === 1 ? '' : 's'),
+                $this->tags);
+    }
+    else
+    {
+        echo ".";
+    }
+    // */
+ ?></p>
 </div>
 
 <?= $htmlItemScope->render() ?>

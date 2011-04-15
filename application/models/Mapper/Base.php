@@ -65,6 +65,12 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      *                      - where         Additional condition(s) [ null ];
      *                      - paginate      Return a Zend_Paginator instead of
      *                                      a Connexions_Model_Set.
+     *                      - fields        An array of fields to return
+     *                                      [ '*' ];
+     *                      - excludeStats  If true, do NOT include statistics
+     *                                      [ false ];
+     *                      - rawRows       If true, return raw rows instead of
+     *                                      model instances [ false ];
      *
      *  @return A Connexions_Model_Set instance that provides access to all
      *          matching Domain Model instances.
@@ -79,10 +85,35 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
          * Generate the primary select.
          *
          */
+        $fields  = array();
+        $rawRows = (isset($params['rawRows'])
+                        ? $params['rawRows']
+                        : false);
+        if (is_array($params['fields']))
+        {
+            foreach ($params['fields'] as $field)
+            {
+                array_push($fields, "{$as}.{$field}");
+            }
+
+            if ($rawRows !== false)
+            {
+                $params['rawRows'] = $fields;
+            }
+        }
+        else
+        {
+            array_push($fields, "{$as}.*");
+            if ($rawRows !== false)
+            {
+                $params['rawRows'] = true;
+            }
+        }
+
         $select   = $db->select();
         $select->from( array( $as =>
                                 $accessor->info(Zend_Db_Table_Abstract::NAME)),
-                       array("{$as}.*"));
+                       $fields );
 
         $this->_includeSecondarySelect($select, $as, $params);
 
@@ -108,15 +139,18 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
 
         /*
         Connexions::log("Model_Mapper_Base[%s]::fetchRelated(): "
-                        .   "sql[ %s ], order[ %s ], count[ %s ], offset[ %s ]",
+                        .   "sql[ %s ], order[ %s ], "
+                        .   "count[ %s ], offset[ %s ], "
+                        .   "rawRows[ %s ]",
                         get_class($this),
                         $select->assemble(),
                         ($order  ? Connexions::varExport($order)  : 'null'),
                         ($count  ? $count  : 'null'),
-                        ($offset ? $offset : 'null'));
+                        ($offset ? $offset : 'null'),
+                        Connexions::varExport($rawRows));
         // */
 
-        $set    = $this->fetch($select, $order, $count, $offset);
+        $set    = $this->fetch($select, $order, $count, $offset, $rawRows);
 
         /*
         Connexions::log("Model_Mapper_Base[%s]::fetchRelated(): "
@@ -126,6 +160,10 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
         // */
 
 
+        /* :XXX: We SHOULDN'T have 'paginate' true AND 'rawRows' anything other
+         *       than absent or false.  If that scenario is needed, extra work
+         *       needs to be done...
+         */
         if ( isset($params['paginate']) && ($params['paginate'] !== false) )
         {
             $result = new Zend_Paginator( $set->getPaginatorAdapter() );
@@ -287,6 +325,8 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      *  @param  select      The primary Zend_Db_Select instance.
      *  @param  primeAs     The alias of the table in the primary select;
      *  @param  params      An array retrieval criteria.
+     *                          excludeStats    If true, do NOT include
+     *                                          statistics [ false ];
      *
      *  :NOTE:
      *
@@ -311,7 +351,11 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                          array("{$as}.*"))
                   ->group( $groupBy );
 
-        $this->_includeStatistics($select, $secSelect, $as, $params);
+        if ( (! isset($params['excludeStats'])) ||
+             ($params['excludeStats'] !== true) )
+        {
+            $this->_includeStatistics($select, $secSelect, $as, $params);
+        }
 
         /*
         Connexions::log("Model_Mapper_Base[%s]::fetchRelated(): "

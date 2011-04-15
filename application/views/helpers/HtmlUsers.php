@@ -81,7 +81,8 @@ class View_Helper_HtmlUsers extends View_Helper_Users
                                  'user:data:relation',
                                  'user:data:userId',
                                  'user:data:fullName',
-                                 'user:data:email'
+                                 'user:data:email',
+                                 'user:data:dates:lastVisit',
             )
         ),
         self::STYLE_FULL    => array(
