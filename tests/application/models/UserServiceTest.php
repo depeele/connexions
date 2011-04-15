@@ -1645,4 +1645,72 @@ class UserServiceTest extends DbTestCase
         // De-authenticate $user
         $this->_unsetAuthenticatedUser($user);
     }
+
+    public function testUserContributors1()
+    {
+        $expected = "User1,User441,User478,User83";
+
+        // Retrieve the target user
+        $service = Connexions_Service::factory('Model_User');
+        $users   = $service->getContributors( );
+        $this->assertNotEquals(null, $users);
+
+        // /*
+        printf ("Contributors: [ %s ]",
+                $users->debugDump());
+        // */
+
+        $this->assertEquals($expected, $users->__toString());
+    }
+
+    public function testUserContributors2()
+    {
+        $expected = "User1,User441,User478,User83";
+
+        // Retrieve the target user
+        $service = Connexions_Service::factory('Model_User');
+        $users   = $service->getContributors( 5 );
+        $this->assertNotEquals(null, $users);
+
+        /*
+        printf ("Contributors with at least 5 bookmarks: [ %s ]",
+                Connexions::varExport($users));
+        // */
+
+        $this->assertEquals($expected, $users->__toString());
+    }
+
+    public function testUserContributors3()
+    {
+        $expected = "User1,User441,User478";
+
+        // Retrieve the target user
+        $service = Connexions_Service::factory('Model_User');
+        $users   = $service->getContributors( 5, 3 );
+        $this->assertNotEquals(null, $users);
+
+        /*
+        printf ("Top 3 contributors with at least 5 bookmarks: [ %s ]",
+                Connexions::varExport($users));
+        // */
+
+        $this->assertEquals($expected, $users->__toString());
+    }
+
+    public function testUserContributors4()
+    {
+        $expected = "User478,User83";
+
+        // Retrieve the target user
+        $service = Connexions_Service::factory('Model_User');
+        $users   = $service->getContributors( 5, 2,2 );
+        $this->assertNotEquals(null, $users);
+
+        /*
+        printf ("Top contributors 2-4 with at least 5 bookmarks: [ %s ]",
+                Connexions::varExport($users));
+        // */
+
+        $this->assertEquals($expected, $users->__toString());
+    }
 }

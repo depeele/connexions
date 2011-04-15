@@ -449,6 +449,33 @@ class Model_Mapper_User extends Model_Mapper_Base
         return $this;
     }
 
+    /** @brief  Retrieve the Model_Set_User instance representing
+     *          "contributors" who have at least 'min' bookmarks.
+     *  @param  min     The minimum number of bookmarks required to be
+     *                  considered a "contributor"  [ 1 ];
+     *  @param  count   Optional LIMIT count        [ 50 ];
+     *  @param  offset  Optional LIMIT offset       [ 0 ];
+     *
+     *  @return A Model_Set_User instance representing the "contributors";
+     */
+    public function getContributors($min    = 1,
+                                    $count  = 50,
+                                    $offset = null)
+    {
+        $params = array(
+            'where'         => array('totalItems >=' => $min),
+            'order'         => array('totalItems DESC',
+                                     'name ASC'),
+            'excludeStats'  => true,
+            'count'         => $count,
+            'offset'        => $offset,
+        );
+
+        $users = $this->fetchRelated( $params );
+
+        return $users;
+    }
+
     /*********************************************************************
      * Protected methods
      *
