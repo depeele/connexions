@@ -939,4 +939,22 @@ class Service_User extends Connexions_Service
 
         return $dstUrl;
     }
+
+    /** @brief  Retrieve the Model_Set_User instance representing
+     *          "contributors" who have at least 'min' bookmarks.
+     *  @param  min     The minimum number of bookmarks required to be
+     *                  considered a "contributor"  [ 1 ];
+     *  @param  count   Optional LIMIT count        [ 50 ];
+     *  @param  offset  Optional LIMIT offset       [ 0 ];
+     *
+     *  @return A Model_Set_User instance representing the "contributors";
+     */
+    public function getContributors($min    = 1,
+                                    $count  = 50,
+                                    $offset = null)
+    {
+        if ($count < 1) $count = 50;
+
+        return $this->_mapper->getContributors($min, $count, $offset);
+    }
 }
