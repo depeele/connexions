@@ -449,6 +449,11 @@ class Model_Mapper_User extends Model_Mapper_Base
         return $this;
     }
 
+    /**********************************************
+     * Statistics and Meta-information
+     *
+     */
+
     /** @brief  Retrieve the Model_Set_User instance representing
      *          "contributors" who have at least 'min' bookmarks.
      *  @param  min     The minimum number of bookmarks required to be
@@ -474,6 +479,180 @@ class Model_Mapper_User extends Model_Mapper_Base
         $users = $this->fetchRelated( $params );
 
         return $users;
+    }
+
+    /** @brief  Retrieve the COUNT of "contributors" who have at least 'min'
+     *          bookmarks.
+     *  @param  min     The minimum number of bookmarks required to be
+     *                  considered a "contributor"  [ 1 ];
+     *
+     *  @return An integer COUNT representing the "contributors";
+     */
+    public function getContributorCount($min    = 1)
+    {
+        $params = array(
+            'fields'        => array(
+                'count'     => "COUNT( DISTINCT u.userId )",
+            ),
+            'where'         => array('totalItems >=' => $min),
+            'excludeSec'    => true,
+            'rawRows'       => true,
+            'exactUsers'    => false,
+            'exactItems'    => false,
+            'exactTags'     => false,
+        );
+
+        $rows  = $this->fetchRelated( $params );
+        if ((count($rows) > 0) && isset($rows[0]['count']))
+        {
+            $count = $rows[0]['count'];
+        }
+        else
+        {
+            $count = 0;
+        }
+
+        return $count;
+    }
+
+    /** @brief  Retrieve the lastVisit date/times for the given user(s).
+     *  @param  users   A Model_Set_User instance (or null) representing the
+     *                  users to match;
+     *  @param  group   A grouping string indicating how entries should be
+     *                  grouped / rolled-up.  See _normalizeGrouping()
+     *                  [ null == no grouping / roll-up ];
+     *  @param  order   An array of name/value pairs representing the fields
+     *                  and sort directions to use
+     *                  [ null == {'lastVisit' => 'DESC'} ];
+     *  @param  from    Limit the results to date/times AFTER this date/time
+     *                  [ null == no starting time limit ];
+     *  @param  until   Limit the results to date/times BEFORE this date/time
+     *                  [ null == no ending time limit ];
+     *                  null == no time limits ];
+     *
+     *  @return An array of date/time strings.
+     */
+    public function getTimeline($users  = null,
+                                $group  = null,
+                                $order  = null,
+                                $from   = null,
+                                $until  = null)
+    {
+        $fieldDate  = 'date';
+        $fieldCount = 'count';
+        $grouping   = $this->_normalizeGrouping($group);
+
+        if (empty($order))
+        {
+            // Default ordering with the 'lastVisit' field
+            $order      = array($fieldDate
+                                . ' '. Connexions_Service::SORT_DIR_DESC);
+            $fields     = array(
+                $fieldCount => "COUNT(u.lastVisit)",
+                $fieldDate  => "DATE_FORMAT(u.lastVisit, '{$grouping}')",
+            );
+            $orderField = 'lastVisit';
+        }
+        else
+        {
+            // Use the incoming 'order' to determine which fields to include
+            $fields     = array();
+            $orderParts = (is_array($order)
+                            ? $order
+                            : preg_split('/\s*,\s*/', $order));
+
+            foreach ($orderParts as $part)
+            {
+                if (preg_match('/^(.*?)\s+/', $part, $matches))
+                {
+                    $field = $matches[1];
+                    if (empty($fields))
+                    {
+                        $orderField = $field;
+                        $field      = array(
+                            $fieldCount => "COUNT(u.{$field})",
+                            $fieldDate  =>
+                                "DATE_FORMAT(u.{$field}, '{$grouping}')",
+                        );
+                    }
+
+                    array_push($fields, $field);
+                }
+            }
+        }
+
+        // Include any time-range restrictions
+        $where = array();
+        if (is_string($from) && (! empty($from)) )
+        {
+            $fromTime = strtotime($from);
+            if ($fromTime !== false)
+            {
+                $field = $orderField .' >=';
+                $where[ $field ] = strftime('%Y-%m-%d %H:%M:%S', $fromTime);
+            }
+        }
+        if (is_string($until) && (! empty($until)) )
+        {
+            $untilTime = strtotime($until);
+            if ($untilTime !== false)
+            {
+                $field = (empty($where)
+                            ? $orderField
+                            : '+'. $orderField) .' <=';
+
+                $where[ $field ] = strftime('%Y-%m-%d %H:%M:%S', $untilTime);
+            }
+        }
+
+        // Include any user restrictions
+        if (! empty($users))
+        {
+            $where[ 'userId' ] = $users->getIds();
+        }
+
+        $params = array(
+            'order'         => $order,
+            'fields'        => $fields,
+            'excludeSec'    => true,
+            'rawRows'       => true,
+            'exactUsers'    => false,
+            'exactItems'    => false,
+            'exactTags'     => false,
+            'group'         => $fieldDate,
+        );
+        if (! empty($where))    $params['where']  = $where;
+
+
+        // /*
+        Connexions::log("Model_Mapper_Bookmark::getTimeline(): "
+                        . "params[ %s ]",
+                        Connexions::varExport($params));
+        // */
+
+        /* Use the capabilities of fetchRelated() to allow passing 'params'
+         * to communicate what exactly to retrieve and how.
+         */
+        $rows = $this->fetchRelated( $params );
+
+        // /*
+        Connexions::log("Model_Mapper_Bookmark::getTimeline(): "
+                        . "rows[ %s ]",
+                        Connexions::varExport($rows));
+        // */
+
+
+        // Reduce the rows to a simple array of date/times => counts
+        $timeline   = array();
+        foreach ($rows as $row)
+        {
+            $date  = $row[ $fieldDate ];
+            $count = $row[ $fieldCount ];
+
+            $timeline[ $date ] = $count;
+        }
+
+        return $timeline;
     }
 
     /*********************************************************************
