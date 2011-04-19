@@ -897,6 +897,10 @@ class Service_Bookmark extends Connexions_Service
      *                  string of items to match.
      *  @param  tags    A Model_Set_Tag  instance, array, or comma-separated
      *                  string of tags to match.
+     *  @param  group   A grouping string indicating how entries should be
+     *                  grouped / rolled-up.  See
+     *                  Model_Mapper_Base::_normalizeGrouping()
+     *                  [ null == no grouping / roll-up ];
      *  @param  group   How entries should be grouped / rolled-up.  A string
      *                  specifying an ISO 8601 duration
      *                  (e.g. 'P2Y4DT6H8M' == 2 years, 4 days, 6 hours, 8
@@ -915,7 +919,7 @@ class Service_Bookmark extends Connexions_Service
      *                  [ null == no ending time limit ];
      *                  null == no time limits ];
      *
-     *  @return An array of date/time strings.
+     *  @return An array of date/time / count mappings.
      */
     public function getTimeline($users,
                                 $items  = null,

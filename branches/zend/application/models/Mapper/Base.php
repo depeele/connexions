@@ -67,10 +67,15 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      *                                      a Connexions_Model_Set.
      *                      - fields        An array of fields to return
      *                                      [ '*' ];
+     *                      - excludeSec    If true, do NOT include either
+     *                                      the secondary tables NOR statistics
+     *                                      [ false ];
      *                      - excludeStats  If true, do NOT include statistics
      *                                      [ false ];
      *                      - rawRows       If true, return raw rows instead of
      *                                      model instances [ false ];
+     *                      - group         Any additional SQL GROUP BY
+     *                                      clauses [ null ];
      *
      *  @return A Connexions_Model_Set instance that provides access to all
      *          matching Domain Model instances.
@@ -91,9 +96,16 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                         : false);
         if (is_array($params['fields']))
         {
-            foreach ($params['fields'] as $field)
+            foreach ($params['fields'] as $alias => $field)
             {
-                array_push($fields, "{$as}.{$field}");
+                if (is_int($alias))
+                {
+                    array_push($fields, "{$as}.{$field}");
+                }
+                else
+                {
+                    $fields[$alias] = $field;
+                }
             }
 
             if ($rawRows !== false)
@@ -115,7 +127,11 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                                 $accessor->info(Zend_Db_Table_Abstract::NAME)),
                        $fields );
 
-        $this->_includeSecondarySelect($select, $as, $params);
+        if ( (! isset($params['excludeSec'])) ||
+             ($params['excludeSec'] !== true) )
+        {
+            $this->_includeSecondarySelect($select, $as, $params);
+        }
 
 
         if ( isset($params['where']) && (! empty($params['where'])) )
@@ -131,6 +147,11 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
             // */
 
             $this->_addWhere($select, $where);
+        }
+
+        if ( isset($params['group']) && (! empty($params['group'])) )
+        {
+            $select->group($params['group']);
         }
          
         $order  = (isset($params['order'])  ? $params['order']  : null);
@@ -180,6 +201,88 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      * Protected helpers
      *
      */
+
+    /** @brief  Given a grouping string, convert it to an SQL DATE_FORMAT
+     *          string useful for grouping by a specific date/time period;
+     *  @param  group   The grouping string indicating how entries should be
+     *                  grouped / rolled-up.  A string of the form:
+     *                          Pp[:b]
+     *                  Where 'p' may be:
+     *                      H       Hour;
+     *                      D       Day;
+     *                      d       Day-of-week;
+     *                      W       Week (beginning on Monday);
+     *                      w       Week (beginning on Sunday);
+     *                      M       Month;
+     *                      Y       Year;
+     *
+     *                  And 'b' specified additional grouping, and may be:
+     *                      D       By day (only for 'p' === 'H')
+     *                              (e.g. PH:D, hours by day/month/year);
+     *                      M       By month
+     *                              (e.g. PH:M, hours       by month/year);
+     *                                    Pd:M, day-of-week by month/year);
+     *                      Y       By year
+     *                              (e.g. PH:Y, hours       by year);
+     *                                    Pd:Y, day-of-week by year);
+     *
+     *  @return An SQL DATE_FORMAT string;
+     */
+    protected function _normalizeGrouping($group)
+    {
+        $res = '%Y-%m-%d %H:%i:%S';
+        if (preg_match('/P([HDdWwMY])(?::([DMY]))?/', $group, $matches))
+        {
+            $sep = '-';
+            switch ($matches[1])
+            {
+            case 'H':   // Hour
+                $res = '%H';
+                $sep = ' ';
+                break;
+            case 'D':   // Day
+                $res = '%d';
+                break;
+            case 'd':   // Day-of-week
+                $res = '%w';    // '%w (%a)
+                $sep = '.';
+                break;
+            case 'W':   // Week (beginning Monday)
+                $res = '%u';
+                $sep = '.';
+                break;
+            case 'w':   // Week (beginning Sunday)
+                $res = '%U';
+                $sep = '.';
+                break;
+            case 'M':   // Month
+                $res = '%m';
+                break;
+            case 'Y':   // Year
+                $res = '%Y';
+                break;
+            }
+
+            switch ($matches[2])
+            {
+            case 'D':
+                if ($matches[1] === 'H')
+                {
+                    $res = '%d'. $sep . $res;
+                }
+                $sep = '-';
+                // Fall through (implies 'M' and 'Y')
+            case 'M':
+                $res = '%m'. $sep . $res;
+                $sep = '-';
+                // Fall through (implies 'Y')
+            case 'Y':
+                $res = '%Y'. $sep . $res;
+            }
+        }
+
+        return $res;
+    }
 
     /** @brief  Generate an alias for the model name.
      *

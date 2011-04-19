@@ -441,14 +441,9 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
      *                  items to match.
      *  @param  tags    A Model_Set_Tag instance (or null) representing the
      *                  tags to match.
-     *  @param  group   How entries should be grouped / rolled-up.  A string
-     *                  specifying an ISO 8601 duration
-     *                  (e.g. 'P2Y4DT6H8M' == 2 years, 4 days, 6 hours, 8
-     *                        minutes).
-     *                  If not specified, no grouping will be performed.  Note
-     *                  that if grouping is employed, the returned data will be
-     *                  reduced to single date/time instances using the FIRST
-     *                  field indicated by any 'order' parameter [ null ];
+     *  @param  group   A grouping string indicating how entries should be
+     *                  grouped / rolled-up.  See _normalizeGrouping()
+     *                  [ null == no grouping / roll-up ];
      *  @param  order   An array of name/value pairs representing the fields
      *                  and sort directions to use
      *                  [ null == {'taggedOn' => 'DESC'} ];
@@ -468,11 +463,20 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
                                 $from   = null,
                                 $until  = null)
     {
+        $fieldDate  = 'date';
+        $fieldCount = 'count';
+        $grouping   = $this->_normalizeGrouping($group);
+
         if (empty($order))
         {
             // Default ordering with the 'taggedOn' field
-            $order  = array('taggedOn '. Connexions_Service::SORT_DIR_DESC);
-            $fields = array('taggedOn');
+            $order      = array($fieldDate
+                                . ' '. Connexions_Service::SORT_DIR_DESC);
+            $fields     = array(
+                $fieldCount => "COUNT(b.taggedOn)",
+                $fieldDate  => "DATE_FORMAT(b.taggedOn, '{$grouping}')",
+            );
+            $orderField = 'taggedOn';
         }
         else
         {
@@ -486,7 +490,18 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
             {
                 if (preg_match('/^(.*?)\s+/', $part, $matches))
                 {
-                    array_push($fields, $matches[1]);
+                    $field = $matches[1];
+                    if (empty($fields))
+                    {
+                        $orderField = $field;
+                        $field      = array(
+                            $fieldCount => "COUNT(b.{$field})",
+                            $fieldDate  =>
+                                "DATE_FORMAT(b.{$field}, '{$grouping}')",
+                        );
+                    }
+
+                    array_push($fields, $field);
                 }
             }
         }
@@ -498,7 +513,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
             $fromTime = strtotime($from);
             if ($fromTime !== false)
             {
-                $field = $fields[0] .' >=';
+                $field = $orderField .' >=';
                 $where[ $field ] = strftime('%Y-%m-%d %H:%M:%S', $fromTime);
             }
         }
@@ -508,8 +523,8 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
             if ($untilTime !== false)
             {
                 $field = (empty($where)
-                            ? $fields[0]
-                            : '+'. $fields[0]) .' <=';
+                            ? $orderField
+                            : '+'. $orderField) .' <=';
 
                 $where[ $field ] = strftime('%Y-%m-%d %H:%M:%S', $untilTime);
             }
@@ -523,6 +538,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
             'exactUsers'    => false,
             'exactItems'    => false,
             'exactTags'     => false,
+            'group'         => $fieldDate,
         );
         if (! empty($users))    $params['users']  = $users;
         if (! empty($items))    $params['items']  = $items;
@@ -530,7 +546,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         if (! empty($where))    $params['where']  = $where;
 
 
-        // /*
+        /*
         Connexions::log("Model_Mapper_Bookmark::getTimeline(): "
                         . "params[ %s ]",
                         Connexions::varExport($params));
@@ -538,67 +554,14 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
 
         $rows = $this->fetchRelated( $params );
 
-        if ((! empty($group)) || (count($fields) < 2))
+        // Reduce the rows to a simple array of date/times => counts
+        $timeline   = array();
+        foreach ($rows as $row)
         {
-            /* Return a single field
-             *  Reduce the rows to a simple array of date/times
-             */
-            $grouping = $this->_normalizeGroup($group);
+            $date  = $row[ $fieldDate ];
+            $count = $row[ $fieldCount ];
 
-            // /*
-            Connexions::log("Model_Mapper_Bookmark::getTimeline(): "
-                            . "group[ %s ] == grouping[ %s ]",
-                            Connexions::varExport($group),
-                            Connexions::varExport($grouping));
-            // */
-
-            $timeline = array();
-            $field    = $fields[0];
-            foreach ($rows as $row)
-            {
-                if ($grouping)
-                {
-                    // Determine the grouping "bin" to place this entry into.
-                    $time = strtotime($row[ $field ]);
-                    if ($time === false)
-                    {
-                        continue;
-                    }
-
-                    $mod  = floor($time / $grouping['mod']);
-                    if ($grouping['mod'] == 31536000)
-                    {
-                        /* For years, we don't want to 'bin' into the PREVIOUS
-                         * year but rather in the "current" year.
-                         */
-                        $mod++;
-                    }
-                    $mod  *= $grouping['mod'];
-                    $bin   = strftime($grouping['fmt'], $mod);
-
-                    Connexions::log("Model_Mapper_Bookmark::getTimeline(): "
-                                    . "row[ %s ][ %s ] == mod[ %s ], bin[ %s ]",
-                                    $row[ $field ], $time,
-                                    $mod, $bin);
-
-                    if (isset($timeline[$bin]))
-                        $timeline[$bin]++;
-                    else
-                        $timeline[$bin] = 1;
-                }
-                else
-                {
-                    array_push($timeline, $row[ $field ]);
-                }
-            }
-        }
-        else
-        {
-            /* Multiple fields
-             *  Return the rows directly (an array of objects containing
-             *  name/value pairs for each field).
-             */
-            $timeline = $rows;
+            $timeline[ $date ] = $count;
         }
 
         return $timeline;
@@ -633,49 +596,6 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
      * Protected helpers
      *
      */
-
-    /** @brief  Given a grouping string, convert it to a 'unit' and 'count';
-     *  @param  group   The grouping string of the form:
-     *                      'Pn'
-     *                  Where 'P' represents the grouping unit ('S'econds,
-     *                  'M'inutes, 'H'ours, 'd'ays, 'w'eeks, 'm'onths, 'y'ears)
-     *                  followed by an optional 'n' specifying the number of
-     *                  units, defaulting to 1.
-     *
-     *  @return A simple object containing 'fmt' and 'mod';
-     */
-    protected function _normalizeGroup($group)
-    {
-        $res      = null;
-        $interval = (! empty($group)
-                        ? new DateInterval($group)
-                        : null);
-        if ($interval !== null)
-        {
-            // Return the number of seconds in the specified interval.
-            $secs = ($interval->y * 31536000)   // 365 * 24 * 60 * 60 years
-                  + ($interval->m *  2592000)   //  30 * 24 * 60 * 60 months
-                  + ($interval->d *    86400)   //       24 * 60 * 60 days
-                  + ($interval->h *     3600)   //            60 * 60 hours
-                  + ($interval->i *       60)   //                 60 minutes
-                  +  $interval->s;              //                    seconds
-
-            $fmt = '%Y';
-            if ($secs < 31536000)   $fmt .= '-%m';
-            if ($secs <  2592000)   $fmt .= '-%d';
-            if ($secs <    86400)   $fmt .= ' %H';
-            if ($secs <     3600)   $fmt .= ':%M';
-            else if($secs <86400)   $fmt .= ':00';
-            if ($secs <       60)   $fmt .= ':%S';
-
-            $res = array(
-                'fmt' => $fmt,
-                'mod' => $secs,
-            );
-        }
-
-        return $res;
-    }
 
     /** @brief  Given identification value(s) that will be used for retrieval,
      *          normalize the values for 'user'.

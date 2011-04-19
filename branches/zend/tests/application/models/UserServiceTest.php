@@ -1655,7 +1655,7 @@ class UserServiceTest extends DbTestCase
         $users   = $service->getContributors( );
         $this->assertNotEquals(null, $users);
 
-        // /*
+        /*
         printf ("Contributors: [ %s ]",
                 $users->debugDump());
         // */
@@ -1712,5 +1712,40 @@ class UserServiceTest extends DbTestCase
         // */
 
         $this->assertEquals($expected, $users->__toString());
+    }
+
+    public function testUserContributorCount1()
+    {
+        $expected = 4;
+
+        // Retrieve the target user
+        $service = Connexions_Service::factory('Model_User');
+        $count   = $service->getContributorCount( );
+
+        $this->assertEquals($expected, $count);
+    }
+
+    public function testUserContributorCount2()
+    {
+        $expected = 4;
+
+        // Retrieve the target user
+        $service = Connexions_Service::factory('Model_User');
+        $count   = $service->getContributorCount( 5 );
+
+        $this->assertEquals($expected, $count);
+    }
+
+    public function testUserServiceTimeline1()
+    {
+        $expected = array(
+            "2007-04-12 12:38:02"   => 1,
+            "0000-00-00 00:00:00"   => 3,
+        );
+        $users    = null;
+        $service  = Connexions_Service::factory('Model_User');
+        $timeline = $service->getTimeline($users);
+
+        $this->assertEquals($expected, $timeline);
     }
 }

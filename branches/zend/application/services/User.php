@@ -953,8 +953,66 @@ class Service_User extends Connexions_Service
                                     $count  = 50,
                                     $offset = null)
     {
+        if ($min   < 1) $min   = 1;
         if ($count < 1) $count = 50;
 
         return $this->_mapper->getContributors($min, $count, $offset);
+    }
+
+    /** @brief  Retrieve the COUNT of "contributors" who have at least 'min'
+     *          bookmarks.
+     *  @param  min     The minimum number of bookmarks required to be
+     *                  considered a "contributor"  [ 1 ];
+     *
+     *  @return An integer COUNT representing the "contributors";
+     */
+    public function getContributorCount($min    = 1)
+    {
+        if ($min < 1)   $min = 1;
+
+        return $this->_mapper->getContributorCount($min);
+    }
+
+    /** @brief  Retrieve the lastVisit date/times for the given user(s).
+     *  @param  users   A Model_Set_User instance, array, or comma-separated
+     *                  string of users to match.
+     *  @param  group   A grouping string indicating how entries should be
+     *                  grouped / rolled-up.  See
+     *                  Model_Mapper_Base::_normalizeGrouping()
+     *                  [ null == no grouping / roll-up ];
+     *  @param  order   An order string:
+     *                      'taggedOn ASC|DESC'
+     *                      'updatedOn ASC|DESC'
+     *                  used [ 'taggedOn ASC' ];
+     *  @param  from    Limit the results to date/times AFTER this date/time
+     *                  [ null == no starting time limit ];
+     *  @param  until   Limit the results to date/times BEFORE this date/time
+     *                  [ null == no ending time limit ];
+     *                  null == no time limits ];
+     *
+     *  @return An array of date/time strings.
+     */
+    public function getTimeline($users,
+                                $group  = null,
+                                $order  = null,
+                                $from   = null,
+                                $until  = null)
+    {
+        $users = $this->factory('Service_User')->csList2set($users);
+        $order = $this->_csOrder2array($order, true /* noExtras */);
+
+        /*
+        Connexions::log("Service_User::getTimeline(): "
+                        . "users[ %s ], order[ %s ]",
+                        Connexions::varExport($users),
+                        Connexions::varExport($order));
+        // */
+
+        $timeline = $this->_mapper->getTimeline( $users,
+                                                 $group,
+                                                 $order,
+                                                 $from,
+                                                 $until);
+        return $timeline;
     }
 }
