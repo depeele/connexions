@@ -1,0 +1,55 @@
+#!/usr/bin/env php
+<?php
+define('CLI_DIR', realpath(dirname(__FILE__)));
+
+require_once(CLI_DIR. '/bootstrap.php');
+$prog = array_shift($argv);
+
+$svc = Connexions_Service::factory('Service_Bookmark');
+
+// Parameters
+$users = null;  //  --users=
+$items = null;  //  --items=
+$tags  = null;  //  --tags=
+$group = null;  //  --group=
+$order = null;  //  --order=
+$from  = null;  //  --from=
+$until = null;  //  --until=
+
+foreach ($argv as $arg)
+{
+    if (preg_match('/[-]+([^=]+)=(.*)$/', $arg, $matches))
+    {
+        $val = trim($matches[2], " \t\n\r\0\x0B'\"");
+        switch (strtolower($matches[1]))
+        {
+        case 'users':   $users = $val;  break;
+        case 'items':   $items = $val;  break;
+        case 'tags':    $tags  = $val;  break;
+        case 'group':   $group = $val;  break;
+        case 'order':   $order = $val;  break;
+        case 'from':    $from  = $val;  break;
+        case 'until':   $until = $val;  break;
+
+        default:
+            echo  "*** Usage: %s [--users=%CSL%]\n"
+                 ."              [--items=%CSL%]\n"
+                 ."              [--tags=%CSL%]\n"
+                 ."              [--group=%group%]\n"
+                 ."              [--order=%SQL ordering%]\n"
+                 ."              [--from=%YYYY-MM-DD HH:mm:ss FROM%]\n"
+                 ."              [--until=%YYYY-MM-DD HH:mm:ss UNTIL%]\n";
+            return;
+        }
+    }
+}
+
+$timeline = $svc->getTimeline( $users, $items, $tags,
+                               $group, $order,
+                               $from,  $until );
+
+printf (  "Timeline:\n"
+        . "%s\n",
+        ($timeline
+            ? preg_replace('/\],\[/', "],\n[", Zend_Json::encode($timeline))
+            : "") );
