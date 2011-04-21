@@ -1579,9 +1579,9 @@ class BookmarkServiceTest extends DbTestCase
     {
         // Private bookmarks aren't included
         $expected = array(
-            "2007-03-30 14:39:52"   => 1,
-            "2007-03-30 14:33:27"   => 1,
-            "2007-03-30 13:11:57"   => 1,
+            "200703301439"   => 1,
+            "200703301433"   => 1,
+            "200703301311"   => 1,
         );
         $users    = "1";
         $items    = null;
@@ -1598,11 +1598,11 @@ class BookmarkServiceTest extends DbTestCase
         $this->_setAuthenticatedUser(1);
 
         $expected = array(
-            "2010-04-05 17:25:19"   => 1,
-            "2007-03-30 14:39:52"   => 1,
-            "2007-03-30 14:35:51"   => 1,
-            "2007-03-30 14:33:27"   => 1,
-            "2007-03-30 13:11:57"   => 1,
+            "201004051725"   => 1,
+            "200703301439"   => 1,
+            "200703301435"   => 1,
+            "200703301433"   => 1,
+            "200703301311"   => 1,
         );
         $users    = "1";
         $items    = null;
@@ -1619,9 +1619,9 @@ class BookmarkServiceTest extends DbTestCase
     public function testBookmarkServiceTimeline3()
     {
         $expected = array(
-            "2006-06-30 18:21:47"   => 1,
-            "2006-04-09 23:59:27"   => 1,
-            "0000-00-00 00:00:00"   => 1,
+            "200606301821"   => 1,
+            "200604092359"   => 1,
+            "000000000000"   => 1,
         );
         $users    = null;
         $items    = '6';
@@ -1638,7 +1638,7 @@ class BookmarkServiceTest extends DbTestCase
     {
         // Private bookmarks aren't included
         $expected = array(
-            "2007-03-30 14:33:27"   => 1,
+            "200703301433"   => 1,
         );
         $users    = "1,2";
         $items    = "1,3,4";
@@ -1655,9 +1655,9 @@ class BookmarkServiceTest extends DbTestCase
         $this->_setAuthenticatedUser(1);
 
         $expected = array(
-            "2010-04-05 17:25:19"   => 1,
-            "2007-03-30 14:35:51"   => 1,
-            "2007-03-30 14:33:27"   => 1,
+            "201004051725"   => 1,
+            "200703301435"   => 1,
+            "200703301433"   => 1,
         );
         $users    = "1,2";
         $items    = "1,3,4";
@@ -1694,8 +1694,8 @@ class BookmarkServiceTest extends DbTestCase
         $this->_setAuthenticatedUser(1);
 
         $expected = array(
-            "2010-04-05 17:25:19"   => 1,
-            "2007-03-30 14:35:51"   => 1,
+            "201004051725"   => 1,
+            "200703301435"   => 1,
         );
         $users    = "1,2";
         $items    = "1,3,4";
@@ -1718,7 +1718,7 @@ class BookmarkServiceTest extends DbTestCase
         $this->_setAuthenticatedUser(1);
 
         $expected = array(
-            "2007-03-30 14:35:51"   => 1,
+            "200703301435"   => 1,
         );
         $users    = "1,2";
         $items    = "1,3,4";
@@ -1758,7 +1758,7 @@ class BookmarkServiceTest extends DbTestCase
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'PH');    // hour
+                                          'H'); // hour
 
         $this->assertEquals($expected, $timeline);
 
@@ -1779,16 +1779,15 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "2010-04-05 17" => 1,
-            "2007-03-30 14" => 3,
-            "2007-03-30 13" => 1,
+            '30' => array( '14' => 3, '13' => 1 ),
+            '05' => array( '17' => 1 ),
         );
         $users    = "1";
         $items    = null;
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'PH:D');  // hour / day
+                                          'D:H');   // hour / day
 
         $this->assertEquals($expected, $timeline);
 
@@ -1809,16 +1808,15 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "2010-04 17" => 1,
-            "2007-03 14" => 3,
-            "2007-03 13" => 1,
+            '04' => array( '17' => 1 ),
+            '03' => array( '14' => 3, '13' => 1 ),
         );
         $users    = "1";
         $items    = null;
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'PH:M');  // hour / month
+                                          'M:H');   // hour / month
 
         $this->assertEquals($expected, $timeline);
 
@@ -1839,16 +1837,15 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "2010 17" => 1,
-            "2007 14" => 3,
-            "2007 13" => 1,
+            "2010" => array( "17" => 1 ),
+            "2007" => array( "14" => 3, "13" => 1 ),
         );
         $users    = "1";
         $items    = null;
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'PH:Y');  // hour / month
+                                          'Y:H');   // hour / year
 
         $this->assertEquals($expected, $timeline);
 
@@ -1876,7 +1873,7 @@ class BookmarkServiceTest extends DbTestCase
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'PH',
+                                          'H',
                                           null,                     // order
                                           '2007-03-30 14:35:00',    // from
                                           '2010-04-05 17:25:00');   // until
@@ -1908,7 +1905,7 @@ class BookmarkServiceTest extends DbTestCase
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'PD');    // day
+                                          'D');     // day
 
         $this->assertEquals($expected, $timeline);
 
@@ -1929,15 +1926,15 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "2010-04-05" => 1,
-            "2007-03-30" => 4,
+            '04' => array( '05' => 1 ),
+            '03' => array( '30' => 4 ),
         );
         $users    = "1";
         $items    = null;
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'PD:M');  // day / month
+                                          'M:D');   // day / month
 
         $this->assertEquals($expected, $timeline);
 
@@ -1958,15 +1955,15 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "2010-05" => 1,
-            "2007-30" => 4,
+            "2010" => array( "05" => 1 ),
+            "2007" => array( "30" => 4 ),
         );
         $users    = "1";
         $items    = null;
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'PD:Y');  // day / year
+                                          'Y:D');   // day / year
 
         $this->assertEquals($expected, $timeline);
 
@@ -1994,7 +1991,7 @@ class BookmarkServiceTest extends DbTestCase
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'PD',     // day
+                                          'D',      // day
                                           null,                     // order
                                           '2007-03-30 14:35:00',    // from
                                           '2010-04-05 17:25:00');   // until
@@ -2026,7 +2023,7 @@ class BookmarkServiceTest extends DbTestCase
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'Pd');    // day-of-week
+                                          'd');     // day-of-week
 
         $this->assertEquals($expected, $timeline);
 
@@ -2047,15 +2044,15 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "2010-04.1" => 1,
-            "2007-03.5" => 4,
+            '04' => array( '1' => 1 ),
+            '03' => array( '5' => 4 ),
         );
         $users    = "1";
         $items    = null;
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'Pd:M');  // day-of-week / month
+                                          'M:d');   // day-of-week / month
 
         $this->assertEquals($expected, $timeline);
 
@@ -2076,15 +2073,15 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "2010.1" => 1,
-            "2007.5" => 4,
+            "2010" => array( "1" => 1 ),
+            "2007" => array( "5" => 4 ),
         );
         $users    = "1";
         $items    = null;
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'Pd:Y');  // day-of-week / year
+                                          'Y:d');   // day-of-week / year
 
         $this->assertEquals($expected, $timeline);
 
@@ -2112,7 +2109,7 @@ class BookmarkServiceTest extends DbTestCase
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'Pd',     // day-of-week
+                                          'd',      // day-of-week
                                           null,                     // order
                                           '2007-03-30 14:35:00',    // from
                                           '2010-04-05 17:25:00');   // until
@@ -2144,7 +2141,7 @@ class BookmarkServiceTest extends DbTestCase
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'PW');    // week
+                                          'W');     // week
 
         $this->assertEquals($expected, $timeline);
 
@@ -2165,15 +2162,15 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "2010-04.14"    => 1,
-            "2007-03.13"    => 4,
+            "04" => array( "14" => 1 ),
+            "03" => array( "13" => 4 ),
         );
         $users    = "1";
         $items    = null;
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'PW:M');  // week / month
+                                          'M:W');   // week / month
 
         $this->assertEquals($expected, $timeline);
 
@@ -2194,15 +2191,15 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "2010.14"    => 1,
-            "2007.13"    => 4,
+            "2010" => array( "14" => 1 ),
+            "2007" => array( "13" => 4 ),
         );
         $users    = "1";
         $items    = null;
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'PW:Y');  // week / year
+                                          'Y:W');   // week / year
 
         $this->assertEquals($expected, $timeline);
 
@@ -2230,7 +2227,7 @@ class BookmarkServiceTest extends DbTestCase
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'PW',     // week
+                                          'W',      // week
                                           null,                     // order
                                           '2007-03-30 14:35:00',    // from
                                           '2010-04-05 17:25:00');   // until
@@ -2262,7 +2259,7 @@ class BookmarkServiceTest extends DbTestCase
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'Pw');    // week
+                                          'w');     // week
 
         $this->assertEquals($expected, $timeline);
 
@@ -2283,15 +2280,15 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "2010-04.14"    => 1,
-            "2007-03.12"    => 4,
+            "04" => array( "14" => 1 ),
+            "03" => array( "12" => 4 ),
         );
         $users    = "1";
         $items    = null;
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'Pw:M');  // week / month
+                                          'M:w');   // week / month
 
         $this->assertEquals($expected, $timeline);
 
@@ -2312,15 +2309,15 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "2010.14"    => 1,
-            "2007.12"    => 4,
+            "2010" => array( "14" => 1 ),
+            "2007" => array( "12" => 4 ),
         );
         $users    = "1";
         $items    = null;
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'Pw:Y');  // week / year
+                                          'Y:w');   // week / year
 
         $this->assertEquals($expected, $timeline);
 
@@ -2348,7 +2345,7 @@ class BookmarkServiceTest extends DbTestCase
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'Pw',     // week
+                                          'w',      // week
                                           null,                     // order
                                           '2007-03-30 14:35:00',    // from
                                           '2010-04-05 17:25:00');   // until
@@ -2380,7 +2377,7 @@ class BookmarkServiceTest extends DbTestCase
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'PM');    // month
+                                          'M');     // month
 
         $this->assertEquals($expected, $timeline);
 
@@ -2401,15 +2398,15 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "2010-04" => 1,
-            "2007-03" => 4,
+            "2010" => array( "04" => 1 ),
+            "2007" => array( "03" => 4 ),
         );
         $users    = "1";
         $items    = null;
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'PM:Y');  // month / year
+                                          'Y:M');   // month / year
 
         $this->assertEquals($expected, $timeline);
 
@@ -2437,7 +2434,7 @@ class BookmarkServiceTest extends DbTestCase
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'PM',     // month
+                                          'M',      // month
                                           null,                     // order
                                           '2007-03-30 14:35:00',    // from
                                           '2010-04-05 17:25:00');   // until
@@ -2469,7 +2466,7 @@ class BookmarkServiceTest extends DbTestCase
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'PY');    // year
+                                          'Y');     // year
 
         $this->assertEquals($expected, $timeline);
 
@@ -2497,7 +2494,7 @@ class BookmarkServiceTest extends DbTestCase
         $tags     = null;
         $service  = Connexions_Service::factory('Model_Bookmark');
         $timeline = $service->getTimeline($users, $items, $tags,
-                                          'PY',     // year
+                                          'Y',      // year
                                           null,                     // order
                                           '2007-03-30 14:35:00',    // from
                                           '2010-04-05 17:25:00');   // until
