@@ -206,8 +206,8 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      *          string useful for grouping by a specific date/time period;
      *  @param  group   The grouping string indicating how entries should be
      *                  grouped / rolled-up.  A string of the form:
-     *                          Pp[:b]
-     *                  Where 'p' may be:
+     *                          p[:b]
+     *                  Where 'p' may be any reasonable combination of:
      *                      H       Hour;
      *                      D       Day;
      *                      d       Day-of-week;
@@ -216,70 +216,117 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      *                      M       Month;
      *                      Y       Year;
      *
-     *                  And 'b' specified additional grouping, and may be:
-     *                      D       By day (only for 'p' === 'H')
-     *                              (e.g. PH:D, hours by day/month/year);
-     *                      M       By month
-     *                              (e.g. PH:M, hours       by month/year);
-     *                                    Pd:M, day-of-week by month/year);
-     *                      Y       By year
-     *                              (e.g. PH:Y, hours       by year);
-     *                                    Pd:Y, day-of-week by year);
+     *                  'b' is a single character indicating that the timeline
+     *                  information should be grouped into one or more series
+     *                  where each series is identified by 'p'.  'b' is any
+     *                  single character valid for 'p' that also makes sense as
+     *                  the final period/count component of a series.
      *
-     *  @return An SQL DATE_FORMAT string;
+     *                  For example:
+     *                      'YMDH'      - indicates a timeline comprised of all
+     *                                    counts by year/month/day/hour with a
+     *                                    single series
+     *                      'YMD:H'     - indicates a timeline comprised of
+     *                                    a series of counts by hour for each
+     *                                    measured year/month/day;
+     *                      'YMD'       - indicates a timeline comprised of all
+     *                                    counts by year/month/day with a
+     *                                    single series
+     *                      'YM:D'      - indicates a timeline comprised of
+     *                                    a series of counts by day for each
+     *                                    measured year/month;
+     *
+     *  @return A simple object comprised of:
+     *              fmt         - an SQL DATE_FORMAT string used for selecting
+     *                            the data of the timeline;
+     *              seriesIdLen - the numer of characters from the resulting
+     *                            date that should be used to break the data
+     *                            into one or more series;
      */
     protected function _normalizeGrouping($group)
     {
-        $res = '%Y-%m-%d %H:%i:%S';
-        if (preg_match('/P([HDdWwMY])(?::([DMY]))?/', $group, $matches))
+        $fmt         = '%Y%m%d%H%i';    // '%Y-%m-%d %H:%i:%S';
+        $seriesIdLen = 0;
+
+        if (preg_match('/([YMWwDdH:]+)/', $group, $matches))
         {
-            $sep = '-';
-            switch ($matches[1])
+            $full  = $matches[1];
+            $parts = explode(':', $full);
+            $p     = $parts[0];
+            $b     = (count($parts) > 1 ? $parts[1][0] : '');
+
+            $fmt      = '';
+            $totalLen = 0;
+            if (strpos($full, 'Y') !== false)
             {
-            case 'H':   // Hour
-                $res = '%H';
-                $sep = ' ';
-                break;
-            case 'D':   // Day
-                $res = '%d';
-                break;
-            case 'd':   // Day-of-week
-                $res = '%w';    // '%w (%a)
-                $sep = '.';
-                break;
-            case 'W':   // Week (beginning Monday)
-                $res = '%u';
-                $sep = '.';
-                break;
-            case 'w':   // Week (beginning Sunday)
-                $res = '%U';
-                $sep = '.';
-                break;
-            case 'M':   // Month
-                $res = '%m';
-                break;
-            case 'Y':   // Year
-                $res = '%Y';
-                break;
+                // Year
+                $fmt      .= '%Y';
+                $totalLen += 4;
+            }
+            if (strpos($full, 'M') !== false)
+            {
+                // Month (01-12)
+                $fmt      .= '%m';
+                $totalLen += 2;
+            }
+            if (strpos($full, 'D') !== false)
+            {
+                // Day of month (01-31)
+                $fmt      .= '%d';
+                $totalLen += 2;
             }
 
-            switch ($matches[2])
+            if (strpos($full, 'W') !== false)
             {
-            case 'D':
-                if ($matches[1] === 'H')
-                {
-                    $res = '%d'. $sep . $res;
-                }
-                $sep = '-';
-                // Fall through (implies 'M' and 'Y')
-            case 'M':
-                $res = '%m'. $sep . $res;
-                $sep = '-';
-                // Fall through (implies 'Y')
-            case 'Y':
-                $res = '%Y'. $sep . $res;
+                // Week-of-year with Monday as the first day-of-week (01-53)
+                $fmt      .= '%u';
+                $totalLen += 2;
+            }
+            else if (strpos($full, 'w') !== false)
+            {
+                // Week-of-year with Sunday as the first day-of-week (01-53)
+                $fmt      .= '%U';
+                $totalLen += 2;
+            }
+
+            if (strpos($full, 'd') !== false)
+            {
+                // Day-of-week (0-6)
+                $fmt      .= '%w';
+                $totalLen += 1;         // Component length of just 1
+            }
+
+            if (strpos($full, 'H') !== false)
+            {
+                // Hour (00-23)
+                $fmt      .= '%H';
+                $totalLen += 2;
+            }
+
+            if (! empty($b))
+            {
+                /* The 'seriesIdLen' is everything EXCEPT the length of the
+                 * final component indicated by 'b'.
+                 *
+                 * The component length of all valid 'b' values except 'd' is
+                 * 2.  The component length for 'd' is 1.
+                 */
+                $seriesIdLen = $totalLen - ($b === 'd' ? 1 : 2);
             }
         }
+
+        $res = array(
+            'fmt'           => $fmt,
+            'seriesIdLen'   => $seriesIdLen,
+        );
+
+        /*
+        Connexions::log("Model_Mapper_Base(%s)::_normalizeGrouping(): "
+                        .   "group[ %s ], res[ %s ]",
+                        get_class($this),
+                        $group,
+                        Connexions::varExport($res));
+        // */
 
         return $res;
     }

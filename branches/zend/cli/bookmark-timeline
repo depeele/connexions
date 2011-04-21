@@ -16,9 +16,10 @@ $order = null;  //  --order=
 $from  = null;  //  --from=
 $until = null;  //  --until=
 
+$help = false;
 foreach ($argv as $arg)
 {
-    if (preg_match('/[-]+([^=]+)=(.*)$/', $arg, $matches))
+    if (preg_match('/[-]+([^=]+)(?:=(.*))$/', $arg, $matches))
     {
         $val = trim($matches[2], " \t\n\r\0\x0B'\"");
         switch (strtolower($matches[1]))
@@ -32,15 +33,24 @@ foreach ($argv as $arg)
         case 'until':   $until = $val;  break;
 
         default:
-            echo  "*** Usage: %s [--users=%CSL%]\n"
-                 ."              [--items=%CSL%]\n"
-                 ."              [--tags=%CSL%]\n"
-                 ."              [--group=%group%]\n"
-                 ."              [--order=%SQL ordering%]\n"
-                 ."              [--from=%YYYY-MM-DD HH:mm:ss FROM%]\n"
-                 ."              [--until=%YYYY-MM-DD HH:mm:ss UNTIL%]\n";
-            return;
+            $help = true;
         }
+    }
+    else
+    {
+        $help = true;
+    }
+
+    if ($help === true)
+    {
+        echo  "*** Usage: %s [--users=%CSL%]\n"
+             ."              [--items=%CSL%]\n"
+             ."              [--tags=%CSL%]\n"
+             ."              [--group=%group%]\n"
+             ."              [--order=%SQL ordering%]\n"
+             ."              [--from=%YYYY-MM-DD HH:mm:ss FROM%]\n"
+             ."              [--until=%YYYY-MM-DD HH:mm:ss UNTIL%]\n";
+        return;
     }
 }
 

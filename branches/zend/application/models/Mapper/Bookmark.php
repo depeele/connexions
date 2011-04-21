@@ -467,6 +467,12 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         $fieldCount = 'count';
         $grouping   = $this->_normalizeGrouping($group);
 
+        // /*
+        Connexions::log("Model_Mapper_Bookmark::getTimeline(): "
+                        . "group[ %s ] == [ %s ]",
+                        $group, Connexions::varExport($grouping));
+        // */
+
         if (empty($order))
         {
             // Default ordering with the 'taggedOn' field
@@ -474,7 +480,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
                                 . ' '. Connexions_Service::SORT_DIR_DESC);
             $fields     = array(
                 $fieldCount => "COUNT(b.taggedOn)",
-                $fieldDate  => "DATE_FORMAT(b.taggedOn, '{$grouping}')",
+                $fieldDate  => "DATE_FORMAT(b.taggedOn, '{$grouping['fmt']}')",
             );
             $orderField = 'taggedOn';
         }
@@ -497,7 +503,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
                         $field      = array(
                             $fieldCount => "COUNT(b.{$field})",
                             $fieldDate  =>
-                                "DATE_FORMAT(b.{$field}, '{$grouping}')",
+                                "DATE_FORMAT(b.{$field}, '{$grouping['fmt']}')",
                         );
                     }
 
@@ -560,8 +566,31 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         {
             $date  = $row[ $fieldDate ];
             $count = $row[ $fieldCount ];
+            if ($grouping['seriesIdLen'] > 0)
+            {
+                /* Generating one or more series based upon the first
+                 * 'seriesIdLen' characters of the date.
+                 */
+                $series  = substr($date, 0, $grouping['seriesIdLen']);
+                $subDate = substr($date, $grouping['seriesIdLen']);
 
-            $timeline[ $date ] = $count;
+                // /*
+                Connexions::log("Model_Mapper_Bookmark::getTimeline(): "
+                                . "date[ %s ], series[ %s ], subDate[ %s ]",
+                                $date, $series, $subDate);
+                // */
+
+                if (! is_array($timeline[$series]))
+                {
+                    $timeline[ $series ] = array();
+                }
+
+                $timeline[ $series ][ $subDate ] = $count;
+            }
+            else
+            {
+                $timeline[ $date ] = $count;
+            }
         }
 
         return $timeline;
