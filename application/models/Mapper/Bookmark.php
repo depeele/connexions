@@ -467,7 +467,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         $fieldCount = 'count';
         $grouping   = $this->_normalizeGrouping($group);
 
-        // /*
+        /*
         Connexions::log("Model_Mapper_Bookmark::getTimeline(): "
                         . "group[ %s ] == [ %s ]",
                         $group, Connexions::varExport($grouping));
@@ -574,7 +574,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
                 $series  = substr($date, 0, $grouping['seriesIdLen']);
                 $subDate = substr($date, $grouping['seriesIdLen']);
 
-                // /*
+                /*
                 Connexions::log("Model_Mapper_Bookmark::getTimeline(): "
                                 . "date[ %s ], series[ %s ], subDate[ %s ]",
                                 $date, $series, $subDate);

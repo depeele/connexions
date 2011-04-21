@@ -542,6 +542,12 @@ class Model_Mapper_User extends Model_Mapper_Base
         $fieldCount = 'count';
         $grouping   = $this->_normalizeGrouping($group);
 
+        /*
+        Connexions::log("Model_Mapper_User::getTimeline(): "
+                        . "group[ %s ] == [ %s ]",
+                        $group, Connexions::varExport($grouping));
+        // */
+
         if (empty($order))
         {
             // Default ordering with the 'lastVisit' field
@@ -549,7 +555,7 @@ class Model_Mapper_User extends Model_Mapper_Base
                                 . ' '. Connexions_Service::SORT_DIR_DESC);
             $fields     = array(
                 $fieldCount => "COUNT(u.lastVisit)",
-                $fieldDate  => "DATE_FORMAT(u.lastVisit, '{$grouping}')",
+                $fieldDate  => "DATE_FORMAT(u.lastVisit, '{$grouping['fmt']}')",
             );
             $orderField = 'lastVisit';
         }
@@ -572,7 +578,7 @@ class Model_Mapper_User extends Model_Mapper_Base
                         $field      = array(
                             $fieldCount => "COUNT(u.{$field})",
                             $fieldDate  =>
-                                "DATE_FORMAT(u.{$field}, '{$grouping}')",
+                                "DATE_FORMAT(u.{$field}, '{$grouping['fmt']}')",
                         );
                     }
 
@@ -608,7 +614,11 @@ class Model_Mapper_User extends Model_Mapper_Base
         // Include any user restrictions
         if (! empty($users))
         {
-            $where[ 'userId' ] = $users->getIds();
+            $ids = $users->getIds();
+            if (! empty($ids))
+            {
+                $where[ 'userId' ] = $ids;
+            }
         }
 
         $params = array(
@@ -624,8 +634,8 @@ class Model_Mapper_User extends Model_Mapper_Base
         if (! empty($where))    $params['where']  = $where;
 
 
-        // /*
-        Connexions::log("Model_Mapper_Bookmark::getTimeline(): "
+        /*
+        Connexions::log("Model_Mapper_User::getTimeline(): "
                         . "params[ %s ]",
                         Connexions::varExport($params));
         // */
@@ -635,8 +645,8 @@ class Model_Mapper_User extends Model_Mapper_Base
          */
         $rows = $this->fetchRelated( $params );
 
-        // /*
-        Connexions::log("Model_Mapper_Bookmark::getTimeline(): "
+        /*
+        Connexions::log("Model_Mapper_User::getTimeline(): "
                         . "rows[ %s ]",
                         Connexions::varExport($rows));
         // */
@@ -649,7 +659,31 @@ class Model_Mapper_User extends Model_Mapper_Base
             $date  = $row[ $fieldDate ];
             $count = $row[ $fieldCount ];
 
-            $timeline[ $date ] = $count;
+            if ($grouping['seriesIdLen'] > 0)
+            {
+                /* Generating one or more series based upon the first
+                 * 'seriesIdLen' characters of the date.
+                 */
+                $series  = substr($date, 0, $grouping['seriesIdLen']);
+                $subDate = substr($date, $grouping['seriesIdLen']);
+
+                /*
+                Connexions::log("Model_Mapper_User::getTimeline(): "
+                                . "date[ %s ], series[ %s ], subDate[ %s ]",
+                                $date, $series, $subDate);
+                // */
+
+                if (! is_array($timeline[$series]))
+                {
+                    $timeline[ $series ] = array();
+                }
+
+                $timeline[ $series ][ $subDate ] = $count;
+            }
+            else
+            {
+                $timeline[ $date ] = $count;
+            }
         }
 
         return $timeline;
