@@ -8,31 +8,33 @@ $prog = array_shift($argv);
 $svc = Connexions_Service::factory('Service_Bookmark');
 
 // Parameters
-$users = null;  //  --users=
-$items = null;  //  --items=
-$tags  = null;  //  --tags=
-$group = null;  //  --group=
-$order = null;  //  --order=
-$from  = null;  //  --from=
-$until = null;  //  --until=
+$params = array();
+$validParams = array(
+    'users'     => 'comma-separated-list of users',
+    'items'     => 'comma-separated-list of items',
+    'tags'      => 'comma-separated-list of tags',
+    'grouping'  => 'grouping indicator',
+    'order'     => 'SQL ordering',
+    'count'     => 'numeric limit/count',
+    'offset'    => 'numeric limit/offset',
+    'from'      => 'YYY-MM-DD HH:mm:ss from',
+    'until'     => 'YYY-MM-DD HH:mm:ss until',
+);
 
 $help = false;
 foreach ($argv as $arg)
 {
     if (preg_match('/[-]+([^=]+)(?:=(.*))$/', $arg, $matches))
     {
+        $key = trim($matches[1]);
         $val = trim($matches[2], " \t\n\r\0\x0B'\"");
-        switch (strtolower($matches[1]))
-        {
-        case 'users':   $users = $val;  break;
-        case 'items':   $items = $val;  break;
-        case 'tags':    $tags  = $val;  break;
-        case 'group':   $group = $val;  break;
-        case 'order':   $order = $val;  break;
-        case 'from':    $from  = $val;  break;
-        case 'until':   $until = $val;  break;
 
-        default:
+        if (isset($validParams[ $key ]))
+        {
+            $params[ $key ] = $val;
+        }
+        else
+        {
             $help = true;
         }
     }
@@ -43,20 +45,16 @@ foreach ($argv as $arg)
 
     if ($help === true)
     {
-        echo  "*** Usage: %s [--users=%CSL%]\n"
-             ."              [--items=%CSL%]\n"
-             ."              [--tags=%CSL%]\n"
-             ."              [--group=%group%]\n"
-             ."              [--order=%SQL ordering%]\n"
-             ."              [--from=%YYYY-MM-DD HH:mm:ss FROM%]\n"
-             ."              [--until=%YYYY-MM-DD HH:mm:ss UNTIL%]\n";
+        printf ("*** Usage: %s\n", basename($prog));
+        foreach ($validParams as $param => $args)
+        {
+            printf ("              [--%-13s] - %s\n", $param.'=args', $args);
+        }
         return;
     }
 }
 
-$timeline = $svc->getTimeline( $users, $items, $tags,
-                               $group, $order,
-                               $from,  $until );
+$timeline = $svc->getTimeline( $params );
 
 printf (  "Timeline:\n"
         . "%s\n",

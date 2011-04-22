@@ -516,28 +516,37 @@ class Model_Mapper_User extends Model_Mapper_Base
     }
 
     /** @brief  Retrieve the lastVisit date/times for the given user(s).
-     *  @param  users   A Model_Set_User instance (or null) representing the
-     *                  users to match;
-     *  @param  group   A grouping string indicating how entries should be
-     *                  grouped / rolled-up.  See _normalizeGrouping()
-     *                  [ null == no grouping / roll-up ];
-     *  @param  order   An array of name/value pairs representing the fields
-     *                  and sort directions to use
-     *                  [ null == {'lastVisit' => 'DESC'} ];
-     *  @param  from    Limit the results to date/times AFTER this date/time
-     *                  [ null == no starting time limit ];
-     *  @param  until   Limit the results to date/times BEFORE this date/time
-     *                  [ null == no ending time limit ];
-     *                  null == no time limits ];
+     *  @param  params  An array of optional retrieval criteria:
+     *                      - users     A set of users to use in constructing
+     *                                  the timeline.  A Model_Set_User
+     *                                  instance or an array of userIds;
+     *                      - grouping  A grouping string indicating how
+     *                                  timeline entries should be grouped /
+     *                                  rolled-up.  See _normalizeGrouping();
+     *                                  [ 'YMDH' ];
+     *                      - order     An ORDER clause (string, array)
+     *                                  [ 'taggedOn DESC' ];
+     *                      - count     A  LIMIT count
+     *                                  [ all ];
+     *                      - offset    A  LIMIT offset
+     *                                  [ 0 ];
+     *                      - from      A date/time string to limit the results
+     *                                  to those occurring AFTER the specified
+     *                                  date/time;
+     *                      - until     A date/time string to limit the results
+     *                                  to those occurring BEFORE the specified
+     *                                  date/time;
+     *
      *
      *  @return An array of date/time strings.
      */
-    public function getTimeline($users  = null,
-                                $group  = null,
-                                $order  = null,
-                                $from   = null,
-                                $until  = null)
+    public function getTimeline(array $params = array())
     {
+        $group = (isset($params['grouping'])
+                    ? $params['grouping']
+                    : null);
+        unset($params['grouping']);
+
         $fieldDate  = 'date';
         $fieldCount = 'count';
         $grouping   = $this->_normalizeGrouping($group);
@@ -548,11 +557,11 @@ class Model_Mapper_User extends Model_Mapper_Base
                         $group, Connexions::varExport($grouping));
         // */
 
-        if (empty($order))
+        if ( (! isset($params['order'])) || empty($params['order']) )
         {
             // Default ordering with the 'lastVisit' field
-            $order      = array($fieldDate
-                                . ' '. Connexions_Service::SORT_DIR_DESC);
+            $params['order'] = array($fieldDate
+                                     . ' '. Connexions_Service::SORT_DIR_DESC);
             $fields     = array(
                 $fieldCount => "COUNT(u.lastVisit)",
                 $fieldDate  => "DATE_FORMAT(u.lastVisit, '{$grouping['fmt']}')",
@@ -563,9 +572,9 @@ class Model_Mapper_User extends Model_Mapper_Base
         {
             // Use the incoming 'order' to determine which fields to include
             $fields     = array();
-            $orderParts = (is_array($order)
-                            ? $order
-                            : preg_split('/\s*,\s*/', $order));
+            $orderParts = (is_array($params['order'])
+                            ? $params['order']
+                            : preg_split('/\s*,\s*/', $params['order']));
 
             foreach ($orderParts as $part)
             {
@@ -588,19 +597,31 @@ class Model_Mapper_User extends Model_Mapper_Base
         }
 
         // Include any time-range restrictions
-        $where = array();
-        if (is_string($from) && (! empty($from)) )
+        if (isset($params['where']))
         {
-            $fromTime = strtotime($from);
+            $where = (array)$params['where'];
+        }
+        else
+        {
+            $where = array();
+        }
+
+        if (isset($params['from'])      &&
+            is_string($params['from'])  &&
+            (! empty($params['from'])) )
+        {
+            $fromTime = strtotime($params['from']);
             if ($fromTime !== false)
             {
                 $field = $orderField .' >=';
                 $where[ $field ] = strftime('%Y-%m-%d %H:%M:%S', $fromTime);
             }
         }
-        if (is_string($until) && (! empty($until)) )
+        if (isset($params['until'])      &&
+            is_string($params['until'])  &&
+            (! empty($params['until'])) )
         {
-            $untilTime = strtotime($until);
+            $untilTime = strtotime($params['until']);
             if ($untilTime !== false)
             {
                 $field = (empty($where)
@@ -612,25 +633,29 @@ class Model_Mapper_User extends Model_Mapper_Base
         }
 
         // Include any user restrictions
-        if (! empty($users))
+        if (isset($params['users']))
         {
-            $ids = $users->getIds();
-            if (! empty($ids))
+            if ($params['users'] instanceof Connexions_Model_Set)
             {
-                $where[ 'userId' ] = $ids;
+                $ids = $params['users']->getIds();
+                if (! empty($ids))
+                {
+                    $where[ 'userId' ] = $ids;
+                }
             }
+
+            unset($params['users']);
         }
 
-        $params = array(
-            'order'         => $order,
-            'fields'        => $fields,
-            'excludeSec'    => true,
-            'rawRows'       => true,
-            'exactUsers'    => false,
-            'exactItems'    => false,
-            'exactTags'     => false,
-            'group'         => $fieldDate,
-        );
+        // Fill in additional fields we don't want to allow over-ridden.
+        $params['fields']       = $fields;
+        $params['excludeSec']   = true;
+        $params['rawRows']      = true;
+        $params['exactUsers']   = false;
+        $params['exactItems']   = false;
+        $params['exactTags']    = false;
+        $params['group']        = $fieldDate;
+
         if (! empty($where))    $params['where']  = $where;
 
 
@@ -651,41 +676,9 @@ class Model_Mapper_User extends Model_Mapper_Base
                         Connexions::varExport($rows));
         // */
 
-
         // Reduce the rows to a simple array of date/times => counts
-        $timeline   = array();
-        foreach ($rows as $row)
-        {
-            $date  = $row[ $fieldDate ];
-            $count = $row[ $fieldCount ];
-
-            if ($grouping['seriesIdLen'] > 0)
-            {
-                /* Generating one or more series based upon the first
-                 * 'seriesIdLen' characters of the date.
-                 */
-                $series  = substr($date, 0, $grouping['seriesIdLen']);
-                $subDate = substr($date, $grouping['seriesIdLen']);
-
-                /*
-                Connexions::log("Model_Mapper_User::getTimeline(): "
-                                . "date[ %s ], series[ %s ], subDate[ %s ]",
-                                $date, $series, $subDate);
-                // */
-
-                if (! is_array($timeline[$series]))
-                {
-                    $timeline[ $series ] = array();
-                }
-
-                $timeline[ $series ][ $subDate ] = $count;
-            }
-            else
-            {
-                $timeline[ $date ] = $count;
-            }
-        }
-
+        $timeline = $this->_normalizeTimeline($rows, $grouping,
+                                              $fieldDate, $fieldCount);
         return $timeline;
     }
 

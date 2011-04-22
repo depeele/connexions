@@ -974,45 +974,51 @@ class Service_User extends Connexions_Service
     }
 
     /** @brief  Retrieve the lastVisit date/times for the given user(s).
-     *  @param  users   A Model_Set_User instance, array, or comma-separated
-     *                  string of users to match.
-     *  @param  group   A grouping string indicating how entries should be
-     *                  grouped / rolled-up.  See
-     *                  Model_Mapper_Base::_normalizeGrouping()
-     *                  [ null == no grouping / roll-up ];
-     *  @param  order   An order string:
-     *                      'taggedOn ASC|DESC'
-     *                      'updatedOn ASC|DESC'
-     *                  used [ 'taggedOn ASC' ];
-     *  @param  from    Limit the results to date/times AFTER this date/time
-     *                  [ null == no starting time limit ];
-     *  @param  until   Limit the results to date/times BEFORE this date/time
-     *                  [ null == no ending time limit ];
-     *                  null == no time limits ];
+     *  @param  params  An array of optional retrieval criteria:
+     *                      - users     A set of users to use in selecting the
+     *                                  bookmarks used to construct the
+     *                                  timeline.  A Model_Set_User instance or
+     *                                  an array of userIds;
+     *                      - grouping  A grouping string indicating how
+     *                                  timeline entries should be grouped /
+     *                                  rolled-up.  See _normalizeGrouping();
+     *                                  [ 'YMDH' ];
+     *                      - order     An ORDER clause (string, array)
+     *                                  [ 'taggedOn DESC' ];
+     *                      - count     A  LIMIT count
+     *                                  [ all ];
+     *                      - offset    A  LIMIT offset
+     *                                  [ 0 ];
+     *                      - from      A date/time string to limit the results
+     *                                  to those occurring AFTER the specified
+     *                                  date/time;
+     *                      - until     A date/time string to limit the results
+     *                                  to those occurring BEFORE the specified
+     *                                  date/time;
      *
      *  @return An array of date/time strings.
      */
-    public function getTimeline($users,
-                                $group  = null,
-                                $order  = null,
-                                $from   = null,
-                                $until  = null)
+    public function getTimeline(array $params = array())
     {
-        $users = $this->factory('Service_User')->csList2set($users);
-        $order = $this->_csOrder2array($order, true /* noExtras */);
+        if (isset($params['users']) && (! empty($params['users'])) )
+        {
+            $params['users'] =
+                $this->factory('Service_User')->csList2set($params['users']);
+        }
+
+        if (isset($params['order']) && (! empty($params['order'])) )
+        {
+            $params['order'] =
+                $this->_csOrder2array($params['order'], true /* noExtras */);
+        }
 
         /*
         Connexions::log("Service_User::getTimeline(): "
-                        . "users[ %s ], order[ %s ]",
-                        Connexions::varExport($users),
-                        Connexions::varExport($order));
+                        . "params[ %s ]",
+                        Connexions::varExport($params));
         // */
 
-        $timeline = $this->_mapper->getTimeline( $users,
-                                                 $group,
-                                                 $order,
-                                                 $from,
-                                                 $until);
+        $timeline = $this->_mapper->getTimeline( $params );
         return $timeline;
     }
 }

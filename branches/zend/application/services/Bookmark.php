@@ -891,65 +891,71 @@ class Service_Bookmark extends Connexions_Service
 
     /** @brief  Retrieve the taggedOn date/times for the given user(s) and/or
      *          item(s).
-     *  @param  users   A Model_Set_User instance, array, or comma-separated
-     *                  string of users to match.
-     *  @param  items   A Model_Set_Item instance, array, or comma-separated
-     *                  string of items to match.
-     *  @param  tags    A Model_Set_Tag  instance, array, or comma-separated
-     *                  string of tags to match.
-     *  @param  group   A grouping string indicating how entries should be
-     *                  grouped / rolled-up.  See
-     *                  Model_Mapper_Base::_normalizeGrouping()
-     *                  [ null == no grouping / roll-up ];
-     *  @param  group   How entries should be grouped / rolled-up.  A string
-     *                  specifying an ISO 8601 duration
-     *                  (e.g. 'P2Y4DT6H8M' == 2 years, 4 days, 6 hours, 8
-     *                        minutes).
-     *                  If not specified, no grouping will be performed.  Note
-     *                  that if grouping is employed, the returned data will be
-     *                  reduced to single date/time instances using the FIRST
-     *                  field indicated by any 'order' parameter [ null ];
-     *  @param  order   An order string:
-     *                      'taggedOn ASC|DESC'
-     *                      'updatedOn ASC|DESC'
-     *                  used [ 'taggedOn ASC' ];
-     *  @param  from    Limit the results to date/times AFTER this date/time
-     *                  [ null == no starting time limit ];
-     *  @param  until   Limit the results to date/times BEFORE this date/time
-     *                  [ null == no ending time limit ];
-     *                  null == no time limits ];
+     *  @param  params  An array of optional retrieval criteria:
+     *                      - users     A set of users to use in selecting the
+     *                                  bookmarks used to construct the
+     *                                  timeline.  A Model_Set_User instance or
+     *                                  an array of userIds;
+     *                      - items     A set of items to use in selecting the
+     *                                  bookmarks used to construct the
+     *                                  timeline.  A Model_Set_Item instance or
+     *                                  an array of itemIds;
+     *                      - tags      A set of tags to use in selecting the
+     *                                  bookmarks used to construct the
+     *                                  timeline.  A Model_Set_Tag instance or
+     *                                  an array of tagIds;
+     *                      - grouping  A grouping string indicating how
+     *                                  timeline entries should be grouped /
+     *                                  rolled-up.  See _normalizeGrouping();
+     *                                  [ 'YMDH' ];
+     *                      - order     An ORDER clause (string, array)
+     *                                  [ 'taggedOn DESC' ];
+     *                      - count     A  LIMIT count
+     *                                  [ all ];
+     *                      - offset    A  LIMIT offset
+     *                                  [ 0 ];
+     *                      - from      A date/time string to limit the results
+     *                                  to those occurring AFTER the specified
+     *                                  date/time;
+     *                      - until     A date/time string to limit the results
+     *                                  to those occurring BEFORE the specified
+     *                                  date/time;
      *
      *  @return An array of date/time / count mappings.
      */
-    public function getTimeline($users,
-                                $items  = null,
-                                $tags   = null,
-                                $group  = null,
-                                $order  = null,
-                                $from   = null,
-                                $until  = null)
+    public function getTimeline(array $params = array())
     {
-        $users = $this->factory('Service_User')->csList2set($users);
-        $items = $this->factory('Service_Item')->csList2set($items);
-        $tags  = $this->factory('Service_Tag')->csList2set($tags);
-        $order = $this->_csOrder2array($order, true /* noExtras */);
+        if (isset($params['users']) && (! empty($params['users'])) )
+        {
+            $params['users'] =
+                $this->factory('Service_User')->csList2set($params['users']);
+        }
+
+        if (isset($params['items']) && (! empty($params['items'])) )
+        {
+            $params['items'] =
+                $this->factory('Service_Item')->csList2set($params['items']);
+        }
+
+        if (isset($params['tags']) && (! empty($params['tags'])) )
+        {
+            $params['tags']  =
+                $this->factory('Service_Tag')->csList2set($params['tags']);
+        }
+
+        if (isset($params['order']) && (! empty($params['order'])) )
+        {
+            $params['order'] =
+                $this->_csOrder2array($params['order'], true /* noExtras */);
+        }
 
         /*
         Connexions::log("Service_Bookmark::getTimeline(): "
-                        . "users[ %s ], items[ %s ], tags[ %s ], order[ %s ]",
-                        Connexions::varExport($users),
-                        Connexions::varExport($items),
-                        Connexions::varExport($tags),
-                        Connexions::varExport($order));
+                        . "params[ %s ]",
+                        Connexions::varExport($params));
         // */
 
-        $timeline = $this->_mapper->getTimeline( $users,
-                                                 $items,
-                                                 $tags,
-                                                 $group,
-                                                 $order,
-                                                 $from,
-                                                 $until);
+        $timeline = $this->_mapper->getTimeline( $params );
         return $timeline;
     }
 

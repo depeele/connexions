@@ -245,7 +245,7 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      */
     protected function _normalizeGrouping($group)
     {
-        $fmt         = '%Y%m%d%H%i';    // '%Y-%m-%d %H:%i:%S';
+        $fmt         = '%Y%m%d%H';  // '%Y-%m-%d %H:%i:%S';
         $seriesIdLen = 0;
 
         if (preg_match('/([YMWwDdH:]+)/', $group, $matches))
@@ -329,6 +329,66 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
         // */
 
         return $res;
+    }
+
+    /** @brief  Given the raw rows (date/count) from a timeline query along
+     *          with grouping information generated via _normalizeGrouping(),
+     *          the name of the date field, and count field, reduce the rows to
+     *          a simple array of date/times => counts, possibly divided into a
+     *          set of series indicated by the grouping information.
+     *  @param  rows        The raw rows;
+     *  @param  grouping    Grouping information via _normalizeGrouping();
+     *  @param  fieldDate   The name of the date  field [ 'date' ];
+     *  @param  fieldCount  The name of the count field [ 'count' ];
+     *
+     *  @return A timeline array;
+     */
+    protected function _normalizeTimeline(array $rows,
+                                          array $grouping,
+                                                $fieldDate  = 'date',
+                                                $fieldCount = 'count')
+    {
+        // Reduce the rows to a simple array of date/times => counts
+        $timeline   = array();
+        foreach ($rows as $row)
+        {
+            $date  = $row[ $fieldDate ];
+            $count = $row[ $fieldCount ];
+
+            if ($grouping['seriesIdLen'] > 0)
+            {
+                /* Generating one or more series based upon the first
+                 * 'seriesIdLen' characters of the date.
+                 */
+                $series  = substr($date, 0, $grouping['seriesIdLen']);
+                $subDate = substr($date, $grouping['seriesIdLen']);
+
+                /*
+                Connexions::log("Model_Mapper_Base::_normalizeTimeline(): "
+                                . "date[ %s ], series[ %s ], subDate[ %s ]",
+                                $date, $series, $subDate);
+                // */
+
+                if (! is_array($timeline[$series]))
+                {
+                    $timeline[ $series ] = array();
+                }
+
+                $timeline[ $series ][ $subDate ] = $count;
+            }
+            else
+            {
+                $timeline[ $date ] = $count;
+            }
+        }
+
+        /*
+        Connexions::log("Model_Mapper_Base::_normalizeTimeline(): "
+                        . "final timeline[ %s ]",
+                        Connexions::varExport($timeline));
+        // */
+
+        return $timeline;
     }
 
     /** @brief  Generate an alias for the model name.
