@@ -288,7 +288,10 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
      *                      - where     Additional condition(s) [ null ];
      *
      *                      - privacy   Model_User to use for privacy filter
-     *                                  [ anonymous / unauthenticated ];
+     *                                      If NOT provided, use the currently
+     *                                      authenticated user, if explicitly
+     *                                      'false', do NOT include privacy
+     *                                      restrictions;
      *
      *  Override Model_Base::fetchRelated() to add a 'privacy' parameter.
      *
@@ -304,7 +307,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         if ($privacy !== false)
         {
             // Include a privacy filter
-            $params = $this->_addPrivacy($params);
+            $params = $this->addPrivacy($params);
         }
 
         /*
@@ -586,6 +589,58 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         return $timeline;
     }
 
+    /** @brief  Given selection parameters, add a 'where' privacy filter.
+     *  @param  params  The selection parameters.
+     *                      - privacy   Model_User to use for privacy filter
+     *                                      If NOT provided, use the currently
+     *                                      authenticated user, if explicitly
+     *                                      'false', do NOT include privacy
+     *                                      restrictions;
+     *
+     *  @return The new selection parameters, with 'where' included
+     *          (or modified).
+     */
+    public function addPrivacy(array $params)
+    {
+        $as      = $this->_getModelAlias();
+        $privacy = array("{$as}.isPrivate" => 0);
+
+        $user = (isset($params['privacy']) &&
+                 ($params['privacy'] instanceof Model_User)
+                    ? $params['privacy']
+                    : Connexions::getUser());
+
+        /*
+        Connexions::log("Model_Mapper_Bookmark::addPrivacy(): user[ %s ]",
+                        Connexions::varExport($user));
+        // */
+
+        if ( $user && $user->isAuthenticated() )
+        {
+            $privacy["+|{$as}.userId"] = $user->userId;
+        }
+
+        if (isset($params['where']))
+        {
+            $where = array_merge((array)$params['where'], $privacy);
+        }
+        else
+        {
+            $where = $privacy;
+        }
+
+        $params['where'] = $where;
+
+        /*
+        Connexions::log("Model_Mapper_Bookmark::addPrivacy(): "
+                        . "where[ %s ], params[ %s ]",
+                        Connexions::varExport($where),
+                        Connexions::varExport($params));
+        // */
+
+        return $params;
+    }
+
     /** @brief  Create a new instance of the Domain Model given raw data, 
      *          typically from a persistent store.
      *  @param  data        The raw data.
@@ -759,6 +814,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
      *          select/sub-select
      *  @param  select      The primary   Zend_Db_Select instance;
      *  @param  secSelect   The secondary Zend_Db_Select instance;
+     *  @param  primeAs     The alias used for 'select';
      *  @param  secAs       The alias used for 'secSelect';
      *  @param  params      An array retrieval criteria;
      *
@@ -769,6 +825,7 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
      */
     protected function _includeStatistics(Zend_Db_Select    $select,
                                           Zend_Db_Select    $secSelect,
+                                                            $primeAs,
                                                             $secAs,
                                           array             $params)
     {
@@ -806,50 +863,5 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
                   ->join(array($terAs => $terSelect),
                          "{$secAs}.itemId = {$terAs}.itemId",
                          null);
-    }
-
-    /** @brief  Given selection parameters, add a 'where' privacy filter.
-     *  @param  params  The selection parameters.
-     *
-     *  @return The new selection parameters.
-     */
-    protected function _addPrivacy(array $params)
-    {
-        $as      = $this->_getModelAlias();
-        $privacy = array("{$as}.isPrivate" => 0);
-
-        $user = (isset($params['privacy'])
-                    ? $params['privacy']
-                    : Connexions::getUser());
-
-        /*
-        Connexions::log("Model_Mapper_Bookmark::_addPrivacy(): user[ %s ]",
-                        Connexions::varExport($user));
-        // */
-
-        if ( $user && $user->isAuthenticated() )
-        {
-            $privacy["+|{$as}.userId"] = $user->userId;
-        }
-
-        if (isset($params['where']))
-        {
-            $where = array_merge((array)$params['where'], $privacy);
-        }
-        else
-        {
-            $where = $privacy;
-        }
-
-        $params['where'] = $where;
-
-        /*
-        Connexions::log("Model_Mapper_Bookmark::_addPrivacy(): "
-                        . "where[ %s ], params[ %s ]",
-                        Connexions::varExport($where),
-                        Connexions::varExport($params));
-        // */
-
-        return $params;
     }
 }

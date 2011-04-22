@@ -197,6 +197,113 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
         return $result;
     }
 
+    /** @brief  Retrieve bookmark-based statistics.
+     *  @param  params  An array of optional retrieval criteria suitable for
+     *                  fetchRelated() with the addition of:
+     *                      - privacy   Model_User to use for privacy filter
+     *                                      If NOT provided, use the currently
+     *                                      authenticated user, if explicitly
+     *                                      'false', do NOT include privacy
+     *                                      restrictions;
+     *
+     *  @return An array of statistics.
+     */
+    public function getStatistics(array $params = array())
+    {
+        $privacy = (isset($params['privacy'])
+                        ? $params['privacy']
+                        : null);
+
+        // Force the use of the UserItem mapper
+        $mapper = $this->factory('Model_Mapper_Bookmark');
+
+        $as       = $this->_getModelAlias( $mapper->getModelName() );
+        $accessor = $mapper->getAccessor();
+        $db       = $accessor->getAdapter();
+
+        /********************************************************************
+         * Generate the primary select.
+         *
+         */
+        $fields = array(
+            'users'     => 'uti.userCount',
+            'items'     => 'uti.itemCount',
+            'bookmarks' => 'uti.userItemCount',
+            'tags'      => 'uti.tagCount',
+            /*
+            'users'     => 'COUNT( DISTINCT uti.userId )',
+            'items'     => 'COUNT( DISTINCT uti.itemId )',
+            'bookmarks' => 'COUNT( DISTINCT uti.userId,uti.itemId )',
+            */
+            'privates'  => "SUM(CASE WHEN {$as}.isPrivate > 0 "
+                                                ."THEN 1 ELSE 0 END)",
+            'publics'   => "SUM(CASE WHEN {$as}.isPrivate > 0 "
+                                                ."THEN 0 ELSE 1 END)",
+            'favorites' => "SUM( {$as}.isFavorite )",
+            'rated'     => "SUM(CASE WHEN {$as}.rating > 0 "
+                                                ."THEN 1 ELSE 0 END)",
+        );
+
+        // IGNORE the standard generated statistics
+        //$params['excludeStats'] = true;
+
+        // Include the primary keys of the CURRENT mapper
+        $params['group'] = $this->_keyNames;
+        $fields  = array_merge($params['group'], $fields);
+
+        $select = $db->select();
+        $select->from( array( $as =>
+                                $accessor->info(Zend_Db_Table_Abstract::NAME)),
+                       $fields );
+
+        $this->_includeSecondarySelect($select, $as, $params);
+
+        // Reset our fields to ONLY include the fields we specifically requested
+        $select->reset(Zend_Db_Select::COLUMNS)
+               ->columns($fields, $as);
+
+        // Group-by
+        $select->group($params['group']);
+
+        /* Unless explicitly requested to exclude privacy restrictions, include
+         * them now.
+         */
+        if ($privacy !== false)
+        {
+            $params = $mapper->addPrivacy($params);
+        }
+
+        // Include any 'where' restrictions, possibly added by addPrivacy()
+        if (isset($params['where']) && (! empty($params['where'])))
+        {
+            $where = $this->_where( (array)$params['where'] );
+
+            /*
+            Connexions::log("Model_Mapper_Base[%s]::getStatistics(): "
+                            .   "where[ %s ] == [ %s ]",
+                            get_class($this),
+                            Connexions::varExport($params['where']),
+                            Connexions::varExport($where));
+            // */
+
+            $this->_addWhere($select, $where);
+        }
+
+        $order  = (!empty($params['order'])  ? $params['order']  : null);
+        $count  = (!empty($params['count'])  ? $params['count']  : null);
+        $offset = (!empty($params['offset']) ? $params['offset'] : null);
+
+        $stats = $this->fetch($select, $order, $count, $offset, true);
+
+        /*
+        Connexions::log("Model_Mapper_Base::getStatistics(): "
+                        . "stats[ %s ]",
+                        Connexions::varExport($stats));
+        // */
+
+        return $stats;
+    }
+
     /************************************************************************
      * Protected helpers
      *
@@ -392,12 +499,14 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
     }
 
     /** @brief  Generate an alias for the model name.
+     *  @param  modelName   If provided, use this as the model name
+     *                      [ null == the model associated with this mapper ];
      *
      *  @return An alias string.
      */
-    protected function _getModelAlias()
+    protected function _getModelAlias( $modelName = null )
     {
-        $modelName = $this->getModelName();
+        if (empty($modelName))  $modelName = $this->getModelName();
 
         /* Convert the model class name to an abbreviation composed of all
          * upper-case characters following the first '_', then converted to
@@ -564,7 +673,8 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
         if ( (! isset($params['excludeStats'])) ||
              ($params['excludeStats'] !== true) )
         {
-            $this->_includeStatistics($select, $secSelect, $as, $params);
+            $this->_includeStatistics($select, $secSelect,
+                                      $primeAs, $as, $params);
         }
 
         /*
@@ -778,6 +888,7 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      *          select/sub-select
      *  @param  select      The primary   Zend_Db_Select instance;
      *  @param  secSelect   The secondary Zend_Db_Select instance;
+     *  @param  primeAs     The alias used for 'select';
      *  @param  secAs       The alias used for 'secSelect';
      *  @param  params      An array retrieval criteria;
      *
@@ -787,11 +898,24 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      */
     protected function _includeStatistics(Zend_Db_Select    $select,
                                           Zend_Db_Select    $secSelect,
+                                                            $primeAs,
                                                             $secAs,
                                           array             $params)
     {
-        $accessor  = $this->getAccessor();
-        $mainTable = $accessor->info(Zend_Db_Table_Abstract::NAME);
+        // Figure out the main table so we can determine what statistic to add
+        $from = $select->getPart(Zend_Db_Select::FROM);
+        if (isset($from[ $primeAs ]))
+        {
+            $mainTable = $from[ $primeAs ]['tableName'];
+        }
+        else
+        {
+            /* Resort to ignoring the 'select' and pulling directly from our
+             * accessor (won't work if 'select' is for a different table.
+             */
+            $accessor  = $this->getAccessor();
+            $mainTable = $accessor->info(Zend_Db_Table_Abstract::NAME);
+        }
 
         // Include the statistics in the column list of the primary select
         $mainStatCols = array("{$secAs}.userItemCount",

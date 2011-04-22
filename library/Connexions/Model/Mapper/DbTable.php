@@ -1073,8 +1073,8 @@ abstract class Connexions_Model_Mapper_DbTable
      *      { condition1: value(s), condition2: value(s), ... }
      *      [ condition1, condition2, ... ]
      *      [ {'condition': condition1, 'value': value(s)},
-     *         'condition': condition2, 'value': value(s)},
-     *         ...} ]
+     *        {'condition': condition2, 'value': value(s)},
+     *         ... ]
      *
      *  Each 'condition' can have the form:
      *      prefix field op
