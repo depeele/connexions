@@ -376,6 +376,8 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
      *                  Connexions_Service::SORT_DIR_* constant.  If an order
      *                  is omitted, Connexions_Service::SORT_DIR_ASC will be
      *                  used [ {taggedOn: 'ASC'} ];
+     *  @param  count   An OPTIONAL LIMIT count  [ no limit ];
+     *  @param  offset  An OPTIONAL LIMIT offset [ 0 ];
      *  @param  from    Limit the results to date/times AFTER this date/time
      *                  [ null == no date/time from restriction ];
      *  @param  until   Limit the results to date/times BEFORE this date/time
@@ -388,13 +390,23 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
                                 $tags   = null,
                                 $group  = null,
                                 $order  = null,
+                                $count  = null,
+                                $offset = null,
                                 $from   = null,
                                 $until  = null)
     {
-        $timeline = $this->_service->getTimeline($users, $items, $tags,
-                                                 $group, $order,
-                                                 $from, $until);
+        $params = array();
+        if (! empty($users))    $params['users']    = $users;
+        if (! empty($items))    $params['items']    = $items;
+        if (! empty($tags))     $params['tags']     = $tags;
+        if (! empty($group))    $params['grouping'] = $group;
+        if (! empty($order))    $params['order']    = $order;
+        if (! empty($count))    $params['count']    = $count;
+        if (! empty($offset))   $params['offset']   = $offset;
+        if (! empty($from))     $params['from']     = $from;
+        if (! empty($until))    $params['until']    = $until;
 
+        $timeline = $this->_service->getTimeline( $params );
         return $timeline;
     }
 }

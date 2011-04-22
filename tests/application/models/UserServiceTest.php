@@ -1739,12 +1739,14 @@ class UserServiceTest extends DbTestCase
     public function testUserServiceTimeline1()
     {
         $expected = array(
-            "200704121238" => 1,
-            "000000000000" => 3,
+            "2007041212" => 1,
+            "0000000000" => 3,
         );
-        $users    = null;
+        $params = array(
+            'users'     => null,
+        );
         $service  = Connexions_Service::factory('Model_User');
-        $timeline = $service->getTimeline($users);
+        $timeline = $service->getTimeline( $params );
 
         $this->assertEquals($expected, $timeline);
     }
@@ -1752,12 +1754,14 @@ class UserServiceTest extends DbTestCase
     public function testUserServiceTimeline2()
     {
         $expected = array(
-            "200704121238" => 1,
-            "000000000000" => 2,
+            "2007041212" => 1,
+            "0000000000" => 2,
         );
-        $users    = 'User1,User441,User83';
+        $params = array(
+            'users'     => "User1,User441,User83",
+        );
         $service  = Connexions_Service::factory('Model_User');
-        $timeline = $service->getTimeline($users);
+        $timeline = $service->getTimeline( $params );
 
         $this->assertEquals($expected, $timeline);
     }
