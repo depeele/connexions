@@ -155,4 +155,69 @@ class Service_Item extends Connexions_Service
                                             $count,
                                             $offset);
     }
+
+    /** @brief  Retrieve item-releated statistics.
+     *  @param  params  An array of optional retrieval criteria:
+     *                      - users     A set of users to use in selecting the
+     *                                  bookmarks used to construct the
+     *                                  timeline.  A Model_Set_User instance or
+     *                                  an array of userIds;
+     *                      - items     A set of items to use in selecting the
+     *                                  bookmarks used to construct the
+     *                                  timeline.  A Model_Set_Item instance or
+     *                                  an array of itemIds;
+     *                      - tags      A set of tags to use in selecting the
+     *                                  bookmarks used to construct the
+     *                                  timeline.  A Model_Set_Tag instance or
+     *                                  an array of tagIds;
+     *                      - order     An ORDER clause (string, array)
+     *                                  [ 'taggedOn DESC' ];
+     *                      - count     A  LIMIT count
+     *                                  [ all ];
+     *                      - offset    A  LIMIT offset
+     *                                  [ 0 ];
+     *                      - from      A date/time string to limit the results
+     *                                  to those occurring AFTER the specified
+     *                                  date/time;
+     *                      - until     A date/time string to limit the results
+     *                                  to those occurring BEFORE the specified
+     *                                  date/time;
+     *
+     *  @return An array of statistics.
+     */
+    public function getStatistics(array $params = array())
+    {
+        if (isset($params['users']) && (! empty($params['users'])) )
+        {
+            $params['users'] =
+                $this->factory('Service_User')->csList2set($params['users']);
+        }
+
+        if (isset($params['items']) && (! empty($params['items'])) )
+        {
+            $params['items'] =
+                $this->csList2set($params['items']);
+        }
+
+        if (isset($params['tags']) && (! empty($params['tags'])) )
+        {
+            $params['tags']  =
+                $this->factory('Service_Tag')->csList2set($params['tags']);
+        }
+
+        if (isset($params['order']) && (! empty($params['order'])) )
+        {
+            $params['order'] =
+                $this->_csOrder2array($params['order'], true /* noExtras */);
+        }
+
+        /*
+        Connexions::log("Service_Item::getStatistics(): "
+                        . "params[ %s ]",
+                        Connexions::varExport($params));
+        // */
+
+        $stats = $this->_mapper->getStatistics( $params );
+        return $stats;
+    }
 }
