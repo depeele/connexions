@@ -455,20 +455,28 @@ class Model_Mapper_User extends Model_Mapper_Base
      */
 
     /** @brief  Retrieve the Model_Set_User instance representing
-     *          "contributors" who have at least 'min' bookmarks.
-     *  @param  min     The minimum number of bookmarks required to be
-     *                  considered a "contributor"  [ 1 ];
-     *  @param  count   Optional LIMIT count        [ 50 ];
-     *  @param  offset  Optional LIMIT offset       [ 0 ];
+     *          "contributors".
+     *  @param  threshold   The number of bookmarks required to be considered a
+     *                      "contributor".  A non-negative value will retrieve
+     *                      users that have AT LEAST 'threshold' bookmarks,
+     *                      while a negative number will retrieve users with
+     *                      UP TO the absolute value of 'threshold'
+     *                      bookmarks [ 1 ].
+     *  @param  count       Optional LIMIT count  [ 50 ];
+     *  @param  offset      Optional LIMIT offset [ 0 ];
      *
      *  @return A Model_Set_User instance representing the "contributors";
      */
-    public function getContributors($min    = 1,
-                                    $count  = 50,
-                                    $offset = null)
+    public function getContributors($threshold  = 1,
+                                    $count      = 50,
+                                    $offset     = null)
     {
+        $where = ($threshold >= 0
+                    ? array('totalItems >=' => $threshold)
+                    : array('totalItems <=' => abs($threshold)));
+
         $params = array(
-            'where'         => array('totalItems >=' => $min),
+            'where'         => $where,
             'order'         => array('totalItems DESC',
                                      'name ASC'),
             'excludeStats'  => true,
@@ -481,20 +489,27 @@ class Model_Mapper_User extends Model_Mapper_Base
         return $users;
     }
 
-    /** @brief  Retrieve the COUNT of "contributors" who have at least 'min'
-     *          bookmarks.
-     *  @param  min     The minimum number of bookmarks required to be
-     *                  considered a "contributor"  [ 1 ];
+    /** @brief  Retrieve the COUNT of "contributors".
+     *  @param  threshold   The number of bookmarks required to be considered a
+     *                      "contributor".  A non-negative value will include
+     *                      users that have AT LEAST 'threshold' bookmarks,
+     *                      while a negative number will include users with
+     *                      UP TO the absolute value of 'threshold'
+     *                      bookmarks [ 1 ].
      *
      *  @return An integer COUNT representing the "contributors";
      */
-    public function getContributorCount($min    = 1)
+    public function getContributorCount($threshold  = 1)
     {
+        $where = ($threshold >= 0
+                    ? array('totalItems >=' => $threshold)
+                    : array('totalItems <=' => abs($threshold)));
+
         $params = array(
             'fields'        => array(
                 'count'     => "COUNT( DISTINCT u.userId )",
             ),
-            'where'         => array('totalItems >=' => $min),
+            'where'         => $where,
             'excludeSec'    => true,
             'rawRows'       => true,
             'exactUsers'    => false,
