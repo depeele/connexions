@@ -294,7 +294,7 @@ class Service_Proxy_User extends Connexions_Service_Proxy
      */
     public function getContributors($threshold  = 1,
                                     $count      = 50,
-                                    $offset     = 0)
+                                    $offset     = null)
     {
         return ($this->_service->getContributors($threshold, $count, $offset));
     }
