@@ -456,36 +456,58 @@ class Model_Mapper_User extends Model_Mapper_Base
 
     /** @brief  Retrieve the Model_Set_User instance representing
      *          "contributors".
-     *  @param  threshold   The number of bookmarks required to be considered a
-     *                      "contributor".  A non-negative value will retrieve
-     *                      users that have AT LEAST 'threshold' bookmarks,
-     *                      while a negative number will retrieve users with
-     *                      UP TO the absolute value of 'threshold'
-     *                      bookmarks [ 1 ].
-     *  @param  count       Optional LIMIT count  [ 50 ];
-     *  @param  offset      Optional LIMIT offset [ 0 ];
+     *  @param  params  An array of optional retrieval criteria:
+     *                      - users     A set of users to use in selecting the
+     *                                  bookmarks used to construct the
+     *                                  timeline.  A Model_Set_User instance or
+     *                                  an array of userIds;
+     *                      - order     An ORDER clause (string, array)
+     *                                  [ 'taggedOn DESC' ];
+     *                      - count     A  LIMIT count
+     *                                  [ all ];
+     *                      - offset    A  LIMIT offset
+     *                                  [ 0 ];
      *
      *  @return A Model_Set_User instance representing the "contributors";
      */
-    public function getContributors($threshold  = 1,
-                                    $count      = 50,
-                                    $offset     = null)
+    public function getContributors(array $params = array())
     {
-        $where = ($threshold >= 0
-                    ? array('totalItems >=' => $threshold)
-                    : array('totalItems <=' => abs($threshold)));
+        $threshold = (isset($params['threshold'])
+                        ? (int)$params['threshold']
+                        : 1);
+        unset($params['threshold']);
 
-        $params = array(
-            'where'         => $where,
-            'order'         => array('totalItems DESC',
-                                     'name ASC'),
-            'excludeStats'  => true,
-            'count'         => $count,
-            'offset'        => $offset,
-        );
+        if ( (! isset($params['order'])) || empty($params['order']) )
+        {
+            // Default ordering with the 'lastVisit' field
+            $params['order'] = array('totalItems DESC',
+                                     'name ASC');
+        }
+
+        if (isset($params['where']))
+        {
+            $where = (array)$params['where'];
+        }
+        else
+        {
+            $where = array();
+        }
+
+        if ($threshold >= 0)
+        {
+            $where['totalItems >='] = $threshold;
+        }
+        else
+        {
+            $where['totalItems <='] = abs($threshold);
+        }
+
+        $params['where'] = $where;
+
+        // Fill in additional fields we don't want to allow over-ridden.
+        $params['excludeStats'] = true;
 
         $users = $this->fetchRelated( $params );
-
         return $users;
     }
 

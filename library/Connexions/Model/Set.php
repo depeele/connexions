@@ -481,6 +481,25 @@ abstract class Connexions_Model_Set
      */
     public function toArray(array $props    = array())
     {
+        /*
+        Connexions::log("Connexions_Model_Set(%s)::toArray(): props[ %s ]",
+                        get_class($this),
+                        Connexions::varExport($props));
+        // */
+
+        /* If we're being asked to restrict the array to ONLY the public
+         * portions of model instances, we first need to ensure that we have
+         * model instances.  Only they are able to properly convert to array
+         * equivalents excluding any "private" data.
+         */
+        if ( (! isset($props['public'])) || ($props['public'] !== false))
+        {
+            /* Ensure that all entries are model instances.  Only they can
+             * properly exclude private portions.
+             */
+            $this->_makeMembers(0, $this->count());
+        }
+
         $res = array();
         foreach ($this->_members as $idex => $item)
         {
@@ -501,6 +520,34 @@ abstract class Connexions_Model_Set
         }
 
         return $res;
+    }
+
+    /** @brief  Return a JSON-encoded version of this instance.
+     *  @param  props   Generation properties:
+     *                      - deep      Deep traversal (true)
+     *                                    or   shallow (false)
+     *                                    [false];
+     *                      - public    Include only public fields (true)
+     *                                    or  also include private (false)
+     *                                    [true];
+     *                      - dirty     Include only dirty fields (true)
+     *                                    or           all fields (false);
+     *                                    [false];
+     *
+     *  @return An array representation of this Domain Model.
+     */
+    public function toJson(array $props    = array())
+    {
+        if (! isset($props['deep']))    $props['deep'] = false;
+
+        /*
+        Connexions::log("Connexions_Model_Set(%s)::toJson(): props[ %s ]",
+                        get_class($this),
+                        Connexions::varExport($props));
+        // */
+
+        $json = json_encode( $this->toArray($props) );
+        return $json;
     }
 
     /** @brief  Return an array of the Identifiers of all items in this set,

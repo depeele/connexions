@@ -942,26 +942,27 @@ class Service_User extends Connexions_Service
 
     /** @brief  Retrieve the Model_Set_User instance representing
      *          "contributors".
-     *  @param  threshold   The number of bookmarks required to be considered a
-     *                      "contributor".  A non-negative value will retrieve
-     *                      users that have AT LEAST 'threshold' bookmarks,
-     *                      while a negative number will retrieve users with
-     *                      UP TO the absolute value of 'threshold'
-     *                      bookmarks [ 1 ].
-     *  @param  count       Optional LIMIT count  [ 50 ];
-     *  @param  offset      Optional LIMIT offset [ 0 ];
+     *  @param  params      An array of optional retrieval criteria:
+     *                          - threshold The number of bookmarks required
+     *                                      to be considered a "contributor".
+     *                                      A non-negative value will retrieve
+     *                                      users that have AT LEAST
+     *                                      'threshold' bookmarks, while a
+     *                                      negative number will retrieve users
+     *                                      with UP TO the absolute value of
+     *                                      'threshold' bookmarks [ 1 ];
+     *                          - order     An ORDER clause (string, array)
+     *                                      [ 'totalItems DESC' ];
+     *                          - count     A  LIMIT count
+     *                                      [ all ];
+     *                          - offset    A  LIMIT offset
+     *                                      [ 0 ];
      *
      *  @return A Model_Set_User instance representing the "contributors";
      */
-    public function getContributors($threshold  = 1,
-                                    $count      = 50,
-                                    $offset     = 0)
+    public function getContributors(array $params = array())
     {
-        if (! is_int($threshold))   $threshold = (int)$threshold;
-        if (! is_int($count))       $count     = (int)$count;
-        if (! is_int($offset))      $offset    = (int)$offset;
-
-        return $this->_mapper->getContributors($threshold, $count, $offset);
+        return $this->_mapper->getContributors($params);
     }
 
     /** @brief  Retrieve the COUNT of "contributors".

@@ -287,16 +287,25 @@ class Service_Proxy_User extends Connexions_Service_Proxy
      *                      while a negative number will retrieve users with
      *                      UP TO the absolute value of 'threshold'
      *                      bookmarks [ 1 ].
+     *  @param  order       An ORDER clause (string, array)
+     *                      [ 'totalItems DESC, name ASC' ];
      *  @param  count       Optional LIMIT count  [ 50 ];
      *  @param  offset      Optional LIMIT offset [ 0 ];
      *
      *  @return A Model_Set_User instance representing the "contributors";
      */
     public function getContributors($threshold  = 1,
+                                    $order      = null,
                                     $count      = 50,
                                     $offset     = null)
     {
-        return ($this->_service->getContributors($threshold, $count, $offset));
+        $params = array();
+        if (! empty($threshold))    $params['users']    = $users;
+        if (! empty($order))        $params['order']    = $order;
+        if (! empty($count))        $params['count']    = $count;
+        if (! empty($offset))       $params['offset']   = $offset;
+
+        return ($this->_service->getContributors($params));
     }
 
     /** @brief  Retrieve the COUNT of "contributors".
