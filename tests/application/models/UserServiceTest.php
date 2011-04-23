@@ -1668,8 +1668,12 @@ class UserServiceTest extends DbTestCase
         $expected = "User1,User441,User478,User83";
 
         // Retrieve the target user
+        $params = array(
+            'threshold' => 5,
+        );
+
         $service = Connexions_Service::factory('Model_User');
-        $users   = $service->getContributors( 5 );
+        $users   = $service->getContributors( $params );
         $this->assertNotEquals(null, $users);
 
         /*
@@ -1685,8 +1689,12 @@ class UserServiceTest extends DbTestCase
         $expected = "User1,User441,User478";
 
         // Retrieve the target user
+        $params = array(
+            'threshold' => 5,
+            'count'     => 3,
+        );
         $service = Connexions_Service::factory('Model_User');
-        $users   = $service->getContributors( 5, 3 );
+        $users   = $service->getContributors( $params );
         $this->assertNotEquals(null, $users);
 
         /*
@@ -1702,8 +1710,13 @@ class UserServiceTest extends DbTestCase
         $expected = "User478,User83";
 
         // Retrieve the target user
+        $params = array(
+            'threshold' => 5,
+            'count'     => 2,
+            'offset'    => 2,
+        );
         $service = Connexions_Service::factory('Model_User');
-        $users   = $service->getContributors( 5, 2,2 );
+        $users   = $service->getContributors( $params );
         $this->assertNotEquals(null, $users);
 
         /*

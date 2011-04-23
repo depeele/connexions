@@ -927,8 +927,12 @@ class UserDbTest extends DbTestCase
         $expected = "User1,User441,User478,User83";
 
         // Retrieve the target user
+        $params = array(
+            'threshold' => 5,
+        );
+
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $users  = $mapper->getContributors( 5 );
+        $users   = $mapper->getContributors( $params );
         $this->assertNotEquals(null, $users);
 
         /*
@@ -944,8 +948,13 @@ class UserDbTest extends DbTestCase
         $expected = "User1,User441,User478";
 
         // Retrieve the target user
+        $params = array(
+            'threshold' => 5,
+            'count'     => 3,
+        );
+
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $users  = $mapper->getContributors( 5, 3 );
+        $users  = $mapper->getContributors( $params );
         $this->assertNotEquals(null, $users);
 
         /*
@@ -961,8 +970,14 @@ class UserDbTest extends DbTestCase
         $expected = "User478,User83";
 
         // Retrieve the target user
+        $params = array(
+            'threshold' => 5,
+            'count'     => 2,
+            'offset'    => 2,
+        );
+
         $mapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
-        $users  = $mapper->getContributors( 5, 2,2 );
+        $users  = $mapper->getContributors( $params );
         $this->assertNotEquals(null, $users);
 
         /*
