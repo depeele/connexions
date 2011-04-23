@@ -290,9 +290,8 @@ abstract class Connexions_Model
     public function toArray(array $props    = array())
     {
         /*
-        Connexions::log("Connexions_Model::toArray(): props[ %s ]",
-                        $props);
-        Connexions::log("Connexions_Model::toArray(): props[ %s ]",
+        Connexions::log("Connexions_Model(%s)::toArray(): props[ %s ]",
+                        get_class($this),
                         Connexions::varExport($props));
         // */
 
@@ -318,6 +317,34 @@ abstract class Connexions_Model
         // */
 
         return $ret;
+    }
+
+    /** @brief  Return a JSON-encoded version of this instance.
+     *  @param  props   Generation properties:
+     *                      - deep      Deep traversal (true)
+     *                                    or   shallow (false)
+     *                                    [false];
+     *                      - public    Include only public fields (true)
+     *                                    or  also include private (false)
+     *                                    [true];
+     *                      - dirty     Include only dirty fields (true)
+     *                                    or           all fields (false);
+     *                                    [false];
+     *
+     *  @return An array representation of this Domain Model.
+     */
+    public function toJson(array $props    = array())
+    {
+        if (! isset($props['deep']))    $props['deep'] = false;
+
+        /*
+        Connexions::log("Connexions_Model(%s)::toJson(): props[ %s ]",
+                        get_class($this),
+                        Connexions::varExport($props));
+        // */
+
+        $json = json_encode( $this->toArray($props) );
+        return $json;
     }
 
     /** @brief  Invalidate the data contained in this model instance.

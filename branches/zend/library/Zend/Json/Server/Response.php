@@ -178,15 +178,20 @@ class Zend_Json_Server_Response
                 'id'     => $this->getId(),
             );
         } else {
+            $result   = $this->getResult();
             // :XXX: Connexions patch: {
             //       if the result can be simplified, do it
-            $result   = $this->getResult();
             if (is_object($result))
             {
                 if (method_exists($result, 'toArray'))
-                    $result = $result->toArray();
+                {
+                    // Don't perform deep conversion
+                    $result = $result->toArray( array('deep' => false) );
+                }
                 else if (method_exists($result, '__toString'))
+                {
                     $result = $result->__toString();
+                }
             }
             // :XXX: Connexions patch: }
 
