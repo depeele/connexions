@@ -303,50 +303,68 @@ class PeopleController extends Connexions_Controller_Action
         /*************************************************************
          * Sidebar::People
          *
+         *  Retrieve contributor and timeline information
+         *
          */
         case 'people':
-            $service    = $this->service('User');
-            $fetchOrder = array('userItemCount DESC',
-                                'userCount     DESC',
-                                'itemCount     DESC',
-                                'name          ASC');
-
-            if (! isset($this->view->main))
+            // Retrieve contributor information
+            if (count($this->_tags) < 1)
             {
-                $this->_prepare_main();
+                $uSvc      = $this->service('User');
+                $threshold = 50;
+                $config['counts'] = $uSvc->getContributorCount( $threshold );
             }
 
-            // All usersusers,
-            $users = (isset($this->view->main['items'])
-                        ? $this->view->main['items']
-                        : null);
-            if ($users === null)
+            // Construct the timeline
+            $bSvc     = $this->service('Bookmark');
+            $params   = array('tags'      => $this->_tags,
+                               'grouping' => 'YM');
+            $timeline = $bSvc->getTimeline( $params );
+
+            $months = 0;
+            $last   = null;
+            foreach ($timeline as $date => $count)
             {
-                $users = $service->fetchByTags($this->_tags,
-                                               true,            // ALL tags
-                                               $fetchOrder,
-                                               $count,
-                                               $offset);
+                $month = substr($date, 0, 6);
+
+                if ($month !== $last)   $months++;
+                $last = $month;
             }
 
-            // /*
+            // Reduce to a number of ticks that will hopefully be uncluttered
+            $ticks = $months;
+            while ($ticks >= 24)
+            {
+                $ticks = ($ticks / 6) + 1;
+            }
+
+            $config['timeline'] = array(
+                'xDataHint'     => 'fmt:%Y %b',
+                'flot'          => array(
+                    'points'    => array(
+                        'radius'    => 1,
+                        'lineWidth' => 1,
+                    ),
+                    'lines'     => array(
+                        'lineWidth' => 1,
+                    ),
+                    'xaxis'     => array(
+                        'labelAngle'    => 75,
+                        'ticks'         => $ticks,
+                    ),
+                ),
+                'rawData'       => array(
+                    'activity'  => $timeline,
+                ),
+            );
+
+            /*
             Connexions::log("PeopleController::"
                             .   "_prepare_sidebarPane( %s ): "
-                            .   "Fetched %d items",
+                            .   "config[ %s ]",
                             $pane,
-                            count($users));
+                            Connexions::varExport($config));
             // */
-
-
-            $config['items']            =& $users;
-            $config['itemType']         =
-                                 View_Helper_HtmlItemCloud::ITEM_TYPE_USER;
-            $config['weightName']       =  'userItemCount';
-            $config['weightTitle']      =  'Bookmarks';
-            $config['currentSortBy']    =
-                                 View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
-            $config['currentSortOrder'] =
-                                 Connexions_Service::SORT_DIR_DESC;
             break;
 
         /*************************************************************

@@ -108,26 +108,21 @@ class Connexions
         }
         else if (is_array($var))
         {
-            $parts = array();
-            $open  = '';
-            $close = '';
+            $parts  = array();
+            $keys   = array_keys($var);
+
+            /* Are the first two keys of $var sequential integers?  If so,
+             * ASSUME $var is a simple array with sequential integer keys.  If
+             * NOT, treat $var as an object.
+             */
+            $intKey = (is_int($keys[0]) && is_int($keys[1]) &&
+                        ($keys[1] == $keys[0] + 1));
+            $open   = ($intKey == true ? '[ ' : '{ ');
+            $close  = ($intKey == true ? ' ]' : ' }');
+
             foreach ($var as $key => $val)
             {
-                if (empty($parts))
-                {
-                    if (is_int($key))
-                    {
-                        $open  = '[ ';
-                        $close = ' ]';
-                    }
-                    else
-                    {
-                        $open  = '{ ';
-                        $close = ' }';
-                    }
-                }
-
-                if (is_int($key))
+                if ($intKey === true)
                     $str = self::varExport($val);
                 else
                     $str = $key .':'. self::varExport($val);

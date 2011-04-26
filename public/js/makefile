@@ -12,7 +12,8 @@ SRCS =	connexions.js jquery.registry.js jquery.cookie.js 		\
 	connexions.cloudPane.js connexions.sidebar.js			\
 	connexions.itemList.js	connexions.search.js 			\
 	connexions.bookmarkPost.js connexions.autocomplete.js		\
-	connexions.bookmark.js connexions.user.js
+	connexions.bookmark.js connexions.user.js			\
+	jquery.colorhelpers.js jquery.flot.js connexions.timeline.js
 
 SETTINGS_SRCS	= jquery.Jcrop.js jquery.scrollTo.js			\
 		  ui.fileUploader.js					\

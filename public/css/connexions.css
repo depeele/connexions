@@ -375,6 +375,16 @@ a:visited { color: #005a9c; }
 .ui-confirmation { position: absolute; min-width: 8em; padding: 0.2em; font-size: 0.8em; -moz-border-radius: 0.3em 0.3em 0.3em 0.3em; -webkit-border-radius: 0.3em 0.3em 0.3em 0.3em; -ms-border-radius: 0.3em 0.3em 0.3em 0.3em; -khtml-border-radius: 0.3em 0.3em 0.3em 0.3em; border-radius: 0.3em 0.3em 0.3em 0.3em; background-color: #172322; color: white; text-align: center; }
 .ui-confirmation button { width: 3.5em; }
 
+.ui-timeline { position: relative; padding: 0 8em 0 0; margin: 0; }
+.ui-timeline .timeline-legend { position: absolute; top: 5px; right: 5px; width: 10em; padding: 0; margin: 0; }
+.ui-timeline .timeline-legend .timeline-stat { font-size: 0.8em; color: #dddddd; }
+.ui-timeline .timeline-annotation { font-size: 0.8em; color: #dddddd; text-align: center; }
+.ui-timeline .tickLabels { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.ui-timeline .tickLabels .xAxis, .ui-timeline .tickLabels .yAxis { position: absolute; width: 100%; height: 100%; }
+
+.rightCol .ui-timeline { padding: 2em 0 2.5em 0; }
+.rightCol .ui-timeline .timeline-legend { top: auto; bottom: 5px; left: auto; right: 5px; width: auto; }
+
 /****** tagCloud.sass ****** */
 .rightCol .itemItems, .rightCol .userItems { padding: 0 0.25em 0 0; border-top: 3px solid #eeeeee; }
 .rightCol .itemItems .cloudRelation, .rightCol .userItems .cloudRelation { position: absolute; top: -2px; left: -19px; }

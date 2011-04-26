@@ -29,6 +29,7 @@ connexions.css: main.scss		\
 		urls.scss		\
 		tabs.scss		\
 		ui-form.scss		\
+		timeline.scss	\
 		ui.confirmation.scss	\
 		tagCloud.scss		\
 		itemScope.scss		\
@@ -87,6 +88,9 @@ settings.css: settings.scss sizes.scss colors.scss mixins.scss urls.scss \
 ui.confirmation.css: ui.confirmation.scss sizes.scss colors.scss mixins.scss
 	sass -t compact ui.confirmation.scss:ui.confirmation.css
 
+timeline.css: timeline.scss sizes.scss colors.scss mixins.scss
+	sass -t compact timeline.scss:timeline.css
+
 sprites.scss:	urls.scss
 
 ie.scss:	sizes.scss colors.scss
@@ -100,12 +104,14 @@ clean:
 	rm -f connexions.css items.css bookmarks.css users.css \
 	      bookmark-users.css urlItems.css inbox.css validationForm.css \
 	      post.css auth.css url-chooser.css search.css searchResults.css \
-	      ui.confirmation.css settings.css sprites.css ie.css ie8.css \
+	      ui.confirmation.css timeline.css \
+	      settings.css sprites.css ie.css ie8.css \
 	      connexions.min.css items.min.css bookmarks.min.css users.min.css \
 	      bookmark-users.min.css urlItems.min.css inbox.min.css \
 	      validationForm.min.css post.min.css auth.min.css \
 	      url-chooser.min.css search.min.css searchResults.min.css \
-	      ui.confirmation.min.css settings.min.css sprites.min.css \
+	      ui.confirmation.min.css timeline.min.css \
+	      settings.min.css sprites.min.css \
 	      ie.min.css ie8.min.css
 
 %.css : %.scss
