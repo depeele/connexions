@@ -534,12 +534,16 @@ class Model_Mapper_User extends Model_Mapper_Base
                 'total'        => "COUNT( DISTINCT u.userId )",
                 'contributors' => "SUM( CASE WHEN {$where} THEN 1 ELSE 0 END)",
             ),
-            //'where'         => $where,
-            'excludeSec'    => true,
             'rawRows'       => true,
+            'excludeSec'    => true,
             'exactUsers'    => false,
             'exactItems'    => false,
             'exactTags'     => false,
+            /*
+            'excludeSec'    => false,
+            'tags'          => array( 276 ),
+            'exactTags'     => true,
+            // */
         );
 
         $rows = $this->fetchRelated( $params );
@@ -551,6 +555,7 @@ class Model_Mapper_User extends Model_Mapper_Base
             $res = array(
                 'total'        => (int)$rows[0]['total'],
                 'contributors' => (int)$rows[0]['contributors'],
+                'threshold'    => $threshold,
             );
         }
 

@@ -7,15 +7,17 @@
  *  'div.timeline-legend', and/or 'div.timeline-annotation'.  If it does not,
  *  these DOM elements will be added.
  */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*global jQuery:false, window:false */
 (function($) {
 
 function leftPad(val)
 {
     val = "" + val;
-    return val.length == 1 ? "0" + val : val;
+    return val.length === 1 ? "0" + val : val;
 }
 
-var numericRe = /^[0-9]+(.[0-9]*)?$/;
+var numericRe = /^[0-9]+(\.[0-9]*)?$/;
               //   year      month           day
 var datePat   = '^([0-9]{4})(0[0-9]|1[0-2])?([0-2][0-9]|3[01])?'
               //   hour               minute       second
@@ -116,10 +118,14 @@ $.widget('connexions.timeline', {
             {
                 // Force the width of the container
                 self.$timeline.width( self.element.width() );
+                width = self.$timeline.width();
             }
-            //opts.height = self.element.width() * opts.hwRatio
+
+            height = self.element.width() * opts.hwRatio
+
+            self.$timeline.css('height', height);
         }
-        if (opts.height)
+        else
         {
             self.$timeline.css('height', opts.height);
         }
@@ -129,7 +135,7 @@ $.widget('connexions.timeline', {
         self._bindEvents();
 
 
-        setTimeout(function() { self._createPlot(); }, 50);
+        window.setTimeout(function() { self._createPlot(); }, 50);
     },
 
     _bindEvents: function() {
@@ -140,9 +146,9 @@ $.widget('connexions.timeline', {
         self.$timeline.bind('plothover', function(e, pos, item) {
             if (! self.hlTimer)
             {
-                self.hlTimer = setTimeout(function() {
-                                            self._updateHighlights(pos);
-                                          }, 50);
+                self.hlTimer = window.setTimeout(function() {
+                                                    self._updateHighlights(pos);
+                                                 }, 50);
             }
         });
     },
@@ -170,6 +176,13 @@ $.widget('connexions.timeline', {
             opts.data = self._convertData(opts.rawData);
         }
 
+        var height  = self.$timeline.height();
+        var width   = self.$timeline.width();
+        if ((height === 0) || (width === 0))
+        {
+            if (height === 0)   height
+        }
+
         self.$plot  = $.plot(self.$timeline, opts.data, self.flotOpts);
 
         // Cache the size of the plot box/area
@@ -179,12 +192,14 @@ $.widget('connexions.timeline', {
         self.plotBox.right  = self.plotBox.left + self.plotBox.width;
         self.plotBox.bottom = self.plotBox.top  + self.plotBox.height;
 
+        /*
         // Position the legend to the right of the plot box/area
         self.$legend.css({
             position:   'absolute',
             top:        self.plotBox.top   - 5,
             left:       self.plotBox.right + 10
         });
+        // */
         self.$legends = self.$legend.find('.legendLabel');
     },
 
@@ -226,7 +241,7 @@ $.widget('connexions.timeline', {
 
                     opts.xDataType     = 'date';
                     if (($.type(opts.xDataHint) === 'string') &&
-                        (opts.xDataHint.substr(0,4) == 'fmt:'))
+                        (opts.xDataHint.substr(0,4) === 'fmt:'))
                     {
                         opts.xDateFmt  = opts.xDataHint.substr(4);
                         opts.xDataHint = 'fmt';
@@ -274,84 +289,87 @@ $.widget('connexions.timeline', {
         var self    = this;
         var opts    = self.options;
 
-        if (fmt === undefined)  fmt = opts.xDateFmt;
+        if (fmt === undefined)
+        {
+            fmt = opts.xDateFmt;
+        }
 
         var isFmt   = false;
         var res     = [];
         for (var idex = 0; idex < fmt.length; idex++)
         {
-            var char    = fmt.charAt(idex);
+            var fmtChar = fmt.charAt(idex);
             if (isFmt)
             {
                 isFmt = false;
-                switch (char)
+                switch (fmtChar)
                 {
                 case 'Y':   // Year
-                    char = date.getFullYear();
+                    fmtChar = date.getFullYear();
                     break;
     
                 case 'm':   // Month (01-12)
-                    char = leftPad(date.getMonth() + 1);
+                    fmtChar = leftPad(date.getMonth() + 1);
                     break;
 
                 case 'd':   // Day   (01-31)
-                    char = leftPad(date.getDate());
+                    fmtChar = leftPad(date.getDate());
                     break;
 
                 case 'w':   // Day-of-week (0 - 6)
-                    char = date.getDay();
+                    fmtChar = date.getDay();
                     break;
 
                 case 'H':   // Hours (00-23)
-                    char = leftPad(date.getHours());
+                    fmtChar = leftPad(date.getHours());
                     break;
 
                 case 'M':   // Minutes (00-59)
-                    char = leftPad(date.getMinutes());
+                    fmtChar = leftPad(date.getMinutes());
                     break;
 
                 case 'S':   // Seconds (00-59)
-                    char = leftPad(date.getSeconds());
+                    fmtChar = leftPad(date.getSeconds());
                     break;
 
                 case 'z':   // Timezone offset
-                    char = date.getTimezoneOffset();
+                    fmtChar = date.getTimezoneOffset();
                     break;
 
                 // Number to String mappings
                 case 'B':   // Month (January - December)
-                    char = opts.months[date.getMonth()];
+                    fmtChar = opts.months[date.getMonth()];
                     break;
     
                 case 'b':   // Month (Jan - Dec)
-                    char = opts.months[date.getMonth()].substr(0,3);
+                    fmtChar = opts.months[date.getMonth()].substr(0,3);
                     break;
     
                 case 'A':   // Day-of-week   (Sunday - Saturday)
-                    char = opts.days[date.getDay()];
+                    fmtChar = opts.days[date.getDay()];
                     break;
 
                 case 'a':   // Day-of-week   (Su - Sa)
-                    char = opts.days[date.getDay()].substr(0,2);
+                    fmtChar = opts.days[date.getDay()].substr(0,2);
                     break;
 
                 case 'h':   // Hours (12a-11p)
-                    char = opts.hours[date.getHours()];
+                    fmtChar = opts.hours[date.getHours()];
                     break;
 
                 default:
                     break;
                 }
 
-                res.push(char);
+                res.push(fmtChar);
             }
-            else if (char === '%')
+            else if (fmtChar === '%')
             {
                 isFmt = true;
             }
             else
             {
-                res.push(char);
+                res.push(fmtChar);
             }
         }
     
@@ -362,41 +380,62 @@ $.widget('connexions.timeline', {
         var self        = this;
         var opts        = self.options;
 
-        switch (opts.xDataType)
+        if (opts.xDataType === 'date')
         {
-        case 'date':    val = new Date( val );  break;
+            val = new Date( val );
         }
         
         switch (opts.xDataHint)
         {
         case 'hour':
-            if (val instanceof Date)    val = val.getHours();
+            if (val instanceof Date)
+            {
+                val = val.getHours();
+            }
             val = opts.hours[ val ];
             break;
 
         case 'day-of-week':
-            if (val instanceof Date)    val = val.getDay();
+            if (val instanceof Date)
+            {
+                val = val.getDay();
+            }
             val = opts.days[ val ];
             break;
 
         case 'month':
-            if (val instanceof Date)    val = val.getMonth() + 1;
+            if (val instanceof Date)
+            {
+                val = val.getMonth() + 1;
+            }
             val = opts.months[ (val > 0 ? val - 1 : val) ];
             break;
 
         case 'mon':
-            if (val instanceof Date)    val = val.getMonth() + 1;
+            if (val instanceof Date)
+            {
+                val = val.getMonth() + 1;
+            }
             val = opts.months[ (val > 0 ? val - 1 : val) ];
             
-            if (val !== undefined)  val = val.substr(0,3);
+            if (val !== undefined)
+            {
+                val = val.substr(0,3);
+            }
             break;
 
         case 'day':
-            if (val instanceof Date)    val = val.getDate();
+            if (val instanceof Date)
+            {
+                val = val.getDate();
+            }
             break;
 
         case 'year':
-            if (val instanceof Date)    val = val.getFullYear();
+            if (val instanceof Date)
+            {
+                val = val.getFullYear();
+            }
             break;
 
         case 'fmt':
@@ -463,14 +502,22 @@ $.widget('connexions.timeline', {
         tipBox.bottom   = tipBox.top  + tipBox.height;
 
         if (tipBox.top    < self.plotBox.top)
+        {
             tipBox.top = itemPos.top + hlRadius + hlRadius + 5;
+        }
         else if (tipBox.bottom > self.plotBox.bottom)
+        {
             tipBox.top = self.plotBox.bottom - tipBox.height - 5;
+        }
 
         if (tipBox.left   < self.plotBox.left)
+        {
             tipBox.left = self.plotBox.left + 5;
+        }
         else if (tipBox.right > self.plotBox.right)
+        {
             tipBox.left = self.plotBox.right - tipBox.width - 10;
+        }
 
         $tip.css({
             top:    tipBox.top,
@@ -493,7 +540,10 @@ $.widget('connexions.timeline', {
         var y       = series.yaxis.tickFormatter(p[1], series.yaxis);
         var str     = ' : '+ x +' : '+ y;
 
-        if ($stat.length > 0)   $stat.text( str );
+        if ($stat.length > 0)
+        {
+            $stat.text( str );
+        }
         else
         {
             $label.data('orig.label', $label.text());
@@ -518,7 +568,10 @@ $.widget('connexions.timeline', {
             var $label  = $(this);
             var label   = $label.data('orig.label');
             
-            if (label)  $label.text( label );
+            if (label)
+            {
+                $label.text( label );
+            }
         });
 
         var axes    = self.$plot.getAxes();
@@ -540,7 +593,10 @@ $.widget('connexions.timeline', {
             // Locate the items on either side of the mouse's x position
             for (jdex = 0; jdex < series.data.length; jdex++)
             {
-                if (series.data[jdex] === undefined)    continue;
+                if (series.data[jdex] === undefined)
+                {
+                    continue;
+                }
 
                 var pt  = series.data[jdex];
                 if ( pt[0] > pos.x )
@@ -560,8 +616,14 @@ $.widget('connexions.timeline', {
             }
 
             // Choose the closest point
-            if      (p1 == null)    p = p2;
-            else if (p2 == null)    p = p1;
+            if (p1 === null)
+            {
+                p = p2;
+            }
+            else if (p2 === null)
+            {
+                p = p1;
+            }
             else
             {
                 if (Math.abs(pos.x - p1[0]) < Math.abs(pos.x - p2[0]))
@@ -578,8 +640,14 @@ $.widget('connexions.timeline', {
             self.$plot.highlight(series, p, false);
 
             // Present point information in legend and/or tips
-            if (opts.valueInLegend) self._updateLegend(idex, series, p);
-            if (opts.valueInTips)   self._showTip(idex, series, p);
+            if (opts.valueInLegend)
+            {
+                self._updateLegend(idex, series, p);
+            }
+            if (opts.valueInTips)
+            {
+                self._showTip(idex, series, p);
+            }
         }
 
         self.hlTimer = null;

@@ -46,6 +46,25 @@ $config   =  (is_array($this->sidebar['panes']) &&
   </div>
   <?php
 
-    $htmlItemCloud = $this->htmlItemCloud($config);
+    if (isset($config['counts']))
+    {
+        ?>
+  <table class='overview'>
+   <tr><th>Total users</th><td><?= $config['counts']['total'] ?></td></tr>
+   <tr><th>Contributors
+        <div class='threshold'>(<?= $config['counts']['threshold'] ?>
+                or more bookmarks)
+        </div></th><td><?= $config['counts']['contributors'] ?></td></tr>
+  </table>
+        <?php
+    }
 
-    echo $htmlItemCloud->render();
+    ?>
+  <div id='sb-people-timeline' class='timeline'></div>
+  <script type='text/javascript'>
+(function ($) {
+    var $timeline   = $('#sb-people-timeline');
+
+    $timeline.timeline( <?= Zend_Json::encode( $config['timeline'] ) ?> );
+ }(jQuery));
+  </script>

@@ -949,13 +949,15 @@ class Service_Bookmark extends Connexions_Service
                 $this->_csOrder2array($params['order'], true /* noExtras */);
         }
 
+        $timeline = $this->_mapper->getTimeline( $params );
+
         /*
         Connexions::log("Service_Bookmark::getTimeline(): "
-                        . "params[ %s ]",
-                        Connexions::varExport($params));
+                        . "params[ %s ], timeline[ %s ]",
+                        Connexions::varExport($params),
+                        Connexions::varExport($timeline));
         // */
 
-        $timeline = $this->_mapper->getTimeline( $params );
         return $timeline;
     }
 
