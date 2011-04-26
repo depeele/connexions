@@ -163,7 +163,7 @@ $.widget('connexions.timeline', {
         };
 
         // Default flot options
-        self.flotOpts   = $.extend({}, flotDefaults, opts.flot);
+        self.flotOpts   = $.extend(true, {}, flotDefaults, opts.flot);
 
         if ( $.isArray(opts.rawData) || $.isPlainObject(opts.rawData) )
         {
@@ -426,8 +426,12 @@ $.widget('connexions.timeline', {
             top:    series.yaxis.p2c(p[1]),
             left:   series.xaxis.p2c(p[0])
         };
+        //var x           = series.xaxis.tickFormatter(p[0], series.xaxis);
+        var y           = series.yaxis.tickFormatter(p[1], series.yaxis);
+        var str         = y;    //x +': '+ y;
+
         var tip         = '<div class="timeline-tooltip">'
-                        +  p[1]
+                        +  str
                         + '</div>';
         var yaxis       = series.yaxis;
         var $tip        = $(tip).css({
@@ -436,9 +440,12 @@ $.widget('connexions.timeline', {
                             left:               itemPos.left + (hlRadius*2)
                                                              + 5,
                             'text-align':       'left',
+                            'font-size':        'smaller',
+                            /*
                             'font-size':        yaxis.font.size +'px',
                             'font-family':      yaxis.font.family,
                             'font-weight':      yaxis.font.weight,
+                            */
                             width:              yaxis.labelWidth +'px',
                             height:             yaxis.labelHeight +'px',
                             color:              series.yaxis.options.color
@@ -482,12 +489,18 @@ $.widget('connexions.timeline', {
         var opts    = self.options;
         var $label  = self.$legends.eq(idex);
         var $stat   = $label.find('.timeline-stat');
+        var x       = series.xaxis.tickFormatter(p[0], series.xaxis);
+        var y       = series.yaxis.tickFormatter(p[1], series.yaxis);
+        var str     = ' : '+ x +' : '+ y;
 
-        if ($stat.length > 0)   $stat.text(': '+ p[1]);
-        else                    $label.append(
-                                            '<span class="timeline-stat">'
-                                          +  ' : '+ p[1]
-                                          + '</span>');
+        if ($stat.length > 0)   $stat.text( str );
+        else
+        {
+            $label.data('orig.label', $label.text());
+            $label.append(  '<span class="timeline-stat">'
+                          +  str
+                          + '</span>');
+        }
     },
 
     /** @brief  Update the highlighted points based upon the reported mouse
@@ -501,7 +514,12 @@ $.widget('connexions.timeline', {
         // Clear all highlights and tips
         self.$plot.unhighlight();
         self.$timeline.find('.timeline-tooltip').remove();
-        self.$legend.find('.timeline-stat').remove();
+        self.$legends.each(function() {
+            var $label  = $(this);
+            var label   = $label.data('orig.label');
+            
+            if (label)  $label.text( label );
+        });
 
         var axes    = self.$plot.getAxes();
         if ( (pos.x < axes.xaxis.min) || (pos.x > axes.xaxis.max) ||
@@ -515,20 +533,33 @@ $.widget('connexions.timeline', {
         for (idex = 0; idex < dataset.length; idex++)
         {
             var series  = dataset[idex];
+            var p       = null;
+            var p1      = null;
+            var p2      = null;
 
-            // Locate the item just BEFORE the mouse's x position
+            // Locate the items on either side of the mouse's x position
             for (jdex = 0; jdex < series.data.length; jdex++)
             {
-                if ( (series.data[jdex] !== undefined) &&
-                     (series.data[jdex][0] > pos.x) )
+                if (series.data[jdex] === undefined)    continue;
+
+                var pt  = series.data[jdex];
+                if ( pt[0] > pos.x )
                 {
-                    break;
+                    if ((p2 === null) || (pt[0] < p2[0]))
+                    {
+                        p2 = pt;
+                    }
+                }
+                else if ( pt[0] < pos.x )
+                {
+                    if ((p1 === null) || (pt[0] > p1[0]))
+                    {
+                        p1  = pt;
+                    }
                 }
             }
 
-            var p, p1 = series.data[jdex - 1], p2 = series.data[jdex];
-
-            // Choose the closes point
+            // Choose the closest point
             if      (p1 == null)    p = p2;
             else if (p2 == null)    p = p1;
             else
@@ -546,6 +577,7 @@ $.widget('connexions.timeline', {
             // Highlight the point
             self.$plot.highlight(series, p, false);
 
+            // Present point information in legend and/or tips
             if (opts.valueInLegend) self._updateLegend(idex, series, p);
             if (opts.valueInTips)   self._showTip(idex, series, p);
         }

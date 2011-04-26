@@ -519,19 +519,22 @@ class Model_Mapper_User extends Model_Mapper_Base
      *                      UP TO the absolute value of 'threshold'
      *                      bookmarks [ 1 ].
      *
-     *  @return An integer COUNT representing the "contributors";
+     *  @return A simple array containing:
+     *              {'total':        total users,
+     *               'contributors': number of "contributors"}
      */
     public function getContributorCount($threshold  = 1)
     {
         $where = ($threshold >= 0
-                    ? array('totalItems >=' => $threshold)
-                    : array('totalItems <=' => abs($threshold)));
+                    ? 'u.totalItems >='. $threshold
+                    : 'u.totalItems <='. abs($threshold));
 
         $params = array(
             'fields'        => array(
-                'count'     => "COUNT( DISTINCT u.userId )",
+                'total'        => "COUNT( DISTINCT u.userId )",
+                'contributors' => "SUM( CASE WHEN {$where} THEN 1 ELSE 0 END)",
             ),
-            'where'         => $where,
+            //'where'         => $where,
             'excludeSec'    => true,
             'rawRows'       => true,
             'exactUsers'    => false,
@@ -539,17 +542,19 @@ class Model_Mapper_User extends Model_Mapper_Base
             'exactTags'     => false,
         );
 
-        $rows  = $this->fetchRelated( $params );
-        if ((count($rows) > 0) && isset($rows[0]['count']))
+        $rows = $this->fetchRelated( $params );
+        $res  = null;
+        if ((count($rows) > 0) &&
+            isset($rows[0]['total']) &&
+            isset($rows[0]['contributors']))
         {
-            $count = $rows[0]['count'];
-        }
-        else
-        {
-            $count = 0;
+            $res = array(
+                'total'        => (int)$rows[0]['total'],
+                'contributors' => (int)$rows[0]['contributors'],
+            );
         }
 
-        return $count;
+        return $res;
     }
 
     /** @brief  Retrieve the lastVisit date/times for the given user(s).

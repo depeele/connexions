@@ -12,12 +12,13 @@
         margin:     0;
     }
     .ui-timeline .timeline-plot {
-        height:     200px;
+        width:      250px;
+        height:     150px;
     }
     .ui-timeline .timeline-legend {
         padding:    0;
         margin:     0;
-        width:      8em;
+        width:      10em;
     }
     .ui-timeline .timeline-legend .timeline-stat{
         font-size:  0.8em;
@@ -35,57 +36,91 @@
     var valueInLegend   = true;
     var valueInTips     = false;
     var tests           = [
+    // /*
         // Y
-        {xTickType: 'year',
-         desc:      'Y - Activity by year',
+        {xDataHint: 'year',
+         annotation:'Y - Activity by year',
          valueInTips:   true,
          valueInLegend: false,
          hideLegend:    true,
+         flot:          {
+            xaxis:  {labelAngle:45, ticks:5}
+         },
          data: {
             "activity":{"2010":12,"2007":1426,"2006":19852,"2005":4579}
          }},
+
         // M
-        {xTickType: 'mon',
-         desc:      'M - Activity by month',
+        {xDataHint: 'mon',
+         annotation:'M - Activity by month',
          valueInTips:   true,
          valueInLegend: false,
          hideLegend:    true,
+         flot:          {
+            xaxis:  {labelAngle:45, ticks:12}
+         },
          data: {
             "activity":{"12":2227,"11":2048,"10":2249,"09":2129,"08":2231,"07":2188,"06":2087,"05":2155,"04":2044,"03":2185,"02":2031,"01":2295}
          }},
+
         // D
-        {xTickType: 'day',
-         desc:      'D - Activity by day',
+        {xDataHint: 'day',
+         annotation:'D - Activity by day',
          valueInTips:   true,
          valueInLegend: false,
          hideLegend:    true,
+         flot:          {
+            xaxis:  {labelAngle:45, ticks:10}
+         },
          data: {
             "activity":{"31":550,"30":791,"29":789,"28":831,"27":861,"26":884,"25":858,"24":886,"23":807,"22":834,"21":852,"20":845,"19":809,"18":775,"17":854,"16":918,"15":870,"14":861,"13":820,"12":885,"11":818,"10":859,"09":854,"08":850,"07":835,"06":828,"05":847,"04":827,"03":814,"02":889,"01":868}
          }},
-        {xTickType: 'day-of-week',
-         desc:      'd - Activity by day-of-week',
+        {xDataHint: 'day-of-week',
+         annotation:'d - Activity by day-of-week',
          valueInTips:   true,
          valueInLegend: false,
          hideLegend:    true,
          data: {
             "activity":{"6":3630,"5":3824,"4":3751,"3":3703,"2":3790,"1":3766,"0":3405}
          }},
-        {xTickType: 'week',
-         desc:      'w - Activity by week',
+        {xDataHint: 'week',
+         annotation:'w - Activity by week',
          valueInTips:   true,
          valueInLegend: false,
          hideLegend:    true,
          data: {
             "activity":{"53":27,"52":527,"51":475,"50":489,"49":524,"48":514,"47":442,"46":462,"45":509,"44":500,"43":516,"42":510,"41":483,"40":530,"39":487,"38":495,"37":520,"36":469,"35":501,"34":522,"33":524,"32":494,"31":503,"30":529,"29":474,"28":492,"27":465,"26":520,"25":486,"24":500,"23":465,"22":478,"21":488,"20":469,"19":507,"18":478,"17":474,"16":512,"15":439,"14":502,"13":452,"12":484,"11":480,"10":473,"09":483,"08":523,"07":492,"06":485,"05":518,"04":480,"03":514,"02":511,"01":489,"00":184}
          }},
+    // */
+
+        // YM
+        {xDataHint: 'fmt:%Y %b',
+         annotation:'YM - Activity by year/month',
+         valueInTips:   false,
+         valueInLegend: true,
+         hideLegend:    false,
+         height:        '125px',
+         flot:          {
+            points: {radius:    1.25, lineWidth:0.75},
+            lines:  {lineWidth: 1},
+            xaxis:  {labelAngle:45, ticks:6}
+         },
+         data: {
+            "activity":{"201001":12,"200704":5,"200703":250,"200702":438,"200701":733,"200612":926,"200611":1113,"200610":1393,"200609":1465,"200608":1694,"200607":1993,"200606":2027,"200605":2124,"200604":2039,"200603":1935,"200602":1593,"200601":1550,"200512":1301,"200511":935,"200510":856,"200509":664,"200508":537,"200507":195,"200506":60,"200505":31}
+         }},
 
         /********************************************************************
          * Series
          *
          */
+
+    // /*
         // Y:H
-        {xTickType: 'hour',
-         desc:      'Y:H - Activity by hour for multiple years',
+        {xDataHint: 'hour',
+         annotation:'Y:H - Activity by hour for multiple years',
+         flot:          {
+            xaxis:  {labelAngle:45, ticks:12}
+         },
          data:      {
             "2010":{"14":12},
             "2007":{"23":60,"22":67,"21":59,"20":67,"19":62,"18":57,"17":61,"16":99,"15":51,"14":70,"13":54,"12":42,"11":65,"10":65,"09":59,"08":61,"07":79,"06":47,"05":74,"04":42,"03":45,"02":41,"01":49,"00":50},
@@ -93,8 +128,8 @@
             "2005":{"23":203,"22":196,"21":173,"20":173,"19":210,"18":174,"17":183,"16":189,"15":220,"14":195,"13":187,"12":183,"11":157,"10":213,"09":197,"08":177,"07":185,"06":186,"05":204,"04":199,"03":205,"02":185,"01":203,"00":182}
          }},
         // Y:D
-        {xTickType: 'day',
-         desc:      'Y:D - Activity by day for multiple years',
+        {xDataHint: 'day',
+         annotation:'Y:D - Activity by day for multiple years',
          data: {
             "2010":{"07":12},
             "2007":{"31":27,"30":26,"29":17,"28":39,"27":28,"26":40,"25":38,"24":35,"23":47,"22":32,"21":36,"20":39,"19":36,"18":44,"17":39,"16":51,"15":58,"14":59,"13":50,"12":53,"11":37,"10":51,"09":46,"08":61,"07":60,"06":50,"05":58,"04":57,"03":53,"02":81,"01":78},
@@ -102,8 +137,8 @@
             "2005":{"31":109,"30":171,"29":193,"28":169,"27":182,"26":182,"25":155,"24":185,"23":146,"22":141,"21":162,"20":148,"19":156,"18":137,"17":144,"16":152,"15":161,"14":141,"13":127,"12":150,"11":135,"10":142,"09":150,"08":131,"07":135,"06":147,"05":135,"04":117,"03":103,"02":148,"01":125}
          }},
         // Y:d
-        {xTickType: 'day-of-week',
-         desc:      'Y:d - Activity by day-of-week for multiple years',
+        {xDataHint: 'day-of-week',
+         annotation:'Y:d - Activity by day-of-week for multiple years',
          data: {
             "2010":{"4":12},
             "2007":{"6":168,"5":217,"4":225,"3":235,"2":201,"1":227,"0":153},
@@ -111,8 +146,8 @@
             "2005":{"6":660,"5":705,"4":663,"3":633,"2":677,"1":659,"0":582}
          }},
         // Y:w
-        {xTickType: 'weeks',
-         desc:      'Y:w - Activity by week for multiple years',
+        {xDataHint: 'weeks',
+         annotation:'Y:w - Activity by week for multiple years',
          data: {
             "2010":{"01":12},
             "2007":{"14":1,"13":4,"12":32,"11":35,"10":63,"09":75,"08":91,"07":76,"06":126,"05":124,"04":146,"03":140,"02":170,"01":159,"00":184},
@@ -121,8 +156,11 @@
 
          }},
         // Y:M
-        {xTickType: 'mon',
-         desc:      'Y:M - Activity by month for multiple years',
+        {xDataHint: 'mon',
+         annotation:'Y:M - Activity by month for multiple years',
+         flot:          {
+            xaxis:  {labelAngle:45, ticks:12}
+         },
          data: {
             "2010":{"01":12},
             "2007":{"04":5,"03":250,"02":438,"01":733},
@@ -130,8 +168,8 @@
             "2005":{"12":1301,"11":935,"10":856,"09":664,"08":537,"07":195,"06":60,"05":31}
          }},
         // M:d
-        {xTickType: 'day-of-week',
-         desc:      'M:d - Activity by day-of-week for multiple months',
+        {xDataHint: 'day-of-week',
+         annotation:'M:d - Activity by day-of-week for multiple months',
          height:    '250px',
          data: {
             "12":{"6":367,"5":404,"4":335,"3":263,"2":296,"1":286,"0":276},
@@ -148,8 +186,8 @@
             "01":{"6":263,"5":306,"4":323,"3":334,"2":391,"1":365,"0":313}
          }},
         // YM:d
-        {xTickType: 'day-of-week',
-         desc:      'YM:d - Activity by day-of-week for multiple year/months',
+        {xDataHint: 'day-of-week',
+         annotation:'YM:d - Activity by day-of-week for multiple year/months',
          height:    '500px',
          data:      {
             "201001":{"4":12},
@@ -179,8 +217,8 @@
             "200505":{"6":3,"5":4,"4":3,"3":5,"2":8,"1":4,"0":4}
          }},
         // YH
-        {xTickType:     'fmt:%Y:%H',
-         desc:          'YH - Activity by year/hour',
+        {xDataHint:     'fmt:%Y:%H',
+         annotation:    'YH - Activity by year/hour',
          valueInTips:   true,
          valueInLegend: false,
          hideLegend:    true,
@@ -192,13 +230,17 @@
                 "200623":814,"200622":808,"200621":827,"200620":800,"200619":869,"200618":818,"200617":833,"200616":873,"200615":797,"200614":806,"200613":796,"200612":838,"200611":865,"200610":883,"200609":808,"200608":820,"200607":821,"200606":870,"200605":901,"200604":822,"200603":824,"200602":741,"200601":787,"200600":831,
                 "200523":203,"200522":196,"200521":173,"200520":173,"200519":210,"200518":174,"200517":183,"200516":189,"200515":220,"200514":195,"200513":187,"200512":183,"200511":157,"200510":213,"200509":197,"200508":177,"200507":185,"200506":186,"200505":204,"200504":199,"200503":205,"200502":185,"200501":203,"200500":182}
          }},
-        // /* YHDH, 2006-01-01..2006-01-31
-        {xTickType:     'fmt:%Y.%m.%d:%H',
-         desc:          'YHDH - Activity by hour for 2006-01-01..2006-01-31',
+        // YHDH, 2006-01-01..2006-01-31
+        {xDataHint:     'fmt:%Y.%m.%d:%H',
+         annotation:    'YHDH - Activity by hour for 2006-01-01..2006-01-31',
          valueInTips:   false,
          valueInLegend: false,
          hideLegend:    true,
-         flot:          { lines:{show:false} },
+         flot:          {
+            points: {radius:    1.25, lineWidth:0.75},
+            lines:  {show:      false},
+            xaxis:  {labelAngle:45, ticks:10}
+         },
          data:          {
             'activity': {
                 "2006013023":4, "2006013022":5, "2006013021":2, "2006013020":1, "2006013019":1, "2006013018":4, "2006013017":4, "2006013016":5, "2006013015":10, "2006013014":1, "2006013013":3, "2006013012":4, "2006013011":3, "2006013010":3, "2006013009":2, "2006013008":2, "2006013007":4, "2006013006":4, "2006013005":1, "2006013004":1, "2006013003":3, "2006013002":1, "2006013001":1, "2006013000":2,
@@ -233,7 +275,7 @@
                 "2006010123":2,"2006010122":2,"2006010121":1,"2006010119":1,"2006010118":3,"2006010117":1,"2006010116":4,"2006010113":3,"2006010112":2,"2006010111":2,"2006010110":2,"2006010109":2,"2006010108":2,"2006010107":2,"2006010106":3,"2006010105":2,"2006010104":4,"2006010103":2,"2006010102":1,"2006010101":2,"2006010100":2
             }
          }}
-         // */
+    // */
     ];
 
     $(document).ready(function() {
@@ -247,8 +289,8 @@
         $.each(tests, function() {
             var $div    = $('<div></div>').appendTo($body);
             $div.timeline({
-                xDataHint:      this.xTickType,
-                annotation:     this.desc,
+                xDataHint:      this.xDataHint,
+                annotation:     this.annotation,
                 rawData:        this.data,
                 height:         (this.height !== undefined
                                     ? this.height
