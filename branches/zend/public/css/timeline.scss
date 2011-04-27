@@ -18,16 +18,16 @@
     }
   }
 
-  .timeline-legend {
-    //position:     absolute;
-    //top:          5px;
-    //right:        5px;
-    //width:        10em;
+  .timeline-controls {
+    position: absolute;
+    top:      0;
+    right:    0;
+    z-index:  2;
+  }
 
+  .timeline-legend {
     padding:      0;
     margin:       0;
-
-    //z-index:      2;
 
     .legendColorBox, .legendLabel {
       vertical-align: top;
@@ -41,7 +41,8 @@
     }
   }
 
-  .tickLabels, .timeline-tooltip, .timeline-legend, .timeline-annotation {
+  .timeline-legend, .timeline-controls, .timeline-annotation,
+  .timeline-tooltip, .tickLabels {
     font-size:  0.8em;
   }
 
@@ -71,8 +72,13 @@
     // Reduce the font sizes, and restrict the plot height
     padding:        2em 0 0 0;
 
-    .tickLabels, .timeline-tooltip, .timeline-legend, .timeline-annotation {
+    .timeline-legend, .timeline-controls, .timeline-annotation,
+    .timeline-tooltip, .tickLabels {
       font-size:  0.7em;
+    }
+
+    .timeline-controls {
+      top:        2.7em;
     }
 
     .timeline-legend {

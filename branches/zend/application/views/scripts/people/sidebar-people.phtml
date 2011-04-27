@@ -60,7 +60,43 @@ $config   =  (is_array($this->sidebar['panes']) &&
     }
 
     ?>
-  <div id='sb-people-timeline' class='timeline'></div>
+  <div id='sb-people-timeline' class='timeline'>
+   <div class='timeline-legend'></div>
+   <div class='timeline-controls'>
+    <input type='hidden' name='timeline.tags' value='<?= $this->tags ?>' />
+    <select name='timeline.grouping'>
+     <optgroup label="Simple Timelines">
+      <option value='YM'  selected>Year, Month</option>
+      <option value='YMD'         >Year, Month, Day</option>
+      <option value='MD'          >Month, Day</option>
+      <option value='MH'          >Month, Hour</option>
+      <option value='MDH'         >Month, Day, Hour</option>
+     </optgroup>
+     <optgroup label="Series Timelines (by Year)">
+      <option value='Y:M'         >Month</option>
+      <option value='Y:D'         >Day-of-month</option>
+      <option value='Y:d'         >Day-of-week</option>
+      <option value='Y:H'         >Hour</option>
+     </optgroup>
+     <optgroup label="Series Timelines (by Month)">
+      <option value='M:D'         >Day-of-month</option>
+      <option value='M:d'         >Day-of-week</option>
+      <option value='M:H'         >Hour</option>
+     </optgroup>
+     <optgroup label="Series Timelines (by Week)">
+      <option value='w:d'         >Day-of-week</option>
+      <option value='w:H'         >Hour</option>
+     </optgroup>
+     <optgroup label="Series Timelines (by Day-of-Month)">
+      <option value='D:H'         >Hour</option>
+     </optgroup>
+     <optgroup label="Series Timelines (by Day-of-Week)">
+      <option value='d:H'         >Hour</option>
+     </optgroup>
+    </select>
+   </div>
+   <div class='timeline-plot'></div>
+  </div>
   <script type='text/javascript'>
 (function ($) {
     var $timeline   = $('#sb-people-timeline');

@@ -30,6 +30,7 @@ $.widget('connexions.timeline', {
         // Defaults
         xDataHint:      null,   // hour | day-of-week |
                                 //  day | week | month | year
+                                //
         css:            null,   // Additional CSS class(es) to apply to the
                                 // primary DOM element
         annotation:     null,   // Any annotation to include for this timtline
@@ -50,6 +51,30 @@ $.widget('connexions.timeline', {
                                 // any existing legend text when the value
                                 // is being presented? [ false ];
 
+        /* General Json-RPC information:
+         *  {version:   Json-RPC version,
+         *   target:    URL of the Json-RPC endpoint,
+         *   transport: 'POST' | 'GET'
+         *  }
+         *
+         * If not provided, 'version', 'target', and 'transport' are
+         * initialized from:
+         *      $.registry('api').jsonRpc
+         *
+         * which is initialized from
+         *      application/configs/application.ini:api
+         * via
+         *      application/layout/header.phtml
+         */
+        jsonRpc:    null,
+        rpcMethod:  'bookmark.getTimeline',
+        rpcParams:  null,   /* Any RPC parameter required by 'rpcMethod:
+                             *  {
+                             *      'tags':     Context-restricting tags,
+                             *      'group':    Timeline grouping indicator,
+                             *  }
+                             */
+
         // DataType value->label tables
         hours:      [ '12a', ' 1a', ' 2a', ' 3a', ' 4a', ' 5a',
                       ' 6a', ' 7a', ' 8a', ' 9a', '10a', '11a',
@@ -58,7 +83,38 @@ $.widget('connexions.timeline', {
         months:     [ 'January',   'Febrary', 'March',    'April',
                       'May',       'June',    'July',     'August',
                       'September', 'October', 'November', 'December' ],
-        days:       [ 'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa' ]
+        days:       [ 'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa' ],
+
+        // Timeline grouping indicator to xDataHint format mapping
+        groupingFmt:{
+            // Straight Timelines
+            'YM':   'fmt:%Y %b',        // Year, Month
+            'YMD':  'fmt:%Y.%M.%D',     // Year, Month, Day
+            'MD':   'fmt:%b %D',        // Month, Day
+            'MH':   'fmt:%b %h',        // Month, Hour
+            'MDH':  'fmt:%b %D %h',     // Month, Day, Hour
+
+            // Series Timelines (by Year)
+            'Y:M':  'fmt:%b',           // Month
+            'Y:D':  'fmt:%D',           // Day (of month)
+            'Y:d':  'fmt:%a',           // Day (of week)
+            'Y:H':  'fmt:%h',           // Hour
+
+            // Series Timelines (by Month)
+            'M:D':  'fmt:%D',           // Day (of month)
+            'M:d':  'fmt:%a',           // Day (of week)
+            'M:H':  'fmt:%h',           // Hour
+
+            // Series Timelines (by Week)
+            'w:d':  'fmt:%a',           // Day (of week)
+            'w:H':  'fmt:%h',           // Hour
+
+            // Series Timelines (by Day-of-Month)
+            'D:H':  'fmt:%h',           // Hour
+
+            // Series Timelines (by Day-of-Week)
+            'd:H':  'fmt:%h',           // Hour
+        }
     },
 
     /************************
@@ -69,6 +125,28 @@ $.widget('connexions.timeline', {
         var self        = this;
         var opts        = self.options;
 
+        /********************************
+         * Initialize jsonRpc
+         *
+         */
+        if ( $.isFunction($.registry) )
+        {
+            if (opts.jsonRpc === null)
+            {
+                var api = $.registry('api');
+                if (api && api.jsonRpc)
+                {
+                    opts.jsonRpc = $.extend({}, api.jsonRpc, opts.jsonRpc);
+                }
+            }
+        }
+
+        /********************************
+         * Remember initial position
+         * settings and add appropriate
+         * CSS classes.
+         *
+         */
         self.element.data('orig-position', self.element.css('position'));
         self.element.css('position', 'relative')
                     .addClass('ui-timeline');
@@ -83,7 +161,12 @@ $.widget('connexions.timeline', {
             self.element.addClass( opts.css );
         }
 
-        // Locate/create our primary pieces
+
+        /********************************
+         * Locate/create our primary
+         * pieces.
+         *
+         */
         self.$legend = self.element.find('.timeline-legend');
         if ( (self.$legend.length < 1) && (opts.hideLegend !== true) )
         {
@@ -106,6 +189,10 @@ $.widget('connexions.timeline', {
             self.$timeline.data('remove-on-destroy', true);
             self.element.append(self.$timeline);
         }
+
+        self.$controls = self.element.find('.timeline-controls');
+        self.$grouping = self.$controls
+                                .find(':input[name="timeline.grouping"]');
 
         if (opts.annotation)
         {
@@ -173,30 +260,76 @@ $.widget('connexions.timeline', {
                                                  }, 50);
             }
         });
+
+        self.$controls.delegate('input,select', 'change', function(e) {
+            self._reload( self.$grouping.val() );
+        });
     },
 
-    _createPlot: function() {
-        var self            = this;
-        var opts            = self.options;
-        var flotDefaults    = {
-            grid:       { hoverable:true, autoHighlight:false },
-            points:     { show:true },
-            lines:      { show:true },
-            legend:     { container: self.$legend },
-            xaxis:      {
-                tickFormatter: function(val,data) {
-                    return self._xTickFormatter(val, data);
-                }
-            }
-        };
+    /** @brief  Asynchronously (re)load the data for the presented timeline.
+     *  @param  grouping    The new grouping value;
+     *
+     *  Use this.options:
+     *      jsonRpc     the primary Json-RPC information;
+     *      rpcMethod   the Json-RPC method;
+     *      rpcParams   additional Json-RPC method parameters;
+     */
+    _reload: function(grouping) {
+        var self    = this;
+        var opts    = self.options;
 
-        // Default flot options
-        self.flotOpts   = $.extend(true, {}, flotDefaults, opts.flot);
+        var params  = opts.rpcParams;
+        params.grouping = grouping;
 
-        if ( $.isArray(opts.rawData) || $.isPlainObject(opts.rawData) )
+        // What's the xDataHint based upon 'grouping'?
+        var fmt = opts.groupingFmt[ grouping ];
+        if (fmt !== undefined)
         {
-            opts.data = self._convertData(opts.rawData);
+            opts.xDataHint = fmt;
         }
+
+
+        self.element.mask();
+        $.jsonRpc(opts.jsonRpc, opts.rpcMethod, params, {
+            success: function(data) {
+                if ( (! data) || (data.error !== null) )
+                {
+                    $.notify({
+                        title:  'Timeline Update failed',
+                        text:   '<p class="error">'
+                              +  (data ? data.error.message : '')
+                              + '</p>'
+                    });
+                    return;
+                }
+
+                opts.data = self._convertData(data.result);
+                self._draw();
+            },
+            error: function(req, textStatus, err) {
+                $.notify({
+                    title:  'Timeline Update failed',
+                    text:   '<p class="error">'
+                          +  textStatus
+                          + '</p>'
+                });
+            },
+            complete: function(req, textStatus) {
+                self.element.unmask();
+            }
+        });
+
+    },
+
+    /** @brief  Use this.options to generate/update the current timeline.
+     *  
+     *  Use this.options:
+     *      rpcParams.grouping  to determine the xDataHint to use;
+     *      data                the (converted) plot data;
+     */
+    _draw: function() {
+        var self    = this;
+        var opts    = self.options;
 
         var height  = self.$timeline.height();
         var width   = self.$timeline.width();
@@ -228,10 +361,50 @@ $.widget('connexions.timeline', {
         self.$legends.each(function() {
             var $legend = $(this);
 
-            $legend.html(  '<span class="timeline-text">'
-                         +   $legend.html()
-                         + '</span>');
+            if ($legend.find('.timeline-text').length < 1)
+            {
+                $legend.html(  '<span class="timeline-text">'
+                             +   $legend.html()
+                             + '</span>');
+            }
         });
+    },
+
+    _createPlot: function() {
+        var self            = this;
+        var opts            = self.options;
+        var flotDefaults    = {
+            grid:       { hoverable:true, autoHighlight:false },
+            points:     { show:true },
+            lines:      { show:true },
+            legend:     { container: self.$legend },
+            xaxis:      {
+                tickFormatter: function(val,data) {
+                    return self._xTickFormatter(val, data);
+                }
+            }
+        };
+
+        // Default flot options
+        self.flotOpts   = $.extend(true, {}, flotDefaults, opts.flot);
+
+        if (opts.rpcParams !== null)
+        {
+            var fmt = opts.groupingFmt[ opts.rpcParams.grouping ];
+
+            if (fmt !== undefined)
+            {
+                opts.xDataHint = fmt;
+            }
+        }
+
+        // Convert any raw data
+        if ( $.isArray(opts.rawData) || $.isPlainObject(opts.rawData) )
+        {
+            opts.data   = self._convertData(opts.rawData);
+        }
+
+        self._draw();
     },
 
     /** @brief  Convert incoming, raw, connexions timeline data into a form
@@ -244,6 +417,9 @@ $.widget('connexions.timeline', {
         var self    = this;
         var opts    = self.options;
         var data    = [];
+
+        opts.xDataType = undefined;
+        opts.xDateFmt  = undefined;
 
         $.each(rawData, function(key, vals) {
             var info    = { label: key, data: [] };

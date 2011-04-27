@@ -356,50 +356,53 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
 
     /** @brief  Retrieve the taggedOn date/times for the given user(s) and/or
      *          item(s).
-     *  @param  users   A Model_Set_User instance, array, or comma-separated
-     *                  string of users to match.
-     *  @param  items   A Model_Set_Item instance, array, or comma-separated
-     *                  string of items to match.
-     *  @param  tags    A Model_Set_Tag instance, array, or comma-separated
-     *                  string of tags to match.
-     *  @param  group   How entries should be grouped / rolled-up.  A string
-     *                  specifying an ISO 8601 duration
-     *                  (e.g. 'P2Y4DT6H8M' == 2 years, 4 days, 6 hours, 8
-     *                        minutes).
-     *                  If not specified, no grouping will be performed.  Note
-     *                  that if grouping is employed, the returned data will be
-     *                  reduced to single date/time instances using the FIRST
-     *                  field indicated by any 'order' parameter [ null ];
-     *  @param  order   An array of name/direction pairs representing the
-     *                  desired sorting order.  The 'name's MUST be 'taggedOn'
-     *                  or 'updatedOn' and the directions a
-     *                  Connexions_Service::SORT_DIR_* constant.  If an order
-     *                  is omitted, Connexions_Service::SORT_DIR_ASC will be
-     *                  used [ {taggedOn: 'ASC'} ];
-     *  @param  count   An OPTIONAL LIMIT count  [ no limit ];
-     *  @param  offset  An OPTIONAL LIMIT offset [ 0 ];
-     *  @param  from    Limit the results to date/times AFTER this date/time
-     *                  [ null == no date/time from restriction ];
-     *  @param  until   Limit the results to date/times BEFORE this date/time
-     *                  [ null == no date/time until restriction ];
+     *  @param  users       A Model_Set_User instance, array, or
+     *                      comma-separated string of users to match.
+     *  @param  items       A Model_Set_Item instance, array, or
+     *                      comma-separated string of items to match.
+     *  @param  tags        A Model_Set_Tag instance, array, or comma-separated
+     *                      string of tags to match.
+     *  @param  grouping    How entries should be grouped / rolled-up.  A
+     *                      string specifying an ISO 8601 duration
+     *                      (e.g. 'P2Y4DT6H8M' == 2 years, 4 days, 6 hours, 8
+     *                            minutes).
+     *                      If not specified, no grouping will be performed.
+     *                      Note that if grouping is employed, the returned
+     *                      data will be reduced to single date/time instances
+     *                      using the FIRST field indicated by any 'order'
+     *                      parameter [ null ];
+     *  @param  order       An array of name/direction pairs representing the
+     *                      desired sorting order.  The 'name's MUST be
+     *                      'taggedOn' or 'updatedOn' and the directions a
+     *                      Connexions_Service::SORT_DIR_* constant.  If an
+     *                      order is omitted, Connexions_Service::SORT_DIR_ASC
+     *                      will be used [ {taggedOn: 'ASC'} ];
+     *  @param  count       An OPTIONAL LIMIT count  [ no limit ];
+     *  @param  offset      An OPTIONAL LIMIT offset [ 0 ];
+     *  @param  from        Limit the results to date/times AFTER this
+     *                      date/time
+     *                      [ null == no date/time from restriction ];
+     *  @param  until       Limit the results to date/times BEFORE this
+     *                      date/time
+     *                      [ null == no date/time until restriction ];
      *
      *  @return An array of date/time / count mappings.
      */
-    public function getTimeline($users,
-                                $items  = null,
-                                $tags   = null,
-                                $group  = null,
-                                $order  = null,
-                                $count  = null,
-                                $offset = null,
-                                $from   = null,
-                                $until  = null)
+    public function getTimeline($users      = null,
+                                $items      = null,
+                                $tags       = null,
+                                $grouping   = null,
+                                $order      = null,
+                                $count      = null,
+                                $offset     = null,
+                                $from       = null,
+                                $until      = null)
     {
         $params = array();
         if (! empty($users))    $params['users']    = $users;
         if (! empty($items))    $params['items']    = $items;
         if (! empty($tags))     $params['tags']     = $tags;
-        if (! empty($group))    $params['grouping'] = $group;
+        if (! empty($grouping)) $params['grouping'] = $grouping;
         if (! empty($order))    $params['order']    = $order;
         if (! empty($count))    $params['count']    = $count;
         if (! empty($offset))   $params['offset']   = $offset;
