@@ -339,6 +339,8 @@ class PeopleController extends Connexions_Controller_Action
             }
 
             $config['timeline'] = array(
+                'rpcMethod'     => 'bookmark.getTimeline',
+                'rpcParams'     => $params,
                 'xDataHint'     => 'fmt:%Y %b',
                 'replaceLegend' => true,
                 'height'        => '200px',
