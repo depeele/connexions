@@ -2,31 +2,51 @@
 @import "mixins";
 
 .ui-timeline {
-  position:   relative;
-  padding:    0 8em 0 0;
-  margin:     0;
+  position:       relative;
+  padding:        0 8em 0 0;
+  margin:         0;
 
   .timeline-plot {
-  }
+    canvas {
+      z-index:    1;
+    }
 
-  .timeline-legend {
-    position: absolute;
-    top:      5px;
-    right:    5px;
-    width:    10em;
-
-    padding:  0;
-    margin:   0;
-
-    .timeline-stat {
-      font-size:  0.8em;
-      color:      $lightGrey;
+    .timeline-tooltip {
+      z-index:          2;
+      background-color: $pageColorBackground;
+      @include opacity(75);
     }
   }
 
-  .timeline-annotation {
+  .timeline-legend {
+    //position:     absolute;
+    //top:          5px;
+    //right:        5px;
+    //width:        10em;
+
+    padding:      0;
+    margin:       0;
+
+    //z-index:      2;
+
+    .legendColorBox, .legendLabel {
+      vertical-align: top;
+    }
+    .legendLabel {
+      padding:        0.2em 0 0.2em 0.5em;
+    }
+
+    .timeline-stat {
+      color:      $controlColor;
+    }
+  }
+
+  .tickLabels, .timeline-tooltip, .timeline-legend, .timeline-annotation {
     font-size:  0.8em;
-    color:      $lightGrey;
+  }
+
+  .timeline-annotation {
+    color:      $controlColor;
     text-align: center;
   }
 
@@ -36,6 +56,7 @@
     left:     0;
     width:    100%;
     height:   100%;
+    z-index:  0;
 
     .xAxis, .yAxis {
       position: absolute;
@@ -47,19 +68,19 @@
 
 .rightCol {
   .ui-timeline {
-    padding:      2em 0 2.5em 0;
+    // Reduce the font sizes, and restrict the plot height
+    padding:        1em 0;
 
-    .timeline-plot {
-      //width:      250px;
-      //height:     150px;
+    .tickLabels, .timeline-tooltip, .timeline-legend, .timeline-annotation {
+      font-size:  0.7em;
     }
 
     .timeline-legend {
-      top:      auto;
-      bottom:   5px;
-      left:     auto;
-      right:    5px;
-      width:    auto;
+      padding:    0 0 0.5em 4em;
+
+      .legendLabel {
+        width:    100%;
+      }
     }
   }
 }
