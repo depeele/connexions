@@ -376,14 +376,21 @@ a:visited { color: #005a9c; }
 .ui-confirmation button { width: 3.5em; }
 
 .ui-timeline { position: relative; padding: 0 8em 0 0; margin: 0; }
-.ui-timeline .timeline-legend { position: absolute; top: 5px; right: 5px; width: 10em; padding: 0; margin: 0; }
-.ui-timeline .timeline-legend .timeline-stat { font-size: 0.8em; color: #dddddd; }
-.ui-timeline .timeline-annotation { font-size: 0.8em; color: #dddddd; text-align: center; }
-.ui-timeline .tickLabels { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.ui-timeline .timeline-plot canvas { z-index: 1; }
+.ui-timeline .timeline-plot .timeline-tooltip { z-index: 2; background-color: white; opacity: 0.75; filter: alpha(opacity=75); -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=75)'; -khtml-opacity: 0.75; -moz-opacity: 0.75; }
+.ui-timeline .timeline-legend { padding: 0; margin: 0; }
+.ui-timeline .timeline-legend .legendColorBox, .ui-timeline .timeline-legend .legendLabel { vertical-align: top; }
+.ui-timeline .timeline-legend .legendLabel { padding: 0.2em 0 0.2em 0.5em; }
+.ui-timeline .timeline-legend .timeline-stat { color: #999999; }
+.ui-timeline .tickLabels, .ui-timeline .timeline-tooltip, .ui-timeline .timeline-legend, .ui-timeline .timeline-annotation { font-size: 0.8em; }
+.ui-timeline .timeline-annotation { color: #999999; text-align: center; }
+.ui-timeline .tickLabels { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
 .ui-timeline .tickLabels .xAxis, .ui-timeline .tickLabels .yAxis { position: absolute; width: 100%; height: 100%; }
 
-.rightCol .ui-timeline { padding: 2em 0 2.5em 0; }
-.rightCol .ui-timeline .timeline-legend { top: auto; bottom: 5px; left: auto; right: 5px; width: auto; }
+.rightCol .ui-timeline { padding: 1em 0; }
+.rightCol .ui-timeline .tickLabels, .rightCol .ui-timeline .timeline-tooltip, .rightCol .ui-timeline .timeline-legend, .rightCol .ui-timeline .timeline-annotation { font-size: 0.7em; }
+.rightCol .ui-timeline .timeline-legend { padding: 0 0 0.5em 4em; }
+.rightCol .ui-timeline .timeline-legend .legendLabel { width: 100%; }
 
 /****** tagCloud.sass ****** */
 .rightCol .itemItems, .rightCol .userItems { padding: 0 0.25em 0 0; border-top: 3px solid #eeeeee; }

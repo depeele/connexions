@@ -340,13 +340,18 @@ class PeopleController extends Connexions_Controller_Action
 
             $config['timeline'] = array(
                 'xDataHint'     => 'fmt:%Y %b',
+                'replaceLegend' => true,
+                'height'        => '200px',
                 'flot'          => array(
+                    'grid'      => array(
+                        'borderWidth'   => 0.75,
+                    ),
                     'points'    => array(
-                        'radius'    => 1,
-                        'lineWidth' => 1,
+                        'radius'        => 1.5,
+                        'lineWidth'     => 0.75,
                     ),
                     'lines'     => array(
-                        'lineWidth' => 1,
+                        'lineWidth'     => 1,
                     ),
                     'xaxis'     => array(
                         'labelAngle'    => 75,

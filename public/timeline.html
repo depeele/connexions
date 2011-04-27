@@ -6,36 +6,65 @@
   <script type='text/javascript' src='js/connexions-full.js'></script>
   <!-- script type='text/javascript' src='js/jquery.flot.js'></script>
   <script type='text/javascript' src='js/connexions.timeline.js'></script -->
-  <style type='text/css'>
-    .ui-timeline {
-        position:   relative;
-        padding:    0 8em 0 0;
-        margin:     0;
-    }
-    .ui-timeline .timeline-plot {
-        width:      250px;
-        height:     150px;
-    }
-    .ui-timeline .timeline-legend {
-        position:   absolute;
-        top:        5px;
-        left:       255px;
+  <link href='css/themes/connexions/jquery-ui.min.css' media='screen' rel='stylesheet' type='text/css' />
+  <link href='css/connexions.css' media='screen' rel='stylesheet' type='text/css' />
 
+  <style type='text/css'>
+    .main {
+        border: 1px solid #009;
+    }
+    .rightCol {
+        border: 1px solid #090;
+    }
+    .rightCol .ui-timeline {
+        border:         1px solid #ddd;
+        margin-bottom:  1em;
+    }
+
+    .rightCol .ui-timeline-labeled .timeline-plot,
+    .rightCol .ui-timeline-labeled timeline-annotation {
+        width:    175px;
+    }
+
+    .rightCol .ui-timeline-labeled .timeline-legend {
+        position:   absolute;
+        top:        2em;
+        left:       175px;
+
+        width:      90px;
         padding:    0;
-        margin:     0;
-        width:      10em;
     }
-    .ui-timeline .timeline-legend .timeline-stat{
-        font-size:  0.8em;
-        color:      #999;
+
+    /*
+    .rightCol .ui-timeline .timeline-plot {
+        height:     100px;
     }
-    .ui-timeline .timeline-annotation {
-        text-align: center;
-        color:      #999;
+    .rightCol .ui-timeline-labeled .timeline-plot,
+    .rightCol .ui-timeline-labeled .timeline-annotation {
+        width:      175px;
     }
+    .rightCol .ui-timeline .timeline-plot .tickLabels {
+        font-size:  0.7em;
+    }
+    .rightCol .ui-timeline .timeline-legend {
+        top:        2em;
+        bottom;     auto;
+        left:       175px;
+        right:      auto;
+
+        width:      90px;
+        font-size:  0.7em;
+    }
+    */
   </style>
  </head>
  <body>
+  <div class='page liquid'>
+   <div id='pageContent' class='body'>
+    <div class='rightCol'>Sidebar</div>
+    <div class='main'>Main Body</div>
+   </div>
+  </div>
   <script type='text/javascript'>
 (function($) {
     var valueInLegend   = true;
@@ -44,78 +73,85 @@
     // /*
         // Y
         {xDataHint:     'year',
-         annotation:    'Y - Activity by year',
-         valueInTips:   false,
-         valueInLegend: true,
-         hideLegend:    false,
+         annotation:    'Y - Aggregate by Year',
          height:        '150px',
+         replaceLegend: true,
          flot:          {
-            xaxis:  {labelAngle:45, ticks:5}
+            xaxis:  {labelAngle:75, ticks:5}
          },
-         data: {
+         rawData: {
             "activity":{"2010":12,"2007":1426,"2006":19852,"2005":4579}
          }},
 
         // M
         {xDataHint:     'mon',
-         annotation:    'M - Activity by month',
+         annotation:    'M - Aggregate by Month',
          valueInTips:   true,
          valueInLegend: false,
          hideLegend:    true,
-         height:        '150px',
+         //height:        '150px',
+         width:         '250px',
          flot:          {
-            xaxis:  {labelAngle:45, ticks:12}
+            xaxis:  {labelAngle:75, ticks:12}
          },
-         data: {
+         rawData: {
             "activity":{"12":2227,"11":2048,"10":2249,"09":2129,"08":2231,"07":2188,"06":2087,"05":2155,"04":2044,"03":2185,"02":2031,"01":2295}
+         }},
+
+        // w
+        {xDataHint:     'week',
+         annotation:    'w - Aggregate by week',
+         valueInTips:   true,
+         valueInLegend: false,
+         hideLegend:    true,
+         //height:        '150px',
+         width:         '250px',
+         rawData: {
+            "activity":{"53":27,"52":527,"51":475,"50":489,"49":524,"48":514,"47":442,"46":462,"45":509,"44":500,"43":516,"42":510,"41":483,"40":530,"39":487,"38":495,"37":520,"36":469,"35":501,"34":522,"33":524,"32":494,"31":503,"30":529,"29":474,"28":492,"27":465,"26":520,"25":486,"24":500,"23":465,"22":478,"21":488,"20":469,"19":507,"18":478,"17":474,"16":512,"15":439,"14":502,"13":452,"12":484,"11":480,"10":473,"09":483,"08":523,"07":492,"06":485,"05":518,"04":480,"03":514,"02":511,"01":489,"00":184}
          }},
 
         // D
         {xDataHint:     'day',
-         annotation:    'D - Activity by day',
-         valueInTips:   false,
-         valueInLegend: true,
-         hideLegend:    false,
-         height:        '150px',
+         annotation:    'D - Aggregate by day',
+         replaceLegend: true,
+         //height:        '150px',
          flot:          {
-            xaxis:  {labelAngle:45, ticks:10}
+            xaxis:  {labelAngle:75, ticks:10}
          },
-         data: {
+         rawData: {
             "activity":{"31":550,"30":791,"29":789,"28":831,"27":861,"26":884,"25":858,"24":886,"23":807,"22":834,"21":852,"20":845,"19":809,"18":775,"17":854,"16":918,"15":870,"14":861,"13":820,"12":885,"11":818,"10":859,"09":854,"08":850,"07":835,"06":828,"05":847,"04":827,"03":814,"02":889,"01":868}
          }},
+
+        // d
         {xDataHint:     'day-of-week',
-         annotation:    'd - Activity by day-of-week',
-         valueInTips:   true,
-         valueInLegend: false,
-         hideLegend:    true,
-         height:        '150px',
-         data: {
+         annotation:    'd - Aggregate by day-of-week',
+         replaceLegend: true,
+         //height:        '150px',
+         rawData: {
             "activity":{"6":3630,"5":3824,"4":3751,"3":3703,"2":3790,"1":3766,"0":3405}
          }},
-        {xDataHint:     'week',
-         annotation:    'w - Activity by week',
-         valueInTips:   true,
-         valueInLegend: false,
-         hideLegend:    true,
-         height:        '150px',
-         data: {
-            "activity":{"53":27,"52":527,"51":475,"50":489,"49":524,"48":514,"47":442,"46":462,"45":509,"44":500,"43":516,"42":510,"41":483,"40":530,"39":487,"38":495,"37":520,"36":469,"35":501,"34":522,"33":524,"32":494,"31":503,"30":529,"29":474,"28":492,"27":465,"26":520,"25":486,"24":500,"23":465,"22":478,"21":488,"20":469,"19":507,"18":478,"17":474,"16":512,"15":439,"14":502,"13":452,"12":484,"11":480,"10":473,"09":483,"08":523,"07":492,"06":485,"05":518,"04":480,"03":514,"02":511,"01":489,"00":184}
+
+        // H
+        {xDataHint:     'hour',
+         annotation:    'H - Aggregate by hour',
+         replaceLegend: true,
+         //height:        '150px',
+         rawData: {
+            "activity":{"23":1077,"22":1071,"21":1059,"20":1040,"19":1141,"18":1049,"17":1077,"16":1161,"15":1068,"14":1083,"13":1037,"12":1063,"11":1087,"10":1161,"09":1064,"08":1058,"07":1085,"06":1103,"05":1179,"04":1063,"03":1074,"02":967,"01":1039,"00":1063}
          }},
     // */
 
         // YM
         {xDataHint:     'fmt:%Y %b',
          annotation:    'YM - Activity by year/month',
-         valueInTips:   false,
-         valueInLegend: true,
-         hideLegend:    false,
+         replaceLegend: true,
          height:        '125px',
          flot:          {
             points: {radius:    1.25, lineWidth:0.75},
             lines:  {lineWidth: 1},
-            xaxis:  {labelAngle:45, ticks:6}
+            xaxis:  {labelAngle:75, ticks:6}
          },
-         data: {
+         rawData: {
             "activity":{"201001":12,"200704":5,"200703":250,"200702":438,"200701":733,"200612":926,"200611":1113,"200610":1393,"200609":1465,"200608":1694,"200607":1993,"200606":2027,"200605":2124,"200604":2039,"200603":1935,"200602":1593,"200601":1550,"200512":1301,"200511":935,"200510":856,"200509":664,"200508":537,"200507":195,"200506":60,"200505":31}
          }},
 
@@ -128,11 +164,11 @@
         // Y:H
         {xDataHint:     'hour',
          annotation:    'Y:H - Activity by hour for multiple years',
-         height:        '150px',
+         //height:        '150px',
          flot:          {
-            xaxis:  {labelAngle:45, ticks:12}
+            xaxis:  {labelAngle:75, ticks:12}
          },
-         data:      {
+         rawData:      {
             "2010":{"14":12},
             "2007":{"23":60,"22":67,"21":59,"20":67,"19":62,"18":57,"17":61,"16":99,"15":51,"14":70,"13":54,"12":42,"11":65,"10":65,"09":59,"08":61,"07":79,"06":47,"05":74,"04":42,"03":45,"02":41,"01":49,"00":50},
             "2006":{"23":814,"22":808,"21":827,"20":800,"19":869,"18":818,"17":833,"16":873,"15":797,"14":806,"13":796,"12":838,"11":865,"10":883,"09":808,"08":820,"07":821,"06":870,"05":901,"04":822,"03":824,"02":741,"01":787,"00":831},
@@ -141,8 +177,8 @@
         // Y:D
         {xDataHint:     'day',
          annotation:    'Y:D - Activity by day for multiple years',
-         height:        '150px',
-         data: {
+         //height:        '150px',
+         rawData: {
             "2010":{"07":12},
             "2007":{"31":27,"30":26,"29":17,"28":39,"27":28,"26":40,"25":38,"24":35,"23":47,"22":32,"21":36,"20":39,"19":36,"18":44,"17":39,"16":51,"15":58,"14":59,"13":50,"12":53,"11":37,"10":51,"09":46,"08":61,"07":60,"06":50,"05":58,"04":57,"03":53,"02":81,"01":78},
             "2006":{"31":414,"30":594,"29":579,"28":623,"27":651,"26":662,"25":665,"24":666,"23":614,"22":661,"21":654,"20":658,"19":617,"18":594,"17":671,"16":715,"15":651,"14":661,"13":643,"12":682,"11":646,"10":666,"09":658,"08":658,"07":628,"06":631,"05":654,"04":653,"03":658,"02":660,"01":665},
@@ -151,8 +187,8 @@
         // Y:d
         {xDataHint:     'day-of-week',
          annotation:    'Y:d - Activity by day-of-week for multiple years',
-         height:        '150px',
-         data: {
+         //height:        '150px',
+         rawData: {
             "2010":{"4":12},
             "2007":{"6":168,"5":217,"4":225,"3":235,"2":201,"1":227,"0":153},
             "2006":{"6":2802,"5":2902,"4":2851,"3":2835,"2":2912,"1":2880,"0":2670},
@@ -161,8 +197,8 @@
         // Y:w
         {xDataHint:     'weeks',
          annotation:    'Y:w - Activity by week for multiple years',
-         height:        '150px',
-         data: {
+         //height:        '150px',
+         rawData: {
             "2010":{"01":12},
             "2007":{"14":1,"13":4,"12":32,"11":35,"10":63,"09":75,"08":91,"07":76,"06":126,"05":124,"04":146,"03":140,"02":170,"01":159,"00":184},
             "2006":{"53":27,"52":196,"51":182,"50":197,"49":249,"48":263,"47":227,"46":260,"45":273,"44":300,"43":299,"42":320,"41":289,"40":350,"39":323,"38":321,"37":382,"36":334,"35":356,"34":382,"33":389,"32":384,"31":410,"30":453,"29":439,"28":458,"27":444,"26":479,"25":471,"24":496,"23":458,"22":469,"21":478,"20":460,"19":499,"18":478,"17":474,"16":512,"15":439,"14":501,"13":448,"12":452,"11":445,"10":410,"09":408,"08":432,"07":416,"06":359,"05":394,"04":334,"03":374,"02":341,"01":318},
@@ -172,11 +208,11 @@
         // Y:M
         {xDataHint:     'mon',
          annotation:    'Y:M - Activity by month for multiple years',
-         height:        '150px',
+         //height:        '150px',
          flot:          {
-            xaxis:  {labelAngle:45, ticks:12}
+            xaxis:  {labelAngle:75, ticks:12}
          },
-         data: {
+         rawData: {
             "2010":{"01":12},
             "2007":{"04":5,"03":250,"02":438,"01":733},
             "2006":{"12":926,"11":1113,"10":1393,"09":1465,"08":1694,"07":1993,"06":2027,"05":2124,"04":2039,"03":1935,"02":1593,"01":1550},
@@ -185,8 +221,8 @@
         // M:d
         {xDataHint:     'day-of-week',
          annotation:    'M:d - Activity by day-of-week for multiple months',
-         height:        '250px',
-         data: {
+         height:        '200px',
+         rawData: {
             "12":{"6":367,"5":404,"4":335,"3":263,"2":296,"1":286,"0":276},
             "11":{"6":271,"5":289,"4":321,"3":330,"2":314,"1":273,"0":250},
             "10":{"6":318,"5":293,"4":287,"3":285,"2":361,"1":374,"0":331},
@@ -203,8 +239,8 @@
         // YM:d
         {xDataHint: 'day-of-week',
          annotation:'YM:d - Activity by day-of-week for multiple year/months',
-         height:    '500px',
-         data:      {
+         height:    '400px',
+         rawData:      {
             "201001":{"4":12},
             "200704":{"2":1,"1":1,"0":3},
             "200703":{"6":30,"5":57,"4":43,"3":32,"2":28,"1":33,"0":27},
@@ -237,9 +273,10 @@
          valueInTips:   true,
          valueInLegend: false,
          hideLegend:    true,
-         height:        '150px',
+         //height:        '150px',
+         width:         '250px',
          flot:          { lines: {show: false}},
-         data:          {
+         rawData:          {
             'activity by year/hour': {
                 "201014":12,
                 "200723":60,"200722":67,"200721":59,"200720":67,"200719":62,"200718":57,"200717":61,"200716":99,"200715":51,"200714":70,"200713":54,"200712":42,"200711":65,"200710":65,"200709":59,"200708":61,"200707":79,"200706":47,"200705":74,"200704":42,"200703":45,"200702":41,"200701":49,"200700":50,
@@ -252,13 +289,14 @@
          valueInTips:   false,
          valueInLegend: false,
          hideLegend:    true,
-         height:        '150px',
+         height:        '200px',
+         width:         '250px',
          flot:          {
             points: {radius:    1.25, lineWidth:0.75},
             lines:  {show:      false},
-            xaxis:  {labelAngle:45, ticks:10}
+            xaxis:  {labelAngle:75, ticks:10}
          },
-         data:          {
+         rawData:          {
             'activity': {
                 "2006013023":4, "2006013022":5, "2006013021":2, "2006013020":1, "2006013019":1, "2006013018":4, "2006013017":4, "2006013016":5, "2006013015":10, "2006013014":1, "2006013013":3, "2006013012":4, "2006013011":3, "2006013010":3, "2006013009":2, "2006013008":2, "2006013007":4, "2006013006":4, "2006013005":1, "2006013004":1, "2006013003":3, "2006013002":1, "2006013001":1, "2006013000":2,
                 "2006012923":1, "2006012922":1, "2006012921":2, "2006012920":4, "2006012919":4, "2006012918":4, "2006012917":3, "2006012916":3, "2006012915":2, "2006012914":2, "2006012913":1, "2006012912":2, "2006012911":5, "2006012910":3, "2006012909":3, "2006012908":1, "2006012907":1, "2006012905":5, "2006012904":1, "2006012903":2, "2006012902":4, "2006012901":1,
@@ -296,19 +334,33 @@
     ];
 
     $(document).ready(function() {
-        var $body   = $('body');
+        var $sidebar    = $('.rightCol');
 
-        /* <div id='timeline'>
-         *  <h1>Timeline</h1>
-         *  <div class='timeline-plot'></div>
-         * </div>
-         */
+        /*
+        $sidebar.mousemove(function(e) {
+            $.log('sidebar mousemove: [ '+ e.pageX +', '+ e.pageY +' ]');
+        });
+        // */
+        /*
+        $sidebar.delegate('.ui-timeline .timeline-plot',
+                          'mousemove',
+                          function(e) {
+            var $canvas = $(this).find('canvas:first');
+
+            $.log('plot mousemove: [ '+ e.pageX +', '+ e.pageY +' ]');
+            $canvas.trigger(e);
+        });
+        // */
+
         $.each(tests, function() {
-            var $div    = $('<div></div>').appendTo($body);
+            var $div    = $('<div></div>').appendTo($sidebar);
+            $div.timeline( this );
+
+            /*
             $div.timeline({
                 xDataHint:      this.xDataHint,
                 annotation:     this.annotation,
-                rawData:        this.data,
+                rawData:        this.rawData,
                 height:         (this.height !== undefined
                                     ? this.height
                                     : null),
@@ -323,6 +375,7 @@
                                     : valueInLegend),
                 flot:           this.flot
             });
+            // */
         });
     });
 }(jQuery));

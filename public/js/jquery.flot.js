@@ -977,7 +977,7 @@
                 l, w = opts.labelWidth, h = opts.labelHeight, dummyDiv;
 
             function makeDummyDiv(labels, width) {
-                return $('<div style="position:absolute;top:-10000px;' + width + 'font-size:smaller">' +
+                return $('<div style="position:absolute;top:-10000px;' + width + '">' +
                          '<div class="' + axis.direction + 'Axis ' + axis.direction + axis.n + 'Axis">'
                          + labels.join("") + '</div></div>')
                     .appendTo(placeholder);
@@ -1842,7 +1842,7 @@
 
             placeholder.find(".tickLabels").remove();
             
-            var html = ['<div class="tickLabels" style="font-size:smaller">'];
+            var html = ['<div class="tickLabels">'];
 
             var axes = getUsedAxes();
             for (var j = 0; j < axes.length; ++j) {
@@ -2413,7 +2413,7 @@
             if (fragments.length == 0)
                 return;
 
-            var table = '<table style="font-size:smaller;color:' + options.grid.color + '">' + fragments.join("") + '</table>';
+            var table = '<table style="color:' + options.grid.color + '">' + fragments.join("") + '</table>';
             if (options.legend.container != null)
                 $(options.legend.container).html(table);
             else {

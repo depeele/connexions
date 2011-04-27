@@ -30,10 +30,13 @@ $.widget('connexions.timeline', {
         // Defaults
         xDataHint:      null,   // hour | day-of-week |
                                 //  day | week | month | year
+        css:            null,   // Additional CSS class(es) to apply to the
+                                // primary DOM element
         annotation:     null,   // Any annotation to include for this timtline
         rawData:        null,   // Raw, connexions timeline data to present
         data:           [],     // Initial, empty data
 
+        width:          null,   // The width of the timeline plot area
         height:         null,   // The height of the timeline plot area
         hwRatio:        9/16,   // Ratio of height to width
                                 // (used if 'height' is not specified)
@@ -43,6 +46,9 @@ $.widget('connexions.timeline', {
         valueInLegend:  true,   // Show the y hover value(s) in the series
                                 // legend (hideLegend should be true);
         valueInTips:    false,  // Show the y hover value(s) in series graph
+        replaceLegend:  false,  // Should the data label completely replace
+                                // any existing legend text when the value
+                                // is being presented? [ false ];
 
         // DataType value->label tables
         hours:      [ '12a', ' 1a', ' 2a', ' 3a', ' 4a', ' 5a',
@@ -67,16 +73,17 @@ $.widget('connexions.timeline', {
         self.element.css('position', 'relative')
                     .addClass('ui-timeline');
 
-        // Locate/create our primary pieces
-        self.$timeline = self.element.find('.timeline-plot');
-        if (self.$timeline.length < 1)
+        if ( opts.hideLegend !== true )
         {
-            // Append a plot container
-            self.$timeline = $('<div class="timeline-plot"></div>');
-            self.$timeline.data('remove-on-destroy', true);
-            self.element.append(self.$timeline);
+            self.element.addClass('ui-timeline-labeled');
         }
 
+        if ($.type(opts.css) === 'string')
+        {
+            self.element.addClass( opts.css );
+        }
+
+        // Locate/create our primary pieces
         self.$legend = self.element.find('.timeline-legend');
         if ( (self.$legend.length < 1) && (opts.hideLegend !== true) )
         {
@@ -91,45 +98,60 @@ $.widget('connexions.timeline', {
             self.$legend.hide();
         }
 
-        self.$annotation = self.element.find('.timeline-annotation');
-        if (self.$annotation.length < 1)
+        self.$timeline = self.element.find('.timeline-plot');
+        if (self.$timeline.length < 1)
         {
-            // Append a annotation container
-            self.$annotation = $('<div class="timeline-annotation"></div>');
+            // Append a plot container
+            self.$timeline = $('<div class="timeline-plot"></div>');
+            self.$timeline.data('remove-on-destroy', true);
+            self.element.append(self.$timeline);
+        }
 
-            self.$annotation.data('remove-on-destroy', true);
-            self.element.append(self.$annotation);
+        if (opts.annotation)
+        {
+            self.$annotation = self.element.find('.timeline-annotation');
+            if (self.$annotation.length < 1)
+            {
+                // Append a annotation container
+                self.$annotation = $('<div class="timeline-annotation"></div>');
+
+                self.$annotation.data('remove-on-destroy', true);
+                self.element.append(self.$annotation);
+            }
+
+            self.$annotation.html(opts.annotation);
         }
 
         self.hlTimer = null;
 
-        if (opts.annotation)
-        {
-            self.$annotation.html(opts.annotation);
-        }
-
         // Ensure that our plot area has a non-zero height OR width
-        var height  = self.$timeline.height();
         var width   = self.$timeline.width();
+        var height  = self.$timeline.height();
 
-        if (opts.height < 1)
+        if (opts.width !== null)
         {
-            if ((height < 1) && (width < 1))
-            {
-                // Force the width of the container
-                self.$timeline.width( self.element.width() );
-                width = self.$timeline.width();
-            }
-
-            height = self.element.width() * opts.hwRatio
-
-            self.$timeline.css('height', height);
+            self.$timeline.css('width', opts.width);
+            width = self.$timeline.width();
         }
-        else
+        if (opts.height !== null)
         {
             self.$timeline.css('height', opts.height);
+            height = self.$timeline.height();
         }
 
+        if (width < 1)
+        {
+            // Force to the width of the container
+            self.$timeline.width( self.element.width() );
+            width = self.$timeline.width();
+        }
+
+        if (height < 1)
+        {
+            // Force the height to a ratio of the width
+            height = width * opts.hwRatio
+            self.$timeline.css('height', height);
+        }
 
         // Interaction events
         self._bindEvents();
@@ -201,6 +223,15 @@ $.widget('connexions.timeline', {
         });
         // */
         self.$legends = self.$legend.find('.legendLabel');
+
+        // Wrap the current content of each legend item in 'timeline-text'
+        self.$legends.each(function() {
+            var $legend = $(this);
+
+            $legend.html(  '<span class="timeline-text">'
+                         +   $legend.html()
+                         + '</span>');
+        });
     },
 
     /** @brief  Convert incoming, raw, connexions timeline data into a form
@@ -231,11 +262,6 @@ $.widget('connexions.timeline', {
 
                     var newX    = new Date(match[1], match[2], match[3],
                                            match[4], match[5], match[6]);
-
-                    /*
-                    $.log("_convertData[%s]: x[ %s ]=date[ %s ], y[ %s ]",
-                           opts.annotation, x, newX, y);
-                    // */
 
                     info.data.push([newX, y]);
 
@@ -458,6 +484,11 @@ $.widget('connexions.timeline', {
      *  @param  p       The point
      */
     _showTip:   function(idex, series, p) {
+        if (p === null)
+        {
+            return;
+        }
+
         var self        = this;
         var opts        = self.options;
         var hlRadius    = (series.points.radius + series.points.lineWidth);
@@ -479,7 +510,6 @@ $.widget('connexions.timeline', {
                             left:               itemPos.left + (hlRadius*2)
                                                              + 5,
                             'text-align':       'left',
-                            'font-size':        'smaller',
                             /*
                             'font-size':        yaxis.font.size +'px',
                             'font-family':      yaxis.font.family,
@@ -532,24 +562,37 @@ $.widget('connexions.timeline', {
      *  @param  p       The point;
      */
     _updateLegend: function(idex, series, p) {
+        if (p === null)
+        {
+            return;
+        }
+
         var self    = this;
         var opts    = self.options;
-        var $label  = self.$legends.eq(idex);
-        var $stat   = $label.find('.timeline-stat');
+        var $legend = self.$legends.eq(idex);
+        var $stat   = $legend.find('.timeline-stat');
         var x       = series.xaxis.tickFormatter(p[0], series.xaxis);
         var y       = series.yaxis.tickFormatter(p[1], series.yaxis);
-        var str     = ' : '+ x +' : '+ y;
+        var str     = (opts.replaceLegend ? '' : ': ') + x +': '+ y;
 
         if ($stat.length > 0)
         {
-            $stat.text( str );
+            $stat.text( str )
+                 .show();
         }
         else
         {
-            $label.data('orig.label', $label.text());
-            $label.append(  '<span class="timeline-stat">'
-                          +  str
-                          + '</span>');
+            var html    = '<span class="timeline-stat">'
+                        +  str
+                        + '</span>';
+
+            $legend.append(  html );
+
+        }
+
+        if (opts.replaceLegend)
+        {
+            $legend.find('.timeline-text').hide();
         }
     },
 
@@ -561,18 +604,13 @@ $.widget('connexions.timeline', {
         var self    = this;
         var opts    = self.options;
 
-        // Clear all highlights and tips
+        // Clear all highlights, tips, and label stats and tips
         self.$plot.unhighlight();
         self.$timeline.find('.timeline-tooltip').remove();
-        self.$legends.each(function() {
-            var $label  = $(this);
-            var label   = $label.data('orig.label');
-            
-            if (label)
-            {
-                $label.text( label );
-            }
-        });
+        self.$legends
+                .find('.timeline-stat').hide()
+                .end()
+                .find('.timeline-text').show();
 
         var axes    = self.$plot.getAxes();
         if ( (pos.x < axes.xaxis.min) || (pos.x > axes.xaxis.max) ||
@@ -674,6 +712,15 @@ $.widget('connexions.timeline', {
         {
             self.$legend.remove();
         }
+        else
+        {
+            // Unwrap the legend text
+            self.$legends.each(function() {
+                var $legend = $(this);
+
+                $legend.html(  $legend.find('.timeline-text').html() );
+            });
+        }
 
         if (self.$timeline.data('remove-on-destroy') === true)
         {
@@ -683,6 +730,16 @@ $.widget('connexions.timeline', {
         self.element.css('position', self.element.data('orig-position'))
                     .removeData('orig-position')
                     .removeClass('ui-timeline');
+
+        if ( opts.hideLegend !== true )
+        {
+            self.element.removeClass('ui-timeline-labeled');
+        }
+
+        if ($.type(opts.css) === 'string')
+        {
+            self.element.removeClass( opts.css );
+        }
     }
 });
     
