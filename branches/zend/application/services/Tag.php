@@ -3,7 +3,7 @@
  *
  *  The concrete base class providing access to Model_Tag and Model_Set_Tag.
  */
-class Service_Tag extends Connexions_Service
+class Service_Tag extends Service_Base
 {
     /* inferred via classname
     protected   $_modelName = 'Model_Tag';

@@ -9,7 +9,6 @@ $svc = Connexions_Service::factory('Service_User');
 
 // Parameters
 $params = array(
-    'threshold' => 1,
     'count'     => 50,
     'offset'    => 0,
 );
@@ -18,6 +17,8 @@ $validParams = array(
     'order'     => 'SQL ordering',
     'count'     => 'numeric limit/count',
     'offset'    => 'numeric limit/offset',
+    'tags'      => 'comma-separated list of tags',
+    'items'     => 'comma-separated list of items',
 );
 
 $help = false;
@@ -55,8 +56,11 @@ foreach ($argv as $arg)
 
 $contributors = $svc->getContributors( $params );
 
-printf (  "Contributors:\n"
+printf (  "%s Contributors:\n"
         . "%s\n",
+        ($contributors
+            ? count($contributors)
+            : 'No'),
         ($contributors
             ? preg_replace('/\],\[/', "],\n[",
                            Zend_Json::encode($contributors))

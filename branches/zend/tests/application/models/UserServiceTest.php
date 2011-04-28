@@ -1727,9 +1727,64 @@ class UserServiceTest extends DbTestCase
         $this->assertEquals($expected, $users->__toString());
     }
 
+    public function testUserContributors5()
+    {
+        $expected = "User441,User478,User83";
+
+        // Retrieve the target user
+        $params = array(
+            'tags'      => 'cooling',
+            'threshold' => 5,
+        );
+
+        $service = Connexions_Service::factory('Model_User');
+        $users   = $service->getContributors( $params );
+        $this->assertNotEquals(null, $users);
+
+        /*
+        printf ("Top contributors for tags [ %s ] with at least %s bookmarks: "
+                .   "[ %s ]",
+                $params['tags'], 
+                $params['threshold'],
+                Connexions::varExport($users));
+        // */
+
+        $this->assertEquals($expected, $users->__toString());
+    }
+
+    public function testUserContributors6()
+    {
+        $expected = "User83";
+
+        // Retrieve the target user
+        $params = array(
+            'tags'      => 'cooling,hardware,technology,cpu,chip,art',
+            'threshold' => 5,
+        );
+
+        $service = Connexions_Service::factory('Model_User');
+        $users   = $service->getContributors( $params );
+        $this->assertNotEquals(null, $users);
+
+        /*
+        printf ("Top contributors for tags [ %s ] with at least %s bookmarks: "
+                .   "[ %s ]",
+                $params['tags'], 
+                $params['threshold'],
+                Connexions::varExport($users));
+        // */
+
+        $this->assertEquals($expected, $users->__toString());
+    }
+
+
     public function testUserContributorCount1()
     {
-        $expected = 4;
+        $expected = array(
+            'total'         => 4,
+            'contributors'  => 4,
+            'threshold'     => 1,
+        );
 
         // Retrieve the target user
         $service = Connexions_Service::factory('Model_User');
@@ -1740,7 +1795,11 @@ class UserServiceTest extends DbTestCase
 
     public function testUserContributorCount2()
     {
-        $expected = 4;
+        $expected = array(
+            'total'         => 4,
+            'contributors'  => 4,
+            'threshold'     => 5,
+        );
 
         // Retrieve the target user
         $service = Connexions_Service::factory('Model_User');
