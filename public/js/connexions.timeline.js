@@ -89,31 +89,31 @@ $.widget('connexions.timeline', {
         groupingFmt:{
             // Straight Timelines
             'YM':   'fmt:%Y %b',        // Year, Month
-            'YMD':  'fmt:%Y.%M.%D',     // Year, Month, Day
-            'MD':   'fmt:%b %D',        // Month, Day
+            'YMD':  'fmt:%Y.%M.%d',     // Year, Month, Day
+            'MD':   'fmt:%b %d',        // Month, Day
             'MH':   'fmt:%b %h',        // Month, Hour
-            'MDH':  'fmt:%b %D %h',     // Month, Day, Hour
+            'MDH':  'fmt:%b %d %h',     // Month, Day, Hour
 
             // Series Timelines (by Year)
-            'Y:M':  'fmt:%b',           // Month
-            'Y:D':  'fmt:%D',           // Day (of month)
-            'Y:d':  'fmt:%a',           // Day (of week)
-            'Y:H':  'fmt:%h',           // Hour
+            'Y:M':  'mon',              // Month
+            'Y:D':  'day',              // Day (of month)
+            'Y:d':  'day-of-week',      // Day (of week)
+            'Y:H':  'hour',             // Hour
 
             // Series Timelines (by Month)
-            'M:D':  'fmt:%D',           // Day (of month)
-            'M:d':  'fmt:%a',           // Day (of week)
-            'M:H':  'fmt:%h',           // Hour
+            'M:D':  'day',              // Day (of month)
+            'M:d':  'day-of-week',      // Day (of week)
+            'M:H':  'hour',             // Hour
 
             // Series Timelines (by Week)
-            'w:d':  'fmt:%a',           // Day (of week)
-            'w:H':  'fmt:%h',           // Hour
+            'w:d':  'day-of-week',      // Day (of week)
+            'w:H':  'hour',             // Hour
 
             // Series Timelines (by Day-of-Month)
-            'D:H':  'fmt:%h',           // Hour
+            'D:H':  'hour',             // Hour
 
             // Series Timelines (by Day-of-Week)
-            'd:H':  'fmt:%h',           // Hour
+            'd:H':  'hour'              // Hour
         }
     },
 
@@ -192,7 +192,8 @@ $.widget('connexions.timeline', {
 
         self.$controls = self.element.find('.timeline-controls');
         self.$grouping = self.$controls
-                                .find(':input[name="timeline.grouping"]');
+                                .find(':input[name="timeline.grouping"]')
+                                .input();
 
         if (opts.annotation)
         {

@@ -324,7 +324,7 @@ class PeopleController extends Connexions_Controller_Action
 
             $months = 0;
             $last   = null;
-            foreach ($timeline as $date => $count)
+            foreach ($timeline['activity'] as $date => $count)
             {
                 $month = substr($date, 0, 6);
 
@@ -361,9 +361,7 @@ class PeopleController extends Connexions_Controller_Action
                         'ticks'         => $ticks,
                     ),
                 ),
-                'rawData'       => array(
-                    'activity'  => $timeline,
-                ),
+                'rawData'       => $timeline,
             );
 
             /*
