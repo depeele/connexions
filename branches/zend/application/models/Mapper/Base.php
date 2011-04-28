@@ -584,6 +584,14 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
             }
         }
 
+        // Ensure that we have at least 1 series
+        if ($grouping['seriesIdLen'] < 1)
+        {
+            $timeline = array(
+                'activity'  => $timeline,
+            );
+        }
+
         /*
         Connexions::log("Model_Mapper_Base::_normalizeTimeline(): "
                         . "final timeline[ %s ]",
