@@ -3,7 +3,7 @@
  *
  *  The concrete base class providing access to Model_User.
  */
-class Service_User extends Connexions_Service
+class Service_User extends Service_Base
 {
     /* inferred via classname
     protected   $_modelName = 'Model_User';
@@ -962,7 +962,44 @@ class Service_User extends Connexions_Service
      */
     public function getContributors(array $params = array())
     {
-        return $this->_mapper->getContributors($params);
+        if ( ! isset($params['threshold']))
+        {
+            // Compute a threshold based upon overall statistics
+            $statParams = $params;
+            $statParams['aggregate'] = true;
+
+            $stats = $this->getStatistics( $statParams );
+
+            /* Use the halfway point between the average and minimum number of
+             * bookmarks
+             */
+            $threshold = floor( ($stats['bookmarks_min'] +
+                                 $stats['bookmarks_avg']) / 2.0 );
+
+            /*
+            Connexions::log("Service_User::getContributors(): "
+                            . "min[ %s ], avg[ %s ], threshold[ %s ]",
+                            Connexions::varExport($stats['bookmarks_min']),
+                            Connexions::varExport($stats['bookmarks_avg']),
+                            Connexions::varExport($threshold));
+            // */
+
+
+            $params['threshold'] = $threshold;
+        }
+
+        $config = $this->_normalizeParams($params);
+
+        /*
+        Connexions::log("Service_User::getContributors(): "
+                        . "params[ %s ]",
+                        Connexions::varExport($params));
+        Connexions::log("Service_User::getContributors(): "
+                        . "config[ %s ]",
+                        Connexions::varExport($config));
+        // */
+
+        return $this->_mapper->getContributors($config);
     }
 
     /** @brief  Retrieve the COUNT of "contributors".
@@ -1030,70 +1067,4 @@ class Service_User extends Connexions_Service
         $timeline = $this->_mapper->getTimeline( $params );
         return $timeline;
     }
-
-    /** @brief  Retrieve user-releated statistics.
-     *  @param  params  An array of optional retrieval criteria:
-     *                      - users     A set of users to use in selecting the
-     *                                  bookmarks used to construct the
-     *                                  timeline.  A Model_Set_User instance or
-     *                                  an array of userIds;
-     *                      - items     A set of items to use in selecting the
-     *                                  bookmarks used to construct the
-     *                                  timeline.  A Model_Set_Item instance or
-     *                                  an array of itemIds;
-     *                      - tags      A set of tags to use in selecting the
-     *                                  bookmarks used to construct the
-     *                                  timeline.  A Model_Set_Tag instance or
-     *                                  an array of tagIds;
-     *                      - order     An ORDER clause (string, array)
-     *                                  [ 'taggedOn DESC' ];
-     *                      - count     A  LIMIT count
-     *                                  [ all ];
-     *                      - offset    A  LIMIT offset
-     *                                  [ 0 ];
-     *                      - from      A date/time string to limit the results
-     *                                  to those occurring AFTER the specified
-     *                                  date/time;
-     *                      - until     A date/time string to limit the results
-     *                                  to those occurring BEFORE the specified
-     *                                  date/time;
-     *
-     *  @return An array of statistics.
-     */
-    public function getStatistics(array $params = array())
-    {
-        if (isset($params['users']) && (! empty($params['users'])) )
-        {
-            $params['users'] =
-                $this->csList2set($params['users']);
-        }
-
-        if (isset($params['items']) && (! empty($params['items'])) )
-        {
-            $params['items'] =
-                $this->factory('Service_Item')->csList2set($params['items']);
-        }
-
-        if (isset($params['tags']) && (! empty($params['tags'])) )
-        {
-            $params['tags']  =
-                $this->factory('Service_Tag')->csList2set($params['tags']);
-        }
-
-        if (isset($params['order']) && (! empty($params['order'])) )
-        {
-            $params['order'] =
-                $this->_csOrder2array($params['order'], true /* noExtras */);
-        }
-
-        /*
-        Connexions::log("Service_User::getStatistics(): "
-                        . "params[ %s ]",
-                        Connexions::varExport($params));
-        // */
-
-        $stats = $this->_mapper->getStatistics( $params );
-        return $stats;
-    }
-
 }

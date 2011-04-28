@@ -16,6 +16,7 @@ $validParams = array(
     'order'     => 'SQL ordering',
     'count'     => 'numeric limit/count',
     'offset'    => 'numeric limit/offset',
+    'aggregate' => 'aggregate (not per user)',
 );
 
 $help = false;

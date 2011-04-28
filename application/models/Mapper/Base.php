@@ -197,7 +197,7 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
         return $result;
     }
 
-    /** @brief  Retrieve bookmark-based statistics.
+    /** @brief  Retrieve statistics.
      *  @param  params  An array of optional retrieval criteria suitable for
      *                  fetchRelated() with the addition of:
      *                      - privacy   Model_User to use for privacy filter
@@ -205,14 +205,27 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      *                                      authenticated user, if explicitly
      *                                      'false', do NOT include privacy
      *                                      restrictions;
+     *                      - aggregate If true, return aggregate statistics;
      *
      *  @return An array of statistics.
      */
     public function getStatistics(array $params = array())
     {
-        $privacy = (isset($params['privacy'])
+        $aggregate = ( isset($params['aggregate'])
+                        ? $params['aggregate']
+                        : false);
+        $privacy   = ( isset($params['privacy'])
                         ? $params['privacy']
                         : null);
+
+        /*
+        Connexions::log("Model_Mapper_Base(%s)::getStatistics(): "
+                        .   "aggregate[ %s : %s ], privacy[ %s ]",
+                        get_class($this),
+                        Connexions::varExport($params['aggregate']),
+                        Connexions::varExport($aggregate),
+                        Connexions::varExport($privacy));
+        // */
 
         // Force the use of the UserItem mapper
         $mapper = $this->factory('Model_Mapper_Bookmark');
@@ -226,15 +239,6 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
          *
          */
         $fields = array(
-            'users'     => 'uti.userCount',
-            'items'     => 'uti.itemCount',
-            'bookmarks' => 'uti.userItemCount',
-            'tags'      => 'uti.tagCount',
-            /*
-            'users'     => 'COUNT( DISTINCT uti.userId )',
-            'items'     => 'COUNT( DISTINCT uti.itemId )',
-            'bookmarks' => 'COUNT( DISTINCT uti.userId,uti.itemId )',
-            */
             'privates'  => "SUM(CASE WHEN {$as}.isPrivate > 0 "
                                                 ."THEN 1 ELSE 0 END)",
             'publics'   => "SUM(CASE WHEN {$as}.isPrivate > 0 "
@@ -244,12 +248,77 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                                                 ."THEN 1 ELSE 0 END)",
         );
 
-        // IGNORE the standard generated statistics
-        //$params['excludeStats'] = true;
+        if ($this->_modelName !== 'Model_User')
+        {
+            // INCLUDE 'user' information
+            if ($aggregate)
+            {
+                $fields['users_min'] = 'MIN(uti.userCount)';
+                $fields['users_max'] = 'MAX(uti.userCount)';
+                $fields['users_avg'] = 'AVG(uti.userCount)';
+                $fields['users_sd']  = 'STDDEV(uti.userCount)';
+            }
+            else
+            {
+                $fields['users']     = 'uti.userCount';
+            }
+        }
+
+        if ($this->_modelName !== 'Model_Item')
+        {
+            // INCLUDE 'item' information
+            if ($aggregate)
+            {
+                $fields['items_min'] = 'MIN(uti.itemCount)';
+                $fields['items_max'] = 'MAX(uti.itemCount)';
+                $fields['items_avg'] = 'AVG(uti.itemCount)';
+                $fields['items_sd']  = 'STDDEV(uti.itemCount)';
+            }
+            else
+            {
+                $fields['items']     = 'uti.itemCount';
+            }
+        }
+
+        if ($this->_modelName !== 'Model_Tag')
+        {
+            // INCLUDE 'tag' information
+            if ($aggregate)
+            {
+                $fields['tags_min'] = 'MIN(uti.tagCount)';
+                $fields['tags_max'] = 'MAX(uti.tagCount)';
+                $fields['tags_avg'] = 'AVG(uti.tagCount)';
+                $fields['tags_sd']  = 'STDDEV(uti.tagCount)';
+            }
+            else
+            {
+                $fields['tags']     = 'uti.tagCount';
+            }
+        }
+
+        if ($this->_modelName !== 'Model_Bookmark')
+        {
+            // INCLUDE 'bookmark' information
+            if ($aggregate)
+            {
+                $fields['bookmarks_min'] = 'MIN(uti.userItemCount)';
+                $fields['bookmarks_max'] = 'MAX(uti.userItemCount)';
+                $fields['bookmarks_avg'] = 'AVG(uti.userItemCount)';
+                $fields['bookmarks_sd']  = 'STDDEV(uti.userItemCount)';
+            }
+            else
+            {
+                $fields['bookmarks']     = 'uti.userItemCount';
+            }
+        }
+
 
         // Include the primary keys of the CURRENT mapper
-        $params['group'] = $this->_keyNames;
-        $fields  = array_merge($params['group'], $fields);
+        if (! $aggregate)
+        {
+            $params['group'] = $this->_keyNames;
+            $fields  = array_merge($params['group'], $fields);
+        }
 
         $select = $db->select();
         $select->from( array( $as =>
@@ -262,8 +331,11 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
         $select->reset(Zend_Db_Select::COLUMNS)
                ->columns($fields, $as);
 
-        // Group-by
-        $select->group($params['group']);
+        if (! empty($params['group']))
+        {
+            // Group-by
+            $select->group($params['group']);
+        }
 
         /* Unless explicitly requested to exclude privacy restrictions, include
          * them now.
@@ -293,7 +365,22 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
         $count  = (!empty($params['count'])  ? $params['count']  : null);
         $offset = (!empty($params['offset']) ? $params['offset'] : null);
 
+        /*
+        Connexions::log("Model_Mapper_Base(%s)::getStatistics(): "
+                        . "sql[ %s ], order[ %s ], count[ %s ], offset[ %s ]",
+                        get_class($this),
+                        $select->assemble(),
+                        Connexions::varExport($order),
+                        Connexions::varExport($count),
+                        Connexions::varExport($offset));
+        // */
+
         $stats = $this->fetch($select, $order, $count, $offset, true);
+
+        if ($aggregate)
+        {
+            $stats = $stats[0];
+        }
 
         /*
         Connexions::log("Model_Mapper_Base::getStatistics(): "

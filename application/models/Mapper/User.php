@@ -456,13 +456,17 @@ class Model_Mapper_User extends Model_Mapper_Base
 
     /** @brief  Retrieve the Model_Set_User instance representing
      *          "contributors".
-     *  @param  params  An array of optional retrieval criteria:
-     *                      - users     A set of users to use in selecting the
-     *                                  bookmarks used to construct the
-     *                                  timeline.  A Model_Set_User instance or
-     *                                  an array of userIds;
+     *  @param  params  An array of optional retrieval criteria compatible with
+     *                  fetchRelated() with the addition of:
+     *                      - threshold The number of bookmarks required to be
+     *                                  considered a "contributor".  A
+     *                                  non-negative value will include users
+     *                                  that have AT LEAST 'threshold'
+     *                                  bookmarks, while a negative number will
+     *                                  include users with UP TO the absolute
+     *                                  value of 'threshold' bookmarks [ 1 ];
      *                      - order     An ORDER clause (string, array)
-     *                                  [ 'taggedOn DESC' ];
+     *                                  [ 'totalItems DESC, name ASC' ];
      *                      - count     A  LIMIT count
      *                                  [ all ];
      *                      - offset    A  LIMIT offset
@@ -505,7 +509,13 @@ class Model_Mapper_User extends Model_Mapper_Base
         $params['where'] = $where;
 
         // Fill in additional fields we don't want to allow over-ridden.
-        $params['excludeStats'] = true;
+        if ( (! isset($params['users'])) &&
+             (! isset($params['items'])) &&
+             (! isset($params['tags'])) )
+        {
+            // Exclude stats if we don't need them
+            $params['excludeStats'] = true;
+        }
 
         $users = $this->fetchRelated( $params );
         return $users;

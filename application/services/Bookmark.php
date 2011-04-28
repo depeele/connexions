@@ -4,7 +4,7 @@
  *  The concrete base class providing access to Model_Bookmark and 
  *  Model_Set_Bookmark.
  */
-class Service_Bookmark extends Connexions_Service
+class Service_Bookmark extends Service_Base
 {
     /* inferred via classname
     protected   $_modelName = 'Model_Bookmark';
