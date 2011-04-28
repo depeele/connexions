@@ -1783,7 +1783,7 @@ class UserServiceTest extends DbTestCase
         $expected = array(
             'total'         => 4,
             'contributors'  => 4,
-            'threshold'     => 1,
+            'threshold'     => 5,
         );
 
         // Retrieve the target user
@@ -1797,13 +1797,16 @@ class UserServiceTest extends DbTestCase
     {
         $expected = array(
             'total'         => 4,
-            'contributors'  => 4,
-            'threshold'     => 5,
+            'contributors'  => 0,
+            'threshold'     => 6,
+        );
+        $params = array(
+            'threshold' => $expected['threshold'],
         );
 
         // Retrieve the target user
         $service = Connexions_Service::factory('Model_User');
-        $count   = $service->getContributorCount( 5 );
+        $count   = $service->getContributorCount( $params );
 
         $this->assertEquals($expected, $count);
     }

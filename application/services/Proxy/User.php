@@ -287,6 +287,14 @@ class Service_Proxy_User extends Connexions_Service_Proxy
      *                      while a negative number will retrieve users with
      *                      UP TO the absolute value of 'threshold'
      *                      bookmarks [ 1 ].
+     *  @param  items       A Model_Set_Item instance, array, or
+     *                      comma-separated string of item idenfiers that
+     *                      restrict the bookmarks that used to determine
+     *                      "contributor";
+     *  @param  tags        A Model_Set_Tag instance, array, or
+     *                      comma-separated string of tag idenfiers that
+     *                      restrict the bookmarks that used to determine
+     *                      "contributor";
      *  @param  order       An ORDER clause (string, array)
      *                      [ 'totalItems DESC, name ASC' ];
      *  @param  count       Optional LIMIT count  [ 50 ];
@@ -295,32 +303,54 @@ class Service_Proxy_User extends Connexions_Service_Proxy
      *  @return A Model_Set_User instance representing the "contributors";
      */
     public function getContributors($threshold  = 1,
+                                    $items      = null,
+                                    $tags       = null,
                                     $order      = null,
                                     $count      = 50,
                                     $offset     = null)
     {
         $params = array();
-        if (! empty($threshold))    $params['users']    = $users;
-        if (! empty($order))        $params['order']    = $order;
-        if (! empty($count))        $params['count']    = $count;
-        if (! empty($offset))       $params['offset']   = $offset;
+        if (! empty($threshold))    $params['threshold'] = $threshold;
+        if (! empty($items))        $params['items']     = $items;
+        if (! empty($tags))         $params['tags']      = $tags;
+        if (! empty($order))        $params['order']     = $order;
+        if (! empty($count))        $params['count']     = $count;
+        if (! empty($offset))       $params['offset']    = $offset;
 
         return ($this->_service->getContributors($params));
     }
 
     /** @brief  Retrieve the COUNT of "contributors".
      *  @param  threshold   The number of bookmarks required to be considered a
-     *                      "contributor".  A non-negative value will include
+     *                      "contributor".  A non-negative value will retrieve
      *                      users that have AT LEAST 'threshold' bookmarks,
-     *                      while a negative number will include users with
+     *                      while a negative number will retrieve users with
      *                      UP TO the absolute value of 'threshold'
      *                      bookmarks [ 1 ].
+     *  @param  items       A Model_Set_Item instance, array, or
+     *                      comma-separated string of item idenfiers that
+     *                      restrict the bookmarks that used to determine
+     *                      "contributor";
+     *  @param  tags        A Model_Set_Tag instance, array, or
+     *                      comma-separated string of tag idenfiers that
+     *                      restrict the bookmarks that used to determine
+     *                      "contributor";
      *
-     *  @return An integer COUNT representing the "contributors";
+     *  @return A simple array containing:
+     *              {'total':        total users,
+     *               'contributors': number of "contributors",
+     *               'threshold':    the threshold value used}
      */
-    public function getContributorCount($threshold  = 1)
+    public function getContributorCount($threshold  = null,
+                                        $items      = null,
+                                        $tags       = null)
     {
-        return ($this->_service->getContributorCount($threshold));
+        $params = array();
+        if (! empty($threshold))    $params['threshold'] = $threshold;
+        if (! empty($items))        $params['items']     = $items;
+        if (! empty($tags))         $params['tags']      = $tags;
+
+        return ($this->_service->getContributorCount($params));
     }
 
     /** @brief  Retrieve the lastVisit date/times for the given user(s).

@@ -308,17 +308,18 @@ class PeopleController extends Connexions_Controller_Action
          */
         case 'people':
             // Retrieve contributor information
-            if (count($this->_tags) < 1)
-            {
-                $uSvc      = $this->service('User');
-                $threshold = 50;
-                $config['counts'] = $uSvc->getContributorCount( $threshold );
-            }
+            $uSvc      = $this->service('User');
+            $params    = array(
+                'tags'      => $this->_tags,
+            );
+            $config['counts'] = $uSvc->getContributorCount( $params );
 
             // Construct the timeline
             $bSvc     = $this->service('Bookmark');
-            $params   = array('tags'      => $this->_tags,
-                               'grouping' => 'YM');
+            $params   = array(
+                'tags'      => $this->_tags,
+                'grouping'  => 'YM',
+            );
             $timeline = $bSvc->getTimeline( $params );
 
             $months = 0;
