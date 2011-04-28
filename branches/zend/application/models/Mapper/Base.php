@@ -82,6 +82,14 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      */
     public function fetchRelated( array $params = array())
     {
+        /*
+        Connexions::log("Model_Mapper_Base[%s]::fetchRelated(): "
+                        .   "params[ %s ]",
+                        get_class($this),
+                        Connexions::varExport($params));
+        // */
+
+
         $as       = $this->_getModelAlias();
         $accessor = $this->getAccessor();
         $db       = $accessor->getAdapter();

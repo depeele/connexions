@@ -516,45 +516,74 @@ class Model_Mapper_User extends Model_Mapper_Base
             // Exclude stats if we don't need them
             $params['excludeStats'] = true;
         }
+        else
+        {
+            $params['excludeSec']   = false;
+            $params['excludeStats'] = false;
+
+            if ( ! empty($params['users'])) $params['exactUsers'] = true;
+            if ( ! empty($params['items'])) $params['exactItems'] = true;
+            if ( ! empty($params['tags']))  $params['exactTags']  = true;
+        }
 
         $users = $this->fetchRelated( $params );
         return $users;
     }
 
     /** @brief  Retrieve the COUNT of "contributors".
-     *  @param  threshold   The number of bookmarks required to be considered a
-     *                      "contributor".  A non-negative value will include
-     *                      users that have AT LEAST 'threshold' bookmarks,
-     *                      while a negative number will include users with
-     *                      UP TO the absolute value of 'threshold'
-     *                      bookmarks [ 1 ].
+     *  @param  params  An array of optional retrieval criteria compatible with
+     *                  fetchRelated() with the addition of:
+     *                      - threshold The number of bookmarks required to be
+     *                                  considered a "contributor".  A
+     *                                  non-negative value will include users
+     *                                  that have AT LEAST 'threshold'
+     *                                  bookmarks, while a negative number will
+     *                                  include users with UP TO the absolute
+     *                                  value of 'threshold' bookmarks [ 1 ];
      *
      *  @return A simple array containing:
      *              {'total':        total users,
-     *               'contributors': number of "contributors"}
+     *               'contributors': number of "contributors",
+     *               'threshold':    the threshold value used}
      */
-    public function getContributorCount($threshold  = 1)
+    public function getContributorCount(array $params = array())
     {
-        $where = ($threshold >= 0
-                    ? 'u.totalItems >='. $threshold
-                    : 'u.totalItems <='. abs($threshold));
+        $threshold = (isset($params['threshold'])
+                        ? (int)$params['threshold']
+                        : 1);
+        unset($params['threshold']);
 
-        $params = array(
-            'fields'        => array(
-                'total'        => "COUNT( DISTINCT u.userId )",
-                'contributors' => "SUM( CASE WHEN {$where} THEN 1 ELSE 0 END)",
-            ),
-            'rawRows'       => true,
-            'excludeSec'    => true,
-            'exactUsers'    => false,
-            'exactItems'    => false,
-            'exactTags'     => false,
-            /*
-            'excludeSec'    => false,
-            'tags'          => array( 276 ),
-            'exactTags'     => true,
-            // */
+        // Fill in additional parameters we don't want to allow over-ridden.
+        if ( (! isset($params['users'])) &&
+             (! isset($params['items'])) &&
+             (! isset($params['tags'])) )
+        {
+            // Exclude the full secondary selector if we don't need it
+            $params['excludeSec'] = true;
+            $thresholdField       = 'u.totalItems';
+        }
+        else
+        {
+            $params['excludeSec']   = false;
+            $params['excludeStats'] = false;
+            $thresholdField         = 'uti.userItemCount';
+
+            if ( ! empty($params['users'])) $params['exactUsers'] = true;
+            if ( ! empty($params['items'])) $params['exactItems'] = true;
+            if ( ! empty($params['tags']))  $params['exactTags']  = true;
+        }
+
+        $where = ($threshold >= 0
+                    ? "{$thresholdField}>= ". $threshold
+                    : "{$thresholdField}<= ". abs($threshold));
+
+        $params['fields']  = array(
+            'total'        => "COUNT( DISTINCT u.userId )",
+            'contributors' => "SUM( CASE WHEN {$where} THEN 1 ELSE 0 END)",
         );
+        $params['rawRows'] = true;
+
+
 
         $rows = $this->fetchRelated( $params );
         $res  = null;
@@ -568,6 +597,12 @@ class Model_Mapper_User extends Model_Mapper_Base
                 'threshold'    => $threshold,
             );
         }
+
+        /*
+        Connexions::log("Model_Mapper_User::getContributorCount(): "
+                        .   "res[ %s ]",
+                        Connexions::varExport($res));
+        // */
 
         return $res;
     }

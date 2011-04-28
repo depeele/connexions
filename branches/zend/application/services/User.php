@@ -942,21 +942,21 @@ class Service_User extends Service_Base
 
     /** @brief  Retrieve the Model_Set_User instance representing
      *          "contributors".
-     *  @param  params      An array of optional retrieval criteria:
-     *                          - threshold The number of bookmarks required
-     *                                      to be considered a "contributor".
-     *                                      A non-negative value will retrieve
-     *                                      users that have AT LEAST
-     *                                      'threshold' bookmarks, while a
-     *                                      negative number will retrieve users
-     *                                      with UP TO the absolute value of
-     *                                      'threshold' bookmarks [ 1 ];
-     *                          - order     An ORDER clause (string, array)
-     *                                      [ 'totalItems DESC' ];
-     *                          - count     A  LIMIT count
-     *                                      [ all ];
-     *                          - offset    A  LIMIT offset
-     *                                      [ 0 ];
+     *  @param  params  An array of optional retrieval criteria compatible with
+     *                  fetchRelated() with the addition of:
+     *                      - threshold The number of bookmarks required to be
+     *                                  considered a "contributor".  A
+     *                                  non-negative value will include users
+     *                                  that have AT LEAST 'threshold'
+     *                                  bookmarks, while a negative number will
+     *                                  include users with UP TO the absolute
+     *                                  value of 'threshold' bookmarks [ 1 ];
+     *                      - order     An ORDER clause (string, array)
+     *                                  [ 'totalItems DESC, name ASC' ];
+     *                      - count     A  LIMIT count
+     *                                  [ all ];
+     *                      - offset    A  LIMIT offset
+     *                                  [ 0 ];
      *
      *  @return A Model_Set_User instance representing the "contributors";
      */
@@ -1003,20 +1003,55 @@ class Service_User extends Service_Base
     }
 
     /** @brief  Retrieve the COUNT of "contributors".
-     *  @param  threshold   The number of bookmarks required to be considered a
-     *                      "contributor".  A non-negative value will include
-     *                      users that have AT LEAST 'threshold' bookmarks,
-     *                      while a negative number will include users with
-     *                      UP TO the absolute value of 'threshold'
-     *                      bookmarks [ 1 ].
+     *  @param  params  An array of optional retrieval criteria compatible with
+     *                  fetchRelated() with the addition of:
+     *                      - threshold The number of bookmarks required to be
+     *                                  considered a "contributor".  A
+     *                                  non-negative value will include users
+     *                                  that have AT LEAST 'threshold'
+     *                                  bookmarks, while a negative number will
+     *                                  include users with UP TO the absolute
+     *                                  value of 'threshold' bookmarks [ 1 ];
      *
-     *  @return An integer COUNT representing the "contributors";
+     *  @return A simple array containing:
+     *              {'total':        total users,
+     *               'contributors': number of "contributors",
+     *               'threshold':    the threshold value used}
      */
-    public function getContributorCount($threshold  = 1)
+    public function getContributorCount(array $params = array())
     {
-        if (! is_int($threshold))   $threshold = (int)$threshold;
+        if ( ! isset($params['threshold']))
+        {
+            // Compute a threshold based upon overall statistics
+            $statParams = $params;
+            $statParams['aggregate'] = true;
 
-        return $this->_mapper->getContributorCount($threshold);
+            $stats = $this->getStatistics( $statParams );
+
+            /* Use the halfway point between the average and minimum number of
+             * bookmarks
+             */
+            $threshold = floor( ($stats['bookmarks_min'] +
+                                 $stats['bookmarks_avg']) / 2.0 );
+
+            /*
+            Connexions::log("Service_User::getContributorCount(): "
+                            . "min[ %s ], avg[ %s ], max[ %s ], "
+                            . "sd[ %s ] == threshold[ %s ]",
+                            Connexions::varExport($stats['bookmarks_min']),
+                            Connexions::varExport($stats['bookmarks_avg']),
+                            Connexions::varExport($stats['bookmarks_max']),
+                            Connexions::varExport($stats['bookmarks_sd']),
+                            Connexions::varExport($threshold));
+            // */
+
+
+            $params['threshold'] = $threshold;
+        }
+
+        $config = $this->_normalizeParams($params);
+
+        return $this->_mapper->getContributorCount($config);
     }
 
     /** @brief  Retrieve the lastVisit date/times for the given user(s).
