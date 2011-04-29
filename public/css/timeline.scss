@@ -3,12 +3,15 @@
 
 .ui-timeline {
   position:       relative;
-  padding:        0 8em 0 0;
-  margin:         0;
+  border:         unquote("1px solid") $borderColor;
+  padding:        2em 8em 0 0;
+  margin:         0 0 0 0.25em;
 
   .timeline-plot {
+    padding:        0;
+    margin-bottom:  0.5em;
     canvas {
-      z-index:    1;
+      z-index:      1;
     }
 
     .timeline-tooltip {
@@ -20,8 +23,8 @@
 
   .timeline-controls {
     position: absolute;
-    top:      0;
-    right:    0;
+    top:      1em;
+    right:    2px;
     z-index:  2;
   }
 
@@ -33,7 +36,8 @@
       vertical-align: top;
     }
     .legendLabel {
-      padding:        0.2em 0 0.2em 0.5em;
+      padding:  0.2em 0 0.2em 0.5em;
+      width:    100%;
     }
 
     .timeline-stat {
@@ -78,15 +82,11 @@
     }
 
     .timeline-controls {
-      top:        2.7em;
+      top:        0.75em;
     }
 
     .timeline-legend {
       padding:    0 0 0.5em 4em;
-
-      .legendLabel {
-        width:    100%;
-      }
     }
   }
 }

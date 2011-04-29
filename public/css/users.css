@@ -61,7 +61,11 @@
 .rightCol .single-user .users .person .data .avatar img { width: 48px; height: 48px; }
 .rightCol .single-user .users .person .data .control { top: 50px; left: 0px; width: 50px; }
 .rightCol .single-user .users .person .data .control .item-add-none { position: relative; left: auto; }
-.rightCol .overview { border: 1px solid #cccccc; background-color: white; margin: 0 0 0 0.25em; }
-.rightCol .overview .threshold { font-size: 0.8em; color: #999999; }
-.rightCol .overview th, .rightCol .overview td { padding: 0.25em; }
-.rightCol .overview th { width: 100%; }
+.rightCol .overview, .rightCol .statistics { border: 1px solid #cccccc; background-color: white; margin: 0 0 2em 0.25em; }
+.rightCol .overview .threshold, .rightCol .statistics .threshold { font-size: 0.8em; color: #999999; }
+.rightCol .overview th, .rightCol .overview td, .rightCol .statistics th, .rightCol .statistics td { padding: 0.25em; }
+.rightCol .overview th, .rightCol .statistics th { width: 100%; }
+.rightCol .statistics thead { border-bottom: 2px solid #cccccc; background-color: #dddddd; }
+.rightCol .statistics thead .label { text-align: center; font-size: 0.7em; border-left: 1px solid #cccccc; }
+.rightCol .statistics tbody td { text-align: right; border-left: 1px solid #cccccc; font-size: 0.7em; }
+.rightCol .statistics tbody.twoCol { border-top: 1px solid #cccccc; }

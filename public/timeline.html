@@ -19,6 +19,10 @@
     .rightCol .ui-timeline {
         border:         1px solid #ddd;
         margin-bottom:  1em;
+        padding:        0;
+    }
+    .rightCol .ui-timeline .timeline-plot {
+        border:         none;
     }
 
     .rightCol .ui-timeline-labeled .timeline-plot,
@@ -90,7 +94,7 @@
          valueInLegend: false,
          hideLegend:    true,
          //height:        '150px',
-         width:         '250px',
+         //width:         '250px',
          flot:          {
             xaxis:  {labelAngle:75, ticks:12}
          },
@@ -164,7 +168,7 @@
         // Y:H
         {xDataHint:     'hour',
          annotation:    'Y:H - Activity by hour for multiple years',
-         //height:        '150px',
+         height:        '200px',
          flot:          {
             xaxis:  {labelAngle:75, ticks:12}
          },

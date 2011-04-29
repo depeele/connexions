@@ -50,18 +50,63 @@ $config   =  (is_array($this->sidebar['panes']) &&
     {
         ?>
   <table class='overview'>
-   <tr><th>Total users</th><td><?= $config['counts']['total'] ?></td></tr>
-   <tr><th>Contributors
+   <tbody>
+    <tr><th>Total users</th><td><?= $config['counts']['total'] ?></td></tr>
+    <tr><th>Contributors
         <div class='threshold'>(<?= $config['counts']['threshold'] ?>
                 or more bookmarks)
         </div></th><td><?= $config['counts']['contributors'] ?></td></tr>
+   </tbody>
   </table>
         <?php
+
+        if (false)  //(isset($config['counts']['stats']))
+        {
+            $stats = $config['counts']['stats'];
+
+            ?>
+  <table class='statistics'>
+   <thead>
+    <tr><th rowspan='2'>Statistics</th
+       ><th colspan='3' class='label'>per user</th></tr>
+    <tr><th class='label'>min</th
+       ><th class='label'>avg</th
+       ><th class='label'>max</th></tr>
+   </thead>
+   <tbody>
+    <tr><th>Bookmarks</th
+       ><td><?= number_format($stats['bookmarks_min']) ?></td
+       ><td><?= number_format($stats['bookmarks_avg'],2) ?></td
+       ><td><?= number_format($stats['bookmarks_max']) ?></td></tr>
+    <tr><th>Tags</th
+       ><td><?= number_format($stats['tags_min']) ?></td
+       ><td><?= number_format($stats['tags_avg'],2) ?></td
+       ><td><?= number_format($stats['tags_max']) ?></td></tr>
+   </tbody>
+   <tbody class='twoCol'>
+    <tr><th>Favorites</th
+       ><td colspan='3'><?= number_format($stats['favorites']) ?></td></tr>
+    <tr><th>Rated</th
+       ><td colspan='3'><?= number_format($stats['rated'])     ?></td></tr>
+        <?php
+        if ($stats['private'] > 0)
+        {
+            ?>
+    <tr><th>Private</th
+       ><td colspan='3'><?= number_format($stats['private'])   ?></td></tr>
+    <tr><th>Public</th
+       ><td colspan='3'><?= number_format($stats['public'])    ?></td></tr>
+            <?php
+        }
+        ?>
+   </tbody>
+  </table>
+            <?php
+        }
     }
 
     ?>
   <div id='sb-people-timeline' class='timeline'>
-   <div class='timeline-legend'></div>
    <div class='timeline-controls'>
     <input type='hidden' name='timeline.tags' value='<?= $this->tags ?>' />
     <select name='timeline.grouping'>
@@ -96,6 +141,7 @@ $config   =  (is_array($this->sidebar['panes']) &&
     </select>
    </div>
    <div class='timeline-plot'></div>
+   <div class='timeline-legend'></div>
   </div>
   <script type='text/javascript'>
 (function ($) {

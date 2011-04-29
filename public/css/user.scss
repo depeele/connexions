@@ -299,10 +299,10 @@ $displaySortOffset: 5px;
   }
 
   // For the People sidebar when presenting overview information
-  .overview {
+  .overview, .statistics {
     border:           unquote("1px solid") $borderColor;
     background-color: $pageColorBackground;
-    margin:           0 0 0 0.25em;
+    margin:           0 0 2em 0.25em;
 
     .threshold {
       font-size:  0.8em;
@@ -314,6 +314,30 @@ $displaySortOffset: 5px;
     }
     th {
       width:    100%;
+    }
+  }
+
+  .statistics {
+    thead {
+      border-bottom:    unquote("2px solid") $borderColor;
+      background-color: $lightGrey;
+
+      .label {
+        text-align:   center;
+        font-size:    0.7em;
+        border-left:  unquote("1px solid") $borderColor;
+      }
+    }
+
+    tbody {
+      td {
+        text-align:   right;
+        border-left:  unquote("1px solid") $borderColor;
+        font-size:    0.7em;
+      }
+    }
+    tbody.twoCol {
+      border-top:     unquote("1px solid") $borderColor;
     }
   }
 }

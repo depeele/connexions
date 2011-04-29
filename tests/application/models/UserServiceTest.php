@@ -1790,6 +1790,19 @@ class UserServiceTest extends DbTestCase
         $service = Connexions_Service::factory('Model_User');
         $count   = $service->getContributorCount( );
 
+        /* Ignore the 'stats' portion since it includes doubles with '.0000' as
+         * the fractionial component, which assertEquals doesn't handle very
+         * well.
+         *
+         * For example:
+         *  $expected['stats']['items_avg'] = 5.0000
+         *      would be converted to
+         *  $expected['stats']['items_avg'] = 5
+         *      which would NOT match $count['stats']['items_avg']
+         *      which is actually a double.
+         */
+        unset($count['stats']);
+
         $this->assertEquals($expected, $count);
     }
 
@@ -1814,8 +1827,10 @@ class UserServiceTest extends DbTestCase
     public function testUserServiceTimeline1()
     {
         $expected = array(
-            "2007041212" => 1,
-            "0000000000" => 3,
+            'activity'  => array(
+                "2007041212" => 1,
+                "0000000000" => 3,
+            ),
         );
         $params = array(
             'users'     => null,
@@ -1829,8 +1844,10 @@ class UserServiceTest extends DbTestCase
     public function testUserServiceTimeline2()
     {
         $expected = array(
-            "2007041212" => 1,
-            "0000000000" => 2,
+            'activity'  => array(
+                "2007041212" => 1,
+                "0000000000" => 2,
+            ),
         );
         $params = array(
             'users'     => "User1,User441,User83",

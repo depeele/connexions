@@ -1579,8 +1579,10 @@ class BookmarkServiceTest extends DbTestCase
     {
         // Private bookmarks aren't included
         $expected = array(
-            "2007033014"   => 2,
-            "2007033013"   => 1,
+            'activity'  => array(
+                "2007033014"   => 2,
+                "2007033013"   => 1,
+            ),
         );
         $params = array(
             'users' => "1",
@@ -1599,9 +1601,11 @@ class BookmarkServiceTest extends DbTestCase
         $this->_setAuthenticatedUser(1);
 
         $expected = array(
-            "2010040517"   => 1,
-            "2007033014"   => 3,
-            "2007033013"   => 1,
+            'activity'  => array(
+                "2010040517"   => 1,
+                "2007033014"   => 3,
+                "2007033013"   => 1,
+            ),
         );
         $params = array(
             'users' => "1",
@@ -1620,9 +1624,11 @@ class BookmarkServiceTest extends DbTestCase
     public function testBookmarkServiceTimeline3()
     {
         $expected = array(
-            "2006063018"   => 1,
-            "2006040923"   => 1,
-            "0000000000"   => 1,
+            'activity'  => array(
+                "2006063018"   => 1,
+                "2006040923"   => 1,
+                "0000000000"   => 1,
+            ),
         );
         $params = array(
             'users' => null,
@@ -1641,7 +1647,9 @@ class BookmarkServiceTest extends DbTestCase
     {
         // Private bookmarks aren't included
         $expected = array(
-            "2007033014"   => 1,
+            'activity'  => array(
+                "2007033014"   => 1,
+            ),
         );
         $params = array(
             'users' => "1,2",
@@ -1660,8 +1668,10 @@ class BookmarkServiceTest extends DbTestCase
         $this->_setAuthenticatedUser(1);
 
         $expected = array(
-            "2010040517"   => 1,
-            "2007033014"   => 2,
+            'activity'  => array(
+                "2010040517"   => 1,
+                "2007033014"   => 2,
+            ),
         );
         $params = array(
             'users' => "1,2",
@@ -1681,6 +1691,8 @@ class BookmarkServiceTest extends DbTestCase
     {
         // Private bookmarks aren't included
         $expected = array(
+            'activity'  => array(
+            ),
         );
         $params = array(
             'users' => "1,2",
@@ -1700,8 +1712,10 @@ class BookmarkServiceTest extends DbTestCase
         $this->_setAuthenticatedUser(1);
 
         $expected = array(
-            "2010040517"   => 1,
-            "2007033014"   => 1,
+            'activity'  => array(
+                "2010040517"   => 1,
+                "2007033014"   => 1,
+            ),
         );
         $params = array(
             'users' => "1,2",
@@ -1724,7 +1738,9 @@ class BookmarkServiceTest extends DbTestCase
         $this->_setAuthenticatedUser(1);
 
         $expected = array(
-            "2007033014"   => 1,
+            'activity'  => array(
+                "2007033014"   => 1,
+            ),
         );
         $params = array(
             'users' => "1,2",
@@ -1755,9 +1771,11 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "17" => 1,
-            "14" => 3,
-            "13" => 1,
+            'activity'  => array(
+                "17" => 1,
+                "14" => 3,
+                "13" => 1,
+            ),
         );
         $params = array(
             'users'     => "1",
@@ -1880,7 +1898,9 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "14" => 2,
+            'activity'  => array(
+                "14" => 2,
+            ),
         );
         $params = array(
             'users'     => "1",
@@ -1912,8 +1932,10 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "05" => 1,
-            "30" => 4,
+            'activity'  => array(
+                "05" => 1,
+                "30" => 4,
+            ),
         );
         $params = array(
             'users'     => "1",
@@ -2005,7 +2027,9 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "30" => 2,
+            'activity'  => array(
+                "30" => 2,
+            ),
         );
         $params = array(
             'users'     => "1",
@@ -2037,8 +2061,10 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "5" => 4,
-            "1" => 1,
+            'activity'  => array(
+                "5" => 4,
+                "1" => 1,
+            ),
         );
         $params = array(
             'users'     => "1",
@@ -2130,7 +2156,9 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "5" => 2,
+            'activity'  => array(
+                "5" => 2,
+            ),
         );
         $params = array(
             'users'     => "1",
@@ -2162,8 +2190,10 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "14"    => 1,
-            "13"    => 4,
+            'activity'  => array(
+                "14"    => 1,
+                "13"    => 4,
+            ),
         );
         $params = array(
             'users'     => "1",
@@ -2255,7 +2285,9 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "13"    => 2,
+            'activity'  => array(
+                "13"    => 2,
+            ),
         );
         $params = array(
             'users'     => "1",
@@ -2287,8 +2319,10 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "14"    => 1,
-            "12"    => 4,
+            'activity'  => array(
+                "14"    => 1,
+                "12"    => 4,
+            ),
         );
         $params = array(
             'users'     => "1",
@@ -2380,7 +2414,9 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "12"    => 2,
+            'activity'  => array(
+                "12"    => 2,
+            ),
         );
         $params = array(
             'users'     => "1",
@@ -2412,8 +2448,10 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "04" => 1,
-            "03" => 4,
+            'activity'  => array(
+                "04" => 1,
+                "03" => 4,
+            ),
         );
         $params = array(
             'users'     => "1",
@@ -2474,7 +2512,9 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "03" => 2,
+            'activity'  => array(
+                "03" => 2,
+            ),
         );
         $params = array(
             'users'     => "1",
@@ -2506,8 +2546,10 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "2010" => 1,
-            "2007" => 4,
+            'activity'  => array(
+                "2010" => 1,
+                "2007" => 4,
+            ),
         );
         $params = array(
             'users'     => "1",
@@ -2537,7 +2579,9 @@ class BookmarkServiceTest extends DbTestCase
             "2007-03-30 14:33:27"   => 1,
             "2007-03-30 13:11:57"   => 1,
             // */
-            "2007" => 2,
+            'activity'  => array(
+                "2007" => 2,
+            ),
         );
         $params = array(
             'users'     => "1",
