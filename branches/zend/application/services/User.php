@@ -1017,9 +1017,12 @@ class Service_User extends Service_Base
      *              {'total':        total users,
      *               'contributors': number of "contributors",
      *               'threshold':    the threshold value used}
+     *
+     *          If computed, aggregate stats will also be returned.
      */
     public function getContributorCount(array $params = array())
     {
+        $stats = null;
         if ( ! isset($params['threshold']))
         {
             // Compute a threshold based upon overall statistics
@@ -1051,7 +1054,15 @@ class Service_User extends Service_Base
 
         $config = $this->_normalizeParams($params);
 
-        return $this->_mapper->getContributorCount($config);
+        $res = $this->_mapper->getContributorCount($config);
+
+        if ($stats !== null)
+        {
+            // Include the stats that were computed
+            $res['stats'] = $stats;
+        }
+
+        return $res;
     }
 
     /** @brief  Retrieve the lastVisit date/times for the given user(s).

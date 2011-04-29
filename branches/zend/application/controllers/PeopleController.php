@@ -344,7 +344,7 @@ class PeopleController extends Connexions_Controller_Action
                 'rpcParams'     => $params,
                 'xDataHint'     => 'fmt:%Y %b',
                 'replaceLegend' => true,
-                'height'        => '200px',
+                'height'        => '250px',
                 'flot'          => array(
                     'grid'      => array(
                         'borderWidth'   => 0.75,

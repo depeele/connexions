@@ -10725,15 +10725,25 @@ $.widget("connexions.user", {
             if (canvasWidth <= 0 || canvasHeight <= 0)
                 throw "Invalid dimensions for plot, width = " + canvasWidth + ", height = " + canvasHeight;
 
-            function makeCanvas(skipPositioning) {
-                var c = document.createElement('canvas');
+            function makeCanvas(cssClass, offset) {
+                var c   = document.createElement('canvas');
+                var $c  = $(c);
                 c.width = canvasWidth;
                 c.height = canvasHeight;
                 
-                if (!skipPositioning)
-                    $(c).css({ position: 'absolute', left: 0, top: 0 });
-                
-                $(c).appendTo(placeholder);
+                if (cssClass) {
+                    $c.addClass(cssClass);
+                }
+
+                if (offset !== undefined) {
+                    $c.css({
+                        position:   'absolute',
+                        left:       offset.left,
+                        top:        offset.top
+                    });
+                }
+
+                $c.appendTo(placeholder);
                 
                 if (!c.getContext) // excanvas hack
                     c = window.G_vmlCanvasManager.initElement(c);
@@ -10742,12 +10752,15 @@ $.widget("connexions.user", {
             }
             
             // the canvas
-            canvas = makeCanvas(true);
+            canvas = makeCanvas('plot');
             ctx = canvas.getContext("2d");
 
+            var offset  = $(canvas).position();
+
             // overlay canvas for interactive features
-            overlay = makeCanvas();
+            overlay = makeCanvas('overlay', offset);
             octx = overlay.getContext("2d");
+
         }
 
         function bindEvents() {
@@ -10819,14 +10832,88 @@ $.widget("connexions.user", {
         function calculateRotatedDimensions(width,height,angle){
             if (!angle)
                 return {};
-            var rad = angle * Math.PI / 180,
-                sin   = Math.sin(rad),
-                cos   = Math.cos(rad);
 
-            var x1 = cos * width,
-                y1 = sin * width;
+            var rad = angle * Math.PI / 180,
+                sin = Math.sin(rad),
+                cos = Math.cos(rad);
+
+            // Rotated lower-right coordinate - :XXX: connexions {
+            var origCoords      = {
+                    // (0 ,0), (w,0), (w ,-h ), (0,-h)
+                tl: { x:     0, y:        0 },
+                tr: { x: width, y:        0 },
+                br: { x: width, y:  -height },
+                bl: { x:     0, y:  -height },
+
+                // Aligned
+                al: { x:     0, y:-height/2 },  // left-middle  (-h/2,0)
+                ar: { x: width, y:-height/2 }   // right-middle (w,-h/2)
+            };
+            var rotatedCoords   = { };
+            var limits          = {
+                min:{ x: 9999, y: 9999 },
+                max:{ x:-9999, y:-9999 }
+            };
+
+            // Rotate each coordinate in 'origCoords'
+            $.each(origCoords, function(pos, coords) {
+                var rotCoords   = {
+                    x: (coords.x * cos) - (coords.y * sin),
+                    y: (coords.x * sin) + (coords.y * cos)
+                };
+                rotatedCoords[pos] = rotCoords;
+
+                // Tracks limits, including left/right/top/bottom-most
+                if (rotCoords.x < limits.min.x)
+                {
+                    // Min x thus far
+                    limits.min.x = rotCoords.x;
+                    limits.lm    = rotCoords;
+                }
+
+                if (rotCoords.x > limits.max.x)
+                {
+                    // Max x thus far
+                    limits.max.x = rotCoords.x;
+                    limits.rm    = rotCoords;
+                }
+
+                if (rotCoords.y < limits.min.y)
+                {
+                    // Min y thus far
+                    limits.min.y = rotCoords.y;
+                    limits.bm    = rotCoords;
+                }
+
+                if (rotCoords.y > limits.max.y)
+                {
+                    // Max y thus far
+                    limits.max.y = rotCoords.y;
+                    limits.tm    = rotCoords;
+                }
+            });
+            // The bounding box is (min.x,min.y) - (max.x,max.y)
+            var rotatedWidth    = limits.max.x - limits.min.x;
+            var rotatedHeight   = limits.max.y - limits.min.y;
+
+            var res ={
+                width:      rotatedWidth,
+                height:     rotatedHeight, 
+                a_left:     rotatedCoords.al,
+                a_right:    rotatedCoords.ar,
+                topmost:    limits.tm,
+                bottommost: limits.bm,
+                leftmost:   limits.lm
+            };
+            return res;
+            // :XXX: connexions }
+
+
+            // original calculations
+            var x1 =  cos * width,
+                y1 =  sin * width;
             var x2 = -sin * height,
-                y2 = cos * height;
+                y2 =  cos * height;
             var x3 = cos * width - sin * height,
                 y3 = sin * width + cos * height;
             var minX = Math.min(0, x1, x2, x3),
@@ -10852,10 +10939,9 @@ $.widget("connexions.user", {
                 bottommost = { x: height * sin, y: -height*cos};//(0',-h')
             }
 
-            return { width: (maxX-minX), height: (maxY - minY), 
-                     a_left:aligned_left, a_right:aligned_right,
-                     topmost:topmost,bottommost:bottommost,
-                     leftmost:leftmost};
+            return {width:(maxX-minX),height:(maxY - minY), 
+                    a_left:aligned_left,a_right:aligned_right,
+                    topmost:topmost,bottommost:bottommost,leftmost:leftmost};
         }
 
         // For the given axis, determine what offsets to place the labels assuming
@@ -10983,22 +11069,27 @@ $.widget("connexions.user", {
                 
                 if (labels.length > 0) {
                     dummyDiv = makeDummyDiv(labels, "");
+
+                    var $labels = dummyDiv.find('.tickLabel');
+                    var width   = $labels.width();
+                    var height  = $labels.height();
+
                     if (axis.options.labelAngle != 0){
                         var dims = calculateRotatedDimensions(
-                                    dummyDiv.children().width(),
-                                    dummyDiv.find("div.tickLabel").height(),
+                                    width,   //dummyDiv.children().width(),
+                                    height,  //dummyDiv.find("div.tickLabel").height(),
                                     axis.options.labelAngle);
-                        axis.options.origHeight = dummyDiv.find("div.tickLabel").height();
-                        axis.options.origWidth = dummyDiv.children().width();
+                        axis.options.origHeight = height;    //dummyDiv.find("div.tickLabel").height();
+                        axis.options.origWidth = width;  //dummyDiv.children().width();
                         if (h == null)
                             h = dims.height;
                         if (w == null)
                             w = dims.width;
                     } else {
                         if (w == null)
-                            w = dummyDiv.children().width();
+                            w = width;   //dummyDiv.children().width();
                         if (h == null)
-                            h = dummyDiv.find("div.tickLabel").height();
+                            h = height;  //dummyDiv.find("div.tickLabel").height();
                     }
                     dummyDiv.remove();
                 }
@@ -11058,10 +11149,17 @@ $.widget("connexions.user", {
                 
                 if (pos == "bottom") {
                     plotOffset.bottom += lh + axismargin;
-                    axis.box = { top: canvasHeight - plotOffset.bottom, height: lh };
+                    axis.box = {
+                        top:    plotOffset.top +
+                                (canvasHeight - plotOffset.bottom),
+                        height: lh
+                    };
                 }
                 else {
-                    axis.box = { top: plotOffset.top + axismargin, height: lh };
+                    axis.box = {
+                        top:    plotOffset.top + axismargin,
+                        height: lh
+                    };
                     plotOffset.top += lh + axismargin;
                 }
             }
@@ -11069,12 +11167,21 @@ $.widget("connexions.user", {
                 lw += padding;
                 
                 if (pos == "left") {
-                    axis.box = { left: plotOffset.left + axismargin, width: lw };
+                    axis.box = {
+                        top:    plotOffset.top,
+                        left:   plotOffset.left + axismargin,
+                        width:  lw
+                    };
                     plotOffset.left += lw + axismargin;
                 }
                 else {
                     plotOffset.right += lw + axismargin;
-                    axis.box = { left: canvasWidth - plotOffset.right, width: lw };
+                    axis.box = {
+                        top:    plotOffset.top,
+                        left:   plotOffset.left +
+                                (canvasWidth - plotOffset.right),
+                        width: lw
+                    };
                 }
             }
 
@@ -11108,7 +11215,11 @@ $.widget("connexions.user", {
                 setRange(axes[k]);
 
             
-            plotOffset.left = plotOffset.right = plotOffset.top = plotOffset.bottom = 0;
+            //plotOffset.left = plotOffset.right = plotOffset.top = plotOffset.bottom = 0;
+            plotOffset = $(canvas).position();
+            plotOffset.right = plotOffset.bottom = 0;
+
+
             if (options.grid.show) {
                 // make the ticks
                 for (k = 0; k < axes.length; ++k) {
@@ -11842,7 +11953,8 @@ $.widget("connexions.user", {
                             pos.top += angledPos.oTop;
                             pos.left = angledPos.left;
                         } else {
-                            pos.top = Math.round(plotOffset.top + axis.p2c(tick.v) - axis.labelHeight/2);
+                            //pos.top = Math.round(plotOffset.top + axis.p2c(tick.v) - axis.labelHeight/2);
+                            pos.top = Math.round(box.top + axis.p2c(tick.v));
                             if (axis.position == "left") {
                                 pos.right = canvasWidth - (box.left + box.width - box.padding)
                                 align = "right";
@@ -12802,14 +12914,17 @@ $.widget("connexions.user", {
  *  'div.timeline-legend', and/or 'div.timeline-annotation'.  If it does not,
  *  these DOM elements will be added.
  */
-/*jslint nomen:false, laxbreak:true, white:false, onevar:false */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false, plusplus:false */
 /*global jQuery:false, window:false */
 (function($) {
 
-function leftPad(val)
+function leftPad(val, fillChar, padLen)
 {
+    fillChar = fillChar || '0';
+    padLen   = padLen   || 2;
+
     val = "" + val;
-    return val.length === 1 ? "0" + val : val;
+    return val.length < padLen ? fillChar + val : val;
 }
 
 var numericRe = /^[0-9]+(\.[0-9]*)?$/;
@@ -12823,28 +12938,43 @@ $.widget('connexions.timeline', {
     version:    '0.0.1',
     options:    {
         // Defaults
-        xDataHint:      null,   // hour | day-of-week |
-                                //  day | week | month | year
-                                //
-        css:            null,   // Additional CSS class(es) to apply to the
-                                // primary DOM element
+        xDataHint:      null,   /* hour | day-of-week |
+                                 *  day | week | month | year
+                                 *  fmt:%date format% - also implies that the
+                                 *                      x-values are
+                                 *                      date/times.
+                                 */
+        xLegendHint:    null,   /* Primarily for asynchronously loaded data,
+                                 * a hint about how to format legend values
+                                 * (same values are xDataHint).
+                                 */
+
+        css:            null,   /* Additional CSS class(es) to apply to the
+                                 * primary DOM element
+                                 */
         annotation:     null,   // Any annotation to include for this timtline
         rawData:        null,   // Raw, connexions timeline data to present
         data:           [],     // Initial, empty data
 
         width:          null,   // The width of the timeline plot area
         height:         null,   // The height of the timeline plot area
-        hwRatio:        9/16,   // Ratio of height to width
-                                // (used if 'height' is not specified)
+        hwRatio:        9/16,   /* Ratio of height to width
+                                 * (used if 'height' is not specified)
+                                 */
 
 
         hideLegend:     false,  // Hide the legend?
-        valueInLegend:  true,   // Show the y hover value(s) in the series
-                                // legend (hideLegend should be true);
+        valueInLegend:  true,   /* Show the y hover value(s) in the series
+                                 * legend (hideLegend should be true);
+                                 */
         valueInTips:    false,  // Show the y hover value(s) in series graph
-        replaceLegend:  false,  // Should the data label completely replace
-                                // any existing legend text when the value
-                                // is being presented? [ false ];
+        replaceLegend:  false,  /* Should the data label completely replace
+                                 * any existing legend text when the value
+                                 * is being presented? [ false ];
+                                 */
+        createControls: false,  /* Should controls be created if not provided
+                                 * in the markup? [ false ];
+                                 */
 
         /* General Json-RPC information:
          *  {version:   Json-RPC version,
@@ -12870,45 +13000,140 @@ $.widget('connexions.timeline', {
                              *  }
                              */
 
+        /* Place a general limit on the maximum amount of data returned.
+         * Too much and we'll kill the browser.
+         */
+        maxCount:   1000,
+
         // DataType value->label tables
-        hours:      [ '12a', ' 1a', ' 2a', ' 3a', ' 4a', ' 5a',
-                      ' 6a', ' 7a', ' 8a', ' 9a', '10a', '11a',
-                      '12p', ' 1p', ' 2p', ' 3p', ' 4p', ' 5p',
-                      ' 6p', ' 7p', ' 8p', ' 9p', '10p', '11p' ],
+        hours:      [ '12a',  '1a',  '2a',  '3a',  '4a',  '5a',
+                       '6a',  '7a',  '8a',  '9a', '10a', '11a',
+                      '12p',  '1p',  '2p',  '3p',  '4p',  '5p',
+                       '6p',  '7p',  '8p',  '9p', '10p', '11p' ],
         months:     [ 'January',   'Febrary', 'March',    'April',
                       'May',       'June',    'July',     'August',
                       'September', 'October', 'November', 'December' ],
         days:       [ 'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa' ],
 
-        // Timeline grouping indicator to xDataHint format mapping
-        groupingFmt:{
+        /* Timeline grouping indicator map to information about how to
+         * format/present the x-axis tick labels as well as the legend.
+         */
+        grouping:   {
             // Straight Timelines
-            'YM':   'fmt:%Y %b',        // Year, Month
-            'YMD':  'fmt:%Y.%M.%d',     // Year, Month, Day
-            'MD':   'fmt:%b %d',        // Month, Day
-            'MH':   'fmt:%b %h',        // Month, Hour
-            'MDH':  'fmt:%b %d %h',     // Month, Day, Hour
+            'YM':   {
+                group:          'Simple Timelines',
+                name:           'Year, Month',
+                xDataHint:      'fmt:%Y %b',
+                replaceLegend:  true
+            },
+            'YMD':  {
+                group:          'Simple Timelines',
+                name:           'Year, Month, Day',
+                xDataHint:      'fmt:%Y.%M.%d',
+                replaceLegend:  true
+            },
+            'MD':   {
+                group:          'Simple Timelines',
+                name:           'Month, Day',
+                xDataHint:      'fmt:%b %d',
+                replaceLegend:  true
+            },
+            'MH':   {
+                group:          'Simple Timelines',
+                name:           'Month, Hour',
+                xDataHint:      'fmt:%b %h',
+                replaceLegend:  true
+            },
+            'MDH':  {
+                group:          'Simple Timelines',
+                name:           'Month, Day, Hour',
+                xDataHint:      'fmt:%b %d %h',
+                replaceLegend:  true
+            },
 
             // Series Timelines (by Year)
-            'Y:M':  'mon',              // Month
-            'Y:D':  'day',              // Day (of month)
-            'Y:d':  'day-of-week',      // Day (of week)
-            'Y:H':  'hour',             // Hour
+            'Y:M':  {
+                group:          'Series (by Year)',
+                name:           'Month',
+                xDataHint:      'mon',
+                xLegendHint:    'year',
+                replaceLegend:  false
+            },
+            'Y:D':  {
+                group:          'Series (by Year)',
+                name:           'Day (of month)',
+                xDataHint:      'day',
+                xLegendHint:    'year',
+                replaceLegend:  false
+            },
+            'Y:d':  {
+                group:          'Series (by Year)',
+                name:           'Day (of week)',
+                xDataHint:      'day-of-week',
+                xLegendHint:    'year',
+                replaceLegend:  false
+            },
+            'Y:H':  {
+                group:          'Hour',
+                name:           'Month',
+                xDataHint:      'hour',
+                xLegendHint:    'year',
+                replaceLegend:  false
+            },
 
             // Series Timelines (by Month)
-            'M:D':  'day',              // Day (of month)
-            'M:d':  'day-of-week',      // Day (of week)
-            'M:H':  'hour',             // Hour
+            'M:D':  {
+                group:          'Series (by Month)',
+                name:           'Day (of month)',
+                xDataHint:      'day',
+                xLegendHint:    'mon',
+                replaceLegend:  false
+            },
+            'M:d':  {
+                group:          'Series (by Month)',
+                name:           'Day (of week)',
+                xDataHint:      'day-of-week',
+                xLegendHint:    'mon',
+                replaceLegend:  false
+            },
+            'M:H':  {
+                group:          'Series (by Month)',
+                name:           'Hour',
+                xDataHint:      'hour',
+                xLegendHint:    'mon',
+                replaceLegend:  false
+            },
 
             // Series Timelines (by Week)
-            'w:d':  'day-of-week',      // Day (of week)
-            'w:H':  'hour',             // Hour
+            'w:d':  {
+                group:          'Series (by Week)',
+                name:           'Day (of week)',
+                xDataHint:      'day-of-week',
+                replaceLegend:  false
+            },
+            'w:H':  {
+                group:          'Series (by Week)',
+                name:           'Hour',
+                xDataHint:      'hour',
+                replaceLegend:  false
+            },
 
             // Series Timelines (by Day-of-Month)
-            'D:H':  'hour',             // Hour
+            'D:H':  {
+                group:          'Series (by Day-of-Month)',
+                name:           'Hour',
+                xDataHint:      'hour',
+                replaceLegend:  false
+            },
 
             // Series Timelines (by Day-of-Week)
-            'd:H':  'hour'              // Hour
+            'd:H':  {
+                group:          'Series (by Day-of-Week)',
+                name:           'Hour',
+                xDataHint:      'hour',
+                xLegendHint:    'day-of-week',
+                replaceLegend:  false
+            }
         }
     },
 
@@ -12962,6 +13187,25 @@ $.widget('connexions.timeline', {
          * pieces.
          *
          */
+        self.$controls = self.element.find('.timeline-controls');
+        if ((self.$controls.length < 1) && (opts.createControls === true))
+        {
+            // Create controls based upon 'opts.grouping'
+            self.$controls = self._createControls();
+        }
+        self.$grouping = self.$controls
+                                .find(':input[name="timeline.grouping"]')
+                                .input();
+
+        self.$timeline = self.element.find('.timeline-plot');
+        if (self.$timeline.length < 1)
+        {
+            // Append a plot container
+            self.$timeline = $('<div class="timeline-plot"></div>');
+            self.$timeline.data('remove-on-destroy', true);
+            self.element.append(self.$timeline);
+        }
+
         self.$legend = self.element.find('.timeline-legend');
         if ( (self.$legend.length < 1) && (opts.hideLegend !== true) )
         {
@@ -12976,19 +13220,6 @@ $.widget('connexions.timeline', {
             self.$legend.hide();
         }
 
-        self.$timeline = self.element.find('.timeline-plot');
-        if (self.$timeline.length < 1)
-        {
-            // Append a plot container
-            self.$timeline = $('<div class="timeline-plot"></div>');
-            self.$timeline.data('remove-on-destroy', true);
-            self.element.append(self.$timeline);
-        }
-
-        self.$controls = self.element.find('.timeline-controls');
-        self.$grouping = self.$controls
-                                .find(':input[name="timeline.grouping"]')
-                                .input();
 
         if (opts.annotation)
         {
@@ -13015,25 +13246,44 @@ $.widget('connexions.timeline', {
         {
             self.$timeline.css('width', opts.width);
             width = self.$timeline.width();
+
+            if (height <= 10)
+            {
+                height = width * opts.hwRatio;
+                self.$timeline.css('height', height);
+            }
         }
         if (opts.height !== null)
         {
-            self.$timeline.css('height', opts.height);
+            // Measure the timeline height given a parent height.
+            self.$timeline.css('height', '100%');
+            self.element.css('height', opts.height);
             height = self.$timeline.height();
+
+            // Reset the parent and the timeline heights based upon
+            // measurements
+            self.element.css('height', 'auto');
+            self.$timeline.height( height );
+
+            if (width <= 10)
+            {
+                width = height / opts.hwRatio;
+                self.$timeline.width( width );
+            }
         }
 
-        if (width < 1)
+        if (width <= 10)
         {
             // Force to the width of the container
             self.$timeline.width( self.element.width() );
             width = self.$timeline.width();
         }
 
-        if (height < 1)
+        if (height <= 10)
         {
             // Force the height to a ratio of the width
-            height = width * opts.hwRatio
-            self.$timeline.css('height', height);
+            height = width * opts.hwRatio;
+            self.$timeline.height( height );
         }
 
         // Interaction events
@@ -13062,6 +13312,45 @@ $.widget('connexions.timeline', {
         });
     },
 
+    /** @brief  Create timeline controls based upon this.options.grouping.
+     *
+     *  @return The jQuery DOM element representing the new controls.
+     */
+    _createControls: function() {
+        var self        = this;
+        var opts        = self.options;
+        var $controls   = $('<div />').addClass('timeline-controls');
+        var $select     = $('<select name="timeline.grouping" />')
+                                .appendTo($controls);
+        var $group      = null;
+        var lastGroup   = null;
+        var curGroup    = (opts.rpcParams !== null
+                                ? opts.rpcParams.grouping
+                                : null);
+
+        $.each(opts.grouping, function(key, info) {
+            if (lastGroup !== info.group)
+            {
+                $group = $('<optgroup label="'+ info.group +'" />')
+                            .appendTo($select);
+                lastGroup = info.group;
+            }
+            if ((curGroup === null) || (curGroup === key))
+            {
+                curGroup = key;
+            }
+
+            $group.append(  '<option value="'+ key +'"'
+                          +     (curGroup === key ? ' selected' : '') +'>'
+                          +  info.name
+                          + '</option>');
+        });
+
+        $controls.appendTo(self.element);
+
+        return $controls;
+    },
+
     /** @brief  Asynchronously (re)load the data for the presented timeline.
      *  @param  grouping    The new grouping value;
      *
@@ -13073,17 +13362,32 @@ $.widget('connexions.timeline', {
     _reload: function(grouping) {
         var self    = this;
         var opts    = self.options;
-
         var params  = opts.rpcParams;
-        params.grouping = grouping;
 
-        // What's the xDataHint based upon 'grouping'?
-        var fmt = opts.groupingFmt[ grouping ];
-        if (fmt !== undefined)
+        params.grouping = grouping;
+        if (opts.maxCount > 0)
         {
-            opts.xDataHint = fmt;
+            params.count = opts.maxCount;
         }
 
+        // What's the xDataHint based upon 'grouping'?
+        var info    = opts.grouping[ grouping ];
+        if (info !== undefined)
+        {
+            opts.xDataHint     = info.xDataHint;
+            opts.replaceLegend = (info.replaceLegend === true
+                                    ? true
+                                    : false);
+            if (info.xLegendHint !== undefined)
+            {
+                opts.xLegendHint = info.xLegendHint;
+            }
+
+            if (info.rpcParams !== undefined)
+            {
+                params = $.extend(params, info.rpcParams);
+            }
+        }
 
         self.element.mask();
         $.jsonRpc(opts.jsonRpc, opts.rpcMethod, params, {
@@ -13120,19 +13424,12 @@ $.widget('connexions.timeline', {
     /** @brief  Use this.options to generate/update the current timeline.
      *  
      *  Use this.options:
-     *      rpcParams.grouping  to determine the xDataHint to use;
+     *      rpcParams.grouping  to determine how to format the ticks and legend;
      *      data                the (converted) plot data;
      */
     _draw: function() {
         var self    = this;
         var opts    = self.options;
-
-        var height  = self.$timeline.height();
-        var width   = self.$timeline.width();
-        if ((height === 0) || (width === 0))
-        {
-            if (height === 0)   height
-        }
 
         self.$plot  = $.plot(self.$timeline, opts.data, self.flotOpts);
 
@@ -13186,11 +13483,19 @@ $.widget('connexions.timeline', {
 
         if (opts.rpcParams !== null)
         {
-            var fmt = opts.groupingFmt[ opts.rpcParams.grouping ];
+            var info    = opts.grouping[ opts.rpcParams.grouping ];
 
-            if (fmt !== undefined)
+            if (info !== undefined)
             {
-                opts.xDataHint = fmt;
+                opts.xDataHint = info.xDataHint;
+                opts.xDataHint     = info.xDataHint;
+                opts.replaceLegend = (info.replaceLegend === true
+                                        ? true
+                                        : false);
+                if (info.xLegendHint !== undefined)
+                {
+                    opts.xLegendHint = info.xLegendHint;
+                }
             }
         }
 
@@ -13218,7 +13523,8 @@ $.widget('connexions.timeline', {
         opts.xDateFmt  = undefined;
 
         $.each(rawData, function(key, vals) {
-            var info    = { label: key, data: [] };
+            var info    = { label: self._hintFormatter(key, opts.xLegendHint),
+                            data:  [] };
 
             $.each(vals, function(x, y) {
                 y = (numericRe.test(y) ? parseInt(y, 10) : y);
@@ -13286,14 +13592,9 @@ $.widget('connexions.timeline', {
     _formatDate: function(date, fmt) {
         var self    = this;
         var opts    = self.options;
-
-        if (fmt === undefined)
-        {
-            fmt = opts.xDateFmt;
-        }
-
         var isFmt   = false;
         var res     = [];
+        var str;
         for (var idex = 0; idex < fmt.length; idex++)
         {
             var fmtChar = fmt.charAt(idex);
@@ -13303,63 +13604,64 @@ $.widget('connexions.timeline', {
                 switch (fmtChar)
                 {
                 case 'Y':   // Year
-                    fmtChar = date.getFullYear();
+                    str = date.getFullYear();
                     break;
     
                 case 'm':   // Month (01-12)
-                    fmtChar = leftPad(date.getMonth() + 1);
+                    str = leftPad(date.getMonth() + 1);
                     break;
 
                 case 'd':   // Day   (01-31)
-                    fmtChar = leftPad(date.getDate());
+                    str = leftPad(date.getDate());
                     break;
 
                 case 'w':   // Day-of-week (0 - 6)
-                    fmtChar = date.getDay();
+                    str = date.getDay();
                     break;
 
                 case 'H':   // Hours (00-23)
-                    fmtChar = leftPad(date.getHours());
+                    str = leftPad(date.getHours());
                     break;
 
                 case 'M':   // Minutes (00-59)
-                    fmtChar = leftPad(date.getMinutes());
+                    str = leftPad(date.getMinutes());
                     break;
 
                 case 'S':   // Seconds (00-59)
-                    fmtChar = leftPad(date.getSeconds());
+                    str = leftPad(date.getSeconds());
                     break;
 
                 case 'z':   // Timezone offset
-                    fmtChar = date.getTimezoneOffset();
+                    str = date.getTimezoneOffset();
                     break;
 
                 // Number to String mappings
                 case 'B':   // Month (January - December)
-                    fmtChar = opts.months[date.getMonth()];
+                    str = opts.months[date.getMonth()];
                     break;
     
                 case 'b':   // Month (Jan - Dec)
-                    fmtChar = opts.months[date.getMonth()].substr(0,3);
+                    str = opts.months[date.getMonth()].substr(0,3);
                     break;
     
                 case 'A':   // Day-of-week   (Sunday - Saturday)
-                    fmtChar = opts.days[date.getDay()];
+                    str = opts.days[date.getDay()];
                     break;
 
                 case 'a':   // Day-of-week   (Su - Sa)
-                    fmtChar = opts.days[date.getDay()].substr(0,2);
+                    str = opts.days[date.getDay()].substr(0,2);
                     break;
 
                 case 'h':   // Hours (12a-11p)
-                    fmtChar = opts.hours[date.getHours()];
+                    str = leftPad(opts.hours[date.getHours()], '&nbsp;', 3);
                     break;
 
                 default:
+                    str = fmtChar;
                     break;
                 }
 
-                res.push(fmtChar);
+                res.push(str);
             }
             else if (fmtChar === '%')
             {
@@ -13374,23 +13676,34 @@ $.widget('connexions.timeline', {
         return res.join('');
     },
 
-    _xTickFormatter: function(val, data) {
+    /** @brief  Given a value, hint, and possibly dateFmt, format the value.
+     *  @param  val     The value to format;
+     *  @param  hint    The formatting hint (hour | day-of-week |
+     *                                       day | week | month | year
+     *                                       fmt -- requires 'dateFmt' and
+     *                                              also implies that the value
+     *                                              is (now) a Date instance);
+     *  @param  dateFmt The date format string (iff 'hint' === 'fmt');
+     *
+     *  @return The formatted string.
+     */
+    _hintFormatter: function(val, hint, dateFmt) {
+        if (! hint)
+        {
+            return val;
+        }
+
         var self        = this;
         var opts        = self.options;
 
-        if (opts.xDataType === 'date')
-        {
-            val = new Date( val );
-        }
-        
-        switch (opts.xDataHint)
+        switch (hint)
         {
         case 'hour':
             if (val instanceof Date)
             {
                 val = val.getHours();
             }
-            val = opts.hours[ val ];
+            val = leftPad(opts.hours[ val ], '&nbsp;', 3);
             break;
 
         case 'day-of-week':
@@ -13402,21 +13715,14 @@ $.widget('connexions.timeline', {
             break;
 
         case 'month':
-            if (val instanceof Date)
-            {
-                val = val.getMonth() + 1;
-            }
-            val = opts.months[ (val > 0 ? val - 1 : val) ];
-            break;
-
         case 'mon':
             if (val instanceof Date)
             {
                 val = val.getMonth() + 1;
             }
             val = opts.months[ (val > 0 ? val - 1 : val) ];
-            
-            if (val !== undefined)
+
+            if ((hint === 'mon') && (val !== undefined))
             {
                 val = val.substr(0,3);
             }
@@ -13427,6 +13733,7 @@ $.widget('connexions.timeline', {
             {
                 val = val.getDate();
             }
+            val = leftPad(val);
             break;
 
         case 'year':
@@ -13439,7 +13746,7 @@ $.widget('connexions.timeline', {
         case 'fmt':
             if (val instanceof Date)
             {
-                val = self._formatDate(val);
+                val = self._formatDate(val, dateFmt);
             }
             break;
 
@@ -13448,6 +13755,18 @@ $.widget('connexions.timeline', {
         }
 
         return (val === undefined ? '' : val);
+    },
+
+    _xTickFormatter: function(val, data) {
+        var self        = this;
+        var opts        = self.options;
+
+        if (opts.xDataType === 'date')
+        {
+            val = new Date( val );
+        }
+        
+        return self._hintFormatter(val, opts.xDataHint, opts.xDateFmt);
     },
 
     /** @brief  Present a "tip" for the given series and point
@@ -13549,7 +13868,7 @@ $.widget('connexions.timeline', {
 
         if ($stat.length > 0)
         {
-            $stat.text( str )
+            $stat.html( str )
                  .show();
         }
         else

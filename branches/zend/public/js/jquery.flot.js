@@ -762,15 +762,25 @@
             if (canvasWidth <= 0 || canvasHeight <= 0)
                 throw "Invalid dimensions for plot, width = " + canvasWidth + ", height = " + canvasHeight;
 
-            function makeCanvas(skipPositioning) {
-                var c = document.createElement('canvas');
+            function makeCanvas(cssClass, offset) {
+                var c   = document.createElement('canvas');
+                var $c  = $(c);
                 c.width = canvasWidth;
                 c.height = canvasHeight;
                 
-                if (!skipPositioning)
-                    $(c).css({ position: 'absolute', left: 0, top: 0 });
-                
-                $(c).appendTo(placeholder);
+                if (cssClass) {
+                    $c.addClass(cssClass);
+                }
+
+                if (offset !== undefined) {
+                    $c.css({
+                        position:   'absolute',
+                        left:       offset.left,
+                        top:        offset.top
+                    });
+                }
+
+                $c.appendTo(placeholder);
                 
                 if (!c.getContext) // excanvas hack
                     c = window.G_vmlCanvasManager.initElement(c);
@@ -779,12 +789,15 @@
             }
             
             // the canvas
-            canvas = makeCanvas(true);
+            canvas = makeCanvas('plot');
             ctx = canvas.getContext("2d");
 
+            var offset  = $(canvas).position();
+
             // overlay canvas for interactive features
-            overlay = makeCanvas();
+            overlay = makeCanvas('overlay', offset);
             octx = overlay.getContext("2d");
+
         }
 
         function bindEvents() {
@@ -856,14 +869,88 @@
         function calculateRotatedDimensions(width,height,angle){
             if (!angle)
                 return {};
-            var rad = angle * Math.PI / 180,
-                sin   = Math.sin(rad),
-                cos   = Math.cos(rad);
 
-            var x1 = cos * width,
-                y1 = sin * width;
+            var rad = angle * Math.PI / 180,
+                sin = Math.sin(rad),
+                cos = Math.cos(rad);
+
+            // Rotated lower-right coordinate - :XXX: connexions {
+            var origCoords      = {
+                    // (0 ,0), (w,0), (w ,-h ), (0,-h)
+                tl: { x:     0, y:        0 },
+                tr: { x: width, y:        0 },
+                br: { x: width, y:  -height },
+                bl: { x:     0, y:  -height },
+
+                // Aligned
+                al: { x:     0, y:-height/2 },  // left-middle  (-h/2,0)
+                ar: { x: width, y:-height/2 }   // right-middle (w,-h/2)
+            };
+            var rotatedCoords   = { };
+            var limits          = {
+                min:{ x: 9999, y: 9999 },
+                max:{ x:-9999, y:-9999 }
+            };
+
+            // Rotate each coordinate in 'origCoords'
+            $.each(origCoords, function(pos, coords) {
+                var rotCoords   = {
+                    x: (coords.x * cos) - (coords.y * sin),
+                    y: (coords.x * sin) + (coords.y * cos)
+                };
+                rotatedCoords[pos] = rotCoords;
+
+                // Tracks limits, including left/right/top/bottom-most
+                if (rotCoords.x < limits.min.x)
+                {
+                    // Min x thus far
+                    limits.min.x = rotCoords.x;
+                    limits.lm    = rotCoords;
+                }
+
+                if (rotCoords.x > limits.max.x)
+                {
+                    // Max x thus far
+                    limits.max.x = rotCoords.x;
+                    limits.rm    = rotCoords;
+                }
+
+                if (rotCoords.y < limits.min.y)
+                {
+                    // Min y thus far
+                    limits.min.y = rotCoords.y;
+                    limits.bm    = rotCoords;
+                }
+
+                if (rotCoords.y > limits.max.y)
+                {
+                    // Max y thus far
+                    limits.max.y = rotCoords.y;
+                    limits.tm    = rotCoords;
+                }
+            });
+            // The bounding box is (min.x,min.y) - (max.x,max.y)
+            var rotatedWidth    = limits.max.x - limits.min.x;
+            var rotatedHeight   = limits.max.y - limits.min.y;
+
+            var res ={
+                width:      rotatedWidth,
+                height:     rotatedHeight, 
+                a_left:     rotatedCoords.al,
+                a_right:    rotatedCoords.ar,
+                topmost:    limits.tm,
+                bottommost: limits.bm,
+                leftmost:   limits.lm
+            };
+            return res;
+            // :XXX: connexions }
+
+
+            // original calculations
+            var x1 =  cos * width,
+                y1 =  sin * width;
             var x2 = -sin * height,
-                y2 = cos * height;
+                y2 =  cos * height;
             var x3 = cos * width - sin * height,
                 y3 = sin * width + cos * height;
             var minX = Math.min(0, x1, x2, x3),
@@ -889,10 +976,9 @@
                 bottommost = { x: height * sin, y: -height*cos};//(0',-h')
             }
 
-            return { width: (maxX-minX), height: (maxY - minY), 
-                     a_left:aligned_left, a_right:aligned_right,
-                     topmost:topmost,bottommost:bottommost,
-                     leftmost:leftmost};
+            return {width:(maxX-minX),height:(maxY - minY), 
+                    a_left:aligned_left,a_right:aligned_right,
+                    topmost:topmost,bottommost:bottommost,leftmost:leftmost};
         }
 
         // For the given axis, determine what offsets to place the labels assuming
@@ -1020,22 +1106,27 @@
                 
                 if (labels.length > 0) {
                     dummyDiv = makeDummyDiv(labels, "");
+
+                    var $labels = dummyDiv.find('.tickLabel');
+                    var width   = $labels.width();
+                    var height  = $labels.height();
+
                     if (axis.options.labelAngle != 0){
                         var dims = calculateRotatedDimensions(
-                                    dummyDiv.children().width(),
-                                    dummyDiv.find("div.tickLabel").height(),
+                                    width,   //dummyDiv.children().width(),
+                                    height,  //dummyDiv.find("div.tickLabel").height(),
                                     axis.options.labelAngle);
-                        axis.options.origHeight = dummyDiv.find("div.tickLabel").height();
-                        axis.options.origWidth = dummyDiv.children().width();
+                        axis.options.origHeight = height;    //dummyDiv.find("div.tickLabel").height();
+                        axis.options.origWidth = width;  //dummyDiv.children().width();
                         if (h == null)
                             h = dims.height;
                         if (w == null)
                             w = dims.width;
                     } else {
                         if (w == null)
-                            w = dummyDiv.children().width();
+                            w = width;   //dummyDiv.children().width();
                         if (h == null)
-                            h = dummyDiv.find("div.tickLabel").height();
+                            h = height;  //dummyDiv.find("div.tickLabel").height();
                     }
                     dummyDiv.remove();
                 }
@@ -1095,10 +1186,17 @@
                 
                 if (pos == "bottom") {
                     plotOffset.bottom += lh + axismargin;
-                    axis.box = { top: canvasHeight - plotOffset.bottom, height: lh };
+                    axis.box = {
+                        top:    plotOffset.top +
+                                (canvasHeight - plotOffset.bottom),
+                        height: lh
+                    };
                 }
                 else {
-                    axis.box = { top: plotOffset.top + axismargin, height: lh };
+                    axis.box = {
+                        top:    plotOffset.top + axismargin,
+                        height: lh
+                    };
                     plotOffset.top += lh + axismargin;
                 }
             }
@@ -1106,12 +1204,21 @@
                 lw += padding;
                 
                 if (pos == "left") {
-                    axis.box = { left: plotOffset.left + axismargin, width: lw };
+                    axis.box = {
+                        top:    plotOffset.top,
+                        left:   plotOffset.left + axismargin,
+                        width:  lw
+                    };
                     plotOffset.left += lw + axismargin;
                 }
                 else {
                     plotOffset.right += lw + axismargin;
-                    axis.box = { left: canvasWidth - plotOffset.right, width: lw };
+                    axis.box = {
+                        top:    plotOffset.top,
+                        left:   plotOffset.left +
+                                (canvasWidth - plotOffset.right),
+                        width: lw
+                    };
                 }
             }
 
@@ -1145,7 +1252,11 @@
                 setRange(axes[k]);
 
             
-            plotOffset.left = plotOffset.right = plotOffset.top = plotOffset.bottom = 0;
+            //plotOffset.left = plotOffset.right = plotOffset.top = plotOffset.bottom = 0;
+            plotOffset = $(canvas).position();
+            plotOffset.right = plotOffset.bottom = 0;
+
+
             if (options.grid.show) {
                 // make the ticks
                 for (k = 0; k < axes.length; ++k) {
@@ -1879,7 +1990,8 @@
                             pos.top += angledPos.oTop;
                             pos.left = angledPos.left;
                         } else {
-                            pos.top = Math.round(plotOffset.top + axis.p2c(tick.v) - axis.labelHeight/2);
+                            //pos.top = Math.round(plotOffset.top + axis.p2c(tick.v) - axis.labelHeight/2);
+                            pos.top = Math.round(box.top + axis.p2c(tick.v));
                             if (axis.position == "left") {
                                 pos.right = canvasWidth - (box.left + box.width - box.padding)
                                 align = "right";
