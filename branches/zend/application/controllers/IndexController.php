@@ -429,6 +429,22 @@ class IndexController extends Connexions_Controller_Action
             {
                 // A single user's bookmarks -- show just the "owner"
 
+                // Gather Tag statistics depending on any selected users.
+                $uSvc   = $this->service('User');
+                $params = array(
+                    'users'     => $this->_owner,
+                    'tags'      => $this->_tags,
+                    'aggregate' => true,
+                );
+                $config['stats'] = $uSvc->getStatistics( $params );
+
+                // Construct the timeline
+                $tlParams = array(
+                    'users'     => $this->_owner,
+                    'tags'      => $this->_tags,
+                );
+                $config['timeline'] = $this->_getTimeline( $tlParams );
+
                 /*
                 Connexions::log("IndexController::_prepare_sidebarPane( %s ): "
                                 .   "Present JUST the owner [ %s ]",

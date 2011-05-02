@@ -307,45 +307,19 @@ class TagsController extends Connexions_Controller_Action
          *
          */
         case 'tags':
-            // Tags related to the given set of tags (i.e. used by them all).
-            $service    = $this->service('Tag');
-            $fetchOrder = array('userItemCount DESC',
-                                 'userCount     DESC',
-                                'itemCount     DESC',
-                                'tag           ASC');
+            // Gather Tag statistics depending on any selected users.
+            $tSvc   = $this->service('Tag');
+            $params = array(
+                'users'     => $this->_users,
+                'aggregate' => true,
+            );
+            $config['stats'] = $tSvc->getStatistics( $params );
 
-            /* Retrieve the set of tags that are related to the presented
-             * bookmarks.
-             */
-            $tags = $service->fetchByUsers($this->_users,
-                                           $fetchOrder,
-                                           $count,
-                                           $offset,
-                                           true);   // used by ALL users
-
-            //$config['selected']         =& $this->_users;
-
-            $config['items']       =& $tags;
-            $config['weightTitle'] =  'Tagged items';
-            if (count($this->_users) === 1)
-            {
-                $config['itemBaseUrl'] =
-                    $this->view->baseUrl('/'. $this->_users .'/');
-            }
-            else
-            {
-                $config['itemBaseUrl']      =
-                    $this->view->baseUrl('/bookmarks/');
-            }
-
-            /* :NOTE: In this context, userItemCount can also represent
-             *        the total user count.
-             */
-            $config['titleTitle']       =  'Tag';
-            $config['currentSortBy']    =
-                                 View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
-            $config['currentSortOrder'] =
-                                 Connexions_Service::SORT_DIR_DESC;
+            // Construct the timeline
+            $params = array(
+                'users'     => $this->_users,
+            );
+            $config['timeline'] = $this->_getTimeline( $params );
             break;
 
         /*************************************************************

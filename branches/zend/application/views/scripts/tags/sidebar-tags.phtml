@@ -32,6 +32,11 @@ $config   =  (is_array($this->sidebar['panes']) &&
     if ( ($nUsers === 1) && ($this->viewer->isSame($this->users[0])) )
     {
         echo "your tags.";
+
+        $url    = $this->baseUrl('settings/tags/manage');
+        echo "<span class='edit'>",
+              "(<a href='{$url}'>manage your tags</a>)",
+             "</span>";
     }
     else if ( $nUsers > 0)
     {
@@ -49,6 +54,97 @@ $config   =  (is_array($this->sidebar['panes']) &&
   </div>
   <?php
 
-    $htmlItemCloud = $this->htmlItemCloud($config);
+    if (isset($config['stats']))
+    {
+        $stats = $config['stats'];
 
-    echo $htmlItemCloud->render();
+        ?>
+  <table class='statistics'>
+   <thead>
+    <tr><th rowspan='2'>Statistics</th
+       ><th colspan='3' class='label'>per bookmark</th></tr>
+    <tr><th class='label'>min</th
+       ><th class='label'>avg</th
+       ><th class='label'>max</th></tr>
+   </thead>
+   <tbody>
+    <tr><th>Tags</th
+       ><td><?= number_format($stats['tags_min']) ?></td
+       ><td><?= number_format($stats['tags_avg'],2) ?></td
+       ><td><?= number_format($stats['tags_max']) ?></td></tr>
+   </tbody>
+   <tbody class='twoCol'>
+    <tr><th>Bookmarks</th
+       ><td colspan='3'><?= number_format($stats['bookmarks']) ?></td></tr>
+        <?php
+        if ($stats['privates'] > 0)
+        {
+            ?>
+    <tr><th class='subHeader'>Private</th
+       ><td colspan='3'><?= number_format($stats['privates'])   ?></td></tr>
+    <tr><th class='subHeader'>Public</th
+       ><td colspan='3'><?= number_format($stats['publics'])    ?></td></tr>
+            <?php
+        }
+        ?>
+    <tr><th class='subHeader'>Favorites</th
+       ><td colspan='3'><?= number_format($stats['favorites']) ?></td></tr>
+    <tr><th class='subHeader'>Rated</th
+       ><td colspan='3'><?= number_format($stats['rated'])     ?></td></tr>
+   </tbody>
+   <tbody class='twoCol'>
+    <tr><th>Users</th
+       ><td colspan='3'><?= number_format($stats['users']) ?></td></tr>
+    <tr><th>Items</th
+       ><td colspan='3'><?= number_format($stats['items']) ?></td></tr>
+   </tbody>
+  </table>
+            <?php
+    }
+
+    ?>
+  <div id='sb-tags-timeline' class='timeline'>
+   <div class='timeline-controls'><!-- timeline-controls { -->
+    <select name='timeline.grouping'>
+     <optgroup label="Simple Timelines">
+      <option value='YM'  selected>Year, Month</option>
+      <option value='Y'           >Year</option>
+      <option value='M'           >Month</option>
+      <option value='w'           >Week</option>
+      <option value='D'           >Day</option>
+      <option value='d'           >Day-of-week</option>
+      <option value='H'           >Hour</option>
+     </optgroup>
+     <optgroup label="Series Timelines (by Year)">
+      <option value='Y:M'         >Month</option>
+      <option value='Y:D'         >Day-of-month</option>
+      <option value='Y:d'         >Day-of-week</option>
+      <option value='Y:H'         >Hour</option>
+     </optgroup>
+     <optgroup label="Series Timelines (by Month)">
+      <option value='M:D'         >Day-of-month</option>
+      <option value='M:d'         >Day-of-week</option>
+      <option value='M:H'         >Hour</option>
+     </optgroup>
+     <optgroup label="Series Timelines (by Week)">
+      <option value='w:d'         >Day-of-week</option>
+      <option value='w:H'         >Hour</option>
+     </optgroup>
+     <optgroup label="Series Timelines (by Day-of-Month)">
+      <option value='D:H'         >Hour</option>
+     </optgroup>
+     <optgroup label="Series Timelines (by Day-of-Week)">
+      <option value='d:H'         >Hour</option>
+     </optgroup>
+    </select>
+   </div><!-- timeline-controls } -->
+   <div class='timeline-plot'></div>
+   <div class='timeline-legend'></div>
+  </div>
+  <script type='text/javascript'>
+(function ($) {
+    var $timeline   = $('#sb-tags-timeline');
+
+    $timeline.timeline( <?= Zend_Json::encode( $config['timeline'] ) ?> );
+ }(jQuery));
+  </script>

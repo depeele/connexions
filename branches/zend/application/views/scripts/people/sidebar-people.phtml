@@ -60,9 +60,10 @@ $config   =  (is_array($this->sidebar['panes']) &&
   </table>
         <?php
 
-        if (false)  //(isset($config['counts']['stats']))
+        if (isset($config['counts']['stats']))
         {
-            $stats = $config['counts']['stats'];
+            $stats     = $config['counts']['stats'];
+            $bookmarks = $stats['privates'] + $stats['publics'];
 
             ?>
   <table class='statistics'>
@@ -78,27 +79,36 @@ $config   =  (is_array($this->sidebar['panes']) &&
        ><td><?= number_format($stats['bookmarks_min']) ?></td
        ><td><?= number_format($stats['bookmarks_avg'],2) ?></td
        ><td><?= number_format($stats['bookmarks_max']) ?></td></tr>
+        <?php
+        if ($stats['tags_avg'] > 1)
+        {
+            ?>
     <tr><th>Tags</th
        ><td><?= number_format($stats['tags_min']) ?></td
        ><td><?= number_format($stats['tags_avg'],2) ?></td
        ><td><?= number_format($stats['tags_max']) ?></td></tr>
+        <?php
+        }
+            ?>
    </tbody>
    <tbody class='twoCol'>
-    <tr><th>Favorites</th
-       ><td colspan='3'><?= number_format($stats['favorites']) ?></td></tr>
-    <tr><th>Rated</th
-       ><td colspan='3'><?= number_format($stats['rated'])     ?></td></tr>
+    <tr><th>Bookmarks</th
+       ><td colspan='3'><?= number_format($bookmarks) ?></td></tr>
         <?php
-        if ($stats['private'] > 0)
+        if ($stats['privates'] > 0)
         {
             ?>
-    <tr><th>Private</th
-       ><td colspan='3'><?= number_format($stats['private'])   ?></td></tr>
-    <tr><th>Public</th
-       ><td colspan='3'><?= number_format($stats['public'])    ?></td></tr>
+    <tr><th class='subHeader'>Private</th
+       ><td colspan='3'><?= number_format($stats['privates'])   ?></td></tr>
+    <tr><th class='subHeader'>Public</th
+       ><td colspan='3'><?= number_format($stats['publics'])    ?></td></tr>
             <?php
         }
         ?>
+    <tr><th class='subHeader'>Favorites</th
+       ><td colspan='3'><?= number_format($stats['favorites']) ?></td></tr>
+    <tr><th class='subHeader'>Rated</th
+       ><td colspan='3'><?= number_format($stats['rated'])     ?></td></tr>
    </tbody>
   </table>
             <?php
@@ -107,15 +117,16 @@ $config   =  (is_array($this->sidebar['panes']) &&
 
     ?>
   <div id='sb-people-timeline' class='timeline'>
-   <div class='timeline-controls'>
-    <input type='hidden' name='timeline.tags' value='<?= $this->tags ?>' />
+   <div class='timeline-controls'><!-- timeline-controls { -->
     <select name='timeline.grouping'>
      <optgroup label="Simple Timelines">
       <option value='YM'  selected>Year, Month</option>
-      <option value='YMD'         >Year, Month, Day</option>
-      <option value='MD'          >Month, Day</option>
-      <option value='MH'          >Month, Hour</option>
-      <option value='MDH'         >Month, Day, Hour</option>
+      <option value='Y'           >Year</option>
+      <option value='M'           >Month</option>
+      <option value='w'           >Week</option>
+      <option value='D'           >Day</option>
+      <option value='d'           >Day-of-week</option>
+      <option value='H'           >Hour</option>
      </optgroup>
      <optgroup label="Series Timelines (by Year)">
       <option value='Y:M'         >Month</option>
@@ -139,7 +150,7 @@ $config   =  (is_array($this->sidebar['panes']) &&
       <option value='d:H'         >Hour</option>
      </optgroup>
     </select>
-   </div>
+   </div><!-- timeline-controls } -->
    <div class='timeline-plot'></div>
    <div class='timeline-legend'></div>
   </div>

@@ -236,11 +236,14 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
         // */
 
         // Force the use of the UserItem mapper
-        $mapper = $this->factory('Model_Mapper_Bookmark');
+        $mapper     = $this->factory('Model_Mapper_Bookmark');
 
-        $as       = $this->_getModelAlias( $mapper->getModelName() );
-        $accessor = $mapper->getAccessor();
-        $db       = $accessor->getAdapter();
+        $as         = $this->_getModelAlias( $mapper->getModelName() );
+        $accessor   = $mapper->getAccessor();
+        $db         = $accessor->getAdapter();
+
+        $modelName  = $this->getModelName();
+        $secGroupBy = null;  // SecondarySelect grouping -- Use the default
 
         /********************************************************************
          * Generate the primary select.
@@ -256,10 +259,14 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                                                 ."THEN 1 ELSE 0 END)",
         );
 
-        if ($this->_modelName !== 'Model_User')
+        if ($modelName !== 'Model_User')
         {
             // INCLUDE 'user' information
-            if ($aggregate)
+            if ($modelName === 'Model_Tag')
+            {
+                $fields['users'] = 'COUNT(DISTINCT uti.userId)';
+            }
+            else if ($aggregate)
             {
                 $fields['users_min'] = 'MIN(uti.userCount)';
                 $fields['users_max'] = 'MAX(uti.userCount)';
@@ -272,10 +279,15 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
             }
         }
 
-        if ($this->_modelName !== 'Model_Item')
+        if ($modelName !== 'Model_Item')
         {
             // INCLUDE 'item' information
-            if ($aggregate)
+            if (($modelName === 'Model_Tag') ||
+                ($modelName === 'Model_Bookmark'))
+            {
+                $fields['items'] = 'COUNT(DISTINCT uti.itemId)';
+            }
+            else if ($aggregate)
             {
                 $fields['items_min'] = 'MIN(uti.itemCount)';
                 $fields['items_max'] = 'MAX(uti.itemCount)';
@@ -288,26 +300,16 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
             }
         }
 
-        if ($this->_modelName !== 'Model_Tag')
-        {
-            // INCLUDE 'tag' information
-            if ($aggregate)
-            {
-                $fields['tags_min'] = 'MIN(uti.tagCount)';
-                $fields['tags_max'] = 'MAX(uti.tagCount)';
-                $fields['tags_avg'] = 'AVG(uti.tagCount)';
-                $fields['tags_sd']  = 'STDDEV(uti.tagCount)';
-            }
-            else
-            {
-                $fields['tags']     = 'uti.tagCount';
-            }
-        }
-
-        if ($this->_modelName !== 'Model_Bookmark')
+        //if (($modelName !== 'Model_Bookmark') || $aggregate)
+        if ($modelName !== 'Model_Bookmark')
         {
             // INCLUDE 'bookmark' information
-            if ($aggregate)
+            if (($modelName === 'Model_Tag') ||
+                ($modelName === 'Model_Bookmark'))
+            {
+                $fields['bookmarks'] = 'COUNT(DISTINCT uti.userId,uti.itemId)';
+            }
+            else if ($aggregate)
             {
                 $fields['bookmarks_min'] = 'MIN(uti.userItemCount)';
                 $fields['bookmarks_max'] = 'MAX(uti.userItemCount)';
@@ -320,12 +322,50 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
             }
         }
 
+        if ($modelName === 'Model_Tag')
+        {
+            /* For Model_Tag force the secondary select to be grouped by
+             * (userId,itemId) since a userItem/Bookmark has no tagId.
+             */
+            $secGroupBy = array('userId', 'itemId');
+        }
+
 
         // Include the primary keys of the CURRENT mapper
-        if (! $aggregate)
+        if ($aggregate)
         {
-            $params['group'] = $this->_keyNames;
-            $fields  = array_merge($params['group'], $fields);
+            // INCLUDE 'tag' information
+            $fields['tags_min'] = 'MIN(uti.tagCount)';
+            $fields['tags_max'] = 'MAX(uti.tagCount)';
+            $fields['tags_avg'] = 'AVG(uti.tagCount)';
+            $fields['tags_sd']  = 'STDDEV(uti.tagCount)';
+        }
+        else
+        {
+            // INCLUDE a simple tag count
+            $fields['tags']     = 'uti.tagCount';
+
+            if ($modelName === 'Model_Tag')
+            {
+                /* For Model_Tag, include (and group by) the tagId from the
+                 * secondary select since a userItem/Bookmark has no tagId.
+                 */
+                $params['group'] = 'uti.tagId';
+                $fields['tagId'] = 'uti.tagId';
+            }
+            else
+            {
+                $params['group'] = $this->_keyNames;
+                $fields          = array_merge($params['group'], $fields);
+            }
+
+            /*
+            Connexions::log("Model_Mapper_Base[%s]::getStatistics(): "
+                            . "model[ %s ], final fields[ %s ]",
+                            get_class($this),
+                            $modelName,
+                            Connexions::varExport($fields));
+            // */
         }
 
         $select = $db->select();
@@ -333,7 +373,7 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                                 $accessor->info(Zend_Db_Table_Abstract::NAME)),
                        $fields );
 
-        $this->_includeSecondarySelect($select, $as, $params);
+        $this->_includeSecondarySelect($select, $as, $params, $secGroupBy);
 
         // Reset our fields to ONLY include the fields we specifically requested
         $select->reset(Zend_Db_Select::COLUMNS)
@@ -749,6 +789,10 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      *  @param  params      An array retrieval criteria.
      *                          excludeStats    If true, do NOT include
      *                                          statistics [ false ];
+     *  @param  groupBy     A special case parameter when the secondary select
+     *                      should NOT be grouped by the primary key(s) of this
+     *                      model/mapper (e.g.  when retrieving bookmark-based
+     *                      statistics for the tag model).
      *
      *  :NOTE:
      *
@@ -756,7 +800,8 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
      */
     protected function _includeSecondarySelect(Zend_Db_Select  $select,
                                                                $primeAs,
-                                               array           $params)
+                                               array           $params,
+                                                               $groupBy = null)
     {
         $as        = 'uti';
 
@@ -765,7 +810,9 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                             ? $params['order']
                             : array($params['order']))
                         : array());
-        $groupBy   = $this->_keyNames;
+        $groupBy   = ($groupBy === null
+                        ? $this->_keyNames
+                        : $groupBy);
 
         $db        = $select->getAdapter();
         $secSelect = $db->select();
@@ -781,7 +828,7 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
         }
 
         /*
-        Connexions::log("Model_Mapper_Base[%s]::fetchRelated(): "
+        Connexions::log("Model_Mapper_Base[%s]::_includeSecondarySelect(): "
                         . "group by [ %s ]",
                         get_class($this),
                         Connexions::varExport(
@@ -983,6 +1030,13 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                 }
             }
         }
+
+        /*
+        Connexions::log("Model_Mapper_Base(%s)::_includeSecondarySelect(): "
+                        . "secSelect[ %s ]",
+                        get_class($this),
+                        $secSelect->assemble());
+        // */
 
         return $secSelect;
     }

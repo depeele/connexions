@@ -28,9 +28,15 @@ $viewer = $this->viewer;    //$config->viewer;
 $owner  = $this->owner;     //$config->owner;
 
 $label = 'People in ';
+$edit  = '';
 if ($viewer->isSame($owner))
 {
     $label .= 'your network';
+
+    $url    = $this->baseUrl('settings/people/network');
+    $edit   = "<span class='edit'>"
+            .   "(<a href='{$url}'>edit your network</a>)"
+            . "</span>";
 }
 else
 {
@@ -48,7 +54,7 @@ if (count($this->tags) > 0)
     &nbsp;
    </div>
    <?php
-    echo "<p>", $label , ".</p>\n";
+    echo "<p>", $label , ".{$edit}</p>\n";
   ?>
   </div>
   <?php

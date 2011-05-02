@@ -123,6 +123,15 @@
   p {
     font-size:    0.9em;
   }
+  .edit {
+    display:        block;
+    font-size:      0.9em;
+    padding-left:   1em;
+
+    a {
+      font-weight:  normal;
+    }
+  }
   .smaller {
     font-size:    0.8em;
   }
@@ -234,6 +243,58 @@
     @include corners(4px, 0, 0, 4px);
     .ui-tabs-panel {
       padding: 1em 0.25em 1em 0;
+    }
+  }
+
+  // For the sidebar when presenting overview/statistics information
+  .overview, .statistics {
+    border:           unquote("1px solid") $borderColor;
+    background-color: $pageColorBackground;
+    margin:           0 0 2em 0.25em;
+
+    .threshold {
+      font-size:  0.8em;
+      color:      $controlColor;
+    }
+
+    th, td {
+      padding:  0.25em;
+    }
+    th {
+      width:    100%;
+    }
+  }
+
+  .statistics {
+    thead {
+      border-bottom:    unquote("1px solid") $borderColor;
+      //background-color: $lightestGrey;
+
+      th {
+        font-weight:  bold;
+      }
+
+      .label {
+        text-align:   center;
+        font-size:    0.7em;
+        border-left:  unquote("1px solid") $borderColor;
+        border-bottom:unquote("1px solid") $borderColor;
+      }
+    }
+
+    tbody {
+      .subHeader {
+        padding-left: 1em;
+        font-size:    0.9em;
+      }
+      td {
+        text-align:   right;
+        border-left:  unquote("1px solid") $borderColor;
+        font-size:    0.7em;
+      }
+    }
+    tbody.twoCol {
+      border-top:     unquote("1px solid") $borderColor;
     }
   }
 }

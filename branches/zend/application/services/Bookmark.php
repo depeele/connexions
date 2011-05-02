@@ -949,6 +949,12 @@ class Service_Bookmark extends Service_Base
                 $this->_csOrder2array($params['order'], true /* noExtras */);
         }
 
+        /*
+        Connexions::log("Service_Bookmark::getTimeline(): "
+                        . "params[ %s ]",
+                        Connexions::varExport($params));
+        // */
+
         $timeline = $this->_mapper->getTimeline( $params );
 
         /*

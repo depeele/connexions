@@ -119,28 +119,40 @@ $.widget('connexions.timeline', {
                 xDataHint:      'fmt:%Y %b',
                 replaceLegend:  true
             },
-            'YMD':  {
+            'Y':    {
                 group:          'Simple Timelines',
-                name:           'Year, Month, Day',
-                xDataHint:      'fmt:%Y.%M.%d',
+                name:           'Year',
+                xDataHint:      'fmt:%Y',
                 replaceLegend:  true
             },
-            'MD':   {
+            'M':    {
                 group:          'Simple Timelines',
-                name:           'Month, Day',
-                xDataHint:      'fmt:%b %d',
+                name:           'Month',
+                xDataHint:      'mon',
                 replaceLegend:  true
             },
-            'MH':   {
+            'w':    {
                 group:          'Simple Timelines',
-                name:           'Month, Hour',
-                xDataHint:      'fmt:%b %h',
+                name:           'Week',
+                xDataHint:      'week',
                 replaceLegend:  true
             },
-            'MDH':  {
+            'D':    {
                 group:          'Simple Timelines',
-                name:           'Month, Day, Hour',
-                xDataHint:      'fmt:%b %d %h',
+                name:           'Day',
+                xDataHint:      'day',
+                replaceLegend:  true
+            },
+            'd':    {
+                group:          'Simple Timelines',
+                name:           'Day-of-week',
+                xDataHint:      'day-of-week',
+                replaceLegend:  true
+            },
+            'H':    {
+                group:          'Simple Timelines',
+                name:           'Hour',
+                xDataHint:      'hour',
                 replaceLegend:  true
             },
 
