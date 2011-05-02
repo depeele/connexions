@@ -220,6 +220,81 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         return Connexions_Service::factory($name);
     }
 
+    /** @brief  Retrieve and normalize timeline information.
+     *  @param  params  Timeline retrieval parameters
+     *                  ('grouping' will be forced to 'YM' for normalization);
+     *
+     *  @return Normalized timeline information.
+     */
+    protected function _getTimeline(array $params)
+    {
+        // Ensure the expected grouping
+        $params['grouping'] = 'YM';
+
+        // Construct the timeline
+        $bSvc     = $this->service('Bookmark');
+        $timeline = $bSvc->getTimeline( $params );
+
+        $months = 0;
+        $last   = null;
+        foreach ($timeline['activity'] as $date => $count)
+        {
+            $month = substr($date, 0, 6);
+
+            if ($month !== $last)   $months++;
+            $last = $month;
+        }
+
+        /* Reduce to a number of ticks that will hopefully be
+         * uncluttered
+         */
+        $ticks = $months;
+        while ($ticks >= 24)
+        {
+            $ticks = ($ticks / 6) + 1;
+        }
+
+        /* For the RPC params, any Model_Set or Model instance should be passed
+         * as a simple string.
+         */
+        $rpcParams = array();
+        foreach ($params as $key => $val)
+        {
+            if (is_object($val) && method_exists($val, '__toString'))
+            {
+                $val = $val->__toString();
+            }
+            $rpcParams[$key] = $val;
+        }
+
+        $res = array(
+            'rpcMethod'     => 'bookmark.getTimeline',
+            'rpcParams'     => $rpcParams,
+            'xDataHint'     => 'fmt:%Y %b',
+            'replaceLegend' => true,
+            'height'        => '250px',
+            'flot'          => array(
+                'grid'      => array(
+                    'borderWidth'   => 0.75,
+                ),
+                'points'    => array(
+                    'radius'        => 1.5,
+                    'lineWidth'     => 0.75,
+                ),
+                'lines'     => array(
+                    'lineWidth'     => 1,
+                ),
+                'xaxis'     => array(
+                    'labelAngle'    => 75,
+                    'ticks'         => $ticks,
+                ),
+            ),
+            'rawData'       => $timeline,
+        );
+
+        return $res;
+    }
+
     /** @brief  For an action that requires authentication and the current user
      *          is unauthenticated, this method will redirect to signIn with a
      *          flash indicating that it should return to this same action upon

@@ -842,10 +842,9 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
                                "{$secAs}.ratingAvg"));
 
         // Generate SOME statistics in the secondary select
-        $secSelect->columns(array(
-                                $this->_fieldExpression('userTagItem',
-                                                        'tagCount',
-                                                        $secAs)));
+        $secSelect->columns(array($this->_fieldExpression('userTagItem',
+                                                          'tagCount',
+                                                          $secAs)));
 
         // Create a tertiary select to pull item-related statistics
         $terSelect = $db->select();

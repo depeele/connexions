@@ -719,6 +719,8 @@ a:visited { color: #005a9c; }
 .columnHeader h3 { font-size: 1em; font-weight: bold; color: #172322; }
 .columnHeader h3 a { color: inherit; }
 .columnHeader p { font-size: 0.9em; }
+.columnHeader .edit { display: block; font-size: 0.9em; padding-left: 1em; }
+.columnHeader .edit a { font-weight: normal; }
 .columnHeader .smaller { font-size: 0.8em; }
 .columnHeader .restrictions { display: block; padding: 0 0 0 2em; text-align: left; font-size: 0.9em; }
 .columnHeader .context-bg { position: absolute; left: 5px; top: -4px; opacity: 0.4; filter: alpha(opacity=40); -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=40)'; -khtml-opacity: 0.4; -moz-opacity: 0.4; }
@@ -751,6 +753,16 @@ a:visited { color: #005a9c; }
 
 .rightCol .ui-tabs { border-right: none; -moz-border-radius: 4px 0 0 4px; -webkit-border-radius: 4px 0 0 4px; -ms-border-radius: 4px 0 0 4px; -khtml-border-radius: 4px 0 0 4px; border-radius: 4px 0 0 4px; }
 .rightCol .ui-tabs .ui-tabs-panel { padding: 1em 0.25em 1em 0; }
+.rightCol .overview, .rightCol .statistics { border: 1px solid #cccccc; background-color: white; margin: 0 0 2em 0.25em; }
+.rightCol .overview .threshold, .rightCol .statistics .threshold { font-size: 0.8em; color: #999999; }
+.rightCol .overview th, .rightCol .overview td, .rightCol .statistics th, .rightCol .statistics td { padding: 0.25em; }
+.rightCol .overview th, .rightCol .statistics th { width: 100%; }
+.rightCol .statistics thead { border-bottom: 1px solid #cccccc; }
+.rightCol .statistics thead th { font-weight: bold; }
+.rightCol .statistics thead .label { text-align: center; font-size: 0.7em; border-left: 1px solid #cccccc; border-bottom: 1px solid #cccccc; }
+.rightCol .statistics tbody .subHeader { padding-left: 1em; font-size: 0.9em; }
+.rightCol .statistics tbody td { text-align: right; border-left: 1px solid #cccccc; font-size: 0.7em; }
+.rightCol .statistics tbody.twoCol { border-top: 1px solid #cccccc; }
 
 .tags { font-size: 0.9em; padding: 0.5em 0; margin: 0; text-align: right; }
 .tags .tag { border: 1px solid #fff; }

@@ -315,54 +315,10 @@ class PeopleController extends Connexions_Controller_Action
             $config['counts'] = $uSvc->getContributorCount( $params );
 
             // Construct the timeline
-            $bSvc     = $this->service('Bookmark');
-            $params   = array(
+            $params = array(
                 'tags'      => $this->_tags,
-                'grouping'  => 'YM',
             );
-            $timeline = $bSvc->getTimeline( $params );
-
-            $months = 0;
-            $last   = null;
-            foreach ($timeline['activity'] as $date => $count)
-            {
-                $month = substr($date, 0, 6);
-
-                if ($month !== $last)   $months++;
-                $last = $month;
-            }
-
-            // Reduce to a number of ticks that will hopefully be uncluttered
-            $ticks = $months;
-            while ($ticks >= 24)
-            {
-                $ticks = ($ticks / 6) + 1;
-            }
-
-            $config['timeline'] = array(
-                'rpcMethod'     => 'bookmark.getTimeline',
-                'rpcParams'     => $params,
-                'xDataHint'     => 'fmt:%Y %b',
-                'replaceLegend' => true,
-                'height'        => '250px',
-                'flot'          => array(
-                    'grid'      => array(
-                        'borderWidth'   => 0.75,
-                    ),
-                    'points'    => array(
-                        'radius'        => 1.5,
-                        'lineWidth'     => 0.75,
-                    ),
-                    'lines'     => array(
-                        'lineWidth'     => 1,
-                    ),
-                    'xaxis'     => array(
-                        'labelAngle'    => 75,
-                        'ticks'         => $ticks,
-                    ),
-                ),
-                'rawData'       => $timeline,
-            );
+            $config['timeline'] = $this->_getTimeline( $params );
 
             /*
             Connexions::log("PeopleController::"

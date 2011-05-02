@@ -1048,7 +1048,6 @@ class Service_User extends Service_Base
                             Connexions::varExport($threshold));
             // */
 
-
             $params['threshold'] = $threshold;
         }
 
