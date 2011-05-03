@@ -29,6 +29,67 @@ $links->prependStylesheet($baseUrl .'css/connexions.css')
                        'href' => $baseUrl .'/images/favicon.png'),
                        'PREPEND');
 
+if (is_array($this->contexts))
+{
+    /* We have alternative contexts.
+     *
+     * See if there are any we can use to add alternative meta-links.
+     */
+    $url = Connexions::urlExplode( $this->url );
+
+    // /*
+    Connexions::log("application/laytouts/base-header.phtml: "
+                    .   "contexts[ %s ], url[ %s ], pieces[ %s ] == [ %s ]",
+                    Connexions::varExport($this->contexts),
+                    $this->url,
+                    Connexions::varExport($url),
+                    Connexions::urlImplode( $url ));
+    // */
+
+    foreach ($this->contexts as $context)
+    {
+        $format = null;
+        switch ($context)
+        {
+        case 'json':
+            $format = 'json';
+            $type   = 'application/json';
+            break;
+
+        case 'rss':
+            $format = 'rss';
+            $type   = 'application/rss+xml';
+            break;
+
+        case 'atom':
+            $format = 'atom';
+            $type   = 'application/atom';
+            break;
+
+        default:
+            // Treat all others (e.g. partial) as an alternate HTML view
+            $format = $context;
+            $type   = 'text/html';
+            break;
+        }
+
+        // Generate an 'alternate' link for this context
+        $url['query']['format'] = $format;
+        $href   = Connexions::urlImplode( $url );
+
+        /*
+        Connexions::log("application/laytouts/base-header.phtml: "
+                        .   "format[ %s ], type[ %s ], href[ %s ]",
+                        $format, $type, $href);
+        // */
+        $links->headLink(array('rel'    => 'alternate',
+                               'title'  => ucfirst($format) .' view',
+                               'type'   => $type,
+                               'href'   => $href));
+    }
+}
+
+
 $jQuery->addJavascriptFile($this->baseUrl('js/connexions-full.js'));
 
 if ( @isset($config->cdn) && $config->cdn->use )
@@ -95,7 +156,6 @@ $jQuery->clearJavascript()
 $jQuery->javascriptCaptureEnd();
 
 $jQuery->addJavascript(implode('', $js));
-
 
 /***************************************************************************
  * Begin Page Generation
