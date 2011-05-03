@@ -6,4 +6,5 @@ RewriteCond %{REQUEST_FILENAME} -s [OR]
 RewriteCond %{REQUEST_FILENAME} -l [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^.*$ - [NC,L]
+RewriteRule ^feeds/([^/]+)/(.*)$ $2?format=$1 [NC,QSA,R,L]
 RewriteRule ^.*$ index.php [NC,L]
