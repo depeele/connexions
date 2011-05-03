@@ -15,6 +15,8 @@ class SettingsController extends Connexions_Controller_Action
     public    $contexts     = array('index' => array('partial'));
     protected $_noSidebar   = true;
 
+    protected $_bookmarkExportTokenId   = 'bookmark-export-token';
+
 
     // Settings tabs with collapsible sections
     public static   $tabs       = array(
@@ -154,6 +156,83 @@ class SettingsController extends Connexions_Controller_Action
         throw new Exception('Invalid method "'. $method .'" called', 500);
     }
 
+    /** @brief  Prepare for rendering the main view, regardless of format.
+     *
+     *  Override Connexions_Controller_Action::_prepare_main() so we can
+     *  properly handle tabs and tab sections which may be synchronously
+     *  rendered as part of the main view.
+     */
+    protected function _prepare_main()
+    {
+        /*
+        Connexions::log("SettingsController::_prepare_main(): "
+                        . "setting[ %s ], partials[ %s ]",
+                        $this->_partials[1],
+                        Connexions::varExport($this->_partials));
+        // */
+
+        /* Invoke the _prepare_* method for any tab/section that is NOT
+         * asynchronous
+         */
+        $origPartials = $this->_partials;
+        $method = "_prepare";
+        foreach (self::$tabs as $tab => $tabInfo)
+        {
+            // Check each section to see if any are synchronous
+            foreach ($tabInfo['sections'] as $section => $sectInfo)
+            {
+                if ($sectInfo['async'] !== true)
+                {
+                    // Adjust '_partials' to properly indicate this tab/section
+                    $this->_partials = array('main', $tab, $section);
+
+                    /***********************************************
+                     * Invoke any tab prep method.
+                     *
+                     */
+                    $pMethod = $method .'_main_'. $tab;
+                    if (method_exists( $this, $pMethod ))
+                    {
+                        /*
+                        Connexions::log("SettingsController::_prepare_main(): "
+                                        . "Invoke tab prep [ %s ]",
+                                        $pMethod);
+                        // */
+
+                        $res = $this->{$pMethod}();
+                        if ($res === false)
+                        {
+                            return $res;
+                        }
+                    }
+
+                    /***********************************************
+                     * Invoke any section prep method.
+                     *
+                     */
+                    $pMethod .= '_'. $section;
+                    if (method_exists( $this, $pMethod ))
+                    {
+                        /*
+                        Connexions::log("SettingsController::_prepare_main(): "
+                                        . "Invoke section prep [ %s ]",
+                                        $pMethod);
+                        // */
+
+                        $res = $this->{$pMethod}();
+                        if ($res === false)
+                        {
+                            return $res;
+                        }
+                    }
+                }
+            }
+        }
+        $this->_partials = $origPartials;
+
+        return parent::_prepare_main();
+    }
+
     protected function _prepare_main_account()
     {
         /*
@@ -192,6 +271,10 @@ class SettingsController extends Connexions_Controller_Action
             break;
 
         case 'export':
+            $this->view->completionCookie   = array(
+                'name'  => $this->_bookmarkExportTokenId,
+                'path'  => $this->_cookiePath,
+            );
             break;
 
         case 'groups':
@@ -778,11 +861,21 @@ class SettingsController extends Connexions_Controller_Action
         $request =& $this->_request;
 
         // Retrieve all user-related bookmarks params: order, count, offset
-        $this->view->bookmarks   = $this->_viewer->getBookmarks();
-        $this->view->includeTags = Connexions::to_bool(
-                                    $request->getParam('includeTags', true));
-        $this->view->includeMeta = Connexions::to_bool(
-                                    $request->getParam('includeMeta', true));
+        $cookieId = $this->_bookmarkExportTokenId;
+
+        $this->view->bookmarks          = $this->_viewer->getBookmarks();
+
+        $this->view->completionCookie   = array(
+            'name'      => $cookieId,
+            'path'      => $this->_cookiePath,
+            'value'     => $request->getParam( $cookieId ),
+        );
+        $this->view->includeTags        = Connexions::to_bool(
+                                            $request->getParam('includeTags',
+                                                               true));
+        $this->view->includeMeta        = Connexions::to_bool(
+                                            $request->getParam('includeMeta',
+                                                               true));
     }
 
     /***********************************************************************
