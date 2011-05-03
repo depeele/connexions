@@ -522,6 +522,8 @@ class Connexions_Controller_Action extends Zend_Controller_Action
      */
     protected function _handleFormat()
     {
+        $actionName = $this->_request->getActionName();
+
         /*
         Connexions::log("Connexions_Controller_Action(%s)::_handleFormat(): "
                         . "_format[ %s ], _namespace[ %s ], "
@@ -529,14 +531,14 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                         get_class($this),
                         $this->_format, $this->_namespace,
                         $this->_request->getRequestUri(),
-                        $this->_request->getActionName());
+                        $actionName);
         // */
 
 
         /* By default, render the view script associated with the current
          * action
          */
-        $this->_partials = array( $this->_request->getActionName() );
+        $this->_partials = array( $actionName );
 
 
         /* All actual rendering is via one of the scripts in:
@@ -628,8 +630,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                 $this->_format = 'feed';
             }
 
-            $this->_partials = array( $this->_request->getActionName(),
-                                      $this->_format);
+            $this->_partials = array( $actionName, $this->_format);
 
             $this->_renderPartial();
             break;
@@ -637,7 +638,15 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         case 'html':
         default:
             /* Normal HTML rendering - both the main pane and the sidebar.
+             *
+             * Tell the view about available contexts
              */
+            if (isset($this->contexts) &&
+                isset($this->contexts[$actionName ] ))
+            {
+                $this->view->contexts = $this->contexts[ $actionName ];
+            }
+
             $this->_renderPartial();
 
             if ($this->_noSidebar !== true)
