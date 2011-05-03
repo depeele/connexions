@@ -57,6 +57,8 @@ $jQuery->addOnLoad('$.bookmark_export_onLoad();')
     var completionCookie    = '<?= $this->completionCookie['name'] ?>';
     var ccRE                = new RegExp('&'+ completionCookie +'=.*$');
     var token               = null;
+    var cycles              = 0;
+    var maxCycles           = 30;   // In 1 second intervals
 
     $.bookmark_export_onLoad = function() {
         var $export = $('#bookmark-export');
@@ -106,10 +108,12 @@ $jQuery->addOnLoad('$.bookmark_export_onLoad();')
             var cookieValue = $.cookie( completionCookie );
             /*
             $.log("expiration monitor: "
+                    + "cycles[ "+ cycles +" ], "
                     + completionCookie +"[ "+ cookieValue +" ]");
             // */
 
-            if (! cookieValue)
+            cycles++;
+            if ((! cookieValue) || (cycles > maxCycles))
             {
                 $submit.button('enable');
                 window.clearInterval(monitorTimer);
@@ -124,14 +128,18 @@ $jQuery->addOnLoad('$.bookmark_export_onLoad();')
         $form.mask();
 
         // Check for the 'exportCompleted' cookie
+        cycles = 0;
         var monitorTimer = window.setInterval(function() {
             var cookieValue = $.cookie( completionCookie );
             /*
-            $.log("completion monitor: token[ "+ token +" ], "
+            $.log("completion monitor: "
+                    + "cycles[ "+ cycles +" ], "
+                    + "token[ "+ token +" ], "
                     + completionCookie +"[ "+ cookieValue +" ]");
             // */
 
-            if (cookieValue == token)
+            cycles++;
+            if ((cookieValue == token) || (cycles > maxCycles))
             {
                 finishExport( monitorTimer );
             }
