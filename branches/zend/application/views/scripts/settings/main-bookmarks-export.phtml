@@ -27,20 +27,116 @@
  *                           },
  *                           ...
  *                          }
+ *
+ *      completionCookie    An array of 'name' and 'path' providing information
+ *                          about the completion cookie to be used to
+ *                          communicate upload completion;
  */
+
+Connexions::log("view/scripts/settings/main-bookmarks-export: "
+                .   "completionCookie[ %s ]",
+                Connexions::varExport($this->completionCookie));
+
+// Force the removal of any current cookie
+$expires = time() - 3600;   // Minus 1 hour
+setcookie( $this->completionCookie['name'],
+           '',
+           $expires,
+           $this->completionCookie['path'] );
 
 $jQuery = $this->jQuery();
 $jQuery->addOnLoad('$.bookmark_export_onLoad();')
        ->javascriptCaptureStart();
 ?>
 (function($) {
+    var cookieOptions       = {
+        path:   '<?= $this->completionCookie['path'] ?>'
+    };
+    var $form               = null;
+    var $submit             = null;
+    var completionCookie    = '<?= $this->completionCookie['name'] ?>';
+    var ccRE                = new RegExp('&'+ completionCookie +'=.*$');
+    var token               = null;
 
     $.bookmark_export_onLoad = function() {
-        $('#bookmark-export').find('form input[type=submit]').button({
-            priority:   'primary',
-            enabled:    true
+        var $export = $('#bookmark-export');
+
+        $form   = $export.find('form:first');
+        $submit = $form.find('input[type=submit]');
+        token   = new Date().getTime();
+
+        var url = $form.attr('action');
+        url     = url.replace(ccRE, '&'+ completionCookie +'='+ token);
+        $form.attr('action', url);
+
+        // Ensure that any previous cookie is unset
+        $.cookie( completionCookie, null, cookieOptions );
+        
+        $submit.button({priority:'primary', enabled:true});
+        $form.submit(function(e) { 
+            monitorExport();
         });
     };
+
+
+    function finishExport(monitorTimer)
+    {
+        // Clear the interval timer
+        window.clearInterval(monitorTimer);
+
+        // Clear the completion cookie
+        $.cookie( completionCookie, null, cookieOptions );
+
+        // Unmask the form
+        $form.unmask();
+
+        /* Since we CANNOT effectively delete cookies that are set by the
+         * server, do NOT directly re-enable the submit button (i.e. the above
+         * clear doesn't actually remove the cookie), do NOT re-enable the
+         * submit button.
+         *  $submit.button('enable');
+         *
+         * Instead, rely on the server setting a short expiration for the
+         * cookie.
+         *
+         * With that assumption, add an interval timer to monitor for cookie
+         * expiration.  Once expired, re-enable the submit button.
+         */
+        var monitorTimer = window.setInterval(function() {
+            var cookieValue = $.cookie( completionCookie );
+            /*
+            $.log("expiration monitor: "
+                    + completionCookie +"[ "+ cookieValue +" ]");
+            // */
+
+            if (! cookieValue)
+            {
+                $submit.button('enable');
+                window.clearInterval(monitorTimer);
+            }
+        }, 1000);
+    }
+
+    function monitorExport()
+    {
+        // Disable the submit and mask the form
+        $submit.button('disable');
+        $form.mask();
+
+        // Check for the 'exportCompleted' cookie
+        var monitorTimer = window.setInterval(function() {
+            var cookieValue = $.cookie( completionCookie );
+            /*
+            $.log("completion monitor: token[ "+ token +" ], "
+                    + completionCookie +"[ "+ cookieValue +" ]");
+            // */
+
+            if (cookieValue == token)
+            {
+                finishExport( monitorTimer );
+            }
+        }, 1000);
+    }
 
 }(jQuery));
 <?php
@@ -51,7 +147,7 @@ $jQuery->javascriptCaptureEnd();
  */
 ?>
 <div id='bookmark-export'><!-- bookmark-export { -->
- <form  action='?format=partial&part=post-bookmarks-export&streaming=true'
+ <form  action='?format=partial&part=post-bookmarks-export&<?= $this->completionCookie['name'] ?>='
         method='POST'
        enctype="multipart/form-data"><!-- form { -->
   <div class='section'><!-- section { -->
