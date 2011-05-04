@@ -8,7 +8,9 @@ $userRatingWidth: 96px;
 /****** post.sass ****** */
 // Styling for bookmark post form
 //  (in addition to styles from validationForm.sass)
-#post, .ui-validation-form {
+//#post, .ui-validation-form {
+//#post, #bookmarkPost {
+.ui-bookmarkPost {
   .item-status {
     padding:  0 0.5em 0 0;
 
@@ -122,6 +124,12 @@ $userRatingWidth: 96px;
       }
     }
   }
+}
+.container-bookmarkPost {
+  width:      50em;
+}
+.noNav .container-bookmarkPost {
+  width:      100%;
 }
 
 .ui-dialog-bookmarkPost {

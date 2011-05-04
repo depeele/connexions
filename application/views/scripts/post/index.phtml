@@ -2,13 +2,6 @@
 if (! @is_array($this->postInfo))
     $this->postInfo = array();
 
-//$noConflict = Zend_JQuery_View_Helper_JQuery::getJQueryHandler();
-
-/*
-$jQuery = $this->jQuery();
-$jQuery->addOnLoad('$("#post form").bookmarkPost({$status: ".status"});');
-// */
-
 if (isset($this->postInfo['itemId']) && ($this->postInfo['mode'] !== 'post'))
 {
     $verb = 'Update';
@@ -22,7 +15,8 @@ else
 
 $id = 'post';
 ?>
-<div id="<?= $id ?>" class='ui-validation-form ribbon-form line'><!-- { -->
+<div id="<?= $id ?>"
+  class='container-bookmarkPost ui-validation-form ribbon-form line'><!-- { -->
  <div class='context-ribbon'>&nbsp;</div>
  <div class="legend unit"><!-- { -->
   <div class='context-bg connexions_sprites bookmark_bg'>

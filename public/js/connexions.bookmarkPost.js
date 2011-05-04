@@ -174,7 +174,7 @@ $.widget("connexions.bookmarkPost", {
         // Hide the form while we prepare it...
         self.element.hide();
 
-        self.element.addClass('ui-form');
+        self.element.addClass('ui-form ui-bookmarkPost');
 
         /********************************
          * Initialize jsonRpc
