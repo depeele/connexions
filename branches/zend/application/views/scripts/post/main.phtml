@@ -43,9 +43,9 @@ Connexions::log("views/scripts/post/main.phtml: tabs[ %s ]",
                 Connexions::varExport($this->tabs));
 // */
 
-$id = 'bookmarkPost';
+$bookmarkPostId = 'bookmarkPost';
 ?>
-   <form id='<?= $id ?>' method='post' class='line'><!-- { -->
+   <form id='<?= $bookmarkPostId ?>' method='post' class='line'><!-- { -->
     <?php if (isset($this->postInfo['userId'])): ?>
     <input name='userId' type='hidden'
           value='<?= $this->postInfo['userId'] ?>' />
@@ -236,7 +236,7 @@ $postConfig = array_merge($postConfig, $this->postInfo);
 $postConfig = Zend_Json::encode($postConfig);
 
 $jsWait = false;
-$jsLoad = "$('#{$id}').bookmarkPost({$postConfig});";
+$jsLoad = "$('#{$bookmarkPostId}').bookmarkPost({$postConfig});";
 if ($jsWait === false)
 {
     // Instantiate the Javascript widget immediately
