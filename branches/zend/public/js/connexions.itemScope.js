@@ -234,21 +234,20 @@ $.widget("connexions.itemScope", {
                     var loc     = window.location;
                     var url     = loc.toString();
                     var scope   = self.$input.val().replace(/\s*,\s*/g, ',')
-                                                   .replace(/,$/, '');
-                    if (url[url.length-1] !== '/')
-                    {
-                        url += '/';
-                    }
+                                                   .replace(/(^,|,$)/g, '');
 
-                    if (scope.length > 0)
+                    if (self.$curItems.length > 0)
                     {
-                        // Include the new scope item(s)
-                        if (self.$curItems.length > 0)
+                        if (scope.length > 0)
                         {
                             url += ',';
                         }
-                        url += scope;
                     }
+                    else if (url[url.length-1] !== '/')
+                    {
+                        url += '/';
+                    }
+                    url += scope;
 
                     // Simply change the browsers URL
                     window.location.assign(url);
