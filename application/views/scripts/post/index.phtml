@@ -13,9 +13,9 @@ else
     $adj  = 'new';
 }
 
-$id = 'post';
+$containerId = 'post';
 ?>
-<div id="<?= $id ?>"
+<div id="<?= $containerId ?>"
   class='container-bookmarkPost ui-validation-form ribbon-form line'><!-- { -->
  <div class='context-ribbon'>&nbsp;</div>
  <div class="legend unit"><!-- { -->
@@ -37,19 +37,105 @@ $id = 'post';
  * changes the 'isEdit' state.
  */
 (function($) {
-    var $post   = $('#<?= $id ?>');
-    $post.delegate('form', 'isEditChanged', function(e, newValue) {
+    var $container      = $('#<?= $containerId ?>');
+    var formSelector    = '.ui-bookmarkPost';
+
+    //$container.delegate('form', 'isEditChanged', function(e, isEdit) {
+    $container.delegate(formSelector, 'isEditChanged',
+                        function(e, isEdit) {
+        /* Update the title & subtitle of the ribbon-form based upon the new
+         * value of 'isEdit'.
+         */
         var title       = 'Post';
         var subTitle    = 'a new bookmark';
-        if (newValue)
+        if (isEdit)
         {
             title       = 'Update';
             subTitle    = 'a bookmark';
         }
 
-        var $legend = $post.find('.legend:first');
+        var $legend = $container.find('.legend:first');
         $legend.find('h1:first').text(title);
         $legend.find('p:first').text(subTitle);
+    });
+
+    //$container.delegate('form', 'complete', function() {
+    $container.delegate(formSelector, 'complete',
+                        function() {
+        /* Posting is complete -- either via successful save or cancel
+         *
+         * Our action now is determined by whether or not 'closeAction' was
+         * specified in the request.  Valid closeActions are:
+         *  - 'close'               attempt to close the current window;
+         *  - 'hide'                hide the ribbon-form;
+         *  - 'redirect'            if the post form contains a non-empty URL,
+         *                          redirect to that URL, otherwise, go back
+         *                          one page via history;
+         *  - 'iframe'              attempt to invoke the 'close' function
+         *                          on the containing iframe;
+         *  - 'urlCallback:%url%'   redirect to the specified %url%;
+         *  - 'callback:%func%'     invoke the Javascript function %func%;
+         */
+        var action  = '<?= $this->closeAction ?>';
+        var split   = action.indexOf(':');
+        var param   = null;
+
+        if (split <= 0)
+        {
+            action = action.toLowerCase();
+        }
+        else
+        {
+            param  = action.substr(split + 1);
+            action = action.substr(0, split).toLowerCase();
+        }
+
+        switch (action)
+        {
+        case 'close':       // Attempt to close the containing window
+            window.close();
+            break;
+
+        case 'hide':        // Hide the containing DOM element
+            $container.hide();
+            break;
+
+        case 'redirect':    // Bookmark-based redirect
+            param = $container.find(formSelector)
+                                .bookmarkPost('option', '$url').val();
+            if (param && param.length)
+            {
+                // Redirect to the URL of the bookmark
+                location.href = param;
+            }
+            else
+            {
+                // No URL -- move back a page.
+                history.back();
+            }
+            break;
+
+        case 'iframe':      // Attempt to 'close' the containing iframe
+            if (window.frameElement && window.frameElement.close)
+            {
+                window.frameElement.close();
+            }
+            break;
+
+        case 'urlcallback': // Redirect to the specified URL
+            if (param && param.length)
+            {
+                location.href = param;
+            }
+            break;
+
+        case 'callback':    // Invoke the named Javascript function
+            if (param && param.length)
+            {
+                eval(param +'();');
+            }
+            break;
+        }
     });
  }(jQuery));
 </script>

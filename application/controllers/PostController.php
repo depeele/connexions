@@ -114,6 +114,10 @@ class PostController extends Connexions_Controller_Action
             $bookmark = $this->_doGet( $postInfo );
         }
 
+        // Allow 'closeAction' to be specified in the request.
+        $this->view->closeAction = trim($request->getParam('closeAction',
+                                                           'ignore'));
+
         $this->view->postInfo   = $postInfo;
         $this->view->bookmark   = $bookmark;
 
