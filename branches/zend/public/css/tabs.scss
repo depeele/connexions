@@ -39,7 +39,9 @@ $navBorder: unquote("1px dotted") $navColorBorder;
     width: $navWidth;
     *width: $navWidth + 1;
 
-    @include corners(0, 0, 0, 20px);
+    // Use 24px here (4px more than li.welcome/join) so the ul background is
+    // fully hidden behind any background used for li.welcome/join
+    @include corners(0, 0, 0, 24px);
 
     background: $navColorBackground unquote("url(themes/connexions/images/ui-bg_gloss-wave_10_172322_500x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/");
 
