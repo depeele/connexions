@@ -11,6 +11,8 @@ class UrlController extends Connexions_Controller_Action
     // Bootstrap resources to make directly available
     public  $dependencies = array('db','layout');
 
+    protected $_noSidebar   = true;
+
     protected   $_url       = null;
     protected   $_tags      = null;
 
