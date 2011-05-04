@@ -6,10 +6,12 @@
 /****** auth.sass ****** */
 // Styling for registration / login
 #auth {
+  width:      35em;
+
   form {
     .field {
       input.text {
-        width: 15em;
+        width: 100%;
       }
     }
     input.button {

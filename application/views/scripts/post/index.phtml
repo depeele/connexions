@@ -22,25 +22,22 @@ else
 
 $id = 'post';
 ?>
-<div class="line"><!-- { -->
- <div id="<?= $id ?>" class='ui-validation-form ribbon-form'>
-  <div class='context-ribbon'>&nbsp;</div>
-  <div class="legend unit"><!-- { -->
-   <div class='context-bg connexions_sprites bookmark_bg'>
-     &nbsp;
-   </div>
-   <h1><?= $verb ?></h1>
-   <p>a <?= $adj ?> bookmark</p>
-   <div class='status<?= (@isset($this->error) ? ' error' : '') ?>'>
-    <?= (@isset($this->error) ? $this->error : '') ?>
-   </div>
-  </div><!-- legend } -->
-  <div class="userInput unit"><!-- { -->
-    <?= $this->render('post/main.phtml') ?>
-  </div><!-- userInput } -->
-  <br class='clear' />
- </div>
-</div><!-- line } -->
+<div id="<?= $id ?>" class='ui-validation-form ribbon-form line'><!-- { -->
+ <div class='context-ribbon'>&nbsp;</div>
+ <div class="legend unit"><!-- { -->
+  <div class='context-bg connexions_sprites bookmark_bg'>
+    &nbsp;
+  </div>
+  <h1><?= $verb ?></h1>
+  <p>a <?= $adj ?> bookmark</p>
+  <div class='status<?= (@isset($this->error) ? ' error' : '') ?>'>
+   <?= (@isset($this->error) ? $this->error : '') ?>
+  </div>
+ </div><!-- legend } -->
+ <div class="userInput lastUnit"><!-- { -->
+   <?= $this->render('post/main.phtml') ?>
+ </div><!-- userInput } -->
+</div><!-- ribbon-form } -->
 <script type='text/javascript'>
 /* Include an event delegate to adjust our legend if the bookmarkPost widget
  * changes the 'isEdit' state.

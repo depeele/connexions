@@ -626,22 +626,13 @@ a:visited { color: #005a9c; }
 .ui-stars-wrapper .ui-stars-cancel-disabled a { background-image: none; }
 .ui-stars-wrapper .ui-stars-star-disabled, .ui-stars-wrapper .ui-stars-cancel-disabled { cursor: default; }
 
-/****** post.sass ****** */
-.line { padding: 1em; }
-
 .ui-validation-form { padding: 0 0 0 0.5em; float: left; width: auto; background-color: white; border: 2px solid #cccccc; -moz-border-radius: 10px 10px 10px 10px; -webkit-border-radius: 10px 10px 10px 10px; -ms-border-radius: 10px 10px 10px 10px; -khtml-border-radius: 10px 10px 10px 10px; border-radius: 10px 10px 10px 10px; }
 .ui-validation-form .legend { text-align: right; padding-right: 2em; }
 .ui-validation-form .legend h1 { padding: 0; color: #b0d730; font-size: 1.25em; font-weight: bold; }
 .ui-validation-form .legend p { padding: 0; color: #999999; }
 .ui-validation-form .userInput { position: relative; padding: 1em; z-index: 1; -moz-border-radius: 10px 10px 10px 10px; -webkit-border-radius: 10px 10px 10px 10px; -ms-border-radius: 10px 10px 10px 10px; -khtml-border-radius: 10px 10px 10px 10px; border-radius: 10px 10px 10px 10px; }
-.ui-validation-form .userInput .item-status { padding: 0 0.5em 0 0; }
-.ui-validation-form .userInput .item-data .item-name { padding-bottom: 0; }
-.ui-validation-form .userInput .item-data .item-name input { width: 22em; }
-.ui-validation-form .userInput .item-data .item-url { padding-bottom: 0; margin-left: 1em; }
-.ui-validation-form .userInput .item-data .item-url .text { width: 29em; }
 .ui-validation-form .userInput .field { padding-bottom: 0.25em; }
 .ui-validation-form .userInput .field label { color: #999999; }
-.ui-validation-form .userInput .field .text { width: 30em; }
 .ui-validation-form .userInput .field .ui-field-info { height: 1.25em; font-size: 0.9em; padding-left: 1.25em; opacity: 0.75; filter: alpha(opacity=75); -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=75)'; -khtml-opacity: 0.75; -moz-opacity: 0.75; }
 .ui-validation-form .userInput .field .ui-field-info .ui-field-status { float: left; }
 .ui-validation-form .userInput .field .ui-field-info .ui-field-requirements { float: right; color: #999999; text-align: right; }
@@ -650,19 +641,13 @@ a:visited { color: #005a9c; }
 .ui-validation-form .userInput .click-to-edit input:focus { color: #555555; border-color: #aaaaaa; }
 .ui-validation-form .userInput .click-to-edit .ui-field-info { visibility: hidden; }
 .ui-validation-form .userInput .click-to-edit:hover .ui-field-info { visibility: visible; }
-.ui-validation-form .userInput .userRating { position: absolute; z-index: 2; right: 0; display: block; padding: 0; height: 32px; width: 96px; }
-.ui-validation-form .userInput .userRating label { display: none; }
-.ui-validation-form .userInput .favorite, .ui-validation-form .userInput .private { padding-bottom: 0.2em; }
-.ui-validation-form .userInput .favorite input, .ui-validation-form .userInput .private input { width: 0; height: 0; margin: 0; padding: 0; }
-.ui-validation-form .userInput .favorite .checkbox, .ui-validation-form .userInput .private .checkbox { position: relative; display: inline; cursor: pointer; border: none; }
-.ui-validation-form .userInput .favorite .checkbox .ui-stars-wrapper, .ui-validation-form .userInput .private .checkbox .ui-stars-wrapper { float: left; }
-.ui-validation-form .userInput .buttons { position: relative; text-align: right; width: 100%; padding-left: 2em; padding-top: 0; clear: both; }
+.ui-validation-form .userInput .buttons { position: relative; text-align: right; width: 100%; padding: 1em 0 1em 1em; clear: both; }
 .ui-validation-form .userInput .buttons input, .ui-validation-form .userInput .buttons label, .ui-validation-form .userInput .buttons button { position: relative; display: inline; cursor: pointer; }
 .ui-validation-form .userInput .formError { padding: 0; font-weight: bold; text-align: left; color: #cd0a0a; }
 
-/****** ui-form.sass ****** */
+/****** ribbon-form.sass ****** */
 /* ====== Forms ====== */
-.ribbon-form { padding: 0; }
+.ribbon-form { padding: 0; float: none; }
 .ribbon-form .context-ribbon { position: absolute; top: 0; left: 0; width: 48px; height: 100%; background-color: #3d7cc2; -moz-border-radius: 8px 0 0 8px; -webkit-border-radius: 8px 0 0 8px; -ms-border-radius: 8px 0 0 8px; -khtml-border-radius: 8px 0 0 8px; border-radius: 8px 0 0 8px; }
 .ribbon-form .legend { margin-left: 48px; padding-right: 0; text-align: left; width: 8em; }
 .ribbon-form .legend .context-bg { position: absolute; left: -48px; -moz-border-radius: 8px 0 0 0; -webkit-border-radius: 8px 0 0 0; -ms-border-radius: 8px 0 0 0; -khtml-border-radius: 8px 0 0 0; border-radius: 8px 0 0 0; }
@@ -671,12 +656,23 @@ a:visited { color: #005a9c; }
 .ribbon-form .legend .status { margin-top: 5em; padding: 0.5em; text-align: center; color: #999999; }
 
 /****** post.sass ****** */
+#post .item-status, .ui-validation-form .item-status { padding: 0 0.5em 0 0; }
+#post .item-status .favorite, #post .item-status .private, .ui-validation-form .item-status .favorite, .ui-validation-form .item-status .private { padding-bottom: 0.2em; }
+#post .item-status .favorite input, #post .item-status .private input, .ui-validation-form .item-status .favorite input, .ui-validation-form .item-status .private input { width: 0; height: 0; margin: 0; padding: 0; }
+#post .item-status .favorite .checkbox, #post .item-status .private .checkbox, .ui-validation-form .item-status .favorite .checkbox, .ui-validation-form .item-status .private .checkbox { position: relative; display: inline; cursor: pointer; border: none !important; }
+#post .item-status .favorite .checkbox .ui-stars-wrapper, #post .item-status .private .checkbox .ui-stars-wrapper, .ui-validation-form .item-status .favorite .checkbox .ui-stars-wrapper, .ui-validation-form .item-status .private .checkbox .ui-stars-wrapper { float: left; }
+#post .item-data input, #post .item-data textarea, .ui-validation-form .item-data input, .ui-validation-form .item-data textarea { width: 100%; }
+#post .item-data .item-name, .ui-validation-form .item-data .item-name { padding-bottom: 0; margin-right: 106px; }
+#post .item-data .item-url, .ui-validation-form .item-data .item-url { padding-bottom: 0; margin-left: 1em; }
+#post .item-data .userRating, .ui-validation-form .item-data .userRating { position: absolute; z-index: 2; right: 0; display: block; padding: 0; height: 32px; width: 96px; }
+#post .item-data .userRating label, .ui-validation-form .item-data .userRating label { display: none; }
 #post .item-description textarea, #post .item-tags textarea, .ui-validation-form .item-description textarea, .ui-validation-form .item-tags textarea { height: 4em; }
-#post .suggestions, .ui-validation-form .suggestions { margin: 1em 0 0 1em; }
+#post .suggestions, .ui-validation-form .suggestions { margin: 2em 0 0 1em; }
 #post .suggestions .ui-tabs-panel, .ui-validation-form .suggestions .ui-tabs-panel { padding: 0.25em; }
-#post .suggestions .cloud, #post .suggestions .db-profile, .ui-validation-form .suggestions .cloud, .ui-validation-form .suggestions .db-profile { font-size: 1em; width: 28em; }
+#post .suggestions .cloud, #post .suggestions .db-profile, .ui-validation-form .suggestions .cloud, .ui-validation-form .suggestions .db-profile { font-size: 1em; }
 #post .suggestions .db-profile, .ui-validation-form .suggestions .db-profile { margin: 0.5em; }
-#post .suggestions .cloud, .ui-validation-form .suggestions .cloud { padding-bottom: 1em; }
+#post .suggestions .cloud, .ui-validation-form .suggestions .cloud { padding: 1em; }
+#post .suggestions .cloud .Item_Cloud, .ui-validation-form .suggestions .cloud .Item_Cloud { text-align: center; }
 #post .suggestions .cloud .cloudItem .size0, .ui-validation-form .suggestions .cloud .cloudItem .size0 { font-size: 0.65em; }
 #post .suggestions .cloud .cloudItem .size1, .ui-validation-form .suggestions .cloud .cloudItem .size1 { font-size: 0.75em; }
 #post .suggestions .cloud .cloudItem .size2, .ui-validation-form .suggestions .cloud .cloudItem .size2 { font-size: 0.85em; }
@@ -705,6 +701,10 @@ a:visited { color: #005a9c; }
 
 /* Page Footer */
 #pageFooter { clear: both; margin-top: 1em; border-top: 1px solid #cccccc; padding: 0.5em; z-index: 1; }
+
+.noNav #pageHeader { height: 2.25em; }
+
+.noSidebar #pageContent { padding-right: 1em; }
 
 .db-profile { background-color: #cccccc; padding: 0.25em; }
 .db-profile ul { padding: 0 1em; }

@@ -9,46 +9,44 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.css'))
                    .    'submitSelector:"button[name=method]",'
                    .    'disableSubmitOnUnchanged:false});');
 ?>
-<div class="line"><!-- { -->
- <div id="auth" class='ui-validation-form ribbon-form'>
-  <div class='context-ribbon'>&nbsp;</div>
-  <div class="legend unit"><!-- { -->
-   <h1>Sign in</h1>
-   <p>
-    or <?= Connexions::anchor('/auth/register', 'Join now') ?>
-   </p>
-   <div class='status<?= (@isset($this->error) ? ' error' : '') ?>'>
-    <?= (@isset($this->error) ? $this->error : '') ?>
+<div id="auth" class='ui-validation-form ribbon-form line'><!-- { -->
+ <div class='context-ribbon'>&nbsp;</div>
+ <div class="legend unit"><!-- { -->
+  <h1>Sign in</h1>
+  <p>
+   or <?= Connexions::anchor('/auth/register', 'Join now') ?>
+  </p>
+  <div class='status<?= (@isset($this->error) ? ' error' : '') ?>'>
+   <?= (@isset($this->error) ? $this->error : '') ?>
+  </div>
+ </div><!-- legend } -->
+ <div class="userInput lastUnit"><!-- { -->
+  <form method='post'>
+   <div class='field'>
+    <label for='username'>User name</label>
+    <input type='text' class='text required' name='username'
+                       value='<?= $this->username ?>'
+                    tabindex='1' />
+    <div class='ui-field-info'>
+     <div class='ui-field-status'></div>
+    </div>
    </div>
-  </div><!-- legend } -->
-  <div class="userInput unit"><!-- { -->
-   <form method='post'>
-    <div class='field'>
-     <label for='username'>User name</label>
-     <input type='text' class='text required' name='username'
-                        value='<?= $this->username ?>'
-                     tabindex='1' />
-     <div class='ui-field-info'>
-      <div class='ui-field-status'></div>
-     </div>
+   <div class='field'>
+    <label for='password' >Password</label>
+    <input type='password' class='text required'
+           name='password'
+                        tabindex='2' />
+    <div class='ui-field-info'>
+     <div class='ui-field-status'></div>
     </div>
-    <div class='field'>
-     <label for='password' >Password</label>
-     <input type='password' class='text required'
-            name='password'
-                         tabindex='2' />
-     <div class='ui-field-info'>
-      <div class='ui-field-status'></div>
-     </div>
-    </div>
-    <div class='field buttons'>
-     <button name='method' tabindex='3' value='userpassword'>
-      Sign-in
-     </button>
-    </div>
-   </form>
- 
-   <? if ($this->welcome)   echo "Welcome!!<br />"; ?>
-  </div><!-- userInput } -->
- </div>
-</div><!-- line } -->
+   </div>
+   <div class='field buttons'>
+    <button name='method' tabindex='3' value='userpassword'>
+     Sign-in
+    </button>
+   </div>
+  </form>
+
+  <? if ($this->welcome)   echo "Welcome!!<br />"; ?>
+ </div><!-- userInput } -->
+</div><!-- ribbon-form } -->
