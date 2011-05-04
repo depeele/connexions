@@ -34,7 +34,13 @@ $.widget("ui.notify", {
 			self.keys.push(key);
 			self.templates[key] = $(this).removeAttr("id").wrap("<div></div>").parent().html(); // because $(this).andSelf().html() no workie
 		}).end().empty();
-		
+
+        /* Ensure the notification container is NOT hidden.  It MAY be set
+         * 'display:none;' to avoid visibility before CSS styles are completely
+         * loaded and we've completed the instantiation, but from here on it
+         * needs to be visible.
+         */
+		this.element.show();
 	},
 	create: function(template, msg, opts){
 		if(typeof template === "object"){

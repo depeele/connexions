@@ -2285,7 +2285,9 @@ $.widget("ui.notify", {
 			self.keys.push(key);
 			self.templates[key] = $(this).removeAttr("id").wrap("<div></div>").parent().html(); // because $(this).andSelf().html() no workie
 		}).end().empty();
-		
+
+        // Ensure the notification element is NOT hidden
+		this.element.show();
 	},
 	create: function(template, msg, opts){
 		if(typeof template === "object"){
