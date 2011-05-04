@@ -9,30 +9,34 @@
 .ribbon-form .legend .status { margin-top: 5em; padding: 0.5em; text-align: center; color: #999999; }
 
 /****** post.sass ****** */
-#post .item-status, .ui-validation-form .item-status { padding: 0 0.5em 0 0; }
-#post .item-status .favorite, #post .item-status .private, .ui-validation-form .item-status .favorite, .ui-validation-form .item-status .private { padding-bottom: 0.2em; }
-#post .item-status .favorite input, #post .item-status .private input, .ui-validation-form .item-status .favorite input, .ui-validation-form .item-status .private input { width: 0; height: 0; margin: 0; padding: 0; }
-#post .item-status .favorite .checkbox, #post .item-status .private .checkbox, .ui-validation-form .item-status .favorite .checkbox, .ui-validation-form .item-status .private .checkbox { position: relative; display: inline; cursor: pointer; border: none !important; }
-#post .item-status .favorite .checkbox .ui-stars-wrapper, #post .item-status .private .checkbox .ui-stars-wrapper, .ui-validation-form .item-status .favorite .checkbox .ui-stars-wrapper, .ui-validation-form .item-status .private .checkbox .ui-stars-wrapper { float: left; }
-#post .item-data input, #post .item-data textarea, .ui-validation-form .item-data input, .ui-validation-form .item-data textarea { width: 100%; }
-#post .item-data .item-name, .ui-validation-form .item-data .item-name { padding-bottom: 0; margin-right: 106px; }
-#post .item-data .item-url, .ui-validation-form .item-data .item-url { padding-bottom: 0; margin-left: 1em; }
-#post .item-data .userRating, .ui-validation-form .item-data .userRating { position: absolute; z-index: 2; right: 0; display: block; padding: 0; height: 32px; width: 96px; }
-#post .item-data .userRating label, .ui-validation-form .item-data .userRating label { display: none; }
-#post .item-description textarea, #post .item-tags textarea, .ui-validation-form .item-description textarea, .ui-validation-form .item-tags textarea { height: 4em; }
-#post .suggestions, .ui-validation-form .suggestions { margin: 2em 0 0 1em; }
-#post .suggestions .ui-tabs-panel, .ui-validation-form .suggestions .ui-tabs-panel { padding: 0.25em; }
-#post .suggestions .cloud, #post .suggestions .db-profile, .ui-validation-form .suggestions .cloud, .ui-validation-form .suggestions .db-profile { font-size: 1em; }
-#post .suggestions .db-profile, .ui-validation-form .suggestions .db-profile { margin: 0.5em; }
-#post .suggestions .cloud, .ui-validation-form .suggestions .cloud { padding: 1em; }
-#post .suggestions .cloud .Item_Cloud, .ui-validation-form .suggestions .cloud .Item_Cloud { text-align: center; }
-#post .suggestions .cloud .cloudItem .size0, .ui-validation-form .suggestions .cloud .cloudItem .size0 { font-size: 0.65em; }
-#post .suggestions .cloud .cloudItem .size1, .ui-validation-form .suggestions .cloud .cloudItem .size1 { font-size: 0.75em; }
-#post .suggestions .cloud .cloudItem .size2, .ui-validation-form .suggestions .cloud .cloudItem .size2 { font-size: 0.85em; }
-#post .suggestions .cloud .cloudItem .size3, .ui-validation-form .suggestions .cloud .cloudItem .size3 { font-size: 0.95em; }
-#post .suggestions .cloud .cloudItem .size4, .ui-validation-form .suggestions .cloud .cloudItem .size4 { font-size: 1.05em; }
-#post .suggestions .cloud .cloudItem .size5, .ui-validation-form .suggestions .cloud .cloudItem .size5 { font-size: 1.10em; }
-#post .suggestions .cloud .cloudItem .size6, .ui-validation-form .suggestions .cloud .cloudItem .size6 { font-size: 1.25em; }
+.ui-bookmarkPost .item-status { padding: 0 0.5em 0 0; }
+.ui-bookmarkPost .item-status .favorite, .ui-bookmarkPost .item-status .private { padding-bottom: 0.2em; }
+.ui-bookmarkPost .item-status .favorite input, .ui-bookmarkPost .item-status .private input { width: 0; height: 0; margin: 0; padding: 0; }
+.ui-bookmarkPost .item-status .favorite .checkbox, .ui-bookmarkPost .item-status .private .checkbox { position: relative; display: inline; cursor: pointer; border: none !important; }
+.ui-bookmarkPost .item-status .favorite .checkbox .ui-stars-wrapper, .ui-bookmarkPost .item-status .private .checkbox .ui-stars-wrapper { float: left; }
+.ui-bookmarkPost .item-data input, .ui-bookmarkPost .item-data textarea { width: 100%; }
+.ui-bookmarkPost .item-data .item-name { padding-bottom: 0; margin-right: 106px; }
+.ui-bookmarkPost .item-data .item-url { padding-bottom: 0; margin-left: 1em; }
+.ui-bookmarkPost .item-data .userRating { position: absolute; z-index: 2; right: 0; display: block; padding: 0; height: 32px; width: 96px; }
+.ui-bookmarkPost .item-data .userRating label { display: none; }
+.ui-bookmarkPost .item-description textarea, .ui-bookmarkPost .item-tags textarea { height: 4em; }
+.ui-bookmarkPost .suggestions { margin: 2em 0 0 1em; }
+.ui-bookmarkPost .suggestions .ui-tabs-panel { padding: 0.25em; }
+.ui-bookmarkPost .suggestions .cloud, .ui-bookmarkPost .suggestions .db-profile { font-size: 1em; }
+.ui-bookmarkPost .suggestions .db-profile { margin: 0.5em; }
+.ui-bookmarkPost .suggestions .cloud { padding: 1em; }
+.ui-bookmarkPost .suggestions .cloud .Item_Cloud { text-align: center; }
+.ui-bookmarkPost .suggestions .cloud .cloudItem .size0 { font-size: 0.65em; }
+.ui-bookmarkPost .suggestions .cloud .cloudItem .size1 { font-size: 0.75em; }
+.ui-bookmarkPost .suggestions .cloud .cloudItem .size2 { font-size: 0.85em; }
+.ui-bookmarkPost .suggestions .cloud .cloudItem .size3 { font-size: 0.95em; }
+.ui-bookmarkPost .suggestions .cloud .cloudItem .size4 { font-size: 1.05em; }
+.ui-bookmarkPost .suggestions .cloud .cloudItem .size5 { font-size: 1.10em; }
+.ui-bookmarkPost .suggestions .cloud .cloudItem .size6 { font-size: 1.25em; }
+
+.container-bookmarkPost { width: 50em; }
+
+.noNav .container-bookmarkPost { width: 100%; }
 
 .ui-dialog-bookmarkPost .ui-dialog-content { padding: 0; }
 .ui-dialog-bookmarkPost .ui-validation-form { padding: 0; border: none; float: none; }
