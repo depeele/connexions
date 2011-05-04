@@ -11,6 +11,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
     protected   $_request   = null;
     protected   $_viewer    = null;
 
+    protected   $_noNav     = false;    /* Should navigate be excluded?   */
     protected   $_noSidebar = false;    /* Should the sidebar be ignored? */
     protected   $_noFormatHandling
                             = false;    /* Should format handling in render()
@@ -120,6 +121,21 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                         $this->_url,
                         $this->_viewer);
         // */
+
+        // Allow request-override of 'noNav'.
+        $this->_noNav =
+            Connexions::to_bool($this->_request->getParam('noNav',
+                                $this->_noNav));
+        Connexions::log("Connexions_Controller_Action::init(): noNav[ %s ]",
+                        Connexions::varExport($this->_noNav));
+        if ($this->_noNav === true)
+        {
+            $this->view->excludeNav = true;
+        }
+        if ($this->_noSidebar === true)
+        {
+            $this->view->excludeSidebar = true;
+        }
 
         /*********************************************************************
          * If the concrete controller has defined contexts, initialize context

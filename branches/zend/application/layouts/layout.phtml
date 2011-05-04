@@ -3,16 +3,17 @@
 
 echo $this->render('header.phtml');
 ?>
-
   <div id="pageContent" class="body"><!-- { body -->
+   <?php if ( $this->excludeSidebar !== true ) { ?>
    <div class="rightCol" role="complementary"><!-- { right -->
     <?= $this->placeholder('right') ?>
    </div><!-- right } -->
+   <?php } ?>
    <div class="main" role="main"><!-- { main -->
     <?= $this->layout()->content ?>
    </div><!-- main } -->
   </div><!-- body } -->
-  <div id="notifications">
+  <div id="notifications" style='display:none;'>
     <!-- Default notification template -->
     <div id="default">
       <a class="ui-notify-close ui-notify-cross" href="#">x</a>

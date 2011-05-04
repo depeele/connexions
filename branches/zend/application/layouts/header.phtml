@@ -86,8 +86,14 @@ $jQuery->javascriptCaptureEnd();
  */
 echo $this->render('base-header.phtml');
 
+$extraClass = ($this->excludeNav === true
+                ? ' noNav'
+                : '');
+if ($this->excludeSidebar)  $extraClass .= ' noSidebar';
+
+
 ?>
- <div class="page liquid"><!-- { page -->
+ <div class="page liquid<?= $extraClass ?>"><!-- { page -->
   <div id="pageHeader" class="head" role="banner"><!-- { head -->
    <h1 id='siteName'>
     <a href="<?= $baseUrl ?>">
@@ -96,6 +102,7 @@ echo $this->render('base-header.phtml');
      <span>ions</span>
     </a>
    </h1>
+    <?php if ( $this->excludeNav !== true ) { ?>
    <div class="connexions_sprites corner_inner_left
                tabs_outer_curve">&nbsp;</div>
    <div class='tabs'><!-- tabs { -->
@@ -105,6 +112,6 @@ echo $this->render('base-header.phtml');
 
     ?>
    </div><!-- tabs } -->
- 
+    <?php } ?>
    <!-- br class='clear' / -->
   </div><!-- head } -->

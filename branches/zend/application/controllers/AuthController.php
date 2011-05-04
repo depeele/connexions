@@ -20,6 +20,7 @@ class AuthController extends Connexions_Controller_Action
     protected   $_flashMessenger    = null;
     protected   $_redirector        = null;
     protected   $_noFormatHandling  = true;
+    protected   $_noSidebar         = true;
 
 
     public function init()
@@ -27,6 +28,8 @@ class AuthController extends Connexions_Controller_Action
         /* Initialize action controller here */
         $this->_flashMessenger = $this->_helper->getHelper('FlashMessenger');
         $this->_redirector     = $this->_helper->getHelper('Redirector');
+
+        parent::init();
     }
 
     public function signinAction()
