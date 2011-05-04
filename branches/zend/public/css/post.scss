@@ -3,10 +3,64 @@
 @import "mixins";
 @import "ribbon-form";
 
+$userRatingWidth: 96px;
+
 /****** post.sass ****** */
 // Styling for bookmark post form
 //  (in addition to styles from validationForm.sass)
 #post, .ui-validation-form {
+  .item-status {
+    padding:  0 0.5em 0 0;
+
+    .favorite,.private {
+      padding-bottom: 0.2em;
+      input {
+        width: 0;
+        height: 0;
+        margin: 0;
+        padding: 0;
+      }
+      // checkbox styling
+      .checkbox {
+        position: relative;
+        display: inline;
+        cursor: pointer;
+        border: none !important;
+        .ui-stars-wrapper {
+          float: left;
+        }
+      }
+    }
+  }
+  .item-data {
+    input,textarea {
+      width:  100%;
+    }
+
+    .item-name {
+      padding-bottom: 0;
+      margin-right:   $userRatingWidth + 10px;
+    }
+    .item-url {
+      padding-bottom: 0;
+      margin-left:    1em;
+    }
+    .userRating {
+      position: absolute;
+      z-index:  2;
+      right:    0;
+      display:  block;
+      padding:  0;
+
+      // Accomadate a wrapped label
+      height:   32px;
+      width:    $userRatingWidth;
+      label {
+        display: none;
+      }
+    }
+  }
+
   .item-description, .item-tags {
     textarea {
       height:     4em;
@@ -14,7 +68,7 @@
   }
 
   .suggestions {
-    margin:       1em 0 0 1em;
+    margin:       2em 0 0 1em;
 
     .ui-tabs-panel {
       padding:    0.25em;
@@ -29,7 +83,7 @@
       // minus the padding of our div.suggesionts ul container
       //  1em per side, thus decreasing 30em to 28em.
       //
-      width:      28em;
+      //width:      28em;
     }
 
     .db-profile {
@@ -37,7 +91,11 @@
     }
 
     .cloud {
-      padding-bottom: 1em;
+      padding:  1em;
+
+      .Item_Cloud {
+        text-align: center;
+      }
 
       .cloudItem {
         .size0 {

@@ -45,7 +45,7 @@ Connexions::log("views/scripts/post/main.phtml: tabs[ %s ]",
 
 $id = 'bookmarkPost';
 ?>
-   <form id='<?= $id ?>' method='post'><!-- { -->
+   <form id='<?= $id ?>' method='post' class='line'><!-- { -->
     <?php if (isset($this->postInfo['userId'])): ?>
     <input name='userId' type='hidden'
           value='<?= $this->postInfo['userId'] ?>' />
@@ -54,7 +54,7 @@ $id = 'bookmarkPost';
     <input name='itemId' type='hidden'
           value='<?= $this->postInfo['itemId'] ?>' />
     <?php endif ?>
-    <div class='unit item-status'><!-- { -->
+    <div class='item-status unit'><!-- { -->
      <div class='field favorite'>
       <label for='isFavorite'>Favorite</label>
       <input name='isFavorite'
@@ -70,7 +70,7 @@ $id = 'bookmarkPost';
      </div>
     </div><!-- item-status } -->
 
-    <div class='unit item-data'><!-- { -->
+    <div class='item-data lastUnit'><!-- { -->
      <div class='field userRating'>
       <label for='rating'>rating</label>
       <?= $this->htmlStarRating($this->postInfo['rating'],
@@ -120,13 +120,11 @@ $id = 'bookmarkPost';
                  name='tags'
              tabindex='4'><?= $this->postInfo['tags'] ?></textarea>
      </div>
-     <br class='clear' />
     </div><!-- item-data } -->
 
     <div class='buttons'>
      <button name='cancel' tabindex='5'>Cancel</button>
      <button name='submit' tabindex='6'>Save</button>
-     <br class='clear' />
     </div>
 
 <? if (is_array($this->tabs)): ?>

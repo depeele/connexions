@@ -1,10 +1,11 @@
 @import "colors";
 @import "mixins";
 
-/****** ui-form.sass ****** */
+/****** ribbon-form.sass ****** */
 /* ====== Forms ====== */
 .ribbon-form {
-  padding: 0;
+  padding:  0;
+  float:    none;
   .context-ribbon {
     position:         absolute;
     top:              0;

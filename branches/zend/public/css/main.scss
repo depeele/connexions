@@ -85,6 +85,22 @@
   padding: 0.5em;
   z-index: 1;
 }
+
+// Without Navigation
+.noNav {
+  #pageHeader {
+    height: 2.25em;
+  }
+}
+
+// Without Sidebar/rightCol
+.noSidebar {
+  #pageContent {
+    padding-right:  1em;
+  }
+}
+
+// DB Profiling information / debugging
 .db-profile {
   background-color: $borderColor;
   padding: 0.25em;

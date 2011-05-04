@@ -3,12 +3,6 @@
 @import "mixins";
 @import "uiStars";
 
-/****** post.sass ****** */
-// Styling for bookmark post form
-.line {
-  padding: 1em;
-}
-
 .ui-validation-form {
   padding: 0 0 0 0.5em;
   float: left;
@@ -36,34 +30,14 @@
     z-index:  1;
     //background-color: #eef
     @include corners(10px);
-    .item-status {
-      padding:  0 0.5em 0 0;
-    }
-    .item-data {
-      //width:    30em + 96px;
-      //width:    38em;
-      .item-name {
-        padding-bottom: 0;
-        input {
-          width:        22em;
-        }
-      }
-      .item-url {
-        padding-bottom: 0;
-        margin-left:    1em;
-        .text {
-          width:  29em;
-        }
-      }
-    }
     .field {
       padding-bottom: 0.25em;
       label {
         color: $fieldInfoColor;
       }
-      .text {
-        width: 30em;
-      }
+      //.text {
+      //  width: 30em;
+      //}
       .ui-field-info {
         height:       1.25em;
         font-size:    0.9em;
@@ -102,50 +76,11 @@
         }
       }
     }
-    .userRating {
-      position: absolute;
-      z-index:  2;
-      right:    0;
-      display:  block;
-      padding:  0;
-      // Accomadate a wrapped label
-      height:   32px;
-      width:    96px;
-      //width: 160px;
-      label {
-        display: none;
-        //display: block;
-        //float: right;
-        //padding: 2px 0 0 0.25em;
-        //width: 2em;
-        //color: $linkColor;
-      }
-    }
-    .favorite,.private {
-      padding-bottom: 0.2em;
-      input {
-        width: 0;
-        height: 0;
-        margin: 0;
-        padding: 0;
-      }
-      // checkbox styling
-      .checkbox {
-        position: relative;
-        display: inline;
-        cursor: pointer;
-        border: none;
-        .ui-stars-wrapper {
-          float: left;
-        }
-      }
-    }
     .buttons {
       position:     relative;
       text-align:   right;
       width:        100%;
-      padding-left: 2em;
-      padding-top:  0;
+      padding:      1em 0 1em 1em;
       clear:        both;
       input, label, button {
         position: relative;

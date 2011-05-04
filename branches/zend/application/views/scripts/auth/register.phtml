@@ -83,51 +83,49 @@ $jQuery->javascriptCaptureEnd();
 
 
 ?>
-<div class="line"><!-- { -->
- <div id="auth" class='ui-validation-form ribbon-form'>
-  <div class='context-ribbon'>&nbsp;</div>
-  <div class="legend unit"><!-- { -->
-   <h1>Join</h1>
-   <p>
-    or <?= Connexions::anchor('/auth/signIn', 'Sign In') ?>
-   </p>
-   <div class='status<?= (@isset($this->error) ? ' error' : '') ?>'>
-    <?= (@isset($this->error) ? $this->error : '') ?>
+<div id="auth" class='ui-validation-form ribbon-form line'><!-- { -->
+ <div class='context-ribbon'>&nbsp;</div>
+ <div class="legend unit"><!-- { -->
+  <h1>Join</h1>
+  <p>
+   or <?= Connexions::anchor('/auth/signIn', 'Sign In') ?>
+  </p>
+  <div class='status<?= (@isset($this->error) ? ' error' : '') ?>'>
+   <?= (@isset($this->error) ? $this->error : '') ?>
+  </div>
+ </div><!-- legend } -->
+ <div class="userInput lastUnit"><!-- { -->
+  <form method='post'>
+   <div class='field'>
+    <label for='user'>Desired User Name / ID</label>
+    <input type='text' class='text required' autocomplete='off'
+           name='user' value='<?= $this->user ?>'
+                    tabindex='1' />
+    <div class='ui-field-info'>
+     <div class='ui-field-status'></div>
+    </div>
    </div>
-  </div><!-- legend } -->
-  <div class="userInput unit"><!-- { -->
-   <form method='post'>
-    <div class='field'>
-     <label for='user'>Desired User Name / ID</label>
-     <input type='text' class='text required' autocomplete='off'
-            name='user' value='<?= $this->user ?>'
-                     tabindex='1' />
-     <div class='ui-field-info'>
-      <div class='ui-field-status'></div>
-     </div>
+   <div class='field'>
+    <label for='password'>Password</label>
+    <input type='password' class='text required' autocomplete='off'
+          name='password'  value='<?= $this->pass ?>'
+                        tabindex='2' />
+    <div class='ui-field-info'>
+     <div class='ui-field-status'></div>
     </div>
-    <div class='field'>
-     <label for='password'>Password</label>
-     <input type='password' class='text required' autocomplete='off'
-           name='password'  value='<?= $this->pass ?>'
-                         tabindex='2' />
-     <div class='ui-field-info'>
-      <div class='ui-field-status'></div>
-     </div>
+   </div>
+   <div class='field'>
+    <label for='password2'>Re-type Password for verfication</label>
+    <input type='password' class='text required' autocomplete='off'
+           name='password2'
+                        tabindex='3' />
+    <div class='ui-field-info'>
+     <div class='ui-field-status'></div>
     </div>
-    <div class='field'>
-     <label for='password2'>Re-type Password for verfication</label>
-     <input type='password' class='text required' autocomplete='off'
-            name='password2'
-                         tabindex='3' />
-     <div class='ui-field-info'>
-      <div class='ui-field-status'></div>
-     </div>
-    </div>
-    <div class='field buttons'>
-     <button name='submit' tabindex='4'>Join Connexions</button>
-    </div>
-   </form>
-  </div><!-- userInput } -->
- </div>
-</div><!-- line } -->
+   </div>
+   <div class='field buttons'>
+    <button name='submit' tabindex='4'>Join Connexions</button>
+   </div>
+  </form>
+ </div><!-- userInput } -->
+</div><!-- ribbon-form } -->
