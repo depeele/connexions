@@ -43,7 +43,7 @@
 .users .user .data .userId a, .pane .displayStyle fieldset.options .user .data .userId a { display: inline; font-weight: bold; }
 .users .user .data .fullName, .pane .displayStyle fieldset.options .user .data .fullName { float: left; padding: 0.25em; }
 .users .user .data .fullName a, .pane .displayStyle fieldset.options .user .data .fullName a { display: inline; font-weight: bold; }
-.users .user .data .email, .pane .displayStyle fieldset.options .user .data .email { float: right; padding: 0.25em; border: none; max-width: 794px; }
+.users .user .data .email, .pane .displayStyle fieldset.options .user .data .email { float: right; padding: 0.25em; border: none; }
 .users .user .data .email a, .pane .displayStyle fieldset.options .user .data .email a { display: inline; font-weight: normal; }
 .users .user .data .email .icon, .pane .displayStyle fieldset.options .user .data .email .icon { position: relative; float: left; }
 .users .user .data .tags, .pane .displayStyle fieldset.options .user .data .tags { clear: both; display: block; }

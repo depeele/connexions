@@ -39,8 +39,8 @@
     color: black;
     font-weight: bold;
     font-size: 26px;
-    padding: 0.1em 0.5em;
-    width: 200px;
+    padding: 2px 0 2px 5px;
+    width:  160px;
     span {
       display: block;
       float: left;
@@ -58,7 +58,7 @@
 
 /* Page Content */
 #pageContent {
-  padding: 1em 0 0 1em;
+  padding: 2em 0 0 2em;
   z-index: 10;
   .error {
     color: $errorColor;
@@ -186,12 +186,8 @@
 }
 
 .rightCol {
-  padding-left: 2em;
+  padding-left: 2.5em;
   padding-right: 0.2em;
-  //.columnHeader
-  //  .tag_bg
-  //    top:          8px
-  //    z-index:      20
 }
 
 // ********************************************
