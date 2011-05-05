@@ -76,7 +76,7 @@ body { /* IE5.5 */ /*_text-align: center */ min-width: 960px; }
 
 .leftCol { float: left; width: 250px; _margin-right: -3px; }
 
-.rightCol { float: right; width: 300px; _margin-right: -3px; }
+.rightCol { float: right; width: 320px; _margin-right: -3px; }
 
 /* extend columns to allow for common column widths */
 .gMail { width: 160px; }
@@ -691,12 +691,12 @@ a:visited { color: #005a9c; }
 /****** main.scss ****** */
 /* Page Header */
 #pageHeader { height: 3.25em; z-index: 100; }
-#pageHeader h1#siteName { position: absolute; top: 0; left: 0; color: black; font-weight: bold; font-size: 26px; padding: 0.1em 0.5em; width: 200px; }
+#pageHeader h1#siteName { position: absolute; top: 0; left: 0; color: black; font-weight: bold; font-size: 26px; padding: 2px 0 2px 5px; width: 160px; }
 #pageHeader h1#siteName span { display: block; float: left; }
 #pageHeader h1#siteName img { position: relative; float: left; height: 34px; top: 5px; left: -4px; margin-right: -10px; }
 
 /* Page Content */
-#pageContent { padding: 1em 0 0 1em; z-index: 10; }
+#pageContent { padding: 2em 0 0 2em; z-index: 10; }
 #pageContent .error { color: #cd0a0a; }
 #pageContent .success { color: #667e32; }
 
@@ -732,7 +732,7 @@ a:visited { color: #005a9c; }
 .columnHeader .url { font-size: 0.7em; padding: 0 0 0 1em; float: right; max-width: 40%; z-index: 2; }
 .columnHeader .url .favicon { display: inline; width: 0.8em; height: 0.8em; }
 
-.rightCol { padding-left: 2em; padding-right: 0.2em; }
+.rightCol { padding-left: 2.5em; padding-right: 0.2em; }
 
 .ui-widget { font-size: 1em; font-family: Arial, Helvetica, sans-serif; }
 
