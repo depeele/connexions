@@ -34,17 +34,21 @@ $itemCountWidth: $countBoxWidth + 10px;
     padding: 0.2em 0.1em 0.2em 0.25em;
     // Normal ui.input
     input {
-      margin: 0;
-      padding: 0.1em;
+      @include inlineBlock();
+      vertical-align: middle;
+      margin:         0;
+      padding:        0.1em;
     }
     button {
+      @include inlineBlock();
+      vertical-align:   middle;
       border:           0;
+
       color:            $navColor;
       background-color: $borderColor;
-      padding:          0.1em;
       margin:           0;
+      padding:          0 0.1em;
       cursor:           pointer;
-      float:            left;
       font-weight:      bold;
     }
     // jquery.autosuggest

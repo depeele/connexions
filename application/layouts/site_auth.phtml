@@ -1,0 +1,130 @@
+<?php
+/** @file
+ *
+ *  A view partial to render the top-level site authentication information.
+ *
+ *  $this implements the Zend_View_Interface and has at least the following
+ *  members/methods:
+ *      viewer          The current authenticated user (null === 'anonymous');
+ */
+
+/* Ensure that navigation menu related view variables that we need
+ * (i.e. 'inbox') have been initialized.
+ */
+$navMenu = $this->navMenu();
+
+/* Attempt to simplify the current request uri by stripping off any query
+ * and/or fragment.
+ */
+$uri = Connexions::getRequestUri();
+$uri = preg_replace('/[\?#].*$/', '', $uri);
+
+$authenticated = ( ($this->viewer instanceof Model_User) &&
+                    $this->viewer->isAuthenticated() );
+$viewerName    = ( ($this->viewer instanceof Model_User)
+                       ? ($authenticated
+                           ? $this->viewer->name
+                           : 'anonymous')
+                       : 'anonymous');
+$inboxUrl      = $this->baseUrl('/inbox/'. $viewerName);
+
+// /*
+Connexions::log("layouts/site_auth.phtml: viewer[ %s ], authenticated[ %s ], "
+                .   "inboxUrl[ %s ], inbox[ %s ]",
+                $viewerName,
+                Connexions::varExport($authenticated),
+                $inboxUrl,
+                Connexions::varExport($this->inbox));
+// */
+
+
+?>
+<div class='siteMarking'>
+ <div class='urCorner'>&nbsp;</div>
+</div>
+<div class='authInfo'><!-- { authInfo -->
+<?php
+if ($authenticated)
+{
+    /* If the current user is authenticated, we will present an 'inbox'
+     * with unread count in several places:
+     *      - the 'welcome' are on the far left;
+     *      - the 'inbox' sub-menu item;
+     */
+    $envClass = ($this->inbox['unread'] > 0
+                    ? 'envelope'
+                    : 'envelope_dim');
+
+    // Construct the menu
+    ?>
+<div class='authMenu'>
+ <div class='userName'><?= $this->viewer->fullName ?></div>
+ <div class='menu-arrow ui-icon ui-icon-triangle-1-s'>&nbsp;</div>
+ <ul class='menu'>
+  <?php
+    $href = $inboxUrl;
+    $css  = (preg_match('#^'.$href.'#', $uri) ? ' active' : '');
+  ?>
+  <li class='sub-first<?= $css ?>'><a href='<?= $inboxUrl ?>'>Inbox
+   <span class='count'><?php
+
+    if ($this->inbox['unread'] > 0)
+    {
+        printf ("%s", number_format($this->inbox['unread']));
+    }
+
+    ?></span></a></li>
+  <?php
+    $href = $this->baseUrl('/settings');
+    $css  = (preg_match('#^'.$href.'#', $uri) ? ' class="active"' : '');
+  ?>
+  <li<?= $css ?>><a href='<?= $href ?>'>Settings</a></li>
+  <?php
+    $href = $this->baseUrl('/post');
+    $css  = (preg_match('#^'.$href.'#', $uri) ? ' class="active"' : '');
+  ?>
+  <li<?= $css ?>><a href='<?= $href ?>'>Post</a></li>
+  <?php
+    $href = $this->baseUrl('/auth/signOut');
+    $css  = (preg_match('#^'.$href.'#', $uri) ? ' class="active"' : '');
+  ?>
+  <li<?= $css ?>><a href='<?= $href ?>'>Sign Out</a></li>
+ </ul>
+</div>
+<a href='<?= $inboxUrl ?>'
+  class='inbox-indicator'
+  ><span class='ui-icon connexions_sprites <?= $envClass ?>'>&nbsp;</span
+  ><span class='count'><?php
+
+    if ($this->inbox['unread'] > 0)
+    {
+        printf ("%s", number_format($this->inbox['unread']));
+    }
+    else
+    {
+        echo "&nbsp;";
+    }
+
+    ?></span></a><?php
+
+}
+else
+{
+    // Present 'Join' and 'Sign in'
+    ?>
+<div class='authMenu authMenu-unauthenticated'>
+  <?php
+    $href = $this->baseUrl('/auth/signIn');
+    $css  = (preg_match('#^'.$href.'#', $uri) ? ' class="active"' : '');
+  ?>
+ <a href='<?= $href ?>'<?= $css ?>>Sign In</a>
+  <?php
+    $href = $this->baseUrl('/auth/register');
+    $css  = (preg_match('#^'.$href.'#', $uri) ? ' active' : '');
+  ?>
+ <a href='<?= $href ?>' class='last <?= $css ?>'>Join</a>
+</div>
+    <?php
+}
+?>
+</div><!-- authInfo } -->

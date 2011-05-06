@@ -47,18 +47,21 @@ class View_Helper_NavMenu extends Zend_View_Helper_Abstract
      */
     public function navMenu($config = true)
     {
-        if ($config != true)
+        // Only do the work once.
+        if (($config != true) ||
+            ( isset($this->view->inbox) &&
+              isset($this->view->search) ))
         {
             return $this;
         }
 
-        // /*
+        /*
         Connexions_Profile::checkpoint('Connexions',
                                        'View_Helper_NavMenu::begin');
         // */
 
         $viewer = ($this->view->viewer
-                    ? $this->view-viewer
+                    ? $this->view->viewer
                     : Zend_Registry::get('user'));
 
         $config = array(
@@ -100,7 +103,7 @@ class View_Helper_NavMenu extends Zend_View_Helper_Abstract
         $this->view->inbox  = $config['inbox'];
         $this->view->search = $config['search'];
 
-        // /*
+        /*
         Connexions_Profile::checkpoint('Connexions',
                                        'View_Helper_NavMenu::end');
         // */

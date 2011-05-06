@@ -3,7 +3,7 @@
  <nav>
   <!-- Navigation menu { ***************************** -->
     <!-- Authenticated Users -->
-    <userInfo>
+    <!-- userInfo>
      <label>%user.name%</label>
      <controller>index</controller>
      <action>%user.name%</action>
@@ -27,35 +27,35 @@
        <label>Settings</label>
        <controller>settings</controller>
        <resource>member</resource>
-       <class>local last</class>
+       <class>local sub-last</class>
       </settings>
      </pages>
-    </userInfo>
+    </userInfo -->
 
     <!-- Guests -->
-    <register>
+    <!-- register>
      <label>Join Now</label>
      <controller>auth</controller>
      <action>register</action>
      <resource>guest</resource>
      <class>join</class>
-    </register>
+    </register -->
   
     <!-- Authenticated Users -->
-    <signOut>
+    <!-- signOut>
      <label>Sign Out</label>
      <controller>auth</controller>
      <action>signOut</action>
      <resource>member</resource>
-    </signOut>
+    </signOut -->
   
     <!-- Guests -->
-    <signIn>
+    <!-- signIn>
      <label>Sign In</label>
      <controller>auth</controller>
      <action>signIn</action>
      <resource>guest</resource>
-    </signIn>
+    </signIn -->
 
     <bookmarks>
      <label>Bookmarks</label>
@@ -86,7 +86,7 @@
        <label>Lookup URL</label>
        <controller>url</controller>
        <action>index</action>
-       <class>global last</class>
+       <class>global sub-last</class>
       </lookup>
      </pages>
     </bookmarks>
@@ -100,7 +100,7 @@
        <label>Explore</label>
        <controller>people</controller>
        <action>index</action>
-       <class>global last</class>
+       <class>global sub-last</class>
       </explore>
      </pages>
     </people>
@@ -121,7 +121,7 @@
        <label>Explore</label>
        <controller>tags</controller>
        <action>index</action>
-       <class>global last</class>
+       <class>global sub-last</class>
       </explore>
      </pages>
     </tags>
@@ -154,7 +154,7 @@
        <label>About</label>
        <controller>help</controller>
        <action>about</action>
-       <class>global last</class>
+       <class>global sub-last</class>
       </about>
      </pages>
     </help>

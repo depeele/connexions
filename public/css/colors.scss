@@ -1,5 +1,7 @@
 $lightest:            #fff;
 $darkest:             #172322;
+$themeDark:           #1b2726;
+$themeWaveLight:      #222d2c;
 
 $pageColorBackground: $lightest;
 
@@ -23,7 +25,7 @@ $warningColorBackground:      #ffd;     // #fbec88
 $successColorBackground:      #fbec88;  // jquery-ui.css bgColorHighlight
 $updateColorBackground:       $lightestGrey;
 
-$navColorBackground:          $darkest;
+$navColorBackground:          $themeDark;
 $navColorWelcomeBackground:   #3d7cc2;  // $linkColorSubdued; #142940;
 $navColorJoinBackground:      #9fc54e;
 $navColor:                    $lightest;

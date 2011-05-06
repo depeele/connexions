@@ -30,28 +30,28 @@
 
 /* Page Header */
 #pageHeader {
-  height: 3.25em;
-  z-index: 100;
   h1#siteName {
-    position: absolute;
-    top: 0;
-    left: 0;
-    color: black;
-    font-weight: bold;
-    font-size: 26px;
-    padding: 2px 0 2px 5px;
-    width:  160px;
-    span {
-      display: block;
-      float: left;
+    position:       absolute;
+    top:            -26px;
+    left:           0;
+    color:          black;
+    font-weight:    bold;
+    font-size:      26px;
+    padding:        0 0 0 13px;
+
+    a {
+      display:  block;
+      width:    175px;
+    }
+    span,img {
+      @include inlineBlock();
     }
     img {
-      position: relative;
-      float: left;
-      height: 34px;
-      top: 5px;
-      left: -4px;
-      margin-right: -10px;
+      height:       34px;
+      width:        34px;
+      top:          13px;
+      left:         -2px;
+      margin-right: -9px;
     }
   }
 }
