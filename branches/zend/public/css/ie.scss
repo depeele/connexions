@@ -23,11 +23,11 @@
 #pageHeader {
   .nav {
     li {
-      height: $tabHeight - 0.35em;
+      height: $tabHeight - 5px;
     }
   }
   ul.sub {
-    top:  $navTopSub + 0.1em;
+    top:  $navTopSub + 2px;
   }
   .tabs {
     li {
