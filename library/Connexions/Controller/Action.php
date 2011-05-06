@@ -126,8 +126,12 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         $this->_noNav =
             Connexions::to_bool($this->_request->getParam('noNav',
                                 $this->_noNav));
+
+        /*
         Connexions::log("Connexions_Controller_Action::init(): noNav[ %s ]",
                         Connexions::varExport($this->_noNav));
+        // */
+
         if ($this->_noNav === true)
         {
             $this->view->excludeNav = true;
