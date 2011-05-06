@@ -1,0 +1,46 @@
+<?php
+/** @file
+ *
+ *  View script for IndexController::index to render a Feed (RSS/Atom) version
+ *  of the main content.
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
+ *
+ *      main            An array of settings for the main body:
+ *          namespace       The cookie/parameters/settings namespace for the
+ *                          main body;
+ *          viewer          The Model_User instance representing the current
+ *                          viewer (typically a reference to $view->viewer);
+ *          tags            The Model_Tag or Model_Set_Tag instance  
+ *                          representing the tag(s) that partially define the
+ *                          scope of this view
+ *                          (typically a reference to $view->tags);
+ *
+ *          displayStyle    Indicates the current presentation style -- if this
+ *                          is an array, the style is 'custom';
+ *          perPage         The number of results on a single page;
+ *          page            The desired page of results;
+ *          sortBy          Indicates the sort field used to retrieve the
+ *                          current bookmark set;
+ *          sortOrder       Indicates the sort order used to retrieve the
+ *                          current bookmark set;
+ *          feedType        The type of feed to render
+ *                          (View_Helper_FeedBookmarks::TYPE_*);
+ *
+ *  Sets the 'feed' item of the view for use by Bootstrap::feed_post in final
+ *  rendering.
+ */
+Connexions_Profile::checkpoint('Connexions',
+                               'PeopleView Feed rendering beginning');
+
+// Use the application/views/helpers/FeedBookmarks.php view helper...
+$this->feed = $this->feedUsers($this->main)->render();
+
+Connexions_Profile::checkpoint('Connexions',
+                               'PeopleView Feed rendering COMPLETE, '
+                               . 'feed is class '. get_class($this->feed));

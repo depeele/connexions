@@ -1,0 +1,193 @@
+<?php
+/** @file
+ *
+ *  Render the main settings page.
+ *
+ *  Incoming members:
+ *      baseUrl         The base url for the main controller of this page
+ *                      without any differentiating parameters
+ *                      (e.g. tag restrictions);
+ *      url             The full url for the main controller of this page
+ *                      with differentiating parameters;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *
+ *      section         The settings section;
+ *      setting         The specific setting;
+ *      tabs            An array of avaialble tabs and configuration of the
+ *                      form:
+ *                          {%tabId%: {
+ *                              'title':    tab title,
+ *                              'script':   tab render script
+ *                              'sections': {
+ *                                  %sectionId%: {
+ *                                      'title':   command title,
+ *                                      'script':  command render script,
+ *                                  },
+ *                                  ...
+ *                              },
+ *                           },
+ *                           ...
+ *                          }
+ */
+
+$this->headTitle('Settings');
+
+$this->headLink()->appendStylesheet($this->baseUrl('/css/settings.css'));
+
+?>
+<div class='columnHeader'>
+ <div class='context-bg connexions_sprites settings_bg
+             ui-corner-left ui-corner-tr'>&nbsp;</div>
+ <p>Settings</p>
+ <!-- p>Settings for <?= $this->viewer ?></p>
+ <p class='userName'><?= $this->viewer->fullName ?></p -->
+</div>
+<div id='settings' class='settings'>
+ <ul>
+<?php
+    $paneHtml    = '';
+    $tabSelected = 0;
+    $tabNum      = 0;
+    foreach ($this->tabs as $tabId => $tab)
+    {
+        if ($tabId === $this->section)
+        {
+            $tabSelected = $tabNum;
+        }
+
+        $paneUrl = $this->baseUrl('/settings/'. $tabId);
+        $loadUrl = $this->view->url
+                 .  '?format=partial'
+                 .  '&part='. $tab['script'];
+        #$paneUrl = "#{$tabId}";
+        $paneCss = (! empty($tab['cssClass'])
+                        ? $tab['cssClass']
+                        : $tabId);
+
+        ?>
+  <li><a href='<?= $paneUrl ?>'
+         data-panel.tabs='#<?= $tabId ?>'
+         data-load.tabs='<?= $loadUrl ?>'><span><?= $tab['title'] ?></span></a></li><?php
+
+        $paneHtml .= "<div id='{$tabId}'>"
+                  .    "<ul id='{$tabId}-settings' class='{$paneCss}'>";
+        foreach ($tab['sections'] as $sectionId => $section)
+        {
+            $fullId  = $tabId .'-'. $sectionId;
+
+            $state   = ((empty($this->setting) &&
+                        ($section['expanded'] === true)) ||
+                           ($this->setting === $sectionId)
+                                ? 'expanded'
+                                : 'collapsed');
+
+            /*
+            Connexions::log("view/scripts/settings/index.phtml: "
+                            . "section[ %s ], setting[ %s ], state[ %s ]",
+                            $tabId, Connexions::varExport($section), $state);
+            // */
+
+            $sectHtml    = '';
+            $sectionUrl  = $paneUrl .'/'. $sectionId;
+            $sectionData = " data-content.collapsable='{$fullId}-content'";
+            if (isset($section['async']) && ($section['async'] === true))
+            {
+                // Asynchronously loaded
+                $loadUrl      = $this->view->url
+                              .   '?format=partial'
+                              .   '&part='. $section['script'];
+
+                $sectionData .= " data-load.collapsable='{$loadUrl}'";
+
+                /*
+                Connexions::log("view/scripts/settings/index.phtml: "
+                                . "section[ %s ], setting[ %s ]: loadUrl[ %s ]",
+                                $tabId, $section['title'], $loadUrl);
+                // */
+            }
+            else
+            {
+                // Pre-rendered
+                $script       = 'settings/'. $section['script'] .'.phtml';
+                $sectionData .= " data-cache.collapsable='{$fullId}-content'";
+
+                $sectHtml     = "<div id='{$fullId}-content'>"
+                              .  $this->render($script)
+                              . "</div>";
+            }
+
+            $paneHtml .= "<li class='collapsable {$fullId}'>"
+                      .   "<h3 class='toggle {$state}'>"
+                      .    "<a href='{$sectionUrl}'{$sectionData}>"
+                      .     "<span>{$section['title']}</span>"
+                      .    "</a>"
+                      .   "</h3>"
+                      .   $sectHtml
+                      .  "</li>";
+        }
+        $paneHtml .=  "</ul>"
+                  .  "</div>";
+
+        $tabNum++;
+    }
+
+?>
+ </ul>
+ <?= $paneHtml ?>
+</div>
+<?php
+
+/*********************************************************************
+ * Now that we've had a chance to see which tab should be selected,
+ * generate the Javascript to create a ui.tabs instance.
+ */
+$jQuery = $this->jQuery();
+$jQuery->addJavascriptFile($this->baseUrl('js/connexions-full.js'))
+       ->addJavascriptFile($this->baseUrl('js/settings-full.js'))
+       ->addOnLoad("settings_onLoad();")
+       ->javascriptCaptureStart();
+?>
+/************************************************
+ * Initialize the settings tabs
+ *
+ */
+function settings_onLoad()
+{
+    var $el         = $('#settings');
+
+    // Add 'loading' indicators for tabs and collapsables
+    $el.tabs({
+        cache:      true,
+        cookie:     'settings',
+        selected:   <?= $tabSelected ?>,
+        ajaxOptions: {
+            beforeSend: function() {
+                $(this).mask();
+            },
+            complete:   function() {
+                $(this).unmask();
+            }
+        }
+    });
+
+    $el.find('.collapsable').collapsable({
+        cache:  true,
+        cookie: 'settings',
+        ajaxOptions: {
+            beforeSend: function() {
+                $(this).mask();
+            },
+            complete:   function() {
+                $(this).unmask();
+            }
+        }
+    });
+}
+
+<?php
+    $jQuery->javascriptCaptureEnd();
+
+?>
+
+<div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

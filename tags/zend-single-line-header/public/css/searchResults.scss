@@ -1,0 +1,14 @@
+@import "sizes";
+@import "colors";
+@import "mixins";
+
+/****** searchResults.sass ****** */
+// Styling for the search results
+.results {
+  margin-right:  1em;
+
+  .searchStats {
+    float:        right;
+    font-weight:  bold;
+  }
+}

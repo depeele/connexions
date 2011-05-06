@@ -1,0 +1,51 @@
+<?php
+/** @file
+ *
+ *  View script for IndexController::index to render the main content.
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
+ *
+ *      main            An array of settings for the main body:
+ *          namespace       The cookie/parameters/settings namespace for the
+ *                          main body;
+ *          viewer          The Model_User instance representing the current
+ *                          viewer (typically a reference to $view->viewer);
+ *          tags            The Model_Tag or Model_Set_Tag instance  
+ *                          representing the tag(s) that partially define the
+ *                          scope of this view
+ *                          (typically a reference to $view->tags);
+ *
+ *          displayStyle    Indicates the current presentation style -- if this
+ *                          is an array, the style is 'custom';
+ *          perPage         The number of results on a single page;
+ *          page            The desired page of results;
+ *          sortBy          Indicates the sort field used to retrieve the
+ *                          current user set;
+ *          sortOrder       Indicates the sort order used to retrieve the
+ *                          current user set;
+ */
+
+/*
+Connexions::log("scripts/people/main.phtml: begin: main[ %s ]",
+                Connexions::varExport($this->main));
+// */
+
+// Prepare the HTML Users helper and retrieve the current user set.
+$htmlUsers = $this->htmlUsers( $this->main );
+$users     = $htmlUsers->users; //items;
+
+/*
+Connexions::log("scripts/people/main.phtml: paginator with %d users [ %s ]",
+                count($users),
+                (is_object($users)
+                    ? get_class($users)
+                    : gettype($users)) );
+// */
+
+// Render the main view.
+echo $htmlUsers->render();

@@ -1,0 +1,90 @@
+<?php
+/** @file
+ *
+ *  Present a simple search form.
+ *
+ */
+
+// Disable the 'same' / 'Search this view' context
+$navMenu = $this->navMenu(false)->disableSearchContext('same');
+
+$this->headTitle("Search");
+$jQuery = $this->jQuery();
+$jQuery->addStylesheet($this->baseUrl('css/search.css'))
+       ->addOnLoad('$("#simple-search form").validationForm({'
+                   .    'submitSelector:"button[name=submit]"});');
+
+?>
+<div class='line'>
+ <div id='simple-search' class='ui-validation-form ribbon-form'>
+  <div class='context-ribbon'><div class="context-bg connexions_sprites
+                                          search_bg ui-corner-left 
+                                          ui-corner-tr">&nbsp;</div></div>
+  <div class='legend unit'>
+   <h1>Search</h1>
+   <div class='status'>&nbsp;</div>
+  </div>
+  <div class='userInput unit'>
+
+   <form action='<?= $this->baseUrl('/search') ?>' method='post'
+          class='ui-form'>
+    <input name='referer' type='hidden'
+           value='<?= $this->url ?>' />
+    <div class='searchBox'><!-- searchBox { -->
+     <div class='field'>
+      <input name='terms'
+             type='text'
+            class='text required ui-input ui-corner-all ui-state-default'
+             size='30' maxlength='255' autocomplete='off' />
+     </div>
+     <div class='searchContexts'>
+       <?php
+
+       // Render the list of available search contexts.
+       $contextText = 'Search connexions';
+       foreach($navMenu->getContexts() as $name => $info)
+       {
+           if ( ($name === 'same') || (! $navMenu->searchAccept($name)) )
+           {
+               // NOT accepted by ACL or visibility
+               continue;
+           }
+   
+           $title = $info['title']; //Connexions::replacables($info['title']);
+           $id    = 'search-choice-'. $name;
+   
+           if ($name == 'all')
+           {
+               $selected = true;
+           }
+           else
+           {
+               $selected = false;
+           }
+   
+           ?>
+      <div class='field'>
+       <input type='radio'
+                   id='<?= $id ?>'
+                 name='directSearchContext'
+                value='<?= $name ?>'
+                <?= ($selected ? "checked='true'" : '') ?>
+       /><label for='<?= $id ?>'><?= $title ?></label>
+      </div>
+           <?php
+
+       }
+       ?>
+     </div>
+     <div class='field buttons'>
+       <button name='submit'
+              class='ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only'
+               role='button'>
+         <span class='ui-button-text'>Search</span>
+       </button>
+     </div>
+    </div><!-- searchBox } -->
+   </form>
+  </div>
+ </div>
+</div>

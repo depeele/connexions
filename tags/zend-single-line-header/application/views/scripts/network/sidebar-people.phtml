@@ -1,0 +1,68 @@
+<?php
+/** @file
+ *
+ *  View script for IndexController::index to render the people portion of the
+ *  sidebar.
+ *
+ *  The Connexions_View_Helper_HtmlItemCloud helper MUST be initialized
+ *  before this view is rendered.
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      owner           The owner of the current item set -- either a string or
+ *                      a Model_User instance;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
+ *      sidebar         Configuration for the sidebar presentation;
+ */
+$paneName = 'people';
+$config   =  (is_array($this->sidebar['panes']) &&
+              is_array($this->sidebar['panes'][$paneName])
+                ? $this->sidebar['panes'][$paneName]
+                : array());
+
+
+$viewer = $this->viewer;    //$config->viewer;
+$owner  = $this->owner;     //$config->owner;
+
+$label = 'People in ';
+$edit  = '';
+if ($viewer->isSame($owner))
+{
+    $label .= 'your network';
+
+    $url    = $this->baseUrl('settings/people/network');
+    $edit   = "<span class='edit'>"
+            .   "(<a href='{$url}'>edit your network</a>)"
+            . "</span>";
+}
+else
+{
+    $label .= 'the network of '. $owner;
+}
+
+if (count($this->tags) > 0)
+{
+    $label .= 'related to these bookmarks';
+}
+
+?>
+  <div class='columnHeader'>
+   <div class='context-bg connexions_sprites user_bg ui-corner-left'>
+    &nbsp;
+   </div>
+   <?php
+    echo "<p>", $label , ".{$edit}</p>\n";
+  ?>
+  </div>
+  <?php
+
+    // Tag-related users
+    Connexions::log("network/sidebar-people.phtml: config[ %s ]",
+                    Connexions::varExport($config));
+
+    $htmlItemCloud = $this->htmlItemCloud($config);
+
+    echo $htmlItemCloud->render();

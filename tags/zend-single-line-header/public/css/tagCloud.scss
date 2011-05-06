@@ -1,0 +1,515 @@
+/****** tagCloud.sass ****** */
+.rightCol .itemItems, .rightCol .userItems {
+  padding: 0 0.25em 0 0;
+  border-top: unquote("3px solid") $columnHeaderBorderColor;
+  //border-left =         "2px solid" !borderColor
+  //border-bottom =       "2px solid" !borderColor
+  //+corners(10px, 0, 0, 10px)
+  .cloudRelation {
+    position: absolute;
+    top: -2px;
+    left: -19px;
+  }
+}
+
+.itemItems, .userItems {
+  .displayOptions {
+    form {
+      width: 18em;
+      .field {
+        label {
+          width: 5.5em;
+        }
+      }
+      .itemCounts {
+        padding-top: 0.5em;
+        padding-bottom: 0.5em;
+        border-bottom: unquote("1px dotted") $borderColor;
+        .field {
+          display: inline;
+          label {
+            width: auto;
+          }
+          select {
+            width: 4.5em;
+          }
+          label, select, .label {
+            float: left;
+            margin-bottom: 0.25em;
+          }
+          label, .label {
+            padding: 0 0.25em;
+          }
+        }
+        .highlightCount {
+          float: right;
+          display: block;
+          label.above {
+            width: auto;
+          }
+        }
+      }
+      .displayStyle {
+        display: block;
+        position: relative;
+        width: auto;
+        text-align: left;
+        padding-top: 1em;
+        a {
+          font-weight: normal;
+        }
+        .option-selected {
+          font-weight: bold;
+        }
+        .option, .comma {
+          display: block;
+          float: left;
+        }
+        .option.control {
+          position: relative;
+          top: -0.25em;
+        }
+        .comma {
+          padding-right: 0.5em;
+        }
+      }
+    }
+  }
+}
+
+.cloud {
+  z-index:  1;
+  padding:  1em 0 2em 0.25em;
+  clear: both;
+  .highlights {
+    float: right;
+    border: unquote("1px solid") $borderColor;
+    background-color: $highlightTopColorBackground;
+    padding: 0.25em;
+    margin: 0 0 0.25em 1em;
+    font-size: 0.9em;
+    z-index: 2;
+    h4 {
+      font-size: 1em;
+      font-weight: bold;
+      padding: 0;
+      text-align: center;
+      color: $highlightTopHeaderColor;
+    }
+  }
+
+  .Item_List, .Item_Cloud {
+    li {
+      .control {
+        @include inlineBlock();
+        text-align:       center;
+        vertical-align:   middle;
+        margin:           0;
+
+        z-index:          3;
+        cursor:           pointer;
+
+        .icon {
+          @include  inlineBlock();
+        }
+        .item-add, .item-edit, .item-delete {
+          .title {
+            display:  none;
+          }
+        }
+        .item-add {
+          .icon {
+            @extend .control-add-grey;
+          }
+          &:hover {
+            .icon {
+              @extend .control-add;
+            }
+          }
+        }
+        .item-edit {
+          .icon {
+            @extend .control-edit-grey;
+          }
+          &:hover {
+            .icon {
+              @extend .control-edit;
+            }
+          }
+        }
+        .item-delete {
+          .icon {
+            @extend .control-delete-grey;
+          }
+          &:hover {
+            .icon {
+              @extend .control-delete;
+            }
+          }
+        }
+      }
+
+      .edit-item {
+        position:         absolute;
+        padding:          1px;
+        text-align:       center;
+
+        @include          corners(0.3em);
+        border:           unquote("1px solid") $borderColor;
+        background-color: $lightestGrey;
+        color:            $lightest;
+        //font-size:        0.7em;
+        z-index:          4;
+
+        text-align:       center;
+
+        .buttons {
+          font-size:    0.5em;
+          padding:      0.5em 0 0;
+
+          .icon {
+            @include  inlineBlock();
+          }
+          .item-save, .item-cancel {
+            margin: 0 1px;
+            cursor: pointer;
+            .title {
+              display:  none;
+            }
+          }
+          .item-save {
+            .icon {
+              @extend .confirm-yes-grey;
+            }
+            &:hover {
+              .icon {
+                @extend .confirm-yes;
+              }
+            }
+          }
+          .item-cancel {
+            .icon {
+              @extend .confirm-no-grey;
+            }
+            &:hover {
+              .icon {
+                @extend .confirm-no;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .Item_Cloud {
+    li {
+      .control {
+        visibility:   hidden;
+      }
+
+      &:hover {
+        .control {
+          visibility: visible;
+        }
+      }
+
+      // Network relation
+      .relation {
+        @include inlineBlock();
+        font-size:        0.75em;
+        text-align:       center;
+        background-color: $lightest;
+        padding:          1px;
+
+        .connexions_sprites {
+          width:        18px;
+          height:       8px;
+          text-indent:  -9999px;
+        }
+        .relation-amIn {
+          //@extend .relation-amIn;
+          background-position:  -181px -14px;
+        }
+        .relation-isIn {
+          //@extend .relation-isIn;
+          background-position:  -181px -26px;
+        }
+        .relation-mutual {
+          //@extend .relation-mutual;
+          background-position:  -181px -2px;
+        }
+        .relation-self {
+          //@extend .relation-self;
+          background-position:  -133px -50px;
+        }
+        .relation-none {
+          //@extend .relation-none;
+          background-position:  -133px -50px;
+        }
+      }
+    }
+  }
+}
+
+.Item_List {
+  padding: 0;
+  li.header, li.footer {
+    background-color: $tagsHeaderColorBackground;
+    padding:          0.25em;
+    .item,.itemCount {
+      padding:      0;
+      font-weight:  bold;
+    }
+    .itemCount {
+      top:          0.5em;
+    }
+  }
+  li.header {
+    border-bottom:    1px solid $tagsHeaderColorBorder;
+  }
+  li.footer {
+    border-top:       1px solid $tagsHeaderColorBorder;
+  }
+
+  li.odd {
+    background-color: $li_oddColor;
+  }
+  li.even {
+    background-color: $li_evenColor;
+  }
+  .item {
+    display:      block;
+    font-weight:  normal;
+    color:        $highlightTopTagColor;
+    margin-right: 3em;
+    .img {
+      @include inlineBlock();
+    }
+  }
+
+  li {
+    .control {
+      position: absolute;
+      top:      0;
+
+      // Based on .item:margin-right
+      right:    2.5em;
+      .item-add, .item-edit, .item-delete {
+        visibility:   hidden;
+      }
+
+    }
+    &:hover {
+      .control {
+        .item-add, .item-edit, .item-delete {
+          visibility: visible;
+        }
+      }
+    }
+
+    .edit-item {
+      .buttons {
+        text-align: right;
+      }
+    }
+
+    // Network relation
+    .relation {
+      @include inlineBlock();
+      position:         absolute;
+      top:              1px;
+      right:            14px;
+
+      font-size:        0.75em;
+      text-align:       center;
+      padding:          1px;
+
+      .connexions_sprites {
+        width:        32px;
+        height:       12px;
+        text-indent:  -9999px;
+      }
+      .relation-amIn {
+        //@extend .relation-amIn;
+        background-position:  -176px -12px;
+      }
+      .relation-isIn {
+        //@extend .relation-isIn;
+        background-position:  -176px -24px;
+      }
+      .relation-mutual {
+        //@extend .relation-mutual;
+        background-position:  -176px 0px;
+      }
+      .relation-self {
+        //@extend .relation-self;
+        background-position:  -128px -48px;
+      }
+      .relation-none {
+        //@extend .relation-none;
+        background-position:  -128px -48px;
+      }
+
+      /*
+      &:hover {
+        .relation-amIn, .relation-none {
+          //@extend .relation-add;
+          background-position: -36px -86px;
+        }
+        .relation-isIn, .relation-mutual {
+          //@extend .relation-remove;
+          background-position: -36px -98px;
+        }
+      }
+      */
+    }
+  }
+  .itemCount {
+    display:    block;
+    position:   absolute;
+    top:        0;
+    right:      0;
+    padding:    0.15em 0 0.15em;
+    color:      $highlightTopTagCountColor;
+    font-size:  0.8em;
+  }
+}
+
+#sbItemsCloud {
+  .Item_List {
+    li.header {
+      .item {
+        padding:      0;
+      }
+    }
+    .item {
+      padding-top:    0.25em;
+      padding-bottom: 0.25em;
+    }
+    .itemCount {
+      top:          0.5em;
+    }
+  }
+}
+
+.Item_Cloud {
+  list-style: none;
+  text-align: justify;
+  padding: 0;
+  .cloudItem {
+    @include inlineBlock();
+    //line-height:  1.25em
+    font-size: 100%;
+    margin: 0 0.25em;
+    a {
+      @include inlineBlock();
+      vertical-align: middle;
+      padding: 0 0.2em;
+      &:hover {
+        text-decoration: none;
+        background-color: $linkColor;
+        color: $pageColorBackground;
+      }
+    }
+    &:hover {
+      a {
+        text-decoration: none;
+        background-color: $linkColor;
+        color: $pageColorBackground;
+      }
+    }
+    .control {
+      position:         absolute;
+      left:             0;
+      bottom:           -20px;
+      // width == 2 icons (16px each) + 1px left/right margin
+      min-width:        40px;
+      width:            100%;
+
+      background-color: $lightGrey;
+      @include          corners(0 0 5px 5px);
+
+      .item-edit, .item-delete {
+        @include inlineBlock();
+      }
+    }
+    .edit-item {
+      input {
+        text-align:     center;
+      }
+      .buttons {
+        min-width:    40px;
+      }
+    }
+    .avatar {
+      @include inlineBlock();
+      vertical-align: middle;
+      margin: 2px;
+      border: none;
+      img {
+        width: 16px;
+        height: 16px;
+      }
+    }
+    .name {
+      @include inlineBlock();
+      vertical-align: middle;
+    }
+    .size0 {
+      font-size: 0.65em;
+      font-weight: normal;
+      color: black;
+    }
+    .size1 {
+      font-size: 0.75em;
+      font-weight: normal;
+      color: #23598c;
+    }
+    .size2 {
+      font-size: 0.9em;
+      font-weight: normal;
+      color: #23598d;
+    }
+    .size3 {
+      font-size: 1.125em;
+      font-weight: normal;
+      color: #235992;
+    }
+    .size4 {
+      font-size: 1.333em;
+      font-weight: normal;
+      color: #235994;
+    }
+    .size5 {
+      font-size: 1.542em;
+      font-weight: normal;
+      color: #2359aa;
+    }
+    .size6 {
+      font-size: 1.75em;
+      font-weight: normal;
+      color: #2359ff;
+    }
+  }
+}
+.Item_Cloud, .Item_List {
+  .cloudItem,li {
+    a.selected {
+      background-image: none;
+      background-color: $linkColor;
+      color:            $pageColorBackground;
+      &:hover {
+        color:            $linkColor;
+        background-color: $pageColorBackground;
+      }
+    }
+  }
+}
+
+//#sidebar-tabs
+//  .cloud
+//    padding-left: 1.25em
+.main .cloud {
+  font-size:  1.25em;
+}

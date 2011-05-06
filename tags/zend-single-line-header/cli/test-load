@@ -1,0 +1,17 @@
+#!/usr/bin/env php
+<?php
+ini_set('display_startup_errors', 1);
+ini_set('display_errors',         1);
+error_reporting(E_ALL);
+
+define('CLI_DIR', realpath(dirname(__FILE__)));
+
+require_once(CLI_DIR. '/bootstrap.php');
+
+$prog = array_shift($argv);
+foreach ($argv as $arg)
+{
+    printf ("Require: '%s'...", $arg);
+    require_once( $arg );
+    echo " done\n";
+}

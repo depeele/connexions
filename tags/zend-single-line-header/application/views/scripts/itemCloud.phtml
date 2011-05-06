@@ -1,0 +1,276 @@
+<?php
+/** @file
+ *
+ *  HTML rendering of an Item Cloud (may actually present a list).
+ *
+ *  Incoming parameters:
+ *      helper          The View_Helper_HtmlItemCloud instance;
+ *
+ *
+ *  The 'helper' provides access to the following:
+ *      namespace       The form namespace for this paginator;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      users           The Model_Set_User instance representing the user(s)
+ *                      that define the scope for this view.
+ *                      If ((count(users) === 1) && (users[0] == viewer))
+ *                          we're presenting a set of items owned by the
+ *                          current viewer;
+ *
+ *      perPageChoices  The set of valid per-page values;
+ *      itemType        The type of item
+ *                      (View_Helper_HtmlItemCloud::ITEM_TYPE_ITEM |
+ *                                                  ITEM_TYPE_USER);
+ *
+ *      displayStyle    The type of display
+ *                      (View_Helper_HtmlItemCloud::STYLE_CLOUD |
+ *                                                  STYLE_LIST);
+ *
+ *      showRelation    Should a "cloudRelation" indicator be rendered;
+ *      paginator       If provided, render a pagination control top and
+ *                      bottom;
+ *
+ *      items           A Connexions_Model_Set instance representing the set of
+ *                      items to be presented;
+ *      selected        A Connexions_Model_Set instance representing the set of
+ *                      items that are currently selected (null if none are
+ *                      selected);
+ *      itemBaseUrl     The base URL to use for item completion;
+ *      weightName      The name of the field/member to use for weight;
+ *
+ *      showControls    Should item management controls be presented
+ *                      (i.e. is the current, authenticated view the owner
+ *                            of all items?)
+ *
+ */
+$helper       = $this->helper;
+$namespace    = $helper->namespace;
+$displayStyle = $helper->getDisplayStyleName(); //displayStyle;
+$itemType     = $helper->itemType;
+$paginator    = $helper->paginator;
+$html         = $helper->html; // Holder for any additional HTML to be included
+
+//printf ("<!-- displayStyle [ %s ] -->\n", $displayStyle);
+
+/*
+Connexions::log("itemCloud.phtml: displayStyle[ %s ], viewer[ %s ]",
+                Connexions::varExport($displayStyle), $helper->viewer);
+// */
+
+if ($helper->items !== null)
+{
+    $itemList = new Connexions_Model_Set_Adapter_ItemList(
+                        $helper->items,
+                        $helper->selected,
+                        $helper->itemBaseUrl,
+                        $helper->weightName);
+
+    if ($helper->hasHiddenItems())
+    {
+        // Remove any items that were identified as "hidden"
+        foreach ($itemList as $key => $item)
+        {
+            if ($helper->isHiddenItem($item))
+            {
+                unset($itemList[$key]);
+            }
+        }
+    }
+}
+
+$uiPagination = null;
+if ($paginator instanceof Zend_Paginator)
+{
+    $pagerConfig = array(
+        'namespace'      => $namespace,
+        'perPageChoices' => $helper->perPageChoices,
+        'paginator'      => $paginator,
+    );
+    $uiPagination = $this->htmlPaginationControl( $pagerConfig );
+}
+
+/*
+Connexions::log('views/scripts/itemCloud: show controls [ %s ]',
+                Connexions::varExport($helper->showControls));
+// */
+
+$id = $namespace .'Cloud';
+
+?>
+<div    id='<?= $id ?>'
+     class='<?= $itemType ?>Items pane'>
+ <?php
+    if ($helper->showRelation)
+    {
+        echo " ",
+             "<div class='cloudRelation connexions_sprites relation_ltr'>",
+              "&nbsp;",
+             "</div>",
+             "\n";
+    }
+
+    if (is_array($html) && isset($html['prepend']))
+    {
+         echo " ",
+              $html['prepend'],
+              "\n";
+    }
+
+    if ($uiPagination !== null)
+    {
+         echo " ",
+              $uiPagination->render('paginator-top', true),
+              "\n";
+    }
+
+    echo " ",
+         $helper->renderDisplayOptions(),
+         "\n";
+ ?>
+ <div class='cloud'><?php
+
+    if (count($itemList) < 1)
+    {
+        echo 'No matching items.';
+    }
+    else
+    {
+        $sortedList = $helper->sortItemList($itemList);
+
+        if ($displayStyle === View_Helper_HtmlItemCloud::STYLE_CLOUD)
+        {
+            // Render a cloud (Zend_Tag_Cloud)
+            $cloudConfig = array(
+                'ItemList'              => $sortedList,
+
+                // Setup the cloud decoarator
+                'CloudDecorator'        => array(
+                    'decorator'         => 'htmlCloud',
+                    'options'           => array(
+                        'View'          => $this,
+                        'HtmlTags'      => array(
+                            'ul'        => array(
+                                'class' => 'Item_Cloud',
+                            ),
+                        ),
+                    ),
+                ),
+
+                // Setup the tag decorator
+                'TagDecorator'          => array(
+                                           // View_Helper_HtmlItemCloudItem
+                    'decorator'         => 'htmlItemCloudItem',
+                    'options'           => array(
+                        'ShowControls'  => $helper->showControls,
+                        'View'          => $this,
+                        'ItemType'      => $helper->itemType,
+                        'Viewer'        => $helper->viewer,
+                        'HtmlTags'      => array(
+                            'li'        => array(
+                                'class' => 'cloudItem'
+                                           . (($itemType ===
+                                                View_Helper_HtmlItemCloud::
+                                                                ITEM_TYPE_USER)
+                                                ? ' user'
+                                                : ''),
+                            ),
+                        ),
+                        'ClassList'     => array(
+                            'size0', 'size1', 'size2', 'size3',
+                            'size4', 'size5', 'size6',
+                        ),
+                    ),
+                ),
+
+                // Make helpers in 'application/view/helpers' available
+                'prefixPath'            => array(
+                    'prefix'            => 'View_Helper',
+                    'path'              => APPLICATION_PATH .'/views/helpers/',
+                ),
+            );
+
+            $cloud = new Zend_Tag_Cloud( $cloudConfig );
+
+            if ($helper->highlightCount > 0)
+            {
+                /* (Re)sort the item list by descending weight and then
+                 * invoke the 'highlights.phtml' partial passing in the
+                 * newly sorted list and highlightCount.
+                 */
+                $hlList = $helper->sortItemList(
+                                        $itemList,
+                                        'weight',
+                                        Connexions_Service::SORT_DIR_DESC);
+
+                echo $this->partial('highlights.phtml',
+                                    array('itemList'       => $hlList,
+                                          'highlightCount' =>
+                                             $helper->highlightCount,
+                                   ));
+            }
+
+            echo $cloud->render();
+        }
+        else
+        {
+            // Render a list
+
+            // /*
+            echo $this->partial('itemList.phtml',
+                                array('itemList'     => $sortedList,
+                                      'viewer'       => $helper->viewer,
+                                      'weightName'   => $helper->weightName,
+                                      'weightTitle'  => $helper->weightTitle,
+                                      'titleName'    => $helper->titleName,
+                                      'titleTitle'   => $helper->titleTitle,
+                                      'itemType'     => $helper->itemType,
+                                      'showControls' => $helper->showControls,
+                               ));
+            // */
+
+            /*
+            echo $helper->renderList( $sortedList );
+            // */
+        }
+    }
+
+ ?>
+ </div>
+ <?= ($uiPagination !== null
+         ? $uiPagination->render()
+         : '') ?>
+ <?= (is_array($html) && isset($html['append'])
+         ? $html['append']
+         : '') ?>
+</div>
+<?php
+
+/* Establish configuration for and schedule instantiation of a new Javascript
+ * connexions.cloudPane() instance targeting the 'pane' div we've just
+ * rendered.
+ */
+$paneConfig = array(
+    'namespace'      => $namespace,
+    'partial'        => $helper->panePartial,
+    'hiddenVars'     => $helper->paneVars,
+    'displayOptions' => $helper->getDisplayOptionsConfig(),
+    'showControls'   => $helper->showControls,
+);
+$paneConfig = Zend_Json::encode($paneConfig);
+
+$jsWait = false;
+$jsLoad = "$('#{$id}').cloudPane({$paneConfig});";
+if ($jsWait === false)
+{
+    ?>
+<script type='text/javascript'>
+(function($) {
+    <?= $jsLoad ?>
+ }(jQuery));
+</script>
+    <?php
+}
+else
+{
+    $this->jQuery()->addOnLoad( $jsLoad );
+}

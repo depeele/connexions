@@ -1,0 +1,144 @@
+@import "sizes";
+@import "colors";
+@import "mixins";
+@import "ribbon-form";
+
+$userRatingWidth: 96px;
+
+/****** post.sass ****** */
+// Styling for bookmark post form
+//  (in addition to styles from validationForm.sass)
+//#post, .ui-validation-form {
+//#post, #bookmarkPost {
+.ui-bookmarkPost {
+  .item-status {
+    padding:  0 0.5em 0 0;
+
+    .favorite,.private {
+      padding-bottom: 0.2em;
+      input {
+        width: 0;
+        height: 0;
+        margin: 0;
+        padding: 0;
+      }
+      // checkbox styling
+      .checkbox {
+        position: relative;
+        display: inline;
+        cursor: pointer;
+        border: none !important;
+        .ui-stars-wrapper {
+          float: left;
+        }
+      }
+    }
+  }
+  .item-data {
+    input,textarea {
+      width:  100%;
+    }
+
+    .item-name {
+      padding-bottom: 0;
+      margin-right:   $userRatingWidth + 10px;
+    }
+    .item-url {
+      padding-bottom: 0;
+      margin-left:    1em;
+    }
+    .userRating {
+      position: absolute;
+      z-index:  2;
+      right:    0;
+      display:  block;
+      padding:  0;
+
+      // Accomadate a wrapped label
+      height:   32px;
+      width:    $userRatingWidth;
+      label {
+        display: none;
+      }
+    }
+  }
+
+  .item-description, .item-tags {
+    textarea {
+      height:     4em;
+    }
+  }
+
+  .suggestions {
+    margin:       2em 0 0 1em;
+
+    .ui-tabs-panel {
+      padding:    0.25em;
+    }
+
+    .cloud, .db-profile {
+      font-size:      1em;
+
+      // Width here is based off validationForm.scss
+      //  .ui-validation-form .userInput .field .text (width: 30em)
+      //
+      // minus the padding of our div.suggesionts ul container
+      //  1em per side, thus decreasing 30em to 28em.
+      //
+      //width:      28em;
+    }
+
+    .db-profile {
+      margin:     0.5em;
+    }
+
+    .cloud {
+      padding:  1em;
+
+      .Item_Cloud {
+        text-align: center;
+      }
+
+      .cloudItem {
+        .size0 {
+          font-size: 0.65em;
+        }
+        .size1 {
+          font-size: 0.75em;
+        }
+        .size2 {
+          font-size: 0.85em;
+        }
+        .size3 {
+          font-size: 0.95em;
+        }
+        .size4 {
+          font-size: 1.05em;
+        }
+        .size5 {
+          font-size: 1.10em;
+        }
+        .size6 {
+          font-size: 1.25em;
+        }
+      }
+    }
+  }
+}
+.container-bookmarkPost {
+  width:      50em;
+}
+.noNav .container-bookmarkPost {
+  width:      100%;
+}
+
+.ui-dialog-bookmarkPost {
+  .ui-dialog-content {
+    padding:    0;
+  }
+  .ui-validation-form {
+    padding:    0;
+    border:     none;
+    float:      none;
+  }
+}

@@ -1,0 +1,30 @@
+<?php
+//$this->headLink()->appendStylesheet($this->baseUrl('css/auth.css'));
+//
+$this->headTitle('URL Lookup');
+
+$jQuery = $this->jQuery();
+$jQuery->addStylesheet($this->baseUrl('css/url-choose.css'))
+       ->addOnLoad('$("#choose form").validationForm();');
+?>
+<div id="choose" class='ui-validation-form ribbon-form line'><!-- { -->
+ <div class='context-ribbon'>&nbsp;</div>
+ <div class="legend unit"><!-- { -->
+  <h1>URL Lookup</h1>
+  <div class='status<?= (@isset($this->error) ? ' error' : '') ?>'>
+   <?= (@isset($this->error) ? $this->error : '') ?>
+  </div>
+ </div><!-- legend } -->
+ <div class="userInput lastUnit"><!-- { -->
+  <form method='post'>
+   <div class='field'>
+    <label for='url'>Desired URL</label>
+    <textarea class='text required' autocomplete='off'
+               name='url' tabindex='1'><?= $this->url ?></textarea>
+   </div>
+   <div class='field buttons'>
+    <button name='submit' tabindex='4'>Lookup</button>
+   </div>
+  </form>
+ </div><!-- userInput } -->
+</div><!-- ribbon-form -->

@@ -1,0 +1,76 @@
+@import "urls";
+
+.ui-stars-wrapper {
+  display: block;
+  width: 96px;
+  overflow: hidden;
+  input.ui-stars-rating {
+    width: 0;
+    height: 0;
+    padding: 0;
+    margin: 0;
+  }
+  .ui-stars {
+    display: block;
+    float: left;
+    //border-bottom:  1px solid transparent
+    // Hide the <a> text
+    overflow: hidden;
+    text-indent: 999em;
+    a {
+      background-image:       $connexions_sprites_url;
+      background-attachment:  scroll;
+      background-repeat:      no-repeat;
+      background-color:       transparent;
+
+      display: block;
+    }
+  }
+  .ui-stars-star-off, .ui-stars-star, .ui-stars-star-disabled {
+    a {
+      // sprites.sass::.star_1_off
+      @extend .star_1_off;
+    }
+  }
+  .ui-stars-star {
+    cursor: pointer;
+    a {
+      cursor: pointer;
+    }
+  }
+  .ui-stars-star-on {
+    a {
+      // sprites.sass::.star_1_on
+      @extend .star_1_on;
+    }
+  }
+  .ui-stars-star-hover {
+    a {
+      // sprites.sass::.star_1_hover
+      @extend .star_1_hover;
+    }
+  }
+  .ui-stars-cancel {
+    padding: 1px;
+    a {
+      // sprites.sass::.star_0
+      @extend .star_0;
+    }
+  }
+  .ui-stars-cancel-hover {
+    a {
+      // sprites.sass::.star_0_hover
+      @extend .star_0_hover;
+    }
+  }
+  .ui-stars-cancel-disabled {
+    a {
+      // sprites.sass::.star_0
+      @extend .star_0;
+      background-image: none;
+    }
+  }
+  .ui-stars-star-disabled, .ui-stars-cancel-disabled {
+    cursor: default;
+  }
+}

@@ -1,0 +1,394 @@
+@import "mixins";
+@import "colors";
+@import "sizes";
+@import "libraries";
+@import "template";
+@import "grids";
+@import "content";
+@import "sprites";
+@import "tabs";
+@import "ui-form";
+@import "ui.confirmation";
+@import "timeline";
+@import "tagCloud";
+@import "itemScope";
+@import "pagination";
+@import "displayOptions";
+@import "ui.notify";
+@import "validationForm";
+@import "post";
+
+/****** main.scss ****** */
+//a, a:link, a:visited, a:focus, a:hover
+//  color =     !linkColor
+//  outline:    0 none
+//
+//a:active
+//  outline:    0 none
+//  position:   relative
+//  top:        1px
+
+/* Page Header */
+#pageHeader {
+  height: 3.25em;
+  z-index: 100;
+  h1#siteName {
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: black;
+    font-weight: bold;
+    font-size: 26px;
+    padding: 2px 0 2px 5px;
+    width:  160px;
+    span {
+      display: block;
+      float: left;
+    }
+    img {
+      position: relative;
+      float: left;
+      height: 34px;
+      top: 5px;
+      left: -4px;
+      margin-right: -10px;
+    }
+  }
+}
+
+/* Page Content */
+#pageContent {
+  padding: 2em 0 0 2em;
+  z-index: 10;
+  .error {
+    color: $errorColor;
+  }
+  .success {
+    color: $successColor;
+  }
+}
+
+/* Notifications */
+#notifications {
+  display:  block;
+  position: absolute;
+  top:      2.5em;
+  right:    0.25em;
+  z-index:  99999;
+}
+
+/* Page Footer */
+#pageFooter {
+  clear: both;
+  margin-top: 1em;
+  border-top: unquote("1px solid") $borderColor;
+  padding: 0.5em;
+  z-index: 1;
+}
+
+// Without Navigation
+.noNav {
+  #pageHeader {
+    height: 2.25em;
+  }
+}
+
+// Without Sidebar/rightCol
+.noSidebar {
+  #pageContent {
+    padding-right:  1em;
+  }
+}
+
+// DB Profiling information / debugging
+.db-profile {
+  background-color: $borderColor;
+  padding: 0.25em;
+  ul {
+    padding: 0 1em;
+    li {
+      padding: 0;
+      dl {
+        padding: 0 1em;
+        dt {
+          font-weight: bold;
+        }
+        dd {
+          padding: 0 1em;
+        }
+      }
+    }
+  }
+}
+
+/* Columns */
+.columnHeader {
+  height:   3em;
+  h3,p {
+    padding:    0 1em 0 60px;
+    color:      $linkColor;
+  }
+  h3 {
+    font-size:    1em;
+    font-weight:  bold;
+    color:        $darkest;
+  }
+  h3 a {
+    color:        inherit;
+  }
+  p {
+    font-size:    0.9em;
+  }
+  .edit {
+    display:        block;
+    font-size:      0.9em;
+    padding-left:   1em;
+
+    a {
+      font-weight:  normal;
+    }
+  }
+  .smaller {
+    font-size:    0.8em;
+  }
+  .restrictions {
+    display:      block;
+    padding:      0 0 0 2em;
+    text-align:   left;
+    font-size:    0.9em;
+  }
+  .context-bg {
+    position: absolute;
+    left: 5px;
+    top: -4px;
+    @include opacity(40);
+  }
+  .avatar {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: -3px;
+    left: 33px;
+    @include opacity(60);
+  }
+  .url {
+    font-size:  0.7em;
+    padding:    0 0 0 1em;
+    float:      right;
+    max-width:  40%;
+    z-index:    2;
+    .favicon {
+      display:  inline;
+      width:    0.8em;
+      height:   0.8em;
+    }
+  }
+}
+
+.rightCol {
+  padding-left: 2.5em;
+  padding-right: 0.2em;
+}
+
+// ********************************************
+// ui.theme overrides
+.ui-widget {
+  font-size: 1em;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/*
+.ui-state-default a, .ui-state-default a:link {
+  color: $linkColor;
+}
+
+.ui-state-default a:visited {
+  color: $linkColorVisited;
+}
+*/
+
+.ui-tabs .ui-tabs-nav {
+  font-size: 0.7em;
+}
+
+.ui-tabs .ui-tabs-panel {
+  padding: 1em;
+}
+
+/*
+.ui-widget-content {
+  border-color: $borderColor;
+  a {
+    color: $linkColor;
+  }
+  a:visited {
+    color: $linkColorVisited;
+  }
+}
+*/
+
+.ui-autocomplete {
+  .ui-menu-item {
+    border-bottom:  unquote("1px solid") $lightestGrey;
+
+    a {
+      position:     relative;
+      display:      block;
+      font-weight:  normal;
+      .name {
+      }
+      .count {
+        position:     absolute;
+        top:          0.4em;
+        right:        0.4em;
+
+        font-size:    0.8em;
+        font-weight:  normal;
+      }
+    }
+  }
+}
+
+.rightCol {
+  .ui-tabs {
+    border-right: none;
+    @include corners(4px, 0, 0, 4px);
+    .ui-tabs-panel {
+      padding: 1em 0.25em 1em 0;
+    }
+  }
+
+  // For the sidebar when presenting overview/statistics information
+  .overview, .statistics {
+    border:           unquote("1px solid") $borderColor;
+    background-color: $pageColorBackground;
+    margin:           0 0 2em 0.25em;
+
+    .threshold {
+      font-size:  0.8em;
+      color:      $controlColor;
+    }
+
+    th, td {
+      padding:  0.25em;
+    }
+    th {
+      width:    100%;
+    }
+  }
+
+  .statistics {
+    thead {
+      border-bottom:    unquote("1px solid") $borderColor;
+      //background-color: $lightestGrey;
+
+      th {
+        font-weight:  bold;
+      }
+
+      .label {
+        text-align:   center;
+        font-size:    0.7em;
+        border-left:  unquote("1px solid") $borderColor;
+        border-bottom:unquote("1px solid") $borderColor;
+      }
+    }
+
+    tbody {
+      .subHeader {
+        padding-left: 1em;
+        font-size:    0.9em;
+      }
+      td {
+        text-align:   right;
+        border-left:  unquote("1px solid") $borderColor;
+        font-size:    0.7em;
+      }
+    }
+    tbody.twoCol {
+      border-top:     unquote("1px solid") $borderColor;
+    }
+  }
+}
+
+// General tag list / tag presentation
+.tags {
+  font-size: 0.9em;
+  padding: 0.5em 0;
+  margin: 0;
+  text-align: right;
+  // Individual tag
+  .tag {
+    border:   1px solid #fff;
+  }
+  .tag:hover {
+    border-color: $tagColor;
+  }
+  .tag,.tag:hover {
+    @include inlineBlock();
+    background-color: $tagColorBackground;
+    color: $tagColor;
+    @include corners(1em, 0, 0, 1em);
+
+    // Make nested, rouned boxes
+    margin:   0.1em 0.1em 0.1em -0.5em;
+    padding:  0.2em 0.75em 0.2em 0.5em;
+
+    a,a:hover,a:visited,a:focus {
+      display: inline;
+      font-weight: normal;
+      text-decoration: none;
+      color: $tagColor;
+    }
+  }
+  .tag:hover {
+    background-color: $tagColor;
+    color: $tagColorBackground;
+    a, a:hover, a:visited, a:focus {
+      color: $tagColorBackground;
+    }
+  }
+  .highlight {
+    background-color: $tagColorHighlight;
+    color: $tagColorBackground;
+    a, a:hover, a:visited, a:focus {
+      color: $tagColorBackground;
+    }
+  }
+}
+
+// Collapsable content
+.collapsable {
+  .toggle {
+    color:            $collapsableColor;
+    background-color: $collapsableColorBackground;
+    cursor:           pointer;
+    font-size:        0.9em;
+    font-weight:      bold;
+    padding:          0.2em;
+    margin:           0.5em 0 0 0;
+
+    border:           1px solid $borderColor;
+
+    a {
+      color:          $collapsableColor;
+    }
+    .ui-icon {
+      @include inlineBlock();
+      float:  left;
+    }
+  }
+  .content {
+    margin-top:       0;
+
+    border-bottom:    1px solid $borderColor;
+    border-left:      1px solid $borderColor;
+    border-right:     1px solid $borderColor;
+  }
+}
+
+// Hidden HTML templates used by the Javascript so it doesn't need to directly
+// know how to render the HTML
+.template {
+  display:  none;
+}

@@ -1,0 +1,125 @@
+<?php
+/** @file
+ *
+ *  View script for IndexController::index to render the main content.
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
+ *
+ *      main            An array of settings for the main body:
+ *          namespace       The cookie/parameters/settings namespace for the
+ *                          main body;
+ *          viewer          The Model_User instance representing the current
+ *                          viewer (typically a reference to $view->viewer);
+ *          tags            The Model_Tag or Model_Set_Tag instance  
+ *                          representing the tag(s) that partially define the
+ *                          scope of this view
+ *                          (typically a reference to $view->tags);
+ *
+ *          displayStyle    Indicates the current presentation style -- if this
+ *                          is an array, the style is 'custom';
+ *          perPage         The number of results on a single page;
+ *          page            The desired page of results;
+ *          sortBy          Indicates the sort field used to retrieve the
+ *                          current user set;
+ *          sortOrder       Indicates the sort order used to retrieve the
+ *                          current user set;
+ */
+
+Connexions::log("scripts/people/index.phtml: begin...");
+
+/* Initialize the HTML Users helper, needed here because the Scope Helper
+ * needs access to the users for count.
+ */
+$htmlUsers = $this->htmlUsers( $this->main );
+
+/*
+$users     = $htmlUsers->users;
+
+Connexions::log("people/index.phtml: paginator with %d users [ %s ]",
+                count($users),
+                (is_object($users)
+                    ? get_class($users)
+                    : gettype($users)) );
+// */
+
+
+// Prepare the Html Item Scope helper
+$scopePath = array('People' => $this->baseUrl('/people'));
+
+/*
+$scopeQuery = array('format=json',
+                    'method=autocomplete');
+if (count($this->tags) > 0)
+{
+    array_push($scopeQuery, 'tags='. $this->tags);
+}
+*/
+
+$htmlItemScope = $this->htmlItemScope( array(
+                    'namespace'         => $this->namespace,
+                    'items'             => $htmlUsers->paginator,
+                    'scope'             => $this->tags, //$htmlUsers->tags,
+                    'inputLabel'        => 'Tags',
+                    'inputName'         => 'Tags',
+                    'weightName'        => 'userCount',
+                    'path'              => $scopePath,
+                    'jsonRpc'           =>  array(
+                        'method'    =>   'user.autocompleteTag',
+                        'params'    =>   array(
+                            'tags'  => (count($this->tags) < 1
+                                            ? null
+                                            : $this->tags->__toString()),
+                        ),
+                    ),
+                 ));
+
+$baseUrl = $this->baseUrl('/'); //Connexions::url('/');
+
+$links = $this->headLink();
+$links->appendStylesheet($baseUrl .'css/users.css');
+
+?>
+<div class='columnHeader'>
+ <div class='context-bg connexions_sprites user_bg
+             ui-corner-left ui-corner-tr'>&nbsp;</div>
+ <p>All People<?php
+
+        $nTags = count($this->tags);
+        if ( $nTags > 1 )
+        {
+            printf ("<span class='restrictions'>with tags '%s'.</span>",
+                    $this->tags);
+        }
+        else if ( $nTags > 0 )
+        {
+            printf ("<span class='restrictions'>with tag '%s'.</span>",
+                    $this->tags);
+        }
+        else
+        {
+            echo ".";
+        }
+    ?>
+ </p>
+</div>
+
+<?php
+//Connexions_Profile::checkpoint('Connexions', 'IndexView render scope');
+
+echo $htmlItemScope->render();
+
+//Connexions_Profile::checkpoint('Connexions', 'IndexView render items');
+
+echo $this->render('people/main.phtml');
+?>
+
+<div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
+
+<?php
+
+//Connexions_Profile::checkpoint('Connexions', 'IndexView complete');

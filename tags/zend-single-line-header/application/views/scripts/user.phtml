@@ -1,0 +1,341 @@
+<?php
+/** @file
+ *
+ *  Generic user view script.
+ *
+ *  Incoming members:
+ *      user            The Model_User instance to render.
+ *      viewer          The Model_User instance to render.
+ *      showParts       An array indicating which portions of the user record
+ *                      to present;
+ *      maxTags         The maximum number of tags to present for a user [ 5 ];
+ *      sortBy          The current sorting order if this user entry is being
+ *                      rendered in a list;
+ *      tags            A Model_Set_Tag instance of tags that should be
+ *                      highlighted;
+ *      noAvatar        If set, use this URL for the avatar of any user that
+ *                      has no avatar set;
+ */
+$user          =& $this->user;
+$viewer        =  $this->viewer;    // MAY be unset, hence the missing '=&'
+$showParts     =& $this->showParts;
+$maxTags       =  ( isset($this->maxTags)
+                        ? $this->maxTags
+                        : 5 );
+$highlightTags = ($this->tags && ($this->tags instanceof Model_Set_Tag)
+                        ? $this->tags->__toString()
+                        : null);
+
+$isMe          = ( $viewer && $viewer->isSame($user) );
+$userUrl       = $this->url(array('controller' => 'index',
+                                'action'     => 'index',
+                                'owner'      => $user->name));
+
+$links         = $this->headLink();
+$links->appendStylesheet($this->baseUrl('/css/users.css'));
+
+$css = array();
+array_push($css, ($isMe ? 'me' : 'other'));
+
+if ($showParts['minimized'])    array_push($css, 'minimized');
+
+?>
+ <li class='item person <?= implode(' ', $css) ?>'>
+  <form class='user'>
+   <input type='hidden' name='userId' value='<?= $user->userId ?>' /><?php
+
+    /*****************************
+     * Stats
+     *
+     */
+    if ($showParts['user:stats'] === true)
+    {
+        ?>
+   <div class='stats ui-corner-bottom'><?php
+
+        if ($showParts['user:stats:countItems'] === true)
+        {
+            $count = number_format($user->totalItems);
+
+            echo "<a class='countItems' ",
+                     "href='{$userUrl}' ",
+                    "title='Bookmarks'>",
+                   $count,
+                 "</a>";
+        }
+
+        if ($showParts['user:stats:countTags'] === true)
+        {
+            $count = number_format($user->totalTags);
+            $url   = $this->url(array('controller' => 'tags',
+                                      'action'     => 'index',
+                                      'owner'      => $user->name));
+
+            // Watch the white-space...
+            echo "<a class='countTags' ",
+                     "href='{$url}' ",
+                    "title='Tags'>",
+                  "<div class='icon icon-active'>",
+                   "<div class='ui-icon ui-icon-tag'>",
+                    "&nbsp;",
+                   "</div>",
+                  "</div>",
+                  $count,
+                 "</a>";
+        }
+
+        ?>
+   </div><?php
+    }
+
+    /*****************************
+     * User Data
+     *
+     */
+    ?>
+   <div class='data'><?php  // data {
+
+    $clearFloats = $showParts['minimized'];
+
+
+    /*****************************
+     * Avatar
+     *
+     */
+    if ($showParts['user:data:avatar'] === true)
+    {
+        echo "<div class='avatar'>",
+              "<a href='{$userUrl}' title='{$user->fullName}'>",
+               "<div class='img icon-highlight'>";
+        $avatarUrl = $user->pictureUrl;
+        
+        if (empty($avatarUrl) && (! empty($this->noAvatar)) )
+        {
+            $avatarUrl = $this->noAvatar;
+        }
+
+        if (! empty($avatarUrl))
+        {
+            echo "<img src='", $avatarUrl, "' />";
+        }
+        else
+        {
+            echo "<div class='ui-icon ui-icon-person'>&nbsp;</div>";
+            //echo "<img src='", $this->baseUrl('/images/user.gif'), "' />";
+        }
+
+        echo   "</div>",
+              "</a>",
+             "</div>";
+    }
+
+    /*****************************
+     * Network-relation
+     *
+     */
+    if ( $showParts['user:data:relation'] === true )
+    {
+        /* 'user' SHOULD always be a Model_User instance while 'viewer' MAY be
+         * null
+         */
+        $relation = $viewer->networkRelation( $user );
+        $show     = array(
+            'add'   => false,
+            'del'   => false,
+        );
+
+        $haveRelation = false;
+        $extraHtml    = '';
+        if (empty($relation) || in_array('none', $relation))
+        {
+            $relationStr  = 'no relation';
+            $spriteCss    = 'none';
+            $show['add']  = true;
+        }
+        else if (in_array('self', $relation))
+        {
+            $relationStr  = 'you';
+            $spriteCss    = 'self';
+            $extraHtml    = "<a href='{$this->baseUrl('/settings')}' "
+                          .    "class='item-edit' "
+                          .    "title='your settings'>edit profile</a>";
+        }
+        else if (in_array('mutual', $relation))
+        {
+            $haveRelation = true;
+            $relationStr  = 'mutual followers';
+            $spriteCss    = 'mutual';
+            $show['del']  = true;
+        }
+        else if (in_array('amIn', $relation))
+        {
+            $haveRelation = true;
+            $relationStr  = 'follower';
+            $spriteCss    = 'amIn';
+            $show['add']  = true;
+        }
+        else
+        {
+            $haveRelation = true;
+            $relationStr  = 'following';
+            $spriteCss    = 'isIn';
+            $show['del']  = true;
+        }
+
+        echo "<div class='control'>",   // control {
+              $extraHtml,
+              "<div class='relation' title='{$relationStr}' ",
+                                    "data-relation='{$spriteCss}'>",
+               "<!-- ". implode(' ', $relation) ." -->",
+               "<div class='connexions_sprites relation-{$spriteCss}'>",
+                $relationStr,
+               "</div>",
+              "</div>",
+              '<span class="item-add',
+                 ($haveRelation ? '' : ' item-add-none'),
+                                                 '" ',
+                 ($show['add'] ? '' : ' style="display:none;" '),
+                                       'title="add to my network">',
+                 '<span class="title">ADD</span>',
+                 '<span class="icon connexions_sprites ',
+                                             'item-add">',
+                 '</span>',
+              '</span>',
+              '<span class="item-delete" ',
+                 ($show['del'] ? '' : ' style="display:none;" '),
+                                       'title="remove from my network">',
+                 '<span class="title">REMOVE</span>',
+                 '<span class="icon connexions_sprites ',
+                                             'item-delete">',
+                 '</span>',
+              '</span>',
+             "</div>";                  // control }
+    }
+
+
+    /*****************************
+     * UserId
+     *
+     */
+    if ($showParts['user:data:userId'] === true)
+    {
+        echo "<div class='userId' title='User id'>",
+              "<a href='{$userUrl}' title='User Id'>",
+               "<span class='name'>{$user->name}</span>",
+              "</a>",
+             "</div>";
+    }
+
+    /*****************************
+     * fullName
+     *
+     */
+    if ($showParts['user:data:fullName'] === true)
+    {
+        echo "<div class='fullName' ",
+                  "title='Full Name'>";
+
+        if ($showParts['user:data:userId'] !== true)
+        {
+            echo "<a href='{$userUrl}' ",
+                   "title='Full Name'>",
+                  $this->escape($user->fullName),
+                 "</a>";
+        }
+        else
+        {
+            echo $this->escape($user->fullName);
+        }
+
+        echo "</div>";
+    }
+
+    /*****************************
+     * Email address
+     *
+     */
+    if ($showParts['user:data:email'] === true)
+    {
+        echo "<div class='email' ",
+                  "title='email address'>",
+              "<a  href='mailto:{$user->email}' ",
+                 "title='email address'>",
+               "<div class='icon icon-highlight'>",
+                "<div class='ui-icon ui-icon-mail-closed'>",
+                 "&nbsp;",
+                "</div>",
+               "</div>",
+               $user->email,
+              "</a>",
+             "</div>";
+    }
+
+    /*****************************
+     * Tags
+     *
+     */
+    if (($showParts['user:data:tags'] === true) && ($maxTags > 0))
+    {
+        echo "<ul class='tags' title='Top {$maxTags} tags'>";
+
+        foreach ($user->getTags('userItemCount DESC', $maxTags) as $tag)
+        {
+            if ($maxTags-- < 0)
+                break;
+
+            $title  = $tag->getTitle();
+            $weight = $tag->getWeight();
+            $url    = $this->url(array('controller' => 'index',
+                                       'action'     => 'index',
+                                       'owner'      => $user->name,
+                                       'tag'        => $title));
+
+            $cssExtra = ( ($highlightTags !== null) &&
+                          (strpos($highlightTags, $tag->tag) !== false)
+                            ? ' highlight'
+                            : '');
+
+            echo "<li class='tag{$cssExtra}'>",
+                  "<a href='{$url}' title='{$title}: {$weight}'>",
+                   $title,
+                  "</a>",
+                 "</li>";
+
+        }
+
+        echo "</ul>";
+
+        $clearFloats = false;
+    }
+
+    /*****************************
+     * Dates
+     *
+     */
+    if ($showParts['user:data:dates'] === true)
+    {
+        echo "<div class='dates'>";
+
+        if ($showParts['user:data:dates:lastVisit'] === true)
+        {
+            echo "<div class='lastVisit' title='Last visited'>",
+                  $user->lastVisit,
+                 "</div>";
+        }
+
+        echo "</div>";
+
+        $clearFloats = false;
+    }
+
+    if ($clearFloats)
+    {
+        ?>
+    <br class='clear' /><?php
+
+    }
+
+   ?>
+   </div><?php  // data } ?>
+  </form>
+ </li>

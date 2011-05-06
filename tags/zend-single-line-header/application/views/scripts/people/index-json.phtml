@@ -1,0 +1,55 @@
+<?php
+/** @file
+ *
+ *  View script for IndexController::index to render an JSON version of the
+ *  main content.
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
+ *
+ *      main            An array of settings for the main body:
+ *          namespace       The cookie/parameters/settings namespace for the
+ *                          main body;
+ *          viewer          The Model_User instance representing the current
+ *                          viewer (typically a reference to $view->viewer);
+ *          tags            The Model_Tag or Model_Set_Tag instance  
+ *                          representing the tag(s) that partially define the
+ *                          scope of this view
+ *                          (typically a reference to $view->tags);
+ *
+ *          displayStyle    Indicates the current presentation style -- if this
+ *                          is an array, the style is 'custom';
+ *          perPage         The number of results on a single page;
+ *          page            The desired page of results;
+ *          sortBy          Indicates the sort field used to retrieve the
+ *                          current bookmark set;
+ *          sortOrder       Indicates the sort order used to retrieve the
+ *                          current bookmark set;
+ *
+ *  Sets the 'data' item of the view for use by Bootstrap::jsonp_post in final
+ *  rendering.
+ */
+Connexions_Profile::checkpoint('Connexions',
+                               'PeopleView Json rendering beginning');
+
+$users     = $this->users( $this->main );
+$paginator = $users->paginator;
+
+$items = array();
+foreach ($paginator as $item)
+{
+    //array_push($items, $item->toArray( ));
+    array_push($items, $item->toArray( array('deep'     => false,
+                                             'public'   => true,
+                                             'dirty'    => false)) );
+}
+
+$this->data = $items;
+
+Connexions_Profile::checkpoint('Connexions',
+                               'PeopleView Json rendering COMPLETE');
+

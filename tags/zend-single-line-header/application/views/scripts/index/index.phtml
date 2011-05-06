@@ -1,0 +1,126 @@
+<?php
+/** @file
+ *
+ *  View script for IndexController::index to render the main content.
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      owner           The owner of the current item set -- either a string or
+ *                      a Model_User instance;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
+ *
+ *      main            An array of settings for the main body:
+ *          namespace       The cookie/parameters/settings namespace for the
+ *                          main body;
+ *          viewer          The Model_User instance representing the current
+ *                          viewer (typically a reference to $view->viewer);
+ *          users           The Model_User or Model_Set_User instance
+ *                          representing the user(s) that partially define the
+ *                          scope of this view
+ *                          (typically a reference to $view->owner);
+ *          tags            The Model_Tag or Model_Set_Tag instance  
+ *                          representing the tag(s) that partially define the
+ *                          scope of this view
+ *                          (typically a reference to $view->tags);
+ *
+ *          displayStyle    Indicates the current presentation style -- if this
+ *                          is an array, the style is 'custom';
+ *          perPage         The number of results on a single page;
+ *          page            The desired page of results;
+ *          sortBy          Indicates the sort field used to retrieve the
+ *                          current bookmark set;
+ *          sortOrder       Indicates the sort order used to retrieve the
+ *                          current bookmark set;
+ */
+/*
+Connexions::log('script/index/index.phtml: main[ %s ]',
+                Connexions::varExport($this->main));
+// */
+
+/* Initialize the HTML Bookmarks helper, needed here because the Scope Helper
+ * needs access to the bookmarks for count.
+ */
+$htmlBookmarks = $this->htmlBookmarks( $this->main );
+
+// Prepare the Html Item Scope helper
+if ($this->owner === '*')
+{
+    $scopePath = array('Bookmarks' => $this->baseUrl('/bookmarks'));
+}
+else
+{
+    $ownerStr = $this->owner->name;
+
+    $scopePath = array($ownerStr => $this->baseUrl($ownerStr));
+}
+
+$htmlItemScope = $this->htmlItemScope( array(
+                    'namespace'         => $this->main->namespace,
+                    'items'             => $htmlBookmarks->paginator,
+                    'scope'             => $this->tags,
+                    'inputLabel'        => 'Tags',
+                    'inputName'         => 'Tags',
+                    'path'              => $scopePath,
+                    'jsonRpc'           =>  array(
+                        'method'    =>   'bookmark.autocompleteTag',
+                        'params'    =>   array(
+                            'tags'  => (count($this->tags) < 1
+                                            ? null
+                                            : $this->tags->__toString()),
+                            'users' => ($this->owner === '*'
+                                            ? null
+                                            //: $this->owner->name
+                                            : $this->owner->__toString()),
+                        ),
+                    ),
+                 ));
+
+
+$links = $this->headLink();
+$links->appendStylesheet($this->baseUrl('/css/bookmarks.css'));
+
+?>
+<div class='columnHeader'>
+ <div class='context-bg connexions_sprites bookmark_bg
+             ui-corner-left ui-corner-tr'>&nbsp;</div>
+ <p><?php
+    if ($this->owner === '*')
+    {
+        echo "All bookmarks";
+    }
+    else
+    {
+        printf ("%s's bookmarks", $this->owner);
+
+        if (! empty($this->owner->pictureUrl))
+        {
+            printf ("<img class='avatar' src='%s' title='%s' />",
+                    $this->owner->pictureUrl,
+                    $this->owner->fullName);
+        }
+    }
+
+
+    // /*
+    $nTags = count($this->tags);
+    if ($nTags > 0)
+    {
+        printf ("<span class='restrictions'>with tag%s '%s'.</span>",
+                ($nTags === 1 ? '' : 's'),
+                $this->tags);
+    }
+    else
+    {
+        echo ".";
+    }
+    // */
+ ?></p>
+</div>
+
+<?= $htmlItemScope->render() ?>
+<?= $this->render('index/main.phtml') ?>
+
+<div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

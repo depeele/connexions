@@ -1,0 +1,127 @@
+<?php
+/** @file
+ *
+ *  HTML rendering of display options (connexions.dropdownForm.js).
+ *
+ *  Incoming parameters:
+ *      helper          The View_Helper_HtmlDisplayOptions instance;
+ *
+ *
+ *  The 'helper' provides access to the following:
+ *      namespace       The form namespace for this paginator;
+ *
+ *      fields          An array of css/html representing configurable portions
+ *                      of the presentation that don't directly relate to
+ *                      presentation components (e.g. sort by, sort order);
+ *
+ *      definition      An array of key/info representing the selectable
+ *                      presentation components (i.e. the details of presented
+ *                      items that will be shown);
+ *
+ *      groups          The available display groups (named groupings of
+ *                      presentation components that allow quick selectioni of
+ *                      a pre-defined group);
+ */
+$helper     =& $this->helper;
+$namespace  =  $helper->namespace;
+$fields     =& $helper->fields;
+$groups     =& $helper->groups;
+$definition =& $helper->definition;
+$id         =  $namespace .'-displayOptions';
+
+?>
+<div id='<?= $id ?>'
+     class='displayOptions ui-form <?= $id ?>'>
+ <form method='POST'
+        class='ui-state-active ui-corner-all' style='display:none;'>
+  <?php
+
+    // Render the non-presentation component form fields
+    if (is_array($fields))
+    {
+        foreach ($fields as $cssClass => $html)
+        {
+ ?><div class='field <?= $cssClass ?>'><?= $html ?></div><?php
+        }
+    }
+
+    $fName = Connexions::nsParamName($namespace, 'optionGroup');
+  ?>
+  <div class='field displayStyle ui-optionGroups <?= $namespace ?>OptionGroups'>
+   <label for='<?= $fName ?>'>Display</label>
+   <ul class='groups'>
+    <?php
+
+    $currentGroup = $helper->getBestGroupMatch();
+
+    printf ("    <!-- best group match [ %s ] -->\n", $currentGroup);
+
+    // Render the predefined display group choices
+    $customGroup = null;
+    foreach ($groups as $key => $info)
+    {
+        if ($info['isCustom'])
+        {
+            $customGroup = $key;
+        }
+
+        $cssExtra = ($info['isCustom']      ? ' isCustom'          : '');
+        $checked  = ($key === $currentGroup ? " checked='checked'" : '');
+
+  ?><li    class='field<?= $cssExtra ?>'><?php
+   ?><input type='radio'
+            name='<?= $fName ?>'
+           value='<?= $key ?>' <?= $checked ?> /><?php
+   ?><label  for='<?= $fName ?>'><?= $info['label'] ?></label><?php
+  ?></li><?php
+
+    }
+    ?>
+    <br class='clear' />
+   </ul><?php
+
+    // Render the selectable presentation components
+    if (! empty($definition))
+    {
+        $inlineStyle = ($currentGroup === $customGroup
+                            ? ''
+                            : "display:none;");
+
+ ?><fieldset class='options' style='<?= $inlineStyle ?>'><?php
+
+        foreach ($definition as $name => $val)
+        {
+            echo $helper->renderOptionGroupsElement($name, $val);
+        }
+
+ ?></fieldset><?php
+
+    }
+   ?>
+  </div>
+  <div id='buttons-global' class='buttons'>
+   <button type='reset'
+          class='ui-button ui-corner-all ui-state-default'
+          value='custom'>reset</button>
+   <button type='submit'
+          class='ui-button ui-corner-all ui-state-default ui-state-disabled'
+          value='custom'
+       disabled='true'>apply</button>
+  </div>
+ </form>
+</div>
+<?php
+
+$jsWait = false;
+if ($jsWait === false)
+{
+    $doConfig = Zend_Json::encode( $helper->getConfig() );
+    $jsLoad   = "$('#{$id}').dropdownForm( $doConfig );";
+    ?>
+<script type='text/javascript'>
+(function($) {
+    <?= $jsLoad ?>
+ }(jQuery));
+</script>
+    <?php
+}

@@ -1,0 +1,10 @@
+@import "users";
+
+.rightCol .userItems .users {
+  padding-top:    0;
+  padding-right:  0;
+
+  .user {
+    border-top:   0;
+  }
+}

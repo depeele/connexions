@@ -1,0 +1,117 @@
+<?php
+$baseUrl = $this->baseUrl('/'); //Connexions::url('/');
+$jQuery = $this->jQuery();
+
+$jQuery->addOnLoad('$.body_initHandlers();')
+       ->javascriptCaptureStart();
+  ?>
+(function ($) {
+
+    /************************************************
+     * Iniitalize PNG-fix for the document.
+     *
+     * Note: Only effects IE5.5 and IE6.  All others
+     *       will return immediately and shouldn't
+     *       be impacted.
+     */
+    function doc_pngFix()
+    {
+        if (! $.isFunction($.fn.pngFix))
+            return;
+
+        $(document).pngFix( {blankgif: '<?= $baseUrl ?>images/bkank.gif'} );
+    }
+
+    /************************************************
+     * Iniitalize effects for elements in '.body'
+     *
+     */
+    $.body_initHandlers = function() {
+        doc_pngFix();
+
+        // Create a ui.notify widget
+        $.notify = function(vars, opts, template) {
+            $('#notifications').notify('create', template, vars, opts);
+        };
+        $('#notifications').notify();
+
+        /* Handle hover events for any current and future items with the class
+         * .ui-state-default
+         */
+        $('.body .ui-state-default').live('mouseenter', function(e) {
+            /*
+            window.console.debug("in: orig[ "+
+                                 this.localName +":"+
+                                 this.className +" ], "+
+                                 e.relatedTarget.localName +":"+
+                                 e.relatedTarget.className);
+            // */
+            e.stopPropagation();
+                        
+            var $el = $(this);
+
+            if (! $el.attr('disabled'))
+            {
+                // remove all others and hover here
+                $('.ui-state-hover').removeClass('ui-state-hover');
+
+                $el.addClass('ui-state-hover');
+            }
+        });
+
+        $('.body .ui-state-default').live('mouseleave', function(e) {
+            /*
+            window.console.debug("out: orig[ "+
+                                 this.localName +":"+
+                                 this.className +" ], "+
+                                 e.relatedTarget.localName +":"+
+                                 e.relatedTarget.className);
+            // */
+
+            e.stopPropagation();
+                        
+            // remove hover
+            $(this).removeClass('ui-state-hover');
+        });
+
+        $('#search').search();
+    };
+ }(jQuery));
+  <?php
+$jQuery->javascriptCaptureEnd();
+
+/***************************************************************************
+ * Begin the page.
+ *
+ */
+echo $this->render('base-header.phtml');
+
+$extraClass = ($this->excludeNav === true
+                ? ' noNav'
+                : '');
+if ($this->excludeSidebar)  $extraClass .= ' noSidebar';
+
+
+?>
+ <div class="page liquid<?= $extraClass ?>"><!-- { page -->
+  <div id="pageHeader" class="head" role="banner"><!-- { head -->
+   <h1 id='siteName'>
+    <a href="<?= $baseUrl ?>">
+     <span>conne</span>
+     <img src="<?= $baseUrl ?>images/logo.gif" alt="x" />
+     <span>ions</span>
+    </a>
+   </h1>
+    <?php if ( $this->excludeNav !== true ) { ?>
+   <div class="connexions_sprites corner_inner_left
+               tabs_outer_curve">&nbsp;</div>
+   <div class='tabs'><!-- tabs { -->
+    <?php
+        // Present the Navigation Menu
+        echo $this->render('nav_menu.phtml');
+
+    ?>
+   </div><!-- tabs } -->
+    <?php } ?>
+   <!-- br class='clear' / -->
+  </div><!-- head } -->
