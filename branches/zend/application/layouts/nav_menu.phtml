@@ -11,15 +11,10 @@
  *                      (initialized in Bootstrap::_initNavigation());
  */
 
-/* Initialize our navigation menu related view variables -- the ones that will
- * only be needed here.
+/* Ensure that navigation menu related view variables that we need
+ * (i.e. 'search') have been initialized.
  */
 $navMenu = $this->navMenu();
-
-/*
-Connexions::log("layouts/nav_menu.phtml: inbox[ %s ]",
-                Connexions::varExport($this->inbox));
-// */
 
 /************************************************************
  * Render the Navigation Menu
@@ -58,14 +53,6 @@ foreach ($iterator as $page)
 }
 $iterator->rewind();
 
-$authenticated = ( ($this->viewer instanceof Model_User) &&
-                    $this->viewer->isAuthenticated() );
-$inboxUrl      = '/inbox/'
-               . ( ($this->viewer instanceof Model_User)
-                       ? ($authenticated
-                           ? $this->viewer->name
-                           : 'anonymous')
-                       : 'anonymous');
 $prevDepth     = -1;
 $liFirst       = false;
 $ulClass       = 'nav';
@@ -80,9 +67,18 @@ foreach ($iterator as $page)
     $depth    = $iterator->getDepth();
     $indent   = str_repeat(' ', $depth);
     $href     = $page->getHref();
-    $isActive = ($depth > 0
+    $isActive = (($depth > 0
                     ? preg_match('#^'.$href.'#', $uri)
-                    : $page->isActive(true));
+                    : $page->isActive(true)) ? true : false );
+
+    /*
+    Connexions::log("nav_menu: depth[ %s ], label[ %s ], href[ %s ], "
+                    .   "isActive[ %s ]",
+                    $depth,
+                    $page->getLabel(),
+                    $href,
+                    Connexions::varExport($isActive));
+    // */
 
     if ($depth > $prevDepth)
     {
@@ -91,9 +87,11 @@ foreach ($iterator as $page)
         if ( ($depth == 0) && (! @empty($ulClass)))
             array_push($ulClasses, $ulClass);
         else if ($depth > 0)
+        {
             array_push($ulClasses, 'sub');
-        if ($isActive)
-            array_push($ulClasses, 'active');
+            if ($isActive)
+                array_push($ulClasses, 'active');
+        }
 
         echo $indent, '<ul',
                     (! @empty($ulClasses)
@@ -117,9 +115,9 @@ foreach ($iterator as $page)
     // Render the <li> for this page
     $liClasses = array();
     if ( $liFirst )
-        array_push($liClasses, 'first');
-    if ($isActive)
-        array_push($liClasses, 'active');
+    {
+        array_push($liClasses, ($depth > 0 ? 'sub-first' : 'menu-first'));
+    }
     if ( ($pageClass = $page->getClass()) !== null)
         array_push($liClasses, $pageClass);
 
@@ -136,50 +134,17 @@ foreach ($iterator as $page)
     }
 
     $label = Connexions::replaceables($page->getLabel());
-    printf ("<a href='%s'>%s</a>",
-            $href, $label);
+    printf ("<a href='%s'%s>%s</a>",
+            $href,
+            ($isActive ? " class='active'" : ''),
+            $label);
 
-    if ($authenticated)
+    if ($depth == 0)
     {
-        /* If the current user is authenticated, we will present an 'inbox'
-         * with unread count in several places:
-         *      - the 'welcome' are on the far left;
-         *      - the 'inbox' sub-menu item;
-         */
-        $target = $page->getTarget();
-
-        if (strpos($pageClass, 'welcome') !== false)
-        {
-            $envClass = ($this->inbox['unread'] > 0
-                            ? 'envelope'
-                            : 'envelope_dim');
-
-            echo "<div class='inbox-indicator connexions_sprites ",
-                                $envClass, "'>",
-                  "&nbsp;",
-                 "</div>";
-        }
-
-        if (strpos($href, $inboxUrl) !== false)
-        {
-            echo "<div class='inbox-indicator ui-state-default'>",
-                //"<div class='ui-icon ui-icon-mail-closed'>",
-                // "&nbsp;",
-                //"</div>",
-                  "<span class='count'>";
-
-            if ($this->inbox['unread'] > 0)
-            {
-                printf ("%d new", $this->inbox['unread']);
-            }
-            else
-            {
-                echo "&nbsp;";
-            }
-
-            echo  "</span>",
-                 "</div>";
-        }
+        // Include a drop-down indicator
+        echo "<div class='menu-arrow ui-icon ui-icon-triangle-1-s'>",
+              "&nbsp;",
+             "</div>";
     }
 
     if (($depth > 0) && $liFirst)
@@ -250,9 +215,9 @@ $searchContext  = (isset($this->search['context'])
             $id        = 'search-choice-'. $name;
             $liClasses = array();
             if ( $isFirst ) //$idex == 0 )
-                array_push($liClasses, 'first');
+                array_push($liClasses, 'sub-first');
             else if ( ($idex + 1) >= $nItems)
-                array_push($liClasses, 'last');
+                array_push($liClasses, 'sub-last');
 
             if ($searchContext == $name)
             {

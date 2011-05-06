@@ -1,7 +1,7 @@
-$baseFontSize: 14px;
+$baseFontSize:      14px;
 
 $minPageWidth:      960px;
-$rightColumnWidth:  320px;
+$rightColumnWidth:  320px;  // 33% of 960px, the minimum width for usability
 $countBoxWidth:     100px;
 $controlBoxWidth:   20px;
 
@@ -11,30 +11,30 @@ $controlBoxWidth:   20px;
 $urlBoxWidth: $minPageWidth - $rightColumnWidth + $countBoxWidth + $controlBoxWidth + $baseFontSize * 1;
 
 // Navigation tabs
-$tabWidth:  800px;
-$tabHeight: 2em;
+$tabWidth:  600px;
+$tabHeight: 28px;
 
-$navWidth:  610px;
+$navWidth:  400px;
 
-// Sign-Out, Bookmarks, People, Tags, Help
-$navNumItems:   5;
+// People, Tags, Help
+$navNumItems:   3;
 
-$navWidthFirst: 170px;
+$navWidthFirst: 130px;
 
-//  88px     = (610px     - 170px         ) / 5
+//  90px     = (400px     - 130px         ) / 3
 $navWidthItem: ($navWidth - $navWidthFirst) / $navNumItems;
 
-// 190px       = 800px     - 610px
-$navWidthSearch: $tabWidth - $navWidth;
+// 200px          = 600px     - 400px
+$navWidthSearch:    $tabWidth - $navWidth;
 
-$navPadItem:        0.1em;
-$navPadSubItem_tb:  0.25em;
-$navPadSubItem_lr:  1em;
+$navPadItem:        2px;
+$navPadSubItem_tb:  4px;
+$navPadSubItem_lr:  14px;
 
 //  48px  = 64px       - (8px         * 2)    *2 for top and bottom
-$navTopSub: $tabHeight;
+$navTopSub:         $tabHeight;
 
-$searchPad_r: 0.5em;
+$searchPad_r:       7px;
 
 $searchBgWidth: 173px;
 $searchMagWidth: 23px;

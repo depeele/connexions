@@ -38,7 +38,9 @@ $jQuery->addOnLoad('$.body_initHandlers();')
         /* Handle hover events for any current and future items with the class
          * .ui-state-default
          */
-        $('.body .ui-state-default').live('mouseenter', function(e) {
+        var $body   = $('.body');   //$('body');
+
+        $body.delegate('.ui-state-default', 'mouseenter', function(e) {
             /*
             window.console.debug("in: orig[ "+
                                  this.localName +":"+
@@ -53,13 +55,13 @@ $jQuery->addOnLoad('$.body_initHandlers();')
             if (! $el.attr('disabled'))
             {
                 // remove all others and hover here
-                $('.ui-state-hover').removeClass('ui-state-hover');
+                $body.find('.ui-state-hover').removeClass('ui-state-hover');
 
                 $el.addClass('ui-state-hover');
             }
         });
 
-        $('.body .ui-state-default').live('mouseleave', function(e) {
+        $body.delegate('.ui-state-default', 'mouseleave', function(e) {
             /*
             window.console.debug("out: orig[ "+
                                  this.localName +":"+
@@ -75,6 +77,72 @@ $jQuery->addOnLoad('$.body_initHandlers();')
         });
 
         $('#search').search();
+
+        /*********************************************************************
+         * Primarily in support of platforms that do NOT have usable hover
+         * states (e.g. mobile browsers), enable clicking on the parent of any
+         * '.menu-arrow' DOM element.  To support the hover event used for
+         * '#search .searchBox', we also add a 'blur' delegate to '.searchBox
+         * input'.
+         *
+         * When a target item is clicked, check it's current set of CSS classes
+         * to see if it has '.menu-show' (i.e. is in the "sticky" state).
+         *
+         * Toggle between "sticky" and "non-sticky" states:
+         *  - "sticky"      the clicked items has the '.menu-show' CSS class
+         *                  added and all others have '.menu-hide' added.
+         *                  Due to CSS rules, this will cause any CSS-based
+         *                  ':hover' changes to be ignored keeping the clicked
+         *                  item visible and all others hidden;
+         *  - "non-sticky"  both '.menu-show' and '.menu-hide' are removed from
+         *                  all items.  This reverts to the default mode of
+         *                  honoring CSS-based ':hover' changes;
+         *
+         */
+        var $ph     = $('#pageHeader');
+        var $menus  = $ph.find('.menu-arrow,#search .searchBox').parent();
+        function unstick($menu)
+        {
+            $menus.removeClass('menu-show menu-hide');
+            $body.unbind('.sticky');
+        }
+        function stick($menu)
+        {
+            $menus.not($menu).addClass('menu-hide');
+            $menu.addClass('menu-show').removeClass('menu-hide');
+        }
+        function toggleSticky($menu)
+        {
+            var curState    = $menu.hasClass('menu-show');
+
+            if (curState === true)
+            {
+                // New state is non-sticky
+                unstick($menu);
+            }
+            else
+            {
+                /* New state is sticky with $el marked with '.menu-show' and
+                 * all others marked with '.menu-hide'
+                 */
+                stick($menu);
+
+                /* Also add a body-level click handler.  When fired, transition
+                 * to the "non-sticky" state.
+                 */
+                $body.unbind('.sticky');
+                setTimeout(function() {
+                     $body.bind('click.sticky', function(e) {
+                        unstick($menu);
+                    }); }, 100);
+            }
+        }
+
+        $menus.click(function(e) { toggleSticky( $(this) ); });
+        $ph.delegate('#search .searchBox input', 'blur', function(e) {
+            // Handle 'blur' on the search input box and treat it like a click.
+            toggleSticky( $(this).parents('#search:first') );
+        });
     };
  }(jQuery));
   <?php
@@ -95,23 +163,20 @@ if ($this->excludeSidebar)  $extraClass .= ' noSidebar';
 ?>
  <div class="page liquid<?= $extraClass ?>"><!-- { page -->
   <div id="pageHeader" class="head" role="banner"><!-- { head -->
-   <h1 id='siteName'>
-    <a href="<?= $baseUrl ?>">
-     <span>conne</span>
-     <img src="<?= $baseUrl ?>images/logo.gif" alt="x" />
-     <span>ions</span>
-    </a>
-   </h1>
-    <?php if ( $this->excludeNav !== true ) { ?>
-   <div class="connexions_sprites corner_inner_left
-               tabs_outer_curve">&nbsp;</div>
-   <div class='tabs'><!-- tabs { -->
-    <?php
-        // Present the Navigation Menu
-        echo $this->render('nav_menu.phtml');
-
-    ?>
-   </div><!-- tabs } -->
+   <div class='siteAuth'>
+     <?= $this->render('site_auth.phtml') ?>
+   </div>
+   <div class='siteNav'><!-- { siteNav -->
+     <h1 id='siteName'
+      ><a href="<?= $baseUrl ?>"
+       ><span>conne</span
+       ><img src="<?= $baseUrl ?>images/logo.gif" alt="x" /
+       ><span>ions</span
+      ></a></h1>
+     <?php if ( $this->excludeNav !== true ) { ?>
+    <div class='tabs'><!-- tabs { -->
+    <?= $this->render('nav_menu.phtml') ?>
+    </div><!-- tabs } -->
     <?php } ?>
-   <!-- br class='clear' / -->
+   </div><!-- siteNav } -->
   </div><!-- head } -->
