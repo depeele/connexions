@@ -1,0 +1,57 @@
+<?php
+/** @file
+ *
+ *  If search results are available, present them, otherwise, present a search
+ *  form.
+ *
+ *  Incoming members:
+ *      baseUrl         The base url for the main controller of this page
+ *                      without any differentiating parameters
+ *                      (e.g. tag restrictions);
+ *      url             The full url for the main controller of this page
+ *                      with differentiating parameters;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *
+ *      referer         The URL of the referring page
+ *                      (used primarily for 'Search this view');
+ *      context         The chosen search context;
+ *      terms           The provided search terms / query;
+ *      results         The search results/configuration for:
+ *                          bookmarks
+ *                          tags
+ *                          people
+ *                          items
+ */
+
+// Disable the 'same' / 'Search this view' context
+$this->navMenu(false)->disableSearchContext('same');
+
+$this->headLink()->appendStylesheet($this->baseUrl('/css/searchResults.css'));
+
+if (! isset($this->results))
+{
+    // No search results -- render a search form
+    echo $this->render('search/form.phtml');
+    return;
+}
+
+/********************************************************************
+ * Render results
+ *
+ */
+$this->headTitle("Search results for '". $this->terms ."'");
+
+$nResults = @count($this->results);
+
+?>
+<div class='columnHeader'>
+ <div class='context-bg connexions_sprites search_bg
+             ui-corner-left ui-corner-tr'>&nbsp;</div>
+
+ <p><?= ($nResults < 1 ? 'No' : 'Search') ?>
+     results for '<?= $this->terms ?>'.</p>
+</div>
+<?= $this->render('search/main.phtml') ?>
+
+<div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

@@ -1,0 +1,54 @@
+<?php
+/** @file
+ *
+ *  View script for InboxController::index to render the main content.
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      owner           The owner of the current item set -- either a string or
+ *                      a Model_User instance;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
+ *      allTags         A Model_Set_Tag instance that is a clone of 'tags' but
+ *                      also includes the 'for:%user%' tag for 'owner';
+ *
+ *      main            An array of settings for the main body:
+ *          namespace       The cookie/parameters/settings namespace for the
+ *                          main body;
+ *          viewer          The Model_User instance representing the current
+ *                          viewer (typically a reference to $view->viewer);
+ *          tags            The Model_Tag or Model_Set_Tag instance  
+ *                          representing the tag(s) that partially define the
+ *                          scope of this view
+ *                          (typically a reference to $view->allTags);
+ *
+ *          displayStyle    Indicates the current presentation style -- if this
+ *                          is an array, the style is 'custom';
+ *          perPage         The number of results on a single page;
+ *          page            The desired page of results;
+ *          sortBy          Indicates the sort field used to retrieve the
+ *                          current bookmark set;
+ *          sortOrder       Indicates the sort order used to retrieve the
+ *                          current bookmark set;
+ */
+Connexions::log('script/inbox/main.phtml: baseUrl[ %s ], url[ %s ]',
+                $this->baseUrl, $this->url);
+
+// Prepare the HTML Bookmarks helper.
+$htmlBookmarks = $this->htmlBookmarks( $this->main );
+
+
+/*
+//$bookmarks     = $htmlBookmarks->bookmarks; //items;
+Connexions::log("inbox/main.phtml: paginator with %d bookmarks [ %s ]",
+                count($bookmarks),
+                (is_object($bookmarks)
+                    ? get_class($bookmarks)
+                    : gettype($bookmarks)) );
+// */
+$this->main['items'] = $htmlBookmarks;
+
+// Render the main view.
+echo $htmlBookmarks->render();

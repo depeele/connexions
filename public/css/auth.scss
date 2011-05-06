@@ -1,0 +1,29 @@
+@import "sizes";
+@import "colors";
+@import "mixins";
+@import "ribbon-form";
+
+/****** auth.sass ****** */
+// Styling for registration / login
+#auth {
+  width:      35em;
+
+  form {
+    .field {
+      input.text {
+        width: 100%;
+      }
+    }
+    input.button {
+      background-color: #59a5d1;
+      border-color: #408bb6;
+      color: white;
+      cursor: pointer;
+    }
+  }
+  .formError {
+    padding: 1em 0;
+    font-weight: bold;
+    text-align: center;
+  }
+}

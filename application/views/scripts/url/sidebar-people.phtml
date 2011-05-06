@@ -1,0 +1,130 @@
+<?php
+/** @file
+ *
+ *  View script for UrlController::index to render the people portion of the
+ *  sidebar (i.e. the 'People' tab).
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
+ *      item            The item being presented in the main view;
+ *
+ *      main            An array of settings for the main content panel:
+ *      sidebar         An array of settings for the sidebar:
+ */
+$paneName = 'people';
+$config   =  (is_array($this->sidebar['panes']) &&
+              is_array($this->sidebar['panes'][$paneName])
+                ? $this->sidebar['panes'][$paneName]
+                : array());
+
+$nTags = count($this->tags);
+?>
+  <div class='columnHeader'>
+   <div class='context-bg connexions_sprites user_bg ui-corner-left'>
+    &nbsp;
+   </div>
+   <p>
+    <?php
+
+    $nTags = count($this->tags);
+    if ($nTags > 0)
+    {
+        printf ("People who have tagged this item using "
+                . "<span class='restrictions'>the %d specified tag%s.</span>",
+                $nTags,
+                ($nTags === 1 ? '' : 's'));
+    }
+    else
+    {
+        echo "People who have bookmarked this item.";
+    }
+
+    ?></p>
+  </div>
+  <?php
+
+    /*
+    Connexions::log("index/sidebar-people.phtml: config[ %s ]",
+                    print_r($config, true));
+    // */
+
+    $service = Connexions_Service::factory('Model_User');
+
+    $perPage    = $config['perPage'];
+    $page       = $config['page'];
+    if ($perPage < 1)   $perPage = 100;
+    if ($page    < 1)   $page    = 1;
+
+    $count      = $perPage;
+    $offset     = ($page - 1) * $perPage;
+
+    /* Order by userItem/Bookmark count here so the most used will be in the
+     * limited set.  User-requested sorting will be performed later
+     * (in View_Helper_HtmlItemCloud) before the cloud is rendered.
+     *
+     * Best solution would be to weight by 'taggedOn' date:
+     *    SELECT u.*,
+     *           ui.taggedOn,
+     *           uti.userItemCount,
+     *           uti.userCount,
+     *           uti.itemCount,
+     *           uti.tagCount
+     *       FROM user AS u
+     *       INNER JOIN (
+     *          SELECT uti.*,
+     *                 COUNT(DISTINCT uti.userId) AS userCount,
+     *                 COUNT(DISTINCT uti.tagId) AS tagCount,
+     *                 COUNT(DISTINCT uti.itemId) AS itemCount,
+     *                 COUNT(DISTINCT uti.userId,
+     *                 uti.itemId) AS userItemCount
+     *              FROM userTagItem AS uti
+     *              WHERE (uti.itemId IN ( ... )) AND
+     *                    (tagId IN ( ... ))
+     *              GROUP BY userId) AS uti
+     *        ON u.userId=uti.userId
+     *       INNER JOIN (
+     *          SELECT ui.taggedOn
+     *              FROM userItem AS ui
+     *              WHERE (ui.itemId IN ( ... ))
+     *              GROUP BY userId) AS ui
+     *        ON u.userId=ui.userId;
+     *
+     */
+    $fetchOrder = array('totalItems DESC',
+                        'totalTags  DESC',
+                        'tagCount   DESC',
+                        'name       ASC');
+
+    /* Locate all people associated with the current item and ALL specified
+     * tags.
+     */
+    $to = array('items' => $this->item);
+    if ($nTags > 0)
+    {
+        $to['tags']      = $this->tags;
+        //$to['exactTags'] = true;
+    }
+
+    $people = $service->fetchRelated( $to,
+                                      $fetchOrder,
+                                      $count,
+                                      $offset );
+
+    $config['items']            =& $people;
+    //$config['selected']         =& $this->tags;
+    $config['weightName']       = 'totalItems';
+    $config['weightTitle']      = 'Total Bookmarks';
+    //$config['titleTitle']       = 'User';
+    $config['itemType']         =  View_Helper_HtmlItemCloud::ITEM_TYPE_USER;
+    $config['currentSortBy']    =  View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
+    $config['currentSortOrder'] =  Connexions_Service::SORT_DIR_DESC;
+
+    //unset($config['weightName']);
+
+    $htmlItemCloud = $this->htmlItemCloud($config);
+
+    echo $htmlItemCloud->render();

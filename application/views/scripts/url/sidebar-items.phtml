@@ -1,0 +1,34 @@
+<?php
+/** @file
+ *
+ *  View script for UrlController::index to render the items portion of the
+ *  sidebar (i.e. the 'Items' tab).
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
+ *      item            The item being presented in the main view;
+ *      sidebar         Configuration for the sidebar presentation;
+ */
+$paneName = 'items';
+$config   =  (is_array($this->sidebar['panes']) &&
+              is_array($this->sidebar['panes'][$paneName])
+                ? $this->sidebar['panes'][$paneName]
+                : array());
+
+
+?>
+  <div class='columnHeader'>
+   <div class='context-bg connexions_sprites item_bg ui-corner-left'>
+    &nbsp;
+   </div>
+   <p>Similar Items (by url).</p>
+  </div>
+  <?php
+
+    $htmlItemCloud = $this->htmlItemCloud($config);
+
+    echo $htmlItemCloud->render();

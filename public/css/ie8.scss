@@ -1,0 +1,19 @@
+@import "sizes";
+@import "colors";
+
+// For tabs.scss
+#pageHeader {
+  ul.sub {
+    top:        $navTopSub;
+  }
+  .tabs {
+    li.welcome {
+      background-image: none;
+      background-color: $contextColorBackground;
+    }
+  }
+}
+
+#search {
+  padding-top:  inherit;
+}

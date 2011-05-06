@@ -1,0 +1,47 @@
+#!/usr/bin/env php
+<?php
+define('CLI_DIR', realpath(dirname(__FILE__)));
+
+require_once(CLI_DIR. '/bootstrap.php');
+$prog = array_shift($argv);
+
+$svc = Connexions_Service::factory('Service_Item');
+if ($argc < 2)
+{
+    // ALL items
+    $items = $svc->fetch();
+
+    $nItems = count($items);
+    printf ("Updating statistics for ALL %d item%s:\n",
+            $nItems, ($nItems === 1 ? '' : 's'));
+    foreach ($items as $item)
+    {
+        echo ".";
+        $item->updateStatistics();
+    }
+    echo "\n";
+}
+else
+{
+    // Specific item(s)
+
+    $nItems = $argc - 1;
+    printf ("Updating statistics for %d specific item%s:\n",
+            $nItems, ($nItems === 1 ? '' : 's'));
+    foreach ($argv as $id)
+    {
+        printf ("  %s: ", $id);
+        $item = $svc->find( $id );
+
+        if ($item instanceof Model_Item)
+        {
+            printf ("[ %s ] ... ", $item);
+            $item->updateStatistics();
+            echo "updated\n";
+        }
+        else
+        {
+            echo "UNKNOWN item\n";
+        }
+    }
+}

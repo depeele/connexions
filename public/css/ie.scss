@@ -1,0 +1,97 @@
+@import "sizes";
+@import "colors";
+
+// For libraries.scss
+.clearfix {
+  display:  inline-block;
+  zoom:     1;
+  display:  block;
+}
+
+.inlineBlock {
+  /* Trigger 'hasLayout' and set display to inline == inline-block */
+  zoom:     1;
+  *display: inline;
+}
+
+// For main.scss
+.pane {
+  zoom:   1;
+}
+
+// For tabs.scss
+#pageHeader {
+  .nav {
+    li {
+      height: $tabHeight - 0.35em;
+    }
+  }
+  ul.sub {
+    top:  $navTopSub + 0.1em;
+  }
+  .tabs {
+    li {
+      // Firefox/Chrome 88px, 81px
+      width:  $navWidthItem - 7;
+    }
+    li.welcome {
+      background-image: none;
+      background-color: $contextColorBackground;
+    }
+  }
+}
+
+#search {
+  .submit {
+    left:  $searchInputInputWidth;
+  }
+  .choices {
+    .list {
+      top:  $tabHeight - $navPadItem;
+      li {
+        width:  $searchInputInputWidth;
+      }
+    }
+  }
+}
+
+// <= IE7 fixes
+*:first-child+html, * html {
+  #search .choices .list {
+      top:  $navTopSub;
+  }
+}
+
+// For itemScope.scss
+.itemScope {
+  zoom:   1;
+}
+
+// For bookmarks.scss
+.bookmarks, .pane .displayStyle fieldset.options {
+  .item {
+    .data {
+      .url {
+        width:  $urlBoxWidth;
+      }
+    }
+  }
+}
+
+// For users.scss
+#usersList {
+  .users {
+    .user {
+      .data {
+        .email {
+          width:  $urlBoxWidth;
+        }
+      }
+    }
+  }
+}
+
+// For displayOptions.scss
+.displayOptions {
+  width:  9em;
+}

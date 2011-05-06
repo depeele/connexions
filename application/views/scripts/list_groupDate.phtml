@@ -1,0 +1,33 @@
+<?php
+/** @file
+ *
+ *  HTML rendering of a date group header in a list of items
+ *      (typically via a View_Helper_List sub-class).
+ *
+ *  Incoming parameters:
+ *      helper          The View_Helper_List instance that initiated this view
+ *                      script.  It provides additional parameters (e.g.
+ *                      namespace, perPageChoices, viewer, paginator, sortBy)
+ *                      as well as group value parsing and rendering of display
+ *                      options and group headers;
+ *      value           The value to use in representing this group;
+ *      lastYear        The value of 'Year' in the previous group header;
+ */
+list($year, $month, $day) = explode('-', $this->value);
+
+// Figure out the day-of-week
+$time      = strtotime($this->value);
+$month     = date('M', $time);
+$dayOfWeek = date('D', $time);
+
+?>
+<div class='groupType date'><?php
+    if ($year !== $this->lastYear)
+    {
+        ?><span class='year'><?= $year ?></span><?php
+    }
+    
+?><div class='dateBox'><span 
+       class='month'      ><?= $month     ?></span><span
+       class='day'        ><?= $day       ?></span><span
+       class='day-of-week'><?= $dayOfWeek ?></span></div></div>

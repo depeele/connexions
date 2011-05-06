@@ -1,0 +1,131 @@
+<?php
+/** @file
+ *
+ *  HTML rendering of a sidebar.
+ *
+ *  Incoming parameters
+ *    (primarily from Connexions_Controller_Action::_prepare_sidebar()):
+ *      rootUrl         The site's "root" url;
+ *      baseUrl         Same as 'rootUrl';
+ *      url             The current request url;
+ *      viewer          A Model_User instnace representing the current viewer;
+ *      controller      The controller that initiated this view;
+ *      action          The controller action that initiated this view;
+ *      sidebar
+ *          namespace   The form namespace for this paginator;
+ *          async       Boolean indicating whether or not the individual tab
+ *                      panes should be loaded asynchronously [ true ];
+ *          viewer      A Model_User instnace representing the current viewer;
+ *          users       The current set of user's restricting the view.  Either
+ *                      null (no restriction) or a Model_Set_User instnace;
+ *          tags        The current set of tags's restricting the view.  Either
+ *                      null (no restriction) or a Model_Set_Tag instnace;
+ *          panes       Tab pane definitions indexed by pane identifier with
+ *                      each pane having the parameters required to render
+ *                      that pane.  For example:
+ *                          namespace
+ *                          title
+ *                          itemBaseUrl
+ *                          page
+ *                          perPage
+ *                          highlightCount
+ *                          sortBy
+ *                          sortOrder
+ *                          displayStyle
+ *
+ *                          weightName
+ *                          itemType
+ *              
+ */
+$params   =& $this->sidebar;
+$baseUrl  = $this->baseUrl('/');
+
+if (isset($this->owner) && ($this->owner !== '*'))
+{
+    /* When bookmarks for a single user are being presented, the 'People' pane
+     * will contain details about that user, generated via:
+     *      application/views/scripts/index/sidebar-people.phtml
+     *          application/views/scripts/sidebar-user.phtml
+     *              application/views/scripts/user.phtml
+     *
+     * Properly rendering a 'user' in the sidebar requires
+     * 'css/bookmark-users.css', which can only effectively be included here
+     * since sidebar-user.phtml, the most logical place to perform the include,
+     * is currently included asynchronously, causing all headLink()
+     * modifications to be ignored.
+     */
+    $this->headLink()
+            ->appendStylesheet( $this->baseUrl('/css/bookmark-users.css') );
+}
+
+$paneHtml = '';
+
+/*
+Connexions::log("View_Helper_HtmlSidebar::render() "
+                . "scriptPaths[ %s ], path[ %s ]",
+                Connexions::varExport($this->getScriptPaths()),
+                $path);
+// */
+
+// For async loading
+if ($params['async'] === true)
+{
+    $paneUrl = $this->url . '?format=partial&part=sidebar-';
+}
+else
+{
+    $paneUrl = '#sidebar-';
+}
+
+$id = $params['namespace'];
+?>
+<div id='<?= $id ?>'>
+ <ul><?php
+
+foreach ($params['panes'] as $paneId => $config)
+{
+    ?>
+  <li><a href='<?= $paneUrl ?><?= $paneId ?>'><span><?=
+        (! empty($config['title'])
+            ? $config['title']
+            : ucfirst($paneId)) ?></span></a></li><?php
+
+    if ($params['async'] !== true)
+    {
+        // Controller-specific, synchronous rendering
+        $script = "{$this->controller}/sidebar-{$paneId}.phtml";
+
+        /*
+        Connexions::log("View_Helper_HtmlSidebar::render() "
+                        . "render script[ %s ]",
+                        $script);
+        // */
+
+        $paneHtml .= "<div id='sidebar-{$paneId}'>"
+                  .    $this->render($script)
+                  .  "</div>\n";
+    }
+}
+
+?>
+ </ul>
+ <?= $paneHtml ?>
+</div>
+<?php
+
+$jsWait = false;
+$jsLoad = "$('#{$id}').sidebar();";
+if ($jsWait === false)
+{
+    ?>
+<script type='text/javascript'>
+(function($) {
+    <?= $jsLoad ?>
+ }(jQuery));
+</script>
+    <?php
+}
+else
+{
+    $this->jQuery()->addOnLoad( $jsLoad );
+}
