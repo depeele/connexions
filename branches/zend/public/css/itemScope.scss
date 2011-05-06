@@ -6,7 +6,10 @@ $itemCountWidth: $countBoxWidth + 10px;
     color: $navColor;
   }
   ul {
-    background-color: $borderColor;
+    // Mirros css/themes/connexions/jquery-ui.css::.ui-widget_header
+    background: #c2c2c2 url(themes/connexions/images/ui-bg_gloss-wave_90_c2c2c2_500x100.png) 50% 50% repeat-x;
+    //background-color: $borderColor;
+
     padding: 0;
     padding-right: $itemCountWidth + 2px;
     li {
@@ -45,7 +48,7 @@ $itemCountWidth: $countBoxWidth + 10px;
       border:           0;
 
       color:            $navColor;
-      background-color: $borderColor;
+      background:       none;
       margin:           0;
       padding:          0 0.1em;
       cursor:           pointer;

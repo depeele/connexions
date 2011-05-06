@@ -523,13 +523,13 @@ a:visited { color: #005a9c; }
 
 /* ****** itemScope.scss ****** */
 .itemScope a { color: white; }
-.itemScope ul { background-color: #cccccc; padding: 0; padding-right: 112px; }
+.itemScope ul { background: #c2c2c2 url(themes/connexions/images/ui-bg_gloss-wave_90_c2c2c2_500x100.png) 50% 50% repeat-x; padding: 0; padding-right: 112px; }
 .itemScope ul li { background-color: transparent; float: left; border-right: 1px dotted #cccccc; }
 .itemScope ul li a, .itemScope ul li input { display: block; float: left; font-weight: normal; }
 .itemScope ul li a { padding: 0.25em; }
 .itemScope .scopeEntry { border: none; padding: 0.2em 0.1em 0.2em 0.25em; }
 .itemScope .scopeEntry input { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; vertical-align: middle; margin: 0; padding: 0.1em; }
-.itemScope .scopeEntry button { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; vertical-align: middle; border: 0; color: white; background-color: #cccccc; margin: 0; padding: 0 0.1em; cursor: pointer; font-weight: bold; }
+.itemScope .scopeEntry button { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; vertical-align: middle; border: 0; color: white; background: none; margin: 0; padding: 0 0.1em; cursor: pointer; font-weight: bold; }
 .itemScope .scopeEntry ul.as-selections { box-shadow: none; -webkit-box-shadow: none; -moz-box-shadow: none; border: none; padding: 0.1em; margin: 0; }
 .itemScope .scopeEntry ul.as-selections li { border: none; margin: 0; padding: 0; }
 .itemScope .scopeEntry ul.as-selections li.as-original { margin: 0; }
