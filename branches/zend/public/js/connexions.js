@@ -9,8 +9,11 @@
     function init_log()
     {
         $.log = function(fmt) {
-            if ((window.console !== undefined) &&
-                $.isFunction(window.console.log))
+            /* :XXX: IE9 does NOT report window.console.log as a function but
+             *       rather an object...
+             */
+            if ( (window.console     !== undefined) &&
+                 (window.console.log !== undefined) )
             {
                 var msg = fmt;
                 for (var idex = 1; idex < arguments.length; idex++)
@@ -21,17 +24,14 @@
             }
         };
 
-        /*
-        $.log = ((window.console !== undefined) &&
-                 $.isFunction(window.console.log)
-                    ?  window.console.log
-                    : function() {});
-        */
-
         $.log("Logging enabled");
     }
 
-    if ( (window.console === undefined) || (! $.isFunction(window.console.log)))
+    /* :XXX: IE9 does NOT report window.console.log as a function but
+     *       rather an object...
+     */
+    if ( (window.console     === undefined) ||
+         (window.console.log === undefined) )
     {
         $(document).ready(init_log);
     }
