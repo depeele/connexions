@@ -9,8 +9,11 @@
     function init_log()
     {
         $.log = function(fmt) {
-            if ((window.console !== undefined) &&
-                $.isFunction(window.console.log))
+            /* :XXX: IE9 does NOT report window.console.log as a function but
+             *       rather an object...
+             */
+            if ( (window.console     !== undefined) &&
+                 (window.console.log !== undefined) )
             {
                 var msg = fmt;
                 for (var idex = 1; idex < arguments.length; idex++)
@@ -21,17 +24,14 @@
             }
         };
 
-        /*
-        $.log = ((window.console !== undefined) &&
-                 $.isFunction(window.console.log)
-                    ?  window.console.log
-                    : function() {});
-        */
-
         $.log("Logging enabled");
     }
 
-    if ( (window.console === undefined) || (! $.isFunction(window.console.log)))
+    /* :XXX: IE9 does NOT report window.console.log as a function but
+     *       rather an object...
+     */
+    if ( (window.console     === undefined) ||
+         (window.console.log === undefined) )
     {
         $(document).ready(init_log);
     }
@@ -1957,20 +1957,23 @@ $.widget("ui.input", {
 /** @file
  *
  *  Based on jquerytag (www.faithkadirakin.com/dev/jquerytag/) adjusted to
- *  fit nicely into jquery.ui, convert "tags" to clickable items.
+ *  fit nicely into jquery.ui, convert "tags" to clickable items and
+ *  the option to convert the tag input box to a ui.autocomplete
  *
  *  Requires:
  *      ui.core.js
  *      ui.widget.js
+ *      ui.input.js
+ *      ui.autocomplete.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false, window:false, clearTimeout:false, setTimeout:false */
 (function($) {
 
 $.widget("ui.tagInput", $.ui.input, {
-    version: "0.0.1",
+    version: "0.0.2",
     options: {
-        // Defaults
+        // tagInput Defaults
         separator:      ',',
         unique:         true,
         addOnEnter:     true,
@@ -1983,46 +1986,21 @@ $.widget("ui.tagInput", $.ui.input, {
             remove:     'delete',
             activeInput:'activeInput',
             measure:    'measureInput'
-        }
+        },
+
+        /* If autocompletion is desired, 'autocomplete' can be used to pass
+         * the desired options to ui.autocomplete.  If false, no autocompletion
+         * will be used.
+         *
+         * One additional autocomplete parameter that is NOT used by
+         * ui.autocomplete:
+         *  addOnSelect     - should an item selected from the autocompletion
+         *                    menu be automatically added (true) or just
+         *                    completed into the current input area (false)
+         *                    [ true ];
+         */
+        autocomplete:   false
     },
-
-    /** @brief  Create a new instance.
-    _create: function() {
-        var self        = this;
-        var opts        = self.options;
-
-        self.sepRe  = new RegExp('\s*'+ opts.separator +'\s*');
-
-        self.element.addClass( opts.cssClass.origInput)
-                    .wrap( "<div class='"+ opts.cssClass.container +"' />" );
-
-        self.$container = self.element.parent();
-
-        // Add a <ul> above the <input> to hold converted tags as <li> items
-        self.$tags = $('<ul/>').addClass(opts.cssClass.list)
-                               .appendTo( self.$container )
-                               .css({
-                                    'padding-left': self.element
-                                                        .css('padding-left'),
-                                    'padding-right':self.element
-                                                        .css('padding-right'),
-                                    'padding-top':  self.element
-                                                        .css('padding-top'),
-                                    'padding-bottom':self.element
-                                                        .css('padding-bottom')
-                               });
-
-        // Append a final, anchor element to $tag that will act as the user
-        // input item.
-        self.$inputLi   = $('<li/>').addClass(opts.cssClass.activeInput)
-                                    .appendTo( self.$tags );
-        self.$input     = $('<input type="text" />')
-                                    .appendTo( self.$inputLi );
-
-        // Invoke our super-class
-        $.ui.input.prototype._create.apply(this, arguments);
-    },
-    // */
 
     /** @brief  Initialize a new instance.
      */
@@ -2064,25 +2042,85 @@ $.widget("ui.tagInput", $.ui.input, {
         self.mWidth = self.$measureLi.html('m').width() + 2;
         self.$measureLi.empty();
 
+        // Include an li to hold the active input control.
+        self.$inputLi   = $('<li/>').addClass(opts.cssClass.activeInput)
+                                    .appendTo( self.$tags )
+                                    .hide();
+        self.$input     = $('<input type="text" />')
+                                    .appendTo( self.$inputLi )
+                                    .width( self.mWidth );
+
+        // Setup autocompletion if needed.
+        self._setupAutocomplete();
+
         // Establish our initial value
         self.val( self.element.val() );
 
-        // Invoke our super-class
+        // Invoke our super-classes
         $.ui.input.prototype._init.apply(this, arguments);
     },
 
+    _setupAutocomplete: function() {
+        var self    = this;
+        var opts    = self.options;
+        if (! opts.autocomplete)
+        {
+            return;
+        }
+
+        var acOpts  = (opts.autocomplete !== true
+                            ? opts.autocomplete
+                            : {});
+
+        // When an autocompletion item is selected, 
+        acOpts.select = function(e, ui) {
+            // /*
+            $.log("ui.tagInput::_acSelect: val[ "+ ui.item.value +" ]");
+            // */
+
+            self.$input.val( ui.item.value );
+
+            /* Ensure that our input is the proper size for the selected value
+             * and then focus
+             */
+            self.$input.trigger('resize')
+                       .focus();
+
+            if (acOpts.addOnSelect !== false)
+            {
+                setTimeout(function() {
+                    self._squelchBlur = false;
+
+                    // Blur to add the new item...
+                    self.$input.blur();
+
+                    // Re-focus so the user can continue with input.
+                    self.element.focus();
+                }, 10);
+            }
+        };
+
+        /* When we focus on the autocompletion menu, squelch our handling of
+         * the corresponding blur event
+         */
+        acOpts.focus = function(e, ui) {
+            $.log("ui.tagInput::_acFocus: ");
+            self._squelchBlur = true;
+        };
+
+        self.$input.autocomplete( acOpts );
+    },
+
     _bindEvents: function() {
-        var self        = this;
-        var opts        = self.options;
+        var self    = this;
+        var opts    = self.options;
+        var keyCode = $.ui.keyCode;
 
         /* Bind our event handlers so we have the option of squelching events
-         * from reaching our super-class (e.g. keydown).
+         * from reaching our super-class.
          *
          * Event handlers
          */
-        var _keydown    = function(e) {
-        };
-
         var _resize     = function(e) {
             self.$tags.css({
                         /*  leave room for the resize handle since self.$tags
@@ -2099,7 +2137,8 @@ $.widget("ui.tagInput", $.ui.input, {
         var _focus    = function(e) {
             e.stopPropagation();
             e.preventDefault();
-            self._ensureInput();
+            self._squelchBlur = false;
+            self.$inputLi.show();
             self.$input.trigger('focus');
         };
 
@@ -2110,7 +2149,7 @@ $.widget("ui.tagInput", $.ui.input, {
             self.$measureLi.html( val );
             var width   = self.$measureLi.width() + self.mWidth;
 
-            /*
+            // /*
             $.log("ui.tagInput::_inputWidth: val[ "+ val   +" ], "
                            + "width[ "+ width +" ]");
             // */
@@ -2125,6 +2164,8 @@ $.widget("ui.tagInput", $.ui.input, {
             // */
 
             _inputWidth();
+
+            self._squelchBlur = false;
         };
         var _inputKeydown   = function(e) {
             /*
@@ -2143,23 +2184,23 @@ $.widget("ui.tagInput", $.ui.input, {
                 self._squelchBlur = true;
                 switch (key)
                 {
-                case 8:     // backspace
+                case keyCode.BACKSPACE:
                     self.$inputLi.prev().remove();
                     break;
 
-                case 46:    // delete
+                case keyCode.DELETE:
                     self.$inputLi.prev().remove();
                     break;
 
-                case 37:    // left arrow
-                case 38:    // up array
+                case keyCode.LEFT:  // left arrow
+                case keyCode.UP:    // up   arrow
                     // Move the input area to the left
                     self.$inputLi.prev().before( self.$inputLi );
                     self.$input.focus();
                     break;
 
-                case 39:    // right arrow
-                case 40:    // down array
+                case keyCode.RIGHT: // right arrow
+                case keyCode.DOWN:  // down  arrow
                     // Move the input area to the right
                     self.$inputLi.next().after( self.$inputLi );
                     self.$input.focus();
@@ -2168,11 +2209,13 @@ $.widget("ui.tagInput", $.ui.input, {
                 default:
                     squelch = false;
                 }
-                self._squelchBlur = false;
+                //self._squelchBlur = false;
 
                 if (squelch)
                 {
                     e.preventDefault();
+                    //e.stopPropagation();
+                    //e.stopImmediatePropagation();
                     return false;
                 }
             }
@@ -2188,7 +2231,7 @@ $.widget("ui.tagInput", $.ui.input, {
 
             if ( (String.fromCharCode(key) === opts.separator) ||
                  (key                      === opts.separator) ||
-                 (opts.addOnEnter && (key === 13)) )
+                 (opts.addOnEnter && (key  === keyCode.ENTER)) )
             {
                 self._addTag();
                 e.preventDefault();
@@ -2196,7 +2239,7 @@ $.widget("ui.tagInput", $.ui.input, {
             }
         };
         var _inputBlur      = function(e) {
-            /*
+            // /*
             $.log("ui.tagInput::_inputBlur: "
                     + "val[ "
                     + (self.$input ? self.$input.val() : 'null') +" ]");
@@ -2206,33 +2249,27 @@ $.widget("ui.tagInput", $.ui.input, {
             {
                 // Don't process 'blur' if we're in a keydown handler
                 self._squelchBlur = false;
-                //$.log("ui.tagInput::_inputBlur: squelch");
-                return;
+
+                /*
+                $.log("ui.tagInput::_inputBlur: squelch");
+                // */
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+
+                self.$input.focus();
+
+                return false;
             }
 
             self._addTag();
 
-            setTimeout(function() {
-                var $li = self.$inputLi;
-                self.$inputLi = self.$input = null;
-                if (! $li)
-                {
-                    return;
-                }
-
-                /*
-                $.log("ui.tagInput::_inputBlur: timeout, remove [ "
-                            + $li.length +" ] '"
-                            + opts.cssClass.activeInput +"' inputs");
-                // */
-
-                $li.remove();
-            }, 5);
+            // Hide the active input element
+            self.$inputLi.hide();
         };
 
         // Event bindings
         self.element
-                .bind('keydown.uitaginput', _keydown)
                 .bind('resize.uitaginput',  _resize)
                 .bind('focus.uitaginput',   _focus);
 
@@ -2243,7 +2280,8 @@ $.widget("ui.tagInput", $.ui.input, {
         self.$tags.delegate('.activeInput','keydown.uitaginput', _inputKeydown)
                   .delegate('.activeInput','keyup.uitaginput',   _inputKeyup)
                   .delegate('.activeInput','keypress.uitaginput',_inputKeypress)
-                  .delegate('.activeInput','blur.uitaginput',    _inputBlur);
+                  .delegate('.activeInput','blur.uitaginput',    _inputBlur)
+                  .delegate('.activeInput','resize.uitaginput',  _inputWidth);
 
         /* Since textarea elements can be resized in chrome, monitor 'mouseup'
          * events on body and, when triggered, ensure that self.$tags mirrors
@@ -2261,24 +2299,6 @@ $.widget("ui.tagInput", $.ui.input, {
         self.element.trigger('resize');
     },
 
-    /** @brief  Ensure that there is an input area within $tags that can be
-     *          used to accept user input.
-     */
-    _ensureInput: function() {
-        var self        = this;
-        var opts        = self.options;
-
-        self.$inputLi = self.$tags.find('.'+ opts.cssClass.activeInput );
-        if (self.$inputLi.length < 1)
-        {
-            self.$inputLi   = $('<li/>').addClass(opts.cssClass.activeInput)
-                                        .appendTo( self.$tags );
-            self.$input     = $('<input type="text" />')
-                                        .appendTo( self.$inputLi )
-                                        .width( self.mWidth );
-        }
-    },
-
     /** @brief  Given the text of a new tag, if it is not empty, create
      *          a new DOM element representing the new tag.
      *  @param  tag     The text of the new tag;
@@ -2290,8 +2310,14 @@ $.widget("ui.tagInput", $.ui.input, {
         var opts    = self.options;
         var val     = tag.replace(self.trimRe, '');
 
+        /*
+        $.log("ui.tagInput::_createTag: "
+                + "tag[ "+ tag +" ], val[ "+ val +" ]");
+        // */
+
+
         if ( (val.length < 1) ||
-             (opts.unique && (self.tagStr.indexOf(val) > -1)) )
+             (opts.unique && (self.tags.indexOf(val) > -1)) )
         {
             // Empty or duplicate tag -- do NOT create a tag element.
 
@@ -2342,11 +2368,13 @@ $.widget("ui.tagInput", $.ui.input, {
 
         self.$measureLi.html( '' );
 
-        if (self.$input)
-        {
-            // Reset the input value
-            self.$input.val('').width( self.mWidth );
-        }
+        // Reset the input value
+        self.$input.val('').width( self.mWidth );
+
+        /*
+        $.log("ui.tagInput::_addTag: "
+                + "val[ "+ val +" ]");
+        // */
 
         var $tag    = self._createTag( val );
         if (! $tag)
@@ -2354,18 +2382,11 @@ $.widget("ui.tagInput", $.ui.input, {
             return;
         }
 
-        if (self.$input)
-        {
-            // Insert the new tag
-            self.$input.closest('li').before( $tag );
+        // Insert the new tag
+        self.$input.closest('li').before( $tag );
 
-            // Re-focus the input
-            self.$input.focus();
-        }
-        else
-        {
-            self.$tags.append( $tag );
-        }
+        // Re-focus the input
+        self.$input.focus();
 
         self._updateTags();
     },
@@ -2384,13 +2405,31 @@ $.widget("ui.tagInput", $.ui.input, {
         });
         self.tagStr = self.tags.join( opts.separator );
 
+        /*
         $.log('ui.tagInput::_updateTags: tagStr[ '+ self.tagStr +' ]');
+        // */
     },
 
     /************************
      * Public methods
      *
      */
+
+    /** @brief  Retrieve the current value of the active input.
+     *
+     *  @return The current value.
+     */
+    term: function() {
+        var self    = this;
+        var opts    = self.options;
+        var val     = '';
+        if (self.$inputLi.is(':visible'))
+        {
+            val = self.$input.val();
+        }
+
+        return val;
+    },
 
     /** @brief  Set or retrieve the current value of the tag list.
      *  @param  newVal  If provided, the new value of the tag list
@@ -2416,10 +2455,12 @@ $.widget("ui.tagInput", $.ui.input, {
                 self._addTag( this );
             });
         }
+        /*
         else
         {
             $.log('ui.tagInput::val(): [ '+ self.tagStr +' ]');
         }
+        // */
 
         return self.tagStr;
     },
@@ -2440,8 +2481,7 @@ $.widget("ui.tagInput", $.ui.input, {
 
         // Invoke our super-class
         $.ui.input.prototype.destroy.apply(this, arguments);
-    },
-
+    }
 });
 
 
