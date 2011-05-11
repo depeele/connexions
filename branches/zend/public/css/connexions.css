@@ -1,3 +1,4 @@
+/*fieldInfoColor             = !validationInputColor */
 /****** libraries.scss ****** */
 /* Copyright (c) 2008, Yahoo! Inc. All rights reserved. Code licensed under the BSD License: http://developer.yahoo.net/yui/license.txt version: 3.0.0pr2 */
 html { color: black; background: white; }
@@ -306,6 +307,7 @@ a:visited { color: #005a9c; }
 
 /****** tabs.scss ****** */
 /* Alternative Tab styling using no background image but rather border-radius. Requires a change to application/configs/navigation.xml to remove 'connexions_sprites welcome_bg' from the 'class' of <userInfo> and 'connexions_sprites join_bg'    from the 'class' of <register>  This will show square tabs in browsers that don't support border-radius and likely won't work at all in IE6. */
+/*fieldInfoColor             = !validationInputColor */
 /* Tabs / Navigation */
 #pageHeader { font-size: 14px; z-index: 100; }
 #pageHeader .tabs_outer_curve { position: absolute; right: 598px; }
@@ -384,6 +386,7 @@ a:visited { color: #005a9c; }
 #pageHeader .siteNav #search:hover .list, #pageHeader .siteNav #search .menu-show .list { display: block; }
 #pageHeader .siteNav #search.menu-hide .list { display: none; }
 
+/*fieldInfoColor             = !validationInputColor */
 /****** ui-form.sass ****** */
 /* ====== Forms ====== */
 .ui-form .ui-field { position: relative; }
@@ -402,9 +405,11 @@ a:visited { color: #005a9c; }
 .ui-form .ui-dropDown ul li { padding: 2px; display: block; }
 .ui-form .ui-dropDown:hover ul { display: block; }
 
+/*fieldInfoColor             = !validationInputColor */
 .ui-confirmation { position: absolute; min-width: 8em; padding: 0.2em; font-size: 0.8em; -moz-border-radius: 0.3em 0.3em 0.3em 0.3em; -webkit-border-radius: 0.3em 0.3em 0.3em 0.3em; -ms-border-radius: 0.3em 0.3em 0.3em 0.3em; -khtml-border-radius: 0.3em 0.3em 0.3em 0.3em; border-radius: 0.3em 0.3em 0.3em 0.3em; background-color: #172322; color: white; text-align: center; }
 .ui-confirmation button { width: 3.5em; }
 
+/*fieldInfoColor             = !validationInputColor */
 .ui-timeline { position: relative; border: 1px solid #cccccc; padding: 2em 8em 0 0; margin: 0 0 0 0.25em; }
 .ui-timeline .timeline-plot { padding: 0; margin-bottom: 0.5em; }
 .ui-timeline .timeline-plot canvas { z-index: 1; }
@@ -481,7 +486,7 @@ a:visited { color: #005a9c; }
 .Item_List li:hover .control .item-add, .Item_List li:hover .control .item-edit, .Item_List li:hover .control .item-delete { visibility: visible; }
 .Item_List li .edit-item .buttons { text-align: right; }
 .Item_List li .relation { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; position: absolute; top: 1px; right: 14px; font-size: 0.75em; text-align: center; padding: 1px; /*
-&:hover { .relation-amIn, .relation-none { //@extend .relation-add; background-position: -36px -86px; } .relation-isIn, .relation-mutual { //@extend .relation-remove; background-position: -36px -98px; }
+&:hover { .relation-amIn, .relation-none { /*@extend .relation-add; */ background-position: -36px -86px; } .relation-isIn, .relation-mutual { /*@extend .relation-remove; */ background-position: -36px -98px; }
 }
 */ }
 .Item_List li .relation .connexions_sprites { width: 32px; height: 12px; text-indent: -9999px; }
@@ -569,6 +574,7 @@ a:visited { color: #005a9c; }
 .paginator-top { float: left; padding: 0.1em 0; }
 .paginator-top .pager { display: inline; }
 
+/*fieldInfoColor             = !validationInputColor */
 .displayOptions { float: right; }
 .displayOptions form { position: absolute; top: 1.75em; right: 0; padding: 0.5em; width: 20em; z-index: 11; }
 .displayOptions form select { font-size: 0.9em; font-weight: normal !important; }
@@ -631,6 +637,7 @@ a:visited { color: #005a9c; }
 .pane .displayOptions .displayStyle fieldset.options .user .data .fullName { padding-bottom: 0.5em; }
 .pane .displayOptions .displayStyle fieldset.options .user .data .dates { clear: none; float: left; padding: 0.5em 0 0 16px; }
 
+/*fieldInfoColor             = !validationInputColor */
 .ui-notify { width: 350px; position: absolute; top: 10px; right: 10px; }
 
 .ui-notify-message { padding: 10px; margin-bottom: 15px; background: #000; background: rgba(0, 0, 0, 0.8); -moz-border-radius: 8px 8px 8px 8px; -webkit-border-radius: 8px 8px 8px 8px; -ms-border-radius: 8px 8px 8px 8px; -khtml-border-radius: 8px 8px 8px 8px; border-radius: 8px 8px 8px 8px; -moz-box-shadow: 0 0 6px #000; -webkit-box-shadow: 0 0 6px #000; box-shadow: 0 0 6px #000; }
@@ -646,6 +653,7 @@ a:visited { color: #005a9c; }
 .ui-notify-cross:hover { color: #ffffab; }
 .ui-notify-cross:active { position: relative; top: 1px; }
 
+/*fieldInfoColor             = !validationInputColor */
 .ui-stars-wrapper { display: block; width: 96px; overflow: hidden; }
 .ui-stars-wrapper input.ui-stars-rating { width: 0; height: 0; padding: 0; margin: 0; }
 .ui-stars-wrapper .ui-stars { display: block; float: left; overflow: hidden; text-indent: 999em; }
@@ -675,6 +683,8 @@ a:visited { color: #005a9c; }
 .ui-validation-form .userInput .buttons input, .ui-validation-form .userInput .buttons label, .ui-validation-form .userInput .buttons button { position: relative; display: inline; cursor: pointer; }
 .ui-validation-form .userInput .formError { padding: 0; font-weight: bold; text-align: left; color: #cd0a0a; }
 
+/*fieldInfoColor             = !validationInputColor */
+/*fieldInfoColor             = !validationInputColor */
 /****** ribbon-form.sass ****** */
 /* ====== Forms ====== */
 .ribbon-form { padding: 0; float: none; }
