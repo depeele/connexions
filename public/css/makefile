@@ -7,7 +7,8 @@ YUI_COMP	= yui-compressor
 
 all: connexions.min.css bookmarks.min.css users.min.css 	\
 	bookmark-users.min.css					\
-	ui-form.min.css urlItems.min.css inbox.min.css		\
+	ui-form.min.css ui.tagInput.min.css			\
+	urlItems.min.css inbox.min.css				\
  	validationForm.min.css post.min.css auth.min.css 	\
 	ribbon-form.min.css url-choose.min.css			\
 	search.min.css searchResults.min.css inbox.min.css	\
@@ -29,7 +30,8 @@ connexions.css: main.scss		\
 		urls.scss		\
 		tabs.scss		\
 		ui-form.scss		\
-		timeline.scss	\
+		ui.tagInput.scss	\
+		timeline.scss		\
 		ui.confirmation.scss	\
 		tagCloud.scss		\
 		itemScope.scss		\

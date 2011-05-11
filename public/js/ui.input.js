@@ -146,8 +146,11 @@ $.widget("ui.input", {
             opts.$label.addClass('ui-input-over')
                        .show();
         }
+    },
 
-        self._bindEvents();
+    _init: function()
+    {
+        this._bindEvents();
     },
 
     _bindEvents: function()
@@ -354,55 +357,67 @@ $.widget("ui.input", {
      */
     valid: function(state)
     {
-        if (state === this.options.valid)
+        var self    = this;
+        var opts    = this.options;
+        if (state === opts.valid)
         {
             return;
         }
 
         // Clear out validation information
-        this.element
+        self.element
                 .removeClass('ui-state-error ui-state-valid ui-state-changed');
 
-        this.options.$validation
+        var hasVal  = ( opts.$validation &&
+                        (opts.$validation.jquery === undefined) );
+
+        if ( hasVal )
+        {
+            opts.$validation
                 .html('&nbsp;')
                 .removeClass('ui-state-invalid ui-state-valid');
+        }
 
         if (state === true)
         {
             // Valid
-            this.element.addClass(   'ui-state-valid');
+            self.element.addClass(   'ui-state-valid');
 
-            this.options.$validation
-                        .addClass(   'ui-state-valid');
+            if ( hasVal )
+            {
+                opts.$validation
+                            .addClass(   'ui-state-valid');
+            }
         }
         else if (state !== undefined)
         {
             // Invalid, possibly with an error message
-            this.element.addClass(   'ui-state-error');
+            self.element.addClass(   'ui-state-error');
 
-            this.options.$validation
-                        .addClass(   'ui-state-invalid');
-
-            if (typeof state === 'string')
+            if ( hasVal )
             {
-                this.options.$validation
-                            .html(state);
+                opts.$validation.addClass(   'ui-state-invalid');
+
+                if (typeof state === 'string')
+                {
+                    opts.$validation.html(state);
+                }
             }
         }
 
-        if (this.hasChanged())
+        if (self.hasChanged())
         {
-            this.element.addClass('ui-state-changed');
+            self.element.addClass('ui-state-changed');
         }
 
-        this.options.valid = state;
+        opts.valid = state;
 
         // Let everyone know that the validation state has changed.
-        //this.element.trigger('validation_change.uiinput');
+        //self.element.trigger('validation_change.uiinput');
 
         if (state !== undefined)
         {
-            this._trigger('validation_change', null, [state]);
+            self._trigger('validation_change', null, [state]);
         }
     },
 
