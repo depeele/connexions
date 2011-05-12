@@ -13,17 +13,20 @@
   }
 
   .tagList {
-    position: absolute;
-    z-index:  3;
+    position:   absolute;
+    z-index:    3;
+    top:        0;
+    left:       0;
+    overflow:   hidden;
 
-    cursor:   text;
 
-    top:      0;
-    left:     0;
+    background: none;
+    cursor:     text;
 
     .tag, .activeInput {
       @include inlineBlock();
       padding:  1px;
+      float:    none;
     }
 
     .tag {
@@ -43,7 +46,8 @@
     }
     .activeInput {
       // Account for the border of '.tag'
-      margin:       2px;
+      border:       none;
+      margin:       0;
       width:        auto;
       input {
         display:    inline;
