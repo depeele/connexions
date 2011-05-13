@@ -100,6 +100,7 @@ $.widget("settings.networkAdd", {
         {
             // Setup autocompletion via Json-RPC
             self.$input.autocomplete({
+                separator:  ',',
                 source:     function(request, response) {
                     return self._autocomplete(request,response);
                 },

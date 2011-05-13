@@ -33,14 +33,16 @@ $itemCountWidth: $countBoxWidth + 10px;
     }
   }
   .scopeEntry {
-    border: none;
-    padding: 0.2em 0.1em 0.2em 0.25em;
+    border:   none;
+    padding:  0.2em 0.1em 0.2em 0.25em;
+    width:    22em;
     // Normal ui.input
     input {
       @include inlineBlock();
       vertical-align: middle;
       margin:         0;
       padding:        0.1em;
+      width:          20em;
     }
     button {
       @include inlineBlock();

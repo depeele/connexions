@@ -2008,8 +2008,8 @@ $.widget("ui.tagInput", $.ui.input, {
         var self        = this;
         var opts        = self.options;
 
-        self.trimRe = new RegExp('^\s+|\s+$', 'g');
-        self.sepRe  = new RegExp('\s*'+ opts.separator +'\s*');
+        self.trimRe = new RegExp('^\\s+|\\s+$', 'g');
+        self.sepRe  = new RegExp('\\s*'+ opts.separator +'\\s*');
         self.tags   = [];
         self.tagStr = '';
 
@@ -2186,10 +2186,12 @@ $.widget("ui.tagInput", $.ui.input, {
                 {
                 case keyCode.BACKSPACE:
                     self.$inputLi.prev().remove();
+                    self._updateTags();
                     break;
 
                 case keyCode.DELETE:
                     self.$inputLi.prev().remove();
+                    self._updateTags();
                     break;
 
                 case keyCode.LEFT:  // left arrow
@@ -2475,9 +2477,6 @@ $.widget("ui.tagInput", $.ui.input, {
         $('body').unbind('.uitaginput');
         self.$tags.undelegate('input', '.uitaginput');
         self.element.unbind('.uitaginput');
-
-        self.element.val = self.element.data('origValFunc');
-        self.element.removeData('origValFunc');
 
         // Invoke our super-class
         $.ui.input.prototype.destroy.apply(this, arguments);
@@ -5356,6 +5355,7 @@ $.widget("connexions.itemScope", {
         {
             // Setup autocompletion via Json-RPC
             self.$input.autocomplete({
+                separator:  ',',
                 source:     function(request, response) {
                     return self._autocomplete(request,response);
                 },
@@ -7477,16 +7477,17 @@ $.widget("connexions.bookmarkPost", {
 
         // Tag autocompletion
         opts.$tags.autocomplete({
-            source: function(req, rsp) {
+            separator:  ',',
+            source:     function(req, rsp) {
                 $.log('connexions.bookmarkPost::$tags.source('+ req.term +')');
                 return self._autocomplete(req, rsp);
             },
-            change: function(e, ui) {
+            change:     function(e, ui) {
                 $.log('connexions.bookmarkPost::$tags.change( "'
                         + opts.$tags.val() +'" )');
                 self._highlightTags();
             },
-            close: function(e, ui) {
+            close:  function(e, ui) {
                 // A tag has been completed.  Perform highlighting.
                 $.log('connexions.bookmarkPost::$tags.close()');
                 self._highlightTags();
@@ -8623,14 +8624,21 @@ $.widget("connexions.bookmarkPost", {
 $.widget('connexions.autocomplete', $.ui.autocomplete, {
     version: "0.0.1",
     options: {
-        delay:      200,
+        delay:      300,
         minLength:  2,
-        separator:  ','
+
+        // If a separator is NOT specified, revert to jquery-ui.autocomplete
+        separator:  null    //','
     },
 
     _init: function() {
         var self    = this;
         var opts    = self.options;
+        if (opts.separator === null)
+        {
+            // No special setup -- allow our super-class to run.
+            return $.ui.autocomplete.prototype._init.apply(this, arguments);
+        }
 
         $.each(['search','focus','select'], function() {
             var tName   = this;

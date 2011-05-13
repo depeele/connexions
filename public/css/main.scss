@@ -232,9 +232,12 @@
     border-bottom:  unquote("1px solid") $lightestGrey;
 
     a {
-      position:     relative;
-      display:      block;
-      font-weight:  normal;
+      position:       relative;
+      display:        block;
+      font-weight:    normal;
+
+      // Room for the count
+      padding-right:  3em;
       .name {
       }
       .count {

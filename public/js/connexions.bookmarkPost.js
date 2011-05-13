@@ -241,16 +241,17 @@ $.widget("connexions.bookmarkPost", {
 
         // Tag autocompletion
         opts.$tags.autocomplete({
-            source: function(req, rsp) {
+            separator:  ',',
+            source:     function(req, rsp) {
                 $.log('connexions.bookmarkPost::$tags.source('+ req.term +')');
                 return self._autocomplete(req, rsp);
             },
-            change: function(e, ui) {
+            change:     function(e, ui) {
                 $.log('connexions.bookmarkPost::$tags.change( "'
                         + opts.$tags.val() +'" )');
                 self._highlightTags();
             },
-            close: function(e, ui) {
+            close:  function(e, ui) {
                 // A tag has been completed.  Perform highlighting.
                 $.log('connexions.bookmarkPost::$tags.close()');
                 self._highlightTags();
