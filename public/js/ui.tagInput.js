@@ -489,6 +489,17 @@ $.widget("ui.tagInput", $.ui.input, {
         // Mirror tagStr in the underlying input element
         self.element.val( opts.tagStr );
 
+        if ((! self.$inputLi.is(':visible')) && (opts.tags.length < 1))
+        {
+            // Show the label
+            self.$label.show();
+        }
+        else if (opts.tags.length > 0)
+        {
+            // Hide the label
+            self.$label.hide();
+        }
+
         /*
         $.log('ui.tagInput::_updateTags: tagStr[ '+ opts.tagStr +' ]');
         // */
@@ -499,8 +510,10 @@ $.widget("ui.tagInput", $.ui.input, {
      *
      */
 
-    /** @brief  If the current value of the tag input control is non-empty,
-     *          add a new tag.
+    /** @brief  Add the given tag to the list.
+     *  @param  val     The tag to add.
+     *
+     *  @return this for a fluent interface
      */
     addTag: function(val) {
         var self    = this;
@@ -522,20 +535,43 @@ $.widget("ui.tagInput", $.ui.input, {
         // */
 
         var $tag    = self._createTag( val );
-        if (! $tag)
+        if ($tag)
         {
-            return;
+            // Insert the new tag
+            self.$input.closest('li').before( $tag );
+
+            // Re-focus the input
+            self.$input.focus();
+
+            self._updateTags();
         }
 
-        // Insert the new tag
-        self.$input.closest('li').before( $tag );
-
-        // Re-focus the input
-        self.$input.focus();
-
-        self._updateTags();
+        return this;
     },
 
+    /** @brief  Delete the given tag from the list.
+     *  @param  val     The tag to delete.
+     *
+     *  @return this for a fluent interface
+     */
+    deleteTag: function(val) {
+        var self    = this;
+        var opts    = self.options;
+
+        // /*
+        $.log("ui.tagInput::deleteTag: "
+                + "val[ "+ val +" ]");
+        // */
+
+        var pos = opts.tags.indexOf(val);
+        if (pos < 0)
+        {
+            return this;
+        }
+
+        self.$tags.find('.'+opts.cssClass.item).eq(pos).remove();
+        self._updateTags();
+    },
 
     /** @brief  Enable this control.
      *
