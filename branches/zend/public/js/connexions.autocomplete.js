@@ -16,14 +16,21 @@
 $.widget('connexions.autocomplete', $.ui.autocomplete, {
     version: "0.0.1",
     options: {
-        delay:      200,
+        delay:      300,
         minLength:  2,
-        separator:  ','
+
+        // If a separator is NOT specified, revert to jquery-ui.autocomplete
+        separator:  null    //','
     },
 
     _init: function() {
         var self    = this;
         var opts    = self.options;
+        if (opts.separator === null)
+        {
+            // No special setup -- allow our super-class to run.
+            return $.ui.autocomplete.prototype._init.apply(this, arguments);
+        }
 
         $.each(['search','focus','select'], function() {
             var tName   = this;

@@ -52,8 +52,8 @@ $.widget("ui.tagInput", $.ui.input, {
         var self        = this;
         var opts        = self.options;
 
-        self.trimRe = new RegExp('^\s+|\s+$', 'g');
-        self.sepRe  = new RegExp('\s*'+ opts.separator +'\s*');
+        self.trimRe = new RegExp('^\\s+|\\s+$', 'g');
+        self.sepRe  = new RegExp('\\s*'+ opts.separator +'\\s*');
         self.tags   = [];
         self.tagStr = '';
 
@@ -230,10 +230,12 @@ $.widget("ui.tagInput", $.ui.input, {
                 {
                 case keyCode.BACKSPACE:
                     self.$inputLi.prev().remove();
+                    self._updateTags();
                     break;
 
                 case keyCode.DELETE:
                     self.$inputLi.prev().remove();
+                    self._updateTags();
                     break;
 
                 case keyCode.LEFT:  // left arrow
@@ -519,9 +521,6 @@ $.widget("ui.tagInput", $.ui.input, {
         $('body').unbind('.uitaginput');
         self.$tags.undelegate('input', '.uitaginput');
         self.element.unbind('.uitaginput');
-
-        self.element.val = self.element.data('origValFunc');
-        self.element.removeData('origValFunc');
 
         // Invoke our super-class
         $.ui.input.prototype.destroy.apply(this, arguments);
