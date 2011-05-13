@@ -1,0 +1,96 @@
+<html>
+ <head>
+  <title>ui.tagInput Test</title>
+  
+  <link rel='stylesheet' type='text/css' href='css/themes/connexions/jquery-ui.css' />
+  <link rel='stylesheet' type='text/css' href='css/connexions.css' />
+  <link rel='stylesheet' type='text/css' href='css/ui.tagInput.min.css'>
+  <!-- link rel='stylesheet' type='text/css' href='css/ui-form.min.css' />
+  <link rel='stylesheet' type='text/css' href='css/ui.tagInput.min.css' / -->
+  <style type='text/css'>
+.ui-form {
+    padding:2em;
+}
+#tags {
+    width:  40em;
+    height: 10ex;
+}
+/*
+.tagInput .tagList .activeInput {
+    border: 1px dotted #900;
+}
+*/
+.tagInput .tagList .measureInput {
+    position:   absolute;
+    visibility: hidden;
+}
+  </style>
+
+  <script type='text/javascript' src='js/jquery.js'></script>
+  <script type='text/javascript' src='js/jquery-ui.js'></script>
+  <script type='text/javascript' src='js/connexions.js'></script>
+  <script type='text/javascript' src='js/ui.input.js'></script>
+  <script type='text/javascript' src='js/ui.tagInput.js'></script>
+  <script type='text/javascript'>
+    (function($) {
+      $(document).ready(function() {
+        var $form   = $('form');
+        var $inputs = $form.find('#tags');
+        var $submit = $form.find(':submit').button();
+        var $getVal = $('#get-value');
+        var $output = $('#output');
+
+        $getVal.click(function(e) {
+            e.preventDefault();
+
+            $output.append( '<p>val: [ '+ $inputs.val() +' ], '
+                           +        '[ '+ $inputs.tagInput('val') +' ]'
+                           +'</p>');
+        });
+
+        $inputs.tagInput()
+                .bind('validation_change', function(e, status) {
+                  if (status === true)
+                  {
+                    // Are all the others valid?
+                    var $valid  = $inputs.filter('.ui-state-valid');
+
+                    if ($valid.length == $inputs.length)
+                    {
+                        $submit.removeClass('ui-state-disabled')
+                               .removeAttr('disabled');
+                    }
+                    else
+                    {
+                      status = '';
+                    }
+                  }
+
+                  if ((status !== true) && (status !== undefined))
+                  {
+                    $submit.addClass('ui-state-disabled')
+                           .attr('disabled', true);
+                  }
+                });
+
+        $submit.addClass('ui-state-disabled')
+               .attr('disabled', true);
+
+      });
+    }(jQuery));
+  </script>
+ </head>
+ <body>
+   <form class='ui-form'>
+     <div class='ui-field'>
+       <label    for='tags'>Tags</label>
+       <textarea  id='tags' class='text required'></textarea>
+       <div class='ui-field-status'>&nbsp;</div>
+     </div>
+     <input type='submit' class='ui-button' />
+     <a id='get-value' href='#'>get value</a>
+   </form>
+
+   <div id='output'></div>
+ </body>
+</html>

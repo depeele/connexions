@@ -1971,13 +1971,12 @@ $.widget("ui.input", {
 (function($) {
 
 $.widget("ui.tagInput", $.ui.input, {
-    version: "0.0.2",
+    version: "0.0.3",
     options: {
         // tagInput Defaults
         separator:      ',',
         unique:         true,
         addOnEnter:     true,
-        validation:     '!empty',
         cssClass:       {
             container:  'tagInput',
             origInput:  'rawInput',
@@ -2013,14 +2012,24 @@ $.widget("ui.tagInput", $.ui.input, {
         self.tags   = [];
         self.tagStr = '';
 
+        /*
         self.element.addClass( opts.cssClass.origInput)
                     .wrap( "<div class='"+ opts.cssClass.container +"' />" );
-
         self.$container = self.element.parent();
+        // */
+
+        self.$container = $('<div />').addClass(opts.cssClass.container)
+                                      .addClass( self.element.attr('class') )
+                                      .insertAfter( self.element );
+
+        // Move any label INTO $container
+        self.$label     = self.element.siblings('label')
+                                      .appendTo( self.$container );
 
         // Add a <ul> above the <input> to hold converted tags as <li> items
         self.$tags = $('<ul/>').addClass(opts.cssClass.list)
                                .appendTo( self.$container )
+                               ; /*
                                .css({
                                     'padding-left': self.element
                                                         .css('padding-left'),
@@ -2031,6 +2040,7 @@ $.widget("ui.tagInput", $.ui.input, {
                                     'padding-bottom':self.element
                                                         .css('padding-bottom')
                                });
+                               */
 
         /* Include a hidden li that will be usee to determine the proper width
          * given the current input characters.
@@ -2054,12 +2064,16 @@ $.widget("ui.tagInput", $.ui.input, {
         self._setupAutocomplete();
 
         // Establish our initial value
-        self.val( self.element.val() );
+        self.origValue = self.element.val();
+        self.val( self.origValue );
 
-        // Invoke our super-classes
+        // Invoke our super-class (which SHOULD invoke _bindEvents()
         $.ui.input.prototype._init.apply(this, arguments);
     },
 
+    /** @brief  If 'autocomplete' options have been provided, setup
+     *          autocompletion on self.$input.
+     */
     _setupAutocomplete: function() {
         var self    = this;
         var opts    = self.options;
@@ -2111,6 +2125,8 @@ $.widget("ui.tagInput", $.ui.input, {
         self.$input.autocomplete( acOpts );
     },
 
+    /** @brief  Establish any needed event handlers.
+     */
     _bindEvents: function() {
         var self    = this;
         var opts    = self.options;
@@ -2131,15 +2147,15 @@ $.widget("ui.tagInput", $.ui.input, {
             });
         };
         var _click    = function(e) {
-            // Trigger 'focus' on the underlying input element
+            // Trigger 'focus'
             self.element.trigger('focus');
         };
         var _focus    = function(e) {
             e.stopPropagation();
             e.preventDefault();
             self._squelchBlur = false;
-            self.$inputLi.show();
-            self.$input.trigger('focus');
+
+            self._activeInput_show();
         };
 
         var _inputWidth = function() {
@@ -2267,15 +2283,14 @@ $.widget("ui.tagInput", $.ui.input, {
             self._addTag();
 
             // Hide the active input element
-            self.$inputLi.hide();
+            self._activeInput_hide();
         };
 
         // Event bindings
         self.element
-                .bind('resize.uitaginput',  _resize)
                 .bind('focus.uitaginput',   _focus);
 
-        self.$tags
+        self.$container
                 .bind('click.uitaginput',   _click);
 
         // Delegate relavant input events
@@ -2285,20 +2300,44 @@ $.widget("ui.tagInput", $.ui.input, {
                   .delegate('.activeInput','blur.uitaginput',    _inputBlur)
                   .delegate('.activeInput','resize.uitaginput',  _inputWidth);
 
-        /* Since textarea elements can be resized in chrome, monitor 'mouseup'
-         * events on body and, when triggered, ensure that self.$tags mirrors
-         * the size of the underlying textarea.
-         */
-        $('body').bind('mouseup.uitaginput', _resize);
-
-
         // Finally, invoke our super-class
         $.ui.input.prototype._bindEvents.apply(this, arguments);
 
-        /* Trigger a 'resize' event on our input element to ensure that
-         * self.$tags mirros its size.
+        /* Ensure that self.$tags mirrors the original size of self.element
+         * and then hide self.element.
          */
-        self.element.trigger('resize');
+        _resize();
+        self.element.hide();
+    },
+
+    /** @brief  Show the active input element.
+     */
+    _activeInput_show: function() {
+        if (this.options.enabled)
+        {
+            // Hide the label and show the active input element
+            this.$label.hide();
+            this.$inputLi.show();
+
+            this.$input.trigger('focus');
+        }
+
+        return this;
+    },
+
+    /** @brief  Hide the active input element.
+     */
+    _activeInput_hide: function() {
+        // Hide the active input element
+        this.$inputLi.hide();
+
+        if (this.tagStr.length < 1)
+        {
+            // Re-show the label 
+            this.$label.show();
+        }
+
+        return this;
     },
 
     /** @brief  Given the text of a new tag, if it is not empty, create
@@ -2407,6 +2446,9 @@ $.widget("ui.tagInput", $.ui.input, {
         });
         self.tagStr = self.tags.join( opts.separator );
 
+        // Mirror tagStr in the underlying input element
+        self.element.val( self.tagStr );
+
         /*
         $.log('ui.tagInput::_updateTags: tagStr[ '+ self.tagStr +' ]');
         // */
@@ -2416,6 +2458,109 @@ $.widget("ui.tagInput", $.ui.input, {
      * Public methods
      *
      */
+
+    /** @brief  Enable this control.
+     *
+     *  @return this for a fluent interface.
+     */
+    enable: function() {
+        if (! this.options.enabled)
+        {
+            this.options.enabled = true;
+
+            this.$container.removeClass('ui-state-disabled')
+                           .removeAttr('disabled');
+            this.$label.removeClass('ui-state-disabled')
+                       .removeAttr('disabled');
+
+            //this.element.trigger('enabled.uiinput');
+            this._trigger('enabled');
+        }
+
+        return this;
+    },
+
+    /** @brief  Disable this control.
+     *
+     *  @return this for a fluent interface.
+     */
+    disable: function() {
+        var opts    = this.options;
+        if (opts.enabled)
+        {
+            opts.enabled = false;
+            this.$container.attr('disabled', true)
+                           .addClass('ui-state-disabled');
+            this.$label.attr('disabled', true)
+                       .addClass('ui-state-disabled');
+
+            if (this.$inputLi.is(':visible'))
+            {
+                this._squelchBlur = true;
+                this._activeInput_hide();
+                this._squelchBlur = false;
+            }
+
+            //this.element.trigger('disabled.uiinput');
+            this._trigger('disabled');
+        }
+
+        return this;
+    },
+
+    /** @brief  Reset the input to its original (creation or last direct set)
+     *          value.
+     *
+     *  @return this for a fluent interface.
+     */
+    reset: function() {
+        // Restore the original value
+        this.val( this.origValue );
+
+        this.$container
+                .removeClass('ui-state-error ui-state-valid ui-state-changed');
+
+        return this;
+    },
+
+    /** @brief  Has the value of this input changed from its original?
+     *
+     *  @return true | false
+     */
+    hasChanged: function() {
+        return (this.val() !== this.origValue);
+    },
+
+    /** @brief  Override jQuery-ui option() so we can return 'term' as the
+     *          value of the activeInput.
+     *  @param  key     The desired option;
+     *  @param  value   If provided, the new value;
+     *
+     *  @return this for a fluent interface.
+     */
+    option: function(key, value) {
+        if ((key   === undefined) ||    // retrieve all
+            (value !== undefined) ||    // set
+            (typeof key !== 'string'))  // set via object
+        {
+            // Let the super-class handle this.
+            return $.ui.input.prototype.option.apply(this, arguments);
+        }
+
+        var ret;
+        switch (key)
+        {
+        case 'term':
+            ret = this.term();
+            break;
+
+        default:
+            ret = this.options[ key ];
+            break;
+        }
+
+        return ret;
+    },
 
     /** @brief  Retrieve the current value of the active input.
      *
@@ -2456,6 +2601,9 @@ $.widget("ui.tagInput", $.ui.input, {
             $.each(self.tags, function() {
                 self._addTag( this );
             });
+
+            // Mirror tagStr in the underlying input element
+            self.element.val( self.tagStr );
         }
         /*
         else
@@ -2474,9 +2622,18 @@ $.widget("ui.tagInput", $.ui.input, {
         var opts        = self.options;
 
         // Unbind
-        $('body').unbind('.uitaginput');
-        self.$tags.undelegate('input', '.uitaginput');
         self.element.unbind('.uitaginput');
+        self.$tags.undelegate('input', '.uitaginput');
+        self.$container.unbind('.uitaginput');
+
+        /* Move the label back before the original element and ensure that both
+         * the label and element are visible.
+         */
+        self.$label.insertBefore( self.element ).show();
+        self.element.show();
+
+        // Remove our container and everything in it.
+        self.$container.remove();
 
         // Invoke our super-class
         $.ui.input.prototype.destroy.apply(this, arguments);
