@@ -21,6 +21,12 @@ $.widget("ui.tagInput", $.ui.input, {
         separator:      ',',
         unique:         true,
         addOnEnter:     true,
+
+        noHeight:       false,  // Do NOT set the height to match the
+                                // underlying element
+        noWidth:        false,  // Do NOT set the width to match the
+                                // underlying element
+
         cssClass:       {
             container:  'tagInput',
             origInput:  'rawInput',
@@ -53,13 +59,13 @@ $.widget("ui.tagInput", $.ui.input, {
 
         self.trimRe = new RegExp('^\\s+|\\s+$', 'g');
         self.sepRe  = new RegExp('\\s*'+ opts.separator +'\\s*');
-        self.tags   = [];
-        self.tagStr = '';
+        opts.tags   = [];
+        opts.tagStr = '';
 
         // Assemble the widget structure
         self.$container = $('<div />').addClass(opts.cssClass.container)
                                       .addClass( self.element.attr('class') )
-                                      .insertAfter( self.element );
+                                      .insertBefore( self.element );
 
         // Move any label INTO $container
         self.$label     = self.element.siblings('label')
@@ -68,36 +74,40 @@ $.widget("ui.tagInput", $.ui.input, {
         // Add a <ul> above the <input> to hold converted tags as <li> items
         self.$tags = $('<ul/>').addClass(opts.cssClass.list)
                                .appendTo( self.$container )
-                               ; /*
-                               .css({
-                                    'padding-left': self.element
-                                                        .css('padding-left'),
-                                    'padding-right':self.element
-                                                        .css('padding-right'),
-                                    'padding-top':  self.element
-                                                        .css('padding-top'),
-                                    'padding-bottom':self.element
-                                                        .css('padding-bottom')
-                               });
-                               */
+
+        /* Ensure that self.$tags mirrors the original size of self.element
+         * and then hide self.element.
+         */
+        self._resize();
+        self.element.hide();
+
+
+        // Include an li to hold the active input control.
+        self.$inputLi   = $('<li/>').addClass(opts.cssClass.activeInput)
+                                    .appendTo( self.$tags );
+        self.$input     = $('<input type="text" />')
+                                    .appendTo( self.$inputLi );
 
         /* Include a hidden li that will be usee to determine the proper width
          * given the current input characters.
          *
-         * Start by measuring 'm', which will be used as the minimum width.
+         * Start by attempting to measure 'm', which will be used as the
+         * minimum width.  This MAY not work if the widget is contained
+         * in a dialog or other collapsable item that may not yet be displayed.
          */
-        self.$measureLi = $('<li/>').addClass(opts.cssClass.measure)
-                                    .appendTo( self.$tags );
-        self.mWidth = self.$measureLi.html('m').width() + 2;
-        self.$measureLi.empty();
+        self.$measure = $('<div />')
+                                .addClass(opts.cssClass.measure)
+                                .appendTo( self.$inputLi );
+        self.mWidth = self.$measure.html('m').width() + 2;
+        self.$measure.html('');
 
-        // Include an li to hold the active input control.
-        self.$inputLi   = $('<li/>').addClass(opts.cssClass.activeInput)
-                                    .appendTo( self.$tags )
-                                    .hide();
-        self.$input     = $('<input type="text" />')
-                                    .appendTo( self.$inputLi )
-                                    .width( self.mWidth );
+        // /*
+        $.log("ui.tagInput::_init: mWidth[ "+ self.mWidth +" ]");
+        // */
+
+        self.$input.width( self.mWidth );
+        self.$inputLi.hide();
+
 
         // Setup autocompletion if needed.
         self._setupAutocomplete();
@@ -108,6 +118,32 @@ $.widget("ui.tagInput", $.ui.input, {
 
         // Invoke our super-class (which SHOULD invoke _bindEvents()
         $.ui.input.prototype._init.apply(this, arguments);
+    },
+
+    /** @brief  Resize our input area to match the original.
+     *
+     *  @return this for a fluent interface
+     */
+    _resize:    function() {
+        var self    = this;
+        var opts    = self.options;
+        var width   = self.element.css('width');
+        var height  = self.element.css('height');
+        width       = width  || self.element.innerWidth();
+        height      = height || self.element.innerHeight();
+
+        if ((opts.noWidth !== true) && width)
+        {
+            self.$container.css('width', width);
+        }
+        if (height)
+        {
+            self.$tags.css( (opts.noHeight === true
+                                ? 'min-height'
+                                : 'height'), height );
+        }
+
+        return;
     },
 
     /** @brief  If 'autocomplete' options have been provided, setup
@@ -171,27 +207,14 @@ $.widget("ui.tagInput", $.ui.input, {
         var opts    = self.options;
         var keyCode = $.ui.keyCode;
 
-        /* Bind our event handlers so we have the option of squelching events
-         * from reaching our super-class.
-         *
-         * Event handlers
-         */
-        var _resize     = function(e) {
-            self.$tags.css({
-                        /*  leave room for the resize handle since self.$tags
-                         *  sits above the input area in z-order.
-                         */
-                width:  self.element.innerWidth() - 10,
-                height: self.element.innerHeight()
-            });
-        };
         var _click    = function(e) {
             // Trigger 'focus'
             self.element.trigger('focus');
         };
         var _focus    = function(e) {
-            e.stopPropagation();
             e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
             self._squelchBlur = false;
 
             self._activeInput_show();
@@ -201,8 +224,8 @@ $.widget("ui.tagInput", $.ui.input, {
             var val     = self.$input.val();
 
             // Assign to the measuring li
-            self.$measureLi.html( val );
-            var width   = self.$measureLi.width() + self.mWidth;
+            self.$measure.html( val );
+            var width   = self.$measure.width() + self.mWidth;
 
             // /*
             $.log("ui.tagInput::_inputWidth: val[ "+ val   +" ], "
@@ -290,7 +313,7 @@ $.widget("ui.tagInput", $.ui.input, {
                  (key                      === opts.separator) ||
                  (opts.addOnEnter && (key  === keyCode.ENTER)) )
             {
-                self._addTag();
+                self.addTag();
                 e.preventDefault();
                 return false;
             }
@@ -319,7 +342,7 @@ $.widget("ui.tagInput", $.ui.input, {
                 return false;
             }
 
-            self._addTag();
+            self.addTag();
 
             // Hide the active input element
             self._activeInput_hide();
@@ -341,24 +364,34 @@ $.widget("ui.tagInput", $.ui.input, {
 
         // Finally, invoke our super-class
         $.ui.input.prototype._bindEvents.apply(this, arguments);
-
-        /* Ensure that self.$tags mirrors the original size of self.element
-         * and then hide self.element.
-         */
-        _resize();
-        self.element.hide();
     },
 
     /** @brief  Show the active input element.
      */
     _activeInput_show: function() {
-        if (this.options.enabled)
+        var self    = this;
+        var opts    = self.options;
+        if (opts.enabled)
         {
             // Hide the label and show the active input element
-            this.$label.hide();
-            this.$inputLi.show();
+            self.$label.hide();
+            self.$inputLi.show();
 
-            this.$input.trigger('focus');
+            if (self.mWidth < 3)
+            {
+                self.mWidth = self.$measure.html('m').width() + 2;
+                self.$measure.html('');
+
+                // /*
+                $.log("ui.tagInput::_activeInput_show: "
+                      + "mWidth[ "+ self.mWidth +" ]");
+                // */
+
+                //self.$input.width( self.mWidth );
+            }
+
+            self.$container.addClass('ui-state-focus ui-state-active');
+            self.$input.trigger('focus');
         }
 
         return this;
@@ -369,8 +402,9 @@ $.widget("ui.tagInput", $.ui.input, {
     _activeInput_hide: function() {
         // Hide the active input element
         this.$inputLi.hide();
+        this.$container.removeClass('ui-state-focus ui-state-active');
 
-        if (this.tagStr.length < 1)
+        if (this.options.tagStr.length < 1)
         {
             // Re-show the label 
             this.$label.show();
@@ -397,7 +431,7 @@ $.widget("ui.tagInput", $.ui.input, {
 
 
         if ( (val.length < 1) ||
-             (opts.unique && (self.tags.indexOf(val) > -1)) )
+             (opts.unique && (opts.tags.indexOf(val) > -1)) )
         {
             // Empty or duplicate tag -- do NOT create a tag element.
 
@@ -438,21 +472,52 @@ $.widget("ui.tagInput", $.ui.input, {
         return $tag;
     },
 
+    /** @brief  Update the tags and tagStr based upon the current items in
+     *          $tags
+     */
+    _updateTags: function() {
+        var self    = this;
+        var opts    = self.options;
+
+        opts.tags   = [];
+        self.$tags.find('.'+opts.cssClass.item +' > span')
+                  .each(function() {
+            opts.tags.push( $(this).html() );
+        });
+        opts.tagStr = opts.tags.join( opts.separator );
+
+        // Mirror tagStr in the underlying input element
+        self.element.val( opts.tagStr );
+
+        /*
+        $.log('ui.tagInput::_updateTags: tagStr[ '+ opts.tagStr +' ]');
+        // */
+    },
+
+    /************************
+     * Public methods
+     *
+     */
+
     /** @brief  If the current value of the tag input control is non-empty,
      *          add a new tag.
      */
-    _addTag: function() {
+    addTag: function(val) {
         var self    = this;
         var opts    = self.options;
-        var val     = (self.$input ? $.trim(self.$input.val()) : '');
 
-        self.$measureLi.html( '' );
+        if (val === undefined)
+        {
+            val = (self.$input ? $.trim(self.$input.val()) : '');
 
-        // Reset the input value
-        self.$input.val('').width( self.mWidth );
+            self.$measure.html( '' );
 
-        /*
-        $.log("ui.tagInput::_addTag: "
+            // Reset the input value
+            self.$input.val('').width( self.mWidth );
+        }
+
+        // /*
+        $.log("ui.tagInput::addTag: "
                 + "val[ "+ val +" ]");
         // */
 
@@ -471,32 +536,6 @@ $.widget("ui.tagInput", $.ui.input, {
         self._updateTags();
     },
 
-    /** @brief  Update the tags and tagStr based upon the current items in
-     *          $tags
-     */
-    _updateTags: function() {
-        var self    = this;
-        var opts    = self.options;
-
-        self.tags   = [];
-        self.$tags.find('.'+opts.cssClass.item +' > span')
-                  .each(function() {
-            self.tags.push( $(this).html() );
-        });
-        self.tagStr = self.tags.join( opts.separator );
-
-        // Mirror tagStr in the underlying input element
-        self.element.val( self.tagStr );
-
-        /*
-        $.log('ui.tagInput::_updateTags: tagStr[ '+ self.tagStr +' ]');
-        // */
-    },
-
-    /************************
-     * Public methods
-     *
-     */
 
     /** @brief  Enable this control.
      *
@@ -633,25 +672,33 @@ $.widget("ui.tagInput", $.ui.input, {
             self.element.removeClass('ui-state-valid');
             delete self.options.valid;
 
-            self.tags   = $.trim(newVal).split( self.sepRe );
-            self.tagStr = self.tags.join( opts.separator );
+            var tags    = $.trim(newVal).split( self.sepRe );
 
+            // Empty our current tag state
+            opts.tags   = [];
+            opts.tagStr = '';
             self.$tags.find('.tag').remove();
-            $.each(self.tags, function() {
-                self._addTag( this );
+
+            // Add new tag items for each new tag
+            $.each(tags, function() {
+                self.addTag( this );
             });
 
+            // Set our current tag state
+            opts.tags   = tags;
+            opts.tagStr = opts.tags.join( opts.separator );
+
             // Mirror tagStr in the underlying input element
-            self.element.val( self.tagStr );
+            self.element.val( opts.tagStr );
         }
         /*
         else
         {
-            $.log('ui.tagInput::val(): [ '+ self.tagStr +' ]');
+            $.log('ui.tagInput::val(): [ '+ opts.tagStr +' ]');
         }
         // */
 
-        return self.tagStr;
+        return opts.tagStr;
     },
 
     /** @brief  Destroy an instance.
