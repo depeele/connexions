@@ -410,6 +410,25 @@ a:visited { color: #005a9c; }
 .ui-confirmation button { width: 3.5em; }
 
 /*fieldInfoColor             = !validationInputColor */
+.tagInput { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; position: relative; z-index: 1; padding: 0; margin: 0; }
+.tagInput .rawInput { z-index: 2; }
+.tagInput .tagList { z-index: 3; padding: 0.2em; margin: 0; background: none; cursor: text; }
+.tagInput .tagList .tag, .tagInput .tagList .activeInput { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; padding: 0.2em; float: none; }
+.tagInput .tagList .tag { border: 1px solid #cccccc; -moz-border-radius: 4px 4px 4px 4px; -webkit-border-radius: 4px 4px 4px 4px; -ms-border-radius: 4px 4px 4px 4px; -khtml-border-radius: 4px 4px 4px 4px; border-radius: 4px 4px 4px 4px; margin: 0.2em; cursor: pointer; }
+.tagInput .tagList .tag span, .tagInput .tagList .tag .delete { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
+.tagInput .tagList .tag span { padding: 0 0 0 0.25em; }
+.tagInput .tagList .tag .delete { text-indent: 999em; text-decoration: none; }
+.tagInput .tagList .activeInput { border: none; margin: 0; width: auto; }
+.tagInput .tagList .activeInput input { display: inline; border: none; background: none; padding: 0; margin: 0; width: auto; }
+.tagInput .tagList .measureInput { position: absolute; z-index: 0; visibility: hidden; width: auto; padding: 1px; margin: 2px; }
+
+.scopeEntry .tagInput label { top: 0.2em; left: 0.2em; }
+.scopeEntry .tagInput .tagList { font-size: 0.85em; padding: 0 0.1em; }
+.scopeEntry .tagInput .tagList .tag { margin: 0 0.1em; padding: 0 0 0 0.2em; }
+.scopeEntry .tagInput .tagList .tag .delete { float: none; }
+.scopeEntry .tagInput .tagList .activeInput { padding: 0 0.1em; top: 0.2em; }
+
+/*fieldInfoColor             = !validationInputColor */
 .ui-timeline { position: relative; border: 1px solid #cccccc; padding: 2em 8em 0 0; margin: 0 0 0 0.25em; }
 .ui-timeline .timeline-plot { padding: 0; margin-bottom: 0.5em; }
 .ui-timeline .timeline-plot canvas { z-index: 1; }
