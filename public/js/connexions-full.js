@@ -1631,12 +1631,17 @@ $.widget("ui.input", {
             self._blur();
         };
 
+        var _validate   = function(e) {
+            self.validate();
+        };
+
         self.element
                 .bind('mouseenter.uiinput', _mouseenter)
                 .bind('mouseleave.uiinput', _mouseleave)
                 .bind('keydown.uiinput',    _keydown)
                 .bind('focus.uiinput',      _focus)
-                .bind('blur.uiinput',       _blur);
+                .bind('blur.uiinput',       _blur)
+                .bind('validate.uiinput',   _validate);
 
         opts.$label
                 .bind('click.uiinput', function() { self.element.focus(); });
@@ -2481,6 +2486,12 @@ $.widget("ui.tagInput", $.ui.input, {
             // Hide the label
             self.$label.hide();
         }
+
+        /* Since we control tags that are entered, mark the underlying element
+         * as valid for the sake of widgets that include the original element
+         * and expect it to use '.ui-state-valid' to indicate validity.
+         */
+        self.element.trigger('validate');
 
         // Trigger a 'change' event
         self._trigger('change');

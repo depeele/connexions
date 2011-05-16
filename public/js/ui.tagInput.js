@@ -526,6 +526,12 @@ $.widget("ui.tagInput", $.ui.input, {
             self.$label.hide();
         }
 
+        /* Since we control tags that are entered, mark the underlying element
+         * as valid for the sake of widgets that include the original element
+         * and expect it to use '.ui-state-valid' to indicate validity.
+         */
+        self.element.trigger('validate');
+
         // Trigger a 'change' event
         self._trigger('change');
 
