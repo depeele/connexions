@@ -240,21 +240,38 @@ $.widget("connexions.bookmarkPost", {
          */
 
         // Tag autocompletion
-        opts.$tags.autocomplete({
-            separator:  ',',
-            source:     function(req, rsp) {
-                $.log('connexions.bookmarkPost::$tags.source('+ req.term +')');
-                return self._autocomplete(req, rsp);
-            },
-            change:     function(e, ui) {
-                $.log('connexions.bookmarkPost::$tags.change( "'
-                        + opts.$tags.val() +'" )');
+        opts.$tags.tagInput({
+            noHeight:       true,
+            change:     function() {
+                /*
+                $.log('connexions.bookmarkPost::'
+                       + '$tags.change( "'+ opts.$tags.val() +'" )');
+                // */
                 self._highlightTags();
             },
-            close:  function(e, ui) {
-                // A tag has been completed.  Perform highlighting.
-                $.log('connexions.bookmarkPost::$tags.close()');
-                self._highlightTags();
+            autocomplete:   {
+                source:     function(req, rsp) {
+                    /*
+                    $.log('connexions.bookmarkPost::'
+                           + '$tags.source('+ req.term +')');
+                    // */
+                    return self._autocomplete(req, rsp);
+                },
+                change:     function(e, ui) {
+                    /*
+                    $.log('connexions.bookmarkPost::'
+                           + '$tags.change( "'+ opts.$tags.val() +'" )');
+                    // */
+                    self._highlightTags();
+                },
+                close:  function(e, ui) {
+                    // A tag has been completed.  Perform highlighting.
+                    /*
+                    $.log('connexions.bookmarkPost::$tags.close()');
+                    // */
+
+                    self._highlightTags();
+                }
             }
         });
 
@@ -440,8 +457,9 @@ $.widget("connexions.bookmarkPost", {
      */
     _bindEvents: function()
     {
-        var self    = this;
-        var opts    = self.options;
+        var self            = this;
+        var opts            = self.options;
+        var tagsTabIndex    = Math.floor(opts.$tags.attr('tabIndex'));
 
         // Handle a direct click on one of the status indicators
         var _save_click       = function(e, data) {
@@ -504,20 +522,6 @@ $.widget("connexions.bookmarkPost", {
             self.validate();
         };
 
-        var _tagInput       = function( event ) {
-            var keyCode = $.ui.keyCode;
-            if ( event.keyCode === $.ui.keyCode.COMMA)
-            {
-                // This is the end of a tag -- treat it as a 'select' event
-                // and close the menu
-                var menu    = opts.$tags.autocomplete('widget');
-
-                //event.preventDefault();
-                //event.stopPropagation();
-                opts.$tags.autocomplete('close');
-            }
-        };
-
         /* Context bind this function in 'self/this' so we can use it
          * outside of this routine.
          */
@@ -539,21 +543,51 @@ $.widget("connexions.bookmarkPost", {
             if ($item.hasClass('selected'))
             {
                 // De-select / remove
-                var re  = new RegExp('\\s*'+ tag +'\\s*[,]?');
-                tags    = tags.replace(re, '');
+                opts.$tags.tagInput('deleteTag', tag);
             }
             else
             {
-                // Select / add
-                if (! tags.match(/,\s*$/))
-                {
-                    tags += ', ';
-                }
-                tags += tag;
+                opts.$tags.tagInput('addTag', tag);
             }
 
-            opts.$tags.val(tags);
             self._highlightTags();
+        };
+
+        /** @brief  Handle tab/backtab for input focus changes.  This is
+         *          primarily to ensure that opts.$tags receives focus events.
+         */
+        var keyCode         = $.ui.keyCode;
+        var _form_tabFocus  = function(e) {
+            var key     = e.keyCode || e.which;
+
+            if (key === keyCode.TAB)
+            {
+                var $target     = $(e.target);
+                var tabIndex    = Math.floor($target.attr('tabIndex'));
+
+                $.log('connexions.bookmarkPost::_form_tabFocus(): '
+                      + 'target[ '+ $target.attr('name') +' ], '
+                      + 'tabIndex[ '+ tabIndex +' ], '
+                      + 'tagsTabIndex[ '+ tagsTabIndex +' ], '
+                      + 'key[ '+ key +' ], '
+                      + 'shiftKey[ '+ e.shiftKey +' ]');
+
+                /* Tab       == forward  one field
+                 * Shift-Tab == backward one field
+                 */
+                if ( (   e.shiftKey  && ((tabIndex - 1) === tagsTabIndex)) ||
+                     ((! e.shiftKey) && ((tabIndex + 1) === tagsTabIndex)) )
+                {
+                    // opts.$tags is to be the newly focused field
+                    $.log('connexions.bookmarkPost::_form_tabFocus(): '
+                          + 'trigger focus for opts.$tags');
+                    opts.$tags.focus();
+
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                }
+            }
         };
 
         /**********************************************************************
@@ -579,12 +613,12 @@ $.widget("connexions.bookmarkPost", {
         opts.$url.bind('validation_change.bookmarkPost',
                                                 _url_change);
 
-        opts.$tags.bind('keydown.bookmarkPost', _tagInput);
-
         opts.$suggestions.delegate('.cloud .cloudItem,'
                                    + '.cloud .Item_List li:not(.header)',
                                    'click.bookmarkPost',
                                                 self._tagClick);
+
+        self.element.bind('keydown.bookmarkPost', _form_tabFocus);
 
         _validate_form();
     },
@@ -900,7 +934,7 @@ $.widget("connexions.bookmarkPost", {
                  * alter the field's default value.
                  */
                 opts.$name.val(headers.title );
-                opts.$name.trigger('blur');
+                opts.$name.blur();
             }
         }
 
@@ -911,7 +945,7 @@ $.widget("connexions.bookmarkPost", {
             if ($desc.length > 0)
             {
                 opts.$description.val($desc.attr('content') );
-                opts.$description.trigger('blur');
+                opts.$description.blur();
             }
         }
 
@@ -922,7 +956,7 @@ $.widget("connexions.bookmarkPost", {
             if ($keywords.length > 0)
             {
                 opts.$tags.val($keywords.attr('content') );
-                opts.$tags.trigger('blur');
+                opts.$tags.blur();
             }
         }
     },
@@ -1056,7 +1090,7 @@ $.widget("connexions.bookmarkPost", {
         $cloudTags.filter('.selected').removeClass('selected');
 
         // Highlight any currently selected tags.
-        var tags    = opts.$tags.val();
+        var tags    = opts.$tags.tagInput('option', 'tags');  //val();
         var nTags   = tags.length;
         var tag     = null;
 
@@ -1065,8 +1099,8 @@ $.widget("connexions.bookmarkPost", {
             return;
         }
 
-        tags  = tags.split(/\s*,\s*/);
-        nTags = tags.length;
+        //tags  = tags.split(/\s*,\s*/);
+        //nTags = tags.length;
 
         var forRe   = /^for:/;
         for (var idex = 0; idex < nTags; idex++)
@@ -1103,8 +1137,11 @@ $.widget("connexions.bookmarkPost", {
     {
         var self    = this;
         var opts    = self.options;
+        var term    = opts.$tags.tagInput('option', 'term');
+        var re      = new RegExp(term, 'gi');
         var params  = {
-            id: { userId: opts.userId, itemId: opts.itemId }
+            id:     { userId: opts.userId, itemId: opts.itemId },
+            term:   term
         };
 
 
@@ -1118,8 +1155,6 @@ $.widget("connexions.bookmarkPost", {
             params.id.itemId = opts.$url.val();
         }
 
-        params.term = opts.$tags.autocomplete('option', 'term');
-
         $.jsonRpc(opts.jsonRpc, 'bookmark.autocompleteTag', params, {
             success:    function(ret, txtStatus, req){
                 if (ret.error !== null)
@@ -1128,22 +1163,18 @@ $.widget("connexions.bookmarkPost", {
                     return;
                 }
 
-                response(
-                    $.map(ret.result,
-                          function(item) {
-                            var str = item.tag.replace(
-                                                params.term,
-                                                '<b>'+ params.term +'</b>' );
-                            return {
-                                label:   '<span class="name">'
-                                       +  str
-                                       + '</span>'
-                                       +' <span class="count">'
-                                       +  item.userItemCount
-                                       + '</span>',
-                                value: item.tag
-                            };
-                          }));
+                var res = $.map(ret.result, function(item) {
+                    var str     = item.tag.replace(re, '<b>'+ term +'</b>');
+                    var weight  = item.userItemCount;
+
+                    return {
+                        label:   '<span class="name">'+ str +'</span>'
+                                +'<span class="count">'+ weight +'</span>',
+                        value:  item.tag
+                    };
+                });
+
+                response( res );
                 self.element.trigger('success', [ret, txtStatus, req]);
             },
             error:      function(req, txtStatus, e) {
@@ -1339,6 +1370,8 @@ $.widget("connexions.bookmarkPost", {
         self.element.removeClass('ui-form');
 
         // Unbind events
+        self.element.unbind('.bookmarkPost');
+
         opts.$inputs.unbind('.bookmarkPost');
         opts.$favorite.unbind('.bookmarkPost');
         opts.$private.unbind('.bookmarkPost');

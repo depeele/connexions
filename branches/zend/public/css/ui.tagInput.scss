@@ -4,18 +4,18 @@
 .tagInput {
   @include inlineBlock();
   position: relative;
-  z-index:  1;
+  //z-index:  1;
 
   padding:  0;
   margin:   0;
 
   .rawInput {
-    z-index:  2;
+    //z-index:  2;
   }
 
   .tagList {
     //position:   absolute;
-    z-index:    3;
+    //z-index:    3;
     //top:        0;
     //left:       0;
     //overflow:   hidden;
@@ -69,7 +69,7 @@
     // Hidden li used to measure the width of input characters
     .measureInput {
       position:   absolute;
-      z-index:    0;
+      //z-index:    0;
       visibility: hidden;
       width:      auto;
       padding:    1px;

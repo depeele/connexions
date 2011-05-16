@@ -4,13 +4,7 @@
   
   <link rel='stylesheet' type='text/css' href='css/themes/connexions/jquery-ui.css' />
   <link rel='stylesheet' type='text/css' href='css/connexions.css' />
-  <link rel='stylesheet' type='text/css' href='css/ui.tagInput.min.css'>
-  <!-- link rel='stylesheet' type='text/css' href='css/ui-form.min.css' />
-  <link rel='stylesheet' type='text/css' href='css/ui.tagInput.min.css' / -->
   <style type='text/css'>
-.ui-form {
-    padding:2em;
-}
 #tags {
     width:  40em;
     height: 10ex;
@@ -22,10 +16,7 @@
 
   <script type='text/javascript' src='js/jquery.js'></script>
   <script type='text/javascript' src='js/jquery-ui.js'></script>
-  <script type='text/javascript' src='js/connexions.js'></script>
-  <script type='text/javascript' src='js/connexions.autocomplete.js'></script>
-  <script type='text/javascript' src='js/ui.input.js'></script>
-  <script type='text/javascript' src='js/ui.tagInput.js'></script>
+  <script type='text/javascript' src='js/connexions-full.js'></script>
   <script type='text/javascript'>
 (function($) {
   var $tags, $submit, $output;
@@ -104,11 +95,79 @@
     }
   }
 
+  function showBookmarkDialog(html, isEdit)
+  {
+    var title   = (isEdit === true ? 'Edit' : 'Save')
+                + ' bookmark';
+    var dialog  = '<div>'      // dialog {
+                +  '<div class="ui-validation-form">'  // validation-form {
+                +   '<div class="userInput lastUnit">'
+                       // bookmarkPost HTML goes here
+                +   '</div>'
+                +  '</div>'                            // validation-form }
+                + '</div>';    // dialog }
+
+    var $html   = $(dialog).hide()
+                           .appendTo( 'body' );
+    var $dialog = $html.first();
+
+    /* Establish an event delegate for the 'isEditChanged' event BEFORE
+     * evaluating the incoming HTML 
+     */
+    $dialog.delegate('form', 'isEditChanged.bookmark', function() {
+        // Update the dialog header
+        isEdit = $dialog.find('form:first')
+                        .bookmarkPost('option', 'isEdit');
+        title  = (isEdit === true ? 'Edit YOUR' : 'Save')
+               + ' bookmark';
+        if ($dialog.data('dialog'))
+        {
+            // Update the dialog title
+            $dialog.dialog('option', 'title', title);
+        }
+    });
+
+    /* Now, include the incoming bookmarkPost HTML -- this MAY cause the
+     * 'isEditChanged' event to be fired if the widget finds that the
+     * URL is already bookmarked by the current user.
+     */
+    $dialog.find('.userInput').html( html );
+    var $form       = $dialog.find('form:first');
+
+    $dialog.dialog({
+        autoOpen:   true,
+        title:      title,
+        dialogClass:'ui-dialog-bookmarkPost',
+        width:      480,
+        resizable:  false,
+        modal:      true,
+        open:       function(event, ui) {
+            // Event bindings that can wait
+            $form.bind('saved.bookmark', function(e, data) {
+                output("Bookmark Saved");
+            });
+
+            $form.bind('complete.bookmark', function() {
+                $dialog.dialog('close');
+            });
+        },
+        close:      function(event, ui) {
+            $form.unbind('.bookmark')
+                 .bookmarkPost('destroy');
+            $dialog.dialog('destroy');
+            $html.remove();
+        }
+    });
+  }
+
   $(document).ready(function() {
-    var $form       = $('form:first');
-    var $getVal     = $('#get-value');
-    var $itemScope1 = $('#ItemScope');
-    var $itemScope2 = $('#ItemScope2');
+    var $form           = $('form:first');
+    var $getVal         = $('#get-value');
+    var $addTag         = $('#add-tag');
+    var $delTag         = $('#del-tag');
+    var $popupBookmark  = $('#popup-bookmark');
+    var $itemScope1     = $('#ItemScope');
+    var $itemScope2     = $('#ItemScope2');
 
     $tags       = $form.find('#tags');
     $submit     = $form.find(':submit').button();
@@ -119,6 +178,26 @@
 
         output( 'val: [ '+ $tags.val() +' ], '
                +        '[ '+ $tags.tagInput('val') +' ]');
+    });
+    $addTag.click(function(e) {
+        e.preventDefault();
+        $tags.tagInput('addTag', 'abc');
+    });
+    $delTag.click(function(e) {
+        e.preventDefault();
+
+        $tags.tagInput('deleteTag', 'abc');
+    });
+    $popupBookmark.click(function(e) {
+        e.preventDefault();
+
+        var url = '/connexions/post?url=http%3A%2F%2Fwww.clipperz.com%2F'
+                +   '&format=partial'
+                +   '&part=main';
+
+        $.get(url, function(data) {
+            showBookmarkDialog(data);
+        });
     });
 
     // ui.tagInput with ui.autocomplete
@@ -189,9 +268,13 @@
          <textarea  id='tags' class='text required'></textarea>
          <div class='ui-field-status'>&nbsp;</div>
        </div>
-       <input type='submit' class='ui-button' />
-       <a id='get-value' href='#'>get value</a>
+       <input type='submit' class='ui-button' /><br />
+       <a id='get-value' href='#'>get value</a><br />
+       <a id='add-tag' href='#'>Add tag 'abc'</a><br />
+       <a id='del-tag' href='#'>Del tag 'abc'</a><br />
+       <a id='popup-bookmark' href='#'>Bookmark Edit</a><br />
      </form>
+     <br />
 
      <form id='ItemScope' class='itemScope ItemScope ui-form'>
        <ul class='ui-corner-top'>
@@ -206,6 +289,7 @@
          <br class='clear' />
        </ul>
      </form>
+     <br />
 
      <form id='ItemScope2' class='itemScope ItemScope ui-form'>
        <ul class='ui-corner-top'>
