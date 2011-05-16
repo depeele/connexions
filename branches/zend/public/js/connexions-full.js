@@ -2062,7 +2062,7 @@ $.widget("ui.tagInput", $.ui.input, {
         self.mWidth = self.$measure.html('m').width() + 2;
         self.$measure.html('');
 
-        // /*
+        /*
         $.log("ui.tagInput::_init: mWidth[ "+ self.mWidth +" ]");
         // */
 
@@ -2124,7 +2124,7 @@ $.widget("ui.tagInput", $.ui.input, {
 
         // When an autocompletion item is selected, 
         acOpts.select = function(e, ui) {
-            // /*
+            /*
             $.log("ui.tagInput::_acSelect: val[ "+ ui.item.value +" ]");
             // */
 
@@ -2154,7 +2154,7 @@ $.widget("ui.tagInput", $.ui.input, {
          * the corresponding blur event
          */
         acOpts.focus = function(e, ui) {
-            $.log("ui.tagInput::_acFocus: ");
+            //$.log("ui.tagInput::_acFocus: ");
             self._squelchBlur = true;
         };
 
@@ -2170,7 +2170,6 @@ $.widget("ui.tagInput", $.ui.input, {
 
         var _click    = function(e) {
             // Trigger 'focus'
-            //self.element.trigger('focus');
             self.element.focus();
         };
         var _focus    = function(e) {
@@ -2198,7 +2197,7 @@ $.widget("ui.tagInput", $.ui.input, {
         };
 
         var _inputKeyup     = function(e) {
-            // /*
+            /*
             $.log("ui.tagInput::_inputKeyup: "
                     + "val[ "+ self.$input.val() +" ]");
             // */
@@ -2208,7 +2207,7 @@ $.widget("ui.tagInput", $.ui.input, {
             self._squelchBlur = false;
         };
         var _inputKeydown   = function(e) {
-            // /*
+            /*
             $.log("ui.tagInput::_inputKeydown: "
                     + "val[ "+ self.$input.val() +" ]");
             // */
@@ -2263,7 +2262,7 @@ $.widget("ui.tagInput", $.ui.input, {
             }
         };
         var _inputKeypress  = function(e) {
-            // /*
+            /*
             $.log("ui.tagInput::_inputKeypress: "
                     + "val[ "+ self.$input.val() +" ]");
             // */
@@ -2281,7 +2280,7 @@ $.widget("ui.tagInput", $.ui.input, {
             }
         };
         var _inputBlur      = function(e) {
-            // /*
+            /*
             $.log("ui.tagInput::_inputBlur: "
                     + "val[ "
                     + (self.$input ? self.$input.val() : 'null') +" ]");
@@ -2345,13 +2344,13 @@ $.widget("ui.tagInput", $.ui.input, {
                 self.mWidth = self.$measure.html('m').width() + 2;
                 self.$measure.html('');
 
-                // /*
+                /*
                 $.log("ui.tagInput::_activeInput_show: "
                       + "mWidth[ "+ self.mWidth +" ]");
                 // */
             }
 
-            // /*
+            /*
             $.log("ui.tagInput::_activeInput_show: focus on $input");
             // */
 
@@ -2497,7 +2496,7 @@ $.widget("ui.tagInput", $.ui.input, {
             self.$input.val('').width( self.mWidth );
         }
 
-        // /*
+        /*
         $.log("ui.tagInput::addTag: "
                 + "val[ "+ val +" ]");
         // */
@@ -2526,7 +2525,7 @@ $.widget("ui.tagInput", $.ui.input, {
         var self    = this;
         var opts    = self.options;
 
-        // /*
+        /*
         $.log("ui.tagInput::deleteTag: "
                 + "val[ "+ val +" ]");
         // */
@@ -2555,7 +2554,6 @@ $.widget("ui.tagInput", $.ui.input, {
             this.$label.removeClass('ui-state-disabled')
                        .removeAttr('disabled');
 
-            //this.element.trigger('enabled.uiinput');
             this._trigger('enabled');
         }
 
@@ -2583,7 +2581,6 @@ $.widget("ui.tagInput", $.ui.input, {
                 this._squelchBlur = false;
             }
 
-            //this.element.trigger('disabled.uiinput');
             this._trigger('disabled');
         }
 
@@ -7730,7 +7727,10 @@ $.widget("connexions.bookmarkPost", {
                 $.log('connexions.bookmarkPost::'
                        + '$tags.change( "'+ opts.$tags.val() +'" )');
                 // */
+
+                // Highlight the "new" tags and validate
                 self._highlightTags();
+                self.validate();
             },
             autocomplete:   {
                 source:     function(req, rsp) {
