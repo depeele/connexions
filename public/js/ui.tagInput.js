@@ -133,9 +133,8 @@ $.widget("ui.tagInput", $.ui.input, {
         var self    = this;
         var opts    = self.options;
         var width   = self.element.css('width');
-        var height  = self.element.css('height');
+        var height  = self.element.innerHeight();
         width       = width  || self.element.innerWidth();
-        height      = height || self.element.innerHeight();
 
         if ((opts.noWidth !== true) && width)
         {
