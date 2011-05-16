@@ -1977,6 +1977,12 @@ $.widget("ui.tagInput", $.ui.input, {
         separator:      ',',
         unique:         true,
         addOnEnter:     true,
+
+        noHeight:       false,  // Do NOT set the height to match the
+                                // underlying element
+        noWidth:        false,  // Do NOT set the width to match the
+                                // underlying element
+
         cssClass:       {
             container:  'tagInput',
             origInput:  'rawInput',
@@ -2009,18 +2015,13 @@ $.widget("ui.tagInput", $.ui.input, {
 
         self.trimRe = new RegExp('^\\s+|\\s+$', 'g');
         self.sepRe  = new RegExp('\\s*'+ opts.separator +'\\s*');
-        self.tags   = [];
-        self.tagStr = '';
+        opts.tags   = [];
+        opts.tagStr = '';
 
-        /*
-        self.element.addClass( opts.cssClass.origInput)
-                    .wrap( "<div class='"+ opts.cssClass.container +"' />" );
-        self.$container = self.element.parent();
-        // */
-
+        // Assemble the widget structure
         self.$container = $('<div />').addClass(opts.cssClass.container)
                                       .addClass( self.element.attr('class') )
-                                      .insertAfter( self.element );
+                                      .insertBefore( self.element );
 
         // Move any label INTO $container
         self.$label     = self.element.siblings('label')
@@ -2029,36 +2030,45 @@ $.widget("ui.tagInput", $.ui.input, {
         // Add a <ul> above the <input> to hold converted tags as <li> items
         self.$tags = $('<ul/>').addClass(opts.cssClass.list)
                                .appendTo( self.$container )
-                               ; /*
-                               .css({
-                                    'padding-left': self.element
-                                                        .css('padding-left'),
-                                    'padding-right':self.element
-                                                        .css('padding-right'),
-                                    'padding-top':  self.element
-                                                        .css('padding-top'),
-                                    'padding-bottom':self.element
-                                                        .css('padding-bottom')
-                               });
-                               */
+
+        /* Ensure that self.$tags mirrors the original size of self.element
+         * and then hide self.element.
+         */
+        self._resize();
+        self.tabIndex = self.element.attr('tabIndex');
+        self.element.hide();
+
+
+        // Include an li to hold the active input control.
+        self.$inputLi   = $('<li/>').addClass(opts.cssClass.activeInput)
+                                    .appendTo( self.$tags );
+        self.$input     = $('<input type="text" />')
+                                    .appendTo( self.$inputLi );
+        if (self.tabIndex)
+        {
+            self.$input.attr('tabIndex', self.tabIndex);
+        }
 
         /* Include a hidden li that will be usee to determine the proper width
          * given the current input characters.
          *
-         * Start by measuring 'm', which will be used as the minimum width.
+         * Start by attempting to measure 'm', which will be used as the
+         * minimum width.  This MAY not work if the widget is contained
+         * in a dialog or other collapsable item that may not yet be displayed.
          */
-        self.$measureLi = $('<li/>').addClass(opts.cssClass.measure)
-                                    .appendTo( self.$tags );
-        self.mWidth = self.$measureLi.html('m').width() + 2;
-        self.$measureLi.empty();
+        self.$measure = $('<div />')
+                                .addClass(opts.cssClass.measure)
+                                .appendTo( self.$inputLi );
+        self.mWidth = self.$measure.html('m').width() + 2;
+        self.$measure.html('');
 
-        // Include an li to hold the active input control.
-        self.$inputLi   = $('<li/>').addClass(opts.cssClass.activeInput)
-                                    .appendTo( self.$tags )
-                                    .hide();
-        self.$input     = $('<input type="text" />')
-                                    .appendTo( self.$inputLi )
-                                    .width( self.mWidth );
+        // /*
+        $.log("ui.tagInput::_init: mWidth[ "+ self.mWidth +" ]");
+        // */
+
+        self.$input.width( self.mWidth );
+        self.$inputLi.hide();
+
 
         // Setup autocompletion if needed.
         self._setupAutocomplete();
@@ -2069,6 +2079,32 @@ $.widget("ui.tagInput", $.ui.input, {
 
         // Invoke our super-class (which SHOULD invoke _bindEvents()
         $.ui.input.prototype._init.apply(this, arguments);
+    },
+
+    /** @brief  Resize our input area to match the original.
+     *
+     *  @return this for a fluent interface
+     */
+    _resize:    function() {
+        var self    = this;
+        var opts    = self.options;
+        var width   = self.element.css('width');
+        var height  = self.element.css('height');
+        width       = width  || self.element.innerWidth();
+        height      = height || self.element.innerHeight();
+
+        if ((opts.noWidth !== true) && width)
+        {
+            self.$container.css('width', width);
+        }
+        if (height)
+        {
+            self.$tags.css( (opts.noHeight === true
+                                ? 'min-height'
+                                : 'height'), height );
+        }
+
+        return;
     },
 
     /** @brief  If 'autocomplete' options have been provided, setup
@@ -2132,27 +2168,15 @@ $.widget("ui.tagInput", $.ui.input, {
         var opts    = self.options;
         var keyCode = $.ui.keyCode;
 
-        /* Bind our event handlers so we have the option of squelching events
-         * from reaching our super-class.
-         *
-         * Event handlers
-         */
-        var _resize     = function(e) {
-            self.$tags.css({
-                        /*  leave room for the resize handle since self.$tags
-                         *  sits above the input area in z-order.
-                         */
-                width:  self.element.innerWidth() - 10,
-                height: self.element.innerHeight()
-            });
-        };
         var _click    = function(e) {
             // Trigger 'focus'
-            self.element.trigger('focus');
+            //self.element.trigger('focus');
+            self.element.focus();
         };
         var _focus    = function(e) {
-            e.stopPropagation();
             e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
             self._squelchBlur = false;
 
             self._activeInput_show();
@@ -2162,10 +2186,10 @@ $.widget("ui.tagInput", $.ui.input, {
             var val     = self.$input.val();
 
             // Assign to the measuring li
-            self.$measureLi.html( val );
-            var width   = self.$measureLi.width() + self.mWidth;
+            self.$measure.html( val );
+            var width   = self.$measure.width() + self.mWidth;
 
-            // /*
+            /*
             $.log("ui.tagInput::_inputWidth: val[ "+ val   +" ], "
                            + "width[ "+ width +" ]");
             // */
@@ -2174,7 +2198,7 @@ $.widget("ui.tagInput", $.ui.input, {
         };
 
         var _inputKeyup     = function(e) {
-            /*
+            // /*
             $.log("ui.tagInput::_inputKeyup: "
                     + "val[ "+ self.$input.val() +" ]");
             // */
@@ -2184,7 +2208,7 @@ $.widget("ui.tagInput", $.ui.input, {
             self._squelchBlur = false;
         };
         var _inputKeydown   = function(e) {
-            /*
+            // /*
             $.log("ui.tagInput::_inputKeydown: "
                     + "val[ "+ self.$input.val() +" ]");
             // */
@@ -2239,7 +2263,7 @@ $.widget("ui.tagInput", $.ui.input, {
             }
         };
         var _inputKeypress  = function(e) {
-            /*
+            // /*
             $.log("ui.tagInput::_inputKeypress: "
                     + "val[ "+ self.$input.val() +" ]");
             // */
@@ -2251,7 +2275,7 @@ $.widget("ui.tagInput", $.ui.input, {
                  (key                      === opts.separator) ||
                  (opts.addOnEnter && (key  === keyCode.ENTER)) )
             {
-                self._addTag();
+                self.addTag();
                 e.preventDefault();
                 return false;
             }
@@ -2280,7 +2304,7 @@ $.widget("ui.tagInput", $.ui.input, {
                 return false;
             }
 
-            self._addTag();
+            self.addTag();
 
             // Hide the active input element
             self._activeInput_hide();
@@ -2302,24 +2326,37 @@ $.widget("ui.tagInput", $.ui.input, {
 
         // Finally, invoke our super-class
         $.ui.input.prototype._bindEvents.apply(this, arguments);
-
-        /* Ensure that self.$tags mirrors the original size of self.element
-         * and then hide self.element.
-         */
-        _resize();
-        self.element.hide();
     },
 
     /** @brief  Show the active input element.
      */
     _activeInput_show: function() {
-        if (this.options.enabled)
+        var self    = this;
+        var opts    = self.options;
+        if (opts.enabled)
         {
             // Hide the label and show the active input element
-            this.$label.hide();
-            this.$inputLi.show();
+            self.$label.hide();
+            self.$inputLi.show();
 
-            this.$input.trigger('focus');
+            if (self.mWidth < 3)
+            {
+                // Attempt to take a valid measurement of 'm'
+                self.mWidth = self.$measure.html('m').width() + 2;
+                self.$measure.html('');
+
+                // /*
+                $.log("ui.tagInput::_activeInput_show: "
+                      + "mWidth[ "+ self.mWidth +" ]");
+                // */
+            }
+
+            // /*
+            $.log("ui.tagInput::_activeInput_show: focus on $input");
+            // */
+
+            self.$container.addClass('ui-state-focus ui-state-active');
+            self.$input.focus();
         }
 
         return this;
@@ -2330,8 +2367,9 @@ $.widget("ui.tagInput", $.ui.input, {
     _activeInput_hide: function() {
         // Hide the active input element
         this.$inputLi.hide();
+        this.$container.removeClass('ui-state-focus ui-state-active');
 
-        if (this.tagStr.length < 1)
+        if (this.options.tagStr.length < 1)
         {
             // Re-show the label 
             this.$label.show();
@@ -2358,7 +2396,7 @@ $.widget("ui.tagInput", $.ui.input, {
 
 
         if ( (val.length < 1) ||
-             (opts.unique && (self.tags.indexOf(val) > -1)) )
+             (opts.unique && (opts.tags.indexOf(val) > -1)) )
         {
             // Empty or duplicate tag -- do NOT create a tag element.
 
@@ -2399,39 +2437,6 @@ $.widget("ui.tagInput", $.ui.input, {
         return $tag;
     },
 
-    /** @brief  If the current value of the tag input control is non-empty,
-     *          add a new tag.
-     */
-    _addTag: function() {
-        var self    = this;
-        var opts    = self.options;
-        var val     = (self.$input ? $.trim(self.$input.val()) : '');
-
-        self.$measureLi.html( '' );
-
-        // Reset the input value
-        self.$input.val('').width( self.mWidth );
-
-        /*
-        $.log("ui.tagInput::_addTag: "
-                + "val[ "+ val +" ]");
-        // */
-
-        var $tag    = self._createTag( val );
-        if (! $tag)
-        {
-            return;
-        }
-
-        // Insert the new tag
-        self.$input.closest('li').before( $tag );
-
-        // Re-focus the input
-        self.$input.focus();
-
-        self._updateTags();
-    },
-
     /** @brief  Update the tags and tagStr based upon the current items in
      *          $tags
      */
@@ -2439,18 +2444,32 @@ $.widget("ui.tagInput", $.ui.input, {
         var self    = this;
         var opts    = self.options;
 
-        self.tags   = [];
+        opts.tags   = [];
         self.$tags.find('.'+opts.cssClass.item +' > span')
                   .each(function() {
-            self.tags.push( $(this).html() );
+            opts.tags.push( $(this).html() );
         });
-        self.tagStr = self.tags.join( opts.separator );
+        opts.tagStr = opts.tags.join( opts.separator );
 
         // Mirror tagStr in the underlying input element
-        self.element.val( self.tagStr );
+        self.element.val( opts.tagStr );
+
+        if ((! self.$inputLi.is(':visible')) && (opts.tags.length < 1))
+        {
+            // Show the label
+            self.$label.show();
+        }
+        else if (opts.tags.length > 0)
+        {
+            // Hide the label
+            self.$label.hide();
+        }
+
+        // Trigger a 'change' event
+        self._trigger('change');
 
         /*
-        $.log('ui.tagInput::_updateTags: tagStr[ '+ self.tagStr +' ]');
+        $.log('ui.tagInput::_updateTags: tagStr[ '+ opts.tagStr +' ]');
         // */
     },
 
@@ -2458,6 +2477,69 @@ $.widget("ui.tagInput", $.ui.input, {
      * Public methods
      *
      */
+
+    /** @brief  Add the given tag to the list.
+     *  @param  val     The tag to add.
+     *
+     *  @return this for a fluent interface
+     */
+    addTag: function(val) {
+        var self    = this;
+        var opts    = self.options;
+
+        if (val === undefined)
+        {
+            val = (self.$input ? $.trim(self.$input.val()) : '');
+
+            self.$measure.html( '' );
+
+            // Reset the input value
+            self.$input.val('').width( self.mWidth );
+        }
+
+        // /*
+        $.log("ui.tagInput::addTag: "
+                + "val[ "+ val +" ]");
+        // */
+
+        var $tag    = self._createTag( val );
+        if ($tag)
+        {
+            // Insert the new tag
+            self.$input.closest('li').before( $tag );
+
+            // Re-focus the input
+            self.$input.focus();
+
+            self._updateTags();
+        }
+
+        return this;
+    },
+
+    /** @brief  Delete the given tag from the list.
+     *  @param  val     The tag to delete.
+     *
+     *  @return this for a fluent interface
+     */
+    deleteTag: function(val) {
+        var self    = this;
+        var opts    = self.options;
+
+        // /*
+        $.log("ui.tagInput::deleteTag: "
+                + "val[ "+ val +" ]");
+        // */
+
+        var pos = opts.tags.indexOf(val);
+        if (pos < 0)
+        {
+            return this;
+        }
+
+        self.$tags.find('.'+opts.cssClass.item).eq(pos).remove();
+        self._updateTags();
+    },
 
     /** @brief  Enable this control.
      *
@@ -2594,25 +2676,33 @@ $.widget("ui.tagInput", $.ui.input, {
             self.element.removeClass('ui-state-valid');
             delete self.options.valid;
 
-            self.tags   = $.trim(newVal).split( self.sepRe );
-            self.tagStr = self.tags.join( opts.separator );
+            var tags    = $.trim(newVal).split( self.sepRe );
 
+            // Empty our current tag state
+            opts.tags   = [];
+            opts.tagStr = '';
             self.$tags.find('.tag').remove();
-            $.each(self.tags, function() {
-                self._addTag( this );
+
+            // Add new tag items for each new tag
+            $.each(tags, function() {
+                self.addTag( this );
             });
 
+            // Set our current tag state
+            opts.tags   = tags;
+            opts.tagStr = opts.tags.join( opts.separator );
+
             // Mirror tagStr in the underlying input element
-            self.element.val( self.tagStr );
+            self.element.val( opts.tagStr );
         }
         /*
         else
         {
-            $.log('ui.tagInput::val(): [ '+ self.tagStr +' ]');
+            $.log('ui.tagInput::val(): [ '+ opts.tagStr +' ]');
         }
         // */
 
-        return self.tagStr;
+        return opts.tagStr;
     },
 
     /** @brief  Destroy an instance.
@@ -7633,21 +7723,38 @@ $.widget("connexions.bookmarkPost", {
          */
 
         // Tag autocompletion
-        opts.$tags.autocomplete({
-            separator:  ',',
-            source:     function(req, rsp) {
-                $.log('connexions.bookmarkPost::$tags.source('+ req.term +')');
-                return self._autocomplete(req, rsp);
-            },
-            change:     function(e, ui) {
-                $.log('connexions.bookmarkPost::$tags.change( "'
-                        + opts.$tags.val() +'" )');
+        opts.$tags.tagInput({
+            noHeight:       true,
+            change:     function() {
+                /*
+                $.log('connexions.bookmarkPost::'
+                       + '$tags.change( "'+ opts.$tags.val() +'" )');
+                // */
                 self._highlightTags();
             },
-            close:  function(e, ui) {
-                // A tag has been completed.  Perform highlighting.
-                $.log('connexions.bookmarkPost::$tags.close()');
-                self._highlightTags();
+            autocomplete:   {
+                source:     function(req, rsp) {
+                    /*
+                    $.log('connexions.bookmarkPost::'
+                           + '$tags.source('+ req.term +')');
+                    // */
+                    return self._autocomplete(req, rsp);
+                },
+                change:     function(e, ui) {
+                    /*
+                    $.log('connexions.bookmarkPost::'
+                           + '$tags.change( "'+ opts.$tags.val() +'" )');
+                    // */
+                    self._highlightTags();
+                },
+                close:  function(e, ui) {
+                    // A tag has been completed.  Perform highlighting.
+                    /*
+                    $.log('connexions.bookmarkPost::$tags.close()');
+                    // */
+
+                    self._highlightTags();
+                }
             }
         });
 
@@ -7833,8 +7940,9 @@ $.widget("connexions.bookmarkPost", {
      */
     _bindEvents: function()
     {
-        var self    = this;
-        var opts    = self.options;
+        var self            = this;
+        var opts            = self.options;
+        var tagsTabIndex    = Math.floor(opts.$tags.attr('tabIndex'));
 
         // Handle a direct click on one of the status indicators
         var _save_click       = function(e, data) {
@@ -7897,20 +8005,6 @@ $.widget("connexions.bookmarkPost", {
             self.validate();
         };
 
-        var _tagInput       = function( event ) {
-            var keyCode = $.ui.keyCode;
-            if ( event.keyCode === $.ui.keyCode.COMMA)
-            {
-                // This is the end of a tag -- treat it as a 'select' event
-                // and close the menu
-                var menu    = opts.$tags.autocomplete('widget');
-
-                //event.preventDefault();
-                //event.stopPropagation();
-                opts.$tags.autocomplete('close');
-            }
-        };
-
         /* Context bind this function in 'self/this' so we can use it
          * outside of this routine.
          */
@@ -7932,21 +8026,51 @@ $.widget("connexions.bookmarkPost", {
             if ($item.hasClass('selected'))
             {
                 // De-select / remove
-                var re  = new RegExp('\\s*'+ tag +'\\s*[,]?');
-                tags    = tags.replace(re, '');
+                opts.$tags.tagInput('deleteTag', tag);
             }
             else
             {
-                // Select / add
-                if (! tags.match(/,\s*$/))
-                {
-                    tags += ', ';
-                }
-                tags += tag;
+                opts.$tags.tagInput('addTag', tag);
             }
 
-            opts.$tags.val(tags);
             self._highlightTags();
+        };
+
+        /** @brief  Handle tab/backtab for input focus changes.  This is
+         *          primarily to ensure that opts.$tags receives focus events.
+         */
+        var keyCode         = $.ui.keyCode;
+        var _form_tabFocus  = function(e) {
+            var key     = e.keyCode || e.which;
+
+            if (key === keyCode.TAB)
+            {
+                var $target     = $(e.target);
+                var tabIndex    = Math.floor($target.attr('tabIndex'));
+
+                $.log('connexions.bookmarkPost::_form_tabFocus(): '
+                      + 'target[ '+ $target.attr('name') +' ], '
+                      + 'tabIndex[ '+ tabIndex +' ], '
+                      + 'tagsTabIndex[ '+ tagsTabIndex +' ], '
+                      + 'key[ '+ key +' ], '
+                      + 'shiftKey[ '+ e.shiftKey +' ]');
+
+                /* Tab       == forward  one field
+                 * Shift-Tab == backward one field
+                 */
+                if ( (   e.shiftKey  && ((tabIndex - 1) === tagsTabIndex)) ||
+                     ((! e.shiftKey) && ((tabIndex + 1) === tagsTabIndex)) )
+                {
+                    // opts.$tags is to be the newly focused field
+                    $.log('connexions.bookmarkPost::_form_tabFocus(): '
+                          + 'trigger focus for opts.$tags');
+                    opts.$tags.focus();
+
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                }
+            }
         };
 
         /**********************************************************************
@@ -7972,12 +8096,12 @@ $.widget("connexions.bookmarkPost", {
         opts.$url.bind('validation_change.bookmarkPost',
                                                 _url_change);
 
-        opts.$tags.bind('keydown.bookmarkPost', _tagInput);
-
         opts.$suggestions.delegate('.cloud .cloudItem,'
                                    + '.cloud .Item_List li:not(.header)',
                                    'click.bookmarkPost',
                                                 self._tagClick);
+
+        self.element.bind('keydown.bookmarkPost', _form_tabFocus);
 
         _validate_form();
     },
@@ -8293,7 +8417,7 @@ $.widget("connexions.bookmarkPost", {
                  * alter the field's default value.
                  */
                 opts.$name.val(headers.title );
-                opts.$name.trigger('blur');
+                opts.$name.blur();
             }
         }
 
@@ -8304,7 +8428,7 @@ $.widget("connexions.bookmarkPost", {
             if ($desc.length > 0)
             {
                 opts.$description.val($desc.attr('content') );
-                opts.$description.trigger('blur');
+                opts.$description.blur();
             }
         }
 
@@ -8315,7 +8439,7 @@ $.widget("connexions.bookmarkPost", {
             if ($keywords.length > 0)
             {
                 opts.$tags.val($keywords.attr('content') );
-                opts.$tags.trigger('blur');
+                opts.$tags.blur();
             }
         }
     },
@@ -8449,7 +8573,7 @@ $.widget("connexions.bookmarkPost", {
         $cloudTags.filter('.selected').removeClass('selected');
 
         // Highlight any currently selected tags.
-        var tags    = opts.$tags.val();
+        var tags    = opts.$tags.tagInput('option', 'tags');  //val();
         var nTags   = tags.length;
         var tag     = null;
 
@@ -8458,8 +8582,8 @@ $.widget("connexions.bookmarkPost", {
             return;
         }
 
-        tags  = tags.split(/\s*,\s*/);
-        nTags = tags.length;
+        //tags  = tags.split(/\s*,\s*/);
+        //nTags = tags.length;
 
         var forRe   = /^for:/;
         for (var idex = 0; idex < nTags; idex++)
@@ -8496,8 +8620,11 @@ $.widget("connexions.bookmarkPost", {
     {
         var self    = this;
         var opts    = self.options;
+        var term    = opts.$tags.tagInput('option', 'term');
+        var re      = new RegExp(term, 'gi');
         var params  = {
-            id: { userId: opts.userId, itemId: opts.itemId }
+            id:     { userId: opts.userId, itemId: opts.itemId },
+            term:   term
         };
 
 
@@ -8511,8 +8638,6 @@ $.widget("connexions.bookmarkPost", {
             params.id.itemId = opts.$url.val();
         }
 
-        params.term = opts.$tags.autocomplete('option', 'term');
-
         $.jsonRpc(opts.jsonRpc, 'bookmark.autocompleteTag', params, {
             success:    function(ret, txtStatus, req){
                 if (ret.error !== null)
@@ -8521,22 +8646,18 @@ $.widget("connexions.bookmarkPost", {
                     return;
                 }
 
-                response(
-                    $.map(ret.result,
-                          function(item) {
-                            var str = item.tag.replace(
-                                                params.term,
-                                                '<b>'+ params.term +'</b>' );
-                            return {
-                                label:   '<span class="name">'
-                                       +  str
-                                       + '</span>'
-                                       +' <span class="count">'
-                                       +  item.userItemCount
-                                       + '</span>',
-                                value: item.tag
-                            };
-                          }));
+                var res = $.map(ret.result, function(item) {
+                    var str     = item.tag.replace(re, '<b>'+ term +'</b>');
+                    var weight  = item.userItemCount;
+
+                    return {
+                        label:   '<span class="name">'+ str +'</span>'
+                                +'<span class="count">'+ weight +'</span>',
+                        value:  item.tag
+                    };
+                });
+
+                response( res );
                 self.element.trigger('success', [ret, txtStatus, req]);
             },
             error:      function(req, txtStatus, e) {
@@ -8732,6 +8853,8 @@ $.widget("connexions.bookmarkPost", {
         self.element.removeClass('ui-form');
 
         // Unbind events
+        self.element.unbind('.bookmarkPost');
+
         opts.$inputs.unbind('.bookmarkPost');
         opts.$favorite.unbind('.bookmarkPost');
         opts.$private.unbind('.bookmarkPost');

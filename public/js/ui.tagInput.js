@@ -79,6 +79,7 @@ $.widget("ui.tagInput", $.ui.input, {
          * and then hide self.element.
          */
         self._resize();
+        self.tabIndex = self.element.attr('tabIndex');
         self.element.hide();
 
 
@@ -87,6 +88,10 @@ $.widget("ui.tagInput", $.ui.input, {
                                     .appendTo( self.$tags );
         self.$input     = $('<input type="text" />')
                                     .appendTo( self.$inputLi );
+        if (self.tabIndex)
+        {
+            self.$input.attr('tabIndex', self.tabIndex);
+        }
 
         /* Include a hidden li that will be usee to determine the proper width
          * given the current input characters.
@@ -101,7 +106,7 @@ $.widget("ui.tagInput", $.ui.input, {
         self.mWidth = self.$measure.html('m').width() + 2;
         self.$measure.html('');
 
-        // /*
+        /*
         $.log("ui.tagInput::_init: mWidth[ "+ self.mWidth +" ]");
         // */
 
@@ -163,7 +168,7 @@ $.widget("ui.tagInput", $.ui.input, {
 
         // When an autocompletion item is selected, 
         acOpts.select = function(e, ui) {
-            // /*
+            /*
             $.log("ui.tagInput::_acSelect: val[ "+ ui.item.value +" ]");
             // */
 
@@ -193,7 +198,7 @@ $.widget("ui.tagInput", $.ui.input, {
          * the corresponding blur event
          */
         acOpts.focus = function(e, ui) {
-            $.log("ui.tagInput::_acFocus: ");
+            //$.log("ui.tagInput::_acFocus: ");
             self._squelchBlur = true;
         };
 
@@ -209,7 +214,7 @@ $.widget("ui.tagInput", $.ui.input, {
 
         var _click    = function(e) {
             // Trigger 'focus'
-            self.element.trigger('focus');
+            self.element.focus();
         };
         var _focus    = function(e) {
             e.preventDefault();
@@ -227,7 +232,7 @@ $.widget("ui.tagInput", $.ui.input, {
             self.$measure.html( val );
             var width   = self.$measure.width() + self.mWidth;
 
-            // /*
+            /*
             $.log("ui.tagInput::_inputWidth: val[ "+ val   +" ], "
                            + "width[ "+ width +" ]");
             // */
@@ -319,7 +324,7 @@ $.widget("ui.tagInput", $.ui.input, {
             }
         };
         var _inputBlur      = function(e) {
-            // /*
+            /*
             $.log("ui.tagInput::_inputBlur: "
                     + "val[ "
                     + (self.$input ? self.$input.val() : 'null') +" ]");
@@ -379,19 +384,22 @@ $.widget("ui.tagInput", $.ui.input, {
 
             if (self.mWidth < 3)
             {
+                // Attempt to take a valid measurement of 'm'
                 self.mWidth = self.$measure.html('m').width() + 2;
                 self.$measure.html('');
 
-                // /*
+                /*
                 $.log("ui.tagInput::_activeInput_show: "
                       + "mWidth[ "+ self.mWidth +" ]");
                 // */
-
-                //self.$input.width( self.mWidth );
             }
 
+            /*
+            $.log("ui.tagInput::_activeInput_show: focus on $input");
+            // */
+
             self.$container.addClass('ui-state-focus ui-state-active');
-            self.$input.trigger('focus');
+            self.$input.focus();
         }
 
         return this;
@@ -500,6 +508,9 @@ $.widget("ui.tagInput", $.ui.input, {
             self.$label.hide();
         }
 
+        // Trigger a 'change' event
+        self._trigger('change');
+
         /*
         $.log('ui.tagInput::_updateTags: tagStr[ '+ opts.tagStr +' ]');
         // */
@@ -529,7 +540,7 @@ $.widget("ui.tagInput", $.ui.input, {
             self.$input.val('').width( self.mWidth );
         }
 
-        // /*
+        /*
         $.log("ui.tagInput::addTag: "
                 + "val[ "+ val +" ]");
         // */
@@ -558,7 +569,7 @@ $.widget("ui.tagInput", $.ui.input, {
         var self    = this;
         var opts    = self.options;
 
-        // /*
+        /*
         $.log("ui.tagInput::deleteTag: "
                 + "val[ "+ val +" ]");
         // */
@@ -587,7 +598,6 @@ $.widget("ui.tagInput", $.ui.input, {
             this.$label.removeClass('ui-state-disabled')
                        .removeAttr('disabled');
 
-            //this.element.trigger('enabled.uiinput');
             this._trigger('enabled');
         }
 
@@ -615,7 +625,6 @@ $.widget("ui.tagInput", $.ui.input, {
                 this._squelchBlur = false;
             }
 
-            //this.element.trigger('disabled.uiinput');
             this._trigger('disabled');
         }
 
