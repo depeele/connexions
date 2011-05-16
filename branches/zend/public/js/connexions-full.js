@@ -7942,9 +7942,13 @@ $.widget("connexions.bookmarkPost", {
         /* Set the value of the underlying controls as well as notifying the
          * ui.input widget of the new value
          */
-        opts.$name.val(opts.name).input('val', opts.name);
-        opts.$description.val(opts.description).input('val', opts.description);
-        opts.$tags.val(opts.tags).input('val', opts.tags);
+        opts.$name.input('val', opts.name);
+        opts.$description.input('val', opts.description);
+        opts.$tags.tagInput('val', opts.tags);
+
+        //opts.$name.val(opts.name).input('val', opts.name);
+        //opts.$description.val(opts.description).input('val', opts.description);
+        //opts.$tags.val(opts.tags).input('val', opts.tags);
 
         opts.$favorite.checkbox( opts.isFavorite ? 'check' : 'uncheck' );
         opts.$private.checkbox(  opts.isPrivate  ? 'check' : 'uncheck' );
@@ -7953,7 +7957,7 @@ $.widget("connexions.bookmarkPost", {
          * 'change' event, causing _url_changed() to be invoked, resulting in
          * another call to this method, ...
          */
-        opts.$url.val(opts.url);
+        opts.$url.val( (opts.itemId ? opts.itemId : opts.url) );
 
         if (opts.$userId.length > 0)
         {
@@ -8295,7 +8299,7 @@ $.widget("connexions.bookmarkPost", {
                 {
                     var tags    = [];
                     $.each(opts.tags, function() {
-                        tags.push(this.tag);
+                        tags.push(this);
                     });
 
                     opts.tags = tags.join(',');
@@ -8398,7 +8402,7 @@ $.widget("connexions.bookmarkPost", {
                 {
                     var tags    = [];
                     $.each(opts.tags, function() {
-                        tags.push(this.tag);
+                        tags.push(this);
                     });
 
                     opts.tags = tags.join(',');
