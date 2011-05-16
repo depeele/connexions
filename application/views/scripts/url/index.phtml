@@ -80,6 +80,7 @@ $firstBookmark = $htmlBookmarks->paginator->getItem(0);
  <h3 class='siteName'>
   <a href='<?= $this->item->url ?>'><?= $firstBookmark->name ?></a>
  </h3>
+ <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
 </div>
 <?php
 
@@ -87,6 +88,3 @@ echo $htmlItemScope->render();
 
 // Use the main.phtml view script from the IndexController
 echo $this->render('url/main.phtml');
-?>
-
-<div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

@@ -72,39 +72,21 @@ class IndexController extends Connexions_Controller_Action
         else
         {
             // Resolve the incoming 'owner' name.
-            $user = $this->_resolveUserName($reqOwner);
+            $this->_owner = $this->_resolveUserName($reqOwner);
 
-            if ($user !== null) // ($user instanceof Model_User)
+            if ( ! $this->_owner->isBacked() )
             {
-                // A valid user
-                $this->_owner = $user;
-            }
-            // 'owner' is NOT a valid user.
-            else if (empty($reqTags))   // If 'tags' are empty, use 'owner'
-            {
-                /* No 'tags' were specified.  Use the owner as 'tags' and set
-                 * 'owner' to '*'
-                 */
-                $this->_owner = '*';
-                $reqTags      = $reqOwner;
-            }
-            else
-            {
-                /* 'tags' have already been specified.  Set 'owner' to '*' and
-                 * report that the provided 'owner' is NOT a valid user.
-                 */
-                $this->_owner      = '*';
-                $this->view->error = "Unknown user [ {$reqOwner} ]";
+                $this->view->error = "Unknown user [ {$this->_owner} ]";
             }
         }
 
-        /*
-        Connexions::log("IndexController::indexAction: reqTags[ %s ]",
-                        $reqTags);
-        // */
-
         // Parse the incoming request tags
         $this->_tags = $this->service('Tag')->csList2set($reqTags);
+
+        /*
+        Connexions::log("IndexController::indexAction: reqTags[ %s ] == [ %s ]",
+                        $reqTags, $this->_tags);
+        // */
 
         /***************************************************************
          * We now have a valid 'owner' ($this->_owner) and
@@ -112,8 +94,8 @@ class IndexController extends Connexions_Controller_Action
          *
          * Adjust the URL to reflect the validated 'owner' and 'tags'
          */
-        $this->_baseUrl .= ($this->_owner instanceof Model_User
-                                ? $this->_owner->name
+        $this->_baseUrl .= ($this->_owner !== '*'
+                                ? $this->_owner
                                 : 'bookmarks')
                         .  '/';
 
@@ -160,10 +142,15 @@ class IndexController extends Connexions_Controller_Action
 
         parent::_prepare_main();
 
+        $users = null;
+        if ($this->_owner !== '*')
+        {
+            $users = $this->_owner->getMapper()->makeEmptySet();
+            $users->setResults(array($this->_owner));
+        }
+
         $extra = array(
-            'users' => ($this->_owner !== '*'
-                            ? $this->_owner
-                            : null),
+            'users' => $users,
             'tags'  => &$this->_tags,
         );
         $this->view->main = array_merge($this->view->main, $extra);
@@ -192,10 +179,15 @@ class IndexController extends Connexions_Controller_Action
         // */
         parent::_prepare_sidebar();
 
+        $users = null;
+        if ($this->_owner !== '*')
+        {
+            $users = $this->_owner->getMapper()->makeEmptySet();
+            $users->setResults(array($this->_owner));
+        }
+
         $extra = array(
-            'users' => ($this->_owner !== '*'
-                            ? $this->_owner
-                            : null),
+            'users' => $users,
             'tags'  => &$this->_tags,
         );
         $this->view->sidebar = array_merge($this->view->sidebar, $extra);
@@ -293,7 +285,7 @@ class IndexController extends Connexions_Controller_Action
                  * only by the current owner (if any).
                  */
 
-                /*
+                // /*
                 Connexions::log("IndexController::_prepare_sidebarPane( %s ): "
                                 .   "Fetch tags %d-%d by user [ %s ]",
                                 $pane,
@@ -312,7 +304,7 @@ class IndexController extends Connexions_Controller_Action
             {
                 // Tags related to the bookmarks with the given set of tags.
 
-                /*
+                // /*
                 Connexions::log("IndexController::_prepare_sidebarPane( %s ): "
                                 .   "Fetch tags %d-%d related to bookmarks "
                                 .   "with tags[ %s ]",
@@ -347,9 +339,23 @@ class IndexController extends Connexions_Controller_Action
                     $overRides = array_merge($this->view->main,
                                              array('perPage' => -1));
 
+                    // /*
+                    Connexions::log("IndexController::"
+                                    .   "_prepare_sidebarPane( %s ): "
+                                    .   "fetch bookmarks directly",
+                                    $pane);
+                    // */
+
                     $helper    = $this->view->bookmarks( $overRides );
                     $bookmarks = $helper->bookmarks;
                 }
+
+                // /*
+                Connexions::log("IndexController::"
+                                .   "_prepare_sidebarPane( %s ): "
+                                .   "fetch bookmark-related tags...",
+                                $pane);
+                // */
 
                 /* Retrieve the set of tags that are related to the presented 
                  * bookmarks.
@@ -358,6 +364,14 @@ class IndexController extends Connexions_Controller_Action
                                                    $fetchOrder,
                                                    $count,
                                                    $offset);
+
+                // /*
+                Connexions::log("IndexController::"
+                                .   "_prepare_sidebarPane( %s ): "
+                                .   "bookmark-related tags [ %s ]",
+                                $pane,
+                                $tags);
+                // */
 
                 $config['selected'] =& $this->_tags;
             }

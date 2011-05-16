@@ -42,6 +42,7 @@ $this->headLink()->appendStylesheet($this->baseUrl('/css/settings.css'));
  <p>Settings</p>
  <!-- p>Settings for <?= $this->viewer ?></p>
  <p class='userName'><?= $this->viewer->fullName ?></p -->
+ <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
 </div>
 <div id='settings' class='settings'>
  <ul>
@@ -187,7 +188,3 @@ function settings_onLoad()
 
 <?php
     $jQuery->javascriptCaptureEnd();
-
-?>
-
-<div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

@@ -106,6 +106,7 @@ $links->appendStylesheet($baseUrl .'css/users.css');
         }
     ?>
  </p>
+ <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
 </div>
 
 <?php
@@ -116,10 +117,5 @@ echo $htmlItemScope->render();
 //Connexions_Profile::checkpoint('Connexions', 'IndexView render items');
 
 echo $this->render('people/main.phtml');
-?>
-
-<div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
-
-<?php
 
 //Connexions_Profile::checkpoint('Connexions', 'IndexView complete');

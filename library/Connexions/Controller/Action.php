@@ -380,7 +380,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
 
         if ((! @empty($name)) && ($name !== '*'))
         {
-            // Does the name match an existing user?
+            // Does the name match the current viewer?
             if ($name === $this->_viewer->name)
             {
                 // 'name' matches the current viewer...
@@ -388,16 +388,17 @@ class Connexions_Controller_Action extends Zend_Controller_Action
             }
             else
             {
-                //$ownerInst = Model_User::find(array('name' => $name));
+                /* Retieve a model representing the target user
+                 * (MAY be unbacked).
+                 */
                 $ownerInst = $this->service('User')
-                                    ->find(array('name' => $name));
+                                    ->get(array('name' => $name));
             }
 
-            // Have we located a valid, backed user?
+            // Have we located a user?
             if ($ownerInst !== null)
             {
-                // YES -- we've located an existing user.
-
+                // YES -- we have a user model instance, possibly unbacked.
                 $res = $ownerInst;
             }
         }
