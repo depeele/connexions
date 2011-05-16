@@ -1978,10 +1978,24 @@ $.widget("ui.tagInput", $.ui.input, {
         unique:         true,
         addOnEnter:     true,
 
-        noHeight:       false,  // Do NOT set the height to match the
-                                // underlying element
-        noWidth:        false,  // Do NOT set the width to match the
-                                // underlying element
+        height:         'height',   /* How should the height of the replacement
+                                     * element be specified:
+                                     *  'none'          do NOT use height;
+                                     *  'cssHeight'     use the CSS height;
+                                     *  'height'        use 'innerHeight' and
+                                     *                  set as 'height';
+                                     *  'min-height'    use 'innerHeight' and
+                                     *                  set as 'min-height';
+                                     */
+        width:          'cssWidth', /* How should the width of the replacement
+                                     * element be specified:
+                                     *  'none'          do NOT use width;
+                                     *  'cssWidth'      use the CSS width;
+                                     *  'width'         use 'innerWidth' and
+                                     *                  set as 'width';
+                                     *  'min-width'     use 'innerWidth' and
+                                     *                  set as 'min-width';
+                                     */
 
         cssClass:       {
             container:  'tagInput',
@@ -2088,17 +2102,22 @@ $.widget("ui.tagInput", $.ui.input, {
     _resize:    function() {
         var self    = this;
         var opts    = self.options;
-        var width   = self.element.css('width');
-        var height  = self.element.innerHeight();
-        width       = width  || self.element.innerWidth();
+        var width   = (opts.width === 'cssWidth'
+                        ? self.element.css('width')
+                        : self.element.innerHeight());
+        var height  = (opts.height === 'cssHeight'
+                        ? self.element.css('height')
+                        : self.element.innerHeight());
 
-        if ((opts.noWidth !== true) && width)
+        if ((opts.width !== 'none') && width)
         {
-            self.$container.css('width', width);
+            self.$container.css( (opts.width === 'min-width'
+                                ? 'min-width'
+                                : 'width'), width );
         }
-        if (height)
+        if ((opts.height !== 'none') && height)
         {
-            self.$tags.css( (opts.noHeight === true
+            self.$tags.css( (opts.height === 'min-height'
                                 ? 'min-height'
                                 : 'height'), height );
         }
@@ -5486,8 +5505,8 @@ $.widget("connexions.optionGroups", {
  *
  *  This is primarily a class to provide unobtrusive activation of a
  *  pre-rendered area generate by View_Helper_HtmlItemScope:
- *      - conversion of the input area to either a ui.input or ui.autocomplete
- *        instance;
+ *      - conversion of the input area to a ui.input, ui.autocomplete, or
+ *        ui.tagInput instance;
  *
  *  The pre-rendered HTML must have a form similar to:
  *      <form class='itemScope'>
@@ -5515,7 +5534,7 @@ $.widget("connexions.optionGroups", {
  *  Requires:
  *      ui.core.js
  *      ui.widget.js
- *      ui.input.js  OR ui.autocomplete.js
+ *      ui.input.js, ui.autocomplete.js, or ui.tagInput.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false, window:false, document:false */
@@ -5597,13 +5616,34 @@ $.widget("connexions.itemScope", {
         if (opts.jsonRpc !== null)
         {
             // Setup autocompletion via Json-RPC
-            self.$input.autocomplete({
-                separator:  ',',
-                source:     function(request, response) {
-                    return self._autocomplete(request,response);
-                },
-                minLength:  opts.minLength
-            });
+            if (self.$input.tagInput)
+            {
+                self.$input.tagInput({
+                    height:         'none',
+                    autocomplete:   {
+                        source:     function(request, response) {
+                            return self._autocomplete(request,response);
+                        },
+                        minLength:  opts.minLength
+                    }
+                });
+
+                // Make it easier for _autocomplete() and destroy()
+                self.autocompleteWidget = self.$input.data('tagInput');
+            }
+            else if (self.$input.autocomplete)
+            {
+                self.$input.autocomplete({
+                    separator:  ',',
+                    source:     function(request, response) {
+                        return self._autocomplete(request,response);
+                    },
+                    minLength:  opts.minLength
+                });
+
+                // Make it easier for _autocomplete() and destroy()
+                self.autocompleteWidget = self.$input.data('autocomplete');
+            }
         }
 
         self._bindEvents();
@@ -5614,7 +5654,7 @@ $.widget("connexions.itemScope", {
         var opts    = self.options;
         var params  = opts.jsonRpc.params;
         
-        params.term = self.$input.autocomplete('option', 'term');
+        params.term = self.autocompleteWidget.option('term');
 
         var re      = new RegExp(params.term, 'gi');
 
@@ -5749,7 +5789,7 @@ $.widget("connexions.itemScope", {
         // Destroy widgets
         if (opts.jsonRpc !== null)
         {
-            self.$input.autocomplete('destroy');
+            self.autocompleteWidget.destroy();
         }
         self.$input.input('destroy');
 
@@ -7720,7 +7760,7 @@ $.widget("connexions.bookmarkPost", {
 
         // Tag autocompletion
         opts.$tags.tagInput({
-            noHeight:       true,
+            height:     'min-height',
             change:     function() {
                 /*
                 $.log('connexions.bookmarkPost::'

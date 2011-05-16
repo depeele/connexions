@@ -22,10 +22,24 @@ $.widget("ui.tagInput", $.ui.input, {
         unique:         true,
         addOnEnter:     true,
 
-        noHeight:       false,  // Do NOT set the height to match the
-                                // underlying element
-        noWidth:        false,  // Do NOT set the width to match the
-                                // underlying element
+        height:         'height',   /* How should the height of the replacement
+                                     * element be specified:
+                                     *  'none'          do NOT use height;
+                                     *  'cssHeight'     use the CSS height;
+                                     *  'height'        use 'innerHeight' and
+                                     *                  set as 'height';
+                                     *  'min-height'    use 'innerHeight' and
+                                     *                  set as 'min-height';
+                                     */
+        width:          'cssWidth', /* How should the width of the replacement
+                                     * element be specified:
+                                     *  'none'          do NOT use width;
+                                     *  'cssWidth'      use the CSS width;
+                                     *  'width'         use 'innerWidth' and
+                                     *                  set as 'width';
+                                     *  'min-width'     use 'innerWidth' and
+                                     *                  set as 'min-width';
+                                     */
 
         cssClass:       {
             container:  'tagInput',
@@ -132,17 +146,22 @@ $.widget("ui.tagInput", $.ui.input, {
     _resize:    function() {
         var self    = this;
         var opts    = self.options;
-        var width   = self.element.css('width');
-        var height  = self.element.innerHeight();
-        width       = width  || self.element.innerWidth();
+        var width   = (opts.width === 'cssWidth'
+                        ? self.element.css('width')
+                        : self.element.innerHeight());
+        var height  = (opts.height === 'cssHeight'
+                        ? self.element.css('height')
+                        : self.element.innerHeight());
 
-        if ((opts.noWidth !== true) && width)
+        if ((opts.width !== 'none') && width)
         {
-            self.$container.css('width', width);
+            self.$container.css( (opts.width === 'min-width'
+                                ? 'min-width'
+                                : 'width'), width );
         }
-        if (height)
+        if ((opts.height !== 'none') && height)
         {
-            self.$tags.css( (opts.noHeight === true
+            self.$tags.css( (opts.height === 'min-height'
                                 ? 'min-height'
                                 : 'height'), height );
         }

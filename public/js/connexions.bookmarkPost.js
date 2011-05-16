@@ -241,7 +241,7 @@ $.widget("connexions.bookmarkPost", {
 
         // Tag autocompletion
         opts.$tags.tagInput({
-            noHeight:       true,
+            height:     'min-height',
             change:     function() {
                 /*
                 $.log('connexions.bookmarkPost::'

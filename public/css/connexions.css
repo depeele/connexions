@@ -421,12 +421,6 @@ a:visited { color: #005a9c; }
 .tagInput .tagList .activeInput input { display: inline; border: none; background: none; padding: 0; margin: 0; width: auto; }
 .tagInput .tagList .measureInput { position: absolute; visibility: hidden; width: auto; padding: 1px; margin: 2px; }
 
-.scopeEntry .tagInput label { top: 0.2em; left: 0.2em; }
-.scopeEntry .tagInput .tagList { font-size: 0.85em; padding: 0 0.1em; }
-.scopeEntry .tagInput .tagList .tag { margin: 0 0.1em; padding: 0 0 0 0.2em; }
-.scopeEntry .tagInput .tagList .tag .delete { float: none; }
-.scopeEntry .tagInput .tagList .activeInput { padding: 0 0.1em; top: 0.2em; }
-
 /*fieldInfoColor             = !validationInputColor */
 .ui-timeline { position: relative; border: 1px solid #cccccc; padding: 2em 8em 0 0; margin: 0 0 0 0.25em; }
 .ui-timeline .timeline-plot { padding: 0; margin-bottom: 0.5em; }
@@ -567,6 +561,11 @@ a:visited { color: #005a9c; }
 .itemScope .scopeEntry .as-results .as-list .as-result-item .as-message { padding: 0.25em; }
 .itemScope .scopeEntry .as-results .as-list .active { color: white; background-color: #0066cc; }
 .itemScope .scopeEntry .as-results .as-list .active em { background-color: #1b2726; }
+.itemScope .scopeEntry .tagInput label { top: 0.2em; left: 0.2em; }
+.itemScope .scopeEntry .tagInput .tagList { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; font-size: 0.85em; padding: 0 0.1em; }
+.itemScope .scopeEntry .tagInput .tagList .tag { margin: 0 0.1em; padding: 0 0 0 0.2em; }
+.itemScope .scopeEntry .tagInput .tagList .tag .delete { float: none; }
+.itemScope .scopeEntry .tagInput .tagList .activeInput { padding: 0 0.1em; top: 0.2em; }
 .itemScope .root, .itemScope .section { background-color: #0066cc; padding: 0 0.2em 0 0; border: 1px solid #0066cc; z-index: 10; }
 .itemScope .section { margin-left: 1px; }
 .itemScope .scopeItem { padding-left: 0.6em; margin-left: -0.5em; -moz-border-radius: 0 1em 1em 0; -webkit-border-radius: 0 1em 1em 0; -ms-border-radius: 0 1em 1em 0; -khtml-border-radius: 0 1em 1em 0; border-radius: 0 1em 1em 0; border: 1px dotted #cccccc; z-index: 2; background-color: #999999; }
