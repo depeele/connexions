@@ -140,6 +140,14 @@
   p {
     font-size:    0.9em;
   }
+  .error {
+    position:       absolute;
+    right:          0;
+
+    font-size:      0.9em;
+    font-weight:    bold;
+    padding-left:   60px;
+  }
   .edit {
     display:        block;
     font-size:      0.9em;

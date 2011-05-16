@@ -46,7 +46,7 @@ Connexions::log('script/index/index.phtml: main[ %s ]',
 $htmlBookmarks = $this->htmlBookmarks( $this->main );
 
 // Prepare the Html Item Scope helper
-if ($this->owner === '*')
+if (! is_object($this->owner))
 {
     $scopePath = array('Bookmarks' => $this->baseUrl('/bookmarks'));
 }
@@ -59,7 +59,9 @@ else
 
 $htmlItemScope = $this->htmlItemScope( array(
                     'namespace'         => $this->main->namespace,
-                    'items'             => $htmlBookmarks->paginator,
+                    'items'             => ($htmlBookmarks
+                                                ? $htmlBookmarks->paginator
+                                                : null),
                     'scope'             => $this->tags,
                     'inputLabel'        => 'Tags',
                     'inputName'         => 'Tags',
@@ -70,7 +72,7 @@ $htmlItemScope = $this->htmlItemScope( array(
                             'tags'  => (count($this->tags) < 1
                                             ? null
                                             : $this->tags->__toString()),
-                            'users' => ($this->owner === '*'
+                            'users' => (! is_object($this->owner)
                                             ? null
                                             //: $this->owner->name
                                             : $this->owner->__toString()),
@@ -87,7 +89,7 @@ $links->appendStylesheet($this->baseUrl('/css/bookmarks.css'));
  <div class='context-bg connexions_sprites bookmark_bg
              ui-corner-left ui-corner-tr'>&nbsp;</div>
  <p><?php
-    if ($this->owner === '*')
+    if (! is_object($this->owner))
     {
         echo "All bookmarks";
     }
@@ -118,9 +120,8 @@ $links->appendStylesheet($this->baseUrl('/css/bookmarks.css'));
     }
     // */
  ?></p>
+ <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
 </div>
 
 <?= $htmlItemScope->render() ?>
 <?= $this->render('index/main.phtml') ?>
-
-<div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>

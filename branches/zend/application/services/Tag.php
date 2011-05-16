@@ -28,6 +28,12 @@ class Service_Tag extends Service_Base
      */
     public function csList2set($csList, $order = null, $create = false)
     {
+        if ($csList instanceof Model_Set_Tag)
+        {
+            // $csList is ALREADY a set
+            return $csList;
+        }
+
         // Parse the comma-separated-list directly -- we'll use it later.
         $ids = $this->_csList2array($csList);
 

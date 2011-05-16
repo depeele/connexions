@@ -105,9 +105,8 @@ $links->appendStylesheet($this->baseUrl('/css/bookmarks.css'));
         // */
     ?>
  </p>
+ <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
 </div>
 
 <?= $htmlItemScope->render() ?>
 <?= $this->render('network/main.phtml') ?>
-
-<div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
