@@ -247,7 +247,10 @@ $.widget("connexions.bookmarkPost", {
                 $.log('connexions.bookmarkPost::'
                        + '$tags.change( "'+ opts.$tags.val() +'" )');
                 // */
+
+                // Highlight the "new" tags and validate
                 self._highlightTags();
+                self.validate();
             },
             autocomplete:   {
                 source:     function(req, rsp) {
