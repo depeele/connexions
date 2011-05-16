@@ -5,8 +5,8 @@
  *
  *  This is primarily a class to provide unobtrusive activation of a
  *  pre-rendered area generate by View_Helper_HtmlItemScope:
- *      - conversion of the input area to either a ui.input or ui.autocomplete
- *        instance;
+ *      - conversion of the input area to a ui.input, ui.autocomplete, or
+ *        ui.tagInput instance;
  *
  *  The pre-rendered HTML must have a form similar to:
  *      <form class='itemScope'>
@@ -34,7 +34,7 @@
  *  Requires:
  *      ui.core.js
  *      ui.widget.js
- *      ui.input.js  OR ui.autocomplete.js
+ *      ui.input.js, ui.autocomplete.js, or ui.tagInput.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false, window:false, document:false */
@@ -116,13 +116,34 @@ $.widget("connexions.itemScope", {
         if (opts.jsonRpc !== null)
         {
             // Setup autocompletion via Json-RPC
-            self.$input.autocomplete({
-                separator:  ',',
-                source:     function(request, response) {
-                    return self._autocomplete(request,response);
-                },
-                minLength:  opts.minLength
-            });
+            if (self.$input.tagInput)
+            {
+                self.$input.tagInput({
+                    height:         'none',
+                    autocomplete:   {
+                        source:     function(request, response) {
+                            return self._autocomplete(request,response);
+                        },
+                        minLength:  opts.minLength
+                    }
+                });
+
+                // Make it easier for _autocomplete() and destroy()
+                self.autocompleteWidget = self.$input.data('tagInput');
+            }
+            else if (self.$input.autocomplete)
+            {
+                self.$input.autocomplete({
+                    separator:  ',',
+                    source:     function(request, response) {
+                        return self._autocomplete(request,response);
+                    },
+                    minLength:  opts.minLength
+                });
+
+                // Make it easier for _autocomplete() and destroy()
+                self.autocompleteWidget = self.$input.data('autocomplete');
+            }
         }
 
         self._bindEvents();
@@ -133,7 +154,7 @@ $.widget("connexions.itemScope", {
         var opts    = self.options;
         var params  = opts.jsonRpc.params;
         
-        params.term = self.$input.autocomplete('option', 'term');
+        params.term = self.autocompleteWidget.option('term');
 
         var re      = new RegExp(params.term, 'gi');
 
@@ -268,7 +289,7 @@ $.widget("connexions.itemScope", {
         // Destroy widgets
         if (opts.jsonRpc !== null)
         {
-            self.$input.autocomplete('destroy');
+            self.autocompleteWidget.destroy();
         }
         self.$input.input('destroy');
 
