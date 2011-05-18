@@ -396,7 +396,7 @@ class TagsController extends Connexions_Controller_Action
                                 Connexions::varExport($tags));
                 // */
 
-                $users = $this->_owner->getMapper()->makeEmptySet();
+                $users = $service->makeEmptySet();
             }
             else
             {

@@ -280,10 +280,17 @@ class PeopleController extends Connexions_Controller_Action
                 /* Retrieve the set of tags that are related to the presented 
                  * users.
                  */
-                $tags = $service->fetchByUsers($users,
-                                               $fetchOrder,
-                                               $count,
-                                               $offset);
+                if ( ($users !== null) && (count($users) < 1) )
+                {
+                    $tags = $service->makeEmptySet();
+                }
+                else
+                {
+                    $tags = $service->fetchByUsers($users,
+                                                   $fetchOrder,
+                                                   $count,
+                                                   $offset);
+                }
 
                 $config['selected'] =& $this->_tags;
             }
