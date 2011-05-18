@@ -18,6 +18,11 @@
  *                      rendered in a list;
  *      tags            A Model_Set_Tag instance of tags that should be
  *                      highlighted;
+ *
+ *      lastVisiFor     IF 'lastVisitFor' was included for the primary view,
+ *                      indicating that we are rendering the 'inbox', this will
+ *                      be a date/time string of the last date the inbox was
+ *                      viewed.  Use this to highlight new/unviewed items;
  */
 $bookmark      =& $this->bookmark;
 $viewer        =& $this->viewer;
@@ -54,6 +59,24 @@ if ( ($showParts['item:data:avatar'] !== true) ||
 {
     array_push($css, 'no-avatar');
 }
+if (isset($this->lastVisitFor))
+{
+    /*
+    Connexions::log("view/scripts/bookmark.phtml: "
+                    .   "lastVisitFor[ %s ], "
+                    .   "taggedOn[ %s ], "
+                    .   "updatedOn[ %s ], ",
+                    Connexions::varExport($this->lastVisitFor),
+                    $bookmark->taggedOn,
+                    $bookmark->updatedOn);
+    // */
+
+    if ($bookmark->taggedOn > $this->lastVisitFor)
+    {
+        array_push($css, 'new-item');
+    }
+}
+
 
 ?>
  <li class='item <?= implode(' ', $css) ?>'>
