@@ -5562,7 +5562,10 @@ $.widget("connexions.itemScope", {
                                                  * MAY be an array if multiple
                                                  * properties were used in the
                                                  * autocomplete and should be
-                                                 * presented.
+                                                 * presented.  In this case,
+                                                 * the first SHOULD be the
+                                                 * property to use as the
+                                                 * autocompletion value.
                                                  */
         weightName:         'userItemCount',    /* The property to present
                                                  * as the autocompletion
@@ -5682,6 +5685,7 @@ $.widget("connexions.itemScope", {
                     $.map(ret.result,
                           function(item) {
                             var str     = '';
+                            var value   = null;
                             var weight  = (item[opts.weightName] === undefined
                                             ? ''
                                             : item[opts.weightName]);
@@ -5691,7 +5695,15 @@ $.widget("connexions.itemScope", {
                                 // Multiple match keys
                                 var parts   = [];
                                 $.each(opts.termName, function() {
-                                    if (item[ this ] === undefined) return;
+                                    if (item[ this ] === undefined)
+                                    {
+                                        return;
+                                    }
+
+                                    if (value === null)
+                                    {
+                                        value = item[this];
+                                    }
 
                                     str = item[this]
                                             .replace(re,
@@ -5704,7 +5716,8 @@ $.widget("connexions.itemScope", {
                             }
                             else
                             {
-                                str = item[ opts.termName ]
+                                value = item[opts.termName];
+                                str   = value
                                         .replace(re, '<b>'+params.term+'</b>');
                             }
 
@@ -5715,7 +5728,7 @@ $.widget("connexions.itemScope", {
                                        +' <span class="count">'
                                        +  weight
                                        + '</span>',
-                                value: item.tag
+                                value: value
                             };
                           }));
                 self.element.trigger('success', [ret, txtStatus, req]);

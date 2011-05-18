@@ -285,7 +285,7 @@ class IndexController extends Connexions_Controller_Action
                  * only by the current owner (if any).
                  */
 
-                // /*
+                /*
                 Connexions::log("IndexController::_prepare_sidebarPane( %s ): "
                                 .   "Fetch tags %d-%d by user [ %s ]",
                                 $pane,
@@ -304,7 +304,7 @@ class IndexController extends Connexions_Controller_Action
             {
                 // Tags related to the bookmarks with the given set of tags.
 
-                // /*
+                /*
                 Connexions::log("IndexController::_prepare_sidebarPane( %s ): "
                                 .   "Fetch tags %d-%d related to bookmarks "
                                 .   "with tags[ %s ]",
@@ -339,7 +339,7 @@ class IndexController extends Connexions_Controller_Action
                     $overRides = array_merge($this->view->main,
                                              array('perPage' => -1));
 
-                    // /*
+                    /*
                     Connexions::log("IndexController::"
                                     .   "_prepare_sidebarPane( %s ): "
                                     .   "fetch bookmarks directly",
@@ -350,7 +350,7 @@ class IndexController extends Connexions_Controller_Action
                     $bookmarks = $helper->bookmarks;
                 }
 
-                // /*
+                /*
                 Connexions::log("IndexController::"
                                 .   "_prepare_sidebarPane( %s ): "
                                 .   "fetch bookmark-related tags...",
@@ -365,7 +365,7 @@ class IndexController extends Connexions_Controller_Action
                                                    $count,
                                                    $offset);
 
-                // /*
+                /*
                 Connexions::log("IndexController::"
                                 .   "_prepare_sidebarPane( %s ): "
                                 .   "bookmark-related tags [ %s ]",
