@@ -21,7 +21,6 @@ abstract class Connexions_Service
      */
     protected   $_defaultOrdering   = array();
 
-
     /** @brief  Returned from a factory if no instance can be located or 
      *          generated.
      */
@@ -179,10 +178,11 @@ abstract class Connexions_Service
      *  @param  csList  The comma-separated list of identifiers
      *                  (MUST ALL target the same model field);
      *  @param  order   An ordering string/array.
+     *  @param  create  Should any non-existing items be created? [ false ];
      *
      *  @return Connexions_Model_Set
      */
-    public function csList2set($csList, $order = null)
+    public function csList2set($csList, $order = null, $create = false)
     {
         if (is_object($csList))
         {
@@ -205,10 +205,13 @@ abstract class Connexions_Service
             }
         }
 
+
+        // Parse the comma-separated-list into a simple array.
         $ids = $this->_csList2array($csList);
         if ( (! is_array($ids)) || empty($ids) )
         {
-            $set = $this->_mapper->makeEmptySet();
+            $normIds = $ids;
+            $set     = $this->_mapper->makeEmptySet();
         }
         else
         {
@@ -216,27 +219,120 @@ abstract class Connexions_Service
             $order   = $this->_csOrder2array($order);
 
             /*
-            Connexions::log("Connexions_Service::csList2set(): "
+            Connexions::log("Connexions_Service[%s]::csList2set(): "
                             . "csList[ %s ]",
+                            get_class($this),
                             Connexions::varExport($csList));
-            Connexions::log("Connexions_Service::csList2set(): "
+            Connexions::log("Connexions_Service[%s]::csList2set(): "
                             . "ids[ %s ]",
+                            get_class($this),
                             Connexions::varExport($ids));
-            Connexions::log("Connexions_Service::csList2set(): "
+            Connexions::log("Connexions_Service[%s]::csList2set(): "
                             . "normIds[ %s ]",
+                            get_class($this),
                             Connexions::varExport($normIds));
-            Connexions::log("Connexions_Service::csList2set(): "
+            Connexions::log("Connexions_Service[%s]::csList2set(): "
                             . "order[ %s ]",
+                            get_class($this),
                             Connexions::varExport($order));
             // */
 
             $set     = $this->_mapper->fetch($normIds, $order);
-            $set->setSource($csList);
+        }
+        $set->setSource($csList);
+
+
+        /* Now, if the size of 'set' is less than the size of 'ids', locate the
+         * missing entries and create a representative model instance for each.
+         *
+         * If 'create' is true, ensure that the representative model instances
+         * have been saved.
+         */
+        if ( count($set) < count($ids) )
+        {
+            /*
+            Connexions::log("Connexions_Service[%s]::csList2set(): "
+                                . "%d item(s) seem to be missing...",
+                            get_class($this),
+                            count($ids) - count($set));
+            Connexions::log("Connexions_Service[%s]::csList2set(): "
+                                . "ids[ %s ], normIds[ %s ]",
+                            get_class($this),
+                            Connexions::varExport($ids),
+                            Connexions::varExport($normIds));
+            Connexions::log("Connexions_Service[%s]::csList2set(): "
+                                . "set[ %s ]",
+                            get_class($this),
+                            Connexions::varExport($set));
+            // */
+
+            // Ensure we have entries for all items in 'normIds'
+            foreach( $normIds as $field => $vals )
+            {
+                $vals = (is_array($vals) ? $vals : array( $vals ));
+
+                /*
+                Connexions::log("Connexions_Service[%s]::csList2set(): "
+                                    . "field[ %s ], values[ %s ]",
+                                get_class($this),
+                                $field,
+                                Connexions::varExport($vals));
+                // */
+
+                foreach( $vals as $id)
+                {
+                    $data = array();
+                    $data[$field] = $id;
+
+                    $model = $this->_mapper->getModel( $data );
+
+                    /*
+                    Connexions::log("Connexions_Service[%s]::csList2set(): "
+                                        . "getModel for item '%s': %sbacked",
+                                    get_class($this),
+                                    $item,
+                                    ($model->isBacked() ? '' : 'NOT '));
+                    // */
+
+                    // See if the normalized item already exists in the set.
+                    if (! $set->contains($model))
+                    {
+                        /* The normalized item does NOT exist in the set.
+                         *
+                         * If we've been asked to create, save this model now.
+                         *
+                         * Regardless, append it to the set.
+                         */
+                        if (($create === true) && (! $model->isBacked()) )
+                        {
+                            $model = $model->save();
+                        }
+                        $set->append( $model );
+
+                        /*
+                        Connexions::log("Connexions_Service[%s]::csList2set(): "
+                                            . "append[ %s ]",
+                                        get_class($this),
+                                        $model->debugDump());
+                        // */
+                    }
+                }
+            }
+
+            /*
+            Connexions::log("Connexions_Service[%s]::csList2set(): "
+                                . "ids[ %s ] == final set[ %s ]",
+                            get_class($this),
+                            Connexions::varExport($ids),
+                            Connexions::varExport($set));
+            // */
+
         }
 
         /*
-        Connexions::log("Connexions_Service::csList2set( %s ): "
+        Connexions::log("Connexions_Service[%s]::csList2set( %s ): "
                         .   "[ %s ] == [ %s ] %s:%s",
+                        get_class($this),
                         $csList,
                         Connexions::varExport($ids),
                         $set,
