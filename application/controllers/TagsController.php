@@ -372,7 +372,14 @@ class TagsController extends Connexions_Controller_Action
                     $this->_prepare_main();
                 }
 
-                $tags = $this->view->main['tags'];
+                $tags = $this->view->main['items'];
+
+                /*
+                Connexions::log("TagsController::_prepare_sidebarPane( %s ): "
+                                .   "tags[ %s ]",
+                                $pane,
+                                Connexions::varExport($tags));
+                // */
 
                 $config['selected'] =& $this->_users;
             }
@@ -380,11 +387,40 @@ class TagsController extends Connexions_Controller_Action
             /* Retrieve the set of users that are related to the presented 
              * tags.
              */
-            $users = $service->fetchByTags($tags,
-                                           false,   // ANY tag
-                                           $fetchOrder,
-                                           $count,
-                                           $offset);
+            if ( ($tags !== null) && (count($tags) < 1) )
+            {
+                /*
+                Connexions::log("TagsController::_prepare_sidebarPane( %s ): "
+                                .   "EMPTY tags [ %s ] == empty users",
+                                $pane,
+                                Connexions::varExport($tags));
+                // */
+
+                $users = $this->_owner->getMapper()->makeEmptySet();
+            }
+            else
+            {
+                /*
+                Connexions::log("TagsController::_prepare_sidebarPane( %s ): "
+                                .   "Locate users related to tags[ %s ]",
+                                $pane,
+                                Connexions::varExport($tags));
+                // */
+
+                $users = $service->fetchByTags($tags,
+                                               false,   // ANY tag
+                                               $fetchOrder,
+                                               $count,
+                                               $offset);
+            }
+
+            /*
+            Connexions::log("TagsController::_prepare_sidebarPane( %s ): "
+                            .   "users[ %s ]",
+                            $pane,
+                            Connexions::varExport($users));
+            // */
+
 
 
             $config['items']            =& $users;

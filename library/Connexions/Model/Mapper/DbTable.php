@@ -432,15 +432,19 @@ abstract class Connexions_Model_Mapper_DbTable
         $ids   = array();
         foreach ($rows as $row)
         {
+            $id = array_values($row);
+
             /*
             Connexions::log("Connexions_Model_Mapper_DbTable::getIds(): "
-                            .   "row[ %s ]",
-                            Connexions::varExport($row));
+                            .   "row[ %s ] == id[ %s ]",
+                            Connexions::varExport($row),
+                            Connexions::varExport($id));
             // */
 
-            $id = array_values($row);
             if ($nKeys === 1)
-                $id = $row[0];
+            {
+                $id = $id[0];
+            }
 
             array_push($ids, $id);
         }

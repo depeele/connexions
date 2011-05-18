@@ -560,6 +560,15 @@ abstract class Connexions_Model_Set
         if ( ($this->getOffset() > 0) ||
             ($this->getTotalCount() > $this->count()) )
         {
+            /*
+            Connexions::log("Connexions_Model_Set[%s]::getIds(): "
+                            .   "(offset[ %s ] > 0) || "
+                            .   "totalCount[ %s ] > count[ %s ])",
+                            get_class($this),
+                            $this->getOffset(),
+                            $this->getTotalCount(), $this->count());
+            // */
+
             // We have a limited sub-set.  Use our Mapper to retrieve ALL ids
             return $this->getMapper()->getIds( $this );
         }
@@ -570,6 +579,13 @@ abstract class Connexions_Model_Set
         {
             if ($item === null)
             {
+                /*
+                Connexions::log("Connexions_Model_Set[%s]::getIds(): "
+                                .   "fill members[ %s .. %s ]",
+                                get_class($this),
+                                $idex, $this->getCount());
+                // */
+
                 // One or more members are missing...
                 $this->_fillMembers($idex, $this->getCount());
 
@@ -594,6 +610,13 @@ abstract class Connexions_Model_Set
 
             array_push($ids, $id);
         }
+
+        /*
+        Connexions::log("Connexions_Model_Set[%s]::getIds(): "
+                        .   "ids[ %s ]",
+                        get_class($this),
+                        Connexions::varExport($ids));
+        // */
 
         return $ids;
     }
