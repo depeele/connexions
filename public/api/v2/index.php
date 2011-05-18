@@ -274,7 +274,7 @@ $baseUrl = $config->urls->base;
              *                            transport:    'POST',
              *                            contentType:  'application/json',
              *                            SMDVersion:   '2.0',
-             *                            target:       '/api/v1/json-rpc',
+             *                            target:       '/api/v2/json-rpc',
              *                            services:     [
              *                              % name %: % service Description %,
              *                              ...

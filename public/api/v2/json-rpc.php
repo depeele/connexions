@@ -37,7 +37,7 @@ if ($req->isGet() && ($req->getParam('serviceDescription')))
     Connexions::log("json-rpc: Handle GET request...");
     // */
 
-    $server->setTarget(Connexions::url('/api/v1/json-rpc'))
+    $server->setTarget(Connexions::url('/api/v2/json-rpc'))
            ->setEnvelope(Zend_Json_Server_Smd::ENV_JSONRPC_2);
 
     /*
