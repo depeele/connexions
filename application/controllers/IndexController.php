@@ -145,7 +145,7 @@ class IndexController extends Connexions_Controller_Action
         $users = null;
         if ($this->_owner !== '*')
         {
-            $users = $this->_owner->getMapper()->makeEmptySet();
+            $users = $this->service('User')->makeEmptySet();
             $users->setResults(array($this->_owner));
         }
 
@@ -182,7 +182,7 @@ class IndexController extends Connexions_Controller_Action
         $users = null;
         if ($this->_owner !== '*')
         {
-            $users = $this->_owner->getMapper()->makeEmptySet();
+            $users = $this->service('User')->makeEmptySet();
             $users->setResults(array($this->_owner));
         }
 
@@ -339,7 +339,7 @@ class IndexController extends Connexions_Controller_Action
                     $overRides = array_merge($this->view->main,
                                              array('perPage' => -1));
 
-                    /*
+                    // /*
                     Connexions::log("IndexController::"
                                     .   "_prepare_sidebarPane( %s ): "
                                     .   "fetch bookmarks directly",
@@ -353,17 +353,25 @@ class IndexController extends Connexions_Controller_Action
                 /*
                 Connexions::log("IndexController::"
                                 .   "_prepare_sidebarPane( %s ): "
-                                .   "fetch bookmark-related tags...",
-                                $pane);
+                                .   "fetch tags related to %d bookmarks...",
+                                $pane,
+                                count($bookmarks));
                 // */
 
                 /* Retrieve the set of tags that are related to the presented 
                  * bookmarks.
                  */
-                $tags = $service->fetchByBookmarks($bookmarks,
-                                                   $fetchOrder,
-                                                   $count,
-                                                   $offset);
+                if ( ($bookmarks !== null) && (count($bookmarks) < 1) )
+                {
+                    $tags = $service->makeEmptySet();
+                }
+                else
+                {
+                    $tags = $service->fetchByBookmarks($bookmarks,
+                                                       $fetchOrder,
+                                                       $count,
+                                                       $offset);
+                }
 
                 /*
                 Connexions::log("IndexController::"

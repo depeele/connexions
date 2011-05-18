@@ -491,7 +491,8 @@ a:visited { color: #005a9c; }
 .Item_List li.footer { border-top: 1px solid #e3e3ff; }
 .Item_List li.odd { background-color: #f3f3ff; }
 .Item_List li.even { background-color: none; }
-.Item_List .item { display: block; font-weight: normal; color: #2786c2; margin-right: 3em; }
+.Item_List .item { display: block; font-weight: normal; color: #2786c2; }
+.Item_List .item a { margin-right: 3em; }
 .Item_List .item .img { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
 .Item_List li .control { position: absolute; top: 0; right: 2.5em; }
 .Item_List li .control .item-add, .Item_List li .control .item-edit, .Item_List li .control .item-delete { visibility: hidden; }

@@ -282,7 +282,10 @@
     display:      block;
     font-weight:  normal;
     color:        $highlightTopTagColor;
-    margin-right: 3em;
+
+    a {
+      margin-right: 3em;
+    }
     .img {
       @include inlineBlock();
     }
