@@ -337,4 +337,11 @@ $displaySortOffset: 5px;
       }
     }
   }
+
+  // Item (new-item in an inbox view)
+  .new-item {
+    //background-color: $lightestGrey;
+    background-color: $highlightTopColorBackground;
+    @include corners(0, 0, 0, 20px);
+  }
 }

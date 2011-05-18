@@ -346,6 +346,10 @@ class View_Helper_HtmlBookmarks extends View_Helper_Bookmarks
             'sortBy'     => $this->sortBy,
             'tags'       => $this->tags,
         );
+        if ( isset($this->view->lastVisitFor))
+        {
+            $params['lastVisitFor'] = $this->view->lastVisitFor;
+        }
 
         $params = array_merge($defaults, $params);
 
