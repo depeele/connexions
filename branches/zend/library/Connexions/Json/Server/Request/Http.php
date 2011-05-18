@@ -5,13 +5,13 @@
  *      - records the request method and URI;
  *      - allows a JSON-encoded string to be passed in a GET request as the
  *        Query, e.g.:
- *          http://localhost/api/v1/json-rpc?{"version":2,"method": ...}
+ *          http://localhost/api/v2/json-rpc?{"version":2,"method": ...}
  *
  *      - allows general, non-JSON query parameters for those simple cases
  *        where the Json Server accepts a GET request with Query parameter(s)
  *        used to determine the response.  For example, a Json server that can
  *        return the API when requested:
- *          http://localhost/api/v1/json-rpc?getApi=1
+ *          http://localhost/api/v2/json-rpc?getApi=1
  *
  */
 class Connexions_Json_Server_Request_Http extends Zend_Json_Server_Request
