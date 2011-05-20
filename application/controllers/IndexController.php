@@ -45,6 +45,12 @@ class IndexController extends Connexions_Controller_Action
         $reqOwner = $request->getParam('owner', null);
         $reqTags  = $request->getParam('tags', null);
 
+        if (empty($reqOwner))
+        {
+            return $this->_helper->redirector
+                                    ->setGotoRoute(array('bookmarks'));
+        }
+
         /* If this is a user/"owned" area (e.g. /<userName> [/ <tags ...>]),
          * verify the validity of the requested user.
          */
