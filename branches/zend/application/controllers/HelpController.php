@@ -5,8 +5,10 @@
  *      /help[<topic>]
  */
 
-class HelpController extends Zend_Controller_Action
+class HelpController extends Connexions_Controller_Action
 {
+    protected   $_noSidebar = true;
+
     public function indexAction()
     {
         // The specific view requested will be contained in 'topic'
