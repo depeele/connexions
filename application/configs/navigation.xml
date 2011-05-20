@@ -132,24 +132,30 @@
      <controller>help</controller>
      <action>index</action>
      <pages>
-      <about>
-       <label>About</label>
+      <general>
+       <label>General</label>
        <controller>help</controller>
-       <action>about</action>
+       <action>general</action>
        <class>global</class>
-      </about>
-      <basics>
-       <label>Basics</label>
+      </general>
+      <faq>
+       <label>FAQ</label>
        <controller>help</controller>
-       <action>basics</action>
+       <action>faq</action>
        <class>global</class>
-      </basics>
+      </faq>
       <developer>
        <label>Developers</label>
        <controller>help</controller>
        <action>developer</action>
        <class>global</class>
       </developer>
+      <about>
+       <label>About</label>
+       <controller>help</controller>
+       <action>about</action>
+       <class>global</class>
+      </about>
       <explore>
        <label>Explore</label>
        <controller>help</controller>

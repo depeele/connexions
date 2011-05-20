@@ -7,10 +7,54 @@
 
 class HelpController extends Connexions_Controller_Action
 {
-    protected   $_noSidebar = true;
+    // Tell Connexions_Controller_Action_Helper_ResourceInjector which
+    // Bootstrap resources to make directly available
+    public      $dependencies   = array('db','layout');
+    public      $contexts       = array('index' => array('partial'));
+    protected   $_noSidebar     = true;
+
+    public static   $tabs       = array(
+        'general'   => array(
+            'title'     => 'General',
+            'script'    => 'main-general',
+        ),
+        'faq'       => array(
+            'title'     => 'FAQ',
+            'script'    => 'main-faq',
+        ),
+        'developers'=> array(
+            'title'     => 'Developers',
+            'script'    => 'main-developers',
+        ),
+        'about'     => array(
+            'title'     => 'About',
+            'script'    => 'main-about',
+        ),
+    );
+
+    public function init()
+    {
+        $this->_baseUrl    = $this->_helper->url(null, 'help');
+        $this->_cookiePath = $this->_baseUrl;
+
+        parent::init();
+    }
 
     public function indexAction()
     {
+        $request =& $this->_request;
+
+        $this->view->tabs  = self::$tabs;
+        $this->view->topic = $request->getParam('topic', null);
+
+        Connexions::log("HelpController::indexAction(): topic[ %s ]",
+                        Connexions::varExport($this->view->topic));
+
+        // HTML form/cookie namespace
+        $this->_namespace = 'help';
+
+        return;
+
         // The specific view requested will be contained in 'topic'
         $request = $this->getRequest();
         $topic   = $request->getParam('topic', null);
@@ -29,4 +73,3 @@ class HelpController extends Connexions_Controller_Action
         }
     }
 }
-
