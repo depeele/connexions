@@ -69,22 +69,8 @@ $.widget('connexions.tabs', $.ui.tabs, {
         }
 
         this.xhr = $.ajax( $.extend( {}, o.ajaxOptions, {
-            url: url,
-            beforeSend: function(xhr, textStatus) {
-                if ($.isFunction(o.ajaxOptions.beforeSend))
-                {
-                    o.ajaxOptions.beforeSend.call(self.element,
-                                                  xhr, textStatus);
-                }
-            },
-            complete: function(xhr, textStatus) {
-                if ($.isFunction(o.ajaxOptions.complete))
-                {
-                    o.ajaxOptions.complete.call(self.element,
-                                                xhr, textStatus);
-                }
-            },
-            success: function( r, s ) {
+            url:        url,
+            success:    function( r, s ) {
                 // Connexions panelId {
                 self._getPanel( $a ).html( r );
                 //self.element.find( self._sanitizeSelector( a.hash ) ).html(r);
@@ -102,12 +88,12 @@ $.widget('connexions.tabs', $.ui.tabs, {
                                self._ui( self.anchors[ index ],
                                          self.panels[ index ] ) );
 
-                if ($.isFunction(o.ajaxOptions.success))
-                {
-                    o.ajaxOptions.success.call(self.element, r, s);
+                try {
+                    o.ajaxOptions.success( r, s );
                 }
+                catch ( e ) {}
             },
-            error: function( xhr, s, e ) {
+            error:      function( xhr, s, e ) {
                 // take care of tab labels
                 self._cleanup();
 
@@ -115,15 +101,15 @@ $.widget('connexions.tabs', $.ui.tabs, {
                                self._ui( self.anchors[ index ],
                                           self.panels[ index ] ) );
 
-                if ($.isFunction(o.ajaxOptions.error))
-                {
+                try {
                     /* Passing index avoid a race condition when this method is
                      * called after the user has selected another tab.  Pass
                      * the anchor that initiated this request allows loadError
                      * to manipulate the tab content panel via $(a.hash)
                      */
-                    o.ajaxOptions.error.call( self.element, xhr, s, index, a );
+                    o.ajaxOptions.error( xhr, s, index, a );
                 }
+                catch ( e ) {}
             }
         } ) );
 

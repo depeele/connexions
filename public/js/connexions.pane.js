@@ -172,38 +172,44 @@ $.widget("connexions.pane", {
     reload: function(completionCb) {
         var self    = this;
         var opts    = self.options;
-        var re      = new RegExp(opts.pageVar +'='+ opts.pageCur);
-        var rep     = opts.pageVar +'='+ (opts.page !== null
-                                            ? opts.page
-                                            : opts.pageCur);
         var loc     = window.location;
         var url     = loc.toString();
+        var qSep    = '?';
 
-        if (loc.search.length === 0)
+        if (opts.pageVar !== null)
         {
-            url += '?'+ rep;
-        }
-        else if (! url.match(re))
-        {
-            url += '&'+ rep;
-        }
-        else
-        {
-            url = url.replace(re, rep);
+            var re  = new RegExp(opts.pageVar +'='+ opts.pageCur);
+            var rep = opts.pageVar +'='+ (opts.page !== null
+                                            ? opts.page
+                                            : opts.pageCur);
+            if (loc.search.length === 0)
+            {
+                url += '?'+ rep;
+            }
+            else if (! url.match(re))
+            {
+                url += '&'+ rep;
+            }
+            else
+            {
+                url = url.replace(re, rep);
+            }
+            qSep = '&';
         }
 
         if (opts.hiddenVars !== null)
         {
             // Also include any hidden input values in the URL.
             $.each(opts.hiddenVars, function(name,val) {
-                url += '&'+ name +'='+ val;
+                url += qSep + name +'='+ val;
+                qSep = '&';
             });
         }
 
         if (opts.partial !== null)
         {
             // AJAX reload of just this pane...
-            url += '&format=partial&part='+ opts.partial;
+            url += qSep +'format=partial&part='+ opts.partial;
 
             $.ajax({url:        url,
                     dataType:   'html',

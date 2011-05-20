@@ -24,7 +24,9 @@ $config   =  (is_array($this->sidebar['panes']) &&
                 : array());
 
 
-?>
+if ($this->sidebar['initialRender'] === true)
+{
+    ?>
   <div class='columnHeader'>
    <div class='context-bg connexions_sprites user_bg ui-corner-left'>
     &nbsp;
@@ -44,9 +46,9 @@ $config   =  (is_array($this->sidebar['panes']) &&
     ?>
    </p>
   </div>
-<?php
+    <?php
+}
 
 // Tag-related users
 $htmlItemCloud = $this->htmlItemCloud($config);
-
 echo $htmlItemCloud->render();

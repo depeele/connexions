@@ -21,7 +21,9 @@ $config   =  (is_array($this->sidebar['panes']) &&
                 ? $this->sidebar['panes'][$paneName]
                 : array());
 
-?>
+if ($this->sidebar['initialRender'] === true)
+{
+    ?>
   <div class='columnHeader'>
    <div class='context-bg connexions_sprites tag_bg ui-corner-left'>
     &nbsp;
@@ -52,13 +54,14 @@ $config   =  (is_array($this->sidebar['panes']) &&
 
     ?></p>
   </div>
-  <?php
+    <?php
+}
 
-    if (isset($config['stats']))
-    {
-        $stats = $config['stats'];
+if (isset($config['stats']))
+{
+    $stats = $config['stats'];
 
-        ?>
+    ?>
   <table class='statistics'>
    <thead>
     <tr><th rowspan='2'>Statistics</th
@@ -76,17 +79,17 @@ $config   =  (is_array($this->sidebar['panes']) &&
    <tbody class='twoCol'>
     <tr><th>Bookmarks</th
        ><td colspan='3'><?= number_format($stats['bookmarks']) ?></td></tr>
-        <?php
-        if ($stats['privates'] > 0)
-        {
-            ?>
+    <?php
+    if ($stats['privates'] > 0)
+    {
+        ?>
     <tr><th class='subHeader'>Private</th
        ><td colspan='3'><?= number_format($stats['privates'])   ?></td></tr>
     <tr><th class='subHeader'>Public</th
        ><td colspan='3'><?= number_format($stats['publics'])    ?></td></tr>
-            <?php
-        }
-        ?>
+        <?php
+    }
+    ?>
     <tr><th class='subHeader'>Favorites</th
        ><td colspan='3'><?= number_format($stats['favorites']) ?></td></tr>
     <tr><th class='subHeader'>Rated</th
@@ -99,10 +102,10 @@ $config   =  (is_array($this->sidebar['panes']) &&
        ><td colspan='3'><?= number_format($stats['items']) ?></td></tr>
    </tbody>
   </table>
-            <?php
-    }
+    <?php
+}
 
-    ?>
+?>
   <div id='sb-tags-timeline' class='timeline'>
    <div class='timeline-controls'><!-- timeline-controls { -->
     <select name='timeline.grouping'>

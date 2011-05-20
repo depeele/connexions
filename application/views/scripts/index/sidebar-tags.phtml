@@ -20,16 +20,17 @@ $config   =  (is_array($this->sidebar['panes']) &&
                 ? $this->sidebar['panes'][$paneName]
                 : array());
 
-
-?>
+if ($this->sidebar['initialRender'] === true)
+{
+    ?>
   <div class='columnHeader'>
    <div class='context-bg connexions_sprites tag_bg ui-corner-left'>
     &nbsp;
    </div>
    <p>Tags related to these bookmarks.</p>
   </div>
-  <?php
+    <?php
+}
 
-    $htmlItemCloud = $this->htmlItemCloud($config);
-
-    echo $htmlItemCloud->render();
+$htmlItemCloud = $this->htmlItemCloud($config);
+echo $htmlItemCloud->render();

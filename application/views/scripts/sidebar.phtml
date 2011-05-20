@@ -39,25 +39,6 @@
  */
 $params   =& $this->sidebar;
 $baseUrl  = $this->baseUrl('/');
-
-if (isset($this->owner) && ($this->owner !== '*'))
-{
-    /* When bookmarks for a single user are being presented, the 'People' pane
-     * will contain details about that user, generated via:
-     *      application/views/scripts/index/sidebar-people.phtml
-     *          application/views/scripts/sidebar-user.phtml
-     *              application/views/scripts/user.phtml
-     *
-     * Properly rendering a 'user' in the sidebar requires
-     * 'css/bookmark-users.css', which can only effectively be included here
-     * since sidebar-user.phtml, the most logical place to perform the include,
-     * is currently included asynchronously, causing all headLink()
-     * modifications to be ignored.
-     */
-    $this->headLink()
-            ->appendStylesheet( $this->baseUrl('/css/bookmark-users.css') );
-}
-
 $paneHtml = '';
 
 /*
@@ -85,7 +66,7 @@ $id = $params['namespace'];
 foreach ($params['panes'] as $paneId => $config)
 {
     ?>
-  <li><a href='<?= $paneUrl ?><?= $paneId ?>'><span><?=
+  <li><a href='<?= $paneUrl ?><?= $paneId ?>&initialRender=true'><span><?=
         (! empty($config['title'])
             ? $config['title']
             : ucfirst($paneId)) ?></span></a></li><?php

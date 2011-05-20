@@ -415,7 +415,7 @@ $.widget("connexions.bookmark", {
 
         if (self.$dateTagged.length > 0)
         {
-            newStr = self._localizeDate(self.$dateTagged.data('utcDate'),
+            newStr = self._localizeDate(self.$dateTagged.data('utcdate'),
                                         groupBy);
 
             self.$dateTagged.html( newStr );
@@ -423,7 +423,7 @@ $.widget("connexions.bookmark", {
 
         if (self.$dateUpdated.length > 0)
         {
-            newStr = self._localizeDate(self.$dateUpdated.data('utcDate'),
+            newStr = self._localizeDate(self.$dateUpdated.data('utcdate'),
                                         groupBy);
 
             self.$dateUpdated.html( newStr );
@@ -658,8 +658,8 @@ $.widget("connexions.bookmark", {
         self.$url.attr('href',  data.url);
 
         // Update and localize the dates
-        self.$dateTagged.data( 'utcDate', data.taggedOn  );
-        self.$dateUpdated.data('utcDate', data.updatedOn );
+        self.$dateTagged.data( 'utcdate', data.taggedOn  );
+        self.$dateUpdated.data('utcdate', data.updatedOn );
         self._localizeDates();
 
         // Alter our parent to reflect 'isPrivate'

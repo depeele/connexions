@@ -23,7 +23,9 @@ $config   =  (is_array($this->sidebar['panes']) &&
                 ? $this->sidebar['panes'][$paneName]
                 : array());
 
-?>
+if ($this->sidebar['initialRender'] === true)
+{
+    ?>
   <div class='columnHeader'>
    <div class='context-bg connexions_sprites user_bg ui-corner-left'>
     &nbsp;
@@ -44,11 +46,12 @@ $config   =  (is_array($this->sidebar['panes']) &&
    
    ?></p>
   </div>
-  <?php
+    <?php
+}
 
-    if (isset($config['counts']))
-    {
-        ?>
+if (isset($config['counts']))
+{
+    ?>
   <table class='overview'>
    <tbody>
     <tr><th>Total users</th><td><?= $config['counts']['total'] ?></td></tr>
@@ -58,14 +61,14 @@ $config   =  (is_array($this->sidebar['panes']) &&
         </div></th><td><?= $config['counts']['contributors'] ?></td></tr>
    </tbody>
   </table>
-        <?php
+    <?php
 
-        if (isset($config['counts']['stats']))
-        {
-            $stats     = $config['counts']['stats'];
-            $bookmarks = $stats['privates'] + $stats['publics'];
+    if (isset($config['counts']['stats']))
+    {
+        $stats     = $config['counts']['stats'];
+        $bookmarks = $stats['privates'] + $stats['publics'];
 
-            ?>
+        ?>
   <table class='statistics'>
    <thead>
     <tr><th rowspan='2'>Statistics</th
@@ -89,7 +92,7 @@ $config   =  (is_array($this->sidebar['panes']) &&
        ><td><?= number_format($stats['tags_max']) ?></td></tr>
         <?php
         }
-            ?>
+        ?>
    </tbody>
    <tbody class='twoCol'>
     <tr><th>Bookmarks</th
@@ -111,11 +114,11 @@ $config   =  (is_array($this->sidebar['panes']) &&
        ><td colspan='3'><?= number_format($stats['rated'])     ?></td></tr>
    </tbody>
   </table>
-            <?php
-        }
+        <?php
     }
+}
 
-    ?>
+?>
   <div id='sb-people-timeline' class='timeline'>
    <div class='timeline-controls'><!-- timeline-controls { -->
     <select name='timeline.grouping'>

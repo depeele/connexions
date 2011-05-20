@@ -20,15 +20,17 @@ $config   =  (is_array($this->sidebar['panes']) &&
                 : array());
 
 
-?>
+if ($this->sidebar['initialRender'] === true)
+{
+    ?>
   <div class='columnHeader'>
    <div class='context-bg connexions_sprites item_bg ui-corner-left'>
     &nbsp;
    </div>
    <p>Similar Items (by url).</p>
   </div>
-  <?php
+    <?php
+}
 
-    $htmlItemCloud = $this->htmlItemCloud($config);
-
-    echo $htmlItemCloud->render();
+$htmlItemCloud = $this->htmlItemCloud($config);
+echo $htmlItemCloud->render();

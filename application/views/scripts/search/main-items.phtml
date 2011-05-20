@@ -51,8 +51,6 @@
 Connexions::log('script/search/main-items.phtml');
 $sectionConfig = $this->results['items'];
 
-$this->headLink()->appendStylesheet($this->baseUrl('/css/tagCloud.css'));
-
 $htmlCloud = $this->htmlItemCloud( $sectionConfig );
 
 $count = $htmlCloud->items->getTotalCount();

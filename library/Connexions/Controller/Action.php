@@ -884,11 +884,14 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                     : true);
 
         $sidebar = array(
-            'namespace' => 'sidebar-tab',
-            'async'     => $async,
-            'viewer'    => &$this->_viewer,
-            'users'     => null,
-            'tags'      => &$this->_tags,
+            'namespace'     => 'sidebar-tab',
+            'async'         => $async,
+            'viewer'        => &$this->_viewer,
+            'users'         => null,
+            'tags'          => &$this->_tags,
+            'initialRender' => Connexions::to_bool(
+                                $this->_request->getParam('initialRender',
+                                                          false)),
 
             /* 'items'  SHOULD be set by the main view script to a
              *          Connexions_Model_Set instance representing the set of
@@ -976,6 +979,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         foreach ($sidebar['panes'] as $name => &$pane)
         {
             $params       = $this->_getParams($pane['namespace']);
+            $params['panePartial']  = 'sidebar-'. $name;
             $params['displayStyle'] =
                 $this->_getDisplayStyle($pane['namespace'],
                                         $pane['displayStyle']);

@@ -4,8 +4,6 @@
 @import "uiStars";
 @import "urls";
 
-$displaySortOffset: 5px;
-
 /****** urlItems.sass ****** */
 .columnHeader {
   .itemInfo {
@@ -21,12 +19,6 @@ $displaySortOffset: 5px;
     a, .subTitle {
       font-size: 0.9em;
     }
-  }
-}
-
-.main {
-  .itemScope {
-    clear: both;
   }
 }
 
@@ -168,8 +160,6 @@ $displaySortOffset: 5px;
     }
   }
 }
-
-@import "bookmark";
 
 #urlItemsList {
   .urlItems {

@@ -795,7 +795,10 @@
             if ($spin.length > 0)
             {
                 var url = $spin.attr('src');
-                $spin.attr('src', url.replace('.gif', '-spinner.gif') );
+                if (url.indexOf('-spinner.gif') > 0)
+                {
+                    $spin.attr('src', url.replace('.gif', '-spinner.gif') );
+                }
             }
 
             if ($.fn.bgiframe)
@@ -3810,6 +3813,7 @@ $.widget('connexions.tabs', $.ui.tabs, {
 
         this.xhr = $.ajax( $.extend( {}, o.ajaxOptions, {
             url: url,
+            /*
             beforeSend: function(xhr, textStatus) {
                 if ($.isFunction(o.ajaxOptions.beforeSend))
                 {
@@ -3824,6 +3828,7 @@ $.widget('connexions.tabs', $.ui.tabs, {
                                                 xhr, textStatus);
                 }
             },
+            // */
             success: function( r, s ) {
                 // Connexions panelId {
                 self._getPanel( $a ).html( r );
@@ -3842,10 +3847,10 @@ $.widget('connexions.tabs', $.ui.tabs, {
                                self._ui( self.anchors[ index ],
                                          self.panels[ index ] ) );
 
-                if ($.isFunction(o.ajaxOptions.success))
-                {
-                    o.ajaxOptions.success.call(self.element, r, s);
+                try {
+                    o.ajaxOptions.success( r, s );
                 }
+                catch ( e ) {}
             },
             error: function( xhr, s, e ) {
                 // take care of tab labels
@@ -3855,15 +3860,15 @@ $.widget('connexions.tabs', $.ui.tabs, {
                                self._ui( self.anchors[ index ],
                                           self.panels[ index ] ) );
 
-                if ($.isFunction(o.ajaxOptions.error))
-                {
+                try {
                     /* Passing index avoid a race condition when this method is
                      * called after the user has selected another tab.  Pass
                      * the anchor that initiated this request allows loadError
                      * to manipulate the tab content panel via $(a.hash)
                      */
-                    o.ajaxOptions.error.call( self.element, xhr, s, index, a );
+                    o.ajaxOptions.error( xhr, s, index, a );
                 }
+                catch ( e ) {}
             }
         } ) );
 
@@ -6218,38 +6223,44 @@ $.widget("connexions.pane", {
     reload: function(completionCb) {
         var self    = this;
         var opts    = self.options;
-        var re      = new RegExp(opts.pageVar +'='+ opts.pageCur);
-        var rep     = opts.pageVar +'='+ (opts.page !== null
-                                            ? opts.page
-                                            : opts.pageCur);
         var loc     = window.location;
         var url     = loc.toString();
+        var qSep    = '?';
 
-        if (loc.search.length === 0)
+        if (opts.pageVar !== null)
         {
-            url += '?'+ rep;
-        }
-        else if (! url.match(re))
-        {
-            url += '&'+ rep;
-        }
-        else
-        {
-            url = url.replace(re, rep);
+            var re  = new RegExp(opts.pageVar +'='+ opts.pageCur);
+            var rep = opts.pageVar +'='+ (opts.page !== null
+                                            ? opts.page
+                                            : opts.pageCur);
+            if (loc.search.length === 0)
+            {
+                url += '?'+ rep;
+            }
+            else if (! url.match(re))
+            {
+                url += '&'+ rep;
+            }
+            else
+            {
+                url = url.replace(re, rep);
+            }
+            qSep = '&';
         }
 
         if (opts.hiddenVars !== null)
         {
             // Also include any hidden input values in the URL.
             $.each(opts.hiddenVars, function(name,val) {
-                url += '&'+ name +'='+ val;
+                url += qSep + name +'='+ val;
+                qSep = '&';
             });
         }
 
         if (opts.partial !== null)
         {
             // AJAX reload of just this pane...
-            url += '&format=partial&part='+ opts.partial;
+            url += qSep +'format=partial&part='+ opts.partial;
 
             $.ajax({url:        url,
                     dataType:   'html',
@@ -7161,46 +7172,17 @@ $.widget("connexions.sidebar", {
                     self.$tab.mask();
                 },
                 complete: function() {
-                    // Bind any new displayOptions forms
-                    self._bindReload(self.$tab);
-
                     // Unmask the tab panel area...
                     self.$tab.unmask();
                 }
             }
         });
-
-        // For each asynchronous tab, bind reload events
-        self.element.find('ul:first li a:first').each(function(idex) {
-            var url = $.data(this, 'load.tabs');
-            if (url)
-            {
-                var $tab = self.element.find('.ui-tabs-panel').eq(idex);
-                self._bindReload($tab);
-            }
-        });
-
-        self._bindReload(self.element);
     },
 
     /************************
      * Private methods
      *
      */
-    _bindReload: function(context) {
-        var self    = this;
-
-        context.find('.displayOptions')
-                .dropdownForm('setApplyCb', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    e.stopImmediatePropagation();
-
-                    // Reload the tab contents
-                    self.element.tabs('load',
-                                      self.element.tabs('option', 'selected'));
-                });
-    },
 
     /************************
      * Public methods
@@ -9557,7 +9539,7 @@ $.widget("connexions.bookmark", {
 
         if (self.$dateTagged.length > 0)
         {
-            newStr = self._localizeDate(self.$dateTagged.data('utcDate'),
+            newStr = self._localizeDate(self.$dateTagged.data('utcdate'),
                                         groupBy);
 
             self.$dateTagged.html( newStr );
@@ -9565,7 +9547,7 @@ $.widget("connexions.bookmark", {
 
         if (self.$dateUpdated.length > 0)
         {
-            newStr = self._localizeDate(self.$dateUpdated.data('utcDate'),
+            newStr = self._localizeDate(self.$dateUpdated.data('utcdate'),
                                         groupBy);
 
             self.$dateUpdated.html( newStr );
@@ -9800,8 +9782,8 @@ $.widget("connexions.bookmark", {
         self.$url.attr('href',  data.url);
 
         // Update and localize the dates
-        self.$dateTagged.data( 'utcDate', data.taggedOn  );
-        self.$dateUpdated.data('utcDate', data.updatedOn );
+        self.$dateTagged.data( 'utcdate', data.taggedOn  );
+        self.$dateUpdated.data('utcdate', data.updatedOn );
         self._localizeDates();
 
         // Alter our parent to reflect 'isPrivate'

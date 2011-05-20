@@ -24,33 +24,21 @@ $config   =  (is_array($this->sidebar['panes']) &&
                 : array());
 
 
-if ($this->owner === '*')
+if (($this->sidebar['initialRender'] === true) && ($this->owner === '*'))
 {
-?>
+    ?>
   <div class='columnHeader'>
    <div class='context-bg connexions_sprites user_bg ui-corner-left'>
     &nbsp;
    </div>
    <p>People related to these bookmarks.</p>
   </div>
-  <?php
+    <?php
 }
 
 if ($this->owner !== '*')
 {
-    /* Present information about the single user.
-     *
-     * In order for 'sidebar-user.phtml' to render properly,
-     * 'css/bookmark-users.css' MUST be included.
-     *
-     * NOTE: Since this view scripts is most often included asynchronously,
-     *       this headLink() will NOT effect the containing page.  See
-     *       application/views/scripts/sidebar.phtml where it is
-     *       currently included effectively.
-     *
-     *  $this->headLink()
-     *       ->appendStylesheet( $this->baseUrl('/css/bookmark-users.css'));
-     */
+    // Present information about the single user.
     echo $this->partial('sidebar-user.phtml',
                         array(
                             'user'   => $this->owner,
@@ -143,6 +131,5 @@ else
 {
     // Tag-related users
     $htmlItemCloud = $this->htmlItemCloud($config);
-
     echo $htmlItemCloud->render();
 }

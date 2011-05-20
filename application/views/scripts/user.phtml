@@ -31,9 +31,6 @@ $userUrl       = $this->url(array('controller' => 'index',
                                 'action'     => 'index',
                                 'owner'      => $user->name));
 
-$links         = $this->headLink();
-$links->appendStylesheet($this->baseUrl('/css/users.css'));
-
 $css = array();
 array_push($css, ($isMe ? 'me' : 'other'));
 

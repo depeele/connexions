@@ -73,10 +73,12 @@ function searchResults_onLoad()
     if ($async === true)
     {
         // Load all stylesheets that MAY be used
+        /*
         $this->headLink()
                 ->appendStylesheet($this->baseUrl('/css/bookmarks.css'))
                 ->appendStylesheet($this->baseUrl('/css/tagCloud.css'))
                 ->appendStylesheet($this->baseUrl('/css/users.css'));
+        // */
     }
 
     foreach ($this->results as $section => $sectionConfig)

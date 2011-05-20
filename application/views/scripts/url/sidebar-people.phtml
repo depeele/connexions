@@ -22,7 +22,10 @@ $config   =  (is_array($this->sidebar['panes']) &&
                 : array());
 
 $nTags = count($this->tags);
-?>
+
+if ($this->sidebar['initialRender'] === true)
+{
+    ?>
   <div class='columnHeader'>
    <div class='context-bg connexions_sprites user_bg ui-corner-left'>
     &nbsp;
@@ -45,86 +48,86 @@ $nTags = count($this->tags);
 
     ?></p>
   </div>
-  <?php
+    <?php
+}
 
-    /*
-    Connexions::log("index/sidebar-people.phtml: config[ %s ]",
-                    print_r($config, true));
-    // */
+/*
+Connexions::log("index/sidebar-people.phtml: config[ %s ]",
+                print_r($config, true));
+// */
 
-    $service = Connexions_Service::factory('Model_User');
+$service = Connexions_Service::factory('Model_User');
 
-    $perPage    = $config['perPage'];
-    $page       = $config['page'];
-    if ($perPage < 1)   $perPage = 100;
-    if ($page    < 1)   $page    = 1;
+$perPage    = $config['perPage'];
+$page       = $config['page'];
+if ($perPage < 1)   $perPage = 100;
+if ($page    < 1)   $page    = 1;
 
-    $count      = $perPage;
-    $offset     = ($page - 1) * $perPage;
+$count      = $perPage;
+$offset     = ($page - 1) * $perPage;
 
-    /* Order by userItem/Bookmark count here so the most used will be in the
-     * limited set.  User-requested sorting will be performed later
-     * (in View_Helper_HtmlItemCloud) before the cloud is rendered.
-     *
-     * Best solution would be to weight by 'taggedOn' date:
-     *    SELECT u.*,
-     *           ui.taggedOn,
-     *           uti.userItemCount,
-     *           uti.userCount,
-     *           uti.itemCount,
-     *           uti.tagCount
-     *       FROM user AS u
-     *       INNER JOIN (
-     *          SELECT uti.*,
-     *                 COUNT(DISTINCT uti.userId) AS userCount,
-     *                 COUNT(DISTINCT uti.tagId) AS tagCount,
-     *                 COUNT(DISTINCT uti.itemId) AS itemCount,
-     *                 COUNT(DISTINCT uti.userId,
-     *                 uti.itemId) AS userItemCount
-     *              FROM userTagItem AS uti
-     *              WHERE (uti.itemId IN ( ... )) AND
-     *                    (tagId IN ( ... ))
-     *              GROUP BY userId) AS uti
-     *        ON u.userId=uti.userId
-     *       INNER JOIN (
-     *          SELECT ui.taggedOn
-     *              FROM userItem AS ui
-     *              WHERE (ui.itemId IN ( ... ))
-     *              GROUP BY userId) AS ui
-     *        ON u.userId=ui.userId;
-     *
-     */
-    $fetchOrder = array('totalItems DESC',
-                        'totalTags  DESC',
-                        'tagCount   DESC',
-                        'name       ASC');
+/* Order by userItem/Bookmark count here so the most used will be in the
+ * limited set.  User-requested sorting will be performed later
+ * (in View_Helper_HtmlItemCloud) before the cloud is rendered.
+ *
+ * Best solution would be to weight by 'taggedOn' date:
+ *    SELECT u.*,
+ *           ui.taggedOn,
+ *           uti.userItemCount,
+ *           uti.userCount,
+ *           uti.itemCount,
+ *           uti.tagCount
+ *       FROM user AS u
+ *       INNER JOIN (
+ *          SELECT uti.*,
+ *                 COUNT(DISTINCT uti.userId) AS userCount,
+ *                 COUNT(DISTINCT uti.tagId) AS tagCount,
+ *                 COUNT(DISTINCT uti.itemId) AS itemCount,
+ *                 COUNT(DISTINCT uti.userId,
+ *                 uti.itemId) AS userItemCount
+ *              FROM userTagItem AS uti
+ *              WHERE (uti.itemId IN ( ... )) AND
+ *                    (tagId IN ( ... ))
+ *              GROUP BY userId) AS uti
+ *        ON u.userId=uti.userId
+ *       INNER JOIN (
+ *          SELECT ui.taggedOn
+ *              FROM userItem AS ui
+ *              WHERE (ui.itemId IN ( ... ))
+ *              GROUP BY userId) AS ui
+ *        ON u.userId=ui.userId;
+ *
+ */
+$fetchOrder = array('totalItems DESC',
+                    'totalTags  DESC',
+                    'tagCount   DESC',
+                    'name       ASC');
 
-    /* Locate all people associated with the current item and ALL specified
-     * tags.
-     */
-    $to = array('items' => $this->item);
-    if ($nTags > 0)
-    {
-        $to['tags']      = $this->tags;
-        //$to['exactTags'] = true;
-    }
+/* Locate all people associated with the current item and ALL specified
+ * tags.
+ */
+$to = array('items' => $this->item);
+if ($nTags > 0)
+{
+    $to['tags']      = $this->tags;
+    //$to['exactTags'] = true;
+}
 
-    $people = $service->fetchRelated( $to,
-                                      $fetchOrder,
-                                      $count,
-                                      $offset );
+$people = $service->fetchRelated( $to,
+                                  $fetchOrder,
+                                  $count,
+                                  $offset );
 
-    $config['items']            =& $people;
-    //$config['selected']         =& $this->tags;
-    $config['weightName']       = 'totalItems';
-    $config['weightTitle']      = 'Total Bookmarks';
-    //$config['titleTitle']       = 'User';
-    $config['itemType']         =  View_Helper_HtmlItemCloud::ITEM_TYPE_USER;
-    $config['currentSortBy']    =  View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
-    $config['currentSortOrder'] =  Connexions_Service::SORT_DIR_DESC;
+$config['items']            =& $people;
+//$config['selected']         =& $this->tags;
+$config['weightName']       = 'totalItems';
+$config['weightTitle']      = 'Total Bookmarks';
+//$config['titleTitle']       = 'User';
+$config['itemType']         =  View_Helper_HtmlItemCloud::ITEM_TYPE_USER;
+$config['currentSortBy']    =  View_Helper_HtmlItemCloud::SORT_BY_WEIGHT;
+$config['currentSortOrder'] =  Connexions_Service::SORT_DIR_DESC;
 
-    //unset($config['weightName']);
+//unset($config['weightName']);
 
-    $htmlItemCloud = $this->htmlItemCloud($config);
-
-    echo $htmlItemCloud->render();
+$htmlItemCloud = $this->htmlItemCloud($config);
+echo $htmlItemCloud->render();

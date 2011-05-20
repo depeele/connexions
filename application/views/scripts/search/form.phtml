@@ -10,7 +10,7 @@ $navMenu = $this->navMenu(false)->disableSearchContext('same');
 
 $this->headTitle("Search");
 $jQuery = $this->jQuery();
-$jQuery->addStylesheet($this->baseUrl('css/search.css'))
+$jQuery->addStylesheet($this->baseUrl('css/search.min.css'))
        ->addOnLoad('$("#simple-search form").validationForm({'
                    .    'submitSelector:"button[name=submit]"});');
 

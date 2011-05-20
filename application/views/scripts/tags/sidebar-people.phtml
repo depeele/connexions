@@ -18,16 +18,18 @@ $config   =  (is_array($this->sidebar['panes']) &&
                 ? $this->sidebar['panes'][$paneName]
                 : array());
 
-?>
+if ($this->sidebar['initialRender'] === true)
+{
+    ?>
   <div class='columnHeader'>
    <div class='context-bg connexions_sprites user_bg ui-corner-left'>
     &nbsp;
    </div>
    <p>People who also used one or more of these tags.</p>
   </div>
-  <?php
+    <?php
+}
 
-    // Tag-related users
-    $htmlItemCloud = $this->htmlItemCloud($config);
-
-    echo $htmlItemCloud->render();
+// Tag-related users
+$htmlItemCloud = $this->htmlItemCloud($config);
+echo $htmlItemCloud->render();
