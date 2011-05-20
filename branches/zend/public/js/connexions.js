@@ -795,7 +795,10 @@
             if ($spin.length > 0)
             {
                 var url = $spin.attr('src');
-                $spin.attr('src', url.replace('.gif', '-spinner.gif') );
+                if (url.indexOf('-spinner.gif') > 0)
+                {
+                    $spin.attr('src', url.replace('.gif', '-spinner.gif') );
+                }
             }
 
             if ($.fn.bgiframe)

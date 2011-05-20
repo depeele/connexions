@@ -33,8 +33,6 @@
 Connexions::log('script/search/main-people.phtml');
 $sectionConfig = $this->results['people'];
 
-$this->headLink()->appendStylesheet($this->baseUrl('/css/users.css'));
-
 $htmlUsers = $this->htmlUsers($sectionConfig);
 
 $count = $htmlUsers->users->getTotalCount();

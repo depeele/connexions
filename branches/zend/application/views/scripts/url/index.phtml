@@ -62,9 +62,6 @@ $htmlItemScope = $this->htmlItemScope( array(
                     ),
                  ));
 
-$links = $this->headLink();
-$links->appendStylesheet($this->baseUrl('css/bookmarks.css'));
-
 $firstBookmark = $htmlBookmarks->paginator->getItem(0);
  
 #$itemBaseUrl = preg_replace('#([^:]+://[^/]+).*$#', '$1', $this->item->url);

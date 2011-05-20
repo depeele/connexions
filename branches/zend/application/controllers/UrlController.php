@@ -11,8 +11,6 @@ class UrlController extends Connexions_Controller_Action
     // Bootstrap resources to make directly available
     public  $dependencies = array('db','layout');
 
-    protected $_noSidebar   = true;
-
     protected   $_url       = null;
     protected   $_tags      = null;
 
@@ -63,6 +61,10 @@ class UrlController extends Connexions_Controller_Action
                             . "redirect using url hash[ %s ]",
                             $this->_urlHash);
             // */
+
+            // Use a flash message to pass the original, unhashed URL
+            $flash = $this->_helper->flashMessenger;
+            $flash->addMessage( "url:{$url}" );
 
             return $this->_helper->redirector
                                     ->setGotoRoute(array('url',
@@ -130,10 +132,30 @@ class UrlController extends Connexions_Controller_Action
 
     public function chooseAction()
     {
-        // Nothing much to do -- let the view script render...
-        Connexions::log('UrlController::chooseAction');
-        //$this->_noFormatHandling = true;
+        $url   = $this->_request->getParam('url', null);
+
+        // See if the unhash url has been communicated via flash message
+        $flash = $this->_helper->flashMessenger;
+        if ($flash->hasMessages())
+        {
+            $messages = $flash->getMessages();
+            foreach ($messages as $msg)
+            {
+                if (preg_match('/^url:(.*)$/i', $msg, $matches))
+                {
+                    $url = $matches[1];
+                    break;
+                }
+            }
+        }
+
+        /*
+        Connexions::log('UrlController::chooseAction: url[ %s ]',
+                        $url);
+        // */
+
         $this->_noSidebar = true;
+        $this->view->url  = $url;
     }
 
     /** @brief Redirect all other actions to 'index'

@@ -1,15 +1,8 @@
 <?php
-//$this->headLink()->appendStylesheet($this->baseUrl('css/auth.css'));
-//
 $this->headTitle('Join');
 
 $jQuery = $this->jQuery();
-$jQuery->addStylesheet($this->baseUrl('css/auth.css'))
-       /*
-       ->addStylesheet($this->baseUrl('css/validationForm.css'))
-       ->addJavascriptFile($this->baseUrl('js/ui.button.min.js'))
-       ->addJavascriptFile($this->baseUrl('js/ui.input.min.js'))
-       */
+$jQuery->addStylesheet($this->baseUrl('css/auth.min.css'))
        ->addOnLoad('authRegister_onLoad();')
        ->javascriptCaptureStart();
 ?>

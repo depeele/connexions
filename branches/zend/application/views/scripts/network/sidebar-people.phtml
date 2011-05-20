@@ -24,45 +24,44 @@ $config   =  (is_array($this->sidebar['panes']) &&
                 : array());
 
 
-$viewer = $this->viewer;    //$config->viewer;
-$owner  = $this->owner;     //$config->owner;
-
-$label = 'People in ';
-$edit  = '';
-if ($viewer->isSame($owner))
+if ($this->sidebar['initialRender'] === true)
 {
-    $label .= 'your network';
+    $viewer = $this->viewer;    //$config->viewer;
+    $owner  = $this->owner;     //$config->owner;
 
-    $url    = $this->baseUrl('settings/people/network');
-    $edit   = "<span class='edit'>"
-            .   "(<a href='{$url}'>edit your network</a>)"
-            . "</span>";
-}
-else
-{
-    $label .= 'the network of '. $owner;
-}
+    $label = 'People in ';
+    $edit  = '';
+    if ($viewer->isSame($owner))
+    {
+        $label .= 'your network';
 
-if (count($this->tags) > 0)
-{
-    $label .= 'related to these bookmarks';
-}
+        $url    = $this->baseUrl('settings/people/network');
+        $edit   = "<span class='edit'>"
+                .   "(<a href='{$url}'>edit your network</a>)"
+                . "</span>";
+    }
+    else
+    {
+        $label .= 'the network of '. $owner;
+    }
 
-?>
+    if (count($this->tags) > 0)
+    {
+        $label .= 'related to these bookmarks';
+    }
+
+    ?>
   <div class='columnHeader'>
    <div class='context-bg connexions_sprites user_bg ui-corner-left'>
     &nbsp;
    </div>
-   <?php
+    <?php
     echo "<p>", $label , ".{$edit}</p>\n";
-  ?>
+    ?>
   </div>
-  <?php
+    <?php
+}
 
-    // Tag-related users
-    Connexions::log("network/sidebar-people.phtml: config[ %s ]",
-                    Connexions::varExport($config));
-
-    $htmlItemCloud = $this->htmlItemCloud($config);
-
-    echo $htmlItemCloud->render();
+// Tag-related users
+$htmlItemCloud = $this->htmlItemCloud($config);
+echo $htmlItemCloud->render();

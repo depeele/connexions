@@ -1,10 +1,8 @@
 <?php
-//$this->headLink()->appendStylesheet(Connexions::url('/css/auth.css'));
-//$this->headLink()->appendStylesheet($this->baseUrl('css/auth.css'));
 $this->headTitle('Sign In');
 
 $jQuery = $this->jQuery();
-$jQuery->addStylesheet($this->baseUrl('css/auth.css'))
+$jQuery->addStylesheet($this->baseUrl('css/auth.min.css'))
        ->addOnLoad('$("#auth form").validationForm({'
                    .    'submitSelector:"button[name=method]",'
                    .    'disableSubmitOnUnchanged:false});');

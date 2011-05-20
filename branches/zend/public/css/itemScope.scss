@@ -2,6 +2,7 @@ $itemCountWidth: $countBoxWidth + 10px;
 
 /* ****** itemScope.scss ****** */
 .itemScope {
+  clear:  both;
   a {
     color: $navColor;
   }

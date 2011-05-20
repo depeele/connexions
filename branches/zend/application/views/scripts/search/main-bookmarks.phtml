@@ -33,8 +33,6 @@
 Connexions::log('script/search/main-bookmarks.phtml');
 $sectionConfig = $this->results['bookmarks'];
 
-$this->headLink()->appendStylesheet($this->baseUrl('/css/bookmarks.css'));
-
 $htmlBookmarks = $this->htmlBookmarks($sectionConfig);
 
 $count = $htmlBookmarks->bookmarks->getTotalCount();
