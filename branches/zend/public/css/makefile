@@ -7,6 +7,7 @@ YUI_COMP	= yui-compressor
 
 all: connexions.min.css post.min.css auth.min.css 		\
 	url-choose.min.css search.min.css settings.min.css 	\
+	help.min.css						\
 	ie.min.css ie8.min.css 					\
 	themes/connexions/jquery-ui.min.css
 
@@ -59,6 +60,10 @@ settings.css: settings.scss sizes.scss colors.scss mixins.scss urls.scss \
 		sprites.scss jquery_Jcrop.scss ui-fileUploader.scss users.scss
 	sass -t compact settings.scss:settings.css
 
+help.css: help.scss sizes.scss colors.scss mixins.scss urls.scss \
+		sprites.scss
+	sass -t compact help.scss:help.css
+
 ie.scss:	sizes.scss colors.scss
 
 ie8.scss:	sizes.scss colors.scss
@@ -67,6 +72,7 @@ ie8.scss:	sizes.scss colors.scss
 clean:
 	rm -f connexions*.css post*.css auth*.css	\
 	      url-choose*.css search*.css settings*.css \
+	      help*.css 				\
 	      ie*.css 					\
 	      themes/connexions/jquery-ui.min.css
 
