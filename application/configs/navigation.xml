@@ -132,12 +132,12 @@
      <controller>help</controller>
      <action>index</action>
      <pages>
-      <center>
-       <label>Help Center</label>
+      <about>
+       <label>About</label>
        <controller>help</controller>
-       <action>index</action>
+       <action>about</action>
        <class>global</class>
-      </center>
+      </about>
       <basics>
        <label>Basics</label>
        <controller>help</controller>
@@ -150,12 +150,12 @@
        <action>developer</action>
        <class>global</class>
       </developer>
-      <about>
-       <label>About</label>
+      <explore>
+       <label>Explore</label>
        <controller>help</controller>
-       <action>about</action>
+       <action>index</action>
        <class>global sub-last</class>
-      </about>
+      </explore>
      </pages>
     </help>
   <!-- Navigation menu } ***************************** -->
