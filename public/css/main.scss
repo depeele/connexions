@@ -33,6 +33,14 @@
 //  position:   relative
 //  top:        1px
 
+body {
+  background-color:   $themeDark;
+
+  .page {
+    background-color: $pageColorBackground;
+  }
+}
+
 /* Page Header */
 #pageHeader {
   h1#siteName {
@@ -85,7 +93,7 @@
 /* Page Footer */
 #pageFooter {
   clear:            both;
-  margin:           1em 0 0;
+  margin:           4em 0 0;
   background-color: $themeDark;
   //border-top:     unquote("1px solid") $borderColor;
   z-index:        1;
