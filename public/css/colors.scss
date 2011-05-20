@@ -1,6 +1,6 @@
 $lightest:            #fff;
 $darkest:             #172322;
-$themeDark:           #1b2726;
+$themeDark:           #182524;  //#1b2726;
 $themeWaveLight:      #222d2c;
 
 $pageColorBackground: $lightest;
@@ -34,6 +34,7 @@ $navColorSelected:            #b0d730;
 $navColorSub:                 #2786c2;
 $navColorSubHover:            #7fcdfe;
 $navColorBorder:              #666;
+$navBg:                       $navColorBackground unquote("url(themes/connexions/images/ui-bg_gloss-wave_10_172322_500x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/");
 
 $groupHeaderColorBackground:  #edf4fb;        //#eef;
 $groupHeaderColor:            $controlColor;
