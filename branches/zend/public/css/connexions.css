@@ -255,6 +255,8 @@ a:visited { color: #005a9c; }
 
 .people_bg, .network_bg { background-position: -150px -74px; width: 48px; height: 48px; }
 
+.help_bg { background-position: -200px -74px; width: 48px; height: 48px; }
+
 .bookmark_bg { background-position: -100px -123px; width: 48px; height: 48px; }
 
 .user_bg { background-position: -150px -123px; width: 48px; height: 48px; }
@@ -891,6 +893,9 @@ a:visited { color: #005a9c; }
 .rightCol .single-user .users .person .data .control .item-add-none { position: relative; left: auto; }
 
 /****** main.scss ****** */
+body { background-color: #182524; }
+body .page { background-color: white; }
+
 /* Page Header */
 #pageHeader h1#siteName { position: absolute; top: -26px; left: 0; color: black; font-weight: bold; font-size: 26px; padding: 0 0 0 13px; }
 #pageHeader h1#siteName a { display: block; width: 175px; }
@@ -906,7 +911,7 @@ a:visited { color: #005a9c; }
 #notifications { display: block; position: absolute; top: 2.5em; right: 0.25em; z-index: 99999; }
 
 /* Page Footer */
-#pageFooter { clear: both; margin: 1em 0 0; background-color: #182524; z-index: 1; height: 200px; }
+#pageFooter { clear: both; margin: 4em 0 0; background-color: #182524; z-index: 1; height: 200px; }
 #pageFooter .footer-nav { background: #182524 url(themes/connexions/images/ui-bg_gloss-wave_10_172322_500x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/; color: white; padding: 1em; height: 100px; }
 #pageFooter .footer-nav li { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; vertical-align: middle; padding: 0; margin: 0 0.5em; }
 #pageFooter .footer-nav li a { color: white; }
