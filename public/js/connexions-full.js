@@ -9752,7 +9752,7 @@ $.widget("connexions.bookmark", {
             var tagHtml = '';
 
             $.each(data.tags, function() {
-                tagHtml += self.tagTmpl.replace(/%tag%/g, this.tag);
+                tagHtml += self.tagTmpl.replace(/%tag%/g, this);
             });
 
             // Replace the existing tags with the new.
