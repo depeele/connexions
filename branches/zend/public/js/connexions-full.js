@@ -3812,24 +3812,8 @@ $.widget('connexions.tabs', $.ui.tabs, {
         }
 
         this.xhr = $.ajax( $.extend( {}, o.ajaxOptions, {
-            url: url,
-            /*
-            beforeSend: function(xhr, textStatus) {
-                if ($.isFunction(o.ajaxOptions.beforeSend))
-                {
-                    o.ajaxOptions.beforeSend.call(self.element,
-                                                  xhr, textStatus);
-                }
-            },
-            complete: function(xhr, textStatus) {
-                if ($.isFunction(o.ajaxOptions.complete))
-                {
-                    o.ajaxOptions.complete.call(self.element,
-                                                xhr, textStatus);
-                }
-            },
-            // */
-            success: function( r, s ) {
+            url:        url,
+            success:    function( r, s ) {
                 // Connexions panelId {
                 self._getPanel( $a ).html( r );
                 //self.element.find( self._sanitizeSelector( a.hash ) ).html(r);
@@ -3852,7 +3836,7 @@ $.widget('connexions.tabs', $.ui.tabs, {
                 }
                 catch ( e ) {}
             },
-            error: function( xhr, s, e ) {
+            error:      function( xhr, s, e ) {
                 // take care of tab labels
                 self._cleanup();
 
