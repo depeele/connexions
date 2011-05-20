@@ -84,11 +84,51 @@
 
 /* Page Footer */
 #pageFooter {
-  clear: both;
-  margin-top: 1em;
-  border-top: unquote("1px solid") $borderColor;
-  padding: 0.5em;
-  z-index: 1;
+  clear:            both;
+  margin:           1em 0 0;
+  background-color: $themeDark;
+  //border-top:     unquote("1px solid") $borderColor;
+  z-index:        1;
+  height:         200px;
+
+  // Footer navigation
+  .footer-nav {
+    background:   $navBg;
+    color:        $navColor;
+    padding:      1em;
+    height:       100px;
+  
+    li {
+      @include inlineBlock();
+      vertical-align: middle;
+      padding:        0;
+      margin:         0 0.5em;
+  
+      a {
+        color:        $navColor;
+      }
+      img {
+        @include inlineBlock();
+        vertical-align: middle;
+        height:         1.5em;
+      }
+      span {
+        @include inlineBlock();
+        vertical-align: middle;
+      }
+    }
+  
+    .org {
+      position: absolute;
+      right:    0.5em;
+    }
+  
+    .sep {
+      font-size:    1.2em;
+      font-weight:  bold;
+      margin:       0;
+    }
+  }
 }
 
 // Without Navigation

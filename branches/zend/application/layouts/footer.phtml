@@ -1,4 +1,61 @@
+<?php
+
+$baseUrl = $this->baseUrl();
+$config  = Connexions::getConfig();
+$contact = $config->contact;
+
+?>
   <div id="pageFooter" class="foot" role="banner">
+   <ul class='footer-nav'>
+    <li class='icon'
+            ><img src='<?= $this->baseUrl('/images/logo.png') ?>'
+                  title='connexions' /></li>
+    <li class='internal'
+            ><a href='<?= $this->baseUrl('/help/about') ?>'>About</a></li>
+    <li class='sep'>&middot;</li>
+    <li class='internal'
+            ><a href='<?= $this->baseUrl('/help') ?>'>Help</a></li>
+    <li class='sep'>&middot;</li>
+    <li class='internal'
+            ><a href='<?= $this->baseUrl('/help/api') ?>'>API</a></li>
+    <li class='sep'>&middot;</li>
+    <?php
+    if ($contact->services)
+    {
+        $nServices = count($contact->services);
+        $idex      = 0;
+        foreach ($contact->services as $name => $url)
+        {
+            ?>
+    <li class='external'
+            ><a href='<?= $url ?>'><?= ucfirst($name) ?></a></li>
+            <?php
+
+            if (++$idex < $nServices)
+            {
+                ?>
+    <li class='sep'>&middot;</li>
+                <?php
+            }
+        }
+    }
+
+    if ($contact->org)
+    {
+        $img = ($contact->org->img
+                    ? "<img src='{$contact->org->img}' />"
+                    : "");
+
+        ?>
+    <li class='org'
+            ><a href='<?= $contact->org->url ?>'
+                ><?= $img ?><span class='name'
+                ><?= $contact->org->name ?></span></a></li>
+        <?php
+    }
+    ?>
+   </ul>
+
    <?= $this->HtmlDbProfile() ?>
   </div>
  </div><!-- page } -->
