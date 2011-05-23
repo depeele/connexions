@@ -42,6 +42,10 @@ class Service_Item extends Service_Base
                            'uti.userItemCount DESC',
                            'i.urlHash         ASC');
         }
+        else
+        {
+            $order = $this->_csOrder2array($order);
+        }
 
         $to = array('users'      => $users,
                     'exactUsers' => $exact);
@@ -76,6 +80,10 @@ class Service_Item extends Service_Base
                            'uti.userItemCount DESC',
                            'i.urlHash         ASC');
         }
+        else
+        {
+            $order = $this->_csOrder2array($order);
+        }
 
         $to = array('tags'      => $tags,
                     'exactTags' => $exact);
@@ -94,8 +102,8 @@ class Service_Item extends Service_Base
      *  @param  exactTags   Items MUST be associated with ALL provided tags
      *                      [ true ];
      *  @param  order       Optional ORDER clause (string, array)
-     *                      [ 'tagCount DESC, userCount DESC, 
-     *                         userItemCount DESC, urlHash ASC' ];
+     *                      [ 'userItemCount DESC, userCount DESC, 
+     *                         tagCount DESC, urlHash ASC' ];
      *  @param  count       Optional LIMIT count
      *  @param  offset      Optional LIMIT offset
      *
@@ -110,10 +118,16 @@ class Service_Item extends Service_Base
                                         $offset     = null)
     {
         if ($order === null)
+        {
             $order = array('uti.userItemCount DESC',
                            'uti.userCount     DESC',
                            'uti.tagCount      DESC',
                            'i.urlHash         ASC');
+        }
+        else
+        {
+            $order = $this->_csOrder2array($order);
+        }
 
         $to = array('users'      => $users,
                     'tags'       => $tags,
@@ -148,7 +162,14 @@ class Service_Item extends Service_Base
             $item   = $this->_mapper->find( $normId );
         }
         else
+        {
             $item = $id;
+        }
+
+        if ($order !== null)
+        {
+            $order = $this->_csOrder2array($order);
+        }
 
         return $this->_mapper->fetchSimilar($item,
                                             $order,

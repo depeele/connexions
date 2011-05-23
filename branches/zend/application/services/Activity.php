@@ -25,7 +25,7 @@ class Service_Activity extends Connexions_Service
      *                  the target Domain Model and the directions a
      *                  Connexions_Service::SORT_DIR_* constant.  If an order
      *                  is omitted, Connexions_Service::SORT_DIR_ASC will be
-     *                  used [ no specified order ];
+     *                  used [ $this->_defaultOrdering ];
      *  @param  count   The maximum number of items from the full set of
      *                  matching items that should be returned
      *                  [ null == all ];
@@ -53,10 +53,11 @@ class Service_Activity extends Connexions_Service
 
         /*
         Connexions::log("Connexions_Service::fetch() "
-                        . "id[ %s ], ids[ %s ], normIds[ %s ]",
+                        . "id[ %s ], ids[ %s ], normIds[ %s ], order[ %s ]",
                         Connexions::varExport($id),
                         Connexions::varExport($ids),
-                        Connexions::varExport($normIds));
+                        Connexions::varExport($normIds),
+                        Connexions::varExport($order));
         // */
 
         return $this->_mapper->fetch( $normIds,
@@ -70,10 +71,7 @@ class Service_Activity extends Connexions_Service
      *  @param  users   A Model_Set_User instance, array, or comma-separated
      *                  string of users to match.
      *  @param  order   Optional ORDER clause (string, array)
-     *                      [ [ 'taggedOn      DESC',
-     *                          'name          ASC',
-     *                          'userCount     DESC',
-     *                          'tagCount      DESC' ] ]
+     *                  [ $this->_defaultOrdering ];
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
      *  @param  since   Limit the results to activities that occurred after

@@ -5,8 +5,36 @@
 @import "sprites";
 
 #help {
-}
-#help-faq {
+  h3 {
+    color:          $linkColor;
+    padding:        1em 0 0;
+    font-weight:    bold;
+    border-bottom:  unquote("1px solid") $borderColor;
+  }
+  ul {
+    padding:        0;
+  }
+
+  .figure {
+    @include  inlineBlock();
+    margin:   0.5em 2em;
+    padding:  1em;
+    border:   unquote("1px dotted") $borderColor;
+    @include  corners(1em);
+    background-color: $lightestGrey;
+
+    img {
+      max-width:    800px;
+
+      @include      corners(1em);
+      margin-left:  auto;
+      margin-right: auto;
+    }
+    .caption {
+      padding:  0.5em 1em;
+    }
+  }
+
   .collapsable {
     .toggle {
       color:            $linkColor;
@@ -25,6 +53,25 @@
       p {
         padding:  0;
       }
+    }
+  }
+
+  .continued {
+    padding-bottom: 0;
+  }
+
+  .help-content {
+    ul {
+      padding-left: 1em;
+
+      li {
+        list-style:   disc;
+        margin:       0.5em 1em;
+      }
+    }
+
+    .outer {
+      padding-left: 2em;
     }
   }
 }

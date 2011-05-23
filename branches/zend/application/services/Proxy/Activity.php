@@ -14,7 +14,7 @@ class Service_Proxy_Activity extends Connexions_Service_Proxy
      *                  the target Domain Model and the directions a
      *                  Connexions_Service::SORT_DIR_* constant.  If an order
      *                  is omitted, Connexions_Service::SORT_DIR_ASC will be
-     *                  used [ no specified order ];
+     *                  used [ 'time DESC' ];
      *  @param  count   The maximum number of items from the full set of
      *                  matching items that should be returned
      *                  [ null == all ];
@@ -26,9 +26,9 @@ class Service_Proxy_Activity extends Connexions_Service_Proxy
      *  @return A new Connexions_Model_Set.
      */
     public function fetch($id       = null,
-                          $order    = null,
-                          $count    = null,
-                          $offset   = null,
+                          $order    = 'time DESC',
+                          $count    = 50,
+                          $offset   = 0,
                           $since    = null)
     {
         return $this->_service->fetch($id,
@@ -42,10 +42,7 @@ class Service_Proxy_Activity extends Connexions_Service_Proxy
      *  @param  users   A Model_Set_User instance, array, or comma-separated
      *                  string of users to match.
      *  @param  order   Optional ORDER clause (string, array)
-     *                      [ [ 'taggedOn      DESC',
-     *                          'name          ASC',
-     *                          'userCount     DESC',
-     *                          'tagCount      DESC' ] ]
+     *                  [ 'time DESC' ];
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
      *  @param  since   Limit the results to activities that occurred after
@@ -54,9 +51,9 @@ class Service_Proxy_Activity extends Connexions_Service_Proxy
      *  @return A new Model_Set_Activity instance.
      */
     public function fetchByUsers($users,
-                                 $order   = null,
-                                 $count   = null,
-                                 $offset  = null,
+                                 $order    = 'time DESC',
+                                 $count    = 50,
+                                 $offset   = 0,
                                  $since   = null)
     {
         return $this->_service->fetchByUsers($users,

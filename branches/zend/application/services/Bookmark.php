@@ -251,7 +251,7 @@ class Service_Bookmark extends Service_Base
      *                  the target Domain Model and the directions a
      *                  Connexions_Service::SORT_DIR_* constant.  If an order
      *                  is omitted, Connexions_Service::SORT_DIR_ASC will be
-     *                  used [ no specified order ];
+     *                  used [ $this->_defaultOrdering ];
      *  @param  count   The maximum number of items from the full set of
      *                  matching items that should be returned
      *                  [ null == all ];
@@ -291,12 +291,13 @@ class Service_Bookmark extends Service_Base
             $normIds['+|userId'] = $user->userId;
         }
 
-        /*
+        // /*
         Connexions::log("Service_Bookmark::fetch() "
-                        . "id[ %s ], ids[ %s ], normIds[ %s ]",
+                        . "id[ %s ], ids[ %s ], normIds[ %s ], order[ %s ]",
                         Connexions::varExport($id),
                         Connexions::varExport($ids),
-                        Connexions::varExport($normIds));
+                        Connexions::varExport($normIds),
+                        Connexions::varExport($order));
         // */
 
         return $this->_mapper->fetch( $normIds,
@@ -313,7 +314,7 @@ class Service_Bookmark extends Service_Base
      *                  the target Domain Model and the directions a
      *                  Connexions_Service::SORT_DIR_* constant.  If an order
      *                  is omitted, Connexions_Service::SORT_DIR_ASC will be
-     *                  used [ no specified order ];
+     *                  used [ $this->_defaultOrdering ];
      *  @param  since   Limit the results to bookmarks updated after this
      *                  date/time [ null == no time limits ];
      *
@@ -357,10 +358,7 @@ class Service_Bookmark extends Service_Base
      *  @param  exact   Bookmarks MUST be associated with provided tags
      *                  [ true ];
      *  @param  order   Optional ORDER clause (string, array)
-     *                      [ [ 'tagCount      DESC',
-     *                          'taggedOn      DESC',
-     *                          'name          ASC',
-     *                          'userCount     DESC' ] ]
+     *                  [ $_defaultOrdering ];
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
      *  @param  since   Limit the results to bookmarks updated after this
@@ -375,10 +373,11 @@ class Service_Bookmark extends Service_Base
                                 $offset  = null,
                                 $since   = null)
     {
-        $to = array('tags'      => $tags,
-                    'exactTags' => $exact,
-                    // Include any time limits
-                    'where'     => $this->_includeSince(array(), $since) );
+        $order = $this->_csOrder2array($order);
+        $to    = array('tags'      => $tags,
+                       'exactTags' => $exact,
+                       // Include any time limits
+                       'where'     => $this->_includeSince(array(), $since) );
 
         return $this->fetchRelated( $to,
                                     $order,
@@ -390,10 +389,7 @@ class Service_Bookmark extends Service_Base
      *  @param  users   A Model_Set_User instance, array, or comma-separated
      *                  string of users to match.
      *  @param  order   Optional ORDER clause (string, array)
-     *                      [ [ 'taggedOn      DESC',
-     *                          'name          ASC',
-     *                          'userCount     DESC',
-     *                          'tagCount      DESC' ] ]
+     *                  [ $_defaultOrdering ];
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
      *  @param  since   Limit the results to bookmarks updated after this
@@ -407,10 +403,11 @@ class Service_Bookmark extends Service_Base
                                  $offset  = null,
                                  $since   = null)
     {
-        $to = array('users'      => $users,
-                    'exactUsers' => false,  // userCount doesn't matter
-                    // Include any time limits
-                    'where'      => $this->_includeSince(array(), $since) );
+        $order = $this->_csOrder2array($order);
+        $to    = array('users'      => $users,
+                       'exactUsers' => false,  // userCount doesn't matter
+                       // Include any time limits
+                       'where'      => $this->_includeSince(array(), $since) );
 
         return $this->fetchRelated( $to,
                                     $order,
@@ -422,10 +419,7 @@ class Service_Bookmark extends Service_Base
      *  @param  items   A Model_Set_Item instance, array, or comma-separated
      *                  string of items to match.
      *  @param  order   Optional ORDER clause (string, array)
-     *                      [ [ 'taggedOn      DESC',
-     *                          'name          ASC',
-     *                          'userCount     DESC',
-     *                          'tagCount      DESC' ] ]
+     *                  [ $_defaultOrdering ];
      *  @param  count   Optional LIMIT count
      *  @param  offset  Optional LIMIT offset
      *  @param  since   Limit the results to bookmarks updated after this
@@ -439,10 +433,11 @@ class Service_Bookmark extends Service_Base
                                  $offset  = null,
                                  $since   = null)
     {
-        $to = array('items'      => $items,
-                    'exactItems' => false,  // itemCount doesn't matter
-                    // Include any time limits
-                    'where'      => $this->_includeSince(array(), $since) );
+        $order = $this->_csOrder2array($order);
+        $to    = array('items'      => $items,
+                       'exactItems' => false,  // itemCount doesn't matter
+                       // Include any time limits
+                       'where'      => $this->_includeSince(array(), $since) );
 
         return $this->fetchRelated( $to,
                                     $order,
@@ -460,10 +455,7 @@ class Service_Bookmark extends Service_Base
      *  @param  exactTags   Bookmarks MUST be associated with provided tags
      *                      [ true ];
      *  @param  order       Optional ORDER clause (string, array)
-     *                      [ [ 'taggedOn      DESC',
-     *                          'name          ASC',
-     *                          'userCount     DESC',
-     *                          'tagCount      DESC' ] ]
+     *                      [ $_defaultOrdering ];
      *  @param  count       Optional LIMIT count
      *  @param  offset      Optional LIMIT offset
      *  @param  since       Limit the results to bookmarks updated after this
@@ -480,12 +472,13 @@ class Service_Bookmark extends Service_Base
                                         $offset     = null,
                                         $since      = null)
     {
-        $to = array('users'      => $users,
-                    'tags'       => $tags,
-                    'exactUsers' => $exactUsers,
-                    'exactTags'  => $exactTags,
-                    // Include any time limits
-                    'where'      => $this->_includeSince(array(), $since) );
+        $order = $this->_csOrder2array($order);
+        $to    = array('users'      => $users,
+                       'tags'       => $tags,
+                       'exactUsers' => $exactUsers,
+                       'exactTags'  => $exactTags,
+                       // Include any time limits
+                       'where'      => $this->_includeSince(array(), $since) );
 
         return $this->fetchRelated( $to,
                                     $order,
@@ -501,10 +494,7 @@ class Service_Bookmark extends Service_Base
      *  @param  exactTags   Bookmarks MUST be associated with provided tags
      *                      [ true ];
      *  @param  order       Optional ORDER clause (string, array)
-     *                      [ [ 'taggedOn      DESC',
-     *                          'name          ASC',
-     *                          'userCount     DESC',
-     *                          'tagCount      DESC' ] ]
+     *                      [ $_defaultOrdering ];
      *  @param  count       Optional LIMIT count
      *  @param  offset      Optional LIMIT offset
      *  @param  since       Limit the results to bookmarks updated after this
@@ -520,12 +510,13 @@ class Service_Bookmark extends Service_Base
                                         $offset  = null,
                                         $since   = null)
     {
-        $to = array('items'      => $items,
-                    'tags'       => $tags,
-                    'exactItems' => false,  // itemCount doesn't matter
-                    'exactTags'  => $exact,
-                    // Include any time limits
-                    'where'      => $this->_includeSince(array(), $since) );
+        $order = $this->_csOrder2array($order);
+        $to    = array('items'      => $items,
+                       'tags'       => $tags,
+                       'exactItems' => false,  // itemCount doesn't matter
+                       'exactTags'  => $exact,
+                       // Include any time limits
+                       'where'      => $this->_includeSince(array(), $since) );
 
         return $this->fetchRelated( $to,
                                     $order,

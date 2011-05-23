@@ -48,7 +48,7 @@ class Service_User extends Service_Base
             break;
         }
 
-        /*
+        // /*
         Connexions::log("Service_User::authenticate(): "
                         .   "authType[ %s ], authAdapter[ %s ]",
                         $authType,
@@ -119,7 +119,13 @@ class Service_User extends Service_Base
                                 $where  = null)
     {
         if ($order === null)
-            $order = 'tagCount DESC';
+        {
+            $order = array('tagCount DESC');
+        }
+        else
+        {
+            $order = $this->_csOrder2array($order);
+        }
 
         $to = array('tags'       => $tags,
                     'exactTags'  => $exact,
@@ -157,6 +163,10 @@ class Service_User extends Service_Base
             $order = array('userItemCount DESC',
                            'userCount     DESC',
                            'name          ASC');
+        }
+        else
+        {
+            $order = $this->_csOrder2array($order);
         }
 
         $to = array('bookmarks'  => $bookmarks,
@@ -434,7 +444,7 @@ class Service_User extends Service_Base
     /** @brief  Perform tag autocompletion for the given user.
      *  @param  term    The string to autocomplete.
      *  @param  context The context of completion:
-     *                      - A Model_User instance, definine the specific user
+     *                      - A Model_User instance, defining the specific user
      *                        to perform autocomplete for;
      *                      - A Model_Set_Tag instance, array, or
      *                        comma-separated string of tags that restrict the

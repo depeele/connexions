@@ -813,6 +813,21 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         if (empty($config['viewer']))
             $config['viewer'] = &$this->_viewer;
 
+
+        /* Allow 'perPage', 'page', 'sortBy', and 'sortOrder' to be specified
+         * for all formats.
+         */
+        $request = &$this->_request;
+        if (empty($config['perPage']))
+            $config['perPage']   = $request->getParam("perPage");
+        if (empty($config['page']))
+            $config['page']      = $request->getParam("page");
+        if (empty($config['sortBy']))
+            $config['sortBy']    = $request->getParam("sortBy");
+        if (empty($config['sortOrder']))
+            $config['sortOrder'] = $request->getParam("sortOrder");
+
+
         if (($this->_format === 'html') || ($this->_format === 'partial'))
         {
             // For HTML rendering, include 'cookiePath' and 'displayStyle'
@@ -824,17 +839,6 @@ class Connexions_Controller_Action extends Zend_Controller_Action
             /* All the rest are more subject to variability since they are
              * likely added by a user.
              */
-            $request      = &$this->_request;
-
-            if (empty($config['perPage']))
-                $config['perPage']   = $request->getParam("perPage");
-            if (empty($config['page']))
-                $config['page']      = $request->getParam("page");
-            if (empty($config['sortBy']))
-                $config['sortBy']    = $request->getParam("sortBy");
-            if (empty($config['sortOrder']))
-                $config['sortOrder'] = $request->getParam("sortOrder");
-
 
             // Alternative names
             if (empty($config['perPage']))

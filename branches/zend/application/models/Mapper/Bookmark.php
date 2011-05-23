@@ -119,7 +119,10 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
                            array($normId['userId'], $normId['itemId']));
             }
 
-            $normIds = array('(userId,itemId)' => $normIds);
+            if (! empty($normIds))
+            {
+                $normIds = array('(userId,itemId)' => $normIds);
+            }
         }
 
         return $normIds;
