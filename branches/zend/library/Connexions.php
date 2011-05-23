@@ -360,6 +360,30 @@ class Connexions
         return $jsonRpc;
     }
 
+    /** @brief  Given a Wikipedia term, return the appropriate URL.
+     *  @param  term    The desired term.
+     *
+     *  @return The Wikipedia URL.
+     */
+    public static function wikipedia($term)
+    {
+        return "http://en.wikipedia.org/wiki/${term}";
+    }
+
+    /** @brief  Given a Wikipedia term, return the HTML of a link to the
+     *          Wikipedia term.
+     *  @param  term    The desired term.
+     *  @param  title   The title to present [ $term ];
+     *
+     *  @return The HTML of a link to the Wikipedia term.
+     */
+    public static function wikipedia_a($term, $title = null)
+    {
+        $title = (empty($title) ? $term : $title);
+        return "<a class='wikipedia' "
+                .  "href='". self::wikipedia($term) ."'>{$title}</a>";
+    }
+
     /** @brief  Given a site URL, apply any 'base' url prefix and return.
      *  @param  url     The site URL.
      *
