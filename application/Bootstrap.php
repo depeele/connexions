@@ -733,7 +733,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             /* Disable rendering -- we'll handle it directly, performing the
              *                      final output in jsonp_post()
              */
-            Connexions::log('Bootstrap::jsonp_init: Disable auto rendering');
+            //Connexions::log('Bootstrap::jsonp_init: Disable auto rendering');
 
             $viewRenderer->setNoRender(true);
         }
@@ -761,7 +761,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
         $view = $viewRenderer->view;
 
-        // /*
+        /*
         Connexions::log("jsonp_post: data %spresent, rpc %spresent",
                         (isset($view->data) ? '' : 'NOT '),
                         (isset($view->rpc)  ? '' : 'NOT '));
@@ -791,14 +791,23 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             $json = json_encode($view->data);
         }
 
+        if (isset($view->callback) && (! empty($view->callback)))
+        {
+            $json = "{$view->callback}({$json});";
+        }
+
         if ($front instanceof Zend_Controller_Front)
         {
             /* Set the response body -- this determines what will be returned
              * to the remove caller.
              */
             $front->getResponse()->setBody($json);
+
+            /*
             Connexions::log('Bootstrap::jsonp_post: '
-                            .   'place JSON in response body');
+                            .   'place JSON in response body [ %s ]',
+                            $json);
+            // */
         }
         else
         {

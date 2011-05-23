@@ -168,7 +168,21 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                                 . "request format[ %s ]",
                                 $format);
                 // */
+            }
 
+            if ($format === 'json')
+            {
+                $callback = $this->_request->getParam('callback', null);
+                if (! empty($callback))
+                {
+                    /*
+                    Connexions::log("Connexions_Controller_Action::init(): "
+                                    . "request json format, callback[ %s ]",
+                                    Connexions::varExport($callback));
+                    // */
+
+                    $this->view->callback = $callback;
+                }
             }
 
             $this->_format = $format;

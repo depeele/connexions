@@ -1,6 +1,5 @@
 <?php
 
-
 $config =  Zend_Registry::get('config');
 $api    =& $config->api;
 
@@ -32,15 +31,15 @@ $api    =& $config->api;
   </li>
   <li>Second is <b>page</b>, represented by the <i>Paging</i> control, used to specify which page to present;</li>
  </ul>
- <p>Finally, connexions has a JSON-RPC based API which is described in the next section.</p>
+ <p>Finally, connexions has a <?= Connexions::wikipedia_a('JSON-RPC') ?> based API which is described in the next section.</p>
 </div>
 
 <h3><span>API</span></h3>
 <div class='help-content'>
  <p>The connexions API may be <a href='<?= $api->baseUrl ?>'>directly accessed</a> to allow easier understanding via experimentation.</p>
- <p>This API uses version 2 of the <a href='http://en.wikipedia.org/wiki/JSON-RPC'>JSON-RPC</a> protocol.</p>
+ <p>This API uses version 2 of the <?= Connexions::wikipedia_a('JSON-RPC') ?> protocol.</p>
  <p class='continued'>Generally the API is dividied into six sections</p>
- <ul>
+ <ul class='outer'>
   <li><b>user</b> &mdash; user-related functionality</li>
   <li><b>item</b> &mdash; item/url-related methods</li>
   <li><b>tag</b> &mdash; tag-related operations</li>

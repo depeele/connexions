@@ -61,6 +61,12 @@ $baseUrl = $config->urls->base;
   .field input, .field textarea {
     float:              left;
   }
+  .ui-widget .ui-button {
+    font-size:          0.8em;
+  }
+  .ui-button-text-only .ui-button-text {
+    padding:            0.25em 0.5em;
+  }
   .results {
     padding:            0 1em 1em;
     margin:             1em;
@@ -235,7 +241,8 @@ $baseUrl = $config->urls->base;
                             +   '<input name="method" type="hidden" '
                             +         'value="%method%" />'
                             +   '%params%'
-                            +  '<input type="submit" />'
+                            +  '<button>POST</button>'
+                            +  '<button>GET</button>'
                             +  '</form>'
                             + '</li>';
                 var pTmpl   =   '<div class="field">'
@@ -332,23 +339,22 @@ $baseUrl = $config->urls->base;
 
             function bindForms()
             {
-                $('#services form')
-                    .bind('submit.rpc',  rpc_submit);
-                /*
-                    .bind('success.rpc', function(e, data, txtStatus, req) {
-                        $result.html(  '<pre class="status">'
-                                     +  txtStatus
-                                     + '</pre>'
-                                     + '<pre>'
-                                     +  JSON.stringify(data)
-                                     + '</pre>');
-                    })
-                    .bind('error.rpc',   function(e, txtStatus, req) {
-                        $result.html(  '<pre class="error">'
-                                     +  txtStatus
-                                     + '</pre>');
-                    });
-                */
+                var $forms      = $('#services form');
+                var $buttons    = $forms.find('button');
+
+                $forms.bind('submit.rpc',  rpc_submit);
+
+                $buttons.bind('click.rpc', function(e) {
+                    e.preventDefault();
+
+                    var $button = $(this);
+                    var $form   = $button.parents('form:first');
+
+                    // Use the button text as the new form method.
+                    $form.attr('method', $button.text());
+
+                    $form.submit();
+                });
             }
 
             // Fetch the service description and then build forms...
@@ -360,7 +366,6 @@ $baseUrl = $config->urls->base;
                       function(data, txtStatus)
                       {
                         buildForms(data);
-                        bindForms();
 
                         var $ul = $('#services');
                         $ul.addClass(  'ui-accordion '
@@ -368,7 +373,6 @@ $baseUrl = $config->urls->base;
                                      + 'ui-helper-reset '
                                      + 'ui-accordion-icons' );
 
-                        // /*
                         $ul.find('h3').click(function() {
                             var $ctl    = $(this);
                             var $body   = $ctl.next();
@@ -388,13 +392,11 @@ $baseUrl = $config->urls->base;
                             $body.slideToggle('fast');
                             return false;
                         });
-                        // */
 
-                        /*
-                        $ul.accordion({
-                            autoHeight: false
+                        $ul.find('button').button().click(function() {
                         });
-                        // */
+
+                        bindForms();
                       });
         });
     }(jQuery));
