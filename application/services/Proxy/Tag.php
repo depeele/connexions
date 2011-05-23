@@ -17,7 +17,7 @@ class Service_Proxy_Tag extends Connexions_Service_Proxy
      *  @return A new Model_Set_Tag instance.
      */
     public function fetchByUsers($users,
-                                 $order   = null,
+                                 $order   = 'userCount DESC, userItemCount DESC, tag ASC',
                                  $count   = null,
                                  $offset  = null)
     {
@@ -39,7 +39,7 @@ class Service_Proxy_Tag extends Connexions_Service_Proxy
      *  @return A new Model_Set_Tag instance.
      */
     public function fetchByItems($items,
-                                 $order   = null,
+                                 $order   = 'itemCount DESC, userItemCount DESC, tag ASC',
                                  $count   = null,
                                  $offset  = null)
     {
@@ -64,7 +64,7 @@ class Service_Proxy_Tag extends Connexions_Service_Proxy
      *  @return A new Model_Set_Tag instance.
      */
     public function fetchByBookmarks($bookmarks = null,
-                                     $order     = null,
+                                     $order     = 'userItemCount DESC, userCount DESC, tag ASC',
                                      $count     = null,
                                      $offset    = null)
     {
@@ -78,17 +78,21 @@ class Service_Proxy_Tag extends Connexions_Service_Proxy
      *          users from which we need to locate the current set of
      *          user-related tags and, from that, tag-related users.
      *  @param  term    The string to autocomplete.
-     *  @param  users   A Model_Set_User instance, array, or comma-separated
-     *                  string of users that restrict the tags that should
-     *                  be used to select related users;
+     *  @param  context The context of completion:
+     *                      - A Model_Set_User instance to be used to restrict
+     *                        the tags that should then be used to select
+     *                        related users;
+     *                      - A Model_Set_Tag instance, array, or
+     *                        comma-separated string of tags that should be
+     *                        used to select related users;
      *  @param  limit   The maximum number of users to return [ 15 ];
      *
      *  @return Model_Set_User
      */
     public function autocompleteUser($term,
-                                     $users = null,
-                                     $limit = 15)
+                                     $context   = null,
+                                     $limit     = 15)
     {
-        return $this->_service->autocompleteUser($term, $users, $limit);
+        return $this->_service->autocompleteUser($term, $context, $limit);
     }
 }

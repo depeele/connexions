@@ -43,6 +43,10 @@ class Service_Tag extends Service_Base
                            'userItemCount DESC',
                            'tag           ASC');
         }
+        else
+        {
+            $order = $this->_csOrder2array($order);
+        }
 
         $to = array('users'      => $users,
                     'exactUsers' => $exact);
@@ -86,6 +90,10 @@ class Service_Tag extends Service_Base
                            'userItemCount DESC',
                            'tag           ASC');
         }
+        else
+        {
+            $order = $this->_csOrder2array($order);
+        }
 
         $to = array('items'      => $items,
                     'exactItems' => true);
@@ -123,6 +131,10 @@ class Service_Tag extends Service_Base
                            'userCount     DESC',
                            'tag           ASC');
         }
+        else
+        {
+            $order = $this->_csOrder2array($order);
+        }
 
         $to = array('bookmarks'  => $bookmarks,
                     'where'      => $where);
@@ -142,39 +154,51 @@ class Service_Tag extends Service_Base
      *          users from which we need to locate the current set of
      *          user-related tags and, from that, tag-related users.
      *  @param  term    The string to autocomplete.
-     *  @param  users   A Model_Set_User instance, array, or comma-separated
-     *                  string of users that restrict the tags that should
-     *                  be used to select related users;
+     *  @param  context The context of completion:
+     *                      - A Model_Set_User instance to be used to restrict
+     *                        the tags that should then be used to select
+     *                        related users;
+     *                      - A Model_Set_Tag instance, array, or
+     *                        comma-separated string of tags that should be
+     *                        used to select related users;
      *  @param  limit   The maximum number of users to return [ 15 ];
      *
      *  @return Model_Set_User
      */
     public function autocompleteUser($term,
-                                     $users = null,
-                                     $limit = 15)
+                                     $context   = null,
+                                     $limit     = 15)
     {
         if ($limit < 1) $limit = 15;
 
         /*
         Connexions::log("Service_Tag::autocompleteUser(): "
-                        .   "term[ %s ], users[ %s ], limit[ %d ]",
-                        $term, $users, $limit);
+                        .   "term[ %s ], context[ %s ], limit[ %d ]",
+                        $term, $context, $limit);
         // */
 
         /* Retrieve the tags that define the scope for this
          * autocompletion
          */
         $tags = null;
-        if (! empty($users))
+        if (! empty($context))
         {
-            $tags = $this->fetchByUsers($users);
-
-            /*
-            Connexions::log("Service_Tag::autocompleteUser(): "
-                            .   "tags[ %s ]",
-                            $tags);
-            // */
+            if (($context instanceof Model_User) ||
+                ($context instanceof Model_Set_User))
+            {
+                $tags = $this->fetchByUsers($context);
+            }
+            else
+            {
+                $tags = $context;
+            }
         }
+
+        /*
+        Connexions::log("Service_Tag::autocompleteUser(): "
+                        .   "tags[ %s ]",
+                        Connexions::varExport($tags));
+        // */
 
         /* Match any user with a match in:
          *  name, fullName, or email

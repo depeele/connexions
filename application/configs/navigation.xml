@@ -144,12 +144,12 @@
        <action>faq</action>
        <class>global</class>
       </faq>
-      <developer>
+      <developers>
        <label>Developers</label>
        <controller>help</controller>
-       <action>developer</action>
+       <action>developers</action>
        <class>global</class>
-      </developer>
+      </developers>
       <about>
        <label>About</label>
        <controller>help</controller>

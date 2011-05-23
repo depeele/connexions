@@ -6,6 +6,7 @@ $this->headTitle('Help');
 $this->headLink()->appendStylesheet($this->baseUrl('/css/help.min.css'));
 
 $widgetId = 'help';
+$helpUrl  = $this->baseUrl('/help');
 ?>
 <div class='columnHeader'>
  <div class='context-bg connexions_sprites help_bg
@@ -42,7 +43,7 @@ $widgetId = 'help';
         $paneHtml .= "<div id='help-{$tabId}' class='{$paneCss}'>";
 
         $script    = 'help/'. $tab['script'] .'.phtml';
-        $paneHtml .=  "<div id='{$tabID}-content'>"
+        $paneHtml .=  "<div id='{$tabId}-content'>"
                   .    $this->render( $script )
                   .   "</div>";
 
@@ -102,6 +103,17 @@ function help_onLoad()
     });
 
     $el.show();
+
+    /* Catch any click on a help link and directly switch the the target tab
+    $('body').delegate('a[href^=<?= $helpUrl ?>]', 'click', function(e) {
+        var $a  = $(this);
+        var url = $a.attr('href');
+        $.log('help:a.click url[ '+ url +' ]');
+
+        e.preventDefault();
+        return false;
+    });
+    // */
 }
 
 <?php

@@ -7,6 +7,8 @@ class Service_Proxy_Item extends Connexions_Service_Proxy
 {
     /** @brief  Retrieve a set of items related by a set of Users.
      *  @param  users   A Model_Set_User instance or array of users to match.
+     *  @param  exact   Items MUST be associated with ALL provided users
+     *                  [ false ];
      *  @param  order   Optional ORDER clause (string, array)
      *                      [ 'userCount DESC, tagCount DESC,
      *                         userItemCount DESC, urlHash ASC' ];
@@ -16,11 +18,13 @@ class Service_Proxy_Item extends Connexions_Service_Proxy
      *  @return A new Model_Set_Item instance.
      */
     public function fetchByUsers($users,
-                                 $order   = null,
+                                 $exact   = false,
+                                 $order   = 'userCount DESC, tagCount DESC, userItemCount DESC, urlHash ASC',
                                  $count   = null,
                                  $offset  = null)
     {
         return $this->_service->fetchByUsers($users,
+                                             $exact,
                                              $order,
                                              $count,
                                              $offset);
@@ -40,7 +44,7 @@ class Service_Proxy_Item extends Connexions_Service_Proxy
      */
     public function fetchByTags($tags,
                                 $exact   = true,
-                                $order   = null,
+                                $order   = 'tagCount DESC, userCount DESC, userItemCount DESC, urlHash ASC',
                                 $count   = null,
                                 $offset  = null)
     {
@@ -60,8 +64,8 @@ class Service_Proxy_Item extends Connexions_Service_Proxy
      *  @param  exactTags   Items MUST be associated with ALL provided tags
      *                      [ true ];
      *  @param  order       Optional ORDER clause (string, array)
-     *                      [ 'tagCount DESC, userCount DESC, 
-     *                         userItemCount DESC, urlHash ASC' ];
+     *                      [ 'userItemCount DESC, userCount DESC, 
+     *                         tagCount DESC, urlHash ASC' ];
      *  @param  count       Optional LIMIT count
      *  @param  offset      Optional LIMIT offset
      *
@@ -71,7 +75,7 @@ class Service_Proxy_Item extends Connexions_Service_Proxy
                                         $tags,
                                         $exactUsers = true,
                                         $exactTags  = true,
-                                        $order      = null,
+                                        $order      = 'userItemCount DESC, userCount DESC, tagCount DESC, urlHash ASC',
                                         $count      = null,
                                         $offset     = null)
     {

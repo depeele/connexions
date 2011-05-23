@@ -1,1 +1,51 @@
-Developer help
+<?php
+
+
+$config =  Zend_Registry::get('config');
+$api    =& $config->api;
+
+?>
+<h3><span>Introduction</span></h3>
+<div class='help-content'>
+ <p>Connexions is comprised of a combination of server-side PHP and client-side JavaScript/AJAX to provide rich user interaction and functionality.  It requires a server that provides PHP 5+ and MySQL 5+ and a client web browser that is complient with current web standards (e.g. Firefox, Chrome, Opera, and newer versions of Internet Explorer).</p>
+ <p>There are a number of ways developers can interact with connexions.  Pages are broken into partials that can be independently accessed and, for the 'main' partial, rendered in multiple formats.</p>
+ <div id='figure1' class='figure'>
+  <img src='<?= $this->baseUrl('/images/help/partials.png') ?>'
+       title='Identification of Partials' />
+  <div class='caption'><b>Figure 1</b>: Identification of Partials</div>
+ </div>
+ <p>The formats currently supported for the 'main' partial are: <b>json</b>, <b>rss</b>, <b>atom</b>, and the default <b>html</b>.</p>
+ <p class='continued'>In addition to <i>format</i>, the following URL parameters are supported:</p>
+ <ul class='outer'>
+  <li>First are the options presented in the <i>Display Options</i> control:
+   <ul>
+    <li><b>sortBy</b> &mdash; the item property to sort by.  The valid values differ for the various views:
+      <ul>
+       <li>Bookmarks &mdash; <b>taggedOn</b> (Tag Date), <b>updatedOn</b> (Update Date), <b>title</b>, <b>rating</b>, <b>ratingCount</b>, <b>ratingAvg</b> (Rating Average), <b>userCount</b>;</li>
+       <li>People &mdash; <b>fullName</b>, <b>email</b> (Email Address), <b>lastVisit</b> (Last Visit Date), <b>totalTags</b> (Tag Count), <b>totalItems</b> (Item Count);</li>
+       <li>Tags &mdash; <b>title</b> (Name), <b>weight</b>;</li>
+      </ul>
+    </li>
+    <li><b>sortOrder</b> &mdash; the sort order to apply to the <b>sortBy</b> property.  This may be <b>ASC</b> (Ascending) or <b>DESC</b> (Descending);</li>
+    <li><b>perPage</b> &mdash; the number of items per "page";</li>
+   </ul>
+  </li>
+  <li>Second is <b>page</b>, represented by the <i>Paging</i> control, used to specify which page to present;</li>
+ </ul>
+ <p>Finally, connexions has a JSON-RPC based API which is described in the next section.</p>
+</div>
+
+<h3><span>API</span></h3>
+<div class='help-content'>
+ <p>The connexions API may be <a href='<?= $api->baseUrl ?>'>directly accessed</a> to allow easier understanding via experimentation.</p>
+ <p>This API uses version 2 of the <a href='http://en.wikipedia.org/wiki/JSON-RPC'>JSON-RPC</a> protocol.</p>
+ <p class='continued'>Generally the API is dividied into six sections</p>
+ <ul>
+  <li><b>user</b> &mdash; user-related functionality</li>
+  <li><b>item</b> &mdash; item/url-related methods</li>
+  <li><b>tag</b> &mdash; tag-related operations</li>
+  <li><b>bookmark</b> &mdash; user bookmark-related functions</li>
+  <li><b>activity</b> &mdash; activity stream access</li>
+  <li><b>util</b> &mdash; general purpose utilities</li>
+ </ul>
+</div>

@@ -14,21 +14,21 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
      *                  the target Domain Model and the directions a
      *                  Connexions_Service::SORT_DIR_* constant.  If an order
      *                  is omitted, Connexions_Service::SORT_DIR_ASC will be
-     *                  used [ no specified order ];
+     *                  used [ 'taggedOn DESC, updatedOn DESC, name ASC' ];
      *  @param  count   The maximum number of items from the full set of
      *                  matching items that should be returned
-     *                  [ null == all ];
+     *                  [ 50 ];
      *  @param  offset  The starting offset in the full set of matching items
-     *                  [ null == 0 ].
+     *                  [ 0 ].
      *  @param  since   Limit the results to bookmarks updated after this
      *                  date/time [ null == no time limits ];
      *
      *  @return A new Connexions_Model_Set.
      */
     public function fetch($id       = null,
-                          $order    = null,
-                          $count    = null,
-                          $offset   = null,
+                          $order    = 'taggedOn DESC, updatedOn DESC, name ASC',
+                          $count    = 50,
+                          $offset   = 0,
                           $since    = null)
     {
         return $this->_service->fetch($id, $order, $count, $offset, $since);
@@ -39,12 +39,9 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
      *  @param  exact   Bookmarks MUST be associated with provided tags
      *                  [ true ];
      *  @param  order   Optional ORDER clause (string, array)
-     *                      [ [ 'tagCount      DESC',
-     *                          'taggedOn      DESC',
-     *                          'name          ASC',
-     *                          'userCount     DESC' ] ]
-     *  @param  count   Optional LIMIT count
-     *  @param  offset  Optional LIMIT offset
+     *                  [ 'taggedOn DESC, updatedOn DESC, name ASC' ];
+     *  @param  count   Optional LIMIT count [ 50 ];
+     *  @param  offset  Optional LIMIT offset [ 0 ];
      *  @param  since   Limit the results to bookmarks updated after this
      *                  date/time [ null == no time limits ];
      *
@@ -52,9 +49,9 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
      */
     public function fetchByTags($tags,
                                 $exact   = true,
-                                $order   = null,
-                                $count   = null,
-                                $offset  = null,
+                                $order   = 'taggedOn DESC, updatedOn DESC, name ASC',
+                                $count   = 50,
+                                $offset  = 0,
                                 $since   = null)
     {
         return $this->_service->fetchByTags($tags,
@@ -68,21 +65,18 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
     /** @brief  Retrieve a set of bookmarks related by a set of Users.
      *  @param  users   A Model_Set_User instance or array of users to match.
      *  @param  order   Optional ORDER clause (string, array)
-     *                      [ [ 'taggedOn      DESC',
-     *                          'name          ASC',
-     *                          'userCount     DESC',
-     *                          'tagCount      DESC' ] ]
-     *  @param  count   Optional LIMIT count
-     *  @param  offset  Optional LIMIT offset
+     *                  [ 'taggedOn DESC, updatedOn DESC, name ASC' ];
+     *  @param  count   Optional LIMIT count [ 50 ];
+     *  @param  offset  Optional LIMIT offset [ 0 ];
      *  @param  since   Limit the results to bookmarks updated after this
      *                  date/time [ null == no time limits ];
      *
      *  @return A new Model_Set_Bookmark instance.
      */
     public function fetchByUsers($users,
-                                 $order   = null,
-                                 $count   = null,
-                                 $offset  = null,
+                                 $order   = 'taggedOn DESC, updatedOn DESC, name ASC',
+                                 $count   = 50,
+                                 $offset  = 0,
                                  $since   = null)
     {
         return $this->_service->fetchByUsers($users,
@@ -95,21 +89,18 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
     /** @brief  Retrieve a set of bookmarks related by a set of Items.
      *  @param  items   A Model_Set_Item instance or array of items to match.
      *  @param  order   Optional ORDER clause (string, array)
-     *                      [ [ 'taggedOn      DESC',
-     *                          'name          ASC',
-     *                          'userCount     DESC',
-     *                          'tagCount      DESC' ] ]
-     *  @param  count   Optional LIMIT count
-     *  @param  offset  Optional LIMIT offset
+     *                  [ 'taggedOn DESC, updatedOn DESC, name ASC' ];
+     *  @param  count   Optional LIMIT count [ 50 ];
+     *  @param  offset  Optional LIMIT offset [ 0 ];
      *  @param  since   Limit the results to bookmarks updated after this
      *                  date/time [ null == no time limits ];
      *
      *  @return A new Model_Set_Bookmark instance.
      */
     public function fetchByItems($items,
-                                 $order   = null,
-                                 $count   = null,
-                                 $offset  = null,
+                                 $order   = 'taggedOn DESC, updatedOn DESC, name ASC',
+                                 $count   = 50,
+                                 $offset  = 0,
                                  $since   = null)
     {
         return $this->_service->fetchByItems($items,
@@ -129,12 +120,9 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
      *  @param  exactTags   Bookmarks MUST be associated with provided tags
      *                      [ true ];
      *  @param  order       Optional ORDER clause (string, array)
-     *                      [ [ 'taggedOn      DESC',
-     *                          'name          ASC',
-     *                          'userCount     DESC',
-     *                          'tagCount      DESC' ] ]
-     *  @param  count       Optional LIMIT count
-     *  @param  offset      Optional LIMIT offset
+     *                      [ 'taggedOn DESC, updatedOn DESC, name ASC' ];
+     *  @param  count       Optional LIMIT count [ 50 ];
+     *  @param  offset      Optional LIMIT offset [ 0 ];
      *  @param  since       Limit the results to bookmarks updated after this
      *                      date/time [ null == no time limits ];
      *
@@ -144,9 +132,9 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
                                         $tags,
                                         $exactUsers = true,
                                         $exactTags  = true,
-                                        $order      = null,
-                                        $count      = null,
-                                        $offset     = null,
+                                        $order      = 'taggedOn DESC, updatedOn DESC, name ASC',
+                                        $count      = 50,
+                                        $offset     = 0,
                                         $since      = null)
     {
         return $this->_service->fetchByUsersAndTags($users,
@@ -167,12 +155,9 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
      *  @param  exactTags   Bookmarks MUST be associated with provided tags
      *                      [ true ];
      *  @param  order       Optional ORDER clause (string, array)
-     *                      [ [ 'taggedOn      DESC',
-     *                          'name          ASC',
-     *                          'userCount     DESC',
-     *                          'tagCount      DESC' ] ]
-     *  @param  count       Optional LIMIT count
-     *  @param  offset      Optional LIMIT offset
+     *                      [ 'taggedOn DESC, updatedOn DESC, name ASC' ];
+     *  @param  count       Optional LIMIT count [ 50 ];
+     *  @param  offset      Optional LIMIT offset [ 0 ];
      *  @param  since       Limit the results to bookmarks updated after this
      *                      date/time [ null == no time limits ];
      *
@@ -181,9 +166,9 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
     public function fetchByItemsAndTags($items,
                                         $tags,
                                         $exact   = true,
-                                        $order   = null,
-                                        $count   = null,
-                                        $offset  = null,
+                                        $order   = 'taggedOn DESC, updatedOn DESC, name ASC',
+                                        $count   = 50,
+                                        $offset  = 0,
                                         $since   = null)
     {
         return $this->_service->fetchByItemsAndTags($items,

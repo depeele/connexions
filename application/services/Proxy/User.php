@@ -5,21 +5,6 @@
  */
 class Service_Proxy_User extends Connexions_Service_Proxy
 {
-    /** @brief  Given a user identifier and/or credential, attempt to
-     *          authenticate the identified user.
-     *  @param  authType    The type of authentication to perform
-     *                      (Model_UserAuth::AUTH_*)
-     *  @param  credential  Any initial user credential
-     *                      (e.g. OpenId endpoint).
-     *
-     *  @return A Model_User instance with isAuthenticated() set accordingly.
-     */
-    public function authenticate($authType   = Model_UserAuth::AUTH_PASSWORD,
-                                 $credential = null)
-    {
-        return $this->_service->authenticate($authType, $credential);
-    }
-
     /** @brief  Retrieve a set of users related by a set of Tags.
      *  @param  tags    A comma-separated list of tags to match;
      *  @param  exact   Users MUST be associated with provided tags [ true ];
@@ -32,7 +17,7 @@ class Service_Proxy_User extends Connexions_Service_Proxy
      */
     public function fetchByTags($tags,
                                 $exact   = true,
-                                $order   = null,
+                                $order   = 'tagCount DESC',
                                 $count   = null,
                                 $offset  = null)
     {
@@ -305,9 +290,9 @@ class Service_Proxy_User extends Connexions_Service_Proxy
     public function getContributors($threshold  = 1,
                                     $items      = null,
                                     $tags       = null,
-                                    $order      = null,
+                                    $order      = 'totalItems DESC, name ASC',
                                     $count      = 50,
-                                    $offset     = null)
+                                    $offset     = 0)
     {
         $params = array();
         if (! empty($threshold))    $params['threshold'] = $threshold;
@@ -341,7 +326,7 @@ class Service_Proxy_User extends Connexions_Service_Proxy
      *               'contributors': number of "contributors",
      *               'threshold':    the threshold value used}
      */
-    public function getContributorCount($threshold  = null,
+    public function getContributorCount($threshold  = 1,
                                         $items      = null,
                                         $tags       = null)
     {
@@ -361,9 +346,8 @@ class Service_Proxy_User extends Connexions_Service_Proxy
      *                  Model_Mapper_Base::_normalizeGrouping()
      *                  [ null == no grouping / roll-up ];
      *  @param  order   An order string:
-     *                      'taggedOn ASC|DESC'
-     *                      'updatedOn ASC|DESC'
-     *                  used [ 'taggedOn ASC' ];
+     *                      'lastVisit ASC|DESC'
+     *                  used [ 'lastVisit DESC' ];
      *  @param  count   An OPTIONAL LIMIT count  [ no limit ];
      *  @param  offset  An OPTIONAL LIMIT offset [ 0 ];
      *  @param  from    Limit the results to date/times AFTER this date/time
@@ -376,9 +360,9 @@ class Service_Proxy_User extends Connexions_Service_Proxy
      */
     public function getTimeline($users,
                                 $group  = null,
-                                $order  = null,
+                                $order  = 'lastVisit DESC',
                                 $count  = null,
-                                $offset = null,
+                                $offset = 0,
                                 $from   = null,
                                 $until  = null)
     {

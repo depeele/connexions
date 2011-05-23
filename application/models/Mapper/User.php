@@ -617,7 +617,7 @@ class Model_Mapper_User extends Model_Mapper_Base
      *                                  rolled-up.  See _normalizeGrouping();
      *                                  [ 'YMDH' ];
      *                      - order     An ORDER clause (string, array)
-     *                                  [ 'taggedOn DESC' ];
+     *                                  [ 'lastVisit DESC' ];
      *                      - count     A  LIMIT count
      *                                  [ all ];
      *                      - offset    A  LIMIT offset
@@ -676,11 +676,11 @@ class Model_Mapper_User extends Model_Mapper_Base
                     if (empty($fields))
                     {
                         $orderField = $field;
-                        $field      = array(
-                            $fieldCount => "COUNT(u.{$field})",
-                            $fieldDate  =>
-                                "DATE_FORMAT(u.{$field}, '{$grouping['fmt']}')",
-                        );
+
+                        $fields[ $fieldCount ] = "COUNT(u.{$field})";
+                        $fields[ $fieldDate  ] =
+                            "DATE_FORMAT(u.{$field}, '{$grouping['fmt']}')";
+                        continue;
                     }
 
                     array_push($fields, $field);
