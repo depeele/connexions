@@ -344,7 +344,7 @@ class Service_Proxy_User extends Connexions_Service_Proxy
      *  @param  group   A grouping string indicating how entries should be
      *                  grouped / rolled-up.  See
      *                  Model_Mapper_Base::_normalizeGrouping()
-     *                  [ null == no grouping / roll-up ];
+     *                  [ 'YMDH' ];
      *  @param  order   An order string:
      *                      'lastVisit ASC|DESC'
      *                  used [ 'lastVisit DESC' ];
@@ -359,7 +359,7 @@ class Service_Proxy_User extends Connexions_Service_Proxy
      *  @return An array of date/time / count mappings.
      */
     public function getTimeline($users,
-                                $group  = null,
+                                $group  = 'YMDH',
                                 $order  = 'lastVisit DESC',
                                 $count  = null,
                                 $offset = 0,

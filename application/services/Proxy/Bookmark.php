@@ -376,10 +376,10 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
     public function getTimeline($users      = null,
                                 $items      = null,
                                 $tags       = null,
-                                $grouping   = null,
+                                $grouping   = 'YMDH',
                                 $order      = null,
                                 $count      = null,
-                                $offset     = null,
+                                $offset     = 0,
                                 $from       = null,
                                 $until      = null)
     {
