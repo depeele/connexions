@@ -84,13 +84,19 @@ class Model_Bookmark extends Model_Base
 
         $bookmark = parent::save($noLog);
 
+        /*
         if ($tags !== null)
         {
-            /* Invalidate the tags so they will be re-retrieved to reflect
-             * updated statistics.
-             */
+            // Invalidate the tags so they will be re-retrieved to reflect
+            // updated statistics.
             $tags->invalidate();
         }
+        // */
+
+        /*
+        Connexions::log("Model_Bookmark::save(): bookmark[ %s ]",
+                        $bookmark->debugDump());
+        // */
 
         return $bookmark;
     }
