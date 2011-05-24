@@ -1,0 +1,7 @@
+#!/bin/sh
+#
+# You can make use of a bash alias to invoke this:
+#	alias yui-compressor='<full path to jslint directory>'/yui-compressor'
+yuicDir=`dirname $0`
+
+java -jar "${yuicDir}/lib/yuicompressor.jar" $*
