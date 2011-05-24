@@ -1,50 +1,376 @@
 <?php
 
-$config =  Zend_Registry::get('config');
-$api    =& $config->api;
+$config   =  Zend_Registry::get('config');
+$api      =& $config->api;
+$contact  =& $config->contact;
 
 ?>
-<h3><span>Introduction</span></h3>
-<div class='help-content'>
- <p>Connexions is comprised of a combination of server-side PHP and client-side JavaScript/AJAX to provide rich user interaction and functionality.  It requires a server that provides PHP 5+ and MySQL 5+ and a client web browser that is complient with current web standards (e.g. Firefox, Chrome, Opera, and newer versions of Internet Explorer).</p>
- <p>There are a number of ways developers can interact with connexions.  Pages are broken into partials that can be independently accessed and, for the 'main' partial, rendered in multiple formats.</p>
- <div id='figure1' class='figure'>
-  <img src='<?= $this->baseUrl('/images/help/partials.png') ?>'
-       title='Identification of Partials' />
-  <div class='caption'><b>Figure 1</b>: Identification of Partials</div>
- </div>
- <p>The formats currently supported for the 'main' partial are: <b>json</b>, <b>rss</b>, <b>atom</b>, and the default <b>html</b>.</p>
- <p class='continued'>In addition to <i>format</i>, the following URL parameters are supported:</p>
- <ul class='outer'>
-  <li>First are the options presented in the <i>Display Options</i> control:
-   <ul>
-    <li><b>sortBy</b> &mdash; the item property to sort by.  The valid values differ for the various views:
-      <ul>
-       <li>Bookmarks &mdash; <b>taggedOn</b> (Tag Date), <b>updatedOn</b> (Update Date), <b>title</b>, <b>rating</b>, <b>ratingCount</b>, <b>ratingAvg</b> (Rating Average), <b>userCount</b>;</li>
-       <li>People &mdash; <b>fullName</b>, <b>email</b> (Email Address), <b>lastVisit</b> (Last Visit Date), <b>totalTags</b> (Tag Count), <b>totalItems</b> (Item Count);</li>
-       <li>Tags &mdash; <b>title</b> (Name), <b>weight</b>;</li>
-      </ul>
+<ul class='collapsableList'>
+ <li class='collapsable'>
+  <h3 id='introduction' class='toggle'><span>Introduction</span></h3>
+  <div class='help-content'>
+   <p>Connexions is comprised of a combination of server-side PHP and client-side JavaScript/AJAX to provide rich user interaction and functionality.  It requires a server that provides PHP 5+ and MySQL 5+ and a client web browser that is complient with current web standards (e.g. Firefox, Chrome, Opera, and newer versions of Internet Explorer).
+   <?php
+    if ($contact->services && $contact->services->src)
+    {
+        ?>
+  Full sources are available at <a href='<?= $contact->services->src ?>'><?= $contact->services->src ?></a>
+        <?php
+    }
+   ?>
+   </p>
+   <p>There are a number of ways developers can interact with connexions.  Pages are broken into partials that can be independently accessed and, for the 'main' partial, rendered in multiple formats.</p>
+   <div id='figure1' class='figure'>
+    <img src='<?= $this->baseUrl('/images/help/partials.png') ?>'
+         title='Identification of Partials' />
+    <div class='caption'><b>Figure 1</b>: Identification of Partials</div>
+   </div>
+   <p>The formats currently supported for the 'main' partial are: <b>json</b>, <b>rss</b>, <b>atom</b>, and the default <b>html</b>.</p>
+   <p class='continued'>In addition to <i>format</i>, the following URL parameters are supported:</p>
+   <ul class='outer'>
+    <li>First are the options presented in the <i>Display Options</i> control:
+     <ul>
+      <li><b>sortBy</b> &mdash; the item property to sort by.  The valid values differ for the various views:
+        <ul>
+         <li>Bookmarks &mdash; <b>taggedOn</b> (Tag Date), <b>updatedOn</b> (Update Date), <b>title</b>, <b>rating</b>, <b>ratingCount</b>, <b>ratingAvg</b> (Rating Average), <b>userCount</b>;</li>
+         <li>People &mdash; <b>fullName</b>, <b>email</b> (Email Address), <b>lastVisit</b> (Last Visit Date), <b>totalTags</b> (Tag Count), <b>totalItems</b> (Item Count);</li>
+         <li>Tags &mdash; <b>title</b> (Name), <b>weight</b>;</li>
+        </ul>
+      </li>
+      <li><b>sortOrder</b> &mdash; the sort order to apply to the <b>sortBy</b> property.  This may be <b>ASC</b> (Ascending) or <b>DESC</b> (Descending);</li>
+      <li><b>perPage</b> &mdash; the number of items per "page";</li>
+     </ul>
     </li>
-    <li><b>sortOrder</b> &mdash; the sort order to apply to the <b>sortBy</b> property.  This may be <b>ASC</b> (Ascending) or <b>DESC</b> (Descending);</li>
-    <li><b>perPage</b> &mdash; the number of items per "page";</li>
+    <li>Second is <b>page</b>, represented by the <i>Paging</i> control, used to specify which page to present;</li>
    </ul>
-  </li>
-  <li>Second is <b>page</b>, represented by the <i>Paging</i> control, used to specify which page to present;</li>
- </ul>
- <p>Finally, connexions has a <?= Connexions::wikipedia_a('JSON-RPC') ?> based API which is described in the next section.</p>
-</div>
+   <p>Finally, connexions has a <?= Connexions::wikipedia_a('JSON-RPC') ?> based API which is described in the next section.</p>
+  </div>
+ </li>
+  
+ <li class='collapsable'>
+  <h3 id='api' class='toggle'><span>API</span></h3>
+  <div class='help-content'><!-- api { -->
+   <p>The connexions API may be <a href='<?= $api->baseUrl ?>'>directly accessed</a> to allow easier understanding via experimentation.</p>
+   <p class='continued'>Connexions makes use of version 2 of the <?= Connexions::wikipedia_a('JSON-RPC') ?> protocol for this API.  The general form of a call to this API is an HTTP POST request with an HTML <tt>Content-Type</tt> header of <tt>application/json</tt> and a JSON-encoded body or a GET request with a JSON-encoded request parameter.  In either case, the JSON-encoded value will have the following general form:</p>
+   <pre>
+{
+    "version":  "2.0",
+    "method":   "%the desired API method%",
+    "id":       %An id that you may use to match results if needed%,
+    "params":   {
+        %key%:  %value%,
+        ...
+    }
+}
+   </pre>
+   <p class='continued'>A successful call will return a result with the following JSON-encoded format:</p>
+   <pre>
+{
+    "version":  "2.0",
+    "id":       %The id that you provided in the call%,
+    "result":   %generated results%
+}
+   </pre>
+   <p class='continued'>In the case of an error, the resulting JSON will look like:</p>
+   <pre>
+{
+    "version":  "2.0",
+    "id":       %The id that you provided in the call%,
+    "error":    {
+        "code":     %JSON-RPC error code%,
+        "message":  "%Error message%"
+    }
+}
+   </pre>
+   <p>Within this API, there are interfaces that require authentication and those that do not.  The only authentication currently supported is the normal, cookie-identified, session-based authentication provided by the main <a href='<?= $this->baseUrl('auth/signIn') ?>'>sign-in page</a>.  For remote, non-POST requests, the authenticated APIs also require the user's <a href='<?= $this->baseUrl('settings/account/apiKey') ?>'>apiKey</a> to reduce the risk of <?= Connexions::wikipedia_a('Cross-site scripting', 'cross-site scripting') ?> attacks.  The user may regenerate the <b>apiKey</b> at any time.</p>
+   <p class='continued'>Generally, the API is dividied into six sections:</p>
+   <ul class='collapsableList'><!-- api list { -->
+    <li class='collapsable'><!-- api_user { -->
+     <h4 id='api_user' class='toggle collapsed'><span>user</span> <span class='description'>&mdash; user-related functionality</span></h4>
+     <div class='help-content'>
+      <ul class='collapsableList'>
+       <li class='collapsable'><!-- unauthenticated { -->
+        <h5 class='toggle'><span>Unauthenticated Methods</span></h4>
+        <ul class='collapsableList help-content'>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>find</span></h5>
+          <div class='api-method help-content'><!-- api-method { -->
+           <p>Find a single user.</p>
+           <table class='parameters'>
+            <tr><th>Parameters</th><th>Description</th></tr>
+            <tr><th>id</th><td>The desired user's <b>name</b> (user name) or <b>userId</b>.</td></tr>
+           </table>
+          </div><!-- api-method } -->
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>fetch</span></h5>
+          <div class='api-method help-content'><!-- api-method { -->
+           <p>Retrieve all users matching the provided identifiers.</p>
+           <table class='parameters'>
+            <tr><th>Parameters</th><th>Description</th></tr>
+            <tr><th>ids</th><td>A comma-separated list of users by <b>name</b> (user name) or <b>userId</b>.</tr>
+           </table>
+           <p>Returns an array of one or more user record where each record contains:</p>
+           <table class='results'>
+            <tr><th>Property</th><th>Description</th></tr>
+            <tr><th>userId</th><td>The numeric, local-unique identifier for the user</td></tr>
+            <tr><th>name</th><td>The user name for this user.</td></tr>
+            <tr><th>fullName</th><td>The user's full name.</td></tr>
+            <tr><th>email</th><td>The user's email address.</td></tr>
+            <tr><th>pictureUrl</th><td>A URL to the user's avatar image.</td></tr>
+            <tr><th>profile</th><td>A user-provided description of themselves.</td></tr>
+            <tr><th>lastVisit</th><td>The date/time of the user's last visit.</td></tr>
+            <tr><th>lastVisitFor</th><td>The date/time of the user's last visit to their <a href='<?= $this->baseUrl('inbox') ?>'>inbox</a>.</td></tr>
+            <tr><th>totalTags</th><td>The total number of unique tags this user has used.</td></tr>
+            <tr><th>totalItems</th><td>The total number of unique sites this user has bookmarked.</td></tr>
+            <tr><th>userItemCount</th><td>The total number of unique bookmarks for this user and this call (MAY be 0 for some calls indicating that it was not calculated for the call).</td></tr>
+            <tr><th>itemCount</th><td>The total number of unique sites for this user and this call (MAY be 0 for some calls indicating that it was not calculated for the call).</td></tr>
+            <tr><th>tagCount</th><td>The total number of unique tags for this user and this call (MAY be 0 for some calls indicating that it was not calculated for the call).</td></tr>
+           </table>
+          </div><!-- api-method } -->
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>fetchByTags</span></h5>
+          <div class='api-method help-content'><!-- api-method { -->
+           <p>Fetch all users that have one or more bookmarks with the given tag(s).</p>
+           <table class='parameters'>
+            <tr><th>Parameters</th><th>Description</th></tr>
+            <tr><th>tags</th><td>A comma-separated list of tags by <b>tag</b> (name) or <b>tagId</b>.</td></tr>
+            <tr><th>exact</th><td>A boolean indicating whether the returned users should have bookmarks for <i>all</i> tags (true) or <i>any</i> of the tags (false) [ true ].</td></tr>
+            <tr><th>order</th><td>The sort order to apply to the returned users [ tagCount DESC ];</td></tr>
+            <tr><th>count</th><td>The maximum number of users to return [ all ].</td></tr>
+            <tr><th>offset</th><td>The offset within the matching list to begin including users to return [ 0 ].</td></tr>
+           </table>
+          </div><!-- api-method } -->
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>autocompleteTag</span></h5>
+          <div class='api-method help-content'></div>
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>getContributors</span></h5>
+          <div class='api-method help-content'></div>
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>getContributorCount</span></h5>
+          <div class='api-method help-content'></div>
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>getTimeline</span></h5>
+          <div class='api-method help-content'></div>
+         </li>
+        </ul>
+       </li><!-- unauthenticated } -->
+       <li class='collapsable'><!-- authenticated { -->
+        <h5 class='toggle'><span>Authenticated Methods</span></h4>
+        <ul class='collapsableList help-content'>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>renameTags</span></h5>
+          <div class='api-method help-content'></div>
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>deleteTags</span></h5>
+          <div class='api-method help-content'></div>
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>addToNetwork</span></h5>
+          <div class='api-method help-content'></div>
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>removeFromNetwork</span></h5>
+          <div class='api-method help-content'></div>
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>autocompleteMyTags</span></h5>
+          <div class='api-method help-content'></div>
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>update</span></h5>
+          <div class='api-method help-content'></div>
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>regenerateApiKey</span></h5>
+          <div class='api-method help-content'></div>
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>updateCredentials</span></h5>
+          <div class='api-method help-content'></div>
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>deleteCredential</span></h5>
+          <div class='api-method help-content'></div>
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>cropAvatar</span></h5>
+          <div class='api-method help-content'></div>
+         </li>
+        </ul>
+       </li><!-- authenticated } -->
+      </ul>
+    </li><!-- api_user } -->
+  
+    <li class='collapsable'><!-- api_item { -->
+     <h4 id='api_item' class='toggle collapsed'><span>item</span> <span class='description'>&mdash; item/url methods</span></h4>
+     <div class='help-content'>
+      <ul class='collapsableList'>
+       <li class='collapsable'><!-- unauthenticated { -->
+        <h5 class='toggle'><span>Unauthenticated Methods</span></h4>
+        <ul class='collapsableList help-content'>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>find</span></h5>
+          <div class='api-method help-content'><!-- api-method { -->
+           <p>Find a single item/url.</p>
+           <table class='parameters'>
+            <tr><th>Parameters</th><th>Description</th></tr>
+            <tr><th>id</th><td>The desired items's <b>url</b>, <b>urlHash</b> (md5 of lower-cased url) or <b>itemId</b>.</td></tr>
+           </table>
+          </div><!-- api-method } -->
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>fetch</span></h5>
+          <div class='api-method help-content'></div>
+         </li>
+        </ul>
+       </li><!-- unauthenticated } -->
+       <li class='collapsable'><!-- authenticated { -->
+        <h5 class='toggle'><span>Authenticated Methods</span></h4>
+        <ul class='collapsableList help-content'>
+        </ul>
+       </li><!-- authenticated } -->
+      </ul>
+     </div>
+    </li><!-- api_item } -->
+  
+    <li class='collapsable'><!-- api_tag { -->
+     <h4 id='api_tag' class='toggle collapsed'><span>tag</span> <span class='description'>&mdash; tag-related operations</span></h4>
+     <div class='help-content'>
+      <ul class='collapsableList'>
+       <li class='collapsable'><!-- unauthenticated { -->
+        <h5 class='toggle'><span>Unauthenticated Methods</span></h4>
+        <ul class='collapsableList help-content'>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>find</span></h5>
+          <div class='api-method help-content'><!-- api-method { -->
+           <p>Find a single tag.</p>
+           <table class='parameters'>
+            <tr><th>Parameters</th><th>Description</th></tr>
+            <tr><th>id</th><td>The desired tag's <b>tag</b> (name) or <b>tagId</b>.</td></tr>
+           </table>
+          </div><!-- api-method } -->
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>fetch</span></h5>
+          <div class='api-method help-content'></div>
+         </li>
+        </ul>
+       </li><!-- unauthenticated } -->
+       <li class='collapsable'><!-- authenticated { -->
+        <h5 class='toggle'><span>Authenticated Methods</span></h4>
+        <ul class='collapsableList help-content'>
+        </ul>
+       </li><!-- authenticated } -->
+      </ul>
+     </div>
+    </li><!-- api_tag } -->
+  
+    <li class='collapsable'><!-- api_bookmark { -->
+     <h4 id='api_bookmark' class='toggle collapsed'><span>bookmark</span> <span class='description'>&mdash; user bookmark-related functions</span></h4>
+     <div class='help-content'>
+      <ul class='collapsableList'>
+       <li class='collapsable'><!-- unauthenticated { -->
+        <h5 class='toggle'><span>Unauthenticated Methods</span></h4>
+        <ul class='collapsableList help-content'>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>find</span></h5>
+          <div class='api-method help-content'><!-- api-method { -->
+           <p>Find a single bookmark.</p>
+           <table class='parameters'>
+            <tr><th>Parameters</th><th>Description</th></tr>
+            <tr><th>id</th><td>The desired bokmark's identifier in the form <tt>%user%:%item%</tt> where <tt>%user%</tt> is the <b>name</b> (user name) or <b>userId</b> of the owner and <tt>%item%</tt> is the <b>url</b>, <b>urlHash</b>, or <b>itemId</b> of the bookmarked site.  If the bookmark is private, it will only be returned if the currently authenticated user is the owner.</tr>
+           </table>
+          </div><!-- api-method } -->
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>fetch</span></h5>
+          <div class='api-method help-content'></div>
+         </li>
+        </ul>
+       </li><!-- unauthenticated } -->
+       <li class='collapsable'><!-- authenticated { -->
+        <h5 class='toggle'><span>Authenticated Methods</span></h4>
+        <ul class='collapsableList help-content'>
+        </ul>
+       </li><!-- authenticated } -->
+      </ul>
+     </div>
+    </li><!-- api_bookmark } -->
+  
+    <li class='collapsable'><!-- api_activity { -->
+     <h4 id='api_activity' class='toggle collapsed'><span>activity</span> <span class='description'>&mdash; activity stream access</span></h4>
+     <div class='help-content'>
+      <ul class='collapsableList'>
+       <li class='collapsable'><!-- unauthenticated { -->
+        <h5 class='toggle'><span>Unauthenticated Methods</span></h4>
+        <ul class='collapsableList help-content'>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>find</span></h5>
+          <div class='api-method help-content'><!-- api-method { -->
+           <p>Find a single activity entry.</p>
+           <table class='parameters'>
+            <tr><th>Parameters</th><th>Description</th></tr>
+            <tr><th>id</th><td>The desired activity entry's <b>activityId</b>.</td></tr>
+           </table>
+          </div><!-- api-method } -->
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>fetch</span></h5>
+          <div class='api-method help-content'></div>
+         </li>
+        </ul>
+       </li><!-- unauthenticated } -->
+       <li class='collapsable'><!-- authenticated { -->
+        <h5 class='toggle'><span>Authenticated Methods</span></h4>
+        <ul class='collapsableList help-content'>
+        </ul>
+       </li><!-- authenticated } -->
+      </ul>
+     </div>
+    </li><!-- api_activity } -->
+  
+    <li class='collapsable'><!-- api_util { -->
+     <h4 id='api_util' class='toggle collapsed'><span>util</span> <span class='description'>&mdash; general purpose utilities</span></h4>
+     <div class='help-content'>
+      <ul class='collapsableList'>
+       <li class='collapsable'><!-- unauthenticated { -->
+        <h5 class='toggle'><span>Unauthenticated Methods</span></h4>
+        <ul class='collapsableList help-content'>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>getHead</span></h5>
+          <div class='api-method help-content'><!-- api-method { -->
+           <p>Retrieve the HTML &lt;head&gt; of the given url.</p>
+           <table class='parameters'>
+            <tr><th>Parameters</th><th>Description</th></tr>
+            <tr><th>url</th><td>The url of the desired site.</tr>
+            <tr><th>keepTags</th><td>A comma-separated list of HTML header tags that should be kept [ all ].</tr>
+           </table>
+          </div><!-- api-method } -->
+         </li>
+         <li class='collapsable'>
+          <h6 class='toggle collapsed method-name'><span>fetch</span></h5>
+          <div class='api-method help-content'></div>
+         </li>
+        </ul>
+       </li><!-- unauthenticated } -->
+       <li class='collapsable'><!-- authenticated { -->
+        <h5 class='toggle'><span>Authenticated Methods</span></h4>
+        <ul class='collapsableList help-content'>
+        </ul>
+       </li><!-- authenticated } -->
+      </ul>
+     </div>
+    </li><!-- api_util } -->
+   </ul><!-- api list } -->
 
-<h3><span>API</span></h3>
-<div class='help-content'>
- <p>The connexions API may be <a href='<?= $api->baseUrl ?>'>directly accessed</a> to allow easier understanding via experimentation.</p>
- <p>This API uses version 2 of the <?= Connexions::wikipedia_a('JSON-RPC') ?> protocol.</p>
- <p class='continued'>Generally the API is dividied into six sections</p>
- <ul class='outer'>
-  <li><b>user</b> &mdash; user-related functionality</li>
-  <li><b>item</b> &mdash; item/url-related methods</li>
-  <li><b>tag</b> &mdash; tag-related operations</li>
-  <li><b>bookmark</b> &mdash; user bookmark-related functions</li>
-  <li><b>activity</b> &mdash; activity stream access</li>
-  <li><b>util</b> &mdash; general purpose utilities</li>
- </ul>
-</div>
+  </div><!-- api } -->
+ </li>
+</ul>
