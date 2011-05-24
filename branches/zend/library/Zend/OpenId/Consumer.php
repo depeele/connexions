@@ -16,9 +16,9 @@
  * @category   Zend
  * @package    Zend_OpenId
  * @subpackage Zend_OpenId_Consumer
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2011 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Consumer.php 20096 2010-01-06 02:05:09Z bkarwin $
+ * @version    $Id: Consumer.php 23775 2011-03-01 17:25:24Z ralph $
  */
 
 /**
@@ -47,7 +47,7 @@ require_once 'Zend/Http/Client.php';
  * @category   Zend
  * @package    Zend_OpenId
  * @subpackage Zend_OpenId_Consumer
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2011 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_OpenId_Consumer
@@ -761,13 +761,6 @@ class Zend_OpenId_Consumer
                 $r)) {
             $version = 1.1;
             $server = $r[2];
-        /* :XXX: Based upon OpenId-2.0 patch:
-         *          http://framework.zend.com/issues/browse/ZF-6905 {
-         */
-        } else if (preg_match('/<URI>([^<]+)<\/URI>/i', $response, $r)) {
-            $version = 2.0;
-            $server = $r[1];
-        // :XXX: }
         } else {
             return false;
         }
@@ -855,15 +848,6 @@ class Zend_OpenId_Consumer
         if ($version >= 2.0) {
             $params['openid.ns'] = Zend_OpenId::NS_2_0;
         }
-        /* :XXX: Based upon OpenId-2.0 patch:
-         *          http://framework.zend.com/issues/browse/ZF-6905 {
-         */
-        if (($version <= 2.0) &&
-            ($server == 'https://www.google.com/accounts/o8/ud')) {
-            $id        = 'http://specs.openid.net/auth/2.0/identifier_select';
-            $claimedId = $id;
-        }
-        // :XXX: }
 
         $params['openid.mode'] = $immediate ?
             'checkid_immediate' : 'checkid_setup';

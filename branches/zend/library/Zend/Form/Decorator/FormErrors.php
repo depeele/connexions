@@ -15,7 +15,7 @@
  * @category   Zend
  * @package    Zend_Form
  * @subpackage Decorator
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2011 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -32,9 +32,9 @@ require_once 'Zend/Form/Decorator/Abstract.php';
  * @category   Zend
  * @package    Zend_Form
  * @subpackage Decorator
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2011 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: FormErrors.php 22273 2010-05-24 15:55:55Z alab $
+ * @version    $Id: FormErrors.php 23853 2011-04-10 16:06:30Z ramon $
  */
 class Zend_Form_Decorator_FormErrors extends Zend_Form_Decorator_Abstract
 {
@@ -122,6 +122,8 @@ class Zend_Form_Decorator_FormErrors extends Zend_Form_Decorator_Abstract
         $this->getPlacement();
         $this->getSeparator();
         $this->ignoreSubForms();
+        $this->getShowCustomFormErrors();
+        $this->getOnlyCustomFormErrors();
     }
 
     /**
@@ -343,19 +345,20 @@ class Zend_Form_Decorator_FormErrors extends Zend_Form_Decorator_Abstract
 
     /**
      * Get showCustomFormErrors
-     * 
+     *
      * @return bool
      */
     public function getShowCustomFormErrors()
     {
         if (null === $this->_showCustomFormErrors) {
-            if (null === ($how =  $this->getOption('showCustomFormErrors'))) {
+            if (null === ($show =  $this->getOption('showCustomFormErrors'))) {
                 $this->setShowCustomFormErrors($this->_defaults['showCustomFormErrors']);
             } else {
                 $this->setShowCustomFormErrors($show);
                 $this->removeOption('showCustomFormErrors');
             }
         }
+        return $this->_showCustomFormErrors;
     }
 
     /**
@@ -372,19 +375,20 @@ class Zend_Form_Decorator_FormErrors extends Zend_Form_Decorator_Abstract
 
     /**
      * Get onlyCustomFormErrors
-     * 
+     *
      * @return bool
      */
     public function getOnlyCustomFormErrors()
     {
         if (null === $this->_onlyCustomFormErrors) {
-            if (null === ($how =  $this->getOption('onlyCustomFormErrors'))) {
+            if (null === ($show =  $this->getOption('onlyCustomFormErrors'))) {
                 $this->setOnlyCustomFormErrors($this->_defaults['onlyCustomFormErrors']);
             } else {
                 $this->setOnlyCustomFormErrors($show);
                 $this->removeOption('onlyCustomFormErrors');
             }
         }
+        return $this->_onlyCustomFormErrors;
     }
 
     /**
@@ -446,10 +450,14 @@ class Zend_Form_Decorator_FormErrors extends Zend_Form_Decorator_Abstract
                              .  $view->formErrors($messages, $this->getOptions())
                              .  $this->getMarkupListItemEnd();
                 }
-            } else if (!$this->ignoreSubForms()) {
-                $content .= $this->getMarkupListStart()
-                          . $this->_recurseForm($subitem, $view)
-                          . $this->getMarkupListEnd();
+            } else if ($subitem instanceof Zend_Form && !$this->ignoreSubForms()) {
+                $markup = $this->_recurseForm($subitem, $view);
+
+                if (!empty($markup)) {
+                    $content .= $this->getMarkupListStart()
+                              . $markup
+                              . $this->getMarkupListEnd();
+                }
             }
         }
         return $content;
