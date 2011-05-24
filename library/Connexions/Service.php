@@ -290,12 +290,19 @@ abstract class Connexions_Service
                     Connexions::log("Connexions_Service[%s]::csList2set(): "
                                         . "getModel for item '%s': %sbacked",
                                     get_class($this),
-                                    $item,
+                                    $id,
                                     ($model->isBacked() ? '' : 'NOT '));
                     // */
 
-                    // See if the normalized item already exists in the set.
-                    if (! $set->contains($model))
+                    /* See if the normalized item already exists in the set.
+                     *
+                     * If the instance is NOT backed, it will have a non-unique
+                     * id so use the normalized string version for comparisons
+                     * in that case.
+                     */
+                    if (! $set->contains( ($model->isBacked()
+                                            ? $model
+                                            : $model->__toString())) )
                     {
                         /* The normalized item does NOT exist in the set.
                          *
