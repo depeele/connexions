@@ -2,6 +2,9 @@
 require_once TESTS_PATH .'/application/BaseTestCase.php';
 require_once APPLICATION_PATH .'/models/User.php';
 
+/**
+ *  @group Models
+ */
 class UserTest extends BaseTestCase
 {
     protected   $_user1 = array(
@@ -103,7 +106,7 @@ class UserTest extends BaseTestCase
 
         $mapper = $user->getMapper();
 
-        $this->assertType('Model_Mapper_User', $mapper);
+        $this->assertInstanceOf('Model_Mapper_User', $mapper);
     }
 
     public function testUserGetFilter()
@@ -112,7 +115,7 @@ class UserTest extends BaseTestCase
 
         $filter = $user->getFilter();
 
-        $this->assertType('Model_Filter_User', $filter);
+        $this->assertInstanceOf('Model_Filter_User', $filter);
     }
 
     /*************************************************************************

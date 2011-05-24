@@ -1,6 +1,9 @@
 <?php
 require_once TESTS_PATH .'/application/BaseTestCase.php';
 
+/**
+ *  @group Models
+ */
 class AuthTest extends BaseTestCase
 {
     public function testAuthUserPasswordType()

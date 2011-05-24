@@ -2,6 +2,9 @@
 require_once TESTS_PATH .'/application/BaseTestCase.php';
 require_once APPLICATION_PATH .'/models/Tag.php';
 
+/**
+ *  @group Filters
+ */
 class TagFilterTest extends BaseTestCase
 {
     protected function _getParsed($filter)

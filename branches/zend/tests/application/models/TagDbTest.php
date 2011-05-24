@@ -2,6 +2,9 @@
 require_once TESTS_PATH .'/application/DbTestCase.php';
 require_once APPLICATION_PATH .'/models/Tag.php';
 
+/**
+ *  @group Mappers
+ */
 class TagDbTest extends DbTestCase
 {
     private $_tag1  = array(

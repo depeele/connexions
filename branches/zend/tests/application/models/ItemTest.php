@@ -2,6 +2,9 @@
 require_once TESTS_PATH .'/application/BaseTestCase.php';
 require_once APPLICATION_PATH .'/models/Item.php';
 
+/**
+ *  @group Models
+ */
 class ItemTest extends BaseTestCase
 {
     protected   $_item1 = array(
@@ -77,7 +80,7 @@ class ItemTest extends BaseTestCase
 
         $mapper = $item->getMapper();
 
-        $this->assertType('Model_Mapper_Item', $mapper);
+        $this->assertInstanceOf('Model_Mapper_Item', $mapper);
     }
 
     public function testItemGetFilter()
@@ -86,6 +89,6 @@ class ItemTest extends BaseTestCase
 
         $filter = $item->getFilter();
 
-        $this->assertType('Model_Filter_Item', $filter);
+        $this->assertInstanceOf('Model_Filter_Item', $filter);
     }
 }

@@ -2,6 +2,9 @@
 require_once TESTS_PATH .'/application/DbTestCase.php';
 require_once APPLICATION_PATH .'/services/Item.php';
 
+/**
+ *  @group Services
+ */
 class ItemServiceTest extends DbTestCase
 {
     private     $_item0 = array(

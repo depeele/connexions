@@ -2,6 +2,9 @@
 require_once TESTS_PATH .'/application/DbTestCase.php';
 require_once APPLICATION_PATH .'/services/User.php';
 
+/**
+ *  @group Services
+ */
 class UserServiceTest extends DbTestCase
 {
     private     $_user0 = array(
@@ -1051,7 +1054,7 @@ class UserServiceTest extends DbTestCase
 
     public function testUserServicecsList2set()
     {
-        $expected   = array(1, 3, 4);
+        $expected   = array(1, 3, 4, 0, 0);
         $names      = "user1, user478,  user83, user12345, user91828";
         $service    = Connexions_Service::factory('Model_User');
         $users      = $service->csList2set( $names );
@@ -1530,7 +1533,7 @@ class UserServiceTest extends DbTestCase
 
         try
         {
-            $res = $service->addToNetwork( $user, 'User441, User?' );
+            $res = $service->addToNetwork( $user, 'User441, Unknown' );
             $this->fail("Unauthenticated update permitted");
         }
         catch (Exception $e)
@@ -1544,7 +1547,7 @@ class UserServiceTest extends DbTestCase
     public function testUserServiceAddToNetwork2()
     {
         // Authenticate as User1 to add
-        $expected = array('user?'   => 'Unknown user',
+        $expected = array('unknown' => 'Unknown user',
                           'User441' => true,
                           'User83'  => true);
         $service  = Connexions_Service::factory('Model_User');
@@ -1560,7 +1563,7 @@ class UserServiceTest extends DbTestCase
         $this->_setAuthenticatedUser($user);
         $this->assertTrue ($user->isAuthenticated());
 
-        $res = $service->addToNetwork( $user, 'user441, user?, user83' );
+        $res = $service->addToNetwork( $user, 'user441, unknown, user83' );
         //printf ("add results[ %s ]", Connexions::varExport($res));
 
         $this->assertEquals($expected, $res);
@@ -1595,7 +1598,7 @@ class UserServiceTest extends DbTestCase
 
         try
         {
-            $res = $service->removeFromNetwork( $user, 'User83, User?' );
+            $res = $service->removeFromNetwork( $user, 'User83, Unknown' );
             $this->fail("Unauthenticated update permitted");
         }
         catch (Exception $e)
@@ -1609,7 +1612,7 @@ class UserServiceTest extends DbTestCase
     public function testUserServiceRemoveFromNetwork2()
     {
         // Authenticate as User1 to add
-        $expected = array('user?'   => 'Unknown user',
+        $expected = array('unknown' => 'Unknown user',
                           'User83'  => true);
         $service  = Connexions_Service::factory('Model_User');
         $user     = $service->find( $this->_user1['userId']  );
@@ -1624,7 +1627,7 @@ class UserServiceTest extends DbTestCase
         $this->_setAuthenticatedUser($user);
         $this->assertTrue ($user->isAuthenticated());
 
-        $res = $service->removeFromNetwork( $user, 'user83, user?' );
+        $res = $service->removeFromNetwork( $user, 'user83, unknown' );
         //printf ("add results[ %s ]", Connexions::varExport($res));
 
         $this->assertEquals($expected, $res);

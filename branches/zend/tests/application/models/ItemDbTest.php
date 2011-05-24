@@ -2,6 +2,9 @@
 require_once TESTS_PATH .'/application/DbTestCase.php';
 require_once APPLICATION_PATH .'/models/Item.php';
 
+/**
+ *  @group Mappers
+ */
 class ItemDbTest extends DbTestCase
 {
     protected   $_item1 = array(
