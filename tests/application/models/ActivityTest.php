@@ -2,6 +2,9 @@
 require_once TESTS_PATH .'/application/BaseTestCase.php';
 require_once APPLICATION_PATH .'/models/Activity.php';
 
+/**
+ *  @group Models
+ */
 class ActivityTest extends BaseTestCase
 {
     protected static    $toArray_deep_all       = array(
@@ -64,6 +67,6 @@ class ActivityTest extends BaseTestCase
 
         $mapper = $item->getMapper();
 
-        $this->assertType('Model_Mapper_Activity', $mapper);
+        $this->assertInstanceOf('Model_Mapper_Activity', $mapper);
     }
 }

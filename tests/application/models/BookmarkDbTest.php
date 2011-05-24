@@ -2,6 +2,9 @@
 require_once TESTS_PATH .'/application/DbTestCase.php';
 require_once APPLICATION_PATH .'/models/Bookmark.php';
 
+/**
+ *  @group Mappers
+ */
 class BookmarkDbTest extends DbTestCase
 {
     protected   $_user1 = array(

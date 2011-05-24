@@ -1,6 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit bootstrap="../../bootstrap.php" colors="true" verbose="true">
-  <testsuite name="Application Tests : Models">
-    <directory>./</directory>
+  <testsuite name="Connexions_Models">
+    <file>UserTest.php</file>
+    <file>TagTest.php</file>
+    <file>ItemTest.php</file>
+    <file>BookmarkTest.php</file>
+    <file>GroupTest.php</file>
+    <file>UserAuthTest.php</file>
+    <file>AuthTest.php</file>
+    <file>ActivityTest.php</file>
+  </testsuite>
+  <testsuite name="Connexions_Mappers">
+    <file>UserDbTest.php</file>
+    <file>TagDbTest.php</file>
+    <file>ItemDbTest.php</file>
+    <file>BookmarkDbTest.php</file>
+    <file>GroupDbTest.php</file>
+    <file>UserAuthDbTest.php</file>
+    <file>ActivityDbTest.php</file>
+  </testsuite>
+  <testsuite name="Connexions_Filters">
+    <file>UserFilterTest.php</file>
+    <file>TagFilterTest.php</file>
+    <file>BookmarkFilterTest.php</file>
+  </testsuite>
+  <testsuite name="Connexions_Services">
+    <file>UserServiceTest.php</file>
+    <file>TagServiceTest.php</file>
+    <file>ItemServiceTest.php</file>
+    <file>BookmarkServiceTest.php</file>
+    <file>GroupServiceTest.php</file>
+    <file>ActivityServiceTest.php</file>
   </testsuite>
 </phpunit>

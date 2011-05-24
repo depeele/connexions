@@ -2,6 +2,12 @@
 require_once TESTS_PATH .'/library/LibraryTestCase.php';
 require_once LIBRARY_PATH .'/Connexions/Model.php';
 
+// Simple Test Model Mapper
+class Model_Mapper_UnitTest extends Model_Mapper_Base
+{
+    protected   $_keyNames  = array('unitId');
+}
+
 // Simple Test Model
 class Model_UnitTest extends Connexions_Model
 {
@@ -9,6 +15,12 @@ class Model_UnitTest extends Connexions_Model
         'unitId'    => null,
         'name'      => ''
     );
+
+    public function __construct($config = array())
+    {
+        $this->_mapper = new Model_Mapper_UnitTest();
+        return parent::__construct($config);
+    }
 
     public function getId()
     {
@@ -77,7 +89,7 @@ class ModelTest extends LibraryTestCase
 
         $this->assertEquals($expected, $unit->toArray());
         $this->assertFalse( $unit->isBacked() );
-        $this->assertFalse( $unit->isValid() );
+        $this->assertTrue(  $unit->isValid() );
     }
 
     public function testBasicSetters()
@@ -90,7 +102,7 @@ class ModelTest extends LibraryTestCase
         $unit->setIsBacked(false);
         $this->assertFalse( $unit->isBacked() );
 
-        $this->assertFalse( $unit->isValid() );
+        $this->assertTrue(  $unit->isValid() );
         $unit->setIsValid();
         $this->assertTrue( $unit->isValid() );
         $unit->setIsValid(false);
@@ -155,6 +167,7 @@ class ModelTest extends LibraryTestCase
         $this->assertEquals($expected, $unit->toArray());
     }
 
+    /*
     public function testGetMapperWithNoMapperClass()
     {
         $unit = new Model_UnitTest( );
@@ -163,6 +176,7 @@ class ModelTest extends LibraryTestCase
 
         $this->assertEquals(Connexions_Model_Mapper::NO_INSTANCE, $mapper);
     }
+    // */
 
     public function testGetFilterWithNoFilterClass()
     {

@@ -2,6 +2,9 @@
 require_once TESTS_PATH .'/application/DbTestCase.php';
 require_once APPLICATION_PATH .'/models/Activity.php';
 
+/**
+ *  @group Mappers
+ */
 class ActivityDbTest extends DbTestCase
 {
     protected static    $toArray_deep_all       = array(

@@ -2,6 +2,9 @@
 require_once TESTS_PATH .'/application/DbTestCase.php';
 require_once APPLICATION_PATH .'/models/User.php';
 
+/**
+ *  @group Mappers
+ */
 class UserDbTest extends DbTestCase
 {
     private $_user1 = array(
@@ -54,6 +57,9 @@ class UserDbTest extends DbTestCase
          */
         $uMapper = Connexions_Model_Mapper::factory('Model_Mapper_User');
         $uMapper->flushIdentityMap();
+
+        $tMapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
+        $tMapper->flushIdentityMap();
 
         parent::tearDown();
     }

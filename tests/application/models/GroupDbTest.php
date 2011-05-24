@@ -2,6 +2,9 @@
 require_once TESTS_PATH .'/application/DbTestCase.php';
 require_once APPLICATION_PATH .'/models/Group.php';
 
+/**
+ *  @group Mappers
+ */
 class GroupDbTest extends DbTestCase
 {
     private $_group1 = array(

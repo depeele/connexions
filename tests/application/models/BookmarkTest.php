@@ -2,6 +2,9 @@
 require_once TESTS_PATH .'/application/BaseTestCase.php';
 require_once APPLICATION_PATH .'/models/Bookmark.php';
 
+/**
+ *  @group Models
+ */
 class BookmarkTest extends BaseTestCase
 {
     protected   $_bookmark1 = array(
@@ -93,7 +96,7 @@ class BookmarkTest extends BaseTestCase
 
         $mapper = $bookmark->getMapper();
 
-        $this->assertType('Model_Mapper_Bookmark', $mapper);
+        $this->assertInstanceOf('Model_Mapper_Bookmark', $mapper);
     }
 
     public function testBookmarkGetFilter()
@@ -102,6 +105,6 @@ class BookmarkTest extends BaseTestCase
 
         $filter = $bookmark->getFilter();
 
-        $this->assertType('Model_Filter_Bookmark', $filter);
+        $this->assertInstanceOf('Model_Filter_Bookmark', $filter);
     }
 }

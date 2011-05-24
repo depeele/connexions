@@ -2,6 +2,9 @@
 require_once TESTS_PATH .'/application/BaseTestCase.php';
 require_once APPLICATION_PATH .'/models/UserAuth.php';
 
+/**
+ *  @group Models
+ */
 class UserAuthTest extends BaseTestCase
 {
     public function testUserAuthConstructorInjectionOfProperties()
@@ -39,7 +42,7 @@ class UserAuthTest extends BaseTestCase
 
         $mapper = $userAuth->getMapper();
 
-        $this->assertType('Model_Mapper_UserAuth', $mapper);
+        $this->assertInstanceOf('Model_Mapper_UserAuth', $mapper);
     }
 
     public function testUserAuthGetFilter()
@@ -48,7 +51,7 @@ class UserAuthTest extends BaseTestCase
 
         $filter = $userAuth->getFilter();
 
-        //$this->assertType('Model_Filter_UserAuth', $filter);
+        //$this->assertInstanceOf('Model_Filter_UserAuth', $filter);
         $this->assertEquals(Connexions_Model::NO_INSTANCE, $filter);
     }
 

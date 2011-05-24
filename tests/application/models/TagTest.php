@@ -2,6 +2,9 @@
 require_once TESTS_PATH .'/application/BaseTestCase.php';
 require_once APPLICATION_PATH .'/models/Tag.php';
 
+/**
+ *  @group Models
+ */
 class TagTest extends BaseTestCase
 {
     protected $_tag1    = array(
@@ -74,7 +77,7 @@ class TagTest extends BaseTestCase
 
         $mapper = $tag->getMapper();
 
-        $this->assertType('Model_Mapper_Tag', $mapper);
+        $this->assertInstanceOf('Model_Mapper_Tag', $mapper);
     }
 
     public function testTagGetFilter()
@@ -83,6 +86,6 @@ class TagTest extends BaseTestCase
 
         $filter = $tag->getFilter();
 
-        $this->assertType('Model_Filter_Tag', $filter);
+        $this->assertInstanceOf('Model_Filter_Tag', $filter);
     }
 }

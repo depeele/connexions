@@ -2,6 +2,9 @@
 require_once TESTS_PATH .'/application/DbTestCase.php';
 require_once APPLICATION_PATH .'/services/Bookmark.php';
 
+/**
+ *  @group Services
+ */
 class BookmarkServiceTest extends DbTestCase
 {
     protected   $_user1 = array(
@@ -1246,6 +1249,7 @@ class BookmarkServiceTest extends DbTestCase
         $this->assertEquals($expected, $bookmarks);
     }
 
+    /** @outputBuffering disabled */
     public function testBookmarkServiceCreateBookmark1()
     {
         $user = $this->_user1;
@@ -1295,10 +1299,12 @@ class BookmarkServiceTest extends DbTestCase
          * Create the new bookmark and save it.
          */
         $service  = Connexions_Service::factory('Model_Bookmark');
-        $bookmark = $service->get( $template );
-        $bookmark = $bookmark->save();
 
-        //echo "Bookmark:\n", $bookmark->debugDump(), "\n";
+        $bookmark = $service->get( $template );
+        //echo "Bookmark (get):\n", $bookmark->debugDump(), "\n";
+
+        $bookmark = $bookmark->save();
+        //echo "Bookmark (save):\n", $bookmark->debugDump(), "\n";
 
         // Adjust the dynamic values in our expected results
         $expected['taggedOn']          = $bookmark->taggedOn;

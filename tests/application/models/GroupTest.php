@@ -2,6 +2,9 @@
 require_once TESTS_PATH .'/application/BaseTestCase.php';
 require_once APPLICATION_PATH .'/models/Group.php';
 
+/**
+ *  @group Models
+ */
 class GroupTest extends BaseTestCase
 {
     public function testGroupConstructorInjectionOfProperties()
@@ -50,7 +53,7 @@ class GroupTest extends BaseTestCase
 
         $mapper = $group->getMapper();
 
-        $this->assertType('Model_Mapper_Group', $mapper);
+        $this->assertInstanceOf('Model_Mapper_Group', $mapper);
     }
 
     public function testGroupGetFilter()

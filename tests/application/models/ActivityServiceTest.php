@@ -2,6 +2,9 @@
 require_once TESTS_PATH .'/application/DbTestCase.php';
 require_once APPLICATION_PATH .'/services/Activity.php';
 
+/**
+ *  @group Services
+ */
 class ActivityServiceTest extends DbTestCase
 {
     protected static    $toArray_deep_all       = array(
