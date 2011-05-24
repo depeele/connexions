@@ -730,8 +730,6 @@ abstract class Connexions_Model
                 else
                 {
                     $operation  = 'save';
-                    $properties = $this->toArray(array('deep'  => false,
-                                                       'dirty' => false));
                 }
             }
 
@@ -739,6 +737,11 @@ abstract class Connexions_Model
 
             if (($noLog !== true) && $res->isBacked())
             {
+                if ($operation === 'save')
+                {
+                    $properties = $res->toArray(array('deep'  => false,
+                                                      'dirty' => false));
+                }
                 $this->_logActivity($operation, $properties);
             }
         }
