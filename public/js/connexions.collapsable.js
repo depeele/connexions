@@ -96,11 +96,11 @@ $.widget("connexions.collapsable", {
         else
         {
             self.$content = self.$toggle.next();
-            self.$content.addClass('ui-corner-bottom');
         }
 
         // Add styling to the toggle and content
         self.$toggle.addClass('ui-corner-top');
+        self.$content.addClass('ui-corner-bottom');
 
         // Add an open/close indicator
         self.$toggle.prepend( '<div class="ui-icon">&nbsp;</div>');

@@ -5,14 +5,32 @@
 @import "sprites";
 
 #help {
-  h3 {
+  h3,h4,h5,h6 {
     color:          $linkColor;
-    padding:        1em 0 0;
     font-weight:    bold;
-    border-bottom:  unquote("1px solid") $borderColor;
+    margin-bottom:  0.5em;
   }
+  h3 {
+    font-size:      1.2em;
+    border-bottom:  unquote("1px solid") $borderColor;
+    padding:        1em 0 0;
+  }
+  h4 {
+    font-size:      1.1em;
+    border-bottom:  unquote("1px dotted") $borderColor;
+    margin-left:    0.5em;
+    padding:        0.5em 0 0;
+  }
+  h5 {
+    font-size:      1em;
+  }
+
   ul {
     padding:        0;
+  }
+
+  sup {
+    font-size:      0.75em;
   }
 
   .figure {
@@ -35,31 +53,6 @@
     }
   }
 
-  .collapsable {
-    .toggle {
-      color:            $linkColor;
-      background-color: inherit;
-      border:           none;
-      
-    }
-
-    .faq-answer {
-      margin-left:    10px;
-      padding:        0.5em 2em 1em;
-
-      border-bottom:  unquote("1px solid") $borderColor;
-      border-left:    unquote("1px solid") $borderColor;
-
-      p {
-        padding:  0;
-      }
-    }
-  }
-
-  .continued {
-    padding-bottom: 0;
-  }
-
   .help-content {
     ul {
       padding-left: 1em;
@@ -70,8 +63,73 @@
       }
     }
 
+    .toggle {
+      margin:           0;
+      padding:          0;
+    }
+
     .outer {
       padding-left: 2em;
+    }
+  }
+
+  .collapsableList {
+    padding-left: 0;
+    .collapsable {
+      list-style:         none;
+      margin:             0;
+
+      .toggle {
+        color:            $linkColor;
+        background-color: inherit;
+        border:           none;
+      }
+
+      .help-content {
+        margin-left:    0.8em;
+        margin-bottom:  0.8em;
+        padding:        0.25em 1em 1em 0;
+        border-bottom:  unquote("1px dotted") $lightestGrey;
+        border-left:    unquote("1px dotted") $lightestGrey;
+
+        .collapsableList {
+          padding-left: 0.8em;
+          .toggle {
+            margin-left:  0;
+          }
+        }
+      }
+
+      .faq-answer {
+      }
+    }
+  }
+
+  p {
+    padding:  0 0 1em 1em;
+  }
+  pre {
+    font-size:  0.9em;
+    padding:    0 0 1em 2em;
+  }
+  .continued, .description {
+    padding-bottom: 0;
+  }
+  span.description {
+    color:  $themeText;
+  }
+
+  .api-method {
+    table {
+      margin-left:    1em;
+
+      th, td {
+        padding:      0.1em 0.5em;
+      }
+
+      th {
+        font-weight:  bold;
+      }
     }
   }
 }
