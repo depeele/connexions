@@ -28,6 +28,7 @@
  *   resources.Jquery.noconflictmode = false        ; default
  *   resources.Jquery.version = 1.7.1               ; <null>
  *   resources.Jquery.localpath = "/foo/bar"
+ *   resources.Jquery.enable = true
  *   resources.Jquery.uienable = true;
  *   resources.Jquery.ui_enable = true;
  *   resources.Jquery.uiversion = 0.7.7;
@@ -107,7 +108,7 @@ class ZendX_Application_Resource_Jquery
         $options = array_merge($options, array('cdn_ssl' => false));
 
         foreach ($options as $key => $value) {
-            switch($key) {
+            switch(strtolower($key)) {
                 case 'noconflictmode':
                     if (!(bool)$value) {
                         ZendX_JQuery_View_Helper_JQuery::disableNoConflictMode();
@@ -155,13 +156,21 @@ class ZendX_Application_Resource_Jquery
             }
         }
 
-        if ((isset($key['uienable']) && (bool) $key['uienable'])
-            || (isset($key['ui_enable']) && (bool) $key['ui_enable'])
-            || (!isset($key['ui_enable']) && !isset($key['uienable'])))
+        if ((isset($options['uienable']) && (bool) $options['uienable'])
+            || (isset($options['ui_enable']) && (bool) $options['ui_enable'])
+            || (!isset($options['ui_enable']) && !isset($options['uienable'])))
         {
             $this->_view->JQuery()->uiEnable();
         } else {
             $this->_view->JQuery()->uiDisable();
+        }
+
+        if ((isset($options['enable']) && (bool) $options['enable'])
+           || !isset($options['enable']))
+        {
+            $this->_view->JQuery()->enable();
+        } else {
+            $this->_view->JQuery()->disable();
         }
     }
 }
