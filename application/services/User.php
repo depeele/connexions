@@ -290,7 +290,6 @@ class Service_User extends Service_Base
             throw new Exception('Operation prohibited for an '
                                 .   'unauthenticated user.');
         }
-        // */
 
         /* We grab both an array and set so we can check to see if any of the
          * identified user's are unknown and mark them as such
@@ -309,25 +308,16 @@ class Service_User extends Service_Base
         // */
 
 
-        $res           = array();
-        if (count($ids) > count($userInstances))
-        {
-            /* One or more target users are invalid.  Mark those that are
-             * invalid.
-             */
-            foreach ($ids as $id)
-            {
-                if (! $userInstances->contains($id))
-                {
-                    $res[ $id ] = 'Unknown user';
-                }
-            }
-        }
-
-        // Now, attempt to add all those user that are valid.
+        /* Attempt to add all those user that are valid, marking those that are
+         * 'unbacked' as "Unknown"
+         */
+        $res = array();
         foreach ($userInstances as $newUser)
         {
-            $res[ $newUser->__toString() ] = $user->addToNetwork( $newUser );
+            $res[ $newUser->__toString() ] =
+                ($newUser->isBacked()
+                    ?  $user->addToNetwork( $newUser )
+                    : 'Unknown user');
         }
 
         /*
@@ -382,25 +372,16 @@ class Service_User extends Service_Base
         // */
 
 
+        /* Attempt to remove all those user that are valid, marking those that
+         * are 'unbacked' as "Unknown"
+         */
         $res           = array();
-        if (count($ids) > count($userInstances))
-        {
-            /* One or more target users are invalid.  Mark those that are
-             * invalid.
-             */
-            foreach ($ids as $id)
-            {
-                if (! $userInstances->contains($id))
-                {
-                    $res[ $id ] = 'Unknown user';
-                }
-            }
-        }
-
-        // Now, attempt to add all those user that are valid.
         foreach ($userInstances as $remUser)
         {
-            $res[ ''.$remUser ] = $user->removeFromNetwork( $remUser );
+            $res[ $remUser->__toString() ] =
+                ($remUser->isBacked()
+                    ?  $user->removeFromNetwork( $remUser )
+                    : 'Unknown user');
         }
 
         return $res;
