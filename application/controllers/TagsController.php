@@ -444,10 +444,19 @@ class TagsController extends Connexions_Controller_Action
             $fetchOrder = array('i.userCount   DESC',
                                 'ratingCount   DESC',
                                 'url           ASC');
+
             $items      = $service->fetchByUsers($this->_users,
+                                                 false, // exact?
                                                  $fetchOrder,
                                                  $count,
                                                  $offset);
+
+            /*
+            Connexions::log("TagsController::_prepare_sidebar( %s ): "
+                            .   "items[ %s ]",
+                            $pane,
+                            Connexions::varExport($items));
+            // */
 
             $config['items']            =& $items;
             //$config['itemBaseUrl']      =  $this->_helper->url(null, 'url');
