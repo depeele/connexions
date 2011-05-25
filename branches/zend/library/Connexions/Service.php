@@ -290,7 +290,7 @@ abstract class Connexions_Service
                     Connexions::log("Connexions_Service[%s]::csList2set(): "
                                         . "getModel for item '%s': %sbacked",
                                     get_class($this),
-                                    $id,
+                                    Connexions::varExport($data),
                                     ($model->isBacked() ? '' : 'NOT '));
                     // */
 
@@ -312,6 +312,13 @@ abstract class Connexions_Service
                          */
                         if (($create === true) && (! $model->isBacked()) )
                         {
+                            /*
+                            Connexions::log("Connexions_Service[%s]::"
+                                            .   "csList2set(): save[ %s ]",
+                                            get_class($this),
+                                            $model->debugDump());
+                            // */
+
                             $model = $model->save();
                         }
                         $set->append( $model );
@@ -382,6 +389,8 @@ abstract class Connexions_Service
             return (array)$str;
         }
 
+        $orig = $str;
+
         // Remove any empty items (e.g. ",,")
         $str  = preg_replace('/,\s*,/', ',', $str);
 
@@ -396,7 +405,7 @@ abstract class Connexions_Service
         /*
         Connexions::log("Connexions_Service::_csList2array( %s ): "
                         . "[ %s ]",
-                        $str,
+                        $orig,
                         Connexions::varExport($list));
         // */
 

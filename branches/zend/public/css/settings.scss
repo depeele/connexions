@@ -445,8 +445,9 @@
 
 // For the iframe contents
 #bookmark-import-results {
-  overflow-x: hidden;
-  overflow-y: hidden;
+  overflow-x:       hidden;
+  overflow-y:       hidden;
+  background-color: $pageColorBackground;
 
   h3 {
     .tags {

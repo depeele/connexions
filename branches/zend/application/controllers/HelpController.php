@@ -44,11 +44,18 @@ class HelpController extends Connexions_Controller_Action
     {
         $request =& $this->_request;
 
-        $this->view->tabs  = self::$tabs;
-        $this->view->topic = $request->getParam('topic', null);
+        $this->view->tabs    = self::$tabs;
+        $this->view->topic   = $request->getParam('topic',   null);
+        $this->view->section = $request->getParam('section', null);
+        $this->view->rest    = $request->getParam('rest',    null);
 
-        Connexions::log("HelpController::indexAction(): topic[ %s ]",
-                        Connexions::varExport($this->view->topic));
+        /*
+        Connexions::log("HelpController::indexAction(): "
+                        .   "topic[ %s ], section[ %s ], rest[ %s ]",
+                        Connexions::varExport($this->view->topic),
+                        Connexions::varExport($this->view->section),
+                        Connexions::varExport($this->view->rest));
+        // */
 
         // HTML form/cookie namespace
         $this->_namespace = 'help';

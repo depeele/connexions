@@ -380,8 +380,11 @@ class Connexions
     public static function wikipedia_a($term, $title = null)
     {
         $title = (empty($title) ? $term : $title);
-        return "<a class='wikipedia' "
-                .  "href='". self::wikipedia($term) ."'>{$title}</a>";
+        return  "<span class='external-link'>"
+               . "<a class='wikipedia' "
+               .     "href='". self::wikipedia($term) ."'>{$title}</a>"
+               . "<span class='icon connexions_sprites link-wikipedia'></span>"
+               ."</span>";
     }
 
     /** @brief  Given a site URL, apply any 'base' url prefix and return.

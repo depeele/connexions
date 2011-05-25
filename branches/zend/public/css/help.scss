@@ -29,6 +29,10 @@
     padding:        0;
   }
 
+  a {
+    color:          $linkColor;
+  }
+
   sup {
     font-size:      0.75em;
   }
@@ -74,7 +78,8 @@
   }
 
   .collapsableList {
-    padding-left: 0;
+    padding-left:   0;
+    margin-bottom:  1em;
     .collapsable {
       list-style:         none;
       margin:             0;
@@ -91,6 +96,8 @@
         padding:        0.25em 1em 1em 0;
         border-bottom:  unquote("1px dotted") $lightestGrey;
         border-left:    unquote("1px dotted") $lightestGrey;
+        border-top:     none;
+        border-right:   none;
 
         .collapsableList {
           padding-left: 0.8em;
@@ -119,9 +126,13 @@
     color:  $themeText;
   }
 
-  .api-method {
+  .api-method, .api-record {
+    p {
+      padding:  0.5em 1em;
+    }
     table {
       margin-left:    1em;
+      margin-bottom:  0.5em;
 
       th, td {
         padding:      0.1em 0.5em;

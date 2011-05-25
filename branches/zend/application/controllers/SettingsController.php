@@ -687,9 +687,15 @@ class SettingsController extends Connexions_Controller_Action
              *       generally use ending tags.
              *
              */
-            if (preg_match('/^<DT><A HREF="([^"]+)"([^>]*?)>([^<]+)<\/A>/i',
+            if (preg_match('/^(?:<DL><p>)?<DT><A HREF="([^"]+)"([^>]*?)>([^<]+)<\/A>/i',
                                                             $line, $markInfo))
             {
+                if (preg_match('/^<DL>/', $line))
+                {
+                    // Technical start of a folder
+                    $state['level']++;
+                }
+
                 // Add any delayed bookmark.
                 $this->_addBookmark($state);
 
@@ -1045,7 +1051,7 @@ class SettingsController extends Connexions_Controller_Action
                 case 'tags':
                     // Normalize the provided tags
                     $val = implode(',',
-                                   preg_split('#\s*[/,+]\s*#', $val));
+                                   preg_split('#\s*,\s*#', $val));
 
                     array_push($state['bookmark']['tags'], $val);
                     break;

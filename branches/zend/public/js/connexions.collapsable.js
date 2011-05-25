@@ -90,17 +90,17 @@ $.widget("connexions.collapsable", {
                                         .insertAfter(self.$toggle);
                     self.$content.data('destroy.collapsable', true);
                 }
-                self.$content.addClass('content');
             }
         }
-        else
+
+        if ( (! self.$content) || (self.$content.length < 1) )
         {
             self.$content = self.$toggle.next();
         }
 
         // Add styling to the toggle and content
         self.$toggle.addClass('ui-corner-top');
-        self.$content.addClass('ui-corner-bottom');
+        self.$content.addClass('content ui-corner-bottom');
 
         // Add an open/close indicator
         self.$toggle.prepend( '<div class="ui-icon">&nbsp;</div>');

@@ -7,7 +7,7 @@
 class Model_Filter_Tag extends Connexions_Model_Filter
 {
     const   ENCODING    = 'UTF-8';
-    const   MIN_LENGTH  = 2;
+    const   MIN_LENGTH  = 1;
     const   MAX_LENGTH  = 30;
 
     protected $_filterRules     = array(
@@ -15,22 +15,6 @@ class Model_Filter_Tag extends Connexions_Model_Filter
         'tag'           => array(array('callback',
                                        'callback' =>
                                             'Model_Filter_Tag::filterTag'),
-        /* Collapse all filtering to a single callback
-        'tag'           => array('stripTags',  'stripNewlines',
-                                 'stringTrim', 'stringToLower',
-                                 // Collapse white-space
-                                 array('pregReplace',
-                                       'match'  => '/\s+/',
-                                       'replace'=> ' '),
-                                 // Remove invalid characters
-                                 array('pregReplace',
-                                       'match'  => '/[,"\\\'`\\\\]/',
-                                       'replace'=> ''),
-                                 // length
-                                 array('pregReplace',
-                                        'match'  => '/(.{2,30}).*' .'/',
-                                       'replace'=> '$1'),
-        */
         ),
 
         // The following SHOULD NOT be set from outside the Model Layers
@@ -62,6 +46,8 @@ class Model_Filter_Tag extends Connexions_Model_Filter
 
     static public function filterTag($value)
     {
+        $orig = $value;
+
         /* Decode any HTML entities, handling '&nbsp;' and '&shy;' specially
          * since html_entity_decode() generates some uniicode character that
          * isn't matched by \s, \pZ, \pM, \pP, nor \pC
@@ -92,6 +78,18 @@ class Model_Filter_Tag extends Connexions_Model_Filter
         $value = preg_replace('/(.{'. self::MIN_LENGTH .','
                                     . self::MAX_LENGTH .'}).*'.'/',
                               '$1', $value);
+
+        if (empty($value))
+        {
+            // Replace an empty value with '_empty_'
+            // /*
+            Connexions::log("Model_Filter_Tag::filterTag(): value[ %s ] "
+                            .   "filters to an empty tag",
+                            $orig);
+            // */
+
+            $value = '_empty_';
+        }
 
         return $value;
     }

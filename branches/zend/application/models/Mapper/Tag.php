@@ -54,6 +54,54 @@ class Model_Mapper_Tag extends Model_Mapper_Base
         return $id;
     }
 
+    /** @brief  Given an array of identification value(s) that will be used to
+     *          retrieve a set of model instances (via fetch()), normalize them 
+     *          to an array of attribute/value(s) pairs.
+     *  @param  ids     An array of identification value(s) (string, integer, 
+     *                  array).  Each identification value MAY be an 
+     *                  associative array that specifically identifies 
+     *                  attribute/value pairs.
+     *
+     *  Override Connexions_Model_Mapper::normalizeIds() so we can better
+     *  handle numeric tags within a list of non-numeric tags.
+     *
+     *  @return An array containing arrays of attribute/value(s) pairs suitable 
+     *          for retrieval.
+     */
+    public function normalizeIds($ids)
+    {
+        $ret = parent::normalizeIds($ids);
+
+        /* Heuristic to combine:
+         *  If there are exactly two different fields, they are 'tag' and
+         *  'tagId', and the number of entries in 'tag' exceeds the number of
+         *  entries in 'tagId', combine 'tagId' with 'tag'.
+         */
+        if ( (count($ret) === 2)                            &&
+             ((isset($ret['tag']) && isset($ret['tagId']))) &&
+             (count($ret['tag']) >= count($ret['tagId'])) )
+        {
+            /*
+            Connexions::log("Model_Mapper_Tag::normalizeIds(): "
+                            .   "ids[ %s ] == %d fields in [ %s ]",
+                            Connexions::varExport($ids),
+                            count($ret),
+                            Connexions::varExport($ret));
+            // */
+
+            $ret['tag'] = array_merge((array)$ret['tag'], (array)$ret['tagId']);
+            unset($ret['tagId']);
+        }
+
+        /*
+        Connexions::log("Model_Mapper_Tag::normalizeIds(): "
+                        .   "consolidated ret[ %s ]",
+                        Connexions::varExport($ret));
+        // */
+
+        return $ret;
+    }
+
     /** @brief  Retrieve a set of tag-related users
      *  @param  tag     The Model_Tag instance.
      *

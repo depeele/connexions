@@ -451,6 +451,18 @@ body {
   }
 }
 
+// External links
+.external-link {
+  @include      inlineBlock();
+  color:        $linkColor;
+  padding-right:18px;
+  .icon {
+    position:   absolute;
+    top:        -4px;
+    right:      2px;
+  }
+}
+
 // Hidden HTML templates used by the Javascript so it doesn't need to directly
 // know how to render the HTML
 .template {
