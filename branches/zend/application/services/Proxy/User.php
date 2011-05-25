@@ -158,7 +158,7 @@ class Service_Proxy_User extends Connexions_Service_Proxy
      *  @param  fullName    The new 'fullName'   (null for no change);
      *  @param  email       The new 'email'      (null for no change);
      *  @param  pictureUrl  The new 'pictureUrl' (null for no change);
-     *  @param  profileUrl  The new 'profile'    (null for no change);
+     *  @param  profile     The new 'profile'    (null for no change);
      *  @param  apiKey      The apiKey for the currently authenticated user
      *                      (REQUIRED if the transport method is NOT POST);
      *
@@ -167,13 +167,13 @@ class Service_Proxy_User extends Connexions_Service_Proxy
     public function update($fullName    = null,
                            $email       = null,
                            $pictureUrl  = null,
-                           $profileUrl  = null,
+                           $profile     = null,
                            $apiKey      = null)
     {
         $user = $this->_authenticate($apiKey);
 
         return $this->_service->update($user, $fullName, $email,
-                                       $pictureUrl, $profileUrl);
+                                       $pictureUrl, $profile);
     }
 
     /** @brief  Regenerate the API Key for the currently authenticated user.

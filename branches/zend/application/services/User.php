@@ -497,7 +497,7 @@ class Service_User extends Service_Base
      *  @param  fullName    The new 'fullName'   (null for no change);
      *  @param  email       The new 'email'      (null for no change);
      *  @param  pictureUrl  The new 'pictureUrl' (null for no change);
-     *  @param  profileUrl  The new 'profile'    (null for no change);
+     *  @param  profile     The new 'profile'    (null for no change);
      *
      *  @return The updated user.
      */
@@ -505,7 +505,7 @@ class Service_User extends Service_Base
                                         $fullName   = null,
                                         $email      = null,
                                         $pictureUrl = null,
-                                        $profileUrl = null)
+                                        $profile    = null)
     {
         /* SHOULD be handled by the Proxy for any API path
          * but double-check here for extra protection
@@ -529,7 +529,7 @@ class Service_User extends Service_Base
         if (! empty($fullName))     $user->fullName   = $fullName;
         if (! empty($email))        $user->email      = $email;
         if (! empty($pictureUrl))   $user->pictureUrl = $pictureUrl;
-        if (! empty($profileUrl))   $user->profile    = $profileUrl;
+        if (! empty($profile))      $user->profile    = $profile;
 
         if (! $user->isValid())
         {
