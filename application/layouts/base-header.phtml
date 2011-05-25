@@ -181,4 +181,4 @@ $jQuery->addJavascript(implode('', $js));
   <?= $this->jQuery() ?>
 
 </head>
-<body>
+<body<?= (isset($this->bodyCss) ? " class='{$this->bodyCss}'" : '') ?>>
