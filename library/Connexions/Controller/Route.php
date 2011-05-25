@@ -77,7 +77,11 @@ class Connexions_Controller_Route
                                     ':setting'  => false)
                            ),
   
-        'help'          => array(':topic'   => false),
+        'help'          => array(':topic'   => array(
+                                    ':section'  => array(
+                                        ':rest'     => true)
+                                    )
+                           ),
   
         'api'           => array(':cmd'     => array(
                                     ':subCmd'  => array(
@@ -209,10 +213,21 @@ class Connexions_Controller_Route
                     else if (@isset($parts[$idex]))
                     {
                         // Pull the value from the URL
-                        $params[$name] = $parts[$idex];
-                        $idex++;
+                        if ($val === true)
+                        {
+                            /* This portion of the route should receive
+                             * everything else
+                             */
+                            $params[$name] = array_slice($parts, $idex);
+                            $idex = $nParts + 1;
+                        }
+                        else
+                        {
+                            $params[$name] = $parts[$idex];
+                            $idex++;
 
-                        $newRoute = $val;
+                            $newRoute = $val;
+                        }
                         break;
                     }
                 }
@@ -230,6 +245,17 @@ class Connexions_Controller_Route
             $route = $newRoute;
         }
 
+        /*
+        Connexions::log("Connexions_Controller_Route::match: "
+                        .   "idex[ %d ], nParts[ %d ], parts[ %s ], "
+                        .   "ending route value[ %s ], "
+                        .   "params[ %s ]",
+                        $idex, $nParts, Connexions::varExport($parts),
+                        $route,
+                        Connexions::varExport($params));
+        // */
+
+
         if (($idex < $nParts) && (! $partial))
         {
             /*
@@ -243,8 +269,9 @@ class Connexions_Controller_Route
         /*
         Connexions::log(
                 sprintf("Connexions_Controller_Route::match: "
-                            . "Params [ %s ]",
-                         print_r($params, true)) );
+                         . "key[ %s ], Params [ %s ]",
+                         $routeKey,
+                         Connexions::varExport($params)) );
         // */
 
         // Remember this current route

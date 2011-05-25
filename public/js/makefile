@@ -2,7 +2,7 @@
 YUI_COMP	= yui-compressor
 
 SRCS =	connexions.js jquery.registry.js jquery.cookie.js 		\
-	jquery.pngFix.js						\
+	jquery.scrollTo.js jquery.pngFix.js				\
 	ui.checkbox.js ui.input.js ui.tagInput.js ui.stars.js		\
 	ui.notify.js ui.confirmation.js ui.validationForm.js		\
 	connexions.tabs.js connexions.collapsable.js			\
@@ -15,7 +15,7 @@ SRCS =	connexions.js jquery.registry.js jquery.cookie.js 		\
 	connexions.bookmark.js connexions.user.js			\
 	jquery.colorhelpers.js jquery.flot.js connexions.timeline.js
 
-SETTINGS_SRCS	= jquery.Jcrop.js jquery.scrollTo.js			\
+SETTINGS_SRCS	= jquery.Jcrop.js 					\
 		  ui.fileUploader.js					\
 		  settings.avatarChooser.js				\
 		  settings.accountInfo.js				\
