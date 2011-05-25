@@ -40,6 +40,9 @@ body {
     background-color: $pageColorBackground;
   }
 }
+body.light {
+  background-color:   $pageColorBackground;
+}
 
 /* Page Header */
 #pageHeader {

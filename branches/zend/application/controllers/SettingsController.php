@@ -501,6 +501,14 @@ class SettingsController extends Connexions_Controller_Action
         }
     }
 
+    protected function _prepare_post_bookmarks()
+    {
+        // /*
+        Connexions::log("SettingsController::_prepare_post_bookmarks():");
+        // */
+        $this->view->bodyCss = 'light';
+    }
+
     protected function _prepare_post_bookmarks_import()
     {
         /*

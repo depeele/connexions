@@ -898,6 +898,8 @@ a:visited { color: #005a9c; }
 body { background-color: #182524; }
 body .page { background-color: white; }
 
+body.light { background-color: white; }
+
 /* Page Header */
 #pageHeader h1#siteName { position: absolute; top: -26px; left: 0; color: black; font-weight: bold; font-size: 26px; padding: 0 0 0 13px; }
 #pageHeader h1#siteName a { display: block; width: 175px; }
