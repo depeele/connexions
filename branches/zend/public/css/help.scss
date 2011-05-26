@@ -25,7 +25,7 @@
     font-size:      1em;
   }
 
-  ul {
+  ul,ol {
     padding:        0;
   }
 
@@ -58,13 +58,21 @@
   }
 
   .help-content {
-    ul {
+    ul,ol {
       padding-left: 1em;
 
       li {
-        list-style:   disc;
         margin:       0.5em 1em;
       }
+    }
+    ul li,ol ul li {
+      list-style:   disc;
+    }
+    ol li {
+      list-style:   decimal;
+    }
+    ol ol li {
+      list-style:   lower-alpha;
     }
 
     .toggle {
@@ -130,12 +138,19 @@
     p {
       padding:  0.5em 1em;
     }
+    .continued, .description {
+      padding-bottom: 0;
+    }
     table {
       margin-left:    1em;
       margin-bottom:  0.5em;
 
       th, td {
         padding:      0.1em 0.5em;
+
+        p {
+          padding-left:   0;
+        }
       }
 
       th {

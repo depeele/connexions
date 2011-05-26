@@ -7,12 +7,13 @@
  */
 class Connexions
 {
-    protected static    $_user      = null;
-    protected static    $_db        = null;
-    protected static    $_log       = null;
-    protected static    $_request   = null;
-    protected static    $_config    = null;
-    protected static    $_urlMap    = array();
+    protected static    $_user          = null;
+    protected static    $_db            = null;
+    protected static    $_log           = null;
+    protected static    $_request       = null;
+    protected static    $_config        = null;
+    protected static    $_urlMap        = array();
+    protected static    $_externalUrls  = null;
 
     /** @brief  Provide a general logging mechanism.
      *  @param  fmt     The sprintf-like format string
@@ -337,8 +338,10 @@ class Connexions
 
         return self::$_config;
     }
+
     /** @brief  Retrive Json-RPC api information from our application
-     * configuration (application/configs/application.ini : api.jsonRpc)
+     *          configuration
+     *          (application/configs/application.ini : api.jsonRpc)
      *
      */
     public static function getJsonRpcInfo()
@@ -360,6 +363,33 @@ class Connexions
         return $jsonRpc;
     }
 
+    /** @brief  Retrive a named external url from our application configuration
+     *          (application/configs/application.ini : externalUrls.%name%)
+     *
+     *  @return The url string (null if not found).
+     */
+    public static function getExternalUrl($name)
+    {
+        Connexions::log("Connexions::getExternalUrl(): name[ %s ]",
+                        $name);
+
+        if (self::$_externalUrls === null)
+        {
+            self::$_externalUrls = self::getConfig()
+                                    ->get('externalUrls')
+                                        ->toArray();
+        }
+
+        $url = (isset(self::$_externalUrls[$name])
+                    ? self::$_externalUrls[$name]
+                    : null);
+
+        Connexions::log("Connexions::getExternalUrl(): name[ %s ] == [ %s ]",
+                        $name, $url);
+
+        return $url;
+    }
+
     /** @brief  Given a Wikipedia term, return the appropriate URL.
      *  @param  term    The desired term.
      *
@@ -367,7 +397,7 @@ class Connexions
      */
     public static function wikipedia($term)
     {
-        return "http://en.wikipedia.org/wiki/${term}";
+        return self::getExternalUrl('wikipedia') ."/${term}";
     }
 
     /** @brief  Given a Wikipedia term, return the HTML of a link to the
@@ -384,6 +414,32 @@ class Connexions
                . "<a class='wikipedia' "
                .     "href='". self::wikipedia($term) ."'>{$title}</a>"
                . "<span class='icon connexions_sprites link-wikipedia'></span>"
+               ."</span>";
+    }
+
+    /** @brief  Given an RFC number, return the appropriate URL.
+     *  @param  number  The desired rfc number.
+     *
+     *  @return The RFC URL.
+     */
+    public static function rfc($number)
+    {
+        return self::getExternalUrl('rfc') ."${term}";
+    }
+
+    /** @brief  Given an RFC number, return the HTML of a link to the RFC.
+     *  @param  number  The desired RFC number.
+     *  @param  title   The title to present [ $term ];
+     *
+     *  @return The HTML of a link to the RFC.
+     */
+    public static function rfc_a($number, $title = null)
+    {
+        $title = (empty($title) ? "RFC {$number}" : $title);
+        return  "<span class='external-link'>"
+               . "<a class='rfc' "
+               .     "href='". self::rfc($number) ."'>{$title}</a>"
+               . "<span class='icon connexions_sprites link-rfc'></span>"
                ."</span>";
     }
 
@@ -743,7 +799,7 @@ class Connexions
         $port   = null;
         $path   = null;
 
-        // Generate a normalized URI: See RFC 3886, section 6
+        // Generate a normalized URI: See RFC 3986, section 6
         foreach ($uri as $part => $val)
         {
             switch ($part)

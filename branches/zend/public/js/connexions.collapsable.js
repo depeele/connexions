@@ -134,33 +134,19 @@ $.widget("connexions.collapsable", {
 
         self.$toggle.bind('click.collapsable', function(e) {
             e.preventDefault();
+            e.stopPropagation();
 
-            if (self.$content.is(":hidden"))
-            {
-                // Show the content / open
-                self.$toggle.removeClass('collapsed')
-                            .addClass(   'expanded');
-                self.$indicator.removeClass('ui-icon-triangle-1-e')
-                               .addClass(   'ui-icon-triangle-1-s');
-                self.$content.slideDown();
-                    
-                self.element.trigger('expand');
-                self._load();
-            }
-            else
-            {
-                // Hide the content / close
-                self.$toggle.removeClass('expanded')
-                            .addClass(   'collapsed');
-                self.$indicator.removeClass('ui-icon-triangle-1-s')
-                               .addClass(   'ui-icon-triangle-1-e');
-                self.$content.slideUp();
+            self.toggle();
+        });
 
-                self.element.trigger('collapse');
-            }
-
-            // Trigger 'toggle'
-            self.element.trigger('toggle');
+        self.element.bind('toggle.collapsable', function(e) {
+            self.toggle();
+        });
+        self.element.bind('expand.collapsable', function(e) {
+            self.expand();
+        });
+        self.element.bind('collapse.collapsable', function(e) {
+            self.collapse();
         });
     },
 
@@ -263,6 +249,55 @@ $.widget("connexions.collapsable", {
      * Public methods
      *
      */
+    toggle: function() {
+        var self    = this;
+        var opts    = self.options;
+        if (self.$content.is(":hidden"))
+        {
+            self.expand();
+        }
+        else
+        {
+            self.collapse();
+        }
+
+        // Trigger 'toggled'
+        self.element.trigger('toggled');
+    },
+
+    expand: function() {
+        var self    = this;
+        var opts    = self.options;
+        if (self.$content.is(":hidden"))
+        {
+            // Show the content / open
+            self.$toggle.removeClass('collapsed')
+                        .addClass(   'expanded');
+            self.$indicator.removeClass('ui-icon-triangle-1-e')
+                           .addClass(   'ui-icon-triangle-1-s');
+            self.$content.slideDown();
+                
+            self.element.trigger('expanded');
+            self._load();
+        }
+    },
+
+    collapse: function() {
+        var self    = this;
+        var opts    = self.options;
+        if (! self.$content.is(":hidden"))
+        {
+            // Hide the content / close
+            self.$toggle.removeClass('expanded')
+                        .addClass(   'collapsed');
+            self.$indicator.removeClass('ui-icon-triangle-1-s')
+                           .addClass(   'ui-icon-triangle-1-e');
+            self.$content.slideUp();
+
+            self.element.trigger('collapsed');
+        }
+    },
+
     destroy: function() {
         var self    = this;
         var opts    = self.options;
@@ -292,14 +327,11 @@ $.widget("connexions.collapsable", {
 
         // Remove event bindings
         self.$toggle.unbind('.collapsable');
+        self.element.unbind('.collapsable');
 
         // Ensure that the content is visible
         self.$content.show();
     }
 });
 
-
 }(jQuery));
-
-
-
