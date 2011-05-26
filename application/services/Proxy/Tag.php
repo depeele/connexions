@@ -78,7 +78,7 @@ class Service_Proxy_Tag extends Connexions_Service_Proxy
      *          users from which we need to locate the current set of
      *          user-related tags and, from that, tag-related users.
      *  @param  term    The string to autocomplete.
-     *  @param  context The context of completion:
+     *  @param  users   The context of completion:
      *                      - A Model_Set_User instance to be used to restrict
      *                        the tags that should then be used to select
      *                        related users;
@@ -90,9 +90,9 @@ class Service_Proxy_Tag extends Connexions_Service_Proxy
      *  @return Model_Set_User
      */
     public function autocompleteUser($term,
-                                     $context   = null,
+                                     $users     = null,
                                      $limit     = 15)
     {
-        return $this->_service->autocompleteUser($term, $context, $limit);
+        return $this->_service->autocompleteUser($term, $users, $limit);
     }
 }
