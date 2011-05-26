@@ -43,16 +43,16 @@ class Connexions_Service_Proxy
      *                      representing the desired sorting order.
      *  @param  count       The maximum number of items from the full set of
      *                      matching items that should be returned
-     *                      [ null == all ];
+     *                      [ 50 ];
      *  @param  offset      The starting offset in the full set of matching
-     *                      items [ null == 0 ].
+     *                      items [ 0 ].
      *
      *  @return A new Connexions_Model_Set.
      */
     public function fetch($ids       = null,
                           $order     = null,
-                          $count     = null,
-                          $offset    = null)
+                          $count     = 50,
+                          $offset    = 0)
     {
         return $this->_service->fetch($ids, $order, $count, $offset);
     }

@@ -20,8 +20,8 @@ class Service_Proxy_Item extends Connexions_Service_Proxy
     public function fetchByUsers($users,
                                  $exact   = false,
                                  $order   = 'userCount DESC, tagCount DESC, userItemCount DESC, urlHash ASC',
-                                 $count   = null,
-                                 $offset  = null)
+                                 $count   = 50,
+                                 $offset  = 0)
     {
         return $this->_service->fetchByUsers($users,
                                              $exact,
@@ -45,8 +45,8 @@ class Service_Proxy_Item extends Connexions_Service_Proxy
     public function fetchByTags($tags,
                                 $exact   = true,
                                 $order   = 'tagCount DESC, userCount DESC, userItemCount DESC, urlHash ASC',
-                                $count   = null,
-                                $offset  = null)
+                                $count   = 50,
+                                $offset  = 0)
     {
         return $this->_service->fetchByTags($tags,
                                             $exact,
@@ -76,8 +76,8 @@ class Service_Proxy_Item extends Connexions_Service_Proxy
                                         $exactUsers = true,
                                         $exactTags  = true,
                                         $order      = 'userItemCount DESC, userCount DESC, tagCount DESC, urlHash ASC',
-                                        $count      = null,
-                                        $offset     = null)
+                                        $count      = 50,
+                                        $offset     = 0)
     {
         return $this->_service->fetchByUsersAndTags($users,
                                                     $tags,
@@ -100,9 +100,9 @@ class Service_Proxy_Item extends Connexions_Service_Proxy
      *  @return A new Model_Set_Item instance.
      */
     public function fetchSimilar($id,
-                                 $order   = null,
-                                 $count   = null,
-                                 $offset  = null)
+                                 $order   = 'url ASC',
+                                 $count   = 50,
+                                 $offset  = 0)
     {
         return $this->_service->fetchSimilar($id,
                                              $order,
