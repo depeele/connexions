@@ -65,6 +65,10 @@
         margin:       0.5em 1em;
       }
     }
+    div > ol, div > ul {
+      padding-left: 2em;
+    }
+
     ul li,ol ul li {
       list-style:   disc;
     }
@@ -134,7 +138,7 @@
     color:  $themeText;
   }
 
-  .api-method, .api-record {
+  .api-method, .api-record, .additional-info {
     p {
       padding:  0.5em 1em;
     }
