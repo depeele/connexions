@@ -822,8 +822,9 @@ class Service_User extends Service_Base
         if (! isset($crop['width']))    $crop['width']  = 50;
         if (! isset($crop['height']))   $crop['height'] = 50;
         if (! is_array($crop['ul']))    $crop['ul']     = array(0, 0);
-        if (! is_array($crop['lr']))    $crop['lr']     = array( $srcWidth,
-                                                                 $srcHeight );
+        if (! is_array($crop['lr']))    $crop['lr']     =
+                array( $crop['ul'][0] + $srcWidth,
+                       $crop['ul'][1] + $srcHeight );
 
 
         $thumbnail = imagecreatetruecolor($crop['width'],
