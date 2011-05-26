@@ -5,6 +5,19 @@ $api      =& $config->api;
 $contact  =& $config->contact;
 $url      =  $this->baseUrl('help/developers');
 
+$idDescriptions = array(
+    'user'      => "<b>name</b> (user name) or <b>userId</b>",
+    'item'      => "<b>url</b>, <b>urlHash</b> (md5 of <a href='{$url}/api/records/item/normalizedUrl'>normalized url</a>) or <b>itemId</b>",
+    'tag'       => "<b>tag</b> (tag name) or <b>tagId</b>",
+    'bookmark'  => ''
+);
+$idDescriptions['bookmark'] =
+        "<tt>%user%:%item%</tt> where <tt>%user%</tt> is the "
+        . $idDescriptions['user'] ." of the owner and <tt>%item%</tt> is the "
+        . $idDescriptions['item'] ." of the bookmarked site";
+
+
+
 $jsSectionId = '';
 if ($this->section)
 {
@@ -194,8 +207,9 @@ function rest_collapsed($view, $val)
            <p>Find a single user.</p>
            <table class='parameters'>
             <tr><th>Parameters</th><th>Description</th></tr>
-            <tr><th>id</th><td>The desired user's <b>name</b> (user name) or <b>userId</b>;</td></tr>
+            <tr><th>id</th><td>The desired user's <?= $idDescriptions['user'] ?>;</td></tr>
            </table>
+
            <p class='return'>Returns the matching <a href='<?= $url .'/api/records/user' ?>'>user record</a> or <tt>null</tt> if there is no match.</p>
           </div><!-- api-method } -->
          </li>
@@ -207,8 +221,12 @@ function rest_collapsed($view, $val)
            <p>Retrieve all users matching the provided identifiers.</p>
            <table class='parameters'>
             <tr><th>Parameters</th><th>Description</th></tr>
-            <tr><th>ids</th><td>A comma-separated list of users by <b>name</b> (user name) or <b>userId</b>.</tr>
+            <tr><th>ids</th><td>A comma-separated list of users by <?= $idDescriptions['user'] ?>;</td></tr>
+            <tr><th>order</th><td>The sort order to apply to the returned users [ lastVisit DESC, name ASC, fullName ASC ];</td></tr>
+            <tr><th>count</th><td>The maximum number of users to return [ 50 ];</td></tr>
+            <tr><th>offset</th><td>The offset within the list of all matching users to begin including users to return [ 0 ];</td></tr>
            </table>
+
            <p class='return'>Returns an array of zero or more <a href='<?= $url .'/api/records/user' ?>'>user records</a>.</p>
           </div><!-- api-method } -->
          </li>
@@ -217,15 +235,16 @@ function rest_collapsed($view, $val)
           <!-- ======= user.fetchByTags ======= -->
           <h6 id='api_user_fetchbytags' class='toggle <?= rest_collapsed($this, 'user/fetchByTags') ?> method-name'><a href='<?= $url .'/api/user/fetchByTags' ?>' data-cache.collapsable='api_user_fetchByTags_content'>fetchByTags</a></h6>
           <div id='api_user_fetchByTags_content' class='api-method help-content'><!-- api-method { -->
-           <p>Fetch all users that have one or more bookmarks with the given tag(s).</p>
+           <p>Fetch all users that have one or more bookmarks with the given tags.</p>
            <table class='parameters'>
             <tr><th>Parameters</th><th>Description</th></tr>
-            <tr><th>tags</th><td>A comma-separated list of tags by <b>tag</b> (tag name) or <b>tagId</b>;</td></tr>
+            <tr><th>tags</th><td>A comma-separated list of tags by <?= $idDescriptions['tag'] ?>;</td></tr>
             <tr><th>exact</th><td>A boolean indicating whether the returned users should have bookmarks for <i>all</i> tags (true) or <i>any</i> of the tags (false) [ true ];</td></tr>
             <tr><th>order</th><td>The sort order to apply to the returned users [ tagCount DESC ];</td></tr>
-            <tr><th>count</th><td>The maximum number of users to return [ all ];</td></tr>
+            <tr><th>count</th><td>The maximum number of users to return [ 50 ];</td></tr>
             <tr><th>offset</th><td>The offset within the list of all matching users to begin including users to return [ 0 ];</td></tr>
            </table>
+
            <p class='return'>Returns an array of zero or more <a href='<?= $url .'/api/records/user' ?>'>user records</a>.</p>
           </div><!-- api-method } -->
          </li>
@@ -240,6 +259,7 @@ function rest_collapsed($view, $val)
             <tr><th>term</th><td>The term to match by user <b>name</b> (user name), <b>fullName</b>, or <b>email</b>;</td></tr>
             <tr><th>limit</th><td>The maximum number of matches to return [ 15 ];</td></tr>
            </table>
+
            <p class='return'>Returns an array of zero or more <a href='<?= $url .'/api/records/user' ?>'>user records</a>.</p>
           </div><!-- api-method } -->
          </li>
@@ -253,9 +273,10 @@ function rest_collapsed($view, $val)
            <table class='parameters'>
             <tr><th>Parameters</th><th>Description</th></tr>
             <tr><th>term</th><td>The term to match by <b>tag</b> (tag name);</td></tr>
-            <tr><th>tags</th><td>A comma-separated list of tags by <b>tag</b> (tag name) or <b>tagId</b>.  This list will be used to limit the final set of tags used in locating matches (user-related tags from tag-related users).</tr></tr>
+            <tr><th>tags</th><td>A comma-separated list of tags by <?= $idDescriptions['tag'] ?>.  This list will be used to limit the final set of tags used in locating matches (user-related tags from tag-related users).</tr></tr>
             <tr><th>limit</th><td>The maximum number of matches to return [ 15 ];</td></tr>
            </table>
+
            <p class='return'>Returns an array of zero or more <a href='<?= $url .'/api/records/user' ?>'>user records</a>.</p>
           </div><!-- api-method } -->
          </li>
@@ -268,12 +289,13 @@ function rest_collapsed($view, $val)
            <table class='parameters'>
             <tr><th>Parameters</th><th>Description</th></tr>
             <tr><th>threshold</th><td>The number of bookmarks required to be considered a "contributor".  A non-negative value will include users that have <i>at least</i> (&gt;=) that many bookmarks while a negative value will include users with <i>up to</i> (&lt;=) the absolute value [ 1 ];</td></tr>
-            <tr><th>items</th><td>A comma-separated list of items by <b>url</b>, <b>urlHash</b> (md5 of <a href='<?= $url .'/api/records/item/normalizedUrl' ?>'>normalized url</a>) or <b>itemId</b>.  If provided, only users that have bookmarks to one or more of the given item(s) will be included;</td></tr>
-            <tr><th>tags</th><td>A comma-separated list of tags by <b>tag</b> (tag name), or <b>tagId</b>.  If provided, only users that have used one or more of the given tag9s) will be included;</td></tr>
+            <tr><th>items</th><td>A comma-separated list of items by <?= $idDescriptions['item'] ?>.  If provided, only users that have bookmarks to one or more of the given items will be included;</td></tr>
+            <tr><th>tags</th><td>A comma-separated list of tags by <?= $idDescriptions['tag'] ?>>.  If provided, only users that have used one or more of the given tag9s) will be included;</td></tr>
             <tr><th>order</th><td>The sort order to use in the selection [ totalItems DESC, name ASC ];</td></tr>
             <tr><th>count</th><td>The maximum number of matches to return [ 50 ];</td></tr>
             <tr><th>offset</th><td>The offset within the list of all matching users to begin including users to return [ 0 ];</td></tr>
            </table>
+
            <p class='return'>Returns an array of zero or more <a href='<?= $url .'/api/records/user' ?>'>user records</a>.</p>
           </div><!-- api-method } -->
          </li>
@@ -286,8 +308,8 @@ function rest_collapsed($view, $val)
            <table class='parameters'>
             <tr><th>Parameters</th><th>Description</th></tr>
             <tr><th>threshold</th><td>The number of bookmarks required to be considered a "contributor".  A non-negative value will include users that have <i>at least</i> (&gt;=) that many bookmarks while a negative value will include users with <i>up to</i> (&lt;=) the absolute value [ 1 ].  If no threshold is provided, one will be computed based upon the distribution of bookmarks.  In this case, the returned object will also include the statistics used to generate the threshold;</td></tr>
-            <tr><th>items</th><td>A comma-separated list of items by <b>url</b>, <b>urlHash</b> (md5 of <a href='<?= $url .'/api/records/item/normalizedUrl' ?>'>normalized url</a>) or <b>itemId</b>.  If provided, only users that have bookmarks to one or more of the given item(s) will be included;</td></tr>
-            <tr><th>tags</th><td>A comma-separated list of tags by <b>tag</b> (tag name), or <b>tagId</b>.  If provided, only users that have used one or more of the given tag9s) will be included;</td></tr>
+            <tr><th>items</th><td>A comma-separated list of items by <?= $idDescriptions['item'] ?>.  If provided, only users that have bookmarks to one or more of the given items will be included;</td></tr>
+            <tr><th>tags</th><td>A comma-separated list of tags by <?= $idDescriptions['tag'] ?>>.  If provided, only users that have used one or more of the given tag9s) will be included;</td></tr>
             <tr><th>order</th><td>The sort order to use in the selection [ totalItems DESC, name ASC ];</td></tr>
             <tr><th>count</th><td>The maximum number of matches to return [ 50 ];</td></tr>
             <tr><th>offset</th><td>The offset within the list of all matching users to begin including users to return [ 0 ];</td></tr>
@@ -338,7 +360,7 @@ function rest_collapsed($view, $val)
            <p>Retrieve the lastVisit date/times for one or more users.</p>
            <table class='parameters'>
             <tr><th>Parameters</th><th>Description</th></tr>
-            <tr><th>users</th><td>A comma-separated list of users by <b>name</b> (user name) or <b>userId</b>;</td></tr>
+            <tr><th>users</th><td>A comma-separated list of users by <?= $idDescriptions['user'] ?>;</td></tr>
             <!-- group { -->
             <tr><th>group</th><td>The desired grouping in the form <tt>p[:b]</tt> where <tt>p</tt> may be any reasonable combination of:
              <table>
@@ -363,7 +385,7 @@ function rest_collapsed($view, $val)
             </td></tr>
             <!-- group } -->
             <tr><th>order</th><td>The sort order to use in the selection [ lastVisit DESC ];</td></tr>
-            <tr><th>count</th><td>The maximum number of users to include in the timeline [ all ];</td></tr>
+            <tr><th>count</th><td>The maximum number of users to include in the timeline [ 50 ];</td></tr>
             <tr><th>offset</th><td>The offset within the list of all matching users to begin including date/times for the timeline [ 0 ];</td></tr>
             <tr><th>from</th><td>Limit the timeline to dat/times <i>after</i> this date/time.  The date/time should be in the form 'YYYY-MM-DD hh:mm:ss';</td></tr>
             <tr><th>until</th><td>Limit the timeline to dat/times <i>before</i> this date/time.  The date/time should be in the form 'YYYY-MM-DD hh:mm:ss';</td></tr>
@@ -423,7 +445,7 @@ function rest_collapsed($view, $val)
            <p>Delete one or more tags.</p>
            <table class='parameters'>
             <tr><th>Parameters</th><th>Description</th></tr>
-            <tr><th>tags</th><td>A comma-separated list of tags by <b>tag</b> (tag name), or <b>tagId</b></td></tr>
+            <tr><th>tags</th><td>A comma-separated list of tags by <?= $idDescriptions['tag'] ?>></td></tr>
             <tr><th>apiKey</th><td>The apiKey for the currently authenticated user.  Only required for non-POST requests;</td></tr>
            </table>
            <p class='continued return'>Returns a results object of the form:</p>
@@ -446,7 +468,7 @@ function rest_collapsed($view, $val)
            <p>Add one or more users to the network of the authenticated user.</p>
            <table class='parameters'>
             <tr><th>Parameters</th><th>Description</th></tr>
-            <tr><th>users</th><td>A comma-separated list of users by <b>name</b> (user name) or <b>userId</b>.</tr>
+            <tr><th>users</th><td>A comma-separated list of users by <?= $idDescriptions['user'] ?>;</td></tr>
             <tr><th>apiKey</th><td>The apiKey for the currently authenticated user.  Only required for non-POST requests;</td></tr>
            </table>
 
@@ -467,7 +489,7 @@ function rest_collapsed($view, $val)
            <p>Remove one or more users from the network of the authenticated user.</p>
            <table class='parameters'>
             <tr><th>Parameters</th><th>Description</th></tr>
-            <tr><th>users</th><td>A comma-separated list of users by <b>name</b> (user name) or <b>userId</b>.</tr>
+            <tr><th>users</th><td>A comma-separated list of users by <?= $idDescriptions['user'] ?>;</td></tr>
             <tr><th>apiKey</th><td>The apiKey for the currently authenticated user.  Only required for non-POST requests;</td></tr>
            </table>
 
@@ -533,7 +555,7 @@ function rest_collapsed($view, $val)
           <!-- ======== user.updateCredentials ======= -->
           <h6 id='api_user_updatecredentials' class='toggle <?= rest_collapsed($this, 'user/updateCredentials') ?> method-name'><a href='<?= $url .'/api/user/updateCredentials' ?>' data-cache.collapsable='api_user_updateCredentials_content'>updateCredentials</a></h6>
           <div id='api_user_updateCredentials_content' class='api-method help-content'><!-- api-method { -->
-           <p>Update the credential(s) for the authenticated user.</p>
+           <p>Update the credentials for the authenticated user.</p>
            <table class='parameters'>
             <tr><th>Parameters</th><th>Description</th></tr>
             <tr><th>credentials</th><td>A JSON-encoded array of <a href='<?= $url .'/api/records/credential' ?>'>credential records</a>;</td></tr>
@@ -611,8 +633,9 @@ function rest_collapsed($view, $val)
            <p>Find a single item/url.</p>
            <table class='parameters'>
             <tr><th>Parameters</th><th>Description</th></tr>
-            <tr><th>id</th><td>The desired items's <b>url</b>, <b>urlHash</b> (md5 of <a href='<?= $url .'/api/records/item/normalizedUrl' ?>'>normalized url</a>) or <b>itemId</b>;</td></tr>
+            <tr><th>id</th><td>The desired items's <?= $idDescriptions['item'] ?>;</td></tr>
            </table>
+
            <p class='return'>Returns the matching <a href='<?= $url .'/api/records/item' ?>'>item record</a> or <tt>null</tt> if there is no match.</p>
           </div><!-- api-method } -->
          </li>
@@ -624,19 +647,92 @@ function rest_collapsed($view, $val)
            <p>Retrieve all items matching the provided identifiers.</p>
            <table class='parameters'>
             <tr><th>Parameters</th><th>Description</th></tr>
-            <tr><th>ids</th><td>A comma-separated list of items by <b>url</b>, <b>urlHash</b> (md5 of <a href='<?= $url .'/api/records/item/normalizedUrl' ?>'>normalized url</a>) or <b>itemId</b>;</td></tr>
+            <tr><th>ids</th><td>A comma-separated list of items by <?= $idDescriptions['item'] ?>;</td></tr>
+            <tr><th>order</th><td>The sort order to apply to the returned items [ url ASC ];</td></tr>
+            <tr><th>count</th><td>The maximum number of items to return [ 50 ];</td></tr>
+            <tr><th>offset</th><td>The offset within the list of all matching items to begin including items to return [ 0 ];</td></tr>
            </table>
-           <p class='return'>Returns an array of zero or more <a href='<?= $url .'/api/records/user' ?>'>user records</a>.</p>
+
+           <p class='return'>Returns an array of zero or more <a href='<?= $url .'/api/records/item' ?>'>item records</a>.</p>
+
+          </div><!-- api-method } -->
+         </li>
+
+         <li class='collapsable'>
+          <!-- ======== item.fetchByUsers ======= -->
+          <h6 id='api_item_fetchbyusers' class='toggle <?= rest_collapsed($this, 'item/fetchByUsers') ?> method-name'><a href='<?= $url .'/api/item/fetchByUsers' ?>' data-cache.collapsable='api_item_fetchByUsers_content'>fetchByUsers</a></h6>
+          <div id='api_item_fetchByUsers_content' class='api-method help-content'><!-- api-method { -->
+           <p>Retrieve all items that have been bookmarked by the given users.</p>
+           <table class='parameters'>
+            <tr><th>Parameters</th><th>Description</th></tr>
+            <tr><th>users</th><td>A comma-separated list of users by <?= $idDescriptions['user'] ?>;</td></tr>
+            <tr><th>exact</th><td>A boolean indicating whether the returned items should have bookmarks by <i>all</i> users (true) or <i>any</i> of the users (false) [ true ];</td></tr>
+            <tr><th>order</th><td>The sort order to apply to the returned items [ userCount DESC, tagCount DESC, userItemCount DESC urlHash ASC ];</td></tr>
+            <tr><th>count</th><td>The maximum number of items to return [ 50 ];</td></tr>
+            <tr><th>offset</th><td>The offset within the list of all matching items to begin including items to return [ 0 ];</td></tr>
+           </table>
+
+           <p class='return'>Returns an array of zero or more <a href='<?= $url .'/api/records/item' ?>'>item records</a>.</p>
+          </div><!-- api-method } -->
+         </li>
+
+         <li class='collapsable'>
+          <!-- ======== item.fetchByTags ======= -->
+          <h6 id='api_item_fetchbytags' class='toggle <?= rest_collapsed($this, 'item/fetchByTags') ?> method-name'><a href='<?= $url .'/api/item/fetchByTags' ?>' data-cache.collapsable='api_item_fetchByTags_content'>fetchByTags</a></h6>
+          <div id='api_item_fetchByTags_content' class='api-method help-content'><!-- api-method { -->
+           <p>Retrieve all items that have been bookmarked with the given tags.</p>
+           <table class='parameters'>
+            <tr><th>Parameters</th><th>Description</th></tr>
+            <tr><th>tags</th><td>A comma-separated list of tags by <?= $idDescriptions['tag'] ?>;</td></tr>
+            <tr><th>exact</th><td>A boolean indicating whether the returned items should have bookmarks with <i>all</i> tags (true) or <i>any</i> of the tags (false) [ true ];</td></tr>
+            <tr><th>order</th><td>The sort order to apply to the returned items [ tagCount DESC, userCount DESC, userItemCount DESC urlHash ASC ];</td></tr>
+            <tr><th>count</th><td>The maximum number of items to return [ 50 ];</td></tr>
+            <tr><th>offset</th><td>The offset within the list of all matching items to begin including items to return [ 0 ];</td></tr>
+           </table>
+
+           <p class='return'>Returns an array of zero or more <a href='<?= $url .'/api/records/item' ?>'>item records</a>.</p>
+          </div><!-- api-method } -->
+         </li>
+
+         <li class='collapsable'>
+          <!-- ======== item.fetchByUsersAndTags ======= -->
+          <h6 id='api_item_fetchbyusersandtags' class='toggle <?= rest_collapsed($this, 'item/fetchByUsersAndTags') ?> method-name'><a href='<?= $url .'/api/item/fetchByUsersAndTags' ?>' data-cache.collapsable='api_item_fetchByUsersAndTags_content'>fetchByUsersAndTags</a></h6>
+          <div id='api_item_fetchByUsersAndTags_content' class='api-method help-content'><!-- api-method { -->
+           <p>Retrieve all items that have been bookmarked by the given users with the given tags.</p>
+           <table class='parameters'>
+            <tr><th>Parameters</th><th>Description</th></tr>
+            <tr><th>users</th><td>A comma-separated list of users by <?= $idDescriptions['user'] ?>;</td></tr>
+            <tr><th>tags</th><td>A comma-separated list of tags by <?= $idDescriptions['tag'] ?>;</td></tr>
+            <tr><th>exactUsers</th><td>A boolean indicating whether the returned items should have bookmarks by <i>all</i> users (true) or <i>any</i> of the users (false) [ true ];</td></tr>
+            <tr><th>exactTags</th><td>A boolean indicating whether the returned items should have bookmarks with <i>all</i> tags (true) or <i>any</i> of the tags (false) [ true ];</td></tr>
+            <tr><th>order</th><td>The sort order to apply to the returned items [ userItemCount DESC, userCount DESC, tagCount DESC, urlHash ASC ];</td></tr>
+            <tr><th>count</th><td>The maximum number of items to return [ 50 ];</td></tr>
+            <tr><th>offset</th><td>The offset within the list of all matching items to begin including items to return [ 0 ];</td></tr>
+           </table>
+
+           <p class='return'>Returns an array of zero or more <a href='<?= $url .'/api/records/item' ?>'>item records</a>.</p>
+          </div><!-- api-method } -->
+         </li>
+
+         <li class='collapsable'>
+          <!-- ======== item.fetchSimilar ======= -->
+          <h6 id='api_item_fetchsimilar' class='toggle <?= rest_collapsed($this, 'item/fetchSimilar') ?> method-name'><a href='<?= $url .'/api/item/fetchSimilar' ?>' data-cache.collapsable='api_item_fetchSimilar_content'>fetchSimilar</a></h6>
+          <div id='api_item_fetchSimilar_content' class='api-method help-content'><!-- api-method { -->
+           <p>Retrieve all items that are "similar" to the provided item where "similar" is a match to the <i>host</i> portion of the url &mdash; specifically <tt>://%host%</tt>.</p>
+           <table class='parameters'>
+            <tr><th>Parameters</th><th>Description</th></tr>
+            <tr><th>id</th><td>The desired items's <?= $idDescriptions['item'] ?>;</td></tr>
+            <tr><th>order</th><td>The sort order to apply to the returned items [ url ASC ];</td></tr>
+            <tr><th>count</th><td>The maximum number of items to return [ 50 ];</td></tr>
+            <tr><th>offset</th><td>The offset within the list of all matching items to begin including items to return [ 0 ];</td></tr>
+           </table>
+
+           <p class='return'>Returns an array of zero or more <a href='<?= $url .'/api/records/item' ?>'>item records</a>.</p>
           </div><!-- api-method } -->
          </li>
         </ul>
        </li><!-- unauthenticated } -->
 
-       <li class='collapsable'><!-- authenticated { -->
-        <h5 class='toggle'><span>Authenticated Methods</span></h5>
-        <ul class='collapsableList help-content'>
-        </ul>
-       </li><!-- authenticated } -->
       </ul>
      </div>
     </li><!-- api_item } -->
@@ -655,8 +751,10 @@ function rest_collapsed($view, $val)
            <p>Find a single tag.</p>
            <table class='parameters'>
             <tr><th>Parameters</th><th>Description</th></tr>
-            <tr><th>id</th><td>The desired tag's <b>tag</b> (tag name) or <b>tagId</b>;</td></tr>
+            <tr><th>id</th><td>The desired tag by <?= $idDescriptions['tag'] ?>;</td></tr>
            </table>
+
+           <p class='return'>Returns the matching <a href='<?= $url .'/api/records/tag' ?>'>tag record</a> or <tt>null</tt> if there is no match.</p>
           </div><!-- api-method } -->
          </li>
 
@@ -664,6 +762,88 @@ function rest_collapsed($view, $val)
           <!-- ======== tag.fetch ======= -->
           <h6 id='api_tag_fetch' class='toggle <?= rest_collapsed($this, 'tag/fetch') ?> method-name'><a href='<?= $url .'/api/tag/fetch' ?>' data-cache.collapsable='api_tag_fetch_content'>fetch</a></h6>
           <div id='api_tag_fetch_content' class='api-method help-content'><!-- api-method { -->
+           <p>Retrieve all tags matching the provided identifiers.</p>
+           <table class='parameters'>
+            <tr><th>Parameters</th><th>Description</th></tr>
+            <tr><th>ids</th><td>A comma-separated list of tags by <?= $idDescriptions['tag'] ?>;</td></tr>
+            <tr><th>order</th><td>The sort order to apply to the returned tags [ tag ASC ];</td></tr>
+            <tr><th>count</th><td>The maximum number of tags to return [ 50 ];</td></tr>
+            <tr><th>offset</th><td>The offset within the list of all matching tags to begin including tags to return [ 0 ];</td></tr>
+           </table>
+
+           <p class='return'>Returns an array of zero or more <a href='<?= $url .'/api/records/tag' ?>'>tag records</a>.</p>
+
+          </div><!-- api-method } -->
+         </li>
+
+         <li class='collapsable'>
+          <!-- ======== tag.fetchByUsers ======= -->
+          <h6 id='api_tag_fetchbyusers' class='toggle <?= rest_collapsed($this, 'tag/fetchByUsers') ?> method-name'><a href='<?= $url .'/api/tag/fetchByUsers' ?>' data-cache.collapsable='api_tag_fetchByUsers_content'>fetchByUsers</a></h6>
+          <div id='api_tag_fetchByUsers_content' class='api-method help-content'><!-- api-method { -->
+           <p>Retrieve tags that have been used by the given users.</p>
+           <table class='parameters'>
+            <tr><th>Parameters</th><th>Description</th></tr>
+            <tr><th>users</th><td>A comma-separated list of users by <?= $idDescriptions['user'] ?>;</td></tr>
+            <tr><th>order</th><td>The sort order to apply to the returned tags [ userCount DESC, userItemCount DESC, tag ASC ];</td></tr>
+            <tr><th>count</th><td>The maximum number of tags to return [ 50 ];</td></tr>
+            <tr><th>offset</th><td>The offset within the list of all matching tags to begin including tags to return [ 0 ];</td></tr>
+           </table>
+
+           <p class='return'>Returns an array of zero or more <a href='<?= $url .'/api/records/tag' ?>'>tag records</a>.</p>
+
+          </div><!-- api-method } -->
+         </li>
+
+         <li class='collapsable'>
+          <!-- ======== tag.fetchByItems ======= -->
+          <h6 id='api_tag_fetchbyitems' class='toggle <?= rest_collapsed($this, 'tag/fetchByItems') ?> method-name'><a href='<?= $url .'/api/tag/fetchByItems' ?>' data-cache.collapsable='api_tag_fetchByItems_content'>fetchByItems</a></h6>
+          <div id='api_tag_fetchByItems_content' class='api-method help-content'><!-- api-method { -->
+           <p>Retrieve tags that have been used to bookmark the given items.</p>
+           <table class='parameters'>
+            <tr><th>Parameters</th><th>Description</th></tr>
+            <tr><th>items</th><td>A comma-separated list of items by <?= $idDescriptions['item'] ?>.  If provided, tags used with one or more of the given items will be included;</td></tr>
+            <tr><th>order</th><td>The sort order to apply to the returned tags [ itemCount DESC, userItemCount DESC, tag ASC ];</td></tr>
+            <tr><th>count</th><td>The maximum number of tags to return [ 50 ];</td></tr>
+            <tr><th>offset</th><td>The offset within the list of all matching tags to begin including tags to return [ 0 ];</td></tr>
+           </table>
+
+           <p class='return'>Returns an array of zero or more <a href='<?= $url .'/api/records/tag' ?>'>tag records</a>.</p>
+
+          </div><!-- api-method } -->
+         </li>
+
+         <li class='collapsable'>
+          <!-- ======== tag.fetchByBookmarks ======= -->
+          <h6 id='api_tag_fetchbybookmarks' class='toggle <?= rest_collapsed($this, 'tag/fetchByBookmarks') ?> method-name'><a href='<?= $url .'/api/tag/fetchByBookmarks' ?>' data-cache.collapsable='api_tag_fetchByBookmarks_content'>fetchByBookmarks</a></h6>
+          <div id='api_tag_fetchByBookmarks_content' class='api-method help-content'><!-- api-method { -->
+           <p>Retrieve all tags used with the given bookmarks.</p>
+           <table class='parameters'>
+            <tr><th>Parameters</th><th>Description</th></tr>
+            <tr><th>bookmarks</th><td>A comma-separated list of bookmarks in the form <?= $idDescriptions['bookmark'] ?>.  If the bookmark is private, it will only be returned if the currently authenticated user is the owner.</tr>
+            <tr><th>order</th><td>The sort order to apply to the returned tags [ userItemCount DESC, userCount DESC, tag ASC ];</td></tr>
+            <tr><th>count</th><td>The maximum number of tags to return [ 50 ];</td></tr>
+            <tr><th>offset</th><td>The offset within the list of all matching tags to begin including tags to return [ 0 ];</td></tr>
+           </table>
+
+           <p class='return'>Returns an array of zero or more <a href='<?= $url .'/api/records/tag' ?>'>tag records</a>.</p>
+
+          </div><!-- api-method } -->
+         </li>
+
+         <li class='collapsable'>
+          <!-- ======== tag.autocompleteUser ======= -->
+          <h6 id='api_tag_autocompleteuser' class='toggle <?= rest_collapsed($this, 'tag/autocompleteUser') ?> method-name'><a href='<?= $url .'/api/tag/autocompleteUser' ?>' data-cache.collapsable='api_tag_autocompleteUser_content'>autocompleteUser</a></h6>
+          <div id='api_tag_autocompleteUser_content' class='api-method help-content'><!-- api-method { -->
+           <p>Given a term, retrieve all tags that match that term.  If <b>users</b> are specified, they will be used to select all tags used by those users (user-related tags) which will in-turn be the set of tags searched for matches.</p>
+           <table class='parameters'>
+            <tr><th>Parameters</th><th>Description</th></tr>
+            <tr><th>term</th><td>The term to match by <b>tag</b> (tag name);</td></tr>
+            <tr><th>users</th><td>A comma-separated list of tags by <?= $idDescriptions['tag'] ?>.  This list will be used to limit the final set of tags used in locating matches (user-related tags).</tr></tr>
+            <tr><th>limit</th><td>The maximum number of matches to return [ 15 ];</td></tr>
+           </table>
+
+           <p class='return'>Returns an array of zero or more <a href='<?= $url .'/api/records/user' ?>'>user records</a>.</p>
+
           </div><!-- api-method } -->
          </li>
         </ul>
@@ -692,7 +872,7 @@ function rest_collapsed($view, $val)
            <p>Find a single bookmark.</p>
            <table class='parameters'>
             <tr><th>Parameters</th><th>Description</th></tr>
-            <tr><th>id</th><td>The desired bokmark's identifier in the form <tt>%user%:%item%</tt> where <tt>%user%</tt> is the <b>name</b> (user name) or <b>userId</b> of the owner and <tt>%item%</tt> is the <b>url</b>, <b>urlHash</b>, or <b>itemId</b> of the bookmarked site.  If the bookmark is private, it will only be returned if the currently authenticated user is the owner.</tr>
+            <tr><th>id</th><td>The desired bokmark's identifier in the form <?= $idDescriptions['bookmark'] ?>.  If the bookmark is private, it will only be returned if the currently authenticated user is the owner.</tr>
            </table>
           </div><!-- api-method } -->
          </li>

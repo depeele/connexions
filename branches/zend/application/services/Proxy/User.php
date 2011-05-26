@@ -10,16 +10,16 @@ class Service_Proxy_User extends Connexions_Service_Proxy
      *  @param  exact   Users MUST be associated with provided tags [ true ];
      *  @param  order   Optional ORDER clause (string, array)
      *                      [ 'tagCount DESC' ];
-     *  @param  count   Optional LIMIT count;
-     *  @param  offset  Optional LIMIT offset;
+     *  @param  count   Optional LIMIT count [ 50 ];
+     *  @param  offset  Optional LIMIT offset [ 0 ];
      *
      *  @return A new Model_Set_User instance.
      */
     public function fetchByTags($tags,
                                 $exact   = true,
                                 $order   = 'tagCount DESC',
-                                $count   = null,
-                                $offset  = null)
+                                $count   = 50,
+                                $offset  = 0)
     {
         return $this->_service->fetchByTags($tags,
                                             $exact,

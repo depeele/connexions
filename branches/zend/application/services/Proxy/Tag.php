@@ -18,8 +18,8 @@ class Service_Proxy_Tag extends Connexions_Service_Proxy
      */
     public function fetchByUsers($users,
                                  $order   = 'userCount DESC, userItemCount DESC, tag ASC',
-                                 $count   = null,
-                                 $offset  = null)
+                                 $count   = 50,
+                                 $offset  = 0)
     {
         return $this->_service->fetchByUsers($users,
                                              $order,
@@ -40,8 +40,8 @@ class Service_Proxy_Tag extends Connexions_Service_Proxy
      */
     public function fetchByItems($items,
                                  $order   = 'itemCount DESC, userItemCount DESC, tag ASC',
-                                 $count   = null,
-                                 $offset  = null)
+                                 $count   = 50,
+                                 $offset  = 0)
     {
         return $this->_service->fetchByItems($items,
                                              $order,
@@ -65,8 +65,8 @@ class Service_Proxy_Tag extends Connexions_Service_Proxy
      */
     public function fetchByBookmarks($bookmarks = null,
                                      $order     = 'userItemCount DESC, userCount DESC, tag ASC',
-                                     $count     = null,
-                                     $offset    = null)
+                                     $count     = 50,
+                                     $offset    = 0)
     {
         return $this->_service->fetchByBookmarks($bookmarks,
                                                  $order,
