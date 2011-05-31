@@ -764,7 +764,7 @@ abstract class Connexions_Model
             $this->_logActivity('delete');
         }
 
-        $this->getMapper()->delete( $this );
+        return $this->getMapper()->delete( $this );
     }
 
     /** @brief  Simple comparision to see if the current model instance is the
