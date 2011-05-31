@@ -66,6 +66,7 @@ $containerId = 'post';
          *
          * Our action now is determined by whether or not 'closeAction' was
          * specified in the request.  Valid closeActions are:
+         *  - 'back'                move back in the browser's history;
          *  - 'close'               attempt to close the current window;
          *  - 'hide'                hide the ribbon-form;
          *  - 'redirect'            if the post form contains a non-empty URL,
@@ -75,6 +76,9 @@ $containerId = 'post';
          *                          on the containing iframe;
          *  - 'urlCallback:%url%'   redirect to the specified %url%;
          *  - 'callback:%func%'     invoke the Javascript function %func%;
+         *  - 'ignore'              do nothing;
+         *
+         * If 'closeAction' was NOT specified, 'back' will be used.
          */
         var action  = '<?= $this->closeAction ?>';
         var split   = action.indexOf(':');
@@ -134,6 +138,14 @@ $containerId = 'post';
             {
                 eval(param +'();');
             }
+            break;
+
+        case 'ignore':      // Do nothing
+            break;
+
+        case 'back':        // Move back in the browsers history
+        default:
+            window.history.back();
             break;
         }
     });

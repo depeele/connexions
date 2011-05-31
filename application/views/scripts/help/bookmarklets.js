@@ -1,12 +1,20 @@
 // Basic redirect
-javascript:(function(){location.href='http://localhost/connexions/post?url='+encodeURICompoenent(location.href)+'&name='+encodeURIComponent(document.title)+'&noNav&closeAction=close';}())
+javascript:(function(){
+    location.href='<?= $this->baseUrl('post') ?>'
+                 +'?url='+encodeURIComponent(location.href)
+                 +'&name='+encodeURIComponent(document.title)
+                 +'&noNav&closeAction=close';
+}())
+
+// Basic redirect (collapsed)
+javascript:(function(){location.href='<?= $this->baseUrl('post') ?>?url='+encodeURIComponent(location.href)+'&name='+encodeURIComponent(document.title)+'&noNav&closeAction=close';}())
 
 // New Window
 javascript:(function(){
     var href = encodeURIComponent(location.href),
         name = escape(document.title),
         desc = escape(window.getSelection()),
-        url  = 'http://localhost/connexions/post'
+        url  = '<?= $this->baseUrl('post') ?>'
              +      '?url='+url
              +      '&name='+name
              +      '&description='+desc
@@ -19,7 +27,7 @@ javascript:(function(){
 }())
 
 // New Window (collapsed
-javascript:(function(){var url=encodeURIComponent(location.href),name=escape(document.title),desc=escape(window.getSelection()),w=window.open('http://localhost/connexions/post'+'?url='+url+'&name='+name+'&description='+desc+'&noNav&closeAction=close','connexions','toolbar=no,menubar=no,resizable=yes,status=yes,width=975,height=625');window.setTimeout('w.focus()',200);}())
+javascript:(function(){var url=encodeURIComponent(location.href),name=escape(document.title),desc=escape(window.getSelection()),w=window.open('<?= $this->baseUrl('post') ?>'+'?url='+url+'&name='+name+'&description='+desc+'&noNav&closeAction=close','connexions','toolbar=no,menubar=no,resizable=yes,status=yes,width=975,height=625');window.setTimeout('w.focus()',200);}())
 
 // lightbox
 javascript:(function(){
@@ -144,7 +152,7 @@ javascript:(function(){
     var href=encodeURIComponent(location.href),
         name=escape(document.title),
         desc=escape(window.getSelection()),
-        url='http://localhost/connexions/post'
+        url='<?= $this->baseUrl('post') ?>'
            +      '?url='+href
            +      '&name='+name
            +      '&description='+desc
@@ -154,5 +162,5 @@ javascript:(function(){
 }())
 
 // lightbox (collapsed)
-javascript:(function(){var dzId='connexions_disabledZone',lbId='connexions_lightBox',ifId='connexions_iframe',clId='connexions_close',oof=document.body.style.overflow;function _gi(e){return document.getElementById(e);}function _ce(e){return document.createElement(e);}function _ws(){var w=0,h=0;if (typeof(window.innerWidth)==='number'){w=window.innerWidth;h=window.innerHeight;}else if (document.documentElement && (document.documentElement.clientWidth || document.documentElement.clientHeight)){w=document.documentElement.innerWidth;h=document.documentElement.innerHeight;}else if (document.body && (document.body.clientWidth || document.body.clientHeight)){w=document.body.innerWidth;h=document.body.innerHeight;}return [w,h];} function lbClose(){document.body.removeChild(_gi(lbId));document.body.removeChild(_gi(dzId));document.body.style.overflow=oof;} function lb(url){var s=_ws(),w=s[0],h=s[1],dz=_ce('div');dz.setAttribute('style', 'background:#000;position:absolute;z-index:100000;top:0px;left:0px;width:'+w+'px;height:'+h+'px;opacity:0.5;-moz-opacity:0.5;-khtml-opacity:0.5;filter:alpha(opacity=50);filter:progid:DXImageTransform.Microsoft.Alpha(Opacity=50);');dz.id=dzId;dz.addEventListener('click',lbClose,true);document.body.appendChild(dz);var lbz=_ce('div');lbz.setAttribute('style','background:#fff;position:fixed;z-index:100001;top:50px;left:50px;width:'+(w-100)+'px;height:'+(h-100)+'px;border:1px solid #ccc;padding:4px;overflow:hidden;');lbz.id=lbId;lbz.innerHTML='<div style=\'padding:4px;margin-bottom:0;background:#aaa;color:#fff;text-shadow:none;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;height:2.25em;\'><span style=\'float:left;\'>Post&nbsp;to&nbsp;connexions</span><span id=\''+clId+'\' style=\'float:right;color:#fff;cursor:pointer;\'>close</span></div><iframe id=\''+ifId+'\' width=\'100%\' height=\''+(w-145)+'px\' frameborder=\'0\' style=\'overflow:auto;\'></iframe>';document.body.appendChild(lbz);document.body.style.overflow='hidden';var ccl=_gi(clId),cif=_gi(ifId);cif.close=lbClose;cif.src=url;ccl.addEventListener('click',lbClose,true);} var href=encodeURIComponent(location.href),name=escape(document.title),desc=escape(window.getSelection()),url='http://localhost/connexions/post?url='+href+'&name='+name+'&description='+desc+'&noNav'+'&closeAction=iframe';lb(url);}())
+javascript:(function(){var dzId='connexions_disabledZone',lbId='connexions_lightBox',ifId='connexions_iframe',clId='connexions_close',oof=document.body.style.overflow;function _gi(e){return document.getElementById(e);}function _ce(e){return document.createElement(e);}function _ws(){var w=0,h=0;if (typeof(window.innerWidth)==='number'){w=window.innerWidth;h=window.innerHeight;}else if (document.documentElement && (document.documentElement.clientWidth || document.documentElement.clientHeight)){w=document.documentElement.innerWidth;h=document.documentElement.innerHeight;}else if (document.body && (document.body.clientWidth || document.body.clientHeight)){w=document.body.innerWidth;h=document.body.innerHeight;}return [w,h];} function lbClose(){document.body.removeChild(_gi(lbId));document.body.removeChild(_gi(dzId));document.body.style.overflow=oof;} function lb(url){var s=_ws(),w=s[0],h=s[1],dz=_ce('div');dz.setAttribute('style', 'background:#000;position:absolute;z-index:100000;top:0px;left:0px;width:'+w+'px;height:'+h+'px;opacity:0.5;-moz-opacity:0.5;-khtml-opacity:0.5;filter:alpha(opacity=50);filter:progid:DXImageTransform.Microsoft.Alpha(Opacity=50);');dz.id=dzId;dz.addEventListener('click',lbClose,true);document.body.appendChild(dz);var lbz=_ce('div');lbz.setAttribute('style','background:#fff;position:fixed;z-index:100001;top:50px;left:50px;width:'+(w-100)+'px;height:'+(h-100)+'px;border:1px solid #ccc;padding:4px;overflow:hidden;');lbz.id=lbId;lbz.innerHTML='<div style=\'padding:4px;margin-bottom:0;background:#aaa;color:#fff;text-shadow:none;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;height:2.25em;\'><span style=\'float:left;\'>Post&nbsp;to&nbsp;connexions</span><span id=\''+clId+'\' style=\'float:right;color:#fff;cursor:pointer;\'>close</span></div><iframe id=\''+ifId+'\' width=\'100%\' height=\''+(w-145)+'px\' frameborder=\'0\' style=\'overflow:auto;\'></iframe>';document.body.appendChild(lbz);document.body.style.overflow='hidden';var ccl=_gi(clId),cif=_gi(ifId);cif.close=lbClose;cif.src=url;ccl.addEventListener('click',lbClose,true);} var href=encodeURIComponent(location.href),name=escape(document.title),desc=escape(window.getSelection()),url='<?= $this->baseUrl('post') ?>?url='+href+'&name='+name+'&description='+desc+'&noNav'+'&closeAction=iframe';lb(url);}())
 
