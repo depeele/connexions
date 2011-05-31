@@ -370,8 +370,10 @@ class Connexions
      */
     public static function getExternalUrl($name)
     {
+        /*
         Connexions::log("Connexions::getExternalUrl(): name[ %s ]",
                         $name);
+        // */
 
         if (self::$_externalUrls === null)
         {
@@ -384,8 +386,10 @@ class Connexions
                     ? self::$_externalUrls[$name]
                     : null);
 
+        /*
         Connexions::log("Connexions::getExternalUrl(): name[ %s ] == [ %s ]",
                         $name, $url);
+        // */
 
         return $url;
     }

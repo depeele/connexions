@@ -1,4 +1,11 @@
 <?php
+// /*
+Connexions::log("main-developers: APPLICATION_PATH[ %s ], include_path[ %s ]",
+                APPLICATION_PATH,
+                get_include_path());
+// */
+
+//require_once(APPLICATION_PATH .'/views/scripts/help/sharedUtils.php');
 
 $config   =  Zend_Registry::get('config');
 $api      =& $config->api;
@@ -45,65 +52,6 @@ Connexions::log('views/scripts/help/main-developers.phtml: '
                 Connexions::varExport($this->rest),
                 $jsSectionId, $jsParentId);
 
-/** @brief  Determine whether or not a section should be collapsed.
- *  @param  view    The view object (uses $view->section).
- *  @param  val     The target section.
- *
- *  @return A string ' collapsed' or ''
- */
-function section_collapsed($view, $val)
-{
-    $ret = '';
-    if (($view->section !== null) && (strcasecmp($view->section, $val)))
-    {
-        $ret = ' collapsed';
-    }
-
-    return $ret;
-}
-
-/** @brief  Determine whether or not a sub-section should be collapsed.
- *  @param  view    The view object (uses $view->rest).
- *  @param  val     The path to the target section.
- *
- *  @return A string ' collapsed' or ''
- */
-function rest_collapsed($view, $val)
-{
-    $ret = ' collapsed';
-    if ($view->rest !== null)
-    {
-        $path   = split('/', $val);
-        $nParts = count($path);
-        if (count($view->rest) >= $nParts)
-        {
-            // /*
-            Connexions::log("rest_collapsed(): rest[ %s ], path[ %s ]",
-                            Connexions::varExport($view->rest),
-                            Connexions::varExport($path));
-            // */
-
-            $ret = '';
-            for ($idex = 0; $idex < $nParts; $idex++)
-            {
-                if (strcasecmp($view->rest[$idex], $path[$idex]))
-                {
-                    $ret = ' collapsed';
-                    break;
-                }
-            }
-        }
-    }
-
-    /*
-    Connexions::log("rest_collapsed(): rest[ %s ], val[ %s ], ret[ %s ]",
-                    Connexions::varExport($view->rest),
-                    $val, $ret);
-    // */
-
-    return $ret;
-}
-
 /* :NOTE: Throughout this file, for any url path that will be used to map to
  *        a specific DOM id, the DOM id MUST be lowercase even if the url path
  *        parameters are mixed-case.
@@ -115,7 +63,7 @@ function rest_collapsed($view, $val)
 <ul class='collapsableList'>
  <li class='collapsable'>
   <h3 id='introduction'
-      class='toggle<?= section_collapsed($this, 'introduction') ?>'><a href='<?= $url ?>/introduction' data-cache.collapsable='introduction_content'>Introduction</a></h3>
+      class='toggle<?= Connexions_Help::section_collapsed($this, 'introduction') ?>'><a href='<?= $url ?>/introduction' data-cache.collapsable='introduction_content'>Introduction</a></h3>
   <div id='introduction_content' class='help-content'>
    <p>Connexions is comprised of a combination of server-side PHP and client-side JavaScript/AJAX to provide rich user interaction and functionality.  It requires a server that provides PHP 5+ and MySQL 5+ and a client web browser that is complient with current web standards (e.g. Firefox, Chrome, Opera, and newer versions of Internet Explorer).
    <?php
@@ -157,7 +105,7 @@ function rest_collapsed($view, $val)
   
  <li class='collapsable'>
   <h3 id='api'
-      class='toggle<?= section_collapsed($this, 'api') ?>'><a href='<?= $url ?>/api' data-cache.collapsable='api_content'>API</a></h3>
+      class='toggle<?= Connexions_Help::section_collapsed($this, 'api') ?>'><a href='<?= $url ?>/api' data-cache.collapsable='api_content'>API</a></h3>
   <div id='api_content' class='help-content api'><!-- api { -->
    <div id='api_overview'><!-- api_overview { -->
     <p>The connexions API may be <a href='<?= $api->baseUrl ?>'>directly accessed</a> to allow easier understanding via experimentation.</p>
@@ -202,14 +150,14 @@ function rest_collapsed($view, $val)
     <p class='continued'>Generally, the API is dividied into six sections:</p>
     <ul class='collapsableList'><!-- api list { -->
      <li class='collapsable'><!-- api_user { -->
-      <h4 id='api_user' class='toggle<?= rest_collapsed($this, 'user') ?>'><a href='<?= $url ?>/api/user' data-cache.collapsable='api_user_content'>user</a> <span class='description'>&mdash; user-related functionality</span></h4>
+      <h4 id='api_user' class='toggle<?= Connexions_Help::rest_collapsed($this, 'user') ?>'><a href='<?= $url ?>/api/user' data-cache.collapsable='api_user_content'>user</a> <span class='description'>&mdash; user-related functionality</span></h4>
       <div id='api_user_content' class='help-content'>
        <ul class='collapsableList'>
         <li class='collapsable'><!-- unauthenticated { -->
          <h5 class='toggle'><span>Unauthenticated Methods</span></h5>
          <ul class='collapsableList help-content'>
           <li class='collapsable'> <!-- ========= user.find { -->
-           <h6 id='api_user_find' class='toggle <?= rest_collapsed($this, 'user/find') ?> method-name'><a href='<?= $url ?>/api/user/find' data-cache.collapsable='api_user_find_content'>find</a></h6>
+           <h6 id='api_user_find' class='toggle <?= Connexions_Help::rest_collapsed($this, 'user/find') ?> method-name'><a href='<?= $url ?>/api/user/find' data-cache.collapsable='api_user_find_content'>find</a></h6>
            <div id='api_user_find_content' class='api-method help-content'><!-- api-method { -->
             <p>Find a single user.</p>
             <table class='parameters'>
@@ -222,7 +170,7 @@ function rest_collapsed($view, $val)
           </li> <!-- user.find ======= } -->
 
           <li class='collapsable'> <!-- ========= user.fetch { -->
-           <h6 id='api_user_fetch' class='toggle <?= rest_collapsed($this, 'user/fetch') ?> method-name'><a href='<?= $url ?>/api/user/fetch' data-cache.collapsable='api_user_fetch_content'>fetch</a></h6>
+           <h6 id='api_user_fetch' class='toggle <?= Connexions_Help::rest_collapsed($this, 'user/fetch') ?> method-name'><a href='<?= $url ?>/api/user/fetch' data-cache.collapsable='api_user_fetch_content'>fetch</a></h6>
            <div id='api_user_fetch_content' class='api-method help-content'><!-- api-method { -->
             <p>Retrieve all users matching the provided identifiers.</p>
             <table class='parameters'>
@@ -238,7 +186,7 @@ function rest_collapsed($view, $val)
           </li> <!-- user.fetch ======= } -->
 
           <li class='collapsable'> <!-- ======= user.fetchByTags { -->
-           <h6 id='api_user_fetchbytags' class='toggle <?= rest_collapsed($this, 'user/fetchByTags') ?> method-name'><a href='<?= $url ?>/api/user/fetchByTags' data-cache.collapsable='api_user_fetchByTags_content'>fetchByTags</a></h6>
+           <h6 id='api_user_fetchbytags' class='toggle <?= Connexions_Help::rest_collapsed($this, 'user/fetchByTags') ?> method-name'><a href='<?= $url ?>/api/user/fetchByTags' data-cache.collapsable='api_user_fetchByTags_content'>fetchByTags</a></h6>
            <div id='api_user_fetchByTags_content' class='api-method help-content'><!-- api-method { -->
             <p>Fetch all users that have one or more bookmarks with the given tags.</p>
             <table class='parameters'>
@@ -255,7 +203,7 @@ function rest_collapsed($view, $val)
           </li> <!-- user.fetchByTags ======= } -->
 
           <li class='collapsable'> <!-- ======== user.autocomplete { -->
-           <h6 id='api_user_autocomplete' class='toggle <?= rest_collapsed($this, 'user/autocomplete') ?> method-name'><a href='<?= $url ?>/api/user/autocomplete' data-cache.collapsable='api_user_autocomplete_content'>autocomplete</a></h6>
+           <h6 id='api_user_autocomplete' class='toggle <?= Connexions_Help::rest_collapsed($this, 'user/autocomplete') ?> method-name'><a href='<?= $url ?>/api/user/autocomplete' data-cache.collapsable='api_user_autocomplete_content'>autocomplete</a></h6>
            <div id='api_user_autocomplete_content' class='api-method help-content'><!-- api-method { -->
             <p>Given a term, retrieve all users that match that term.</p>
             <table class='parameters'>
@@ -269,7 +217,7 @@ function rest_collapsed($view, $val)
           </li> <!-- user.autocomplete ======= } -->
 
           <li class='collapsable'> <!-- ======== user.autocompleteTag { -->
-           <h6 id='api_user_autocompletetag' class='toggle <?= rest_collapsed($this, 'user/autocompleteTag') ?> method-name'><a href='<?= $url ?>/api/user/autocompleteTag' data-cache.collapsable='api_user_autocompleteTag_content'>autocompleteTag</a></h6>
+           <h6 id='api_user_autocompletetag' class='toggle <?= Connexions_Help::rest_collapsed($this, 'user/autocompleteTag') ?> method-name'><a href='<?= $url ?>/api/user/autocompleteTag' data-cache.collapsable='api_user_autocompleteTag_content'>autocompleteTag</a></h6>
            <div id='api_user_autocompleteTag_content' class='api-method help-content'><!-- api-method { -->
             <p>Given a term, retrieve all user-related tags that match that term.  If <b>tags</b> are specified, they will be used to select all users that have used those tags (tag-related users).  This set of users will then be used to locate all tags used by those users (user-related tags) which will in-turn be the set of tags searched for matches.</p>
             <p>This interface is used for tag autocompletion within the <a href='<?= $this->baseUrl('people') ?>'>people</a> pages.</p>
@@ -285,7 +233,7 @@ function rest_collapsed($view, $val)
           </li> <!-- user.autocompleteTag ======= } -->
 
           <li class='collapsable'> <!-- ======== user.getContributors { -->
-           <h6 id='api_user_getcontributors' class='toggle <?= rest_collapsed($this, 'user/getContributors') ?> method-name'><a href='<?= $url ?>/api/user/getContributors' data-cache.collapsable='api_user_getContributors_content'>getContributors</a></h6>
+           <h6 id='api_user_getcontributors' class='toggle <?= Connexions_Help::rest_collapsed($this, 'user/getContributors') ?> method-name'><a href='<?= $url ?>/api/user/getContributors' data-cache.collapsable='api_user_getContributors_content'>getContributors</a></h6>
            <div id='api_user_getContributors_content' class='api-method help-content'><!-- api-method { -->
             <p>Retrieve the set of top "contributors".</p>
             <table class='parameters'>
@@ -303,7 +251,7 @@ function rest_collapsed($view, $val)
           </li> <!-- user.getContributors ======= } -->
 
           <li class='collapsable'> <!-- ======== user.getContributorCount { -->
-           <h6 id='api_user_getcontributorcount' class='toggle <?= rest_collapsed($this, 'user/getContributorCount') ?> method-name'><a href='<?= $url ?>/api/user/getContributorCount' data-cache.collapsable='api_user_getContributorCount_content'>getContributorCount</a></h6>
+           <h6 id='api_user_getcontributorcount' class='toggle <?= Connexions_Help::rest_collapsed($this, 'user/getContributorCount') ?> method-name'><a href='<?= $url ?>/api/user/getContributorCount' data-cache.collapsable='api_user_getContributorCount_content'>getContributorCount</a></h6>
            <div id='api_user_getContributorCount_content' class='api-method help-content'><!-- api-method { -->
             <p>Retrieve the <i>count</i> of "contributors.</p>
             <table class='parameters'>
@@ -355,7 +303,7 @@ function rest_collapsed($view, $val)
           </li> <!-- user.getContributorCount ======= } -->
 
           <li class='collapsable'> <!-- ======== user.getTimeline { -->
-           <h6 id='api_user_gettimeline' class='toggle <?= rest_collapsed($this, 'user/getTimeline') ?> method-name'><a href='<?= $url ?>/api/user/getTimeline' data-cache.collapsable='api_user_getTimeline_content'>getTimeline</a></h6>
+           <h6 id='api_user_gettimeline' class='toggle <?= Connexions_Help::rest_collapsed($this, 'user/getTimeline') ?> method-name'><a href='<?= $url ?>/api/user/getTimeline' data-cache.collapsable='api_user_getTimeline_content'>getTimeline</a></h6>
            <div id='api_user_getTimeline_content' class='api-method help-content'><!-- api-method { -->
             <p>Retrieve the lastVisit date/times for one or more users.</p>
             <table class='parameters'>
@@ -379,7 +327,7 @@ function rest_collapsed($view, $val)
          <h5 class='toggle'><span>Authenticated Methods</span></h5>
          <ul class='collapsableList help-content'>
           <li class='collapsable'> <!-- ======== user.renameTags { -->
-           <h6 id='api_user_renametags' class='toggle <?= rest_collapsed($this, 'user/renameTags') ?> method-name'><a href='<?= $url ?>/api/user/renameTags' data-cache.collapsable='api_user_renameTags_content'>renameTags</a></h6>
+           <h6 id='api_user_renametags' class='toggle <?= Connexions_Help::rest_collapsed($this, 'user/renameTags') ?> method-name'><a href='<?= $url ?>/api/user/renameTags' data-cache.collapsable='api_user_renameTags_content'>renameTags</a></h6>
            <div id='api_user_renameTags_content' class='api-method help-content'><!-- api-method { -->
             <p>Rename one or more tags.</p>
             <table class='parameters'>
@@ -398,7 +346,7 @@ function rest_collapsed($view, $val)
           </li> <!-- user.renameTags ======= } -->
 
           <li class='collapsable'> <!-- ======== user.deleteTags { -->
-           <h6 id='api_user_deletetags' class='toggle <?= rest_collapsed($this, 'user/deleteTags') ?> method-name'><a href='<?= $url ?>/api/user/deleteTags' data-cache.collapsable='api_user_deleteTags_content'>deleteTags</a></h6>
+           <h6 id='api_user_deletetags' class='toggle <?= Connexions_Help::rest_collapsed($this, 'user/deleteTags') ?> method-name'><a href='<?= $url ?>/api/user/deleteTags' data-cache.collapsable='api_user_deleteTags_content'>deleteTags</a></h6>
            <div id='api_user_deleteTags_content' class='api-method help-content'><!-- api-method { -->
             <p>Delete one or more tags.</p>
             <table class='parameters'>
@@ -420,7 +368,7 @@ function rest_collapsed($view, $val)
           </li> <!-- user.deleteTags ======= } -->
 
           <li class='collapsable'> <!-- ======== user.addToNetwork { -->
-           <h6 id='api_user_addtonetwork' class='toggle <?= rest_collapsed($this, 'user/addToNetwork') ?> method-name'><a href='<?= $url ?>/api/user/addToNetwork' data-cache.collapsable='api_user_addToNetwork_content'>addToNetwork</a></h6>
+           <h6 id='api_user_addtonetwork' class='toggle <?= Connexions_Help::rest_collapsed($this, 'user/addToNetwork') ?> method-name'><a href='<?= $url ?>/api/user/addToNetwork' data-cache.collapsable='api_user_addToNetwork_content'>addToNetwork</a></h6>
            <div id='api_user_addToNetwork_content' class='api-method help-content'><!-- api-method { -->
             <p>Add one or more users to the network of the authenticated user.</p>
             <table class='parameters'>
@@ -440,7 +388,7 @@ function rest_collapsed($view, $val)
           </li> <!-- user.addToNetwork ======= } -->
 
           <li class='collapsable'> <!-- ======== user.removeFromNetwork { -->
-           <h6 id='api_user_removefromnetwork' class='toggle <?= rest_collapsed($this, 'user/removeFromNetwork') ?> method-name'><a href='<?= $url ?>/api/user/removeFromNetwork' data-cache.collapsable='api_user_removeFromNetwork_content'>removeFromNetwork</a></h6>
+           <h6 id='api_user_removefromnetwork' class='toggle <?= Connexions_Help::rest_collapsed($this, 'user/removeFromNetwork') ?> method-name'><a href='<?= $url ?>/api/user/removeFromNetwork' data-cache.collapsable='api_user_removeFromNetwork_content'>removeFromNetwork</a></h6>
            <div id='api_user_removeFromNetwork_content' class='api-method help-content'><!-- api-method { -->
             <p>Remove one or more users from the network of the authenticated user.</p>
             <table class='parameters'>
@@ -460,7 +408,7 @@ function rest_collapsed($view, $val)
           </li> <!-- user.removeFromNetwork ======= } -->
 
           <li class='collapsable'> <!-- ======== user.autocompleteMyTags { -->
-           <h6 id='api_user_autocompletemytags' class='toggle <?= rest_collapsed($this, 'user/autocompleteMyTags') ?> method-name'><a href='<?= $url ?>/api/user/autocompleteMyTags' data-cache.collapsable='api_user_autocompleteMyTags_content'>autocompleteMyTags</a></h6>
+           <h6 id='api_user_autocompletemytags' class='toggle <?= Connexions_Help::rest_collapsed($this, 'user/autocompleteMyTags') ?> method-name'><a href='<?= $url ?>/api/user/autocompleteMyTags' data-cache.collapsable='api_user_autocompleteMyTags_content'>autocompleteMyTags</a></h6>
            <div id='api_user_autocompleteMyTags_content' class='api-method help-content'><!-- api-method { -->
             <p>Perform tag autocompletion based upon the tags used by the authenticated user.</p>
             <table class='parameters'>
@@ -475,7 +423,7 @@ function rest_collapsed($view, $val)
           </li> <!-- user.autocompleteMyTags ======= } -->
 
           <li class='collapsable'> <!-- ======== user.update { -->
-           <h6 id='api_user_update' class='toggle <?= rest_collapsed($this, 'user/update') ?> method-name'><a href='<?= $url ?>/api/user/update' data-cache.collapsable='api_user_update_content'>update</a></h6>
+           <h6 id='api_user_update' class='toggle <?= Connexions_Help::rest_collapsed($this, 'user/update') ?> method-name'><a href='<?= $url ?>/api/user/update' data-cache.collapsable='api_user_update_content'>update</a></h6>
            <div id='api_user_update_content' class='api-method help-content'><!-- api-method { -->
             <p>Update the authenticated user.</p>
             <table class='parameters'>
@@ -492,7 +440,7 @@ function rest_collapsed($view, $val)
           </li> <!-- user.update ======= } -->
 
           <li class='collapsable'> <!-- ======== user.regenerateApiKey { -->
-           <h6 id='api_user_regenerateapikey' class='toggle <?= rest_collapsed($this, 'user/regenerateApiKey') ?> method-name'><a href='<?= $url ?>/api/user/regenerateApiKey' data-cache.collapsable='api_user_regenerateApiKey_content'>regenerateApiKey</a></h6>
+           <h6 id='api_user_regenerateapikey' class='toggle <?= Connexions_Help::rest_collapsed($this, 'user/regenerateApiKey') ?> method-name'><a href='<?= $url ?>/api/user/regenerateApiKey' data-cache.collapsable='api_user_regenerateApiKey_content'>regenerateApiKey</a></h6>
            <div id='api_user_regenerateApiKey_content' class='api-method help-content'><!-- api-method { -->
             <p>Regenerate the apiKey for the authenticated user.</p>
             <table class='parameters'>
@@ -505,7 +453,7 @@ function rest_collapsed($view, $val)
           </li> <!-- user.regenerateApiKey ======= } -->
 
           <li class='collapsable'> <!-- ======== user.updateCredentials { -->
-           <h6 id='api_user_updatecredentials' class='toggle <?= rest_collapsed($this, 'user/updateCredentials') ?> method-name'><a href='<?= $url ?>/api/user/updateCredentials' data-cache.collapsable='api_user_updateCredentials_content'>updateCredentials</a></h6>
+           <h6 id='api_user_updatecredentials' class='toggle <?= Connexions_Help::rest_collapsed($this, 'user/updateCredentials') ?> method-name'><a href='<?= $url ?>/api/user/updateCredentials' data-cache.collapsable='api_user_updateCredentials_content'>updateCredentials</a></h6>
            <div id='api_user_updateCredentials_content' class='api-method help-content'><!-- api-method { -->
             <p>Update the credentials for the authenticated user.</p>
             <table class='parameters'>
@@ -519,7 +467,7 @@ function rest_collapsed($view, $val)
           </li> <!-- user.updateCredentials ======= } -->
 
           <li class='collapsable'> <!-- ======== user.deleteCredential { -->
-           <h6 id='api_user_deletecredential' class='toggle <?= rest_collapsed($this, 'user/deleteCredential') ?> method-name'><a href='<?= $url ?>/api/user/deleteCredential' data-cache.collapsable='api_user_deleteCredential_content'>deleteCredential</a></h6>
+           <h6 id='api_user_deletecredential' class='toggle <?= Connexions_Help::rest_collapsed($this, 'user/deleteCredential') ?> method-name'><a href='<?= $url ?>/api/user/deleteCredential' data-cache.collapsable='api_user_deleteCredential_content'>deleteCredential</a></h6>
            <div id='api_user_deleteCredential_content' class='api-method help-content'><!-- api-method { -->
             <p>Delete a single credential for the authenticated user.</p>
             <table class='parameters'>
@@ -533,7 +481,7 @@ function rest_collapsed($view, $val)
           </li> <!-- user.deleteCredential ======= } -->
 
           <li class='collapsable'> <!-- ======== user.cropAvatar { -->
-           <h6 id='api_user_cropavatar' class='toggle <?= rest_collapsed($this, 'user/cropAvatar') ?> method-name'><a href='<?= $url ?>/api/user/cropAvatar' data-cache.collapsable='api_user_cropAvatar_content'>cropAvatar</a></h6>
+           <h6 id='api_user_cropavatar' class='toggle <?= Connexions_Help::rest_collapsed($this, 'user/cropAvatar') ?> method-name'><a href='<?= $url ?>/api/user/cropAvatar' data-cache.collapsable='api_user_cropAvatar_content'>cropAvatar</a></h6>
            <div id='api_user_cropAvatar_content' class='api-method help-content'><!-- api-method { -->
             <p>Given a <i>local URL</i> to an avatar image, along with cropping information, perform the image manipulation to accomplish the crop, and move the resulting image to the avatar directory with a name based upon the authenticated user.</p>
 
@@ -570,14 +518,14 @@ function rest_collapsed($view, $val)
      </li><!-- api_user } -->
    
      <li class='collapsable'><!-- api_item { -->
-      <h4 id='api_item' id='api_item' class='toggle <?= rest_collapsed($this, 'item') ?>'><a href='<?= $url ?>/api/item' data-cache.collapsable='api_item_content'>item</a> <span class='description'>&mdash; item/url methods</span></h4>
+      <h4 id='api_item' id='api_item' class='toggle <?= Connexions_Help::rest_collapsed($this, 'item') ?>'><a href='<?= $url ?>/api/item' data-cache.collapsable='api_item_content'>item</a> <span class='description'>&mdash; item/url methods</span></h4>
       <div id='api_item_content' class='help-content'>
        <ul class='collapsableList'>
         <li class='collapsable'><!-- unauthenticated { -->
          <h5 class='toggle'><span>Unauthenticated Methods</span></h5>
          <ul class='collapsableList help-content'>
           <li class='collapsable'> <!-- ======== item.find { -->
-           <h6 id='api_item_find' class='toggle <?= rest_collapsed($this, 'item/find') ?> method-name'><a href='<?= $url ?>/api/item/find' data-cache.collapsable='api_item_find_content'>find</a></h6>
+           <h6 id='api_item_find' class='toggle <?= Connexions_Help::rest_collapsed($this, 'item/find') ?> method-name'><a href='<?= $url ?>/api/item/find' data-cache.collapsable='api_item_find_content'>find</a></h6>
            <div id='api_item_find_content' class='api-method help-content'><!-- api-method { -->
             <p>Find a single item/url.</p>
             <table class='parameters'>
@@ -590,7 +538,7 @@ function rest_collapsed($view, $val)
           </li> <!-- item.find ======= } -->
 
           <li class='collapsable'> <!-- ======== item.fetch { -->
-           <h6 id='api_item_fetch' class='toggle <?= rest_collapsed($this, 'item/fetch') ?> method-name'><a href='<?= $url ?>/api/item/fetch' data-cache.collapsable='api_item_fetch_content'>fetch</a></h6>
+           <h6 id='api_item_fetch' class='toggle <?= Connexions_Help::rest_collapsed($this, 'item/fetch') ?> method-name'><a href='<?= $url ?>/api/item/fetch' data-cache.collapsable='api_item_fetch_content'>fetch</a></h6>
            <div id='api_item_fetch_content' class='api-method help-content'><!-- api-method { -->
             <p>Retrieve all items matching the provided identifiers.</p>
             <table class='parameters'>
@@ -607,7 +555,7 @@ function rest_collapsed($view, $val)
           </li> <!-- item.fetch ======= } -->
 
           <li class='collapsable'> <!-- ======== item.fetchByUsers { -->
-           <h6 id='api_item_fetchbyusers' class='toggle <?= rest_collapsed($this, 'item/fetchByUsers') ?> method-name'><a href='<?= $url ?>/api/item/fetchByUsers' data-cache.collapsable='api_item_fetchByUsers_content'>fetchByUsers</a></h6>
+           <h6 id='api_item_fetchbyusers' class='toggle <?= Connexions_Help::rest_collapsed($this, 'item/fetchByUsers') ?> method-name'><a href='<?= $url ?>/api/item/fetchByUsers' data-cache.collapsable='api_item_fetchByUsers_content'>fetchByUsers</a></h6>
            <div id='api_item_fetchByUsers_content' class='api-method help-content'><!-- api-method { -->
             <p>Retrieve all items that have been bookmarked by the given users.</p>
             <table class='parameters'>
@@ -624,7 +572,7 @@ function rest_collapsed($view, $val)
           </li> <!-- item.fetchByUsers ======= } -->
 
           <li class='collapsable'> <!-- ======== item.fetchByTags { -->
-           <h6 id='api_item_fetchbytags' class='toggle <?= rest_collapsed($this, 'item/fetchByTags') ?> method-name'><a href='<?= $url ?>/api/item/fetchByTags' data-cache.collapsable='api_item_fetchByTags_content'>fetchByTags</a></h6>
+           <h6 id='api_item_fetchbytags' class='toggle <?= Connexions_Help::rest_collapsed($this, 'item/fetchByTags') ?> method-name'><a href='<?= $url ?>/api/item/fetchByTags' data-cache.collapsable='api_item_fetchByTags_content'>fetchByTags</a></h6>
            <div id='api_item_fetchByTags_content' class='api-method help-content'><!-- api-method { -->
             <p>Retrieve all items that have been bookmarked with the given tags.</p>
             <table class='parameters'>
@@ -641,7 +589,7 @@ function rest_collapsed($view, $val)
           </li> <!-- item.fetchByTags ======= } -->
 
           <li class='collapsable'> <!-- ======== item.fetchByUsersAndTags { -->
-           <h6 id='api_item_fetchbyusersandtags' class='toggle <?= rest_collapsed($this, 'item/fetchByUsersAndTags') ?> method-name'><a href='<?= $url ?>/api/item/fetchByUsersAndTags' data-cache.collapsable='api_item_fetchByUsersAndTags_content'>fetchByUsersAndTags</a></h6>
+           <h6 id='api_item_fetchbyusersandtags' class='toggle <?= Connexions_Help::rest_collapsed($this, 'item/fetchByUsersAndTags') ?> method-name'><a href='<?= $url ?>/api/item/fetchByUsersAndTags' data-cache.collapsable='api_item_fetchByUsersAndTags_content'>fetchByUsersAndTags</a></h6>
            <div id='api_item_fetchByUsersAndTags_content' class='api-method help-content'><!-- api-method { -->
             <p>Retrieve all items that have been bookmarked by the given users with the given tags.</p>
             <table class='parameters'>
@@ -660,7 +608,7 @@ function rest_collapsed($view, $val)
           </li> <!-- item.fetchByUsersAndTags ======= } -->
 
           <li class='collapsable'> <!-- ======== item.fetchSimilar { -->
-           <h6 id='api_item_fetchsimilar' class='toggle <?= rest_collapsed($this, 'item/fetchSimilar') ?> method-name'><a href='<?= $url ?>/api/item/fetchSimilar' data-cache.collapsable='api_item_fetchSimilar_content'>fetchSimilar</a></h6>
+           <h6 id='api_item_fetchsimilar' class='toggle <?= Connexions_Help::rest_collapsed($this, 'item/fetchSimilar') ?> method-name'><a href='<?= $url ?>/api/item/fetchSimilar' data-cache.collapsable='api_item_fetchSimilar_content'>fetchSimilar</a></h6>
            <div id='api_item_fetchSimilar_content' class='api-method help-content'><!-- api-method { -->
             <p>Retrieve all items that are "similar" to the provided item where "similar" is a match to the <i>host</i> portion of the url &mdash; specifically <tt>://%host%</tt>.</p>
             <table class='parameters'>
@@ -682,14 +630,14 @@ function rest_collapsed($view, $val)
      </li><!-- api_item } -->
    
      <li class='collapsable'><!-- api_tag { -->
-      <h4 id='api_tag' id='api_tag' class='toggle <?= rest_collapsed($this, 'tag') ?>'><a href='<?= $url ?>/api/tag' data-cache.collapsable='api_tag_content'>tag</a> <span class='description'>&mdash; tag-related operations</span></h4>
+      <h4 id='api_tag' id='api_tag' class='toggle <?= Connexions_Help::rest_collapsed($this, 'tag') ?>'><a href='<?= $url ?>/api/tag' data-cache.collapsable='api_tag_content'>tag</a> <span class='description'>&mdash; tag-related operations</span></h4>
       <div id='api_tag_content' class='help-content'>
        <ul class='collapsableList'>
         <li class='collapsable'><!-- unauthenticated { -->
          <h5 class='toggle'><span>Unauthenticated Methods</span></h5>
          <ul class='collapsableList help-content'>
           <li class='collapsable'> <!-- ======== tag.find { -->
-           <h6 id='api_tag_find' class='toggle <?= rest_collapsed($this, 'tag/find') ?> method-name'><a href='<?= $url ?>/api/tag/find' data-cache.collapsable='api_tag_find_content'>find</a></h6>
+           <h6 id='api_tag_find' class='toggle <?= Connexions_Help::rest_collapsed($this, 'tag/find') ?> method-name'><a href='<?= $url ?>/api/tag/find' data-cache.collapsable='api_tag_find_content'>find</a></h6>
            <div id='api_tag_find_content' class='api-method help-content'><!-- api-method { -->
             <p>Find a single tag.</p>
             <table class='parameters'>
@@ -702,7 +650,7 @@ function rest_collapsed($view, $val)
           </li> <!-- tag.find ======= } -->
 
           <li class='collapsable'> <!-- ======== tag.fetch { -->
-           <h6 id='api_tag_fetch' class='toggle <?= rest_collapsed($this, 'tag/fetch') ?> method-name'><a href='<?= $url ?>/api/tag/fetch' data-cache.collapsable='api_tag_fetch_content'>fetch</a></h6>
+           <h6 id='api_tag_fetch' class='toggle <?= Connexions_Help::rest_collapsed($this, 'tag/fetch') ?> method-name'><a href='<?= $url ?>/api/tag/fetch' data-cache.collapsable='api_tag_fetch_content'>fetch</a></h6>
            <div id='api_tag_fetch_content' class='api-method help-content'><!-- api-method { -->
             <p>Retrieve all tags matching the provided identifiers.</p>
             <table class='parameters'>
@@ -719,7 +667,7 @@ function rest_collapsed($view, $val)
           </li> <!-- tag.fetch ======= } -->
 
           <li class='collapsable'> <!-- ======== tag.fetchByUsers { -->
-           <h6 id='api_tag_fetchbyusers' class='toggle <?= rest_collapsed($this, 'tag/fetchByUsers') ?> method-name'><a href='<?= $url ?>/api/tag/fetchByUsers' data-cache.collapsable='api_tag_fetchByUsers_content'>fetchByUsers</a></h6>
+           <h6 id='api_tag_fetchbyusers' class='toggle <?= Connexions_Help::rest_collapsed($this, 'tag/fetchByUsers') ?> method-name'><a href='<?= $url ?>/api/tag/fetchByUsers' data-cache.collapsable='api_tag_fetchByUsers_content'>fetchByUsers</a></h6>
            <div id='api_tag_fetchByUsers_content' class='api-method help-content'><!-- api-method { -->
             <p>Retrieve tags that have been used by the given users.</p>
             <table class='parameters'>
@@ -736,7 +684,7 @@ function rest_collapsed($view, $val)
           </li> <!-- tag.fetchByUsers ======= } -->
 
           <li class='collapsable'> <!-- ======== tag.fetchByItems { -->
-           <h6 id='api_tag_fetchbyitems' class='toggle <?= rest_collapsed($this, 'tag/fetchByItems') ?> method-name'><a href='<?= $url ?>/api/tag/fetchByItems' data-cache.collapsable='api_tag_fetchByItems_content'>fetchByItems</a></h6>
+           <h6 id='api_tag_fetchbyitems' class='toggle <?= Connexions_Help::rest_collapsed($this, 'tag/fetchByItems') ?> method-name'><a href='<?= $url ?>/api/tag/fetchByItems' data-cache.collapsable='api_tag_fetchByItems_content'>fetchByItems</a></h6>
            <div id='api_tag_fetchByItems_content' class='api-method help-content'><!-- api-method { -->
             <p>Retrieve tags that have been used to bookmark the given items.</p>
             <table class='parameters'>
@@ -753,7 +701,7 @@ function rest_collapsed($view, $val)
           </li> <!-- tag.fetchByItems ======= } -->
 
           <li class='collapsable'> <!-- ======== tag.fetchByBookmarks { -->
-           <h6 id='api_tag_fetchbybookmarks' class='toggle <?= rest_collapsed($this, 'tag/fetchByBookmarks') ?> method-name'><a href='<?= $url ?>/api/tag/fetchByBookmarks' data-cache.collapsable='api_tag_fetchByBookmarks_content'>fetchByBookmarks</a></h6>
+           <h6 id='api_tag_fetchbybookmarks' class='toggle <?= Connexions_Help::rest_collapsed($this, 'tag/fetchByBookmarks') ?> method-name'><a href='<?= $url ?>/api/tag/fetchByBookmarks' data-cache.collapsable='api_tag_fetchByBookmarks_content'>fetchByBookmarks</a></h6>
            <div id='api_tag_fetchByBookmarks_content' class='api-method help-content'><!-- api-method { -->
             <p>Retrieve all tags used with the given bookmarks.</p>
             <table class='parameters'>
@@ -770,7 +718,7 @@ function rest_collapsed($view, $val)
           </li> <!-- tag.fetchByBookmarks ======= } -->
 
           <li class='collapsable'> <!-- ======== tag.autocompleteUser { -->
-           <h6 id='api_tag_autocompleteuser' class='toggle <?= rest_collapsed($this, 'tag/autocompleteUser') ?> method-name'><a href='<?= $url ?>/api/tag/autocompleteUser' data-cache.collapsable='api_tag_autocompleteUser_content'>autocompleteUser</a></h6>
+           <h6 id='api_tag_autocompleteuser' class='toggle <?= Connexions_Help::rest_collapsed($this, 'tag/autocompleteUser') ?> method-name'><a href='<?= $url ?>/api/tag/autocompleteUser' data-cache.collapsable='api_tag_autocompleteUser_content'>autocompleteUser</a></h6>
            <div id='api_tag_autocompleteUser_content' class='api-method help-content'><!-- api-method { -->
             <p>Given a term, retrieve all tag-related users that match that term.  If <b>users</b> are specified, they will be used to select all tags used by those users (user-related tags).  This set of tags will then be used to locate all users that use those tags (tag-related users) which will in-turn be the set of users searched for matches.</p>
             <table class='parameters'>
@@ -791,14 +739,14 @@ function rest_collapsed($view, $val)
      </li><!-- api_tag } -->
    
      <li class='collapsable'><!-- api_bookmark { -->
-      <h4 id='api_bookmark' id='api_bookmark' class='toggle <?= rest_collapsed($this, 'bookmark') ?>'><a href='<?= $url ?>/api/bookmark' data-cache.collapsable='api_bookmark_content'>bookmark</a> <span class='description'>&mdash; bookmark-related functions</span></h4>
+      <h4 id='api_bookmark' id='api_bookmark' class='toggle <?= Connexions_Help::rest_collapsed($this, 'bookmark') ?>'><a href='<?= $url ?>/api/bookmark' data-cache.collapsable='api_bookmark_content'>bookmark</a> <span class='description'>&mdash; bookmark-related functions</span></h4>
       <div id='api_bookmark_content' class='help-content'>
        <ul class='collapsableList'>
         <li class='collapsable'><!-- unauthenticated { -->
          <h5 class='toggle'><span>Unauthenticated Methods</span></h5>
          <ul class='collapsableList help-content'>
           <li class='collapsable'> <!-- ======== bookmark.fetch { -->
-           <h6 id='api_bookmark_fetch' class='toggle <?= rest_collapsed($this, 'bookmark/fetch') ?> method-name'><a href='<?= $url ?>/api/bookmark/fetch' data-cache.collapsable='api_bookmark_fetch_content'>fetch</a></h6>
+           <h6 id='api_bookmark_fetch' class='toggle <?= Connexions_Help::rest_collapsed($this, 'bookmark/fetch') ?> method-name'><a href='<?= $url ?>/api/bookmark/fetch' data-cache.collapsable='api_bookmark_fetch_content'>fetch</a></h6>
            <div id='api_bookmark_fetch_content' class='api-method help-content'><!-- api-method { -->
             <p>Retrieve all bookmarks matching the provided identifiers.</p>
             <table class='parameters'>
@@ -815,7 +763,7 @@ function rest_collapsed($view, $val)
           </li> <!-- bookmark.fetch ======= } -->
 
           <li class='collapsable'> <!-- ======== bookmark.fetchByTags { -->
-           <h6 id='api_bookmark_fetchbytags' class='toggle <?= rest_collapsed($this, 'bookmark/fetchByTags') ?> method-name'><a href='<?= $url ?>/api/bookmark/fetchByTags' data-cache.collapsable='api_bookmark_fetchByTags_content'>fetchByTags</a></h6>
+           <h6 id='api_bookmark_fetchbytags' class='toggle <?= Connexions_Help::rest_collapsed($this, 'bookmark/fetchByTags') ?> method-name'><a href='<?= $url ?>/api/bookmark/fetchByTags' data-cache.collapsable='api_bookmark_fetchByTags_content'>fetchByTags</a></h6>
            <div id='api_bookmark_fetchByTags_content' class='api-method help-content'><!-- api-method { -->
             <p>Fetch all bookmarks that have one or more of the given tags.</p>
             <table class='parameters'>
@@ -832,7 +780,7 @@ function rest_collapsed($view, $val)
           </li> <!-- bookmark.fetchByTags ======= } -->
 
           <li class='collapsable'> <!-- ======== bookmark.fetchByUsers { -->
-           <h6 id='api_bookmark_fetchbyusers' class='toggle <?= rest_collapsed($this, 'bookmark/fetchByUsers') ?> method-name'><a href='<?= $url ?>/api/bookmark/fetchByUsers' data-cache.collapsable='api_bookmark_fetchByUsers_content'>fetchByUsers</a></h6>
+           <h6 id='api_bookmark_fetchbyusers' class='toggle <?= Connexions_Help::rest_collapsed($this, 'bookmark/fetchByUsers') ?> method-name'><a href='<?= $url ?>/api/bookmark/fetchByUsers' data-cache.collapsable='api_bookmark_fetchByUsers_content'>fetchByUsers</a></h6>
            <div id='api_bookmark_fetchByUsers_content' class='api-method help-content'><!-- api-method { -->
             <p>Fetch all bookmarks that belong to one or more of the given users.</p>
             <table class='parameters'>
@@ -849,7 +797,7 @@ function rest_collapsed($view, $val)
           </li> <!-- bookmark.fetchByUsers ======= } -->
 
           <li class='collapsable'> <!-- ======== bookmark.fetchByItems { -->
-           <h6 id='api_bookmark_fetchbyitems' class='toggle <?= rest_collapsed($this, 'bookmark/fetchByItems') ?> method-name'><a href='<?= $url ?>/api/bookmark/fetchByItems' data-cache.collapsable='api_bookmark_fetchByItems_content'>fetchByItems</a></h6>
+           <h6 id='api_bookmark_fetchbyitems' class='toggle <?= Connexions_Help::rest_collapsed($this, 'bookmark/fetchByItems') ?> method-name'><a href='<?= $url ?>/api/bookmark/fetchByItems' data-cache.collapsable='api_bookmark_fetchByItems_content'>fetchByItems</a></h6>
            <div id='api_bookmark_fetchByItems_content' class='api-method help-content'><!-- api-method { -->
             <p>Fetch all bookmarks that reference one or more of the given items.</p>
             <table class='parameters'>
@@ -866,7 +814,7 @@ function rest_collapsed($view, $val)
           </li> <!-- bookmark.fetchByitems ======= } -->
 
           <li class='collapsable'> <!-- ======== bookmark.fetchByUsersAndTags { -->
-           <h6 id='api_bookmark_fetchbyusersandtags' class='toggle <?= rest_collapsed($this, 'bookmark/fetchByUsersAndTags') ?> method-name'><a href='<?= $url ?>/api/bookmark/fetchByUsersAndTags' data-cache.collapsable='api_bookmark_fetchByUsersAndTags_content'>fetchByUsersAndTags</a></h6>
+           <h6 id='api_bookmark_fetchbyusersandtags' class='toggle <?= Connexions_Help::rest_collapsed($this, 'bookmark/fetchByUsersAndTags') ?> method-name'><a href='<?= $url ?>/api/bookmark/fetchByUsersAndTags' data-cache.collapsable='api_bookmark_fetchByUsersAndTags_content'>fetchByUsersAndTags</a></h6>
            <div id='api_bookmark_fetchByUsersAndTags_content' class='api-method help-content'><!-- api-method { -->
             <p>Fetch all bookmarks owned by one or more of the given users that use one or more of the given tags.</p>
             <table class='parameters'>
@@ -885,7 +833,7 @@ function rest_collapsed($view, $val)
           </li> <!-- bookmark.fetchByUsersAndTags ======= } -->
 
           <li class='collapsable'> <!-- ======== bookmark.fetchByUsersAndItems { -->
-           <h6 id='api_bookmark_fetchbyusersanditems' class='toggle <?= rest_collapsed($this, 'bookmark/fetchByUsersAndItems') ?> method-name'><a href='<?= $url ?>/api/bookmark/fetchByUsersAndItems' data-cache.collapsable='api_bookmark_fetchByUsersAndItems_content'>fetchByUsersAndItems</a></h6>
+           <h6 id='api_bookmark_fetchbyusersanditems' class='toggle <?= Connexions_Help::rest_collapsed($this, 'bookmark/fetchByUsersAndItems') ?> method-name'><a href='<?= $url ?>/api/bookmark/fetchByUsersAndItems' data-cache.collapsable='api_bookmark_fetchByUsersAndItems_content'>fetchByUsersAndItems</a></h6>
            <div id='api_bookmark_fetchByUsersAndItems_content' class='api-method help-content'><!-- api-method { -->
             <p>Fetch all bookmarks owned by one or more of the given users that reference one or more of the given items.</p>
             <table class='parameters'>
@@ -904,7 +852,7 @@ function rest_collapsed($view, $val)
           </li> <!-- bookmark.fetchByUsersAndItems ======= } -->
 
           <li class='collapsable'> <!-- ======== bookmark.autocompleteTag { -->
-           <h6 id='api_bookmark_autocompleteuser' class='toggle <?= rest_collapsed($this, 'bookmark/autocompleteTag') ?> method-name'><a href='<?= $url ?>/api/bookmark/autocompleteTag' data-cache.collapsable='api_bookmark_autocompleteTag_content'>autocompleteTag</a></h6>
+           <h6 id='api_bookmark_autocompleteuser' class='toggle <?= Connexions_Help::rest_collapsed($this, 'bookmark/autocompleteTag') ?> method-name'><a href='<?= $url ?>/api/bookmark/autocompleteTag' data-cache.collapsable='api_bookmark_autocompleteTag_content'>autocompleteTag</a></h6>
            <div id='api_bookmark_autocompleteTag_content' class='api-method help-content'><!-- api-method { -->
             <p>Given a term, retrieve all bookmark-related tags that match that term.  If <b>tags</b>, <b>users</b>, or <b>items</b> are specified, they will be used to select a matching set of bookmarks.  This set of bookmarks will then be used to locate all tags related to those bookmarks (bookmark-releated tags) which will in-turn be the set of tags searched for matches.  Note that the valid combinations of <b>tags</b>, <b>users</b>, and <b>items</b>, in order of precedence, are [<b>users</b>], [<b>users, tags</b>], [<b>items</b>], [<b>items, tags</b>], and [<b>tags</b>].</p>
             <table class='parameters'>
@@ -922,7 +870,7 @@ function rest_collapsed($view, $val)
           </li> <!-- bookmark.autocompleteTag ======= } -->
 
           <li class='collapsable'> <!-- ======== bookmark.getTimeline { -->
-           <h6 id='api_bookmark_gettimeline' class='toggle <?= rest_collapsed($this, 'bookmark/getTimeline') ?> method-name'><a href='<?= $url ?>/api/bookmark/getTimeline' data-cache.collapsable='api_bookmark_getTimeline_content'>getTimeline</a></h6>
+           <h6 id='api_bookmark_gettimeline' class='toggle <?= Connexions_Help::rest_collapsed($this, 'bookmark/getTimeline') ?> method-name'><a href='<?= $url ?>/api/bookmark/getTimeline' data-cache.collapsable='api_bookmark_getTimeline_content'>getTimeline</a></h6>
            <div id='api_bookmark_getTimeline_content' class='api-method help-content'><!-- api-method { -->
             <p>Retrieve the taggedOn date/times for one or more bookmarks.</p>
             <table class='parameters'>
@@ -948,7 +896,7 @@ function rest_collapsed($view, $val)
          <h5 class='toggle'><span>Authenticated Methods</span></h5>
          <ul class='collapsableList help-content'>
           <li class='collapsable'> <!-- ======== bookmark.find { -->
-           <h6 id='api_bookmark_find' class='toggle <?= rest_collapsed($this, 'bookmark/find') ?> method-name'><a href='<?= $url ?>/api/bookmark/find' data-cache.collapsable='api_bookmark_find_content'>find</a></h6>
+           <h6 id='api_bookmark_find' class='toggle <?= Connexions_Help::rest_collapsed($this, 'bookmark/find') ?> method-name'><a href='<?= $url ?>/api/bookmark/find' data-cache.collapsable='api_bookmark_find_content'>find</a></h6>
            <div id='api_bookmark_find_content' class='api-method help-content'><!-- api-method { -->
             <p>Find a single bookmark.</p>
             <table class='parameters'>
@@ -962,7 +910,7 @@ function rest_collapsed($view, $val)
           </li> <!-- bookmark.find ======= } -->
 
           <li class='collapsable'> <!-- ======== bookmark.update { -->
-           <h6 id='api_bookmark_update' class='toggle <?= rest_collapsed($this, 'bookmark/update') ?> method-name'><a href='<?= $url ?>/api/bookmark/update' data-cache.collapsable='api_bookmark_update_content'>update</a></h6>
+           <h6 id='api_bookmark_update' class='toggle <?= Connexions_Help::rest_collapsed($this, 'bookmark/update') ?> method-name'><a href='<?= $url ?>/api/bookmark/update' data-cache.collapsable='api_bookmark_update_content'>update</a></h6>
            <div id='api_bookmark_update_content' class='api-method help-content'><!-- api-method { -->
             <p>Update or create a bookmark.</p>
             <table class='parameters'>
@@ -983,7 +931,7 @@ function rest_collapsed($view, $val)
           </li> <!-- bookmark.update ======= } -->
 
           <li class='collapsable'> <!-- ======== bookmark.delete { -->
-           <h6 id='api_bookmark_delete' class='toggle <?= rest_collapsed($this, 'bookmark/delete') ?> method-name'><a href='<?= $url ?>/api/bookmark/delete' data-cache.collapsable='api_bookmark_delete_content'>delete</a></h6>
+           <h6 id='api_bookmark_delete' class='toggle <?= Connexions_Help::rest_collapsed($this, 'bookmark/delete') ?> method-name'><a href='<?= $url ?>/api/bookmark/delete' data-cache.collapsable='api_bookmark_delete_content'>delete</a></h6>
            <div id='api_bookmark_delete_content' class='api-method help-content'><!-- api-method { -->
             <p>Delete the identified bookmark.</p>
             <table class='parameters'>
@@ -1003,14 +951,14 @@ function rest_collapsed($view, $val)
      </li><!-- api_bookmark } -->
    
      <li class='collapsable'><!-- api_activity { -->
-      <h4 id='api_activity' id='api_activity' class='toggle <?= rest_collapsed($this, 'activity') ?>'><a href='<?= $url ?>/api/activity' data-cache.collapsable='api_activity_content'>activity</a> <span class='description'>&mdash; activity stream access</span></h4>
+      <h4 id='api_activity' id='api_activity' class='toggle <?= Connexions_Help::rest_collapsed($this, 'activity') ?>'><a href='<?= $url ?>/api/activity' data-cache.collapsable='api_activity_content'>activity</a> <span class='description'>&mdash; activity stream access</span></h4>
       <div id='api_activity_content' class='help-content'>
        <ul class='collapsableList'>
         <li class='collapsable'><!-- unauthenticated { -->
          <h5 class='toggle'><span>Unauthenticated Methods</span></h5>
          <ul class='collapsableList help-content'>
           <li class='collapsable'> <!-- ======== activity.find { -->
-           <h6 id='api_activity_find' class='toggle <?= rest_collapsed($this, 'activity/find') ?> method-name'><a href='<?= $url ?>/api/activity/find' data-cache.collapsable='api_activity_find_content'>find</a></h6>
+           <h6 id='api_activity_find' class='toggle <?= Connexions_Help::rest_collapsed($this, 'activity/find') ?> method-name'><a href='<?= $url ?>/api/activity/find' data-cache.collapsable='api_activity_find_content'>find</a></h6>
            <div id='api_activity_find_content' class='api-method help-content'><!-- api-method { -->
             <p>Find a single activity entry.</p>
             <table class='parameters'>
@@ -1023,7 +971,7 @@ function rest_collapsed($view, $val)
           </li> <!-- activity.find ======= } -->
 
           <li class='collapsable'> <!-- ======== activity.fetch { -->
-           <h6 id='api_activity_fetch' class='toggle <?= rest_collapsed($this, 'activity/fetch') ?> method-name'><a href='<?= $url ?>/api/activity/fetch' data-cache.collapsable='api_activity_fetch_content'>fetch</a></h6>
+           <h6 id='api_activity_fetch' class='toggle <?= Connexions_Help::rest_collapsed($this, 'activity/fetch') ?> method-name'><a href='<?= $url ?>/api/activity/fetch' data-cache.collapsable='api_activity_fetch_content'>fetch</a></h6>
            <div id='api_activity_fetch_content' class='api-method help-content'><!-- api-method { -->
             <p>Retrieve all activity records matching the provided identifiers.</p>
             <table class='parameters'>
@@ -1040,7 +988,7 @@ function rest_collapsed($view, $val)
           </li> <!-- activity.fetch ======= } -->
 
           <li class='collapsable'> <!-- ======== activity.fetchByUsers { -->
-           <h6 id='api_activity_fetchByUsers' class='toggle <?= rest_collapsed($this, 'activity/fetchByUsers') ?> method-name'><a href='<?= $url ?>/api/activity/fetchByUsers' data-cache.collapsable='api_activity_fetchByUsers_content'>fetchByUsers</a></h6>
+           <h6 id='api_activity_fetchByUsers' class='toggle <?= Connexions_Help::rest_collapsed($this, 'activity/fetchByUsers') ?> method-name'><a href='<?= $url ?>/api/activity/fetchByUsers' data-cache.collapsable='api_activity_fetchByUsers_content'>fetchByUsers</a></h6>
            <div id='api_activity_fetchByUsers_content' class='api-method help-content'><!-- api-method { -->
             <p>Retrieve all activity records for the given user(s).</p>
             <table class='parameters'>
@@ -1062,14 +1010,14 @@ function rest_collapsed($view, $val)
      </li><!-- api_activity } -->
    
      <li class='collapsable'><!-- api_util { -->
-      <h4 id='api_util' id='api_util' class='toggle <?= rest_collapsed($this, 'util') ?>'><a href='<?= $url ?>/api/util' data-cache.collapsable='api_util_content'>util</a> <span class='description'>&mdash; general purpose utilities</span></h4>
+      <h4 id='api_util' id='api_util' class='toggle <?= Connexions_Help::rest_collapsed($this, 'util') ?>'><a href='<?= $url ?>/api/util' data-cache.collapsable='api_util_content'>util</a> <span class='description'>&mdash; general purpose utilities</span></h4>
       <div id='api_util_content' class='help-content'>
        <ul class='collapsableList'>
         <li class='collapsable'><!-- unauthenticated { -->
          <h5 class='toggle'><span>Unauthenticated Methods</span></h5>
          <ul class='collapsableList help-content'>
           <li class='collapsable'> <!-- ======== util.getHead { -->
-           <h6 id='api_util_gethead' class='toggle <?= rest_collapsed($this, 'util/getHead') ?> method-name'><a href='<?= $url ?>/api/util/getHead' data-cache.collapsable='api_util_getHead_content'>getHead</a></h6>
+           <h6 id='api_util_gethead' class='toggle <?= Connexions_Help::rest_collapsed($this, 'util/getHead') ?> method-name'><a href='<?= $url ?>/api/util/getHead' data-cache.collapsable='api_util_getHead_content'>getHead</a></h6>
            <div id='api_util_getHead_content' class='api-method help-content'><!-- api-method { -->
             <p>Retrieve the HTML &lt;head&gt; of the given url.</p>
             <table class='parameters'>
@@ -1100,7 +1048,7 @@ function rest_collapsed($view, $val)
     <p class='continued'>The primary records returned by the APIs are:</p>
     <ul class='collapsableList'><!-- api-records { -->
      <li class='collapsable api-record'><!-- api-record { -->
-      <h4 id='api_records_user' class='toggle <?= rest_collapsed($this, 'records/user') ?>'><a href='<?= $url ?>/api/records/user' data-cache.collapsable='api_records_user_content'>user</a></h4>
+      <h4 id='api_records_user' class='toggle <?= Connexions_Help::rest_collapsed($this, 'records/user') ?>'><a href='<?= $url ?>/api/records/user' data-cache.collapsable='api_records_user_content'>user</a></h4>
       <div id='api_records_user_content' class='help-content'>
        <table class='record'>
         <tr><th>Property</th><th>Description</th></tr>
@@ -1122,7 +1070,7 @@ function rest_collapsed($view, $val)
      </li><!-- api-record } -->
 
      <li class='collapsable api-record'><!-- api-record { -->
-      <h4 id='api_records_item' class='toggle <?= rest_collapsed($this, 'records/item') ?>'><a href='<?= $url ?>/api/records/item' data-cache.collapsable='api_records_item_content'>item</a></h4>
+      <h4 id='api_records_item' class='toggle <?= Connexions_Help::rest_collapsed($this, 'records/item') ?>'><a href='<?= $url ?>/api/records/item' data-cache.collapsable='api_records_item_content'>item</a></h4>
       <div id='api_records_item_content' class='help-content'>
        <table class='record'>
         <tr><th>Property</th><th>Description</th></tr>
@@ -1142,7 +1090,7 @@ function rest_collapsed($view, $val)
      </li><!-- api-record } -->
 
      <li class='collapsable api-record'><!-- api-record { -->
-      <h4 id='api_records_tag' class='toggle <?= rest_collapsed($this, 'records/tag') ?>'><a href='<?= $url ?>/api/records/tag' data-cache.collapsable='api_records_tag_content'>tag</a></h4>
+      <h4 id='api_records_tag' class='toggle <?= Connexions_Help::rest_collapsed($this, 'records/tag') ?>'><a href='<?= $url ?>/api/records/tag' data-cache.collapsable='api_records_tag_content'>tag</a></h4>
       <div id='api_records_tag_content' class='help-content'>
        <table class='record'>
         <tr><th>Property</th><th>Description</th></tr>
@@ -1157,7 +1105,7 @@ function rest_collapsed($view, $val)
      </li><!-- api-record } -->
 
      <li class='collapsable api-record'><!-- api-record { -->
-      <h4 id='api_records_bookmark' class='toggle <?= rest_collapsed($this, 'records/bookmark') ?>'><a href='<?= $url ?>/api/records/bookmark' data-cache.collapsable='api_records_bookmark_content'>bookmark</a></h4>
+      <h4 id='api_records_bookmark' class='toggle <?= Connexions_Help::rest_collapsed($this, 'records/bookmark') ?>'><a href='<?= $url ?>/api/records/bookmark' data-cache.collapsable='api_records_bookmark_content'>bookmark</a></h4>
       <div id='api_records_bookmark_content' class='help-content'>
        <table class='record'>
         <tr><th>Property</th><th>Description</th></tr>
@@ -1177,7 +1125,7 @@ function rest_collapsed($view, $val)
      </li><!-- api-record } -->
 
      <li class='collapsable api-record'><!-- api-record { -->
-      <h4 id='api_records_credential' class='toggle <?= rest_collapsed($this, 'records/credential') ?>'><a href='<?= $url ?>/api/records/credential' data-cache.collapsable='api_records_credential_content'>credential</a></h4>
+      <h4 id='api_records_credential' class='toggle <?= Connexions_Help::rest_collapsed($this, 'records/credential') ?>'><a href='<?= $url ?>/api/records/credential' data-cache.collapsable='api_records_credential_content'>credential</a></h4>
       <div id='api_records_credential_content' class='help-content'>
        <table class='record'>
         <tr><th>Property</th><th>Description</th></tr>
@@ -1191,7 +1139,7 @@ function rest_collapsed($view, $val)
      </li><!-- api-record } -->
 
      <li class='collapsable api-record'><!-- api-record { -->
-      <h4 id='api_records_activity' class='toggle <?= rest_collapsed($this, 'records/activity') ?>'><a href='<?= $url ?>/api/records/activity' data-cache.collapsable='api_records_activity_content'>activity</a></h4>
+      <h4 id='api_records_activity' class='toggle <?= Connexions_Help::rest_collapsed($this, 'records/activity') ?>'><a href='<?= $url ?>/api/records/activity' data-cache.collapsable='api_records_activity_content'>activity</a></h4>
       <div id='api_records_activity_content' class='help-content'>
        <table class='record'>
         <tr><th>Property</th><th>Description</th></tr>
@@ -1207,7 +1155,7 @@ function rest_collapsed($view, $val)
      </li><!-- api-record } -->
 
      <li class='collapsable api-record'><!-- api-record { -->
-      <h4 id='api_records_timeline' class='toggle <?= rest_collapsed($this, 'records/timeline') ?>'><a href='<?= $url ?>/api/records/timeline' data-cache.collapsable='api_records_timeline_content'>timeline</a></h4>
+      <h4 id='api_records_timeline' class='toggle <?= Connexions_Help::rest_collapsed($this, 'records/timeline') ?>'><a href='<?= $url ?>/api/records/timeline' data-cache.collapsable='api_records_timeline_content'>timeline</a></h4>
       <div id='api_records_timeline_content' class='help-content'>
         <p class='continued'>For a single series, the return object will have the form:</p>
         <pre>
@@ -1239,7 +1187,7 @@ function rest_collapsed($view, $val)
     <h4>Additional Information</h4>
 
     <div class='collapsable'><!-- api_additionalInformation_normalizedUrl { -->
-     <h5 id='api_additionalinformation_normalizedurl' class='toggle<?= rest_collapsed($this, 'additionalInformation/normalizedUrl') ?>'<a href='<?= $url ?>/api/additionalInformation/normalizedUrl' data-cache.collapsable='api_additionalInformation_normalizedUrl_content'>Normalized URL</a></h5>
+     <h5 id='api_additionalinformation_normalizedurl' class='toggle<?= Connexions_Help::rest_collapsed($this, 'additionalInformation/normalizedUrl') ?>'<a href='<?= $url ?>/api/additionalInformation/normalizedUrl' data-cache.collapsable='api_additionalInformation_normalizedUrl_content'>Normalized URL</a></h5>
      <div id='api_additionalInformation_normalizedUrl_content' class='help-content'>
       <p>In order to mitigate issues with various functionally equivalent URLs represented by differing URL string, connexions will normalize the url before generating the URL hash that is used to represent the url.</p>
 
@@ -1275,7 +1223,7 @@ function rest_collapsed($view, $val)
     </div><!-- api_additionalInformation_normalizedUrl } -->
 
     <div class='collapsable'><!-- api_additionalInformation_timelineGrouping { -->
-     <h5 id='api_additionalinformation_timelinegrouping' class='toggle<?= rest_collapsed($this, 'additionalInformation/timelineGrouping') ?>'<a href='<?= $url ?>/api/additionalInformation/timelineGrouping' data-cache.collapsable='api_additionalInformation_timelineGrouping_content'>Timeline Grouping</a></h5>
+     <h5 id='api_additionalinformation_timelinegrouping' class='toggle<?= Connexions_Help::rest_collapsed($this, 'additionalInformation/timelineGrouping') ?>'<a href='<?= $url ?>/api/additionalInformation/timelineGrouping' data-cache.collapsable='api_additionalInformation_timelineGrouping_content'>Timeline Grouping</a></h5>
      <div id='api_additionalInformation_timelineGrouping_content' class='help-content'>
       <p class='continued'>When retrieving a timeline, the results can be grouped into one or more series.  These groupings are defined by a structured string of the form <tt>p[:b]</tt> where <tt>p</tt> may be any reasonable combination of:</p>
       <table>
@@ -1329,90 +1277,8 @@ function rest_collapsed($view, $val)
             }
         }
 
-        setup_localNavigation();
+        $('#help-developers').localNavigation('<?= $url ?>');
     });
-
-    /** @brief  If the browser supports 'window.history.pushState', establish
-     *          local navigation so the page doesn't have to be completely
-     *          reloaded for local links between sections.
-     */
-    function setup_localNavigation()
-    {
-        if (! window.history.pushState)
-        {
-            return;
-        }
-
-        var localHistory    = [];
-        $(window).bind('popstate', function(e) {
-            if (localHistory.length < 1)
-            {
-                return;
-            }
-
-            var state   = localHistory.pop();
-            var $a      = state.context;
-            var $el     = $a.parents('.collapsable:first');
-
-            // Scroll back to the parent of the original element
-            $.scrollTo( $el, {
-                duration:   800,
-                onAfter:    function() {
-                    $el.effect('highlight', null, 2000);
-                }
-            });
-        });
-
-        // Bind clicks for any local href
-        $('body').delegate('a[href^="<?= $url ?>"]', 'click', function(e) {
-            var a       = this;
-            var $a      = $(a);
-            var href    = $a.attr('href');
-
-            /* Doesn't work on Chrome if 'state' is non-null
-            var state   = { context: a };
-            var title   = $('head title').text();
-            window.history.pushState(state, title, href);
-            // */
-            localHistory.push({ context: $a });
-            window.history.pushState(null, null, href);
-
-            href = '#' + href.replace("<?= $url ?>/", '')
-                             .replace(/\//g, '_')
-                             .toLowerCase()
-
-            var $el = $( href );
-            if ($el.length < 1)
-            {
-                // Don't stop this one since we don't know where it goes...
-                return;
-            }
-
-            // Ensure that all collapsable parents are expanded
-            $el.parents('.collapsable').trigger('expand');
-            $el.trigger('expand');
-
-            // Give the target item time to become visible
-            var timer   = window.setInterval(function() {
-                if (! $el.is(':visible'))
-                {
-                    return;
-                }
-
-                window.clearInterval(timer);
-                $.scrollTo( $el, {
-                    duration:   800,
-                    onAfter:    function() {
-                        $el.parent().effect('highlight', null, 2000);
-                    }
-                });
-            }, 250);
-
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        });
-    }
 
  }(jQuery));
 </script>
