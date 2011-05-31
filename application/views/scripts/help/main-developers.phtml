@@ -11,6 +11,7 @@ $idDescriptions = array(
     'tag'       => "<b>tag</b> (tag name) or <b>tagId</b>",
     'bookmark'  => '',
     'date/time' => '<tt>YYYY-MM-DD hh:mm:ss</tt>',
+    'activity'  => '<b>activityId</b>',
 );
 $idDescriptions['bookmark'] =
         "<tt>%user%:%item%</tt> where <tt>%user%</tt> is the "
@@ -291,7 +292,7 @@ function rest_collapsed($view, $val)
              <tr><th>Parameters</th><th>Description</th></tr>
              <tr><th>threshold</th><td>The number of bookmarks required to be considered a "contributor".  A non-negative value will include users that have <i>at least</i> (&gt;=) that many bookmarks while a negative value will include users with <i>up to</i> (&lt;=) the absolute value [ 1 ];</td></tr>
              <tr><th>items</th><td>A comma-separated list of items by <?= $idDescriptions['item'] ?>.  If provided, only users that have bookmarks to one or more of the given items will be included;</td></tr>
-             <tr><th>tags</th><td>A comma-separated list of tags by <?= $idDescriptions['tag'] ?>>.  If provided, only users that have used one or more of the given tag9s) will be included;</td></tr>
+             <tr><th>tags</th><td>A comma-separated list of tags by <?= $idDescriptions['tag'] ?>.  If provided, only users that have used one or more of the given tag9s) will be included;</td></tr>
              <tr><th>order</th><td>The sort order to use in the selection [ totalItems DESC, name ASC ];</td></tr>
              <tr><th>count</th><td>The maximum number of matches to return [ 50 ];</td></tr>
              <tr><th>offset</th><td>The offset within the list of all matching users to begin including users to return [ 0 ];</td></tr>
@@ -309,7 +310,7 @@ function rest_collapsed($view, $val)
              <tr><th>Parameters</th><th>Description</th></tr>
              <tr><th>threshold</th><td>The number of bookmarks required to be considered a "contributor".  A non-negative value will include users that have <i>at least</i> (&gt;=) that many bookmarks while a negative value will include users with <i>up to</i> (&lt;=) the absolute value [ 1 ].  If no threshold is provided, one will be computed based upon the distribution of bookmarks.  In this case, the returned object will also include the statistics used to generate the threshold;</td></tr>
              <tr><th>items</th><td>A comma-separated list of items by <?= $idDescriptions['item'] ?>.  If provided, only users that have bookmarks to one or more of the given items will be included;</td></tr>
-             <tr><th>tags</th><td>A comma-separated list of tags by <?= $idDescriptions['tag'] ?>>.  If provided, only users that have used one or more of the given tag9s) will be included;</td></tr>
+             <tr><th>tags</th><td>A comma-separated list of tags by <?= $idDescriptions['tag'] ?>.  If provided, only users that have used one or more of the given tag9s) will be included;</td></tr>
              <tr><th>order</th><td>The sort order to use in the selection [ totalItems DESC, name ASC ];</td></tr>
              <tr><th>count</th><td>The maximum number of matches to return [ 50 ];</td></tr>
              <tr><th>offset</th><td>The offset within the list of all matching users to begin including users to return [ 0 ];</td></tr>
@@ -367,26 +368,8 @@ function rest_collapsed($view, $val)
              <tr><th>from</th><td>Limit the timeline to date/times <i>after</i> this date/time.  The date/time should be in the form <?= $idDescriptions['date/time'] ?>;</td></tr>
              <tr><th>until</th><td>Limit the timeline to date/times <i>before</i> this date/time.  The date/time should be in the form <?= $idDescriptions['date/time'] ?>;</td></tr>
             </table>
-            <p class='continued'>For a single series, the return object will have the form:</p>
-            <pre>
-{
-     "activity":     {
-         "%date/time string%": %count%,
-         ...
-     }
-}
-            </pre>
 
-            <p class='continued'>For a multiple series, the return object will have the form:</p>
-            <pre>
-{
-     "%series date/time%": {
-         "%period component%": %count%,
-         ...
-     },
-     ...
-}
-            </pre>
+            <p class='return'>Returns a <a href='<?= $url ?>/api/records/timeline'>timeline object</a>.</p>
            </div><!-- api-method } -->
           </li> <!-- user.getTimeline ======= } -->
          </ul>
@@ -420,7 +403,7 @@ function rest_collapsed($view, $val)
             <p>Delete one or more tags.</p>
             <table class='parameters'>
              <tr><th>Parameters</th><th>Description</th></tr>
-             <tr><th>tags</th><td>A comma-separated list of tags by <?= $idDescriptions['tag'] ?>></td></tr>
+             <tr><th>tags</th><td>A comma-separated list of tags by <?= $idDescriptions['tag'] ?>;</td></tr>
              <tr><th>apiKey</th><td>The apiKey for the currently authenticated user.  Only required for non-POST requests;</td></tr>
             </table>
             <p class='continued return'>Returns a results object of the form:</p>
@@ -552,7 +535,7 @@ function rest_collapsed($view, $val)
           <li class='collapsable'> <!-- ======== user.cropAvatar { -->
            <h6 id='api_user_cropavatar' class='toggle <?= rest_collapsed($this, 'user/cropAvatar') ?> method-name'><a href='<?= $url ?>/api/user/cropAvatar' data-cache.collapsable='api_user_cropAvatar_content'>cropAvatar</a></h6>
            <div id='api_user_cropAvatar_content' class='api-method help-content'><!-- api-method { -->
-            <p>Given a <i>local URL</i> to an avatar image, along with cropping information, perform the image manipulation to accomplish the crop, and move the resulting image to the avatar directory with a name based upon the the authenticated user.</p>
+            <p>Given a <i>local URL</i> to an avatar image, along with cropping information, perform the image manipulation to accomplish the crop, and move the resulting image to the avatar directory with a name based upon the authenticated user.</p>
 
             <p>By <i>local URL</i> we mean a URL that refers to <i>this</i> server.</p>
             <table class='parameters'>
@@ -954,26 +937,8 @@ function rest_collapsed($view, $val)
              <tr><th>from</th><td>Limit the timeline to date/times <i>after</i> this date/time.  The date/time should be in the form <?= $idDescriptions['date/time'] ?>;</td></tr>
              <tr><th>until</th><td>Limit the timeline to date/times <i>before</i> this date/time.  The date/time should be in the form <?= $idDescriptions['date/time'] ?>;</td></tr>
             </table>
-            <p class='continued'>For a single series, the return object will have the form:</p>
-            <pre>
-{
-     "activity":     {
-         "%date/time string%": %count%,
-         ...
-     }
-}
-            </pre>
 
-            <p class='continued'>For a multiple series, the return object will have the form:</p>
-            <pre>
-{
-     "%series date/time%": {
-         "%period component%": %count%,
-         ...
-     },
-     ...
-}
-            </pre>
+            <p class='return'>Returns a <a href='<?= $url ?>/api/records/timeline'>timeline object</a>.</p>
            </div><!-- api-method } -->
           </li> <!-- user.getTimeline ======= } -->
          </ul>
@@ -996,6 +961,41 @@ function rest_collapsed($view, $val)
            </div><!-- api-method } -->
           </li> <!-- bookmark.find ======= } -->
 
+          <li class='collapsable'> <!-- ======== bookmark.update { -->
+           <h6 id='api_bookmark_update' class='toggle <?= rest_collapsed($this, 'bookmark/update') ?> method-name'><a href='<?= $url ?>/api/bookmark/update' data-cache.collapsable='api_bookmark_update_content'>update</a></h6>
+           <div id='api_bookmark_update_content' class='api-method help-content'><!-- api-method { -->
+            <p>Update or create a bookmark.</p>
+            <table class='parameters'>
+             <tr><th>Parameters</th><th>Description</th></tr>
+             <tr><th>id</th><td>The desired bokmark's identifier in the form <?= $idDescriptions['bookmark'] ?>;</tr>
+             <tr><th>name</th><td>The (new) name for the bookmark [ empty == no change ];</td></tr>
+             <tr><th>description</th><td>The (new) description for the bookmark [ empty == no change ];</td></tr>
+             <tr><th>rating</th><td>The (new) rating ( 0-5 ) for the bookmark [ empty == no change, 0 == no rating ];</td></tr>
+             <tr><th>isFavorite</th><td>The (new) favorite value (true | false) for the bookmark [ empty == no change ];</td></tr>
+             <tr><th>isPrivate</th><td>The (new) privacy value (true | false) for the bookmark [ empty == no change ];</td></tr>
+             <tr><th>tags</th><td>A comma-separated list of the (new) set of tags by <?= $idDescriptions['tag'] ?> [ empty == no change ];</td></tr>
+             <tr><th>url</th><td>The (new) url for the bookmark [ empty == no change ];</td></tr>
+             <tr><th>apiKey</th><td>The apiKey for the currently authenticated user.  Only required for non-POST requests;</td></tr>
+            </table>
+
+            <p class='return'>Returns the new/updated <a href='<?= $url ?>/api/records/bookmark'>bookmark record</a>.</p>
+           </div><!-- api-method } -->
+          </li> <!-- bookmark.update ======= } -->
+
+          <li class='collapsable'> <!-- ======== bookmark.delete { -->
+           <h6 id='api_bookmark_delete' class='toggle <?= rest_collapsed($this, 'bookmark/delete') ?> method-name'><a href='<?= $url ?>/api/bookmark/delete' data-cache.collapsable='api_bookmark_delete_content'>delete</a></h6>
+           <div id='api_bookmark_delete_content' class='api-method help-content'><!-- api-method { -->
+            <p>Delete the identified bookmark.</p>
+            <table class='parameters'>
+             <tr><th>Parameters</th><th>Description</th></tr>
+             <tr><th>id</th><td>The desired bokmark's identifier in the form <?= $idDescriptions['bookmark'] ?>;</tr>
+             <tr><th>apiKey</th><td>The apiKey for the currently authenticated user.  Only required for non-POST requests;</td></tr>
+            </table>
+
+            <p class='return'>Returns an empty result on success.</p>
+           </div><!-- api-method } -->
+          </li> <!-- bookmark.delete ======= } -->
+
          </ul>
         </li><!-- authenticated } -->
        </ul>
@@ -1015,24 +1015,48 @@ function rest_collapsed($view, $val)
             <p>Find a single activity entry.</p>
             <table class='parameters'>
              <tr><th>Parameters</th><th>Description</th></tr>
-             <tr><th>id</th><td>The desired activity entry's <b>activityId</b>;</td></tr>
+             <tr><th>id</th><td>The desired activity entry's <?= $idDescriptions['activity'] ?>;</td></tr>
             </table>
+
+            <p class='return'>Returns the matching <a href='<?= $url ?>/api/records/activity'>activity record</a> or <tt>null</tt> if there is no match.</p>
            </div><!-- api-method } -->
           </li> <!-- activity.find ======= } -->
 
           <li class='collapsable'> <!-- ======== activity.fetch { -->
            <h6 id='api_activity_fetch' class='toggle <?= rest_collapsed($this, 'activity/fetch') ?> method-name'><a href='<?= $url ?>/api/activity/fetch' data-cache.collapsable='api_activity_fetch_content'>fetch</a></h6>
            <div id='api_activity_fetch_content' class='api-method help-content'><!-- api-method { -->
+            <p>Retrieve all activity records matching the provided identifiers.</p>
+            <table class='parameters'>
+             <tr><th>Parameters</th><th>Description</th></tr>
+             <tr><th>ids</th><td>A comma-separated list of activities by <?= $idDescriptions['activity'] ?>;</td></tr>
+             <tr><th>order</th><td>The sort order to apply to the returned activities [ time DESC ];</td></tr>
+             <tr><th>count</th><td>The maximum number of activities to return [ 50 ];</td></tr>
+             <tr><th>offset</th><td>The offset within the list of all matching activities to begin including activities to return [ 0 ];</td></tr>
+             <tr><th>since</th><td>Limit the results to activities created after this date/time.  The date/time should be in the form <?= $idDescriptions['date/time'] ?>;</td></tr>
+            </table>
+
+            <p class='return'>Returns an array of zero or more <a href='<?= $url ?>/api/records/activity'>activity records</a>.</p>
            </div><!-- api-method } -->
           </li> <!-- activity.fetch ======= } -->
+
+          <li class='collapsable'> <!-- ======== activity.fetchByUsers { -->
+           <h6 id='api_activity_fetchByUsers' class='toggle <?= rest_collapsed($this, 'activity/fetchByUsers') ?> method-name'><a href='<?= $url ?>/api/activity/fetchByUsers' data-cache.collapsable='api_activity_fetchByUsers_content'>fetchByUsers</a></h6>
+           <div id='api_activity_fetchByUsers_content' class='api-method help-content'><!-- api-method { -->
+            <p>Retrieve all activity records for the given user(s).</p>
+            <table class='parameters'>
+             <tr><th>Parameters</th><th>Description</th></tr>
+             <tr><th>users</th><td>A comma-separated list of users by <?= $idDescriptions['user'] ?>;</td></tr>
+             <tr><th>order</th><td>The sort order to apply to the returned activities [ time DESC ];</td></tr>
+             <tr><th>count</th><td>The maximum number of activities to return [ 50 ];</td></tr>
+             <tr><th>offset</th><td>The offset within the list of all matching activities to begin including activities to return [ 0 ];</td></tr>
+             <tr><th>since</th><td>Limit the results to activities created after this date/time.  The date/time should be in the form <?= $idDescriptions['date/time'] ?>;</td></tr>
+            </table>
+
+            <p class='return'>Returns an array of zero or more <a href='<?= $url ?>/api/records/activity'>activity records</a>.</p>
+           </div><!-- api-method } -->
+          </li> <!-- activity.fetchByUsers ======= } -->
          </ul>
         </li><!-- unauthenticated } -->
-
-        <li class='collapsable'><!-- authenticated { -->
-         <h5 class='toggle'><span>Authenticated Methods</span></h5>
-         <ul class='collapsableList help-content'>
-         </ul>
-        </li><!-- authenticated } -->
        </ul>
       </div>
      </li><!-- api_activity } -->
@@ -1053,22 +1077,18 @@ function rest_collapsed($view, $val)
              <tr><th>url</th><td>The url of the desired site.</tr>
              <tr><th>keepTags</th><td>A comma-separated list of HTML header tags that should be kept [ all ].</tr>
             </table>
+
+            <p class='return continued'>Returns an object containing information about the provided <tt>url</tt>.  This object will have the form:</p>
+            <pre>
+{
+    "url":  "%The URL used for the retrieval%",
+    "html": "%The HTML results from the head request, possibly limited to the specified set of HTML header tags%"
+}
+            </pre>
            </div><!-- api-method } -->
           </li> <!-- util.getHead ======= } -->
-
-          <li class='collapsable'> <!-- ======== util.fetch { -->
-           <h6 id='api_util_fetch' class='toggle <?= rest_collapsed($this, 'util/fetch') ?> method-name'><a href='<?= $url ?>/api/util/fetch' data-cache.collapsable='api_util_fetch_content'>fetch</a></h6>
-           <div id='api_util_fetch_content' class='api-method help-content'><!-- api-method { -->
-           </div><!-- api-method } -->
-          </li> <!-- util.fetch ======= } -->
          </ul>
         </li><!-- unauthenticated } -->
-
-        <li class='collapsable'><!-- authenticated { -->
-         <h5 class='toggle'><span>Authenticated Methods</span></h5>
-         <ul class='collapsableList help-content'>
-         </ul>
-        </li><!-- authenticated } -->
        </ul>
       </div>
      </li><!-- api_util } -->
@@ -1090,8 +1110,8 @@ function rest_collapsed($view, $val)
         <tr><th>email</th><td>The user's email address;</td></tr>
         <tr><th>pictureUrl</th><td>A URL to the user's avatar image;</td></tr>
         <tr><th>profile</th><td>A user-provided description of themselves;</td></tr>
-        <tr><th>lastVisit</th><td>The date/time of the user's last visit;</td></tr>
-        <tr><th>lastVisitFor</th><td>The date/time of the user's last visit to their <a href='<?= $this->baseUrl('inbox') ?>'>inbox</a>;</td></tr>
+        <tr><th>lastVisit</th><td>The date/time of the user's last visit in the form <?= $idDescriptions['date/time'] ?>;</td></tr>
+        <tr><th>lastVisitFor</th><td>The date/time of the user's last visit to their <a href='<?= $this->baseUrl('inbox') ?>'>inbox</a> in the form <?= $idDescriptions['date/time'] ?>;</td></tr>
         <tr><th>totalTags</th><td>The total number of unique tags this user has used;</td></tr>
         <tr><th>totalItems</th><td>The total number of unique sites this user has bookmarked;</td></tr>
         <tr><th>userItemCount</th><td>The total number of unique bookmarks for this user and this call (MAY be 0 for some calls indicating that it was not calculated for the call);</td></tr>
@@ -1149,8 +1169,8 @@ function rest_collapsed($view, $val)
         <tr><th>isFavorite</th><td>An indicator of whether or not this bookmark has been marked as a favorite (1 == true, 0 == false);</td></tr>
         <tr><th>isPrivate</th><td>An indicator of whether or not this bookmark has been marked as private (1 == true, 0 == false).
         <p><i>Note that results will only include the private bookmarks of the currently authenticated user</i>.</p></td></tr>
-        <tr><th>taggedOn</th><td>The date/time this bookmarked was created;</td></tr>
-        <tr><th>updatedOn</th><td>The date/time this bookmarked was last updated;</td></tr>
+        <tr><th>taggedOn</th><td>The date/time this bookmarked was created in the form <?= $idDescriptions['date/time'] ?>;</td></tr>
+        <tr><th>updatedOn</th><td>The date/time this bookmarked was last updated in the form <?= $idDescriptions['date/time'] ?>;</td></tr>
         <tr><th>tags</th><td>An array of tags by <b>tag</b> (tag name);</td></tr>
        </table>
       </div>
@@ -1169,6 +1189,49 @@ function rest_collapsed($view, $val)
        </table>
       </div>
      </li><!-- api-record } -->
+
+     <li class='collapsable api-record'><!-- api-record { -->
+      <h4 id='api_records_activity' class='toggle <?= rest_collapsed($this, 'records/activity') ?>'><a href='<?= $url ?>/api/records/activity' data-cache.collapsable='api_records_activity_content'>activity</a></h4>
+      <div id='api_records_activity_content' class='help-content'>
+       <table class='record'>
+        <tr><th>Property</th><th>Description</th></tr>
+        <tr><th>activityId</th><td>The numeric, local-unique identifier for the activity;</td></tr>
+        <tr><th>userId</th><td>The numeric, local-unique identifier for the associated user;</td></tr>
+        <tr><th>objectType</th><td>The type of object this activity is related to (user, tag, item, bookmark, userAuth);</td></tr>
+        <tr><th>objectId</th><td>The numeric, local-unique identifier of the target object (interpreted based upon <tt>objectType</tt>);</td></tr>
+        <tr><th>operation</th><td>The operation that was performed upon the target object (save, update, delete);</td></tr>
+        <tr><th>time</th><td>The date/time that the operation was performed in the form <?= $idDescriptions['date/time'] ?>;</td></tr>
+        <tr><th>properties</th><td>The effected properties of the target object;</td></tr>
+       </table>
+      </div>
+     </li><!-- api-record } -->
+
+     <li class='collapsable api-record'><!-- api-record { -->
+      <h4 id='api_records_timeline' class='toggle <?= rest_collapsed($this, 'records/timeline') ?>'><a href='<?= $url ?>/api/records/timeline' data-cache.collapsable='api_records_timeline_content'>timeline</a></h4>
+      <div id='api_records_timeline_content' class='help-content'>
+        <p class='continued'>For a single series, the return object will have the form:</p>
+        <pre>
+{
+     "activity":     {
+         "%date/time string%": %count%,
+         ...
+     }
+}
+        </pre>
+
+        <p class='continued'>For a multiple series, the return object will have the form:</p>
+        <pre>
+{
+     "%series date/time%": {
+         "%period component%": %count%,
+         ...
+     },
+     ...
+}
+        </pre>
+      </div>
+     </li><!-- api-record } -->
+
     </ul><!-- api-records } -->
    </div><!-- api_records } -->
 

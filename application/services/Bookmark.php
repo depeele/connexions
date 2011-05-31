@@ -877,7 +877,7 @@ class Service_Bookmark extends Service_Base
                         $bookmark->debugDump());
         // */
 
-        $bookmark->delete();
+        return $bookmark->delete();
     }
 
     /** @brief  Retrieve the taggedOn date/times for the given user(s) and/or
