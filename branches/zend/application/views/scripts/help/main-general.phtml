@@ -1,6 +1,152 @@
+<?php
+$config   =  Zend_Registry::get('config');
+$contact  =& $config->contact;
+$url      =  $this->baseUrl('help/general');
+
+?>
+<h3><span>What is Connexions?</span></h3>
+<div class='help-content'>
+ <p>Connexions is a social bookmarking service that allows you to tag, save,
+ manage and share links to interesting resources from across the internet, all
+ in a central place.  Connexions makes it easier to discover, remember and
+ share what you need when you need it.</p>
+
+ <h4><span>Bookmark any resource and get to it from any browser</span></h4>
+ <p>Instead of having disjoint, disconnected bookmarks on several different
+ computers, Connexions allows you to store bookmarks in one place, accessible
+ from any computer.</p>
+
+ <p>With a focus on community, Connexions gives you the opportunity to make
+ your bookmarks public, allowing the community to benefit from the rich store
+ of resources that you have found to be of interest.  Of course, if you find
+ resources that you would like to keep for yourself, you can do that as well by
+ marking them "private".  As a further memory aid, you can mark bookmarks as
+ "favorite" as well as providing a rating indicating how useful the resource
+ has proven to be.</p>
+
+ <p>Instead of limiting you to a single, strict heirarchy of folders in order
+ to manage your bookmarks, Connexions allows you to add tags to the bookmarks
+ you create.  These tags are simple, non-heirarchical keywords that allow you
+ to attach memorable, meanigful words or concepts to bookmarks.  This helps
+ with discovery, remembering, and sharing by providing a natural grouping of
+ sites that have similarities that are important to you.</p>
+
+ <p>Bookmarks can be grouped and viewed in multiple ways &mdash; by date,
+ title, rating, count of people who have also bookmarked the site, by tag(s),
+ people that tagged, or even by the URL of the resource itself.  Connexions
+ provides many different ways to view the bookmarks, tags, and people that form
+ the community.</p>
+
+ <h4><span>Community - share and share alike</span></h4>
+ <p>If others that you respect, trust, or just plain like are also using
+ Connexions, you can send them bookmarks that you believe they might find
+ interesting.  The next time they visit Connexions, they can check out any
+ bookmarks that have been tagged for them.  Of course, they can do the same for
+ you, helping you find resources that you may have overlooked.</p>
+
+ <p>You can also add any Connexions users to your "network", allowing you to
+ visit one place to get a view into the resources they have collectively found
+ useful.</p>
+
+</div>
+
+<h3><span>Finding your way around</span></h3>
+<div class='help-content'>
+ <h4><span>General Navigation</span></h4>
+ <p>Connexions is divided into three main sections &mdash; <b>Bookmarks</b>,
+ <b>People</b>, and <b>Tags</b>.  Once signed-in, you will see the menu items
+ as presented below:</p>
+ <p>
+  <img src='<?= $this->baseUrl('/images/help/navigation-bookmarks.jpg') ?>'
+       title='Navigation: Bookmarks' />
+  <img src='<?= $this->baseUrl('/images/help/navigation-people.jpg') ?>'
+       title='Navigation: People' />
+  <img src='<?= $this->baseUrl('/images/help/navigation-tags.jpg') ?>'
+       title='Navigation: Tags' />
+ </p>
+
+ <p>In addition to the primary sections, there is also <b>Help</b>,
+ <b>Search</b>, and the <b>Account</b> area at the top-right</p>
+ <p>
+  <img src='<?= $this->baseUrl('/images/help/navigation-help.jpg') ?>'
+       title='Navigation: Help' />
+ </p>
+ <p>
+  Search provides several different search contexts to help narrow the results to those you are most likely after.  See <a href='<?= $this->baseUrl('help/faq/how_do_i_perform_a_search') ?>'>How do I perform a search</a> for more information about searching and search contexts.
+  <br />
+
+  <img src='<?= $this->baseUrl('/images/help/navigation-search.jpg') ?>'
+       title='Navigation: Search' />
+ </p>
+ <p>
+  The <b>Account</b> area provides access to account-related actions.
+  <br />
+  <img src='<?= $this->baseUrl('/images/help/navigation-account.jpg') ?>'
+       title='Navigation: Account' />
+ </p>
+
+ <h4><span>Main Display Section</span></h4>
+ <p class='continued'>In addition to the main navigation, most pages also have
+ a section header that includes a contextual icon and description of the
+ current section, section "bread crumbs", scope selection, count of total
+ number of entries presented in the section, paging selectors (if the
+         information requires multiple pages), and a display options button.
+ </p>
+ <div id='figure1' class='figure'>
+  <img src='<?= $this->baseUrl('/images/help/navigation-section.jpg') ?>'
+       title='Anatomy of a Section Header' />
+  <div class='caption'><b>Figure 1</b>: Anatomy of a Section Header</div>
+ </div>
+
+ <p class='continued'>The display options button, when clicked, presens a set
+ of display options that may be used to customize the way items are presented
+ within the section.  Clicking on "Custom" in the "Display" area will expand
+ a section that allows even greater customization, letting you choose which
+ portions of an entry should be presented.
+ </p>
+ <div id='figure2' class='figure'>
+  <img src='<?= $this->baseUrl('/images/help/navigation-displayOptions.jpg') ?>'
+       title='Display Options' />
+  <div class='caption'><b>Figure 2</b>: Display Options</div>
+ </div>
+
+ <p class='continued'>The display options button, when clicked, presens a set
+ of display options that may be used to customize the way items are presented
+ within the section.  Clicking on "Custom" in the "Display" area will expand
+ a section that allows even greater customization, letting you choose which
+ portions of an entry should be presented.
+ </p>
+
+ <h4><span>Sidebar</span></h4>
+ <p class='continued'>The sidebar is presented along the right-hand side of
+ most pages.  Its purpose is to provide additional information that is relevant
+ to the items presented in the main section.  This area is divided into three
+ main "tabs" &mdash; <b>Tags</b>, <b>People</b>, and <b>Items</b>.</p>
+ <div id='figure3' class='figure'>
+  <img src='<?= $this->baseUrl('/images/help/sidebar.jpg') ?>'
+       title='Sidebar' />
+  <div class='caption'><b>Figure 3</b>: Sidebar</div>
+ </div>
+ <ul>
+  <li><b>Tags</b> presents related tags in either a tag cloud or a list of tags, selectable via "Display Options";</li>
+  <li><b>People</b> presents people related to the entries in the main section, again either in a cloud or list form;</li>
+  <li><b>Items</b> shows all related items (bookmarked sites);</li>
+ </ul>
+
+
+</div>
+
+<?php
+if ($contact->services && $contact->services->support)
+{
+    $support =& $contact->services->support;
+
+    ?>
 <h3><span>Support</span></h3>
 <div class='help-content'>
  <p>We are attempting to respond to questions, bug reports, and other feedback
-    at <a href='#'>Get Satisfaction</a>.  It's the perfect service to handle
-    support sorts of questions.</p>
+ via <a href='<?= $support->url ?>'><?= $support->name ?></a>.  It's the ideal
+ service to handle all manner of questions.</p>
 </div>
+    <?php
+}
