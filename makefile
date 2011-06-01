@@ -1,4 +1,5 @@
 all:
+	@./updateBuildNumber.sh
 	@cd public/js; make
 	@cd public/css; make
 

@@ -2,6 +2,7 @@
 
 $baseUrl = $this->baseUrl();
 $config  = Connexions::getConfig();
+$app     = $config->app;
 $contact = $config->contact;
 
 ?>
@@ -40,20 +41,32 @@ $contact = $config->contact;
         }
     }
 
+    ?>
+    <li class='org'><?php
+
     if ($contact->org)
     {
         $img = ($contact->org->img
                     ? "<img src='{$contact->org->img}' />"
                     : "");
 
-        ?>
-    <li class='org'
-            ><a href='<?= $contact->org->url ?>'
-                ><?= $img ?><span class='name'
-                ><?= $contact->org->name ?></span></a></li>
+        ?><a href='<?= $contact->org->url ?>'
+               ><?= $img ?><span class='name'
+               ><?= $contact->org->name ?></span></a>
         <?php
     }
+
+    if ($app && $app->version && $app->version->major)
+    {
+        ?><div class='version'>
+            <span class='major'><?= $app->version->major ?>.</span
+           ><span class='minor'><?= $app->version->minor ?></span>
+            <span class='build'>(build <?= $app->version->build ?>)</span>
+          </div><?php
+    }
+
     ?>
+    </li>
    </ul>
 
    <?= $this->HtmlDbProfile() ?>

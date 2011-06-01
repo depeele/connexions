@@ -924,6 +924,8 @@ body.light { background-color: white; }
 #pageFooter .footer-nav li img { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; vertical-align: middle; height: 1.5em; }
 #pageFooter .footer-nav li span { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; vertical-align: middle; }
 #pageFooter .footer-nav .org { position: absolute; right: 0.5em; }
+#pageFooter .footer-nav .version { font-size: 0.8em; }
+#pageFooter .footer-nav .version .major:after { text: '.'; }
 #pageFooter .footer-nav .sep { font-size: 1.2em; font-weight: bold; margin: 0; }
 
 .noNav #pageHeader { height: 2.25em; }
