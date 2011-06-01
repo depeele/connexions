@@ -1,12 +1,4 @@
 <?php
-// /*
-Connexions::log("main-developers: APPLICATION_PATH[ %s ], include_path[ %s ]",
-                APPLICATION_PATH,
-                get_include_path());
-// */
-
-//require_once(APPLICATION_PATH .'/views/scripts/help/sharedUtils.php');
-
 $config   =  Zend_Registry::get('config');
 $api      =& $config->api;
 $contact  =& $config->contact;
@@ -65,19 +57,21 @@ Connexions::log('views/scripts/help/main-developers.phtml: '
   <h3 id='introduction'
       class='toggle<?= Connexions_Help::section_collapsed($this, 'introduction') ?>'><a href='<?= $url ?>/introduction' data-cache.collapsable='introduction_content'>Introduction</a></h3>
   <div id='introduction_content' class='help-content'>
-   <p>Connexions is comprised of a combination of server-side PHP and client-side JavaScript/AJAX to provide rich user interaction and functionality.  It requires a server that provides PHP 5+ and MySQL 5+ and a client web browser that is complient with current web standards (e.g. Firefox, Chrome, Opera, and newer versions of Internet Explorer).
+   <p>Connexions is comprised of a combination of server-side PHP and client-side JavaScript/AJAX to provide rich user interaction and functionality.  It requires a server that provides PHP 5+ and MySQL 5+ and a client web browser that is complient with current web standards (e.g. Firefox, Chrome, Opera, and newer versions of Internet Explorer).</p>
    <?php
     if ($contact->services && $contact->services->src)
     {
+        $src =& $contact->services->src;
+
         ?>
-  Full sources are available at <a href='<?= $contact->services->src ?>'><?= $contact->services->src ?></a>
+   <p>Full sources are available via <a href='<?= $src->url ?>'><?= $src->name ?></a>.</p>
         <?php
     }
    ?>
    </p>
    <p>There are a number of ways developers can interact with connexions.  Pages are broken into partials that can be independently accessed and, for the 'main' partial, rendered in multiple formats.</p>
    <div id='figure1' class='figure'>
-    <img src='<?= $this->baseUrl('/images/help/partials.png') ?>'
+    <img src='<?= $this->baseUrl('/images/help/partials.jpg') ?>'
          title='Identification of Partials' />
     <div class='caption'><b>Figure 1</b>: Identification of Partials</div>
    </div>

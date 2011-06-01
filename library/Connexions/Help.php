@@ -7,20 +7,33 @@
 class Connexions_Help
 {
     /** @brief  Determine whether or not a section should be collapsed.
-     *  @param  view    The view object (uses $view->section).
-     *  @param  val     The target section.
+     *  @param  view                The view object (uses $view->section).
+     *  @param  val                 The target section.
+     *  @param  defaultCollapsed    Should the default be 'collapsed' (true)?
      *
      *  @return A string ' collapsed' or ''
      */
-    static public function section_collapsed($view, $val)
+    static public function section_collapsed($view, $val,
+                                             $defaultCollapsed = false)
     {
-        $ret = '';
-        if (($view->section !== null) && (strcasecmp($view->section, $val)))
+        $ret = ($defaultCollapsed ? ' collapsed' : '');
+
+        if (! empty($view->section))
         {
-            $ret = ' collapsed';
+            // A specific section has been requested...
+            if (strcasecmp($view->section, $val))
+            {
+                // But NOT this one.
+                $ret = ' collapsed';
+            }
+            else
+            {
+                // And it IS this one.
+                $ret = '';
+            }
         }
 
-        /*
+        // /*
         Connexions::log("Connexions_Help::section_collapsed(): "
                         .   "section[ %s ], val[ %s ], ret[ %s ]",
                         Connexions::varExport($view->section),
