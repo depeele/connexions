@@ -6,10 +6,11 @@ $url      =  $this->baseUrl('help/general');
 ?>
 <h3><span>What is Connexions?</span></h3>
 <div class='help-content'>
- <p>Connexions is a social bookmarking service that allows you to tag, save,
- manage and share links to interesting resources from across the internet, all
- in a central place.  Connexions makes it easier to discover, remember and
- share what you need when you need it.</p>
+ <p>Connexions is a <?=
+        Connexions::wikipedia_a('Social_bookmarking', 'social bookmarking') ?>
+ service that allows you to tag, save, manage and share links to interesting
+ resources from across the internet, all in a central place.  Connexions makes
+ it easier to discover, remember and share what you need when you need it.</p>
 
  <h4><span>Bookmark any resource and get to it from any browser</span></h4>
  <p>Instead of having disjoint, disconnected bookmarks on several different
@@ -110,27 +111,47 @@ $url      =  $this->baseUrl('help/general');
   <div class='caption'><b>Figure 2</b>: Display Options</div>
  </div>
 
- <p class='continued'>The display options button, when clicked, presens a set
- of display options that may be used to customize the way items are presented
- within the section.  Clicking on "Custom" in the "Display" area will expand
- a section that allows even greater customization, letting you choose which
- portions of an entry should be presented.
- </p>
+ <p class='continued'>Within the main section, bookmarks, users, tags, or items
+ will be presented.  To help familiarize you with what you will see, here are a
+ few annotated images of various entries that will appear within this main
+ section.</p>
+ <div id='figure3' class='figure'>
+  <img src='<?= $this->baseUrl('/images/help/bookmark.jpg') ?>'
+       title='Anatomy of a Bookmark Entry' />
+  <div class='caption'><b>Figure 3</b>: Anatomy of a Bookmark Entry</div>
+ </div>
+
+ <div id='figure4' class='figure'>
+  <img src='<?= $this->baseUrl('/images/help/user.jpg') ?>'
+       title='Anatomy of a User Entry' />
+  <div class='caption'><b>Figure 4</b>: Anatomy of a User Entry</div>
+ </div>
+
 
  <h4><span>Sidebar</span></h4>
  <p class='continued'>The sidebar is presented along the right-hand side of
  most pages.  Its purpose is to provide additional information that is relevant
  to the items presented in the main section.  This area is divided into three
  main "tabs" &mdash; <b>Tags</b>, <b>People</b>, and <b>Items</b>.</p>
- <div id='figure3' class='figure'>
+ <div id='figure5' class='figure'>
   <img src='<?= $this->baseUrl('/images/help/sidebar.jpg') ?>'
        title='Sidebar' />
-  <div class='caption'><b>Figure 3</b>: Sidebar</div>
+  <div class='caption'><b>Figure 5</b>: Sidebar</div>
  </div>
  <ul>
-  <li><b>Tags</b> presents related tags in either a tag cloud or a list of tags, selectable via "Display Options";</li>
-  <li><b>People</b> presents people related to the entries in the main section, again either in a cloud or list form;</li>
-  <li><b>Items</b> shows all related items (bookmarked sites);</li>
+  <li><b>Tags</b> &mdash; presents related tags in either a tag cloud or a list
+  of tags, selectable via "Display Options".  If the main section is presenting
+  tags, tag statistics will be presented here;</li>
+  <li><b>People</b> &mdash; presents people related to the entries in the main
+  section, in a form controlled by "Display Options".  If the main section is
+  presenting users, user statistics will be presented.  If all the entries in
+  the main section belong to a single user, additional information as well as
+  statistics about that user will be shown.</li>
+  <li><b>Items</b> &mdash; shows all related items (bookmarked sites) in either
+  cloud of list form depending on the settings selected via "Display Options".
+  If the main section is presenting all the bookmarks for a specific item, this
+  sidebar tab will show a list of any "similar" items, where similar is
+  determined by the host within the items url;</li>
  </ul>
 
 

@@ -305,10 +305,13 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         // Make the log available via the global Registry
         Zend_Registry::set('log', $log);
 
-        //Connexions::log('Bootstrap::Logging initialized');
-        Connexions_Profile::init($log);
-        Connexions_Profile::start('Connexions',
-                                  'Bootstrap::Logging initialized');
+        if ($log !== -1)
+        {
+            //Connexions::log('Bootstrap::Logging initialized');
+            Connexions_Profile::init($log);
+            Connexions_Profile::start('Connexions',
+                                      'Bootstrap::Logging initialized');
+        }
 
         return $this;
     }

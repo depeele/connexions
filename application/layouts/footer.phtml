@@ -24,11 +24,11 @@ $contact = $config->contact;
     {
         $nServices = count($contact->services);
         $idex      = 0;
-        foreach ($contact->services as $name => $url)
+        foreach ($contact->services as $type => $service)
         {
             ?>
     <li class='external'
-            ><a href='<?= $url ?>'><?= ucfirst($name) ?></a></li>
+            ><a href='<?= $service->url ?>'><?= ucfirst($type) ?></a></li>
             <?php
 
             if (++$idex < $nServices)
