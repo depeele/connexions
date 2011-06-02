@@ -54,8 +54,10 @@ class IndexController extends Connexions_Controller_Action
         /* If this is a user/"owned" area (e.g. /<userName> [/ <tags ...>]),
          * verify the validity of the requested user.
          */
-        if ( ($reqOwner === 'mine') ||
-             ($reqOwner === 'me')   ||
+        if ( ($reqOwner === '@mine') ||
+             ($reqOwner === '@self') ||
+             ($reqOwner === 'mine')  ||
+             ($reqOwner === 'me')    ||
              ($reqOwner === 'self') )
         {
             // 'mine' == the currently authenticated user (viewer)

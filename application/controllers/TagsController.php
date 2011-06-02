@@ -45,6 +45,26 @@ class TagsController extends Connexions_Controller_Action
          */
         $reqUsers = $request->getParam('owners', null);
 
+        // See if the requested user is one of the special 'self' indicators.
+        if ( ($reqUsers === '@mine') ||
+             ($reqUsers === '@self') ||
+             ($reqUsers === 'mine')  ||
+             ($reqUsers === 'me')    ||
+             ($reqUsers === 'self') )
+        {
+            // 'mine' == the currently authenticated user (viewer)
+            if ( ( ! $this->_viewer instanceof Model_User) ||
+                 (! $this->_viewer->isAuthenticated()) )
+            {
+                // Unauthenticated user -- Redirect to signIn
+                return $this->_redirectToSignIn();
+            }
+
+            // Redirect to the viewer's tags
+            $url = $this->_viewer->name;
+            return $this->_helper->redirector( $url );
+        }
+
         // Parse the incoming request users / owners
         $this->_users = $this->service('User')->csList2set($reqUsers);
 
