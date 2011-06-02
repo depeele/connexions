@@ -1,4 +1,14 @@
 <?php
+/** @file
+ *
+ *  Layout the primary page header.  This will also include 'base-header.phtml'
+ *
+ *  Options:
+ *      excludeNav      - if true, exclude the navigational components of the
+ *                        header, exlude the footer, and ensure that the main
+ *                        body has the 'light' class;
+ *      excludeSidebar  - if true, exclude the sidebar;
+ */
 $baseUrl = $this->baseUrl('/'); //Connexions::url('/');
 $jQuery = $this->jQuery();
 
@@ -152,20 +162,30 @@ $jQuery->javascriptCaptureEnd();
  * Begin the page.
  *
  */
-echo $this->render('base-header.phtml');
+$extraClass = '';
+if ($this->excludeNav === true)
+{
+    $extraClass .= ' noNav';
 
-$extraClass = ($this->excludeNav === true
-                ? ' noNav'
-                : '');
+    // Notify base-header to use 'light' on body.
+    if (! isset($this->bodyCss))    $this->bodyCss = '';
+    $this->bodyCss .= ' light';
+
+    Connexions::log("layout/header: bodyCss[ %s ]",
+                    $this->bodyCss);
+}
 if ($this->excludeSidebar)  $extraClass .= ' noSidebar';
 
+echo $this->render('base-header.phtml');
 
 ?>
  <div class="page liquid<?= $extraClass ?>"><!-- { page -->
   <div id="pageHeader" class="head" role="banner"><!-- { head -->
+  <?php if ( $this->excludeNav !== true ) { ?>
    <div class='siteAuth'>
      <?= $this->render('site_auth.phtml') ?>
    </div>
+   <?php } ?>
    <div class='siteNav'><!-- { siteNav -->
      <h1 id='siteName'
       ><a href="<?= $baseUrl ?>"

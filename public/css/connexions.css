@@ -433,7 +433,7 @@ a:visited { color: #005a9c; }
 .tagInput .tagList .tag { border: 1px solid #cccccc; -moz-border-radius: 4px 4px 4px 4px; -webkit-border-radius: 4px 4px 4px 4px; -ms-border-radius: 4px 4px 4px 4px; -khtml-border-radius: 4px 4px 4px 4px; border-radius: 4px 4px 4px 4px; margin: 0.2em; cursor: pointer; }
 .tagInput .tagList .tag span, .tagInput .tagList .tag .delete { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
 .tagInput .tagList .tag span { padding: 0 0 0 0.25em; }
-.tagInput .tagList .tag .delete { text-indent: 999em; text-decoration: none; }
+.tagInput .tagList .tag .delete { text-indent: -9999em; text-decoration: none; }
 .tagInput .tagList .activeInput { border: none; margin: 0; width: auto; }
 .tagInput .tagList .activeInput input { display: inline; border: none; background: none; padding: 0; margin: 0; width: auto; }
 .tagInput .tagList .measureInput { position: absolute; visibility: hidden; width: auto; padding: 1px; margin: 2px; }
@@ -492,13 +492,6 @@ a:visited { color: #005a9c; }
 .cloud .Item_List li .edit-item .buttons .item-save .title, .cloud .Item_List li .edit-item .buttons .item-cancel .title, .cloud .Item_Cloud li .edit-item .buttons .item-save .title, .cloud .Item_Cloud li .edit-item .buttons .item-cancel .title { display: none; }
 .cloud .Item_Cloud li .control { visibility: hidden; }
 .cloud .Item_Cloud li:hover .control { visibility: visible; }
-.cloud .Item_Cloud li .relation { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; font-size: 0.75em; text-align: center; background-color: white; padding: 1px; }
-.cloud .Item_Cloud li .relation .connexions_sprites { width: 18px; height: 8px; text-indent: -9999px; }
-.cloud .Item_Cloud li .relation .relation-amIn { background-position: -181px -14px; }
-.cloud .Item_Cloud li .relation .relation-isIn { background-position: -181px -26px; }
-.cloud .Item_Cloud li .relation .relation-mutual { background-position: -181px -2px; }
-.cloud .Item_Cloud li .relation .relation-self { background-position: -133px -50px; }
-.cloud .Item_Cloud li .relation .relation-none { background-position: -133px -50px; }
 
 .Item_List { padding: 0; }
 .Item_List li.header, .Item_List li.footer { background-color: #f3f3ff; padding: 0.25em; }
@@ -515,16 +508,13 @@ a:visited { color: #005a9c; }
 .Item_List li .control .item-add, .Item_List li .control .item-edit, .Item_List li .control .item-delete { visibility: hidden; }
 .Item_List li:hover .control .item-add, .Item_List li:hover .control .item-edit, .Item_List li:hover .control .item-delete { visibility: visible; }
 .Item_List li .edit-item .buttons { text-align: right; }
-.Item_List li .relation { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; position: absolute; top: 1px; right: 14px; font-size: 0.75em; text-align: center; padding: 1px; /*
-&:hover { .relation-amIn, .relation-none { /*@extend .relation-add; */ background-position: -36px -86px; } .relation-isIn, .relation-mutual { /*@extend .relation-remove; */ background-position: -36px -98px; }
-}
-*/ }
-.Item_List li .relation .connexions_sprites { width: 32px; height: 12px; text-indent: -9999px; }
-.Item_List li .relation .relation-amIn { background-position: -176px -12px; }
-.Item_List li .relation .relation-isIn { background-position: -176px -24px; }
-.Item_List li .relation .relation-mutual { background-position: -176px 0px; }
-.Item_List li .relation .relation-self { background-position: -128px -48px; }
-.Item_List li .relation .relation-none { background-position: -128px -48px; }
+.Item_List li .relation { position: absolute; top: 1px; right: 14px; }
+.Item_List li .relation .connexions_sprites { width: 32px; height: 12px; text-indent: -9999em; }
+.Item_List li .relation .relation-amIn { background-position: -176px -12px; text-indent: -9999em; }
+.Item_List li .relation .relation-isIn { background-position: -176px -24px; text-indent: -9999em; }
+.Item_List li .relation .relation-mutual { background-position: -176px 0px; text-indent: -9999em; }
+.Item_List li .relation .relation-self { background-position: -128px -48px; text-indent: -9999em; }
+.Item_List li .relation .relation-none { background-position: -128px -48px; text-indent: -9999em; }
 .Item_List .itemCount { display: block; position: absolute; top: 0; right: 0; padding: 0.15em 0 0.15em; color: #999999; font-size: 0.8em; }
 
 #sbItemsCloud .Item_List li.header .item { padding: 0; }
@@ -588,7 +578,7 @@ a:visited { color: #005a9c; }
 .itemScope .root, .itemScope .section { background-color: #0066cc; padding: 0 0.2em 0 0; border: 1px solid #0066cc; z-index: 10; }
 .itemScope .section { margin-left: 1px; }
 .itemScope .scopeItem { padding-left: 0.6em; margin-left: -0.5em; -moz-border-radius: 0 1em 1em 0; -webkit-border-radius: 0 1em 1em 0; -ms-border-radius: 0 1em 1em 0; -khtml-border-radius: 0 1em 1em 0; border-radius: 0 1em 1em 0; border: 1px dotted #cccccc; z-index: 2; background-color: #999999; }
-.itemScope .deletable a.delete { display: block; padding: 0; margin: 0.25em; text-indent: 999em; text-decoration: none; }
+.itemScope .deletable a.delete { display: block; padding: 0; margin: 0.25em; text-indent: -9999em; text-decoration: none; }
 .itemScope .itemCount { position: absolute; right: 0; background-color: #999999; border: 1px solid #999999; color: white; padding: 0.25em; float: none; width: 110px; text-align: center; font-weight: bold; }
 
 /****** papgination.sass ****** */
@@ -692,7 +682,7 @@ a:visited { color: #005a9c; }
 /*fieldInfoColor             = !validationInputColor */
 .ui-stars-wrapper { display: block; width: 96px; overflow: hidden; }
 .ui-stars-wrapper input.ui-stars-rating { width: 0; height: 0; padding: 0; margin: 0; }
-.ui-stars-wrapper .ui-stars { display: block; float: left; overflow: hidden; text-indent: 999em; }
+.ui-stars-wrapper .ui-stars { display: block; float: left; overflow: hidden; text-indent: -9999em; }
 .ui-stars-wrapper .ui-stars a { background-image: url("sprites/connexions.gif"); background-attachment: scroll; background-repeat: no-repeat; background-color: transparent; display: block; }
 .ui-stars-wrapper .ui-stars-star { cursor: pointer; }
 .ui-stars-wrapper .ui-stars-star a { cursor: pointer; }
@@ -856,14 +846,14 @@ a:visited { color: #005a9c; }
 .users .user .stats .countTags, .pane .displayStyle fieldset.options .user .stats .countTags { display: block; position: relative; color: #cccccc; padding: 0.25em 16px 0.25em 0.25em; font-size: 0.75em; font-weight: normal; text-align: right; text-decoration: none; }
 .users .user .stats .countTags:hover, .pane .displayStyle fieldset.options .user .stats .countTags:hover { background-color: #b0d730; color: white; }
 .users .user .stats .countTags .icon, .pane .displayStyle fieldset.options .user .stats .countTags .icon { position: absolute; border: none; top: 0.25em; right: -2px; padding: 0; }
+.users .user .relation, .pane .displayStyle fieldset.options .user .relation { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; font-size: 0.75em; text-align: center; padding: 1px; }
+.users .user .relation .connexions_sprites, .pane .displayStyle fieldset.options .user .relation .connexions_sprites { text-indent: -9999em; }
 .users .user .data, .pane .displayStyle fieldset.options .user .data { position: relative; padding: 0.25em 0 0 40px; z-index: 1; }
 .users .user .data .avatar, .pane .displayStyle fieldset.options .user .data .avatar { position: absolute; left: 0; top: 0; width: 32px; height: 32px; }
 .users .user .data .avatar a .img, .pane .displayStyle fieldset.options .user .data .avatar a .img { display: block; position: relative; border: 0; background-color: transparent; }
 .users .user .data .avatar a .img img, .pane .displayStyle fieldset.options .user .data .avatar a .img img { width: 32px; height: 32px; }
 .users .user .data .avatar a .img .ui-icon, .pane .displayStyle fieldset.options .user .data .avatar a .img .ui-icon { position: relative; left: 8px; top: 8px; }
 .users .user .data .control, .pane .displayStyle fieldset.options .user .data .control { position: absolute; left: 2px; top: 33px; font-size: 0.75em; text-align: center; cursor: pointer; }
-.users .user .data .control .relation, .pane .displayStyle fieldset.options .user .data .control .relation { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
-.users .user .data .control .relation .connexions_sprites, .pane .displayStyle fieldset.options .user .data .control .relation .connexions_sprites { width: 32px; height: 12px; text-indent: -9999px; }
 .users .user .data .control .item-add, .users .user .data .control .item-delete, .pane .displayStyle fieldset.options .user .data .control .item-add, .pane .displayStyle fieldset.options .user .data .control .item-delete { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; visibility: hidden; top: 1px; left: -2px; z-index: 10; }
 .users .user .data .control .item-add .title, .users .user .data .control .item-delete .title, .pane .displayStyle fieldset.options .user .data .control .item-add .title, .pane .displayStyle fieldset.options .user .data .control .item-delete .title { display: none; }
 .users .user .data .control .item-add-none, .pane .displayStyle fieldset.options .user .data .control .item-add-none { position: absolute; left: 8px; }
@@ -925,10 +915,10 @@ body.light { background-color: white; }
 #pageFooter .footer-nav li span { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; vertical-align: middle; }
 #pageFooter .footer-nav .org { position: absolute; right: 0.5em; }
 #pageFooter .footer-nav .version { font-size: 0.8em; }
-#pageFooter .footer-nav .version .major:after { text: '.'; }
 #pageFooter .footer-nav .sep { font-size: 1.2em; font-weight: bold; margin: 0; }
 
 .noNav #pageHeader { height: 2.25em; }
+.noNav #pageHeader h1#siteName { top: -10px; }
 
 .noSidebar #pageContent { padding-right: 1em; }
 

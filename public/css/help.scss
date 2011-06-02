@@ -188,4 +188,8 @@
       }
     }
   }
+
+  .relation {
+    @include inlineBlock();
+  }
 }

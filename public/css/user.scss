@@ -75,6 +75,17 @@
         }
       }
     }
+    .relation {
+      @include inlineBlock();
+      font-size:        0.75em;
+      text-align:       center;
+      //background-color: $lightest;
+      padding:          1px;
+
+      .connexions_sprites {
+        text-indent:  -9999em;
+      }
+    }
     .data {
       position: relative;
       padding: 0.25em 0 0 40px;
@@ -115,16 +126,6 @@
         font-size:  0.75em;
         text-align: center;
         cursor:     pointer;
-
-        .relation {
-          @include inlineBlock();
-
-          .connexions_sprites {
-            width:        32px;
-            height:       12px;
-            text-indent:  -9999px;
-          }
-        }
 
         .item-add, .item-delete {
           @include inlineBlock();
