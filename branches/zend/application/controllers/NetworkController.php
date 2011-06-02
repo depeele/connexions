@@ -55,11 +55,11 @@ class NetworkController extends Connexions_Controller_Action
         $reqOwner = $request->getParam('owner', null);
         $reqTags  = $request->getParam('tags',  null);
 
-        /* If this is a user/"owned" area (e.g. /<userName> [/ <tags ...>]),
-         * verify the validity of the requested user.
-         */
-        if ( ($reqOwner === 'mine') ||
-             ($reqOwner === 'me')   ||
+        // See if the requested user is one of the special 'self' indicators.
+        if ( ($reqOwner === '@mine') ||
+             ($reqOwner === '@self') ||
+             ($reqOwner === 'mine')  ||
+             ($reqOwner === 'me')    ||
              ($reqOwner === 'self') )
         {
             // 'mine' == the currently authenticated user (viewer)
@@ -70,8 +70,9 @@ class NetworkController extends Connexions_Controller_Action
                 return $this->_redirectToSignIn();
             }
 
-            // Redirect to the viewer's bookmarks
-            return $this->_helper->redirector($this->_viewer->name);
+            // Redirect to the viewer's network
+            $url = $this->_viewer->name .'/'. $reqTags;
+            return $this->_helper->redirector( $url );
         }
 
         // Resolve the incoming 'owner' name.
