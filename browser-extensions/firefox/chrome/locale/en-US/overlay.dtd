@@ -1,0 +1,38 @@
+<!ENTITY connexions.label       "Connexions label">
+
+<!-- Main  menu -->
+<!ENTITY connexions.menu.label          "Connexions">
+<!ENTITY connexions.menu.accesskey          "X">
+
+<!ENTITY connexions.menu.page.label         "Bookmark this page...">
+<!ENTITY connexions.menu.sidebar.label      "Bookmarks sidebar">
+<!ENTITY connexions.menu.site.label         "Connexions Website">
+<!ENTITY connexions.menu.site.myBookmarks   "My Bookmarks">
+<!ENTITY connexions.menu.site.myTags        "My Tags">
+<!ENTITY connexions.menu.site.myNetwork     "My Network">
+<!ENTITY connexions.menu.site.myInbox       "My Inbox">
+<!ENTITY connexions.menu.site.bookmarks     "Bookmarks">
+<!ENTITY connexions.menu.site.tags          "Tags">
+<!ENTITY connexions.menu.site.people        "People">
+
+<!-- Tools menu -->
+<!ENTITY connexions.menu.tools.label    "Connexions Options">
+
+<!-- Main Context menu -->
+<!ENTITY connexions.context.tagCurrent.label    "Bookmark this page in connexions...">
+<!ENTITY connexions.context.tagLink.label       "Bookmark this link in connexions...">
+<!ENTITY connexions.context.tagMedia.label      "Bookmark this media in connexions...">
+
+<!ENTITY connexions.context.tagCurrent.accesskey    "C">
+<!ENTITY connexions.context.tagLink.accesskey       "C">
+<!ENTITY connexions.context.tagMedia.accesskey      "C">
+
+<!-- Toolbar -->
+<!ENTITY connexions.toolbar.name  "example">
+<!ENTITY connexions.toolbar.label "This is an example toolbar. You can hide it under View &gt; toolbars &gt; &connexions.toolbar.name;">
+
+<!ENTITY connexions.toolbar.button.label "Your Toolbar Button">
+<!ENTITY connexions.toolbar.button.tooltip "This is your toolbar button!">
+
+<!-- Sidebar -->
+<!ENTITY connexions.sidebar.label "Your Sidebar">
