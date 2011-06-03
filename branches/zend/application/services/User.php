@@ -20,22 +20,46 @@ class Service_User extends Service_Base
 
     /** @brief  Given a user identifier and/or credential, attempt to
      *          authenticate the identified user.
-     *  @param  authType    The type of authentication to perform
-     *                      (Model_UserAuth::AUTH_*)
-     *  @param  credential  Any initial user credential
-     *                      (e.g. OpenId endpoint).
+     *  @param  method      The authentication method
+     *                      (a dotted form of Model_UserAuth::AUTH_*)
+     *  @param  credential  If needed, the user credential
+     *                      (e.g. OpenId endpoint, User password);
+     *  @param  id          If needed, the user identity
+     *                      (e.g. User name);
+     *
+     *  On successful authentication, the authentication information will be
+     *  stored in the authentication session, identified by the session cookie.
+     *  In order to make use of the authentication, the session cookie MUST be
+     *  maintained by the client and provided on future request.
      *
      *  @return A Model_User instance with isAuthenticated() set accordingly.
      */
-    public function authenticate($authType   = Model_UserAuth::AUTH_PASSWORD,
-                                 $credential = null)
+    public function authenticate($method     = Model_UserAuth::AUTH_PASSWORD,
+                                 $credential = null,
+                                 $id         = null)
     {
         $auth        = Zend_Auth::getInstance();
         $authAdapter = null;
-        switch ($authType)
+
+        list($method, $name) = explode('.', $method);
+
+        // /*
+        Connexions::log("Service_User::authenticate(): "
+                        .   "method[ %s ], name[ %s ], "
+                        .   "credential[ %s ], id[ %s ]",
+                        $method, $name,
+                        Connexions::varExport($credential),
+                        Connexions::varExport($id) );
+        // */
+        switch ($method)
         {
         case Model_UserAuth::AUTH_OPENID:
             $authAdapter = new Connexions_Auth_OpenId( $credential );
+            if ((! empty($name)) &&
+                isset(Connexions_Auth_OpenId::$openid_endpoints[$name]))
+            {
+                $id = Connexions_Auth_OpenId::$openid_endpoints[$name];
+            }
             break;
 
         case Model_UserAuth::AUTH_PKI:
@@ -45,16 +69,58 @@ class Service_User extends Service_Base
         case Model_UserAuth::AUTH_PASSWORD:
         default:
             $authAdapter = new Connexions_Auth_UserPassword();
+
+            // /*
+            Connexions::log("Service_User::authenticate(): "
+                            .   "method[ %s ], authAdapter[ %s ]",
+                            $method,
+                            get_class($authAdapter));
+            // */
+
+            /* If credential and/or id are provided, push them into the
+             * current request.
+             */
+            if (($id !== null) || ($credential !== null))
+            {
+                $req = Connexions::getRequest();
+
+                /*
+                Connexions::log("Service_User::authenticate(): "
+                                .   "request[ %s ] parameters[ %s ]",
+                                get_class($req),
+                                Connexions::varExport($req->getParams()));
+                // */
+
+                if (($id !== null) && (! $req->__isset('username')))
+                {
+                    $req->setParam('username', $id);
+                }
+
+                if (($credential !== null) && (! $req->__isset('password')))
+                {
+                    $req->setParam('password', $credential);
+                }
+
+                /*
+                Connexions::log("Service_User::authenticate(): "
+                                .   "method[ %s ], request parameters[ %s ]",
+                                $method,
+                                Connexions::varExport($req->getParams()) );
+                // */
+            }
             break;
         }
 
-        // /*
+        /*
         Connexions::log("Service_User::authenticate(): "
-                        .   "authType[ %s ], authAdapter[ %s ]",
-                        $authType,
+                        .   "method[ %s ], authAdapter[ %s ], "
+                        .   "credential[ %s ], id[ %s ]",
+                        $method,
                         (is_object($authAdapter)
                             ? get_class($authAdapter)
-                            : gettype($authAdapter)));
+                            : gettype($authAdapter)),
+                        Connexions::varExport($credential),
+                        Connexions::varExport($id) );
         // */
 
         $authResult = $auth->authenticate( $authAdapter );
@@ -84,6 +150,18 @@ class Service_User extends Service_Base
         // */
 
         return $user;
+    }
+
+    /** @brief  Revoke any current authentication.
+     *
+     *  @return true
+     */
+    public function deauthenticate()
+    {
+        $auth  = Zend_Auth::getInstance();
+        $auth->clearIdentity();
+
+        return true;
     }
 
     /** @brief  Create a new, anonymous user -- unauthenticated and unbacked.

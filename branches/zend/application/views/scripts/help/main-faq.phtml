@@ -348,6 +348,41 @@ for:%user name%
    </ol>
   </div>
  </li><!-- question-answer } -->
+
+ <li class='collapsable'><!-- question-answer { -->
+  <h3 id='what_is_my_apikey_and_why_do_i_need_it'
+      class='toggle faq-question<?= Connexions_Help::section_collapsed($this, 'what_is_my_apikey_and_why_do_i_need_it', true) ?>'><a href='<?= $url ?>/what_is_my_apikey_and_why_do_i_need_it' data-cache.collapsable='what_is_my_apikey_and_why_do_i_need_it_content'>What is my apiKey and why do i need it?</a></h3>
+  <div id='what_is_my_apikey_and_why_do_i_need_it_content' class='help-content faq-answer'>
+   <p>Your
+   <a href='<?= $this->baseUrl('settings/account/apiKey') ?>'>API Key</a>
+   is used to protect you from
+   <?= Connexions::wikipedia_a('Cross-site scripting', 'cross-site scripting')?>
+   attacks that would allow an unscrupulous site to retrieve your private
+   connexions information.</p>
+
+   <p>Connexions uses client-based cookies to identify a server-side session
+   that contains authentication information about you.  If you are signed-in to
+   connexions, any request to connexions will carry along this cookie allowing
+   connexions to recognize you without asking you to sign-in for every request.
+   Unfortunately, without precautions, this convenience would allow an
+   unscrupulous site to include Javascript that could make a GET request to
+   connexions.  This GET request would carry the cookie, authenticating the
+   request as coming from you and allowing it to retrieve your private
+   connexions information.  Note that the browser protects you for other types
+   of requests (POST, PUT, DEL), denying the request if it isn't to the same
+   site that served the page.  Only GET requests to other sites are permitted
+   by the browser.</p>
+
+   <p>The API Key helps to protect you from this type of attack.  Any GET
+   request that might reveal private information REQUIRES the inclusion of the
+   API Key.</p>
+
+   <p>Protect your API Key just as you would a password.  While you can
+   re-generate it at any time, until you do so, any site or web application
+   with your API Key can, any time you visit it, make requests as you for as
+   long as you are signed-in to connexions.</p>
+  </div>
+ </li><!-- question-answer } -->
 </ul>
 <script type='text/javascript'>
 (function($) {

@@ -5,6 +5,38 @@
  */
 class Service_Proxy_User extends Connexions_Service_Proxy
 {
+    /** @brief  Given a user identifier and/or credential, attempt to
+     *          authenticate the identified user.
+     *  @param  method      The authentication method
+     *                      (a dotted form of Model_UserAuth::AUTH_*)
+     *  @param  credential  If needed, the user credential
+     *                      (e.g. OpenId endpoint, User password);
+     *  @param  id          If needed, the user identity
+     *                      (e.g. User name);
+     *
+     *  On successful authentication, the authentication information will be
+     *  stored in the authentication session, identified by the session cookie.
+     *  In order to make use of the authentication, the session cookie MUST be
+     *  maintained by the client and provided on future request.
+     *
+     *  @return A Model_User instance with isAuthenticated() set accordingly.
+     */
+    public function authenticate($method     = Model_UserAuth::AUTH_PASSWORD,
+                                 $credential = null,
+                                 $id         = null)
+    {
+        return $this->_service->authenticate($method, $credential, $id);
+    }
+
+    /** @brief  Revoke any current authentication.
+     *
+     *  @return true
+     */
+    public function deauthenticate()
+    {
+        return $this->_service->deauthenticate();
+    }
+
     /** @brief  Retrieve a set of users related by a set of Tags.
      *  @param  tags    A comma-separated list of tags to match;
      *  @param  exact   Users MUST be associated with provided tags [ true ];

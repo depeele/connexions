@@ -54,4 +54,15 @@ $jQuery->javascriptCaptureEnd();
    </div>
   </div>
  </form>
+ <div class='warning'>
+  <p><span class='title'>Note:</span> Your API Key is used to protect you from
+  <?= Connexions::wikipedia_a('Cross-site scripting', 'cross-site scripting') ?>
+  attacks that would allow an unscrupulous site to retrieve your private
+  connexions information.</p>
+
+  <p>See <a href='<?=
+  $this->baseUrl('help/faq/what_is_my_apikey_and_why_do_i_need_it') ?>'>What is
+  my apiKey and why do I need it?</a> in the <a href='<?=
+  $this->baseUrl('help/faq') ?>'>FAQ</a> for more information.</p>
+ </div>
 </div>
