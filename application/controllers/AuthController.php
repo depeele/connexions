@@ -11,12 +11,6 @@
 
 class AuthController extends Connexions_Controller_Action
 {
-    // Pre-defined openid endpoints: method = 'openid.<name>';
-    static public   $openid_endpoints   = array(
-      'google' => 'https://www.google.com/accounts/o8/id',
-      'yahoo'  => 'http://open.login.yahooapis.com/openid20/www.yahoo.com/xrds'
-    );
-
     protected   $_flashMessenger    = null;
     protected   $_redirector        = null;
     protected   $_noFormatHandling  = true;
@@ -36,48 +30,13 @@ class AuthController extends Connexions_Controller_Action
     {
         $uService = $this->service('User');
         $request  = $this->getRequest();
-        $authType = null;
+        $user     = null;
         if ($request->isPost())
         {
             /* This is a POST request -- Perform authentication based upon the
              * specified method
              */
-            $id = null;
-            list($method, $name) = explode('.',
-                                           $request->getParam('method', ''));
-
-            Connexions::log("AuthController: "
-                            .   "method[ {$method} ], name[ {$name} ]");
-
-            switch ($method)
-            {
-            case 'apachessl':
-                $authType    = Model_UserAuth::AUTH_PKI;
-
-                //$authAdapter = new Connexions_Auth_ApacheSsl();
-                break;
-
-            case 'openid':
-                $authType = Model_UserAuth::AUTH_OPENID;
-                if ((! empty($name)) && isset(self::$openid_endpoints[$name]))
-                    $id = self::$openid_endpoints[$name];
-                else
-                    $id = $request->getParam('identity', null);
-
-                Connexions::log("AuthController: "
-                                .   "OpenId, endpoint[ {$id} ]");
-
-                //$authAdapter = new Connexions_Auth_OpenId($id);
-                break;
-
-            case 'userpassword':
-            default:
-                $authType = Model_UserAuth::AUTH_PASSWORD;
-
-                //$authAdapter = new Connexions_Auth_UserPassword();
-                //$this->view->username = $authAdapter->getIdentity();
-                break;
-            }
+            $user = $uService->authenticate($request->getParam('method'));
         }
         else if (isset($request->openid_mode))
         {
@@ -85,21 +44,14 @@ class AuthController extends Connexions_Controller_Action
             Connexions::log("AuthController: Handle OpenId response: "
                             .   "mode [ {$request->openid_mode} ]");
 
-            $authType    = Model_UserAuth::AUTH_OPENID;
-            //$authAdapter = new Connexions_Auth_OpenId();
+            $user = $uService->authenticate(Model_UserAuth::AUTH_OPENID);
         }
 
-        if ($authType === null)
+        if ($user === null)
         {
             // No authentication yet attempted -- present the auth form
             return $this->_showAuthenticationForm();
         }
-
-        /*********************************************************************
-         * Attempt authentication
-         *
-         */
-        $user = $uService->authenticate($authType, $id);
 
         if (! $user->isAuthenticated())
         {
@@ -177,9 +129,14 @@ class AuthController extends Connexions_Controller_Action
 
     public function signoutAction()
     {
+        $uService = $this->service('User');
+        $uService->deauthenticate();
+
+        /*
         //$viewer = Zend_Registry::get('user');
         $auth = Zend_Auth::getInstance();
         $auth->clearIdentity();
+        // */
 
         // Redirect
         return $this->_redirector->gotoSimple('index','index');

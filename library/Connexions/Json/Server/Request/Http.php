@@ -485,4 +485,25 @@ class Connexions_Json_Server_Request_Http extends Zend_Json_Server_Request
 
         return $this;
     }
+
+    /** @brief  Alias for addParam() to match Zend_Request_Http
+     *  @param  key     The key to set
+     *  @param  value   The new value.
+     *
+     *  @return Zend_Json_Server_Request
+     */
+    public function setParam($key, $value)
+    {
+        return $this->addParam($value, $key);
+    }
+
+    /** @brief  Check to see if a property is set
+     *  @param  key     The property to check
+     *
+     *  @return boolean
+     */
+    public function __isset($key)
+    {
+        return isset($this->_params[ $key ]);
+    }
 }

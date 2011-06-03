@@ -56,7 +56,8 @@ class NetworkController extends Connexions_Controller_Action
         $reqTags  = $request->getParam('tags',  null);
 
         // See if the requested user is one of the special 'self' indicators.
-        if ( ($reqOwner === '@mine') ||
+        if ( ($reqOwner === null)    ||
+             ($reqOwner === '@mine') ||
              ($reqOwner === '@self') ||
              ($reqOwner === 'mine')  ||
              ($reqOwner === 'me')    ||

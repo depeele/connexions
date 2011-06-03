@@ -44,16 +44,15 @@ class InboxController extends Connexions_Controller_Action
         $reqOwner = $request->getParam('owner', null);
         $reqTags  = $request->getParam('tags', null);
 
-        /* If this is a user/"owned" area
-         * (e.g. /inbox/<userName> [/ <tags ...>]),
-         * verify the validity of the requested user.
-         */
-        if ( ($reqOwner === null)   ||
-             ($reqOwner === 'mine') ||
-             ($reqOwner === 'me')   ||
+        // See if the requested user is one of the special 'self' indicators.
+        if ( ($reqOwner === null)    ||
+             ($reqOwner === '@mine') ||
+             ($reqOwner === '@self') ||
+             ($reqOwner === 'mine')  ||
+             ($reqOwner === 'me')    ||
              ($reqOwner === 'self') )
         {
-            // Use the currently authenticated user (viewer)
+            // 'mine' == the currently authenticated user (viewer)
             if ( ( ! $this->_viewer instanceof Model_User) ||
                  (! $this->_viewer->isAuthenticated()) )
             {
@@ -61,8 +60,9 @@ class InboxController extends Connexions_Controller_Action
                 return $this->_redirectToSignIn();
             }
 
-            // Redirect to the viewer's inbox
-            return $this->_helper->redirector($this->_viewer->name);
+            // Redirect to the viewer's network
+            $url = $this->_viewer->name .'/'. $reqTags;
+            return $this->_helper->redirector( $url );
         }
 
         // Does the name match an existing user?

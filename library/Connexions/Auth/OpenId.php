@@ -7,6 +7,12 @@
 
 class Connexions_Auth_OpenId extends Connexions_Auth_Abstract
 {
+    // Pre-defined openid endpoints: method = 'openid.<name>';
+    static public   $openid_endpoints   = array(
+      'google' => 'https://www.google.com/accounts/o8/id',
+      'yahoo'  => 'http://open.login.yahooapis.com/openid20/www.yahoo.com/xrds'
+    );
+
     protected   $_authType      = 'openid'; // Model_UserAuth::AUTH_OPENID
 
     /** @brief  URL of the identification endpoint.

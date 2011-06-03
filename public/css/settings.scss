@@ -90,12 +90,10 @@
   }
 
   .warning {
-    text-align: center;
     color:      $controlColor;
     font-size:  0.9em;
 
     p {
-      @include inlineBlock();
       margin-left:  8em;
       text-align:   left;
 

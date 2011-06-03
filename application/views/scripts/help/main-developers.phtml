@@ -135,7 +135,15 @@ Connexions::log('views/scripts/help/main-developers.phtml: '
     }
 }
     </pre>
-    <p>Within this API, there are interfaces that require authentication and those that do not.  The only authentication currently supported is the normal, cookie-identified, session-based authentication provided by the main <a href='<?= $this->baseUrl('auth/signIn') ?>'>sign-in page</a>.  For remote, non-POST requests, the authenticated APIs also require the user's <a href='<?= $this->baseUrl('settings/account/apiKey') ?>'>apiKey</a> to reduce the risk of <?= Connexions::wikipedia_a('Cross-site scripting', 'cross-site scripting') ?> attacks.  The user may regenerate the <b>apiKey</b> at any time.</p>
+    <p>Within this API, there are interfaces that require authentication and
+    those that do not.  The only authentication currently supported is the
+    normal, cookie-identified, session-based authentication provided by the
+    main <a href='<?= $this->baseUrl('auth/signIn') ?>'>sign-in page</a>.  For
+    non-POST requests, the authenticated APIs also require the user's <a
+    href='<?= $this->baseUrl('settings/account/apiKey') ?>'>apiKey</a> to
+    reduce the risk of <?= Connexions::wikipedia_a('Cross-site scripting',
+            'cross-site scripting') ?> attacks.  The user may regenerate the
+    <b>apiKey</b> at any time.</p>
    </div><!-- api_overview } -->
 
    <div id='api_methods'><!-- api_methods { -->
