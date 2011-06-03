@@ -1,0 +1,71 @@
+#!/bin/sh
+#
+# ../../application/config/application.ini
+#
+config='../../application/configs/application.ini'
+lines=`grep '^extensions\.firefox\.' "${config}" | \
+	   sed 's/^extensions\.firefox\.//g;s/[ ]*=[ ]*/=/g;'`
+
+#echo "lines[ $lines ]";
+eval $lines;
+
+if [ -z "$domain" -o -z "$url" -o -z "$author" -o -z "$authorUrl" -o -z "$version" ]; then
+	echo "*** Missing one or more definitions from '${config}'"
+	echo "***	extensions.firefox.version"
+	echo "***	extensions.firefox.domain"
+	echo "***	extensions.firefox.url"
+	echo "***	extensions.firefox.author"
+	echo "***	extensions.firefox.authorUrl"
+	exit 1
+fi
+
+jarName="connexions"
+extName="${jarName}-${version}"
+
+# Clean and prepare the build area
+rm -rf build
+mkdir build
+cp install.rdf chrome.manifest build
+cp -R chrome   build
+cp -R defaults build
+
+rm -rf `find build -name '*svn*' | xargs`
+
+# Replace all occurrences of
+#	%VERSION%, %DOMAIN%, %URL%, %AUTHOR%, and %AUTHOR_URL%
+# with the matching values from the configuration file.
+sedCmd="s#%VERSION%#${version}#g"
+sedCmd="${sedCmd};s#%DOMAIN%#${domain}#g"
+sedCmd="${sedCmd};s#%URL%#${url}#g"
+sedCmd="${sedCmd};s#%AUTHOR%#${author}#g"
+sedCmd="${sedCmd};s#%AUTHOR_URL%#${authorUrl}#g"
+
+echo "Replacing variables: "
+echo " VERSION    [ ${version} ]"
+echo " DOMAIN     [ ${domain} ]"
+echo " URL        [ ${url} ]"
+echo " AUTHOR     [ ${author} ]"
+echo " AUTHOR_URL [ ${authorUrl} ]"
+
+for file in `find build -type f | xargs`; do
+	#echo ">> ${file}..."
+	sed -e "${sedCmd}" "${file}" > "${file}.tmp"
+	mv "${file}.tmp" "${file}"
+	#echo ""
+done
+
+pushd build > /dev/null
+
+#echo "Building '${jarName}.jar'..."
+#cd chrome > /dev/null
+#files=`ls`
+#zip -r "${jarName}.jar" ${files} > /dev/null 2>&1
+#rm -rf ${files}
+#cd ..
+
+echo "Building '${extName}.xpi'..."
+files=`ls`
+zip -r "${extName}.xpi" ${files} > /dev/null 2>&1
+rm -rf ${files}
+
+popd > /dev/null

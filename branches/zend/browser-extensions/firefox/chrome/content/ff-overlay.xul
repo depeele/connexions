@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="chrome://connexions/skin/overlay.css" type="text/css"?>
+<!DOCTYPE overlay SYSTEM "chrome://connexions/locale/overlay.dtd">
+<overlay id="connexions-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <script src="connexions.js"/>
+  <script src="ff-overlay.js"/>
+
+  <stringbundleset id="stringbundleset">
+    <stringbundle id="connexions-strings" src="chrome://connexions/locale/overlay.properties"/>
+  </stringbundleset>
+
+  <commandset id="mainCommandSet">
+    <command        id="cmd_connexions_bookmark_page"
+             oncommand="connexions.tagPage(event, 'page');" />
+    <command        id="cmd_connexions_bookmark_link"
+             oncommand="connexions.tagPage(event, 'link');" />
+    <command        id="cmd_connexions_bookmark_media"
+             oncommand="connexions.tagPage(event, 'media');" />
+    <command        id="cmd_connexions_sidebar"
+             oncommand="toggleSidebar('viewSidebar_connexions');" />
+    <command        id="cmd_connexions_toolbar_button"
+             oncommand="connexions.toolbarButtonCommand();"/>
+    <command        id="cmd_connexions_options"
+             oncommand="connexions.showOptions();"/>
+  </commandset>
+
+  <keyset id="mainKeyset">
+    <key            id="key_connexions_bookmark_page"
+               command="cmd_connexions_bookmark_page" />
+    <key            id="key_connexions_bookmark_link"
+               command="cmd_connexions_bookmark_link" />
+    <key            id="key_connexions_bookmark_media"
+               command="cmd_connexions_bookmark_media" />
+    <key            id="key_connexions_sidebar"
+               command="cmd_connexions_sidebar" />
+  </keyset>
+
+  <!-- Tools menu { -->
+  <menupopup id="menu_ToolsPopup">
+    <menuitem     id="connexions-tools-menu"
+               label="&connexions.menu.tools.label;"
+               image="chrome://connexions/skin/logo-small.png"
+         insertafter="menu_preferences"
+             command="cmd_connexions_options"/>
+  </menupopup>
+  <!-- Tools menu } -->
+
+  <!-- Main menu { -->
+  <menubar id="main-menubar">
+    <menu            id="connexions-menu"
+                  label="&connexions.menu.label;"
+           insertbefore="bookmarksMenu, bookmarks-menu"
+              accesskey="&connexions.menu.accesskey;">
+      <menupopup id="connexions-menu-popup"
+                 type="main">
+        <menuitem    id="connexions-menu-add-bookmark"
+                  class="menuitem-iconic menubar-icon"
+                  label="&connexions.menu.page.label;"
+                    key="key_connexions_bookmark_page"
+                command="cmd_connexions_bookmark_page" />
+        <menuitem    id="connexions-menu-sidebar"
+                  class="menuitem-iconic menubar-icon"
+                  label="&connexions.menu.sidebar.label;"
+                    key="key_connexions_sidebar"
+                command="cmd_connexions_sidebar" />
+        <menuseparator />
+        <menu class="menuitem-iconic menubar-icon"
+              label="&connexions.menu.site.label;"
+               image="chrome://connexions/skin/logo-small.png">
+          <menupopup>
+            <menuitem class="menuitem-iconic menubar-icon"
+                      label="&connexions.menu.site.myBookmarks;"
+                  oncommand="connexions.loadPage(event, 'myBookmarks');" />
+            <menuitem class="menuitem-iconic menubar-icon"
+                      label="&connexions.menu.site.myTags;"
+                  oncommand="connexions.loadPage(event, 'myTags');" />
+            <menuitem class="menuitem-iconic menubar-icon"
+                      label="&connexions.menu.site.myNetwork;"
+                  oncommand="connexions.loadPage(event, 'myNetwork');" />
+            <menuitem class="menuitem-iconic menubar-icon"
+                      label="&connexions.menu.site.myInbox;"
+                  oncommand="connexions.loadPage(event, 'myInbox');" />
+            <menuseparator />
+            <menuitem class="menuitem-iconic menubar-icon"
+                      label="&connexions.menu.site.bookmarks;"
+                  oncommand="connexions.loadPage(event, 'bookmarks');" />
+            <menuitem class="menuitem-iconic menubar-icon"
+                      label="&connexions.menu.site.tags;"
+                  oncommand="connexions.loadPage(event, 'tags');" />
+            <menuitem class="menuitem-iconic menubar-icon"
+                      label="&connexions.menu.site.people;"
+                  oncommand="connexions.loadPage(event, 'people');" />
+          </menupopup>
+        </menu>
+      </menupopup>
+    </menu>
+  </menubar>
+  <!-- Main menu } -->
+
+  <!-- Main Context menu { -->
+  <popup id="contentAreaContextMenu">
+    <menuitem     id="context-connexions-page"
+         insertafter="context-bookmarkpage"
+               label="&connexions.context.tagCurrent.label;"
+               image="chrome://connexions/skin/logo-small.png"
+               class="menuitem-iconic"
+           accesskey="&connexions.context.tagCurrent.accesskey;"
+             command="cmd_connexions_bookmark_page"/>
+    <menuitem     id="context-connexions-link"
+         insertafter="context-bookmarklink"
+               label="&connexions.context.tagLink.label;"
+               image="chrome://connexions/skin/logo-small.png"
+               class="menuitem-iconic"
+           accesskey="&connexions.context.tagLink.accesskey;"
+             command="cmd_connexions_bookmark_link"/>
+    <menuitem     id="context-connexions-media"
+         insertafter="context-saveimage"
+               label="&connexions.context.tagMedia.label;"
+               image="chrome://connexions/skin/logo-small.png"
+               class="menuitem-iconic"
+           accesskey="&connexions.context.tagMedia.accesskey;"
+             command="cmd_connexions_bookmark_media"/>
+  </popup>
+  <!-- Main Context menu } -->
+
+  <toolbarpalette id="BrowserToolbarPalette">
+  <toolbarbutton id="connexions-toolbar-button"
+              class="toolbarbutton-1 chromeclass-toolbar-additional"
+              label="&connexions.toolbar.button.label;"
+        tooltiptext="&connexions.toolbar.button.tooltip;"
+            command="cmd_connexions_toolbar_button"/>
+  </toolbarpalette>
+
+  <toolbox id="navigator-toolbox">
+    <toolbar    id="connexions-toolbar"
+             class="chromeclass-toolbar"
+       toolbarname="&connexions.toolbar.name;"
+      customizable="true">
+      <label value="&connexions.toolbar.label;"/>
+    </toolbar>
+  </toolbox>
+
+  <menupopup id="viewSidebarMenu">
+    <menuitem observes="viewSidebar_connexions" />
+  </menupopup>
+
+  <broadcasterset id="mainBroadcasterSet">
+    <broadcaster    id="viewSidebar_connexions"
+                 label="&connexions.sidebar.label;"
+             autoCheck="false"
+                  type="checkbox"
+                 group="sidebar"
+            sidebarurl="chrome://connexions/content/ff-sidebar.xul"
+          sidebartitle="&connexions.sidebar.label;"
+               command="cmd_connexions_sidebar" />
+  </broadcasterset>
+
+</overlay>
