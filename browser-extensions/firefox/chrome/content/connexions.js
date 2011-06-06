@@ -181,16 +181,128 @@ var   connexions = {
                     : null);
     },
 
-    tagPage: function(e, type) {
+    /** @brief  Given the contextMenu instance and desired tagging type,
+     *          present the tag page.
+     *  @param  el      The DOM element that is the target
+     *                  (if any, SHOULD be equivalent to document.popupNode);
+     *  @param  type    The desired type of tagging
+     *                  ('page', 'link', 'media');
+     *
+     */
+    tagPage: function(el, type) {
+        var url, name;
+        var docUrl  = (document.URL
+                        ? document.URL
+                        : gURLBar.value);
+
+        connexions.log('tagPage(): el %s== document.popupNode',
+                        (el == document.popupNode
+                            ? '='
+                            : '!'));
+        connexions.log('tagPage(): docUrl[ %s ]', docUrl);
+
         switch (type)
         {
         case 'page':
-            connexions.openTagPage();
+            /*
+            var browser     = connexions.getBrowser();
+            var webNav      = browser.webNavigation;
+            url  = (webNav.currentURI
+                    ? webNav.currentURI.spec
+                    : gURLBar.value);
+            name = (webNav.document.title
+                    ? webNav.document.title
+                    : url);
+            // */
+
+            url  = docUrl;
+            name = (document.title
+                        ? document.title
+                        : url);
+
+            var selection   = connexions.getSelectedText();
+            var description = (selection.str ? selection.str : '');
+
+            connexions.log('tagPage(): type[ %s ], url[ %s ], name[ %s ], '
+                            +   'description[ %s ]',
+                           type, url, name, description);
+
+            connexions.openTagPage(url, name, description);
             break;
 
         case 'link':
+            /*
+            url  = (typeof(gContextMenu.linkURL) === 'string'
+                        ? gContextMenu.linkURL
+                        : gContextMenu.linkURL());
+            name = gContextMenu.linkText();
+            // */
+
+            connexions.log('tagPage(): type[ %s ]', type);
+
+            url  = el.getAttribute('href');
+            connexions.log('tagPage(): type[ %s ], url[ %s ]', type, url);
+
+            name = el.textContent;
+            connexions.log('tagPage(): type[ %s ], url[ %s ], name[ %s ]',
+                            type, url, name);
+
         case 'media':
-            connexions.popupAlert(type);
+            if (url === undefined)
+            {
+                /*
+                url  = gContextMenu.target.getAttribute('src');
+                name = gContextMenu.target.getAttribute('title');
+                // */
+                connexions.log('tagPage(): type[ %s ], UNDEFINED url...',
+                                type);
+
+                url  = el.getAttribute('src');
+                name = el.getAttribute('title');
+                if (! name)
+                {
+                    name = el.getAttribute('alt');
+                }
+                if (! name)
+                {
+                    name = '';
+                }
+            }
+
+            if (! url.match(/^[^:]:\/\//))
+            {
+                connexions.log('tagPage(): type[ %s ], prepend docUrl...',
+                                type);
+
+                /* prepend the document URL taking care not to duplicate '/'
+                 * between the document url and the target url.
+                 */
+                if (docUrl.match(/\/$/))
+                {
+                    if (url.match(/^\//))
+                    {
+                        url = docUrl + url.substr(1);
+                    }
+                    else
+                    {
+                        url = docUrl + url;
+                    }
+                }
+                else if (url.match(/^\//))
+                {
+                    url = docUrl + url;
+                }
+                else
+                {
+                    url = docUrl +'/'+ url;
+                }
+            }
+
+            connexions.log('tagPage(): type[ %s ], final url[ %s ], name[ %s ]',
+                           type, url, name);
+
+            connexions.openTagPage(url, name);
+            //connexions.popupAlert(type);
             break;
         }
     },
@@ -215,7 +327,7 @@ var   connexions = {
             var title   = 'Connexions Options';
             var opts    = 'chrome,titlebar,toolbar,centerscreen,dialog=no';
             connexions.prefsWindow =
-                connexions.openWindow(xul, title, opts);
+                connexions.openXulWindow(xul, title, opts);
         }
         connexions.prefsWindow.focus();
     },
@@ -274,7 +386,7 @@ var   connexions = {
         connexions.openTab(url);
     },
 
-    openWindow: function(xul, title, options, url) {
+    openXulWindow: function(xul, title, options, url) {
         return window.openDialog(xul, title, options, url);
     },
 
@@ -287,40 +399,69 @@ var   connexions = {
     },
 
     openPopupWindow: function(url, title) {
-        var xul     = 'chrome://browser/content/browser.xul';
-        var width   = 800;
-        var height  = 500;
-        var options = 'chrome,titlebar,centerscreen,dialog=no,'
-                    +   'width='+ width
-                    +   'height='+ height;
+        var width   = 980;
+        var height  = 680;
+        var options = 'chrome'
+                    + ',resizable'
+                    + ',scrollbars'
+                    + ',titlebar'
+                    + ',statusbars'
+                    + ',centerscreen'
+                    + ',dependent'
+                    + ',dialog=no'
+                    + ',width=' + width
+                    + ',height='+ height;
 
-        return openWindow(xul, title, options, url);
+        /*
+        connexions.log("openPopupWindow(): url    [ %s ]", url);
+        connexions.log("openPopupWindow(): title  [ %s ]", title);
+        connexions.log("openPopupWindow(): options[ %s ]", options);
+        connexions.log("openPopupWindow(): xul    [ %s ]", xul);
+        // */
+
+        /*
+        var xul         = 'chrome://browser/content/browser.xul';
+        var newWindow   = connexions.openXulWindow(xul, title, options, url);
+        */
+        //var newWindow   = window.open(url, '_parent', options);
+        var newWindow   = window.open(url, '_blank', options);
+
+        /*
+        newWindow.addEventListener("close", function() {
+                                    connexions.log("openPopupWindow(): "
+                                                   + "close event triggered");
+
+                                    newWindow.close();
+                                   }, true);
+        // */
+
+        return newWindow;
     },
 
-    openTagPage: function() {
-        var selection   = connexions.getSelectedText();
-        var description = (selection.str ? selection.str : '');
-        var browser     = connexions.getBrowser();
-        var webNav      = browser.webNavigation;
-        var location    = (webNav.currentURI
-                            ? webNav.currentURI.spec
-                            : gURLBar.value);
-        var name        = (webNav.document.title
-                            ? webNav.document.title
-                            : location);
+    openTagPage: function(url, name, description, tags) {
+        var query   = '?url='+ encodeURIComponent(url)
+                    + '&name='+ encodeURIComponent(name);
+        if (description !== undefined)
+        {
+            query += '&description='+ encodeURIComponent(description);
+        }
+        if (tags !== undefined)
+        {
+            query += '&tags='+ encodeURIComponent(tags);
+        }
 
-        connexions.log("openTagPage(): description[ %s ]", description);
-        connexions.log("openTagPage(): location[ %s ]", location);
+        query += '&noNav&closeAction=close';
+
+        /*
+        connexions.log("openTagPage(): url[ %s ]", url);
         connexions.log("openTagPage(): name[ %s ]", name);
+        connexions.log("openTagPage(): description[ %s ]", description);
+        connexions.log("openTagPage(): tags[ %s ]", tags);
+        connexions.log("openTagPage(): query[ %s ]", query);
+        // */
 
-        connexions.openPopupWindow(
-                connexions.url('post'
-                               + '?url='+ encodeURIComponent(location)
-                               + '&name='+ encodeURIComponent(name)
-                               + '&description='
-                                    + encodeURIComponent(description)
-                               + '&closeAction=close'),
-                'Bookmark a Page');
+        connexions.openPopupWindow( connexions.url('post'+ query),
+                                    'Bookmark a Page' );
     },
 
     getSelectedText: function(maxLen) {
