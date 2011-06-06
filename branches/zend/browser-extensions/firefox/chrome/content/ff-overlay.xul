@@ -11,11 +11,11 @@
 
   <commandset id="mainCommandSet">
     <command        id="cmd_connexions_bookmark_page"
-             oncommand="connexions.tagPage(gContextMenu.target, 'page');" />
+             oncommand="connexions.tagPage((gContextMenu ? gContextMenu.target : null), 'page');" />
     <command        id="cmd_connexions_bookmark_link"
-             oncommand="connexions.tagPage(gContextMenu.target, 'link');" />
+             oncommand="connexions.tagPage((gContextMenu ? gContextMenu.target : null), 'link');" />
     <command        id="cmd_connexions_bookmark_media"
-             oncommand="connexions.tagPage(gContextMenu.target, 'media');" />
+             oncommand="connexions.tagPage((gContextMenu ? gContextMenu.target : null), 'media');" />
     <command        id="cmd_connexions_sidebar"
              oncommand="toggleSidebar('viewSidebar_connexions');" />
     <command        id="cmd_connexions_toolbar_button"

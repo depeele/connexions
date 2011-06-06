@@ -705,7 +705,7 @@ a:visited { color: #005a9c; }
 .ui-validation-form .userInput .click-to-edit input:focus { color: #555555; border-color: #aaaaaa; }
 .ui-validation-form .userInput .click-to-edit .ui-field-info { visibility: hidden; }
 .ui-validation-form .userInput .click-to-edit:hover .ui-field-info { visibility: visible; }
-.ui-validation-form .userInput .buttons { position: relative; text-align: right; width: 100%; padding: 1em 0 1em 1em; clear: both; }
+.ui-validation-form .userInput .buttons { position: relative; text-align: right; width: 100%; padding: 2em 0 0.5em 1em; clear: both; }
 .ui-validation-form .userInput .buttons input, .ui-validation-form .userInput .buttons label, .ui-validation-form .userInput .buttons button { position: relative; display: inline; cursor: pointer; }
 .ui-validation-form .userInput .formError { padding: 0; font-weight: bold; text-align: left; color: #cd0a0a; }
 
@@ -733,7 +733,7 @@ a:visited { color: #005a9c; }
 .ui-bookmarkPost .item-data .userRating { position: absolute; z-index: 2; right: 0; display: block; padding: 0; height: 32px; width: 96px; }
 .ui-bookmarkPost .item-data .userRating label { display: none; }
 .ui-bookmarkPost .item-description textarea, .ui-bookmarkPost .item-tags textarea { height: 4em; }
-.ui-bookmarkPost .suggestions { margin: 2em 0 0 1em; }
+.ui-bookmarkPost .suggestions { margin: 2em 0 0 1.5em; }
 .ui-bookmarkPost .suggestions .ui-tabs-panel { padding: 0.25em; }
 .ui-bookmarkPost .suggestions .cloud, .ui-bookmarkPost .suggestions .db-profile { font-size: 1em; }
 .ui-bookmarkPost .suggestions .db-profile { margin: 0.5em; }
