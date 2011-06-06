@@ -106,15 +106,25 @@ class AuthController extends Connexions_Controller_Action
                 if (preg_match('/^onSuccess:(.*)$/i', $msg, $matches))
                 {
                     $onSuccess = $matches[1];
+
+                    if (preg_match('/[?&]noNav/i', $onSuccess))
+                    {
+                        /* The target URL specifies 'noNav' so the
+                         * signin page should reflect that.
+                         */
+                        $this->_noNav           = true;
+                        $this->view->excludeNav = true;
+                    }
                     break;
                 }
             }
         }
 
         Connexions::log("AuthController::signinAction(): "
-                        .   "messages[ %s ], onSuccess[ %s ]",
+                        .   "messages[ %s ], onSuccess[ %s ], noNav[ %s ]",
                         Connexions::varExport($messages),
-                        $onSuccess);
+                        $onSuccess,
+                        Connexions::varExport($this->_noNav));
 
         if (empty($onSuccess))
         {
@@ -264,12 +274,29 @@ class AuthController extends Connexions_Controller_Action
             {
                 if (preg_match('/^onSuccess:/i', $msg))
                 {
+                    // /*
                     Connexions::log(
                             "AuthController::_showAuthenticationForm(): "
                             . "forward flash message '%s'",
                             $msg);
+                    // */
 
                     $this->_flashMessenger->addMessage($msg);
+
+                    if (preg_match('/[\?\&]noNav/i', $msg))
+                    {
+                        /* The target URL specifies 'noNav' so the
+                         * signin page should reflect that.
+                         */
+                        $this->_noNav           = true;
+                        $this->view->excludeNav = true;
+
+                        // /*
+                        Connexions::log(
+                                "AuthController::_showAuthenticationForm(): "
+                                . "respect 'noNav'");
+                        // */
+                    }
                 }
             }
         }
