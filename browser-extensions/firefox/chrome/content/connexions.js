@@ -195,10 +195,6 @@ var   connexions = {
                         ? document.URL
                         : gURLBar.value);
 
-        connexions.log('tagPage(): el %s== document.popupNode',
-                        (el == document.popupNode
-                            ? '='
-                            : '!'));
         connexions.log('tagPage(): docUrl[ %s ]', docUrl);
 
         switch (type)
@@ -240,6 +236,7 @@ var   connexions = {
 
             connexions.log('tagPage(): type[ %s ]', type);
 
+            // el should NEVER be null here
             url  = el.getAttribute('href');
             connexions.log('tagPage(): type[ %s ], url[ %s ]', type, url);
 
@@ -257,6 +254,7 @@ var   connexions = {
                 connexions.log('tagPage(): type[ %s ], UNDEFINED url...',
                                 type);
 
+                // el should NEVER be null here
                 url  = el.getAttribute('src');
                 name = el.getAttribute('title');
                 if (! name)
