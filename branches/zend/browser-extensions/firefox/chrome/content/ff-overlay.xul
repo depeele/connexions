@@ -11,11 +11,11 @@
 
   <commandset id="mainCommandSet">
     <command        id="cmd_connexions_bookmark_page"
-             oncommand="connexions.tagPage(event, 'page');" />
+             oncommand="connexions.tagPage(gContextMenu.target, 'page');" />
     <command        id="cmd_connexions_bookmark_link"
-             oncommand="connexions.tagPage(event, 'link');" />
+             oncommand="connexions.tagPage(gContextMenu.target, 'link');" />
     <command        id="cmd_connexions_bookmark_media"
-             oncommand="connexions.tagPage(event, 'media');" />
+             oncommand="connexions.tagPage(gContextMenu.target, 'media');" />
     <command        id="cmd_connexions_sidebar"
              oncommand="toggleSidebar('viewSidebar_connexions');" />
     <command        id="cmd_connexions_toolbar_button"
@@ -101,6 +101,20 @@
   <popup id="contentAreaContextMenu">
     <menuitem     id="context-connexions-page"
          insertafter="context-bookmarkpage"
+               label="&connexions.context.tagCurrent.label;"
+               image="chrome://connexions/skin/logo-small.png"
+               class="menuitem-iconic"
+           accesskey="&connexions.context.tagCurrent.accesskey;"
+             command="cmd_connexions_bookmark_page"/>
+    <menuitem     id="context-connexions-page-after-link"
+         insertafter="context-bookmarklink"
+               label="&connexions.context.tagCurrent.label;"
+               image="chrome://connexions/skin/logo-small.png"
+               class="menuitem-iconic"
+           accesskey="&connexions.context.tagCurrent.accesskey;"
+             command="cmd_connexions_bookmark_page"/>
+    <menuitem     id="context-connexions-page-after-media"
+         insertafter="context-saveimage"
                label="&connexions.context.tagCurrent.label;"
                image="chrome://connexions/skin/logo-small.png"
                class="menuitem-iconic"
