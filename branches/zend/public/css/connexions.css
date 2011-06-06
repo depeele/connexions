@@ -918,7 +918,6 @@ body.light { background-color: white; }
 #pageFooter .footer-nav .sep { font-size: 1.2em; font-weight: bold; margin: 0; }
 
 .noNav #pageHeader { height: 2.25em; }
-.noNav #pageHeader h1#siteName { top: -10px; }
 
 .noSidebar #pageContent { padding-right: 1em; }
 

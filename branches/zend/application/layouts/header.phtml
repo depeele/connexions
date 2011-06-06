@@ -181,11 +181,12 @@ echo $this->render('base-header.phtml');
 ?>
  <div class="page liquid<?= $extraClass ?>"><!-- { page -->
   <div id="pageHeader" class="head" role="banner"><!-- { head -->
-  <?php if ( $this->excludeNav !== true ) { ?>
    <div class='siteAuth'>
+     <div class='siteMarking'>
+      <div class='urCorner'>&nbsp;</div>
+     </div>
      <?= $this->render('site_auth.phtml') ?>
    </div>
-   <?php } ?>
    <div class='siteNav'><!-- { siteNav -->
      <h1 id='siteName'
       ><a href="<?= $baseUrl ?>"
