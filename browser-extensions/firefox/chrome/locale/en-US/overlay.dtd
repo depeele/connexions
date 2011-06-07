@@ -37,5 +37,8 @@
 <!ENTITY connexions.toolbar.button.bookmark.label "Bookmarks">
 <!ENTITY connexions.toolbar.button.bookmark.tooltip "Toggle the bookmarks sidebar">
 
+<!ENTITY connexions.toolbar.button.connexions.label "Connexions">
+<!ENTITY connexions.toolbar.button.connexions.tooltip "Visit Connexions">
+
 <!-- Sidebar -->
 <!ENTITY connexions.sidebar.label "Your Sidebar">

@@ -138,6 +138,11 @@
   <!-- Main Context menu } -->
 
   <toolbarpalette id="BrowserToolbarPalette">
+   <toolbarbutton id="connexions-toolbar-button-connexions"
+               class="toolbarbutton-1 chromeclass-toolbar-additional"
+               label="&connexions.toolbar.button.connexions.label;"
+         tooltiptext="&connexions.toolbar.button.connexions.tooltip;"
+           oncommand="connexions.loadPage(event, 'main');" />
    <toolbarbutton id="connexions-toolbar-button-tag"
                class="toolbarbutton-1 chromeclass-toolbar-additional"
                label="&connexions.toolbar.button.tag.label;"
