@@ -14,24 +14,33 @@
   list-style-image: url("chrome://connexions/skin/toolbar-button-bookmark.png");
 }
 
+#connexions-toolbar-button-connexions
+{
+  list-style-image: url("chrome://connexions/skin/toolbar-button-connexions.png");
+}
+
 #connexions-toolbar-button-tag,
-#connexions-toolbar-button-bookmark
+#connexions-toolbar-button-bookmark,
+#connexions-toolbar-button-connexions
 {
   -moz-image-region: rect(0px 24px 24px 0px);
 }
 #connexions-toolbar-button-tag:hover,
-#connexions-toolbar-button-bookmark:hover
+#connexions-toolbar-button-bookmark:hover,
+#connexions-toolbar-button-connexions:hover
 {
   -moz-image-region: rect(24px 24px 48px  0px);
 }
 
 [iconsize="small"] #connexions-toolbar-button-tag,
-[iconsize="small"] #connexions-toolbar-button-bookmark
+[iconsize="small"] #connexions-toolbar-button-bookmark,
+[iconsize="small"] #connexions-toolbar-button-connexions
 {
   -moz-image-region: rect( 0px 40px 16px 24px);
 }
 [iconsize="small"] #connexions-toolbar-button-tag:hover,
-[iconsize="small"] #connexions-toolbar-button-bookmark:hover
+[iconsize="small"] #connexions-toolbar-button-bookmark:hover,
+[iconsize="small"] #connexions-toolbar-button-connexions:hover
 {
   -moz-image-region: rect(24px 40px 40px 24px);
 }

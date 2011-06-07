@@ -365,9 +365,13 @@ var   connexions = {
         case 'people':
             url = 'people';
             break;
+
+        case 'main':
+            url = '';
+            break;
         }
 
-        if (url) {
+        if (url !== null) {
             connexions.browserLoadPage(e, connexions.url(url));
         }
     },
