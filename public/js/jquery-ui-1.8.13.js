@@ -2154,8 +2154,8 @@ $.widget( "ui.autocomplete", {
 
 	_suggest: function( items ) {
 		var ul = this.menu.element
-			.empty()
-			.zIndex( this.element.zIndex() + 1 );
+			        .empty()
+                    .zIndex(0);
 		this._renderMenu( ul, items );
 		// TODO refresh should check if the active item is still in the dom, removing the need for a manual deactivate
 		this.menu.deactivate();
@@ -2164,9 +2164,23 @@ $.widget( "ui.autocomplete", {
 		// size and position menu
 		ul.show();
 		this._resizeMenu();
-		ul.position( $.extend({
-			of: this.element
-		}, this.options.position ));
+
+        // :XXX: Connexions patch: {
+        var position    = this.options.position;
+        if (position.of === undefined) {
+            position.of = this.element;
+        }
+
+        // Locate the maximum z-index in all our parents
+        var zIndex  = 0;
+        position.of.parents().each(function() {
+            var zi  = $(this).zIndex();
+            if (zi > zIndex)    zIndex = zi;
+        });
+
+		ul.position( position )
+          .zIndex( zIndex + 1);
+        // :XXX: Connexions patch: }
 
 		if ( this.options.autoFocus ) {
 			this.menu.next( new $.Event("mouseover") );
@@ -2191,10 +2205,10 @@ $.widget( "ui.autocomplete", {
 	_renderItem: function( ul, item) {
 		return $( "<li></li>" )
 			.data( "item.autocomplete", item )
-			// connexions {
+			// :XXX: Connexions patch: {
 			//.append( $( "<a></a>" ).text( item.label ) )
 			.append( $( "<a></a>" ).html( item.label ) )
-			// connexions }
+			// :XXX: Connexions patch: }
 			.appendTo( ul );
 	},
 
