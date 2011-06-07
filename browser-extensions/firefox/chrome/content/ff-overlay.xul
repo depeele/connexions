@@ -138,11 +138,16 @@
   <!-- Main Context menu } -->
 
   <toolbarpalette id="BrowserToolbarPalette">
-  <toolbarbutton id="connexions-toolbar-button"
-              class="toolbarbutton-1 chromeclass-toolbar-additional"
-              label="&connexions.toolbar.button.label;"
-        tooltiptext="&connexions.toolbar.button.tooltip;"
-            command="cmd_connexions_toolbar_button"/>
+   <toolbarbutton id="connexions-toolbar-button-tag"
+               class="toolbarbutton-1 chromeclass-toolbar-additional"
+               label="&connexions.toolbar.button.tag.label;"
+         tooltiptext="&connexions.toolbar.button.tag.tooltip;"
+             command="cmd_connexions_bookmark_page"/>
+   <toolbarbutton id="connexions-toolbar-button-bookmark"
+               class="toolbarbutton-1 chromeclass-toolbar-additional"
+               label="&connexions.toolbar.button.bookmark.label;"
+         tooltiptext="&connexions.toolbar.button.bookmark.tooltip;"
+             command="cmd_connexions_sidebar"/>
   </toolbarpalette>
 
   <toolbox id="navigator-toolbox">
