@@ -992,7 +992,7 @@ body.light { background-color: white; }
 
 .collapsable .toggle { color: #999999; background-color: #eeeeee; cursor: pointer; font-size: 0.9em; font-weight: bold; padding: 0.2em; margin: 0.5em 0 0 0; border: 1px solid #cccccc; }
 .collapsable .toggle a { color: #999999; }
-.collapsable .toggle .ui-icon { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; float: left; }
+.collapsable .toggle .ui-icon { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; vertical-align: middle; }
 .collapsable .content { margin-top: 0; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; }
 
 .external-link { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; color: #0066cc; padding-right: 18px; }

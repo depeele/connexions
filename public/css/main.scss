@@ -446,7 +446,7 @@ body.light {
     }
     .ui-icon {
       @include inlineBlock();
-      float:  left;
+      vertical-align: middle;
     }
   }
   .content {

@@ -3,201 +3,236 @@ $config   =  Zend_Registry::get('config');
 $contact  =& $config->contact;
 $url      =  $this->baseUrl('help/general');
 
+$jsSectionId = '';
+if ($this->section)
+{
+    $jsSectionId = $this->section;
+    if ($this->rest)
+    {
+        // Navigate to the parent of the final area
+        $rest = implode('_', $this->rest);
+        if (! empty($rest))
+        {
+            $jsSectionId .= '_'. $rest;
+        }
+    }
+}
+
+Connexions::log('views/scripts/help/main-general.phtml: '
+                . 'topic[ %s ], section[ %s ], rest[ %s ], '
+                . 'jsSectionId[ %s ]',
+                Connexions::varExport($this->topic),
+                Connexions::varExport($this->section),
+                Connexions::varExport($this->rest),
+                $jsSectionId);
+
+
 ?>
-<h3><span>What is Connexions?</span></h3>
-<div class='help-content'>
+<h3 id='what_is_connexions'><span>What is Connexions?</span></h3>
+<div class='help-content'><!-- what_is_connexions { -->
  <p>Connexions is a <?=
         Connexions::wikipedia_a('Social_bookmarking', 'social bookmarking') ?>
  service that allows you to tag, save, manage and share links to interesting
  resources from across the internet, all in a central place.  Connexions makes
  it easier to discover, remember and share what you need when you need it.</p>
 
- <h4><span>Bookmark any resource and get to it from any browser</span></h4>
- <p>Instead of having disjoint, disconnected bookmarks on several different
- computers, Connexions allows you to store bookmarks in one place, accessible
- from any computer.</p>
+ <div class='section'><!-- section { -->
+  <h4><span>Bookmark any resource and get to it from any browser</span></h4>
+  <p>Instead of having disjoint, disconnected bookmarks on several different
+  computers, Connexions allows you to store bookmarks in one place, accessible
+  from any computer.</p>
 
- <p>With a focus on community, Connexions gives you the opportunity to make
- your bookmarks public, allowing the community to benefit from the rich store
- of resources that you have found to be of interest.  Of course, if you find
- resources that you would like to keep for yourself, you can do that as well by
- marking them "private".  As a further memory aid, you can mark bookmarks as
- "favorite" as well as providing a rating indicating how useful the resource
- has proven to be.</p>
+  <p>With a focus on community, Connexions gives you the opportunity to make
+  your bookmarks public, allowing the community to benefit from the rich store
+  of resources that you have found to be of interest.  Of course, if you find
+  resources that you would like to keep for yourself, you can do that as well by
+  marking them "private".  As a further memory aid, you can mark bookmarks as
+  "favorite" as well as providing a rating indicating how useful the resource
+  has proven to be.</p>
 
- <p>Instead of limiting you to a single, strict heirarchy of folders in order
- to manage your bookmarks, Connexions allows you to add tags to the bookmarks
- you create.  These tags are simple, non-heirarchical keywords that allow you
- to attach memorable, meanigful words or concepts to bookmarks.  This helps
- with discovery, remembering, and sharing by providing a natural grouping of
- sites that have similarities that are important to you.</p>
+  <p>Instead of limiting you to a single, strict heirarchy of folders in order
+  to manage your bookmarks, Connexions allows you to add tags to the bookmarks
+  you create.  These tags are simple, non-heirarchical keywords that allow you
+  to attach memorable, meanigful words or concepts to bookmarks.  This helps
+  with discovery, remembering, and sharing by providing a natural grouping of
+  sites that have similarities that are important to you.</p>
 
- <p>Bookmarks can be grouped and viewed in multiple ways &mdash; by date,
- title, rating, count of people who have also bookmarked the site, by tag(s),
- people that tagged, or even by the URL of the resource itself.  Connexions
- provides many different ways to view the bookmarks, tags, and people that form
- the community.</p>
+  <p>Bookmarks can be grouped and viewed in multiple ways &mdash; by date,
+  title, rating, count of people who have also bookmarked the site, by tag(s),
+  people that tagged, or even by the URL of the resource itself.  Connexions
+  provides many different ways to view the bookmarks, tags, and people that form
+  the community.</p>
+ </div><!-- section } -->
 
- <h4><span>Community - share and share alike</span></h4>
- <p>If others that you respect, trust, or just plain like are also using
- Connexions, you can send them bookmarks that you believe they might find
- interesting.  The next time they visit Connexions, they can check out any
- bookmarks that have been tagged for them.  Of course, they can do the same for
- you, helping you find resources that you may have overlooked.</p>
+ <div class='section'><!-- section { -->
+  <h4 id='what_is_connexions_community'><span>Community - share and share alike</span></h4>
+  <p>If others that you respect, trust, or just plain like are also using
+  Connexions, you can send them bookmarks that you believe they might find
+  interesting.  The next time they visit Connexions, they can check out any
+  bookmarks that have been tagged for them.  Of course, they can do the same for
+  you, helping you find resources that you may have overlooked.</p>
 
- <p>You can also add any Connexions users to
- <a href='<?= $this->baseUrl('network/'. $this->viewer) ?>'>your network</a>,
- allowing you to visit one place to get a view into the resources they have
- collectively found useful.</p>
+  <p>You can also add any Connexions users to
+  <a href='<?= $this->baseUrl('network/'. $this->viewer) ?>'>your network</a>,
+  allowing you to visit one place to get a view into the resources they have
+  collectively found useful.</p>
+ </div><!-- section } -->
 
-</div>
+</div><!-- what_is_connexions } -->
 
-<h3><span>Finding your way around</span></h3>
-<div class='help-content'>
- <h4><span>General Page Layout</span></h4>
- <p class='continues'>Nearly all pages within connexions can be divided into
- four primary components: <b>Navigation Bar</b>, <b>Section Header</b>,
- <b>Main Section</b>, and <b>Sidebar</b>.</p>
- <div id='figure1' class='figure'>
-  <img src='<?= $this->baseUrl('/images/help/page.jpg') ?>'
-       title='Anatomy of a Page' />
-  <div class='caption'><b>Figure 1</b>: Anatomy of a Page</div>
- </div>
+<h3 id='finding_your_way_around'><a href='<?= $url ?>/finding_your_way_around' onclick='return false;'>Finding your way around</a></h3>
+<div class='help-content'><!-- finding_your_way_around { -->
 
- <h4><span>General Navigation</span></h4>
- <p class='continued'>Connexions is divided into three main sections &mdash;
- <b>Bookmarks</b>, <b>People</b>, <b>Tags</b> &mdash; and the navigation menu
- has an additional three choices &mdash; <b>Help</b>, <b>Search</b>, and
- <b>Account</b>.  Once signed-in, you will see the menu items as presented
- below:</p>
- <div id='figure2' class='figure'>
-  <img src='<?= $this->baseUrl('/images/help/navigation-bar.jpg') ?>'
-       title='Anatomy of the Navigation bar' />
-  <div class='caption'><b>Figure 2</b>: Anatomy of the Navigation Bar</div>
- </div>
+ <div class='section'><!-- section { -->
+  <h4 id='finding_your_way_around_general_page_layout'><a href='<?= $url ?>/finding_your_way_around/general_page_layout' onclick='return false;'>General Page Layout</a></h4>
+  <p class='continues'>Nearly all pages within connexions can be divided into
+  four primary components: <b>Navigation Bar</b>, <b>Section Header</b>,
+  <b>Main Section</b>, and <b>Sidebar</b>.</p>
+  <div id='figure1' class='figure'>
+   <img src='<?= $this->baseUrl('/images/help/page.jpg') ?>'
+        title='Anatomy of a Page' />
+   <div class='caption'><b>Figure 1</b>: Anatomy of a Page</div>
+  </div>
+ </div><!-- section } -->
 
- <p>The navigation items will expand when your mouse moves over them or you can
- click on the the <b>Drop-down Buttons</b> located next to each navigation
- item.</p>
+ <div class='section'><!-- section { -->
+  <h4 id='finding_your_way_around_general_navigation'><a href='<?= $url ?>/finding_your_way_around/general_navigation' onclick='return false;'>General Navigation</a></h4>
+  <p class='continued'>Connexions is divided into three main sections &mdash;
+  <b>Bookmarks</b>, <b>People</b>, <b>Tags</b> &mdash; and the navigation menu
+  has an additional three choices &mdash; <b>Help</b>, <b>Search</b>, and
+  <b>Account</b>.  Once signed-in, you will see the menu items as presented
+  below:</p>
+  <div id='figure2' class='figure'>
+   <img src='<?= $this->baseUrl('/images/help/navigation-bar.jpg') ?>'
+        title='Anatomy of the Navigation bar' />
+   <div class='caption'><b>Figure 2</b>: Anatomy of the Navigation Bar</div>
+  </div>
+ 
+  <p>The navigation items will expand when your mouse moves over them or you can
+  click on the the <b>Drop-down Buttons</b> located next to each navigation
+  item.</p>
+ 
+  <p>The <b>Search Contexts</b> apply to the <b>Search Input</b>, and provide
+  several different choices to help narrow the results to those you are most
+  likely after.  See <a href='<?=
+  $this->baseUrl('help/faq/navigation_and_search/how_do_i_perform_a_search') ?>'>How do I perform a
+  search</a> for more information about searching and search contexts.</p>
+ </div><!-- section } -->
 
- <p>The <b>Search Contexts</b> apply to the <b>Search Input</b>, and provide
- several different choices to help narrow the results to those you are most
- likely after.  See <a href='<?=
- $this->baseUrl('help/faq/how_do_i_perform_a_search') ?>'>How do I perform a
- search</a> for more information about searching and search contexts.</p>
+ <div class='section'><!-- section { -->
+  <h4 id='finding_your_way_around_main_display_section'><a href='<?= $url ?>/finding_your_way_around/main_display_section' onclick='return false;'>Main Display Section</a></h4>
+  <p class='continued'>In addition to the main navigation, most pages also have
+  a section header that includes a contextual icon and description of the
+  current section, section "bread crumbs", scope selection, count of total
+  number of entries presented in the section, paging selectors (if the
+  information requires multiple pages), and a display options button.
+  </p>
+  <div id='figure3' class='figure'>
+   <img src='<?= $this->baseUrl('/images/help/navigation-section.jpg') ?>'
+        title='Anatomy of a Section Header' />
+   <div class='caption'><b>Figure 3</b>: Anatomy of a Section Header</div>
+  </div>
+ 
+  <p>The <b>Scope Selection</b> may be used to filter the items presented in the
+  section.  For most pages (<b>Bookmarks</b>, <b>People</b>, and <b>Items</b>)
+  filtering is by <i>tag</i> while the <b>Tags</b> page allows filtering
+  by <i>user</i>.</p>
+ 
+  <p class='continued'>The <b>Display Options Button</b>, when clicked, presents
+  a set of display options that may be used to customize the way items are
+  presented within the section.  Clicking on "Custom" in the "Display" area will
+  expand a section that allows even greater customization, letting you choose
+  which portions of an entry should be presented.</p>
+  <div id='figure4' class='figure'>
+   <img src='<?= $this->baseUrl('/images/help/navigation-displayOptions.jpg') ?>'
+        title='Display Options' />
+   <div class='caption'><b>Figure 4</b>: Display Options</div>
+  </div>
+ 
+  <p class='continued'>Within the main section, bookmarks, users, tags, or items
+  will be presented.  To help familiarize you with what you will see, here are a
+  few annotated images of various entries that will appear within this main
+  section.</p>
+  <div id='figure5' class='figure'>
+   <img src='<?= $this->baseUrl('/images/help/bookmark.jpg') ?>'
+        title='Anatomy of a Bookmark Entry' />
+   <div class='caption'><b>Figure 5</b>: Anatomy of a Bookmark Entry</div>
+  </div>
+ 
+  <div id='figure6' class='figure'>
+   <img src='<?= $this->baseUrl('/images/help/user.jpg') ?>'
+        title='Anatomy of a User Entry' />
+   <div class='caption'><b>Figure 6</b>: Anatomy of a User Entry</div>
+  </div>
+ </div><!-- section } -->
 
- <h4><span>Main Display Section</span></h4>
- <p class='continued'>In addition to the main navigation, most pages also have
- a section header that includes a contextual icon and description of the
- current section, section "bread crumbs", scope selection, count of total
- number of entries presented in the section, paging selectors (if the
-         information requires multiple pages), and a display options button.
- </p>
- <div id='figure3' class='figure'>
-  <img src='<?= $this->baseUrl('/images/help/navigation-section.jpg') ?>'
-       title='Anatomy of a Section Header' />
-  <div class='caption'><b>Figure 3</b>: Anatomy of a Section Header</div>
- </div>
-
- <p>The <b>Scope Selection</b> may be used to filter the items presented in the
- section.  For most pages (<b>Bookmarks</b>, <b>People</b>, and <b>Items</b>)
-    filtering is by <i>tag</i> while the <b>Tags</b> page allows filtering
-    by <i>user</i>.</p>
-
- <p class='continued'>The <b>Display Options Button</b>, when clicked, presents
- a set of display options that may be used to customize the way items are
- presented within the section.  Clicking on "Custom" in the "Display" area will
- expand a section that allows even greater customization, letting you choose
- which portions of an entry should be presented.</p>
- <div id='figure4' class='figure'>
-  <img src='<?= $this->baseUrl('/images/help/navigation-displayOptions.jpg') ?>'
-       title='Display Options' />
-  <div class='caption'><b>Figure 4</b>: Display Options</div>
- </div>
-
- <p class='continued'>Within the main section, bookmarks, users, tags, or items
- will be presented.  To help familiarize you with what you will see, here are a
- few annotated images of various entries that will appear within this main
- section.</p>
- <div id='figure5' class='figure'>
-  <img src='<?= $this->baseUrl('/images/help/bookmark.jpg') ?>'
-       title='Anatomy of a Bookmark Entry' />
-  <div class='caption'><b>Figure 5</b>: Anatomy of a Bookmark Entry</div>
- </div>
-
- <div id='figure6' class='figure'>
-  <img src='<?= $this->baseUrl('/images/help/user.jpg') ?>'
-       title='Anatomy of a User Entry' />
-  <div class='caption'><b>Figure 6</b>: Anatomy of a User Entry</div>
- </div>
-
-
- <h4><span>Sidebar</span></h4>
- <p class='continued'>The sidebar is presented along the right-hand side of
- most pages.  Its purpose is to provide additional information that is relevant
- to the items presented in the main section.  This area is divided into three
- main "tabs" &mdash; <b>Tags</b>, <b>People</b>, and <b>Items</b>.</p>
- <div id='figure7' class='figure'>
-  <img src='<?= $this->baseUrl('/images/help/sidebar.jpg') ?>'
-       title='Sidebar' />
-  <div class='caption'><b>Figure 7</b>: Sidebar</div>
- </div>
- <ul>
-  <li><b>Tags</b> &mdash; presents related tags in either a tag cloud or a list
-  of tags, selectable via "Display Options".  If the main section is presenting
-  tags, tag statistics will be presented here.  If all the entries in the main
-  section are owned by the authenticated user, they can be directly managed.
-  In this case, when you hover over the tag, you will see two icons below or
-  beside the tag that allow in-line editing or deletion
- <div id='figure8' class='figure'>
-  <img src='<?= $this->baseUrl('/images/help/tags-direct-management.jpg') ?>'
-       title='Direct Tag Management' />
-  <div class='caption'><b>Figure 8</b>: Direct Tag Management</div>
- </div></li>
-  <li><b>People</b> &mdash; presents people related to the entries in the main
-  section in a form controlled by "Display Options".  If the main section is
-  presenting users, user statistics will be presented and if all the entries in
-  the main section belong to a single user, additional information as well as
-  statistics about that user will be shown.
-  <p class='continued'>When people are presented in a list, any users that are
-  in <a href='<?= $this->baseUrl('network/'. $this->viewer) ?>'>your
-  network</a> or who have added you to their network will have a relation
-  indicator included.  The valid relations are:</p>
+ <div class='section'><!-- section { -->
+  <h4 id='finding_your_way_around_sidebar'><a href='<?= $url ?>/finding_your_way_around/sidebar' onclick='return false;'>Sidebar</a></h4>
+  <p class='continued'>The sidebar is presented along the right-hand side of
+  most pages.  Its purpose is to provide additional information that is relevant
+  to the items presented in the main section.  This area is divided into three
+  main "tabs" &mdash; <b>Tags</b>, <b>People</b>, and <b>Items</b>.</p>
+  <div id='figure7' class='figure'>
+   <img src='<?= $this->baseUrl('/images/help/sidebar.jpg') ?>'
+        title='Sidebar' />
+   <div class='caption'><b>Figure 7</b>: Sidebar</div>
+  </div>
   <ul>
-   <li class='user'><div class='relation'><div class='connexions_sprites
-   relation-amIn'>&nbsp;</div></div> &mdash; <b>amIn</b> indicates that
-   you are in their network but they are not in yours;</li>
-
-   <li class='user'><div class='relation'><div class='connexions_sprites
-   relation-isIn'>&nbsp;</div></div> &mdash; <b>isIn</b> indicates that
-   the user is in your network but you are not in theirs;</li>
-
-   <li class='user'><div class='relation'><div class='connexions_sprites
-   relation-mutual'>&nbsp;</div></div> &mdash; <b>mutual</b> indicates that
-   the you are in one anothers networks;</li>
+   <li><b>Tags</b> &mdash; presents related tags in either a tag cloud or a list
+   of tags, selectable via "Display Options".  If the main section is presenting
+   tags, tag statistics will be presented here.  If all the entries in the main
+   section are owned by the authenticated user, they can be directly managed.
+   In this case, when you hover over the tag, you will see two icons below or
+   beside the tag that allow in-line editing or deletion
+  <div id='figure8' class='figure'>
+   <img src='<?= $this->baseUrl('/images/help/tags-direct-management.jpg') ?>'
+        title='Direct Tag Management' />
+   <div class='caption'><b>Figure 8</b>: Direct Tag Management</div>
+  </div></li>
+   <li><b>People</b> &mdash; presents people related to the entries in the main
+   section in a form controlled by "Display Options".  If the main section is
+   presenting users, user statistics will be presented and if all the entries in
+   the main section belong to a single user, additional information as well as
+   statistics about that user will be shown.
+   <p class='continued'>When people are presented in a list, any users that are
+   in <a href='<?= $this->baseUrl('network/'. $this->viewer) ?>'>your
+   network</a> or who have added you to their network will have a relation
+   indicator included.  The valid relations are:</p>
+   <ul>
+    <li class='user'><div class='relation'><div class='connexions_sprites
+    relation-amIn'>&nbsp;</div></div> &mdash; <b>amIn</b> indicates that
+    you are in their network but they are not in yours;</li>
+ 
+    <li class='user'><div class='relation'><div class='connexions_sprites
+    relation-isIn'>&nbsp;</div></div> &mdash; <b>isIn</b> indicates that
+    the user is in your network but you are not in theirs;</li>
+ 
+    <li class='user'><div class='relation'><div class='connexions_sprites
+    relation-mutual'>&nbsp;</div></div> &mdash; <b>mutual</b> indicates that
+    the you are in one anothers networks;</li>
+   </ul>
+ 
+ 
+   <p class='continued'>Finally, when viewing <a href='<?=
+   $this->baseUrl('network/'. $this->viewer) ?>'>your network</a>, the users
+   shown in the "People" tab will only be those users currently in your network.
+   In this case, when you hover over a user, you will see an icon on the right
+   that allows in-line deletion of the user from your network.</p>
+  <div id='figure9' class='figure'>
+   <img src='<?= $this->baseUrl('/images/help/network-direct-management.jpg') ?>'
+        title='Direct Network Management' />
+   <div class='caption'><b>Figure 9</b>: Direct Network Management</div>
+  </div></li>
+ 
+   <li><b>Items</b> &mdash; shows all related items (bookmarked sites) in either
+   cloud of list form depending on the settings selected via "Display Options".
+   If the main section is presenting all the bookmarks for a specific item, this
+   sidebar tab will show a list of any "similar" items, where similar is
+   determined by the host within the items url;</li>
   </ul>
+ </div><!-- section } -->
 
-
-  <p class='continued'>Finally, when viewing <a href='<?=
-  $this->baseUrl('network/'. $this->viewer) ?>'>your network</a>, the users
-  shown in the "People" tab will only be those users currently in your network.
-  In this case, when you hover over a user, you will see an icon on the right
-  that allows in-line deletion of the user from your network.</p>
- <div id='figure9' class='figure'>
-  <img src='<?= $this->baseUrl('/images/help/network-direct-management.jpg') ?>'
-       title='Direct Network Management' />
-  <div class='caption'><b>Figure 9</b>: Direct Network Management</div>
- </div></li>
-
-  <li><b>Items</b> &mdash; shows all related items (bookmarked sites) in either
-  cloud of list form depending on the settings selected via "Display Options".
-  If the main section is presenting all the bookmarks for a specific item, this
-  sidebar tab will show a list of any "similar" items, where similar is
-  determined by the host within the items url;</li>
- </ul>
-
-
-</div>
+</div><!-- finding_your_way_around } -->
 
 <?php
 if ($contact->services && $contact->services->support)
@@ -213,3 +248,37 @@ if ($contact->services && $contact->services->support)
 </div>
     <?php
 }
+?>
+<script type='text/javascript'>
+(function($) {
+    var tabsId      = 'help';
+    var $tabs       = $('#'+ tabsId);
+    var sectionId   = '<?= $jsSectionId ?>';
+    var tabId       = 'help-general';
+
+    function firstShow(e, ui)
+    {
+        var panelId = $(ui.panel).attr('id');
+        if ((panelId === tabId) && (sectionId.length > 0))
+        {
+            var $el     = $('#'+ tabId +' #'+ sectionId);
+            if ($el.length === 1)
+            {
+                window.setTimeout(function() {
+                    $.scrollTo( $el, {
+                        duration:   800,
+                        onAfter:    function() {
+                            $el.parent().effect('highlight', null, 2000);
+                        }
+                    });
+                }, 100);
+            }
+        }
+
+        $tabs.unbind('tabsshow', firstShow);
+    }
+
+    // Bind to the 'tabsshow' event indicating the the tabs widget is ready
+    $tabs.bind('tabsshow', firstShow);
+ }(jQuery));
+</script>

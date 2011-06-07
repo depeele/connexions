@@ -83,6 +83,15 @@
     }
   }
 
+  .toolbar {
+    font-size:  0.8em;
+    text-align: right;
+
+    a {
+      cursor: pointer;
+    }
+  }
+
   .help-content {
     ul,ol {
       padding-left: 1em;

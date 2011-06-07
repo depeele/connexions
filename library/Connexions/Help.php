@@ -33,7 +33,7 @@ class Connexions_Help
             }
         }
 
-        // /*
+        /*
         Connexions::log("Connexions_Help::section_collapsed(): "
                         .   "section[ %s ], val[ %s ], ret[ %s ]",
                         Connexions::varExport($view->section),
