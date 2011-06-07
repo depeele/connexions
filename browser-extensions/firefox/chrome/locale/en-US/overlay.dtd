@@ -41,4 +41,6 @@
 <!ENTITY connexions.toolbar.button.connexions.tooltip "Visit Connexions">
 
 <!-- Sidebar -->
-<!ENTITY connexions.sidebar.label "Your Sidebar">
+<!ENTITY connexions.sidebar.label 			"Connexions">
+<!ENTITY connexions.sidebar.bookmarks.label "Bookmarks">
+<!ENTITY connexions.sidebar.tags.label 		"Tags">

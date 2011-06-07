@@ -2,11 +2,18 @@
 <?xml-stylesheet href="chrome://global/skin/" type"text/css" ?>
 <!DOCTYPE page SYSTEM "chrome://connexions/locale/overlay.dtd">
 
-<page id="connexions-sidebar" title="&connexions.sidebar.label;"
-         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<page id="connexions-sidebar"
+   title="&connexions.sidebar.label;"
+   xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
   <script src="ff-sidebar.js"/>
 
   <vbox flex="1">
-    <label value="&connexions.sidebar.label;" />
+    <groupbox flex="1">
+      <label value="&connexions.sidebar.bookmarks.label;" />
+    </groupbox>
+    <splitter collapse="after" resizeafter="farthest"><grippy /></splitter>
+    <groupbox flex="1">
+      <label value="&connexions.sidebar.tags.label;" />
+    </groupbox>
   </vbox>
 </page>
