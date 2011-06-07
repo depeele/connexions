@@ -6,6 +6,17 @@ $jsSectionId = '';
 if ($this->section)
 {
     $jsSectionId = $this->section;
+    if ($this->rest)
+    {
+        // Navigate to the parent of the final area
+        //$rest = preg_replace('/_.*?$/', '', implode('_', $this->rest));
+        $rest = implode('_', $this->rest);
+        if (! empty($rest))
+        {
+            $jsSectionId .= '_'. $rest;
+            $jsParentId   = preg_replace('/_[^_]*?$/', '', $jsSectionId);
+        }
+    }
 }
 
 Connexions::log('views/scripts/help/main-faq.phtml: '
@@ -16,396 +27,621 @@ Connexions::log('views/scripts/help/main-faq.phtml: '
                 Connexions::varExport($this->rest),
                 $jsSectionId, $jsParentId);
 ?>
-<ul class='collapsableList'>
- <li class='collapsable'><!-- question-answer { -->
-  <h3 id='what_is_connexions'
-      class='toggle faq-question<?= Connexions_Help::section_collapsed($this, 'what_is_connexions', true) ?>'><a href='<?= $url ?>/what_is_connexions' data-cache.collapsable='what_is_connexions_content'>What is connexions?</a></h3>
-  <div id='what_is_connexions_content'
-       class='help-content faq-answer'>
-   <p><b>Connexions</b> is a collaborative, <?=
-   Connexions::wikipedia_a('Social_bookmarking', 'social bookmarking') ?>/<?=
-   Connexions::wikipedia_a('Social_bookmarking#Folksonomy', 'folksonomy') ?>
-   system.  It is similar to del.icio.us, simply, furl, and BlinkList.
-   Connexions provides an attractive, easy to use interface that allows
-   individuals to tag anything that has a unique identifier (e.g. a URL, URI)
-   with one or more keywords.  Tagged items can then be located based upon tags
-   and/or the individuals that tagged them.  The system also permits users to
-   rate the quality of items, mark items as shared or private, and indicate
-   which items are favorites.</p>
-   <p class='continued'>Storing your bookmarks in connexions provided a number
-   of benefits:</p>
-   <ul class='outer'>
-    <li>Your bookmarks are available anywhere you have access to connexions,
-      not limited to the browser you originally used to create the
-          bookmark;</li>
-    <li>You can share your bookmarks publically so your friends, coworkers, and
-    any others can view them for reference or collaboration.  Of course, if you
-    would rather, you can mark your bookmarks as private, making them viewable
-    only by you.  The decision is yours;</li>
-    <li>All public bookmarks are always visible, along with a count of how many
-    people have bookmarked the same item.  This allows your to find new
-    information that may also be of interest to you.  That's the power of the
-    social aspect of connexions!</li>
-   </ul>
-  </div>
- </li><!-- question-answer } -->
-
- <li class='collapsable'><!-- question-answer { -->
-  <h3 id='what_is_social_bookmarking'
-      class='toggle faq-question<?= Connexions_Help::section_collapsed($this, 'what_is_social_bookmarking', true) ?>'><a href='<?= $url ?>/what_is_social_bookmarking' data-cache.collapsable='what_is_social_bookmarking_content'>What is social bookmarking?</a></h3>
-  <div id='what_is_social_bookmarking_content'
-       class='help-content faq-answer'>
-   <p><b>Social bookmarking</b> is "a method for users to organize, store,
-  manage and search for bookmarks of resources online.  Unlike file sharing,
-  the <i>resources</i> themselves aren't shared, merly bookmarks that
-      <i>reference</i> them." <sup>[<?=
-      Connexions::wikipedia_a('Social_bookmarking', 'wikipedia') ?>]</sup></p>
-   <p>In addition to saving references to online resources, connexions also
-   allows bookmarks to contain a textual description, rating, be marked private
-   and/or favorite, as well as have one or more tags associated with them.</p>
-   <p>The tags associated with bookmarks are what make connexions a <?=
-   Connexions::wikipedia_a('Folksonomy', 'folksonomy') ?>, allowing users to
-   determine the form of organization required for their needs.  There is no
-   forced heirarchy of terms that users must learn.  They are free to create
-   their own as individuals, as ad-hoc collaborative groups, or even as
-   structured groups.  It's completely up to the users.</p>
-  </div>
- </li><!-- question-answer } -->
-
- <li class='collapsable'><!-- question-answer { -->
-  <h3 id='what_are_tags'
-      class='toggle faq-question<?= Connexions_Help::section_collapsed($this, 'what_are_tags', true) ?>'><a href='<?= $url ?>/what_are_tags' data-cache.collapsable='what_are_tags_content'>What are tags?</a></h3>
-  <div id='what_are_tags_content'
-       class='help-content faq-answer'>
-   <p><b>Tags</b> are "non-heirarchical keywords or terms assigned to ... a
-   bookmark" <sup>[<?= Connexions::wikipedia_a('Tag_(metadata)', 'wikipedia')
-   ?>]</sup></p>
-   <p>They are primarily used to attach simple, memorable, meaningful words or
-   concepts to a bookmark.  This helps to later locate the sites you have
-   bookmarked and provides a natural grouping of sites that you have determined
-   have similarities.</p> 
-  </div>
- </li><!-- question-answer } -->
-
- <li class='collapsable'><!-- question-answer { -->
-  <h3 id='what_can_be_bookmarked'
-      class='toggle faq-question<?= Connexions_Help::section_collapsed($this, 'what_can_be_bookmarked', true) ?>'><a href='<?= $url ?>/what_can_be_bookmarked' data-cache.collapsable='what_can_be_bookmarked_content'>What can be bookmarked?</a></h3>
-  <div id='what_can_be_bookmarked_content' class='help-content faq-answer'>
-   <p>Anything with a <?= Connexions::wikipedia_a('Uniform Resource Locator',
-           'URL') ?> can be bookmarked in connexions.  Generally, that would be
-   anything that can be visited using an Internet Browser like Firefox, Chrome,
-            Opera, or Internet Explorer.</p>
-   </p>
-  </div>
- </li><!-- question-answer } -->
-
- <li class='collapsable'><!-- question-answer { -->
-  <h3 id='how_do_i_bookmark_a_url'
-      class='toggle faq-question<?= Connexions_Help::section_collapsed($this, 'how_do_i_bookmark_a_url', true) ?>'><a href='<?= $url ?>/how_do_i_bookmark_a_url' data-cache.collapsable='how_do_i_bookmark_a_url_content'>How do I bookmark a URL?</a></h3>
-  <div id='how_do_i_bookmark_a_url_content' class='help-content faq-answer'>
-   <p class='continued'>There are three primary ways that you can bookmark a
-   URL:</p>
-   <ol>
-    <li>Use the primary <a href='<?= $this->baseUrl('post') ?>'>post
-    page</a>;</li>
-    <li>By <a href='<?= $this->baseUrl('settings/bookmarks/import')
-    ?>'>importing existing bookmarks from a file</a>;</li>
-    <li>Using one of the <a href='<?= $url
-    ?>/what_bookmarking_tools_are_available'>bookmarking tools</a>;</li>
-   </ol>
-
-  </div>
- </li><!-- question-answer } -->
-
- <li class='collapsable'><!-- question-answer { -->
-  <h3 id='what_bookmarking_tools_are_available'
-      class='toggle faq-question<?= Connexions_Help::section_collapsed($this, 'what_bookmarking_tools_are_available', true) ?>'><a href='<?= $url ?>/what_bookmarking_tools_are_available' data-cache.collapsable='what_bookmarking_tools_are_available_content'>What bookmarking tools are available?</a></h3>
-  <div id='what_bookmarking_tools_are_available_content' class='help-content faq-answer'>
-   <p>The most widely usable tools currently available for use with connexions
-   are in the form of <?= Connexions::wikipedia_a('Bookmarklet',
-           'bookmarklets') ?>.</p>
-   <p>Bookmarklets are simple bits of javascript that can be added as a
-   bookmark within most modern browsers.  When the bookmarklet is activated, it
-   invokes the javascript in the context of the currently active page.</p>
-   <p class='continued'>There are several connexions bookmarklets currently
-   available.  To make use of any of these, right-click on the bookmarklet link
-   and choose 'bookmark' or, simply drag the link to the bookmarks bar:</p>
-   <ul>
-    <li><a href="<?= $this->partial('help/bookmarklet-basic_redirect.php')
-    ?>">basic redirect</a> &mdash; The simplest of the connexions bookmarklets,
-      this will cause the browser to visit the connexions post page with
-          information about the currently active page, and then, upon
-          completion of the bookmarking activity, return to the current
-          page;</li>
-    <li><a href="<?= $this->partial('help/bookmarklet-window.php')
-    ?>">window</a> &mdash; Popup a new browser window to present the connexions
-    posting form.  Upon completion, the new window will be closed.
-     <div class='warning'>
-      <p><span class='title'>warnings:</span> If popup blockers are enabled in
-      your browser, the popup <i>MAY</i> be blocked.<br />
-      If the popup is opened, it <i>MAY</i> appear <b>behind</b> the current
-      browser window.</p>
+<div class='toolbar'>
+ <a id='expand-all'>expand all</a> | <a id='collapse-all'>collapse all</a>
+</div>
+<ul class='collapsableList'><!-- outer-list { -->
+ <li class='collapsable'><!-- basics { -->
+  <h3 id='basics'
+      class='toggle<?= Connexions_Help::section_collapsed($this, 'basics') ?>'
+      ><a href='<?= $url ?>/basics'
+          data-cache.collapsable='basics_content'>Basics</a></h3>
+  <div id='basics_content'
+       class='help-content'>
+   <ul class='collapsableList'><!-- inner-list { -->
+    <li class='collapsable'><!-- question-answer { -->
+     <h3 id='basics_what_is_connexions'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'what_is_connexions') ?>'
+         ><a href='<?= $url ?>/basics/what_is_connexions'
+             data-cache.collapsable='what_is_connexions_content'>What is connexions?</a></h3>
+     <div id='what_is_connexions_content'
+          class='help-content faq-answer'>
+      <p><b>Connexions</b> is a collaborative, <?=
+      Connexions::wikipedia_a('Social_bookmarking', 'social bookmarking')
+      ?> / <?= Connexions::wikipedia_a('Social_bookmarking#Folksonomy',
+              'folksonomy') ?>
+      system.  It is similar to del.icio.us, simply, furl, reddit, and
+      BlinkList.  Connexions provides an attractive, easy to use interface that
+      allows individuals to tag anything that has a unique identifier (e.g. a
+      URL, URI) with one or more keywords.  Tagged items, also called
+      <b>bookmarks</b>, can then be located based upon tags, the individuals
+      that tagged them, the URL that was tagged or some combination of these.
+      The system also permits users to rate the quality of items, mark items as
+      shared or private, and indicate which items are favorites.</p>
+      <p class='continued'>Storing your bookmarks in connexions provided a
+      number of benefits:</p>
+      <ul class='outer'>
+       <li>Your bookmarks are available anywhere you have access to connexions,
+         not limited to the browser you originally used to create the
+             bookmark;</li>
+       <li>You can share your bookmarks publically so your friends, coworkers,
+       and any others can view them for reference or collaboration.  Of course,
+       if you would rather, you can mark your bookmarks as private, making them
+           viewable only by you.  The decision is yours;</li>
+       <li>All public bookmarks are always visible, along with a count of how
+       many people have bookmarked the same item.  This allows your to find new
+       information that may also be of interest to you.  That's the power of
+       the social aspect of connexions!</li>
+      </ul>
      </div>
-    </li>
-    <li><a href="<?= $this->partial('help/bookmarklet-lightbox.php')
-    ?>">lightbox</a> &mdash; This is the most complex, and most error-prone
-    bookmarklet.  It will create a new, popup dialog containing the connexions
-    post form within the current page.  Upon completion of the bookmarking
-    activity, the dialog will be removed;</li>
-   </ul>
-  </div>
- </li><!-- question-answer } -->
-
- <li class='collapsable'><!-- question-answer { -->
-  <h3 id='can_i_make_changes_to_a_bookmark'
-      class='toggle faq-question<?= Connexions_Help::section_collapsed($this, 'can_i_make_changes_to_a_bookmark', true) ?>'><a href='<?= $url ?>/can_i_make_changes_to_a_bookmark' data-cache.collapsable='can_i_make_changes_to_a_bookmark_content'>Can I make changes to a bookmark?</a></h3>
-  <div id='can_i_make_changes_to_a_bookmark_content'
-       class='help-content faq-answer'>
-   <p>Absolutely!  If you are the owner of the bookmark.</p>
-   <p class='continued'>When you are logged in as an authenticated user, any
-   bookmarks owned by you will have an 'EDIT' link visible in the upper-right
-   when you hover over the bookmark.</p>
-   <div id='figure1' class='figure'>
-    <img src='<?= $this->baseUrl('images/help/bookmark-edit.jpg') ?>'
-         title='Hovering over a bookmark' />
-    <div class='caption'><b>Figure 1</b>: Hovering over a bookmark</div>
-   </div>
-   <p>You can make a few immediate changes to the "favorite" or "privacy"
-   status using the star (<span class='icon'><span class='connexions_sprites
-           star_empty'>&nbsp;</span></span>) and lock (<span class='icon'><span
-               class='connexions_sprites lock_empty'>&nbsp;</span></span>)
-           icons on the left.  In addition, you can immediately change the
-           current "rating" using the stars (<span class='icon'>
-<span class='ui-stars-wrapper'>
- <span class='ui-stars ui-stars-star   ui-stars-star-disabled'><a title='Terrible'></a></span>
- <span class='ui-stars ui-stars-star   ui-stars-star-disabled'><a title='Fair'></a></span>
- <span class='ui-stars ui-stars-star   ui-stars-star-disabled'><a title='Average'></a></span>
- <span class='ui-stars ui-stars-star   ui-stars-star-disabled'><a title='Good'></a></span>
- <span class='ui-stars ui-stars-star   ui-stars-star-disabled'><a title='Excellent'></a></span>
-</span></span>) to the right.  Any other change requires clicking on the "EDIT"
-           link.  This will popup a dialog that will allow you to edit all
-           properties of the bookmark.</p>
-   <p class='continued'>In addition to "EDIT" there is also a "DELETE" link
-   that, which clicked, will present a delete confirmation.  If  you click
-   "Yes", the bookmark will be deleted.</p>
-   <div id='figure2' class='figure'>
-    <img src='<?= $this->baseUrl('images/help/delete-confirmation.jpg') ?>'
-         title='Bookmark delete confirmation' />
-    <div class='caption'><b>Figure 2</b>: Bookmark delete confirmation</div>
-   </div>
-   <p>For bookmarks that are <i>not</i> owned by you, in place of "EDIT |
-   DELETE" will be "SAVE".  Clicking on this will popup the bookmark post
-   dialog filled with the details of that bookmark and allowing you to make any
-   changes before saving a new bookmark.</p>
-  </div>
- </li><!-- question-answer } -->
-
- <li class='collapsable'><!-- question-answer { -->
-  <h3 id='can_i_share_my_bookmarks'
-      class='toggle faq-question<?= Connexions_Help::section_collapsed($this, 'can_i_share_my_bookmarks', true) ?>'><a href='<?= $url ?>/can_i_share_my_bookmarks' data-cache.collapsable='can_i_share_my_bookmarks_content'>Can I share my bookmarks?</a></h3>
-  <div id='can_i_share_my_bookmarks_content' class='help-content faq-answer'>
-   <p>Certainly!  Any user's public bookmarks are available via <tt><?=
-   $this->baseUrl('%user name%') ?></tt><?php
+    </li><!-- question-answer } -->
    
-    if ($this->viewer->isAuthenticated())
-    {
-        ?> &mdash; e.g. <b>your</b> public bookmarks are available via <a
-            href='<?= $viewerUrl ?>'><?= $viewerUrl ?></a>.  If you wish to
-            share bookmarks, make sure they are public, and point anyone you'd
-            like to share with to that URL
-        <?php
-    }
-   ?>.</p>
-   <p class='continued'>In addition to the standard view, this list of
-   bookmarks can also be retrieved in several different formats simply by
-   appending a <tt>format</tt> parameter to the URL:</p>
-   <ul>
-    <li><?= Connexions::wikipedia_a('RSS') ?> &mdash; <tt><?=
-    $this->baseUrl('%user name%?format=rss') ?></tt><?php
-
-    if ($this->viewer->isAuthenticated())
-    {
-        ?> (e.g. <a href='<?= $viewerUrl ?>?format=rss'><?= $viewerUrl
-                ?>?format=rss</a>)<?php
-    }
+    <li class='collapsable'><!-- question-answer { -->
+     <h3 id='basics_what_is_social_bookmarking'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'what_is_social_bookmarking', true) ?>'
+         ><a href='<?= $url ?>/basics/what_is_social_bookmarking'
+             data-cache.collapsable='what_is_social_bookmarking_content'>What is social bookmarking?</a></h3>
+     <div id='what_is_social_bookmarking_content'
+          class='help-content faq-answer'>
+      <p><b>Social bookmarking</b> is "a method for users to organize, store,
+     manage and search for bookmarks of resources online.  Unlike file sharing,
+     the <i>resources</i> themselves aren't shared, merly bookmarks that
+     <i>reference</i> them." <sup>[<?=
+     Connexions::wikipedia_a('Social_bookmarking', 'wikipedia') ?>]</sup></p>
+     <p>In addition to saving references to online resources, connexions also
+     allows bookmarks to contain a textual description, rating, be marked
+     private and/or favorite, as well as have one or more tags associated with
+     them.</p>
+      <p>The tags associated with bookmarks are what make connexions a <?=
+      Connexions::wikipedia_a('Folksonomy', 'folksonomy') ?>, allowing users to
+      determine the form of organization required for their needs.  There is no
+      forced heirarchy of terms that users must learn.  They are free to create
+      their own as individuals, as ad-hoc collaborative groups, or even as
+      structured groups.  It's completely up to the users.</p>
+     </div>
+    </li><!-- question-answer } -->
    
-    ?>;</li>
-    <li><?= Connexions::wikipedia_a('Atom_(standard)', 'Atom') ?> &mdash;
-    <tt><?= $this->baseUrl('%user name%?format=atom') ?></tt><?php
+   </ul><!-- inner-list } -->
+  </div>
+ </li><!-- basics } -->
 
-    if ($this->viewer->isAuthenticated())
-    {
-        ?> (e.g. <a href='<?= $viewerUrl ?>?format=atom'><?= $viewerUrl
-                ?>?format=atom</a>)<?php
-    }
+ <li class='collapsable'><!-- tags { -->
+  <h3 id='tags'
+      class='toggle<?= Connexions_Help::section_collapsed($this, 'tags') ?>'
+      ><a href='<?= $url ?>/tags'
+          data-cache.collapsable='tags_content'>Tags</a></h3>
+  <div id='tags_content'
+       class='help-content'>
+   <ul class='collapsableList'><!-- inner-list { -->
+    <li class='collapsable'><!-- question-answer { -->
+     <h3 id='tags_what_are_tags'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'what_are_tags', true) ?>'
+         ><a href='<?= $url ?>/tags/what_are_tags'
+             data-cache.collapsable='what_are_tags_content'>What are tags?</a></h3>
+     <div id='what_are_tags_content'
+          class='help-content faq-answer'>
+      <p><b>Tags</b> are "non-heirarchical keywords or terms assigned to ... a
+      bookmark" <sup>[<?= Connexions::wikipedia_a('Tag_(metadata)', 'wikipedia')
+      ?>]</sup></p>
+      <p>They are primarily used to attach simple, memorable, meaningful words
+      or concepts to a bookmark.  This helps to later locate the sites you have
+      bookmarked and provides a natural grouping of sites that you have
+      determined have similarities.</p> 
+     </div>
+    </li><!-- question-answer } -->
+
+    <li class='collapsable'><!-- question-answer { -->
+     <h3 id='tags_how_do_i_add_tags'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'how_do_i_add_tags', true) ?>'
+         ><a href='<?= $url ?>/tags/how_do_i_add_tags'
+             data-cache.collapsable='how_do_i_add_tags_content'>How do I add tags?</a></h3>
+     <div id='how_do_i_add_tags_content'
+          class='help-content faq-answer'>
+      <p>When saving or editing a bookmark, there is a field for entering one
+       or more comma-separated tags.</p>
+      <p>There is also an area at the bottom of the form that presents
+       suggested <b>Tags</b> and <b>People</b>.  Within the <b>Tags</b> tab,
+       you will find a set of <b>Recommended</b> tags, based upon tags used by
+       other users for the URL as well as an area containing <b>Your top
+       20</b>, most used tags.  Clicking on any of the tags in this area will
+       add (or remove) that tag from the tags in the above tags area.</p>
+      <p>Within the <b>People</b> tab will be a list of all users that are
+       currently in Your network.  Your network can be managed via <a href='<?=
+       $this->baseUrl('settings/people/network')
+       ?>'>settings/people/network</a>.</p>
+     </div>
+    </li><!-- question-answer } -->
+
+    <li class='collapsable'><!-- question-answer { -->
+     <h3 id='tags_what_is_a_tag_cloud'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'what_is_a_tag_cloud', true) ?>'
+         ><a href='<?= $url ?>/tags/what_is_a_tag_cloud'
+             data-cache.collapsable='what_is_a_tag_cloud_content'>What is a tag cloud?</a></h3>
+     <div id='what_is_a_tag_cloud_content'
+          class='help-content faq-answer'>
+      <p class='continues'>A tag cloud is a way to view a set of tags in a more
+       compact form that a simple list.  In a tag cloud, the tags are sized
+       based upon how often they have been used &mdash; their <b>weight</b>.
+       Within a cloud, the tags can be sorted alphabetically or by their weight
+       depending on what make the most sense to you.</p>
+      <div id='figure1' class='figure'>
+       <img src='<?= $this->baseUrl('images/help/tag-cloud.jpg') ?>'
+            title='Tag Cloud' />
+       <div class='caption'><b>Figure 1</b>: Tag Cloud</div>
+      </div>
+
+     </div>
+    </li><!-- question-answer } -->
+
+    <li class='collapsable'><!-- question-answer { -->
+     <h3 id='tags_how_do_i_view_all_bookmarks_tagged_with_specific_tags'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'how_do_i_view_all_bookmarks_tagged_with_specific_tags', true) ?>'
+         ><a href='<?= $url ?>/tags/how_do_i_view_all_bookmarks_tagged_with_specific_tags'
+             data-cache.collapsable='how_do_i_view_all_bookmarks_tagged_with_specific_tags_content'>How do I view all bookmarks tagged with specific tags?</a></h3>
+     <div id='how_do_i_view_all_bookmarks_tagged_with_specific_tags_content'
+          class='help-content faq-answer'>
+      <p>All pages have a <a href='<?=
+      $this->baseUrl('/help/general/finding_your_way_around/main_display_section')
+      ?>'>Main Display Section</a> and most include a <b>Section Header</b>.
+      Within the section header, you can enter one or more comma-separated
+      <b>tags</b> within the <b>Scope Selection</b> area of the section header
+      and then click on the <b>Scope Selection Apply</b> button to limit the
+      presented items to those with <i>all</i> of the spepcified tags.</p>
+      <p>As you type tags in the scope selection area, connexions will
+      provide an autocompletion list of tags that make sense in the current
+      view.  You can choose one or more of these autocompletion suggestions
+      to include them in the list of tags that will be used.</p>
+     </div>
+    </li><!-- question-answer } -->
+
+   </ul><!-- inner-list } -->
+  </div>
+ </li><!-- tags } -->
+
+ <li class='collapsable'><!-- bookmarks { -->
+  <h3 id='bookmarks'
+      class='toggle<?= Connexions_Help::section_collapsed($this, 'bookmarks') ?>'
+      ><a href='<?= $url ?>/bookmarks'
+          data-cache.collapsable='bookmarks_content'>Bookmarks</a></h3>
+  <div id='bookmarks_content'
+       class='help-content'>
+   <ul class='collapsableList'><!-- inner-list { -->
+
+    <li class='collapsable'><!-- question-answer { -->
+     <h3 id='bookmarks_what_can_be_bookmarked'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'what_can_be_bookmarked', true) ?>'
+         ><a href='<?= $url ?>/bookmarks/what_can_be_bookmarked'
+             data-cache.collapsable='what_can_be_bookmarked_content'>What can be bookmarked?</a></h3>
+     <div id='what_can_be_bookmarked_content' class='help-content faq-answer'>
+      <p>Anything with a <?= Connexions::wikipedia_a('Uniform Resource
+              Locator', 'URL') ?> can be bookmarked in connexions.  Generally,
+         that would be anything that can be visited using an Internet Browser
+         like Firefox, Chrome, Opera, or Internet Explorer.</p>
+     </div>
+    </li><!-- question-answer } -->
    
-    ?>;</li>
-    
-    <li><?= Connexions::wikipedia_a('JSON') ?> &mdash; <tt><?=
-    $this->baseUrl('%user name%?format=json') ?></tt><?php
-
-    if ($this->viewer->isAuthenticated())
-    {
-        ?> (e.g. <a href='<?= $viewerUrl ?>?format=json'><?= $viewerUrl
-                ?>?format=json</a>)<?php
-    }
+    <li class='collapsable'><!-- question-answer { -->
+     <h3 id='bookmarks_how_do_i_bookmark_a_url'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'how_do_i_bookmark_a_url', true) ?>'
+         ><a href='<?= $url ?>/bookmarks/how_do_i_bookmark_a_url'
+             data-cache.collapsable='how_do_i_bookmark_a_url_content'>How do I bookmark a URL?</a></h3>
+     <div id='how_do_i_bookmark_a_url_content' class='help-content faq-answer'>
+      <p class='continued'>There are three primary ways that you can bookmark a
+      URL:</p>
+      <ol>
+       <li>Use the primary <a href='<?= $this->baseUrl('post') ?>'>post
+       page</a>;</li>
+       <li>By <a href='<?= $this->baseUrl('settings/bookmarks/import')
+       ?>'>importing existing bookmarks from a file</a>;</li> <li>Using one of
+       the <a href='<?= $url
+       ?>/tools_and_extras/what_bookmarking_tools_are_available'>bookmarking tools</a>;</li>
+      </ol>
    
-    ?>;</li>
-    
-   </ul>
-   <br />
+     </div>
+    </li><!-- question-answer } -->
 
-   <p>You can also post bookmarks <a href='<?= $url
-   ?>/can_i_bookmark_something_for_another_user'>"for" another user</a> and
-   <a href='<?= $url
-   ?>/can_i_create_a_group_of_people_who_often_bookmark_things_im_interested_in'>create
-   a group of people who often bookmark things of interest</a>.</p>
+    <li class='collapsable'><!-- question-answer { -->
+     <h3 id='bookmarks_can_i_make_changes_to_a_bookmark'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'can_i_make_changes_to_a_bookmark', true) ?>'
+         ><a href='<?= $url ?>/bookmarks/can_i_make_changes_to_a_bookmark'
+             data-cache.collapsable='can_i_make_changes_to_a_bookmark_content'>Can I make changes to a bookmark?</a></h3>
+     <div id='can_i_make_changes_to_a_bookmark_content'
+          class='help-content faq-answer'>
+      <p>Absolutely!  If you are the owner of the bookmark.</p>
+      <p class='continued'>When you are logged in as an authenticated user, any
+      bookmarks owned by you will have an 'EDIT' link visible in the
+      upper-right when you hover over the bookmark.</p>
+      <div id='figure2' class='figure'>
+       <img src='<?= $this->baseUrl('images/help/bookmark-edit.jpg') ?>'
+            title='Hovering over a bookmark' />
+       <div class='caption'><b>Figure 2</b>: Hovering over a bookmark</div>
+      </div>
+      <p>You can make a few immediate changes to the "favorite" or "privacy"
+      status using the star
+      (<span class='icon'><span class='connexions_sprites
+       star_empty'>&nbsp;</span></span>) and lock
+      (<span class='icon'><span class='connexions_sprites
+       lock_empty'>&nbsp;</span></span>)
+      icons on the left.  In addition, you can immediately change the current
+      "rating" using the stars (<span class='icon'>
+   <span class='ui-stars-wrapper'>
+    <span class='ui-stars ui-stars-star   ui-stars-star-disabled'><a title='Terrible'></a></span>
+    <span class='ui-stars ui-stars-star   ui-stars-star-disabled'><a title='Fair'></a></span>
+    <span class='ui-stars ui-stars-star   ui-stars-star-disabled'><a title='Average'></a></span>
+    <span class='ui-stars ui-stars-star   ui-stars-star-disabled'><a title='Good'></a></span>
+    <span class='ui-stars ui-stars-star   ui-stars-star-disabled'><a title='Excellent'></a></span>
+   </span></span>) to the right.  Any other change requires clicking on the
+      "EDIT" link.  This will popup a dialog that will allow you to edit all
+      properties of the bookmark.</p>
+      <p class='continued'>In addition to "EDIT" there is also a "DELETE" link
+      that, which clicked, will present a delete confirmation.  If  you click
+      "Yes", the bookmark will be deleted.</p>
+      <div id='figure3' class='figure'>
+       <img src='<?= $this->baseUrl('images/help/delete-confirmation.jpg') ?>'
+            title='Bookmark delete confirmation' />
+       <div class='caption'><b>Figure 3</b>: Bookmark delete confirmation</div>
+      </div>
+      <p>For bookmarks that are <i>not</i> owned by you, in place of "EDIT |
+      DELETE" will be "SAVE".  Clicking on this will popup the bookmark post
+      dialog filled with the details of that bookmark and allowing you to make
+      any changes before saving a new bookmark.</p>
+     </div>
+    </li><!-- question-answer } -->
+
+   </ul><!-- inner-list } -->
   </div>
- </li><!-- question-answer } -->
+ </li><!-- bookmarks } -->
 
- <li class='collapsable'><!-- question-answer { -->
-  <h3 id='can_i_bookmark_something_for_another_user'
-      class='toggle faq-question<?= Connexions_Help::section_collapsed($this, 'can_i_bookmark_something_for_another_user', true) ?>'><a href='<?= $url ?>/can_i_bookmark_something_for_another_user' data-cache.collapsable='can_i_bookmark_something_for_another_user_content'>Can I bookmark something for another user?</a></h3>
-  <div id='can_i_bookmark_something_for_another_user_content' class='help-content faq-answer'>
-   <p class='continued'>Yes.  If you have <a href='<?= $url
-   ?>/can_i_create_a_group_of_people_who_often_bookmark_things_im_interested_in'>added
-   people to your network</a>, the easiest way is to use the "People" tab
-   within the <a href='<?= $this->baseUrl('post') ?>'>post page</a>.</p>
+ <li class='collapsable'><!-- network_and_sharing { -->
+  <h3 id='network_and_sharing'
+      class='toggle<?= Connexions_Help::section_collapsed($this, 'network_and_sharing') ?>'
+      ><a href='<?= $url ?>/network_and_sharing'
+          data-cache.collapsable='network_and_sharing_content'>Network and Sharing</a></h3>
+  <div id='network_and_sharing_content'
+       class='help-content'>
+   <ul class='collapsableList'><!-- inner-list { -->
 
-
-   <div id='figure3' class='figure'>
-    <img src='<?= $this->baseUrl('images/help/post-people.jpg') ?>'
-         title='Post people tab' />
-    <div class='caption'><b>Figure 3</b>: Post people tab</div>
-   </div>
+    <li class='collapsable'><!-- question-answer { -->
+     <h3 id='network_and_sharing_can_i_share_my_bookmarks'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'can_i_share_my_bookmarks', true) ?>'
+         ><a href='<?= $url ?>/network_and_sharing/can_i_share_my_bookmarks'
+             data-cache.collapsable='can_i_share_my_bookmarks_content'>Can I share my bookmarks?</a></h3>
+     <div id='can_i_share_my_bookmarks_content' class='help-content faq-answer'>
+      <p>Certainly!  Any user's public bookmarks are available via <tt><?=
+      $this->baseUrl('%user name%') ?></tt><?php
+      
+       if ($this->viewer->isAuthenticated())
+       {
+           ?> &mdash; e.g. <b>your</b> public bookmarks are available via <a
+               href='<?= $viewerUrl ?>'><?= $viewerUrl ?></a>.  If you wish to
+               share bookmarks, make sure they are public, and point anyone
+               you'd like to share with to that URL
+           <?php
+       }
+      ?>.</p>
+      <p class='continued'>In addition to the standard view, this list of
+      bookmarks can also be retrieved in several different formats simply by
+      appending a <tt>format</tt> parameter to the URL:</p>
+      <ul>
+       <li><?= Connexions::wikipedia_a('RSS') ?> &mdash; <tt><?=
+       $this->baseUrl('%user name%?format=rss') ?></tt><?php
    
-   <p class='continued'>In addition, you can manually add tags that indicate
-   that a bookmark is for one or more users by including tags of the form:
-   <pre>
-for:%user name%
-    </pre>
+       if ($this->viewer->isAuthenticated())
+       {
+           ?> (e.g. <a href='<?= $viewerUrl ?>?format=rss'><?= $viewerUrl
+                   ?>?format=rss</a>)<?php
+       }
+      
+       ?>;</li>
+       <li><?= Connexions::wikipedia_a('Atom_(standard)', 'Atom') ?> &mdash;
+       <tt><?= $this->baseUrl('%user name%?format=atom') ?></tt><?php
+   
+       if ($this->viewer->isAuthenticated())
+       {
+           ?> (e.g. <a href='<?= $viewerUrl ?>?format=atom'><?= $viewerUrl
+                   ?>?format=atom</a>)<?php
+       }
+      
+       ?>;</li>
+       
+       <li><?= Connexions::wikipedia_a('JSON') ?> &mdash; <tt><?=
+       $this->baseUrl('%user name%?format=json') ?></tt><?php
+   
+       if ($this->viewer->isAuthenticated())
+       {
+           ?> (e.g. <a href='<?= $viewerUrl ?>?format=json'><?= $viewerUrl
+                   ?>?format=json</a>)<?php
+       }
+      
+       ?>;</li>
+       
+      </ul>
+      <br />
+   
+      <p>You can also post bookmarks <a href='<?= $url
+      ?>/can_i_bookmark_something_for_another_user'>"for" another user</a> and
+      <a href='<?= $url
+      ?>/can_i_create_a_group_of_people_who_often_bookmark_things_im_interested_in'>create
+      a group of people who often bookmark things of interest</a>.</p>
+     </div>
+    </li><!-- question-answer } -->
+   
+    <li class='collapsable'><!-- question-answer { -->
+     <h3 id='network_and_sharing_can_i_bookmark_something_for_another_user'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'can_i_bookmark_something_for_another_user', true) ?>'
+         ><a href='<?= $url ?>/network_and_sharing/can_i_bookmark_something_for_another_user'
+             data-cache.collapsable='can_i_bookmark_something_for_another_user_content'>Can I bookmark something for another user?</a></h3>
+     <div id='can_i_bookmark_something_for_another_user_content' class='help-content faq-answer'>
+      <p class='continued'>Yes.  If you have <a href='<?= $url
+      ?>/can_i_create_a_group_of_people_who_often_bookmark_things_im_interested_in'>added
+      people to your network</a>, the easiest way is to use the "People" tab
+      within the <a href='<?= $this->baseUrl('post') ?>'>post page</a>.</p>
+   
+      <div id='figure4' class='figure'>
+       <img src='<?= $this->baseUrl('images/help/post-people.jpg') ?>'
+            title='Post people tab' />
+       <div class='caption'><b>Figure 4</b>: Post people tab</div>
+      </div>
+      
+      <p class='continued'>In addition, you can manually add tags that indicate
+      that a bookmark is for one or more users by including tags of the form:
+      <pre>
+   for:%user name%
+       </pre>
+   
+      <p class='continued'>If anyone bookmarks items <i>for you</i>, they will
+      appear in your <a href='<?= $url ?>/inbox/<?= $this->viewer ?>'>inbox</a>
+      with an indication in the top navigation bar that you have new items:</p>
+      <div id='figure5' class='figure'>
+       <img src='<?= $this->baseUrl('images/help/inbox-indicator.jpg') ?>'
+            title='Inbox indicator' />
+       <div class='caption'><b>Figure 5</b>: Inbox indicator</div>
+      </div>
+   
+     </div>
+    </li><!-- question-answer } -->
 
-   <p class='continued'>If anyone bookmarks items <i>for you</i>, they will
-   appear in your <a href='<?= $url ?>/inbox/<?= $this->viewer ?>'>inbox</a>
-   with an indication in the top navigation bar that you have new items:</p>
-   <div id='figure4' class='figure'>
-    <img src='<?= $this->baseUrl('images/help/inbox-indicator.jpg') ?>'
-         title='Inbox indicator' />
-    <div class='caption'><b>Figure 4</b>: Inbox indicator</div>
-   </div>
+    <li class='collapsable'><!-- question-answer { -->
+     <h3 id='network_and_sharing_can_i_create_a_group_of_people_who_often_bookmark_things_im_interested_in'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'can_i_create_a_group_of_people_who_often_bookmark_things_im_interested_in', true) ?>'
+         ><a href='<?= $url ?>/network_and_sharing/can_i_create_a_group_of_people_who_often_bookmark_things_im_interested_in'
+             data-cache.collapsable='can_i_create_a_group_of_people_who_often_bookmark_things_im_interested_in_content'>Can I create a group of people who often bookmark things I'm interested in?</a></h3>
+     <div id='can_i_create_a_group_of_people_who_often_bookmark_things_im_interested_in_content'
+          class='help-content faq-answer'>
+      <p>Every user has a pre-defined group called their "Network".  You can
+      add any number of users to this group via <a href='<?=
+      $this->baseUrl('settings/people/network') ?>'>settings/people/network</a>
+      and view all public bookmarks of users in that group by visiting your <a
+      href='<?= $this->baseUrl('network/'. $this->viewer) ?>'>"Network"
+      page</a>.</p>
+     </div>
+    </li><!-- question-answer } -->
 
+   </ul><!-- inner-list } -->
   </div>
- </li><!-- question-answer } -->
+ </li><!-- network_and_sharing } -->
 
- <li class='collapsable'><!-- question-answer { -->
-  <h3 id='can_i_create_a_group_of_people_who_often_bookmark_things_im_interested_in'
-      class='toggle faq-question<?= Connexions_Help::section_collapsed($this, 'can_i_create_a_group_of_people_who_often_bookmark_things_im_interested_in', true) ?>'><a href='<?= $url ?>/can_i_create_a_group_of_people_who_often_bookmark_things_im_interested_in' data-cache.collapsable='can_i_create_a_group_of_people_who_often_bookmark_things_im_interested_in_content'>Can I create a group of people who often bookmark things I'm interested in?</a></h3>
-  <div id='can_i_create_a_group_of_people_who_often_bookmark_things_im_interested_in_content' class='help-content faq-answer'>
-   <p>Every user has a pre-defined group called their "Network".  You can add
-   any number of users to this group via <a href='<?=
-   $this->baseUrl('settings/people/network') ?>'>settings/people/network</a>
-   and view all public bookmarks of users in that group by visiting your <a
-   href='<?= $this->baseUrl('network/'. $this->viewer) ?>'>"Network"
-   page</a>.</p>
+ <li class='collapsable'><!-- navigation_and_search { -->
+  <h3 id='navigation_and_search'
+      class='toggle<?= Connexions_Help::section_collapsed($this, 'navigation_and_search') ?>'
+      ><a href='<?= $url ?>/navigation_and_search'
+          data-cache.collapsable='navigation_and_search_content'>Navigation and Search</a></h3>
+  <div id='navigation_and_search_content'
+       class='help-content'>
+   <ul class='collapsableList'><!-- inner-list { -->
+
+    <li class='collapsable'><!-- question-answer { -->
+     <h3 id='navigation_and_search_how_do_i_navigate_connexions'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'how_do_i_navigate_connexiont', true) ?>'
+         ><a href='<?= $url ?>/navigation_and_search/how_do_i_navigate_connexiont'
+             data-cache.collapsable='how_do_i_navigate_connexions_content'>How do I navigate connexions?</a></h3>
+     <div id='how_do_i_navigate_connexions_content'
+          class='help-content faq-answer'>
+      <p>Navigation is primarily via the main navigation bar.</p>
+
+      <p>For an in-depth tour of how to navigate connexions, see <a href='<?=
+      $this->baseUrl('help/general/finding_your_way_around') ?>'>Finding your
+      way around</a>.</p>
+     </div>
+    </li><!-- question-answer } -->
+
+    <li class='collapsable'><!-- question-answer { -->
+     <h3 id='navigation_and_search_how_do_i_perform_a_search'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'how_do_i_perform_a_search', true) ?>'
+         ><a href='<?= $url ?>/navigation_and_search/how_do_i_perform_a_search'
+             data-cache.collapsable='how_do_i_perform_a_search_content'>How do I perform a search?</a></h3>
+     <div id='how_do_i_perform_a_search_content'
+          class='help-content faq-answer'>
+      <p class='continued'>To perform a search, select the desired <a href='<?=
+      $url ?>/navigation_and_search/what_is_a_search_context'>search context</a> in the search bar in
+      the upper right corner, type in the terms that you are trying to find,
+          and press the "search" button.</p>
+      <div id='figure6' class='figure'>
+       <img src='<?= $this->baseUrl('images/help/search-area.jpg') ?>'
+            title='Search area' />
+       <div class='caption'><b>Figure 6</b>: Search area</div>
+      </div>
+     </div>
+    </li><!-- question-answer } -->
+
+    <li class='collapsable'><!-- question-answer { -->
+     <h3 id='navigation_and_search_what_is_a_search_context'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'what_is_a_search_context', true) ?>'
+         ><a href='<?= $url ?>/navigation_and_search/what_is_a_search_context'
+             data-cache.collapsable='what_is_a_search_context_content'>What is a search context?</a></h3>
+     <div id='what_is_a_search_context_content'
+          class='help-content faq-answer'>
+      <p>A search context allows you to specify the type of information that
+      you are searching for.</p>
+      <p class='continued'>There are currently fix search contexts:</p>
+      <ol>
+       <li><b>Search this view</b> &mdash; Search for matches within the
+       current page/view;</li>
+       <li><b>My bookmarks</b> &mdash; Search for matches within all bookmarks
+       that <b>you</b> have created;</li>
+       <li><b>My network's bookmarks</b> &mdash; Search for matches within the
+       public bookmarks created by anyone in <a href='<?=
+       $this->baseUrl('network/'. $this->viewer )?>'>your network</a>;</li>
+       <li><b>Everyone's bookmarks</b> &mdash; Search for matches within all
+       public bookmarks;</li>
+       <li><b>All of connexions</b> &mdash; Search for matches within all
+       people, tags, items, and public bookmarks;</li>
+      </ol>
+     </div>
+    </li><!-- question-answer } -->
+
+   </ul><!-- inner-list } -->
   </div>
- </li><!-- question-answer } -->
+ </li><!-- navigation_and_search } -->
 
- <li class='collapsable'><!-- question-answer { -->
-  <h3 id='how_do_i_perform_a_search'
-      class='toggle faq-question<?= Connexions_Help::section_collapsed($this, 'how_do_i_perform_a_search', true) ?>'><a href='<?= $url ?>/how_do_i_perform_a_search' data-cache.collapsable='how_do_i_perform_a_search_content'>How do I perform a search?</a></h3>
-  <div id='how_do_i_perform_a_search_content' class='help-content faq-answer'>
-   <p class='continued'>To perform a search, select the desired <a href='<?=
-   $url ?>/what_is_a_search_context'>search context</a> in the search bar in
-   the upper right corner, type in the terms that you are trying to find, and
-   press the "search" button.</p>
-   <div id='figure5' class='figure'>
-    <img src='<?= $this->baseUrl('images/help/search-area.jpg') ?>'
-         title='Search area' />
-    <div class='caption'><b>Figure 5</b>: Search area</div>
-   </div>
+ <li class='collapsable'><!-- tools_and_extras { -->
+  <h3 id='tools_and_extras'
+      class='toggle<?= Connexions_Help::section_collapsed($this, 'tools_and_extras') ?>'
+      ><a href='<?= $url ?>/tools_and_extras'
+          data-cache.collapsable='tools_and_extras_content'>Tools and extras</a></h3>
+  <div id='tools_and_extras_content'
+       class='help-content'>
+   <ul class='collapsableList'><!-- inner-list { -->
+
+    <li class='collapsable'><!-- question-answer { -->
+     <h3 id='tools_and_extras_what_bookmarking_tools_are_available'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'what_bookmarking_tools_are_available', true) ?>'
+         ><a href='<?= $url ?>/tools_and_extras/what_bookmarking_tools_are_available'
+             data-cache.collapsable='what_bookmarking_tools_are_available_content'>What bookmarking tools are available?</a></h3>
+     <div id='what_bookmarking_tools_are_available_content'
+          class='help-content faq-answer'>
+      <p>The most widely usable tools currently available for use with
+      connexions are in the form of <?= Connexions::wikipedia_a('Bookmarklet',
+              'bookmarklets') ?>.</p>
+      <p>Bookmarklets are simple bits of javascript that can be added as a
+      bookmark within most modern browsers.  When the bookmarklet is activated,
+      it invokes the javascript in the context of the currently active
+      page.</p>
+      <p class='continued'>There are several connexions bookmarklets currently
+      available.  To make use of any of these, right-click on the bookmarklet
+      link and choose 'bookmark' or, simply drag the link to the bookmarks
+      bar:</p>
+      <ul>
+       <li><a href="<?= $this->partial('help/bookmarklet-basic_redirect.php')
+       ?>">basic redirect</a> &mdash; The simplest of the connexions
+       bookmarklets, this will cause the browser to visit the connexions post
+       page with information about the currently active page, and then, upon
+       completion of the bookmarking activity, return to the current page;</li>
+       <li><a href="<?= $this->partial('help/bookmarklet-window.php')
+       ?>">window</a> &mdash; Popup a new browser window to present the
+       connexions posting form.  Upon completion, the new window will be
+       closed.
+        <div class='warning'>
+         <p><span class='title'>warnings:</span> If popup blockers are enabled
+         in your browser, the popup <i>MAY</i> be blocked.<br /> If the popup
+         is opened, it <i>MAY</i> appear <b>behind</b> the current browser
+         window.</p>
+        </div>
+       </li>
+       <li><a href="<?= $this->partial('help/bookmarklet-lightbox.php')
+       ?>">lightbox</a> &mdash; This is the most complex, and most error-prone
+       bookmarklet.  It will create a new, popup dialog containing the
+       connexions post form within the current page.  Upon completion of the
+       bookmarking activity, the dialog will be removed;</li>
+      </ul>
+     </div>
+    </li><!-- question-answer } -->
+
+    <li class='collapsable'><!-- question-answer { -->
+     <h3 id='tools_and_extras_what_is_my_apikey_and_why_do_i_need_it'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'what_is_my_apikey_and_why_do_i_need_it', true) ?>'
+         ><a href='<?= $url ?>/tools_and_extras/what_is_my_apikey_and_why_do_i_need_it'
+             data-cache.collapsable='what_is_my_apikey_and_why_do_i_need_it_content'>What is my apiKey and why do i need it?</a></h3>
+     <div id='what_is_my_apikey_and_why_do_i_need_it_content'
+          class='help-content faq-answer'>
+      <p>Your <a href='<?= $this->baseUrl('settings/account/apiKey') ?>'>API
+      Key</a> is used to protect you from <?=
+      Connexions::wikipedia_a('Cross-site scripting', 'cross-site scripting')?>
+      attacks that would allow an unscrupulous site to retrieve your private
+      connexions information.</p>
+   
+      <p>Connexions uses client-based cookies to identify a server-side session
+      that contains authentication information about you.  If you are signed-in
+      to connexions, any request to connexions will carry along this cookie
+      allowing connexions to recognize you without asking you to sign-in for
+      every request.  Unfortunately, without precautions, this convenience
+      would allow an unscrupulous site to include Javascript that could make a
+      GET request to connexions.  This GET request would carry the cookie,
+      authenticating the request as coming from you and allowing it to retrieve
+      your private connexions information.  Note that the browser protects you
+      for other types of requests (POST, PUT, DEL), denying the request if it
+      isn't to the same site that served the page.  Only GET requests to other
+      sites are permitted by the browser.</p>
+   
+      <p>The API Key helps to protect you from this type of attack.  Any GET
+      request that might reveal private information REQUIRES the inclusion of
+      the API Key.</p>
+   
+      <p>Protect your API Key just as you would a password.  While you can
+      re-generate it at any time, until you do so, any site or web application
+      with your API Key can, any time you visit it, make requests as you for as
+      long as you are signed-in to connexions.</p>
+     </div>
+    </li><!-- question-answer } -->
+
+   </ul><!-- inner-list } -->
   </div>
- </li><!-- question-answer } -->
+ </li><!-- tools_and_extras } -->
 
- <li class='collapsable'><!-- question-answer { -->
-  <h3 id='what_is_a_search_context'
-      class='toggle faq-question<?= Connexions_Help::section_collapsed($this, 'what_is_a_search_context', true) ?>'><a href='<?= $url ?>/what_is_a_search_context' data-cache.collapsable='what_is_a_search_context_content'>What is a search context?</a></h3>
-  <div id='what_is_a_search_context_content' class='help-content faq-answer'>
-   <p>A search context allows you to specify the type of information that you
-   are searching for.</p>
-   <p class='continued'>There are currently fix search contexts:</p>
-   <ol>
-    <li><b>Search this view</b> &mdash; Search for matches within the current
-    page/view;</li>
-    <li><b>My bookmarks</b> &mdash; Search for matches within all bookmarks
-    that <b>you</b> have created;</li>
-    <li><b>My network's bookmarks</b> &mdash; Search for matches within the
-    public bookmarks created by anyone in <a href='<?=
-    $this->baseUrl('network/'. $this->viewer )?>'>your network</a>;</li>
-    <li><b>Everyone's bookmarks</b> &mdash; Search for matches within all
-    public bookmarks;</li>
-    <li><b>All of connexions</b> &mdash; Search for matches within all people,
-  tags, items, and public bookmarks;</li>
-   </ol>
-  </div>
- </li><!-- question-answer } -->
+</ul><!-- outer-list } -->
 
- <li class='collapsable'><!-- question-answer { -->
-  <h3 id='what_is_my_apikey_and_why_do_i_need_it'
-      class='toggle faq-question<?= Connexions_Help::section_collapsed($this, 'what_is_my_apikey_and_why_do_i_need_it', true) ?>'><a href='<?= $url ?>/what_is_my_apikey_and_why_do_i_need_it' data-cache.collapsable='what_is_my_apikey_and_why_do_i_need_it_content'>What is my apiKey and why do i need it?</a></h3>
-  <div id='what_is_my_apikey_and_why_do_i_need_it_content' class='help-content faq-answer'>
-   <p>Your
-   <a href='<?= $this->baseUrl('settings/account/apiKey') ?>'>API Key</a>
-   is used to protect you from
-   <?= Connexions::wikipedia_a('Cross-site scripting', 'cross-site scripting')?>
-   attacks that would allow an unscrupulous site to retrieve your private
-   connexions information.</p>
-
-   <p>Connexions uses client-based cookies to identify a server-side session
-   that contains authentication information about you.  If you are signed-in to
-   connexions, any request to connexions will carry along this cookie allowing
-   connexions to recognize you without asking you to sign-in for every request.
-   Unfortunately, without precautions, this convenience would allow an
-   unscrupulous site to include Javascript that could make a GET request to
-   connexions.  This GET request would carry the cookie, authenticating the
-   request as coming from you and allowing it to retrieve your private
-   connexions information.  Note that the browser protects you for other types
-   of requests (POST, PUT, DEL), denying the request if it isn't to the same
-   site that served the page.  Only GET requests to other sites are permitted
-   by the browser.</p>
-
-   <p>The API Key helps to protect you from this type of attack.  Any GET
-   request that might reveal private information REQUIRES the inclusion of the
-   API Key.</p>
-
-   <p>Protect your API Key just as you would a password.  While you can
-   re-generate it at any time, until you do so, any site or web application
-   with your API Key can, any time you visit it, make requests as you for as
-   long as you are signed-in to connexions.</p>
-  </div>
- </li><!-- question-answer } -->
-</ul>
 <script type='text/javascript'>
 (function($) {
+    var tabsId      = 'help';
+    var $tabs       = $('#'+ tabsId);
     var sectionId   = '<?= $jsSectionId ?>';
-    $(document).ready(function() {
-        if (sectionId.length > 0)
+    var tabId       = 'help-faq';
+
+    function firstShow(e, ui)
+    {
+        // Establish localNavigation
+        $('#'+ tabId).localNavigation('<?= $url ?>');
+
+        // Bind local events
+        $('#expand-all').click(function(e) {
+            e.preventDefault();
+
+            $('#'+ tabId +' .collapsable').collapsable('expand');
+
+            return false;
+        });
+        $('#collapse-all').click(function(e) {
+            e.preventDefault();
+
+            $('#'+ tabId +' .collapsable').collapsable('collapse');
+
+            return false;
+        });
+
+        // If OUR tab is being shown...
+        var panelId = $(ui.panel).attr('id');
+        if ((panelId === tabId) && (sectionId.length > 0))
         {
-            var $el = $('#'+ sectionId);
-            if ($el.length ===  1)
+            // ... scroll to the target section
+            var $el     = $('#'+ tabId +' #'+ sectionId);
+            if ($el.length === 1)
             {
-                /* A valid section has been requested (via url path) so scroll
-                 * to it and highlight the target section.
-                 */
-                $.scrollTo( $el, {
-                    duration:   800,
-                    onAfter:    function() {
-                        $el.parent().effect('highlight', null, 2000);
-                    }
-                });
+                window.setTimeout(function() {
+                    $.scrollTo( $el, {
+                        duration:   800,
+                        onAfter:    function() {
+                            $el.parent().effect('highlight', null, 2000);
+                        }
+                    });
+                }, 100);
             }
         }
 
-        $('#help-faq').localNavigation('<?= $url ?>');
-    });
+        $tabs.unbind('tabsshow', firstShow);
+    }
+
+    // Bind to the 'tabsshow' event indicating the the tabs widget is ready
+    $tabs.bind('tabsshow', firstShow);
+
  }(jQuery));
 </script>

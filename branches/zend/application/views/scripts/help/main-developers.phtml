@@ -53,7 +53,7 @@ Connexions::log('views/scripts/help/main-developers.phtml: '
  */
 ?>
 <ul class='collapsableList'>
- <li class='collapsable'>
+ <li class='collapsable'><!-- introduction-li { -->
   <h3 id='introduction'
       class='toggle<?= Connexions_Help::section_collapsed($this, 'introduction') ?>'><a href='<?= $url ?>/introduction' data-cache.collapsable='introduction_content'>Introduction</a></h3>
   <div id='introduction_content' class='help-content'>
@@ -95,9 +95,9 @@ Connexions::log('views/scripts/help/main-developers.phtml: '
    </ul>
    <p>Finally, connexions has a <?= Connexions::wikipedia_a('JSON-RPC') ?> based API which is described in the next section.</p>
   </div>
- </li>
+ </li><!-- introduction-li } -->
   
- <li class='collapsable'>
+ <li class='collapsable'><!-- api-li { -->
   <h3 id='api'
       class='toggle<?= Connexions_Help::section_collapsed($this, 'api') ?>'><a href='<?= $url ?>/api' data-cache.collapsable='api_content'>API</a></h3>
   <div id='api_content' class='help-content api'><!-- api { -->
@@ -1253,34 +1253,46 @@ Connexions::log('views/scripts/help/main-developers.phtml: '
    </div><!-- api_additionalInformation } -->
 
   </div><!-- api } -->
- </li>
+ </li><!-- api-li } -->
 </ul>
 <script type='text/javascript'>
 (function($) {
+    var tabsId          = 'help';
+    var $tabs           = $('#'+ tabsId);
     // The parent of the section original requested via url path.
     var sectionParent   = '<?= $jsParentId ?>';
+    var sectionId       = '<?= $jsSectionId ?>';
+    var tabId           = 'help-developers';
 
-    $(document).ready(function() {
-        if (sectionParent.length > 0)
+    function firstShow(e, ui)
+    {
+        // Establish localNavigation
+        $('#'+ tabId).localNavigation('<?= $url ?>');
+
+        // If OUR tab is being shown...
+        var panelId = $(ui.panel).attr('id');
+        if ((panelId === tabId) && (sectionId.length > 0))
         {
-            var $parent = $('#'+ sectionParent);
-            if ($parent.length ===  1)
+            // ... scroll to the target section
+            var $parent = $('#'+ tabId +' #'+ sectionParent);
+            var $el     = $('#'+ tabId +' #'+ sectionId);
+            if (($parent.length === 1) && ($el.length === 1))
             {
-                /* A valid section has been requested (via url path) so scroll
-                 * to it and highlight the target section.
-                 */
-                var $el     = $('#<?= $jsSectionId ?>');
-                $.scrollTo( $parent, {
-                    duration:   800,
-                    onAfter:    function() {
-                        $el.parent().effect('highlight', null, 2000);
-                    }
-                });
+                window.setTimeout(function() {
+                    $.scrollTo( $parent, {
+                        duration:   800,
+                        onAfter:    function() {
+                            $el.parent().effect('highlight', null, 2000);
+                        }
+                    });
+                }, 100);
             }
         }
 
-        $('#help-developers').localNavigation('<?= $url ?>');
-    });
+        $tabs.unbind('tabsshow', firstShow);
+    }
 
+    // Bind to the 'tabsshow' event indicating the the tabs widget is ready
+    $tabs.bind('tabsshow', firstShow);
  }(jQuery));
 </script>
