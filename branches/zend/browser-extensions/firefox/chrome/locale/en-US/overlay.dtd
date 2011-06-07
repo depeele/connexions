@@ -31,8 +31,11 @@
 <!ENTITY connexions.toolbar.name  "example">
 <!ENTITY connexions.toolbar.label "This is an example toolbar. You can hide it under View &gt; toolbars &gt; &connexions.toolbar.name;">
 
-<!ENTITY connexions.toolbar.button.label "Your Toolbar Button">
-<!ENTITY connexions.toolbar.button.tooltip "This is your toolbar button!">
+<!ENTITY connexions.toolbar.button.tag.label "Tag">
+<!ENTITY connexions.toolbar.button.tag.tooltip "Tag this page">
+
+<!ENTITY connexions.toolbar.button.bookmark.label "Bookmarks">
+<!ENTITY connexions.toolbar.button.bookmark.tooltip "Toggle the bookmarks sidebar">
 
 <!-- Sidebar -->
 <!ENTITY connexions.sidebar.label "Your Sidebar">

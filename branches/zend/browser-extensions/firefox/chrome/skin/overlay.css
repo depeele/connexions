@@ -3,20 +3,35 @@
 {
   color: red ! important;
 }
-#connexions-toolbar-button
+
+#connexions-toolbar-button-tag
 {
-  list-style-image: url("chrome://connexions/skin/toolbar-button.png");
+  list-style-image: url("chrome://connexions/skin/toolbar-button-tag.png");
+}
+
+#connexions-toolbar-button-bookmark
+{
+  list-style-image: url("chrome://connexions/skin/toolbar-button-bookmark.png");
+}
+
+#connexions-toolbar-button-tag,
+#connexions-toolbar-button-bookmark
+{
   -moz-image-region: rect(0px 24px 24px 0px);
 }
-#connexions-toolbar-button:hover
+#connexions-toolbar-button-tag:hover,
+#connexions-toolbar-button-bookmark:hover
 {
   -moz-image-region: rect(24px 24px 48px  0px);
 }
-[iconsize="small"] #connexions-toolbar-button
+
+[iconsize="small"] #connexions-toolbar-button-tag,
+[iconsize="small"] #connexions-toolbar-button-bookmark
 {
   -moz-image-region: rect( 0px 40px 16px 24px);
 }
-[iconsize="small"] #connexions-toolbar-button:hover
+[iconsize="small"] #connexions-toolbar-button-tag:hover,
+[iconsize="small"] #connexions-toolbar-button-bookmark:hover
 {
   -moz-image-region: rect(24px 40px 40px 24px);
 }
