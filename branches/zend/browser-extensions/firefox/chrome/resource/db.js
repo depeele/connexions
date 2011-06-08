@@ -15,11 +15,11 @@ let EXPORTED_SYMBOLS    = ["Connexions_Db"];
 
 function Connexions_Db()
 {
-    this.initialized = false;
     this.init();
 }
 
 Connexions_Db.prototype = {
+    initialized:    false,
     dbConnection:   null,
     dbStatements:   {},
     dbSchema:       {
@@ -52,6 +52,8 @@ Connexions_Db.prototype = {
 
     init: function()
     {
+        if (this.initialized === true)  return;
+
         // initialization code
         this.initialized = true;
 

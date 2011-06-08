@@ -58,12 +58,15 @@ function Connexions_log(msg, stackFrame)
 
 function Debug()
 {
-    this.initialized = false;
     this.init();
 }
 
 Debug.prototype = {
+    initialized:    false,
+
     init: function() {
+        if (this.initialized === true)  return;
+
         this.initialized = true;
     },
 

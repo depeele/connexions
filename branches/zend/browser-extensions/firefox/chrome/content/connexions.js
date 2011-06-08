@@ -18,11 +18,11 @@ CU.import("resource://connexions/db.js");
  */
 function Connexions()
 {
-    this.initialized = false;
     this.init();
 }
 
 Connexions.prototype = {
+    initialized:    false,
     wm:             CC['@mozilla.org/appshell/window-mediator;1']
                         .getService(CI.nsIWindowMediator),
     prefsWindow:    null,
@@ -30,6 +30,8 @@ Connexions.prototype = {
     db:             null,
 
     init: function() {
+        if (this.initialized === true)  return;
+
         this.initialized = true;
         this.strings     = document.getElementById("connexions-strings");
         this.db          = new Connexions_Db();
@@ -43,6 +45,18 @@ Connexions.prototype = {
         var bookmarks   = this.db.getBookmarks();
         cDebug.log('connexions::init(): retrieved %s bookmarks',
                    bookmarks.length);
+
+        for (var idex = 0; idex < bookmarks.length; idex++)
+        {
+            var bookmark    = bookmarks[idex];
+
+            cDebug.log('connexions::init(): bookmark %s '
+                        +   '{url[ %s ], urlHash[ %s ], name[ %s ]}',
+                        idex,
+                        bookmark.url,
+                        bookmark.urlHash,
+                        bookmark.name);
+        }
     },
 
     getString: function(name) {
