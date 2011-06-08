@@ -2,7 +2,7 @@
 content   connexions                 chrome/content/
 skin      connexions   classic/1.0   chrome/skin/
 locale    connexions   en-US         chrome/locale/en-US/
-
+resource  connexions                 chrome/resource/
 
 overlay   chrome://browser/content/browser.xul   chrome://connexions/content/ff-overlay.xul
 style chrome://global/content/customizeToolbar.xul chrome://connexions/skin/overlay.css
