@@ -11,7 +11,7 @@
     <em:aboutURL>chrome://connexions/content/about.xul</em:aboutURL>
     <em:optionsURL>chrome://connexions/content/options.xul</em:optionsURL>
     <em:homepageURL>%URL%</em:homepageURL>
-    <em:iconURL>chrome://connexions/skin/logo.png</em:iconURL>
+    <em:iconURL>chrome://connexions/skin/logo-100.png</em:iconURL>
     <em:targetApplication>
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!-- Firefox -->
