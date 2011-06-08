@@ -39,7 +39,7 @@
   <menupopup id="menu_ToolsPopup">
     <menuitem     id="connexions-tools-menu"
                label="&connexions.menu.tools.label;"
-               image="chrome://connexions/skin/logo-small.png"
+               class="connexions-menu-icon menuitem-iconic"
          insertafter="menu_preferences"
              command="cmd_connexions_options"/>
   </menupopup>
@@ -64,9 +64,9 @@
                     key="key_connexions_sidebar"
                 command="cmd_connexions_sidebar" />
         <menuseparator />
-        <menu class="menuitem-iconic menubar-icon"
-              label="&connexions.menu.site.label;"
-               image="chrome://connexions/skin/logo-small.png">
+        <menu    id="connexions-site-menu"
+              class="menu-iconic connexions-menubar-icon"
+              label="&connexions.menu.site.label;">
           <menupopup>
             <menuitem class="menuitem-iconic menubar-icon"
                       label="&connexions.menu.site.myBookmarks;"
@@ -102,36 +102,31 @@
     <menuitem     id="context-connexions-page"
          insertafter="context-bookmarkpage"
                label="&connexions.context.tagCurrent.label;"
-               image="chrome://connexions/skin/logo-small.png"
-               class="menuitem-iconic"
+               class="connexions-menu-icon menuitem-iconic"
            accesskey="&connexions.context.tagCurrent.accesskey;"
              command="cmd_connexions_bookmark_page"/>
     <menuitem     id="context-connexions-page-after-link"
          insertafter="context-bookmarklink"
                label="&connexions.context.tagCurrent.label;"
-               image="chrome://connexions/skin/logo-small.png"
-               class="menuitem-iconic"
+               class="connexions-menu-icon menuitem-iconic"
            accesskey="&connexions.context.tagCurrent.accesskey;"
              command="cmd_connexions_bookmark_page"/>
     <menuitem     id="context-connexions-page-after-media"
          insertafter="context-saveimage"
                label="&connexions.context.tagCurrent.label;"
-               image="chrome://connexions/skin/logo-small.png"
-               class="menuitem-iconic"
+               class="connexions-menu-icon menuitem-iconic"
            accesskey="&connexions.context.tagCurrent.accesskey;"
              command="cmd_connexions_bookmark_page"/>
     <menuitem     id="context-connexions-link"
          insertafter="context-bookmarklink"
                label="&connexions.context.tagLink.label;"
-               image="chrome://connexions/skin/logo-small.png"
-               class="menuitem-iconic"
+               class="connexions-menu-icon menuitem-iconic"
            accesskey="&connexions.context.tagLink.accesskey;"
              command="cmd_connexions_bookmark_link"/>
     <menuitem     id="context-connexions-media"
          insertafter="context-saveimage"
                label="&connexions.context.tagMedia.label;"
-               image="chrome://connexions/skin/logo-small.png"
-               class="menuitem-iconic"
+               class="connexions-menu-icon menuitem-iconic"
            accesskey="&connexions.context.tagMedia.accesskey;"
              command="cmd_connexions_bookmark_media"/>
   </popup>
