@@ -1,0 +1,38 @@
+.sidebar-header {
+    padding:        0.25em 0.25em 0.1em;
+}
+
+.sidebar-title {
+    font-weight:    bold;
+}
+.sidebar-count {
+    font-size:      0.8em;
+}
+
+.list {
+    padding:        2px;
+}
+
+.bookmarks {
+}
+.bookmarks .bookmark-name {
+    width:      5em;
+}
+.bookmark-properties {
+    margin:     0;
+    padding:    0;
+    width:      16px;
+    height:     16px;
+}
+.favorite-private {
+  list-style-image: url("chrome://connexions/skin/favorite+private-16.png");
+}
+.favorite {
+  list-style-image: url("chrome://connexions/skin/favorite-16.png");
+}
+.private {
+  list-style-image: url("chrome://connexions/skin/private-16.png");
+}
+
+.tags {
+}

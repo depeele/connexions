@@ -1,7 +1,7 @@
-<!ENTITY connexions.label       "Connexions label">
+<!ENTITY connexions.label                   "Connexions">
 
 <!-- Main  menu -->
-<!ENTITY connexions.menu.label          "Connexions">
+<!ENTITY connexions.menu.label              "Connexions">
 <!ENTITY connexions.menu.accesskey          "X">
 
 <!ENTITY connexions.menu.page.label         "Bookmark this page...">
@@ -16,31 +16,64 @@
 <!ENTITY connexions.menu.site.people        "People">
 
 <!-- Tools menu -->
-<!ENTITY connexions.menu.tools.label    "Connexions Options">
+<!ENTITY connexions.menu.tools.label        "Connexions Options">
 
 <!-- Main Context menu -->
 <!ENTITY connexions.context.tagCurrent.label    "Bookmark this page in connexions...">
 <!ENTITY connexions.context.tagLink.label       "Bookmark this link in connexions...">
 <!ENTITY connexions.context.tagMedia.label      "Bookmark this media in connexions...">
 
-<!ENTITY connexions.context.tagCurrent.accesskey    "C">
-<!ENTITY connexions.context.tagLink.accesskey       "C">
-<!ENTITY connexions.context.tagMedia.accesskey      "C">
+<!ENTITY connexions.context.tagCurrent.accesskey    "X">
+<!ENTITY connexions.context.tagLink.accesskey       "X">
+<!ENTITY connexions.context.tagMedia.accesskey      "X">
+
+<!-- When the tagCurrent item is included WITH tagLink or tagMedia -->
+<!ENTITY connexions.context.tagAlt.accesskey        "P">
 
 <!-- Toolbar -->
 <!ENTITY connexions.toolbar.name  "example">
 <!ENTITY connexions.toolbar.label "This is an example toolbar. You can hide it under View &gt; toolbars &gt; &connexions.toolbar.name;">
 
-<!ENTITY connexions.toolbar.button.tag.label "Tag">
-<!ENTITY connexions.toolbar.button.tag.tooltip "Tag this page">
+<!ENTITY connexions.toolbar.button.tag.label            "Tag">
+<!ENTITY connexions.toolbar.button.tag.tooltip          "Tag this page">
 
-<!ENTITY connexions.toolbar.button.bookmark.label "Bookmarks">
-<!ENTITY connexions.toolbar.button.bookmark.tooltip "Toggle the bookmarks sidebar">
+<!ENTITY connexions.toolbar.button.bookmark.label       "Bookmarks">
+<!ENTITY connexions.toolbar.button.bookmark.tooltip     "Toggle the bookmarks sidebar">
 
-<!ENTITY connexions.toolbar.button.connexions.label "Connexions">
-<!ENTITY connexions.toolbar.button.connexions.tooltip "Visit Connexions">
+<!ENTITY connexions.toolbar.button.connexions.label     "Connexions">
+<!ENTITY connexions.toolbar.button.connexions.tooltip   "Visit Connexions">
 
 <!-- Sidebar -->
-<!ENTITY connexions.sidebar.label 			"Connexions">
-<!ENTITY connexions.sidebar.bookmarks.label "Bookmarks">
-<!ENTITY connexions.sidebar.tags.label 		"Tags">
+<!ENTITY connexions.sidebar.label                       "Connexions">
+<!ENTITY connexions.sidebar.bookmarks.label             "Bookmarks">
+<!ENTITY connexions.sidebar.bookmarks.sort.byAlpha      "By Alpha (a-z)">
+<!ENTITY connexions.sidebar.bookmarks.sort.byUrl        "By Url">
+<!ENTITY connexions.sidebar.bookmarks.sort.byRating     "By Rating">
+<!ENTITY connexions.sidebar.bookmarks.sort.byTagDate    "By Tag Date">
+<!ENTITY connexions.sidebar.bookmarks.sort.byUpdateDate "By Update Date">
+<!ENTITY connexions.sidebar.bookmarks.sort.byVisitDate  "By Visit Date">
+<!ENTITY connexions.sidebar.bookmarks.sort.byVisitCount "By Visit Count">
+
+<!ENTITY connexions.sidebar.tags.label                  "Tags">
+<!ENTITY connexions.sidebar.tags.sort.byAlpha           "By Alpha (a-z)">
+<!ENTITY connexions.sidebar.tags.sort.byFrequency       "By Frequency">
+
+<!-- Sidebar Context menu -->
+<!ENTITY connexions.sidebar.context.open.label             "Open">
+<!ENTITY connexions.sidebar.context.open.accesskey         "O">
+
+<!ENTITY connexions.sidebar.context.openInWindow.label     "Open in New Window">
+<!ENTITY connexions.sidebar.context.openInWindow.accesskey "W">
+
+<!ENTITY connexions.sidebar.context.openInTab.label        "Open in New Tab">
+<!ENTITY connexions.sidebar.context.openInTab.accesskey    "T">
+
+<!ENTITY connexions.sidebar.context.edit.label             "Edit">
+<!ENTITY connexions.sidebar.context.edit.accesskey         "E">
+
+<!ENTITY connexions.sidebar.context.delete.label           "Delete">
+<!ENTITY connexions.sidebar.context.delete.accesskey       "D">
+
+<!ENTITY connexions.sidebar.context.properties.label       "Properties">
+<!ENTITY connexions.sidebar.context.properties.accesskey   "P">
+

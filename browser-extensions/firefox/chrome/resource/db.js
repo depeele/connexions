@@ -67,12 +67,14 @@ Connexions_Db.prototype = {
 
         if (!dbFile.exists())
         {
+            // Create the database
             this.dbConnection = this._dbCreate(dbService, dbFile);
             cDebug.log("Connexions_Db::init(): Created database "
                             + "[ "+ dbFile.path +" ]");
         }
         else
         {
+            // Simply open the database
             this.dbConnection = dbService.openDatabase(dbFile);
             cDebug.log("Connexions_Db::init(): Opened database "
                             + "[ "+ dbFile.path +" ]");

@@ -4,11 +4,16 @@
   color: red ! important;
 }
 
+.connexions-logo,
 .connexions-menu-icon,
 .connexions-menubar-icon {
   list-style-image: url("chrome://connexions/skin/logo-16.png");
 }
+.connexions-logo {
+  margin-right: 5px;
+}
 
+/* Toolbar */
 #connexions-toolbar-button-tag
 {
   list-style-image: url("chrome://connexions/skin/toolbar-button-tag.png");

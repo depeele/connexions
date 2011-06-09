@@ -22,41 +22,21 @@ function Connexions()
 }
 
 Connexions.prototype = {
-    initialized:    false,
     wm:             CC['@mozilla.org/appshell/window-mediator;1']
                         .getService(CI.nsIWindowMediator),
+    initialized:    false,
     prefsWindow:    null,
     strings:        null,
-    db:             null,
+    debug:          null,
 
     init: function() {
         if (this.initialized === true)  return;
 
         this.initialized = true;
         this.strings     = document.getElementById("connexions-strings");
-        this.db          = new Connexions_Db();
+        this.debug       = cDebug;
 
         cDebug.log('connexions::init(): completed');
-
-        cDebug.log('connexions::init(): bookmarks[ %s ], tags[ %s ]',
-                   this.db.getTotalBookmarks(),
-                   this.db.getTotalTags());
-
-        var bookmarks   = this.db.getBookmarks();
-        cDebug.log('connexions::init(): retrieved %s bookmarks',
-                   bookmarks.length);
-
-        for (var idex = 0; idex < bookmarks.length; idex++)
-        {
-            var bookmark    = bookmarks[idex];
-
-            cDebug.log('connexions::init(): bookmark %s '
-                        +   '{url[ %s ], urlHash[ %s ], name[ %s ]}',
-                        idex,
-                        bookmark.url,
-                        bookmark.urlHash,
-                        bookmark.name);
-        }
     },
 
     getString: function(name) {
@@ -84,17 +64,6 @@ Connexions.prototype = {
         switch (type)
         {
         case 'page':
-            /*
-            var browser     = this.getBrowser();
-            var webNav      = browser.webNavigation;
-            url  = (webNav.currentURI
-                    ? webNav.currentURI.spec
-                    : gURLBar.value);
-            name = (webNav.document.title
-                    ? webNav.document.title
-                    : url);
-            // */
-
             url  = docUrl;
             name = (document.title
                         ? document.title
@@ -256,27 +225,60 @@ Connexions.prototype = {
         }
 
         if (url !== null) {
-            this.browserLoadPage(e, this.url(url));
+            this.openTab(this.url(url));
         }
     },
 
-    getBrowser: function() {
-        return (this.wm.getMostRecentWindow('navigator:browser')).getBrowser();
-        //document.getElementById('content');
+    /** @brief  For contexts that do NOT have 'window', retrieve the CURRENT
+     *          window.
+     */
+    getWindow: function() {
+        var wind    = null;
+
+        if (window && window.getBrowser)
+        {
+            //cDebug.log('connexions::getWindow(): Simple');
+            wind = window;
+        }
+        /*
+        else if (document && document.commandDispatcher)
+        {
+            cDebug.log('connexions::getWindow(): via document');
+            wind = document.commandDispatcher.focusedWindow;
+        }
+        // */
+        else
+        {
+            //cDebug.log('connexions::getWindow(): via getMostRecentWindow');
+            wind = this.wm.getMostRecentWindow('navigator:browser');
+        }
+
+        return wind;
     },
 
-    browserLoadPage: function(e, url) {
-        var browser = this.getBrowser();
+    /** @brief  For contexts that do NOT have 'window', retrieve the browser
+     *          instance associated with the CURRENT window.
+     */
+    getBrowser: function() {
+        return (getBrowser
+                    ? getBrowser()
+                    : (this.getWindow()).getBrowser());
+    },
 
-        // Open the url in a new tab
-        this.openTab(url);
+    /** @brief  For contexts that do NOT have 'window', retrieve the window and
+     *          invoke 'toggleSidebar()'
+     */
+    toggleSidebar: function(id, capture) {
+        return (this.getWindow()).toggleSidebar(id, capture);
     },
 
     openXulWindow: function(xul, title, options, url) {
-        return window.openDialog(xul, title, options, url);
+        return (this.getWindow()).openDialog(xul, title, options, url);
     },
 
     openTab: function(url) {
+        cDebug.log("openTab(): url[ %s ]", url);
+
         var browser = this.getBrowser();
         var tab     = browser.addTab(url);
         browser.selectedTab = tab;
@@ -310,7 +312,7 @@ Connexions.prototype = {
         var newWindow   = this.openXulWindow(xul, title, options, url);
         */
         //var newWindow   = window.open(url, '_parent', options);
-        var newWindow   = window.open(url, '_blank', options);
+        var newWindow   = (this.getWindow()).open(url, '_blank', options);
 
         /*
         newWindow.addEventListener("close", function() {
@@ -353,7 +355,9 @@ Connexions.prototype = {
     getSelectedText: function(maxLen) {
         maxLen = maxLen || 4096;
 
-        var curWindow   = document.commandDispatcher.focusedWindow;
+        var curWindow   = (document && document.commandDispatcher
+                            ? document.commandDispatcher.focusedWindow
+                            : this.getWindow());
         var str         = curWindow.getSelection();
         str = str.toString();
         str = str.replace(/^\s+/, '')
@@ -398,8 +402,8 @@ Connexions_log('Connexions: types: regexp[ '+ cDebug.type(/abc/) +' ]');
 Connexions_log('Connexions: types: object[ '+ cDebug.type({a:1}) +' ]');
 Connexions_log('Connexions: types: null  [ '+ cDebug.type(null)  +' ]');
 Connexions_log('Connexions: types: string[ '+ cDebug.type("string") +' ]');
-// */
 Connexions_log('Connexions: types: object[ '+ cDebug.obj2str({a:1}) +' ]');
+// */
 
 window.addEventListener("load",   function(){ connexions.init(); },    false);
 window.addEventListener("unload", function(){ connexions.destroy(); }, false);
