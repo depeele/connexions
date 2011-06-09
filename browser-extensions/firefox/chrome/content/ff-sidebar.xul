@@ -18,29 +18,29 @@
     <menuitem
         label="&connexions.sidebar.context.open.label;"
         accesskey="&connexions.sidebar.context.open.accesskey;"
-        oncommand="cSidebar.openIn(event, document.popupNode.parentNode, 'current');"/>
+        oncommand="cSidebar.openIn(event, document.popupNode, 'current');"/>
     <menuitem
         label="&connexions.sidebar.context.openInWindow.label;"
         accesskey="&connexions.sidebar.context.openInWindow.accesskey;"
-        oncommand="cSidebar.openIn(event, document.popupNode.parentNode, 'window');"/>
+        oncommand="cSidebar.openIn(event, document.popupNode, 'window');"/>
     <menuitem
         label="&connexions.sidebar.context.openInTab.label;"
         accesskey="&connexions.sidebar.context.openInTab.accesskey;"
-        oncommand="cSidebar.openIn(event, document.popupNode.parentNode, 'tab');"/>
+        oncommand="cSidebar.openIn(event, document.popupNode, 'tab');"/>
     <menuseparator />
     <menuitem
         label="&connexions.sidebar.context.properties.label;"
         accesskey="&connexions.sidebar.context.properties.accesskey;"
-        oncommand="cSidebar.properties(event, document.popupNode.parentNode);"/>
+        oncommand="cSidebar.properties(event, document.popupNode);"/>
     <menuseparator />
     <menuitem
         label="&connexions.sidebar.context.edit.label;"
         accesskey="&connexions.sidebar.context.edit.accesskey;"
-        oncommand="cSidebar.edit(event, document.popupNode.parentNode);"/>
+        oncommand="cSidebar.edit(event, document.popupNode);"/>
     <menuitem
         label="&connexions.sidebar.context.delete.label;"
         accesskey="&connexions.sidebar.context.delete.accesskey;"
-        oncommand="cSidebar.delete(event, document.popupNode.parentNode);"/>
+        oncommand="cSidebar.delete(event, document.popupNode);"/>
   </popup>
   <!-- Sidebar Bookmarks Context menu } -->
 
@@ -80,12 +80,16 @@
          </menulist>
        </hbox>
       </hbox>
-      <richlistbox
+      <listbox
             id="sidebar-bookmarkList"
-            class="boomkarks list"
+            class="bookmarks list"
             contextmenu="sidebar-bookmarks-contextMenu"
             flex="1">
-      </richlistbox>
+        <listcols>
+          <listcol flex="1" />
+          <listcol />
+        </listcols>
+      </listbox>
     </vbox>
 
     <splitter collapse="after" resizeafter="farthest"><grippy /></splitter>
@@ -114,11 +118,15 @@
          </menulist>
        </hbox>
       </hbox>
-      <richlistbox
+      <listbox
             id="sidebar-tagList"
             class="tags list"
             flex="1">
-      </richlistbox>
+        <listcols>
+          <listcol flex="1" />
+          <listcol />
+        </listcols>
+      </listbox>
     </vbox>
   </vbox>
   <!-- Sidebar Content } -->

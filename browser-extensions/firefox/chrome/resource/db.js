@@ -282,8 +282,8 @@ Connexions_Db.prototype = {
         var stmt    = this.dbStatements[ fname ];
         if (stmt === undefined)
         {
-            var sql = 'SELECT bookmarks.rowid,bookmarks.* FROM bookmarks '
-                    +   'ORDER BY ?1,name';
+            var sql = 'SELECT b.rowid,b.* FROM bookmarks AS b '
+                    +   'ORDER BY ?1,b.name ASC';
             stmt = this.dbConnection.createStatement(sql);
             this.dbStatements[ fname ] = stmt;
         }
@@ -334,6 +334,103 @@ Connexions_Db.prototype = {
         stmt.reset();
 
         return bookmarks;
+    },
+
+    /** @brief  Retrieve the set of tags for the given bookmark.
+     *  @param  bookmarkId  The id of the target bookmark.
+     *
+     *  @return An array of tag objects;
+     */
+    getTags: function(bookmarkId)
+    {
+        var fname   = 'getTags';
+        var stmt    = this.dbStatements[ fname ];
+        if (stmt === undefined)
+        {
+            var sql = 'SELECT t.rowid,t.name '
+                    +   'FROM tags as t,bookmarkTags as bt '
+                    +   'WHERE t.rowid = bt.tagId AND bt.bookmarkId = ?1';
+                    +   'ORDER BY t.name ASC';
+            stmt = this.dbConnection.createStatement(sql);
+            this.dbStatements[ fname ] = stmt;
+        }
+
+        var tags    = [];
+        try {
+            stmt.bindInt64Parameter(0, bookmarkId);
+            while (stmt.executeStep())
+            {
+                var tag = this._tagFromRow(stmt);
+                tags.push(tag);
+            }
+        } catch(e) {
+            cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
+        }
+        stmt.reset();
+
+        return tags;
+    },
+
+    /** @brief  Retrieve a set of tags with frequency counts.
+     *  @param  sortOrder   The desired sort order:
+     *                          A valid field:
+     *                              name, count
+     *                          A sort order:
+     *                              ASC, DESC
+     *
+     *  @return An array of tag objects;
+     */
+    getAllTags: function(sortOrder)
+    {
+        var fname   = 'getAllTags';
+        var stmt    = this.dbStatements[ fname ];
+        if (stmt === undefined)
+        {
+            var sql = 'SELECT t.rowid,t.name,COUNT(bt.tagId) as frequency '
+                    +   'FROM tags as t,bookmarkTags as bt '
+                    +   'WHERE t.rowid = bt.tagId '
+                    +   'GROUP BY t.rowid '
+                    +   'ORDER BY ?1,t.name ASC';
+            stmt = this.dbConnection.createStatement(sql);
+            this.dbStatements[ fname ] = stmt;
+        }
+
+        var tags    = [];
+        try {
+            var order   = (sortOrder
+                            ? sortOrder.split(/\s+/)
+                            : [ 'name', 'asc' ]);
+
+            switch (order[0])
+            {
+            case 'name':
+            case 'frequency':
+                break;
+
+            default:
+                order[0] = 'frequency';
+                break;
+            }
+
+            switch (order[1].toLowerCase())
+            {
+            case 'asc':     order[1] = 'ASC';   break;
+            case 'desc':
+            default:        order[1] = 'DESC';  break;
+            }
+
+            stmt.bindUTF8StringParameter(0, order.join(' '));
+            while (stmt.executeStep())
+            {
+                var tag = this._tagFromRow(stmt);
+                tags.push(tag);
+            }
+        } catch(e) {
+            cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
+        }
+        stmt.reset();
+
+        return tags;
     },
 
     /** @brief  Insert a new bookmark
@@ -715,6 +812,25 @@ Connexions_Db.prototype = {
         } catch (e) {
             cDebug.log("Connexions_Db::_bookmarkFromRow(): ERROR [ %s ]", e);
             obj = null;
+        }
+
+        return obj;
+    },
+
+    _tagFromRow: function(stmt)
+    {
+        var obj = {};
+        try {
+            obj.id          = stmt.getInt64(0);
+            obj.name        = stmt.getUTF8String(1);
+            obj.frequency   = stmt.getInt32(2);
+
+        } catch (e) {
+            cDebug.log("Connexions_Db::_tagFromRow(): ERROR [ %s ]", e);
+            if ((obj.id === undefined) || (obj.name === undefined))
+            {
+                obj = null;
+            }
         }
 
         return obj;

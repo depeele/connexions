@@ -10,13 +10,19 @@
 }
 
 .list {
-    padding:        2px;
+    padding:    2px;
+    width:      100%;
+}
+.item-odd {
+    background-color:   #eee;
+}
+.item-even {
 }
 
 .bookmarks {
 }
-.bookmarks .bookmark-name {
-    width:      5em;
+.bookmark-name {
+    width:      100%;
 }
 .bookmark-properties {
     margin:     0;
@@ -24,15 +30,20 @@
     width:      16px;
     height:     16px;
 }
-.favorite-private {
+.bookmarks .favorite-private {
   list-style-image: url("chrome://connexions/skin/favorite+private-16.png");
 }
-.favorite {
+.bookmarks .favorite {
   list-style-image: url("chrome://connexions/skin/favorite-16.png");
 }
-.private {
+.bookmarks .private {
   list-style-image: url("chrome://connexions/skin/private-16.png");
 }
 
 .tags {
+}
+.tags .tag-name {
+}
+.tags .tag-frequency {
+    font-size:      0.8em;
 }
