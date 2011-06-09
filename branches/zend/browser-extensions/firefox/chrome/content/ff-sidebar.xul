@@ -1,19 +1,125 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/" type"text/css" ?>
+<?xml-stylesheet href="chrome://connexions/skin/sidebar.css" type="text/css"?>
 <!DOCTYPE page SYSTEM "chrome://connexions/locale/overlay.dtd">
 
 <page id="connexions-sidebar"
    title="&connexions.sidebar.label;"
    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <script src="connexions.js"/>
   <script src="ff-sidebar.js"/>
 
+  <tooltip id='connexions-tooltip'>
+    <vbox id='connexions-tooltip-label' width='180px' />
+  </tooltip>
+
+  <!-- Sidebar Bookmarks Context menu { -->
+  <popup id='sidebar-bookmarks-contextMenu'>
+    <menuitem
+        label="&connexions.sidebar.context.open.label;"
+        accesskey="&connexions.sidebar.context.open.accesskey;"
+        oncommand="cSidebar.openIn(event, document.popupNode.parentNode, 'current');"/>
+    <menuitem
+        label="&connexions.sidebar.context.openInWindow.label;"
+        accesskey="&connexions.sidebar.context.openInWindow.accesskey;"
+        oncommand="cSidebar.openIn(event, document.popupNode.parentNode, 'window');"/>
+    <menuitem
+        label="&connexions.sidebar.context.openInTab.label;"
+        accesskey="&connexions.sidebar.context.openInTab.accesskey;"
+        oncommand="cSidebar.openIn(event, document.popupNode.parentNode, 'tab');"/>
+    <menuseparator />
+    <menuitem
+        label="&connexions.sidebar.context.properties.label;"
+        accesskey="&connexions.sidebar.context.properties.accesskey;"
+        oncommand="cSidebar.properties(event, document.popupNode.parentNode);"/>
+    <menuseparator />
+    <menuitem
+        label="&connexions.sidebar.context.edit.label;"
+        accesskey="&connexions.sidebar.context.edit.accesskey;"
+        oncommand="cSidebar.edit(event, document.popupNode.parentNode);"/>
+    <menuitem
+        label="&connexions.sidebar.context.delete.label;"
+        accesskey="&connexions.sidebar.context.delete.accesskey;"
+        oncommand="cSidebar.delete(event, document.popupNode.parentNode);"/>
+  </popup>
+  <!-- Sidebar Bookmarks Context menu } -->
+
+  <!-- Sidebar Content { -->
   <vbox flex="1">
-    <groupbox flex="1">
-      <label value="&connexions.sidebar.bookmarks.label;" />
-    </groupbox>
+    <vbox flex="1">
+      <!-- NOTE: For hbox, 'center' === 'middle' -->
+      <hbox align="center"
+            class="sidebar-header">
+       <label class="sidebar-title"
+              value="&connexions.sidebar.bookmarks.label;" />
+       <hbox pack="end" flex="1" align="center">
+         <spacer flex="1000" />
+         <label id="sidebar-bookmarksCount"
+                class="sidebar-count"
+                value="(##)" />
+         <menulist id="sidebar-bookmarksSort"
+                   label="View"
+                   flex="1"
+                   sizetopopup="none">
+           <menupopup>
+             <menuitem label="&connexions.sidebar.bookmarks.sort.byAlpha;"
+                       oncommand="cSidebar.sortBookmarks('name ASC');" />
+             <menuitem label="&connexions.sidebar.bookmarks.sort.byUrl;"
+                       oncommand="cSidebar.sortBookmarks('url ASC');" />
+             <menuitem label="&connexions.sidebar.bookmarks.sort.byRating;"
+                       oncommand="cSidebar.sortBookmarks('rating DESC');" />
+             <menuitem label="&connexions.sidebar.bookmarks.sort.byTagDate;"
+                       oncommand="cSidebar.sortBookmarks('taggedOn DESC');" />
+             <menuitem label="&connexions.sidebar.bookmarks.sort.byUpdateDate;"
+                       oncommand="cSidebar.sortBookmarks('updatedOn DESC');" />
+             <menuitem label="&connexions.sidebar.bookmarks.sort.byVisitDate;"
+                       oncommand="cSidebar.sortBookmarks('visitedOn DESC');" />
+             <menuitem label="&connexions.sidebar.bookmarks.sort.byVisitCount;"
+                       oncommand="cSidebar.sortBookmarks('visitCount DESC');" />
+           </menupopup>
+         </menulist>
+       </hbox>
+      </hbox>
+      <richlistbox
+            id="sidebar-bookmarkList"
+            class="boomkarks list"
+            contextmenu="sidebar-bookmarks-contextMenu"
+            flex="1">
+      </richlistbox>
+    </vbox>
+
     <splitter collapse="after" resizeafter="farthest"><grippy /></splitter>
-    <groupbox flex="1">
-      <label value="&connexions.sidebar.tags.label;" />
-    </groupbox>
+
+    <vbox flex="1">
+      <!-- NOTE: For hbox, 'center' === 'middle' -->
+      <hbox align="center"
+            class="sidebar-header">
+       <label class="sidebar-title"
+             value="&connexions.sidebar.tags.label;" />
+       <hbox pack="end" flex="1" align="center">
+         <spacer flex="1000" />
+         <label id="sidebar-tagsCount"
+                class="sidebar-count"
+                value="(##)" />
+         <menulist id="sidebar-tagsSort"
+                   label="View"
+                   flex="1"
+                   sizetopopup="none">
+           <menupopup>
+             <menuitem label="&connexions.sidebar.tags.sort.byAlpha;"
+                       oncommand="cSidebar.sortTags('name ASC');" />
+             <menuitem label="&connexions.sidebar.tags.sort.byFrequency;"
+                       oncommand="cSidebar.sortTags('count DESC');" />
+           </menupopup>
+         </menulist>
+       </hbox>
+      </hbox>
+      <richlistbox
+            id="sidebar-tagList"
+            class="tags list"
+            flex="1">
+      </richlistbox>
+    </vbox>
   </vbox>
+  <!-- Sidebar Content } -->
 </page>

@@ -5,10 +5,14 @@
   <script src="connexions.js"/>
   <script src="ff-overlay.js"/>
 
+  <!-- Make the overlay.properties strings available via '#connexions-strings'
+       and also via connexions.getString() -->
   <stringbundleset id="stringbundleset">
-    <stringbundle id="connexions-strings" src="chrome://connexions/locale/overlay.properties"/>
+    <stringbundle id="connexions-strings"
+                 src="chrome://connexions/locale/overlay.properties"/>
   </stringbundleset>
 
+  <!-- Primary commands -->
   <commandset id="mainCommandSet">
     <command        id="cmd_connexions_bookmark_page"
              oncommand="connexions.tagPage((gContextMenu ? gContextMenu.target : null), 'page');" />
@@ -24,6 +28,7 @@
              oncommand="connexions.showOptions();"/>
   </commandset>
 
+  <!-- Primary key set -->
   <keyset id="mainKeyset">
     <key            id="key_connexions_bookmark_page"
                command="cmd_connexions_bookmark_page" />
@@ -109,13 +114,13 @@
          insertafter="context-bookmarklink"
                label="&connexions.context.tagCurrent.label;"
                class="connexions-menu-icon menuitem-iconic"
-           accesskey="&connexions.context.tagCurrent.accesskey;"
+           accesskey="&connexions.context.tagAlt.accesskey;"
              command="cmd_connexions_bookmark_page"/>
     <menuitem     id="context-connexions-page-after-media"
          insertafter="context-saveimage"
                label="&connexions.context.tagCurrent.label;"
                class="connexions-menu-icon menuitem-iconic"
-           accesskey="&connexions.context.tagCurrent.accesskey;"
+           accesskey="&connexions.context.tagAlt.accesskey;"
              command="cmd_connexions_bookmark_page"/>
     <menuitem     id="context-connexions-link"
          insertafter="context-bookmarklink"
@@ -132,6 +137,7 @@
   </popup>
   <!-- Main Context menu } -->
 
+  <!-- Available Toolbar icons { -->
   <toolbarpalette id="BrowserToolbarPalette">
    <toolbarbutton id="connexions-toolbar-button-connexions"
                class="toolbarbutton-1 chromeclass-toolbar-additional"
@@ -149,7 +155,9 @@
          tooltiptext="&connexions.toolbar.button.bookmark.tooltip;"
              command="cmd_connexions_sidebar"/>
   </toolbarpalette>
+  <!-- Available Toolbar icons } -->
 
+  <!-- Connexions toolbar { -->
   <toolbox id="navigator-toolbox">
     <toolbar    id="connexions-toolbar"
              class="chromeclass-toolbar"
@@ -158,12 +166,16 @@
       <label value="&connexions.toolbar.label;"/>
     </toolbar>
   </toolbox>
+  <!-- Connexions toolbar } -->
 
+  <!-- View Sidebar menu { -->
   <menupopup id="viewSidebarMenu">
     <menuitem observes="viewSidebar_connexions" />
   </menupopup>
+  <!-- View Sidebar menu } -->
 
   <broadcasterset id="mainBroadcasterSet">
+    <!-- use to allow any sidebar button to share state -->
     <broadcaster    id="viewSidebar_connexions"
                  label="&connexions.sidebar.label;"
              autoCheck="false"
