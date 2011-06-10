@@ -23,26 +23,26 @@ _cSidebar.prototype = {
                                 .QueryInterface(CI.nsIInterfaceRequestor)
                                     .getInterface(CI.nsIDOMWindow);
 
-        this.db = new Connexions_Db();
+        this.db = connexions_db;    //new Connexions_Db();
 
         cDebug.log("cSidebar::init(): complete");
     },
 
     load: function() {
         // Retrieve references to interactive elements
-        this.bookmarksCount = document
-                                    .getElementById("sidebar-bookmarksCount");
-        this.tagsCount      = document
-                                    .getElementById("sidebar-tagsCount");
+        this.bookmarksCount =
+                document.getElementById("sidebar-bookmarksCount");
+        this.tagsCount      =
+                document.getElementById("sidebar-tagsCount");
 
         // These are <tree> elements
-        this.bookmarkList   = document
-                                    .getElementById("sidebar-bookmarkList");
-        this.tagList        = document
-                                    .getElementById("sidebar-tagList");
+        this.bookmarkList   =
+                document.getElementById("sidebar-bookmarkList");
+        this.tagList        =
+                document.getElementById("sidebar-tagList");
 
-        this.bookmarksMenu  = document
-                                    .getElementById("sidebar-bookmarks-contextMenu");
+        this.bookmarksMenu  =
+                document.getElementById("sidebar-bookmarks-contextMenu");
 
         this._render();
         this._bindEvents();
@@ -56,8 +56,10 @@ _cSidebar.prototype = {
     },
 
     _emptyListItems: function(itemList) {
+        /*
         cDebug.log("cSidebar::_emptyListItems: remove %s items",
                     itemList.itemCount);
+        // */
         while (itemList.itemCount > 0)
         {
             itemList.removeItemAt( 0 );
@@ -70,9 +72,13 @@ _cSidebar.prototype = {
         this.bookmarksCount.value = countBookmarks;
 
         var bookmarks   = this.db.getBookmarks(sortOrder);
+
+        /*
         cDebug.log('cSidebar::_renderBookmarks(): '
+                        + 'sortOrder[ %s ], '
                         + 'retrieved %s bookmarks, totalCount[ %s ]',
-                   bookmarks.length, countBookmarks);
+                   sortOrder, bookmarks.length, countBookmarks);
+        // */
 
         // Empty any current items and re-fill
         this._emptyListItems( this.bookmarkList );
@@ -141,9 +147,12 @@ _cSidebar.prototype = {
         this.tagsCount.value      = countTags;
 
         var tags    = this.db.getAllTags(sortOrder);
+
+        /*
         cDebug.log('cSidebar::_renderTags(): '
                    +    'retrieved %s tags, total[ %s ]',
                    tags.length, countTags);
+        // */
 
         // Empty any current items and re-fill
         this._emptyListItems( this.tagList );
@@ -171,11 +180,13 @@ _cSidebar.prototype = {
             item.appendChild( freq );
             this.tagList.appendChild( item );
 
+            /*
             cDebug.log('cSidebar::_render(): tag %s '
                         +   '{name[ %s ], frequency[ %s ]}',
                         idex,
                         tag.name,
                         tag.frequency);
+            // */
         }
     },
 

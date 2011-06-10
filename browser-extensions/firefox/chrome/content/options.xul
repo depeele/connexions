@@ -1,15 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://connexions/skin/options.css" type="text/css"?>
 <!DOCTYPE prefwindow SYSTEM "chrome://connexions/locale/options.dtd">
-<prefwindow id="connexions-preferences" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" title="&prefwindow.title;">
-  <prefpane id="pane1" label="&pane1.title;">
-    <preferences>
-      <preference id="boolpref1" name="extensions.connexions.boolpref" type="bool"/>
-      <preference id="intpref1" name="extensions.connexions.intpref" type="int"/>
-      <preference id="stringpref1" name="extensions.connexions.stringpref" type="string"/> <!-- note that this is only an ASCII string - use unichar for unicode strings -->
-    </preferences>
-    <checkbox id="checkboolpref" preference="boolpref1" label="&checkboolpref.label;" accesskey="&checkboolpref.accesskey;"/>
-    <label accesskey="&intpref.accesskey;" control="textintpref">&intpref.label;</label><textbox id="textintpref" preference="intpref1"/>
-    <label accesskey="&stringpref.accesskey;" control="textstringpref">&stringpref.label;</label><textbox id="textstringpref" preference="stringpref1"/>
+<prefwindow
+  id="connexions-preferences"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  title="&connexions.prefs.title;">
+
+  <stringbundleset id="stringbundleset">
+    <stringbundle id="connexions-options-strings"
+                  src="chrome://connexions/locale/options.properties" />
+  </stringbundleset>
+
+  <script src="connexions.js"/>
+  <script src="options.js"/>
+
+  <prefpane id="connexions-prefs-pane"
+            label="&connexions.prefs.title;">
+    <tabbox id="connexions-prefs-tabbox" height="580">
+      <tabs>
+        <tab id="connexions-prefs-tab-general"
+             label="&connexions.prefs.tab.general;" />
+      </tabs>
+      <tabpanels>
+        <tabpanel
+            id="connexions-prefs-tabPanel-general"
+            orient="vertical"
+            align="start">
+            <vbox>
+              <groupbox align="start">
+                <caption label="&connexions.prefs.account.caption;" />
+                <vbox>
+                  <label id='connexions-account-user' />
+                  <label id='connexions-account-login'
+                         value="&connexions.prefs.account.login;"
+                         class='link' />
+                  <label id='connexions-account-register'
+                         value="&connexions.prefs.account.create;"
+                         class='link' />
+                </vbox>
+              </groupbox>
+              <groupbox align="start">
+                <caption label="&connexions.prefs.sync.caption;" />
+                <description>&connexions.prefs.sync.description;</description>
+                <button id='connexions-prefs-sync'
+                        label="&connexions.prefs.sync.button.label;" />
+              </groupbox>
+            </vbox>
+         </tabpanel>
+      </tabpanels>
+    </tabbox>
   </prefpane>
 </prefwindow>

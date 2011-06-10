@@ -11,7 +11,7 @@ const CU    = Components.utils;
 CU.import("resource://connexions/debug.js");
 
 
-let EXPORTED_SYMBOLS    = ["Connexions_Db"];
+let EXPORTED_SYMBOLS    = ["Connexions_Db", "connexions_db"];
 
 function Connexions_Db()
 {
@@ -278,51 +278,60 @@ Connexions_Db.prototype = {
      */
     getBookmarks: function(sortOrder)
     {
-        var fname   = 'getBookmarks';
-        var stmt    = this.dbStatements[ fname ];
-        if (stmt === undefined)
-        {
-            var sql = 'SELECT b.rowid,b.* FROM bookmarks AS b '
-                    +   'ORDER BY ?1,b.name ASC';
-            stmt = this.dbConnection.createStatement(sql);
-            this.dbStatements[ fname ] = stmt;
-        }
-
-        var bookmarks   = [];
-        try {
-            var order   = (sortOrder
+        var fname       = 'getBookmarks';
+        var order       = (sortOrder
                             ? sortOrder.split(/\s+/)
                             : [ 'name', 'asc' ]);
+        var stmts       = this.dbStatements[ fname ];
+        var bookmarks   = [];
 
-            switch (order[0])
+        if (stmts === undefined)
+        {
+            // For the various sort orders
+            this.dbStatements[ fname ] = stmts = {};
+        }
+
+        switch (order[0])
+        {
+        case 'url':
+        case 'urlHash':
+        case 'name':
+        case 'description':
+        case 'rating':
+        case 'isFavorite':
+        case 'isPrivate':
+        case 'taggedOn':
+        case 'updatedOn':
+        case 'vistedOn':
+        case 'visitCount':
+        case 'shortcut':
+            break;
+
+        default:
+            order[0] = 'visitedOn';
+            break;
+        }
+
+        switch (order[1].toLowerCase())
+        {
+        case 'asc':     order[1] = 'ASC';   break;
+        case 'desc':
+        default:        order[1] = 'DESC';  break;
+        }
+        order = order.join(' ');
+
+        cDebug.log("Connexions_Db::%s(): order[ %s ]", fname, order);
+
+        var stmt = stmts[ order ];
+        try {
+            if (stmt === undefined)
             {
-            case 'url':
-            case 'urlHash':
-            case 'name':
-            case 'description':
-            case 'rating':
-            case 'isFavorite':
-            case 'isPrivate':
-            case 'taggedOn':
-            case 'updatedOn':
-            case 'vistedOn':
-            case 'visitCount':
-            case 'shortcut':
-                break;
-
-            default:
-                order[0] = 'visitedOn';
-                break;
+                var sql = 'SELECT b.rowid,b.* FROM bookmarks AS b '
+                        +   'ORDER BY '+ order +',b.name ASC';
+                stmt = this.dbConnection.createStatement(sql);
+                stmts[ order ] = stmt;
             }
 
-            switch (order[1].toLowerCase())
-            {
-            case 'asc':     order[1] = 'ASC';   break;
-            case 'desc':
-            default:        order[1] = 'DESC';  break;
-            }
-
-            stmt.bindUTF8StringParameter(0, order.join(' '));
             while (stmt.executeStep())
             {
                 var bookmark    = this._bookmarkFromRow(stmt);
@@ -331,7 +340,7 @@ Connexions_Db.prototype = {
         } catch(e) {
             cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
         }
-        stmt.reset();
+        if (stmt)   stmt.reset();
 
         return bookmarks;
     },
@@ -383,43 +392,50 @@ Connexions_Db.prototype = {
     getAllTags: function(sortOrder)
     {
         var fname   = 'getAllTags';
-        var stmt    = this.dbStatements[ fname ];
-        if (stmt === undefined)
+        var order   = (sortOrder
+                        ? sortOrder.split(/\s+/)
+                        : [ 'name', 'asc' ]);
+        var stmts   = this.dbStatements[ fname ];
+        var tags    = [];
+
+        if (stmts === undefined)
         {
-            var sql = 'SELECT t.rowid,t.name,COUNT(bt.tagId) as frequency '
-                    +   'FROM tags as t,bookmarkTags as bt '
-                    +   'WHERE t.rowid = bt.tagId '
-                    +   'GROUP BY t.rowid '
-                    +   'ORDER BY ?1,t.name ASC';
-            stmt = this.dbConnection.createStatement(sql);
-            this.dbStatements[ fname ] = stmt;
+            // For the various sort orders
+            this.dbStatements[ fname ] = stmts = {};
         }
 
-        var tags    = [];
+        switch (order[0])
+        {
+        case 'name':
+        case 'frequency':
+            break;
+
+        default:
+            order[0] = 'frequency';
+            break;
+        }
+
+        switch (order[1].toLowerCase())
+        {
+        case 'asc':     order[1] = 'ASC';   break;
+        case 'desc':
+        default:        order[1] = 'DESC';  break;
+        }
+        order = order.join(' ');
+
+        var stmt = stmts[ order ];
         try {
-            var order   = (sortOrder
-                            ? sortOrder.split(/\s+/)
-                            : [ 'name', 'asc' ]);
-
-            switch (order[0])
+            if (stmt === undefined)
             {
-            case 'name':
-            case 'frequency':
-                break;
-
-            default:
-                order[0] = 'frequency';
-                break;
+                var sql = 'SELECT t.rowid,t.name,COUNT(bt.tagId) as frequency '
+                        +   'FROM tags as t,bookmarkTags as bt '
+                        +   'WHERE t.rowid = bt.tagId '
+                        +   'GROUP BY t.rowid '
+                        +   'ORDER BY '+ order +',t.name ASC';
+                stmt = this.dbConnection.createStatement(sql);
+                stmts[ order ] = stmt;
             }
 
-            switch (order[1].toLowerCase())
-            {
-            case 'asc':     order[1] = 'ASC';   break;
-            case 'desc':
-            default:        order[1] = 'DESC';  break;
-            }
-
-            stmt.bindUTF8StringParameter(0, order.join(' '));
             while (stmt.executeStep())
             {
                 var tag = this._tagFromRow(stmt);
@@ -428,7 +444,7 @@ Connexions_Db.prototype = {
         } catch(e) {
             cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
         }
-        stmt.reset();
+        if (stmt)   stmt.reset();
 
         return tags;
     },
@@ -714,6 +730,21 @@ Connexions_Db.prototype = {
         }
     },
 
+    /** @brief  Delete all content from all tables.
+     *
+     *  @return true | false
+     */
+    emptyAllTables: function() {
+        for(var name in this.dbSchema.tables)
+        {
+            cDebug.log("Connexions_Db::emptyAllTables(): name[ %s ]", name);
+
+            this._emptyTable(name);
+
+            dbConnection.createTable(name, schema);
+        }
+    },
+
     /** @brief  Perform an asynchronous SQL query.
      *  @param  sql         The SQL query string, with bindings;
      *  @param  bindings    The bindings to apply (name / value pairs);
@@ -751,6 +782,64 @@ Connexions_Db.prototype = {
      * "Private" methods
      *
      */
+
+    /** @brief  Execute the given SQL as a transaction.
+     *  @param  sql     The sql to execute.
+     *
+     *  @return true | false
+     */
+    _transaction: function(sql)
+    {
+        this.dbConnection.beginTransaction();
+
+        var stmt;
+        try {
+            stmt = this.dbConnexions.createStatement( sql );
+            stmt.execute();
+        } catch(e) {
+            if (stmt !== undefined)
+            {
+                stmt.finalize();
+            }
+
+            cDebug.log("Connexions_Db::_transaction(): ERROR [ %s ]",
+                        e);
+            return false;
+        }
+
+        stmt.finalize();
+
+        this.dbConnection.commitTransaction();
+
+        return true;
+    },
+
+    /** @brief  Empty the contents of the given table.
+     *  @param  name        The name of the table to empty.
+     *
+     *  @return true | false
+     */
+    _emptyTable: function(name)
+    {
+        var sql = 'DELETE FROM '+ name;
+
+        return this._transaction( sql );
+    },
+
+    /** @brief  Drop a table, index, or collation.
+     *  @param  type    The type of database item to drop
+     *                  ( TABLE, INDEX, COLLATION );
+     *  @param  name    The name of the item to drop;
+     *
+     *  @return true | false
+     */
+    _drop: function(type, name)
+    {
+        var sql = 'DROP '+ type +' '+ name;
+
+        return this._transaction( sql );
+    },
+
     _dbCreate: function(dbService, dbFile)
     {
         var dbConnection = dbService.openDatabase(dbFile);
@@ -770,8 +859,8 @@ Connexions_Db.prototype = {
 
             var schema  = this.dbSchema.tables[name];
 
-            Connexions_log("Connexions_Db::_dbCreateTables(): "
-                            + "name[ "+ name +" ], schema[ "+ schema +" ]");
+            cDebug.log("Connexions_Db::_dbCreateTables(): "
+                            + "name[ %s ], schema[ %s ]", name, schema);
 
             dbConnection.createTable(name, schema);
         }
@@ -784,8 +873,8 @@ Connexions_Db.prototype = {
             var sql = "CREATE INDEX IF NOT EXISTS "
                     +   name +" ON "+ this.dbSchema.indices[name];
 
-            Connexions_log("Connexions_Db::_dbCreateIndices(): "
-                            + "name[ "+ name +" ], sql[ "+ sql +" ]");
+            cDebug.log("Connexions_Db::_dbCreateIndices(): "
+                            + "name[ %s ], sql[ %s ]", name, sql);
 
             dbConnection.executeSimpleSQL( sql );
         }
@@ -836,3 +925,5 @@ Connexions_Db.prototype = {
         return obj;
     }
 };
+
+var connexions_db = new Connexions_Db();
