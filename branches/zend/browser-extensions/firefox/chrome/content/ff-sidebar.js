@@ -93,21 +93,11 @@ _cSidebar.prototype = {
             name.setAttribute("class", 'bookmark-name');
             name.setAttribute("crop",  'end');
 
-            if (bookmark.isFavorite)
-            {
-                if (bookmark.isPrivate)
-                {
-                    propCss.push('favorite-private');
-                }
-                else
-                {
-                    propCss.push('favorite');
-                }
-            }
-            else if (bookmark.isPrivate)
-            {
-                propCss.push('private');
-            }
+            var propName    = [];
+            if (bookmark.isFavorite)    propName.push('favorite');
+            if (bookmark.isPrivate)     propName.push('private');
+            propCss.push( propName.join('-') );
+
             propIcon.setAttribute("label", ' ');
             propIcon.setAttribute("class", propCss.join(' '));
 

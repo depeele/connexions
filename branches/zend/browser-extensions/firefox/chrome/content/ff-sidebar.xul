@@ -80,16 +80,18 @@
          </menulist>
        </hbox>
       </hbox>
-      <listbox
-            id="sidebar-bookmarkList"
-            class="bookmarks list"
-            contextmenu="sidebar-bookmarks-contextMenu"
-            flex="1">
-        <listcols>
-          <listcol flex="1" />
-          <listcol />
-        </listcols>
-      </listbox>
+      <deck flex="1">
+        <listbox
+              id="sidebar-bookmarkList"
+              class="bookmarks list"
+              contextmenu="sidebar-bookmarks-contextMenu"
+              flex="1">
+          <listcols flex="1">
+            <listcol id="sidebar-bookmarkList-name" flex="1" />
+            <listcol id="sidebar-bookmarkList-props" width="16" align="end" />
+          </listcols>
+        </listbox>
+      </deck>
     </vbox>
 
     <splitter collapse="after" resizeafter="farthest"><grippy /></splitter>
