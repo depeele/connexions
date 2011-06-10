@@ -25,16 +25,45 @@ Connexions.prototype = {
     wm:             CC['@mozilla.org/appshell/window-mediator;1']
                         .getService(CI.nsIWindowMediator),
     initialized:    false,
+    user:           null,   // The current user
+
     prefsWindow:    null,
     strings:        null,
     debug:          null,
+    cookieInfo:     {
+        domain:     "%DOMAIN%",
+        name:       "%COKIENAME%",
+        value:      null,
+    },
+    jsonRpcInfo:    {
+        version:    "%JSONRPC_VERSION%",
+        transport:  "%JSONRPC_TRANSPORT%",
+        url:        "%JSONRPC_URL%",
+        id:         0
+    },
 
     init: function() {
         if (this.initialized === true)  return;
 
-        this.initialized = true;
-        this.strings     = document.getElementById("connexions-strings");
-        this.debug       = cDebug;
+        var self    = this;
+        self.initialized = true;
+        self.strings     = document.getElementById("connexions-strings");
+        self.debug       = cDebug;
+
+        self.getCookie();
+
+        self.jsonRpc('user.whoami', {}, {
+            success: function(data, textStatus, xhr) {
+                cDebug.log('connexions::init(): Current user[ %s ]',
+                            cDebug.obj2str(data));
+
+                self.user = data;
+            },
+            error:   function(xhr, textStatus, error) {
+                cDebug.log('connexions::init(): ERROR retrieving user[ %s ]',
+                            textStatus);
+            }
+        });
 
         cDebug.log('connexions::init(): completed');
     },
@@ -421,6 +450,15 @@ Connexions.prototype = {
         return url;
     },
 
+    /** @brief  Retrieve the information about the currently authenticated
+     *          user.
+     *
+     *  @return A user record
+     */
+    getUser: function() {
+        return this.user;
+    },
+
     sync: function(isReload) {
         cDebug.log("connexions::sync(): isReload[ %s ]", isReload);
 
@@ -432,6 +470,121 @@ Connexions.prototype = {
         /* :TODO: Perform an asynchronous request for all bookmarks and add
          * them into the local database.
          */
+    },
+
+    /** @brief  Invoke a JsonRpc call.
+     *  @param  method      The remote JsonRpc method;
+     *  @param  params      Parameters required for 'method';
+     *  @param  callbacks   A set of callback functions similar to those
+     *                      required by jQuery.ajax():
+     *                          success:    function(data, textStatus, xhr)
+     *                          error:      function(xhr, textStatus, error)
+     *                          complete:   function(xhr, textStatus)
+     *                          progress:   function(position, totalSize, xhr)
+     */
+    jsonRpc: function(method, params, callbacks) {
+        var rpc = {
+            version:    this.jsonRpcInfo.version,
+            id:         this.jsonRpcInfo.id++,
+            method:     method,
+            params:     params
+        };
+
+        // Create a new XmlHttpRequest
+        var xhr = CC['@mozilla.org/xmlextras/xmlhttprequest;1']
+                        .createInstance(CI.nsIXMLHttpRequest);
+
+        if (callbacks.success || callbacks.complete)
+        {
+            // Handle 'onload' to report success/complete
+            xhr.onload = function(event) {
+                // event.target (XMLHttpRequest)
+                var data        = event.target.responseText;
+                var textStatus  = event.target.statusText;
+
+                if (callbacks.success)
+                {
+                    // Attempt to parse 'data' as JSON
+                    var json;
+                    try {
+                        json = JSON.parse(data);
+                    } catch(e) {
+                        if (callbacks.error)
+                        {
+                            callbacks.error(xhr, textStatus,"JSON parse error");
+                            return;
+                        }
+                    }
+
+                    callbacks.success(json, textStatus, xhr);
+                }
+
+                if (callbacks.complete) callbacks.complete(xhr, textStatus);
+            };
+        }
+
+        if (callbacks.error || callbacks.complete)
+        {
+            // Handle 'onerror' to report error/complete
+            xhr.onerror = function(event) {
+                // event.target (XMLHttpRequest)
+                var status      = event.target.status;
+                var textStatus  = event.target.statusText;
+
+                if (callbacks.error)    callbacks.error(xhr, textStatus,status);
+                if (callbacks.complete) callbacks.complete(xhr, textStatus);
+            };
+        }
+
+        if (callbacks.progress)
+        {
+            // Handle 'onprogress' to report progress
+            xhr.onprogress = function(event) {
+                // event.position, event.totalSize,
+                // event.target (XMLHttpRequest)
+
+                callbakcs.progress(event.position, event.totalSize, xhr);
+            };
+        }
+
+        /*
+        request.onuploadprogress = function(event) {
+        };
+        // */
+
+        xhr.open(this.jsonRpcInfo.transport,
+                 this.jsonRpcInfo.url);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
+        if (this.cookieInfo.value !== null)
+        {
+            this.setRequestHeader('Cookie',
+                                  this.cookieInfo.name +'='
+                                  + this.cookieInfo.value +';');
+        }
+
+        xhr.send( JSON.stringify( rpc ) );
+    },
+
+    getCookie: function() {
+        var cookieManager   = CC['@mozilla.org/cookiemanager;1']
+                                .getService(CI.nsICookieManager);
+        var iter            = cookieManager.enumerator;
+        while ( iter.hasMoreElements() )
+        {
+            var cookie = iter.getNext().QueryInterface(CI.nsICookie);
+            if ((! cookie )                              ||
+                (cookie.host !== this.cookieInfo.domain) ||
+                (cookie.name !== this.cookieInfo.name))
+            {
+                continue;
+            }
+
+            cDebug.log('cookie: host[ %s ], path[ %s ], name[ %s ]',
+                       cookie.host, cookie.path, cookie.name);
+
+            this.cookieInfo.value = cookie.value;
+        }
     },
 
     destroy: function() {

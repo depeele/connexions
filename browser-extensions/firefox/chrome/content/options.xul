@@ -42,13 +42,21 @@
               </groupbox>
               <groupbox align="start">
                 <caption label="&connexions.prefs.sync.caption;" />
-                <description>&connexions.prefs.sync.description;</description>
-                <button id='connexions-prefs-sync'
-                        label="&connexions.prefs.sync.button.label;" />
+                <vbox>
+                  <description>&connexions.prefs.sync.description;</description>
+                  <hbox>
+                    <button id='connexions-prefs-sync'
+                            label="&connexions.prefs.sync.button.label;" />
+                    <spacer flex="1" />
+                  </hbox>
 
-                <description class="bordered">&connexions.prefs.syncFull.description;</description>
-                <button id='connexions-prefs-fullSync'
-                        label="&connexions.prefs.syncFull.button.label;" />
+                  <description class="bordered">&connexions.prefs.syncFull.description;</description>
+                  <hbox>
+                    <button id='connexions-prefs-fullSync'
+                            label="&connexions.prefs.syncFull.button.label;" />
+                    <spacer flex="1" />
+                  </hbox>
+                </vbox>
               </groupbox>
             </vbox>
          </tabpanel>
