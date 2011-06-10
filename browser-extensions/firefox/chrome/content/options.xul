@@ -45,6 +45,10 @@
                 <description>&connexions.prefs.sync.description;</description>
                 <button id='connexions-prefs-sync'
                         label="&connexions.prefs.sync.button.label;" />
+
+                <description class="bordered">&connexions.prefs.syncFull.description;</description>
+                <button id='connexions-prefs-fullSync'
+                        label="&connexions.prefs.syncFull.button.label;" />
               </groupbox>
             </vbox>
          </tabpanel>
