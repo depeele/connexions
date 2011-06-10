@@ -183,12 +183,19 @@ Connexions.prototype = {
         this.prefsWindow.focus();
     },
 
-    loadPage: function(e, page) {
+    /** @brief  Load a new page.
+     *  @param  e       The originating event;
+     *  @param  page    The connexions page to load
+     *                  ( myBookmarks myTags, myNetwork, myInbox, bookmarks,
+     *                    tags, people, main, signin, register)
+     *  @param  type    The type of load ( [tab], popup)
+     */
+    loadPage: function(e, page, type) {
         var url = null;
 
-        cDebug.log("loadPage(): event[ %s ], page[ %s ]",
+        cDebug.log("loadPage(): event[ %s ], page[ %s ], type[ %s ]",
                         cDebug.obj2str(e),
-                        page);
+                        page, type);
         switch (page)
         {
         case 'myBookmarks':
@@ -219,13 +226,37 @@ Connexions.prototype = {
             url = 'people';
             break;
 
+        case 'signin':
+            url = 'auth/signIn';
+            break;
+
+        case 'register':
+            url = 'auth/register';
+            break;
+
         case 'main':
+        default:
             url = '';
             break;
         }
 
         if (url !== null) {
-            this.openTab(this.url(url));
+            url = this.url(url);
+
+            cDebug.log("loadPage(): page[ %s ], type[ %s ], final url[ %s ]",
+                       page, type, url);
+
+            switch (type)
+            {
+            case 'popup':
+                this.openPopupWindow( url, page );
+                break;
+
+            case 'tab':
+            default:
+                this.openTab( url );
+                break;
+            }
         }
     },
 
@@ -260,9 +291,13 @@ Connexions.prototype = {
      *          instance associated with the CURRENT window.
      */
     getBrowser: function() {
+        return (this.getWindow()).getBrowser();
+
+        /*
         return (getBrowser
                     ? getBrowser()
                     : (this.getWindow()).getBrowser());
+        // */
     },
 
     /** @brief  For contexts that do NOT have 'window', retrieve the window and
@@ -384,6 +419,19 @@ Connexions.prototype = {
         }
 
         return url;
+    },
+
+    sync: function(isReload) {
+        cDebug.log("connexions::sync(): isReload[ %s ]", isReload);
+
+        if (isReload)
+        {
+            connexions_db.emptyAllTables();
+        }
+
+        /* :TODO: Perform an asynchronous request for all bookmarks and add
+         * them into the local database.
+         */
     },
 
     destroy: function() {
