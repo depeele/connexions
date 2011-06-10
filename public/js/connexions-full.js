@@ -1974,6 +1974,7 @@ $.widget("ui.input", {
                 .bind('keydown.uiinput',    _keydown)
                 .bind('focus.uiinput',      _focus)
                 .bind('blur.uiinput',       _blur)
+                .bind('change.uiinput',     _blur)
                 .bind('validate.uiinput',   _validate);
 
         opts.$label
@@ -1988,6 +1989,44 @@ $.widget("ui.input", {
         {
             opts.$label.show();
         }
+
+        self._handleAutofill();
+    },
+
+    /** @brief  Hack to try and deal with browser autofill issues when the
+     *          browser doesn't fire any 'change' event on autofill.
+     */
+    _handleAutofill: function() {
+        /* Handle some browser autocompletion issues by doing a small bit of
+         * polling at 10, 100, 1000, and 10000 microseconds to see if the
+         * browser makes an unannounced change to the value.
+         */
+        var self            = this;
+        var timeout         = 1;
+        var autofillCheck   = function() {
+            if (self.hasChanged())
+            {
+                $.log('ui.input: id[ %s ] unannounced change after %sms!',
+                      self.element.attr('name'), timeout);
+                self._blur();
+            }
+            else if (timeout < 10000)
+            {
+                // Wait a bit longer
+                timeout *= 10;
+
+                $.log('ui.input: id[ %s ] wait for %sms for a change...',
+                      self.element.attr('name'), timeout);
+                window.setTimeout(function() { autofillCheck(); }, timeout);
+            }
+            else
+            {
+                $.log('ui.input: id[ %s ] NO change after %sms',
+                      self.element.attr('name'), timeout);
+            }
+        };
+
+        autofillCheck();
     },
 
     _blur: function()
