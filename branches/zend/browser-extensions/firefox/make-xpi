@@ -3,16 +3,20 @@
 # ../../application/config/application.ini
 #
 config='../../application/configs/application.ini'
-lines=`grep '^extensions\.firefox\.' "${config}" | \
+
+firefox=`grep '^extensions\.firefox\.' "${config}" | \
 	   sed 's/^extensions\.firefox\.//g;s/[ ]*=[ ]*/=/g;'`
+eval $firefox;
 
-#echo "lines[ $lines ]";
-eval $lines;
+jsonRpc=`grep '^api\.jsonRpc\.' "${config}" | \
+	   sed 's/^api\.//g;s/\./_/g;s/[ ]*=[ ]*/=/g;'`
+eval $jsonRpc;
 
-if [ -z "$domain" -o -z "$url" -o -z "$author" -o -z "$authorUrl" -o -z "$version" ]; then
+if [ -z "$domain" -o -z "$cookieName" -o -z "$url" -o -z "$author" -o -z "$authorUrl" -o -z "$version" ]; then
 	echo "*** Missing one or more definitions from '${config}'"
 	echo "***	extensions.firefox.version"
 	echo "***	extensions.firefox.domain"
+	echo "***	extensions.firefox.cookieName"
 	echo "***	extensions.firefox.url"
 	echo "***	extensions.firefox.author"
 	echo "***	extensions.firefox.authorUrl"
@@ -33,19 +37,33 @@ rm -rf `find build -name '*svn*' | xargs`
 
 # Replace all occurrences of
 #	%VERSION%, %DOMAIN%, %URL%, %AUTHOR%, and %AUTHOR_URL%
+#
+# As well as JsonRpc related replacables:
+#	%JSONRPC_VERSION%, %JSONRPC_URL%, %JSONRPC_TRANSPORT%
+#
+#
 # with the matching values from the configuration file.
 sedCmd="s#%VERSION%#${version}#g"
 sedCmd="${sedCmd};s#%DOMAIN%#${domain}#g"
+sedCmd="${sedCmd};s#%COOKIENAME%#${cookieName}#g"
 sedCmd="${sedCmd};s#%URL%#${url}#g"
 sedCmd="${sedCmd};s#%AUTHOR%#${author}#g"
 sedCmd="${sedCmd};s#%AUTHOR_URL%#${authorUrl}#g"
+sedCmd="${sedCmd};s#%JSONRPC_VERSION%#${jsonRpc_version}#g"
+sedCmd="${sedCmd};s#%JSONRPC_URL%#${jsonRpc_url}#g"
+sedCmd="${sedCmd};s#%JSONRPC_TRANSPORT%#${jsonRpc_transport}#g"
 
 echo "Replacing variables: "
 echo " VERSION    [ ${version} ]"
 echo " DOMAIN     [ ${domain} ]"
+echo " COOKIENAME [ ${cookieName} ]"
 echo " URL        [ ${url} ]"
 echo " AUTHOR     [ ${author} ]"
 echo " AUTHOR_URL [ ${authorUrl} ]"
+echo " JSONRPC variable: "
+echo "  VERSION   [ ${jsonRpc_version} ]"
+echo "  URL       [ ${jsonRpc_url} ]"
+echo "  TRANSPORT [ ${jsonRpc_transport} ]"
 
 for file in `find build -type f | xargs`; do
 	#echo ">> ${file}..."
