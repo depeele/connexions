@@ -7,5 +7,7 @@
 
 <!ENTITY connexions.prefs.sync.caption      "Sync bookmarks">
 <!ENTITY connexions.prefs.sync.description  'Click "Sync Now" to check for updates to your bookmarks without reloading all of your bookmarks.'>
-
 <!ENTITY connexions.prefs.sync.button.label "Sync Now">
+
+<!ENTITY connexions.prefs.syncFull.description  'A full sync will clear out all existing bookmarks and tags and reload them from Connexions.'>
+<!ENTITY connexions.prefs.syncFull.button.label "Full Sync">
