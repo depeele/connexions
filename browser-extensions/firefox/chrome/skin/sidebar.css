@@ -21,23 +21,30 @@
 
 .bookmarks {
 }
-.bookmark-name {
-    width:      100%;
+.bookmarks .bookmark-name {
 }
-.bookmark-properties {
+.bookmarks .bookmark-properties {
     margin:     0;
     padding:    0;
     width:      16px;
     height:     16px;
+
+    max-width:  16px;
+    min-width:  16px;
 }
+.bookmarks .favorite,
+.bookmarks .private,
 .bookmarks .favorite-private {
-  list-style-image: url("chrome://connexions/skin/favorite+private-16.png");
+  list-style-image: url("chrome://connexions/skin/bookmark-props.png");
 }
 .bookmarks .favorite {
-  list-style-image: url("chrome://connexions/skin/favorite-16.png");
+  -moz-image-region: rect(0px 16px 16px 0px);
 }
 .bookmarks .private {
-  list-style-image: url("chrome://connexions/skin/private-16.png");
+  -moz-image-region: rect(16px 16px 32px 0px);
+}
+.bookmarks .favorite-private {
+  -moz-image-region: rect(32px 16px 48px 0px);
 }
 
 .tags {
