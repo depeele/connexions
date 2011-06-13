@@ -11,6 +11,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
     protected   $_request   = null;
     protected   $_viewer    = null;
 
+    protected   $_pki       = null;
     protected   $_noNav     = false;    /* Should navigate be excluded?   */
     protected   $_noSidebar = false;    /* Should the sidebar be ignored? */
     protected   $_noFormatHandling
@@ -82,6 +83,19 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         $this->_url         =  $this->_baseUrl
                             .  $this->_request->getPathInfo();
 
+        // Include any PKI information
+        if ( isset($_SERVER['SSL_CLIENT_VERIFY'])           &&
+             ($_SERVER['SSL_CLIENT_VERIFY'] === 'SUCCESS')  &&
+             (! @empty($_SERVER['SSL_CLIENT_I_DN']) )       &&
+             (! @empty($_SERVER['SSL_CLIENT_S_DN']) ) )
+        {
+            $this->_pki = array(
+                'verified'  => true,
+                'issuer'    => $_SERVER['SSL_CLIENT_I_DN'],
+                'subject'   => $_SERVER['SSL_CLIENT_S_DN'],
+            );
+        }
+
 
         if (! preg_match('#/\s*$#', $this->_url))
         {
@@ -97,6 +111,9 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         Connexions::log("Connexions_Controller_Action::init(): "
                         .   "request params[ %s ]",
                         Connexions::varExport($this->_request->getParams()));
+        Connexions::log("Connexions_Controller_Action::init(): "
+                        .   "pki[ %s ]",
+                        Connexions::varExport($this->_pki));
         // */
 
         $this->_streaming = Connexions::to_bool(
@@ -111,6 +128,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         $this->view->cookiePath    = $this->_cookiePath;
         $this->view->url           = $this->_url;
         $this->view->viewer        = $this->_viewer;
+        $this->view->pki           = $this->_pki;
         $this->view->searchContext = $this->_request->getParam('searchContext',
                                                                null);
 

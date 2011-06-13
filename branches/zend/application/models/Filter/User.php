@@ -18,7 +18,7 @@ class Model_Filter_User extends Connexions_Model_Filter
          */
         'name'          => array('decodeEntities', 'stripTags', 'stringTrim',
                                  array('pregReplace',
-                                       'match'  => '/[^a-zA-Z0-9\._\-]/',
+                                       'match'  => '/[^a-zA-Z0-9\._\-@]/',
                                        'replace'=> ''),
         ),
         'fullName'      => array('decodeEntities', 'stripTags', 'stringTrim',

@@ -37,6 +37,19 @@ class Service_Proxy_User extends Connexions_Service_Proxy
         return $this->_service->deauthenticate();
     }
 
+    /** @brief  Retrieve the currently authenticated user (if any).
+     *  @param  apiKey      The apiKey for the currently authenticated user
+     *                      (REQUIRED if the transport method is NOT POST);
+     *
+     *  @return A Model_User instance with isAuthenticated() set accordingly.
+     */
+    public function whoami($apiKey)
+    {
+        $user = $this->_authenticate($apiKey);
+
+        return $user;
+    }
+
     /** @brief  Retrieve a set of users related by a set of Tags.
      *  @param  tags    A comma-separated list of tags to match;
      *  @param  exact   Users MUST be associated with provided tags [ true ];

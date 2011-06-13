@@ -2,78 +2,64 @@
 $this->headTitle('Join');
 
 $jQuery = $this->jQuery();
-$jQuery->addStylesheet($this->baseUrl('css/auth.min.css'))
-       ->addOnLoad('authRegister_onLoad();')
-       ->javascriptCaptureStart();
-?>
-/************************************************
- * Initialize the form handlers
- *
- */
-function authRegister_onLoad()
+$jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
+
+$fullName = $this->fullName;
+$email    = $this->email;
+
+Connexions::log("register.phtml: includePki[ %s ], autoPki[ %s ]",
+                Connexions::varExport($this->includePki),
+                Connexions::varExport($this->autoPki));
+
+if (empty($this->user)      &&
+   ($this->pki !== null)    &&
+   ($this->pki['verified'] === true))
 {
-    var $auth   = $('#auth');
-    var $form   = $auth.find('form:first');
-
-    /* Passwords have a custom, synchronous validator that we need to
-     * bind BEFORE instantiating the validationForm so we can syncrhonously
-     * perform validation as needed.
-     */
-    var pass1Name   = 'password';
-    var pass2Name   = 'password2';
-    var $pass1      = $form.find('input[name='+ pass1Name +']');
-    var $pass2      = $form.find('input[name='+ pass2Name +']');
-    var $status     = $auth.find('.status');
-
-    $form.find('input[name=user]').input({
-        validation: function(val) {
-            return validate_user($(this), val);
-        }
-    });
-
-    $form.find('input[name='+ pass1Name +'],'+
-               'input[name='+ pass2Name +']').input({
-        validation: function() {
-            return $.validatePasswords($(this), $pass1, $pass2);
-        }
-    });
-
-    $form.validationForm({$validation: $status} );
-}
-
-function validate_user($user, name)
-{
-    var stat    = $user.input('isValid');
-    /* :XXX: If the stat is currently 'undefined', we will be returned an
-     *       object which we need to convert BACK to 'undefined' so we don't
-     *       toggle the state (undefined => object) causing the CSS class to be
-     *       changed, causing a flicker from undefined to invalid.
-     */
-    if ((stat !== true) && (stat !== false))
+    $needUserName = true;
+    if (preg_match('/emailAddress=([^\/]+)/i',
+                   $this->pki['subject'], $match))
     {
-        stat = undefined;
+        Connexions::log("register.phtml: subject[ %s ], email match[ %s ]",
+                        $this->pki['subject'],
+                        Connexions::varExport($match));
+
+        $email        = $match[1];
+        $this->user   = $email;
+        $needUserName = false;
     }
 
-    if (name.length > 2)
+    if (preg_match('/CN=([^\/]+)/i',
+                        $this->pki['subject'], $match))
     {
-        // Perform a JSONP call to see if this user name is in use
-        $.getJSON('<?= $this->baseUrl('auth/checkuser') ?>?jsonp=?',
-            {format:   'json',
-             userName: name},
-             function(data) {
-                if (data.error !== undefined)
-                    $user.input('valid', data.error.message);
-                else
-                    $user.input('valid', true);
-             });
+        Connexions::log("register.phtml: subject[ %s ], CN match[ %s ]",
+                        $this->pki['subject'],
+                        Connexions::varExport($match));
+
+        $fullName   = $match[1];
+        if ($needUserName)
+        {
+            $this->user = $fullName;
+        }
     }
 
-    // Regardless, don't change the current validation.
-    return stat;
-}
-<?php
-$jQuery->javascriptCaptureEnd();
+    /* Apply the Model_User filter to the constructed user name to ensure that
+     * it's valid.
+     */
+    $filter = $this->viewer->getFilter();
+    $filter->setData( array('name'      => $this->user,
+                            'fullName'  => $fullName,
+                            'email'     => $email) );
+    $this->user = $filter->getUnescaped('name');
+    $fullName   = $filter->getUnescaped('fullName');
+    $email      = $filter->getUnescaped('email');
 
+    //$this->user = preg_replace('/[^a-zA-Z0-9\._\-\@]/', '.', $this->user);
+    //$this->user = preg_replace('/\.+/',                 '.', $this->user);
+
+    Connexions::log("register.phtml: Sanitized certificate data: "
+                    . "name[ %s ], fullName[ %s ], email[ %s ]",
+                    $this->user, $fullName, $email);
+}
 
 ?>
 <div id="auth" class='ui-validation-form ribbon-form line'><!-- { -->
@@ -83,13 +69,16 @@ $jQuery->javascriptCaptureEnd();
   <p>
    or <?= Connexions::anchor('/auth/signIn', 'Sign In') ?>
   </p>
-  <div class='status<?= (@isset($this->error) ? ' error' : '') ?>'>
-   <?= (@isset($this->error) ? $this->error : '') ?>
-  </div>
  </div><!-- legend } -->
  <div class="userInput lastUnit"><!-- { -->
   <form method='post'>
-   <div class='field'>
+   <?php if (! empty($fullName)) { ?>
+   <input type='hidden' name='fullName' value='<?= $fullName ?>' />
+   <?php } ?>
+   <?php if (! empty($email)) { ?>
+   <input type='hidden' name='email' value='<?= $email ?>' />
+   <?php } ?>
+   <div class='field username'>
     <label for='user'>Desired User Name / ID</label>
     <input type='text' class='text required' autocomplete='off'
            name='user' value='<?= $this->user ?>'
@@ -98,27 +87,206 @@ $jQuery->javascriptCaptureEnd();
      <div class='ui-field-status'></div>
     </div>
    </div>
-   <div class='field'>
-    <label for='password'>Password</label>
-    <input type='password' class='text required' autocomplete='off'
-          name='password'  value='<?= $this->pass ?>'
-                        tabindex='2' />
-    <div class='ui-field-info'>
-     <div class='ui-field-status'></div>
+   <?php
+   if (($this->pki !== null) && ($this->pki['verified'] === true))
+   {
+       ?>
+   <fieldset class='userpassword'>
+    <legend>Password</legend>
+        <?php
+   }
+    ?>
+    <div class='field'>
+     <label for='password'>Password</label>
+     <input type='password' class='text required' autocomplete='off'
+           name='password'  value='<?= $this->pass ?>'
+                         tabindex='2' />
+     <div class='ui-field-info'>
+      <div class='ui-field-status'></div>
+     </div>
     </div>
-   </div>
-   <div class='field'>
-    <label for='password2'>Re-type Password for verfication</label>
-    <input type='password' class='text required' autocomplete='off'
-           name='password2'
-                        tabindex='3' />
-    <div class='ui-field-info'>
-     <div class='ui-field-status'></div>
+    <div class='field'>
+     <label for='password2'>Re-type Password for verfication</label>
+     <input type='password' class='text required' autocomplete='off'
+            name='password2'
+                         tabindex='3' />
+     <div class='ui-field-info'>
+      <div class='ui-field-status'></div>
+     </div>
     </div>
-   </div>
+   <?php
+   if (($this->pki !== null) && ($this->pki['verified'] === true))
+   {
+       /* We have a valid SSL client certificate so offer it as a valid
+        * credential.
+        */
+       ?>
+   </fieldset>
+   <fieldset class='pki'>
+    <legend>PKI
+     <input id='includePki'
+            type='checkbox'
+            name='includePki'
+            value='true'<?= ($this->includePki
+                                 ? " checked='true'"
+                                 : '') ?> />
+    </legend>
+    <span class='dn'
+     ><span class='ui-icon'
+      ><span class='connexions_sprites type-certificate'></span></span>
+      <?= $this->pki['subject'] ?></span>
+    <div class='field options'>
+     <label for='autoPki'>Automatic sign-in via PKI?</label>
+     <input id='autoPki'
+            type='checkbox'
+            name='autoPki'
+            value='true'<?= ($this->autoPki
+                                 ? " checked='true'"
+                                 : '') ?> />
+    </div>
+   </fieldset>
+       <?php
+   }
+   ?>
+
    <div class='field buttons'>
     <button name='submit' tabindex='4'>Join Connexions</button>
    </div>
   </form>
+  <div class='status<?= (@isset($this->error) ? ' error' : '') ?>'>
+   <?= (@isset($this->error) ? $this->error : '') ?>
+  </div>
  </div><!-- userInput } -->
 </div><!-- ribbon-form } -->
+<script type='text/javascript'>
+(function($) {
+    // Initialize the form handlers
+    var $auth   = $('#auth');
+    var $form   = $auth.find('form:first');
+
+    /* Passwords have a custom, synchronous validator that we need to
+     * bind BEFORE instantiating the validationForm so we can syncrhonously
+     * perform validation as needed.
+     */
+    var pass1Name   = 'password';
+    var pass2Name   = 'password2';
+    var $user       = $form.find('input[name=user]');
+    var $pass       = $form.find('input[type=password]');
+    var $pass1      = $form.find('input[name='+ pass1Name +']');
+    var $pass2      = $form.find('input[name='+ pass2Name +']');
+    var $pki        = $form.find('fieldset.pki');
+    var $includePki = $form.find('input[name=includePki]');
+    var $status     = $auth.find('.status');
+
+    function validate_user($user, name)
+    {
+        var stat    = $user.input('isValid');
+        /* :XXX: If the stat is currently 'undefined', we will be returned an
+         *       object which we need to convert BACK to 'undefined' so we
+         *       don't toggle the state (undefined => object) causing the CSS
+         *       class to be changed, causing a flicker from undefined to
+         *       invalid.
+         */
+        if ((stat !== true) && (stat !== false))
+        {
+            stat = undefined;
+        }
+    
+        if (name.length > 2)
+        {
+            // Perform a JSONP call to see if this user name is in use
+            $.getJSON('<?= $this->baseUrl('auth/checkuser') ?>?jsonp=?',
+                {format:   'json',
+                 userName: name},
+                 function(data) {
+                    if (data.error !== undefined)
+                        $user.input('valid', data.error.message);
+                    else
+                        $user.input('valid', true);
+                 });
+        }
+    
+        // Regardless, don't change the current validation.
+        return stat;
+    }
+
+
+    $(document).ready(function() {
+        $user.input({
+            hideLabel:  false,
+            validation: function(val) {
+                return validate_user($(this), val);
+            }
+        });
+
+        $pass.input({
+            validation: function() {
+                return $.validatePasswords($(this), $pass1, $pass2);
+            }
+        });
+
+        $includePki.bind('change', function() {
+            var included    = $includePki.is(':checked');
+            $form.validationForm('option',
+                                 'disableSubmitOnUnchanged',
+                                 (included ? false : true));
+
+            $form.validationForm('validate');
+
+            // Handle (en/dis)abling the pki area
+            var $fields = $pki.find('> .field, > .dn');
+            var $inputs = $fields.find('input');
+            if (included)
+            {
+                $fields.removeClass('ui-state-disabled');
+                $inputs.removeAttr('disabled');
+            }
+            else
+            {
+                $fields.addClass('ui-state-disabled');
+                $inputs.attr('disabled', true);
+            }
+        });
+
+        var firstValidation = true;
+        $form.validationForm({
+            //$validation:              $status,
+            disableSubmitOnUnchanged: ($includePki.is(':checked')
+                                        ? false : true),
+            validate:   function() {
+                var res = $user.input('isValid');
+                if (res === true)
+                {
+                    if ($includePki.is(':checked'))
+                    {
+                        // We simply need two matching (even if empty) passwords
+                        res = ($pass1.val() == $pass2.val());
+                    }
+                    else
+                    {
+                        // We need two matching, non-empty passwords
+                        res = $.validatePasswords($pass1, $pass1, $pass2);
+                    }
+                }
+
+                if (res == true)
+                {
+                    if (firstValidation)
+                    {
+                        firstValidation = false;
+                    }
+                    else
+                    {
+                        $status.text('');
+                    }
+                }
+
+                return res;
+            }
+        });
+
+        $includePki.trigger('change');
+    });
+}(jQuery));
+
+</script>

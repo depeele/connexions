@@ -120,11 +120,13 @@ class AuthController extends Connexions_Controller_Action
             }
         }
 
+        /*
         Connexions::log("AuthController::signinAction(): "
                         .   "messages[ %s ], onSuccess[ %s ], noNav[ %s ]",
                         Connexions::varExport($messages),
                         $onSuccess,
                         Connexions::varExport($this->_noNav));
+        // */
 
         if (empty($onSuccess))
         {
@@ -160,53 +162,91 @@ class AuthController extends Connexions_Controller_Action
         // action body
         $request = $this->getRequest();
 
-        $user  = $request->getParam('user',      '');
-        $pass  = $request->getParam('password',  '');
-        $pass2 = $request->getParam('password2', '');
+        $user       = $request->getParam('user',      '');
+        $fullName   = $request->getParam('fullName', '');
+        $email      = $request->getParam('email',    '');
+        $pass       = $request->getParam('password',  '');
+        $pass2      = $request->getParam('password2', '');
+        $includePki = Connexions::to_bool($request->getParam('includePki',
+                                                             true));
+        $autoPki    = Connexions::to_bool($request->getParam('autoPki',
+                                                             false));
 
-        $this->view->user = $user;
-        $this->view->pass = $pass;
+        /* To create a new user we need:
+         *  - a POST request;
+         *  - a non-empty user;
+         *  - includePki == true OR
+         *      non-empty $pass and $pass2;
+         */
+        if ($request->isPost() &&
+            (! @empty($user))  &&
+            ( ($includePki == true) ||
+              ((! @empty($pass)) && (! @empty($pass2))) ) )
+        {
+            // Gather user data.
+            $res      = null;
+            $userData = array(
+                'name'          => $user,
+                'fullName'      => $fullName,
+                'email'         => $email,
+                'credentials'   => array(),
+            );
 
-        if (@empty($user) || @empty($pass) || @empty($pass2))
-        {
-            // Present the registration form
-        }
-        else if ($pass != $pass2)
-        {
-            $this->view->error = "Passwords do not match.";
-        }
-        else
-        {
-            // Add this new user to the database
-            $userModel = $this->service('User')
-                                    ->get(array('name' => $user));
-            if ( (! $userModel) || $userModel->isBacked())
+            if ($includePki && $this->_pki && $this->_pki['verified'])
             {
-                $this->view->error = "User Name is already taken.";
+                array_push($userData['credentials'], array(
+                    'type'  =>  Model_UserAuth::AUTH_PKI,
+                    'value' =>  $this->_pki['subject']
+                ));
             }
-            else
-            {
-                // Set the password for this new user and save the record.
-                $userModel->name     = $user;
-                $userModel->password = $pass;
 
-                if ($userModel->save())
+            if (! empty($pass))
+            {
+                if ($pass != $pass2)
                 {
-                    /* We've successfully registered this new user
-                     *
-                     * Mark this user as 'authenticated' by performing a
-                     * write() of the user's name to the authentication store.
-                     */
-                    $auth = Zend_Auth::getInstance();
-                    $auth->getStorage()->write($user);
-
-                    // Redirect to a new user welcome.
-                    return $this->_redirector->gotoSimple('index', 'welcome');
+                    $res = "Passwords do not match.";
                 }
-
-                $this->view->error = "Database error";
+                else
+                {
+                    array_push($userData['credentials'], array(
+                        'type'  => Model_UserAuth::AUTH_PASSWORD,
+                        'value' => $pass
+                    ));
+                }
             }
+
+            if ($res === null)
+            {
+                if (! empty($userData['credentials']))
+                {
+                    $res = $this->_registerUser($userData);
+                    if ($res === true)
+                    {
+                        /* SUCCESS -- redirect the newly registered
+                         *            (and authenticated) user to the primary
+                         *            bookmarks page
+                         */
+                        return $this->_redirector->gotoSimple('index',
+                                                              'bookmarks');
+                    }
+                }
+                else
+                {
+                    $res = "Missing credentials";
+                }
+            }
+
+            // ERROR
+            $this->view->error = $res;
         }
+
+        // Include form variables we can re-use
+        $this->view->user       = $user;
+        $this->view->fullName   = $fullName;
+        $this->view->email      = $email;
+        $this->view->pass       = $pass;
+        $this->view->includePki = $includePki;
+        $this->view->autoPki    = $autoPki;
 
         return $this->_showAuthenticationForm();
     }
@@ -261,11 +301,199 @@ class AuthController extends Connexions_Controller_Action
         $jsonRpc->sendResponse();
     }
 
+    /*************************************************************************
+     * Protected Helpers
+     *
+     */
+
+    /** @brief  Prepare for rendering the main view, regardless of format.
+     *
+     *  This will collect the variables needed to render the main view, placing
+     *  them in $view->main as a configuration array.
+     */
+    protected function _prepare_main()
+    {
+        //Connexions::log("AuthController::_prepare_main():");
+
+        parent::_prepare_main();
+
+        $request  =& $this->_request;
+
+        /* Allow 'closeAction', 'onSuccess', and/or 'noNav' to be specified in
+         * the request.
+         */
+        $this->view->closeAction = trim($request->getParam('closeAction',
+                                                           'back'));
+        $this->view->onSuccess   =
+            trim($request->getParam('onSuccess', $this->view->closeAction));
+        $this->_noNav            =
+            Connexions::to_bool($request->getParam('noNav', false));
+        $this->view->excludeNav  = $this->_noNav;
+
+        /*
+        Connexions::log("AuthController::_prepare_main(): "
+                        . "closeAction[ %s ], onSuccess[ %s ], noNav[ %s ]",
+                        $this->view->closeAction,
+                        $this->view->onSuccess,
+                        Connexions::varExport($this->view->noNav));
+        // */
+    }
+
+    /** @brief  Register a new user.
+     *  @param  user        Incoming user data of the form:
+     *                          {name:      userName,
+     *                           fullName:  fullName,
+     *                           email:     email,
+     *                           credentials:   [
+     *                              {type:  'password | pki',
+     *                               value: credential value},
+     *                              ...
+     *                           ]}
+     *
+     *  @return true on success, string error message on error.
+     */
+    protected function _registerUser($user)
+    {
+        // /*
+        Connexions::log("AuthController::_registerUser(): user[ %s ]",
+                        Connexions::varExport($user));
+        // */
+
+        // Add this new user to the database
+        $userModel = $this->service('User')
+                                ->get(array('name' => $user['name']));
+        if ( (! $userModel) || $userModel->isBacked())
+        {
+            // /*
+            Connexions::log("AuthController::_registerUser(): "
+                            . "Error retrieving userModel for user[ %s ]",
+                            $user['name']);
+            // */
+
+            return "User Name is already taken.";
+        }
+
+        // Set the user name and save the user mode.
+        $userModel->name = $user['name'];
+        if (! empty($user['fullName']))
+        {
+            $userModel->fullName = $user['fullName'];
+        }
+        if (! empty($user['email']))
+        {
+            $userModel->email = $user['email'];
+        }
+
+        /*
+        Connexions::log("AuthController::_registerUser(): user[ %s ]",
+                        $user['name']);
+        // */
+
+        $userModel = $userModel->save();
+        if (! $userModel)
+        {
+            // /*
+            Connexions::log("AuthController::_registerUser(): "
+                            .   "Cannot create new user for user[ %s ]",
+                            $user['name']);
+            // */
+
+            return "Cannot create new user";
+        }
+
+        /*
+        Connexions::log("AuthController::_registerUser(): "
+                        .   "New user created[ %s ]",
+                        $userModel->debugDump());
+        // */
+
+
+        // Now, add credentials for this user.
+        $errors   = array();
+        $authCred = null;
+        foreach ($user['credentials'] as $credential)
+        {
+            $userAuth   = null;
+            try {
+                $userAuth = $userModel->addAuthenticator($credential['value'],
+                                                         $credential['type']);
+
+                if ($userAuth === null)
+                {
+                    array_push($errors,
+                                "Cannot add {$credential['type']} credential");
+                }
+                else if ($authCred === null)
+                {
+                    $authCred = $credential;
+                }
+            } catch (Exception $e) {
+                Connexions::log("AuthController::_registerUser(): "
+                                .   "ERROR adding credential[ %s ]",
+                                $e->getMessage());
+                array_push($errors,
+                            "Cannot add {$credential['type']} credential: "
+                                . $e->getMessage());
+            }
+
+            /*
+            Connexions::log("AuthController::_registerUser(): "
+                            .   "credential[ %s ] %sadded",
+                            Connexions::varExport($credential),
+                            ($userAuth !== null
+                                ? ''
+                                : 'NOT '));
+            // */
+        }
+
+        if (! empty($errors))
+        {
+            // /*
+            Connexions::log("AuthController::_registerUser(): "
+                            .   "error(s) [ %s ]",
+                            Connexions::varExport($errors));
+            // */
+
+            $userModel->delete();
+
+            return implode('; ', $errors);
+        }
+
+        /*
+        Connexions::log("AuthController::_registerUser(): "
+                        .   "perform an initial authentication for [ %s ] "
+                        .   "using credential[ %s ]",
+                        $userModel,
+                        Connexions::varExport($authCred));
+        // */
+
+        /* We've successfully registered this new user
+         *
+         * Perform an initial authentication with the first credential.
+         */
+        $uService  = $this->service('User');
+        $userModel = $uService->authenticate( $authCred['type'],
+                                              $authCred['value'],
+                                              $userModel->id );
+
+        // /*
+        Connexions::log("AuthController::_registerUser(): "
+                        .   "authentication %s",
+                        ($userModel->isAuthenticated()
+                            ? 'success'
+                            : 'FAILURE'));
+        // */
+
+        return true;
+    }
+
     /** @brief  Prepare to (re)show the authentication form.  If there are any
      *          flash messages that indicate a 'returnTo' URL, forward them on.
      */
     protected function _showAuthenticationForm()
     {
+        $this->_prepare_main();
+
         if ($this->_flashMessenger->hasMessages())
         {
             // Forward any 'onSuccess' flash message

@@ -55,7 +55,9 @@ if ($authenticated)
     // Construct the menu
     ?>
 <div class='authMenu'>
- <div class='userName'><?= $this->viewer->fullName ?></div>
+ <div class='userName'><?= (! empty($this->viewer->fullName)
+                                ? $this->viewer->fullName
+                                : $this->viewer->name) ?></div>
  <div class='menu-arrow ui-icon ui-icon-triangle-1-s'>&nbsp;</div>
  <ul class='menu'>
   <?php
