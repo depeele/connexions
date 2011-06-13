@@ -32,7 +32,7 @@
 (function($) {
 
 $.widget("settings.credential", {
-    version: "0.0.1",
+    version: "0.0.2",
 
     /* Remove the strange ui.widget._trigger() class name prefix for events.
      *
@@ -51,6 +51,11 @@ $.widget("settings.credential", {
 
         //validTypes: [ 'openid', 'password', 'pki' ],
         validTypes: [ 'password', 'pki' ],
+
+        /* Any known PKI credentials that may be used when the authType is
+         * changed to 'pki'
+         */
+        pki:        null,
 
         /* General Json-RPC information:
          *  {version:   Json-RPC version,
@@ -226,6 +231,22 @@ $.widget("settings.credential", {
 
                 // Trickle a 'rebind' event up to our parent...
                 self._trigger('rebind');
+            }
+
+            if ((newType          === 'pki') &&
+                (opts.pki         !== null) &&
+                (opts.pki.subject !== undefined))
+            {
+                var $input  = opts.$credential;
+                var val     = $input.val();
+
+                if (val.length < 1)
+                {
+                    $input.val(opts.pki.subject);
+
+                    // Trigger blur to handle label hiding and validation.
+                    $input.trigger('blur');
+                }
             }
 
             $types.removeClass('current');

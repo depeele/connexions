@@ -39,6 +39,11 @@ $.widget("ui.validationForm", {
                                      * changed from the initial values
                                      * [ true ];
                                      */
+        handleAutoFill: false,      /* Should we attempt to handle issues with
+                                     * browser auto-fill where input values
+                                     * are automatically filled but no
+                                     * 'change' or 'update' events are fired?
+                                     */
 
         $status:        null        /* The element to present validation
                                      * information in [:sibling
@@ -113,7 +118,10 @@ $.widget("ui.validationForm", {
         opts.$inputs.each(function() {
             var $el = $(this);
             if ($el.data('input'))  return;
-            $el.input({hideLabel: opts.hideLabels});
+            $el.input({
+                hideLabel:      opts.hideLabels,
+                handleAutoFill: opts.handleAutofill
+            });
         });
 
         opts.$buttons.each(function() {

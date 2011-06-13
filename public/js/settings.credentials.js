@@ -52,6 +52,9 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
          */
         $status:    null,
 
+        // Any known PKI credentials that may be used by settings.credential
+        pki:        null,
+
         /* General Json-RPC information:
          *  {version:   Json-RPC version,
          *   target:    URL of the Json-RPC endpoint,
@@ -346,9 +349,13 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
     {
         var self    = this;
         var opts    = self.options;
+        var cOpts   = {
+            jsonRpc: opts.jsonRpc,
+            apiKey:  opts.apiKey,
+            pki:     opts.pki
+        }
 
-        $cred.credential({jsonRpc: opts.jsonRpc,
-                          apiKey:  opts.apiKey});
+        $cred.credential( cOpts );
 
         $cred.bind('remove.settingsCredentials', function() {
             self._deactivateCredential( $cred );
