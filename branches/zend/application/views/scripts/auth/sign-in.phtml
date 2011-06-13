@@ -196,7 +196,8 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
     $(document).ready(function() {
         $form.validationForm({
             submitSelector:             "button[name=method]:first",
-            disableSubmitOnUnchanged:   false
+            disableSubmitOnUnchanged:   false,
+            handleAutofill:             true
         });
     });
 

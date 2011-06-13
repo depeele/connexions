@@ -149,7 +149,7 @@ CREATE TABLE userAuth (
   userId        INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
   authType      VARCHAR(30)             NOT NULL DEFAULT 'password',
 
-  credential    VARCHAR(255)            NOT NULL DEFAULT '',
+  credential    VARCHAR(255)            NOT NULL UNIQUE DEFAULT '',
 
   -- User-selected name for this credential
   name          VARCHAR(32)             NOT NULL DEFAULT '',
