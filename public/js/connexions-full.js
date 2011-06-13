@@ -1804,7 +1804,7 @@ $.widget("ui.input", {
      *      'enabled'           when element is enabled;
      *      'disabled'          when element is disabled.
      */
-    _create: function()
+    _init: function()
     {
         var self    = this;
         var opts    = this.options;
@@ -1886,10 +1886,6 @@ $.widget("ui.input", {
             opts.$label.addClass('ui-input-over')
                        .show();
         }
-    },
-
-    _init: function()
-    {
         this._bindEvents();
     },
 
@@ -2152,8 +2148,7 @@ $.widget("ui.input", {
         self.element
                 .removeClass('ui-state-error ui-state-valid ui-state-changed');
 
-        var hasVal  = ( opts.$validation &&
-                        (opts.$validation.jquery === undefined) );
+        var hasVal  = ( opts.$validation.length > 0);
 
         if ( hasVal )
         {
@@ -3887,7 +3882,7 @@ $.widget("ui.validationForm", {
              *  'ui-form-status'
              */
             opts.$status = self.element
-                                    .parent()
+                                    .parents('.ui-validation-form:first')
                                         .find('.ui-form-status:first');
         }
 
@@ -3895,6 +3890,8 @@ $.widget("ui.validationForm", {
         opts.$inputs   = self.element.find(  'input[type=text],'
                                            + 'input[type=password],'
                                            + 'textarea');
+        opts.$buttons  = self.element.find(  'button');
+
         if (opts.$submit === undefined)
         {
             opts.$submit = self.element.find( opts.submitSelector );
@@ -3902,11 +3899,26 @@ $.widget("ui.validationForm", {
         opts.$cancel   = self.element.find('button[name=cancel]');
         opts.$reset    = self.element.find('button[name=reset]');
 
-        // Instantiate sub-widgets
-        opts.$inputs.input({hideLabel: opts.hideLabels});
+        // Instantiate sub-widgets if they haven't already been instantiated
+        opts.$inputs.each(function() {
+            var $el = $(this);
+            if ($el.data('input'))  return;
+            $el.input({hideLabel: opts.hideLabels});
+        });
+
+        opts.$buttons.each(function() {
+            var $el = $(this);
+            if ($el.data('button'))  return;
+            $el.button();
+        });
+
+        opts.$submit.button('disable');
+
+        /*
         opts.$submit.button({priority:'primary', enabled:false});
         opts.$cancel.button({priority:'secondary'});
         opts.$reset.button({priority:'secondary'});
+        // */
 
         self._bindEvents();
 
@@ -3923,7 +3935,17 @@ $.widget("ui.validationForm", {
             self.validate();
         };
 
-        var _reset      = function(e) {
+        var _cancel_click   = function(e, data) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            e.stopPropagation();
+
+            // :TODO: "Cancel" notification
+            self._trigger('canceled', null, data);
+            self._trigger('complete');
+        };
+
+        var _reset_click   = function(e, data) {
             e.preventDefault();
             e.stopPropagation();
 
@@ -3931,7 +3953,8 @@ $.widget("ui.validationForm", {
         };
 
         opts.$inputs.bind('validation_change.uivalidationform', _validate);
-        opts.$reset.bind('click.uivalidationform',              _reset);
+        opts.$cancel.bind('click.uivalidationform',             _cancel_click);
+        opts.$reset.bind('click.uivalidationform',              _reset_click);
     },
 
     /** @brief  Default callback for _trigger('validate')
@@ -4073,9 +4096,9 @@ $.widget("ui.validationForm", {
     {
         var self        = this;
         var opts        = self.options;
-        var isValid     = self._trigger('validate');
+        var isValid     = opts.validate();
 
-        if (isValid)
+        if (isValid === true)
         {
             opts.$status
                     .removeClass('error')
@@ -4087,9 +4110,14 @@ $.widget("ui.validationForm", {
             opts.$status
                     .removeClass('success')
                     .addClass('error');
+
+            if ($.type(isValid) === 'string')
+            {
+                opts.$status.text( isValid );
+            }
         }
 
-        if (isValid &&
+        if ((isValid === true) &&
             ( (opts.disableSubmitOnUnchanged === false) || self.hasChanged()) )
         {
             opts.$submit.button('enable');

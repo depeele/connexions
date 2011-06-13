@@ -1,4 +1,15 @@
 <?php
+/** @file
+ *
+ *  Primary view handler for bookmark posting.
+ *
+ *  View variables:
+ *      postInfo    An object containing incoming information about the
+ *                  bookmark;
+ *      closeAction An indication of what action to take when the form
+ *                  is closed, either via successful post or close/cancel;
+ *      error       On error, an indication of what the error was;
+ */
 if (! @is_array($this->postInfo))
     $this->postInfo = array();
 

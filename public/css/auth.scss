@@ -14,11 +14,75 @@
         width: 100%;
       }
     }
+
     input.button {
       background-color: #59a5d1;
       border-color: #408bb6;
       color: white;
       cursor: pointer;
+    }
+
+    .buttons {
+      padding:  0 0 1em 0;
+    }
+
+    .options {
+      label {
+        @include  inlineBlock();
+      }
+    }
+
+    .username {
+      label {
+        position: relative;
+        top:      auto;
+        left:     auto;
+      }
+    }
+
+    .userpassword, .pki {
+      padding:        0.5em 0.5em 0;
+      margin-bottom:  1em;
+      border:         unquote("1px solid") $borderColor;
+      @include        corners(0, 0, 10px, 10px);
+
+      legend {
+        padding:      0 1em;
+        color:        $linkColor;
+        font-size:    0.8em;
+      }
+    }
+
+    .pki {
+      padding-top:    1em;
+      padding-bottom: 1em;
+      border-top:   unquote("1px solid") $borderColor;
+
+      .dn {
+        display:          block;
+        @include          corners(0, 10px, 0, 10px);
+        border:           unquote("1px solid") $borderColor;
+        background-color: $lightestGrey;
+
+        text-align:       left;
+        font-size:        0.8em;
+        margin-bottom:    0.2em;
+
+        .ui-icon {
+          display:          block;
+          background-image: none;
+          margin:           1px 1em 0 2px;
+          float:            left;
+
+          .connexions_sprites {
+            display:        block;
+          }
+        }
+      }
+
+      .options {
+        text-align: right;
+      }
     }
   }
   .formError {

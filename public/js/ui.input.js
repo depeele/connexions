@@ -64,7 +64,7 @@ $.widget("ui.input", {
      *      'enabled'           when element is enabled;
      *      'disabled'          when element is disabled.
      */
-    _create: function()
+    _init: function()
     {
         var self    = this;
         var opts    = this.options;
@@ -146,10 +146,6 @@ $.widget("ui.input", {
             opts.$label.addClass('ui-input-over')
                        .show();
         }
-    },
-
-    _init: function()
-    {
         this._bindEvents();
     },
 
@@ -412,8 +408,7 @@ $.widget("ui.input", {
         self.element
                 .removeClass('ui-state-error ui-state-valid ui-state-changed');
 
-        var hasVal  = ( opts.$validation &&
-                        (opts.$validation.jquery === undefined) );
+        var hasVal  = ( opts.$validation.length > 0);
 
         if ( hasVal )
         {

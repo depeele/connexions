@@ -422,6 +422,10 @@ class Model_User extends Model_Taggable
         if ((! $this->isBacked()) ||
             (! $this->validateAuthType($authType)) )
         {
+            /*
+            Connexions::log("Model_User::addAuthenticator(): unbacked user");
+            // */
+
             return null;
         }
 

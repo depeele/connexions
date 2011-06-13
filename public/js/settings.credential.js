@@ -49,7 +49,8 @@ $.widget("settings.credential", {
         name:       null,
         credential: null,
 
-        validTypes: [ 'openid', 'password', 'pki' ],
+        //validTypes: [ 'openid', 'password', 'pki' ],
+        validTypes: [ 'password', 'pki' ],
 
         /* General Json-RPC information:
          *  {version:   Json-RPC version,

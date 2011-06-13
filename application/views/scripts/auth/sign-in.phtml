@@ -1,11 +1,11 @@
 <?php
 $this->headTitle('Sign In');
 
+Connexions::log("views/scripts/auth/sign-in.phtml: pki[ %s ]",
+                Connexions::varExport($this->pki));
+
 $jQuery = $this->jQuery();
-$jQuery->addStylesheet($this->baseUrl('css/auth.min.css'))
-       ->addOnLoad('$("#auth form").validationForm({'
-                   .    'submitSelector:"button[name=method]",'
-                   .    'disableSubmitOnUnchanged:false});');
+$jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
 ?>
 <div id="auth" class='ui-validation-form ribbon-form line'><!-- { -->
  <div class='context-ribbon'>&nbsp;</div>
@@ -39,12 +39,166 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.min.css'))
     </div>
    </div>
    <div class='field buttons'>
-    <button name='method' tabindex='3' value='userpassword'>
+    <button name='cancel' tabindex='3'>
+     Cancel
+    </button>
+    <button name='method' tabindex='4' value='userpassword'>
      Sign-in
     </button>
    </div>
+   <?php
+   if (($this->pki !== null) && ($this->pki['verified'] === true))
+   {
+       /* We have a valid SSL client certificate so offer the option
+        * of authenticating using that.
+        */
+       ?>
+   <div class='field buttons pki'>
+    <span class='dn'
+     ><span class='ui-icon'
+      ><span class='connexions_sprites type-certificate'></span></span>
+      <?= $this->pki['subject'] ?></span>
+    <label for='auto_pki'>Automatic signin</label>
+    <input id='auto_pki'
+           type='checkbox'
+           name='auto_pki'
+           value='true'<?= ($this->auto_pki
+                                ? " checked='true'"
+                                : '') ?> />
+           
+    <button name='method' tabindex='5' value='pki'>
+     PKI
+    </button>
+   </div>
+       <?php
+   }
+   ?>
   </form>
 
   <? if ($this->welcome)   echo "Welcome!!<br />"; ?>
  </div><!-- userInput } -->
 </div><!-- ribbon-form } -->
+<script type='text/javascript'>
+/* Include an event delegate to adjust our legend if the bookmarkPost widget
+ * changes the 'isEdit' state.
+ */
+(function($) {
+    var $container      = $('#auth');
+    var $form           = $container.find('form');
+    var $status         = $container.find('.status');
+
+    $container.delegate('button[name=method]', 'click', function(e) {
+        e.preventDefault();
+
+        // Use jsonRpc to see if the authentication information is valid
+        var api         = $.registry('api');
+        var $button     = $(this);
+        var method      = $button.val();
+        var rpc         = $.extend({}, api.jsonRpc);
+        var params      = {
+            'method':   method
+        };
+        var id;
+
+        if (method === 'userpassword')
+        {
+            id                = $container.find('input[name=username]').val();
+            params.id         = id;
+            params.credential = $container.find('input[name=password]').val();
+        }
+
+        $.jsonRpc(rpc, 'user.authenticate', params, {
+            success:    function(data, textStatus, req) {
+                if (data.error)
+                {
+                    $status.text(data.error.message);
+                }
+                else if ( (data.result.name === 'anonymous') ||
+                          ((id !== undefined) && (data.result.name !== id)) )
+                {
+                    // Invalid id and/or credential
+                    $status.text('Invalid id and/or credential');
+                }
+                else
+                {
+                    // Authentication success
+                    $form.trigger('complete');
+                }
+            },
+            error:      function(req, textStatus, err) {
+                $status.html( textStatus );
+            },
+            complete:   function(req, textStatus) {
+            }
+        });
+    });
+
+    $container.delegate('form', 'complete', function() {
+        /* Authentication is complete -- either via successful save or cancel
+         *
+         * Our action now is determined by whether or not 'closeAction' was
+         * specified in the request.  Valid closeActions are:
+         *  - 'back'                move back in the browser's history;
+         *  - 'close'               attempt to close the current window;
+         *  - 'hide'                hide the ribbon-form;
+         *  - 'redirect'            if the post form contains a non-empty URL,
+         *                          redirect to that URL, otherwise, go back
+         *                          one page via history;
+         *  - 'iframe'              attempt to invoke the 'close' function
+         *                          on the containing iframe;
+         *  - 'urlCallback:%url%'   redirect to the specified %url%;
+         *  - 'callback:%func%'     invoke the Javascript function %func%;
+         *  - 'ignore'              do nothing;
+         *
+         * If 'closeAction' was NOT specified, 'back' will be used.
+         */
+        var action  = '<?= $this->closeAction ?>';
+        var split   = action.indexOf(':');
+        var param   = null;
+
+        if (split <= 0)
+        {
+            action = action.toLowerCase();
+        }
+        else
+        {
+            param  = action.substr(split + 1);
+            action = action.substr(0, split).toLowerCase();
+        }
+
+        switch (action)
+        {
+        case 'close':       // Attempt to close the containing window
+            window.close();
+            break;
+
+        case 'hide':        // Hide the containing DOM element
+            $container.hide();
+            break;
+
+        case 'iframe':      // Attempt to 'close' the containing iframe
+            if (window.frameElement && window.frameElement.close)
+            {
+                window.frameElement.close();
+            }
+            break;
+
+        case 'ignore':      // Do nothing
+            break;
+
+        case 'back':        // Move back in the browsers history
+        default:
+            window.history.back();
+            break;
+        }
+    });
+
+    $(document).ready(function() {
+        $form.validationForm({
+            submitSelector:             "button[name=method]:first",
+            disableSubmitOnUnchanged:   false
+        });
+    });
+
+ }(jQuery));
+</script>
