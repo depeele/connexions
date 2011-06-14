@@ -141,56 +141,18 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
          *  - 'back'                move back in the browser's history;
          *  - 'close'               attempt to close the current window;
          *  - 'hide'                hide the ribbon-form;
-         *  - 'redirect'            if the post form contains a non-empty URL,
-         *                          redirect to that URL, otherwise, go back
-         *                          one page via history;
          *  - 'iframe'              attempt to invoke the 'close' function
          *                          on the containing iframe;
-         *  - 'urlCallback:%url%'   redirect to the specified %url%;
+         *  - 'redirect:%url%'      redirect to the specified %url;
+         *  - 'urlCallback:%url%'   redirect to the specified %url;
          *  - 'callback:%func%'     invoke the Javascript function %func%;
          *  - 'ignore'              do nothing;
          *
          * If 'closeAction' was NOT specified, 'back' will be used.
          */
         var action  = '<?= $this->closeAction ?>';
-        var split   = action.indexOf(':');
-        var param   = null;
 
-        if (split <= 0)
-        {
-            action = action.toLowerCase();
-        }
-        else
-        {
-            param  = action.substr(split + 1);
-            action = action.substr(0, split).toLowerCase();
-        }
-
-        switch (action)
-        {
-        case 'close':       // Attempt to close the containing window
-            window.close();
-            break;
-
-        case 'hide':        // Hide the containing DOM element
-            $container.hide();
-            break;
-
-        case 'iframe':      // Attempt to 'close' the containing iframe
-            if (window.frameElement && window.frameElement.close)
-            {
-                window.frameElement.close();
-            }
-            break;
-
-        case 'ignore':      // Do nothing
-            break;
-
-        case 'back':        // Move back in the browsers history
-        default:
-            window.history.back();
-            break;
-        }
+        $.closeAction(action, $container);
     });
 
     $(document).ready(function() {

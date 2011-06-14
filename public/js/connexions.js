@@ -824,4 +824,86 @@
         });
     };
 
+    /*************************************************************************
+     * Handle a 'closeAction'
+     *
+     */
+
+    /** @brief  Implement a generic close action based upon an incoming request
+     *          value and the completion of the current task.
+     *  @param  action      The desired close action [ 'back' ]:
+     *                      - 'back'                move back in the browser's
+     *                                              history;
+     *                      - 'close'               attempt to close the
+     *                                              current window;
+     *                      - 'hide'                hide the specified
+     *                                              $container;
+     *                      - 'iframe'              attempt to invoke the
+     *                                              'close' function on the
+     *                                              containing iframe;
+     *                      - 'redirect:%url%'      redirect to the specified
+     *                        'urlCallback:%url%'   %url%.  If %url% is empty,
+     *                                              invoke 'back';
+     *                      - 'callback:%func%'     invoke the Javascript
+     *                                              function %func%;
+     *                      - 'ignore'              do nothing;
+     *  @param  $container  For 'hide', the container to hide;
+     */
+    $.closeAction = function(action, $container) {
+        var split   = action.indexOf(':');
+        var param   = null;
+
+        if (split <= 0)
+        {
+            action = action.toLowerCase();
+        }
+        else
+        {
+            param  = action.substr(split + 1);
+            action = action.substr(0, split).toLowerCase();
+        }
+
+        switch (action)
+        {
+        case 'close':       // Attempt to close the containing window
+            window.close();
+            break;
+
+        case 'hide':        // Hide the containing DOM element
+            $container.hide();
+            break;
+
+        case 'iframe':      // Attempt to 'close' the containing iframe
+            if (window.frameElement && window.frameElement.close)
+            {
+                window.frameElement.close();
+            }
+            break;
+
+        case 'callback':    // Invoke the named Javascript function
+            if (param && param.length)
+            {
+                eval(param +'();');
+            }
+            break;
+
+        case 'ignore':      // Do nothing
+            break;
+
+        case 'redirect':    // Redirect to the specified URL
+        case 'urlCallback':
+            if (param && param.length)
+            {
+                location.href = param;
+                break;
+            }
+            // No url provided -- fall through to 'back'
+
+        case 'back':        // Move back in the browsers history
+        default:
+            window.history.back();
+            break;
+        }
+    };
+
  }(jQuery));
