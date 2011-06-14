@@ -1,4 +1,11 @@
-CU.import("resource://connexions/debug.js");
+/** @file
+ *
+ *  The primary browser sidebar.
+ *
+ *  Requires: chrome://connexions/connexions.js
+ */
+CU.import('resource://connexions/debug.js');
+CU.import("resource://connexions/connexions.js");
 
 function _cSidebar()
 {
@@ -23,7 +30,7 @@ _cSidebar.prototype = {
                                 .QueryInterface(CI.nsIInterfaceRequestor)
                                     .getInterface(CI.nsIDOMWindow);
 
-        this.db = connexions_db;    //new Connexions_Db();
+        this.db = connexions.db;    //new Connexions_Db();
 
         cDebug.log("cSidebar::init(): complete");
     },
