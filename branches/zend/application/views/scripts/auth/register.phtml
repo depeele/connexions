@@ -150,7 +150,8 @@ if (empty($this->user)      &&
    ?>
 
    <div class='field buttons'>
-    <button name='submit' tabindex='4'>Join Connexions</button>
+    <button name='cancel' tabindex='4'>Cancel</button>
+    <button name='submit' tabindex='5'>Join Connexions</button>
    </div>
   </form>
   <div class='status<?= (@isset($this->error) ? ' error' : '') ?>'>
@@ -161,8 +162,8 @@ if (empty($this->user)      &&
 <script type='text/javascript'>
 (function($) {
     // Initialize the form handlers
-    var $auth   = $('#auth');
-    var $form   = $auth.find('form:first');
+    var $container  = $('#auth');
+    var $form       = $container.find('form:first');
 
     /* Passwords have a custom, synchronous validator that we need to
      * bind BEFORE instantiating the validationForm so we can syncrhonously
@@ -176,7 +177,7 @@ if (empty($this->user)      &&
     var $pass2      = $form.find('input[name='+ pass2Name +']');
     var $pki        = $form.find('fieldset.pki');
     var $includePki = $form.find('input[name=includePki]');
-    var $status     = $auth.find('.status');
+    var $status     = $container.find('.status');
 
     function validate_user($user, name)
     {
@@ -210,6 +211,27 @@ if (empty($this->user)      &&
         return stat;
     }
 
+    $container.delegate('form', 'complete', function() {
+        /* Registration is complete -- either via successful save or cancel
+         *
+         * Our action now is determined by whether or not 'closeAction' was
+         * specified in the request.  Valid closeActions are:
+         *  - 'back'                move back in the browser's history;
+         *  - 'close'               attempt to close the current window;
+         *  - 'hide'                hide the ribbon-form;
+         *  - 'iframe'              attempt to invoke the 'close' function
+         *                          on the containing iframe;
+         *  - 'redirect:%url%'      redirect to the specified %url;
+         *  - 'urlCallback:%url%'   redirect to the specified %url;
+         *  - 'callback:%func%'     invoke the Javascript function %func%;
+         *  - 'ignore'              do nothing;
+         *
+         * If 'closeAction' was NOT specified, 'back' will be used.
+         */
+        var action  = '<?= $this->closeAction ?>';
+
+        $.closeAction(action, $container);
+    });
 
     $(document).ready(function() {
         $user.input({

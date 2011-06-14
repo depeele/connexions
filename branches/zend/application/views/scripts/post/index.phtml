@@ -80,85 +80,36 @@ $containerId = 'post';
          *  - 'back'                move back in the browser's history;
          *  - 'close'               attempt to close the current window;
          *  - 'hide'                hide the ribbon-form;
-         *  - 'redirect'            if the post form contains a non-empty URL,
-         *                          redirect to that URL, otherwise, go back
-         *                          one page via history;
          *  - 'iframe'              attempt to invoke the 'close' function
          *                          on the containing iframe;
-         *  - 'urlCallback:%url%'   redirect to the specified %url%;
+         *  - 'redirect:%url%'      redirect to the specified %url;
+         *  - 'urlCallback:%url%'   redirect to the specified %url;
          *  - 'callback:%func%'     invoke the Javascript function %func%;
          *  - 'ignore'              do nothing;
+         *  - 'redirect'            if the post form contains a non-empty URL,
+         *                          append ":%url%", otherwise, invoke 'back';
          *
          * If 'closeAction' was NOT specified, 'back' will be used.
          */
         var action  = '<?= $this->closeAction ?>';
-        var split   = action.indexOf(':');
-        var param   = null;
 
-        if (split <= 0)
+        if (action === 'redirect')
         {
-            action = action.toLowerCase();
-        }
-        else
-        {
-            param  = action.substr(split + 1);
-            action = action.substr(0, split).toLowerCase();
-        }
-
-        switch (action)
-        {
-        case 'close':       // Attempt to close the containing window
-            window.close();
-            break;
-
-        case 'hide':        // Hide the containing DOM element
-            $container.hide();
-            break;
-
-        case 'redirect':    // Bookmark-based redirect
-            param = $container.find(formSelector)
-                                .bookmarkPost('option', '$url').val();
+            // Append ':%url%'
+            var param = $container.find(formSelector)
+                                    .bookmarkPost('option', '$url').val();
             if (param && param.length)
             {
                 // Redirect to the URL of the bookmark
-                location.href = param;
+                action = 'redirect:'+ param;
             }
             else
             {
-                // No URL -- move back a page.
-                history.back();
+                action = 'back';
             }
-            break;
-
-        case 'iframe':      // Attempt to 'close' the containing iframe
-            if (window.frameElement && window.frameElement.close)
-            {
-                window.frameElement.close();
-            }
-            break;
-
-        case 'urlcallback': // Redirect to the specified URL
-            if (param && param.length)
-            {
-                location.href = param;
-            }
-            break;
-
-        case 'callback':    // Invoke the named Javascript function
-            if (param && param.length)
-            {
-                eval(param +'();');
-            }
-            break;
-
-        case 'ignore':      // Do nothing
-            break;
-
-        case 'back':        // Move back in the browsers history
-        default:
-            window.history.back();
-            break;
         }
+
+        $.closeAction(action, $container);
     });
  }(jQuery));
 </script>

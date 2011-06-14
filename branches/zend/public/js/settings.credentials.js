@@ -353,7 +353,7 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
             jsonRpc: opts.jsonRpc,
             apiKey:  opts.apiKey,
             pki:     opts.pki
-        }
+        };
 
         $cred.credential( cOpts );
 
@@ -390,10 +390,22 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
      */
     addItem: function()
     {
-        var valids  = $.settings.credential.prototype.options.validTypes;
-        var self    = this;
-        var opts    = self.options;
-        var cur     = valids[0];
+        var valids      = $.settings.credential.prototype.options.validTypes;
+        var self        = this;
+        var opts        = self.options;
+        var cur         = valids[0];
+        var excludePki  = false;
+
+        opts.$credentials.each(function() {
+            var $el     = $(this);
+            var values  = $el.credential('values');
+            if (values.authType === 'pki')
+            {
+                excludePki = true;
+                return false;
+            }
+        });
+
         var html    = "<li class='new'>"
                     +  "<div class='field typeSelection'>"
                     +   "<div class='type current "+ cur +"'>"+ cur +"</div>"
@@ -403,6 +415,8 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
                     +   "<div class='options ui-corner-all ui-state-default'>";
 
         $.each(valids, function(idex, val) {
+            if ((val === 'pki') && excludePki)  return;
+
             html    +=   "<div class='option ui-state-default"
                     +               (cur === val ? ' current' : '') + "'>"
                     +      "<div class='type "+ this +"'>"+ this +"</div>"
