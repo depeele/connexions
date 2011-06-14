@@ -1,3 +1,11 @@
+/** @file
+ *
+ *  The primary browser overlay.
+ *
+ *  Requires: chrome://connexions/connexions.js
+ */
+CU.import('resource://connexions/debug.js');
+
 var cOverlay = {
     load: function() {
         document.getElementById("contentAreaContextMenu")

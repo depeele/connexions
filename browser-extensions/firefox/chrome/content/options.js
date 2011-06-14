@@ -1,3 +1,11 @@
+/** @file
+ *
+ *  The options overlay.
+ *
+ *  Requires: chrome://connexions/connexions.js
+ */
+CU.import('resource://connexions/debug.js');
+
 var cOptions = {
     elUser:     null,
     elLogin:    null,
@@ -21,7 +29,13 @@ var cOptions = {
         cOptions.elFullSync =
                 document.getElementById('connexions-prefs-fullSync');
 
-        cOptions.elUser.setAttribute('label', 'User here');
+        cOptions.elUser.setAttribute('value', 'Not signed in');
+
+        // Initiate retrieval of the current user
+        connexions.retrieveUser(function(user) {
+            cOptions.elUser.setAttribute('value', user.name
+                                                    +' ('+ user.fullName +')');
+        });
 
         cOptions._bindEvents();
 
@@ -38,12 +52,12 @@ var cOptions = {
         cOptions.elLogin
                 .addEventListener('click', function(e) {
                     cDebug.log("cOptions._bindEvents(): login click");
-                    connexions.loadPage(e, 'signin', 'popup');
+                    connexions.loadPage(e, 'signin', 'popup', 'close');
                  }, false);
         cOptions.elRegister
                 .addEventListener('click', function(e) {
                     cDebug.log("cOptions._bindEvents(): register click");
-                    connexions.loadPage(e, 'register', 'popup');
+                    connexions.loadPage(e, 'register', 'popup', 'close');
                  }, false);
         cOptions.elSync
                 .addEventListener('click', function(e) {
