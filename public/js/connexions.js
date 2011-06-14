@@ -165,6 +165,17 @@
      *
      */
 
+    /** @brief  Upper-case the first character of the given string.
+     *  @param  str     The string;
+     *
+     *  @return str with the first character upper-case.
+     */
+    $.ucFirst = function(str) {
+        if ($.type(str) !== 'string')   return str;
+
+        return str[0].toUpperCase() + str.substr(1);
+    };
+
     /** @brief  Left pad the provided string to the specified number of
      *          characters using the provided padding character.
      *  @param  str         The string to pad;

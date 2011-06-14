@@ -355,8 +355,9 @@ class SettingsController extends Connexions_Controller_Action
 
             /*
             Connexions::log("SettingsController::_prepare_main_tags(): "
-                            . "offset[ %d ], count[ %d ], order[ %s ]",
-                            $offset, $count, $fetchOrder);
+                            . "offset[ %d ], count[ %d ], order[ %s ], "
+                            . "filter[ %s ]",
+                            $offset, $count, $fetchOrder, $filter);
             // */
 
             //$tags    = $this->service('Tag')->csList2set($reqTags);
@@ -366,8 +367,6 @@ class SettingsController extends Connexions_Controller_Action
                                                 $count,
                                                 $offset,
                                                 $filter);
-
-            // :TODO: Filter the userTags by 'reqTags'
             $config['items'] = $userTags;
 
             $paginator = new Zend_Paginator($config['items']

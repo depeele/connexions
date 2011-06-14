@@ -199,8 +199,12 @@ $.widget("connexions.pane", {
 
         if (opts.hiddenVars !== null)
         {
+            var ns      = opts.namespace;
+            var hasNs   = (ns.length > 0);
+
             // Also include any hidden input values in the URL.
             $.each(opts.hiddenVars, function(name,val) {
+                if (hasNs)  name = ns + $.ucFirst(name);
                 url += qSep + name +'='+ val;
                 qSep = '&';
             });
