@@ -253,6 +253,8 @@ $.widget("settings.credential", {
             $el.addClass('current');
 
             $opts.slideToggle();
+
+            self.element.trigger('typeChanged');
         });
 
         self.element.bind('remove.settingsCredential', function(e) {

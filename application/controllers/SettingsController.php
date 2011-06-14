@@ -252,6 +252,11 @@ class SettingsController extends Connexions_Controller_Action
         case 'credentials':
             // Retrieve all credentials for the current user.
             $this->view->credentials = $this->_viewer->getAuthenticator();
+
+            // Include 'autoSignin'
+            $this->view->autoSignin  =
+                $this->_request->getParam('autoSignin', null);
+
             break;
         }
     }

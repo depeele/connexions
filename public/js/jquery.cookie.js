@@ -84,8 +84,8 @@ jQuery.cookie = function(name, value, options) {
             // Strip any trailing '/'
             options.path = options.path.replace(/\/+$/, '');
         }
-        if ((options.secure           === undefined) &&
-            (window.location.protocol === 'https'))
+        if ((options.secure                       === undefined) &&
+            (window.location.protocol.substr(0,5) === 'https'))
         {
             options.secure = true;
         }

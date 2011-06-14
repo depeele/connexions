@@ -134,6 +134,7 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
 
         // Add item
         opts.$add         = self.element.find('.add');
+        opts.$autoSignin  = self.element.find('.autoSignin');
 
         /********************************
          * Instantiate any sub-widgets
@@ -201,6 +202,12 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
 
             self._status(isSuccess, title, text);
         };
+        var _click_autoSignin   = function(e) {
+            $.changeAutoSignin( $(this) );
+        };
+        var _typeChange = function(e) {
+            self._typeChange();
+        };
 
         /**********************************************************************
          * bind events
@@ -208,11 +215,34 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
          */
         opts.$submit.bind('click.settingsCredentials',  _save_click);
         opts.$add.bind('click.settingsCredentials',     _add_item);
+        opts.$autoSignin.delegate('input', 'click.settingsCredentials',
+                                                        _click_autoSignin);
         self.element.bind('status.settingsCredentials', _status);
+        self.element.bind('typeChanged.settingsCredentials',
+                                                        _typeChange);
 
         self.element.bind('rebind.settingsCredentials', function() {
             self.rebind();
         });
+    },
+
+    _typeChange: function(e) {
+        var self    = this;
+        var opts    = self.options;
+        if (opts.enabled !== true)
+        {
+            return;
+        }
+
+        if (opts.$credentials.has('.pki').length > 0)
+        {
+            // Show autoSignin
+            opts.$autoSignin.show();
+        }
+        else
+        {
+            opts.$autoSignin.hide();
+        }
     },
 
     _performUpdate: function()
@@ -360,6 +390,8 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
         $cred.bind('remove.settingsCredentials', function() {
             self._deactivateCredential( $cred );
         });
+
+        self._typeChange();
     },
 
     _deactivateCredential: function($cred)
@@ -373,6 +405,8 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
             // Refresh the list of credentials
             opts.$credentials = self.element
                                     .find('li:has(input[name^=credential])');
+
+            self._typeChange();
 
             // Re-bind and re-validate to account for the destroyed inputs
             self.rebind();  //$.ui.validationForm.prototype.rebind.call(this);
@@ -440,7 +474,7 @@ $.widget("settings.credentials", $.extend({}, $.ui.validationForm.prototype, {
                     +         "class='text required' "
                     +         "value='' />"
                     +  "</div>\n"
-                    +  "<div class='control'>"
+                    +  "<div class='control delete'>"
                     +   "<a class='delete' href='#'>delete</a>"
                     +  "</div>"
                     + "</li>";

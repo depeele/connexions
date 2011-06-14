@@ -39,7 +39,7 @@ $.widget("ui.validationForm", {
                                      * changed from the initial values
                                      * [ true ];
                                      */
-        handleAutoFill: false,      /* Should we attempt to handle issues with
+        handleAutofill: false,      /* Should we attempt to handle issues with
                                      * browser auto-fill where input values
                                      * are automatically filled but no
                                      * 'change' or 'update' events are fired?
@@ -120,7 +120,7 @@ $.widget("ui.validationForm", {
             if ($el.data('input'))  return;
             $el.input({
                 hideLabel:      opts.hideLabels,
-                handleAutoFill: opts.handleAutofill
+                handleAutofill: opts.handleAutofill
             });
         });
 

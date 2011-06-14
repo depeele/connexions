@@ -7,20 +7,22 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
 $fullName = $this->fullName;
 $email    = $this->email;
 
-Connexions::log("register.phtml: includePki[ %s ], autoPki[ %s ]",
+Connexions::log("register.phtml: includePki[ %s ], autoSignin[ %s ]",
                 Connexions::varExport($this->includePki),
-                Connexions::varExport($this->autoPki));
+                Connexions::varExport($this->autoSignin));
+
+$pki = $this->connection['pki'];
 
 if (empty($this->user)      &&
-   ($this->pki !== null)    &&
-   ($this->pki['verified'] === true))
+   ($pki !== null)    &&
+   ($pki['verified'] === true))
 {
     $needUserName = true;
     if (preg_match('/emailAddress=([^\/]+)/i',
-                   $this->pki['subject'], $match))
+                   $pki['subject'], $match))
     {
         Connexions::log("register.phtml: subject[ %s ], email match[ %s ]",
-                        $this->pki['subject'],
+                        $pki['subject'],
                         Connexions::varExport($match));
 
         $email        = $match[1];
@@ -29,10 +31,10 @@ if (empty($this->user)      &&
     }
 
     if (preg_match('/CN=([^\/]+)/i',
-                        $this->pki['subject'], $match))
+                        $pki['subject'], $match))
     {
         Connexions::log("register.phtml: subject[ %s ], CN match[ %s ]",
-                        $this->pki['subject'],
+                        $pki['subject'],
                         Connexions::varExport($match));
 
         $fullName   = $match[1];
@@ -88,7 +90,7 @@ if (empty($this->user)      &&
     </div>
    </div>
    <?php
-   if (($this->pki !== null) && ($this->pki['verified'] === true))
+   if (($pki !== null) && ($pki['verified'] === true))
    {
        ?>
    <fieldset class='userpassword'>
@@ -115,7 +117,7 @@ if (empty($this->user)      &&
      </div>
     </div>
    <?php
-   if (($this->pki !== null) && ($this->pki['verified'] === true))
+   if (($pki !== null) && ($pki['verified'] === true))
    {
        /* We have a valid SSL client certificate so offer it as a valid
         * credential.
@@ -134,15 +136,16 @@ if (empty($this->user)      &&
     <span class='dn'
      ><span class='ui-icon'
       ><span class='connexions_sprites type-certificate'></span></span>
-      <?= $this->pki['subject'] ?></span>
+      <?= $pki['subject'] ?></span>
     <div class='field options'>
-     <label for='autoPki'>Automatic sign-in via PKI?</label>
-     <input id='autoPki'
+     <label for='autoSignin'>Automatic sign-in via PKI?</label>
+     <input id='autoSignin'
             type='checkbox'
-            name='autoPki'
-            value='true'<?= ($this->autoPki
-                                 ? " checked='true'"
-                                 : '') ?> />
+            name='autoSignin'
+           value='pki'<?= ( preg_match('/(\s*,\s*)?pki(\s*,\s*)?/',
+                                       $this->autoSignin)
+                                ? " checked='true'"
+                                : '') ?> />
     </div>
    </fieldset>
        <?php
@@ -210,6 +213,10 @@ if (empty($this->user)      &&
         // Regardless, don't change the current validation.
         return stat;
     }
+
+    $container.delegate('input[name=autoSignin]', 'click', function(e) {
+        $.changeAutoSignin( $(this) );
+    });
 
     $container.delegate('form', 'complete', function() {
         /* Registration is complete -- either via successful save or cancel
