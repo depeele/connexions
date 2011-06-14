@@ -28,15 +28,16 @@ class AuthController extends Connexions_Controller_Action
 
     public function signinAction()
     {
-        $uService = $this->service('User');
-        $request  = $this->getRequest();
-        $user     = null;
+        $uService =  $this->service('User');
+        $request  =& $this->_request;
+        $user     =  null;
         if ($request->isPost())
         {
             /* This is a POST request -- Perform authentication based upon the
              * specified method
              */
-            $user = $uService->authenticate($request->getParam('method'));
+            $method = $request->getParam('method');
+            $user   = $uService->authenticate( $method );
         }
         else if (isset($request->openid_mode))
         {
@@ -169,8 +170,7 @@ class AuthController extends Connexions_Controller_Action
         $pass2      = $request->getParam('password2', '');
         $includePki = Connexions::to_bool($request->getParam('includePki',
                                                              true));
-        $autoPki    = Connexions::to_bool($request->getParam('autoPki',
-                                                             false));
+        $autoSignin = $request->getParam('autoSignin', null);
 
         /* To create a new user we need:
          *  - a POST request;
@@ -246,7 +246,7 @@ class AuthController extends Connexions_Controller_Action
         $this->view->email      = $email;
         $this->view->pass       = $pass;
         $this->view->includePki = $includePki;
-        $this->view->autoPki    = $autoPki;
+        $this->view->autoSignin = $autoSignin;
 
         return $this->_showAuthenticationForm();
     }
@@ -329,6 +329,7 @@ class AuthController extends Connexions_Controller_Action
         $this->_noNav            =
             Connexions::to_bool($request->getParam('noNav', false));
         $this->view->excludeNav  = $this->_noNav;
+        $this->view->autoSignin  = $request->getParam('autoSignin', null);
 
         /*
         Connexions::log("AuthController::_prepare_main(): "

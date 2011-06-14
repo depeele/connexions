@@ -1,8 +1,12 @@
 <?php
 $this->headTitle('Sign In');
 
-Connexions::log("views/scripts/auth/sign-in.phtml: pki[ %s ]",
-                Connexions::varExport($this->pki));
+Connexions::log("views/scripts/auth/sign-in.phtml: connection[ %s ]",
+                Connexions::varExport($this->connection));
+Connexions::log("views/scripts/auth/sign-in.phtml: autoSignin[ %s ]",
+                Connexions::varExport($this->autoSignin));
+
+$pki = $this->connection['pki'];
 
 $jQuery = $this->jQuery();
 $jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
@@ -47,7 +51,8 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
     </button>
    </div>
    <?php
-   if (($this->pki !== null) && ($this->pki['verified'] === true))
+   if (($pki !== null) &&
+       ($pki['verified'] === true))
    {
        /* We have a valid SSL client certificate so offer the option
         * of authenticating using that.
@@ -57,12 +62,13 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
     <span class='dn'
      ><span class='ui-icon'
       ><span class='connexions_sprites type-certificate'></span></span>
-      <?= $this->pki['subject'] ?></span>
-    <label for='auto_pki'>Automatic signin</label>
-    <input id='auto_pki'
+      <?= $pki['subject'] ?></span>
+    <label for='autoSignin'>Automatic signin</label>
+    <input id='autoSignin'
            type='checkbox'
-           name='auto_pki'
-           value='true'<?= ($this->auto_pki
+           name='autoSignin'
+           value='pki'<?= ( preg_match('/(\s*,\s*)?pki(\s*,\s*)?/',
+                                       $this->autoSignin)
                                 ? " checked='true'"
                                 : '') ?> />
            
@@ -83,11 +89,13 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
  * changes the 'isEdit' state.
  */
 (function($) {
-    var $container      = $('#auth');
-    var $form           = $container.find('form');
-    var $status         = $container.find('.status');
+    var $container  = $('#auth');
+    var $form       = $container.find('form');
+    var $status     = $container.find('.status');
 
     $container.delegate('button[name=method]', 'click', function(e) {
+        //return;   // Allow the POST to occur normally
+
         e.preventDefault();
 
         // Use jsonRpc to see if the authentication information is valid
@@ -131,6 +139,10 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
             complete:   function(req, textStatus) {
             }
         });
+    });
+
+    $container.delegate('input[name=autoSignin]', 'click', function(e) {
+        $.changeAutoSignin( $(this) );
     });
 
     $container.delegate('form', 'complete', function() {

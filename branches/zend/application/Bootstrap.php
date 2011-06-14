@@ -37,6 +37,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
              ->_commonLogging()
              ->_commonPaths()
              ->_commonDb()
+             ->_commonConnection()
              ->_commonAuth();
 
         /*
@@ -432,6 +433,38 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         return $this;
     }
 
+    /** @brief  Initialize connexions information. */
+    protected function _commonConnection()
+    {
+        $connectionInfo = array(
+            'domain'    => $_SERVER['SERVER_NAME'],
+            'clientIp'  => $_SERVER['REMOTE_ADDR'],
+            'https'     => (isset($_SERVER['HTTPS']) &&
+                            ($_SERVER['HTTPS'] === 'on')
+                                ? true
+                                : false),
+            'pki'       => null,
+        );
+
+        // Include any PKI information
+        if ( isset($_SERVER['SSL_CLIENT_VERIFY']) )
+        {
+            $connectionInfo['pki'] = array(
+                'verified'  => ($_SERVER['SSL_CLIENT_VERIFY'] === 'SUCCESS'),
+                'issuer'    => (isset($_SERVER['SSL_CLIENT_I_DN'])
+                                    ? $_SERVER['SSL_CLIENT_I_DN']
+                                    : null),
+                'subject'   => (isset($_SERVER['SSL_CLIENT_S_DN'])
+                                    ? $_SERVER['SSL_CLIENT_S_DN']
+                                    : null),
+            );
+        }
+
+        Zend_Registry::set('connectionInfo', $connectionInfo);
+
+        return $this;
+    }
+
     /** @brief  Initialize authentication. */
     protected function _commonAuth()
     {
@@ -484,7 +517,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
              *          - authenticated user;
              *          - non-backed, unauthenticated anonymous user;
              */
+            $user = $this->_autoSignin();
+        }
 
+        if ($user === null)
+        {
             /*
             Connexions::log("Bootstrap::_commonAuth: create an anonymous user");
             // */
@@ -519,6 +556,51 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         // */
 
         return $this;
+    }
+
+    /** @brief  If there is an 'autoSignin' cookie, attempt auto-signin with
+     *          all indicated methods until authentication is successful or
+     *          we run out of methods.
+     *
+     *  @return A valid, authenticated Model_User instance or null.
+     */
+    protected function _autoSignin()
+    {
+        $autoSignin = $_COOKIE['autoSignin'];
+
+        // /*
+        Connexions::log("Bootstrap::_autoSignin(): autoSignin value[ %s ]",
+                        Connexions::varExport($autoSignin));
+        // */
+
+        if (empty($autoSignin))
+        {
+            return null;
+        }
+
+        $uService = Connexions_Service::factory('Service_User');
+        $methods  = preg_split('/\s*,\s*/', $autoSignin);
+        foreach ($methods as $method)
+        {
+            try {
+                $user = $uService->authenticate( $method );
+            } catch(Exception $e) {
+                $user = null;
+            }
+
+            // /*
+            Connexions::log("Bootstrap::_autoSignin(): method[ %s ] user[ %s ]",
+                        $method,
+                        Connexions::varExport($user));
+            // */
+
+             if ($user && $user->isAuthenticated())
+             {
+                 return $user;
+             }
+        }
+
+        return null;
     }
 
     /*******************************************

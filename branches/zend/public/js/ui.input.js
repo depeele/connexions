@@ -29,7 +29,7 @@ $.widget("ui.input", {
                                      * [ true ];
                                      */
 
-        handleAutoFill: false,      /* Should we attempt to handle issues with
+        handleAutofill: false,      /* Should we attempt to handle issues with
                                      * browser auto-fill where input values
                                      * are automatically filled but no
                                      * 'change' or 'update' events are fired?

@@ -906,6 +906,45 @@
         }
     };
 
+    /** @brief  Given the jQuery DOM element of an autoSignin checkbox,
+     *          determine the new autoSignin value and set a long-term
+     *          cookie with the new value.
+     *  @param  $el     The jQuery DOM element of an autoSignin checkbox.
+     *
+     *  Given the jQuery DOM element of an autoSignin checkbox, determine the
+     *  new autoSignin value and set a long-term cookie with the new value.
+     *  If the new value is empty, delete the autoSignin cookie.
+     *
+     *  Requires: jquery.registry.js and that 'urls' be previously set to
+     *            include 'base' as the site's baseUrl.
+     */
+    $.changeAutoSignin = function($el) {
+        var targetVal   = $el.val();
+        var curVal      = $.cookie('autoSignin');
+        var cookieOpts  = {
+            'expires':  365,    // days
+            'path':     $.registry('urls').base
+        };
+        var newVal      = (curVal ? curVal : '');
+
+        if ($el.is(':checked'))
+        {
+            // add targetVal
+            if (newVal.length > 0)  newVal += ',';
+            newVal += targetVal;
+        }
+        else
+        {
+            // remove targetVal
+            var re  = new RegExp('(\s*,\s*)?'+ targetVal +'(\s*,\s*)?');
+            newVal = newVal.replace(re, '');
+        }
+
+        if (newVal.length < 1)  newVal = null;
+
+        $.cookie('autoSignin', newVal, cookieOpts);
+    };
+
  }(jQuery));
 /** @file
  *
@@ -1016,8 +1055,8 @@ jQuery.cookie = function(name, value, options) {
             // Strip any trailing '/'
             options.path = options.path.replace(/\/+$/, '');
         }
-        if ((options.secure           === undefined) &&
-            (window.location.protocol === 'https'))
+        if ((options.secure                       === undefined) &&
+            (window.location.protocol.substr(0,5) === 'https'))
         {
             options.secure = true;
         }
@@ -1851,7 +1890,7 @@ $.widget("ui.input", {
                                      * [ true ];
                                      */
 
-        handleAutoFill: false,      /* Should we attempt to handle issues with
+        handleAutofill: false,      /* Should we attempt to handle issues with
                                      * browser auto-fill where input values
                                      * are automatically filled but no
                                      * 'change' or 'update' events are fired?
@@ -3920,7 +3959,7 @@ $.widget("ui.validationForm", {
                                      * changed from the initial values
                                      * [ true ];
                                      */
-        handleAutoFill: false,      /* Should we attempt to handle issues with
+        handleAutofill: false,      /* Should we attempt to handle issues with
                                      * browser auto-fill where input values
                                      * are automatically filled but no
                                      * 'change' or 'update' events are fired?
@@ -4001,7 +4040,7 @@ $.widget("ui.validationForm", {
             if ($el.data('input'))  return;
             $el.input({
                 hideLabel:      opts.hideLabels,
-                handleAutoFill: opts.handleAutofill
+                handleAutofill: opts.handleAutofill
             });
         });
 

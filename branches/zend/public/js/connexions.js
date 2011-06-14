@@ -906,4 +906,43 @@
         }
     };
 
+    /** @brief  Given the jQuery DOM element of an autoSignin checkbox,
+     *          determine the new autoSignin value and set a long-term
+     *          cookie with the new value.
+     *  @param  $el     The jQuery DOM element of an autoSignin checkbox.
+     *
+     *  Given the jQuery DOM element of an autoSignin checkbox, determine the
+     *  new autoSignin value and set a long-term cookie with the new value.
+     *  If the new value is empty, delete the autoSignin cookie.
+     *
+     *  Requires: jquery.registry.js and that 'urls' be previously set to
+     *            include 'base' as the site's baseUrl.
+     */
+    $.changeAutoSignin = function($el) {
+        var targetVal   = $el.val();
+        var curVal      = $.cookie('autoSignin');
+        var cookieOpts  = {
+            'expires':  365,    // days
+            'path':     $.registry('urls').base
+        };
+        var newVal      = (curVal ? curVal : '');
+
+        if ($el.is(':checked'))
+        {
+            // add targetVal
+            if (newVal.length > 0)  newVal += ',';
+            newVal += targetVal;
+        }
+        else
+        {
+            // remove targetVal
+            var re  = new RegExp('(\s*,\s*)?'+ targetVal +'(\s*,\s*)?');
+            newVal = newVal.replace(re, '');
+        }
+
+        if (newVal.length < 1)  newVal = null;
+
+        $.cookie('autoSignin', newVal, cookieOpts);
+    };
+
  }(jQuery));
