@@ -94,8 +94,11 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
     var $status     = $container.find('.status');
 
     $container.delegate('button[name=method]', 'click', function(e) {
-        //return;   // Allow the POST to occur normally
+        return;   // Allow the POST to occur normally
 
+        /* If we go down this path, we MUST set the 'authCookie' to signal the
+         * client side about authentication status.
+         */
         e.preventDefault();
 
         // Use jsonRpc to see if the authentication information is valid

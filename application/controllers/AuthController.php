@@ -15,13 +15,16 @@ class AuthController extends Connexions_Controller_Action
     protected   $_redirector        = null;
     protected   $_noFormatHandling  = true;
     protected   $_noSidebar         = true;
-
+    protected   $_api               = null;
 
     public function init()
     {
         /* Initialize action controller here */
         $this->_flashMessenger = $this->_helper->getHelper('FlashMessenger');
         $this->_redirector     = $this->_helper->getHelper('Redirector');
+
+        $config = Zend_Registry::get('config');
+        $this->_api =& $config->api;
 
         parent::init();
     }
@@ -38,6 +41,8 @@ class AuthController extends Connexions_Controller_Action
              */
             $method = $request->getParam('method');
             $user   = $uService->authenticate( $method );
+
+            $this->_userAuthCookie($user);
         }
         else if (isset($request->openid_mode))
         {
@@ -144,6 +149,9 @@ class AuthController extends Connexions_Controller_Action
     {
         $uService = $this->service('User');
         $uService->deauthenticate();
+
+        // Set the userAuth cookie to null
+        $this->_userAuthCookie();
 
         /*
         //$viewer = Zend_Registry::get('user');
@@ -340,6 +348,42 @@ class AuthController extends Connexions_Controller_Action
         // */
     }
 
+    /** @brief  Update the cookie used to signal the client side to user
+     *          authentication changes.
+     *  @param  user    The (new) user.
+     */
+    protected function _userAuthCookie($user = null)
+    {
+        $authCookie = $this->_api->authCookie;
+
+        $expires = time() + (60 * 60 * 24 * 365);
+        if ($user && $user->isAuthenticated())
+        {
+            // Set the authCookie to identify the new user.
+            $cookieVal = $user->__toString();
+        }
+        else
+        {
+            // Set the authCookie to null to indicate NO user.
+            $cookieVal = null;
+        }
+
+        // /*
+        Connexions::log("AuthController::_userAuthCookie(): "
+                        .   "authCookie[ %s ], value[ %s ]",
+                        Connexions::varExport($authCookie),
+                        Connexions::varExport($cookieVal));
+
+        // */
+
+        setcookie( $authCookie,
+                   $cookieVal,
+                   $expires,
+                   $this->_rootUrl .'/',
+                   '',  //$this->_connection['domain'],
+                   $this->_connection['https']);
+    }
+
     /** @brief  Register a new user.
      *  @param  user        Incoming user data of the form:
      *                          {name:      userName,
@@ -484,6 +528,8 @@ class AuthController extends Connexions_Controller_Action
                             ? 'success'
                             : 'FAILURE'));
         // */
+
+        $this->_userAuthCookie($userModel);
 
         return true;
     }

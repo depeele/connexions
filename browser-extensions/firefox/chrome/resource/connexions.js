@@ -2,6 +2,13 @@
  *
  *  The primary connexions class (connexions).
  *
+ *  The server uses a cookie ('api.authCookie' set in
+ *  application/config/application.ini) to indicate when there is a change in
+ *  user authentication.
+ *
+ *  We use an observer to notice this change, (re)retrieve the currently
+ *  authenticated user (via jsonRpc('user.whoami')), and broadcast the change
+ *  via 'connexions.userChanged'.
  */
 var EXPORTED_SYMBOLS    = ['connexions'];
 
@@ -24,6 +31,12 @@ function Connexions()
 }
 
 Connexions.prototype = {
+    os:             CC['@mozilla.org/observer-service;1']
+                        .getService(CI.nsIObserverService),
+    /*
+    cm:             CC["@mozilla.org/categorymanager;1"]
+                        .getService(CI.nsICategoryManager),
+    // */
     wm:             CC['@mozilla.org/appshell/window-mediator;1']
                         .getService(CI.nsIWindowMediator),
     initialized:    false,
@@ -32,18 +45,25 @@ Connexions.prototype = {
     debug:          cDebug,
     db:             connexions_db,
 
+    cookieTimer:    CC['@mozilla.org/timer;1']
+                        .createInstance(CI.nsITimer),
+    cookieTicking:  false,
     prefsWindow:    null,
     strings:        null,
 
     cookieJar:      {
         domain:     "%DOMAIN%",
-        values:     null,
+        authCookie: "%AUTH_COOKIE%",
+        values:     null
     },
     jsonRpcInfo:    {
         version:    "%JSONRPC_VERSION%",
         transport:  "%JSONRPC_TRANSPORT%",
         url:        "%JSONRPC_URL%",
         id:         0
+    },
+    state:          {
+        'retrieveUser': false
     },
 
     init: function() {
@@ -58,7 +78,150 @@ Connexions.prototype = {
         // Normalize the cookie domain.
         self.cookieJar.domain = self.cookieJar.domain.toLowerCase();
 
+        var cookies = this.db.state('cookies');
+        if (cookies !== null)
+        {
+            cDebug.log('resource-connexions::init(): cookies from db[ %s ]',
+                       cookies);
+
+            self.cookieJar.values = self.str2cookies(cookies);
+        }
+
+        /*
+        cDebug.log('resource-connexions::init(): cookieJar '
+                    + 'domain[ %s ], authCookie[ %s ]',
+                    self.cookieJar.domain,
+                    self.cookieJar.authCookie);
+        // */
+
+
+        self._loadObservers();
+
         cDebug.log('resource-connexions::init(): completed');
+    },
+
+    /* Invoked any time 'chrome/content/connexions.js'
+     * receives a 'load' event.
+     */
+    windowLoad: function(document) {
+        cDebug.log('resource-connexions::windowLoad()');
+
+        var self    = this;
+        if ((! document) || (self.string !== null))
+        {
+            return;
+        }
+
+        self.setStrings(document.getEelemntById('connexions-strings'));
+    },
+
+    /** @brief  Observer register notification topics.
+     *  @param  subject The nsISupports object associated with the
+     *                  notification;
+     *  @param  topic   The notification topic string;
+     *  @param  data    Any additional data;
+     */
+    observe: function(subject, topic, data) {
+        var self    = this;
+        //subject.QueryInterface(Ci.nsISupportsString);
+        //subject.data;
+
+        /*
+        cDebug.log('resource-connexions::observe(): topic[ %s ]',
+                   topic);
+        // */
+
+        switch (topic)
+        {
+        case 'cookie-changed':
+            var cookie  = subject.QueryInterface(CI.nsICookie2);
+            var noTimer = false;
+
+            if (self.cookieTicking)
+            {
+                // Cancel the current cookie timer
+                self.cookieTimer.cancel();
+                self.cookieTicking = false;
+            }
+
+            /*
+            cDebug.log('resource-connexions::observe(): cookie-changed: '
+                        +   'host[ %s ], path[ %s ], name[ %s ]',
+                       cookie.host, cookie.path, cookie.name);
+            // */
+            if (cookie  &&
+                (cookie.host.toLowerCase() == self.cookieJar.domain) )
+            {
+                // /*
+                cDebug.log('resource-connexions::observe(): '
+                            +   'cookie-changed: '
+                            +   'host[ %s ], path[ %s ], '
+                            +   'name[ %s ], value[ %s ]',
+                           cookie.host, cookie.path,
+                           cookie.name, cookie.value);
+                // */
+
+                if (self.cookieJar.values === null)
+                {
+                    self.cookieJar.values  = {
+                        __length:   0
+                    };
+                }
+
+                if (self.cookieJar.values[ cookie.name ] !== cookie.value)
+                {
+                    // The cookie HAS changed from our stored value
+                    self.cookieJar.values[ cookie.name ] = cookie.value;
+                    self.cookieJar.values.__length++;
+                    self.db.state('cookies', self.cookies2str());
+
+                    // /*
+                    cDebug.log('resource-connexions::observe(): '
+                                +   'cookie-changed from our stored value: '
+                                +   'host[ %s ], path[ %s ], name[ %s ]',
+                               cookie.host, cookie.path, cookie.name);
+                    // */
+                }
+
+                if (cookie.name === self.cookieJar.authCookie)
+                {
+                    // /*
+                    cDebug.log('resource-connexions::observe(): '
+                                + 'authCookie changed!');
+                    // */
+
+                    // (Re)Retrieve the authenticated user
+                    self.retrieveUser();
+                    noTimer = true;
+                }
+            }
+
+            if (noTimer === false)
+            {
+                /* Set a timer to wait to see if we have more cookies.  When
+                 * the timer expires, attempt to retrieve the currently
+                 * authenticated user.
+                 */
+                self.cookieTimer.initWithCallback(function() {
+                    self.retrieveUser();
+                    self.cookieTicking = false;
+                }, 8000, CI.nsITimer.TYPE_ONE_SHOT);
+                self.cookieTicking = true;
+            }
+            break;
+        }
+    },
+
+    /** @brief  Signal observers.
+     *  @param  subject The subject name;
+     *  @param  data    The event data;
+     */
+    signal: function(subject, data) {
+        cDebug.log('resource-connexions::signal(): subject[ %s ], data[ %s ]',
+                   subject, cDebug.obj2str(data));
+
+        this.os.notifyObservers(null, subject,
+                               (data === undefined ? '' : data));
     },
 
     /** @brief  Initiate the retrieval of the authenticated user.
@@ -67,6 +230,14 @@ Connexions.prototype = {
      */
     retrieveUser: function(callback) {
         var self    = this;
+
+        if (self.state['retrieveUser'] === true)
+        {
+            // In process
+            return;
+        }
+
+        self.state['retrieveUser'] = true;
 
         cDebug.log('resource-connexions::retrieveUser(): initiate...');
 
@@ -81,10 +252,12 @@ Connexions.prototype = {
 
                 if (data.error !== null)
                 {
-                    return;
+                    self.user = null;
                 }
-
-                self.user = data.result;
+                else
+                {
+                    self.user = data.result;
+                }
 
                 if (callback !== undefined)
                 {
@@ -92,12 +265,16 @@ Connexions.prototype = {
                 }
             },
             error:   function(xhr, textStatus, error) {
+                self.user = null;
                 cDebug.log('resource-connexions::retrieveUser(): '
                             +   'ERROR retrieving user[ %s ]',
                             textStatus);
+            },
+            complete: function(xhr, textStatus) {
+                self.signal('connexions.userChanged', self.user);
+                self.state['retrieveUser'] = false;
             }
         });
-
     },
 
     setStrings: function(strings) {
@@ -492,7 +669,7 @@ Connexions.prototype = {
 
         if (isReload)
         {
-            connexions_db.emptyAllTables();
+            connexions_db.deleteAllBookmarks();
         }
 
         /* :TODO: Perform an asynchronous request for all bookmarks and add
@@ -603,17 +780,13 @@ Connexions.prototype = {
         xhr.setRequestHeader('Accept',           'application/json');
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
-        if ((self.cookieJar.values === null) ||
-            (self.cookieJar.values.length < 1) )
-        {
-            // Refresh cookies
-            self.getCookies();
-        }
-
-        if (self.cookieJar.values.length > 0)
+        cDebug.log("resource-connexions::jsonRpc(): "
+                    +   "cookieJar.values.__length[ %s ]",
+                    self.cookieJar.values.__length);
+        if (self.cookieJar.values.__length > 0)
         {
             // Include cookies
-            var cookie  = self.cookieJar.values.join(';');
+            var cookie  = self.cookies2str();
 
             // /*
             cDebug.log("resource-connexions::jsonRpc(): "
@@ -629,8 +802,75 @@ Connexions.prototype = {
         xhr.send( JSON.stringify( rpc ) );
     },
 
-    /** @brief  Retrieve all cookies in the domain specified by this.cookieJar
+    /** @brief  Convert any namve/value object to an equivalent cookie string.
+     *  @param  obj     The object to convert.  If not provided, use
+     *                  this.cookieJar.values
+     *
+     *  @return The cookie string;
      */
+    cookies2str: function(obj) {
+        var self        = this;
+        var cookieStrs  = [];
+
+        if (obj === undefined)  obj = self.cookieJar.values;
+
+        if (obj !== null)
+        {
+            for (var name in obj)
+            {
+                if (name === '__length')    continue;
+
+                var val = obj[name];
+                cookieStrs.push( name +'='+ val);
+            }
+        }
+
+        var str = cookieStrs.join(';');
+
+        /*
+        cDebug.log("resource-connexions::cookie2str(): "
+                    +   'obj[ %s ] == str[ %s ]',
+                    cDebug.obj2str(obj), str);
+        // */
+
+        return str;
+    },
+
+    /** @brief  Convert a cookie string to an equivalent name/value object.
+     *  @param  str     The string to convert.
+     *
+     *  @return The cookie object;
+     */
+    str2cookies: function(str) {
+        var self    = this;
+        var obj     = {
+            __length: 0
+        };
+        var parts   = str.split(/\s*;\s*/);
+
+        for (var idex in parts)
+        {
+            var part    = parts[idex];
+            var nameVal = part.split(/\s*=\s*/);
+            var name    = nameVal[0];
+            var val     = (nameVal.length > 1
+                            ? nameVal[1]
+                            : null);
+
+            obj[ name ] = val;
+            obj.__length++;
+        }
+
+        /*
+        cDebug.log("resource-connexions::str2cookies(): "
+                    +   'str[ %s ] == obj[ %s ]',
+                    str, cDebug.obj2str(obj));
+        // */
+
+        return obj;
+    },
+
+    /** @brief  Retrieve all cookies in the domain specified by this.cookieJar
     getCookies: function() {
         var self            = this;
         var cookieManager   = CC['@mozilla.org/cookiemanager;1']
@@ -645,35 +885,48 @@ Connexions.prototype = {
                    +    "%s cookies from domain[ %s ]...",
                    nCookies, self.cookieJar.domain);
 
-        self.cookieJar.values = [];
+        self.cookieJar.values = {};
         while ( cookies.hasMoreElements() )
         {
             var cookie = cookies.getNext().QueryInterface(CI.nsICookie2);
-            // /*
-            if (! cookie )  continue;
-            cDebug.log('cookie: host[ %s ], path[ %s ], name[ %s ]',
-                       cookie.host, cookie.path, cookie.name);
-            // */
-
             if ((! cookie )                              ||
                 (cookie.host.toLowerCase() !== self.cookieJar.domain) )
             {
                 continue;
             }
 
-            self.cookieJar.values.push( cookie.name +'='+ cookie.value);
+            self.cookieJar.values[cookie.name] = cookie.value;
 
-            /*
             cDebug.log('cookie: host[ %s ], path[ %s ], name[ %s ]',
                        cookie.host, cookie.path, cookie.name);
-            // */
         }
+
+        self.db.state('cookies', self.cookies2str());
 
         cDebug.log("resource-connexions::getCookies(): cookie values[ %s ]",
                    cDebug.obj2str(self.cookieJar.values));
     },
+     */
 
     destroy: function() {
+        this._unloadObservers();
+    },
+
+    /*************************************************************************
+     * "Private" methods
+     *
+     */
+
+    /** @brief  Establish our state observers.
+     */
+    _loadObservers: function() {
+        this.os.addObserver(this, "cookie-changed", false);
+    },
+
+    /** @brief  Establish our state observers.
+     */
+    _unloadObservers: function() {
+        this.os.removeObserver(this, "cookie-changed");
     }
 };
 

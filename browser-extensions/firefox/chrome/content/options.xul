@@ -31,12 +31,19 @@
               <groupbox align="start">
                 <caption label="&connexions.prefs.account.caption;" />
                 <vbox>
-                  <label id='connexions-account-user' />
+                  <hbox>
+                    <label id='connexions-account-user-pre'
+                           value="&connexions.prefs.user.pre;" />
+                    <label id='connexions-account-user' class='link' />
+                    <label id='connexions-account-user-post'
+                           value="&connexions.prefs.user.post;" />
+                  </hbox>
+                  <spacer class='line' />
                   <label id='connexions-account-login'
                          value="&connexions.prefs.account.login;"
                          class='link' />
                   <label id='connexions-account-register'
-                         value="&connexions.prefs.account.create;"
+                         value="&connexions.prefs.account.register;"
                          class='link' />
                 </vbox>
               </groupbox>
