@@ -51,9 +51,10 @@
   <!-- Tools menu } -->
 
   <!-- Main menu { -->
+  <!--            label="&connexions.menu.label;" -->
   <menubar id="main-menubar">
     <menu            id="connexions-menu"
-                  label="&connexions.menu.label;"
+                  class="menu-iconic connexions-menubar-icon"
            insertbefore="bookmarksMenu, bookmarks-menu"
               accesskey="&connexions.menu.accesskey;">
       <menupopup id="connexions-menu-popup"
@@ -76,27 +77,33 @@
             <menuitem class="menuitem-iconic menubar-icon"
                       label="&connexions.menu.site.myBookmarks;"
                   oncommand="connexions.loadPage(event, 'myBookmarks');" />
-            <menuitem class="menuitem-iconic menubar-icon"
+            <menuitem class="menuitem-iconic"
                       label="&connexions.menu.site.myTags;"
                   oncommand="connexions.loadPage(event, 'myTags');" />
-            <menuitem class="menuitem-iconic menubar-icon"
+            <menuitem class="menuitem-iconic"
                       label="&connexions.menu.site.myNetwork;"
                   oncommand="connexions.loadPage(event, 'myNetwork');" />
-            <menuitem class="menuitem-iconic menubar-icon"
+            <menuitem class="menuitem-iconic"
                       label="&connexions.menu.site.myInbox;"
                   oncommand="connexions.loadPage(event, 'myInbox');" />
             <menuseparator />
-            <menuitem class="menuitem-iconic menubar-icon"
+            <menuitem class="menuitem-iconic"
                       label="&connexions.menu.site.bookmarks;"
                   oncommand="connexions.loadPage(event, 'bookmarks');" />
-            <menuitem class="menuitem-iconic menubar-icon"
+            <menuitem class="menuitem-iconic"
                       label="&connexions.menu.site.tags;"
                   oncommand="connexions.loadPage(event, 'tags');" />
-            <menuitem class="menuitem-iconic menubar-icon"
+            <menuitem class="menuitem-iconic"
                       label="&connexions.menu.site.people;"
                   oncommand="connexions.loadPage(event, 'people');" />
           </menupopup>
         </menu>
+        <menuseparator />
+        <menuitem     id="connexions-tools-menu"
+                   label="&connexions.menu.tools.label;"
+                   class="menuitem-iconic menubar-icon"
+             insertafter="menu_preferences"
+                 command="cmd_connexions_options"/>
       </menupopup>
     </menu>
   </menubar>

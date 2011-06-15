@@ -8,14 +8,11 @@ const CI    = Components.interfaces;
 const CR    = Components.results;
 const CU    = Components.utils;
 
-/*****************************************************************************
- * UI / Main
- *
- */
 CU.import('resource://connexions/connexions.js');
 
 function connexions_load()
 {
+    connexions.windowLoad(document);
     //connexions.setStrings(document.getEelemntById('connexions-strings'));
 }
 

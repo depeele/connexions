@@ -2,8 +2,10 @@
 <!ENTITY connexions.prefs.tab.general       "General">
 <!ENTITY connexions.prefs.account.caption   "Connexions account">
 
+<!ENTITY connexions.prefs.user.pre          "Signed in as">
+<!ENTITY connexions.prefs.user.post         "on connexions">
 <!ENTITY connexions.prefs.account.login     "Sign in">
-<!ENTITY connexions.prefs.account.create    "Create a new account">
+<!ENTITY connexions.prefs.account.register  "Create a new account">
 
 <!ENTITY connexions.prefs.sync.caption      "Sync bookmarks">
 <!ENTITY connexions.prefs.sync.description  'Click "Sync Now" to check for updates to your bookmarks without reloading all of your bookmarks.'>

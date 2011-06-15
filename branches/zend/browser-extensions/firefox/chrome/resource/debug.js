@@ -174,5 +174,5 @@ Debug.prototype = {
 
 var cDebug  = new Debug();
 
-Connexions_log('Connexions_log: available...');
+//Connexions_log('Connexions_log: available...');
 cDebug.log('cDebug.log: [ %s ]', 'available');
