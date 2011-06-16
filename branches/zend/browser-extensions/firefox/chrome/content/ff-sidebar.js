@@ -97,15 +97,15 @@ CSidebar.prototype = {
         for (var idex = 0; idex < bookmarks.length; idex++)
         {
             var bookmark    = bookmarks[idex];
-            var item        = document.createElement("listitem");
+            var row         = document.createElement("listitem");
             var name        = document.createElement("listcell");
             var propIcon    = document.createElement("listcell");
             var propCss     = [ 'listcell-iconic', 'bookmark-properties' ];
 
-            item.setAttribute("class", 'item-'+ (((idex+1) % 2)
+            row.setAttribute("class", 'item-'+ (((idex+1) % 2)
                                                     ? 'odd'
                                                     : 'even'));
-            item.setUserData("bookmark", bookmark, null);
+            row.setUserData("bookmark", bookmark, null);
 
             name.setAttribute("label", bookmark.name);
             name.setAttribute("class", 'bookmark-name');
@@ -120,9 +120,9 @@ CSidebar.prototype = {
             propIcon.setAttribute("class", propCss.join(' '));
 
             // Include the cells listitem and the listitem in the listbox
-            item.appendChild( name );
-            item.appendChild( propIcon );
-            this.bookmarkList.appendChild( item );
+            row.appendChild( name );
+            row.appendChild( propIcon );
+            this.bookmarkList.appendChild( row );
 
             /*
             // Ensure the name is NOT longer than the width - 16px
@@ -171,14 +171,14 @@ CSidebar.prototype = {
         for (var idex = 0; idex < tags.length; idex++)
         {
             var tag         = tags[idex];
-            var item        = document.createElement("listitem");
+            var row         = document.createElement("listitem");
             var name        = document.createElement("listcell");
             var freq        = document.createElement("listcell");
 
-            item.setAttribute("class", 'item-'+ (((idex+1) % 2)
+            row.setAttribute("class", 'item-'+ (((idex+1) % 2)
                                                     ? 'odd'
                                                     : 'even'));
-            item.setUserData("tag", tag, null);
+            row.setUserData("tag", tag, null);
 
             name.setAttribute("label", tag.name);
             name.setAttribute("class", 'tag-name');
@@ -188,9 +188,9 @@ CSidebar.prototype = {
             freq.setAttribute("class", 'tag-frequency');
 
             // Include the cells listitem and the listitem in the listbox
-            item.appendChild( name );
-            item.appendChild( freq );
-            this.tagList.appendChild( item );
+            row.appendChild( name );
+            row.appendChild( freq );
+            this.tagList.appendChild( row );
 
             /*
             cDebug.log('cSidebar::_render(): tag %s '
