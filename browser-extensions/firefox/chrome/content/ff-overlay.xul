@@ -6,7 +6,7 @@
   <script src="ff-overlay.js"/>
 
   <!-- Make the overlay.properties strings available via '#connexions-strings'
-       and also via connexions.getString() -->
+       and thus via connexions.getString() -->
   <stringbundleset id="stringbundleset">
     <stringbundle id="connexions-strings"
                  src="chrome://connexions/locale/overlay.properties"/>
@@ -50,11 +50,15 @@
   </menupopup>
   <!-- Tools menu } -->
 
-  <!-- Main menu { -->
-  <!--            label="&connexions.menu.label;" -->
+  <!-- Main menu {
+        Labeled
+                  label="&connexions.menu.label;"
+        Icon
+                  class="menu-iconic connexions-menubar-icon"
+   -->
   <menubar id="main-menubar">
     <menu            id="connexions-menu"
-                  class="menu-iconic connexions-menubar-icon"
+                  label="&connexions.menu.label;"
            insertbefore="bookmarksMenu, bookmarks-menu"
               accesskey="&connexions.menu.accesskey;">
       <menupopup id="connexions-menu-popup"

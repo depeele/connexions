@@ -3,16 +3,21 @@
  *  The primary browser sidebar.
  *
  *  Requires: chrome://connexions/connexions.js
+ *  which makes available:
+ *      resource://connexions/debug.js          cDebug
+ *      resource://connexions/db.js             cDb
+ *      resource://connexions/connexions.js     connexions
  */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false, plusplus:false, regexp:false */
+/*global Components:false, cDebug:false, CU:false, CI:false, connexions:false, document:false, window:false */
 CU.import('resource://connexions/debug.js');
-CU.import("resource://connexions/connexions.js");
 
-function _cSidebar()
+function CSidebar()
 {
     this.init();
 }
 
-_cSidebar.prototype = {
+CSidebar.prototype = {
     mainWindow:     null,
     bookmarksCount: null,
     tagsCount:      null,
@@ -107,8 +112,8 @@ _cSidebar.prototype = {
             name.setAttribute("crop",  'end');
 
             var propName    = [];
-            if (bookmark.isFavorite)    propName.push('favorite');
-            if (bookmark.isPrivate)     propName.push('private');
+            if (bookmark.isFavorite)    { propName.push('favorite'); }
+            if (bookmark.isPrivate)     { propName.push('private');  }
             propCss.push( propName.join('-') );
 
             propIcon.setAttribute("label", ' ');
@@ -247,7 +252,7 @@ _cSidebar.prototype = {
                     (bookmark && bookmark.url? bookmark.url:'*** UNKNOWN ***'));
     },
 
-    delete: function(e, item) {
+    'delete': function(e, item) {
         var bookmark    = item.getUserData('bookmark');
         cDebug.log("cSidebar::delete(): url[ %s ]",
                     (bookmark && bookmark.url? bookmark.url:'*** UNKNOWN ***'));
@@ -270,7 +275,7 @@ _cSidebar.prototype = {
     }
 };
 
-var cSidebar    = new _cSidebar();
+var cSidebar    = new CSidebar();
 
 window.addEventListener("load",   function() { cSidebar.load(); },   false);
 window.addEventListener("unload", function() { cSidebar.unload(); }, false);

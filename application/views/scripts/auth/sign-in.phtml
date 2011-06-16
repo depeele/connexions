@@ -92,17 +92,34 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
     var $container  = $('#auth');
     var $form       = $container.find('form');
     var $status     = $container.find('.status');
+    var api         = $.registry('api');
+
+    function updateAuthCookie(user)
+    {
+        var authCookie  = api.authCookie;
+        var cookieVal   = '';
+        var cookieOpts  = {
+            expires:    365,    // days
+            path:       '<?= $this->baseUrl('') ?>'
+        };
+        if (user.isAuthenticated)
+        {
+            cookieVal = user.name;
+        }
+
+        $.log("updateAuthCookie: path[ %s ], val[ %s ]",
+              cookieOpts.path, cookieVal);
+
+        $.cookie(api.authCookie, cookieVal, cookieOpts);
+    }
 
     $container.delegate('button[name=method]', 'click', function(e) {
-        return;   // Allow the POST to occur normally
-
         /* If we go down this path, we MUST set the 'authCookie' to signal the
          * client side about authentication status.
          */
         e.preventDefault();
 
         // Use jsonRpc to see if the authentication information is valid
-        var api         = $.registry('api');
         var $button     = $(this);
         var method      = $button.val();
         var rpc         = $.extend({}, api.jsonRpc);
@@ -123,18 +140,28 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
                 if (data.error)
                 {
                     $status.text(data.error.message);
+                    return;
                 }
-                else if ( (data.result.name === 'anonymous') ||
-                          ((id !== undefined) && (data.result.name !== id)) )
+
+                var user    = data.result;
+                if ( (user.name === 'anonymous') ||
+                     ((id !== undefined) && (user.name !== id)) )
                 {
+                    user.isAuthenticated = false;
+
                     // Invalid id and/or credential
                     $status.text('Invalid id and/or credential');
                 }
                 else
                 {
                     // Authentication success
+                    user.isAuthenticated = true;
+
+                    // Update the userAuth cookie
                     $form.trigger('complete');
                 }
+
+                updateAuthCookie(user);
             },
             error:      function(req, textStatus, err) {
                 $status.html( textStatus );

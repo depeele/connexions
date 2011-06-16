@@ -28,7 +28,7 @@
             orient="vertical"
             align="start">
             <vbox>
-              <groupbox align="start">
+              <groupbox align="start" id='connexions-account-info'>
                 <caption label="&connexions.prefs.account.caption;" />
                 <vbox>
                   <hbox>
@@ -47,19 +47,19 @@
                          class='link' />
                 </vbox>
               </groupbox>
-              <groupbox align="start">
+              <groupbox align="start" id='connexions-prefs-sync'>
                 <caption label="&connexions.prefs.sync.caption;" />
                 <vbox>
                   <description>&connexions.prefs.sync.description;</description>
                   <hbox>
-                    <button id='connexions-prefs-sync'
+                    <button id='connexions-prefs-button-sync'
                             label="&connexions.prefs.sync.button.label;" />
                     <spacer flex="1" />
                   </hbox>
 
                   <description class="bordered">&connexions.prefs.syncFull.description;</description>
                   <hbox>
-                    <button id='connexions-prefs-fullSync'
+                    <button id='connexions-prefs-button-fullSync'
                             label="&connexions.prefs.syncFull.button.label;" />
                     <spacer flex="1" />
                   </hbox>

@@ -3,11 +3,18 @@
  *  The primary browser overlay.
  *
  *  Requires: chrome://connexions/connexions.js
+ *  which makes available:
+ *      resource://connexions/debug.js          cDebug
+ *      resource://connexions/db.js             cDb
+ *      resource://connexions/connexions.js     connexions
  */
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false, plusplus:false, regexp:false */
+/*global Components:false, cDebug:false, CU:false, document:false, window:false, gContextMenu:false */
 CU.import('resource://connexions/debug.js');
 
 var cOverlay = {
     load: function() {
+        cDebug.log("ff-overlay.js:load");
         document.getElementById("contentAreaContextMenu")
                 .addEventListener("popupshowing", function (e){
                                     cOverlay.showContextMenu(e);
@@ -15,6 +22,8 @@ var cOverlay = {
     },
 
     showContextMenu: function(event) {
+        cDebug.log("COverlay::showContextMenu");
+
         /* show or hide the menuitem based on what the context menu is on
          *  gContextMenu.isTextSelected
          *              .isContentSelected
@@ -31,7 +40,9 @@ var cOverlay = {
          * https://developer.mozilla.org/en/DOM/document.popupNode
          *
          * var element  = document.popupNode;
-         * var isImage  = (element instanceof Components.interfaces.nsIImageLoadingContent && element.currentURI);
+         * var isImage  = (element instanceof
+         *                  Components.interfaces.nsIImageLoadingContent &&
+         *                  element.currentURI);
          *
          */
         var items = {
@@ -59,5 +70,5 @@ var cOverlay = {
     }
 };
 
-window.addEventListener("load",   function() { cOverlay.load(); },   false);
-window.addEventListener("unload", function() { cOverlay.unload(); }, false);
+window.addEventListener("load",   cOverlay.load,   false);
+window.addEventListener("unload", cOverlay.unload, false);

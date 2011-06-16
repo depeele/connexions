@@ -845,6 +845,8 @@
      *  @param  action      The desired close action [ 'back' ]:
      *                      - 'back'                move back in the browser's
      *                                              history;
+     *                      - 'callback:%func%'     invoke the Javascript
+     *                                              function %func%;
      *                      - 'close'               attempt to close the
      *                                              current window;
      *                      - 'hide'                hide the specified
@@ -852,12 +854,12 @@
      *                      - 'iframe'              attempt to invoke the
      *                                              'close' function on the
      *                                              containing iframe;
+     *                      - 'ignore'              do nothing;
      *                      - 'redirect:%url%'      redirect to the specified
      *                        'urlCallback:%url%'   %url%.  If %url% is empty,
      *                                              invoke 'back';
-     *                      - 'callback:%func%'     invoke the Javascript
-     *                                              function %func%;
-     *                      - 'ignore'              do nothing;
+     *                      - 'reload'              simply reload the current
+     *                                              window;
      *  @param  $container  For 'hide', the container to hide;
      */
     $.closeAction = function(action, $container) {
@@ -876,8 +878,11 @@
 
         switch (action)
         {
-        case 'close':       // Attempt to close the containing window
-            window.close();
+        case 'callback':    // Invoke the named Javascript function
+            if (param && param.length)
+            {
+                eval(param +'();');
+            }
             break;
 
         case 'hide':        // Hide the containing DOM element
@@ -891,14 +896,21 @@
             }
             break;
 
-        case 'callback':    // Invoke the named Javascript function
-            if (param && param.length)
-            {
-                eval(param +'();');
-            }
+        case 'ignore':      // Do nothing
             break;
 
-        case 'ignore':      // Do nothing
+
+        // Actions with fallthroughs
+        case 'close':       // Attempt to close the containing window
+            try {
+                window.close();
+                break;
+            } catch(e) {}
+
+            // Cannot close -- fall through to reload
+
+        case 'reload':      // Reload the current page
+            window.location.reload();
             break;
 
         case 'redirect':    // Redirect to the specified URL

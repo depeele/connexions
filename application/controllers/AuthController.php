@@ -159,11 +159,16 @@ class AuthController extends Connexions_Controller_Action
         $auth->clearIdentity();
         // */
 
-        // Redirect
-        return $this->_redirector->gotoSimple('index','index');
-        //return $this->_redirector->setGotoSimple('index', 'index');
-
-        // action body
+        if (! empty($this->_connection['referer']))
+        {
+            // Redirect back to the referer
+            return $this->_redirector->gotoUrl($this->_connection['referer']);
+        }
+        else
+        {
+            // Redirect to the main page
+            return $this->_redirector->gotoSimple('index','index');
+        }
     }
 
     public function registerAction()
@@ -549,13 +554,27 @@ class AuthController extends Connexions_Controller_Action
             {
                 if (preg_match('/^onSuccess:/i', $msg))
                 {
-                    // /*
+                    /*
                     Connexions::log(
                             "AuthController::_showAuthenticationForm(): "
                             . "forward flash message '%s'",
                             $msg);
                     // */
 
+                    /* Client-side redirection support:
+                     *      Include 'onSuccess' as a 'closeAction' for the view
+                     *      in the case where we're handling redirection via
+                     *      client-side Javascript.
+                     */
+                    $url = Connexions::url(
+                                preg_replace('/^onSuccess:/', '', $msg));
+                    $this->view->closeAction = 'redirect:'. $url;
+
+                    /* Server-side reicrection support:
+                     *      Forward this this flash message in the case where
+                     *      we're handling authentication via a POST and wish
+                     *      to redirect from the server-side.
+                     */
                     $this->_flashMessenger->addMessage($msg);
 
                     if (preg_match('/[\?\&]noNav/i', $msg))
@@ -566,7 +585,7 @@ class AuthController extends Connexions_Controller_Action
                         $this->_noNav           = true;
                         $this->view->excludeNav = true;
 
-                        // /*
+                        /*
                         Connexions::log(
                                 "AuthController::_showAuthenticationForm(): "
                                 . "respect 'noNav'");
