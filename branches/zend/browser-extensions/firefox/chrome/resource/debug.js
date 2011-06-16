@@ -3,34 +3,44 @@
  *  General console logging.
  *
  */
-let EXPORTED_SYMBOLS    = ["Connexions_log", "cDebug"];
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false, plusplus:false, regexp:false */
+/*global Components:false, console:false */
+var EXPORTED_SYMBOLS    = ["Connexions_log", "cDebug"];
 
-const CC                = Components.classes;
-const CI                = Components.interfaces;
-const CR                = Components.results;
-const CU                = Components.utils;
+var CC  = Components.classes;
+var CI  = Components.interfaces;
+var CR  = Components.results;
+var CU  = Components.utils;
 
+/*****************************************************************************
+ * Primary logger
+ *
+ */
 var gLog  = null;
 
 function Connexions_log(msg, stackFrame)
 {
     if (gLog === null)
     {
-        if (console && console.log)
-        {
-            gLog = function(msg) {
-                console.log(msg);
-            };
-        }
-        else
-        {
-            var console = CC['@mozilla.org/consoleservice;1']
-                            .getService(CI.nsIConsoleService);
+        // See if the Gecko 2 Web Console is available
+        try {
+            if (console && console.log)
+            {
+                gLog = function(msg) {
+                    console.log(msg);
+                };
+            }
+        } catch(e) {}
+    }
+    if (gLog === null)
+    {
+        // Fall back to nsIConsole
+        var nsConsole = CC['@mozilla.org/consoleservice;1']
+                        .getService(CI.nsIConsoleService);
 
-            gLog = function(msg) {
-                console.logStringMessage(msg);
-            };
-        }
+        gLog = function(msg) {
+            nsConsole.logStringMessage(msg);
+        };
     }
 
     if (stackFrame === undefined)
@@ -56,6 +66,10 @@ function Connexions_log(msg, stackFrame)
     gLog(msg);
 }
 
+/*****************************************************************************
+ * General Debug class
+ *
+ */
 function Debug()
 {
     this.init();
@@ -65,7 +79,7 @@ Debug.prototype = {
     initialized:    false,
 
     init: function() {
-        if (this.initialized === true)  return;
+        if (this.initialized === true)  { return; }
 
         this.initialized = true;
     },
@@ -86,9 +100,9 @@ Debug.prototype = {
         if (type === 'object')
         {
             // What TYPE of object
-            if (obj.length) type = 'array';
-            if (obj.exec)   type = 'regexp';
-            if (obj.now)    type = 'date';
+            if (obj.length) { type = 'array'; }
+            if (obj.exec)   { type = 'regexp'; }
+            if (obj.now)    { type = 'date'; }
         }
 
         return type;
@@ -96,7 +110,7 @@ Debug.prototype = {
 
     obj2str: function(obj, depth, maxDepth) {
         var str = "";
-        if (obj == null) {
+        if (obj === null) {
             str += "null";
             return str;
         }

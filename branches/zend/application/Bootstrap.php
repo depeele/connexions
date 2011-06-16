@@ -41,6 +41,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
              ->_commonAuth();
 
         /*
+        Connexions::log("Bootstrap::_initCommon: headers[ %s ]",
+                        print_r(getallheaders(), true ));
+        // */
+
+        /*
         Connexions_Profile::checkpoint('Connexions',
                                        'Bootstrap::_initCommon complete');
         // */
@@ -439,6 +444,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $connectionInfo = array(
             'domain'    => $_SERVER['SERVER_NAME'],
             'clientIp'  => $_SERVER['REMOTE_ADDR'],
+            'referer'   => $_SERVER['HTTP_REFERER'],
             'https'     => (isset($_SERVER['HTTPS']) &&
                             ($_SERVER['HTTPS'] === 'on')
                                 ? true
@@ -459,6 +465,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
                                     : null),
             );
         }
+
+        /*
+        Connexions::log("Bootstrap::_commonConnection: connectionInfo[ %s ]",
+                        Connexions::varExport($connectionInfo));
+        // */
 
         Zend_Registry::set('connectionInfo', $connectionInfo);
 

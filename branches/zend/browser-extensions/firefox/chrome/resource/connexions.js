@@ -10,16 +10,32 @@
  *  authenticated user (via jsonRpc('user.whoami')), and broadcast the change
  *  via 'connexions.userChanged'.
  */
-var EXPORTED_SYMBOLS    = ['connexions'];
-
-const CC                    = Components.classes;
-const CI                    = Components.interfaces;
-const CR                    = Components.results;
-const CU                    = Components.utils;
-const CONNEXIONS_BASE_URL   = "%URL%";
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false, plusplus:false, regexp:false */
+/*global Components:false, cDebug:false, cDb:false, window:false */
+var CC                  = Components.classes;
+var CI                  = Components.interfaces;
+var CR                  = Components.results;
+var CU                  = Components.utils;
+var CONNEXIONS_BASE_URL = "%URL%";
 
 CU.import("resource://connexions/debug.js");
 CU.import("resource://connexions/db.js");
+
+var EXPORTED_SYMBOLS    = ['connexions'/*, $, $$ */];
+
+/*****************************************************************************
+ * Helpers
+ *
+function $(id)
+{
+    return connexions.getWindow().document.getElementById(id);
+}
+
+function $$(cssSelector)
+{
+    return connexions.getWindow().document.querySelectorAll(cssSelector);
+}
+ */
 
 /*****************************************************************************
  * UI / Main
@@ -43,7 +59,7 @@ Connexions.prototype = {
     user:           null,   // The current user
 
     debug:          cDebug,
-    db:             connexions_db,
+    db:             cDb,
 
     cookieTimer:    CC['@mozilla.org/timer;1']
                         .createInstance(CI.nsITimer),
@@ -63,11 +79,11 @@ Connexions.prototype = {
         id:         0
     },
     state:          {
-        'retrieveUser': false
+        retrieveUser:   false
     },
 
     init: function() {
-        if (this.initialized === true)  return;
+        if (this.initialized === true)  { return; }
 
         cDebug.log('resource-connexions::init():');
 
@@ -100,19 +116,43 @@ Connexions.prototype = {
         cDebug.log('resource-connexions::init(): completed');
     },
 
-    /* Invoked any time 'chrome/content/connexions.js'
-     * receives a 'load' event.
+    /** @brief  Invoked any time 'chrome/content/connexions.js' receives a
+     *          'load' event.
      */
-    windowLoad: function(document) {
+    windowLoad: function() {
         cDebug.log('resource-connexions::windowLoad()');
 
-        var self    = this;
-        if ((! document) || (self.string !== null))
+        var self        = this;
+        var document    = self.getDocument();
+
+        if (document && (self.strings === null))
         {
-            return;
+            /* Attempt to include the strings from the 'connexions-strings'
+             * stringbundle established in ff-overlay.xul
+             */
+            try {
+                var strings = document.getElementById('connexions-strings');
+
+                /*
+                cDebug.log('resource-connexions::windowLoad(): strings[ %s ]',
+                           strings);
+                // */
+
+                self.setStrings( strings );
+            } catch(e) {
+                cDebug.log('resource-connexions::windowLoad(): '
+                            + 'get connextion-strings triggered an error: %s',
+                           e.message);
+            };
         }
 
-        self.setStrings(document.getEelemntById('connexions-strings'));
+        if (self.user === null)
+        {
+            // Attempt to retrieve the current user.
+            cDebug.log('resource-connexions::windowLoad(): retrieveUser');
+
+            self.retrieveUser();
+        }
     },
 
     /** @brief  Observer register notification topics.
@@ -150,7 +190,7 @@ Connexions.prototype = {
                        cookie.host, cookie.path, cookie.name);
             // */
             if (cookie  &&
-                (cookie.host.toLowerCase() == self.cookieJar.domain) )
+                (cookie.host.toLowerCase() === self.cookieJar.domain) )
             {
                 // /*
                 cDebug.log('resource-connexions::observe(): '
@@ -205,7 +245,7 @@ Connexions.prototype = {
                 self.cookieTimer.initWithCallback(function() {
                     self.retrieveUser();
                     self.cookieTicking = false;
-                }, 8000, CI.nsITimer.TYPE_ONE_SHOT);
+                }, 5000, CI.nsITimer.TYPE_ONE_SHOT);
                 self.cookieTicking = true;
             }
             break;
@@ -231,24 +271,26 @@ Connexions.prototype = {
     retrieveUser: function(callback) {
         var self    = this;
 
-        if (self.state['retrieveUser'] === true)
+        if (self.state.retrieveUser === true)
         {
             // In process
             return;
         }
 
-        self.state['retrieveUser'] = true;
+        self.state.retrieveUser = true;
 
-        cDebug.log('resource-connexions::retrieveUser(): initiate...');
+        //cDebug.log('resource-connexions::retrieveUser(): initiate...');
 
         /* Perform a JsonRpc request to find out who the authenticated user if
          * (if any)
          */
         self.jsonRpc('user.whoami', {}, {
             success: function(data, textStatus, xhr) {
+                /*
                 cDebug.log('resource-connexions::retrieveUser(): '
                             +   'jsonRpc return[ %s ]',
                             cDebug.obj2str(data));
+                // */
 
                 if (data.error !== null)
                 {
@@ -272,7 +314,7 @@ Connexions.prototype = {
             },
             complete: function(xhr, textStatus) {
                 self.signal('connexions.userChanged', self.user);
-                self.state['retrieveUser'] = false;
+                self.state.retrieveUser = false;
             }
         });
     },
@@ -281,10 +323,31 @@ Connexions.prototype = {
         this.strings = strings;
     },
 
-    getString: function(name) {
-        return (this.strings
-                    ? this.strings.getString(name)
-                    : null);
+    /** @brief  If our strings (nsIStringBundle) have been set, retrieve and
+     *          return the named string.
+     *  @param  name        The name of the desired string;
+     *  @param  strArray    If provided,
+     *                          strings.getFormattedString(name, strArray)
+     *                      will be used to retrieve the desired string.
+     *                      Otherwise,
+     *                          strings.getString(name)
+     *                      will be used;
+     *
+     *  @return The desired string (null if no match);
+     */
+    getString: function(name, strArray) {
+        var str = null;
+
+        if (this.strings)
+        {
+            try {
+                str = (strArray
+                        ? this.strings.getFormattedString(name, strArray)
+                        : this.strings.getString(name));
+            } catch(e) {}
+        }
+
+        return str;
     },
 
     /** @brief  Given the contextMenu instance and desired tagging type,
@@ -298,7 +361,7 @@ Connexions.prototype = {
      */
     tagPage: function(el, type) {
         var self    = this;
-        var doc     = el.ownerDocument;
+        var doc     = self.getDocument();   //el.ownerDocument;
         var docUrl  = doc.URL;
         var url, name;
 
@@ -339,6 +402,8 @@ Connexions.prototype = {
             name = el.textContent;
             cDebug.log('tagPage(): type[ %s ], url[ %s ], name[ %s ]',
                             type, url, name);
+
+            // Fall through
 
         case 'media':
             if (url === undefined)
@@ -514,20 +579,21 @@ Connexions.prototype = {
      *          window.
      */
     getWindow: function() {
-        var wind    = null;
+        return this.wm.getMostRecentWindow('navigator:browser');
+    },
 
-        cDebug.log('resource-connexions::getWindow(): '
-                        +   'via getMostRecentWindow');
-        wind = this.wm.getMostRecentWindow('navigator:browser');
-
-        return wind;
+    /** @brief  For contexts that do NOT have 'document', retrieve the CURRENT
+     *          document.
+     */
+    getDocument: function() {
+        return this.getWindow().document;
     },
 
     /** @brief  For contexts that do NOT have 'window', retrieve the browser
      *          instance associated with the CURRENT window.
      */
     getBrowser: function() {
-        return (this.getWindow()).getBrowser();
+        return this.getWindow().getBrowser();
 
         /*
         return (getBrowser
@@ -540,11 +606,11 @@ Connexions.prototype = {
      *          invoke 'toggleSidebar()'
      */
     toggleSidebar: function(id, capture) {
-        return (this.getWindow()).toggleSidebar(id, capture);
+        return this.getWindow().toggleSidebar(id, capture);
     },
 
     openXulWindow: function(xul, title, options, url) {
-        return (this.getWindow()).openDialog(xul, title, options, url);
+        return this.getWindow().openDialog(xul, title, options, url);
     },
 
     openTab: function(url) {
@@ -583,7 +649,7 @@ Connexions.prototype = {
         var newWindow   = this.openXulWindow(xul, title, options, url);
         */
         //var newWindow   = window.open(url, '_parent', options);
-        var newWindow   = (this.getWindow()).open(url, '_blank', options);
+        var newWindow   = this.getWindow().open(url, '_blank', options);
 
         /*
         newWindow.addEventListener("close", function() {
@@ -665,11 +731,21 @@ Connexions.prototype = {
     },
 
     sync: function(isReload) {
-        cDebug.log("resource-connexions::sync(): isReload[ %s ]", isReload);
+        var self    = this;
+
+        if (self.user == null)
+        {
+            cDebug.log("resource-connexions::sync(): NOT signed in");
+            return;
+        }
+
+        cDebug.log("resource-connexions::sync(): "
+                    +   "signed in as [ %s ], isReload[ %s ]",
+                    self.user.name, isReload);
 
         if (isReload)
         {
-            connexions_db.deleteAllBookmarks();
+            cDb.deleteAllBookmarks();
         }
 
         /* :TODO: Perform an asynchronous request for all bookmarks and add
@@ -725,7 +801,7 @@ Connexions.prototype = {
                     callbacks.success(json, textStatus, xhr);
                 }
 
-                if (callbacks.complete) callbacks.complete(xhr, textStatus);
+                if (callbacks.complete) {callbacks.complete(xhr, textStatus);}
             };
         }
 
@@ -742,8 +818,9 @@ Connexions.prototype = {
                     textStatus = event.target.statusText;
                 } catch(e) {}
 
-                if (callbacks.error)    callbacks.error(xhr, textStatus,status);
-                if (callbacks.complete) callbacks.complete(xhr, textStatus);
+                if (callbacks.error)    { callbacks.error(xhr, textStatus,
+                                                               status); }
+                if (callbacks.complete) { callbacks.complete(xhr, textStatus);}
             };
         }
 
@@ -763,12 +840,6 @@ Connexions.prototype = {
         };
         // */
 
-        // /*
-        cDebug.log("resource-connexions::jsonRpc(): "
-                   +    "method[ %s ], transport[ %s ], url[ %s ]",
-                   method, self.jsonRpcInfo.transport, self.jsonRpcInfo.url);
-        // */
-
         xhr.open(self.jsonRpcInfo.transport,
                  self.jsonRpcInfo.url);
 
@@ -780,23 +851,23 @@ Connexions.prototype = {
         xhr.setRequestHeader('Accept',           'application/json');
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
-        cDebug.log("resource-connexions::jsonRpc(): "
-                    +   "cookieJar.values.__length[ %s ]",
-                    self.cookieJar.values.__length);
-        if (self.cookieJar.values.__length > 0)
+        var cookies;
+        if ( (self.cookieJar.values !== null) &&
+             (self.cookieJar.values.__length > 0) )
         {
             // Include cookies
-            var cookie  = self.cookies2str();
+            cookies = self.cookies2str();
 
-            // /*
-            cDebug.log("resource-connexions::jsonRpc(): "
-                        +   "cookies[ %s ] == cookie[ %s ]",
-                       cDebug.obj2str( self.cookieJar.values ),
-                       cookie);
-            // */
-
-            xhr.setRequestHeader('Cookie', cookie);
+            xhr.setRequestHeader('Cookie', cookies);
         }
+
+        // /*
+        cDebug.log("resource-connexions::jsonRpc(): "
+                   +    "method[ %s ], transport[ %s ], "
+                   +    "url[ %s ], cookiies[ %s ]",
+                   method, self.jsonRpcInfo.transport,
+                   self.jsonRpcInfo.url, cookies);
+        // */
 
         // Send the request
         xhr.send( JSON.stringify( rpc ) );
@@ -812,13 +883,13 @@ Connexions.prototype = {
         var self        = this;
         var cookieStrs  = [];
 
-        if (obj === undefined)  obj = self.cookieJar.values;
+        if (obj === undefined)  { obj = self.cookieJar.values; }
 
         if (obj !== null)
         {
             for (var name in obj)
             {
-                if (name === '__length')    continue;
+                if (name === '__length')    { continue; }
 
                 var val = obj[name];
                 cookieStrs.push( name +'='+ val);

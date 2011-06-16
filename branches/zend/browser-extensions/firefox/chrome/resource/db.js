@@ -3,15 +3,17 @@
  *  Local connexions database.
  *
  */
-const CC    = Components.classes;
-const CI    = Components.interfaces;
-const CR    = Components.results;
-const CU    = Components.utils;
+/*jslint nomen:false, laxbreak:true, white:false, onevar:false, plusplus:false, regexp:false */
+/*global Components:false, cDebug:false */
+var CC  = Components.classes;
+var CI  = Components.interfaces;
+var CR  = Components.results;
+var CU  = Components.utils;
 
 CU.import("resource://connexions/debug.js");
 
 
-let EXPORTED_SYMBOLS    = ["Connexions_Db", "connexions_db"];
+var EXPORTED_SYMBOLS    = ["Connexions_Db", "cDb"];
 
 function Connexions_Db()
 {
@@ -27,23 +29,23 @@ Connexions_Db.prototype = {
     dbStatements:   {},
     dbSchema:       {
         tables: {
-            bookmarks:      "url TEXT NOT NULL DEFAULT \"\" COLLATE NOCASE,\
-                             urlHash VARCHAR(64) NOT NULL DEFAULT \"\" COLLATE NOCASE,\
-                             name VARCHAR(255) NOT NULL DEFAULT \"\" COLLATE NOCASE,\
-                             description NOT NULL DEFAULT \"\",\
-                             rating UNSIGNED NOT NULL DEFAULT 0,\
-                             isFavorite BOOL NOT NULL DEFAULT 0,\
-                             isPrivate BOOL NOT NULL DEFAULT 0,\
-                             taggedOn DATETIME NOT NULL DEFAULT 0,\
-                             updatedOn DATETIME NOT NULL DEFAULT 0,\
-                             visitedOn DATETIME NOT NULL DEFAULT 0,\
-                             visitCount UNSIGNED NOT NULL DEFAULT 0,\
-                             shortcut VARCHAR(64) NOT NULL DEFAULT \"\"",
+            bookmarks:      "url TEXT NOT NULL DEFAULT \"\" COLLATE NOCASE,"
+                           +"urlHash VARCHAR(64) NOT NULL DEFAULT \"\" COLLATE NOCASE,"
+                           +"name VARCHAR(255) NOT NULL DEFAULT \"\" COLLATE NOCASE,"
+                           +"description NOT NULL DEFAULT \"\","
+                           +"rating UNSIGNED NOT NULL DEFAULT 0,"
+                           +"isFavorite BOOL NOT NULL DEFAULT 0,"
+                           +"isPrivate BOOL NOT NULL DEFAULT 0,"
+                           +"taggedOn DATETIME NOT NULL DEFAULT 0,"
+                           +"updatedOn DATETIME NOT NULL DEFAULT 0,"
+                           +"visitedOn DATETIME NOT NULL DEFAULT 0,"
+                           +"visitCount UNSIGNED NOT NULL DEFAULT 0,"
+                           +"shortcut VARCHAR(64) NOT NULL DEFAULT \"\"",
             tags:           "name VARCHAR(32) NOT NULL UNIQUE COLLATE NOCASE",
-            bookmarkTags:   "bookmarkId UNSIGNED NOT NULL,\
-                             tagId UNSIGNED NOT NULL",
-            state:          "name VARCHAR(32) NOT NULL UNIQUE,\
-                             value TEXT NOT NULL DEFAULT \"\"",
+            bookmarkTags:   "bookmarkId UNSIGNED NOT NULL,"
+                           +"tagId UNSIGNED NOT NULL",
+            state:          "name VARCHAR(32) NOT NULL UNIQUE,"
+                           +"value TEXT NOT NULL DEFAULT \"\""
         },
         indices: {
             bookmarks_alpha:      "bookmarks(name ASC)",
@@ -53,13 +55,13 @@ Connexions_Db.prototype = {
             tags_alpha:           "tags(name)",
             bookmarks_tag:        "bookmarkTags(bookmarkId, tagId)",
             tags_bookmark:        "bookmarkTags(tagId, bookmarkId)",
-            state_alpha:          "state(name)",
+            state_alpha:          "state(name)"
         }
     },
 
     init: function()
     {
-        if (this.initialized === true)  return;
+        if (this.initialized === true)  { return; }
 
         // initialization code
         this.initialized = true;
@@ -101,7 +103,7 @@ Connexions_Db.prototype = {
         cDebug.log('Connexions_Db::signal(): event[ %s ], data[ %s ]',
                    event, cDebug.obj2str(data));
 
-        self.os.notifyObservers(null, event,
+        this.os.notifyObservers(null, event,
                                (data === undefined ? '' : data));
     },
 
@@ -117,12 +119,13 @@ Connexions_Db.prototype = {
     getTotalBookmarks: function()
     {
         var fname   = 'getTotalBookmarks';
-        var stmt    = this.dbStatements[ fname ];
+        var self    = this;
+        var stmt    = self.dbStatements[ fname ];
         if (stmt === undefined)
         {
             var sql = 'SELECT COUNT(rowid) FROM bookmarks';
-            stmt = this.dbConnection.createStatement(sql);
-            this.dbStatements[ fname ] = stmt;
+            stmt = self.dbConnection.createStatement(sql);
+            self.dbStatements[ fname ] = stmt;
         }
 
         var count   = 0;
@@ -147,12 +150,13 @@ Connexions_Db.prototype = {
     getBookmarkId: function(url)
     {
         var fname   = 'getBookmarkId';
-        var stmt    = this.dbStatements[ fname ];
+        var self    = this;
+        var stmt    = self.dbStatements[ fname ];
         if (stmt === undefined)
         {
             var sql = 'SELECT rowid FROM bookmarks WHERE url = ?1';
-            stmt = this.dbConnection.createStatement(sql);
-            this.dbStatements[ fname ] = stmt;
+            stmt = self.dbConnection.createStatement(sql);
+            self.dbStatements[ fname ] = stmt;
         }
 
         var id  = null;
@@ -178,13 +182,14 @@ Connexions_Db.prototype = {
     getBookmarkByUrl: function(url)
     {
         var fname   = 'getBookmarkByUrl';
-        var stmt    = this.dbStatements[ fname ];
+        var self    = this;
+        var stmt    = self.dbStatements[ fname ];
         if (stmt === undefined)
         {
             var sql = 'SELECT bookmarks.rowid,bookmarks.* FROM bookmarks '
                     +   'WHERE bookmarks.url=?1';
-            stmt = this.dbConnection.createStatement(sql);
-            this.dbStatements[ fname ] = stmt;
+            stmt = self.dbConnection.createStatement(sql);
+            self.dbStatements[ fname ] = stmt;
         }
 
         var bookmark    = null;
@@ -192,7 +197,7 @@ Connexions_Db.prototype = {
             stmt.bindUTF8StringParemeter(0, url);
             if (stmt.executeStep())
             {
-                bookmark = this._bookmarkFromRow(stmt);
+                bookmark = self._bookmarkFromRow(stmt);
             }
         } catch(e) {
             cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
@@ -210,13 +215,14 @@ Connexions_Db.prototype = {
     getBookmarkById: function(id)
     {
         var fname   = 'getBookmarkById';
-        var stmt    = this.dbStatements[ fname ];
+        var self    = this;
+        var stmt    = self.dbStatements[ fname ];
         if (stmt === undefined)
         {
             var sql = 'SELECT bookmarks.rowid,bookmarks.* FROM bookmarks '
                     +   'WHERE bookmarks.rowid=?1';
-            stmt = this.dbConnection.createStatement(sql);
-            this.dbStatements[ fname ] = stmt;
+            stmt = self.dbConnection.createStatement(sql);
+            self.dbStatements[ fname ] = stmt;
         }
 
         var bookmark    = null;
@@ -224,7 +230,7 @@ Connexions_Db.prototype = {
             stmt.bindInt64Parameter(0, id);
             if (stmt.executeStep())
             {
-                bookmark = this._bookmarkFromRow(stmt);
+                bookmark = self._bookmarkFromRow(stmt);
             }
         } catch(e) {
             cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
@@ -244,7 +250,8 @@ Connexions_Db.prototype = {
     insertBookmark: function(bookmark)
     {
         var fname   = 'insertBookmark';
-        var stmt    = this.dbStatements[ fname ];
+        var self    = this;
+        var stmt    = self.dbStatements[ fname ];
         if (stmt === undefined)
         {
             /*  1   url
@@ -262,41 +269,41 @@ Connexions_Db.prototype = {
              */
             var sql = 'INSERT INTO bookmarks VALUES(?1, ?2, ?3, ?4, ?5, ?6, '
                     +                              '?7, ?8, ?9, ?10, ?11, ?12)';
-            stmt = this.dbConnection.createStatement(sql);
-            this.dbStatements[ fname ] = stmt;
+            stmt = self.dbConnection.createStatement(sql);
+            self.dbStatements[ fname ] = stmt;
         }
 
         var id  = null;
         try {
             var now = (new Date()).getTime() * 1000;
 
-            stmt.bindUTF8StringParameter(0, bookmark['url']);
-            stmt.bindUTF8StringParameter(1, (bookmark['urlHash']
-                                              ? bookmark['urlHash'] : ''));
-            stmt.bindUTF8StringParameter(2, (bookmark['name']
-                                              ? bookmark['name'] : ''));
-            stmt.bindUTF8StringParameter(3, (bookmark['description']
-                                              ? bookmark['description'] : ''));
-            stmt.bindInt64Parameter(4, (bookmark['rating']
-                                              ? bookmark['rating'] : 0));
-            stmt.bindInt32Parameter(5, (bookmark['isFavorite']
+            stmt.bindUTF8StringParameter(0, bookmark.url);
+            stmt.bindUTF8StringParameter(1, (bookmark.urlHash
+                                              ? bookmark.urlHash : ''));
+            stmt.bindUTF8StringParameter(2, (bookmark.name
+                                              ? bookmark.name : ''));
+            stmt.bindUTF8StringParameter(3, (bookmark.description
+                                              ? bookmark.description : ''));
+            stmt.bindInt64Parameter(4, (bookmark.rating
+                                              ? bookmark.rating : 0));
+            stmt.bindInt32Parameter(5, (bookmark.isFavorite
                                               ? 1 : 0));
-            stmt.bindInt32Parameter(6, (bookmark['isPrivate']
+            stmt.bindInt32Parameter(6, (bookmark.isPrivate
                                               ? 1 : 0));
-            stmt.bindInt64Parameter(7, (bookmark['taggedOn']
-                                              ? bookmark['taggedOn'] : now));
-            stmt.bindInt64Parameter(8, (bookmark['updatedOn']
-                                              ? bookmark['updatedOn'] : now));
-            stmt.bindInt64Parameter(9, (bookmark['visitedOn']
-                                              ? bookmark['visitedOn'] : now));
-            stmt.bindInt32Parameter(10, (bookmark['visitCount']
-                                              ? bookmark['visitedCount'] : 0));
-            stmt.bindUTF8StringParameter(11, (bookmark['shortcut']
-                                              ? bookmark['shortcut'] : ''));
+            stmt.bindInt64Parameter(7, (bookmark.taggedOn
+                                              ? bookmark.taggedOn : now));
+            stmt.bindInt64Parameter(8, (bookmark.updatedOn
+                                              ? bookmark.updatedOn : now));
+            stmt.bindInt64Parameter(9, (bookmark.visitedOn
+                                              ? bookmark.visitedOn : now));
+            stmt.bindInt32Parameter(10, (bookmark.visitCount
+                                              ? bookmark.visitedCount : 0));
+            stmt.bindUTF8StringParameter(11, (bookmark.shortcut
+                                              ? bookmark.shortcut : ''));
 
             stmt.execute();
 
-            id = this.dbConnection.lastInsertRowId;
+            id = self.dbConnection.lastInsertRowId;
 
             self.signal('connexions.bookmarkAdded', id);
         } catch(e) {
@@ -314,34 +321,35 @@ Connexions_Db.prototype = {
      */
     addBookmark: function(bookmark)
     {
-        if (bookmark['url'] === undefined)
+        var self    = this;
+        if (bookmark.url === undefined)
         {
             return null;
         }
 
-        var cur = this.getBookmarkByUrl(bookmark['url']);
-        if (cur)
+        var id = self.getBookmarkByUrl(bookmark.url);
+        if (id)
         {
             // Bookmark exists -- update
-            this.updateBookmark(bookmark);
+            self.updateBookmark(bookmark);
         }
         else
         {
             // Bookmark does NOT exist -- create
-            id = this.insertBookmark(bookmark);
+            id = self.insertBookmark(bookmark);
 
             if ((id !== null) &&
-                (bookmark['tags'] !== undefined) &&
-                (bookmark['tags'].length > 0))
+                (bookmark.tags !== undefined) &&
+                (bookmark.tags.length > 0))
             {
-                var tags    = bookmark['tags'];
+                var tags    = bookmark.tags;
                 for (var idex = 0; idex < tags.length; idex++)
                 {
-                    if (! tags[idex])   continue;
+                    if (! tags[idex])   { continue; }
 
-                    var tagId   = this.addTag(tags[idex]);
+                    var tagId   = self.addTag(tags[idex]);
 
-                    this.insertBookmarkTag(id, tagId);
+                    self.insertBookmarkTag(id, tagId);
                 }
             }
         }
@@ -359,7 +367,8 @@ Connexions_Db.prototype = {
     updateBookmark: function(bookmark)
     {
         var fname   = 'updateBookmark';
-        var stmt    = this.dbStatements[ fname ];
+        var self    = this;
+        var stmt    = self.dbStatements[ fname ];
         if (stmt === undefined)
         {
             var sql = 'UPDATE bookmarks SET url=?1, urlHash=?2, '
@@ -368,41 +377,41 @@ Connexions_Db.prototype = {
                     +                      'isPrivate=?7, taggedOn=?8, '
                     +                      'updatedOn=?9, visitedOn=?10, '
                     +                      'visitCount=?11, shortcut=?12';
-            stmt = this.dbConnection.createStatement(sql);
-            this.dbStatements[ fname ] = stmt;
+            stmt = self.dbConnection.createStatement(sql);
+            self.dbStatements[ fname ] = stmt;
         }
 
         var res     = true;
         try {
             var now = (new Date()).getTime() * 1000;
 
-            stmt.bindUTF8StringParameter(0, bookmark['url']);
-            stmt.bindUTF8StringParameter(1, (bookmark['urlHash']
-                                              ? bookmark['urlHash'] : ''));
-            stmt.bindUTF8StringParameter(2, (bookmark['name']
-                                              ? bookmark['name'] : ''));
-            stmt.bindUTF8StringParameter(3, (bookmark['description']
-                                              ? bookmark['description'] : ''));
-            stmt.bindInt64Parameter(4, (bookmark['rating']
-                                              ? bookmark['rating'] : 0));
-            stmt.bindInt32Parameter(5, (bookmark['isFavorite']
+            stmt.bindUTF8StringParameter(0, bookmark.url);
+            stmt.bindUTF8StringParameter(1, (bookmark.urlHash
+                                              ? bookmark.urlHash : ''));
+            stmt.bindUTF8StringParameter(2, (bookmark.name
+                                              ? bookmark.name : ''));
+            stmt.bindUTF8StringParameter(3, (bookmark.description
+                                              ? bookmark.description : ''));
+            stmt.bindInt64Parameter(4, (bookmark.rating
+                                              ? bookmark.rating : 0));
+            stmt.bindInt32Parameter(5, (bookmark.isFavorite
                                               ? 1 : 0));
-            stmt.bindInt32Parameter(6, (bookmark['isPrivate']
+            stmt.bindInt32Parameter(6, (bookmark.isPrivate
                                               ? 1 : 0));
-            stmt.bindInt64Parameter(7, (bookmark['taggedOn']
-                                              ? bookmark['taggedOn'] : now));
-            stmt.bindInt64Parameter(8, (bookmark['updatedOn']
-                                              ? bookmark['updatedOn'] : now));
-            stmt.bindInt64Parameter(9, (bookmark['visitedOn']
-                                              ? bookmark['visitedOn'] : now));
-            stmt.bindInt32Parameter(10, (bookmark['visitCount']
-                                              ? bookmark['visitedCount'] : 0));
-            stmt.bindUTF8StringParameter(11, (bookmark['shortcut']
-                                              ? bookmark['shortcut'] : ''));
+            stmt.bindInt64Parameter(7, (bookmark.taggedOn
+                                              ? bookmark.taggedOn : now));
+            stmt.bindInt64Parameter(8, (bookmark.updatedOn
+                                              ? bookmark.updatedOn : now));
+            stmt.bindInt64Parameter(9, (bookmark.visitedOn
+                                              ? bookmark.visitedOn : now));
+            stmt.bindInt32Parameter(10, (bookmark.visitCount
+                                              ? bookmark.visitedCount : 0));
+            stmt.bindUTF8StringParameter(11, (bookmark.shortcut
+                                              ? bookmark.shortcut : ''));
 
             stmt.execute();
 
-            self.signal('connexions.bookmarkUpdated', bookmark['id']);
+            self.signal('connexions.bookmarkUpdated', bookmark.id);
         } catch(e) {
             cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
             res = false;
@@ -420,14 +429,15 @@ Connexions_Db.prototype = {
     incrementVisitCount: function(url)
     {
         var fname   = 'incrementVisitCount';
-        var stmt    = this.dbStatements[ fname ];
+        var self    = this;
+        var stmt    = self.dbStatements[ fname ];
         if (stmt === undefined)
         {
             var sql = 'UPDATE bookmarks SET visitCount=visitCount+1, '
                     +                      'visitedOn=?1 '
                     +                  'WHERE url=?2';
-            stmt = this.dbConnection.createStatement(sql);
-            this.dbStatements[ fname ] = stmt;
+            stmt = self.dbConnection.createStatement(sql);
+            self.dbStatements[ fname ] = stmt;
         }
 
         try {
@@ -456,16 +466,17 @@ Connexions_Db.prototype = {
     getBookmarks: function(sortOrder)
     {
         var fname       = 'getBookmarks';
+        var self        = this;
         var order       = (sortOrder
                             ? sortOrder.split(/\s+/)
                             : [ 'name', 'asc' ]);
-        var stmts       = this.dbStatements[ fname ];
+        var stmts       = self.dbStatements[ fname ];
         var bookmarks   = [];
 
         if (stmts === undefined)
         {
             // For the various sort orders
-            this.dbStatements[ fname ] = stmts = {};
+            self.dbStatements[ fname ] = stmts = {};
         }
 
         switch (order[0])
@@ -507,19 +518,19 @@ Connexions_Db.prototype = {
             {
                 var sql = 'SELECT b.rowid,b.* FROM bookmarks AS b '
                         +   'ORDER BY '+ order +',b.name ASC';
-                stmt = this.dbConnection.createStatement(sql);
+                stmt = self.dbConnection.createStatement(sql);
                 stmts[ order ] = stmt;
             }
 
             while (stmt.executeStep())
             {
-                var bookmark    = this._bookmarkFromRow(stmt);
+                var bookmark    = self._bookmarkFromRow(stmt);
                 bookmarks.push(bookmark);
             }
         } catch(e) {
             cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
         }
-        if (stmt)   stmt.reset();
+        if (stmt)   { stmt.reset(); }
 
         return bookmarks;
     },
@@ -538,12 +549,13 @@ Connexions_Db.prototype = {
     insertBookmarkTag: function(bookmarkId, tagId)
     {
         var fname   = 'insertBookmarkTag';
-        var stmt    = this.dbStatements[ fname ];
+        var self    = this;
+        var stmt    = self.dbStatements[ fname ];
         if (stmt === undefined)
         {
             var sql = 'INSERT INTO bookmarksTags VALUES(?1, ?2)';
-            stmt = this.dbConnection.createStatement(sql);
-            this.dbStatements[ fname ] = stmt;
+            stmt = self.dbConnection.createStatement(sql);
+            self.dbStatements[ fname ] = stmt;
         }
 
         var id  = null;
@@ -553,7 +565,7 @@ Connexions_Db.prototype = {
 
             stmt.execute();
 
-            id = this.dbConnection.lastInsertRowId;
+            id = self.dbConnection.lastInsertRowId;
 
             self.signal('connexions.bookmarkTagAdded', id);
         } catch(e) {
@@ -561,7 +573,7 @@ Connexions_Db.prototype = {
         }
         stmt.reset();
 
-        return is;
+        return id;
     },
 
     /************************************************************************
@@ -576,12 +588,13 @@ Connexions_Db.prototype = {
     getTotalTags: function()
     {
         var fname   = 'getTotalTags';
-        var stmt    = this.dbStatements[ fname ];
+        var self    = this;
+        var stmt    = self.dbStatements[ fname ];
         if (stmt === undefined)
         {
             var sql = 'SELECT COUNT(rowid) FROM tags';
-            stmt = this.dbConnection.createStatement(sql);
-            this.dbStatements[ fname ] = stmt;
+            stmt = self.dbConnection.createStatement(sql);
+            self.dbStatements[ fname ] = stmt;
         }
 
         var count   = 0;
@@ -606,12 +619,13 @@ Connexions_Db.prototype = {
     getTagId: function(name)
     {
         var fname   = 'getTagId';
-        var stmt    = this.dbStatements[ fname ];
+        var self    = this;
+        var stmt    = self.dbStatements[ fname ];
         if (stmt === undefined)
         {
             var sql = 'SELECT rowid FROM tags WHERE name = ?1';
-            stmt = this.dbConnection.createStatement(sql);
-            this.dbStatements[ fname ] = stmt;
+            stmt = self.dbConnection.createStatement(sql);
+            self.dbStatements[ fname ] = stmt;
         }
 
         var id  = null;
@@ -637,12 +651,13 @@ Connexions_Db.prototype = {
     insertTag: function(name)
     {
         var fname   = 'insertTag';
-        var stmt    = this.dbStatements[ fname ];
+        var self    = this;
+        var stmt    = self.dbStatements[ fname ];
         if (stmt === undefined)
         {
             var sql = 'INSERT INTO tags VALUES(?1)';
-            stmt = this.dbConnection.createStatement(sql);
-            this.dbStatements[ fname ] = stmt;
+            stmt = self.dbConnection.createStatement(sql);
+            self.dbStatements[ fname ] = stmt;
         }
 
         var id  = 0;
@@ -651,7 +666,7 @@ Connexions_Db.prototype = {
 
             stmt.execute();
             
-            id = this.dbConnection.lastInsertRowId;
+            id = self.dbConnection.lastInsertRowId;
 
             self.signal('connexions.tagAdded', id);
         } catch(e) {
@@ -687,15 +702,16 @@ Connexions_Db.prototype = {
     getTags: function(bookmarkId)
     {
         var fname   = 'getTags';
-        var stmt    = this.dbStatements[ fname ];
+        var self    = this;
+        var stmt    = self.dbStatements[ fname ];
         if (stmt === undefined)
         {
             var sql = 'SELECT t.rowid,t.name '
                     +   'FROM tags as t,bookmarkTags as bt '
-                    +   'WHERE t.rowid = bt.tagId AND bt.bookmarkId = ?1';
+                    +   'WHERE t.rowid = bt.tagId AND bt.bookmarkId = ?1 '
                     +   'ORDER BY t.name ASC';
-            stmt = this.dbConnection.createStatement(sql);
-            this.dbStatements[ fname ] = stmt;
+            stmt = self.dbConnection.createStatement(sql);
+            self.dbStatements[ fname ] = stmt;
         }
 
         var tags    = [];
@@ -703,7 +719,7 @@ Connexions_Db.prototype = {
             stmt.bindInt64Parameter(0, bookmarkId);
             while (stmt.executeStep())
             {
-                var tag = this._tagFromRow(stmt);
+                var tag = self._tagFromRow(stmt);
                 tags.push(tag);
             }
         } catch(e) {
@@ -726,16 +742,17 @@ Connexions_Db.prototype = {
     getAllTags: function(sortOrder)
     {
         var fname   = 'getAllTags';
+        var self    = this;
         var order   = (sortOrder
                         ? sortOrder.split(/\s+/)
                         : [ 'name', 'asc' ]);
-        var stmts   = this.dbStatements[ fname ];
+        var stmts   = self.dbStatements[ fname ];
         var tags    = [];
 
         if (stmts === undefined)
         {
             // For the various sort orders
-            this.dbStatements[ fname ] = stmts = {};
+            self.dbStatements[ fname ] = stmts = {};
         }
 
         switch (order[0])
@@ -752,6 +769,7 @@ Connexions_Db.prototype = {
         switch (order[1].toLowerCase())
         {
         case 'asc':     order[1] = 'ASC';   break;
+
         case 'desc':
         default:        order[1] = 'DESC';  break;
         }
@@ -766,19 +784,19 @@ Connexions_Db.prototype = {
                         +   'WHERE t.rowid = bt.tagId '
                         +   'GROUP BY t.rowid '
                         +   'ORDER BY '+ order +',t.name ASC';
-                stmt = this.dbConnection.createStatement(sql);
+                stmt = self.dbConnection.createStatement(sql);
                 stmts[ order ] = stmt;
             }
 
             while (stmt.executeStep())
             {
-                var tag = this._tagFromRow(stmt);
+                var tag = self._tagFromRow(stmt);
                 tags.push(tag);
             }
         } catch(e) {
             cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
         }
-        if (stmt)   stmt.reset();
+        if (stmt)   { stmt.reset(); }
 
         return tags;
     },
@@ -795,12 +813,13 @@ Connexions_Db.prototype = {
      */
     getState: function(name) {
         var fname   = 'getState';
-        var stmt    = this.dbStatements[ fname ];
+        var self    = this;
+        var stmt    = self.dbStatements[ fname ];
         if (stmt === undefined)
         {
             var sql = 'SELECT rowid,state.* FROM state WHERE name=?1';
-            stmt = this.dbConnection.createStatement(sql);
-            this.dbStatements[ fname ] = stmt;
+            stmt = self.dbConnection.createStatement(sql);
+            self.dbStatements[ fname ] = stmt;
         }
 
         var state   = null;
@@ -808,7 +827,7 @@ Connexions_Db.prototype = {
             stmt.bindUTF8StringParameter(0, name);
             if (stmt.executeStep())
             {
-                state = this._stateFromRow(stmt);
+                state = self._stateFromRow(stmt);
             }
         } catch(e) {
             cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
@@ -826,12 +845,13 @@ Connexions_Db.prototype = {
      */
     insertState: function(name, value) {
         var fname   = 'insertState';
-        var stmt    = this.dbStatements[ fname ];
+        var self    = this;
+        var stmt    = self.dbStatements[ fname ];
         if (stmt === undefined)
         {
             var sql = 'INSERT INTO state VALUES(?1, ?2)';
-            stmt = this.dbConnection.createStatement(sql);
-            this.dbStatements[ fname ] = stmt;
+            stmt = self.dbConnection.createStatement(sql);
+            self.dbStatements[ fname ] = stmt;
         }
 
         var id  = null;
@@ -841,7 +861,7 @@ Connexions_Db.prototype = {
 
             stmt.execute();
 
-            id = this.dbConnection.lastInsertRowId;
+            id = self.dbConnection.lastInsertRowId;
         } catch(e) {
             cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
         }
@@ -858,12 +878,13 @@ Connexions_Db.prototype = {
      */
     updateState: function(name, value) {
         var fname   = 'updateState';
-        var stmt    = this.dbStatements[ fname ];
+        var self    = this;
+        var stmt    = self.dbStatements[ fname ];
         if (stmt === undefined)
         {
             var sql = 'UPDATE state SET value=?2 WHERE name=?1';
-            stmt = this.dbConnection.createStatement(sql);
-            this.dbStatements[ fname ] = stmt;
+            stmt = self.dbConnection.createStatement(sql);
+            self.dbStatements[ fname ] = stmt;
         }
 
         var res = true;
@@ -888,7 +909,8 @@ Connexions_Db.prototype = {
      */
     state: function(name, value) {
         // First, see if the state already exists
-        var state   = this.getState(name);
+        var self    = this;
+        var state   = self.getState(name);
 
         /*
         cDebug.log("Connexions_Db::state(): name[ %s ], state[ %s ]",
@@ -906,7 +928,7 @@ Connexions_Db.prototype = {
                 // */
 
                 // It didn't already exists, so INSERT
-                this.insertState(name, value);
+                self.insertState(name, value);
             }
             else
             {
@@ -916,7 +938,7 @@ Connexions_Db.prototype = {
                 // */
 
                 // It already exists, so UPDATE
-                this.updateState(name, value);
+                self.updateState(name, value);
             }
         }
 
@@ -939,7 +961,7 @@ Connexions_Db.prototype = {
      */
     deleteAllBookmarks: function() {
         var self    = this;
-        for(var name in this.dbSchema.tables)
+        for(var name in self.dbSchema.tables)
         {
             if ((name !== 'boomkarks') &&
                 (name !== 'tags')      &&
@@ -952,7 +974,7 @@ Connexions_Db.prototype = {
             cDebug.log("Connexions_Db::deleteAllBookmarks(): name[ %s ]", name);
             // */
 
-            this._emptyTable(name);
+            self._emptyTable(name);
 
             self.signal('connexions.bookmarksDeleted');
         }
@@ -962,13 +984,14 @@ Connexions_Db.prototype = {
      *  @return true | false
      */
     emptyAllTables: function() {
-        for(var name in this.dbSchema.tables)
+        var self    = this;
+        for(var name in self.dbSchema.tables)
         {
             // /*
             cDebug.log("Connexions_Db::emptyAllTables(): name[ %s ]", name);
             // */
 
-            this._emptyTable(name);
+            self._emptyTable(name);
 
             self.signal('connexions.tablesEmptied');
         }
@@ -1178,4 +1201,4 @@ Connexions_Db.prototype = {
     }
 };
 
-var connexions_db = new Connexions_Db();
+var cDb = new Connexions_Db();
