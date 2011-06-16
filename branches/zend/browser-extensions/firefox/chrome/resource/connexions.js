@@ -80,7 +80,8 @@ Connexions.prototype = {
     },
     state:          {
         retrieveUser:   false,
-        sync:           false
+        sync:           false,
+        syncStatus:     null
     },
 
     init: function() {
@@ -730,6 +731,10 @@ Connexions.prototype = {
         return this.user;
     },
 
+    getSyncStatus: function() {
+        return this.state.syncStatus;
+    },
+
     sync: function(isReload) {
         var self    = this;
 
@@ -772,6 +777,8 @@ Connexions.prototype = {
         cDebug.log("resource-connexions:sync(): params[ %s ]",
                    cDebug.obj2str(params));
 
+        self.state.syncStatus  = null;
+
         self.signal('connexions.syncBegin');
         self.jsonRpc('bookmark.fetchByUsers', params, {
             progress: function(position, totalSize, xhr) {
@@ -789,23 +796,29 @@ Connexions.prototype = {
                 if (data.error !== null)
                 {
                     // ERROR
+                    self.state.syncStatus = data.error;
                 }
                 else
                 {
                     // SUCCESS!
+                    self.state.syncStatus = true;
                 }
             },
             error:   function(xhr, textStatus, error) {
                 cDebug.log('resource-connexions::sync():error: '
                             +   '[ %s ]',
                             textStatus);
+                self.state.syncStatus = {
+                    code:       error,
+                    message:    textStatus
+                };
             },
             complete: function(xhr, textStatus) {
                 cDebug.log('resource-connexions::sync():complete: '
                             +   '[ %s ]',
                             textStatus);
 
-                self.signal('connexions.syncComplete');
+                self.signal('connexions.syncEnd', self.state.syncStatus);
                 self.state.sync = false;
             }
         });
@@ -910,6 +923,7 @@ Connexions.prototype = {
                     /* Invoke xhr.onerror so both the 'error' and
                      * 'complete' callback will be properly invoked.
                      */
+                    params.status     = -32700; // JsonRPC: Parse Error
                     params.textStatus = e.message;
                     invokeCallback('error', params);
                     return;

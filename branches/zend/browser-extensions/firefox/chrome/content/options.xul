@@ -50,19 +50,32 @@
               <groupbox align="start" id='connexions-prefs-sync'>
                 <caption label="&connexions.prefs.sync.caption;" />
                 <vbox>
-                  <description>&connexions.prefs.sync.description;</description>
+                  <label value='&connexions.prefs.sync.description;' />
                   <hbox>
                     <button id='connexions-prefs-button-sync'
                             label="&connexions.prefs.sync.button.label;" />
                     <spacer flex="1" />
                   </hbox>
 
-                  <description class="bordered">&connexions.prefs.syncFull.description;</description>
+                  <label class="bordered"
+                         value='&connexions.prefs.syncFull.description;' />
                   <hbox>
                     <button id='connexions-prefs-button-fullSync'
                             label="&connexions.prefs.syncFull.button.label;" />
                     <spacer flex="1" />
                   </hbox>
+
+                  <vbox id='connexions-prefs-sync-status-box'
+                        class='bordered statusBox'
+                       hidden='true'>
+                    <label id='connexions-prefs-sync-status'
+                           class='syncStatus'
+                           hidden='true' />
+                    <progressmeter
+                        id='connexions-prefs-sync-progress'
+                        mode='undetermined'
+                        hidden='true' />
+                  </vbox>
                 </vbox>
               </groupbox>
             </vbox>

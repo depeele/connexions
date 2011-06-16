@@ -9,3 +9,15 @@
   padding-top:  1em;
   border-top:   1px solid #999;
 }
+.statusBox {
+  height:         4em;
+  margin-bottom:  1em;
+}
+.statusBox .syncStatus {
+  font-size:    1.2em;
+  padding:      0 1em 1em;
+}
+progressmeter {
+  margin:       1em;
+  height:       2em;
+}

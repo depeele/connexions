@@ -32,6 +32,10 @@ COptions.prototype = {
     btnSync:    null,
     btnFullSync:null,
 
+    elStatusBox:null,
+    elStatus:   null,
+    elProgress: null,
+
     strings:    null,
 
     init: function() {
@@ -62,10 +66,20 @@ COptions.prototype = {
         self.btnFullSync =
                 document.getElementById('connexions-prefs-button-fullSync');
 
+        self.elStatusBox =
+                document.getElementById('connexions-prefs-sync-status-box');
+        self.elStatus    =
+                document.getElementById('connexions-prefs-sync-status');
+        self.elProgress  =
+                document.getElementById('connexions-prefs-sync-progress');
+
         self._loadObservers();
 
         // Initialize the user area
         self.showUser( connexions.getUser() );
+
+        // Initialize the last sync information
+        self.showLastSync();
 
         self._bindEvents();
 
@@ -117,6 +131,29 @@ COptions.prototype = {
             // Enable the sync items.
             this.disableAll(this.elSync, '');
         }
+    },
+
+    showLastSync: function() {
+        var self        = this;
+        var lastSync    = parseInt( connexions.db.state('lastSync'), 10 );
+
+        cDebug.log('options::showLastSync(): lastSync int[ %s ]', lastSync);
+
+        // Convert the unix date time to a Date instance
+        lastSync = new Date (lastSync * 1000);
+
+        cDebug.log('options::showLastSync(): lastSync date[ %s ]',
+                   lastSync.toLocaleString());
+
+        var str = self.getString('connexions.prefs.sync.last',
+                                 [ lastSync.toLocaleString() ]);
+
+        cDebug.log('options::showLastSync(): status str[ %s ]', str);
+
+        self.elStatus.setAttribute('value', str);
+        self.elStatusBox.hidden = false;
+        self.elStatus.hidden    = false;
+        self.elProgress.hidden  = true;
     },
 
     /** @brief  Disable or enable the given element and all children.
@@ -184,6 +221,51 @@ COptions.prototype = {
             // */
             self.showUser( user );
             break;
+
+        case 'connexions.syncBegin':
+            cDebug.log('options::observe(): conexions.syncBegin:');
+
+            // Disable the sync items.
+            self.disableAll(self.elSync, 'true');
+
+            // Show the status and progressmeter
+            self.elStatus.setAttribute('value',
+                self.getString('connexions.prefs.sync.working'));
+            self.elStatusBox.hidden = false;
+            self.elStatus.hidden    = false;
+            self.elProgress.hidden  = false;
+            break;
+
+        case 'connexions.syncEnd':
+            /* if data === true, success
+             * otherwise, the error object from the jsonRpc containing:
+             *  code and message
+             */
+            var syncStatus  = connexions.getSyncStatus();
+            cDebug.log('options::observe(): conexions.syncEnd: '
+                        +   'syncStatus[ %s ]',
+                       cDebug.obj2str( connexions.getSyncStatus() ));
+
+            // Hide the progress meter and update the status information
+            self.elProgress.hidden = true;
+            var strStatus;
+            if (syncStatus === true)
+            {
+                strStatus = self.getString('connexions.prefs.sync.success');
+            }
+            else
+            {
+                strStatus = self.getString('connexions.prefs.sync.error')
+                          + ' ' + syncStatus.message;
+            }
+            self.elStatus.setAttribute('value', strStatus);
+
+            // :TODO: Wait for a bit, then update to show the last sync date
+
+            // Enable the sync items.
+            self.disableAll(self.elSync, '');
+
+            break;
         }
     },
 
@@ -233,12 +315,16 @@ COptions.prototype = {
      */
     _loadObservers: function() {
         this.os.addObserver(this, "connexions.userChanged", false);
+        this.os.addObserver(this, "connexions.syncBegin",   false);
+        this.os.addObserver(this, "connexions.syncEnd",     false);
     },
 
     /** @brief  Establish our state observers.
      */
     _unloadObservers: function() {
         this.os.removeObserver(this, "connexions.userChanged");
+        this.os.removeObserver(this, "connexions.syncBegin");
+        this.os.removeObserver(this, "connexions.syncEnd");
     }
 };
 
