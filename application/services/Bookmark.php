@@ -409,6 +409,18 @@ class Service_Bookmark extends Service_Base
                        // Include any time limits
                        'where'      => $this->_includeSince(array(), $since) );
 
+        /*
+        Connexions::log("Service_Bookmark::fetchByUsers(): "
+                        .   "to[ %s ], "
+                        .   "order[ %s ], count[ %s ], offset[ %s ], "
+                        .   "since[ %s ]",
+                        Connexions::varExport($to),
+                        Connexions::varExport($order),
+                        Connexions::varExport($count),
+                        Connexions::varExport($offset),
+                        Connexions::varExport($since));
+        // */
+
         return $this->fetchRelated( $to,
                                     $order,
                                     $count,
@@ -981,6 +993,22 @@ class Service_Bookmark extends Service_Base
             {
                 // Include an additional condition in 'normIds'
                 $since = strftime('%Y-%m-%d %H:%M:%S', $since);
+                if ($taggedOn === true)
+                {
+                    $id['taggedOn >='] = $since;
+                }
+                else
+                {
+                    $id['updatedOn >='] = $since;
+                }
+            }
+        }
+        else if (is_int($since) || is_numeric($since))
+        {
+            // ASSUME this is a unix timestamp
+            $since = strftime('%Y-%m-%d %H:%M:%S', $since);
+            if ($since !== false)
+            {
                 if ($taggedOn === true)
                 {
                     $id['taggedOn >='] = $since;

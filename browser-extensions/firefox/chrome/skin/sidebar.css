@@ -13,11 +13,25 @@
     padding:    2px;
     width:      100%;
 }
+
+.list listitem:nth-child(even) {
+}
+.list listitem:nth-child(odd) {
+    background-color:   #eee;
+}
+.list listitem:active {
+    background-color:   inherit;
+}
+/*
 .item-odd {
     background-color:   #eee;
 }
+.item-odd:active {
+    background-color:   inherit;
+}
 .item-even {
 }
+*/
 
 .bookmarks {
 }

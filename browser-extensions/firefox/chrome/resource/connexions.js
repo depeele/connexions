@@ -79,7 +79,8 @@ Connexions.prototype = {
         id:         0
     },
     state:          {
-        retrieveUser:   false
+        retrieveUser:   false,
+        sync:           false
     },
 
     init: function() {
@@ -143,7 +144,7 @@ Connexions.prototype = {
                 cDebug.log('resource-connexions::windowLoad(): '
                             + 'get connextion-strings triggered an error: %s',
                            e.message);
-            };
+            }
         }
 
         if (self.user === null)
@@ -276,7 +277,6 @@ Connexions.prototype = {
             // In process
             return;
         }
-
         self.state.retrieveUser = true;
 
         //cDebug.log('resource-connexions::retrieveUser(): initiate...');
@@ -733,11 +733,18 @@ Connexions.prototype = {
     sync: function(isReload) {
         var self    = this;
 
-        if (self.user == null)
+        if (self.user === null)
         {
             cDebug.log("resource-connexions::sync(): NOT signed in");
             return;
         }
+
+        if (self.state.sync === true)
+        {
+            // In process
+            return;
+        }
+        self.state.sync = true;
 
         cDebug.log("resource-connexions::sync(): "
                     +   "signed in as [ %s ], isReload[ %s ]",
@@ -751,6 +758,57 @@ Connexions.prototype = {
         /* :TODO: Perform an asynchronous request for all bookmarks and add
          * them into the local database.
          */
+        var lastSync    = parseInt(self.db.state('lastSync'), 10);
+        var params  = {
+            users:  self.user.name,
+            count:  null
+        };
+
+        if (! isNaN(lastSync))
+        {
+            params.since = lastSync;
+        }
+
+        cDebug.log("resource-connexions:sync(): params[ %s ]",
+                   cDebug.obj2str(params));
+
+        self.signal('connexions.syncBegin');
+        self.jsonRpc('bookmark.fetchByUsers', params, {
+            progress: function(position, totalSize, xhr) {
+                cDebug.log('resource-connexions::sync():progress: '
+                            +   'position[ %s ], totalSize[ %s ]',
+                            position, totalSize);
+            },
+            success: function(data, textStatus, xhr) {
+                // /*
+                cDebug.log('resource-connexions::sync():success: '
+                            +   'jsonRpc return[ %s ]',
+                            cDebug.obj2str(data));
+                // */
+
+                if (data.error !== null)
+                {
+                    // ERROR
+                }
+                else
+                {
+                    // SUCCESS!
+                }
+            },
+            error:   function(xhr, textStatus, error) {
+                cDebug.log('resource-connexions::sync():error: '
+                            +   '[ %s ]',
+                            textStatus);
+            },
+            complete: function(xhr, textStatus) {
+                cDebug.log('resource-connexions::sync():complete: '
+                            +   '[ %s ]',
+                            textStatus);
+
+                self.signal('connexions.syncComplete');
+                self.state.sync = false;
+            }
+        });
     },
 
     /** @brief  Invoke a JsonRpc call.
@@ -776,64 +834,129 @@ Connexions.prototype = {
         var xhr = CC['@mozilla.org/xmlextras/xmlhttprequest;1']
                         .createInstance(CI.nsIXMLHttpRequest);
 
-        if (callbacks.success || callbacks.complete)
+        /** @brief  Invoke callback(s)
+         *  @param  which   The name of the callback to invoke
+         *                  (success, error, progress).  Note that 'complete'
+         *                  will ALWAYS be invoked for 'success' and 'error'.
+         *  @param  params  State parameters to be applied depending on the
+         *                  callback being invoked:
+         *                      {data:
+         *                       textStatus:
+         *                       status:
+         *                       position:
+         *                       totalSize: }
+         */
+        function invokeCallback(which, params)
         {
-            // Handle 'onload' to report success/complete
-            xhr.onload = function(event) {
-                // event.target (XMLHttpRequest)
-                var data        = event.target.responseText;
-                var textStatus  = event.target.statusText;
-
+            var needComplete    = false;
+            switch (which)
+            {
+            case 'success':
+                needComplete = true;
                 if (callbacks.success)
                 {
-                    // Attempt to parse 'data' as JSON
-                    var json;
-                    try {
-                        json = JSON.parse(data);
-                    } catch(e) {
-                        if (callbacks.error)
-                        {
-                            callbacks.error(xhr, textStatus,"JSON parse error");
-                            return;
-                        }
-                    }
-
-                    callbacks.success(json, textStatus, xhr);
+                    callbacks.success(params.data, params.textStatus, xhr);
                 }
+                break;
 
-                if (callbacks.complete) {callbacks.complete(xhr, textStatus);}
-            };
+            case 'error':
+                needComplete = true;
+                if (callbacks.error)
+                {
+                    callbacks.error(xhr, params.textStatus);
+                }
+                break;
+
+            case 'progress':
+                if (callbacks.error)
+                {
+                    callbacks.progress(params.position, params.totalSize, xhr);
+                }
+                break;
+            }
+
+            // For 'success' and 'error', ALWAYS invoke complete if it exists
+            if (needComplete && callbacks.complete)
+            {
+                callbacks.complete(xhr, params.textStatus);
+            }
         }
 
-        if (callbacks.error || callbacks.complete)
-        {
-            // Handle 'onerror' to report error/complete
-            xhr.onerror = function(event) {
-                // event.target (XMLHttpRequest)
-                var status      = (event.target !== undefined
-                                    ? event.target.status
-                                    : -1);
-                var textStatus  = "Error";
+        // Handle 'onload' to report success/complete
+        xhr.onload = function(event) {
+            // event.target (XMLHttpRequest)
+            var params  = {
+                xhr:        event.target,
+                status:     event.target.status,
+                textStatus: event.target.statusText,
+                data:       event.target.responseText
+            };
+
+            cDebug.log("connexions::jsonRpc(): onload: "
+                       +   "textStatus[ %s ]",
+                       params.textStatus);
+
+            if (callbacks.success)
+            {
+                // Attempt to parse 'data' as JSON
+                var json;
                 try {
-                    textStatus = event.target.statusText;
-                } catch(e) {}
+                    params.data = JSON.parse(params.data);
+                } catch(e) {
+                    cDebug.log("connexions::jsonRpc(): onload: "
+                               + "JSON.parse error[ %s ], data[ %s ]",
+                               e.message, params.data);
 
-                if (callbacks.error)    { callbacks.error(xhr, textStatus,
-                                                               status); }
-                if (callbacks.complete) { callbacks.complete(xhr, textStatus);}
+                    /* Invoke xhr.onerror so both the 'error' and
+                     * 'complete' callback will be properly invoked.
+                     */
+                    params.textStatus = e.message;
+                    invokeCallback('error', params);
+                    return;
+                }
+            }
+
+            invokeCallback('success', params);
+        };
+
+        // Handle 'onerror' to report error/complete
+        xhr.onerror = function(event) {
+            // event.target (XMLHttpRequest)
+            var params  = {
+                xhr:        xhr,
+                status:     -1,
+                textStatus: "Error"
             };
-        }
+            try {
+                params.xhr = event.target;
+            } catch(e) {}
+            try {
+                params.status = event.target.status;
+            } catch(e) {}
+            try {
+                params.textStatus = event.target.statusText;
+            } catch(e) {}
 
-        if (callbacks.progress)
-        {
-            // Handle 'onprogress' to report progress
-            xhr.onprogress = function(event) {
-                // event.position, event.totalSize,
-                // event.target (XMLHttpRequest)
+            cDebug.log("connexions::jsonRpc(): ERROR: "
+                       +   "status[ %s ], textStatus[ %s ]",
+                       params.status, params.textStatus);
 
-                callbacks.progress(event.position, event.totalSize, xhr);
+            invokeCallback('error', params);
+        };
+
+        // Handle 'onprogress' to report progress
+        xhr.onprogress = function(event) {
+            // event.position, event.totalSize,
+            // event.target (XMLHttpRequest)
+            var params  = {
+                xhr:        xhr,
+                position:   event.position,
+                totalSize:  event.totalSize
             };
-        }
+
+            invokeCallback('progress', params);
+        };
+
 
         /*
         request.onuploadprogress = function(event) {
@@ -864,7 +987,7 @@ Connexions.prototype = {
         // /*
         cDebug.log("resource-connexions::jsonRpc(): "
                    +    "method[ %s ], transport[ %s ], "
-                   +    "url[ %s ], cookiies[ %s ]",
+                   +    "url[ %s ], cookies[ %s ]",
                    method, self.jsonRpcInfo.transport,
                    self.jsonRpcInfo.url, cookies);
         // */

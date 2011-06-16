@@ -126,6 +126,15 @@ class Service_Activity extends Connexions_Service
                 $id['time >='] = strftime('%Y-%m-%d %H:%M:%S', $since);
             }
         }
+        else if (is_int($since) || is_numeric($since))
+        {
+            // ASSUME this is a unix timestamp
+            $since = strftime('%Y-%m-%d %H:%M:%S', $since);
+            if ($since !== false)
+            {
+                $id['time >='] = strftime('%Y-%m-%d %H:%M:%S', $since);
+            }
+        }
 
         return $id;
     }
