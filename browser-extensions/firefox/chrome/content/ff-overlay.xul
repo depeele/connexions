@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="chrome://connexions/skin/overlay.css" type="text/css"?>
 <!DOCTYPE overlay SYSTEM "chrome://connexions/locale/overlay.dtd">
-<overlay id="connexions-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<overlay
+    id="connexions-overlay"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
   <script src="connexions.js"/>
   <script src="ff-overlay.js"/>
 

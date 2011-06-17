@@ -17,5 +17,8 @@
 <!ENTITY connexions.prefs.sync.full             "Full Sync">
 <!ENTITY connexions.prefs.sync.full.description 'Clear out the local copy of your bookmarks and reload them from connexions.'>
 
+<!ENTITY connexions.prefs.sync.del              "Delete All">
+<!ENTITY connexions.prefs.sync.del.description  'Clear out the local copy of your bookmarks (does NOT effect your bookmarks on connexions).'>
+
 <!ENTITY connexions.prefs.sync.status.last      "Last Sync">
 <!ENTITY connexions.prefs.sync.cancel           "Cancel">

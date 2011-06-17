@@ -100,11 +100,14 @@ CSidebar.prototype = {
             var row         = document.createElement("listitem");
             var name        = document.createElement("listcell");
             var propIcon    = document.createElement("listcell");
-            var propCss     = [ 'listcell-iconic', 'bookmark-properties' ];
+            //var propCss     = [ 'listcell-iconic', 'bookmark-properties' ];
+            var propCss     = [ 'bookmark-properties' ];
 
+            /*
             row.setAttribute("class", 'item-'+ (((idex+1) % 2)
                                                     ? 'odd'
                                                     : 'even'));
+            // */
             row.setUserData("bookmark", bookmark, null);
 
             name.setAttribute("label", bookmark.name);
@@ -116,8 +119,10 @@ CSidebar.prototype = {
             if (bookmark.isPrivate)     { propName.push('private');  }
             propCss.push( propName.join('-') );
 
-            propIcon.setAttribute("label", ' ');
+            //propIcon.setAttribute("label", 'Hey there!!!');
             propIcon.setAttribute("class", propCss.join(' '));
+
+            //propIcon.appendChild(document.createElement("image"));
 
             // Include the cells listitem and the listitem in the listbox
             row.appendChild( name );
@@ -175,9 +180,11 @@ CSidebar.prototype = {
             var name        = document.createElement("listcell");
             var freq        = document.createElement("listcell");
 
+            /*
             row.setAttribute("class", 'item-'+ (((idex+1) % 2)
                                                     ? 'odd'
                                                     : 'even'));
+            // */
             row.setUserData("tag", tag, null);
 
             name.setAttribute("label", tag.name);

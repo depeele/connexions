@@ -280,15 +280,18 @@ Connexions.prototype = {
     signal: function(subject, data) {
         cDebug.log('resource-connexions::signal(): subject[ %s ], data[ %s ]',
                    subject, cDebug.obj2str(data));
-
         if (data !== undefined)
         {
             // JSON-encode the non-string
             data = JSON.stringify( data );
         }
 
+        this.os.notifyObservers(this, subject,
+                               (data === undefined ? '' : data));
+        /*
         this.os.notifyObservers(null, subject,
                                (data === undefined ? '' : data));
+        // */
     },
 
     /** @brief  Initiate the retrieval of the authenticated user.
@@ -760,6 +763,16 @@ Connexions.prototype = {
         return this.state.syncStatus;
     },
 
+    /** @brief  Delete all local bookmarks.
+     */
+    delBookmarks: function() {
+        this.db.deleteAllBookmarks();
+    },
+
+    /** @brief  Syncrhonize bookmarks with connexions.
+     *  @param  isReload    If true, delete all local bookmarks first.
+     *
+     */
     sync: function(isReload) {
         var self    = this;
 
@@ -782,7 +795,7 @@ Connexions.prototype = {
 
         if (isReload)
         {
-            cDb.deleteAllBookmarks();
+            self.delBookmarks();
         }
 
         /* :TODO: Perform an asynchronous request for all bookmarks and add
@@ -1212,8 +1225,15 @@ var connexions = new Connexions();
  *
  * Firefox >= 3, < 4
  */
-var signalEvent = function(subject) {
+
+/** @brief  The signal thread used to invoke connexions.signal within the
+ *          context of the main UI thread.
+ *  @param  subject     The subject string;
+ *  @param  data        The data to include;
+ */
+var signalEvent = function(subject, data) {
     this.subject = subject;
+    this.data    = data;
 };
 
 signalEvent.prototype = {
@@ -1229,17 +1249,57 @@ signalEvent.prototype = {
 
     run: function() {
         /*
-        cDebug.log('resource-connexions::signalEvent(): '
+        cDebug.log('resource-connexions::signalEvent thread: '
                     + "invoke signal with '%s'",
                     this.subject);
         // */
 
         // Signal progress
-        connexions.signal.call(connexions, this.subject,
-                               connexions.state.syncStatus);
+        connexions.signal(this.subject, this.data);
     }
 };
 
+/** @brief  The thread used to invoke connexions.db.addBookmark() within the
+ *          context of the main UI thread so the database can then invoke
+ *          connexions.signal().
+ *  @param  bookmark    The bookmark object;
+ */
+var addBookmark = function(bookmark) {
+    this.bookmark = bookmark;
+};
+
+addBookmark.prototype = {
+    QueryInterface: function(iid) {
+        if (iid.equals(CI.nsIRunnable) ||
+            iid.equals(CI.nsISupports))
+        {
+            return this;
+        }
+
+        throw CR.NS_ERROR_NO_INTERFACE;
+    },
+
+    run: function() {
+        // /*
+        cDebug.log('resource-connexions::addBookmark thread: '
+                    + "bookmark[ %s ]",
+                    cDebug.obj2str(this.bookmark));
+        // */
+
+        // Add this bookmark and, on success, signal progress.
+        var res = connexions.db.addBookmark(this.bookmark);
+        if (res !== null)
+        {
+            connexions.state.syncStatus.progress.current++;
+            connexions.signal('connexions.syncProgress',
+                              connexions.state.syncStatus);
+        }
+    }
+};
+
+/** @brief  The thread used to add bookmarks OFF the main UI thread.
+ *  @param  bookmarks   The array of bookmarks to add;
+ */
 var bookmarksThread = function(bookmarks) {
     this.bookmarks = bookmarks;
 };
@@ -1255,10 +1315,120 @@ bookmarksThread.prototype = {
         throw CR.NS_ERROR_NO_INTERFACE;
     },
 
-    run: function() {
-        var bookmarks   = this.bookmarks;
+    signal: function(subject, data) {
+        connexions.mainThread.dispatch(
+                new signalEvent(subject, data),
+                CI.nsIThread.DISPATCH_SYNC);
+    },
 
-        cDebug.log('resource-connexions::bookmarksThread(): %s bookmarks',
+    addBookmark: function(bookmark) {
+        connexions.mainThread.dispatch(
+                new addBookmark(bookmark),
+                CI.nsIThread.DISPATCH_SYNC);
+    },
+
+    /** @brief  Given a date string of the form 'YYYY-MM-DD hh:mm:ss', convert
+     *          it to a UNIX timestamp.
+     *  @param  dateStr     The date string;
+     *
+     *  @return The equivalent UNIX timestamp.
+     */
+    normalizeDate: function(dateStr) {
+        var normalized  = 0;
+        var parts       = dateStr.split(' ');
+        var dateParts   = parts[0].split('-');
+        var timeParts   = parts[1].split(':');
+        var dateInfo    = {
+            year:   parseInt(dateParts[0], 10),
+            month:  parseInt(dateParts[1], 10),
+            day:    parseInt(dateParts[2], 10),
+
+            hour:   parseInt(timeParts[0], 10),
+            min:    parseInt(timeParts[1], 10),
+            sec:    parseInt(timeParts[2], 10)
+        };
+
+        try {
+            var utc  = Date.UTC(dateInfo.year, dateInfo.month-1, dateInfo.day,
+                                dateInfo.hour, dateInfo.min, dateInfo.sec);
+
+            normalized = utc / 1000;
+        } catch (e) {
+            cDebug.log('resource-connexions::bookmarksThread thread: '
+                        +   'normalizeDate() ERROR: %s',
+                        e.message);
+        }
+
+        return normalized;
+    },
+
+    /** @brief  Given an incoming "boolean" value, convert it to a native
+     *          boolean.
+     *  @param  val         The incoming value;
+     *
+     *  @return The equivalent boolean.
+     */
+    normalizeBool: function(val) {
+        return (val ? true : false);
+    },
+
+    /** @brief  Given an incoming bookmark object, normalize it to an object
+     *          acceptable for our local database.
+     *  @param  bookmark    The bookmark object to normalize;
+     *
+     *  The incoming bookmark will have the form:
+     *      userId:         string: useName,
+     *      itemId:         string: itemUrl,
+     *      name:           string,
+     *      description:    string,
+     *      rating:         integer,
+     *      isFavorite:     integer,
+     *      isPrivate:      integer,
+     *      taggedOn:       string: 'YYYY-MM-DD hh:mm:ss',
+     *      updatedOn:      string: 'YYYY-MM-DD hh:mm:ss',
+     *      ratingAvg:      number,
+     *      tags:           [ tag strings ],
+     *
+     *  We need the form:
+     *      url:            string,
+     *      urlHash:        string,
+     *      name:           string,
+     *      description:    string,
+     *      rating:         integer,
+     *      isFavorite:     boolean,
+     *      isPrivate:      boolean,
+     *      taggedOn:       integer: (UNIX Date/Time),
+     *      updatedOn:      integer: (UNIX Date/Time),
+     *      tags:           [ tag strings ],
+     *      visitedOn:      integer: (UNIX Date/Time),
+     *      visitCount:     integer,
+     *      shortcut:       string
+     *
+     *  @return The equivalent normalized bookmark object;
+     */
+    normalizeBookmark: function(bookmark) {
+        var self        = this;
+        var normalized  = {
+            url:            bookmark.itemId,
+          //urlHash:        connexions.md5(bookmark.itemId),
+            name:           bookmark.name,
+            description:    bookmark.description,
+            rating:         bookmark.rating,
+            isFavorite:     self.normalizeBool(bookmark.isFavorite),
+            isPrivate:      self.normalizeBool(bookmark.isPrivate),
+            taggedOn:       self.normalizeDate(bookmark.taggedOn),
+            updatedOn:      self.normalizeDate(bookmark.updatedOn),
+            tags:           bookmark.tags,
+        };
+    
+        return normalized;
+    },
+
+    run: function() {
+        var self        = this;
+        var bookmarks   = self.bookmarks;
+
+        cDebug.log('resource-connexions::bookmarksThread thread: %s bookmarks',
                    bookmarks.length);
 
         // Signal our first progress update
@@ -1267,21 +1437,27 @@ bookmarksThread.prototype = {
             current:    0
         };
 
-        connexions.mainThread.dispatch(
-                new signalEvent('connexions.syncProgress'),
-                CI.nsIThread.DISPATCH_SYNC);
-
+        self.signal('connexions.syncProgress', connexions.state.syncStatus);
         for each (var bookmark in bookmarks)
         {
-            connexions.state.syncStatus.progress.current++;
-            connexions.mainThread.dispatch(
-                    new signalEvent('connexions.syncProgress'),
-                    CI.nsIThread.DISPATCH_SYNC);
+            /*
+            cDebug.log('resource-connexions::bookmarksThread thread: '
+                        +   'bookmark[ %s ]',
+                        cDebug.obj2str(bookmark));
+            // */
+
+            var normalized  = self.normalizeBookmark(bookmark);
+
+            /*
+            cDebug.log('resource-connexions::bookmarksThread thread: '
+                        +   'normalized[ %s ]',
+                        cDebug.obj2str(normalized));
+            // */
+
+            self.addBookmark( normalized );
         }
 
-        connexions.mainThread.dispatch(
-                new signalEvent('connexions.syncEnd'),
-                CI.nsIThread.DISPATCH_SYNC);
+        self.signal('connexions.syncEnd', connexions.state.syncStatus);
         connexions.state.sync = false;
     }
 };

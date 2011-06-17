@@ -5,6 +5,7 @@
 
 <page id="connexions-sidebar"
    title="&connexions.sidebar.label;"
+   xmlns:html="http://www.w3.org/1999/xhtml"
    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
   <script src="connexions.js"/>
   <script src="ff-sidebar.js"/>
@@ -88,7 +89,9 @@
               flex="1">
           <listcols flex="1">
             <listcol id="sidebar-bookmarkList-name" flex="1" />
-            <listcol id="sidebar-bookmarkList-props" width="16" align="end" />
+            <listcol id="sidebar-bookmarkList-props" />
+            <!-- Without this, any scrollbar will crop the last column out -->
+            <listcol id="sidebar-bookmarkList-scrollarea" />
           </listcols>
         </listbox>
       </deck>
@@ -124,8 +127,10 @@
             id="sidebar-tagList"
             class="tags list"
             flex="1">
-        <listcols>
+        <listcols flex="1" pack="end">
           <listcol flex="1" />
+          <listcol />
+          <!-- Without this, any scrollbar will crop the last column out -->
           <listcol />
         </listcols>
       </listbox>
