@@ -1,7 +1,21 @@
+.title {
+  font-size:    2em;
+  font-weight:  bold;
+}
 .link {
   text-decoration:  underline !important;
   color:            #00f;
   cursor:           pointer;
+}
+.userName {
+  font-size:  1.2em;
+}
+.sync-box {
+}
+.syncNow-box {
+}
+.syncFull-box {
+  margin-top: 0.5em;
 }
 .bordered {
   width:        100%;
@@ -9,15 +23,20 @@
   padding-top:  1em;
   border-top:   1px solid #999;
 }
-.statusBox {
-  height:         4em;
-  margin-bottom:  1em;
+.syncStatus-box {
+  padding:      1em;
+  min-height:   8.5em;
 }
-.statusBox .syncStatus {
+.syncStatus-box .syncStatus {
   font-size:    1.2em;
-  padding:      0 1em 1em;
 }
-progressmeter {
-  margin:       1em;
-  height:       2em;
+.syncStatus-box .progressMeter-box {
+  min-height:   2em;
+  margin-left:  0.5em;
+  width:        100%;
+}
+.syncStatus-box .syncDetails {
+  margin-left:  2em;
+  font-size:    0.8em;
+  min-height:   2em;
 }

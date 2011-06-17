@@ -55,12 +55,16 @@ Connexions.prototype = {
     // */
     wm:             CC['@mozilla.org/appshell/window-mediator;1']
                         .getService(CI.nsIWindowMediator),
+    tm:             null,
+
     initialized:    false,
     user:           null,   // The current user
 
     debug:          cDebug,
     db:             cDb,
 
+    mainThread:     null,
+    bookmarksThread:null,
     cookieTimer:    CC['@mozilla.org/timer;1']
                         .createInstance(CI.nsITimer),
     cookieTicking:  false,
@@ -112,6 +116,15 @@ Connexions.prototype = {
                     self.cookieJar.authCookie);
         // */
 
+        // Is this Firefox >= 3 < 4, which has a thread-manager?
+        try {
+            self.tm = CC['@mozilla.org/thread-manager;1']
+                        .getService();
+        } catch(e) {}
+        if (self.tm === null)
+        {
+            // NOT Firefox >= 3 < 4.  Is it Firefox 4+?
+        }
 
         self._loadObservers();
 
@@ -165,8 +178,14 @@ Connexions.prototype = {
      */
     observe: function(subject, topic, data) {
         var self    = this;
-        //subject.QueryInterface(Ci.nsISupportsString);
-        //subject.data;
+        /*
+        if (data !== undefined)
+        {
+            try {
+                data = JSON.parse(data);
+            } catch(e) {}
+        }
+        // */
 
         /*
         cDebug.log('resource-connexions::observe(): topic[ %s ]',
@@ -261,6 +280,12 @@ Connexions.prototype = {
     signal: function(subject, data) {
         cDebug.log('resource-connexions::signal(): subject[ %s ], data[ %s ]',
                    subject, cDebug.obj2str(data));
+
+        if (data !== undefined)
+        {
+            // JSON-encode the non-string
+            data = JSON.stringify( data );
+        }
 
         this.os.notifyObservers(null, subject,
                                (data === undefined ? '' : data));
@@ -782,46 +807,83 @@ Connexions.prototype = {
         self.signal('connexions.syncBegin');
         self.jsonRpc('bookmark.fetchByUsers', params, {
             progress: function(position, totalSize, xhr) {
-                cDebug.log('resource-connexions::sync():progress: '
+                cDebug.log('resource-connexions::sync(): RPC progress: '
                             +   'position[ %s ], totalSize[ %s ]',
                             position, totalSize);
             },
             success: function(data, textStatus, xhr) {
                 // /*
-                cDebug.log('resource-connexions::sync():success: '
+                cDebug.log('resource-connexions::sync(): RPC success: '
                             +   'jsonRpc return[ %s ]',
                             cDebug.obj2str(data));
                 // */
 
                 if (data.error !== null)
                 {
-                    // ERROR
-                    self.state.syncStatus = data.error;
+                    // ERROR!
+                    self.state.syncStatus = data;
                 }
                 else
                 {
-                    // SUCCESS!
-                    self.state.syncStatus = true;
+                    // SUCCESS -- Add all new bookmarks.
+                    self.state.syncStatus = {
+                        error:      null
+                    };
+                    self._syncAddBookmarks(data.result);
                 }
             },
             error:   function(xhr, textStatus, error) {
-                cDebug.log('resource-connexions::sync():error: '
+                cDebug.log('resource-connexions::sync(): RPC error: '
                             +   '[ %s ]',
                             textStatus);
                 self.state.syncStatus = {
-                    code:       error,
-                    message:    textStatus
+                    error:  {
+                        code:       error,
+                        message:    textStatus
+                    }
                 };
             },
             complete: function(xhr, textStatus) {
-                cDebug.log('resource-connexions::sync():complete: '
+                cDebug.log('resource-connexions::sync(): RPC complete: '
                             +   '[ %s ]',
                             textStatus);
-
-                self.signal('connexions.syncEnd', self.state.syncStatus);
-                self.state.sync = false;
+                if (self.state.syncStatus.error !== null)
+                {
+                    // There was an error so the sync is complete
+                    self.signal('connexions.syncEnd', self.state.syncStatus);
+                    self.state.sync = false;
+                }
             }
         });
+    },
+
+    /** @brief  Given a set of bookmarks retrieved from the server,
+     *          add/update our local cache.
+     *  @param  bookmarks   An array of bookmark objects.
+     */
+    _syncAddBookmarks: function(bookmarks) {
+        var self    = this;
+
+        if ((self.bookmarksThread === null) && (self.tm !== null))
+        {
+            /* Retrieve the main thread and create a new background thread to
+             * handle bookmarks processing.
+             */
+            self.mainThread      = self.tm.mainThread;
+            self.bookmarksThread = self.tm.newThread(0);
+        }
+
+        if (self.bookmarksThread === null)
+        {
+            /* No threading!!  We COULD invoke it directly, but then the main
+             * UI wouldn't be updated.
+             */
+            throw CR.NS_ERROR_NOT_IMPLEMENTED;
+        }
+
+        cDebug.log('resource-connexions::_syncAddBookmarks(): dispatch thread');
+        self.bookmarksThread.dispatch(new bookmarksThread(bookmarks),
+                                      CI.nsIThread.DISPATCH_NORMAL);
     },
 
     /** @brief  Invoke a JsonRpc call.
@@ -1139,3 +1201,87 @@ Connexions.prototype = {
 };
 
 var connexions = new Connexions();
+
+/*****************************************************************************
+ * Worker thread and event to add retrieved bookmarks
+ *
+ * Note: Apparently we cannot invoke notifyObservers() from a background
+ *       thread.  As a result, we must dispatch a "signalEvent" to the main
+ *       thread which will cause the notifyObservers() to be invoked from it's
+ *       context.
+ *
+ * Firefox >= 3, < 4
+ */
+var signalEvent = function(subject) {
+    this.subject = subject;
+};
+
+signalEvent.prototype = {
+    QueryInterface: function(iid) {
+        if (iid.equals(CI.nsIRunnable) ||
+            iid.equals(CI.nsISupports))
+        {
+            return this;
+        }
+
+        throw CR.NS_ERROR_NO_INTERFACE;
+    },
+
+    run: function() {
+        /*
+        cDebug.log('resource-connexions::signalEvent(): '
+                    + "invoke signal with '%s'",
+                    this.subject);
+        // */
+
+        // Signal progress
+        connexions.signal.call(connexions, this.subject,
+                               connexions.state.syncStatus);
+    }
+};
+
+var bookmarksThread = function(bookmarks) {
+    this.bookmarks = bookmarks;
+};
+
+bookmarksThread.prototype = {
+    QueryInterface: function(iid) {
+        if (iid.equals(CI.nsIRunnable) ||
+            iid.equals(CI.nsISupports))
+        {
+            return this;
+        }
+
+        throw CR.NS_ERROR_NO_INTERFACE;
+    },
+
+    run: function() {
+        var bookmarks   = this.bookmarks;
+
+        cDebug.log('resource-connexions::bookmarksThread(): %s bookmarks',
+                   bookmarks.length);
+
+        // Signal our first progress update
+        connexions.state.syncStatus.progress = {
+            total:      bookmarks.length,
+            current:    0
+        };
+
+        connexions.mainThread.dispatch(
+                new signalEvent('connexions.syncProgress'),
+                CI.nsIThread.DISPATCH_SYNC);
+
+        for each (var bookmark in bookmarks)
+        {
+            connexions.state.syncStatus.progress.current++;
+            connexions.mainThread.dispatch(
+                    new signalEvent('connexions.syncProgress'),
+                    CI.nsIThread.DISPATCH_SYNC);
+        }
+
+        connexions.mainThread.dispatch(
+                new signalEvent('connexions.syncEnd'),
+                CI.nsIThread.DISPATCH_SYNC);
+        connexions.state.sync = false;
+    }
+};
