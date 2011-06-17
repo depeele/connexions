@@ -54,6 +54,7 @@
   background-attachment:  scroll;
   background-repeat:      no-repeat;
   background-color:       transparent;
+  background-position:    0 -48px;
 }
 .bookmarks .favorite,
 .bookmarks .private,
