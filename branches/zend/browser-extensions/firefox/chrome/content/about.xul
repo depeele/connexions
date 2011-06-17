@@ -9,6 +9,7 @@
       autostretch="always"
       onload="sizeToContent()"
       buttons="accept"
+      xmlns:html="http://www.w3.org/1999/xhtml"
       xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
   <groupbox align="center"
            orient="horizontal">

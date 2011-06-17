@@ -29,23 +29,25 @@ Connexions_Db.prototype = {
     dbStatements:   {},
     dbSchema:       {
         tables: {
-            bookmarks:      "url TEXT NOT NULL DEFAULT \"\" COLLATE NOCASE,"
-                           +"urlHash VARCHAR(64) NOT NULL DEFAULT \"\" COLLATE NOCASE,"
-                           +"name VARCHAR(255) NOT NULL DEFAULT \"\" COLLATE NOCASE,"
-                           +"description NOT NULL DEFAULT \"\","
-                           +"rating UNSIGNED NOT NULL DEFAULT 0,"
-                           +"isFavorite BOOL NOT NULL DEFAULT 0,"
-                           +"isPrivate BOOL NOT NULL DEFAULT 0,"
-                           +"taggedOn DATETIME NOT NULL DEFAULT 0,"
-                           +"updatedOn DATETIME NOT NULL DEFAULT 0,"
-                           +"visitedOn DATETIME NOT NULL DEFAULT 0,"
-                           +"visitCount UNSIGNED NOT NULL DEFAULT 0,"
-                           +"shortcut VARCHAR(64) NOT NULL DEFAULT \"\"",
-            tags:           "name VARCHAR(32) NOT NULL UNIQUE COLLATE NOCASE",
-            bookmarkTags:   "bookmarkId UNSIGNED NOT NULL,"
-                           +"tagId UNSIGNED NOT NULL",
-            state:          "name VARCHAR(32) NOT NULL UNIQUE,"
-                           +"value TEXT NOT NULL DEFAULT \"\""
+            bookmarks:
+                    "url TEXT NOT NULL DEFAULT \"\" COLLATE NOCASE,"
+                   +"urlHash VARCHAR(64) NOT NULL DEFAULT \"\" COLLATE NOCASE,"
+                   +"name VARCHAR(255) NOT NULL DEFAULT \"\" COLLATE NOCASE,"
+                   +"description NOT NULL DEFAULT \"\","
+                   +"rating UNSIGNED NOT NULL DEFAULT 0,"
+                   +"isFavorite BOOL NOT NULL DEFAULT 0,"
+                   +"isPrivate BOOL NOT NULL DEFAULT 0,"
+                   +"taggedOn DATETIME NOT NULL DEFAULT 0,"
+                   +"updatedOn DATETIME NOT NULL DEFAULT 0,"
+                   +"visitedOn DATETIME NOT NULL DEFAULT 0,"
+                   +"visitCount UNSIGNED NOT NULL DEFAULT 0,"
+                   +"shortcut VARCHAR(64) NOT NULL DEFAULT \"\"",
+            tags:  "name VARCHAR(32) NOT NULL UNIQUE COLLATE NOCASE",
+            bookmarkTags:
+                    "bookmarkId UNSIGNED NOT NULL,"
+                   +"tagId UNSIGNED NOT NULL",
+            state:  "name VARCHAR(32) NOT NULL UNIQUE,"
+                   +"value TEXT NOT NULL DEFAULT \"\""
         },
         indices: {
             bookmarks_alpha:      "bookmarks(name ASC)",
@@ -59,6 +61,10 @@ Connexions_Db.prototype = {
         }
     },
 
+    /** @brief  Initialize this instance.
+     *
+     *  @return this    For a fluent interface.
+     */
     init: function()
     {
         if (this.initialized === true)  { return; }
@@ -93,18 +99,29 @@ Connexions_Db.prototype = {
                             + "[ "+ dbFile.path +" ]");
             // */
         }
+
+        return this;
     },
 
     /** @brief  Signal observers.
      *  @param  event   The event name;
      *  @param  data    The event data;
+     *
+     *  @return this    For a fluent interface.
      */
     signal: function(event, data) {
+        if (data !== undefined)
+        {
+            // JSON-encode the non-string
+            data = JSON.stringify( data );
+        }
         cDebug.log('Connexions_Db::signal(): event[ %s ], data[ %s ]',
-                   event, cDebug.obj2str(data));
+                   event, data);
 
         this.os.notifyObservers(null, event,
                                (data === undefined ? '' : data));
+
+        return this;
     },
 
     /************************************************************************
@@ -161,7 +178,7 @@ Connexions_Db.prototype = {
 
         var id  = null;
         try {
-            stmt.bindUTF8StringParemeter(0, url);
+            stmt.bindUTF8StringParameter(0, url);
             if (stmt.executeStep())
             {
                 id = stmt.getInt64(0);
@@ -194,7 +211,7 @@ Connexions_Db.prototype = {
 
         var bookmark    = null;
         try {
-            stmt.bindUTF8StringParemeter(0, url);
+            stmt.bindUTF8StringParameter(0, url);
             if (stmt.executeStep())
             {
                 bookmark = self._bookmarkFromRow(stmt);
@@ -303,7 +320,10 @@ Connexions_Db.prototype = {
 
             stmt.execute();
 
-            id = self.dbConnection.lastInsertRowId;
+            id = self.dbConnection.lastInsertRowID;
+
+            cDebug.log("Connexions:Db:%s(): insert id[ %s ]",
+                       fname, id);
 
             self.signal('connexions.bookmarkAdded', id);
         } catch(e) {
@@ -321,6 +341,9 @@ Connexions_Db.prototype = {
      */
     addBookmark: function(bookmark)
     {
+        cDebug.log("Connexions_Db::addBookmark(): bookmark[ %s ]",
+                   cDebug.obj2str(bookmark));
+
         var self    = this;
         if (bookmark.url === undefined)
         {
@@ -328,6 +351,10 @@ Connexions_Db.prototype = {
         }
 
         var id = self.getBookmarkByUrl(bookmark.url);
+
+        cDebug.log("Connexions_Db::addBookmark(): id from url[ %s ] == [ %s ]",
+                   bookmark.url, id);
+
         if (id)
         {
             // Bookmark exists -- update
@@ -342,19 +369,56 @@ Connexions_Db.prototype = {
                 (bookmark.tags !== undefined) &&
                 (bookmark.tags.length > 0))
             {
-                var tags    = bookmark.tags;
-                for (var idex = 0; idex < tags.length; idex++)
-                {
-                    if (! tags[idex])   { continue; }
-
-                    var tagId   = self.addTag(tags[idex]);
-
-                    self.insertBookmarkTag(id, tagId);
-                }
+                // Add bookmark tags
+                self.addBookmarkTags(id, bookmark.tags);
             }
         }
 
+        cDebug.log("Connexions_Db::addBookmark(): complete, return id[ %s ]",
+                   id);
+
         return id;
+    },
+
+    /** @brief  Delete a bookmark.
+     *  @param  id      The id of the target bookmark.
+     *
+     *  @return true | false
+     */
+    deleteBookmark: function(bookmark)
+    {
+        var fname   = 'deleteBookmark';
+        var self    = this;
+        var stmt    = self.dbStatements[ fname ];
+        if (stmt === undefined)
+        {
+            var sql = 'DELETE FROM bookmarks WHERE rowid=?1';
+            stmt = self.dbConnection.createStatement(sql);
+            self.dbStatements[ fname ] = stmt;
+        }
+
+        var res     = true;
+        try {
+            stmt.bindInt64Parameter(0, id);
+            stmt.execute();
+        } catch(e) {
+            cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
+            res = false;
+        }
+        stmt.reset();
+
+        if (res === true)
+        {
+            // Delete tag relations for the bookmark
+            self.deleteBookmarkTags(id);
+
+            // Finally, remove any un-referenced tags
+            self.removeUnreferencedTags();
+
+            self.signal('connexions.bookmarkDeleted', id);
+        }
+
+        return res;
     },
 
     /** @brief  Update a bookmark.
@@ -418,13 +482,28 @@ Connexions_Db.prototype = {
         }
         stmt.reset();
 
+        /* Now, if the incoming bookmark has tags, delete all existing tag
+         * relations and re-create them.
+         */
+        if (bookmark.tags !== undefined)
+        {
+            // Delete all current tag relations
+            self.deleteBookmarkTags(bookmark.id);
+
+            // Create the new tag relations
+            self.addBookmarkTags(bookmark.id, bookmark.tags);
+        }
+
+        // Finally, remove any un-referenced tags
+        self.removeUnreferencedTags();
+
         return res;
     },
 
     /** @brief  Update the visit count for a bookmark.
      *  @param  url     The URL of the bookmark;
      *
-     *  @return void
+     *  @return this    For a fluent interface.
      */
     incrementVisitCount: function(url)
     {
@@ -450,6 +529,8 @@ Connexions_Db.prototype = {
         } catch(e) {
             cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
         }
+
+        return self;
     },
 
     /** @brief  Retrieve a set of bookmarks.
@@ -540,6 +621,29 @@ Connexions_Db.prototype = {
      *
      */
 
+    /** @brief  Given a bookmarkId and an array of raw tag strings, add
+     *          bookmarkTags relation entries to link the tags to the
+     *          bookmarks.
+     *  @param  bookmarkId      The target bookmark;
+     *  @param  tags            An array of tag strings.
+     *
+     *  @return this    for a fluent interface
+     */
+    addBookmarkTags: function(bookmarkId, tags)
+    {
+        var self    = this;
+        for (var idex = 0; idex < tags.length; idex++)
+        {
+            if (! tags[idex])   { continue; }
+
+            var tagId   = self.addTag(tags[idex]);
+
+            self.insertBookmarkTag(bookmarkId, tagId);
+        }
+
+        return self;
+    },
+
     /** @brief  Insert a new bookmarkTag join entry.
      *  @param  bookmarkId  The id of the bookmark;
      *  @param  tagId       The id of the tag;
@@ -553,7 +657,7 @@ Connexions_Db.prototype = {
         var stmt    = self.dbStatements[ fname ];
         if (stmt === undefined)
         {
-            var sql = 'INSERT INTO bookmarksTags VALUES(?1, ?2)';
+            var sql = 'INSERT INTO bookmarkTags VALUES(?1, ?2)';
             stmt = self.dbConnection.createStatement(sql);
             self.dbStatements[ fname ] = stmt;
         }
@@ -565,9 +669,7 @@ Connexions_Db.prototype = {
 
             stmt.execute();
 
-            id = self.dbConnection.lastInsertRowId;
-
-            self.signal('connexions.bookmarkTagAdded', id);
+            id = self.dbConnection.lastInsertRowID;
         } catch(e) {
             cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
         }
@@ -575,6 +677,66 @@ Connexions_Db.prototype = {
 
         return id;
     },
+
+    /** @brief  Delete all bookmarkTags entries for the given bookmarkId.
+     *  @param  bookmarkId  The target bookmark
+     *
+     *  @return true | false
+     */
+    deleteBookmarkTags: function(bookmarkId)
+    {
+        var fname   = 'deleteBookmarkTags';
+        var self    = this;
+        var stmt    = self.dbStatements[ fname ];
+        if (stmt === undefined)
+        {
+            var sql = 'DELETE FROM bookmarkTags WHERE bookmarkId=?1';
+            stmt = self.dbConnection.createStatement(sql);
+            self.dbStatements[ fname ] = stmt;
+        }
+
+        var res = false;
+        try {
+            stmt.bindInt64Parameter(0, bookmarkId);
+
+            stmt.execute();
+            res = true;
+        } catch(e) {
+            cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
+        }
+        stmt.reset();
+
+        return res;
+    },
+
+    /** @brief  Remove any tags that have no reference to a current bookmark.
+     *
+     *  @return this    for a fluent interface
+     */
+    removeUnreferencedTags: function()
+    {
+        var fname   = 'removeUnreferencedTags';
+        var self    = this;
+        var stmt    = self.dbStatements[ fname ];
+        if (stmt === undefined)
+        {
+            var sql = 'DELETE FROM tags WHERE rowid '
+                    +       'NOT IN (SELECT DISTINCT tagId FROM bookmarkTags)';
+            stmt = self.dbConnection.createStatement(sql);
+            self.dbStatements[ fname ] = stmt;
+        }
+
+        var id  = null;
+        try {
+            stmt.execute();
+        } catch(e) {
+            cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
+        }
+        stmt.reset();
+
+        return self;
+    },
+
 
     /************************************************************************
      * tags table methods
@@ -630,7 +792,7 @@ Connexions_Db.prototype = {
 
         var id  = null;
         try {
-            stmt.bindUTF8StringParemeter(0, name);
+            stmt.bindUTF8StringParameter(0, name);
             if (stmt.executeStep())
             {
                 id = stmt.getInt64(0);
@@ -666,7 +828,7 @@ Connexions_Db.prototype = {
 
             stmt.execute();
             
-            id = self.dbConnection.lastInsertRowId;
+            id = self.dbConnection.lastInsertRowID;
 
             self.signal('connexions.tagAdded', id);
         } catch(e) {
@@ -680,7 +842,7 @@ Connexions_Db.prototype = {
     /** @brief  Add/Retrieve a tag
      *  @param  tag     The name of the tag;
      *
-     *  @return The tag
+     *  @return The tagId
      */
     addTag: function(tag)
     {
@@ -811,7 +973,8 @@ Connexions_Db.prototype = {
      *
      *  @return The state object (null if not found);
      */
-    getState: function(name) {
+    getState: function(name)
+    {
         var fname   = 'getState';
         var self    = this;
         var stmt    = self.dbStatements[ fname ];
@@ -843,7 +1006,8 @@ Connexions_Db.prototype = {
      *
      *  @return The id of the new bookmark
      */
-    insertState: function(name, value) {
+    insertState: function(name, value)
+    {
         var fname   = 'insertState';
         var self    = this;
         var stmt    = self.dbStatements[ fname ];
@@ -861,7 +1025,7 @@ Connexions_Db.prototype = {
 
             stmt.execute();
 
-            id = self.dbConnection.lastInsertRowId;
+            id = self.dbConnection.lastInsertRowID;
         } catch(e) {
             cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
         }
@@ -876,7 +1040,8 @@ Connexions_Db.prototype = {
      *
      *  @return true | false
      */
-    updateState: function(name, value) {
+    updateState: function(name, value)
+    {
         var fname   = 'updateState';
         var self    = this;
         var stmt    = self.dbStatements[ fname ];
@@ -907,7 +1072,8 @@ Connexions_Db.prototype = {
      *
      *  @return The (old) value;
      */
-    state: function(name, value) {
+    state: function(name, value)
+    {
         // First, see if the state already exists
         var self    = this;
         var state   = self.getState(name);
@@ -959,12 +1125,13 @@ Connexions_Db.prototype = {
      *
      *  @return true | false
      */
-    deleteAllBookmarks: function() {
+    deleteAllBookmarks: function()
+    {
         var self    = this;
         for(var name in self.dbSchema.tables)
         {
-            if ((name !== 'boomkarks') &&
-                (name !== 'tags')      &&
+            if ((name !== 'boomkmarks') &&
+                (name !== 'tags')       &&
                 (name !== 'bookmarkTags'))
             {
                 continue;
@@ -979,11 +1146,13 @@ Connexions_Db.prototype = {
             self.signal('connexions.bookmarksDeleted');
         }
     },
+
     /** @brief  Delete all content from all tables.
      *
      *  @return true | false
      */
-    emptyAllTables: function() {
+    emptyAllTables: function()
+    {
         var self    = this;
         for(var name in self.dbSchema.tables)
         {
@@ -1014,6 +1183,7 @@ Connexions_Db.prototype = {
      *                           }
      *                          }
      *                           
+     *  @return this    For a fluent interface.
      */
     query: function(sql, bindings, callbacks)
     {
@@ -1028,6 +1198,8 @@ Connexions_Db.prototype = {
         statement.bindParameters(params);
 
         statement.executeAsync( callbacks );
+
+        return this;
     },
 
     /***********************************************************************
@@ -1092,14 +1264,28 @@ Connexions_Db.prototype = {
         return this._transaction( sql );
     },
 
+    /** @brief  Create the database and populate it with tables and indices.
+     *  dbService   The mozIStorageService instance;
+     *  dbFile      The nsIFile instance representing the file that will hold
+     *              the database;
+     *
+     *  @return The database connection (mozIStorageConnection).
+     */
     _dbCreate: function(dbService, dbFile)
     {
         var dbConnection = dbService.openDatabase(dbFile);
-        this._dbCreateTables(dbConnection);
-        this._dbCreateIndices(dbConnection);
+
+        this._dbCreateTables(dbConnection)
+            ._dbCreateIndices(dbConnection);
+
         return dbConnection;
     },
 
+    /** @brief  Create the tables indicated by this.dbSchema.tables.
+     *  @param  dbConnexions    The (new) dbConnexions created by _dbCreate();
+     *
+     *  @return this    For a fluent interface.
+     */
     _dbCreateTables: function(dbConnection)
     {
         for(var name in this.dbSchema.tables)
@@ -1118,8 +1304,15 @@ Connexions_Db.prototype = {
 
             dbConnection.createTable(name, schema);
         }
+
+        return this;
     },
 
+    /** @brief  Create the indices indicated by this.dbSchema.indices.
+     *  @param  dbConnexions    The (new) dbConnexions created by _dbCreate();
+     *
+     *  @return this    For a fluent interface.
+     */
     _dbCreateIndices: function(dbConnection)
     {
         for(var name in this.dbSchema.indices)
@@ -1134,8 +1327,17 @@ Connexions_Db.prototype = {
 
             dbConnection.executeSimpleSQL( sql );
         }
+
+        return this;
     },
 
+    /** @brief  Generate a bookmark object from a database row.
+     *  @param  stmt    The mozIStorageStatement instance representing the
+     *                  row containing the data to be used to generate the
+     *                  bookmark object;
+     *
+     *  @return The new bookmark object.
+     */
     _bookmarkFromRow: function(stmt)
     {
         var obj = {};
@@ -1162,6 +1364,13 @@ Connexions_Db.prototype = {
         return obj;
     },
 
+    /** @brief  Generate a tab object from a database row.
+     *  @param  stmt    The mozIStorageStatement instance representing the
+     *                  row containing the data to be used to generate the
+     *                  tag object;
+     *
+     *  @return The new tag object.
+     */
     _tagFromRow: function(stmt)
     {
         var obj = {};
@@ -1181,6 +1390,13 @@ Connexions_Db.prototype = {
         return obj;
     },
 
+    /** @brief  Generate a state object from a database row.
+     *  @param  stmt    The mozIStorageStatement instance representing the
+     *                  row containing the data to be used to generate the
+     *                  state object;
+     *
+     *  @return The new state object.
+     */
     _stateFromRow: function(stmt)
     {
         var obj = {};

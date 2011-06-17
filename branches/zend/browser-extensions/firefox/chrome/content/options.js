@@ -31,6 +31,7 @@ COptions.prototype = {
     elSyncBox:          null,
     btnSyncNow:         null,
     btnSyncFull:        null,
+    btnSyncDel:         null,
     btnSyncCancel:      null,
 
     elStatusBox:        null,
@@ -70,6 +71,8 @@ COptions.prototype = {
             document.getElementById('connexions-prefs-sync-now');
         self.btnSyncFull =
             document.getElementById('connexions-prefs-sync-full');
+        self.btnSyncDel =
+            document.getElementById('connexions-prefs-sync-del');
         self.btnSyncCancel =
             document.getElementById('connexions-prefs-sync-cancel');
 
@@ -373,7 +376,6 @@ COptions.prototype = {
                  }, false);
         self.btnSyncNow
                 .addEventListener('click', function(e) {
-                    //if (this.getAttribute('disabled') === 'true')
                     if (this.disabled === 'true')
                     {
                         return;
@@ -383,7 +385,6 @@ COptions.prototype = {
                  }, false);
         self.btnSyncFull
                 .addEventListener('click', function(e) {
-                    //if (this.getAttribute('disabled') === 'true')
                     if (this.disabled === 'true')
                     {
                         return;
@@ -391,9 +392,17 @@ COptions.prototype = {
                     cDebug.log("cOptions._bindEvents(): syncFull click");
                     connexions.sync(true);
                  }, false);
+        self.btnSyncDel
+                .addEventListener('click', function(e) {
+                    if (this.disabled === 'true')
+                    {
+                        return;
+                    }
+                    cDebug.log("cOptions._bindEvents(): syncDel click");
+                    connexions.delBookmarks();
+                 }, false);
         self.btnSyncCancel
                 .addEventListener('click', function(e) {
-                    //if (this.getAttribute('disabled') === 'true')
                     if (this.disabled === 'true')
                     {
                         return;

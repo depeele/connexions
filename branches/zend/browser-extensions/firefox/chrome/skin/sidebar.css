@@ -10,8 +10,9 @@
 }
 
 .list {
-    padding:    2px;
-    width:      100%;
+    padding:      2px;
+}
+.list listitem {
 }
 
 .list listitem:nth-child(even) {
@@ -19,8 +20,9 @@
 .list listitem:nth-child(odd) {
     background-color:   #eee;
 }
-.list listitem:active {
-    background-color:   inherit;
+.list listitem[selected] {
+    background-color:   #fbec88;
+    color:              #363636;
 }
 /*
 .item-odd {
@@ -38,27 +40,37 @@
 .bookmarks .bookmark-name {
 }
 .bookmarks .bookmark-properties {
-    margin:     0;
-    padding:    0;
-    width:      16px;
-    height:     16px;
+  margin:     0;
+  padding:    0;
+  /*
+  width:      16px;
+  height:     16px;
 
-    max-width:  16px;
-    min-width:  16px;
+  max-width:  16px;
+  min-width:  16px;
+  */
+
+  background-image:       url("chrome://connexions/skin/bookmark-props.png");
+  background-attachment:  scroll;
+  background-repeat:      no-repeat;
+  background-color:       transparent;
 }
 .bookmarks .favorite,
 .bookmarks .private,
 .bookmarks .favorite-private {
-  list-style-image: url("chrome://connexions/skin/bookmark-props.png");
+  /*list-style-image: url("chrome://connexions/skin/bookmark-props.png");*/
 }
 .bookmarks .favorite {
-  -moz-image-region: rect(0px 16px 16px 0px);
+  background-position:  0 0;
+  /*-moz-image-region: rect(0px 16px 16px 0px);*/
 }
 .bookmarks .private {
-  -moz-image-region: rect(16px 16px 32px 0px);
+  background-position:  0 -16px;
+  /*-moz-image-region: rect(16px 16px 32px 0px);*/
 }
 .bookmarks .favorite-private {
-  -moz-image-region: rect(32px 16px 48px 0px);
+  background-position:  0 -32px;
+  /*-moz-image-region: rect(32px 16px 48px 0px);*/
 }
 
 .tags {

@@ -4,6 +4,7 @@
 <!DOCTYPE prefwindow SYSTEM "chrome://connexions/locale/options.dtd">
 <prefwindow
   id="connexions-preferences"
+  xmlns:html="http://www.w3.org/1999/xhtml"
   xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
   title="&connexions.prefs.title;">
 
@@ -77,6 +78,14 @@
                         orient="vertical" pack="center" align="center"
                         height="25" />
                 <description value="&connexions.prefs.sync.full.description;"/>
+              </hbox>
+              <hbox class='delete-box'
+                    align="center">
+                <button id="connexions-prefs-sync-del"
+                        label="&connexions.prefs.sync.del;"
+                        orient="vertical" pack="center" align="center"
+                        height="25" />
+                <description value="&connexions.prefs.sync.del.description;"/>
               </hbox>
               <vbox id="connexions-prefs-sync-status-box"
                     class='syncStatus-box bordered'>
