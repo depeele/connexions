@@ -29,6 +29,7 @@ COptions.prototype = {
     btnRegister:         null,
 
     elSyncBox:          null,
+    elSyncButtons:      null,
     btnSyncNow:         null,
     btnSyncFull:        null,
     btnSyncDel:         null,
@@ -67,6 +68,8 @@ COptions.prototype = {
 
         self.elSyncBox =
             document.getElementById('connexions-prefs-sync-box');
+        self.elSyncButtons =
+            document.getElementById('connexions-prefs-sync-buttons');
         self.btnSyncNow =
             document.getElementById('connexions-prefs-sync-now');
         self.btnSyncFull =
@@ -129,8 +132,7 @@ COptions.prototype = {
             this.btnRegister.value = str;
 
             // Hide (or disable) the sync items.
-            this.disableAll(this.elSyncBox, 'true');
-            //this.elSyncBox.hidden = true;
+            this.disableAll(this.elSyncButtons, 'true');
         }
         else
         {
@@ -153,8 +155,7 @@ COptions.prototype = {
             this.btnRegister.label = str;
 
             // Show (or enable) the sync items.
-            this.disableAll(this.elSyncBox, '');
-            //this.elSyncBox.hidden = false;
+            this.disableAll(this.elSyncButtons, '');
         }
     },
 
@@ -255,11 +256,11 @@ COptions.prototype = {
             break;
 
         case 'connexions.syncBegin':
-            cDebug.log('options::observe(): conexions.syncBegin:');
+            cDebug.log('options::observe(): connexions.syncBegin:');
             self.syncProgressReceived = false;
 
             // Disable the sync items.
-            self.disableAll(self.elSyncBox, 'true');
+            self.disableAll(self.elSyncButtons, 'true');
 
             // Show the status and progressmeter
             self.elStatus.value           =
@@ -280,14 +281,31 @@ COptions.prototype = {
         case 'connexions.syncProgress':
             self.syncProgressReceived = true;
 
+            /* progress SHOULD contain:
+             *      total   The total number of items being processed;
+             *      current The item currently being processed;
+             *
+             * and MAY contain:
+             *      added   The number of items successfully added;
+             *      updated The number of items successfully updated;
+             */
             var progress    = data.progress;
 
             var str = self.getString('connexions.prefs.sync.progress.total',
                                      [ progress.total ]);
             self.elProgressFinal.value = str;
 
-            str = self.getString('connexions.prefs.sync.progress.current',
-                                     [ progress.current ]);
+            if (progress.added !== undefined)
+            {
+                str = self.getString('connexions.prefs.sync.progress.detail',
+                                         [ progress.current,
+                                           progress.added, progress.updated ]);
+            }
+            else
+            {
+                str = self.getString('connexions.prefs.sync.progress.current',
+                                         [ progress.current ]);
+            }
             self.elProgressCurrent.value  = str;
             self.elProgressCurrent.hidden = false;
 
@@ -341,7 +359,7 @@ COptions.prototype = {
             // :TODO: Wait for a bit, then update to show the last sync date
 
             // Enable the sync items.
-            self.disableAll(self.elSyncBox, '');
+            self.disableAll(self.elSyncButtons, '');
 
             break;
         }
@@ -408,6 +426,7 @@ COptions.prototype = {
                         return;
                     }
                     cDebug.log("cOptions._bindEvents(): syncCancel click");
+                    connexions.syncCancel();
                  }, false);
     },
 

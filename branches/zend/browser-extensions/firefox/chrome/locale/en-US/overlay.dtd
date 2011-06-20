@@ -45,18 +45,21 @@
 
 <!-- Sidebar -->
 <!ENTITY connexions.sidebar.label                       "Connexions">
+<!ENTITY connexions.sidebar.sort.by                     "Sort by">
+<!ENTITY connexions.sidebar.sort.order                  "Sort order">
+
 <!ENTITY connexions.sidebar.bookmarks.label             "Bookmarks">
-<!ENTITY connexions.sidebar.bookmarks.sort.byAlpha      "By Alpha (a-z)">
-<!ENTITY connexions.sidebar.bookmarks.sort.byUrl        "By Url">
-<!ENTITY connexions.sidebar.bookmarks.sort.byRating     "By Rating">
-<!ENTITY connexions.sidebar.bookmarks.sort.byTagDate    "By Tag Date">
-<!ENTITY connexions.sidebar.bookmarks.sort.byUpdateDate "By Update Date">
-<!ENTITY connexions.sidebar.bookmarks.sort.byVisitDate  "By Visit Date">
-<!ENTITY connexions.sidebar.bookmarks.sort.byVisitCount "By Visit Count">
+<!ENTITY connexions.sidebar.bookmarks.sort.title        "Title">
+<!ENTITY connexions.sidebar.bookmarks.sort.url          "Url">
+<!ENTITY connexions.sidebar.bookmarks.sort.rating       "Rating">
+<!ENTITY connexions.sidebar.bookmarks.sort.tagDate      "Tag Date">
+<!ENTITY connexions.sidebar.bookmarks.sort.updateDate   "Update Date">
+<!ENTITY connexions.sidebar.bookmarks.sort.visitDate    "Visit Date">
+<!ENTITY connexions.sidebar.bookmarks.sort.visitCount   "Visit Count">
 
 <!ENTITY connexions.sidebar.tags.label                  "Tags">
-<!ENTITY connexions.sidebar.tags.sort.byAlpha           "By Alpha (a-z)">
-<!ENTITY connexions.sidebar.tags.sort.byFrequency       "By Frequency">
+<!ENTITY connexions.sidebar.tags.sort.name              "Name">
+<!ENTITY connexions.sidebar.tags.sort.frequency         "Frequency">
 
 <!-- Sidebar Context menu -->
 <!ENTITY connexions.sidebar.context.open.label             "Open">
