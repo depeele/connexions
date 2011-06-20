@@ -593,7 +593,7 @@ Connexions.prototype = {
             switch (type)
             {
             case 'popup':
-                this.openPopupWindow( url, page );
+                this.openPopupWindow( url );
                 break;
 
             case 'tab':
@@ -642,6 +642,11 @@ Connexions.prototype = {
         return this.getWindow().openDialog(xul, title, options, url);
     },
 
+    /** @brief  Open the given URL in a new tab.
+     *  @param  url             The desired url;
+     *
+     *  @return The new tab/window.
+     */
     openTab: function(url) {
         cDebug.log("openTab(): url[ %s ]", url);
 
@@ -652,44 +657,63 @@ Connexions.prototype = {
         return tab;
     },
 
-    openPopupWindow: function(url, title) {
-        var width   = 980;
-        var height  = 680;
+    /** @brief  Open the given URL in the currently active window/tab.
+     *  @param  url     The desired url;
+     *  @param  title   The new window title;
+     *
+     *  @return The window.
+     */
+    openCurrent: function(url, title) {
+        //var newWindow   = this.getWindow()....
+
+        //return newWindow;
+    },
+
+    /** @brief  Open the given URL in a new window.
+     *  @param  url             The desired url;
+     *  @param  title           The new window title;
+     *  @param  extraOptions    Additional window options (in addition to:
+     *                              chrome, resisable, scrollbars, titlebar,
+     *                              statusbars, centerscreen, dialog=no
+     *
+     *  @return The new window.
+     */
+    openWindow: function(url, title, extraOptions) {
         var options = 'chrome'
                     + ',resizable'
                     + ',scrollbars'
                     + ',titlebar'
                     + ',statusbars'
                     + ',centerscreen'
-                    + ',dependent'
-                    + ',dialog=no'
-                    + ',width=' + width
-                    + ',height='+ height;
-
-        /*
-        cDebug.log("openPopupWindow(): url    [ %s ]", url);
-        cDebug.log("openPopupWindow(): title  [ %s ]", title);
-        cDebug.log("openPopupWindow(): options[ %s ]", options);
-        cDebug.log("openPopupWindow(): xul    [ %s ]", xul);
-        // */
+                    + ',dialog=no';
+        if (extraOptions !== undefined)
+        {
+            options += ','+ extraOptions;
+        }
 
         /*
         var xul         = 'chrome://browser/content/browser.xul';
         var newWindow   = this.openXulWindow(xul, title, options, url);
         */
-        //var newWindow   = window.open(url, '_parent', options);
         var newWindow   = this.getWindow().open(url, '_blank', options);
 
-        /*
-        newWindow.addEventListener("close", function() {
-                                    cDebug.log("openPopupWindow(): "
-                                                   + "close event triggered");
-
-                                    newWindow.close();
-                                   }, true);
-        // */
-
         return newWindow;
+    },
+
+    /** @brief  Open the given URL in a new, popup window.
+     *  @param  url             The desired url;
+     *  @param  title           The new window title;
+     *
+     *  @return The new window.
+     */
+    openPopupWindow: function(url, title) {
+        var width   = 980;
+        var height  = 680;
+        var options = 'dependent'
+                    + ',width=' + width
+                    + ',height='+ height;
+
+        return this.openWindow(url, title, options);
     },
 
     openTagPage: function(url, name, description, tags) {
@@ -878,35 +902,6 @@ Connexions.prototype = {
         {
             this.state.sync = false;
         }
-    },
-
-    /** @brief  Given a set of bookmarks retrieved from the server,
-     *          add/update our local cache.
-     *  @param  bookmarks   An array of bookmark objects.
-     */
-    _syncAddBookmarks: function(bookmarks) {
-        var self    = this;
-
-        if ((self.bookmarksThread === null) && (self.tm !== null))
-        {
-            /* Retrieve the main thread and create a new background thread to
-             * handle bookmarks processing.
-             */
-            self.mainThread      = self.tm.mainThread;
-            self.bookmarksThread = self.tm.newThread(0);
-        }
-
-        if (self.bookmarksThread === null)
-        {
-            /* No threading!!  We COULD invoke it directly, but then the main
-             * UI wouldn't be updated.
-             */
-            throw CR.NS_ERROR_NOT_IMPLEMENTED;
-        }
-
-        cDebug.log('resource-connexions::_syncAddBookmarks(): dispatch thread');
-        self.bookmarksThread.dispatch(new bookmarksThread(bookmarks),
-                                      CI.nsIThread.DISPATCH_NORMAL);
     },
 
     /** @brief  Invoke a JsonRpc call.
@@ -1209,6 +1204,35 @@ Connexions.prototype = {
      * "Private" methods
      *
      */
+
+    /** @brief  Given a set of bookmarks retrieved from the server,
+     *          add/update our local cache.
+     *  @param  bookmarks   An array of bookmark objects.
+     */
+    _syncAddBookmarks: function(bookmarks) {
+        var self    = this;
+
+        if ((self.bookmarksThread === null) && (self.tm !== null))
+        {
+            /* Retrieve the main thread and create a new background thread to
+             * handle bookmarks processing.
+             */
+            self.mainThread      = self.tm.mainThread;
+            self.bookmarksThread = self.tm.newThread(0);
+        }
+
+        if (self.bookmarksThread === null)
+        {
+            /* No threading!!  We COULD invoke it directly, but then the main
+             * UI wouldn't be updated.
+             */
+            throw CR.NS_ERROR_NOT_IMPLEMENTED;
+        }
+
+        cDebug.log('resource-connexions::_syncAddBookmarks(): dispatch thread');
+        self.bookmarksThread.dispatch(new bookmarksThread(bookmarks),
+                                      CI.nsIThread.DISPATCH_NORMAL);
+    },
 
     /** @brief  Establish our state observers.
      */

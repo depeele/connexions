@@ -86,17 +86,17 @@
              <menuitem label="&connexions.sidebar.bookmarks.sort.rating;"
                        value="rating"
                        oncommand="cSidebar.sortBookmarks('rating');" />
-             <menuitem label="&connexions.sidebar.bookmarks.sort.tagDate;"
+             <menuitem label="&connexions.sidebar.bookmarks.sort.taggedOn;"
                        value="taggedOn"
                        oncommand="cSidebar.sortBookmarks('taggedOn');" />
-             <menuitem label="&connexions.sidebar.bookmarks.sort.updateDate;"
+             <menuitem label="&connexions.sidebar.bookmarks.sort.updatedOn;"
                        value="updatedOn"
                        oncommand="cSidebar.sortBookmarks('updatedOn');" />
-             <menuitem label="&connexions.sidebar.bookmarks.sort.visitDate;"
+             <menuitem label="&connexions.sidebar.bookmarks.sort.visitedOn;"
                        value="visitedOn"
                        oncommand="cSidebar.sortBookmarks('visitedOn');" />
              <menuitem label="&connexions.sidebar.bookmarks.sort.visitCount;"
-                       value="visitedCount"
+                       value="visitCount"
                        oncommand="cSidebar.sortBookmarks('visitCount');" />
            </menupopup>
          </menulist>

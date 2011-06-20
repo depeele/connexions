@@ -52,9 +52,9 @@
 <!ENTITY connexions.sidebar.bookmarks.sort.title        "Title">
 <!ENTITY connexions.sidebar.bookmarks.sort.url          "Url">
 <!ENTITY connexions.sidebar.bookmarks.sort.rating       "Rating">
-<!ENTITY connexions.sidebar.bookmarks.sort.tagDate      "Tag Date">
-<!ENTITY connexions.sidebar.bookmarks.sort.updateDate   "Update Date">
-<!ENTITY connexions.sidebar.bookmarks.sort.visitDate    "Visit Date">
+<!ENTITY connexions.sidebar.bookmarks.sort.taggedOn     "Tag Date">
+<!ENTITY connexions.sidebar.bookmarks.sort.updatedOn    "Update Date">
+<!ENTITY connexions.sidebar.bookmarks.sort.visitedOn    "Visit Date">
 <!ENTITY connexions.sidebar.bookmarks.sort.visitCount   "Visit Count">
 
 <!ENTITY connexions.sidebar.tags.label                  "Tags">

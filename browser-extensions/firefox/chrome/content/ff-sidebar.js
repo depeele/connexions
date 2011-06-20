@@ -49,15 +49,15 @@ CSidebar.prototype = {
                 min:    'low',
                 max:    'high',
             },
-            tagDate:    {
+            taggedOn:    {
                 min:    'early',
                 max:    'recent',
             },
-            updateDate: {
+            updatedOn: {
                 min:    'early',
                 max:    'recent',
             },
-            visitDate:  {
+            visitedOn:  {
                 min:    'early',
                 max:    'recent',
             },
@@ -192,11 +192,36 @@ CSidebar.prototype = {
         cDebug.log("cSidebar::search(): term[ %s ]", term);
     },
 
+    /** @brief  Open the URL of the given item.
+     *  @param  e       The triggering event;
+     *  @param  item    The bookmark item;
+     *  @param  where   Where to open ( [current], window, tab);
+     */
     openIn: function(e, item, where) {
         var bookmark    = item.getUserData('bookmark');
+
         cDebug.log("cSidebar::openIn(): where[ %s ], url[ %s ]",
                     where,
                     (bookmark && bookmark.url? bookmark.url:'*** UNKNOWN ***'));
+
+        if (! bookmark || (bookmark.url === undefined))
+        {
+            return;
+        }
+
+        switch (where)
+        {
+        case 'window':
+            connexions.openWindow(bookmark.url);
+            break;
+
+        case 'tab':
+            connexions.openTab(bookmark.url);
+            break;
+
+        case 'current':
+        default:
+        }
     },
 
     properties: function(e, item) {
