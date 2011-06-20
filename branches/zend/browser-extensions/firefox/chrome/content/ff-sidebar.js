@@ -188,6 +188,10 @@ CSidebar.prototype = {
         cDebug.log("cSidebar::showBookmarksContextMenu():");
     },
 
+    search: function(term) {
+        cDebug.log("cSidebar::search(): term[ %s ]", term);
+    },
+
     openIn: function(e, item, where) {
         var bookmark    = item.getUserData('bookmark');
         cDebug.log("cSidebar::openIn(): where[ %s ], url[ %s ]",
