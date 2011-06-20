@@ -1,16 +1,36 @@
 .sidebar-header {
-    padding:        0.25em 0.25em 0.1em;
+  padding:        0.25em 0.25em 0.1em;
 }
 
 .sidebar-title {
-    font-weight:    bold;
+  font-weight:    bold;
 }
 .sidebar-count {
-    font-size:      0.8em;
+  font-size:      0.8em;
+}
+
+.sort-order, .sort-by {
+  cursor: pointer;
+}
+.sort-order {
+  width:  16px;
+  height: 16px;
+
+  background-image:       url("chrome://connexions/skin/sort-order.png");
+  background-attachment:  scroll;
+  background-repeat:      no-repeat;
+  background-color:       transparent;
+  background-position:    0 0;
+}
+.sort-asc {
+  background-position:    0 0;
+}
+.sort-desc {
+  background-position:    0 -16px;
 }
 
 .list {
-    padding:      2px;
+  padding:      2px;
 }
 .list listitem {
 }
@@ -18,18 +38,18 @@
 .list listitem:nth-child(even) {
 }
 .list listitem:nth-child(odd) {
-    background-color:   #eee;
+  background-color:   #eee;
 }
 .list listitem[selected] {
-    background-color:   #fbec88;
-    color:              #363636;
+  background-color:   #fbec88;
+  color:              #363636;
 }
 /*
 .item-odd {
-    background-color:   #eee;
+  background-color:   #eee;
 }
 .item-odd:active {
-    background-color:   inherit;
+  background-color:   inherit;
 }
 .item-even {
 }

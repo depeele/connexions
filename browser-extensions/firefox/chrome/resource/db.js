@@ -337,7 +337,14 @@ Connexions_Db.prototype = {
     /** @brief  Add/Update a bookmark
      *  @param  bookmark    The (new) bookmark object;
      *
-     *  @return The id of the new/updated bookmark;
+     *  @return The new/updated bookmark object with the (new) bookmark id and
+     *          an 'addStatus' field indicating HOW the bookmark was added:
+     *              'ignored'   - already existed, the new bookmark indicated
+     *                            no change;
+     *              'updated'   - already existed, the new bookmark had
+     *                            changes;
+     *              'created'   - did NOT already exist and was added;
+     *              
      */
     addBookmark: function(bookmark)
     {
@@ -350,20 +357,35 @@ Connexions_Db.prototype = {
             return null;
         }
 
-        var id = self.getBookmarkByUrl(bookmark.url);
+        var existing    = self.getBookmarkByUrl(bookmark.url);
 
-        cDebug.log("Connexions_Db::addBookmark(): id from url[ %s ] == [ %s ]",
-                   bookmark.url, id);
+        cDebug.log("Connexions_Db::addBookmark(): from url[ %s ] == [ %s ]",
+                   bookmark.url, cDebug.obj2str(existing));
 
-        if (id)
+        if (existing)
         {
             // Bookmark exists -- update
-            self.updateBookmark(bookmark);
+            bookmark.id        = existing.id;
+
+            // Is there any change?
+            if (self._bookmarksEquivalent(bookmark, existing))
+            {
+                // No change
+                cDebug.log("Connexions_Db::addBookmark(): NO CHANGE");
+                bookmark.addStatus = 'ignored';
+            }
+            else
+            {
+                bookmark.addStatus = 'updated';
+                self.updateBookmark(bookmark);
+            }
         }
         else
         {
             // Bookmark does NOT exist -- create
-            id = self.insertBookmark(bookmark);
+            var id = self.insertBookmark(bookmark);
+            bookmark.id        = id;
+            bookmark.addStatus = 'created';
 
             if ((id !== null) &&
                 (bookmark.tags !== undefined) &&
@@ -374,10 +396,10 @@ Connexions_Db.prototype = {
             }
         }
 
-        cDebug.log("Connexions_Db::addBookmark(): complete, return id[ %s ]",
-                   id);
+        cDebug.log("Connexions_Db::addBookmark(): complete, return [ %s ]",
+                   bookmark);
 
-        return id;
+        return bookmark;
     },
 
     /** @brief  Delete a bookmark.
@@ -423,7 +445,7 @@ Connexions_Db.prototype = {
 
     /** @brief  Update a bookmark.
      *  @param  bookmark    The bookmark object:
-     *                          url, urlHash, name, description,
+     *                          id, url, urlHash, name, description,
      *                          rating, isFavorite, isPrivate, tags
      *
      *  @return true | false
@@ -440,7 +462,8 @@ Connexions_Db.prototype = {
                     +                      'rating=?5, isFavorite=?6, '
                     +                      'isPrivate=?7, taggedOn=?8, '
                     +                      'updatedOn=?9, visitedOn=?10, '
-                    +                      'visitCount=?11, shortcut=?12';
+                    +                      'visitCount=?11, shortcut=?12 '
+                    +     'WHERE rowid=?13';
             stmt = self.dbConnection.createStatement(sql);
             self.dbStatements[ fname ] = stmt;
         }
@@ -472,6 +495,8 @@ Connexions_Db.prototype = {
                                               ? bookmark.visitedCount : 0));
             stmt.bindUTF8StringParameter(11, (bookmark.shortcut
                                               ? bookmark.shortcut : ''));
+
+            stmt.bindInt64Parameter(12, bookmark.id);
 
             stmt.execute();
 
@@ -729,6 +754,8 @@ Connexions_Db.prototype = {
         var id  = null;
         try {
             stmt.execute();
+
+            self.signal('connexions.tagsUpdated');
         } catch(e) {
             cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
         }
@@ -1130,7 +1157,7 @@ Connexions_Db.prototype = {
         var self    = this;
         for(var name in self.dbSchema.tables)
         {
-            if ((name !== 'boomkmarks') &&
+            if ((name !== 'bookmarks')  &&
                 (name !== 'tags')       &&
                 (name !== 'bookmarkTags'))
             {
@@ -1356,6 +1383,10 @@ Connexions_Db.prototype = {
             obj.visitCount  = stmt.getInt32(11);
             obj.shortcut    = stmt.getUTF8String(12);
 
+            // Ensure that boolean flags have boolean values
+            obj.isFavorite = (obj.isFavorite ? true : false); 
+            obj.isPrivate  = (obj.isPrivate  ? true : false); 
+
         } catch (e) {
             cDebug.log("Connexions_Db::_bookmarkFromRow(): ERROR [ %s ]", e);
             obj = null;
@@ -1414,6 +1445,30 @@ Connexions_Db.prototype = {
         }
 
         return obj;
+    },
+
+    /** @brief  Compare two bookmark objects for equivalence.
+     *  @param  bm1     The first  bookmark object;
+     *  @param  bm2     The second bookmark object;
+     *
+     *  @return true | false
+     */
+    _bookmarksEquivalent: function(bm1, bm2)
+    {
+        return ( (bm1.url         === bm2.url)         &&
+                 (bm1.name        === bm2.name)        &&
+                 (bm1.description === bm2.description) &&
+                 (bm1.rating      === bm2.rating)      &&
+                 (bm1.isFavorite  === bm2.isFavorite)  &&
+                 (bm1.isPrivate   === bm2.isPrivate)   &&
+                 (bm1.taggedOn    === bm2.taggedOn)    &&
+                 (bm1.updatedOn   === bm2.updatedOn)   &&
+                 ((bm1.visitedOn  === undefined) ||
+                  (bm1.visitedOn  === bm2.visitedOn))  &&
+                 ((bm1.visitCount === undefined) ||
+                  (bm1.visitCount === bm2.visitCount)) &&
+                 ((bm1.shortcut   === undefined) ||
+                  (bm1.shortcut   === bm2.shortcut)) );
     }
 };
 

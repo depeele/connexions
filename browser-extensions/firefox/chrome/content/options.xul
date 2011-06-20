@@ -63,30 +63,32 @@
                       class='sync-box'
                       orient="vertical">
               <caption label="&connexions.prefs.sync.caption;"/>
-              <hbox class='syncNow-box'
-                    align="center">
-                <button id="connexions-prefs-sync-now"
-                        label="&connexions.prefs.sync.now;"
-                        orient="vertical" pack="center" align="center"
-                        height="25" />
-                <description value="&connexions.prefs.sync.now.description;"/>
-              </hbox>
-              <hbox class='syncFull-box'
-                    align="center">
-                <button id="connexions-prefs-sync-full"
-                        label="&connexions.prefs.sync.full;"
-                        orient="vertical" pack="center" align="center"
-                        height="25" />
-                <description value="&connexions.prefs.sync.full.description;"/>
-              </hbox>
-              <hbox class='delete-box'
-                    align="center">
-                <button id="connexions-prefs-sync-del"
-                        label="&connexions.prefs.sync.del;"
-                        orient="vertical" pack="center" align="center"
-                        height="25" />
-                <description value="&connexions.prefs.sync.del.description;"/>
-              </hbox>
+              <vbox id="connexions-prefs-sync-buttons">
+                <hbox class='syncNow-box'
+                      align="center">
+                  <button id="connexions-prefs-sync-now"
+                          label="&connexions.prefs.sync.now;"
+                          orient="vertical" pack="center" align="center"
+                          height="25" />
+                  <label value="&connexions.prefs.sync.now.description;"/>
+                </hbox>
+                <hbox class='syncFull-box'
+                      align="center">
+                  <button id="connexions-prefs-sync-full"
+                          label="&connexions.prefs.sync.full;"
+                          orient="vertical" pack="center" align="center"
+                          height="25" />
+                  <label value="&connexions.prefs.sync.full.description;"/>
+                </hbox>
+                <hbox class='delete-box'
+                      align="center">
+                  <button id="connexions-prefs-sync-del"
+                          label="&connexions.prefs.sync.del;"
+                          orient="vertical" pack="center" align="center"
+                          height="25" />
+                  <label value="&connexions.prefs.sync.del.description;"/>
+                </hbox>
+              </vbox>
               <vbox id="connexions-prefs-sync-status-box"
                     class='syncStatus-box bordered'>
                 <label id="connexions-prefs-sync-status"

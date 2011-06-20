@@ -870,6 +870,16 @@ Connexions.prototype = {
         });
     },
 
+    /** @brief  If a sync is in progress, cancel it.
+     *
+     */
+    syncCancel: function() {
+        if (this.state.sync === true)
+        {
+            this.state.sync = false;
+        }
+    },
+
     /** @brief  Given a set of bookmarks retrieved from the server,
      *          add/update our local cache.
      *  @param  bookmarks   An array of bookmark objects.
@@ -1280,7 +1290,7 @@ addBookmark.prototype = {
     },
 
     run: function() {
-        // /*
+        /*
         cDebug.log('resource-connexions::addBookmark thread: '
                     + "bookmark[ %s ]",
                     cDebug.obj2str(this.bookmark));
@@ -1290,6 +1300,31 @@ addBookmark.prototype = {
         var res = connexions.db.addBookmark(this.bookmark);
         if (res !== null)
         {
+            if (res.addStatus !== undefined)
+            {
+                if (connexions.state.syncStatus.progress.added === undefined)
+                {
+                    connexions.state.syncStatus.progress.added   = 0;
+                    connexions.state.syncStatus.progress.updated = 0;
+                    connexions.state.syncStatus.progress.ignored = 0;
+                }
+
+                switch (res.addStatus)
+                {
+                case 'created':
+                    connexions.state.syncStatus.progress.added++;
+                    break;
+
+                case 'updated':
+                    connexions.state.syncStatus.progress.updated++;
+                    break;
+
+                case 'ignored':
+                    connexions.state.syncStatus.progress.ignored++;
+                    break;
+                }
+            }
+
             connexions.state.syncStatus.progress.current++;
             connexions.signal('connexions.syncProgress',
                               connexions.state.syncStatus);
@@ -1428,8 +1463,10 @@ bookmarksThread.prototype = {
         var self        = this;
         var bookmarks   = self.bookmarks;
 
+        /*
         cDebug.log('resource-connexions::bookmarksThread thread: %s bookmarks',
                    bookmarks.length);
+        // */
 
         // Signal our first progress update
         connexions.state.syncStatus.progress = {
@@ -1440,6 +1477,12 @@ bookmarksThread.prototype = {
         self.signal('connexions.syncProgress', connexions.state.syncStatus);
         for each (var bookmark in bookmarks)
         {
+            if (connexions.state.sync !== true)
+            {
+                // CANCEL the sync
+                break;
+            }
+
             /*
             cDebug.log('resource-connexions::bookmarksThread thread: '
                         +   'bookmark[ %s ]',
@@ -1458,6 +1501,7 @@ bookmarksThread.prototype = {
         }
 
         self.signal('connexions.syncEnd', connexions.state.syncStatus);
+        self.signal('connexions.bookmarksUpdated');
         connexions.state.sync = false;
     }
 };
