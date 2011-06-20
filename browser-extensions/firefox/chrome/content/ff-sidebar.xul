@@ -47,10 +47,19 @@
 
   <!-- Sidebar Content { -->
   <vbox flex="1">
+    <hbox class='sidebar-tools' align="center">
+     <textbox id="sidebar-search"
+              type="search"
+              class="compact"
+              flex="1"
+              searchbutton="true"
+              oncommand="cSidebar.search(this.value);" />
+    </hbox>
     <vbox flex="1">
       <!-- NOTE: For hbox, 'center' === 'middle' -->
       <hbox align="center"
-            class="sidebar-header">
+            class="sidebar-header sidebar-bookmarks-section">
+       <box class="sidebar-context-image" />
        <label class="sidebar-title"
               value="&connexions.sidebar.bookmarks.label;" />
        <label id="sidebar-bookmarksCount"
@@ -114,7 +123,8 @@
     <vbox flex="1">
       <!-- NOTE: For hbox, 'center' === 'middle' -->
       <hbox align="center"
-            class="sidebar-header">
+            class="sidebar-header sidebar-tags-section">
+       <box class="sidebar-context-image" />
        <label class="sidebar-title"
              value="&connexions.sidebar.tags.label;" />
        <label id="sidebar-tagsCount"

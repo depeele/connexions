@@ -1,10 +1,31 @@
-.sidebar-header {
-  padding:        0.25em 0.25em 0.1em;
+.sidebar-tools {
+  background-color: -moz-Dialog;
+  -moz-appearance:  toolbox;
 }
 
-.sidebar-title {
-  font-weight:    bold;
+.sidebar-tools textbox {
 }
+
+.sidebar-header {
+  padding:          0 0.25em;
+  background-color: -moz-Dialog;
+}
+.sidebar-header .sidebar-context-image {
+  width:          16px;
+  height:         16px;
+
+  background-attachment:  scroll;
+  background-repeat:      no-repeat;
+  background-color:       transparent;
+  background-position:    -24px -24px;
+}
+.sidebar-bookmarks-section .sidebar-context-image {
+  background-image: url("chrome://connexions/skin/toolbar-button-bookmark.png");
+}
+.sidebar-tags-section .sidebar-context-image {
+  background-image: url("chrome://connexions/skin/toolbar-button-tag.png");
+}
+
 .sidebar-count {
   font-size:      0.8em;
 }
@@ -40,20 +61,17 @@
 .list listitem:nth-child(odd) {
   background-color:   #eee;
 }
-.list listitem[selected] {
-  background-color:   #fbec88;
-  color:              #363636;
+
+/* From firefox/toolkit/themes/winstrip/global/listbox.css { */
+.list listitem[selected="true"] {
+  background-color:   -moz-cellhighlight;
+  color:              -moz-cellhighlighttext;
 }
-/*
-.item-odd {
-  background-color:   #eee;
+.list:focus > listitem[selected="true"] {
+  background-color:   Highlight;
+  color:              HighlightText;
 }
-.item-odd:active {
-  background-color:   inherit;
-}
-.item-even {
-}
-*/
+/* From firefox/toolkit/themes/winstrip/global/listbox.css } */
 
 .bookmarks {
 }
@@ -62,13 +80,6 @@
 .bookmarks .bookmark-properties {
   margin:     0;
   padding:    0;
-  /*
-  width:      16px;
-  height:     16px;
-
-  max-width:  16px;
-  min-width:  16px;
-  */
 
   background-image:       url("chrome://connexions/skin/bookmark-props.png");
   background-attachment:  scroll;
@@ -76,22 +87,14 @@
   background-color:       transparent;
   background-position:    0 -48px;
 }
-.bookmarks .favorite,
-.bookmarks .private,
-.bookmarks .favorite-private {
-  /*list-style-image: url("chrome://connexions/skin/bookmark-props.png");*/
-}
 .bookmarks .favorite {
   background-position:  0 0;
-  /*-moz-image-region: rect(0px 16px 16px 0px);*/
 }
 .bookmarks .private {
   background-position:  0 -16px;
-  /*-moz-image-region: rect(16px 16px 32px 0px);*/
 }
 .bookmarks .favorite-private {
   background-position:  0 -32px;
-  /*-moz-image-region: rect(32px 16px 48px 0px);*/
 }
 
 .tags {
