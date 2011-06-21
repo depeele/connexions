@@ -1,6 +1,6 @@
 <!ENTITY connexions.label                   "Connexions">
 
-<!-- Main  menu -->
+<!-- Main  menu { -->
 <!ENTITY connexions.menu.label              "Connexions">
 <!ENTITY connexions.menu.accesskey          "X">
 
@@ -14,11 +14,12 @@
 <!ENTITY connexions.menu.site.bookmarks     "Bookmarks">
 <!ENTITY connexions.menu.site.tags          "Tags">
 <!ENTITY connexions.menu.site.people        "People">
+<!-- Main  menu } -->
 
 <!-- Tools menu -->
 <!ENTITY connexions.menu.tools.label        "Connexions Options">
 
-<!-- Main Context menu -->
+<!-- Main Context menu { -->
 <!ENTITY connexions.context.tagCurrent.label    "Bookmark this page in connexions...">
 <!ENTITY connexions.context.tagLink.label       "Bookmark this link in connexions...">
 <!ENTITY connexions.context.tagMedia.label      "Bookmark this media in connexions...">
@@ -29,8 +30,9 @@
 
 <!-- When the tagCurrent item is included WITH tagLink or tagMedia -->
 <!ENTITY connexions.context.tagAlt.accesskey        "P">
+<!-- Main Context menu } -->
 
-<!-- Toolbar -->
+<!-- Toolbar { -->
 <!ENTITY connexions.toolbar.name  "example">
 <!ENTITY connexions.toolbar.label "This is an example toolbar. You can hide it under View &gt; toolbars &gt; &connexions.toolbar.name;">
 
@@ -42,8 +44,9 @@
 
 <!ENTITY connexions.toolbar.button.connexions.label     "Connexions">
 <!ENTITY connexions.toolbar.button.connexions.tooltip   "Visit Connexions">
+<!-- Toolbar } -->
 
-<!-- Sidebar -->
+<!-- Sidebar { -->
 <!ENTITY connexions.sidebar.label                       "Connexions">
 <!ENTITY connexions.sidebar.sort.by                     "Sort by">
 <!ENTITY connexions.sidebar.sort.order                  "Sort order">
@@ -61,7 +64,7 @@
 <!ENTITY connexions.sidebar.tags.sort.name              "Name">
 <!ENTITY connexions.sidebar.tags.sort.frequency         "Frequency">
 
-<!-- Sidebar Context menu -->
+<!-- Sidebar Context menu { -->
 <!ENTITY connexions.sidebar.context.open.label             "Open">
 <!ENTITY connexions.sidebar.context.open.accesskey         "O">
 
@@ -79,4 +82,25 @@
 
 <!ENTITY connexions.sidebar.context.properties.label       "Properties">
 <!ENTITY connexions.sidebar.context.properties.accesskey   "P">
+<!-- Sidebar Context menu } -->
 
+<!-- Sidebar Bookmark Property Panel { -->
+<!ENTITY bookmark.title             "Bookmark Properties">
+<!ENTITY bookmark.label.id          "id">
+<!ENTITY bookmark.label.url         "Url">
+<!ENTITY bookmark.label.urlHash     "Url hash">
+<!ENTITY bookmark.label.name        "Name">
+<!ENTITY bookmark.label.description "Description">
+<!ENTITY bookmark.label.rating      "Rating">
+<!ENTITY bookmark.label.isFavorite  "Favorite">
+<!ENTITY bookmark.label.isPrivate   "Private">
+
+<!ENTITY bookmark.label.taggedOn    "Tagged">
+<!ENTITY bookmark.label.updatedOn   "Updated">
+<!ENTITY bookmark.label.visitedOn   "Visited">
+<!ENTITY bookmark.label.visitCount  "Visits">
+<!ENTITY bookmark.label.shortcut    "Shortcut">
+
+<!ENTITY bookmark.label.tags        "Tags">
+<!-- Sidebar Bookmark Property Panel } -->
+<!-- Sidebar } -->
