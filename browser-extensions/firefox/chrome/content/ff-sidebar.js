@@ -29,6 +29,9 @@ CSidebar.prototype = {
 
     elBookmarksSortOrder:   null,
     elBookmarksSortBy:      null,
+
+    panelProperties:        null,
+
     bookmarksSort:          {
         by:     'name',
         order:  'ASC',
@@ -138,6 +141,11 @@ CSidebar.prototype = {
         this.elBookmarksMenu  =
                 document.getElementById("sidebar-bookmarks-contextMenu");
 
+        // Bookmark properties panel
+        var panel   = document.getElementById("sidebar-bookmark-properties");
+        this.panelProperties = new CBookmark( panel );
+
+
         // Setup the bookmarks sort information
         var bookmarksSort        = this.prefs
                                         .getCharPref('sortOrder.bookmarks');
@@ -155,6 +163,7 @@ CSidebar.prototype = {
         this.tagsSort.by    = tagsSort[0];
         this.tagsSort.order = tagsSort[1].toUpperCase();
 
+        // Load observers, render, and bind events
         this._loadObservers();
 
         this._render();
@@ -193,11 +202,11 @@ CSidebar.prototype = {
     },
 
     /** @brief  Open the URL of the given item.
-     *  @param  e       The triggering event;
+     *  @param  event   The triggering event;
      *  @param  item    The bookmark item;
      *  @param  where   Where to open ( [current], window, tab);
      */
-    openIn: function(e, item, where) {
+    openIn: function(event, item, where) {
         var bookmark    = item.getUserData('bookmark');
 
         cDebug.log("cSidebar::openIn(): where[ %s ], url[ %s ]",
@@ -209,37 +218,76 @@ CSidebar.prototype = {
             return;
         }
 
-        switch (where)
+        if (where === undefined)
         {
-        case 'window':
-            connexions.openWindow(bookmark.url);
-            break;
-
-        case 'tab':
-            connexions.openTab(bookmark.url);
-            break;
-
-        case 'current':
-        default:
+            // Determine 'where' by the incoming event
+            if (event.altKey || event.metaKey)
+            {
+                where = 'window';
+            }
+            else if (event.shiftKey)
+            {
+                where = 'tab';
+            }
         }
+
+        return connexions.openIn( bookmark.url, where );
     },
 
-    properties: function(e, item) {
+    /** @brief  Present the properties of a current item.
+     *  @param  event   The triggering event;
+     *  @param  item    The associated item (MUST have 'bookmark' user data);
+     */
+    properties: function(event, item) {
         var bookmark    = item.getUserData('bookmark');
         cDebug.log("cSidebar::properties(): url[ %s ]",
                     (bookmark && bookmark.url? bookmark.url:'*** UNKNOWN ***'));
+
+        this.panelProperties.load(bookmark)
+                            .open(item, event);
     },
 
     edit: function(e, item) {
         var bookmark    = item.getUserData('bookmark');
         cDebug.log("cSidebar::edit(): url[ %s ]",
                     (bookmark && bookmark.url? bookmark.url:'*** UNKNOWN ***'));
+
+        var query   = '?url='+ encodeURIComponent(bookmark.url);
+
+        /*
+                    + '&name='+ encodeURIComponent(name);
+        if (description !== undefined)
+        {
+            query += '&description='+ encodeURIComponent(description);
+        }
+        if (tags !== undefined)
+        {
+            query += '&tags='+ encodeURIComponent(tags);
+        }
+        // */
+
+        query += '&noNav&closeAction=close';
+
+        connexions.openPopupWindow( connexions.url('post'+ query),
+                                    'Edit a Bookmark' );
     },
 
     'delete': function(e, item) {
         var bookmark    = item.getUserData('bookmark');
-        cDebug.log("cSidebar::delete(): url[ %s ]",
-                    (bookmark && bookmark.url? bookmark.url:'*** UNKNOWN ***'));
+        cDebug.log('cSidebar::delete(): bookmark[ %s ]',
+                   cDebug.obj2str(bookmark));
+
+        var title       =
+            connexions.getString('connexions.sidebar.bookmark.delete.title');
+        var question    =
+            connexions.getString('connexions.sidebar.bookmark.delete.confirm',
+                                 bookmark.name);
+        var answer      = connexions.confirm(title, question);
+
+        if (answer)
+        {
+            cDebug.log("cSidebar::delete(): delete url[ %s ]", bookmark.url);
+        }
     },
 
     /** @brief  Sort bookmarks, possibly changing the field or order.
@@ -553,12 +601,32 @@ CSidebar.prototype = {
 
     _bindEvents: function() {
         var self    = this;
-        this.elBookmarksMenu
+
+        self.elBookmarkList
+                .addEventListener("click", function (e){
+                                    if (e.button !== 0)
+                                    {
+                                        // NOT a left-click
+                                        return;
+                                    }
+
+                                    cDebug.log('ff-sidebar::_bindEvents(click):'
+                                                + 'node[ %s ]',
+                                                e.target.nodeName);
+
+                                    if (e.target.nodeName !== 'listitem')
+                                    {
+                                        return;
+                                    }
+
+                                    self.openIn(e, e.target);
+                                  }, false);
+        self.elBookmarksMenu
                 .addEventListener("popupshowing", function (e){
                                     self.showBookmarksContextMenu(e);
                                   }, false);
 
-        this.elBookmarksSortOrder
+        self.elBookmarksSortOrder
                 .addEventListener("click", function (e){
                     if (self.bookmarksSort.order === 'ASC')
                     {
@@ -574,7 +642,7 @@ CSidebar.prototype = {
                     self.sortBookmarks();
                 }, false);
 
-        this.elTagsSortOrder
+        self.elTagsSortOrder
                 .addEventListener("click", function (e){
                     if (self.tagsSort.order === 'ASC')
                     {

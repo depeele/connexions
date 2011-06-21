@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
-<?xml-stylesheet href="chrome://global/skin/" type"text/css" ?>
-<?xml-stylesheet href="chrome://connexions/skin/sidebar.css" type="text/css"?>
+<?xml-stylesheet href="chrome://global/skin/"
+                 type"text/css" ?>
+<?xml-stylesheet href="chrome://connexions/skin/sidebar.css"
+                 type="text/css" ?>
+<?xml-stylesheet href="chrome://connexions/skin/bookmark-properties.css"
+                 type="text/css" ?>
 <!DOCTYPE page SYSTEM "chrome://connexions/locale/overlay.dtd">
 
 <page id="connexions-sidebar"
@@ -9,6 +13,7 @@
    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
   <script src="connexions.js"/>
   <script src="ff-sidebar.js"/>
+  <script src="bookmark-properties.js"/>
 
   <tooltip id='connexions-tooltip'>
     <vbox id='connexions-tooltip-label' width='180px' />
@@ -44,6 +49,69 @@
         oncommand="cSidebar.delete(event, document.popupNode);"/>
   </popup>
   <!-- Sidebar Bookmarks Context menu } -->
+
+  <!-- Sidebar Bookmark Property Panel { -->
+  <panel id="sidebar-bookmark-properties">
+    <vbox class='properties'>
+      <hbox class='property odd'>
+        <label class='label' value='&bookmark.label.id;' />
+        <label id='bookmark-id' flex='1'/>
+      </hbox>
+      <hbox class='property'>
+        <label class='label' value='&bookmark.label.url;' />
+        <label id='bookmark-url' flex='1'/>
+      </hbox>
+      <hbox class='property odd'>
+        <label class='label' value='&bookmark.label.urlHash;' />
+        <label id='bookmark-urlHash' flex='1'/>
+      </hbox>
+      <hbox class='property'>
+        <label class='label' value='&bookmark.label.name;' />
+        <label id='bookmark-name' flex='1'/>
+      </hbox>
+      <hbox class='property odd'>
+        <label class='label' value='&bookmark.label.description;' />
+        <label id='bookmark-description' flex='1'/>
+      </hbox>
+      <hbox class='property'>
+        <label class='label' value='&bookmark.label.rating;' />
+        <label id='bookmark-rating' flex='1'/>
+      </hbox>
+      <hbox class='property odd'>
+        <label class='label' value='&bookmark.label.isFavorite;' />
+        <label id='bookmark-isFavorite' flex='1'/>
+      </hbox>
+      <hbox class='property'>
+        <label class='label' value='&bookmark.label.isPrivate;' />
+        <label id='bookmark-isPrivate' flex='1'/>
+      </hbox>
+      <hbox class='property odd'>
+        <label class='label' value='&bookmark.label.taggedOn;' />
+        <label id='bookmark-taggedOn' flex='1'/>
+      </hbox>
+      <hbox class='property'>
+        <label class='label' value='&bookmark.label.updatedOn;' />
+        <label id='bookmark-updatedOn' flex='1'/>
+      </hbox>
+      <hbox class='property odd'>
+        <label class='label' value='&bookmark.label.visitedOn;' />
+        <label id='bookmark-visitedOn' flex='1'/>
+      </hbox>
+      <hbox class='property'>
+        <label class='label' value='&bookmark.label.visitCount;' />
+        <label id='bookmark-visitCount' flex='1'/>
+      </hbox>
+      <hbox class='property odd'>
+        <label class='label' value='&bookmark.label.shortcut;' />
+        <label id='bookmark-shortcut' flex='1'/>
+      </hbox>
+      <hbox class='property'>
+        <label class='label' value='&bookmark.label.tags;' />
+        <label id='bookmark-tags' flex='1'/>
+      </hbox>
+    </vbox>
+  </panel>
+  <!-- Sidebar Bookmark Property Panel } -->
 
   <!-- Sidebar Content { -->
   <vbox flex="1">

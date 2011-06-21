@@ -194,6 +194,24 @@ Connexions.prototype = {
 
         switch (topic)
         {
+        case 'http-on-modify-request':
+            /* An HTTP request is about to be sent.
+             *
+             * Locate the target URL and invoke db.incrementVisitCount() with
+             * that url.  If it is the URL of an existing bookmark, the visit
+             * count and visitedOn date will be updated.
+             */
+            subject.QueryInterface(CI.nsIHttpChannel);
+
+            var url         = subject.URI.spec;
+            /*
+            cDebug.log('resource-connexions::observe(): topic[ %s ], url[ %s ]',
+                        topic, url);
+            // */
+
+            self.db.incrementVisitCount( url );
+            break;
+
         case 'cookie-changed':
             var cookie  = subject.QueryInterface(CI.nsICookie2);
             var noTimer = false;
@@ -352,6 +370,25 @@ Connexions.prototype = {
         this.strings = strings;
     },
 
+    /** @brief  Given an object, return it's "primative" type.
+     *  @param  obj     The object;
+     *
+     *  @return The type:
+     *              object, array, regexp, date, string, number
+     */
+    type: function(obj) {
+        var type    = (obj === null ? 'null' : typeof(obj));
+        if (type === 'object')
+        {
+            // What TYPE of object
+            if (obj.length) { type = 'array'; }
+            if (obj.exec)   { type = 'regexp'; }
+            if (obj.now)    { type = 'date'; }
+        }
+
+        return type;
+    },
+
     /** @brief  If our strings (nsIStringBundle) have been set, retrieve and
      *          return the named string.
      *  @param  name        The name of the desired string;
@@ -369,11 +406,20 @@ Connexions.prototype = {
 
         if (this.strings)
         {
+            if ((strArray !== undefined) && (this.type(strArray) !== 'array'))
+            {
+                strArray = [ strArray ];
+            }
+
             try {
                 str = (strArray
                         ? this.strings.getFormattedString(name, strArray)
                         : this.strings.getString(name));
-            } catch(e) {}
+            } catch(e) {
+                cDebug.log('connexions-resource::getString(): ERROR: '
+                            + 'name[ %s ]: %s',
+                            name, e.message);
+            }
         }
 
         return str;
@@ -495,25 +541,39 @@ Connexions.prototype = {
         }
     },
 
+    /** @brief  Present a popup alert
+     *  @param  msg     The message to present;
+     *
+     */
     popupAlert: function(msg) {
         var promptService =
                 CC["@mozilla.org/embedcomp/prompt-service;1"]
                           .getService(CI.nsIPromptService);
-        promptService.alert(window, 'Connexions Alert', msg);
+        promptService.alert(this.getWindow(), 'Connexions Alert', msg);
     },
 
-    toolbarButtonCommand: function(e) {
-        // just reuse the function above.    you can change this, obviously!
-        this.popupAlert('toolbar button');
+    /** @brief  Present a confirmation dialog.
+     *  @param  title       The dialog itle;
+     *  @param  question    The confirmation question;
+     *
+     *  @return true | false
+     */
+    'confirm': function(title, msg) {
+        var promptService =
+                CC["@mozilla.org/embedcomp/prompt-service;1"]
+                          .getService(CI.nsIPromptService);
+        return promptService.confirm(this.getWindow(), title, msg);
     },
 
+    /** @brief  Open the options windows.
+     */
     showOptions: function() {
         cDebug.log("showOptions()");
 
         if (! this.prefsWindow || this.prefsWindow.closed) {
             var xul     = 'chrome://connexions/content/options.xul';
             var title   = 'Connexions Options';
-            var opts    = 'chrome,titlebar,toolbar,centerscreen,dialog=no';
+            var opts    = 'chrome,titlebar,toolbar,centerscreen,dialog=yes';
             this.prefsWindow =
                 this.openXulWindow(xul, title, opts);
         }
@@ -521,20 +581,67 @@ Connexions.prototype = {
     },
 
     /** @brief  Load a new page.
-     *  @param  e           The originating event;
+     *  @param  event       The originating event;
      *  @param  page        The connexions page to load
      *                      ( myBookmarks myTags, myNetwork, myInbox,
      *                        bookmarks, tags, people, main, signin, register)
-     *  @param  type        The type of load ( [tab], popup)
+     *  @param  where       Where to open ( [current], window, tab, popup);
      *  @param  closeAction The close action to invoke when the page is to be
      *                      closed [ 'back' ];
+     *
+     *  Open the new page based upon the current keyboard state:
+     *      shift:      in a new window;
+     *      meta/ctrl:  in a new tab;
+     *      -none-:     in the current window/tab;
+     *
+     *  :NOTE: Up to at least Firefox 3.6.17, <menuitem oncommand> does NOT
+     *         pass along any button or keyboard state, making it extremely
+     *         difficult (i.e. impossible) to modify the open behavious based
+     *         upon the current keyboard state.
      */
-    loadPage: function(e, page, type, closeAction) {
+    loadPage: function(event, page, where, closeAction) {
         var url = null;
 
-        cDebug.log("loadPage(): event[ %s ], page[ %s ], type[ %s ]",
-                        cDebug.obj2str(e),
-                        page, type);
+        /* event properties:
+         *  target
+         *  currentTarget
+         *  button              0:left, 1:middle, 2:right
+         *  detail              Number of clicks
+         *  screenX,screenY     Mouse position relative to tl screen
+         *  clientX,clientY     Mouse position relative to tl document
+         *
+         * event methods:
+         *  stopPropagation()
+         *  preventDefault()
+         *
+        cDebug.log("loadPage(): "
+                   + "event[ %s ], "
+                   + "event[ type:%s, button:%s, keyCode:%s, charCode:%s, "
+                   +        "alt:%s, ctrl:%s, shift:%s, meta:%s, which:%s], "
+                   + "page[ %s ], where[ %s ]",
+                        cDebug.obj2str(event),
+                        event.type,
+                        event.button, event.keyCode, event.charCode,
+                        event.altKey, event.ctrlKey,
+                        event.shiftKey, event.metaKey,
+                        event.which,
+                        page, where);
+        return;
+        // */
+
+        if (where === undefined)
+        {
+            // Determine 'where' by the incoming event
+            if (event.altKey || event.metaKey)
+            {
+                where = 'window';
+            }
+            else if (event.shiftKey)
+            {
+                where = 'tab';
+            }
+        }
+
         switch (page)
         {
         case 'myBookmarks':
@@ -587,20 +694,12 @@ Connexions.prototype = {
 
             url = this.url(url);
 
-            cDebug.log("loadPage(): page[ %s ], type[ %s ], final url[ %s ]",
-                       page, type, url);
+            /*
+            cDebug.log("loadPage(): page[ %s ], where[ %s ], final url[ %s ]",
+                       page, where, url);
+            // */
 
-            switch (type)
-            {
-            case 'popup':
-                this.openPopupWindow( url );
-                break;
-
-            case 'tab':
-            default:
-                this.openTab( url );
-                break;
-            }
+            this.openIn( url, where );
         }
     },
 
@@ -638,8 +737,107 @@ Connexions.prototype = {
         return this.getWindow().toggleSidebar(id, capture);
     },
 
-    openXulWindow: function(xul, title, options, url) {
-        return this.getWindow().openDialog(xul, title, options, url);
+    /** @brief  Open a new XUL dialog.
+     *  @param  xul         The URL to the XUL overlay;
+     *  @param  title       The window title;
+     *  @param  options     Window properties;
+     *  @param  data        Data (object) to be passed to the new window;
+     */
+    openXulWindow: function(xul, title, options, data) {
+        return this.getWindow().openDialog(xul, title, options, data);
+    },
+
+    /** @brief  Open the given URL as specified by 'where';
+     *  @param  url     The desired URL;
+     *  @param  where   Where to open ( [current], window, tab, popup);
+     *
+     *  @return The window;
+     */
+    openIn: function(url, where) {
+        var self    = this;
+
+        cDebug.log("openIn(): url[ %s ], where[ %s ]",
+                    url, where);
+
+        /* FIRST, look through each browser and tab to see if this URL is
+         * already open.  If it is, focus on the indow/tab.
+         */
+        var be      = self.wm.getEnumerator('navigator:browser');
+        var res     = false;
+        while ((res === false) && (be.hasMoreElements()))
+        {
+            var win = be.getNext();
+            var tb = win.gBrowser;
+
+            // Check each tab of this browser instance
+            var nTabs   = tb.browsers.length;
+            for (var idex = 0; idex < nTabs; idex++)
+            {
+                var browser     = tb.getBrowserAtIndex(idex);
+                if ( url === browser.currentURI.spec )
+                {
+                    /* We found a window/tab that is opened to the desired URL!
+                     *
+                     * Select this tab and focus on this window.
+                     */
+                    tb.selectedTab = tb.tabContainer.childNodes[idex];
+                    win.focus();
+
+                    res = win;
+                    break;
+                }
+            }
+        }
+
+        if (res === false)
+        {
+            // The URL isn't already opened.  Open it now.
+            switch (where)
+            {
+            case 'window':
+                res = self.openWindow( url );
+                break;
+
+            case 'tab':
+                res = self.openTab( url );
+                break;
+
+            case 'popup':
+                res = self.openPopupWindow( url );
+                break;
+
+            case 'current':
+            default:
+                res = self.openCurrent( url );
+                break;
+            }
+        }
+
+        return res;
+    },
+
+    /** @brief  Open the given URL in the currently active window/tab.
+     *  @param  url     The desired url;
+     *  @param  name    The new window name (no white-space, e.g. '_blank');
+     *
+     *  @return The window.
+     */
+    openCurrent: function(url, name) {
+        var win = this.getWindow();
+
+        if (win)
+        {
+            // Use an existing browser window
+            //win.delayedOpenTab(url, null, null, null, null);
+            win.content.document.location = url;
+        }
+        else
+        {
+            // No browser windows are open, so open a new one
+            win = this.openWindow(url, name);
+        }
+
+        return win;
     },
 
     /** @brief  Open the given URL in a new tab.
@@ -657,63 +855,50 @@ Connexions.prototype = {
         return tab;
     },
 
-    /** @brief  Open the given URL in the currently active window/tab.
+    /** @brief  Open the given URL in a new, normal browser window.
      *  @param  url     The desired url;
-     *  @param  title   The new window title;
-     *
-     *  @return The window.
-     */
-    openCurrent: function(url, title) {
-        //var newWindow   = this.getWindow()....
-
-        //return newWindow;
-    },
-
-    /** @brief  Open the given URL in a new window.
-     *  @param  url             The desired url;
-     *  @param  title           The new window title;
-     *  @param  extraOptions    Additional window options (in addition to:
-     *                              chrome, resisable, scrollbars, titlebar,
-     *                              statusbars, centerscreen, dialog=no
+     *  @param  name    The new window name (no white-space, e.g. '_blank');
      *
      *  @return The new window.
      */
-    openWindow: function(url, title, extraOptions) {
-        var options = 'chrome'
-                    + ',resizable'
-                    + ',scrollbars'
-                    + ',titlebar'
-                    + ',statusbars'
+    openWindow: function(url, name) {
+        var options = 'titlebar=yes'
+                    + ',menubar=yes'
+                    + ',toolbar=yes'
+                    + ',location=yes'
+                    + ',personalbar=yes'
+                    + ',scrollbars=yes'
+                    + ',resizable=yes'
+                    + ',status=yes'
                     + ',centerscreen'
                     + ',dialog=no';
-        if (extraOptions !== undefined)
-        {
-            options += ','+ extraOptions;
-        }
 
-        /*
-        var xul         = 'chrome://browser/content/browser.xul';
-        var newWindow   = this.openXulWindow(xul, title, options, url);
-        */
-        var newWindow   = this.getWindow().open(url, '_blank', options);
-
-        return newWindow;
+        return this._openWindow(url, name, options);
     },
 
-    /** @brief  Open the given URL in a new, popup window.
-     *  @param  url             The desired url;
-     *  @param  title           The new window title;
+    /** @brief  Open the given URL in a new, popup/dialog window.
+     *  @param  url     The desired url;
+     *  @param  name    The new window name (no white-space, e.g. '_blank');
      *
      *  @return The new window.
      */
-    openPopupWindow: function(url, title) {
+    openPopupWindow: function(url, name) {
         var width   = 980;
         var height  = 680;
-        var options = 'dependent'
+        var options = 'chrome'
+                    + ',dependent'
+                    + ',titlebar=yes'
+                    + ',menubar=no'
+                    + ',toolbar=no'
+                    + ',scrollbars=yes'
+                    + ',resizable=yes'
+                    + ',status=yes'
+                    + ',dialog=yes'
+                    + ',centerscreen'
                     + ',width=' + width
                     + ',height='+ height;
 
-        return this.openWindow(url, title, options);
+        return this._openWindow(url, name, options);
     },
 
     openTagPage: function(url, name, description, tags) {
@@ -1205,12 +1390,38 @@ Connexions.prototype = {
      *
      */
 
+    /** @brief  Open the given URL in a new, normal browser window.
+     *  @param  url         The desired url;
+     *  @param  name        The new window name (no white-space, e.g. '_blank');
+     *  @param  options     The window options;
+     *
+     *  @return The new window.
+     */
+    _openWindow: function(url, name, options) {
+        /*
+        var xul         = 'chrome://browser/content/browser.xul';
+        var newWindow   = this.openXulWindow(xul, name, options, url);
+        */
+        if (name !== undefined) name = name.replace(/\s+/g, '_').toLowerCase();
+
+        var newWindow   = this.getWindow().open(url, name, options);
+
+        return newWindow;
+    },
+
+
     /** @brief  Given a set of bookmarks retrieved from the server,
      *          add/update our local cache.
      *  @param  bookmarks   An array of bookmark objects.
      */
     _syncAddBookmarks: function(bookmarks) {
         var self    = this;
+
+        /*
+        cDebug.log('resource-connexions::_syncAddBookmarks(): '
+                    + 'is %smain thread',
+                    (self.tm.isMainThread ? '' : 'NOT '));
+        // */
 
         if ((self.bookmarksThread === null) && (self.tm !== null))
         {
@@ -1238,12 +1449,14 @@ Connexions.prototype = {
      */
     _loadObservers: function() {
         this.os.addObserver(this, "cookie-changed", false);
+        this.os.addObserver(this, "http-on-modify-request", false);
     },
 
     /** @brief  Establish our state observers.
      */
     _unloadObservers: function() {
         this.os.removeObserver(this, "cookie-changed");
+        this.os.removeObserver(this, "http-on-modify-request");
     }
 };
 

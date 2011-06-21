@@ -545,7 +545,7 @@ Connexions_Db.prototype = {
         }
 
         try {
-            var now = (new Date()).getTime() * 1000;
+            var now = (new Date()).getTime() / 1000;
 
             stmt.bindInt64Parameter(0, now);    // visitedOn
             stmt.bindUTF8StringParameter(1, url);
@@ -895,9 +895,10 @@ Connexions_Db.prototype = {
         var stmt    = self.dbStatements[ fname ];
         if (stmt === undefined)
         {
-            var sql = 'SELECT t.rowid,t.name '
+            var sql = 'SELECT t.rowid,t.name,COUNT(bt.tagId) as frequency '
                     +   'FROM tags as t,bookmarkTags as bt '
                     +   'WHERE t.rowid = bt.tagId AND bt.bookmarkId = ?1 '
+                    +   'GROUP BY t.rowid '
                     +   'ORDER BY t.name ASC';
             stmt = self.dbConnection.createStatement(sql);
             self.dbStatements[ fname ] = stmt;
