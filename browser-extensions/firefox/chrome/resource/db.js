@@ -641,6 +641,60 @@ Connexions_Db.prototype = {
         return bookmarks;
     },
 
+    /** @brief  Retrieve a set of bookmarks that use all of the provided tags.
+     *  @param  tags    An array of tag objects;
+     *
+     *  @return An array of bookmark objects;
+     */
+    getBookmarksByTags: function(tags)
+    {
+        var fname   = 'getBookmarksByTags';
+        var self    = this;
+        var stmt    = self.dbStatements[ fname ];
+        if (stmt === undefined)
+        {
+            var sql = "SELECT b.* FROM bookmarks as b "
+                    +   "INNER JOIN ("
+                    +     "SELECT bt.*,COUNT(DISTINCT bt.tagId) AS tagCount "
+                    +       "FROM bookmarkTags AS bt "
+                    +       "WHERE (bt.tagId IN (:tags)) "
+                    +       "GROUP BY bt.bookmarkId"
+                    +       "HAVING (tagCount=:tagCount)) AS bt "
+                    +       "ON b.rowid=bt.bookmarkId";
+            stmt = self.dbConnection.createStatement(sql);
+            self.dbStatements[ fname ] = stmt;
+        }
+
+        var bookmarks   = null;
+        try {
+            var params  = stmt.newBindingParamsArray();
+            var nTags   = 0;
+            var bp;
+            for (var idex in tags)
+            {
+                var tag = tags[idex];
+                bp = params.newBindingParams();
+                bp.bindByName('tags', tag.id);
+                nTags++;
+            }
+            bp = params.newBindingParams();
+            bp.bindByName('tagCount', nTags);
+
+            stmt.bindParameters(params);
+
+            while (stmt.executeStep())
+            {
+                var bookmark    = self._bookmarkFromRow(stmt);
+                bookmarks.push(bookmark);
+            }
+        } catch(e) {
+            cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
+        }
+        stmt.reset();
+
+        return bookmarks;
+    },
+
     /************************************************************************
      * bookmarkTags table methods
      *
