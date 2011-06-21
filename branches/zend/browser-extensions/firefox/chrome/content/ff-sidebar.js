@@ -231,9 +231,33 @@ CSidebar.prototype = {
         cDebug.log("cSidebar::showBookmarksContextMenu():");
     },
 
+    /** @brief  Given a search term filter the visible bookmarks and tags.
+     *  @param  term    The desired search term.
+     *
+     */
     search: function(term) {
         cDebug.log("cSidebar::search(): term[ %s ]", term);
+
+        // :TODO:
     },
+
+    /** @brief  Given an array of tag objects, filter the visible bookmarks
+     *          by those tags.
+     *  @param  tags    An array of tag objects.
+     *
+     */
+    bookmarksFilterByTags: function( tags ) {
+        cDebug.log('ff-sidebar::bookmarksFilterByTags():select tags[ %s ]',
+                   cDebug.obj2str(tags));
+
+        /* :TODO: connexions.db.getBookmarksByTags( tags );
+        var bookmarks   = connexions.db.getBookmarksByTags( tags );
+
+        cDebug.log('ff-sidebar::bookmarksFilterByTags():bookmarks[ %s ]',
+                   cDebug.obj2str(bookmarks));
+        // */
+    },
+
 
     /** @brief  Open the URL of the given item.
      *  @param  event   The triggering event;
@@ -594,11 +618,6 @@ CSidebar.prototype = {
             //var propCss     = [ 'listcell-iconic', 'bookmark-properties' ];
             var propCss     = [ 'bookmark-properties' ];
 
-            /*
-            row.setAttribute("class", 'item-'+ (((idex+1) % 2)
-                                                    ? 'odd'
-                                                    : 'even'));
-            // */
             row.setUserData("bookmark", bookmark, null);
 
             name.setAttribute("label", bookmark.name);
@@ -674,11 +693,6 @@ CSidebar.prototype = {
             var name        = document.createElement("listcell");
             var freq        = document.createElement("listcell");
 
-            /*
-            row.setAttribute("class", 'item-'+ (((idex+1) % 2)
-                                                    ? 'odd'
-                                                    : 'even'));
-            // */
             row.setUserData("tag", tag, null);
 
             name.setAttribute("label", tag.name);
@@ -706,29 +720,34 @@ CSidebar.prototype = {
     _bindEvents: function() {
         var self    = this;
 
+        /*****************************************************************
+         * Bookmark list
+         *
+         */
         self.elBookmarkList
                 .addEventListener("click", function (e){
-                                    if (e.button !== 0)
-                                    {
-                                        // NOT a left-click
-                                        return;
-                                    }
+                    if (e.button !== 0)
+                    {
+                       // NOT a left-click
+                       return;
+                    }
 
-                                    cDebug.log('ff-sidebar::_bindEvents(click):'
-                                                + 'node[ %s ]',
-                                                e.target.nodeName);
+                    cDebug.log('ff-sidebar::_bindEvents(click):'
+                               + 'bookmarkList node[ %s ]',
+                               e.target.nodeName);
 
-                                    if (e.target.nodeName !== 'listitem')
-                                    {
-                                        return;
-                                    }
+                    if (e.target.nodeName !== 'listitem')
+                    {
+                        return;
+                    }
 
-                                    self.openIn(e, e.target);
-                                  }, false);
+                    self.openIn(e, e.target);
+                }, false);
+
         self.elBookmarksMenu
                 .addEventListener("popupshowing", function (e){
-                                    self.showBookmarksContextMenu(e);
-                                  }, false);
+                    self.showBookmarksContextMenu(e);
+                }, false);
 
         self.elBookmarksSortOrder
                 .addEventListener("click", function (e){
@@ -745,6 +764,58 @@ CSidebar.prototype = {
 
                     self.sortBookmarks();
                 }, false);
+
+
+        /*****************************************************************
+         * Tag list
+         *
+         */
+        self.elTagList
+                .addEventListener("click", function(e) {
+                    if (e.button !== 0)
+                    {
+                        // NOT a left-click
+                        return;
+                    }
+
+                    var items   = self.elTagList.selectedItems;
+                    var nItems  = items.length;
+
+                    /*
+                    cDebug.log('ff-sidebar::_bindEvents():tagList select: '
+                                + '%s/%s',
+                                self.elTagList.selectedCount,
+                                nItems);
+                    // */
+
+                    var tags    = [];
+                    for (var idex = 0; idex < nItems; idex++)
+                    {
+                        var item    = self.elTagList.getSelectedItem(idex);
+                        var tag     = item.getUserData('tag');
+
+                        /*
+                        cDebug.log('ff-sidebar::_bindEvents():tagList select: '
+                                    + '%s: item[ %s ], tag[ %s ]',
+                                    idex,
+                                    cDebug.obj2str(item),
+                                    cDebug.obj2str(tag));
+                        // */
+                        if (! tag)
+                        {
+                            continue;
+                        }
+
+                        tags.push(tag);
+                    }
+
+                    /*
+                    cDebug.log('ff-sidebar::_bindEvents():select tags[ %s ]',
+                               cDebug.obj2str(tags));
+                    // */
+
+                    self.bookmarksFilterByTags( tags );
+                 }, false);
 
         self.elTagsSortOrder
                 .addEventListener("click", function (e){

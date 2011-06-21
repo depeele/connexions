@@ -225,6 +225,7 @@
       <listbox
             id="sidebar-tagList"
             class="tags list"
+            seltype="multiple"
             flex="1">
         <listcols flex="1" pack="end">
           <listcol flex="1" />
