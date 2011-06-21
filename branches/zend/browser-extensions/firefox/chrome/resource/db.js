@@ -407,7 +407,7 @@ Connexions_Db.prototype = {
      *
      *  @return true | false
      */
-    deleteBookmark: function(bookmark)
+    deleteBookmark: function(id)
     {
         var fname   = 'deleteBookmark';
         var self    = this;

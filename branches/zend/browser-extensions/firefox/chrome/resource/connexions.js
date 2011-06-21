@@ -71,6 +71,8 @@ Connexions.prototype = {
     prefsWindow:    null,
     strings:        null,
 
+    pendingNotifications:   [],
+
     cookieJar:      {
         domain:     "%DOMAIN%",
         authCookie: "%AUTH_COOKIE%",
@@ -187,7 +189,7 @@ Connexions.prototype = {
         }
         // */
 
-        /*
+        // /*
         cDebug.log('resource-connexions::observe(): topic[ %s ]',
                    topic);
         // */
@@ -288,6 +290,34 @@ Connexions.prototype = {
                 self.cookieTicking = true;
             }
             break;
+
+        // Firefox 4- alert notification events
+        case 'alertfinished':
+        case 'alertclickcallback':
+            var cookie      = parseInt(data, 10);
+            var nCallbacks  = self.pendingNotifications.length;
+
+            /* If this callback is at the END of the notifications queue, pop
+             * it off.  Hopefully this won't get too deep...
+             */
+            var callback    = ( (cookie + 1) === nCallbacks
+                                ? self.pendingNotifications.pop()
+                                : (cookie < nCallbacks
+                                    ? self.pendingNotifications[cookie]
+                                    : null) );
+            if (callback)
+            {
+                if ((topic === 'alertclickcallback') &&
+                    (callback.click !== undefined))
+                {
+                    callback.click();
+                }
+                else if ((topic === 'alertfinished') &&
+                         (callback.close !== undefined))
+                {
+                    callback.close();
+                }
+            }
         }
     },
 
@@ -563,6 +593,74 @@ Connexions.prototype = {
                 CC["@mozilla.org/embedcomp/prompt-service;1"]
                           .getService(CI.nsIPromptService);
         return promptService.confirm(this.getWindow(), title, msg);
+    },
+
+    /** @brief  Present a system notification.
+     *  @param  title       The notification title;
+     *  @param  msg         The notification message;
+     *  @param  iconUrl     An options URL to an icon to include;
+     *  @param  callbacks   Desired callbacks:
+     *                          {click: function(),
+     *                           close: function() }
+     */
+    notify: function(title, msg, iconUrl, callbacks) {
+        var self    = this;
+
+        cDebug.log('resource-connexions::notify(): title[ %s ], msg[ %s ]',
+                    title, msg);
+
+        // Firefox 4+
+        try {
+            var notify =
+                    navigator.mozNotification.createNotification(title, msg,
+                                                                  iconUrl);
+
+            cDebug.log('resource-connexions::notify(): using Firfox 4+');
+
+            if (callbacks !== undefined)
+            {
+                if (callbacks.click !== undefined)
+                {
+                    notify.onclick = callbacks.click;
+                }
+                if (callbacks.close !== undefined)
+                {
+                    notify.onclose = callbacks.close;
+                }
+            }
+
+            notify.show();
+            return;
+        } catch(e) {}
+
+        // Firefox 4-
+        var idex;
+        try {
+            var as      = CC['@mozilla.org/alerts-service;1']
+                            .getService(CI.nsIAlertsService);
+            idex = self.pendingNotifications.length;
+
+            cDebug.log('resource-connexions::notify(): using Firfox 4-');
+
+            self.pendingNotifications.push( callbacks );
+
+            /* close and click callbacks are handled by our 'observe' method
+             * for 'alertfinished' and 'alertclickcallback'
+             */
+            as.showAlertNotification(iconUrl, title, msg,
+                                     true,                  // textClickable
+                                     'connexions-'+idex,    // cookie
+                                     self,                  // alertListener
+                                     'connexions-alert');
+        } catch(e) {
+            cDebug.log('resource-connexions::notify(): ERROR: %s',
+                        e.message);
+
+            if (idex !== undefined)
+            {
+                self.pendingNotifications.pop();
+            }
+        }
     },
 
     /** @brief  Open the options windows.
@@ -1266,9 +1364,10 @@ Connexions.prototype = {
         // /*
         cDebug.log("resource-connexions::jsonRpc(): "
                    +    "method[ %s ], transport[ %s ], "
-                   +    "url[ %s ], cookies[ %s ]",
+                   +    "url[ %s ], cookies[ %s ], rpc[ %s ]",
                    method, self.jsonRpcInfo.transport,
-                   self.jsonRpcInfo.url, cookies);
+                   self.jsonRpcInfo.url, cookies,
+                   cDebug.obj2str(rpc));
         // */
 
         // Send the request

@@ -46,6 +46,7 @@
     <menuitem
         label="&connexions.sidebar.context.delete.label;"
         accesskey="&connexions.sidebar.context.delete.accesskey;"
+        authenticated="true"
         oncommand="cSidebar.delete(event, document.popupNode);"/>
   </popup>
   <!-- Sidebar Bookmarks Context menu } -->

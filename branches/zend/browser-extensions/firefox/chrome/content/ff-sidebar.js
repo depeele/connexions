@@ -173,6 +173,8 @@ CSidebar.prototype = {
     },
 
     showBookmarksContextMenu: function(event) {
+        var self    = this;
+
         /* show or hide the menuitem based on what the context menu is on
          *  gContextMenu.isTextSelected
          *              .isContentSelected
@@ -194,6 +196,38 @@ CSidebar.prototype = {
          *                      element.currentURI);
          *
          */
+
+        /* (En/Dis)able context items based upon whether we are currently
+         * authenticated.
+         */
+        var user            = connexions.getUser();
+        var isAuthenticated = ( (user !== null) && (user.name !== undefined)
+                                ? true
+                                : false );
+        var nItems          = self.elBookmarksMenu.children.length;
+
+        cDebug.log("cSidebar::showBookmarksContextMenu(): "
+                    +   "%sauthenticated, %s menu items",
+                    (isAuthenticated ? '' : 'NOT '),
+                    nItems);
+
+        for (var idex = 0; idex < nItems; idex++)
+        {
+            var item    = self.elBookmarksMenu.children[idex];
+            //if (item.nodeName !== 'menuitem')
+            if (item.hasAttribute('authenticated'))
+            {
+                if (isAuthenticated)
+                {
+                    item.disabled = '';
+                }
+                else
+                {
+                    item.disabled = 'true';
+                }
+            }
+        }
+
         cDebug.log("cSidebar::showBookmarksContextMenu():");
     },
 
@@ -274,8 +308,17 @@ CSidebar.prototype = {
 
     'delete': function(e, item) {
         var bookmark    = item.getUserData('bookmark');
-        cDebug.log('cSidebar::delete(): bookmark[ %s ]',
-                   cDebug.obj2str(bookmark));
+        var user        = connexions.getUser();
+
+        cDebug.log('cSidebar::delete(): bookmark[ %s ], user[ %s ]',
+                   cDebug.obj2str(bookmark),
+                   cDebug.obj2str(user));
+
+        if ( (! bookmark) || (! user) || (user.name === undefined))
+        {
+            // NOT valid!
+            return;
+        }
 
         var title       =
             connexions.getString('connexions.sidebar.bookmark.delete.title');
@@ -284,10 +327,71 @@ CSidebar.prototype = {
                                  bookmark.name);
         var answer      = connexions.confirm(title, question);
 
-        if (answer)
+        if (! answer)
         {
-            cDebug.log("cSidebar::delete(): delete url[ %s ]", bookmark.url);
+            return;
         }
+
+        cDebug.log("cSidebar::delete(): delete url[ %s ]", bookmark.url);
+
+        var success = false;
+        var res     = null;
+        var params  = {
+            // ID == userId:itemId
+            id: user.name +':'+ bookmark.url
+        };
+        connexions.jsonRpc('bookmark.delete', params, {
+            success: function(data, textStatus, xhr) {
+                // /*
+                cDebug.log('resource-connexions::delete(): RPC success: '
+                            +   'jsonRpc return[ %s ]',
+                            cDebug.obj2str(data));
+                // */
+
+                if (data.error !== null)
+                {
+                    // ERROR!
+                    res = data.error;
+                }
+                else
+                {
+                    // SUCCESS -- Add all new bookmarks.
+                    success = true;
+                }
+            },
+            error:   function(xhr, textStatus, error) {
+                cDebug.log('resource-connexions::sync(): RPC error: '
+                            +   '[ %s ]',
+                            textStatus);
+                res = {
+                    code:       error,
+                    message:    textStatus
+                };
+            },
+            complete: function(xhr, textStatus) {
+                cDebug.log('resource-connexions::sync(): RPC complete: '
+                            +   '[ %s ]',
+                            textStatus);
+                if (success === true)
+                {
+                    connexions.notify('Bookmark deleted',
+                                    "Successfully deleted bookmark titled "
+                                    + "'"+ bookmark.name +"'");
+
+                    /* Delete our local copy.  If this succeeds, it will signal
+                     * 'connexions.deleteBookmark' which will cause the
+                     * sidebar to be refreshed.
+                     */
+                    connexions.db.deleteBookmark(bookmark.id);
+                }
+                else
+                {
+                    // ERROR
+                    connexions.notify('Bookmark deletion failed',
+                                      res.message);
+                }
+            }
+        });
     },
 
     /** @brief  Sort bookmarks, possibly changing the field or order.
