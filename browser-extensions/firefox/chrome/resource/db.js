@@ -5,15 +5,14 @@
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false, plusplus:false, regexp:false */
 /*global Components:false, cDebug:false */
+var EXPORTED_SYMBOLS    = ["Connexions_Db", "cDb"];
+
 var CC  = Components.classes;
 var CI  = Components.interfaces;
 var CR  = Components.results;
 var CU  = Components.utils;
 
 CU.import("resource://connexions/debug.js");
-
-
-var EXPORTED_SYMBOLS    = ["Connexions_Db", "cDb"];
 
 function Connexions_Db()
 {
@@ -25,6 +24,7 @@ Connexions_Db.prototype = {
                         .getService(CI.nsIObserverService),
 
     initialized:    false,
+    noSignals:      false,
     dbConnection:   null,
     dbStatements:   {},
     dbSchema:       {
@@ -100,28 +100,65 @@ Connexions_Db.prototype = {
             // */
         }
 
+        this._loadObservers();
+
         return this;
     },
 
+    setConnexions: function(connexionsInst) {
+        connexions = connexionsInst;
+    },
+
     /** @brief  Signal observers.
-     *  @param  event   The event name;
+     *  @param  subject The subject name;
      *  @param  data    The event data;
+     *
+     *  :NOTE: Relay on connexions for signaling.  It will handle invoking this
+     *         signal request on the main thread.
      *
      *  @return this    For a fluent interface.
      */
-    signal: function(event, data) {
+    signal: function(subject, data) {
+        if (this.noSignals !== true)
+        {
+            connexions.signal(subject, data);
+        }
+        return this;
+    },
+
+    /** @brief  Observer register notification topics.
+     *  @param  subject The nsISupports object associated with the
+     *                  notification;
+     *  @param  topic   The notification topic string;
+     *  @param  data    Any additional data;
+     */
+    observe: function(subject, topic, data) {
+        var self    = this;
+        /*
         if (data !== undefined)
         {
-            // JSON-encode the non-string
-            data = JSON.stringify( data );
+            try {
+                data = JSON.parse(data);
+            } catch(e) {}
         }
-        cDebug.log('Connexions_Db::signal(): event[ %s ], data[ %s ]',
-                   event, data);
+        // */
 
-        this.os.notifyObservers(null, event,
-                               (data === undefined ? '' : data));
+        // /*
+        cDebug.log('Connexions_Db::observe(): topic[ %s ]',
+                   topic);
+        // */
 
-        return this;
+        switch (topic)
+        {
+        case 'connexions.syncBegin':
+            // Squelch all signaling until syncEnd
+            self.noSignals = true;
+            break;
+
+        case 'connexions.syncEnd':
+            self.noSignals = false;
+            break;
+        }
     },
 
     /************************************************************************
@@ -322,8 +359,10 @@ Connexions_Db.prototype = {
 
             id = self.dbConnection.lastInsertRowID;
 
+            /*
             cDebug.log("Connexions:Db:%s(): insert id[ %s ]",
                        fname, id);
+            // */
 
             self.signal('connexions.bookmarkAdded', id);
         } catch(e) {
@@ -348,8 +387,10 @@ Connexions_Db.prototype = {
      */
     addBookmark: function(bookmark)
     {
+        /*
         cDebug.log("Connexions_Db::addBookmark(): bookmark[ %s ]",
                    cDebug.obj2str(bookmark));
+        // */
 
         var self    = this;
         if (bookmark.url === undefined)
@@ -359,8 +400,10 @@ Connexions_Db.prototype = {
 
         var existing    = self.getBookmarkByUrl(bookmark.url);
 
+        /*
         cDebug.log("Connexions_Db::addBookmark(): from url[ %s ] == [ %s ]",
                    bookmark.url, cDebug.obj2str(existing));
+        // */
 
         if (existing)
         {
@@ -371,7 +414,9 @@ Connexions_Db.prototype = {
             if (self._bookmarksEquivalent(bookmark, existing))
             {
                 // No change
+                /*
                 cDebug.log("Connexions_Db::addBookmark(): NO CHANGE");
+                // */
                 bookmark.addStatus = 'ignored';
             }
             else
@@ -396,8 +441,10 @@ Connexions_Db.prototype = {
             }
         }
 
+        /*
         cDebug.log("Connexions_Db::addBookmark(): complete, return [ %s ]",
                    bookmark);
+        // */
 
         return bookmark;
     },
@@ -1219,8 +1266,9 @@ Connexions_Db.prototype = {
                 continue;
             }
 
-            // /*
-            cDebug.log("Connexions_Db::deleteAllBookmarks(): name[ %s ]", name);
+            /*
+            cDebug.log("Connexions_Db::deleteAllBookmarks(): name[ %s ]",
+                       name);
             // */
 
             self._emptyTable(name);
@@ -1238,7 +1286,7 @@ Connexions_Db.prototype = {
         var self    = this;
         for(var name in self.dbSchema.tables)
         {
-            // /*
+            /*
             cDebug.log("Connexions_Db::emptyAllTables(): name[ %s ]", name);
             // */
 
@@ -1524,6 +1572,20 @@ Connexions_Db.prototype = {
                   (bm1.visitCount === bm2.visitCount)) &&
                  ((bm1.shortcut   === undefined) ||
                   (bm1.shortcut   === bm2.shortcut)) );
+    },
+
+    /** @brief  Establish our state observers.
+     */
+    _loadObservers: function() {
+        this.os.addObserver(this, "connexions.syncBegin",   false);
+        this.os.addObserver(this, "connexions.syncEnd",     false);
+    },
+
+    /** @brief  Establish our state observers.
+     */
+    _unloadObservers: function() {
+        this.os.removeObserver(this, "connexions.syncBegin");
+        this.os.removeObserver(this, "connexions.syncEnd");
     }
 };
 

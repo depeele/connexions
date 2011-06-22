@@ -12,6 +12,8 @@
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false, plusplus:false, regexp:false */
 /*global Components:false, cDebug:false, cDb:false, window:false */
+var EXPORTED_SYMBOLS    = ['connexions'/*, $, $$ */];
+
 var CC                  = Components.classes;
 var CI                  = Components.interfaces;
 var CR                  = Components.results;
@@ -20,8 +22,6 @@ var CONNEXIONS_BASE_URL = "%URL%";
 
 CU.import("resource://connexions/debug.js");
 CU.import("resource://connexions/db.js");
-
-var EXPORTED_SYMBOLS    = ['connexions'/*, $, $$ */];
 
 /*****************************************************************************
  * Helpers
@@ -58,12 +58,13 @@ Connexions.prototype = {
     tm:             null,
 
     initialized:    false,
+    appVersion:     0.0,
+
     user:           null,   // The current user
 
     debug:          cDebug,
-    db:             cDb,
+    db:             null,
 
-    mainThread:     null,
     bookmarksThread:null,
     cookieTimer:    CC['@mozilla.org/timer;1']
                         .createInstance(CI.nsITimer),
@@ -93,11 +94,16 @@ Connexions.prototype = {
     init: function() {
         if (this.initialized === true)  { return; }
 
+        // Postpone until now to allow us to move the inclusion of db.js down
+        cDb.setConnexions(this);
+        this.db    = cDb;
+
         cDebug.log('resource-connexions::init():');
 
         var self    = this;
 
         self.initialized = true;
+        self.appVersion  = self.getAppVersion();
 
         // Normalize the cookie domain.
         self.cookieJar.domain = self.cookieJar.domain.toLowerCase();
@@ -135,6 +141,8 @@ Connexions.prototype = {
 
     /** @brief  Invoked any time 'chrome/content/connexions.js' receives a
      *          'load' event.
+     *
+     *  @return this for a fluent interface.
      */
     windowLoad: function() {
         cDebug.log('resource-connexions::windowLoad()');
@@ -170,6 +178,8 @@ Connexions.prototype = {
 
             self.retrieveUser();
         }
+
+        return self;
     },
 
     /** @brief  Observer register notification topics.
@@ -189,13 +199,19 @@ Connexions.prototype = {
         }
         // */
 
-        // /*
+        /*
         cDebug.log('resource-connexions::observe(): topic[ %s ]',
                    topic);
         // */
 
         switch (topic)
         {
+        case 'connexions.syncEnd':
+            // Our addBookmarks worker has completed the sync.
+            self.signal('connexions.bookmarksUpdated');
+            self.state.sync = false;
+            break;
+
         case 'http-on-modify-request':
             /* An HTTP request is about to be sent.
              *
@@ -324,8 +340,29 @@ Connexions.prototype = {
     /** @brief  Signal observers.
      *  @param  subject The subject name;
      *  @param  data    The event data;
+     *
+     *  @return this for a fluent interface.
      */
     signal: function(subject, data) {
+        if (! this.tm.isMainThread)
+        {
+            /* Apparently, nsI* interfaces (e.g. this.os, nsIObserverService)
+             * can only be invoked from the main thread.  Since we're NOT on
+             * the main thread, use MainThread to dispatch a signal request to
+             * the main thread.
+             */
+            /*
+            cDebug.log('resource-connexions::signal(): subject[ %s ] -- '
+                        + 'dispatch to main thread',
+                       subject);
+            // */
+            this.tm.mainThread.dispatch(
+                new MainThread('signal', {subject: subject,
+                                          data:    data}),
+                CI.nsIThread.DISPATCH_SYNC);
+            return this;
+        }
+
         cDebug.log('resource-connexions::signal(): subject[ %s ], data[ %s ]',
                    subject, cDebug.obj2str(data));
         if (data !== undefined)
@@ -340,11 +377,41 @@ Connexions.prototype = {
         this.os.notifyObservers(null, subject,
                                (data === undefined ? '' : data));
         // */
+
+        return this;
+    },
+
+    /** @brief  Retrieve the version of our host application (i.e. Firefox)
+     *
+     *  @return The version information.
+     */
+    getAppVersion: function() {
+        if (this.appVersion < 1)
+        {
+            // assuming we're running under Firefox
+            var appInfo = CC["@mozilla.org/xre/app-info;1"]
+                                .getService(CI.nsIXULAppInfo);
+
+            this.appVversion = parseFloat(appInfo.version);
+        }
+
+        return this.appVersion;
+
+        /*
+        var vc      = CC["@mozilla.org/xpcom/version-comparator;1"]
+                            .getService(CI.nsIVersionComparator);
+
+        if (vc.compare(appInfo.version, "1.5") >= 0) {
+            // running under Firefox 1.5 or later
+        }
+        // */
     },
 
     /** @brief  Initiate the retrieval of the authenticated user.
      *  @param  callback    The callback to invoke upon success:
      *                          function(user)
+     *
+     *  @return this for a fluent interface.
      */
     retrieveUser: function(callback) {
         var self    = this;
@@ -352,7 +419,7 @@ Connexions.prototype = {
         if (self.state.retrieveUser === true)
         {
             // In process
-            return;
+            return self;
         }
         self.state.retrieveUser = true;
 
@@ -394,10 +461,19 @@ Connexions.prototype = {
                 self.state.retrieveUser = false;
             }
         });
+
+        return self;
     },
 
+    /** @brief  Set our localized string bundle.
+     *  @param  strings A string bundle.
+     *
+     *  @return this for a fluent interface.
+     */
     setStrings: function(strings) {
         this.strings = strings;
+
+        return this;
     },
 
     /** @brief  Given an object, return it's "primative" type.
@@ -463,6 +539,7 @@ Connexions.prototype = {
      *  @param  type    The desired type of tagging
      *                  ('page', 'link', 'media');
      *
+     *  @return this for a fluent interface.
      */
     tagPage: function(el, type) {
         var self    = this;
@@ -569,17 +646,22 @@ Connexions.prototype = {
             //self.popupAlert(type);
             break;
         }
+
+        return self;
     },
 
     /** @brief  Present a popup alert
      *  @param  msg     The message to present;
      *
+     *  @return this for a fluent interface.
      */
     popupAlert: function(msg) {
         var promptService =
                 CC["@mozilla.org/embedcomp/prompt-service;1"]
                           .getService(CI.nsIPromptService);
         promptService.alert(this.getWindow(), 'Connexions Alert', msg);
+
+        return this;
     },
 
     /** @brief  Present a confirmation dialog.
@@ -602,6 +684,11 @@ Connexions.prototype = {
      *  @param  callbacks   Desired callbacks:
      *                          {click: function(),
      *                           close: function() }
+     *
+     *  :NOTE: For Firefox <4, this works nicely on Windows but NOT on
+     *         OSX.  On OSX, notifications are completely ignored.
+     *
+     *  @return this for a fluent interface.
      */
     notify: function(title, msg, iconUrl, callbacks) {
         var self    = this;
@@ -609,8 +696,10 @@ Connexions.prototype = {
         cDebug.log('resource-connexions::notify(): title[ %s ], msg[ %s ]',
                     title, msg);
 
-        // Firefox 4+
-        try {
+        if (self.appVersion >= 4.0)
+        {
+          // Firefox 4+
+          try {
             var notify =
                     navigator.mozNotification.createNotification(title, msg,
                                                                   iconUrl);
@@ -630,10 +719,11 @@ Connexions.prototype = {
             }
 
             notify.show();
-            return;
-        } catch(e) {}
+            return this;
+          } catch(e) {}
+        }
 
-        // Firefox 4-
+        // Firefox 4- (or if Firefox 4+ fails)
         var idex;
         try {
             var as      = CC['@mozilla.org/alerts-service;1']
@@ -661,9 +751,13 @@ Connexions.prototype = {
                 self.pendingNotifications.pop();
             }
         }
+
+        return this;
     },
 
     /** @brief  Open the options windows.
+     *
+     *  @return this for a fluent interface.
      */
     showOptions: function() {
         cDebug.log("showOptions()");
@@ -676,6 +770,8 @@ Connexions.prototype = {
                 this.openXulWindow(xul, title, opts);
         }
         this.prefsWindow.focus();
+
+        return this;
     },
 
     /** @brief  Load a new page.
@@ -696,6 +792,8 @@ Connexions.prototype = {
      *         pass along any button or keyboard state, making it extremely
      *         difficult (i.e. impossible) to modify the open behavious based
      *         upon the current keyboard state.
+     *
+     *  @return this for a fluent interface.
      */
     loadPage: function(event, page, where, closeAction) {
         var url = null;
@@ -707,6 +805,10 @@ Connexions.prototype = {
          *  detail              Number of clicks
          *  screenX,screenY     Mouse position relative to tl screen
          *  clientX,clientY     Mouse position relative to tl document
+         *  keyCode
+         *  charCode
+         *  altKey, ctrlKey, shiftKey, metaKey
+         *  which
          *
          * event methods:
          *  stopPropagation()
@@ -724,21 +826,47 @@ Connexions.prototype = {
                         event.shiftKey, event.metaKey,
                         event.which,
                         page, where);
-        return;
         // */
 
         if (where === undefined)
         {
-            // Determine 'where' by the incoming event
-            if (event.altKey || event.metaKey)
+            /* Determine 'where' by the incoming event.
+             *
+             * Modeled after browser.js::whereToOpenLink() (which is
+             * unavailable in this context),  return one of:
+             *      current, tab, tabshifted, window
+             *
+             * Do NOT include 'save' as an option since we don't expect that to
+             * be useful in this context.
+             */
+            if (event.metaKey || event.ctrlKey)
+            {
+                if (event.shiftKey)
+                {
+                    where = 'tabshifted';
+                }
+                else
+                {
+                    where = 'tab';
+                }
+            }
+            /*
+            else if (event.altKey)
+            {
+                where = 'save';
+            }
+            // */
+            else if (event.shiftKey)
             {
                 where = 'window';
             }
-            else if (event.shiftKey)
+            else
             {
-                where = 'tab';
+                where = 'current';
             }
         }
+        cDebug.log("loadPage(): page[ %s ], where[ %s ]",
+                    page, where);
 
         switch (page)
         {
@@ -799,10 +927,14 @@ Connexions.prototype = {
 
             this.openIn( url, where );
         }
+
+        return this;
     },
 
     /** @brief  For contexts that do NOT have 'window', retrieve the CURRENT
      *          window.
+     *
+     *  @return The current window.
      */
     getWindow: function() {
         return this.wm.getMostRecentWindow('navigator:browser');
@@ -810,6 +942,8 @@ Connexions.prototype = {
 
     /** @brief  For contexts that do NOT have 'document', retrieve the CURRENT
      *          document.
+     *
+     *  @return The document of the current window.
      */
     getDocument: function() {
         return this.getWindow().document;
@@ -817,6 +951,8 @@ Connexions.prototype = {
 
     /** @brief  For contexts that do NOT have 'window', retrieve the browser
      *          instance associated with the CURRENT window.
+     *
+     *  @return The browser instance of the current window.
      */
     getBrowser: function() {
         return this.getWindow().getBrowser();
@@ -830,9 +966,12 @@ Connexions.prototype = {
 
     /** @brief  For contexts that do NOT have 'window', retrieve the window and
      *          invoke 'toggleSidebar()'
+     *
+     *  @return this for a fluent interface.
      */
     toggleSidebar: function(id, capture) {
-        return this.getWindow().toggleSidebar(id, capture);
+        this.getWindow().toggleSidebar(id, capture);
+        return this;
     },
 
     /** @brief  Open a new XUL dialog.
@@ -840,6 +979,8 @@ Connexions.prototype = {
      *  @param  title       The window title;
      *  @param  options     Window properties;
      *  @param  data        Data (object) to be passed to the new window;
+     *
+     *  @return The new dialog window
      */
     openXulWindow: function(xul, title, options, data) {
         return this.getWindow().openDialog(xul, title, options, data);
@@ -847,9 +988,14 @@ Connexions.prototype = {
 
     /** @brief  Open the given URL as specified by 'where';
      *  @param  url     The desired URL;
-     *  @param  where   Where to open ( [current], window, tab, popup);
+     *  @param  where   Where to open:
+     *                      [current]   The currently active window/tab;
+     *                      window      A new window;
+     *                      tab         A new tab;
+     *                      tabshifted  A new tab (in the background);
+     *                      popup       In a popup window;
      *
-     *  @return The window;
+     *  @return The (new) window
      */
     openIn: function(url, where) {
         var self    = this;
@@ -889,7 +1035,10 @@ Connexions.prototype = {
 
         if (res === false)
         {
-            // The URL isn't already opened.  Open it now.
+            /* The URL isn't already opened.  Open it now in a way compatable
+             * with browser.js::openUILinkIn(), which is unavailable in this
+             * context.
+             */
             switch (where)
             {
             case 'window':
@@ -897,7 +1046,8 @@ Connexions.prototype = {
                 break;
 
             case 'tab':
-                res = self.openTab( url );
+            case 'tabshifted':
+                res = self.openTab( url, (where === 'tabshifted'));
                 break;
 
             case 'popup':
@@ -940,15 +1090,32 @@ Connexions.prototype = {
 
     /** @brief  Open the given URL in a new tab.
      *  @param  url             The desired url;
+     *  @param  inBackground    Should the new tab remain in the background
+     *                          (true) or receive immediate focus? [ false ]
      *
      *  @return The new tab/window.
      */
-    openTab: function(url) {
-        cDebug.log("openTab(): url[ %s ]", url);
+    openTab: function(url, inBackground) {
+        cDebug.log("openTab(): url[ %s ], inBackground[ %s ]",
+                   url, cDebug.obj2str(inBackground));
 
         var browser = this.getBrowser();
-        var tab     = browser.addTab(url);
+        var tab;
+
+        if (inBackground === undefined) { inBackground = false; }
+
+        /* Firefox 3.6+
+         *  tab = browser.loadOneTab( url, {loadInBackground: inBackground});
+         */
+        tab = browser.loadOneTab( url,
+                                  null,     // referrerURI
+                                  null,     // charset
+                                  null,     // postData
+                                  inBackground);
+        /*
+        tab = browser.addTab(url);
         browser.selectedTab = tab;
+        */
 
         return tab;
     },
@@ -999,6 +1166,14 @@ Connexions.prototype = {
         return this._openWindow(url, name, options);
     },
 
+    /** @brief  Open the bookmark post page in a new popup window.
+     *  @param  url         The url to bookmark;
+     *  @param  name        The name of the new bookmark;
+     *  @param  description The description of the new bookmark;
+     *  @param  tags        A comma-separated list of tags;
+     *
+     *  @return The new window.
+     */
     openTagPage: function(url, name, description, tags) {
         var query   = '?url='+ encodeURIComponent(url)
                     + '&name='+ encodeURIComponent(name);
@@ -1021,10 +1196,15 @@ Connexions.prototype = {
         cDebug.log("openTagPage(): query[ %s ]", query);
         // */
 
-        this.openPopupWindow( this.url('post'+ query),
+        return this.openPopupWindow( this.url('post'+ query),
                                     'Bookmark a Page' );
     },
 
+    /** @brief  Retrieve any selected text from the currently active window.
+     *  @param  maxLen  The maximum number of characters to return;
+     *
+     *  @return The selected text.
+     */
     getSelectedText: function(maxLen) {
         maxLen = maxLen || 4096;
 
@@ -1047,6 +1227,12 @@ Connexions.prototype = {
         return {str: str, len:origLen};
     },
 
+    /** @brief  Given a connexions-relative path, return a complete, absolute
+     *          URL.
+     *  @param  path    The connexions-relative path.
+     *
+     *  @return The equivalent absolute URL.
+     */
     url: function(path) {
         var url = CONNEXIONS_BASE_URL;
         if ((path !== undefined) && (path.length > 0))
@@ -1066,19 +1252,28 @@ Connexions.prototype = {
         return this.user;
     },
 
+    /** @brief  Retrieve the current sync status.
+     *
+     *  @return The current sync status.
+     */
     getSyncStatus: function() {
         return this.state.syncStatus;
     },
 
     /** @brief  Delete all local bookmarks.
+     *
+     *  @return this for a fluent interface.
      */
     delBookmarks: function() {
         this.db.deleteAllBookmarks();
+
+        return this;
     },
 
-    /** @brief  Syncrhonize bookmarks with connexions.
+    /** @brief  Initiate a Sync with connexions.
      *  @param  isReload    If true, delete all local bookmarks first.
      *
+     *  @return this for a fluent interface.
      */
     sync: function(isReload) {
         var self    = this;
@@ -1086,13 +1281,13 @@ Connexions.prototype = {
         if (self.user === null)
         {
             cDebug.log("resource-connexions::sync(): NOT signed in");
-            return;
+            return this;
         }
 
         if (self.state.sync === true)
         {
             // In process
-            return;
+            return this;
         }
         self.state.sync = true;
 
@@ -1149,7 +1344,7 @@ Connexions.prototype = {
                     self.state.syncStatus = {
                         error:      null
                     };
-                    self._syncAddBookmarks(data.result);
+                    self.addBookmarks(data.result);
                 }
             },
             error:   function(xhr, textStatus, error) {
@@ -1175,16 +1370,21 @@ Connexions.prototype = {
                 }
             }
         });
+
+        return this;
     },
 
     /** @brief  If a sync is in progress, cancel it.
      *
+     *  @return this for a fluent interface.
      */
     syncCancel: function() {
         if (this.state.sync === true)
         {
             this.state.sync = false;
         }
+
+        return this;
     },
 
     /** @brief  Invoke a JsonRpc call.
@@ -1196,6 +1396,8 @@ Connexions.prototype = {
      *                          error:      function(xhr, textStatus, error)
      *                          complete:   function(xhr, textStatus)
      *                          progress:   function(position, totalSize, xhr)
+     *
+     *  @return The active XMLHttpRequest instance.
      */
     jsonRpc: function(method, params, callbacks) {
         var self    = this;
@@ -1372,6 +1574,8 @@ Connexions.prototype = {
 
         // Send the request
         xhr.send( JSON.stringify( rpc ) );
+
+        return xhr;
     },
 
     /** @brief  Convert any namve/value object to an equivalent cookie string.
@@ -1480,6 +1684,81 @@ Connexions.prototype = {
     },
      */
 
+    /** @brief  Given a set of bookmarks retrieved from the server,
+     *          add/update our local cache.
+     *  @param  bookmarks   An array of bookmark objects.
+     *
+     *  :NOTE: This makes use of BookmarksWorker
+     *         (from chrome/resource/bookmarks-worker.js) as a worker thread to
+     *         move bookmark processing off the main UI thread.
+     */
+    addBookmarks: function(bookmarks) {
+        var self    = this;
+
+        if ((self.bookmarksThread === null) && (self.tm !== null))
+        {
+            /* Retrieve the main thread and create a new background thread to
+             * handle bookmarks processing.
+             */
+            self.bookmarksThread = self.tm.newThread(0);
+        }
+
+        cDebug.log('resource-connexions::addBookmarks(): signal worker');
+        self.bookmarksThread.dispatch(new BookmarksWorker(bookmarks),
+                                      CI.nsIThread.DISPATCH_NORMAL);
+    },
+
+    /** @brief  Given a normalized bookmark object, attempt to add it and
+     *          signal any progress.
+     *  @param  bookmark    The normalized bookmark object.
+     *
+     *  :NOTE: This will typically be called from BookmarksWorker
+     *         (chrome/resource/bookmarks-worker.js) when it needs to add
+     *         a bookmark.  We handle things this way because the database
+     *         objects makes use of connexions.signal() which can only be
+     *         invoked form the main thread.
+     *
+     *  @return this for a fluent interface.
+     */
+    addBookmark: function(bookmark) {
+        var self    = this;
+        var res     = self.db.addBookmark(bookmark);
+        if (res !== null)
+        {
+            if (res.addStatus !== undefined)
+            {
+                if (self.state.syncStatus.progress.added === undefined)
+                {
+                    self.state.syncStatus.progress.added   = 0;
+                    self.state.syncStatus.progress.updated = 0;
+                    self.state.syncStatus.progress.ignored = 0;
+                }
+
+                switch (res.addStatus)
+                {
+                case 'created':
+                    self.state.syncStatus.progress.added++;
+                    break;
+
+                case 'updated':
+                    self.state.syncStatus.progress.updated++;
+                    break;
+
+                case 'ignored':
+                    self.state.syncStatus.progress.ignored++;
+                    break;
+                }
+            }
+
+            self.state.syncStatus.progress.current++;
+            self.signal('connexions.syncProgress', self.state.syncStatus);
+        }
+
+        return self;
+    },
+
+    /** @brief  Destroy/unload this instance.
+     */
     destroy: function() {
         this._unloadObservers();
     },
@@ -1488,6 +1767,28 @@ Connexions.prototype = {
      * "Private" methods
      *
      */
+
+    /** @brief  Receive an addBookmarks worker message.
+     *  @param  event   The Post event which SHOULD contain a data item of the
+     *                  form:
+     *                      { type: 'signal | call', ... }
+     */
+    _addBookmarksMessage: function(event) {
+        var self    = this;
+        var info    = event.data;
+
+        switch (info.type)
+        {
+        case 'signal':
+            // Signal the provided 'subject' and 'data'
+            self.signal(info.subject, info.data);
+            break;
+
+        case 'call':
+            self[info.method].apply(self, info.args);
+            break;
+        }
+    },
 
     /** @brief  Open the given URL in a new, normal browser window.
      *  @param  url         The desired url;
@@ -1508,47 +1809,12 @@ Connexions.prototype = {
         return newWindow;
     },
 
-
-    /** @brief  Given a set of bookmarks retrieved from the server,
-     *          add/update our local cache.
-     *  @param  bookmarks   An array of bookmark objects.
-     */
-    _syncAddBookmarks: function(bookmarks) {
-        var self    = this;
-
-        /*
-        cDebug.log('resource-connexions::_syncAddBookmarks(): '
-                    + 'is %smain thread',
-                    (self.tm.isMainThread ? '' : 'NOT '));
-        // */
-
-        if ((self.bookmarksThread === null) && (self.tm !== null))
-        {
-            /* Retrieve the main thread and create a new background thread to
-             * handle bookmarks processing.
-             */
-            self.mainThread      = self.tm.mainThread;
-            self.bookmarksThread = self.tm.newThread(0);
-        }
-
-        if (self.bookmarksThread === null)
-        {
-            /* No threading!!  We COULD invoke it directly, but then the main
-             * UI wouldn't be updated.
-             */
-            throw CR.NS_ERROR_NOT_IMPLEMENTED;
-        }
-
-        cDebug.log('resource-connexions::_syncAddBookmarks(): dispatch thread');
-        self.bookmarksThread.dispatch(new bookmarksThread(bookmarks),
-                                      CI.nsIThread.DISPATCH_NORMAL);
-    },
-
     /** @brief  Establish our state observers.
      */
     _loadObservers: function() {
-        this.os.addObserver(this, "cookie-changed", false);
+        this.os.addObserver(this, "cookie-changed",         false);
         this.os.addObserver(this, "http-on-modify-request", false);
+        this.os.addObserver(this, "connexions.syncEnd",     false);
     },
 
     /** @brief  Establish our state observers.
@@ -1556,33 +1822,36 @@ Connexions.prototype = {
     _unloadObservers: function() {
         this.os.removeObserver(this, "cookie-changed");
         this.os.removeObserver(this, "http-on-modify-request");
+        this.os.removeObserver(this, "connexions.syncEnd");
     }
 };
 
-var connexions = new Connexions();
+var connexions  = new Connexions();
+
+/* Place this at the bottom to mitigate the dependency loop between
+ * connexions.js and bookmarks-worker.js
+ */
+CU.import("resource://connexions/bookmarks-worker.js");
 
 /*****************************************************************************
- * Worker thread and event to add retrieved bookmarks
+ * Interface from a worker thread back to the main thread.
  *
- * Note: Apparently we cannot invoke notifyObservers() from a background
- *       thread.  As a result, we must dispatch a "signalEvent" to the main
- *       thread which will cause the notifyObservers() to be invoked from it's
- *       context.
- *
- * Firefox >= 3, < 4
  */
 
 /** @brief  The signal thread used to invoke connexions.signal within the
  *          context of the main UI thread.
- *  @param  subject     The subject string;
- *  @param  data        The data to include;
+ *  @param  type        The type of call back to the main thread
+ *                      ( signal | call );
+ *  @param  data        Type-specific data:
+ *                          signal: {subject, data}
+ *                          call:   {method,  args}
  */
-var signalEvent = function(subject, data) {
-    this.subject = subject;
-    this.data    = data;
+var MainThread = function(type, data) {
+    this.type = type;
+    this.data = data;
 };
 
-signalEvent.prototype = {
+MainThread.prototype = {
     QueryInterface: function(iid) {
         if (iid.equals(CI.nsIRunnable) ||
             iid.equals(CI.nsISupports))
@@ -1594,250 +1863,17 @@ signalEvent.prototype = {
     },
 
     run: function() {
-        /*
-        cDebug.log('resource-connexions::signalEvent thread: '
-                    + "invoke signal with '%s'",
-                    this.subject);
-        // */
+        var info    = this.data;
 
-        // Signal progress
-        connexions.signal(this.subject, this.data);
-    }
-};
-
-/** @brief  The thread used to invoke connexions.db.addBookmark() within the
- *          context of the main UI thread so the database can then invoke
- *          connexions.signal().
- *  @param  bookmark    The bookmark object;
- */
-var addBookmark = function(bookmark) {
-    this.bookmark = bookmark;
-};
-
-addBookmark.prototype = {
-    QueryInterface: function(iid) {
-        if (iid.equals(CI.nsIRunnable) ||
-            iid.equals(CI.nsISupports))
+        switch (this.type)
         {
-            return this;
+        case 'signal':
+            connexions.signal(info.subject, info.data);
+            break;
+
+        case 'call':
+            connexions[info.method].apply(connexions, info.args);
+            break;
         }
-
-        throw CR.NS_ERROR_NO_INTERFACE;
-    },
-
-    run: function() {
-        /*
-        cDebug.log('resource-connexions::addBookmark thread: '
-                    + "bookmark[ %s ]",
-                    cDebug.obj2str(this.bookmark));
-        // */
-
-        // Add this bookmark and, on success, signal progress.
-        var res = connexions.db.addBookmark(this.bookmark);
-        if (res !== null)
-        {
-            if (res.addStatus !== undefined)
-            {
-                if (connexions.state.syncStatus.progress.added === undefined)
-                {
-                    connexions.state.syncStatus.progress.added   = 0;
-                    connexions.state.syncStatus.progress.updated = 0;
-                    connexions.state.syncStatus.progress.ignored = 0;
-                }
-
-                switch (res.addStatus)
-                {
-                case 'created':
-                    connexions.state.syncStatus.progress.added++;
-                    break;
-
-                case 'updated':
-                    connexions.state.syncStatus.progress.updated++;
-                    break;
-
-                case 'ignored':
-                    connexions.state.syncStatus.progress.ignored++;
-                    break;
-                }
-            }
-
-            connexions.state.syncStatus.progress.current++;
-            connexions.signal('connexions.syncProgress',
-                              connexions.state.syncStatus);
-        }
-    }
-};
-
-/** @brief  The thread used to add bookmarks OFF the main UI thread.
- *  @param  bookmarks   The array of bookmarks to add;
- */
-var bookmarksThread = function(bookmarks) {
-    this.bookmarks = bookmarks;
-};
-
-bookmarksThread.prototype = {
-    QueryInterface: function(iid) {
-        if (iid.equals(CI.nsIRunnable) ||
-            iid.equals(CI.nsISupports))
-        {
-            return this;
-        }
-
-        throw CR.NS_ERROR_NO_INTERFACE;
-    },
-
-    signal: function(subject, data) {
-        connexions.mainThread.dispatch(
-                new signalEvent(subject, data),
-                CI.nsIThread.DISPATCH_SYNC);
-    },
-
-    addBookmark: function(bookmark) {
-        connexions.mainThread.dispatch(
-                new addBookmark(bookmark),
-                CI.nsIThread.DISPATCH_SYNC);
-    },
-
-    /** @brief  Given a date string of the form 'YYYY-MM-DD hh:mm:ss', convert
-     *          it to a UNIX timestamp.
-     *  @param  dateStr     The date string;
-     *
-     *  @return The equivalent UNIX timestamp.
-     */
-    normalizeDate: function(dateStr) {
-        var normalized  = 0;
-        var parts       = dateStr.split(' ');
-        var dateParts   = parts[0].split('-');
-        var timeParts   = parts[1].split(':');
-        var dateInfo    = {
-            year:   parseInt(dateParts[0], 10),
-            month:  parseInt(dateParts[1], 10),
-            day:    parseInt(dateParts[2], 10),
-
-            hour:   parseInt(timeParts[0], 10),
-            min:    parseInt(timeParts[1], 10),
-            sec:    parseInt(timeParts[2], 10)
-        };
-
-        try {
-            var utc  = Date.UTC(dateInfo.year, dateInfo.month-1, dateInfo.day,
-                                dateInfo.hour, dateInfo.min, dateInfo.sec);
-
-            normalized = utc / 1000;
-        } catch (e) {
-            cDebug.log('resource-connexions::bookmarksThread thread: '
-                        +   'normalizeDate() ERROR: %s',
-                        e.message);
-        }
-
-        return normalized;
-    },
-
-    /** @brief  Given an incoming "boolean" value, convert it to a native
-     *          boolean.
-     *  @param  val         The incoming value;
-     *
-     *  @return The equivalent boolean.
-     */
-    normalizeBool: function(val) {
-        return (val ? true : false);
-    },
-
-    /** @brief  Given an incoming bookmark object, normalize it to an object
-     *          acceptable for our local database.
-     *  @param  bookmark    The bookmark object to normalize;
-     *
-     *  The incoming bookmark will have the form:
-     *      userId:         string: useName,
-     *      itemId:         string: itemUrl,
-     *      name:           string,
-     *      description:    string,
-     *      rating:         integer,
-     *      isFavorite:     integer,
-     *      isPrivate:      integer,
-     *      taggedOn:       string: 'YYYY-MM-DD hh:mm:ss',
-     *      updatedOn:      string: 'YYYY-MM-DD hh:mm:ss',
-     *      ratingAvg:      number,
-     *      tags:           [ tag strings ],
-     *
-     *  We need the form:
-     *      url:            string,
-     *      urlHash:        string,
-     *      name:           string,
-     *      description:    string,
-     *      rating:         integer,
-     *      isFavorite:     boolean,
-     *      isPrivate:      boolean,
-     *      taggedOn:       integer: (UNIX Date/Time),
-     *      updatedOn:      integer: (UNIX Date/Time),
-     *      tags:           [ tag strings ],
-     *      visitedOn:      integer: (UNIX Date/Time),
-     *      visitCount:     integer,
-     *      shortcut:       string
-     *
-     *  @return The equivalent normalized bookmark object;
-     */
-    normalizeBookmark: function(bookmark) {
-        var self        = this;
-        var normalized  = {
-            url:            bookmark.itemId,
-          //urlHash:        connexions.md5(bookmark.itemId),
-            name:           bookmark.name,
-            description:    bookmark.description,
-            rating:         bookmark.rating,
-            isFavorite:     self.normalizeBool(bookmark.isFavorite),
-            isPrivate:      self.normalizeBool(bookmark.isPrivate),
-            taggedOn:       self.normalizeDate(bookmark.taggedOn),
-            updatedOn:      self.normalizeDate(bookmark.updatedOn),
-            tags:           bookmark.tags,
-        };
-    
-        return normalized;
-    },
-
-    run: function() {
-        var self        = this;
-        var bookmarks   = self.bookmarks;
-
-        /*
-        cDebug.log('resource-connexions::bookmarksThread thread: %s bookmarks',
-                   bookmarks.length);
-        // */
-
-        // Signal our first progress update
-        connexions.state.syncStatus.progress = {
-            total:      bookmarks.length,
-            current:    0
-        };
-
-        self.signal('connexions.syncProgress', connexions.state.syncStatus);
-        for each (var bookmark in bookmarks)
-        {
-            if (connexions.state.sync !== true)
-            {
-                // CANCEL the sync
-                break;
-            }
-
-            /*
-            cDebug.log('resource-connexions::bookmarksThread thread: '
-                        +   'bookmark[ %s ]',
-                        cDebug.obj2str(bookmark));
-            // */
-
-            var normalized  = self.normalizeBookmark(bookmark);
-
-            /*
-            cDebug.log('resource-connexions::bookmarksThread thread: '
-                        +   'normalized[ %s ]',
-                        cDebug.obj2str(normalized));
-            // */
-
-            self.addBookmark( normalized );
-        }
-
-        self.signal('connexions.syncEnd', connexions.state.syncStatus);
-        self.signal('connexions.bookmarksUpdated');
-        connexions.state.sync = false;
     }
 };
