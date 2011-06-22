@@ -238,7 +238,22 @@ CSidebar.prototype = {
     search: function(term) {
         cDebug.log("cSidebar::search(): term[ %s ]", term);
 
-        // :TODO:
+        // Locate all matching bookmarks
+        var sort      = this.bookmarksSort.by +' '+ this.bookmarksSort.order;
+        var bookmarks = connexions.db.getBookmarksByTerm( term, sort );
+
+        cDebug.log('ff-sidebar::search():bookmarks[ %s ]',
+                   cDebug.obj2str(bookmarks));
+        this._renderBookmarks(bookmarks);
+
+        // Locate all matching tags
+        sort     = this.tagsSort.by +' '+ this.tagsSort.order;
+        var tags = connexions.db.getTagsByTerm( term, sort );
+
+        cDebug.log('ff-sidebar::search():tags[ %s ]',
+                   cDebug.obj2str(tags));
+
+        this._renderTags(tags);
     },
 
     /** @brief  Given an array of tag objects, filter the visible bookmarks
@@ -250,14 +265,20 @@ CSidebar.prototype = {
         cDebug.log('ff-sidebar::bookmarksFilterByTags():select tags[ %s ]',
                    cDebug.obj2str(tags));
 
-        /* :TODO: connexions.db.getBookmarksByTags( tags );
-        var bookmarks   = connexions.db.getBookmarksByTags( tags );
+        var sort      = this.bookmarksSort.by +' '+ this.bookmarksSort.order;
+        var bookmarks = connexions.db.getBookmarksByTags( tags, sort );
 
         cDebug.log('ff-sidebar::bookmarksFilterByTags():bookmarks[ %s ]',
                    cDebug.obj2str(bookmarks));
-        // */
-    },
+        this._renderBookmarks(bookmarks);
 
+        /* Now, update the tags to show only those used by the current
+         * bookmarks
+        sort       = this.tagsSort.by +' '+ this.tagsSort.order;
+        var bmTags = connexions.db.getTagsByBookmarks( bookmarks, sort );
+        this._renderTags(bmTags, tags);
+         */
+    },
 
     /** @brief  Open the URL of the given item.
      *  @param  event   The triggering event;
@@ -435,7 +456,7 @@ CSidebar.prototype = {
         cDebug.log("cSidebar::sortBookmarks(): by[ %s ], order[ %s ]",
                    this.bookmarksSort.by, this.bookmarksSort.order);
 
-        this._renderBookmarks( );
+        this._refreshBookmarks( );
     },
 
     /** @brief  Sort tags, possibly changing the field or order.
@@ -455,7 +476,7 @@ CSidebar.prototype = {
         cDebug.log("cSidebar::sortTags(): by[ %s ], order[ %s ]",
                    this.tagsSort.by, this.tagsSort.order);
 
-        this._renderTags( );
+        this._refreshTags( );
     },
 
     unload: function() {
@@ -493,7 +514,7 @@ CSidebar.prototype = {
             if (self.syncing !== true)
             {
                 // Re-render the bookmarks
-                self._renderBookmarks();
+                self._refreshBookmarks();
             }
             break;
 
@@ -511,7 +532,7 @@ CSidebar.prototype = {
             if (self.syncing !== true)
             {
                 // Re-render the tags
-                self._renderTags();
+                self._refreshTags();
             }
             break;
 
@@ -529,8 +550,8 @@ CSidebar.prototype = {
 
         case "connexions.tablesEmptied":
             // (Re)Render bookmarks and tags
-            self._renderBookmarks();
-            self._renderTags();
+            self._refreshBookmarks();
+            self._refreshTags();
 
             break;
         }
@@ -575,8 +596,8 @@ CSidebar.prototype = {
 
 
         // Render the bookmarks and tags
-        self._renderBookmarks();
-        self._renderTags();
+        self._refreshBookmarks();
+        self._refreshTags();
     },
 
     _emptyListItems: function(itemList) {
@@ -590,7 +611,7 @@ CSidebar.prototype = {
         }
     },
 
-    _renderBookmarks: function() {
+    _refreshBookmarks: function() {
         var countBookmarks  = this.db.getTotalBookmarks();
 
         this.elBookmarksCount.value = countBookmarks;
@@ -599,6 +620,26 @@ CSidebar.prototype = {
         this._update_bookmarksSort_ui();
 
         var bookmarks   = this.db.getBookmarks(sort);
+
+        this._renderBookmarks(bookmarks);
+    },
+
+    _refreshTags: function() {
+        var countTags       = this.db.getTotalTags();
+
+        this.elTagsCount.value      = countTags;
+
+        var sort    = this.tagsSort.by +' '+ this.tagsSort.order;
+        this._update_tagsSort_ui();
+
+        var tags    = this.db.getAllTags(sort);
+
+        this._renderTags(tags);
+    },
+
+    _renderBookmarks: function(bookmarks) {
+        var countBookmarks  = bookmarks.length;
+        this.elBookmarksCount.value = countBookmarks;
 
         /*
         cDebug.log('cSidebar::_renderBookmarks(): '
@@ -668,15 +709,9 @@ CSidebar.prototype = {
         }
     },
 
-    _renderTags: function(sortOrder) {
-        var countTags       = this.db.getTotalTags();
-
+    _renderTags: function(tags, selected) {
+        var countTags       = tags.length;
         this.elTagsCount.value      = countTags;
-
-        var sort    = this.tagsSort.by +' '+ this.tagsSort.order;
-        this._update_tagsSort_ui();
-
-        var tags    = this.db.getAllTags(sort);
 
         /*
         cDebug.log('cSidebar::_renderTags(): '
@@ -686,6 +721,7 @@ CSidebar.prototype = {
 
         // Empty any current items and re-fill
         this._emptyListItems( this.elTagList );
+        this.elTagList.clearSelection();
         for (var idex = 0; idex < tags.length; idex++)
         {
             var tag         = tags[idex];
@@ -706,6 +742,30 @@ CSidebar.prototype = {
             row.appendChild( name );
             row.appendChild( freq );
             this.elTagList.appendChild( row );
+
+            if (selected !== undefined)
+            {
+                cDebug.log('cSidebar::_render(): is tag selected? '
+                            +   'selected[ %s ], tag[ %s ]',
+                            cDebug.obj2str(selected),
+                            cDebug.obj2str(tag));
+
+                // See if this tag should be selected
+                for (var jdex = 0; jdex < selected.length; jdex++)
+                {
+                    var selTag  = selected[jdex];
+
+                    if (tag.id === selTag.id)
+                    {
+                        cDebug.log('cSidebar::_render(): tag IS selected: '
+                                    +   'tag[ %s ]',
+                                    cDebug.obj2str(tag));
+
+                        this.elTagList.addItemToSelection( row );
+                        break;
+                    }
+                }
+            }
 
             /*
             cDebug.log('cSidebar::_render(): tag %s '
