@@ -14,6 +14,11 @@ var CU  = Components.utils;
 
 CU.import("resource://connexions/debug.js");
 
+var wrapper = new Components.Constructor(
+                        "@mozilla.org/storage/statement-wrapper;1",
+                        CI.mozIStorageStatementWrapper,
+                        "initialize");
+
 function Connexions_Db()
 {
     this.init();
@@ -620,9 +625,7 @@ Connexions_Db.prototype = {
     {
         var fname       = 'getBookmarks';
         var self        = this;
-        var order       = (sortOrder
-                            ? sortOrder.split(/\s+/)
-                            : [ 'name', 'asc' ]);
+        var order       = self._bookmarksOrder(sortOrder);
         var stmts       = self.dbStatements[ fname ];
         var bookmarks   = [];
 
@@ -632,40 +635,7 @@ Connexions_Db.prototype = {
             self.dbStatements[ fname ] = stmts = {};
         }
 
-        switch (order[0])
-        {
-        case 'url':
-        case 'urlHash':
-        case 'name':
-        case 'description':
-        case 'rating':
-        case 'isFavorite':
-        case 'isPrivate':
-        case 'taggedOn':
-        case 'updatedOn':
-        case 'vistedOn':
-        case 'visitCount':
-        case 'shortcut':
-            break;
-
-        default:
-            order[0] = 'visitedOn';
-            break;
-        }
-
-        switch (order[1].toLowerCase())
-        {
-        case 'asc':     order[1] = 'ASC';   break;
-        case 'desc':
-        default:        order[1] = 'DESC';  break;
-        }
-        order = order.join(' ');
-
-        /*
-        cDebug.log("Connexions_Db::%s(): order[ %s ]", fname, order);
-        // */
-
-        var stmt = stmts[ order ];
+        var stmt        = stmts[ order ];
         try {
             if (stmt === undefined)
             {
@@ -689,46 +659,58 @@ Connexions_Db.prototype = {
     },
 
     /** @brief  Retrieve a set of bookmarks that use all of the provided tags.
-     *  @param  tags    An array of tag objects;
+     *  @param  tags        An array of tag objects;
+     *  @param  sortOrder   The desired sort order:
+     *                          A valid field:
+     *                              url, urlHash, name, description, rating,
+     *                              isFavorite, isPrivate, taggedOn, updatedOn,
+     *                              visitedOn, visitCount, shortcut
+     *                          A sort order:
+     *                              ASC, DESC
      *
      *  @return An array of bookmark objects;
      */
-    getBookmarksByTags: function(tags)
+    getBookmarksByTags: function(tags, sortOrder)
     {
         var fname   = 'getBookmarksByTags';
         var self    = this;
-        var stmt    = self.dbStatements[ fname ];
-        if (stmt === undefined)
+
+        if ( (! tags) || (tags.length < 1))
         {
-            var sql = "SELECT b.* FROM bookmarks as b "
-                    +   "INNER JOIN ("
-                    +     "SELECT bt.*,COUNT(DISTINCT bt.tagId) AS tagCount "
-                    +       "FROM bookmarkTags AS bt "
-                    +       "WHERE (bt.tagId IN (:tags)) "
-                    +       "GROUP BY bt.bookmarkId"
-                    +       "HAVING (tagCount=:tagCount)) AS bt "
-                    +       "ON b.rowid=bt.bookmarkId";
-            stmt = self.dbConnection.createStatement(sql);
-            self.dbStatements[ fname ] = stmt;
+            return self.getBookmarks(sortOrder);
         }
 
-        var bookmarks   = null;
+        /* Since mozIStorageStatement provides no way to bind an array of
+         * parameters, we have to construct this statement from scratch
+         * everytime we need it.
+         */
+        var order   = self._bookmarksOrder(sortOrder);
+        var tagIds  = [];
+        for (var idex in tags)
+        {
+            var tag = tags[idex];
+            tagIds.push(tag.id);
+        }
+        cDebug.log("Connexions_Db::%s(): %s tags[ %s ]",
+                   fname, tagIds.length,
+                   cDebug.obj2str(tagIds));
+
+        var sql = "SELECT b.rowid,b.* FROM bookmarks as b "
+                +   "INNER JOIN ("
+                +     "SELECT bt.*,COUNT(DISTINCT bt.tagId) AS tagCount "
+                +       "FROM bookmarkTags AS bt "
+                +       "WHERE (bt.tagId IN ("+ tagIds.join(',') +")) "
+                +       "GROUP BY bt.bookmarkId "
+                +       "HAVING (tagCount="+ tagIds.length +")) AS bt "
+                +   "ON b.rowid=bt.bookmarkId "
+                +   "ORDER BY "+ order +",b.name ASC";
+
+        cDebug.log("Connexions_Db::%s(): sql[ %s ]",
+                   fname, sql);
+
+        var stmt        = self.dbConnection.createStatement(sql);
+        var bookmarks   = [];
         try {
-            var params  = stmt.newBindingParamsArray();
-            var nTags   = 0;
-            var bp;
-            for (var idex in tags)
-            {
-                var tag = tags[idex];
-                bp = params.newBindingParams();
-                bp.bindByName('tags', tag.id);
-                nTags++;
-            }
-            bp = params.newBindingParams();
-            bp.bindByName('tagCount', nTags);
-
-            stmt.bindParameters(params);
-
             while (stmt.executeStep())
             {
                 var bookmark    = self._bookmarkFromRow(stmt);
@@ -738,6 +720,59 @@ Connexions_Db.prototype = {
             cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
         }
         stmt.reset();
+
+        return bookmarks;
+    },
+
+    /** @brief  Retrieve a set of bookmarks that match the given term.
+     *  @param  term        The term to match (on url, name, description)
+     *  @param  sortOrder   The desired sort order:
+     *                          A valid field:
+     *                              url, urlHash, name, description, rating,
+     *                              isFavorite, isPrivate, taggedOn, updatedOn,
+     *                              visitedOn, visitCount, shortcut
+     *                          A sort order:
+     *                              ASC, DESC
+     *
+     *  @return An array of bookmark objects;
+     */
+    getBookmarksByTerm: function(term, sortOrder)
+    {
+        var fname       = 'getBookmarksByTerm';
+        var self        = this;
+        var order       = self._bookmarksOrder(sortOrder);
+        var stmts       = self.dbStatements[ fname ];
+        var bookmarks   = [];
+
+        if (stmts === undefined)
+        {
+            // For the various sort orders
+            self.dbStatements[ fname ] = stmts = {};
+        }
+
+        var stmt        = stmts[ order ];
+        try {
+            if (stmt === undefined)
+            {
+                var sql = 'SELECT b.rowid,b.* FROM bookmarks AS b '
+                        +   'WHERE (b.url LIKE ?1) OR '
+                        +         '(b.name LIKE ?1) OR '
+                        +         '(b.description LIKE ?1) '
+                        +   'ORDER BY '+ order +',b.name ASC';
+                stmt = self.dbConnection.createStatement(sql);
+                stmts[ order ] = stmt;
+            }
+            stmt.bindUTF8StringParameter(0, '%'+ term +'%');
+
+            while (stmt.executeStep())
+            {
+                var bookmark    = self._bookmarkFromRow(stmt);
+                bookmarks.push(bookmark);
+            }
+        } catch(e) {
+            cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
+        }
+        if (stmt)   { stmt.reset(); }
 
         return bookmarks;
     },
@@ -1034,9 +1069,7 @@ Connexions_Db.prototype = {
     {
         var fname   = 'getAllTags';
         var self    = this;
-        var order   = (sortOrder
-                        ? sortOrder.split(/\s+/)
-                        : [ 'name', 'asc' ]);
+        var order   = self._tagsOrder(sortOrder);
         var stmts   = self.dbStatements[ fname ];
         var tags    = [];
 
@@ -1046,27 +1079,7 @@ Connexions_Db.prototype = {
             self.dbStatements[ fname ] = stmts = {};
         }
 
-        switch (order[0])
-        {
-        case 'name':
-        case 'frequency':
-            break;
-
-        default:
-            order[0] = 'frequency';
-            break;
-        }
-
-        switch (order[1].toLowerCase())
-        {
-        case 'asc':     order[1] = 'ASC';   break;
-
-        case 'desc':
-        default:        order[1] = 'DESC';  break;
-        }
-        order = order.join(' ');
-
-        var stmt = stmts[ order ];
+        var stmt    = stmts[ order ];
         try {
             if (stmt === undefined)
             {
@@ -1091,6 +1104,121 @@ Connexions_Db.prototype = {
 
         return tags;
     },
+
+    /** @brief  Retrieve a set of tags used by the given bookmarks.
+     *  @param  bookmarks   An array of bookmark objects;
+     *  @param  sortOrder   The desired sort order:
+     *                          A valid field:
+     *                              url, urlHash, name, description, rating,
+     *                              isFavorite, isPrivate, taggedOn, updatedOn,
+     *                              visitedOn, visitCount, shortcut
+     *                          A sort order:
+     *                              ASC, DESC
+     *
+     *
+     *  @return An array of tag objects;
+     */
+    getTagsByBookmarks: function(bookmarks, sortOrder)
+    {
+        var fname   = 'getTagsByBookmarks';
+        var self    = this;
+        var order   = self._tagsOrder(sortOrder);
+
+        /* Since mozIStorageStatement provides no way to bind an array of
+         * parameters, we have to construct this statement from scratch
+         * everytime we need it.
+         */
+        var bookmarkIds = [];
+        for (var idex in bookmarks)
+        {
+            var bookmark = bookmarks[idex];
+            bookmarkIds.push(bookmark.id);
+        }
+        cDebug.log("Connexions_Db::%s(): %s bookmarks[ %s ]",
+                   fname, bookmarkIds.length,
+                   cDebug.obj2str(bookmarkIds));
+
+        var sql = "SELECT t.rowid,t.name,"
+                +        "COUNT(DISTINCT bt.bookmarkId) as frequency "
+                +   "FROM tags as t, bookmarkTags as bt "
+                +   "WHERE (bt.bookmarkId IN ("+bookmarkIds.join(',')+")) "
+                +   "GROUP BY t.rowId "
+                +   "ORDER BY "+ order +",t.name ASC";
+
+        cDebug.log("Connexions_Db::%s(): sql[ %s ]",
+                   fname, sql);
+
+        var stmt        = self.dbConnection.createStatement(sql);
+        var tags        = [];
+        try {
+            while (stmt.executeStep())
+            {
+                var tag = self._tagFromRow(stmt);
+                tags.push(tag);
+            }
+        } catch(e) {
+            cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
+        }
+        stmt.reset();
+
+        return tags;
+    },
+
+    /** @brief  Retrieve a set of tags that match the given term.
+     *  @param  term        The term to match (on url, name, description)
+     *  @param  sortOrder   The desired sort order:
+     *                          A valid field:
+     *                              url, urlHash, name, description, rating,
+     *                              isFavorite, isPrivate, taggedOn, updatedOn,
+     *                              visitedOn, visitCount, shortcut
+     *                          A sort order:
+     *                              ASC, DESC
+     *
+     *  @return An array of tag objects;
+     */
+    getTagsByTerm: function(term, sortOrder)
+    {
+        var fname   = 'getTagsByTerm';
+        var self    = this;
+        var order   = self._tagsOrder(sortOrder);
+        var stmts   = self.dbStatements[ fname ];
+        var tags    = [];
+
+        if (stmts === undefined)
+        {
+            // For the various sort orders
+            self.dbStatements[ fname ] = stmts = {};
+        }
+
+        var stmt        = stmts[ order ];
+        try {
+            if (stmt === undefined)
+            {
+                var sql = 'SELECT t.rowid,t.name,COUNT(bt.tagId) as frequency '
+                        +   'FROM tags as t,bookmarkTags as bt '
+                        +   'WHERE (t.name LIKE ?1) AND (t.rowid = bt.tagId) '
+                        +   'GROUP BY t.rowid '
+                        +   'ORDER BY '+ order +',t.name ASC';
+                cDebug.log("Connexions_Db::%s(): sql [ %s ]", fname, sql);
+
+                stmt = self.dbConnection.createStatement(sql);
+                stmts[ order ] = stmt;
+            }
+            stmt.bindUTF8StringParameter(0, '%'+ term +'%');
+
+            while (stmt.executeStep())
+            {
+                var tag    = self._tagFromRow(stmt);
+                tags.push(tag);
+            }
+        } catch(e) {
+            cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
+        }
+        if (stmt)   { stmt.reset(); }
+
+        return tags;
+    },
+
 
     /************************************************************************
      * state table methods
@@ -1337,6 +1465,102 @@ Connexions_Db.prototype = {
      *
      */
 
+    /** @brief  Prepare a bookmark sort order string.
+     *  @param  sortOrder   The desired sort order:
+     *                          A valid field:
+     *                              url, urlHash, name, description, rating,
+     *                              isFavorite, isPrivate, taggedOn, updatedOn,
+     *                              visitedOn, visitCount, shortcut
+     *                          A sort order:
+     *                              ASC, DESC
+     *
+     *  @return A validated bookmark sort order string;
+     */
+    _bookmarksOrder: function(sortOrder)
+    {
+        var self        = this;
+        var order       = (sortOrder
+                            ? sortOrder.split(/\s+/)
+                            : [ 'name', 'asc' ]);
+
+        switch (order[0])
+        {
+        case 'url':
+        case 'urlHash':
+        case 'name':
+        case 'description':
+        case 'rating':
+        case 'isFavorite':
+        case 'isPrivate':
+        case 'taggedOn':
+        case 'updatedOn':
+        case 'vistedOn':
+        case 'visitCount':
+        case 'shortcut':
+            break;
+
+        default:
+            order[0] = 'visitedOn';
+            break;
+        }
+
+        switch (order[1].toLowerCase())
+        {
+        case 'asc':     order[1] = 'ASC';   break;
+        case 'desc':
+        default:        order[1] = 'DESC';  break;
+        }
+        order = order.join(' ');
+
+        /*
+        cDebug.log("Connexions_Db::_bookmarksOrder(): order[ %s ]", order);
+        // */
+
+        return order;
+    },
+
+    /** @brief  Prepare a tag sort order string.
+     *  @param  sortOrder   The desired sort order:
+     *                          A valid field:
+     *                              name, count
+     *                          A sort order:
+     *                              ASC, DESC
+     *
+     *  @return A validated tag sort order string;
+     */
+    _tagsOrder: function(sortOrder)
+    {
+        var self        = this;
+        var order       = (sortOrder
+                            ? sortOrder.split(/\s+/)
+                            : [ 'name', 'asc' ]);
+
+        switch (order[0])
+        {
+        case 'name':
+        case 'frequency':
+            break;
+
+        default:
+            order[0] = 'frequency';
+            break;
+        }
+
+        switch (order[1].toLowerCase())
+        {
+        case 'asc':     order[1] = 'ASC';   break;
+        case 'desc':
+        default:        order[1] = 'DESC';  break;
+        }
+        order = order.join(' ');
+
+        /*
+        cDebug.log("Connexions_Db::_tagsOrder(): order[ %s ]", order);
+        // */
+
+        return order;
+    },
+
     /** @brief  Execute the given SQL as a transaction.
      *  @param  sql     The sql to execute.
      *
@@ -1412,7 +1636,7 @@ Connexions_Db.prototype = {
     },
 
     /** @brief  Create the tables indicated by this.dbSchema.tables.
-     *  @param  dbConnexions    The (new) dbConnexions created by _dbCreate();
+     *  @param  dbConnection    The (new) dbConnection created by _dbCreate();
      *
      *  @return this    For a fluent interface.
      */
@@ -1439,7 +1663,7 @@ Connexions_Db.prototype = {
     },
 
     /** @brief  Create the indices indicated by this.dbSchema.indices.
-     *  @param  dbConnexions    The (new) dbConnexions created by _dbCreate();
+     *  @param  dbConnection    The (new) dbConnection created by _dbCreate();
      *
      *  @return this    For a fluent interface.
      */
@@ -1471,6 +1695,7 @@ Connexions_Db.prototype = {
     _bookmarkFromRow: function(stmt)
     {
         var obj = {};
+
         try {
             obj.id          = stmt.getInt64(0);
             obj.url         = stmt.getUTF8String(1);
