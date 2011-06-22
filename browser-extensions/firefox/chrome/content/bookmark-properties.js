@@ -65,7 +65,7 @@ CBookmark.prototype = {
         {
             self.el[key] = document.getElementById('bookmark-'+ key);
 
-            if (self.el[key] && bookmark[key])
+            if (self.el[key] && (bookmark[key] !== undefined))
             {
                 var val = bookmark[key];
                 switch (key)
@@ -84,6 +84,10 @@ CBookmark.prototype = {
                         date = new Date ( date * 1000 );
                         val  = date.toLocaleString();
                     }
+                    else
+                    {
+                        val = '';
+                    }
                     break;
 
                 case 'tags':
@@ -95,6 +99,11 @@ CBookmark.prototype = {
                     val = tags.join(', ');
                     break;
                 }
+
+                /*
+                cDebug.log('bookmark-properties::load(): %s value[ %s ]',
+                           key, val);
+                // */
 
                 self.el[key].value = val;
             }
