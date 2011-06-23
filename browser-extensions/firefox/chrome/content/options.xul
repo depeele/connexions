@@ -64,6 +64,16 @@
                       orient="vertical">
               <caption label="&connexions.prefs.sync.caption;"/>
               <vbox id="connexions-prefs-sync-buttons">
+                <hbox>
+                  <label value="&connexions.prefs.sync.period.pre;" />
+                  <textbox id="connexions-prefs-sync-period"
+                          class='sync-period'
+                          type='number'
+                          max='1440'
+                          hidespinbuttons='false' />
+                  <label value="&connexions.prefs.sync.period.post;"
+                         flex="1" />
+                </hbox>
                 <hbox class='syncNow-box'
                       align="center">
                   <button id="connexions-prefs-sync-now"

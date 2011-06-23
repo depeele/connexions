@@ -12,6 +12,19 @@
 }
 .sync-box {
 }
+
+.sync-box label, .sync-box .sync-period, .sync-box spinbuttons {
+  display:        inline-block;
+  vertical-align: middle;
+}
+.sync-box .sync-period {
+  /*width:          4em;*/
+  /*margin-right:   0;*/
+}
+.sync-box spinbuttons {
+  /*margin-left:    0;*/
+}
+
 .syncNow-box {
 }
 .syncFull-box {

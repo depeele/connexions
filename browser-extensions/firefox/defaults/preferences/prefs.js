@@ -1,3 +1,4 @@
+pref("extensions.connexions.syncMinutes",                 5);
 pref("extensions.connexions.sidebar.sortOrder.bookmarks", "name ASC");
 pref("extensions.connexions.sidebar.sortOrder.tags",      "name ASC");
 
