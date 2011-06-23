@@ -722,16 +722,21 @@ $.widget("connexions.bookmark", {
          */
         $dialog.find('.userInput').html( html );
         var $form       = $dialog.find('form:first');
+        var isModal     = false;
+        var $overlayed  = $('body');
 
         self.disable();
+
         $dialog.dialog({
             autoOpen:   true,
             title:      title,
             dialogClass:'ui-dialog-bookmarkPost',
             width:      480,
             resizable:  false,
-            modal:      true,
+            modal:      isModal,
             open:       function(event, ui) {
+                $overlayed.overlay($dialog.maxZindex() - 2);
+
                 // Event bindings that can wait
                 $form.bind('saved.bookmark', function(e, data) {
                     if (isEdit === true)
@@ -758,6 +763,8 @@ $.widget("connexions.bookmark", {
                 });
             },
             close:      function(event, ui) {
+                $overlayed.unoverlay();
+
                 $form.unbind('.bookmark')
                      .bookmarkPost('destroy');
                 $dialog.dialog('destroy');

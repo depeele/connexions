@@ -42,7 +42,7 @@ $.widget("ui.tagInput", $.ui.input, {
                                      */
 
         cssClass:       {
-            container:  'tagInput',
+            container:  'tagInput ui-corner-all ui-state-default',
             origInput:  'rawInput',
             list:       'tagList',
             item:       'tag',

@@ -779,34 +779,78 @@
     };
 
     /*************************************************************************
+     * z-index
+     *
+     */
+
+    /** @brief  For any element, locate the maximum z-index in its anscestor
+     *          chain.
+     *
+     *  @return The maximum z-index.
+     */
+    $.fn.maxZindex = function() {
+        var maxZ    = 0;
+
+        $(this).parents().each(function() {
+            //if ((! this) || (this.length < 1))  return;
+
+            var thisZ   = $(this).css('z-index');
+            if (!isNaN(thisZ)) maxZ = Math.max(maxZ, thisZ);
+        });
+
+        return maxZ;
+    };
+
+    /*************************************************************************
      * Overlay any element.
      *
      */
-    $.fn.mask = function() {
+    $.fn.overlay = function(zIndex) {
         return this.each(function() {
-            var $spin       = $('#pageHeader h1 a img');
             var $el         = $(this);
-            var zIndex      = $el.css('z-index');
-            if (zIndex === 'auto')
-            {
-                zIndex = 99999;
-            }
-            else
-            {
-                zIndex++;
-            }
-
+            var myZ         = (zIndex === undefined
+                                ? $el.maxZindex()
+                                : zIndex) + 1;
             var $overlay    = $('<div></div>')
                                     .addClass('ui-widget-overlay')
                                     .appendTo($el)
-                                    .css({width:    $el.outerWidth(),
+                                    .css({position: 'absolute',
+                                          top:      0,
+                                          left:     0,
+                                          width:    $el.outerWidth(),
                                           height:   $el.outerHeight(),
-                                          'z-index':zIndex});
+                                          'z-index':myZ});
+            if ($.fn.bgiframe)
+            {
+                $overlay.bgiframe();
+            }
+
+            $el.data('connexions-overlay', $overlay);
+        });
+    };
+
+    $.fn.unoverlay = function() {
+        return this.each(function() {
+            var $el         = $(this);
+            var $overlay    = $el.data('connexions-overlay');
+
+            if ($overlay && ($overlay.length > 0))
+            {
+                $overlay.remove();
+            }
+        });
+    };
+
+    $.fn.mask = function() {
+        return this.each(function() {
+            var $spin       = $('#pageHeader h1 a img');
+
+            $(this).overlay();
 
             if ($spin.length > 0)
             {
                 var url = $spin.attr('src');
-                if (url.indexOf('-spinner.gif') > 0)
+                if (url.indexOf('-spinner.gif') < 0)
                 {
                     $spin.attr('src', url.replace('.gif', '-spinner.gif') );
                 }
@@ -822,15 +866,16 @@
     $.fn.unmask = function() {
         return this.each(function() {
             var $spin       = $('#pageHeader h1 a img');
-            var $el         = $(this);
-            var $overlay    = $el.find('.ui-widget-overlay');
 
-            $overlay.remove();
+            $(this).unoverlay();
 
             if ($spin.length > 0)
             {
                 var url = $spin.attr('src');
-                $spin.attr('src', url.replace('-spinner.gif', '.gif') );
+                if (url.indexOf('-spinner.gif') > 0)
+                {
+                    $spin.attr('src', url.replace('-spinner.gif', '.gif') );
+                }
             }
         });
     };
