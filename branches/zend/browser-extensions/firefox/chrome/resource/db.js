@@ -334,7 +334,7 @@ Connexions_Db.prototype = {
 
         var id  = null;
         try {
-            var now = (new Date()).getTime() * 1000;
+            var now = (new Date()).getTime() / 1000;
 
             stmt.bindUTF8StringParameter(0, bookmark.url);
             stmt.bindUTF8StringParameter(1, (bookmark.urlHash
@@ -354,7 +354,7 @@ Connexions_Db.prototype = {
             stmt.bindInt64Parameter(8, (bookmark.updatedOn
                                               ? bookmark.updatedOn : now));
             stmt.bindInt64Parameter(9, (bookmark.visitedOn
-                                              ? bookmark.visitedOn : now));
+                                              ? bookmark.visitedOn : 0));
             stmt.bindInt32Parameter(10, (bookmark.visitCount
                                               ? bookmark.visitedCount : 0));
             stmt.bindUTF8StringParameter(11, (bookmark.shortcut
@@ -522,7 +522,7 @@ Connexions_Db.prototype = {
 
         var res     = true;
         try {
-            var now = (new Date()).getTime() * 1000;
+            var now = (new Date()).getTime() / 1000;
 
             stmt.bindUTF8StringParameter(0, bookmark.url);
             stmt.bindUTF8StringParameter(1, (bookmark.urlHash
@@ -542,7 +542,7 @@ Connexions_Db.prototype = {
             stmt.bindInt64Parameter(8, (bookmark.updatedOn
                                               ? bookmark.updatedOn : now));
             stmt.bindInt64Parameter(9, (bookmark.visitedOn
-                                              ? bookmark.visitedOn : now));
+                                              ? bookmark.visitedOn : 0));
             stmt.bindInt32Parameter(10, (bookmark.visitCount
                                               ? bookmark.visitedCount : 0));
             stmt.bindUTF8StringParameter(11, (bookmark.shortcut
@@ -596,15 +596,21 @@ Connexions_Db.prototype = {
             self.dbStatements[ fname ] = stmt;
         }
 
-        try {
-            var now = (new Date()).getTime() / 1000;
+        var bookmark    = self.getBookmarkByUrl(url);
+        if (bookmark !== null)
+        {
+            try {
+                var now = (new Date()).getTime() / 1000;
 
-            stmt.bindInt64Parameter(0, now);    // visitedOn
-            stmt.bindUTF8StringParameter(1, url);
+                stmt.bindInt64Parameter(0, now);    // visitedOn
+                stmt.bindUTF8StringParameter(1, url);
 
-            stmt.execute();
-        } catch(e) {
-            cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
+                stmt.execute();
+
+                self.signal('connexions.bookmarkUpdated', bookmark.id);
+            } catch(e) {
+                cDebug.log("Connexions_Db::%s(): ERROR [ %s ]", fname, e);
+            }
         }
 
         return self;
@@ -1142,6 +1148,7 @@ Connexions_Db.prototype = {
                 +        "COUNT(DISTINCT bt.bookmarkId) as frequency "
                 +   "FROM tags as t, bookmarkTags as bt "
                 +   "WHERE (bt.bookmarkId IN ("+bookmarkIds.join(',')+")) "
+                +     "AND (bt.tagId = t.rowid) "
                 +   "GROUP BY t.rowId "
                 +   "ORDER BY "+ order +",t.name ASC";
 

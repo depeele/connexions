@@ -45,7 +45,8 @@ CBookmark.prototype = {
     load: function(bookmark) {
         var self    = this;
 
-        self.bookmark = bookmark;
+        // Update the bookmark from the database
+        self.bookmark = bookmark = connexions.db.getBookmarkById(bookmark.id);
 
         if ((bookmark.tags === undefined) &&
             (bookmark.id   !== undefined))
