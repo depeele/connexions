@@ -61,13 +61,7 @@ $.widget("ui.confirmation", {
         /* Figure out the z-index that will allow the confirmation to appear
          * above all others.
          */
-        var zIndex  = 0;
-        self.element.parents().each(function() {
-            if ((! this) || (this.length < 1))  return;
-
-            var zi  = parseInt($(this).css('z-index'), 10);
-            if (zi > zIndex)    zIndex = zi;
-        });
+        var zIndex  = self.element.maxZindex();
 
 
         // Present a confirmation mini-dialog.

@@ -172,7 +172,7 @@ $.widget("connexions.bookmarkPost", {
         var opts        = self.options;
 
         // Hide the form while we prepare it...
-        self.element.hide();
+        //self.element.hide();
 
         self.element.addClass('ui-form ui-bookmarkPost');
 
@@ -353,7 +353,9 @@ $.widget("connexions.bookmarkPost", {
         self._setStateFromForm();
         self._bindEvents();
 
-        self.element.show();
+        //self.element.show();
+
+        $.ui.dialog.prototype._init.call(self);
     },
 
     _setStateFromForm: function()

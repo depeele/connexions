@@ -38,6 +38,7 @@ body {
 
   .page {
     background-color: $pageColorBackground;
+    overflow-x:       hidden;
   }
 }
 body.light {
