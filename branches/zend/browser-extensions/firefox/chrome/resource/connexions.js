@@ -55,7 +55,10 @@ Connexions.prototype = {
     // */
     wm:             CC['@mozilla.org/appshell/window-mediator;1']
                         .getService(CI.nsIWindowMediator),
+    ps:             CC['@mozilla.org/preferences-service;1']
+                        .getService(CI.nsIPrefService),
     tm:             null,
+
 
     initialized:    false,
     appVersion:     0.0,
@@ -66,6 +69,8 @@ Connexions.prototype = {
     db:             null,
 
     bookmarksThread:null,
+    syncTimer:      CC['@mozilla.org/timer;1']
+                        .createInstance(CI.nsITimer),
     cookieTimer:    CC['@mozilla.org/timer;1']
                         .createInstance(CI.nsITimer),
     cookieTicking:  false,
@@ -135,6 +140,7 @@ Connexions.prototype = {
         }
 
         self._loadObservers();
+        self._updatePeriodicSync();
 
         cDebug.log('resource-connexions::init(): completed');
     },
@@ -206,10 +212,33 @@ Connexions.prototype = {
 
         switch (topic)
         {
+        case 'nsPref:changed':
+            /*
+            cDebug.log('resource-connexions::observe(): '
+                        + 'topic[ %s ], pref[ %s ]',
+                        topic, data);
+            // */
+            if (data === 'syncMinutes')
+            {
+                // Update our periodic sync timer
+                self._updatePeriodicSync();
+            }
+            break;
+
         case 'connexions.syncEnd':
-            // Our addBookmarks worker has completed the sync.
+            /* Our addBookmarks worker has completed the sync.
+             *
+             * If the update was a success, update our 'lastSync' timestamp.
+             */
+            if (self.state.syncStatus.error === null)
+            {
+                var lastSync    = (new Date()).getTime() / 1000;
+                self.db.state('lastSync', lastSync);
+            }
+
             self.signal('connexions.bookmarksUpdated');
             self.state.sync = false;
+
             break;
 
         case 'http-on-modify-request':
@@ -335,6 +364,81 @@ Connexions.prototype = {
                 }
             }
         }
+    },
+
+    /** @brief  Retrieve the connexions preference branch.
+     *
+     *  @return The connexions preference branch.
+     */
+    prefs: function() {
+        return this.ps.getBranch('extensions.connexions.');
+    },
+
+    /** @brief  Set/get a connexions preference value.
+     *  @param  name    The name of the preference.
+     *  @param  value   If provided, the new value.
+     *
+     *  @return The current/old value.
+     */
+    pref: function(name, value) {
+        var self    = this;
+        var prefs   = self.prefs();
+
+        name = name.replace(/^extensions.connexions./, '');
+
+        var type    = prefs.getPrefType(name);
+        var curVal;
+        switch (type)
+        {
+        case CI.nsIPrefBranch.PREF_STRING:
+            type   = 'string';
+            curVal = prefs.getCharPref(name);
+            if (value !== undefined)
+            {
+                prefs.setCharPref(name, value);
+            }
+            break;
+
+        case CI.nsIPrefBranch.PREF_INT:
+            type   = 'int';
+            curVal = prefs.getIntPref(name);
+            if (value !== undefined)
+            {
+                prefs.setIntPref(name, value);
+
+               /* The 'nsPref:changed' signal doesn't seem to be fired when we
+                * change values this way so, if 'name' is 'syncMinutes',
+                * directly invoke _updatePeriodicSync().
+                */
+                if (name === 'syncMinutes')
+                {
+                    self._updatePeriodicSync();
+                }
+            }
+            break;
+
+        case CI.nsIPrefBranch.PREF_BOOL:
+            type   = 'bool';
+            curVal = prefs.getBoolPref(name);
+            if (value !== undefined)
+            {
+                prefs.setBoolPref(name, value);
+            }
+            break;
+
+        default:
+            type = 'unknown';
+            break;
+        }
+
+        cDebug.log('resource-connexions::pref(): '
+                    + 'name[ %s ], newValue[ %s ], type[ %s ], curVal[ %s ]',
+                    name,
+                    cDebug.obj2str(value),
+                    type,
+                    cDebug.obj2str(curVal));
+
+        return curVal;
     },
 
     /** @brief  Signal observers.
@@ -1768,6 +1872,19 @@ Connexions.prototype = {
      *
      */
 
+    /** @brief  Update our periodic sync timer based upon the current value of
+     *          the 'extensions.connexions.syncMinutes' preference item.
+     */
+    _updatePeriodicSync: function() {
+        var self    = this;
+        var syncMs  = parseInt(self.pref('syncMinutes'), 10) * 60000;
+
+        self.syncTimer.cancel();
+        self.syncTimer.initWithCallback(function() {
+            self.sync();
+        }, syncMs, CI.nsITimer.TYPE_REPEATING_SLACK);
+    },
+
     /** @brief  Receive an addBookmarks worker message.
      *  @param  event   The Post event which SHOULD contain a data item of the
      *                  form:
@@ -1815,6 +1932,12 @@ Connexions.prototype = {
         this.os.addObserver(this, "cookie-changed",         false);
         this.os.addObserver(this, "http-on-modify-request", false);
         this.os.addObserver(this, "connexions.syncEnd",     false);
+
+        // Preference observer
+        var prefs   = this.prefs();
+        prefs.QueryInterface(CI.nsIPrefBranch2);
+
+        prefs.addObserver('', this, false);
     },
 
     /** @brief  Establish our state observers.
@@ -1823,6 +1946,12 @@ Connexions.prototype = {
         this.os.removeObserver(this, "cookie-changed");
         this.os.removeObserver(this, "http-on-modify-request");
         this.os.removeObserver(this, "connexions.syncEnd");
+
+        // Preference observer
+        var prefs   = this.prefs();
+        prefs.QueryInterface(CI.nsIPrefBranch2);
+
+        prefs.removeObserver('', this);
     }
 };
 

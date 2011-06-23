@@ -113,9 +113,11 @@ CSidebar.prototype = {
 
         this.db = connexions.db;    //new Connexions_Db();
 
+        /*
         this.prefs = CC['@mozilla.org/preferences-service;1']
                         .getService(CI.nsIPrefService)
                         .getBranch('extensions.connexions.sidebar.');
+        // */
 
         cDebug.log("cSidebar::init(): complete");
 
@@ -159,8 +161,12 @@ CSidebar.prototype = {
 
 
         // Setup the bookmarks sort information
+        /*
         var bookmarksSort        = this.prefs
                                         .getCharPref('sortOrder.bookmarks');
+        // */
+        var bookmarksSort        =
+                            connexions.pref('sidebar.sortOrder.bookmarks');
         cDebug.log("cSidebar::load(): bookmarksSort[ %s ]", bookmarksSort);
 
         bookmarksSort            = bookmarksSort.split(/\s+/);
@@ -168,7 +174,8 @@ CSidebar.prototype = {
         this.bookmarksSort.order = bookmarksSort[1].toUpperCase();
 
         // Setup the tags sort information
-        var tagsSort        = this.prefs.getCharPref('sortOrder.tags');
+        //var tagsSort        = this.prefs.getCharPref('sortOrder.tags');
+        var tagsSort        = connexions.pref('sidebar.sortOrder.tags');
         cDebug.log("cSidebar::load(): tagsSort[ %s ]", tagsSort);
 
         tagsSort            = tagsSort.split(/\s+/);
@@ -1078,9 +1085,13 @@ CSidebar.prototype = {
         }
 
         // Remember the choice in our preferences
+        /*
         self.prefs.setCharPref('sortOrder.bookmarks',
                                 self.bookmarksSort.by +' '+
                                 self.bookmarksSort.order);
+        // */
+        connexions.pref('sidebar.sortOrder.bookmarks',
+                        self.bookmarksSort.by +' '+ self.bookmarksSort.order);
 
         // Update the order tooltip and CSS classes
         self.elBookmarksSortOrder.setAttribute('tooltiptext', tooltip);
@@ -1115,9 +1126,13 @@ CSidebar.prototype = {
         }
 
         // Remember the choice in our preferences
+        /*
         self.prefs.setCharPref('sortOrder.tags',
                                 self.tagsSort.by +' '+
                                 self.tagsSort.order);
+        // */
+        connexions.pref('sidebar.sortOrder.tags',
+                        self.tagsSort.by +' '+ self.tagsSort.order);
 
         // Update the order tooltip and CSS classes
         self.elTagsSortOrder.setAttribute('tooltiptext', tooltip);

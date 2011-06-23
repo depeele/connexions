@@ -30,6 +30,7 @@ COptions.prototype = {
 
     elSyncBox:          null,
     elSyncButtons:      null,
+    elSyncPeriod:       null,
     btnSyncNow:         null,
     btnSyncFull:        null,
     btnSyncDel:         null,
@@ -70,6 +71,9 @@ COptions.prototype = {
             document.getElementById('connexions-prefs-sync-box');
         self.elSyncButtons =
             document.getElementById('connexions-prefs-sync-buttons');
+
+        self.elSyncPeriod =
+            document.getElementById('connexions-prefs-sync-period');
         self.btnSyncNow =
             document.getElementById('connexions-prefs-sync-now');
         self.btnSyncFull =
@@ -96,16 +100,19 @@ COptions.prototype = {
         // Initialize the user area
         self.showUser( connexions.getUser() );
 
+        // Initialize the sync period information
+        self.showSyncPeriod();
+
         // Initialize the last sync information
         self.showLastSync();
 
         self._bindEvents();
 
-        cDebug.log("cOptions.load(): complete");
+        //cDebug.log("cOptions.load(): complete");
     },
 
     unload: function() {
-        cDebug.log("cOptions.unload():");
+        //cDebug.log("cOptions.unload():");
 
         this._unloadObservers();
     },
@@ -159,17 +166,26 @@ COptions.prototype = {
         }
     },
 
+    showSyncPeriod: function() {
+        var self        = this;
+        var syncMins    = connexions.pref('syncMinutes');
+
+        self.elSyncPeriod.value = syncMins;
+    },
+
     showLastSync: function() {
         var self        = this;
         var lastSync    = parseInt( connexions.db.state('lastSync'), 10 );
 
-        cDebug.log('options::showLastSync(): lastSync int[ %s ]', lastSync);
+        //cDebug.log('options::showLastSync(): lastSync int[ %s ]', lastSync);
 
         // Convert the unix date time to a Date instance
         lastSync = new Date (lastSync * 1000);
 
+        /*
         cDebug.log('options::showLastSync(): lastSync date[ %s ]',
                    lastSync.toLocaleString());
+        // */
 
         var str = self.getString('connexions.prefs.sync.status.last');
         self.elStatus.value = str;
@@ -256,7 +272,7 @@ COptions.prototype = {
             break;
 
         case 'connexions.syncBegin':
-            cDebug.log('options::observe(): connexions.syncBegin:');
+            //cDebug.log('options::observe(): connexions.syncBegin:');
             self.syncProgressReceived = false;
 
             // Disable the sync items.
@@ -374,23 +390,36 @@ COptions.prototype = {
 
         self.elAccountId
                 .addEventListener('click', function(e) {
-                    cDebug.log("cOptions._bindEvents(): user click");
+                    //cDebug.log("cOptions._bindEvents(): user click");
                     connexions.loadPage(e, 'myBookmarks', 'tab');
                  }, false);
         self.btnSignout
                 .addEventListener('click', function(e) {
-                    cDebug.log("cOptions._bindEvents(): signout click");
+                    //cDebug.log("cOptions._bindEvents(): signout click");
                     //connexions.loadPage(e, 'signin', 'popup', 'close');
                  }, false);
         self.btnSignin
                 .addEventListener('click', function(e) {
-                    cDebug.log("cOptions._bindEvents(): signin click");
+                    //cDebug.log("cOptions._bindEvents(): signin click");
                     connexions.loadPage(e, 'signin', 'popup', 'close');
                  }, false);
         self.btnRegister
                 .addEventListener('click', function(e) {
-                    cDebug.log("cOptions._bindEvents(): register click");
+                    //cDebug.log("cOptions._bindEvents(): register click");
                     connexions.loadPage(e, 'register', 'popup', 'close');
+                 }, false);
+
+        self.elSyncPeriod
+                .addEventListener('change', function(e) {
+                    if (this.disabled === 'true')
+                    {
+                        return;
+                    }
+                    cDebug.log("cOptions._bindEvents(): syncPeriod changed");
+
+                    var period  = parseInt(self.elSyncPeriod.value, 10);
+                    connexions.pref('syncMinutes', period);
+                    //connexions._updatePeriodicSync();
                  }, false);
         self.btnSyncNow
                 .addEventListener('click', function(e) {
@@ -398,7 +427,7 @@ COptions.prototype = {
                     {
                         return;
                     }
-                    cDebug.log("cOptions._bindEvents(): syncNow click");
+                    //cDebug.log("cOptions._bindEvents(): syncNow click");
                     connexions.sync();
                  }, false);
         self.btnSyncFull
@@ -407,7 +436,7 @@ COptions.prototype = {
                     {
                         return;
                     }
-                    cDebug.log("cOptions._bindEvents(): syncFull click");
+                    //cDebug.log("cOptions._bindEvents(): syncFull click");
                     connexions.sync(true);
                  }, false);
         self.btnSyncDel
@@ -416,7 +445,7 @@ COptions.prototype = {
                     {
                         return;
                     }
-                    cDebug.log("cOptions._bindEvents(): syncDel click");
+                    //cDebug.log("cOptions._bindEvents(): syncDel click");
                     connexions.delBookmarks();
                  }, false);
         self.btnSyncCancel
@@ -425,7 +454,7 @@ COptions.prototype = {
                     {
                         return;
                     }
-                    cDebug.log("cOptions._bindEvents(): syncCancel click");
+                    //cDebug.log("cOptions._bindEvents(): syncCancel click");
                     connexions.syncCancel();
                  }, false);
     },
@@ -451,7 +480,7 @@ COptions.prototype = {
 var cOptions;
 function cOptions_load()
 {
-    cDebug.log("cOptions_load");
+    //cDebug.log("cOptions_load");
     if (cOptions === undefined)
     {
         cOptions = new COptions();
@@ -460,7 +489,7 @@ function cOptions_load()
 }
 function cOptions_unload()
 {
-    cDebug.log("cOptions_unload");
+    //cDebug.log("cOptions_unload");
     cOptions.unload();
 }
 
