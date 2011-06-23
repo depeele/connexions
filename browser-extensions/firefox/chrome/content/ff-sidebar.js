@@ -32,6 +32,8 @@ CSidebar.prototype = {
 
     panelProperties:        null,
 
+    selectedTags:           [],
+
     bookmarksSort:          {
         by:     'name',
         order:  'ASC',
@@ -96,6 +98,10 @@ CSidebar.prototype = {
     db:                     null,
     syncing:                false,
 
+    /** @brief  Invoked on initial instance creation.
+     *
+     *  @return this for a fluent interface.
+     */
     init: function() {
         this.mainWindow =
             window.QueryInterface(CI.nsIInterfaceRequestor)
@@ -112,8 +118,14 @@ CSidebar.prototype = {
                         .getBranch('extensions.connexions.sidebar.');
 
         cDebug.log("cSidebar::init(): complete");
+
+        return this;
     },
 
+    /** @brief  Invoked when the sidebar is loaded, refresh the view.
+     *
+     *  @return this for a fluent interface.
+     */
     load: function() {
         // Retrieve references to interactive elements
         this.elBookmarksCount =
@@ -164,14 +176,20 @@ CSidebar.prototype = {
         this.tagsSort.order = tagsSort[1].toUpperCase();
 
         // Load observers, render, and bind events
-        this._loadObservers();
-
-        this._render();
-        this._bindEvents();
+        this._loadObservers()
+            ._render()
+            ._bindEvents();
 
         cDebug.log("cSidebar::load(): complete");
+
+        return this;
     },
 
+    /** @brief  The bookmarks context menu is about to be presented.
+     *  @param  event   The triggering event.
+     *
+     *  @return this for a fluent interface.
+     */
     showBookmarksContextMenu: function(event) {
         var self    = this;
 
@@ -229,11 +247,14 @@ CSidebar.prototype = {
         }
 
         cDebug.log("cSidebar::showBookmarksContextMenu():");
+
+        return self;
     },
 
     /** @brief  Given a search term filter the visible bookmarks and tags.
      *  @param  term    The desired search term.
      *
+     *  @return this for a fluent interface.
      */
     search: function(term) {
         cDebug.log("cSidebar::search(): term[ %s ]", term);
@@ -254,36 +275,52 @@ CSidebar.prototype = {
                    cDebug.obj2str(tags));
 
         this._renderTags(tags);
+
+        return this;
     },
 
     /** @brief  Given an array of tag objects, filter the visible bookmarks
      *          by those tags.
      *  @param  tags    An array of tag objects.
      *
+     *  @return this for a fluent interface.
      */
     bookmarksFilterByTags: function( tags ) {
-        cDebug.log('ff-sidebar::bookmarksFilterByTags():select tags[ %s ]',
+        var self    = this;
+
+        // Remember the set of selected tags
+        self.selectedTags = tags;
+        cDebug.log('ff-sidebar::bookmarksFilterByTags():selected tags[ %s ]',
                    cDebug.obj2str(tags));
 
-        var sort      = this.bookmarksSort.by +' '+ this.bookmarksSort.order;
+        /* Update the bookmarks to show only those that use ALL of the selected
+         * tags.
+         */
+        var sort      = self.bookmarksSort.by +' '+ self.bookmarksSort.order;
         var bookmarks = connexions.db.getBookmarksByTags( tags, sort );
 
         cDebug.log('ff-sidebar::bookmarksFilterByTags():bookmarks[ %s ]',
                    cDebug.obj2str(bookmarks));
-        this._renderBookmarks(bookmarks);
+        self._renderBookmarks(bookmarks);
 
-        /* Now, update the tags to show only those used by the current
-         * bookmarks
-        sort       = this.tagsSort.by +' '+ this.tagsSort.order;
-        var bmTags = connexions.db.getTagsByBookmarks( bookmarks, sort );
-        this._renderTags(bmTags, tags);
+        /* Now, update the tags to show only those used by ANY of the current
+         * bookmarks.
          */
+        self.selectedTags = tags;
+
+        sort       = self.tagsSort.by +' '+ self.tagsSort.order;
+        var bmTags = connexions.db.getTagsByBookmarks( bookmarks, sort );
+        self._renderTags(bmTags);
+
+        return self;
     },
 
     /** @brief  Open the URL of the given item.
      *  @param  event   The triggering event;
      *  @param  item    The bookmark item;
      *  @param  where   Where to open ( [current], window, tab);
+     *
+     *  @return The (new) window/tab (null on error).
      */
     openIn: function(event, item, where) {
         var bookmark    = item.getUserData('bookmark');
@@ -294,7 +331,7 @@ CSidebar.prototype = {
 
         if (! bookmark || (bookmark.url === undefined))
         {
-            return;
+            return null;
         }
 
         if (where === undefined)
@@ -316,6 +353,8 @@ CSidebar.prototype = {
     /** @brief  Present the properties of a current item.
      *  @param  event   The triggering event;
      *  @param  item    The associated item (MUST have 'bookmark' user data);
+     *
+     *  @return this for a fluent interface.
      */
     properties: function(event, item) {
         var bookmark    = item.getUserData('bookmark');
@@ -324,9 +363,17 @@ CSidebar.prototype = {
 
         this.panelProperties.load(bookmark)
                             .open(item, event);
+
+        return this;
     },
 
-    edit: function(e, item) {
+    /** @brief  Present the bookmark edit/post dialog for a specific bookmark.
+     *  @param  event   The triggering event;
+     *  @param  item    The target bookmark item;
+     *
+     *  @return this for a fluent interface.
+     */
+    edit: function(event, item) {
         var bookmark    = item.getUserData('bookmark');
         cDebug.log("cSidebar::edit(): url[ %s ]",
                     (bookmark && bookmark.url? bookmark.url:'*** UNKNOWN ***'));
@@ -349,9 +396,19 @@ CSidebar.prototype = {
 
         connexions.openPopupWindow( connexions.url('post'+ query),
                                     'Edit a Bookmark' );
+
+        return this;
     },
 
+    /** @brief  Confirm the delete request and, if confirmed, request
+     *          server-side deletion.
+     *  @param  event   The triggering event;
+     *  @param  item    The target bookmark item;
+     *
+     *  @return this for a fluent interface.
+     */
     'delete': function(e, item) {
+        var self        = this;
         var bookmark    = item.getUserData('bookmark');
         var user        = connexions.getUser();
 
@@ -362,7 +419,7 @@ CSidebar.prototype = {
         if ( (! bookmark) || (! user) || (user.name === undefined))
         {
             // NOT valid!
-            return;
+            return self;
         }
 
         var title       =
@@ -374,7 +431,7 @@ CSidebar.prototype = {
 
         if (! answer)
         {
-            return;
+            return self;
         }
 
         cDebug.log("cSidebar::delete(): delete url[ %s ]", bookmark.url);
@@ -437,11 +494,15 @@ CSidebar.prototype = {
                 }
             }
         });
+
+        return self;
     },
 
     /** @brief  Sort bookmarks, possibly changing the field or order.
      *  @param  field   The field to sort by [ bookmarksSort.by ];
      *  @param  order   The order to sort by [ bookmarksSort.order ];
+     *
+     *  @return this for a fluent interface.
      */
     sortBookmarks: function(by, order) {
         if (by !== undefined)
@@ -457,11 +518,15 @@ CSidebar.prototype = {
                    this.bookmarksSort.by, this.bookmarksSort.order);
 
         this._refreshBookmarks( );
+
+        return this;
     },
 
     /** @brief  Sort tags, possibly changing the field or order.
      *  @param  field   The field to sort by [ tagsSort.by ];
      *  @param  order   The order to sort by [ tagsSort.order ];
+     *
+     *  @return this for a fluent interface.
      */
     sortTags: function(by, order) {
         if (by !== undefined)
@@ -477,11 +542,19 @@ CSidebar.prototype = {
                    this.tagsSort.by, this.tagsSort.order);
 
         this._refreshTags( );
+
+        return this;
     },
 
+    /** @brief  Called when the sidebar is unloaded.
+     *
+     *  @return this for a fluent interface.
+     */
     unload: function() {
         cDebug.log("cSidebar::unload():");
         this._unloadObservers();
+
+        return this;
     },
 
     /** @brief  Observer register notification topics.
@@ -562,6 +635,11 @@ CSidebar.prototype = {
      *
      */
 
+    /** @brief  Primary rendering of sort information, bookmarks and tags
+     *          lists.
+     *
+     *  @return this for a fluent interface.
+     */
     _render: function() {
         var self    = this;
 
@@ -596,10 +674,17 @@ CSidebar.prototype = {
 
 
         // Render the bookmarks and tags
-        self._refreshBookmarks();
-        self._refreshTags();
+        self._refreshBookmarks()
+            ._refreshTags();
+
+        return self;
     },
 
+    /** @brief  Remove all list items from the given itemList.
+     *  @param  itemList    The itemlist to empty.
+     *
+     *  @return this for a fluent interface.
+     */
     _emptyListItems: function(itemList) {
         /*
         cDebug.log("cSidebar::_emptyListItems: remove %s items",
@@ -609,37 +694,63 @@ CSidebar.prototype = {
         {
             itemList.removeItemAt( 0 );
         }
+
+        return this;
     },
 
+    /** @brief  Retrieve and render ALL bookmarks.
+     *  
+     *  @return this for a fluent interface.
+     */
     _refreshBookmarks: function() {
-        var countBookmarks  = this.db.getTotalBookmarks();
+        var self      = this;
+        var sort      = self.bookmarksSort.by +' '+ self.bookmarksSort.order;
+        var bookmarks = self.db.getBookmarks(sort);
 
-        this.elBookmarksCount.value = countBookmarks;
+        self.elBookmarksCount.value = bookmarks.length;
+        self._update_bookmarksSort_ui();
 
-        var sort    = this.bookmarksSort.by +' '+ this.bookmarksSort.order;
-        this._update_bookmarksSort_ui();
+        /*
+        var countBookmarks  = self.db.getTotalBookmarks();
+        self.elBookmarksCount.value = countBookmarks;
+        // */
 
-        var bookmarks   = this.db.getBookmarks(sort);
+        self._renderBookmarks(bookmarks);
 
-        this._renderBookmarks(bookmarks);
+        return self;
     },
 
+    /** @brief  Retrieve and render ALL tags.
+     *  
+     *  @return this for a fluent interface.
+     */
     _refreshTags: function() {
-        var countTags       = this.db.getTotalTags();
+        var self    = this;
+        var sort    = self.tagsSort.by +' '+ self.tagsSort.order;
+        var tags    = self.db.getAllTags(sort);
 
-        this.elTagsCount.value      = countTags;
+        self.elTagsCount.value = tags.length;
+        self._update_tagsSort_ui();
 
-        var sort    = this.tagsSort.by +' '+ this.tagsSort.order;
-        this._update_tagsSort_ui();
+        /*
+        var countTags       = self.db.getTotalTags();
+        self.elTagsCount.value      = countTags;
+        */
 
-        var tags    = this.db.getAllTags(sort);
+        self._renderTags(tags);
 
-        this._renderTags(tags);
+        return self;
     },
 
+    /** @brief  Render the given set of bookmarks.
+     *  @param  tags    An array of bookmark objects to render;
+     *
+     *  @return this for a fluent interface.
+     */
     _renderBookmarks: function(bookmarks) {
-        var countBookmarks  = bookmarks.length;
-        this.elBookmarksCount.value = countBookmarks;
+        var self                    = this;
+        var countBookmarks          = bookmarks.length;
+        self.elBookmarksCount.value = countBookmarks;
 
         /*
         cDebug.log('cSidebar::_renderBookmarks(): '
@@ -649,7 +760,7 @@ CSidebar.prototype = {
         // */
 
         // Empty any current items and re-fill
-        this._emptyListItems( this.elBookmarkList );
+        self._emptyListItems( self.elBookmarkList );
         for (var idex = 0; idex < bookmarks.length; idex++)
         {
             var bookmark    = bookmarks[idex];
@@ -678,7 +789,7 @@ CSidebar.prototype = {
             // Include the cells listitem and the listitem in the listbox
             row.appendChild( name );
             row.appendChild( propIcon );
-            this.elBookmarkList.appendChild( row );
+            self.elBookmarkList.appendChild( row );
 
             /*
             // Ensure the name is NOT longer than the width - 16px
@@ -707,21 +818,31 @@ CSidebar.prototype = {
                         bookmark.isPrivate);
             // */
         }
+
+        return self;
     },
 
-    _renderTags: function(tags, selected) {
-        var countTags       = tags.length;
-        this.elTagsCount.value      = countTags;
+    /** @brief  Render the given set of tags.
+     *  @param  tags    An array of tag objects to render;
+     *
+     *  @return this for a fluent interface.
+     */
+    _renderTags: function(tags) {
+        var self                = this;
+        var countTags           = tags.length;
+        self.elTagsCount.value  = countTags;
 
-        /*
+        // /*
         cDebug.log('cSidebar::_renderTags(): '
-                   +    'retrieved %s tags, total[ %s ]',
-                   tags.length, countTags);
+                   +    '%s tags, %s selected[ %s ]',
+                   tags.length,
+                   self.selectedTags.length,
+                   cDebug.obj2str(self.selectedTags));
         // */
 
         // Empty any current items and re-fill
-        this._emptyListItems( this.elTagList );
-        this.elTagList.clearSelection();
+        self.elTagList.clearSelection();
+        self._emptyListItems( self.elTagList );
         for (var idex = 0; idex < tags.length; idex++)
         {
             var tag         = tags[idex];
@@ -741,29 +862,24 @@ CSidebar.prototype = {
             // Include the cells listitem and the listitem in the listbox
             row.appendChild( name );
             row.appendChild( freq );
-            this.elTagList.appendChild( row );
+            self.elTagList.appendChild( row );
 
-            if (selected !== undefined)
+            // See if this tag should be selected
+            for (var jdex = 0; jdex < self.selectedTags.length; jdex++)
             {
-                cDebug.log('cSidebar::_render(): is tag selected? '
-                            +   'selected[ %s ], tag[ %s ]',
-                            cDebug.obj2str(selected),
-                            cDebug.obj2str(tag));
+                var selTag  = self.selectedTags[jdex];
 
-                // See if this tag should be selected
-                for (var jdex = 0; jdex < selected.length; jdex++)
+                if (tag.id === selTag.id)
                 {
-                    var selTag  = selected[jdex];
+                    // /*
+                    cDebug.log('cSidebar::_render(): tag IS selected: '
+                                +   'tag[ %s ]',
+                                cDebug.obj2str(tag));
+                    // */
 
-                    if (tag.id === selTag.id)
-                    {
-                        cDebug.log('cSidebar::_render(): tag IS selected: '
-                                    +   'tag[ %s ]',
-                                    cDebug.obj2str(tag));
-
-                        this.elTagList.addItemToSelection( row );
-                        break;
-                    }
+                    row.setAttribute('selected', true);
+                    self.elTagList.addItemToSelection( row );
+                    break;
                 }
             }
 
@@ -775,8 +891,14 @@ CSidebar.prototype = {
                         tag.frequency);
             // */
         }
+
+        return self;
     },
 
+    /** @brief  Bind events.
+     *
+     *  @return this for a fluent interface.
+     */
     _bindEvents: function() {
         var self    = this;
 
@@ -785,7 +907,7 @@ CSidebar.prototype = {
          *
          */
         self.elBookmarkList
-                .addEventListener("click", function (e){
+                .addEventListener('click', function (e){
                     if (e.button !== 0)
                     {
                        // NOT a left-click
@@ -805,12 +927,12 @@ CSidebar.prototype = {
                 }, false);
 
         self.elBookmarksMenu
-                .addEventListener("popupshowing", function (e){
+                .addEventListener('popupshowing', function (e){
                     self.showBookmarksContextMenu(e);
                 }, false);
 
         self.elBookmarksSortOrder
-                .addEventListener("click", function (e){
+                .addEventListener('click', function (e){
                     if (self.bookmarksSort.order === 'ASC')
                     {
                         self.bookmarksSort.order  =  'DESC';
@@ -830,43 +952,79 @@ CSidebar.prototype = {
          * Tag list
          *
          */
+        /*
         self.elTagList
-                .addEventListener("click", function(e) {
-                    if (e.button !== 0)
+                .addEventListener('select', function(event) {
+                    var listBox = event.target;
+                    var item    = self.elTagList.selectedItem;
+                    var tag     = item.getUserData('tag');
+                    cDebug.log('ff-sidebar::_bindEvents():tagList select: '
+                                + '%s:%s selected, %s:%s, is %sslected',
+                                listBox.nodeName,
+                                self.elTagList.selectedCount,
+                                item.nodeName,
+                                tag.name,
+                                (item.selected ? '' : 'NOT '));
+                }, false);
+        // */
+        self.elTagList
+                .addEventListener('click', function(event) {
+                    if (event.button !== 0)
                     {
                         // NOT a left-click
                         return;
                     }
 
-                    var items   = self.elTagList.selectedItems;
-                    var nItems  = items.length;
+                    /* :NOTE: Since we're emptying and re-filling the
+                     *        tag list anytime a tag is selected, we cannot
+                     *        rely on the listbox to keep track of the
+                     *        currently selected tags.
+                     *
+                     *        For this reason, keep our own list of selected
+                     *        tags.
+                     */
+                    var item        = event.target;
+                    var tag         = item.getUserData('tag');
+                    var wasSelected =
+                            self.selectedTags.some(function(selTag) {
+                                return (tag.id === selTag.id);
+                            });
+
+                    item.selected = (! wasSelected);
 
                     /*
-                    cDebug.log('ff-sidebar::_bindEvents():tagList select: '
-                                + '%s/%s',
-                                self.elTagList.selectedCount,
-                                nItems);
+                    cDebug.log('ff-sidebar::_bindEvents():tagList click: '
+                                + '%s items, item %s %sselected, '
+                                + 'alt[%s], ctl[%s], shift[%s], meta[%s]',
+                                self.elTagList.itemCount,
+                                self.elTagList.getIndexOfItem(item),
+                                (item.selected  ? '' : 'NOT '),
+                                (event.altKey   ? '1' : '0'),
+                                (event.ctrlKey  ? '1' : '0'),
+                                (event.shiftKey ? '1' : '0'),
+                                (event.metaKey  ? '1' : '0'));
+
                     // */
 
+                    // Update our list of selected tags
                     var tags    = [];
-                    for (var idex = 0; idex < nItems; idex++)
+                    for (var idex = 0; idex < self.elTagList.itemCount; idex++)
                     {
-                        var item    = self.elTagList.getSelectedItem(idex);
-                        var tag     = item.getUserData('tag');
+                        var tagItem = self.elTagList.getItemAtIndex(idex);
+                        var tag     = tagItem.getUserData('tag');
 
                         /*
-                        cDebug.log('ff-sidebar::_bindEvents():tagList select: '
-                                    + '%s: item[ %s ], tag[ %s ]',
+                        cDebug.log('ff-sidebar::_bindEvents():tagList click: '
+                                    + '#%s [ %s ], is %sselected',
                                     idex,
-                                    cDebug.obj2str(item),
-                                    cDebug.obj2str(tag));
+                                    tag.name,
+                                    (tagItem.selected ? '' : 'NOT '));
                         // */
-                        if (! tag)
-                        {
-                            continue;
-                        }
 
-                        tags.push(tag);
+                        if (tagItem.selected)
+                        {
+                            tags.push(tag);
+                        }
                     }
 
                     /*
@@ -878,7 +1036,7 @@ CSidebar.prototype = {
                  }, false);
 
         self.elTagsSortOrder
-                .addEventListener("click", function (e){
+                .addEventListener('click', function (e){
                     if (self.tagsSort.order === 'ASC')
                     {
                         self.tagsSort.order  =  'DESC';
@@ -892,10 +1050,14 @@ CSidebar.prototype = {
 
                     self.sortTags();
                 }, false);
+
+        return self;
     },
 
     /** @brief  Update the bookmarks sort order image and tooltip based upon
      *          the current bookmarks sort information.
+     *
+     *  @return this for a fluent interface.
      */
     _update_bookmarksSort_ui: function() {
         var self        = this;
@@ -925,10 +1087,14 @@ CSidebar.prototype = {
         self.elBookmarksSortOrder.setAttribute('class',
                                                'sort-order '
                                                + 'sort-'+ order);
+
+        return self;
     },
 
     /** @brief  Update the tags sort order image and tooltip based upon
      *          the current tags sort information.
+     *
+     *  @return this for a fluent interface.
      */
     _update_tagsSort_ui: function() {
         var self        = this;
@@ -958,9 +1124,13 @@ CSidebar.prototype = {
         self.elTagsSortOrder.setAttribute('class',
                                                'sort-order '
                                                + 'sort-'+ order);
+
+        return self;
     },
 
     /** @brief  Establish our state observers.
+     *
+     *  @return this for a fluent interface.
      */
     _loadObservers: function() {
         this.os.addObserver(this, "connexions.bookmarkAdded",    false);
@@ -976,9 +1146,13 @@ CSidebar.prototype = {
         this.os.addObserver(this, "connexions.syncEnd",          false);
 
         this.os.addObserver(this, "connexions.tablesEmptied",    false);
+
+        return this;
     },
 
     /** @brief  Establish our state observers.
+     *
+     *  @return this for a fluent interface.
      */
     _unloadObservers: function() {
         this.os.removeObserver(this, "connexions.bookmarkAdded");
@@ -994,6 +1168,8 @@ CSidebar.prototype = {
         this.os.removeObserver(this, "connexions.syncEnd");
 
         this.os.removeObserver(this, "connexions.tablesEmptied");
+
+        return this;
     }
 };
 
