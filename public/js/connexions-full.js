@@ -2674,7 +2674,7 @@ $.widget("ui.tagInput", $.ui.input, {
         var opts    = self.options;
         var width   = (opts.width === 'cssWidth'
                         ? self.element.css('width')
-                        : self.element.innerHeight());
+                        : self.element.innerWidth());
         var height  = (opts.height === 'cssHeight'
                         ? self.element.css('height')
                         : self.element.innerHeight());
@@ -3866,15 +3866,6 @@ $.widget("ui.confirmation", {
          * above all others.
          */
         var zIndex  = self.element.maxZindex();
-        /*
-        var zIndex  = 0;
-        self.element.parents().each(function() {
-            if ((! this) || (this.length < 1))  return;
-
-            var zi  = parseInt($(this).css('z-index'), 10);
-            if (zi > zIndex)    zIndex = zi;
-        });
-        // */
 
 
         // Present a confirmation mini-dialog.
@@ -8404,6 +8395,7 @@ $.widget("connexions.bookmarkPost", {
         // Tag autocompletion
         opts.$tags.tagInput({
             height:     'min-height',
+            width:      'none',         // Let our CSS handle the width
             change:     function() {
                 /*
                 $.log('connexions.bookmarkPost::'
