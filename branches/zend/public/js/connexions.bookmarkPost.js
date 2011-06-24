@@ -242,6 +242,7 @@ $.widget("connexions.bookmarkPost", {
         // Tag autocompletion
         opts.$tags.tagInput({
             height:     'min-height',
+            width:      'none',         // Let our CSS handle the width
             change:     function() {
                 /*
                 $.log('connexions.bookmarkPost::'

@@ -733,6 +733,7 @@ a:visited { color: #005a9c; }
 .ui-bookmarkPost .item-data .userRating { position: absolute; z-index: 2; right: 0; display: block; padding: 0; height: 32px; width: 96px; }
 .ui-bookmarkPost .item-data .userRating label { display: none; }
 .ui-bookmarkPost .item-description textarea, .ui-bookmarkPost .item-tags textarea { height: 4em; }
+.ui-bookmarkPost .item-description .tagInput, .ui-bookmarkPost .item-tags .tagInput { width: 100%; }
 .ui-bookmarkPost .suggestions { margin: 2em 0 0 1.5em; }
 .ui-bookmarkPost .suggestions .ui-tabs-panel { padding: 0.25em; }
 .ui-bookmarkPost .suggestions .cloud, .ui-bookmarkPost .suggestions .db-profile { font-size: 1em; }
@@ -888,7 +889,7 @@ a:visited { color: #005a9c; }
 
 /****** main.scss ****** */
 body { background-color: #182524; }
-body .page { background-color: white; overflow-x: hidden; }
+body .page { background-color: white; overflow: hidden; }
 
 body.light { background-color: white; }
 
