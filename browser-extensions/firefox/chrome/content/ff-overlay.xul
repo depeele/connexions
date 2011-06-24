@@ -30,7 +30,7 @@
   </commandset>
 
   <!-- Primary key set -->
-  <keyset id="mainKeyset">
+  <!-- keyset id="mainKeyset">
     <key            id="key_connexions_bookmark_page"
                command="cmd_connexions_bookmark_page" />
     <key            id="key_connexions_bookmark_link"
@@ -39,7 +39,7 @@
                command="cmd_connexions_bookmark_media" />
     <key            id="key_connexions_sidebar"
                command="cmd_connexions_sidebar" />
-  </keyset>
+  </keyset -->
 
   <!-- Tools menu { -->
   <menupopup id="menu_ToolsPopup">
@@ -184,7 +184,6 @@
   <menupopup id="viewSidebarMenu">
     <menuitem observes="viewSidebar_connexions" />
   </menupopup>
-  <!-- View Sidebar menu } -->
 
   <broadcasterset id="mainBroadcasterSet">
     <!-- use to allow any sidebar button to share state -->
@@ -197,5 +196,6 @@
           sidebartitle="&connexions.sidebar.label;"
                command="cmd_connexions_sidebar" />
   </broadcasterset>
+  <!-- View Sidebar menu } -->
 
 </overlay>

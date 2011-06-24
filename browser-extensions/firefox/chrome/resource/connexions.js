@@ -233,7 +233,7 @@ Connexions.prototype = {
             if (self.state.syncStatus.error === null)
             {
                 var lastSync    = (new Date()).getTime() / 1000;
-                self.db.state('lastSync', lastSync);
+                //self.db.state('lastSync', lastSync);
             }
 
             self.signal('connexions.bookmarksUpdated');
@@ -647,8 +647,9 @@ Connexions.prototype = {
      */
     tagPage: function(el, type) {
         var self    = this;
-        var doc     = self.getDocument();   //el.ownerDocument;
-        var docUrl  = doc.URL;
+        var browser = self.getBrowser();
+        var docUri  = browser.currentURI;
+        var docUrl  = docUri.spec;
         var url, name;
 
         cDebug.log('tagPage(): docUrl[ %s ]', docUrl);
@@ -657,9 +658,13 @@ Connexions.prototype = {
         {
         case 'page':
             url  = docUrl;
+            name = browser.contentTitle;
+            /*
+            var doc     = browser.contentDocument;
             name = (doc.title
                         ? doc.title
                         : url);
+            // */
 
             var selection   = self.getSelectedText();
             var description = (selection.str ? selection.str : '');
@@ -698,7 +703,7 @@ Connexions.prototype = {
                 url  = gContextMenu.target.getAttribute('src');
                 name = gContextMenu.target.getAttribute('title');
                 // */
-                cDebug.log('tagPage(): type[ %s ], UNDEFINED url...',
+                cDebug.log('tagPage(): type[ %s ], Construct url...',
                                 type);
 
                 // el should NEVER be null here
@@ -716,31 +721,17 @@ Connexions.prototype = {
 
             if (! url.match(/^[^:]:\/\//))
             {
-                cDebug.log('tagPage(): type[ %s ], prepend docUrl...',
-                                type);
-
-                /* prepend the document URL taking care not to duplicate '/'
-                 * between the document url and the target url.
+                /* This is NOT a full, absolute URL.
+                 *
+                 * Merge it with the current document's URL.
                  */
-                if (docUrl.match(/\/$/))
-                {
-                    if (url.match(/^\//))
-                    {
-                        url = docUrl + url.substr(1);
-                    }
-                    else
-                    {
-                        url = docUrl + url;
-                    }
-                }
-                else if (url.match(/^\//))
-                {
-                    url = docUrl + url;
-                }
-                else
-                {
-                    url = docUrl +'/'+ url;
-                }
+                cDebug.log('tagPage(): type[ %s ], make url[ %s ] absolute',
+                                type, url);
+
+                url = docUri.resolve(url);
+
+                cDebug.log('tagPage(): type[ %s ], site-absolute url[ %s ]',
+                            type, url);
             }
 
             cDebug.log('tagPage(): type[ %s ], final url[ %s ], name[ %s ]',
@@ -1483,6 +1474,8 @@ Connexions.prototype = {
      *  @return this for a fluent interface.
      */
     syncCancel: function() {
+        cDebug.log('resource-connexions::syncCancel():');
+
         if (this.state.sync === true)
         {
             this.state.sync = false;
