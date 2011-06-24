@@ -1,12 +1,12 @@
-statusbar .statusbar-icon {
+#connexions-statusbar {
+  margin: 0 4px;
+  height: 24px;
+}
+
+#connexions-statusbar .statusbar-icon {
   height: 24px;
   width:  24px;
   cursor: pointer;
-}
-
-#connexions-statusbar-info,
-#connexions-statusbar-sync {
-  height:     24px;
 }
 
 /* Effect the label within a button as well */
