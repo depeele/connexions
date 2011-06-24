@@ -1,0 +1,55 @@
+statusbar .statusbar-icon {
+  height: 24px;
+  width:  24px;
+  cursor: pointer;
+}
+
+#connexions-statusbar-info,
+#connexions-statusbar-sync {
+  height:     24px;
+}
+
+/* Effect the label within a button as well */
+#connexions-statusbar-sync label {
+  font-size:  0.8em;
+  margin:     0;
+  padding:    0;
+}
+
+#connexions-statusbar-sync .connexions-progressmeter {
+  height:     20px;
+  padding:    2px 0.5em 0;
+}
+#connexions-statusbar-sync .connexions-progressmeter progressmeter {
+  margin:     0;
+  padding:    0;
+}
+#connexions-statusbar-sync .statusbar-syncDetails {
+  position:   relative;
+  top:        12px;
+  left:       0;
+  width:      100%;
+  min-width:  128px;
+}
+#connexions-statusbar-sync .statusbar-syncDetails label {
+  padding:    0 0.2em;
+  font-size:  0.75em;
+}
+.statusbar-syncDetails .progressCurrent {
+  position:   absolute;
+  top:        0;
+  left:       0;
+  text-align: left;
+}
+.statusbar-syncDetails .progressFinal {
+  position:   absolute;
+  top:        0;
+  right:      0;
+  text-align: right;
+}
+#connexions-statusbar-sync .connexions-cancel-sync {
+  display:  inline-block;
+  padding:  0;
+  margin:   4px;
+  cursor:   pointer;
+}

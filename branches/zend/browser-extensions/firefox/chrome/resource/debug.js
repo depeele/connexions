@@ -48,22 +48,28 @@ function Connexions_log(msg, stackFrame)
         stackFrame = Components.stack.caller;
     }
 
-    if (msg.length < 80)
-    {
-        msg += '                                                                               '.substr(0, 80 - msg.length);
-    }
-
-    msg += " - Source File: "+ stackFrame.filename;
+    var src = stackFrame.filename.replace(/file:\/\/\/.*\/chrome/,
+                                          'chrome://connexions/chrome');
     if (stackFrame.lineNumber !== undefined)
     {
-        msg += ', line '+   stackFrame.lineNumber;
+        src += ', line '+   stackFrame.lineNumber;
 
         if (stackFrame.columnNumber !== undefined)
         {
-            msg += ', column '+ stackFrame.columnNumber;
+            src += ', column '+ stackFrame.columnNumber;
         }
     }
-    gLog(msg);
+
+    var sep = '';
+    if (msg.length < 80)
+    {
+        sep += '                                                                               '.substr(0, 80 - msg.length);
+    }
+
+    gLog(msg + sep +' - Source: '+ src);
+
+    // Also dump to the console
+    dump(  '>>> Firefox: '+ msg +" - "+ src +"\n");
 }
 
 /*****************************************************************************
