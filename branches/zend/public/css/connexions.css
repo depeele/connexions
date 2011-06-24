@@ -392,6 +392,8 @@ a:visited { color: #005a9c; }
 #pageHeader .siteNav #search:hover .list, #pageHeader .siteNav #search .menu-show .list { display: block; }
 #pageHeader .siteNav #search.menu-hide .list { display: none; }
 
+.noNav #pageHeader .siteNav .tabs { height: 5px; background-color: #182524; -moz-border-radius: 0 0 0 5px; -webkit-border-radius: 0 0 0 5px; -ms-border-radius: 0 0 0 5px; -khtml-border-radius: 0 0 0 5px; border-radius: 0 0 0 5px; }
+
 /*fieldInfoColor             = !validationInputColor */
 /****** ui-form.sass ****** */
 /* ====== Forms ====== */
