@@ -233,7 +233,7 @@ Connexions.prototype = {
             if (self.state.syncStatus.error === null)
             {
                 var lastSync    = (new Date()).getTime() / 1000;
-                //self.db.state('lastSync', lastSync);
+                self.db.state('lastSync', lastSync);
             }
 
             self.signal('connexions.bookmarksUpdated');
