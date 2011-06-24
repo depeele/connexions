@@ -194,10 +194,10 @@ echo $this->render('base-header.phtml');
        ><img src="<?= $baseUrl ?>images/logo.gif" alt="x" /
        ><span>ions</span
       ></a></h1>
-     <?php if ( $this->excludeNav !== true ) { ?>
     <div class='tabs'><!-- tabs { -->
-    <?= $this->render('nav_menu.phtml') ?>
-    </div><!-- tabs } -->
+     <?php if ( $this->excludeNav !== true ) { ?>
+      <?= $this->render('nav_menu.phtml') ?>
     <?php } ?>
+    </div><!-- tabs } -->
    </div><!-- siteNav } -->
   </div><!-- head } -->

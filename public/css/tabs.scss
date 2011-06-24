@@ -461,3 +461,15 @@ $navBorder: unquote("1px dotted") $navColorBorder;
     }
   }
 }
+
+.noNav {
+  #pageHeader {
+    .siteNav {
+      .tabs {
+        height:           5px;
+        background-color: $navColorBackground;
+        @include corners(0, 0, 0, 5px);
+      }
+    }
+  }
+}
