@@ -13,16 +13,24 @@
 .sync-box {
 }
 
-.sync-box label, .sync-box .sync-period, .sync-box spinbuttons {
+.sync-box label, .sync-box .sync-period {
   display:        inline-block;
   vertical-align: middle;
 }
-.sync-box .sync-period {
-  /*width:          4em;*/
-  /*margin-right:   0;*/
+/*.sync-period .textbox-input-box .textbox-input */
+.sync-period {
+  position:       relative;
+  width:          4em;
 }
-.sync-box spinbuttons {
-  /*margin-left:    0;*/
+.sync-period .textbox-input-box {
+  width:          3em;
+  padding-right:  2px;
+  margin-right:   0;
+}
+.sync-period spinbuttons {
+  vertical-align: middle;
+  margin-left:    -3px;
+  margin-top:     -3px;
 }
 
 .syncNow-box {

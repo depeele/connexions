@@ -11,8 +11,8 @@
 <!ENTITY connexions.prefs.account.register.diff "Create another account">
 
 <!ENTITY connexions.prefs.sync.caption          "Sync bookmarks">
-<!ENTITY connexions.prefs.sync.period.pre       "Sync once every">
-<!ENTITY connexions.prefs.sync.period.post      "minutes">
+<!ENTITY connexions.prefs.sync.period.pre       "Check for updates every">
+<!ENTITY connexions.prefs.sync.period.post      "minutes.">
 
 <!ENTITY connexions.prefs.sync.now              "Sync Now">
 <!ENTITY connexions.prefs.sync.now.description  'Check for updates to your bookmarks without reloading all of your bookmarks.'>

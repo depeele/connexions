@@ -74,7 +74,7 @@
                   <label value="&connexions.prefs.sync.period.post;"
                          flex="1" />
                 </hbox>
-                <hbox class='syncNow-box'
+                <hbox class='syncNow-box bordered'
                       align="center">
                   <button id="connexions-prefs-sync-now"
                           label="&connexions.prefs.sync.now;"
