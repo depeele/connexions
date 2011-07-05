@@ -233,6 +233,8 @@ Connexions.prototype = {
             if (self.state.syncStatus.error === null)
             {
                 var lastSync    = (new Date()).getTime() / 1000;
+
+                // :XXX: Comment out to refrain from changing the lastSync
                 self.db.state('lastSync', lastSync);
             }
 
@@ -1402,81 +1404,46 @@ Connexions.prototype = {
                     +   "signed in as [ %s ], isReload[ %s ]",
                     self.user.name, isReload);
 
-        if (isReload)
-        {
-            self.delBookmarks();
-        }
-
-        /* :TODO: Perform an asynchronous request for all bookmarks and add
-         * them into the local database.
-         */
-        var lastSync    = parseInt(self.db.state('lastSync'), 10);
-        var params  = {
+        var baseParams  = {
             users:  self.user.name,
             count:  null
         };
 
-        if (! isNaN(lastSync))
-        {
-            params.since = lastSync;
-        }
-
-        cDebug.log("resource-connexions:sync(): params[ %s ]",
-                   cDebug.obj2str(params));
-
         self.state.syncStatus  = null;
 
         self.signal('connexions.syncBegin');
-        self.jsonRpc('bookmark.fetchByUsers', params, {
-            progress: function(position, totalSize, xhr) {
-                cDebug.log('resource-connexions::sync(): RPC progress: '
-                            +   'position[ %s ], totalSize[ %s ]',
-                            position, totalSize);
-            },
-            success: function(data, textStatus, xhr) {
-                // /*
-                cDebug.log('resource-connexions::sync(): RPC success: '
-                            +   'jsonRpc return[ %s ]',
-                            cDebug.obj2str(data));
-                // */
+        if (isReload)
+        {
+            // Delete all local bookmarks
+            self.delBookmarks();
 
-                if (data.error !== null)
-                {
-                    // ERROR!
-                    self.state.syncStatus = data;
-                }
-                else
-                {
-                    // SUCCESS -- Add all new bookmarks.
-                    self.state.syncStatus = {
-                        error:      null
-                    };
-                    self.addBookmarks(data.result);
-                }
-            },
-            error:   function(xhr, textStatus, error) {
-                cDebug.log('resource-connexions::sync(): RPC error: '
-                            +   '[ %s ]',
-                            textStatus);
-                self.state.syncStatus = {
-                    error:  {
-                        code:       error,
-                        message:    textStatus
-                    }
-                };
-            },
-            complete: function(xhr, textStatus) {
-                cDebug.log('resource-connexions::sync(): RPC complete: '
-                            +   '[ %s ]',
-                            textStatus);
-                if (self.state.syncStatus.error !== null)
-                {
-                    // There was an error so the sync is complete
-                    self.signal('connexions.syncEnd', self.state.syncStatus);
-                    self.state.sync = false;
-                }
+            // Gather bookmark updates
+            self._gatherUpdates(baseParams, function() {
+                // Finalize, applying updates
+                self._syncFinalize(self.state.syncStatus);
+            });
+        }
+        else
+        {
+            var lastSync    = parseInt(self.db.state('lastSync'), 10);
+
+            if (! isNaN(lastSync))
+            {
+                baseParams.since = lastSync;
             }
-        });
+
+            // Gather bookmark deletions.
+            self._gatherDeletions(baseParams, function() {
+                if (self.state.syncStatus.error === null)
+                {
+                    // Gather bookmark updates
+                    self._gatherUpdates(baseParams, function() {
+                        // Finalize, applying changes
+                        self._syncFinalize(self.state.syncStatus);
+                    });
+                }
+            });
+        }
 
         return this;
     },
@@ -1793,15 +1760,18 @@ Connexions.prototype = {
     },
      */
 
-    /** @brief  Given a set of bookmarks retrieved from the server,
-     *          add/update our local cache.
-     *  @param  bookmarks   An array of bookmark objects.
+    /** @brief  Given a set of bookmark identifiers retrieved from the server,
+     *          delete them.
+     *  @param  sync    The syncrhonization state:
+     *                      deletions:  array of bookmark identifiers to
+     *                                  delete;
+     *                      updates:    array of bookmarks to update;
      *
      *  :NOTE: This makes use of BookmarksWorker
      *         (from chrome/resource/bookmarks-worker.js) as a worker thread to
      *         move bookmark processing off the main UI thread.
      */
-    addBookmarks: function(bookmarks) {
+    updateBookmarks: function(sync) {
         var self    = this;
 
         if ((self.bookmarksThread === null) && (self.tm !== null))
@@ -1812,8 +1782,8 @@ Connexions.prototype = {
             self.bookmarksThread = self.tm.newThread(0);
         }
 
-        cDebug.log('resource-connexions::addBookmarks(): signal worker');
-        self.bookmarksThread.dispatch(new BookmarksWorker(bookmarks),
+        cDebug.log('resource-connexions::updateBookmarks(): signal worker');
+        self.bookmarksThread.dispatch(new BookmarksWorker(sync),
                                       CI.nsIThread.DISPATCH_NORMAL);
     },
 
@@ -1836,13 +1806,6 @@ Connexions.prototype = {
         {
             if (res.addStatus !== undefined)
             {
-                if (self.state.syncStatus.progress.added === undefined)
-                {
-                    self.state.syncStatus.progress.added   = 0;
-                    self.state.syncStatus.progress.updated = 0;
-                    self.state.syncStatus.progress.ignored = 0;
-                }
-
                 switch (res.addStatus)
                 {
                 case 'created':
@@ -1862,6 +1825,37 @@ Connexions.prototype = {
             self.state.syncStatus.progress.current++;
             self.signal('connexions.syncProgress', self.state.syncStatus);
         }
+
+        return self;
+    },
+
+    /** @brief  Given a bookmark identifier (url), attempt to delete it and
+     *          signal any progress.
+     *  @param  id          The bookmark identifier (url).
+     *
+     *  :NOTE: This will typically be called from BookmarksWorker
+     *         (chrome/resource/bookmarks-worker.js) when it needs to add
+     *         a bookmark.  We handle things this way because the database
+     *         objects makes use of connexions.signal() which can only be
+     *         invoked form the main thread.
+     *
+     *  @return this for a fluent interface.
+     */
+    deleteBookmark: function(id) {
+        var self    = this;
+        var res     = self.db.deleteBookmark(id);
+
+        if (res === true)
+        {
+            self.state.syncStatus.progress.deleted++;
+        }
+        else
+        {
+            self.state.syncStatus.progress.ignored++;
+        }
+
+        self.state.syncStatus.progress.current++;
+        self.signal('connexions.syncProgress', self.state.syncStatus);
 
         return self;
     },
@@ -1890,6 +1884,171 @@ Connexions.prototype = {
         }, syncMs, CI.nsITimer.TYPE_REPEATING_SLACK);
     },
 
+    /** @brief  After collecting synchronization data, update our local
+     *          database.
+     *  @param  sync    The sync data containing:
+     *                      error:      null == ready/success,
+     *                      deletions:  array of bookmark identifiers,
+     *                      updates:    array of bookmark objects
+     */
+    _syncFinalize:  function(sync) {
+        var self    = this;
+
+        /* Upon completion, self.state.syncStatus should have:
+         *      error:      null == ready, non-null == error;
+         *      deletions:  array of bookmark identifiers to delete;
+         *      updates:    array of bookmarks to update;
+         */
+        if (sync.error === null)
+        {
+            self.updateBookmarks(sync);
+        }
+    },
+
+    /** @brief  Retrieve bookmark deletions from the activity stream.
+     *  @param  baseParams  JsonRpc base parameters;
+     *  @param  cbComplete  The completion callback;
+     */
+    _gatherDeletions: function(baseParams, cbComplete) {
+        var self    = this;
+        var params  = {
+            users:      baseParams.users,
+            count:      baseParams.count,
+            order:      'time ASC',
+            objectType: 'bookmark',
+            operation:  'delete'
+        };
+        if (baseParams.since !== undefined)
+        {
+            params.since = baseParams.since;
+        }
+
+        self.jsonRpc('activity.fetchByUsers', params, {
+            success: function(data, textStatus, xhr) {
+                // /*
+                cDebug.log('resource-connexions::_gatherDeletions(): '
+                            +   'RPC success: jsonRpc return[ %s ]',
+                            cDebug.obj2str(data));
+                // */
+
+                // Establish syncStatus
+                if (data.error !== null)
+                {
+                    // ERROR!
+                    self.state.syncStatus = data;
+                }
+                else
+                {
+                    // SUCCESS
+                    self.state.syncStatus = {
+                        error:      null,
+                        deletions:  []
+                    };
+
+                    /* Extract JUST the bookmark identifiers, which SHOULD
+                     * contain:
+                     *  userId, itemId
+                     */
+                    for (var idex = 0; idex < data.result.length; idex++)
+                    {
+                        var activity    = data.result[idex];
+                        self.state.syncStatus.deletions
+                                .push(activity.properties);
+                    }
+                }
+            },
+            error:   function(xhr, textStatus, error) {
+                cDebug.log('resource-connexions::_gatherDeletions(): '
+                            +   'RPC error: [ %s ]',
+                            textStatus);
+                // Establish syncStatus
+                self.state.syncStatus = {
+                    error:  {
+                        code:       error,
+                        message:    textStatus
+                    }
+                };
+            },
+            complete: function(xhr, textStatus) {
+                cDebug.log('resource-connexions::_gatherDeletions(): '
+                            +   'RPC complete: [ %s ]',
+                            textStatus);
+
+                cbComplete();
+            }
+        });
+    },
+
+    /** @brief  Retrieve bookmark updates.
+     *  @param  baseParams  JsonRpc base parameters
+     *  @param  cbComplete  The completion callback;
+     */
+    _gatherUpdates: function(baseParams, cbComplete) {
+        var self    = this;
+        var params  = {
+            users:  baseParams.users,
+            count:  baseParams.count
+        };
+        if (baseParams.since !== undefined)
+        {
+            params.since = baseParams.since;
+        }
+
+        self.jsonRpc('bookmark.fetchByUsers', params, {
+            progress: function(position, totalSize, xhr) {
+                cDebug.log('resource-connexions::_gatherUpdates(): '
+                            +   'RPC progress: position[ %s ], totalSize[ %s ]',
+                            position, totalSize);
+            },
+            success: function(data, textStatus, xhr) {
+                // /*
+                cDebug.log('resource-connexions::_gatherUpdates(): '
+                            +   'RPC success: jsonRpc return[ %s ]',
+                            cDebug.obj2str(data));
+                // */
+
+                // Update syncStatus (established via _gatherDeletions())
+                if (data.error !== null)
+                {
+                    // ERROR!
+                    self.state.syncStatus = data;
+                }
+                else
+                {
+                    // SUCCESS -- Add all new bookmarks.
+                    if (self.state.syncStatus === true)
+                    {
+                        self.state.syncStatus = {};
+                    }
+                    self.state.syncStatus.error   = null;
+                    self.state.syncStatus.updates = data.result;
+                }
+            },
+            error:   function(xhr, textStatus, error) {
+                cDebug.log('resource-connexions::_gatherUpdates(): '
+                            +   'RPC error: [ %s ]',
+                            textStatus);
+
+                if (self.state.syncStatus === true)
+                {
+                    self.state.syncStatus = {};
+                }
+
+                self.state.syncStatus.error = {
+                    code:       error,
+                    message:    textStatus
+                };
+            },
+            complete: function(xhr, textStatus) {
+                cDebug.log('resource-connexions::_gatherUpdates(): '
+                            +   'RPC complete: [ %s ]',
+                            textStatus);
+
+                cbComplete();
+            }
+        });
+    },
+
     /** @brief  Receive an addBookmarks worker message.
      *  @param  event   The Post event which SHOULD contain a data item of the
      *                  form:
@@ -1898,6 +2057,9 @@ Connexions.prototype = {
     _addBookmarksMessage: function(event) {
         var self    = this;
         var info    = event.data;
+
+        cDebug.log('resource-connexions::_addBookmarksMessage(): info[ %s ]',
+                    cDebug.obj2str(info));
 
         switch (info.type)
         {

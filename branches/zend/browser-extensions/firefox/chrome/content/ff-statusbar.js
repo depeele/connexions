@@ -146,7 +146,9 @@ CStatusbar.prototype = {
                 str = self.getString(
                             'connexions.statusbar.sync.progress.detail',
                             [ progress.current,
-                              progress.added, progress.updated ]);
+                              progress.added,
+                              progress.updated,
+                              progress.deleted]);
             }
             else
             {
@@ -162,8 +164,8 @@ CStatusbar.prototype = {
                 var val = Math.floor((progress.current / progress.total)
                                         * 100);
 
-                self.elProgress.mode  = 'determined';
-                self.elProgress.value = val;
+                self.elSyncProgress.mode  = 'determined';
+                self.elSyncProgress.value = val;
             }
 
             break;

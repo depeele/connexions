@@ -20,10 +20,12 @@ CU.import('resource://connexions/debug.js');
  */
 
 /** @brief  The thread used to add bookmarks OFF the main UI thread.
- *  @param  bookmarks   The array of bookmarks to add;
+ *  @param  sync    The synchronization data containing:
+ *                      deletions:  An array of bookmark identifiers;
+ *                      updates:    An array of bookmark objects;
  */
-var BookmarksWorker = function(bookmarks) {
-    this.bookmarks = bookmarks;
+var BookmarksWorker = function(sync) {
+    this.sync = sync;
 };
 
 BookmarksWorker.prototype = {
@@ -65,6 +67,21 @@ BookmarksWorker.prototype = {
 
         return this;
     },
+
+    /** @brief  Given a bookmark identifier (url), attempt to delete it and
+     *          signal any progress.
+     *  @param  id          The bookmark identifier (url).
+     *
+     *  :NOTE: Relay on connexions.
+     *
+     *  @return this for a fluent interface.
+     */
+    deleteBookmark: function(id) {
+        connexions.deleteBookmark(id);
+
+        return this;
+    },
+
 
     /** @brief  Given a date string of the form 'YYYY-MM-DD hh:mm:ss', convert
      *          it to a UNIX timestamp.
@@ -163,22 +180,41 @@ BookmarksWorker.prototype = {
     },
 
     run: function() {
-        var self        = this;
-        var bookmarks   = self.bookmarks;
+        var self    = this;
+        var sync    = self.sync;
 
-        // /*
-        cDebug.log('BookmarksWorker::run(): %s bookmarks',
-                   bookmarks.length);
-        // */
-
-        // Signal our first progress update
+        // Establish syncStatus.progress
         connexions.state.syncStatus.progress = {
-            total:      bookmarks.length,
-            current:    0
+            total:      sync.deletions.length + sync.updates.length,
+            current:    0,
+            added:      0,
+            updated:    0,
+            ignored:    0,
+            deleted:    0
         };
 
+        // /*
+        cDebug.log('BookmarksWorker::run(): syncStatus[ %s ]',
+                    cDebug.obj2str(connexions.state.syncStatus));
+        // */
+
+        // Signal our beginning progress update
         self.signal('connexions.syncProgress', connexions.state.syncStatus);
-        for each (var bookmark in bookmarks)
+
+        // First, deletions
+        for each (var bookmark in sync.deletions)
+        {
+            if (connexions.state.sync !== true)
+            {
+                // CANCEL the sync
+                break;
+            }
+
+            self.deleteBookmark(bookmark.itemId);
+        }
+
+        // Second, updates
+        for each (var bookmark in sync.updates)
         {
             if (connexions.state.sync !== true)
             {
@@ -196,9 +232,9 @@ BookmarksWorker.prototype = {
             self.addBookmark( normalized );
         }
 
+        connexions.state.sync = false;
         self.signal('connexions.syncEnd', connexions.state.syncStatus);
         self.signal('connexions.bookmarksUpdated');
-        connexions.state.sync = false;
     }
 };
 
