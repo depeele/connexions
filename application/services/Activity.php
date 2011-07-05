@@ -3,7 +3,7 @@
  *
  *  The concrete base class providing access to Model_Activity.
  */
-class Service_Activity extends Connexions_Service
+class Service_Activity extends Service_Base
 {
     /* inferred via classname
     protected   $_modelName = 'Model_Activity';
@@ -93,12 +93,9 @@ class Service_Activity extends Connexions_Service
                                  $offset        = null,
                                  $since         = null)
     {
-        $ids     = array('userId' => $this->_csList2array($users));
-        $normIds = $this->_mapper->normalizeIds($ids);
-        if ($order !== null)
-        {
-            $order = $this->_csOrder2array($order);
-        }
+        $users   = $this->factory('Service_User')->csList2set($users);
+        $normIds = array('userId' => $users->getIds());
+        $order   = $this->_csOrder2array($order);
 
         if (! empty($objectType))
         {
