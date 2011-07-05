@@ -986,13 +986,12 @@ class Service_Bookmark extends Service_Base
      */
     protected function _includeSince(array $id, $since, $taggedOn = false)
     {
-        if (is_string($since))
+        if (is_int($since) || is_numeric($since))
         {
-            $since = strtotime($since);
+            // ASSUME this is a unix timestamp
+            $since = strftime('%Y-%m-%d %H:%M:%S', $since);
             if ($since !== false)
             {
-                // Include an additional condition in 'normIds'
-                $since = strftime('%Y-%m-%d %H:%M:%S', $since);
                 if ($taggedOn === true)
                 {
                     $id['taggedOn >='] = $since;
@@ -1003,12 +1002,13 @@ class Service_Bookmark extends Service_Base
                 }
             }
         }
-        else if (is_int($since) || is_numeric($since))
+        else if (is_string($since))
         {
-            // ASSUME this is a unix timestamp
-            $since = strftime('%Y-%m-%d %H:%M:%S', $since);
+            $since = strtotime($since);
             if ($since !== false)
             {
+                // Include an additional condition in 'normIds'
+                $since = strftime('%Y-%m-%d %H:%M:%S', $since);
                 if ($taggedOn === true)
                 {
                     $id['taggedOn >='] = $since;
