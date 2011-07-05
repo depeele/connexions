@@ -49,7 +49,9 @@ $.widget("settings.bookmarksImport", {
      */
     widgetEventPrefix:    '',
 
-    options: { },
+    options: {
+        instIdPrefix:   'bookmark-import-browser-instructions'
+    },
 
     /** @brief  Initialize a new instance.
      *
@@ -70,6 +72,9 @@ $.widget("settings.bookmarksImport", {
         opts.$results    = self.element.find('.results-section');
         opts.$iframe     = opts.$results.find('iframe:first');
 
+        opts.$inst       = opts.$form.find('[id^='+ opts.instIdPrefix +']');
+        opts.$instA      = opts.$form.find('.alternatives a')
+
         // Create sub-widgets
         opts.$inputs.input({ hideLabel: false });
         opts.$buttonSets.buttonset();
@@ -87,6 +92,33 @@ $.widget("settings.bookmarksImport", {
         var self    = this;
         var opts    = self.options;
 
+        // Handle showing instructions for specific browsers
+        opts.$form.delegate('.alternatives a', 'click', function(e) {
+            e.preventDefault();
+
+            var $a      = $(this);
+            var id      = '#'+ opts.instIdPrefix +'-'
+                        + $a.attr('href').replace(/.*\?ua=/, '');
+            var $inst   = opts.$form.find( id );
+
+            // Hide all instructions
+            opts.$inst.hide();
+            opts.$instA.css('text-decoration', 'none');
+
+            if ($inst.length > 0)
+            {
+                // Show the instructions for the chosen browser.
+                $inst.show();
+                $a.css('text-decoration', 'underline');
+            }
+            else
+            {
+                // Show the generic instructions
+                opts.$form.find('#'+ opts.instIdPrefix).show();
+            }
+        });
+
+        // Handle changes to the import file
         opts.$file.bind('change.settingsBookmarksImport', function(e) {
             if (opts.$file.val().length > 0)
             {
@@ -97,6 +129,8 @@ $.widget("settings.bookmarksImport", {
                 opts.$submit.button('disable');
             }
         });
+
+        // Handle import form submission
         opts.$form.bind('submit.settingsBookmarksImport', function(e) {
             opts.$form.mask();
 
@@ -109,6 +143,7 @@ $.widget("settings.bookmarksImport", {
             // Allow the event to propagate
         });
 
+        // When the progress iframe is fully loaded, unmask our import form
         opts.$iframe.bind('load.settingsBookmarksImport', function(e) {
             opts.$form.unmask();
 
