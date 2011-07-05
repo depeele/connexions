@@ -162,21 +162,22 @@ class Service_Activity extends Service_Base
      */
     protected function _includeSince(array $id, $since)
     {
-        if (is_string($since))
-        {
-            $since = strtotime($since);
-            if ($since !== false)
-            {
-                // Include an additional condition in 'normIds'
-                $id['time >='] = strftime('%Y-%m-%d %H:%M:%S', $since);
-            }
-        }
-        else if (is_int($since) || is_numeric($since))
+        $orig = $since;
+        if (is_int($since) || is_numeric($since))
         {
             // ASSUME this is a unix timestamp
             $since = strftime('%Y-%m-%d %H:%M:%S', $since);
             if ($since !== false)
             {
+                $id['time >='] = $since;
+            }
+        }
+        else if (is_string($since))
+        {
+            $since = strtotime($since);
+            if ($since !== false)
+            {
+                // Include an additional condition in 'normIds'
                 $id['time >='] = strftime('%Y-%m-%d %H:%M:%S', $since);
             }
         }
