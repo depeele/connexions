@@ -39,24 +39,34 @@ class Service_Proxy_Activity extends Connexions_Service_Proxy
     }
 
     /** @brief  Retrieve a set of activities related to a set of Users.
-     *  @param  users   A Model_Set_User instance, array, or comma-separated
-     *                  string of users to match.
-     *  @param  order   Optional ORDER clause (string, array)
-     *                  [ 'time DESC' ];
-     *  @param  count   Optional LIMIT count
-     *  @param  offset  Optional LIMIT offset
-     *  @param  since   Limit the results to activities that occurred after
-     *                  this date/time [ null == no time limits ];
+     *  @param  users       A Model_Set_User instance, array, or
+     *                      comma-separated string of users to match.
+     *  @param  objectType  An array or  comma-separated string of the
+     *                      object(s) of interest (user, item, tag, bookmark)
+     *                      [ null == all ];
+     *  @param  operation   An array or comma-separated string of the
+     *                      operations(s) of interest (save, update, delete)
+     *                      [ null == all ];
+     *  @param  order       Optional ORDER clause (string, array)
+     *                      [ 'time DESC' ];
+     *  @param  count       Optional LIMIT count
+     *  @param  offset      Optional LIMIT offset
+     *  @param  since       Limit the results to activities that occurred after
+     *                      this date/time [ null == no time limits ];
      *
      *  @return A new Model_Set_Activity instance.
      */
     public function fetchByUsers($users,
-                                 $order    = 'time DESC',
-                                 $count    = 50,
-                                 $offset   = 0,
-                                 $since   = null)
+                                 $objectType    = null,
+                                 $operation     = null,
+                                 $order         = 'time DESC',
+                                 $count         = 50,
+                                 $offset        = 0,
+                                 $since         = null)
     {
         return $this->_service->fetchByUsers($users,
+                                             $objectType,
+                                             $operation,
                                              $order,
                                              $count,
                                              $offset,

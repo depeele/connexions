@@ -260,6 +260,15 @@ abstract class Connexions_Model_Mapper
         return $this->_filter;
     }
 
+    /** @brief  Get the name(s) of the key fields.
+     *
+     *  @return The name(s) of the key fields.
+     */
+    public function getKeyNames()
+    {
+        return $this->_keyNames;
+    }
+
     /** @brief  Find a matching Domain Model or create a new one given raw
      *          data. 
      *  @param  data        The raw data.
