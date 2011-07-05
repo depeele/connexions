@@ -309,17 +309,17 @@ Connexions.prototype = {
                     // */
                 }
 
+                /*
                 if (cookie.name === self.cookieJar.authCookie)
                 {
-                    // /*
                     cDebug.log('resource-connexions::observe(): '
                                 + 'authCookie changed!');
-                    // */
 
                     // (Re)Retrieve the authenticated user
                     self.retrieveUser();
                     noTimer = true;
                 }
+                // */
             }
 
             if (noTimer === false)
@@ -331,7 +331,7 @@ Connexions.prototype = {
                 self.cookieTimer.initWithCallback(function() {
                     self.retrieveUser();
                     self.cookieTicking = false;
-                }, 5000, CI.nsITimer.TYPE_ONE_SHOT);
+                }, 1000, CI.nsITimer.TYPE_ONE_SHOT);
                 self.cookieTicking = true;
             }
             break;
@@ -522,6 +522,9 @@ Connexions.prototype = {
 
         if (self.state.retrieveUser === true)
         {
+            cDebug.log('resource-connexion::retrieveUser(): '
+                        +   'already in progress');
+
             // In process
             return self;
         }
@@ -561,8 +564,8 @@ Connexions.prototype = {
                             textStatus);
             },
             complete: function(xhr, textStatus) {
-                self.signal('connexions.userChanged', self.user);
                 self.state.retrieveUser = false;
+                self.signal('connexions.userChanged', self.user);
             }
         });
 
@@ -1375,6 +1378,15 @@ Connexions.prototype = {
 
         if (self.user === null)
         {
+            // Attempt to retrieve the current user
+            self.retrieveUser(function() {
+                if (self.user !== null)
+                {
+                    // Retry the sync since we now have a non-null user
+                    self.sync(isReload);
+                }
+            });
+
             cDebug.log("resource-connexions::sync(): NOT signed in");
             return this;
         }
