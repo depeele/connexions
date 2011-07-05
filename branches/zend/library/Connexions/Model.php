@@ -761,7 +761,17 @@ abstract class Connexions_Model
         // */
         if ( $this->isBacked())
         {
-            $this->_logActivity('delete');
+            // Use toArray() so we get a public version of field values
+            $fullProperties = $this->toArray(array('deep'  => false,
+                                                   'dirty' => false));
+            $keys           = $this->getMapper()->getKeyNames();
+            $properties     = array();
+            foreach ($keys as $key)
+            {
+                $properties[$key] = $fullProperties[$key];
+            }
+
+            $this->_logActivity('delete', $properties);
         }
 
         return $this->getMapper()->delete( $this );

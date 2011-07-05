@@ -68,22 +68,30 @@ class Service_Activity extends Connexions_Service
     }
 
     /** @brief  Retrieve a set of activities related to a set of Users.
-     *  @param  users   A Model_Set_User instance, array, or comma-separated
-     *                  string of users to match.
-     *  @param  order   Optional ORDER clause (string, array)
-     *                  [ $this->_defaultOrdering ];
-     *  @param  count   Optional LIMIT count
-     *  @param  offset  Optional LIMIT offset
-     *  @param  since   Limit the results to activities that occurred after
-     *                  this date/time [ null == no time limits ];
+     *  @param  users       A Model_Set_User instance, array, or
+     *                      comma-separated string of users to match.
+     *  @param  objectType  An array or comma-separated string of the object(s)
+     *                      of interest (user, item, tag, bookmark)
+     *                      [ null == all ];
+     *  @param  operation   An array or comma-separated string of the
+     *                      operations(s) of interest (save, update, delete)
+     *                      [ null == all ];
+     *  @param  order       Optional ORDER clause (string, array)
+     *                      [ $this->_defaultOrdering ];
+     *  @param  count       Optional LIMIT count
+     *  @param  offset      Optional LIMIT offset
+     *  @param  since       Limit the results to activities that occurred after
+     *                      this date/time [ null == no time limits ];
      *
      *  @return A new Model_Set_Activity instance.
      */
     public function fetchByUsers($users,
-                                 $order   = null,
-                                 $count   = null,
-                                 $offset  = null,
-                                 $since   = null)
+                                 $objectType    = null,
+                                 $operation     = null,
+                                 $order         = null,
+                                 $count         = null,
+                                 $offset        = null,
+                                 $since         = null)
     {
         $ids     = array('userId' => $this->_csList2array($users));
         $normIds = $this->_mapper->normalizeIds($ids);
@@ -92,10 +100,28 @@ class Service_Activity extends Connexions_Service
             $order = $this->_csOrder2array($order);
         }
 
+        if (! empty($objectType))
+        {
+            $normIds = $this->_includeValues($normIds, 'objectType',
+                                             $objectType);
+        }
+
+        if (! empty($operation))
+        {
+            $normIds = $this->_includeValues($normIds, 'operation',
+                                             $operation);
+        }
+
         if ($since !== null)
         {
             $normIds = $this->_includeSince($normIds, $since);
         }
+
+        Connexions::log("Model_Activity::fetchByUsers(): "
+                        . "objectType[ %s ], operation[%s], normIds[ %s ]",
+                        Connexions::varExport($objectType),
+                        Connexions::varExport($operation),
+                        Connexions::varExport($normIds));
 
         return $this->_mapper->fetch( $normIds,
                                       $order,
@@ -107,6 +133,28 @@ class Service_Activity extends Connexions_Service
      * Protected helpers
      *
      */
+
+    /** @brief  Include value restrictions.
+     *  @param  id      The identifier to add restrictions to;
+     *  @param  field   The field to match;
+     *  @param  values  The array or comma-separates string of values;
+     *
+     *  @return The (possibly) modified 'id'.
+     */
+    protected function _includeValues(array $id, $field, $values)
+    {
+        if (is_string($values))
+        {
+            $values = preg_split('/\s*,\s*/', $values);
+        }
+
+        if (is_array($values) && (count($values) > 0))
+        {
+            $id[$field] = $values;
+        }
+
+        return $id;
+    }
 
     /** @brief  Include a date/time restriction.
      *  @param  id      The identifier to add date/time restrictions to;
