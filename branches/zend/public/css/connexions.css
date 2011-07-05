@@ -899,7 +899,7 @@ body.light { background-color: white; }
 #pageHeader h1#siteName { position: absolute; top: -26px; left: 0; color: black; font-weight: bold; font-size: 26px; padding: 0 0 0 13px; }
 #pageHeader h1#siteName a { display: block; width: 175px; }
 #pageHeader h1#siteName span, #pageHeader h1#siteName img { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
-#pageHeader h1#siteName img { height: 34px; width: 34px; top: 13px; left: -2px; margin-right: -9px; }
+#pageHeader h1#siteName img { height: 34px; width: 34px; top: 12px; left: -2px; margin-right: -9px; z-index: 1; }
 
 /* Page Content */
 #pageContent { padding: 2em 0 0 2em; z-index: 10; }
