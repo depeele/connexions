@@ -66,9 +66,10 @@ body.light {
     img {
       height:       34px;
       width:        34px;
-      top:          13px;
+      top:          12px;
       left:         -2px;
       margin-right: -9px;
+      z-index:      1;
     }
   }
 }
