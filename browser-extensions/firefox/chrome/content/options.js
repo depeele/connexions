@@ -315,7 +315,9 @@ COptions.prototype = {
             {
                 str = self.getString('connexions.prefs.sync.progress.detail',
                                          [ progress.current,
-                                           progress.added, progress.updated ]);
+                                           progress.added,
+                                           progress.updated,
+                                           progress.deleted ]);
             }
             else
             {
