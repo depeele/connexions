@@ -56,13 +56,86 @@ $jQuery->javascriptCaptureEnd();
   <div class='section'><!-- section { -->
    <h3>Step 1: Save your browser bookmarks to a file</h3>
    <p id='bookmark-import-browser-instructions'>
-     Use your browsers <i>export bookmarks</i> option and save to a file, remembering
-     where the file was saved.
+     Use your browsers <i>export bookmarks</i> option and save to a file,
+     remembering where the file was saved.
    </p>
+
+   <div id='bookmark-import-browser-instructions-ff'
+        class='browser-instructions' style='display:none;'>
+    <h4>Firefox</h4>
+    <ol>
+     <li>Choose "Organize Bookmarks" from the Bookmarks menu;</li>
+     <li>Choose "Export..." from the File menu (star);</li>
+     <li>Choose a location for your bookmarks file and click Save;</li>
+     <li>Remember the location you chose for your bookmarks file;</li>
+    </ol>
+   </div>
+
+   <div id='bookmark-import-browser-instructions-ie6'
+        class='browser-instructions' style='display:none;'>
+    <h4>Internet Explorer 6</h4>
+    <ol>
+     <li>Choose "Import and Export" from the File menu;</li>
+     <li>Click Next, choose "Export Favorites" and click Next again;</li>
+     <li>Choose which bookmark folder you want to export from (the top one will export all your bookmarks) and click Next;</li>
+     <li>Choose a location for your bookmarks file, click Next, then Finish, and finally OK once it says "Successfully exported favorites";</li>
+     <li>Remember the location you chose for your bookmarks file;</li>
+    </ol>
+   </div>
+
+   <div id='bookmark-import-browser-instructions-ie'
+        class='browser-instructions' style='display:none;'>
+    <h4>Internet Explorer 7+</h4>
+    <ol>
+     <li>Click the Tools button, and make sure that the Menu Bar is checked;</li>
+     <li>Choose "Import and Export" from the File menu;</li>
+     <li>Click Next, choose "Export Favorites", and click Next again;</li>
+     <li>Choose which bookmark folder you want to export from (the top one will export all your bookmarks) and click Next;</li>
+     <li>Choose a location for your bookmarks file, click Next, then Finish, and finally OK once it says "Successfully exported favorites";</li>
+     <li>Remember the location you chose for your bookmarks file;</li>
+    </ol>
+   </div>
+
+   <div id='bookmark-import-browser-instructions-op'
+        class='browser-instructions' style='display:none;'>
+    <h4>Opera</h4>
+    <ol>
+     <li>Choose "Import and Export..." from the File menu;</li>
+     <li>Choose "Export Opera bookmarks"
+          <div class='warning'>
+            <p><span class='title'>Important:</span> do NOT choose the similar looking "Explort bookmarks as HTML" option, which is incompatible!</p>
+          </div>
+     </li>
+     <li>Choose a location for your bookmarks file and click Save;</li>
+     <li>Remember the location you chose for your bookmarks file;</li>
+    </ol>
+   </div>
+
+   <div id='bookmark-import-browser-instructions-sf'
+        class='browser-instructions' style='display:none;'>
+    <h4>Safari</h4>
+    <ol>
+     <li>Choose "Export Bookmarks" from the File menu;</li>
+     <li>Choose a location for your bookmarks file and click Save;</li>
+     <li>Remember the location you chose for your bookmarks file;</li>
+    </ol>
+   </div>
+
+   <div id='bookmark-import-browser-instructions-ch'
+        class='browser-instructions' style='display:none;'>
+    <h4>Chrome</h4>
+    <ol>
+     <li>Choose "Bookmark Manager" from the Settings menu (wrench icon);</li>
+     <li>Choose "Export bookmarks" from the Organize menu;</li>
+     <li>Choose a location for your bookmarks file and click Save;</li>
+     <li>Remember the location you chose for your bookmarks file;</li>
+    </ol>
+   </div>
+
    <p class='alternatives note'>Show instructions for
         <a href='?ua=ff'>Firefox</a>,
         <a href='?ua=ie6'>Internet Explorer 6</a>,
-        <a href='?ua=ie7'>Internet Explorer 7</a>,
+        <a href='?ua=ie'>Internet Explorer 7+</a>,
         <a href='?ua=op'>Opera</a>,
         <a href='?ua=sf'>Safari</a>,
         <a href='?ua=ch'>Chrome</a>.
