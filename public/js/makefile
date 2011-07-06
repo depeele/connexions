@@ -1,7 +1,7 @@
 #YUI_COMP	= yuicompressor
 YUI_COMP	= yui-compressor
 
-SRCS =	connexions.js jquery.registry.js jquery.cookie.js 		\
+SRCS =	json2.js connexions.js jquery.registry.js jquery.cookie.js	\
 	jquery.scrollTo.js jquery.pngFix.js jquery.localNavigation.js	\
 	ui.checkbox.js ui.input.js ui.tagInput.js ui.stars.js		\
 	ui.notify.js ui.confirmation.js ui.validationForm.js		\

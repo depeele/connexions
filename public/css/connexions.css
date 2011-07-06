@@ -3,7 +3,7 @@
 /* Copyright (c) 2008, Yahoo! Inc. All rights reserved. Code licensed under the BSD License: http://developer.yahoo.net/yui/license.txt version: 3.0.0pr2 */
 html { color: black; background: white; }
 
-html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp, small, strong, sub, sup, var, a, b, i, dl, dt, dd, ol, ul, li, form, fieldset, label, legend, input, textarea, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, figure, footer, header, hgroup, menu, nav, sectioni, time, mark, audio, video { position: relative; margin: 0; padding: 0; border: 0; outline: 0; font-size: 100%; vertical-align: baseline; background: transparent; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; -ms-box-sizing: border-box; }
+html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp, small, strong, sub, sup, var, a, b, i, dl, dt, dd, ol, ul, li, form, fieldset, label, legend, input, textarea, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, figure, footer, header, hgroup, menu, nav, section, time, mark, audio, video { position: relative; margin: 0; padding: 0; border: 0; outline: 0; font-size: 100%; vertical-align: baseline; background: transparent; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; -ms-box-sizing: border-box; }
 
 article, aside, figure, footer, header, hgroup, nav, section { display: block; }
 
@@ -55,13 +55,13 @@ br.clear { clear: both; display: block; height: 0; line-height: 0px; }
 
 /****** template.sass ****** */
 /* ====== Page Head, Body, and Foot ====== */
-body { /* IE5.5 */ /*_text-align: center */ min-width: 960px; }
+body { min-width: 960px; }
 
-.body, .main { display: table-cell; *display: block; _position: relative; _left: -3px; _margin-right: -3px; width: auto; _zoom: 1; }
+.body, .main { display: table-cell; width: auto; }
 
 .body:after, .main:after { content: " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . "; visibility: hidden; clear: both; height: 0 !important; display: block; line-height: 0; font-size: 36px; }
 
-.page { margin: 0 auto; width: 950px; /*_text-align: left */ }
+.page { margin: 0 auto; width: 950px; }
 
 /* wraps other template elems to set width */
 /* text-align IE5.5 */
@@ -75,9 +75,9 @@ body { /* IE5.5 */ /*_text-align: center */ min-width: 960px; }
 /* ====== Columns ====== */
 .main { position: relative; }
 
-.leftCol { float: left; width: 250px; _margin-right: -3px; }
+.leftCol { float: left; width: 250px; }
 
-.rightCol { float: right; width: 320px; _margin-right: -3px; }
+.rightCol { float: right; width: 320px; }
 
 /* extend columns to allow for common column widths */
 .gMail { width: 160px; }
@@ -282,6 +282,8 @@ a:visited { color: #005a9c; }
 .welcome_bg { background-position: 0 -270px; }
 
 .old_welcome_bg { width: 100px; height: 64px; background-position: 0 -110px; }
+
+.nav_corner { background-position: 0 -272px; }
 
 .scope_root { height: 24px; width: 16px; background-position: -24px -240px; }
 

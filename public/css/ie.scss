@@ -1,5 +1,6 @@
 @import "sizes";
 @import "colors";
+@import "urls";
 
 // For libraries.scss
 .clearfix {
@@ -14,6 +15,21 @@
   *display: inline;
 }
 
+// template.scss
+.main {
+  position:     relative;
+  left:         -3px;
+  margin-right: -3px;
+  zoom:         1;
+}
+
+.leftCol {
+  margin-right: -3px;
+}
+.rightCol {
+  margin-right: -3px;
+}
+
 // For main.scss
 .pane {
   zoom:   1;
@@ -21,35 +37,89 @@
 
 // For tabs.scss
 #pageHeader {
-  .nav {
-    li {
-      height: $tabHeight - 5px;
+  .tabs_outer_curve {
+    right:    ($tabWidth + 20px) - 2px;
+  }
+
+  .siteAuth {
+    .siteMarking {
+      right:  $tabWidth + 20px;
+      .urCorner {
+        behavior: url("css/PIE.htc");
+        -pie-poll:false;
+      }
+    }
+    .authInfo {
+      width:    $tabWidth + 20px;
+      z-index:  2;    /* ABOVE .siteNav */
+
+      .authMenu {
+        .menu {
+          behavior: url("css/PIE.htc");
+          -pie-poll:false;
+        }
+      }
     }
   }
-  ul.sub {
-    top:  $navTopSub + 2px;
-  }
-  .tabs {
-    li {
-      // Firefox/Chrome 88px, 81px
-      width:  $navWidthItem - 7;
+  .siteNav {
+    .tabs {
+      width:    $tabWidth + 20px;
+      behavior: url("css/PIE.htc");
+      -pie-poll:false;
+
+      li {
+        // Firefox/Chrome 88px, 81px
+        width:  $navWidthItem - 7;
+      }
+      li.menu-first {
+        behavior: url("css/PIE.htc");
+        -pie-poll:false;
+      }
+      li.welcome {
+        background-image: none;
+        background-color: $contextColorBackground;
+      }
     }
-    li.welcome {
-      background-image: none;
-      background-color: $contextColorBackground;
+    .nav {
+      width:    $navWidth + 20px;
+      behavior: url("css/PIE.htc");
+      -pie-poll:false;
+
+      li {
+        height: $tabHeight - 5px;
+      }
+    }
+    ul.sub {
+      .sub-last {
+        behavior: url("css/PIE.htc");
+        -pie-poll:false;
+      }
+    }
+    #search {
+      padding-top:  1px;
+      height:       $tabHeight - 8px;
+    
+      .submit {
+        left:  $searchInputInputWidth;
+      }
+      .choices {
+        .list {
+          top: $tabHeight - ($navPadItem * 2) + 3px;
+          li {
+            width:  $searchInputInputWidth;
+          }
+        }
+      }
     }
   }
 }
 
-#search {
-  .submit {
-    left:  $searchInputInputWidth;
-  }
-  .choices {
-    .list {
-      top:  $tabHeight - $navPadItem;
-      li {
-        width:  $searchInputInputWidth;
+.noNav {
+  #pageHeader {
+    .siteNav {
+      .tabs {
+        behavior: url("css/PIE.htc");
+        -pie-poll:false;
       }
     }
   }
@@ -65,6 +135,36 @@
 // For itemScope.scss
 .itemScope {
   zoom:   1;
+
+  ul {
+    height: 1.8em;
+  }
+
+  .scopeEntry {
+    padding-top:  0;
+
+    .tagInput {
+      margin-top: 0.1em;
+      .tagList {
+        .tag {
+          padding-right:  18px;
+
+          .delete {
+            position:     absolute;
+            right:        -4px;
+            top:          0px;
+            z-index:      100;
+          }
+        }
+      }
+    }
+
+    button {
+      position:     absolute;
+      top:          0.2em;
+    }
+
+  }
 }
 
 // For bookmarks.scss
@@ -73,6 +173,11 @@
     .data {
       .url {
         width:  $urlBoxWidth;
+      }
+      .meta {
+        .dates {
+          width:  8em;
+        }
       }
     }
   }

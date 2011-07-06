@@ -17,3 +17,53 @@
 #search {
   padding-top:  inherit;
 }
+
+// For tabs.scss corners
+#pageHeader {
+  .siteAuth {
+    .siteMarking {
+      .urCorner {
+        behavior: url("css/PIE.htc");
+        -pie-poll:false;
+      }
+    }
+    .authInfo {
+      .authMenu {
+        .menu {
+          behavior: url("css/PIE.htc");
+          -pie-poll:false;
+        }
+      }
+    }
+  }
+  .siteNav {
+    .tabs {
+      behavior: url("css/PIE.htc");
+      -pie-poll:false;
+      li.menu-first {
+        behavior: url("css/PIE.htc");
+        -pie-poll:false;
+      }
+    }
+    .nav {
+      behavior: url("css/PIE.htc");
+      -pie-poll:false;
+    }
+    ul.sub {
+      .sub-last {
+        behavior: url("css/PIE.htc");
+        -pie-poll:false;
+      }
+    }
+}
+
+.noNav {
+  #pageHeader {
+    .siteNav {
+      .tabs {
+        behavior: url("css/PIE.htc");
+        -pie-poll:false;
+      }
+    }
+  }
+}

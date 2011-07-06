@@ -70,6 +70,12 @@ $.widget("connexions.itemList", {
              * representative form
              */
             opts.objClass = self.$items.attr('class');
+
+            // :XXX: IE Fix
+            if (opts.objClass === undefined)
+            {
+                opts.objClass = self.$items[0].className;
+            }
         }
 
         if (self.$items.length > 0)

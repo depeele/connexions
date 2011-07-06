@@ -1,19 +1,12 @@
 /****** template.sass ****** */
 /* ====== Page Head, Body, and Foot ====== */
 body {
-  /* IE5.5 */
-  /*_text-align: center */
   min-width: $minPageWidth;
 }
 
 .body, .main {
   display: table-cell;
-  *display: block;
-  _position: relative;
-  _left: -3px;
-  _margin-right: -3px;
   width: auto;
-  _zoom: 1;
 }
 
 .body:after,.main:after {
@@ -29,7 +22,6 @@ body {
 .page {
   margin: 0 auto;
   width: 950px;
-  /*_text-align: left */
 }
 
 /* wraps other template elems to set width */ /* text-align IE5.5 */
@@ -55,13 +47,11 @@ body {
 .leftCol {
   float: left;
   width: 250px;
-  _margin-right: -3px;
 }
 
 .rightCol {
   float: right;
   width: $rightColumnWidth;
-  _margin-right: -3px;
 }
 
 /* extend columns to allow for common column widths */
