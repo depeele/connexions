@@ -50,6 +50,7 @@ $jQuery->addOnLoad('$.body_initHandlers();')
          */
         var $body   = $('.body');   //$('body');
 
+        if (false) {
         $body.delegate('.ui-state-default', 'mouseenter', function(e) {
             /*
             window.console.debug("in: orig[ "+
@@ -65,7 +66,7 @@ $jQuery->addOnLoad('$.body_initHandlers();')
             if (! $el.attr('disabled'))
             {
                 // remove all others and hover here
-                $body.find('.ui-state-hover').removeClass('ui-state-hover');
+                //$body.find('.ui-state-hover').removeClass('ui-state-hover');
 
                 $el.addClass('ui-state-hover');
             }
@@ -85,6 +86,7 @@ $jQuery->addOnLoad('$.body_initHandlers();')
             // remove hover
             $(this).removeClass('ui-state-hover');
         });
+        }
 
         $('#search').search();
 
