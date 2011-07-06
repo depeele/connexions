@@ -820,10 +820,12 @@
                                           width:    $el.outerWidth(),
                                           height:   $el.outerHeight(),
                                           'z-index':myZ});
+            /*
             if ($.fn.bgiframe)
             {
                 $overlay.bgiframe();
             }
+            // */
 
             $el.data('connexions-overlay', $overlay);
         });
@@ -856,10 +858,13 @@
                 }
             }
 
+            /*
             if ($.fn.bgiframe)
             {
+                var $overlay    = $(this).data('connexions-overlay');
                 $overlay.bgiframe();
             }
+            // */
         });
     };
 

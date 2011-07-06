@@ -468,7 +468,7 @@ $.widget("ui.tagInput", $.ui.input, {
 
 
         if ( (val.length < 1) ||
-             (opts.unique && (opts.tags.indexOf(val) > -1)) )
+             (opts.unique && ($.inArray(val, opts.tags) > -1)) )
         {
             // Empty or duplicate tag -- do NOT create a tag element.
 
@@ -609,7 +609,7 @@ $.widget("ui.tagInput", $.ui.input, {
                 + "val[ "+ val +" ]");
         // */
 
-        var pos = opts.tags.indexOf(val);
+        var pos = $.inArray(val, opts.tags);
         if (pos < 0)
         {
             return this;
