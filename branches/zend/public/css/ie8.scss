@@ -1,16 +1,9 @@
 @import "sizes";
-@import "colors";
 
 // For tabs.scss
 #pageHeader {
   ul.sub {
     top:        $navTopSub;
-  }
-  .tabs {
-    li.welcome {
-      background-image: none;
-      background-color: $contextColorBackground;
-    }
   }
 }
 
@@ -19,52 +12,4 @@
 }
 
 // For tabs.scss corners
-#pageHeader {
-  .siteAuth {
-    .siteMarking {
-      .urCorner {
-        behavior: url("css/PIE.htc");
-        -pie-poll:false;
-      }
-    }
-    .authInfo {
-      .authMenu {
-        .menu {
-          behavior: url("css/PIE.htc");
-          -pie-poll:false;
-        }
-      }
-    }
-  }
-  .siteNav {
-    .tabs {
-      behavior: url("css/PIE.htc");
-      -pie-poll:false;
-      li.menu-first {
-        behavior: url("css/PIE.htc");
-        -pie-poll:false;
-      }
-    }
-    .nav {
-      behavior: url("css/PIE.htc");
-      -pie-poll:false;
-    }
-    ul.sub {
-      .sub-last {
-        behavior: url("css/PIE.htc");
-        -pie-poll:false;
-      }
-    }
-  }
-}
-
-.noNav {
-  #pageHeader {
-    .siteNav {
-      .tabs {
-        behavior: url("css/PIE.htc");
-        -pie-poll:false;
-      }
-    }
-  }
-}
+@import "ie-corner";

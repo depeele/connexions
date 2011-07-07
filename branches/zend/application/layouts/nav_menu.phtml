@@ -119,19 +119,46 @@ foreach ($iterator as $page)
         array_push($liClasses, ($depth > 0 ? 'sub-first' : 'menu-first'));
     }
     if ( ($pageClass = $page->getClass()) !== null)
+    {
+        $liLast = (strpos($pageClass, 'sub-last') !== false);
+
         array_push($liClasses, $pageClass);
+    }
+    else
+    {
+        $liLast = false;
+    }
 
     printf ("%s <li%s>",
             $indent,
             (! @empty($liClasses)
                 ? " class='". implode(' ', $liClasses) ."'"
                 : ""));
-    if (($depth > 0) && $liFirst)
+    if ($liFirst)
     {
-        // Include the left inner corner
-        echo "<div class='connexions_sprites corner_inner_left'>",
+        if ($depth === 0)
+        {
+            // Include the main left outter corner (for IE)
+            echo "<div class='ie-corner ",
+                             "connexions_sprites corner_outter_left'>",
+                 "</div>";
+        }
+        else
+        {
+            // Include the left inner corner
+            echo "<div class='connexions_sprites corner_inner_left'>",
+                 "</div>";
+        }
+    }
+    if ($liLast)
+    {
+        // Include the lower outer corners (for IE)
+        echo "<div class='ie-corner connexions_sprites corner_outter_left'>",
+             "</div>";
+        echo "<div class='ie-corner connexions_sprites corner_outter_right'>",
              "</div>";
     }
+
 
     $label = Connexions::replaceables($page->getLabel());
     printf ("<a href='%s'%s>%s</a>",
@@ -212,11 +239,12 @@ $searchContext  = (isset($this->search['context'])
 
             $title = $info['title'];
 
+            $isLast    = ( ($idex + 1) >= $nItems);
             $id        = 'search-choice-'. $name;
             $liClasses = array();
-            if ( $isFirst ) //$idex == 0 )
+            if ( $isFirst )
                 array_push($liClasses, 'sub-first');
-            else if ( ($idex + 1) >= $nItems)
+            else if ( $isLast )
                 array_push($liClasses, 'sub-last');
 
             if ($searchContext == $name)
@@ -241,12 +269,23 @@ $searchContext  = (isset($this->search['context'])
             $title = Connexions::replaceables($title);
             printf ("<a>%s</a>", $title);
 
-            if ( $isFirst ) //$idex == 0)
+            if ( $isFirst )
             {
                 // Include the right inner corner
                 echo "<div class='connexions_sprites corner_inner_right'>",
                      "</div>";
             }
+            if ( $isLast )
+            {
+                // Include the lower outer corners (for IE)
+                echo "<div class='ie-corner ",
+                                  "connexions_sprites corner_outter_left'>",
+                     "</div>";
+                echo "<div class='ie-corner ",
+                                  "connexions_sprites corner_outter_right'>",
+                     "</div>";
+            }
+
             echo "</li>\n";
 
             $isFirst = false;
