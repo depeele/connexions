@@ -97,14 +97,14 @@ CStatusbar.prototype = {
      */
     observe: function(subject, topic, data) {
         var self    = this;
-        if (data !== undefined)
+        if ( (data !== undefined) && (data !== null) )
         {
             try {
                 data = JSON.parse(data);
             } catch(e) {}
         }
 
-        // /*
+        /*
         cDebug.log("CStatusbar::observe(): topic[ %s ], data[ %s ]",
                     topic, cDebug.obj2str(data));
         // */

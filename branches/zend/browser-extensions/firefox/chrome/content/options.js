@@ -253,7 +253,7 @@ COptions.prototype = {
      */
     observe: function(subject, topic, data) {
         var self    = this;
-        if (data !== undefined)
+        if ( (data !== undefined) && (data !== null) )
         {
             try {
                 data = JSON.parse(data);

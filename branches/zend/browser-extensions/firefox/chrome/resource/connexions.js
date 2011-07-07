@@ -103,7 +103,7 @@ Connexions.prototype = {
         cDb.setConnexions(this);
         this.db    = cDb;
 
-        cDebug.log('resource-connexions::init():');
+        //cDebug.log('resource-connexions::init():');
 
         var self    = this;
 
@@ -116,8 +116,10 @@ Connexions.prototype = {
         var cookies = this.db.state('cookies');
         if (cookies !== null)
         {
+            /*
             cDebug.log('resource-connexions::init(): cookies from db[ %s ]',
                        cookies);
+            // */
 
             self.cookieJar.values = self.str2cookies(cookies);
         }
@@ -142,7 +144,7 @@ Connexions.prototype = {
         self._loadObservers();
         self._updatePeriodicSync();
 
-        cDebug.log('resource-connexions::init(): completed');
+        //cDebug.log('resource-connexions::init(): completed');
     },
 
     /** @brief  Invoked any time 'chrome/content/connexions.js' receives a
@@ -151,7 +153,7 @@ Connexions.prototype = {
      *  @return this for a fluent interface.
      */
     windowLoad: function() {
-        cDebug.log('resource-connexions::windowLoad()');
+        //cDebug.log('resource-connexions::windowLoad()');
 
         var self        = this;
         var document    = self.getDocument();
@@ -180,7 +182,7 @@ Connexions.prototype = {
         if (self.user === null)
         {
             // Attempt to retrieve the current user.
-            cDebug.log('resource-connexions::windowLoad(): retrieveUser');
+            //cDebug.log('resource-connexions::windowLoad(): retrieveUser');
 
             self.retrieveUser();
         }
@@ -197,7 +199,7 @@ Connexions.prototype = {
     observe: function(subject, topic, data) {
         var self    = this;
         /*
-        if (data !== undefined)
+        if ( (data !== undefined) && (data !== null) )
         {
             try {
                 data = JSON.parse(data);
@@ -280,7 +282,7 @@ Connexions.prototype = {
             if (cookie  &&
                 (cookie.host.toLowerCase() === self.cookieJar.domain) )
             {
-                // /*
+                /*
                 cDebug.log('resource-connexions::observe(): '
                             +   'cookie-changed: '
                             +   'host[ %s ], path[ %s ], '
@@ -303,7 +305,7 @@ Connexions.prototype = {
                     self.cookieJar.values.__length++;
                     self.db.state('cookies', self.cookies2str());
 
-                    // /*
+                    /*
                     cDebug.log('resource-connexions::observe(): '
                                 +   'cookie-changed from our stored value: '
                                 +   'host[ %s ], path[ %s ], name[ %s ]',
@@ -433,12 +435,14 @@ Connexions.prototype = {
             break;
         }
 
+        /*
         cDebug.log('resource-connexions::pref(): '
                     + 'name[ %s ], newValue[ %s ], type[ %s ], curVal[ %s ]',
                     name,
                     cDebug.obj2str(value),
                     type,
                     cDebug.obj2str(curVal));
+        // */
 
         return curVal;
     },
@@ -469,8 +473,11 @@ Connexions.prototype = {
             return this;
         }
 
+        /*
         cDebug.log('resource-connexions::signal(): subject[ %s ], data[ %s ]',
                    subject, cDebug.obj2str(data));
+        // */
+
         if (data !== undefined)
         {
             // JSON-encode the non-string
@@ -657,7 +664,7 @@ Connexions.prototype = {
         var docUrl  = docUri.spec;
         var url, name;
 
-        cDebug.log('tagPage(): docUrl[ %s ]', docUrl);
+        //cDebug.log('tagPage(): docUrl[ %s ]', docUrl);
 
         switch (type)
         {
@@ -674,9 +681,11 @@ Connexions.prototype = {
             var selection   = self.getSelectedText();
             var description = (selection.str ? selection.str : '');
 
+            /*
             cDebug.log('tagPage(): type[ %s ], url[ %s ], name[ %s ], '
                             +   'description[ %s ]',
                            type, url, name, description);
+            // */
 
             self.openTagPage(url, name, description);
             break;
@@ -689,15 +698,18 @@ Connexions.prototype = {
             name = gContextMenu.linkText();
             // */
 
-            cDebug.log('tagPage(): type[ %s ]', type);
+            //cDebug.log('tagPage(): type[ %s ]', type);
 
             // el should NEVER be null here
             url  = el.getAttribute('href');
-            cDebug.log('tagPage(): type[ %s ], url[ %s ]', type, url);
+            //cDebug.log('tagPage(): type[ %s ], url[ %s ]', type, url);
 
             name = el.textContent;
+
+            /*
             cDebug.log('tagPage(): type[ %s ], url[ %s ], name[ %s ]',
                             type, url, name);
+            // */
 
             // Fall through
 
@@ -730,17 +742,23 @@ Connexions.prototype = {
                  *
                  * Merge it with the current document's URL.
                  */
+                /*
                 cDebug.log('tagPage(): type[ %s ], make url[ %s ] absolute',
                                 type, url);
+                // */
 
                 url = docUri.resolve(url);
 
+                /*
                 cDebug.log('tagPage(): type[ %s ], site-absolute url[ %s ]',
                             type, url);
+                // */
             }
 
+            /*
             cDebug.log('tagPage(): type[ %s ], final url[ %s ], name[ %s ]',
                            type, url, name);
+            // */
 
             self.openTagPage(url, name);
             //self.popupAlert(type);
@@ -793,8 +811,10 @@ Connexions.prototype = {
     notify: function(title, msg, iconUrl, callbacks) {
         var self    = this;
 
+        /*
         cDebug.log('resource-connexions::notify(): title[ %s ], msg[ %s ]',
                     title, msg);
+        // */
 
         if (self.appVersion >= 4.0)
         {
@@ -804,7 +824,7 @@ Connexions.prototype = {
                     navigator.mozNotification.createNotification(title, msg,
                                                                   iconUrl);
 
-            cDebug.log('resource-connexions::notify(): using Firfox 4+');
+            //cDebug.log('resource-connexions::notify(): using Firfox 4+');
 
             if (callbacks !== undefined)
             {
@@ -830,7 +850,7 @@ Connexions.prototype = {
                             .getService(CI.nsIAlertsService);
             idex = self.pendingNotifications.length;
 
-            cDebug.log('resource-connexions::notify(): using Firfox 4-');
+            //cDebug.log('resource-connexions::notify(): using Firfox 4-');
 
             self.pendingNotifications.push( callbacks );
 
@@ -860,7 +880,7 @@ Connexions.prototype = {
      *  @return this for a fluent interface.
      */
     showOptions: function() {
-        cDebug.log("showOptions()");
+        //cDebug.log("showOptions()");
 
         if (! this.prefsWindow || this.prefsWindow.closed) {
             var xul     = 'chrome://connexions/content/options.xul';
@@ -965,8 +985,11 @@ Connexions.prototype = {
                 where = 'current';
             }
         }
+
+        /*
         cDebug.log("loadPage(): page[ %s ], where[ %s ]",
                     page, where);
+        // */
 
         switch (page)
         {
@@ -1100,8 +1123,10 @@ Connexions.prototype = {
     openIn: function(url, where) {
         var self    = this;
 
+        /*
         cDebug.log("openIn(): url[ %s ], where[ %s ]",
                     url, where);
+        // */
 
         /* FIRST, look through each browser and tab to see if this URL is
          * already open.  If it is, focus on the indow/tab.
@@ -1196,8 +1221,10 @@ Connexions.prototype = {
      *  @return The new tab/window.
      */
     openTab: function(url, inBackground) {
+        /*
         cDebug.log("openTab(): url[ %s ], inBackground[ %s ]",
                    url, cDebug.obj2str(inBackground));
+        // */
 
         var browser = this.getBrowser();
         var tab;
@@ -1389,7 +1416,7 @@ Connexions.prototype = {
                 }
             });
 
-            cDebug.log("resource-connexions::sync(): NOT signed in");
+            //cDebug.log("resource-connexions::sync(): NOT signed in");
             return this;
         }
 
@@ -1400,9 +1427,11 @@ Connexions.prototype = {
         }
         self.state.sync = true;
 
+        /*
         cDebug.log("resource-connexions::sync(): "
                     +   "signed in as [ %s ], isReload[ %s ]",
                     self.user.name, isReload);
+        // */
 
         var baseParams  = {
             users:  self.user.name,
@@ -1442,6 +1471,10 @@ Connexions.prototype = {
                         self._syncFinalize(self.state.syncStatus);
                     });
                 }
+                else
+                {
+                    self._syncFinalize(self.state.syncStatus);
+                }
             });
         }
 
@@ -1453,7 +1486,7 @@ Connexions.prototype = {
      *  @return this for a fluent interface.
      */
     syncCancel: function() {
-        cDebug.log('resource-connexions::syncCancel():');
+        //cDebug.log('resource-connexions::syncCancel():');
 
         if (this.state.sync === true)
         {
@@ -1503,6 +1536,12 @@ Connexions.prototype = {
         function invokeCallback(which, params)
         {
             var needComplete    = false;
+
+            /*
+            cDebug.log("connexions::jsonRpc(): invokeCallback: '%s'",
+                       which);
+            // */
+
             switch (which)
             {
             case 'success':
@@ -1532,6 +1571,12 @@ Connexions.prototype = {
             // For 'success' and 'error', ALWAYS invoke complete if it exists
             if (needComplete && callbacks.complete)
             {
+                /*
+                cDebug.log("connexions::jsonRpc(): invokeCallback: "
+                           +    "ALSO invoke complete due to '%s'",
+                           which);
+                // */
+
                 callbacks.complete(xhr, params.textStatus);
             }
         }
@@ -1546,9 +1591,11 @@ Connexions.prototype = {
                 data:       event.target.responseText
             };
 
+            /*
             cDebug.log("connexions::jsonRpc(): onload: "
                        +   "textStatus[ %s ]",
                        params.textStatus);
+            // */
 
             if (callbacks.success)
             {
@@ -1639,7 +1686,7 @@ Connexions.prototype = {
             xhr.setRequestHeader('Cookie', cookies);
         }
 
-        // /*
+        /*
         cDebug.log("resource-connexions::jsonRpc(): "
                    +    "method[ %s ], transport[ %s ], "
                    +    "url[ %s ], cookies[ %s ], rpc[ %s ]",
@@ -1782,7 +1829,7 @@ Connexions.prototype = {
             self.bookmarksThread = self.tm.newThread(0);
         }
 
-        cDebug.log('resource-connexions::updateBookmarks(): signal worker');
+        //cDebug.log('resource-connexions::updateBookmarks(): signal worker');
         self.bookmarksThread.dispatch(new BookmarksWorker(sync),
                                       CI.nsIThread.DISPATCH_NORMAL);
     },
@@ -1903,6 +1950,11 @@ Connexions.prototype = {
         {
             self.updateBookmarks(sync);
         }
+        else
+        {
+            self.state.sync = false;
+            self.signal('connexions.syncEnd', self.state.syncStatus);
+        }
     },
 
     /** @brief  Retrieve bookmark deletions from the activity stream.
@@ -1925,7 +1977,7 @@ Connexions.prototype = {
 
         self.jsonRpc('activity.fetchByUsers', params, {
             success: function(data, textStatus, xhr) {
-                // /*
+                /*
                 cDebug.log('resource-connexions::_gatherDeletions(): '
                             +   'RPC success: jsonRpc return[ %s ]',
                             cDebug.obj2str(data));
@@ -1958,9 +2010,12 @@ Connexions.prototype = {
                 }
             },
             error:   function(xhr, textStatus, error) {
+                /*
                 cDebug.log('resource-connexions::_gatherDeletions(): '
                             +   'RPC error: [ %s ]',
                             textStatus);
+                // */
+
                 // Establish syncStatus
                 self.state.syncStatus = {
                     error:  {
@@ -1970,9 +2025,11 @@ Connexions.prototype = {
                 };
             },
             complete: function(xhr, textStatus) {
+                /*
                 cDebug.log('resource-connexions::_gatherDeletions(): '
                             +   'RPC complete: [ %s ]',
                             textStatus);
+                // */
 
                 cbComplete();
             }
@@ -1995,13 +2052,15 @@ Connexions.prototype = {
         }
 
         self.jsonRpc('bookmark.fetchByUsers', params, {
+            /*
             progress: function(position, totalSize, xhr) {
                 cDebug.log('resource-connexions::_gatherUpdates(): '
                             +   'RPC progress: position[ %s ], totalSize[ %s ]',
                             position, totalSize);
             },
+            // */
             success: function(data, textStatus, xhr) {
-                // /*
+                /*
                 cDebug.log('resource-connexions::_gatherUpdates(): '
                             +   'RPC success: jsonRpc return[ %s ]',
                             cDebug.obj2str(data));
@@ -2040,9 +2099,11 @@ Connexions.prototype = {
                 };
             },
             complete: function(xhr, textStatus) {
+                /*
                 cDebug.log('resource-connexions::_gatherUpdates(): '
                             +   'RPC complete: [ %s ]',
                             textStatus);
+                // */
 
                 cbComplete();
             }
@@ -2058,8 +2119,10 @@ Connexions.prototype = {
         var self    = this;
         var info    = event.data;
 
+        /*
         cDebug.log('resource-connexions::_addBookmarksMessage(): info[ %s ]',
                     cDebug.obj2str(info));
+        // */
 
         switch (info.type)
         {
