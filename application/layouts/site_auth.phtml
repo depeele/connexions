@@ -85,9 +85,12 @@ if ($authenticated)
   <li<?= $css ?>><a href='<?= $href ?>'>Post</a></li>
   <?php
     $href = $this->baseUrl('/auth/signOut');
-    $css  = (preg_match('#^'.$href.'#', $uri) ? ' class="active"' : '');
+    $css  = 'sub-last'
+          . (preg_match('#^'.$href.'#', $uri) ? ' active' : '');
   ?>
-  <li<?= $css ?>><a href='<?= $href ?>'>Sign Out</a></li>
+  <li class="<?= $css ?>"><a href='<?= $href ?>'>Sign Out</a
+   ><div class='ie-corner connexions_sprites corner_outter_left_10'></div
+   ><div class='ie-corner connexions_sprites corner_outter_right_10'></div></li>
  </ul>
 </div>
 <a href='<?= $inboxUrl ?>'

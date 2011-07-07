@@ -185,7 +185,10 @@ echo $this->render('base-header.phtml');
   <div id="pageHeader" class="head" role="banner"><!-- { head -->
    <div class='siteAuth'>
      <div class='siteMarking'>
-      <div class='urCorner'>&nbsp;</div>
+      <div class='urCorner'>
+       <div class='urCorner-background'></div>
+       <div class='urCorner-rounded'></div>
+      </div>
      </div>
      <?= $this->render('site_auth.phtml') ?>
    </div>
@@ -199,6 +202,8 @@ echo $this->render('base-header.phtml');
     <div class='tabs'><!-- tabs { -->
      <?php if ( $this->excludeNav !== true ) { ?>
       <?= $this->render('nav_menu.phtml') ?>
+    <?php } else {?>
+      <div class='ie-corner connexions_sprites corner_outter_left_10'></div>
     <?php } ?>
     </div><!-- tabs } -->
    </div><!-- siteNav } -->

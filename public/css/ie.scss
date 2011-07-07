@@ -1,6 +1,4 @@
 @import "sizes";
-@import "colors";
-@import "urls";
 
 // For libraries.scss
 .clearfix {
@@ -12,7 +10,7 @@
 .inlineBlock {
   /* Trigger 'hasLayout' and set display to inline == inline-block */
   zoom:     1;
-  *display: inline;
+  display:  inline;
 }
 
 // template.scss
@@ -36,63 +34,31 @@
 }
 
 // For tabs.scss
+@import "ie-corner";
 #pageHeader {
-  .tabs_outer_curve {
-    right:    ($tabWidth + 20px) - 2px;
-  }
-
   .siteAuth {
     .siteMarking {
       right:  $tabWidth + 20px;
-      .urCorner {
-        behavior: url("css/PIE.htc");
-        -pie-poll:false;
-      }
     }
     .authInfo {
       width:    $tabWidth + 20px;
       z-index:  2;    /* ABOVE .siteNav */
-
-      .authMenu {
-        .menu {
-          behavior: url("css/PIE.htc");
-          -pie-poll:false;
-        }
-      }
     }
   }
   .siteNav {
     .tabs {
       width:    $tabWidth + 20px;
-      behavior: url("css/PIE.htc");
-      -pie-poll:false;
 
       li {
         // Firefox/Chrome 88px, 81px
         width:  $navWidthItem - 7;
       }
-      li.menu-first {
-        behavior: url("css/PIE.htc");
-        -pie-poll:false;
-      }
-      li.welcome {
-        background-image: none;
-        background-color: $contextColorBackground;
-      }
     }
     .nav {
       width:    $navWidth + 20px;
-      behavior: url("css/PIE.htc");
-      -pie-poll:false;
 
       li {
         height: $tabHeight - 5px;
-      }
-    }
-    ul.sub {
-      .sub-last {
-        behavior: url("css/PIE.htc");
-        -pie-poll:false;
       }
     }
     #search {
@@ -109,17 +75,6 @@
             width:  $searchInputInputWidth;
           }
         }
-      }
-    }
-  }
-}
-
-.noNav {
-  #pageHeader {
-    .siteNav {
-      .tabs {
-        behavior: url("css/PIE.htc");
-        -pie-poll:false;
       }
     }
   }
