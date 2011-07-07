@@ -97,7 +97,8 @@ $bookmarkPostId = 'bookmarkPost';
      <div class='field item-name'>
       <label for='name'>Bookmark name / title</label>
       <input type='text' class='text required' autocomplete='off'
-             name='name' value='<?= $this->postInfo['name'] ?>'
+             name='name'
+             value='<?= htmlspecialchars($this->postInfo['name'],ENT_QUOTES) ?>'
                       tabindex='1' />
      </div>
      <div class='field item-url<?= (! @empty($this->postInfo['url'])
@@ -105,14 +106,16 @@ $bookmarkPostId = 'bookmarkPost';
                                          : '') ?>'>
       <label for='url'>URL to bookmark</label>
       <input type='text' class='text required' autocomplete='off'
-             name='url'  value='<?= $this->postInfo['url'] ?>'
+             name='url'
+             value='<?= htmlspecialchars($this->postInfo['url'],ENT_QUOTES) ?>'
                       tabindex='2' />
      </div>
      <div class='field item-description'>
       <label for='description'>Description / Notes for this bookmark</label>
       <textarea class='text'
                  name='description'
-             tabindex='3'><?= $this->postInfo['description'] ?></textarea>
+             tabindex='3'><?=
+        htmlspecialchars($this->postInfo['description'],ENT_QUOTES) ?></textarea>
      </div>
      <div class='field item-tags'>
       <label for='tags'>Tags</label>

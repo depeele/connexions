@@ -234,7 +234,6 @@ BookmarksWorker.prototype = {
 
         connexions.state.sync = false;
         self.signal('connexions.syncEnd', connexions.state.syncStatus);
-        self.signal('connexions.bookmarksUpdated');
     }
 };
 

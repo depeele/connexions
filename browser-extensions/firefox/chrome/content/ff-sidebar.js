@@ -119,7 +119,7 @@ CSidebar.prototype = {
                         .getBranch('extensions.connexions.sidebar.');
         // */
 
-        cDebug.log("cSidebar::init(): complete");
+        //cDebug.log("cSidebar::init(): complete");
 
         return this;
     },
@@ -167,7 +167,7 @@ CSidebar.prototype = {
         // */
         var bookmarksSort        =
                             connexions.pref('sidebar.sortOrder.bookmarks');
-        cDebug.log("cSidebar::load(): bookmarksSort[ %s ]", bookmarksSort);
+        //cDebug.log("cSidebar::load(): bookmarksSort[ %s ]", bookmarksSort);
 
         bookmarksSort            = bookmarksSort.split(/\s+/);
         this.bookmarksSort.by    = bookmarksSort[0];
@@ -176,7 +176,7 @@ CSidebar.prototype = {
         // Setup the tags sort information
         //var tagsSort        = this.prefs.getCharPref('sortOrder.tags');
         var tagsSort        = connexions.pref('sidebar.sortOrder.tags');
-        cDebug.log("cSidebar::load(): tagsSort[ %s ]", tagsSort);
+        //cDebug.log("cSidebar::load(): tagsSort[ %s ]", tagsSort);
 
         tagsSort            = tagsSort.split(/\s+/);
         this.tagsSort.by    = tagsSort[0];
@@ -187,7 +187,7 @@ CSidebar.prototype = {
             ._render()
             ._bindEvents();
 
-        cDebug.log("cSidebar::load(): complete");
+        //cDebug.log("cSidebar::load(): complete");
 
         return this;
     },
@@ -231,10 +231,12 @@ CSidebar.prototype = {
                                 : false );
         var nItems          = self.elBookmarksMenu.children.length;
 
+        /*
         cDebug.log("cSidebar::showBookmarksContextMenu(): "
                     +   "%sauthenticated, %s menu items",
                     (isAuthenticated ? '' : 'NOT '),
                     nItems);
+        // */
 
         for (var idex = 0; idex < nItems; idex++)
         {
@@ -253,7 +255,7 @@ CSidebar.prototype = {
             }
         }
 
-        cDebug.log("cSidebar::showBookmarksContextMenu():");
+        //cDebug.log("cSidebar::showBookmarksContextMenu():");
 
         return self;
     },
@@ -264,22 +266,27 @@ CSidebar.prototype = {
      *  @return this for a fluent interface.
      */
     search: function(term) {
-        cDebug.log("cSidebar::search(): term[ %s ]", term);
+        //cDebug.log("cSidebar::search(): term[ %s ]", term);
 
         // Locate all matching bookmarks
         var sort      = this.bookmarksSort.by +' '+ this.bookmarksSort.order;
         var bookmarks = connexions.db.getBookmarksByTerm( term, sort );
 
-        cDebug.log('ff-sidebar::search():bookmarks[ %s ]',
+        /*
+        cDebug.log('cSidebar::search():bookmarks[ %s ]',
                    cDebug.obj2str(bookmarks));
+        // */
+
         this._renderBookmarks(bookmarks);
 
         // Locate all matching tags
         sort     = this.tagsSort.by +' '+ this.tagsSort.order;
         var tags = connexions.db.getTagsByTerm( term, sort );
 
-        cDebug.log('ff-sidebar::search():tags[ %s ]',
+        /*
+        cDebug.log('cSidebar::search():tags[ %s ]',
                    cDebug.obj2str(tags));
+        // */
 
         this._renderTags(tags);
 
@@ -297,8 +304,11 @@ CSidebar.prototype = {
 
         // Remember the set of selected tags
         self.selectedTags = tags;
-        cDebug.log('ff-sidebar::bookmarksFilterByTags():selected tags[ %s ]',
+
+        /*
+        cDebug.log('cSidebar::bookmarksFilterByTags():selected tags[ %s ]',
                    cDebug.obj2str(tags));
+        // */
 
         /* Update the bookmarks to show only those that use ALL of the selected
          * tags.
@@ -306,8 +316,11 @@ CSidebar.prototype = {
         var sort      = self.bookmarksSort.by +' '+ self.bookmarksSort.order;
         var bookmarks = connexions.db.getBookmarksByTags( tags, sort );
 
-        cDebug.log('ff-sidebar::bookmarksFilterByTags():bookmarks[ %s ]',
+        /*
+        cDebug.log('cSidebar::bookmarksFilterByTags():bookmarks[ %s ]',
                    cDebug.obj2str(bookmarks));
+        // */
+
         self._renderBookmarks(bookmarks);
 
         /* Now, update the tags to show only those used by ANY of the current
@@ -332,9 +345,11 @@ CSidebar.prototype = {
     openIn: function(event, item, where) {
         var bookmark    = item.getUserData('bookmark');
 
+        /*
         cDebug.log("cSidebar::openIn(): where[ %s ], url[ %s ]",
                     where,
                     (bookmark && bookmark.url? bookmark.url:'*** UNKNOWN ***'));
+        // */
 
         if (! bookmark || (bookmark.url === undefined))
         {
@@ -365,8 +380,11 @@ CSidebar.prototype = {
      */
     properties: function(event, item) {
         var bookmark    = item.getUserData('bookmark');
+
+        /*
         cDebug.log("cSidebar::properties(): url[ %s ]",
                     (bookmark && bookmark.url? bookmark.url:'*** UNKNOWN ***'));
+        // */
 
         this.panelProperties.load(bookmark)
                             .open(item, event);
@@ -382,8 +400,11 @@ CSidebar.prototype = {
      */
     edit: function(event, item) {
         var bookmark    = item.getUserData('bookmark');
+
+        // /*
         cDebug.log("cSidebar::edit(): url[ %s ]",
                     (bookmark && bookmark.url? bookmark.url:'*** UNKNOWN ***'));
+        // */
 
         var query   = '?url='+ encodeURIComponent(bookmark.url);
 
@@ -401,8 +422,36 @@ CSidebar.prototype = {
 
         query += '&noNav&closeAction=close';
 
-        connexions.openPopupWindow( connexions.url('post'+ query),
-                                    'Edit a Bookmark' );
+        var win = connexions.openPopupWindow( connexions.url('post'+ query),
+                                              'Edit a Bookmark' );
+
+        var timer   = CC['@mozilla.org/timer;1']
+                        .createInstance(CI.nsITimer);
+
+        function onClose(e)
+        {
+            win.removeEventListener('unload', onClose, false);
+
+            // /*
+            cDebug.log("cSidebar::edit(): url[ %s ] - window unload",
+                        bookmark.url);
+            // */
+
+            /* Wait a bit and then request a sync.
+             *
+             * If we do this directly, the jsonRpc call fails for some reason.
+             */
+            timer.initWithCallback(function() {
+                // When the edit window is unloaded/closed, trigger a sync
+                connexions.sync();
+            }, 1000, CI.nsITimer.TYPE_ONE_SHOT);
+        }
+
+        // Give the window time to begin the initial load
+        timer.initWithCallback(function() {
+            // When the edit window is unloaded/closed, trigger a sync
+            win.addEventListener('unload', onClose, false);
+        }, 1000, CI.nsITimer.TYPE_ONE_SHOT);
 
         return this;
     },
@@ -419,9 +468,11 @@ CSidebar.prototype = {
         var bookmark    = item.getUserData('bookmark');
         var user        = connexions.getUser();
 
+        /*
         cDebug.log('cSidebar::delete(): bookmark[ %s ], user[ %s ]',
                    cDebug.obj2str(bookmark),
                    cDebug.obj2str(user));
+        // */
 
         if ( (! bookmark) || (! user) || (user.name === undefined))
         {
@@ -441,7 +492,7 @@ CSidebar.prototype = {
             return self;
         }
 
-        cDebug.log("cSidebar::delete(): delete url[ %s ]", bookmark.url);
+        //cDebug.log("cSidebar::delete(): delete url[ %s ]", bookmark.url);
 
         var success = false;
         var res     = null;
@@ -451,8 +502,8 @@ CSidebar.prototype = {
         };
         connexions.jsonRpc('bookmark.delete', params, {
             success: function(data, textStatus, xhr) {
-                // /*
-                cDebug.log('resource-connexions::delete(): RPC success: '
+                /*
+                cDebug.log('cSidebar::delete(): RPC success: '
                             +   'jsonRpc return[ %s ]',
                             cDebug.obj2str(data));
                 // */
@@ -469,18 +520,24 @@ CSidebar.prototype = {
                 }
             },
             error:   function(xhr, textStatus, error) {
-                cDebug.log('resource-connexions::sync(): RPC error: '
+                /*
+                cDebug.log('cSidebar::delete(): RPC error: '
                             +   '[ %s ]',
                             textStatus);
+                // */
+
                 res = {
                     code:       error,
                     message:    textStatus
                 };
             },
             complete: function(xhr, textStatus) {
-                cDebug.log('resource-connexions::sync(): RPC complete: '
+                /*
+                cDebug.log('cSidebar::delete(): RPC complete: '
                             +   '[ %s ]',
                             textStatus);
+                // */
+
                 if (success === true)
                 {
                     connexions.notify('Bookmark deleted',
@@ -521,8 +578,10 @@ CSidebar.prototype = {
             this.bookmarksSort.order = order;
         }
 
+        /*
         cDebug.log("cSidebar::sortBookmarks(): by[ %s ], order[ %s ]",
                    this.bookmarksSort.by, this.bookmarksSort.order);
+        // */
 
         this._refreshBookmarks( );
 
@@ -545,8 +604,10 @@ CSidebar.prototype = {
             this.tagsSort.order = order;
         }
 
+        /*
         cDebug.log("cSidebar::sortTags(): by[ %s ], order[ %s ]",
                    this.tagsSort.by, this.tagsSort.order);
+        // */
 
         this._refreshTags( );
 
@@ -558,7 +619,7 @@ CSidebar.prototype = {
      *  @return this for a fluent interface.
      */
     unload: function() {
-        cDebug.log("cSidebar::unload():");
+        //cDebug.log("cSidebar::unload():");
         this._unloadObservers();
 
         return this;
@@ -573,7 +634,7 @@ CSidebar.prototype = {
      */
     observe: function(subject, topic, data) {
         var self    = this;
-        if (data !== undefined)
+        if ( (data !== undefined) && (data !== null) )
         {
             try {
                 data = JSON.parse(data);
@@ -581,7 +642,7 @@ CSidebar.prototype = {
         }
 
         /*
-        cDebug.log('ff-sidebar::observer(): topic[ %s ], data[ %s ]',
+        cDebug.log('cSidebar::observe(): topic[ %s ], data[ %s ]',
                    topic, cDebug.obj2str(data));
         // */
 
@@ -617,13 +678,13 @@ CSidebar.prototype = {
             break;
 
         case "connexions.syncBegin":
-            cDebug.log('ff-sidebar::observe(): connexions.syncBegin:');
+            cDebug.log('cSidebar::observe(): connexions.syncBegin:');
             // Disable rendering updates until syncing is complete
             self.syncing = true;
             break;
 
         case "connexions.syncEnd":
-            cDebug.log('ff-sidebar::observe(): connexions.syncEnd:');
+            cDebug.log('cSidebar::observe(): connexions.syncEnd:');
             self.syncing = false;
 
             // Fall through
@@ -839,7 +900,7 @@ CSidebar.prototype = {
         var countTags           = tags.length;
         self.elTagsCount.value  = countTags;
 
-        // /*
+        /*
         cDebug.log('cSidebar::_renderTags(): '
                    +    '%s tags, %s selected[ %s ]',
                    tags.length,
@@ -878,7 +939,7 @@ CSidebar.prototype = {
 
                 if (tag.id === selTag.id)
                 {
-                    // /*
+                    /*
                     cDebug.log('cSidebar::_render(): tag IS selected: '
                                 +   'tag[ %s ]',
                                 cDebug.obj2str(tag));
@@ -921,9 +982,11 @@ CSidebar.prototype = {
                        return;
                     }
 
-                    cDebug.log('ff-sidebar::_bindEvents(click):'
+                    /*
+                    cDebug.log('cSidebar::_bindEvents(click):'
                                + 'bookmarkList node[ %s ]',
                                e.target.nodeName);
+                    // */
 
                     if (e.target.nodeName !== 'listitem')
                     {
@@ -965,7 +1028,7 @@ CSidebar.prototype = {
                     var listBox = event.target;
                     var item    = self.elTagList.selectedItem;
                     var tag     = item.getUserData('tag');
-                    cDebug.log('ff-sidebar::_bindEvents():tagList select: '
+                    cDebug.log('cSidebar::_bindEvents():tagList select: '
                                 + '%s:%s selected, %s:%s, is %sslected',
                                 listBox.nodeName,
                                 self.elTagList.selectedCount,
@@ -1000,7 +1063,7 @@ CSidebar.prototype = {
                     item.selected = (! wasSelected);
 
                     /*
-                    cDebug.log('ff-sidebar::_bindEvents():tagList click: '
+                    cDebug.log('cSidebar::_bindEvents():tagList click: '
                                 + '%s items, item %s %sselected, '
                                 + 'alt[%s], ctl[%s], shift[%s], meta[%s]',
                                 self.elTagList.itemCount,
@@ -1021,7 +1084,7 @@ CSidebar.prototype = {
                         var tag     = tagItem.getUserData('tag');
 
                         /*
-                        cDebug.log('ff-sidebar::_bindEvents():tagList click: '
+                        cDebug.log('cSidebar::_bindEvents():tagList click: '
                                     + '#%s [ %s ], is %sselected',
                                     idex,
                                     tag.name,
@@ -1035,7 +1098,7 @@ CSidebar.prototype = {
                     }
 
                     /*
-                    cDebug.log('ff-sidebar::_bindEvents():select tags[ %s ]',
+                    cDebug.log('cSidebar::_bindEvents():select tags[ %s ]',
                                cDebug.obj2str(tags));
                     // */
 
