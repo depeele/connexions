@@ -8,19 +8,25 @@
   .groupHeader {
     // Left portion of group header, shifted left 15px
     // (with .group, provides a solid header the full width)
-    position: relative;
+    position:         relative;
     background-color: $groupHeaderColorBackground;
-    //border-bottom: unquote("1px solid") $borderColor;
-    color: $groupHeaderColor;
-    height: 20px;
-    left: -15px;
+
+    color:      $groupHeaderColor;
+    height:     20px;
+    left:       -15px;
     .group {
       // Right portion of group header, shifted right 20px (5px over)
       // (with .groupHeader, provides a solid header the full width)
-      position: relative;
+      position:         relative;
       background-color: $groupHeaderColorBackground;
-      height: 20px;
-      right: -20px;
+      height:           20px;
+      right:            -20px;
+    }
+    .groupType {
+      margin-top:   1.5em;
+    }
+    .newYear {
+      margin-top:   2.5em;
     }
     .date {
       position: relative;
