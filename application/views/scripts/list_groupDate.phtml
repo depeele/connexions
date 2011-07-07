@@ -20,9 +20,11 @@ $time      = strtotime($this->value);
 $month     = date('M', $time);
 $dayOfWeek = date('D', $time);
 
+$newYear = ($year !== $this->lastYear);
+
 ?>
-<div class='groupType date'><?php
-    if ($year !== $this->lastYear)
+<div class='groupType date<?= ($newYear ? ' newYear' : '') ?>'><?php
+    if ($newYear)
     {
         ?><span class='year'><?= $year ?></span><?php
     }

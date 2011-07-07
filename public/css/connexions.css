@@ -623,11 +623,11 @@ a:visited { color: #005a9c; }
 .paginator .info .perPage .pageCount, .paginator .info .itemRange .pageCount { font-size: 1.1em; }
 .paginator .info .itemRange .count { margin-right: 0; }
 
-.paginator-top { float: left; padding: 0.1em 0; }
+.paginator-top { float: left; padding: 0.25em 0; }
 .paginator-top .pager { display: inline; }
 
 /*fieldInfoColor             = !validationInputColor */
-.displayOptions { float: right; }
+.displayOptions { float: right; padding-top: 0.2em; }
 .displayOptions form { position: absolute; top: 1.75em; right: 0; padding: 0.5em; width: 20em; z-index: 11; }
 .displayOptions form select { font-size: 0.9em; font-weight: normal !important; }
 .displayOptions .control { z-index: 10; cursor: pointer; }
@@ -785,6 +785,8 @@ a:visited { color: #005a9c; }
 /****** users.scss ****** */
 .items .groupHeader { position: relative; background-color: #edf4fb; color: #999999; height: 20px; left: -15px; }
 .items .groupHeader .group { position: relative; background-color: #edf4fb; height: 20px; right: -20px; }
+.items .groupHeader .groupType { margin-top: 1.5em; }
+.items .groupHeader .newYear { margin-top: 2.5em; }
 .items .groupHeader .date { position: relative; left: -12px; }
 .items .groupHeader .date .year { position: absolute; left: 1em; top: -0.45em; font-size: 3em; font-weight: bold; color: #dce3fb; z-index: 4; }
 .items .groupHeader .date .dateBox { position: relative; left: -0.25em; font-size: 1em; font-weight: bold; }

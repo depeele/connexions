@@ -1,7 +1,9 @@
 @import "colors";
 
 .displayOptions {
-  float: right;
+  float:        right;
+  padding-top:  0.2em;
+
   form {
     position:   absolute;
     top:        1.75em;
