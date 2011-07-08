@@ -1,5 +1,5 @@
 <?php
-define('RPC_DIR', realpath(dirname(__FILE__)));
+define('RPC_DIR', realpath(dirname(__FILE__) .'/..'));
 
 require_once(RPC_DIR. '/bootstrap.php');
 

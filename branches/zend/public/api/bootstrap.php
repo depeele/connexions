@@ -11,7 +11,7 @@ defined('APPLICATION_ENV')
                                     : 'production'));
 
 define('API_PATH',         realpath(dirname(__FILE__)));
-define('APPLICATION_PATH', realpath(API_PATH         .'/../../../application'));
+define('APPLICATION_PATH', realpath(API_PATH         .'/../../application'));
 define('LIBRARY_PATH',     realpath(APPLICATION_PATH .'/../library'));
 define('MODEL_PATH',       realpath(APPLICATION_PATH .'/models'));
 

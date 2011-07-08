@@ -72,7 +72,7 @@ class Service_Bookmark extends Service_Base
             /*
             Connexions::log("Service_Bookmark::get(): "
                             . "create new item using [ %s ]",
-                            $normId['url']);
+                            $id['url']);
             // */
 
             // Create a NEW item!
@@ -754,11 +754,14 @@ class Service_Bookmark extends Service_Base
             throw new Exception("Cannot update bookmarks of/for others");
         }
 
-        // Finally, if we weren't given an itemId, user any incoming 'url'
-        if (empty($id['itemId']))
-        {
-            $id['itemId'] = $url;
-        }
+        // Fill in any additional properties that have been provided
+        if (! empty($name))         $id['name']         = $name;
+        if (! empty($url))          $id['url']          = $url;
+        if (! empty($description))  $id['description']  = $description;
+        if (  $rating     >=  -1)   $id['rating']       = $rating;
+        if (  $isFavorite !== null) $id['isFavorite']   = $isFavorite;
+        if (  $isPrivate  !== null) $id['isPrivate']    = $isPrivate;
+        if (! empty($tags))         $id['tags']         = $tags;
 
         /*
         Connexions::log("Service_Bookmark::update(): "
@@ -766,61 +769,65 @@ class Service_Bookmark extends Service_Base
                         Connexions::varExport($id));
         // */
 
+        $error  = null;
+        $action = 'locate/create';
         try
         {
+            // Attempt to retrieve/create a bookmark model instance.
             $bookmark = $this->get($id);
+            if ($bookmark === null)
+            {
+                $error = "Cannot {$action} bookmark [ "
+                       .    Connexions::varExport($id) .' ]';
+            }
+            else if (! $bookmark->isValid())
+            {
+                // We created an instance but it contains invalid fields
+                $messages = $bookmark->getValidationMessages();
+                $errors   = array();
+                foreach ($messages as $field => $message)
+                {
+                    array_push($errors, sprintf("%s: %s", $field, $message));
+                }
+
+                $error = "Invalid field". (count($errors) === 1 ? '' : 's')
+                       .    " { ". implode(', ', $errors) ." }";
+            }
+            else
+            {
+                // We have successfully updated/created the bookmark
+                $action   = ($bookmark->isBacked()
+                                ? 'update'
+                                : 'create');
+
+                // Attempt to save it
+                $bookmark = $bookmark->save();
+            }
         }
         catch (Exception $e)
         {
+            if (empty($error))
+            {
+                $error .= "Cannot {$action} bookmark [ "
+                       .    Connexions::varExport($id) .' ]: '
+                       .    $e->getMessage();
+            }
+
             $bookmark = null;
         }
 
-        if (! $bookmark)
+        if (! empty($error))
         {
-            throw new Exception('Cannot locate bookmark [ '
-                                . Connexions::varExport($id) .' ]');
+            // FAILURE -- throw an exception
+            throw new Exception($error);
         }
 
-        $update = array();
+        // SUCCESS - return the (new/updated) bookmark
 
-        if (! empty($name))         $bookmark->name         = $name;
-        if (! empty($url))          $bookmark->url          = $url;
-        if (! empty($description))  $bookmark->description  = $description;
-        if (  $rating     >=  -1)   $bookmark->rating       = $rating;
-        if (  $isFavorite !== null) $bookmark->isFavorite   = $isFavorite;
-        if (  $isPrivate  !== null) $bookmark->isPrivate    = $isPrivate;
-        if (! empty($tags))
-        {
-            $bookmark->tags = $this->_prepareTags( array('tags' => $tags),
-                                                   true );
-        }
-
-        /*
-        Connexions::log("Service_Bookmark::update() "
-                        .   "update [ %s ], array[ %s ]",
-                        $bookmark->debugDump(),
-                        Connexions::varExport($bookmark->toArray()));
-        // */
-
-        if (! $bookmark->isValid())
-        {
-            $msgs = $bookmark->getValidationMessages();
-
-            Connexions::log("Service_Bookmark::update() "
-                            .   "invalid bookmark [ %s ]",
-                            Connexions::varExport($msgs));
-
-            throw new Exception ('Invalid bookmark [ '
-                                 . Connexions::varExport($msgs)
-                                 . ' ]');
-        }
-
-        $bookmark = $bookmark->save();
-
-        /*
-        Connexions::log("Service_Bookmark::update() "
-                        .   "updated [ %s ]",
-                        $bookmark->debugDump());
+        // /*
+        Connexions::log("Service_Bookmark::update(): "
+                        . "%s[ %s ]",
+                        $action, $bookmark->debugDump());
         // */
 
         return $bookmark;

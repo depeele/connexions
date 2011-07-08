@@ -9526,9 +9526,13 @@ $.widget("connexions.bookmarkPost", {
 
                     opts.tags = tags.join(',');
                 }
-                if ($.isPlainObject(opts.item))
+                if ($.isPlainObject(opts.item) && opts.item.url)
                 {
                     opts.url = opts.item.url;
+                }
+                else
+                {
+                    opts.url = url;
                 }
 
                 self._setFormFromState();
@@ -9594,7 +9598,7 @@ $.widget("connexions.bookmarkPost", {
             }
         }
 
-        if ( ! opts.$name.input('hasChanged') )
+        if ( ! opts.$description.input('hasChanged') )
         {
             // See if there is a '<meta name="description">'
             var $desc   = headers.meta.filter('meta[name=description]');
@@ -9611,7 +9615,7 @@ $.widget("connexions.bookmarkPost", {
             var $keywords   = headers.meta.filter('meta[name=keywords]');
             if ($keywords.length > 0)
             {
-                opts.$tags.val($keywords.attr('content') );
+                opts.$tags.tagInput('val', $keywords.attr('content') );
                 opts.$tags.blur();
             }
         }
@@ -9656,11 +9660,13 @@ $.widget("connexions.bookmarkPost", {
                                  data.error.message);
                     // */
 
+                    self.headersUrl = null;
                     return;
                 }
 
                 if (data.result === null)
                 {
+                    self.headersUrl = null;
                     return;
                 }
 
@@ -9684,7 +9690,7 @@ $.widget("connexions.bookmarkPost", {
             },
             error:      function(req, textStatus, err) {
                 // :TODO: "Error" notification / invalid URL??
-                //self.headersUrl = null;
+                self.headersUrl = null;
             },
             complete:   function(req, textStatus) {
                 // :TODO: Some indication of completion?
