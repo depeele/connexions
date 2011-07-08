@@ -18,7 +18,6 @@
  *  Parameters may be directly in the URL OR as a JSON-encoded string passed
  *  via 'jsonRpc'.  In this case, 'cmd' will be unset and is instead found in
  *  the 'method' property of the JSON-decoded RPC object.
- *
  */
 define('RPC_DIR', realpath(dirname(__FILE__)));
 require_once(RPC_DIR .'/bootstrap.php');
