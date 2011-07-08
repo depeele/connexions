@@ -525,7 +525,7 @@ class PostController extends Connexions_Controller_Action
             if ($postInfo['isPrivate'] === null)
                 $postInfo['isPrivate'] = $bookmark->isPrivate;
 
-            if (empty($postInfo['tags']))
+            if (empty($postInfo['tags']) && $bookmark->tags)
             {
                 $postInfo['tags'] =
                     preg_replace('/\s*,\s*/', ', ',

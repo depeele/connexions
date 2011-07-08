@@ -39,7 +39,13 @@ class Service_Util
         $html     = '';
         if ($response->isSuccessful())
         {
-            $html = $response->getBody();
+            $html    = $response->getBody();
+
+            /*
+            Connexions::log("Service_Util::getHead(): response: "
+                            . "full html[ %s ]",
+                            $html);
+            // */
 
             // Strip off the ending, from and including </head>
             $html = preg_replace('/\s*<\/head.*$/si', '', $html);
@@ -47,52 +53,61 @@ class Service_Util
             // Strip off the beginning, down to and including <head>
             $html = preg_replace('/^.*?<head[^>]*>\s*/si', '', $html);
 
+            /*
+            Connexions::log("Service_Util::getHead(): response: "
+                            . "trimmed html[ %s ]",
+                            $html);
+            // */
 
             if (is_array($keepTags))
             {
+                $dom       = new Zend_Dom_Query($html);
                 $distilled = '';
-
                 foreach ($keepTags as $tag)
                 {
-                    $re    = '#((?:<'. $tag .'.*?/>|'
-                           .      '<'. $tag .'.*?</'. $tag .'>))#si';
-                    $count = preg_match_all($re, $html, $matches,
-                                            PREG_PATTERN_ORDER);
+                    $els = $dom->query($tag);
 
                     /*
-                    Connexions::log("Service_Util::getHead(): well-formed: "
-                                    . "%d matches for tag '%s': [ %s ]",
-                                    $count, $tag,
-                                    Connexions::varExport($matches));
+                    Connexions::log("Service_Util::getHead(): "
+                                    .   "%d '%s' tags",
+                                    count($els), $tag);
                     // */
 
-                    if ($count > 0)
+                    foreach ($els as $el)
                     {
-                        $distilled .= implode("\n", $matches[1]);
-                    }
+                        // Gather the node value and attributes
+                        $val     = $el->nodeValue;
+                        $attrStr = array();
+                        foreach ($el->attributes as $name => $node)
+                        {
+                            array_push($attrStr,
+                                       "{$name}=\"{$node->nodeValue}\"");
+                        }
 
-                    /* Now, for malformed tags...
-                     *
-                     * :XXX: Currently, this will only match every other 
-                     *       malformed tag if they are all directly in-sequence 
-                     *       with nothing but white-space between...
-                     */
-                    $re    = '#(<'. $tag .'[^>]*>)\s*<[^/]#si';
-                    $count = preg_match_all($re, $html, $matches,
-                                            PREG_PATTERN_ORDER);
-
-                    /*
-                    Connexions::log("Service_Util::getHead(): mal-formed: "
-                                    . "%d matches for tag '%s': [ %s ]",
-                                    $count, $tag,
-                                    Connexions::varExport($matches));
-                    // */
-
-                    if ($count > 0)
-                    {
-                        $distilled .= implode("\n", $matches[1]);
+                        /* Re-construct the HTML of this tag and append it to
+                         * 'distilled'
+                         */
+                        $distilled .= "<{$el->nodeName}";
+                        if (count($attrStr) > 0)
+                        {
+                            $distilled .= ' '.  implode(' ', $attrStr); 
+                        }
+                        if (empty($val))
+                        {
+                            $distilled .= ' />';
+                        }
+                        else
+                        {
+                            $distilled .= ">{$val}</{$el->nodeName}>";
+                        }
                     }
                 }
+
+                /*
+                Connexions::log("Service_Util::getHead(): "
+                                .   "distilled[ %s ]",
+                                $distilled);
+                // */
 
                 $html = $distilled;
             }
