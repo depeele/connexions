@@ -326,52 +326,21 @@ if (isset($this->lastVisitFor))
          ($showParts['item:data:tags']   === true) ||
          ($showParts['item:data:userId'] === true))
     {
-        ?><div class='meta'><?php   // meta {
+        ?><div class='meta line'><?php   // meta {
 
         $clearFloats = false;
     }
 
     /*****************************
-     * Item Tags
+     * User Id
      *
      */
-    if ($showParts['item:data:tags'] === true)
-    {
-        $tagUrl = $this->url(array('action' => 'index',
-                                   'owner'  => $bookmark->user->name,
-                                   'tag'    => '%tag%'));
-
-        ?><ul class='tags'><?php
-         ?><div class='tag-template template'
-            ><li class='tag'><a href='<?= $tagUrl ?>'>%tag%</a></li
-          ></div><?php
-
-        foreach ($bookmark->tags as $tag)
-        {
-            if (empty($tag->tag))
-            {
-                $tag->tag = '_empty_';
-            }
-
-            $cssExtra = ( ($highlightTags !== null) &&
-                          (strpos($highlightTags, $tag->tag) !== false)
-                            ? ' highlight'
-                            : '');
-
-            ?><li class='tag<?= $cssExtra ?>'><a 
-                    href='<?= preg_replace('/%tag%/', $tag->tag, $tagUrl)
-                                        ?>'><?= $tag->tag ?></a></li><?php
-        }
-
-        ?></ul><?php
-    }
-
-    // .userId moves things left, so we need at least the container...
-    ?><div class='userId'><?
+    ?><div class='userDate unit size1of3'><?  // userDate {
 
     if ($showParts['item:data:userId'] === true)
     {
         // Render User Id
+        ?><div class='userId'><?
         ?><a  href='<?= $this->url(array('action' => $bookmark->user->name)) ?>'
              title='<?= $bookmark->user->fullName ?>'><?php
 
@@ -397,8 +366,8 @@ if (isset($this->lastVisitFor))
         }
 
         ?></a><?php
+        ?></div><?
     }
-    ?></div><?
 
     /*****************************
      * Item Dates
@@ -475,9 +444,46 @@ if (isset($this->lastVisitFor))
 
         ?></div><?php   // dates }
     }
+    ?></div><?  // userDate }
 
-    if ( ($showParts['item:data:dates'] === true) ||
-         ($showParts['item:data:tags']  === true) )
+    /*****************************
+     * Item Tags
+     *
+     */
+    if ($showParts['item:data:tags'] === true)
+    {
+        $tagUrl = $this->url(array('action' => 'index',
+                                   'owner'  => $bookmark->user->name,
+                                   'tag'    => '%tag%'));
+
+        ?><ul class='tags unit size2of3 lastUnit'><?php
+         ?><div class='tag-template template'
+            ><li class='tag'><a href='<?= $tagUrl ?>'>%tag%</a></li
+          ></div><?php
+
+        foreach ($bookmark->tags as $tag)
+        {
+            if (empty($tag->tag))
+            {
+                $tag->tag = '_empty_';
+            }
+
+            $cssExtra = ( ($highlightTags !== null) &&
+                          (strpos($highlightTags, $tag->tag) !== false)
+                            ? ' highlight'
+                            : '');
+
+            ?><li class='tag<?= $cssExtra ?>'><a 
+                    href='<?= preg_replace('/%tag%/', $tag->tag, $tagUrl)
+                                        ?>'><?= $tag->tag ?></a></li><?php
+        }
+
+        ?></ul><?php
+    }
+
+    if ( ($showParts['item:data:dates']  === true) ||
+         ($showParts['item:data:tags']   === true) ||
+         ($showParts['item:data:userId'] === true))
     {
         ?></div><?php       // meta }
     }

@@ -165,17 +165,63 @@
       }
       .meta {
         @include clearFix();
-        clear:        both;
-        margin-left:  14em;
-        padding-top:  0.25em;
+        clear:      both;
+        padding:    0.5em 0 0 0.5em;
+
+        // User and Date information
+        .userDate {
+
+          // UserId
+          .userId {
+            vertical-align: top;
+
+            a {
+              font-size:   0.85em;
+              font-weight: normal;
+              color:       $linkColorSubdued;
+
+              .img {
+                @include inlineBlock();
+                vertical-align:   middle;
+                border:           0;
+                background-color: transparent;
+                img {
+                  width: 16px;
+                  height: 16px;
+                }
+                .ui-icon {
+                  position: relative;
+                  top: -2px;
+                }
+              }
+              .name {
+                @include inlineBlock();
+                vertical-align: middle;
+                font-size:      0.9em;
+                padding-left:   0.25em;
+              }
+            }
+          }
+
+          // Dates (tagged, updated)
+          .dates {
+            @include inlineBlock();
+            vertical-align: top;
+            color:          $controlColor;
+            text-align:     right;
+            padding-top:    0.25em;
+            padding-left:   1.5em;
+            .tagged,.updated {
+              font-size:      0.8em;
+              padding-right:  0.1em;
+            }
+          }
+        }
 
         // List of tags for this item
         .tags {
-          display:        block;
-          vertical-align: top;
-          float:          right;
           text-align:     right;
-          padding-top:    0;
+          padding:        0;
 
           // Ensure we receive hover events by being ABOVE stats
           z-index:        5;
@@ -185,54 +231,6 @@
           }
         }
 
-        // UserId
-        .userId {
-          @include inlineBlock();
-          vertical-align: top;
-          margin-left:    -13em;
-          min-width:      5em;
-
-          a {
-            font-size:   0.85em;
-            font-weight: normal;
-            color:       $linkColorSubdued;
-
-            .img {
-              @include inlineBlock();
-              vertical-align:   middle;
-              border:           0;
-              background-color: transparent;
-              img {
-                width: 16px;
-                height: 16px;
-              }
-              .ui-icon {
-                position: relative;
-                top: -2px;
-              }
-            }
-            .name {
-              @include inlineBlock();
-              vertical-align: middle;
-              font-size:      0.9em;
-              padding-left:   0.25em;
-            }
-          }
-        }
-
-        // Dates (tagged, updated)
-        .dates {
-          @include inlineBlock();
-          vertical-align: top;
-          color:          $controlColor;
-          width:          7.75em;
-          text-align:     right;
-          padding-top:    0.25em;
-          .tagged,.updated {
-            font-size:      0.8em;
-            padding-right:  0.1em;
-          }
-        }
       }
 
       // Item controls: edit, delete, save
