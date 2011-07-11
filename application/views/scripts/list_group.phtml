@@ -16,8 +16,9 @@
  */
 
 ?>
-<div class='groupHeader ui-corner-tl'>
- <div class='group group<?= ucFirst($this->groupBy) ?> ui-corner-right'>
+<div class='groupHeader'>
+ <div class='group group<?= ucFirst($this->groupBy) ?> ui-corner-tl'>
   <?= $this->partial($this->script, $this->scriptParams) ?>
  </div>
+ <div class='groupCorner ui-corner-right'></div>
 </div>
