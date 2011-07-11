@@ -6,34 +6,35 @@
 // Styling for users
 .items {
   .groupHeader {
-    // Left portion of group header, shifted left 15px
-    // (with .group, provides a solid header the full width)
     position:         relative;
-    background-color: $groupHeaderColorBackground;
 
     color:      $groupHeaderColor;
-    height:     20px;
-    left:       -15px;
+    left:       -1.5em;
+    padding-top:1.5em;
+
     .group {
-      // Right portion of group header, shifted right 20px (5px over)
-      // (with .groupHeader, provides a solid header the full width)
+      // Left portion of group header, shifted left 1.5em
+      // (with .groupCorner, provides a solid header the full width)
       position:         relative;
       background-color: $groupHeaderColorBackground;
       height:           20px;
-      right:            -20px;
     }
-    .groupType {
-      margin-top:   1.5em;
+    .groupCorner {
+      // Right portion of group header, shifted right 1.5em
+      // (with .group, provides a solid header the full width)
+      position:         absolute;
+      bottom:           0;
+      right:            -1.5em;
+      height:           20px;
+      width:            1.5em;
+      background-color: $groupHeaderColorBackground;
     }
-    .newYear {
-      margin-top:   2.5em;
-    }
+
     .date {
       position: relative;
-      left: -12px;
       .year {
         position: absolute;
-        left: 1em;
+        left: 1.2em;
         top: -0.45em;
         font-size: 3em;
         font-weight: bold;
@@ -43,10 +44,10 @@
         //+rotate(-90deg)
       }
       .dateBox {
-        position: relative;
-        left: -0.25em;
-        font-size: 1em;
-        font-weight: bold;
+        position:     relative;
+        left:         0.1em;
+        font-size:    1em;
+        font-weight:  bold;
         .month {
           display: inline;
         }
@@ -65,8 +66,7 @@
       }
     }
     .alpha,.numeric {
-      position: absolute;
-      left: -0.55em;
+      left: 0.25em;
       top: -0.45em;
       font-size: 3em;
       font-weight: bold;
