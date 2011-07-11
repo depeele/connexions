@@ -57,7 +57,8 @@ search.css: search.scss sizes.scss colors.scss mixins.scss ribbon-form.scss \
 	sass -t compact search.scss:search.css
 
 settings.css: settings.scss sizes.scss colors.scss mixins.scss urls.scss \
-		sprites.scss jquery_Jcrop.scss ui-fileUploader.scss users.scss
+		sprites.scss jquery_Jcrop.scss ui-fileUploader.scss \
+		users.scss items.scss user.scss
 	sass -t compact settings.scss:settings.css
 
 help.css: help.scss sizes.scss colors.scss mixins.scss urls.scss \

@@ -7225,6 +7225,7 @@ $.widget("connexions.pane", {
      *
      */
     _init: function() {
+        this.element.addClass('pane');
         this._init_paginators();
         this._init_displayOptions();
     },
@@ -7325,6 +7326,8 @@ $.widget("connexions.pane", {
         // Remove added elements
         self.$paginators.paginator('destroy');
         self.$displayOptions.dropdownForm('destroy');
+
+        self.element.removeClass('pane');
     },
 
     /************************
