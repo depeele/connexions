@@ -1224,7 +1224,7 @@ class Service_User extends Service_Base
         $objectId   = $user->getId();
 
         $activity   = array(
-            'userId'        => 0,
+            'userId'        => $objectId,
             'objectId'      => $objectId,
             'operation'     => $operation,
             'objectType'    => $objectType,
@@ -1234,7 +1234,11 @@ class Service_User extends Service_Base
         $actor = Connexions::getUser();
         if ($actor)
         {
-            $activity['userId'] = $actor->getId();
+            $actorId = $actor->getId();
+            if (($actorId > 0) && ($actorId !== $objectId))
+            {
+                $activity['userId'] = $actorId;
+            }
         }
 
         /*
