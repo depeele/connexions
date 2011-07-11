@@ -128,6 +128,11 @@ class Service_User extends Service_Base
         {
             // Retrieve the authenticated Model_User instance
             $user = $authResult->getUser();
+
+            // Log this authentication
+            $this->_logActivity($user, 'update',
+                                array('action'        => 'authenticate',
+                                      'method'        => $method));
         }
         else
         {
@@ -158,6 +163,12 @@ class Service_User extends Service_Base
      */
     public function deauthenticate()
     {
+        // Log this deauthentication
+        $user = Connexions::getUser();
+        $this->_logActivity($user, 'update',
+                            array('action' => 'deauthenticate'));
+
+
         $auth  = Zend_Auth::getInstance();
         $auth->clearIdentity();
 
@@ -1181,5 +1192,67 @@ class Service_User extends Service_Base
 
         $timeline = $this->_mapper->getTimeline( $params );
         return $timeline;
+    }
+
+    /*************************************************************************
+     * Protected Helpers
+     *
+     */
+
+    /** @brief  Log activity
+     *  @param  user        The Model_User instance;
+     *  @param  operation   The activity/operation
+     *                      ('save', 'update', 'delete');
+     *  @param  properties  An array of key/value pairs representing the object
+     *                      properties to include;
+     *
+     *  @return this for a fluent interface.
+     */
+    protected function _logActivity(Model_User  $user,
+                                                $operation,
+                                    array       $properties = array())
+    {
+        // Mix connection information into the properties
+        $connection = Zend_Registry::get('connectionInfo');
+        $properties['connection'] = $connection;
+
+        /**************************************************
+         * Store this operation in the activities table
+         *
+         */
+        $objectType = 'user';
+        $objectId   = $user->getId();
+
+        $activity   = array(
+            'userId'        => 0,
+            'objectId'      => $objectId,
+            'operation'     => $operation,
+            'objectType'    => $objectType,
+            'properties'    =>  Zend_Json::encode($properties),
+        );
+
+        $actor = Connexions::getUser();
+        if ($actor)
+        {
+            $activity['userId'] = $actor->getId();
+        }
+
+        /*
+        Connexions::log("Service_User::_logActivity(): "
+                        . "[ %s ]",
+                        Connexions::varExport($activity));
+        // */
+
+        // Create a new instance and save.
+        $activityInst = new Model_Activity($activity);
+        $activityInst = $activityInst->save();
+
+        /*
+        Connexions::log("Service_User::_logActivity(): "
+                        . "[ %s ]",
+                        $activityInst->debugDump());
+        // */
+
+        return $this;
     }
 }
