@@ -52,7 +52,8 @@ class ApiController extends Connexions_Controller_Action
 
         $request = $this->_request;
         $server  = new Zend_Json_Server();
-        $server->setClass('Service_Proxy_ApiV1');
+        $server->setTarget(Connexions::url('/api/'))
+               ->setClass('Service_Proxy_ApiV1');
         $this->_server = $server;
 
         if ($request->isGet() && ($request->getParam('serviceDescription')))
@@ -163,7 +164,8 @@ class ApiController extends Connexions_Controller_Action
     {
         $request = $this->_request;
         $server  = new Zend_Json_Server();
-        $server->setClass('Service_Proxy_User',     'user')
+        $server->setTarget(Connexions::url('/api/v2/json-rpc'))
+               ->setClass('Service_Proxy_User',     'user')
                ->setClass('Service_Proxy_Item',     'item')
                ->setClass('Service_Proxy_Tag',      'tag')
                ->setClass('Service_Proxy_Bookmark', 'bookmark')
@@ -247,8 +249,7 @@ class ApiController extends Connexions_Controller_Action
         $this->_disableRendering();
 
         // Return the service description
-        $this->_server->setTarget(Connexions::url('/api/v2/json-rpc'))
-                      ->setEnvelope(Zend_Json_Server_Smd::ENV_JSONRPC_2);
+        $this->_server->setEnvelope(Zend_Json_Server_Smd::ENV_JSONRPC_2);
 
         header('Content-Type: application/json');
         echo $this->_server->getServiceMap();
