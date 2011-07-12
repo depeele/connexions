@@ -33,6 +33,12 @@ $servicesWidth: 455px;
     padding:    1em 0 0 0;
     font-weight:bold;
     font-size:  1.25em;
+
+    .serviceMap {
+      font-size:  0.7em;
+      float:      right;
+      cursor:     pointer;
+    }
   }
 
   ul {
@@ -90,7 +96,7 @@ $servicesWidth: 455px;
     font-size:  1.25em;
 
     .clear {
-      font-size:  0.8em;
+      font-size:  0.7em;
       float:      right;
       cursor:     pointer;
     }
