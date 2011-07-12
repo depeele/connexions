@@ -2,11 +2,15 @@
 @import "colors";
 @import "mixins";
 
-$servicesWidth: 450px;
+$servicesWidth: 455px;
 
-hr {
-  size:   0;
-  border: unquote("1px dotted") $borderColor;
+.columnHeader {
+  border-bottom:  unquote("3px solid") $borderColor;
+
+  .seeAlso {
+    font-size:    0.8em;
+    padding-left: 75px;
+  }
 }
 
 .ui-accordion {
@@ -46,11 +50,11 @@ hr {
       }
       .fields {
         @include  inlineBlock();
-        width:    20em;
+        width:    20.5em;
   
         .field {
           label {
-            width:  7em;
+            width:  6.5em;
           }
         }
       }

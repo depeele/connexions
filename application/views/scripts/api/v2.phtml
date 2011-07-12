@@ -15,6 +15,9 @@ $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
 ?>
 (function($) {
     $(document).ready(function() {
+        var serviceMap  = <?= ($this->server
+                                ? $this->server->getServiceMap()
+                                : null) ?>;
         var rpcId       = 1;
         var useJsDump   = true;
         var rawData     = null;
@@ -34,14 +37,23 @@ $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
             if (data === undefined) data    = rawData;
             else                    rawData = data;
 
-            return (data === null
-                    ? ''
-                    : (useJsDump
-                        ? jsDump.parse( data )
-                        : JSON.stringify(data, null, '  ')
-                              .replace(/</, '&lt;')
-                              .replace(/>/, '&gt;')
-                              .replace(/&/, '&amp;')) );
+            var rounds  = 0;
+            var html    = '';
+            while ((data !== null) && (++rounds < 3))
+            {
+                try {
+                    html = (useJsDump
+                                ? jsDump.parse( data )
+                                : JSON.stringify(data, null, '  ')
+                                       .replace(/</, '&lt;')
+                                       .replace(/>/, '&gt;')
+                                       .replace(/&/, '&amp;') );
+                } catch(e) {
+                    if (useJsDump)  useJsDump = false;
+                }
+            }
+
+            return html;
         }
 
         $clear.click(function(e) {
@@ -213,6 +225,48 @@ $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
             return li;
         }
 
+        /** @brief  Bind events for new service forms found in $services.
+         */
+        function bindForms()
+        {
+            var $forms      = $services.find('form');
+            var $buttons    = $forms.find('button');
+
+            $forms.bind('submit.rpc',  rpc_submit);
+
+            $buttons.bind('click.rpc', function(e) {
+                e.preventDefault();
+
+                var $button = $(this);
+                var $form   = $button.parents('form:first');
+
+                // Use the button text as the new form method.
+                $form.attr('method', $button.text());
+
+                $form.submit();
+            });
+
+            $serviceUl.find('h4').click(function() {
+                var $ctl    = $(this);
+                var $body   = $ctl.next();
+                var $toggle = $ctl.find('span:first');
+
+                if ($body.is(':hidden'))
+                {
+                    $toggle.removeClass(indicator['closed'])
+                           .addClass(   indicator['opened']);
+                }
+                else
+                {
+                    $toggle.removeClass(indicator['opened'])
+                           .addClass(   indicator['closed']);
+                }
+
+                $body.slideToggle('fast');
+                return false;
+            });
+        }
+
         /** @brief  Given a service map, generate forms for each service.
          *  @param  map         The service map is of the form:
          *                          { envelope:     'JSON-RPC-2.0',
@@ -272,26 +326,10 @@ $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
 
                 $section.append(form);
             });
-        }
 
-        function bindForms()
-        {
-            var $forms      = $services.find('form');
-            var $buttons    = $forms.find('button');
-
-            $forms.bind('submit.rpc',  rpc_submit);
-
-            $buttons.bind('click.rpc', function(e) {
-                e.preventDefault();
-
-                var $button = $(this);
-                var $form   = $button.parents('form:first');
-
-                // Use the button text as the new form method.
-                $form.attr('method', $button.text());
-
-                $form.submit();
-            });
+            $serviceUl.find('input').input({hideLabel:false});
+            $serviceUl.find('button').button();
+            bindForms();
         }
 
         // Fetch the service description and then build forms...
@@ -299,50 +337,32 @@ $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
             opened: 'ui-icon-triangle-1-s',
             closed: 'ui-icon-triangle-1-e'
         };
+
         $services.mask();
-
-
-        $.ajax({
-            type:     'GET',
-            url:      'json-rpc?serviceDescription=1',
-            dataType: 'json',
-            success: function(data, txtStatus, req) {
-                buildForms(data);
-
-                $serviceUl.find('h4').click(function() {
-                    var $ctl    = $(this);
-                    var $body   = $ctl.next();
-                    var $toggle = $ctl.find('span:first');
-
-                    if ($body.is(':hidden'))
-                    {
-                        $toggle.removeClass(indicator['closed'])
-                               .addClass(   indicator['opened']);
-                    }
-                    else
-                    {
-                        $toggle.removeClass(indicator['opened'])
-                               .addClass(   indicator['closed']);
-                    }
-
-                    $body.slideToggle('fast');
-                    return false;
-                });
-
-                $serviceUl.find('input').input({hideLabel:false});
-                $serviceUl.find('button').button();
-
-                bindForms();
-            },
-            error: function(req, txtStatus, e) {
-                $result.html(  '<h3 class="error">'
-                             +  'Cannot retrieve service map'
-                             + '</h3>');
-            },
-            complete: function() {
-                $services.unmask();
-            }
-        });
+        if (serviceMap !== null)
+        {
+            buildForms(serviceMap);
+            $services.unmask();
+        }
+        else
+        {
+            $.ajax({
+                type:     'GET',
+                url:      'json-rpc?serviceDescription=1',
+                dataType: 'json',
+                success: function(data, txtStatus, req) {
+                    buildForms(data);
+                },
+                error: function(req, txtStatus, e) {
+                    $result.html(  '<h3 class="error">'
+                                 +  'Cannot retrieve service map'
+                                 + '</h3>');
+                },
+                complete: function() {
+                    $services.unmask();
+                }
+            });
+        }
     });
 }(jQuery));
 <?php
@@ -350,7 +370,13 @@ $jQuery->javascriptCaptureEnd();
 
 
 ?>
-<div class='line'>
+<div class='columnHeader'>
+ <div class='context-bg connexions_sprites settings_bg 
+             ui-corner-left ui-corner-tr'>&nbsp;</div>
+ <p>API V2 Explorer</p>
+ <p class='seeAlso'>see also the <a href='../'>API V1 Explorer</a></p>
+</div>
+<div class='pane line'>
  <div class='services unit size1of3'>
   <h3>Services</h3>
  </div>

@@ -42,7 +42,7 @@ class ApiController extends Connexions_Controller_Action
     }
      */
 
-    /** @brief  V1 API
+    /** @brief  API V1
      *
      *  Version 1 API interface.
      */
@@ -151,11 +151,11 @@ class ApiController extends Connexions_Controller_Action
          * This will present the list of all available services with active
          * forms to allow direct invocation and presentation of results.
          */
-        $this->view->headTitle('V1 Api Explorer');
+        $this->view->headTitle('Api V1 Explorer');
         $this->view->server = $server;
     }
 
-    /** @brief  V2 API
+    /** @brief  API V2
      *
      *  Version 2 API interface.
      */
@@ -208,7 +208,7 @@ class ApiController extends Connexions_Controller_Action
          * This will present the list of all available services with active
          * forms to allow direct invocation and presentation of results.
          */
-        $this->view->headTitle('V2 Api Explorer');
+        $this->view->headTitle('Api V2 Explorer');
         $this->view->server = $server;
     }
 
