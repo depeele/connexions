@@ -5,6 +5,13 @@
  *  application.
  */
 
+// Define application environment
+define('APPLICATION_ENV', 'development');
+defined('APPLICATION_ENV')
+    || define('APPLICATION_ENV', (getenv('APPLICATION_ENV')
+                                    ? getenv('APPLICATION_ENV')
+                                    : 'production'));
+
 // This directory SHOULD be the directly accessible portion of the app.
 defined('APPLICATION_WEBROOT')
     || define('APPLICATION_WEBROOT', dirname( __FILE__ ) );
@@ -14,19 +21,16 @@ defined('APPLICATION_PATH')
     || define('APPLICATION_PATH',
               realpath(APPLICATION_WEBROOT .'/../application'));
 
-// Define application environment
-define('APPLICATION_ENV', 'development');
-defined('APPLICATION_ENV')
-    || define('APPLICATION_ENV', (getenv('APPLICATION_ENV')
-                                    ? getenv('APPLICATION_ENV')
-                                    : 'production'));
+define('LIBRARY_PATH',  realpath(APPLICATION_PATH .'/../library'));
+define('MODEL_PATH',    realpath(APPLICATION_PATH .'/models'));
+
+$includePaths = array(LIBRARY_PATH,
+                      MODEL_PATH,
+                      //APPLICATION_PATH,
+                      get_include_path());
 
 // Ensure library/ is on include_path
-set_include_path(implode(PATH_SEPARATOR, array(
-    realpath(APPLICATION_PATH . '/../library'),
-    realpath(APPLICATION_PATH . '/models'),
-    get_include_path(),
-)));
+set_include_path(implode(PATH_SEPARATOR, $includePaths));
 
 // Make the application configuration generally avaialble
 require_once('Zend/Config/Ini.php');

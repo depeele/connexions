@@ -5,7 +5,7 @@
 YUI_COMP	= yui-compressor
 
 
-all: connexions.min.css post.min.css auth.min.css 		\
+all: connexions.min.css post.min.css api.min.css auth.min.css 	\
 	url-choose.min.css search.min.css settings.min.css 	\
 	help.min.css						\
 	ie.min.css ie8.min.css 					\
@@ -46,6 +46,9 @@ connexions.css: main.scss		\
 post.css: mixins.scss post.scss colors.scss ribbon-form.scss
 	sass -t compact post.scss:post.css
 
+api.css: api.scss sizes.scss colors.scss mixins.scss
+	sass -t compact api.scss:api.css
+
 auth.css: mixins.scss auth.scss colors.scss ribbon-form.scss
 	sass -t compact auth.scss:auth.css
 
@@ -73,10 +76,10 @@ ie-corner.scss:	urls.scss
 
 #----------------------------------------------------------------------------
 clean:
-	rm -f connexions*.css post*.css auth*.css	\
-	      url-choose*.css search*.css settings*.css \
-	      help*.css 				\
-	      ie*.css 					\
+	rm -f connexions*.css post*.css api*.css auth*.css	\
+	      url-choose*.css search*.css settings*.css 	\
+	      help*.css 					\
+	      ie*.css 						\
 	      themes/connexions/jquery-ui.min.css
 
 %.css : %.scss
