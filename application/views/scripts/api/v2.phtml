@@ -37,19 +37,22 @@ $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
             if (data === undefined) data    = rawData;
             else                    rawData = data;
 
-            var rounds  = 0;
+            // :XXX: Firefox (at least 3.6.17) has issues with jsDump()
+            var tries   = 0;
             var html    = '';
-            while ((data !== null) && (++rounds < 3))
+            while ((data !== null) && (++tries < 3))
             {
                 try {
-                    html = (useJsDump
+                    html = (useJsDump === true
                                 ? jsDump.parse( data )
                                 : JSON.stringify(data, null, '  ')
                                        .replace(/</, '&lt;')
                                        .replace(/>/, '&gt;')
                                        .replace(/&/, '&amp;') );
+                    break;
                 } catch(e) {
-                    if (useJsDump)  useJsDump = false;
+                    // Disable jsDump
+                    useJsDump = -1;
                 }
             }
 
@@ -63,11 +66,16 @@ $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
         });
 
         $result.click(function() {
-            // Clicking on the result area will toggle the formatting.
-            var $pre    = $result.find('pre');
+            if (useJsDump === -1)
+            {
+                // jsDump has been DISABLED
+                return;
+            }
 
+            // Clicking on the result area will toggle the formatting.
             useJsDump = (useJsDump === false ? true : false);
 
+            var $pre    = $result.find('pre');
             $pre.html( data2html() );
         });
 
