@@ -83,19 +83,7 @@ class Connexions_Controller_Route
                                     )
                            ),
   
-        'api'           => array(':cmd'     => array(
-                                    ':subCmd'  => array(
-                                        ':params'  => false)
-                                    )
-                           ),
-  
         'post'          => array(':params'  => false),
-        /*
-        'post'          => array(':controller'  => 'index',
-                                 ':action'      => 'post',
-                                 ':params'      => false,
-                           ),
-        */
   
         'search'        => array(':context' => array(
                                     ':terms'   => false)
@@ -103,7 +91,31 @@ class Connexions_Controller_Route
         'auth'          => array('signIn'   => false,
                                  'signOut'  => false,
                                  'register' => false,
-                                 'checkuser'=> false)
+                                 'checkuser'=> false),
+
+        // Compatability with the Connexions v1 api and feeds
+        'api'           => array('posts'    => array(
+                                    ':action'   => 'v1',
+                                    ':cmd'      => 'posts',
+                                    ':subCmd'   => false,
+                                 ),
+                                 'tags'     => array(
+                                    ':action'   => 'v1',
+                                    ':cmd'      => 'tags',
+                                    ':subCmd'   => false,
+                                 ),
+                                 'v2'       => array(
+                                     ':cmd' => array(
+                                         ':params'  => false,
+                                     ),
+                                 ),
+                           ),
+  
+        'feeds'         => array(':type'    => array(
+                                    ':cmd'  => false,
+                                 ),
+                           ),
+        // */
     );
 
     /** @brief  Retrieve an instance based upon configuration.

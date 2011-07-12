@@ -577,9 +577,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
      */
     protected function _autoSignin()
     {
-        $autoSignin = $_COOKIE['autoSignin'];
+        $autoSignin = (isset($_COOKIE['autoSignin'])
+                        ? $_COOKIE['autoSignin']
+                        : false);
 
-        // /*
+        /*
         Connexions::log("Bootstrap::_autoSignin(): autoSignin value[ %s ]",
                         Connexions::varExport($autoSignin));
         // */
@@ -599,7 +601,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
                 $user = null;
             }
 
-            // /*
+            /*
             Connexions::log("Bootstrap::_autoSignin(): method[ %s ] user[ %s ]",
                         $method,
                         Connexions::varExport($user));
@@ -851,7 +853,25 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
      */
     public function jsonp_post()
     {
-        $front        = Zend_Controller_Front::getInstance();
+        $front = Zend_Controller_Front::getInstance();
+
+        // See if the current request has been dispatched
+        try
+        {
+            $request      = $front->getRequest();
+            if (! $request->isDispatched())
+            {
+                /* Do NOTHING.  The active request has NOT been dispatched
+                 * (i.e. is likely being re-routed).
+                 */
+
+                /*
+                Connexions::log("jsonp_post: Request NOT dispatched -- return");
+                // */
+                return;
+            }
+        } catch (Exception $e) { }
+
         $viewRenderer =
           Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer');
 
