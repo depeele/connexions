@@ -63,6 +63,11 @@ $servicesWidth: 455px;
             width:  6.5em;
           }
         }
+        .required {
+          label {
+            font-weight:  bold;
+          }
+        }
       }
       .buttons {
         @include    inlineBlock();

@@ -199,7 +199,7 @@ $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
                         +  '</div>'
                         +  '</form>'
                         + '</li>';
-            var pTmpl   =   '<div class="field line">'
+            var pTmpl   =   '<div class="field line %required%">'
                         +    '<label for="%name%" '
                         +           'class="unit">%name%</label>'
                         +    '<input name="%name%" '
@@ -217,7 +217,11 @@ $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
             {
                 var param   = info.parameters[idex];
 
-                params += pTmpl.replace(/%name%/g, param.name)
+                params += pTmpl.replace(/%required%/g,
+                                        (param.optional === true
+                                            ? 'optional'
+                                            : 'required'))
+                               .replace(/%name%/g, param.name)
                                .replace(/%type%/g, 'text')
                                .replace(/%default%/g,
                                             (param['default'] !== undefined
