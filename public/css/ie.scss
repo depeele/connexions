@@ -192,6 +192,31 @@
   }
 }
 
+// For user.scss
+.users {
+  .user {
+    //width:    100%;
+    .relation {
+      width:  34px;
+      .connexions_sprites {
+        overflow:     hidden;
+        text-indent:  -9999em;
+      }
+    }
+    .data {
+      margin-right: 100px;
+
+      .email {
+        position: absolute;
+        top:      0;
+        right:    0;
+
+        float:    none;
+      }
+    }
+  }
+}
+
 // For settings.scss
 #settings {
   .pane {
