@@ -28,6 +28,9 @@
   margin-right: -3px;
 }
 
+// For jquery-ui
+@import "ie-jquery-ui";
+
 // For main.scss
 .pane {
   zoom:   1;
@@ -37,6 +40,7 @@
 @import "ie-corner";
 #pageHeader {
   .siteAuth {
+    z-index:  2;
     .siteMarking {
       right:  $tabWidth + 20px;
     }
@@ -46,6 +50,7 @@
     }
   }
   .siteNav {
+    z-index:  1;
     .tabs {
       width:    $tabWidth + 20px;
 
@@ -80,7 +85,12 @@
   }
 }
 
-// <= IE7 fixes
+.collapsable {
+  .toggle {
+    width:  100%;
+  }
+}
+
 *:first-child+html, * html {
   #search .choices .list {
       top:  $navTopSub;
@@ -153,5 +163,49 @@
 
 // For displayOptions.scss
 .displayOptions {
-  width:  9em;
+  width:    9em;
+  z-index:  10;
+
+  .displayStyle {
+    ul.groups {
+      li.control {
+        top:  0.4em;
+      }
+    }
+  }
 }
+
+.itemItems, .userItems {
+  .displayOptions {
+    form {
+      .itemCounts {
+        padding-bottom: 1em;
+        .highlightCount {
+          position: absolute;
+          top:      0.5em;
+          right:    0;
+
+          float:    none;
+        }
+      }
+    }
+  }
+}
+
+// For settings.scss
+#settings {
+  .pane {
+    background: none;
+  }
+}
+.account {
+  .account-credentials {
+    .type, .name, .credential, .typeSelection {
+      margin-right: 4px;
+    }
+    .control {
+      margin-left:  4px;
+    }
+  }
+}
+

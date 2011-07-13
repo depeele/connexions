@@ -118,7 +118,7 @@
         width:    48px;
         cursor:   pointer;
         img {
-          width:  inherit;
+          width:  100%;
         }
       }
       .user-date {
@@ -279,7 +279,7 @@
     }
 
     .buttons {
-      padding:  0.25em 5.5em 1em 36px;
+      padding:  0.25em 5em 1em 36px;
 
       button {
         float:    right;

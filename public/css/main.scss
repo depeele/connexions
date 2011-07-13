@@ -23,6 +23,8 @@
 @import "bookmark";
 @import "user";
 
+$navBorder: unquote("1px dotted") $navColorBorder;
+
 /****** main.scss ****** */
 //a, a:link, a:visited, a:focus, a:hover
 //  color =     !linkColor
@@ -52,18 +54,20 @@ body.light {
 
 /* Page Header */
 #pageHeader {
+  font-size:  $baseFontSize;
+  z-index:    100;
+
   h1#siteName {
     position:       absolute;
-    top:            -26px;
+    top:            0;
     left:           0;
     color:          black;
     font-weight:    bold;
     font-size:      26px;
-    padding:        0 0 0 13px;
+    padding:        0 0 0 0.5em;
 
     a {
       display:  block;
-      width:    175px;
     }
     span,img {
       @include inlineBlock();
@@ -75,6 +79,86 @@ body.light {
       left:         -2px;
       margin-right: -9px;
       z-index:      1;
+    }
+  }
+
+  // Outer curve connecting the tabs with the top border
+  .tabs_outer_curve {
+    position: absolute;
+    right:    $tabWidth - 2px;
+  }
+
+  .siteAuth, .siteNav {
+    a {
+      font-weight:    bold;
+      text-decoration: none;
+    }
+  }
+
+  .siteAuth {
+    text-align:   right;
+    border-top:   unquote("3px solid") $navColorBackground;
+    background:   $navBg;
+
+    .siteMarking {
+      position:         absolute;
+      top:              0;
+      right:            $tabWidth;
+      height:           $tabHeight;
+      width:            100%;
+      background-color: $pageColorBackground;
+
+      font-size:        10px;
+
+      .urCorner {
+        position:       absolute;
+        top:            0;
+        right:          0;
+
+        width:          20px;
+        height:         20px;
+
+        .urCorner-background {
+          position:         absolute;
+          top:              0;
+          right:            0;
+          left:             auto;
+          width:            20px;
+          height:           20px;
+
+          background:       $navBg;
+        }
+        .urCorner-rounded {
+          top:          0;
+          right:        0;
+          width:        20px;
+          height:       20px;
+
+          @include corners(0, 20px, 0, 0);
+          background-color: $pageColorBackground;
+        }
+      }
+    }
+    .authInfo {
+      .authMenu {
+        @include inlineBlock();
+      }
+    }
+  }
+  .siteNav {
+    z-index:  1;
+    height:   $tabHeight;
+
+    // Top navigation tabs
+    .tabs {
+      position: absolute;
+      top:      0;
+      right:    0;
+      padding:  0;
+      width:    $tabWidth;
+      height:   $tabHeight;
+
+      //background-color: transparent;
     }
   }
 }

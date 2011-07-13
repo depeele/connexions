@@ -10,77 +10,15 @@
 @import "colors";
 @import "sizes";
 
-$navBorder: unquote("1px dotted") $navColorBorder;
-
 /* Tabs / Navigation */
 #pageHeader {
-  font-size:  $baseFontSize;
-  z-index:    100;
-
-  // Outer curve connecting the tabs with the top border
-  .tabs_outer_curve {
-    position: absolute;
-    right:    $tabWidth - 2px;
-  }
-
   .menu-arrow {
     @include inlineBlock();
     vertical-align: middle;
     cursor:         pointer;
   }
 
-  .siteAuth, .siteNav {
-    a {
-      font-weight:    bold;
-      text-decoration: none;
-    }
-  }
   .siteAuth {
-    text-align:   right;
-    border-top:   unquote("3px solid") $navColorBackground;
-    background:   $navBg;
-
-    .siteMarking {
-      position:         absolute;
-      top:              0;
-      right:            $tabWidth;
-      height:           $tabHeight;
-      width:            100%;
-      background-color: $pageColorBackground;
-
-      font-size:        10px;
-      //background-color: $navColorBackground;
-      //background-color: $themeWaveLight;
-
-      .urCorner {
-        position:       absolute;
-        top:            0;
-        right:          0;
-
-        width:          20px;
-        height:         20px;
-
-        .urCorner-background {
-          position:         absolute;
-          top:              0;
-          right:            0;
-          left:             auto;
-          width:            20px;
-          height:           20px;
-
-          background:       $navBg;
-        }
-        .urCorner-rounded {
-          top:          0;
-          right:        0;
-          width:        20px;
-          height:       20px;
-
-          @include corners(0, 20px, 0, 0);
-          background-color: $pageColorBackground;
-        }
-      }
-    }
     .authInfo {
       @include inlineBlock();
       width:      $tabWidth;
@@ -126,8 +64,6 @@ $navBorder: unquote("1px dotted") $navColorBorder;
       }
 
       .authMenu {
-        @include inlineBlock();
-
         border-right: $navBorder;
 
         .menu {
@@ -213,20 +149,6 @@ $navBorder: unquote("1px dotted") $navColorBorder;
     }
   }
   .siteNav {
-    z-index:  1;
-    height:   $tabHeight;
-
-    // Top navigation tabs
-    .tabs {
-      position: absolute;
-      top:      0;
-      right:    0;
-      padding:  0;
-      width:    $tabWidth;
-      height:   $tabHeight;
-
-      //background-color: transparent;
-    }
     .nav {
       position: absolute;
       top:      0;

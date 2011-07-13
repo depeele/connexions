@@ -8,8 +8,7 @@
 .columnHeader {
   .itemInfo {
     .label {
-      display: block;
-      float: left;
+      @include inlineBlock();
     }
     .title {
       font-size: 1.2em;
@@ -28,9 +27,8 @@
   color: $navColor;
   padding: 0;
   label,input,button {
+    @include inlineBlock();
     background-color: transparent;
-    display: block;
-    float: left;
     padding: 0.1em;
   }
   label {
@@ -81,8 +79,7 @@
             border: unquote("1px solid") $borderColor;
             padding: 0 0 0.1em 0.2em;
             label {
-              display: inline;
-              float: none;
+              @include inlineBlock();
               width: auto;
               padding-left: 0.25em;
             }
@@ -122,8 +119,7 @@
                   padding-left: 0;
                 }
                 .avatar {
-                  position: relative;
-                  float: left;
+                  @include inlineBlock();
                   padding: 0 0.75em 0 0.25em;
                   label {
                     padding-left: 8px;
@@ -143,8 +139,7 @@
                 text-align: left;
                 padding: 0 0 1em 0;
                 label {
-                  display: inline;
-                  float: none;
+                  @include inlineBlock();
                   font-size: 0.8em;
                 }
               }

@@ -36,6 +36,7 @@ $navColorSub:                 #2786c2;
 $navColorSubHover:            #7fcdfe;
 $navColorBorder:              #666;
 $navBg:                       $navColorBackground unquote("url(themes/connexions/images/ui-bg_gloss-wave_10_172322_500x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/");
+$navBorder:                   unquote("1px dotted") $navColorBorder;
 
 $groupHeaderColorBackground:  #edf4fb;        //#eef;
 $groupHeaderColor:            $controlColor;
