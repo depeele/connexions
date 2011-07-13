@@ -150,7 +150,7 @@ $.widget("connexions.collapsable", {
         });
     },
 
-    _load: function() {
+    _load: function(callback) {
         var self    = this;
         var opts    = self.options;
         var url     = self.$a.data('load.collapsable');
@@ -159,6 +159,10 @@ $.widget("connexions.collapsable", {
 
         if ((! url) || self.$a.data('cache.collapsable'))
         {
+            if ($.isFunction(callback))
+            {
+                callback();
+            }
             return;
         }
 
@@ -199,6 +203,10 @@ $.widget("connexions.collapsable", {
                 }
 
                 self.element.removeClass('ui-state-processing');
+                if ($.isFunction(callback))
+                {
+                    callback();
+                }
             },
             success: function(res, stat) {
                 self.$content.html(res);
@@ -271,14 +279,16 @@ $.widget("connexions.collapsable", {
         if (self.$content.is(":hidden"))
         {
             // Show the content / open
-            self.$toggle.removeClass('collapsed')
-                        .addClass(   'expanded');
-            self.$indicator.removeClass('ui-icon-triangle-1-e')
-                           .addClass(   'ui-icon-triangle-1-s');
-            self.$content.slideDown();
+            self._load(function() {
+                self.$toggle.removeClass('collapsed')
+                            .addClass(   'expanded');
+                self.$indicator.removeClass('ui-icon-triangle-1-e')
+                               .addClass(   'ui-icon-triangle-1-s');
                 
-            self.element.trigger('expanded');
-            self._load();
+                self.$content.slideDown('fast', function() {
+                    self.element.trigger('expanded');
+                });
+            });
         }
     },
 
@@ -292,9 +302,9 @@ $.widget("connexions.collapsable", {
                         .addClass(   'collapsed');
             self.$indicator.removeClass('ui-icon-triangle-1-s')
                            .addClass(   'ui-icon-triangle-1-e');
-            self.$content.slideUp();
-
-            self.element.trigger('collapsed');
+            self.$content.slideUp('fast', function() {
+                self.element.trigger('collapsed');
+            });
         }
     },
 
