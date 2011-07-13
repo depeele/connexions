@@ -191,14 +191,14 @@ echo $this->render('base-header.phtml');
       </div>
      </div>
      <?= $this->render('site_auth.phtml') ?>
-   </div>
-   <div class='siteNav'><!-- { siteNav -->
      <h1 id='siteName'
       ><a href="<?= $baseUrl ?>"
        ><span>conne</span
        ><img src="<?= $baseUrl ?>images/logo.gif" alt="x" /
        ><span>ions</span
       ></a></h1>
+   </div>
+   <div class='siteNav'><!-- { siteNav -->
     <div class='tabs'><!-- tabs { -->
      <?php if ( $this->excludeNav !== true ) { ?>
       <?= $this->render('nav_menu.phtml') ?>
