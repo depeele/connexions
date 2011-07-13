@@ -68,11 +68,11 @@ help.css: help.scss sizes.scss colors.scss mixins.scss urls.scss \
 		sprites.scss
 	sass -t compact help.scss:help.css
 
-ie.scss:	sizes.scss ie-corner.scss
+ie.css:	ie.scss sizes.scss ie-corner.scss ie-jquery-ui.scss
 
-ie8.scss:	sizes.scss ie-corner.scss
+ie8.css:	ie8.scss sizes.scss ie-corner.scss ie-jquery-ui.scss
 
-ie-corner.scss:	urls.scss
+ie-corner.css:	ie-corner.scss urls.scss
 
 #----------------------------------------------------------------------------
 clean:

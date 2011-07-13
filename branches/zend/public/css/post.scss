@@ -76,6 +76,10 @@ $userRatingWidth: 96px;
   .suggestions {
     margin:       2em 0 0 1.5em;
 
+    .pane {
+      background: none;
+    }
+
     .ui-tabs-panel {
       padding:    0.25em;
     }

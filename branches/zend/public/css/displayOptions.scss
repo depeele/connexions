@@ -27,7 +27,6 @@
     }
     .ui-icon {
       right:  0.2em;
-      //float: right;
     }
   }
   .buttons {
@@ -45,9 +44,9 @@
     display: block;
     padding-bottom: 0.25em;
     label {
-      clear:    left;
+      @include inlineBlock();
+
       width:    6em;
-      float:    left;
       padding:  0.25em 0;
     }
   }
@@ -57,12 +56,11 @@
     padding-bottom: 0.5em;
     border-bottom: unquote("1px dotted") $borderColor;
     .field {
-      float: left;
+      @include inlineBlock();
       padding-bottom: 0;
       padding-right: 0.5em;
       label {
-        display: inline;
-        float: none;
+        @include inlineBlock();
         width: auto;
         padding: 0 0.1em;
         font-size: 0.8em;
@@ -87,14 +85,13 @@
       cursor: pointer;
     }
     ul.groups {
+      @include inlineBlock();
       padding: 0;
       li.field {
-        display: block;
-        float: left;
+        @include inlineBlock();
         padding: 0.25em;
         label {
-          display: inline;
-          float: none;
+          @include inlineBlock();
           width: auto;
           padding: 0;
         }
@@ -103,8 +100,12 @@
         cursor: pointer;
       }
       li.control {
-        position: relative;
-        padding:  0.25em 0.25m 0.15em 0;
+        position:   relative;
+        font-size:  1em;
+        padding:    0;
+        .ui-button-text {
+          padding-right:  16px;
+        }
       }
       li.ui-state-active {
         font-weight: bold;
@@ -125,8 +126,7 @@
     border-bottom:  none;
     padding:        0 0 0.1em 0.2em;
     label {
-      display: inline;
-      float: none;
+      @include inlineBlock();
       width: auto;
       padding-left: 0.25em;
     }
@@ -140,8 +140,7 @@
         text-align: left;
         .info {
           text-align: left;
-          float: none;
-          padding: 0;
+          padding:    0;
         }
       }
     }
