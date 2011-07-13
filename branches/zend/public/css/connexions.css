@@ -885,15 +885,15 @@ a:visited { color: #005a9c; }
 .users .user .data .control .item-delete:hover .icon, .pane .displayStyle fieldset.options .user .data .control .item-delete:hover .icon { width: 16px; height: 16px; background-position: -68px -94px; }
 .users .user .data .control .item-edit, .pane .displayStyle fieldset.options .user .data .control .item-edit { display: block; font-size: 0.9em; }
 .users .user .data .control:hover .item-add, .users .user .data .control:hover .item-delete, .pane .displayStyle fieldset.options .user .data .control:hover .item-add, .pane .displayStyle fieldset.options .user .data .control:hover .item-delete { visibility: visible; }
-.users .user .data .userId, .pane .displayStyle fieldset.options .user .data .userId { float: left; padding: 0; font-size: 1.25em; width: 6em; }
+.users .user .data .userId, .pane .displayStyle fieldset.options .user .data .userId { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; padding: 0; font-size: 1.25em; width: 6em; }
 .users .user .data .userId a, .pane .displayStyle fieldset.options .user .data .userId a { display: inline; font-weight: bold; }
-.users .user .data .fullName, .pane .displayStyle fieldset.options .user .data .fullName { float: left; padding: 0.25em; }
+.users .user .data .fullName, .pane .displayStyle fieldset.options .user .data .fullName { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; padding: 0.25em; }
 .users .user .data .fullName a, .pane .displayStyle fieldset.options .user .data .fullName a { display: inline; font-weight: bold; }
 .users .user .data .email, .pane .displayStyle fieldset.options .user .data .email { float: right; padding: 0.25em; border: none; }
 .users .user .data .email a, .pane .displayStyle fieldset.options .user .data .email a { display: inline; font-weight: normal; }
-.users .user .data .email .icon, .pane .displayStyle fieldset.options .user .data .email .icon { position: relative; float: left; }
+.users .user .data .email .icon, .pane .displayStyle fieldset.options .user .data .email .icon { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; position: relative; }
 .users .user .data .tags, .pane .displayStyle fieldset.options .user .data .tags { clear: both; display: block; }
-.users .user .data .dates, .pane .displayStyle fieldset.options .user .data .dates { clear: both; font-size: 0.8em; height: 1em; padding: 0 0 0 1em; color: #999999; }
+.users .user .data .dates, .pane .displayStyle fieldset.options .user .data .dates { clear: both; font-size: 0.8em; height: 1em; padding: 0 0 0 2em; color: #999999; }
 .users .user .data .dates .lastVisit, .pane .displayStyle fieldset.options .user .data .dates .lastVisit { display: block; }
 .users .mine, .pane .displayStyle fieldset.options .mine { min-height: 45px; }
 .users .mine .status, .pane .displayStyle fieldset.options .mine .status { display: block; min-height: 45px; }

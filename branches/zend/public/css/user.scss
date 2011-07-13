@@ -191,7 +191,7 @@
 
       // UserId
       .userId {
-        float: left;
+        @include inlineBlock();
         padding: 0;
         font-size: 1.25em;
         width: 6em;
@@ -202,7 +202,7 @@
       }
       // FullName
       .fullName {
-        float: left;
+        @include inlineBlock();
         padding: 0.25em;
         a {
           display: inline;
@@ -219,8 +219,8 @@
           font-weight: normal;
         }
         .icon {
+          @include inlineBlock();
           position: relative;
-          float: left;
         }
       }
       // List of tags for this item
@@ -233,7 +233,7 @@
         clear:      both;
         font-size:  0.8em;
         height:     1em;
-        padding:    0 0 0 1em;
+        padding:    0 0 0 2em;
         color:      $controlColor;
         .lastVisit {
           display: block;
