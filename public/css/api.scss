@@ -24,6 +24,13 @@ $servicesWidth: 455px;
   }
 }
 
+ul.numbered {
+  margin-left:  2em;
+  li {
+    list-style: decimal;
+  }
+}
+
 .services {
   width:          $servicesWidth;
   padding-right:  0.5em;
