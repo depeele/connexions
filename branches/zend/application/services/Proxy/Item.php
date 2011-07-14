@@ -91,22 +91,25 @@ class Service_Proxy_Item extends Connexions_Service_Proxy
     /** @brief  Retrieve a set of items that are "similar" to the provided
      *          item (i.e. similar to the Item's URL -- actually, having the
      *                     same host).
-     *  @param  id      A Model_Item instance, string url or urlHash, or an
-     *                  array of 'property/value' pairs.
-     *  @param  order   Optional ORDER clause (string, array);
-     *  @param  count   Optional LIMIT count
-     *  @param  offset  Optional LIMIT offset
+     *  @param  id          A Model_Item instance, string url or urlHash, or an
+     *                      array of 'property/value' pairs.
+     *  @param  order       Optional ORDER clause (string, array);
+     *  @param  count       Optional LIMIT count
+     *  @param  offset      Optional LIMIT offset
+     *  @param  inclusive   Include the original item? [ false ];
      *
      *  @return A new Model_Set_Item instance.
      */
     public function fetchSimilar($id,
-                                 $order   = 'url ASC',
-                                 $count   = 50,
-                                 $offset  = 0)
+                                 $order     = 'url ASC',
+                                 $count     = 50,
+                                 $offset    = 0,
+                                 $inclusive = false)
     {
         return $this->_service->fetchSimilar($id,
                                              $order,
                                              $count,
-                                             $offset);
+                                             $offset,
+                                             $inclusive);
     }
 }

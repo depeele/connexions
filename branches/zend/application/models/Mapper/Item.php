@@ -199,31 +199,50 @@ class Model_Mapper_Item extends Model_Mapper_Base
 
     /** @brief  Given an Item Domain Model (or Item identifier), locate
      *          all other items that are "similar" (i.e. have a similar URL).
-     *  @param  id      A Model_Item instance, array of 'property/value' pairs
-     *                  OR a Zend_Db_Select identifying the desired models.
-     *  @param  order   Optional ORDER clause (string, array)
-     *  @param  count   Optional LIMIT count
-     *  @param  offset  Optional LIMIT offset
+     *  @param  id          A Model_Item instance, array of 'property/value'
+     *                      pairs OR a Zend_Db_Select identifying the desired
+     *                      models.
+     *  @param  order       Optional ORDER clause (string, array)
+     *  @param  count       Optional LIMIT count
+     *  @param  offset      Optional LIMIT offset
+     *  @param  inclusive   Include the original item? [ false ];
      *
      *  @return A Model_Item_Set.
      */
     public function fetchSimilar($id,
-                                 $order   = null,
-                                 $count   = null,
-                                 $offset  = null)
+                                 $order     = null,
+                                 $count     = null,
+                                 $offset    = null,
+                                 $inclusive = false)
     {
+        /*
+        Connexions::log("Model_Mapper_Item::fetchSimilar(): id[ %s ]",
+                        Connexions::varExport($id));
+        // */
+
         if ($id instanceof Model_Item)
         {
             $item = $id;
         }
+        else if (is_numeric($id))
+        {
+            // Treat the id as a simple item identifier
+            $item = $this->find( $id ); //array('itemId' => $id));
+        }
         else
         {
-            $item = $this->find( $id ); //array('itemId' => $id));
+            // Treat the id as a URL
+            $item = $id;
         }
 
         if (! $item)
         {
             return $this->makeEmptySet();
+        }
+
+        if (is_string($item))
+        {
+            $inclusive = true;
         }
 
         /* Convert the model class name to an abbreviation composed of all
@@ -247,15 +266,25 @@ class Model_Mapper_Item extends Model_Mapper_Base
                                 $accessor->info(Zend_Db_Table_Abstract::NAME)),
                        array("{$as}.*"));
 
-        // Exclude 'item'
-        $this->_addWhere($select,
-                         $this->_where(array('url!=' => $item->url)) );
+        if ($inclusive !== true)
+        {
+            // Exclude 'item'
+            $this->_addWhere($select,
+                             $this->_where(array('url!=' => $item->url)) );
+        }
 
         /* Include any item with a URL of the form:
          *      .+://-hostname-of-item-url-.*
          */
-        $urlParts = parse_url($item->url);
-        $pattern  = '://'. $urlParts['host'];
+        if (is_string($item))
+        {
+            $pattern = $item;
+        }
+        else
+        {
+            $urlParts = parse_url($item->url);
+            $pattern  = '://'. $urlParts['host'];
+        }
         $this->_addWhere($select,
                          $this->_where(array('url=*' => $pattern)) );
         

@@ -143,20 +143,22 @@ class Service_Item extends Service_Base
     /** @brief  Retrieve a set of items that are "similar" to the provided
      *          item (i.e. similar to the Item's URL -- actually, having the
      *                     same host).
-     *  @param  id      A Model_Item instance, string url or urlHash, or an
-     *                  array of 'property/value' pairs.
-     *  @param  order   Optional ORDER clause (string, array);
-     *  @param  count   Optional LIMIT count
-     *  @param  offset  Optional LIMIT offset
+     *  @param  id          A Model_Item instance, string url or urlHash, or an
+     *                      array of 'property/value' pairs.
+     *  @param  order       Optional ORDER clause (string, array);
+     *  @param  count       Optional LIMIT count
+     *  @param  offset      Optional LIMIT offset
+     *  @param  inclusive   Include the original item? [ false ];
      *
      *  @return A new Model_Set_Item instance.
      */
     public function fetchSimilar($id,
-                                 $order   = null,
-                                 $count   = null,
-                                 $offset  = null)
+                                 $order     = null,
+                                 $count     = null,
+                                 $offset    = null,
+                                 $inclusive = false)
     {
-        if (! $id instanceof Model_Item)
+        if ((! $id instanceof Model_Item) && is_numeric($id))
         {
             $normId = $this->_mapper->normalizeId($id);
             $item   = $this->_mapper->find( $normId );
@@ -171,9 +173,24 @@ class Service_Item extends Service_Base
             $order = $this->_csOrder2array($order);
         }
 
+        $inclusive = Connexions::to_bool($inclusive);
+
+        /*
+        Connexions::log("Service_Item::fetchSimilar(): "
+                        . "item[ %s ], order[ %s ], "
+                        . "count[ %s ], offset[ %s ], "
+                        . "inclusive[ %s ]",
+                        Connexions::varExport($item),
+                        Connexions::varExport($order),
+                        Connexions::varExport($count),
+                        Connexions::varExport($offset),
+                        Connexions::varExport($inclusive));
+        // */
+
         return $this->_mapper->fetchSimilar($item,
                                             $order,
                                             $count,
-                                            $offset);
+                                            $offset,
+                                            $inclusive);
     }
 }

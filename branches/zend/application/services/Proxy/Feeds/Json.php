@@ -5,12 +5,16 @@
  */
 class Service_Proxy_Feeds_Json
 {
-    /** @brief  Retrieve a set of items for the current user.
+    /** @brief  Retrieve a set of bookmarks.
      *  @param  string user     The target user
      *                          ('*' for all, null indicates the currently
      *                           authenticated user) [ null ];
      *  @param  string tags     A comma or plus-separated list of tags to
      *                          filter by.
+     *  @param  string sort     A sorting order string
+     *                          (taggers, popular, votes, topRated, ratings,
+     *                           oldest, byDate, [recent] )
+     *
      *  @param  string callback A JSONP callback.  The returned JSON will be
      *                          wrapped in a Javascript function call using
      *                          this name;
@@ -20,6 +24,7 @@ class Service_Proxy_Feeds_Json
      */
     public function posts($user     = null,
                           $tags     = null,
+                          $sort     = 'recent',
                           $callback = null,
                           $count    = 100)
     {
@@ -27,30 +32,45 @@ class Service_Proxy_Feeds_Json
         $uService = $this->_service('User');
         $tService = $this->_service('Tag');
 
+        switch (strtolower($sort))
+        {
+        case 'taggers':
+        case 'popular':
+            $order = 'userCount DESC, '
+                   . 'updatedOn DESC, taggedOn DESC, name ASC';
+            break;
+
+        case 'toprated':
+            $order = 'ratingAvg DESC, ratingCount DESC, '
+                   . 'updatedOn DESC, taggedOn DESC, name ASC';
+            break;
+
+        case 'ratings':
+        case 'votes':
+            $order = 'ratingCount DESC, ratingAvg DESC, '
+                   . 'updatedOn DESC, taggedOn DESC, name ASC';
+            break;
+
+        case 'oldest':
+        case 'bydate':
+            $order = 'updatedOn ASC, taggedOn ASC, name ASC';
+            break;
+
+        case 'recent':
+        default:
+            $order = 'updatedOn DESC, taggedOn DESC, name ASC';
+        }
+
         $userSet = null;
         if ($user !== '*')
         {
-            // Use the currently authenticated user
-            $userSet = $uService->makeEmptySet();
-
-            // Resolve the incoming 'owner' name.
             if (empty($user))
             {
-                // Use the currently authenticated user.
-                $owner = Connexions::getUser();
-            }
-            else
-            {
-                // Resolve the given user.
-                $owner = $this->_resolveUserName($user);
-                if ( (! $owner) || (! $owner->isBacked()) )
-                {
-                    throw new Exception("Unknown user [ {$user} ]");
-                    return;
-                }
+                // Use the currently authenticated user
+                $user = Connexions::getUser();
             }
 
-            $userSet->setResults(array( $owner ));
+            $userSet = $uService->csList2set( $user );
         }
 
         if (! empty($tags))
@@ -63,20 +83,228 @@ class Service_Proxy_Feeds_Json
         Connexions::log("Service_Proxy_Feeds_Json::posts(): "
                         .   "user[ %s ], userSet[ %s ], "
                         .   "tags[ %s ], tagSet[ %s ], "
+                        .   "sort[ %s == %s ], "
                         .   "count[ %s ]",
                         Connexions::varExport($user),
                         Connexions::varExport($userSet),
                         Connexions::varExport($tags),
                         Connexions::varExport($tagSet),
+                        $sort, $order,
                         $count);
 
         $bookmarks  = $bService->fetchByUsersAndTags($userSet, $tagSet,
                                                      true,      // exactUsers
                                                      true,      // exactTags
-                                                     null,      // order
+                                                     $order,    // order
                                                      $count);
 
         return $bookmarks;
+    }
+
+    /** @brief  Retrieve a set of tags.
+     *  @param  string user     The target user
+     *                          ('*' for all, null indicates the currently
+     *                           authenticated user) [ null ];
+     *  @param  string sort     A sorting order string
+     *                          ( [alpha], count);
+     *  @param  int    atleast  Include only tags that have been used for at
+     *                          least this many bookmarks [ 0 ];
+     *
+     *  @param  string callback A JSONP callback.  The returned JSON will be
+     *                          wrapped in a Javascript function call using
+     *                          this name;
+     *  @param  string count    The maximum number of items to return [ 100 ];
+     *
+     *  @return array of bookmarks
+     */
+    public function tags($user     = null,
+                         $sort     = 'alpha',
+                         $atleast  = 0,
+                         $callback = null,
+                         $count    = 100)
+    {
+        $uService = $this->_service('User');
+        $tService = $this->_service('Tag');
+
+        switch (strtolower($sort))
+        {
+        case 'count':
+            $order = 'userItemCount DESC, tag ASC';
+            break;
+
+        case 'alpha':
+        default:
+            $order = 'tag ASC, userItemCount DESC';
+            break;
+        }
+
+        $userSet = null;
+        if ($user !== '*')
+        {
+            if (empty($user))
+            {
+                // Use the currently authenticated user
+                $user = Connexions::getUser();
+            }
+
+            $userSet = $uService->csList2set( $user );
+        }
+
+        $where = ($atleast < 1
+                    ? null
+                    : array('userItemCount >=' => $atleast) );
+
+        Connexions::log("Service_Proxy_Feeds_Json::tags(): "
+                        .   "user[ %s ], userSet[ %s ], "
+                        .   "sort[ %s == %s ], "
+                        .   "count[ %s ], where[ %s ]",
+                        Connexions::varExport($user),
+                        Connexions::varExport($userSet),
+                        $sort, $order,
+                        $count,
+                        Connexions::varExport($where));
+
+        $tags = $tService->fetchByUsers($userSet,
+                                        $order,
+                                        $count,
+                                        null,       // offset
+                                        false,      // exact
+                                        $where);
+
+        return $tags;
+    }
+
+    /** @brief  Retrieve a set of people.
+     *  @param  string user     The target user
+     *                          ('*' for all, null indicates the currently
+     *                           authenticated user) [ null ];
+     *  @param  string sort     A sorting order string
+     *                          (id, name, email, lastVisit, tagCount,
+     *                           [itemCount] )
+     *
+     *  @param  string callback A JSONP callback.  The returned JSON will be
+     *                          wrapped in a Javascript function call using
+     *                          this name;
+     *  @param  string count    The maximum number of items to return [ 100 ];
+     *
+     *  @return array of bookmarks
+     */
+    public function people($user     = null,
+                           $sort     = 'itemCount',
+                           $callback = null,
+                           $count    = 100)
+    {
+        $uService = $this->_service('User');
+        $tService = $this->_service('Tag');
+
+        switch (strtolower($sort))
+        {
+        case 'id':
+            $order = 'name ASC';
+            break;
+
+        case 'name':
+            $order = 'fullName ASC';
+            break;
+
+        case 'email':
+            $order = 'email ASC';
+            break;
+
+        case 'lastvisit':
+            $order = 'lastVisit DESC, name ASC';
+            break;
+
+        case 'tagcount':
+            $order = 'totalTags DESC, name ASC';
+            break;
+
+        case 'itemcount':
+        default:
+            $order = 'totalItems DESC, name ASC';
+        }
+
+        $userSet = null;
+        if ($user !== '*')
+        {
+            if (empty($user))
+            {
+                // Use the currently authenticated user
+                $user = Connexions::getUser();
+            }
+
+            $userSet = $uService->csList2set( $user );
+        }
+        else
+        {
+            $userSet = $uService->fetch(null,
+                                        $order,
+                                        $count);
+        }
+
+        Connexions::log("Service_Proxy_Feeds_Json::people(): "
+                        .   "user[ %s ], userSet[ %s ], "
+                        .   "sort[ %s == %s ], "
+                        .   "count[ %s ]",
+                        Connexions::varExport($user),
+                        Connexions::varExport($userSet),
+                        $sort, $order,
+                        $count);
+
+        return $userSet;
+    }
+
+    /** @brief  Retrieve a set of urls with associated tags.
+     *  @param  string url      The target url;
+     *  @param  string sort     A sorting order string
+     *                          ( [alpha], count);
+     *
+     *  @param  string callback A JSONP callback.  The returned JSON will be
+     *                          wrapped in a Javascript function call using
+     *                          this name;
+     *  @param  string count    The maximum number of items to return [ 100 ];
+     *
+     *  @return array of bookmarks
+     */
+    public function url($url,
+                        $sort     = 'alpha',
+                        $callback = null,
+                        $count    = 100)
+    {
+        $iService = $this->_service('Item');
+
+        switch (strtolower($sort))
+        {
+        case 'count':
+            $order = 'userItemCount DESC, url ASC';
+            break;
+
+        case 'alpha':
+        default:
+            $order = 'url ASC, userItemCount DESC';
+            break;
+        }
+
+        /*
+        Connexions::log("Service_Proxy_Feeds_Json::url(): "
+                        .   "url[ %s ], sort[ %s == %s ], "
+                        .   "count[ %s ]",
+                        $url,
+                        $sort, $order,
+                        $count);
+        // */
+
+        $items  = $iService->fetchSimilar($url, $order, $count,
+                                          null,     // offset
+                                          true);    // inclusive
+
+        /*
+        Connexions::log("Service_Proxy_Feeds_Json::url(): "
+                        .   "items[ %s ]",
+                        Connexions::varExport($items));
+        // */
+
+        return $items;
     }
 
     /**************************************************************************
@@ -96,64 +324,4 @@ class Service_Proxy_Feeds_Json
 
         return Connexions_Service::factory($name);
     }
-
-    /** @brief  Given a string that is supposed to represent a user, see if it
-     *          represents a valid user.
-     *  @param  name    The user name.
-     *
-     *  @return A Model_User instance matching 'name', null if no match.
-     */
-    protected function _resolveUserName($name)
-    {
-        $res = null;
-
-        if ((! @empty($name)) && ($name !== '*'))
-        {
-            /* Retieve a model representing the target user
-             * (MAY be unbacked).
-             */
-            $userInst = $this->service('User')
-                                ->get(array('name' => $name));
-
-            // Have we located a user?
-            if ($userInst !== null)
-            {
-                // YES -- we have a user model instance, possibly unbacked.
-                $res = $userInst;
-            }
-        }
-
-        return $res;
-    }
-
-    /** @brief  Retrieve the currently authenticated user and validate the
-     *          provided API key.
-     *  @param  apikey  The API key that should be associated with the
-     *                  currently authenticated user.
-     *
-     *  Override Connexions_Service_Proty::_authenticate() to REQUIRE an ApiKey
-     *  regardless of request method.
-     *
-     *  @throw  Exception('Invalid apikey')
-     *
-     *  @return The currently authenticated user.
-     */
-    protected function _authenticate($apikey)
-    {
-        $user = Connexions::getUser();
-        if (! $user->isAuthenticated())
-        {
-            throw new Exception('Operation prohibited for an '
-                                .   'unauthenticated user.');
-        }
-
-        if ($user->apiKey !== $apikey)
-        {
-            throw new Exception('Invalid apikey.');
-        }
-
-        return $user;
-    }
 }
-
-
