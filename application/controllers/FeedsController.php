@@ -99,7 +99,7 @@ class FeedsController extends Connexions_Controller_Action
             // Use the defined server to handle this request
             $callback = $jsonReq->getParam('callback', null);
 
-            // /*
+            /*
             Connexions::log("FeedsController::jsonAction(): "
                             .   "cmd[ %s ], request params[ %s ], "
                             .   "callback[ %s ]",
@@ -115,13 +115,34 @@ class FeedsController extends Connexions_Controller_Action
             $this->_disableRendering();
             $jsonRsp = $server->handle();
 
+            $result = $jsonRsp->getResult();
+            if (is_object($result))
+            {
+                if (method_exists($result, 'toArray'))
+                {
+                    // Don't perform deep conversion
+                    $result = $result->toArray( array('deep' => false) );
+                }
+                else if (method_exists($result, '__toString'))
+                {
+                    $result = $result->__toString();
+                }
+            }
+            $result = json_encode( $result );
+
+            /*
+            Connexions::log("FeedsController::jsonAction(): "
+                            . "result[ %s ]",
+                            Connexions::varExport($result));
+            // */
+
             if (! empty($callback))
             {
-                echo $callback .'('. $jsonRsp .');';
+                echo $callback .'('. $result .');';
             }
             else
             {
-                echo $jsonRsp;
+                echo $result;
             }
         }
 

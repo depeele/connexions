@@ -158,6 +158,8 @@ $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
 
         // Invoke the Json-RPC
         var overflow    = $result.css('overflow');
+        var hasCallback = ((rpc.params.callback !== undefined) &&
+                           (rpc.params.callback.length > 0));
         $result.css('overflow', 'hidden').mask();
         $.ajax({
             type:     reqType,
@@ -165,7 +167,7 @@ $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
             data:     reqData,
             dataType: 'json',
             dataFilter: function(data, type) {
-                if (rpc.params.callback !== undefined)
+                if (hasCallback)
                 {
                     data = data.replace(rpc.params.callback +'(', '')
                                .replace(/\);$/, '');
@@ -179,7 +181,7 @@ $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
                             +  rpc.method +': '+ txtStatus
                             + '</h4>';
 
-                if (rpc.params.callback !== undefined)
+                if (hasCallback)
                 {
                     html += '<div class="callback">'
                          +      'callback: '+ rpc.params.callback
