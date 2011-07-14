@@ -93,7 +93,7 @@ class Connexions_Controller_Route
                                  'register' => false,
                                  'checkuser'=> false),
 
-        // Compatability with the Connexions v1 api and feeds
+        // Compatability with the Connexions api (v1 and v2) and feeds
         'api'           => array('posts'    => array(
                                     ':action'   => 'v1',
                                     ':cmd'      => 'posts',
@@ -111,8 +111,8 @@ class Connexions_Controller_Route
                                  ),
                            ),
   
-        'feeds'         => array(':type'    => array(
-                                    ':cmd'  => false,
+        'feeds'         => array(':action'  => array(
+                                    ':cmd'      => false,
                                  ),
                            ),
         // */

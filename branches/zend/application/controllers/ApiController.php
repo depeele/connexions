@@ -29,19 +29,6 @@ class ApiController extends Connexions_Controller_Action
         parent::init();
     }
 
-    /** @brief  Index/Get/Read/View action.
-     *
-     *  Handle the presentation and processing of a bookmark post.
-    public function indexAction()
-    {
-        //Connexions::log("ApiController::indexAction");
-
-        $request  =& $this->_request;
-
-        $this->view->headTitle('Api');
-    }
-     */
-
     /** @brief  API V1
      *
      *  Version 1 API interface.
@@ -152,7 +139,8 @@ class ApiController extends Connexions_Controller_Action
          * This will present the list of all available services with active
          * forms to allow direct invocation and presentation of results.
          */
-        $this->view->headTitle('Api V1 Explorer');
+        $this->view->title = 'Api V1 Explorer';
+        $this->view->headTitle( $this->view->title );
         $this->view->server = $server;
     }
 
@@ -210,7 +198,8 @@ class ApiController extends Connexions_Controller_Action
          * This will present the list of all available services with active
          * forms to allow direct invocation and presentation of results.
          */
-        $this->view->headTitle('Api V2 Explorer');
+        $this->view->title = 'Api V2 Explorer';
+        $this->view->headTitle( $this->view->title );
         $this->view->server = $server;
     }
 
