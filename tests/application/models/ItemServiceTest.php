@@ -647,27 +647,20 @@ class ItemServiceTest extends DbTestCase
 
     public function testItemServiceSimilar2()
     {
-        $expected = $this->_item4['urlHash'];
+        $url      = 'http://demo.openlinksw.com/';
+        $expected = $this->_item3['urlHash']
+                  . ','. $this->_item4['urlHash'];
 
         $service  = Connexions_Service::factory('Model_Item');
-        $items    = $service->fetchSimilar( $this->_item3['url'] );
+        $items    = $service->fetchSimilar( $url );
+
+        //printf ("similar items[ %s ]", $items);
 
         $this->assertEquals($expected,
                             $items->__toString());
     }
 
     public function testItemServiceSimilar3()
-    {
-        $expected = $this->_item4['urlHash'];
-
-        $service  = Connexions_Service::factory('Model_Item');
-        $items    = $service->fetchSimilar( $this->_item3['urlHash'] );
-
-        $this->assertEquals($expected,
-                            $items->__toString());
-    }
-
-    public function testItemServiceSimilar4()
     {
         $expected = $this->_item4['urlHash'];
 
@@ -680,7 +673,7 @@ class ItemServiceTest extends DbTestCase
                             $items->__toString());
     }
 
-    public function testItemServiceSimilar5()
+    public function testItemServiceSimilar4()
     {
         $expected = $this->_item4['urlHash'];
 
@@ -693,7 +686,7 @@ class ItemServiceTest extends DbTestCase
                             $items->__toString());
     }
 
-    public function testItemServiceSimilar6()
+    public function testItemServiceSimilar5()
     {
         $expected = $this->_item4['urlHash'];
 
