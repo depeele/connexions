@@ -137,6 +137,7 @@ class TagFilterTest extends BaseTestCase
         //$this->_outputInfo($filter, $data);
     }
 
+    /* Obsolete: Tags can be 1 character.
     public function testTagFilterNameTooShort()
     {
         $data       = array(
@@ -154,6 +155,7 @@ class TagFilterTest extends BaseTestCase
 
         //$this->_outputInfo($filter, $data);
     }
+    // */
 
     public function testTagFilterNameTooLong()
     {

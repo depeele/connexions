@@ -256,6 +256,8 @@ class ActivityServiceTest extends DbTestCase
 
         $service    = Connexions_Service::factory('Model_Activity');
         $activities = $service->fetchByUsers( '1',
+                                              null, // objectType
+                                              null, // operation
                                               null, // order
                                               null, // count
                                               null, // offset

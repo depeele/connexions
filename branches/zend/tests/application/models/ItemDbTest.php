@@ -119,4 +119,24 @@ class ItemDbTest extends DbTestCase
         $this->assertEquals($expected,
                             $items->__toString());
     }
+
+    public function testItemTags()
+    {
+        $expectedItem = $this->_item1;
+        $expectedTags  = "ajax,cryptography,identity,online,"
+                       . "password,passwords,privacy,security,"
+                       . "storage,test,tools,web2.0";
+
+        $mapper   = Connexions_Model_Mapper::factory('Model_Mapper_Item');
+        $item     = $mapper->find( array('itemId' => $expectedItem['itemId']) );
+        $tags     = $item->tags;
+
+        /*
+        printf ("item[ %s ], tags[ %s ]\n",
+                Connexions::varExport($item),
+                $tags);
+        // */
+
+        $this->assertEquals($expectedTags, $tags->__toString());
+    }
 }
