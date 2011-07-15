@@ -35,7 +35,7 @@ $itemCountWidth: $countBoxWidth + 10px;
   }
   .scopeEntry {
     border:   none;
-    padding:  0.2em 0.1em 0.2em 0.25em;
+    padding:  1px 0.1em 1px 0.25em;
     width:    22em;
     // Normal ui.input
     input {
@@ -136,6 +136,10 @@ $itemCountWidth: $countBoxWidth + 10px;
 
     // ui.tagInput styling
     .tagInput {
+      padding:        0 1px 1px;
+      vertical-align: middle;
+      height:         1.6em;
+
       label {
         top:  0.2em;
         left: 0.2em;
@@ -144,20 +148,23 @@ $itemCountWidth: $countBoxWidth + 10px;
       .tagList {
         @include inlineBlock();
         font-size:  0.85em;
-        padding:    0 0.1em;
+        padding:    0;
+        height:     1.3em;
 
         .tag {
           margin:   0 0.1em;
           padding:  0 0 0 0.2em;
 
           .delete {
-            float:  none;
+            float:                  none;
           }
         }
 
         .activeInput {
-          padding:  0 0.1em;
-          top:      0.2em;
+          padding:      0.1em 0 0 0.2em;
+          margin:       0;
+          line-height:  1em;
+          height:       1em;
         }
       }
     }

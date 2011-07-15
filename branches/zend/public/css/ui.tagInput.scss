@@ -42,13 +42,16 @@
 
       span, .delete {
         @include inlineBlock();
+        vertical-align: middle;
       }
       span {
         padding:          0 0 0 0.25em;
       }
       .delete {
-        text-indent:      -9999em;
+        text-indent:      16px;
         text-decoration:  none;
+        padding:          0;
+        overflow:         hidden;
       }
     }
     .activeInput {
