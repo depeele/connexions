@@ -3,6 +3,22 @@
  *
  *  Feed Explorer
  */
+
+if (isset($this->server))
+{
+    /* :XXX: Can't really use this since we have different feeds types
+     *       (json, rss, atom).
+     */
+    $this->urlMethod = array('GET');
+    $this->urlParams = true;
+    $this->seeAlso   = array(
+        "the <a href='{$this->baseUrl('api/')}'>API V1 Explorer</a>",
+        "and the <a href='{$this->baseUrl('api/v2/')}'>API V2 Explorer</a>",
+    );
+    echo $this->render('smd.phtml');
+    return;
+}
+
 $this->headLink()->appendStylesheet($this->baseUrl('/css/api.min.css'));
 
 ?>

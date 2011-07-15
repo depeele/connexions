@@ -10,8 +10,8 @@ class View_Helper_FeedBookmarks extends View_Helper_Bookmarks
         'feedType'          => self::TYPE_ATOM,
     );
 
-    const TYPE_RSS          = 'Rss';
-    const TYPE_ATOM         = 'Atom';
+    const TYPE_RSS          = Zend_Feed_Writer::TYPE_RSS_ANY;
+    const TYPE_ATOM         = Zend_Feed_Writer::TYPE_ATOM_ANY;
 
     /** @brief  Construct a new HTML Bookmarks helper.
      *  @param  config  A configuration array that may include, in addition to
@@ -59,7 +59,7 @@ class View_Helper_FeedBookmarks extends View_Helper_Bookmarks
      */
     public function setFeedType($type)
     {
-        switch (ucfirst(strtolower($type)))
+        switch (strtolower($type))
         {
         case self::TYPE_RSS:
             $value = self::TYPE_RSS;
@@ -67,9 +67,15 @@ class View_Helper_FeedBookmarks extends View_Helper_Bookmarks
 
         case self::TYPE_ATOM:
         default:
-            $value = self::TYPE_RSS;
+            $value = self::TYPE_ATOM;
             break;
         }
+
+        /*
+        Connexions::log("View_Helper_FeedBookmarks::setFeedType(): "
+                        .   "type[ %s ] == [ %s ]",
+                        $type, $value);
+        // */
 
         $this->_params['feedType'] = $value;
 
@@ -112,7 +118,7 @@ class View_Helper_FeedBookmarks extends View_Helper_Bookmarks
         );
 
         /*
-        Connexions::log("View_Helper_FeedBookmarks::_genFeed: "
+        Connexions::log("View_Helper_FeedBookmarks::render(): "
                         . "type[ {$type} ], "
                         .   "main info[ ". print_r($feedInfo, true) ." ]");
         // */

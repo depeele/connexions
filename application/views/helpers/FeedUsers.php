@@ -10,8 +10,8 @@ class View_Helper_FeedUsers extends View_Helper_Users
         'feedType'          => self::TYPE_ATOM,
     );
 
-    const TYPE_RSS          = 'Rss';
-    const TYPE_ATOM         = 'Atom';
+    const TYPE_RSS          = Zend_Feed_Writer::TYPE_RSS_ANY;
+    const TYPE_ATOM         = Zend_Feed_Writer::TYPE_ATOM_ANY;
 
     /** @brief  Construct a new HTML Users helper.
      *  @param  config  A configuration array that may include, in addition to
@@ -59,7 +59,7 @@ class View_Helper_FeedUsers extends View_Helper_Users
      */
     public function setFeedType($type)
     {
-        switch (ucfirst(strtolower($type)))
+        switch (strtolower($type))
         {
         case self::TYPE_RSS:
             $value = self::TYPE_RSS;
