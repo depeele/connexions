@@ -102,7 +102,15 @@ Connexions::log('views/scripts/help/main-developers.phtml: '
       class='toggle<?= Connexions_Help::section_collapsed($this, 'api') ?>'><a href='<?= $url ?>/api' data-cache.collapsable='api_content'>API</a></h3>
   <div id='api_content' class='help-content api'><!-- api { -->
    <div id='api_overview'><!-- api_overview { -->
-    <p>The connexions API may be <a href='<?= $api->baseUrl ?>'>directly accessed</a> to allow easier understanding via experimentation.</p>
+    <p>The connexions API may be <a href='<?= $api->baseUrl ?>'>directly
+    accessed</a> to allow easier understanding via experimentation.  In
+    addition to the new, V2 API, the APIs and feeds from the original version
+    of connexions (V1) have been maintained and made directly accessible.  See
+    the <a href='<?= $this->baseUrl('api/') ?>'>API V1 Explorer</a> as well as
+    the original <a href='<?= $this->baseUrl('feeds/') ?>'>feeds</a> 
+    (<a href='../feeds/json/'>Json</a>,
+     <a href='../feeds/rss/'>RSS</a>, and
+     <a href='../feeds/atom/'>Atom</a>).</p>
     <p class='continued'>Connexions makes use of version 2 of the <?= Connexions::wikipedia_a('JSON-RPC') ?> protocol for this API.  The general form of a call to this API is an HTTP POST request with an HTML <tt>Content-Type</tt> header of <tt>application/json</tt> and a JSON-encoded body or a GET request with a JSON-encoded request parameter.  In either case, the JSON-encoded value will have the following general form:</p>
     <pre>
 {
@@ -1274,8 +1282,10 @@ Connexions::log('views/scripts/help/main-developers.phtml: '
         if ((panelId === tabId) && (sectionId.length > 0))
         {
             // ... scroll to the target section
-            var $parent = $('#'+ tabId +' #'+ sectionParent);
             var $el     = $('#'+ tabId +' #'+ sectionId);
+            var $parent = (sectionParent.length > 0
+                            ? $('#'+ tabId +' #'+ sectionParent)
+                            : $el);
             if (($parent.length === 1) && ($el.length === 1))
             {
                 window.setTimeout(function() {
