@@ -3202,7 +3202,8 @@ $.widget("ui.tagInput", $.ui.input, {
             acOpts.position = {
                 my:         'left top',
                 at:         'left bottom',
-                collision:  'none'
+                collision:  'none',
+                offset:     '0 5'
             };
         }
         //acOpts.position.of = self.$tags;
