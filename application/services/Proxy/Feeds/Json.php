@@ -299,13 +299,31 @@ class Service_Proxy_Feeds_Json
                                           null,     // offset
                                           true);    // inclusive
 
+        /* This legacy API is supposed to return an object of the form:
+         *  { %url%: { %tag%: %count%, ... },
+         *    ...
+         *  }
+         */
+        $res = array();
+        foreach ($items as $item)
+        {
+            $tags  = $item->tags;
+            $tagAr = array();
+            foreach ($tags as $tag)
+            {
+                $tagAr[ $tag->tag ] = $tag->userCount;
+            }
+
+            $res[ $item->url ] = $tagAr;
+        }
+
         /*
         Connexions::log("Service_Proxy_Feeds_Json::url(): "
                         .   "items[ %s ]",
                         Connexions::varExport($items));
         // */
 
-        return $items;
+        return $res;
     }
 
     /**************************************************************************

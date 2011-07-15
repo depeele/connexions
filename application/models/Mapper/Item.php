@@ -102,7 +102,23 @@ class Model_Mapper_Item extends Model_Mapper_Base
      */
     public function getTags(Model_Item $item)
     {
-        throw new Exception('Not yet implemented');
+        $itemId = $item->itemId;
+        if ( $itemId <= 0 )
+            return null;
+
+        /*
+        Connexions::log("Model_Mapper_Item::getTags(): "
+                        .   "item[ %d ]",
+                        $itemId);
+        // */
+
+        $tagMapper = Connexions_Model_Mapper::factory('Model_Mapper_Tag');
+        $tags      = $tagMapper->fetchRelated( array(
+                                        'items' => $itemId,
+                                        'order' => 'tag ASC',
+                                    ));
+
+        return $tags;
     }
 
     /** @brief  Retrieve a set of item-related bookmarks
@@ -216,15 +232,17 @@ class Model_Mapper_Item extends Model_Mapper_Base
                                  $inclusive = false)
     {
         /*
-        Connexions::log("Model_Mapper_Item::fetchSimilar(): id[ %s ]",
-                        Connexions::varExport($id));
+        Connexions::log("Model_Mapper_Item::fetchSimilar(): "
+                        .   "id[ %s ], inclusive[ %s ]",
+                        Connexions::varExport($id),
+                        Connexions::varExport($inclusive));
         // */
 
         if ($id instanceof Model_Item)
         {
             $item = $id;
         }
-        else if (is_numeric($id))
+        else if (is_numeric($id) || is_array($id))
         {
             // Treat the id as a simple item identifier
             $item = $this->find( $id ); //array('itemId' => $id));

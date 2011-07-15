@@ -27,6 +27,10 @@ class Model_Item extends Model_Taggable
             'tagCount'      => 0,
     );
 
+    // Associated Domain Model instances
+    protected   $_users     = null;
+    protected   $_tags      = null;
+
     /*************************************************************************
      * Connexions_Model abstract method implementations
      *
@@ -51,26 +55,28 @@ class Model_Item extends Model_Taggable
      *  @param  name    The field name.
      *
      *  @return The field value (null if invalid).
+     */
     public function __get($name)
     {
-        if (array_key_exists($name, $this->_data))
-            return parent::__get($name);
-
-        if ($name === 'ratingAvg')
+        switch ($name)
         {
-            $sum   = $this->ratingSum;
-            $count = $this->ratingCount;
-            if ($count > 0)
-                $val = $sum / $count;
-            else
-                $val = 0;
+        case 'tags':
+            $val = $this->_tags;
+            if ( $val === null )
+            {
+                // Load the Model_Tag array now.
+                $val = $this->getMapper()->getTags( $this );
+                $this->_tags = $val;
+            }
+            break;
 
-            return $val;
+        default:
+            $val = parent::__get($name);
+            break;
         }
 
-        // return null;
+        return $val;
     }
-     */
 
     /** @brief  Set the value of the given field.
      *  @param  name    The field name.
