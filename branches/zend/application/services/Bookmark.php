@@ -291,7 +291,7 @@ class Service_Bookmark extends Service_Base
             $normIds['+|userId'] = $user->userId;
         }
 
-        // /*
+        /*
         Connexions::log("Service_Bookmark::fetch() "
                         . "id[ %s ], ids[ %s ], normIds[ %s ], order[ %s ]",
                         Connexions::varExport($id),

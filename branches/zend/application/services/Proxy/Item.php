@@ -97,19 +97,43 @@ class Service_Proxy_Item extends Connexions_Service_Proxy
      *  @param  count       Optional LIMIT count
      *  @param  offset      Optional LIMIT offset
      *  @param  inclusive   Include the original item? [ false ];
+     *  @param  includeTags Should tags be included for each item? [ true ];
      *
-     *  @return A new Model_Set_Item instance.
+     *  @return An array of item objects.
      */
     public function fetchSimilar($id,
-                                 $order     = 'url ASC',
-                                 $count     = 50,
-                                 $offset    = 0,
-                                 $inclusive = false)
+                                 $order         = 'url ASC',
+                                 $count         = 50,
+                                 $offset        = 0,
+                                 $inclusive     = false,
+                                 $includeTags   = true)
     {
-        return $this->_service->fetchSimilar($id,
-                                             $order,
-                                             $count,
-                                             $offset,
-                                             $inclusive);
+        $inclusive   = Connexions::to_bool($inclusive);
+        $includeTags = Connexions::to_bool($includeTags);
+
+        $items = $this->_service->fetchSimilar($id,
+                                               $order,
+                                               $count,
+                                               $offset,
+                                               $inclusive);
+
+        if ($includeTags === true)
+        {
+            // Include tags for each item.
+            $res = array();
+            foreach ($items as $item)
+            {
+                $itemAr         = $item->toArray();
+                $itemAr['tags'] = $item->tags->toArray();
+
+                array_push($res, $itemAr);
+            }
+        }
+        else
+        {
+            $res = $items->toArray();
+        }
+
+        return $res;
     }
 }

@@ -61,11 +61,13 @@ class ApiController extends Connexions_Controller_Action
         $cmd     = $request->getParam('cmd',    null);
         $subCmd  = $request->getParam('subCmd', null);
 
+        /*
         Connexions::log("ApiController::v1Action: "
                         . "action[ %s ], cmd[ %s ], subCmd[ %s ], "
                         . "jsonRpc[ %s ], params[ %s ]",
                         $action, $cmd, $subCmd, $jsonRpc,
                         Connexions::varExport($request->getParams()));
+        // */
 
         $jsonReq = new Connexions_Json_Server_Request_Http();
         $json    = $jsonReq->getRawJson();
@@ -119,7 +121,7 @@ class ApiController extends Connexions_Controller_Action
         {
             // Use the defined server to handle this request
 
-            // /*
+            /*
             Connexions::log("ApiController::v1Action(): "
                             .   "cmd[ %s ], subCmd[ %s ], request params[ %s ]",
                             $cmd, $subCmd,
@@ -178,7 +180,7 @@ class ApiController extends Connexions_Controller_Action
              */
             $request = new Connexions_Json_Server_Request_Http();
 
-            // /*
+            /*
             Connexions::log("ApiController::v2(): "
                             .   "cmd[ %s ], request params[ %s ]",
                             $cmd,
