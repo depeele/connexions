@@ -47,6 +47,7 @@ class Service_Proxy_Feeds_Json
 
         case 'ratings':
         case 'votes':
+        case 'voters':
             $order = 'ratingCount DESC, ratingAvg DESC, '
                    . 'updatedOn DESC, taggedOn DESC, name ASC';
             break;

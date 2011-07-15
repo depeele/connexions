@@ -36,6 +36,20 @@ class FeedsController extends Connexions_Controller_Action
     {
         $request = $this->_request;
 
+        /*
+         * :XXX: Can't really use this since we have different feeds types
+         *       (json, rss, atom).
+         *
+        $server = new Zend_Json_Server();
+        $server->setTarget(Connexions::url('/feeds/'))
+               ->setAutoEmitResponse( false )
+               ->setClass('Service_Proxy_Feeds_Json', 'json')
+               ->setClass('Service_Proxy_Feeds_Feed', 'rss')
+               ->setClass('Service_Proxy_Feeds_Feed', 'atom');
+        $this->_server = $server;
+        $this->view->server = $server;
+        // */
+
         $this->view->title = 'Feeds Explorer';
         $this->view->headTitle( $this->view->title );
     }
@@ -136,6 +150,7 @@ class FeedsController extends Connexions_Controller_Action
                             Connexions::varExport($result));
             // */
 
+            header('Content-Type: application/json');
             if (! empty($callback))
             {
                 echo $callback .'('. $result .');';
@@ -144,6 +159,7 @@ class FeedsController extends Connexions_Controller_Action
             {
                 echo $result;
             }
+            return;
         }
 
         /* Present the API explorer view.
@@ -161,15 +177,7 @@ class FeedsController extends Connexions_Controller_Action
      */
     public function rssAction()
     {
-        $request = $this->_request;
-
-        // /*
-        Connexions::log("FeedsController::rssAction(): params[ %s ]",
-                        Connexions::varExport($request->getParams()));
-        // */
-
-        $this->view->title = 'RSS Feeds Explorer';
-        $this->view->headTitle( $this->view->title );
+        $this->_feed( View_Helper_FeedBookmarks::TYPE_RSS );
     }
 
     /** @brief  Atom Feeds
@@ -177,21 +185,111 @@ class FeedsController extends Connexions_Controller_Action
      */
     public function atomAction()
     {
-        $request = $this->_request;
-
-        // /*
-        Connexions::log("FeedsController::atomAction(): params[ %s ]",
-                        Connexions::varExport($request->getParams()));
-        // */
-
-        $this->view->title = 'ATOM Feeds Explorer';
-        $this->view->headTitle( $this->view->title );
+        $this->_feed( View_Helper_FeedBookmarks::TYPE_ATOM );
     }
 
     /*************************************************************************
      * Protected Helpers
      *
      */
+
+    /** @brief  Common functionality for Zend_Feed types.
+     *  @param  type    The Feed type (View_Helper_FeedBookmarks::TYPE_*);
+     */
+    protected function _feed($type)
+    {
+        $typeStr = strtolower($type);
+        $request = $this->_request;
+        $cmd     = $request->getParam('cmd', null);
+
+        // /*
+        Connexions::log("FeedsController::_feed(): type[ %s ], cmd[ %s ], "
+                        .   "params[ %s ]",
+                        Connexions::varExport($type),
+                        $cmd,
+                        Connexions::varExport($request->getParams()));
+        // */
+
+        /* :NOTE: Even though this is NOT a JSON feed, we use the
+         *        Zend_Json_Server to provide the ability to return a service
+         *        description.
+         */
+        $server  = new Zend_Json_Server();
+        $server->setTarget(Connexions::url("/feeds/{$typeStr}/"))
+               ->setAutoEmitResponse( false )
+               ->setClass('Service_Proxy_Feeds_Feed');
+        $this->_server = $server;
+
+        if ($request->isGet() && ($request->getParam('serviceDescription')))
+        {
+            // Send the service description
+            /*
+            Connexions::log("FeedsController::_feed(): "
+                            . "return service description");
+            // */
+
+            return $this->_sendServiceDescription();
+        }
+
+        $jsonReq = null;
+        if (! empty($cmd))
+        {
+            // Build a JSON RPC from $_REQUEST
+            $jsonReq = new Connexions_Json_Server_Request_Http();
+            $jsonReq->setOptions(array(
+                'version'   => '2.0',
+                'id'        => 1,
+                'method'    => $cmd,
+            ));
+
+            foreach ($_REQUEST as $key => $val)
+            {
+                $jsonReq->addParam($val, $key);
+            }
+        }
+
+        if ($jsonReq !== null)
+        {
+            Connexions::log("FeedsController::_feed(): "
+                            . "pseudo-JsonRpc request[ %s ]",
+                            $jsonReq);
+
+            //$this->_request = $jsonReq;
+            //Connexions::setRequest($jsonReq);
+            $server->setRequest($jsonReq);
+
+            $this->_disableRendering();
+            $jsonRsp = $server->handle();
+
+            //$this->_enableRendering();
+            $this->view->main = array(
+                'feedType'  => $type,
+                'bookmarks' => $jsonRsp->getResult(),
+            );
+
+            // /*
+            Connexions::log("FeedsController::_feed(): "
+                            . "main[ %s ]",
+                            Connexions::varExport($this->view->main));
+            // */
+            $this->view->title = "{$cmd} {$type} Feed";
+        }
+        else
+        {
+            $this->view->title = strtoupper($type) ." Feeds Explorer";
+        }
+
+        /* Present the API explorer view.
+         *
+         * This will present the list of all available services with active
+         * forms to allow direct invocation and presentation of results.
+         */
+        $this->view->headTitle( $this->view->title );
+        $this->view->server   = $server;
+        $this->view->feedType = $feed;
+
+        $this->render('feed');
+    }
 
     /** @brief  Disable rendering and return the service description of the
      *          current "server".
@@ -229,6 +327,31 @@ class FeedsController extends Connexions_Controller_Action
         if ($layout instanceof Zend_Layout)
         {
             $layout->disableLayout();
+        }
+    }
+
+    /** @brief  (Re)enable view rendering.
+     */
+    protected function _enableRendering()
+    {
+        $front = Zend_Controller_Front::getInstance();
+        $front->setParam('disableOutputBuffering', false);
+        $front->getDispatcher()
+                ->setParam('disableOutputBuffering', false);
+
+        $viewRenderer =
+          Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer');
+
+        $view = $viewRenderer->view;
+        if ($view instanceof Zend_View_Interface)
+        {
+            $viewRenderer->setNoRender(false);
+        }
+
+        $layout = Zend_Layout::getMvcInstance();
+        if ($layout instanceof Zend_Layout)
+        {
+            $layout->enableLayout();
         }
     }
 }

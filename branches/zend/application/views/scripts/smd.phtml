@@ -11,12 +11,21 @@
  *
  *      group       If provided, group ALL services under a single section with
  *                  this name;
- *      urlMethod   If set, include the RPC Method in the URL;
+ *      urlMethod   If set, include the RPC Method in the URL.  Also indicates
+ *                  which methods should be supported
+ *                  ( 'GET', 'POST', true == both, array );
+ *
  *      urlParams   If set, on GET, include the RPC parameters as query
  *                  parameters, otherwise as a JSON String;
  *      jsonRpc     If set, include a 'jsonRpc' checkbox for GET;
+ *
+ *      dataType    The type of data returned by ajax calls to this server
+ *                  ( [json], xml, html, script )
  */
 $this->headLink()->appendStylesheet($this->baseUrl('/css/api.min.css'));
+
+if (! isset($this->urlMethod))  $this->urlMethod = true;
+if (! isset($this->dataType))   $this->dataType  = 'json';
 
 $jQuery = $this->jQuery();
 $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
@@ -26,6 +35,7 @@ $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
     var serviceMap  = <?= ($this->server
                             ? $this->server->getServiceMap()
                             : null) ?>;
+    var dataType    = '<?= $this->dataType ?>';
     var rpcId       = 1;
     var urlMethod   = <?= (isset($this->urlMethod)
                             ? json_encode($this->urlMethod)
@@ -33,7 +43,7 @@ $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
     var urlParams   = <?= (isset($this->urlParams)
                             ? 'true'
                             : 'false') ?>;
-    var useJsDump   = true;
+    var useJsDump   = (dataType === 'json' ? true : -1);
     var rawData     = null;
     var $services   = null;
     var $results    = null;
@@ -44,26 +54,54 @@ $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
     // Format 'data' according to 'useJsDump'
     function data2html(data)
     {
+        var html    = '';
         if (data === undefined) data    = rawData;
         else                    rawData = data;
 
-        // :XXX: Firefox (at least 3.6.17) has issues with jsDump()
-        var tries   = 0;
-        var html    = '';
-        while ((data !== null) && (++tries < 3))
+        if (data === null)
         {
-            try {
-                html = (useJsDump === true
-                            ? jsDump.parse( data )
-                            : JSON.stringify(data, null, '  ')
-                                   .replace(/</, '&lt;')
-                                   .replace(/>/, '&gt;')
-                                   .replace(/&/, '&amp;') );
-                break;
-            } catch(e) {
-                // Disable jsDump
-                useJsDump = -1;
+            return html;
+        }
+
+        switch (dataType)
+        {
+        case 'json':
+            // :XXX: Firefox (at least 3.6.17) has issues with jsDump()
+            var tries   = 0;
+            while (++tries < 3)
+            {
+                try {
+                    html = (useJsDump === true
+                                ? jsDump.parse( data )
+                                : JSON.stringify(data, null, '  ')
+                                       .replace(/&/g, '&amp;')
+                                       .replace(/</g, '&lt;')
+                                       .replace(/>/g, '&gt;') );
+                    break;
+                } catch(e) {
+                    // Disable jsDump
+                    useJsDump = -1;
+                }
             }
+            break;
+
+        case 'xml':
+        case 'html':
+        case 'script':
+            if ($.type(data) === 'object')
+            {
+                if (data.body !== undefined)
+                {
+                    html = $(data.body).html();
+                }
+            }
+            else
+            {
+                html = data.replace(/&/g, '&amp;')
+                           .replace(/</g, '&lt;')
+                           .replace(/>/g, '&gt;');
+            }
+            break;
         }
 
         return html;
@@ -165,13 +203,19 @@ $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
             type:     reqType,
             url:      reqUrl,
             data:     reqData,
-            dataType: 'json',
+            /* For our purposes here in this explorer, we want the RAW XML of
+             * any result and NOT a parsed DOM element.  For that reason, if
+             * the dataType is 'xml', CALL IT 'text' so it will not be
+             * processed by jQuery (or the browser).
+             */
+            dataType: (dataType === 'xml' ? 'text' : dataType),
             dataFilter: function(data, type) {
                 if (hasCallback)
                 {
                     data = data.replace(rpc.params.callback +'(', '')
                                .replace(/\);$/, '');
                 }
+
                 return data;
             },
             success: function(data, txtStatus, req) {
@@ -236,10 +280,19 @@ $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
                     +  '<div class="fields">'
                     +   '%params%'
                     +  '</div>'
-                    +  '<div class="buttons">'
-                    +   '<button>POST</button>'
-                    +   '<button>GET</button>'
-                    +   '<br />'
+                    +  '<div class="buttons">';
+        if ( (urlMethod === true) ||
+             ($.isArray(urlMethod) && ($.inArray('POST', urlMethod) >= 0)) )
+        {
+            lTmpl   +=  '<button>POST</button>';
+        }
+        if ( (urlMethod === true) ||
+             ($.isArray(urlMethod) && ($.inArray('GET', urlMethod) >= 0)) )
+        {
+            lTmpl   +=  '<button>GET</button>';
+        }
+
+        lTmpl       +=  '<br />'
         <?php if ($this->jsonRpc === true) { ?>
                     +   '<label for="jsonRpc">jsonRpc</label>'
                     +   ' <input type="checkbox" id="jsonRpc" />'
@@ -427,6 +480,7 @@ $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
         }
         else
         {
+            // Our service map should always be returned as JSON
             $.ajax({
                 type:     'GET',
                 url:      url +'?serviceDescription=1',

@@ -30,6 +30,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                                          */
 
     protected   $_format    = 'html';   // Render format
+    protected   $_feedType  = null;     // For _format == 'feed', type type
     protected   $_partials  = null;     /* If '_format' is 'partial', this MAY 
                                          * be an array of partial rendering 
                                          * information
@@ -657,9 +658,23 @@ class Connexions_Controller_Action extends Zend_Controller_Action
             $this->_renderPartial();
             break;
 
-        case 'json':
         case 'rss':
+            if ($this->_format !== 'feed')
+            {
+                $this->_format   = 'feed';
+                $this->_feedType = Zend_Feed_Writer::TYPE_RSS_ANY;
+            }
+            // Fall through
+
         case 'atom':
+            if ($this->_format !== 'feed')
+            {
+                $this->_format   = 'feed';
+                $this->_feedType = Zend_Feed_Writer::TYPE_ATOM_ANY;
+            }
+            // Fall through
+        
+        case 'json':
             /* Render a (possibly) non-HTML format, based upon $this->_format.
              *
              * RSS and Atom are consolidated to:
@@ -667,19 +682,14 @@ class Connexions_Controller_Action extends Zend_Controller_Action
              *
              * JSON is rendered via:
              *      %action%-json.phtml
+             *
+            Connexions::log("Connexions_Controller_Action(%s)"
+                            . "::_handleFormat(): "
+                            . "feedType[ %s ], format[ %s ]",
+                            get_class($this),
+                            Connexions::varExport($this->_feedType),
+                            $this->_format);
              */
-            if ($this->_format === 'rss')
-            {
-                $this->view->main['feedType'] =
-                                    View_Helper_FeedBookmarks::TYPE_RSS;
-                $this->_format = 'feed';
-            }
-            else if ($this->_format === 'atom')
-            {
-                $this->view->main['feedType'] =
-                                    View_Helper_FeedBookmarks::TYPE_ATOM;
-                $this->_format = 'feed';
-            }
 
             $this->_partials = array( $actionName, $this->_format);
 
@@ -869,6 +879,11 @@ class Connexions_Controller_Action extends Zend_Controller_Action
             /* All the rest are more subject to variability since they are
              * likely added by a user.
              */
+
+            if ( ($this->_format === 'feed') && (! empty($this->_feedType)) )
+            {
+                $config['feedType'] = $this->_feedType;
+            }
 
             // Alternative names
             if (empty($config['perPage']))
