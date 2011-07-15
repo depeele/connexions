@@ -8,5 +8,9 @@
 $this->urlMethod = true;
 $this->urlParams = true;
 $this->jsonRpc   = true;
-$this->seeAlso   = array("the <a href='v2/'>API V2 Explorer</a>");
+$this->seeAlso   = array("the <a href='v2/'>API V2 Explorer</a>",
+                         "and the <a href='../feeds/'>Version 1 Feeds</a>"
+                         . " (<a href='../feeds/json/'>Json</a>, "
+                         .   "<a href='../feeds/rss/'>RSS</a>, and "
+                         .   "<a href='../feeds/atom/'>Atom</a>)");
 echo $this->render('smd.phtml');

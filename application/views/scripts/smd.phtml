@@ -495,10 +495,7 @@ $jQuery->javascriptCaptureEnd();
  <?php
     if (is_array($this->seeAlso))
     {
-        foreach ($this->seeAlso as $ref)
-        {
-            ?><p class='seeAlso'>see also <?= $ref ?></p><?php
-        }
+        ?><p class='seeAlso'>see also <?= implode(', ', $this->seeAlso) ?></p><?
     }
  ?>
 </div>
