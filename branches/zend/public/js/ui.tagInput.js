@@ -184,17 +184,13 @@ $.widget("ui.tagInput", $.ui.input, {
                             ? opts.autocomplete
                             : {});
 
-        if (acOpts.position === undefined)
-        {
-            acOpts.position = {
-                my:         'left top',
-                at:         'left bottom',
-                collision:  'none',
-                offset:     '0 5'
-            };
-        }
-        //acOpts.position.of = self.$tags;
-        acOpts.position.of = self.$inputLi;
+        acOpts.position = $.extend({my:         'left top',
+                                    at:         'left bottom',
+                                    collision:  'none',
+                                    of:         self.$inputLi},
+                                    (acOpts.position === undefined
+                                        ? {}
+                                        : acOpts.position));
 
         // When an autocompletion item is selected, 
         acOpts.select = function(e, ui) {
