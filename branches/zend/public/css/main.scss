@@ -566,3 +566,11 @@ body.light {
 .template {
   display:  none;
 }
+
+// For the URL Lookup/chooser
+.container-urlChoose {
+  width:      50em;
+}
+.noNav .container-urlChoose {
+  width:      100%;
+}
