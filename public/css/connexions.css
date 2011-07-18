@@ -229,7 +229,7 @@ a:visited { color: #005a9c; }
 
 .relation-mutual { width: 32px; height: 12px; background-position: -176px 0px; }
 
-.relation-none, .relation-self { width: 32px; height: 12px; background-position: -128px -48px; }
+.relation-none, .relation-self { width: 32px; height: 12px; background-position: -128px -48px; visibility: hidden; }
 
 .relation-add { width: 12px; height: 12px; background-position: -46px -86px; }
 
@@ -527,12 +527,12 @@ a:visited { color: #005a9c; }
 .Item_List li:hover .control .item-add, .Item_List li:hover .control .item-edit, .Item_List li:hover .control .item-delete { visibility: visible; }
 .Item_List li .edit-item .buttons { text-align: right; }
 .Item_List li .relation { position: absolute; top: 1px; right: 14px; }
-.Item_List li .relation .connexions_sprites { width: 32px; height: 12px; text-indent: -9999em; }
-.Item_List li .relation .relation-amIn { background-position: -176px -12px; text-indent: -9999em; }
-.Item_List li .relation .relation-isIn { background-position: -176px -24px; text-indent: -9999em; }
-.Item_List li .relation .relation-mutual { background-position: -176px 0px; text-indent: -9999em; }
-.Item_List li .relation .relation-self { background-position: -128px -48px; text-indent: -9999em; }
-.Item_List li .relation .relation-none { background-position: -128px -48px; text-indent: -9999em; }
+.Item_List li .relation .connexions_sprites { width: 32px; height: 12px; text-indent: 32px; overflow: hidden; }
+.Item_List li .relation .relation-amIn { background-position: -176px -12px; }
+.Item_List li .relation .relation-isIn { background-position: -176px -24px; }
+.Item_List li .relation .relation-mutual { background-position: -176px 0px; }
+.Item_List li .relation .relation-self { background-position: -128px -48px; }
+.Item_List li .relation .relation-none { background-position: -128px -48px; }
 .Item_List .itemCount { display: block; position: absolute; top: 0; right: 0; padding: 0.15em 0 0.15em; color: #999999; font-size: 0.8em; }
 
 #sbItemsCloud .Item_List li.header .item { padding: 0; }
@@ -597,7 +597,7 @@ a:visited { color: #005a9c; }
 .itemScope .root, .itemScope .section { background-color: #0066cc; padding: 0 0.2em 0 0; border: 1px solid #0066cc; z-index: 10; }
 .itemScope .section { margin-left: 1px; }
 .itemScope .scopeItem { padding-left: 0.6em; margin-left: -0.5em; -moz-border-radius: 0 1em 1em 0; -webkit-border-radius: 0 1em 1em 0; -ms-border-radius: 0 1em 1em 0; -khtml-border-radius: 0 1em 1em 0; border-radius: 0 1em 1em 0; border: 1px dotted #cccccc; z-index: 2; background-color: #999999; }
-.itemScope .deletable a.delete { display: block; padding: 0; margin: 0.25em; text-indent: -9999em; text-decoration: none; }
+.itemScope .deletable a.delete { display: block; padding: 0; margin: 0.25em; text-indent: 16px; /* According to .ui-icon that SHOULD be used along with '.delete' */ text-decoration: none; }
 .itemScope .itemCount { position: absolute; right: 0; background-color: #999999; border: 1px solid #999999; color: white; padding: 0.25em; float: none; width: 110px; text-align: center; font-weight: bold; }
 
 /****** papgination.sass ****** */
@@ -702,7 +702,7 @@ a:visited { color: #005a9c; }
 /*fieldInfoColor             = !validationInputColor */
 .ui-stars-wrapper { display: block; width: 96px; overflow: hidden; }
 .ui-stars-wrapper input.ui-stars-rating { width: 0; height: 0; padding: 0; margin: 0; }
-.ui-stars-wrapper .ui-stars { display: block; float: left; overflow: hidden; text-indent: -9999em; }
+.ui-stars-wrapper .ui-stars { display: block; float: left; overflow: hidden; text-indent: 96px; }
 .ui-stars-wrapper .ui-stars a { background-image: url("sprites/connexions.gif"); background-attachment: scroll; background-repeat: no-repeat; background-color: transparent; display: block; }
 .ui-stars-wrapper .ui-stars-star { cursor: pointer; }
 .ui-stars-wrapper .ui-stars-star a { cursor: pointer; }
@@ -859,9 +859,9 @@ a:visited { color: #005a9c; }
 /****** user.scss ****** */
 .users { clear: both; padding-top: 2em; border-bottom: 1px solid #cccccc; }
 
-.users .user { position: relative; z-index: 1; margin-bottom: 1em; border-top: 1px solid #cccccc; }
+.users .user { position: relative; z-index: 1; border-top: 1px solid #cccccc; }
 
-.users .person, .pane .displayStyle fieldset.options .person { clear: both; min-height: 55px; }
+.users .person, .pane .displayStyle fieldset.options .person { clear: both; min-height: 55px; margin-bottom: 1em; }
 .users .user, .pane .displayStyle fieldset.options .user { position: relative; z-index: 1; border-top: 1px solid #cccccc; }
 .users .user .stats, .pane .displayStyle fieldset.options .user .stats { position: relative; float: right; width: 100px; background-color: #999999; padding: 0; z-index: 2; }
 .users .user .stats .countItems, .pane .displayStyle fieldset.options .user .stats .countItems { display: block; color: white; padding: 0.25em; font-weight: normal; text-align: center; text-decoration: none; }
@@ -869,8 +869,8 @@ a:visited { color: #005a9c; }
 .users .user .stats .countTags, .pane .displayStyle fieldset.options .user .stats .countTags { display: block; position: relative; color: #cccccc; padding: 0.25em 16px 0.25em 0.25em; font-size: 0.75em; font-weight: normal; text-align: right; text-decoration: none; }
 .users .user .stats .countTags:hover, .pane .displayStyle fieldset.options .user .stats .countTags:hover { background-color: #b0d730; color: white; }
 .users .user .stats .countTags .icon, .pane .displayStyle fieldset.options .user .stats .countTags .icon { position: absolute; border: none; top: 0.25em; right: -2px; padding: 0; }
-.users .user .relation, .pane .displayStyle fieldset.options .user .relation { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; font-size: 0.75em; text-align: center; padding: 1px; }
-.users .user .relation .connexions_sprites, .pane .displayStyle fieldset.options .user .relation .connexions_sprites { text-indent: -9999em; }
+.users .user .relation, .pane .displayStyle fieldset.options .user .relation { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; font-size: 0.75em; text-align: center; padding: 1px; width: 34px; }
+.users .user .relation .connexions_sprites, .pane .displayStyle fieldset.options .user .relation .connexions_sprites { text-indent: 34px; overflow: hidden; }
 .users .user .data, .pane .displayStyle fieldset.options .user .data { position: relative; padding: 0.25em 0 0 40px; z-index: 1; }
 .users .user .data .avatar, .pane .displayStyle fieldset.options .user .data .avatar { position: absolute; left: 0; top: 0; width: 32px; height: 32px; }
 .users .user .data .avatar a .img, .pane .displayStyle fieldset.options .user .data .avatar a .img { display: block; position: relative; border: 0; background-color: transparent; }

@@ -292,34 +292,32 @@
       right:            14px;
 
       .connexions_sprites {
+        // Per the network relations sprites -- sprites.scss::.relation-*
         width:        32px;
         height:       12px;
-        text-indent:  -9999em;
+
+        text-indent:  32px;
+        overflow:     hidden;
       }
       .relation-amIn {
         //@extend .relation-amIn;
         background-position:  -176px -12px;
-        text-indent:          -9999em;
       }
       .relation-isIn {
         //@extend .relation-isIn;
         background-position:  -176px -24px;
-        text-indent:          -9999em;
       }
       .relation-mutual {
         //@extend .relation-mutual;
         background-position:  -176px 0px;
-        text-indent:          -9999em;
       }
       .relation-self {
         //@extend .relation-self;
         background-position:  -128px -48px;
-        text-indent:          -9999em;
       }
       .relation-none {
         //@extend .relation-none;
         background-position:  -128px -48px;
-        text-indent:          -9999em;
       }
     }
   }
