@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://connexions/skin/options.css" type="text/css"?>
+<!DOCTYPE prefwindow SYSTEM "chrome://connexions/locale/options.dtd">
+<prefwindow
+  id="connexions-preferences"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  title="&connexions.prefs.title;">
+
+  <stringbundleset id="stringbundleset">
+    <stringbundle id="connexions-options-strings"
+                  src="chrome://connexions/locale/options.properties" />
+  </stringbundleset>
+
+  <script src="connexions.js"/>
+  <script src="options.js"/>
+
+  <prefpane id="connexions-prefs-pane"
+            label="&connexions.prefs.title;">
+    <vbox>
+      <hbox>
+        <image src="chrome://connexions/skin/logo-100.png"
+               height="32" width="32"/>
+        <label value="&connexions.title;"
+               class="title" />
+      </hbox>
+      <tabbox>
+        <tabs>
+          <tab label="&connexions.prefs.tab.general;" />
+        </tabs>
+        <tabpanels>
+          <tabpanel orient="vertical" pack="start">
+            <groupbox>
+              <caption label="&connexions.prefs.account.caption;" />
+              <hbox pack="start" flex="1">
+                <hbox orient="horizontal" align="baseline">
+                  <label id="connexions-prefs-account-status"
+                         value="&connexions.prefs.account.status;"
+                         orient="vertical" pack="center" align="center"/>
+                  <label id="connexions-prefs-account-id"
+                         class="link userName"
+                         orient="vertical" pack="center" align="center"/>
+                </hbox>
+                <spacer flex="1"/>
+                <vbox>
+                  <button id="connexions-prefs-account-signout"
+                          label="&connexions.prefs.account.signout;"
+                          orient="vertical" pack="center" align="center"
+                          height="25" />
+                  <button id="connexions-prefs-account-signin"
+                          label="&connexions.prefs.account.signin;"
+                          orient="vertical" pack="center" align="center"
+                          height="25" />
+                  <button id="connexions-prefs-account-register"
+                          label="&connexions.prefs.account.register;"
+                          orient="vertical" pack="center" align="center"
+                          height="25" />
+                </vbox>
+              </hbox>
+            </groupbox>
+            <groupbox id="connexions-prefs-sync-box"
+                      class='sync-box'
+                      orient="vertical">
+              <caption label="&connexions.prefs.sync.caption;"/>
+              <vbox id="connexions-prefs-sync-buttons">
+                <hbox>
+                  <label value="&connexions.prefs.sync.period.pre;" />
+                  <textbox id="connexions-prefs-sync-period"
+                          class='sync-period'
+                          type='number'
+                          max='1440'
+                          hidespinbuttons='false' />
+                  <label value="&connexions.prefs.sync.period.post;"
+                         flex="1" />
+                </hbox>
+                <hbox class='syncNow-box bordered'
+                      align="center">
+                  <button id="connexions-prefs-sync-now"
+                          label="&connexions.prefs.sync.now;"
+                          orient="vertical" pack="center" align="center"
+                          height="25" />
+                  <label value="&connexions.prefs.sync.now.description;"/>
+                </hbox>
+                <hbox class='syncFull-box'
+                      align="center">
+                  <button id="connexions-prefs-sync-full"
+                          label="&connexions.prefs.sync.full;"
+                          orient="vertical" pack="center" align="center"
+                          height="25" />
+                  <label value="&connexions.prefs.sync.full.description;"/>
+                </hbox>
+                <hbox class='delete-box'
+                      align="center">
+                  <button id="connexions-prefs-sync-del"
+                          label="&connexions.prefs.sync.del;"
+                          orient="vertical" pack="center" align="center"
+                          height="25" />
+                  <label value="&connexions.prefs.sync.del.description;"/>
+                </hbox>
+              </vbox>
+              <vbox id="connexions-prefs-sync-status-box"
+                    class='syncStatus-box bordered'>
+                <label id="connexions-prefs-sync-status"
+                       class="syncStatus"
+                       value="&connexions.prefs.sync.status.last;"
+                       orient="vertical"/>
+                <hbox class='progressMeter-box'
+                      flex='1'>
+                  <progressmeter
+                          id="connexions-prefs-sync-progress-meter"
+                          mode="undetermined"
+                          flex="1" />
+                </hbox>
+                <hbox class='syncDetails' flex="1">
+                  <label id="connexions-prefs-sync-progress-final" />
+                  <label id="connexions-prefs-sync-progress-current" />
+                  <spacer flex="1"/>
+                  <button id="connexions-prefs-sync-cancel"
+                          label="&connexions.prefs.sync.cancel;"/>
+                </hbox>
+              </vbox>
+            </groupbox>
+          </tabpanel>
+        </tabpanels>
+      </tabbox>
+    </vbox>
+  </prefpane>
+</prefwindow>
