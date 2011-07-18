@@ -169,17 +169,6 @@
   </toolbarpalette>
   <!-- Available Toolbar icons } -->
 
-  <!-- Connexions toolbar { -->
-  <toolbox id="navigator-toolbox">
-    <toolbar    id="connexions-toolbar"
-             class="chromeclass-toolbar"
-       toolbarname="&connexions.toolbar.name;"
-      customizable="true">
-      <label value="&connexions.toolbar.label;"/>
-    </toolbar>
-  </toolbox>
-  <!-- Connexions toolbar } -->
-
   <!-- View Sidebar menu { -->
   <menupopup id="viewSidebarMenu">
     <menuitem observes="viewSidebar_connexions" />

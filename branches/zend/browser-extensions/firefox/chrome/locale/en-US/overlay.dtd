@@ -33,9 +33,6 @@
 <!-- Main Context menu } -->
 
 <!-- Toolbar { -->
-<!ENTITY connexions.toolbar.name  "example">
-<!ENTITY connexions.toolbar.label "This is an example toolbar. You can hide it under View &gt; toolbars &gt; &connexions.toolbar.name;">
-
 <!ENTITY connexions.toolbar.button.tag.label            "Tag">
 <!ENTITY connexions.toolbar.button.tag.tooltip          "Tag this page">
 
