@@ -1,0 +1,101 @@
+#!/bin/sh
+#
+# ../../application/config/application.ini
+#
+config='../../application/configs/application.ini'
+
+firefox=`grep '^extensions\.firefox\.' "${config}" | \
+       sed 's/^extensions\.firefox\.//g;s/[ ]*=[ ]*/=/g;'`
+eval $firefox;
+
+jsonRpc=`grep '^api\.' "${config}" | \
+       sed 's/^api\.//g;s/jsonRpc\./jsonRpc_/g;s/[ ]*=[ ]*/=/g;'`
+eval $jsonRpc;
+
+if [ -z "$version" -o -z "$domain" -o -z "$url" -o -z "$author" -o -z "$authorUrl" ]; then
+    echo "*** Missing one or more definitions from '${config}'"
+    echo "***   extensions.firefox.version      [ ${version} ]"
+    echo "***   extensions.firefox.domain       [ ${domain} ]"
+    echo "***   extensions.firefox.url          [ ${url} ]"
+    echo "***   extensions.firefox.author       [ ${author} ]"
+    echo "***   extensions.firefox.authorUrl    [ ${authorUrl} ]"
+    exit 1
+fi
+
+if [ -z "$authCookie" -o -z "$jsonRpc_version" -o -z "$jsonRpc_url" -o -z "$jsonRpc_transport" ]; then
+    echo "*** Missing one or more JsonRpc definitions from '${config}'"
+    echo "***   api.authCookie           [ ${authCookie} ]"
+    echo "***   api.jsonRpc.version      [ ${jsonRpc_version} ]"
+    echo "***   api.jsonRpc.url          [ ${jsonRpc_url} ]"
+    echo "***   api.jsonRpc.transport    [ ${jsonRpc_transport} ]"
+    exit 1
+fi
+
+jarName="connexions"
+extName="${jarName}-${version}"
+
+# Clean and prepare the build area
+rm -rf build
+mkdir build
+cp install.rdf chrome.manifest build
+cp -R chrome   build
+cp -R defaults build
+
+rm -rf `find build -name '*svn*' | xargs`
+
+# Replace all occurrences of
+#   %VERSION%, %DOMAIN%, %URL%, %AUTHOR%, and %AUTHOR_URL%
+#
+# As well as JsonRpc related replacables:
+#   %JSONRPC_VERSION%, %JSONRPC_URL%, %JSONRPC_TRANSPORT%
+#
+#
+# with the matching values from the configuration file.
+sedCmd="s#%VERSION%#${version}#g"
+sedCmd="${sedCmd};s#%DOMAIN%#${domain}#g"
+sedCmd="${sedCmd};s#%URL%#${url}#g"
+sedCmd="${sedCmd};s#%AUTHOR%#${author}#g"
+sedCmd="${sedCmd};s#%AUTHOR_URL%#${authorUrl}#g"
+sedCmd="${sedCmd};s#%AUTH_COOKIE%#${authCookie}#g"
+sedCmd="${sedCmd};s#%JSONRPC_VERSION%#${jsonRpc_version}#g"
+sedCmd="${sedCmd};s#%JSONRPC_URL%#${jsonRpc_url}#g"
+sedCmd="${sedCmd};s#%JSONRPC_TRANSPORT%#${jsonRpc_transport}#g"
+
+echo "Replacing variables: "
+echo " VERSION    [ ${version} ]"
+echo " DOMAIN     [ ${domain} ]"
+echo " URL        [ ${url} ]"
+echo " AUTHOR     [ ${author} ]"
+echo " AUTHOR_URL [ ${authorUrl} ]"
+echo " AUTH_COOKIE[ ${authCookie} ]"
+echo " JSONRPC variable: "
+echo "  VERSION   [ ${jsonRpc_version} ]"
+echo "  URL       [ ${jsonRpc_url} ]"
+echo "  TRANSPORT [ ${jsonRpc_transport} ]"
+
+for file in `find build -type f | xargs`; do
+    #echo ">> ${file}..."
+    sed -e "${sedCmd}" "${file}" > "${file}.tmp"
+    mv "${file}.tmp" "${file}"
+    #echo ""
+done
+
+pushd build > /dev/null
+if [ $? -ne 0 ]; then
+    echo "*** ERROR"
+    exit 1
+fi
+
+#echo "Building '${jarName}.jar'..."
+#cd chrome > /dev/null
+#files=`ls`
+#zip -r "${jarName}.jar" ${files} > /dev/null 2>&1
+#rm -rf ${files}
+#cd ..
+
+echo "Building '${extName}.xpi'..."
+files=`ls`
+zip -r "${extName}.xpi" ${files} > /dev/null 2>&1
+rm -rf ${files}
+
+popd > /dev/null

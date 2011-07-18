@@ -1,0 +1,106 @@
+.sidebar-tools {
+  background-color: -moz-Dialog;
+  -moz-appearance:  toolbox;
+}
+
+.sidebar-tools textbox {
+}
+
+.sidebar-header {
+  padding:          0 0.25em;
+  background-color: -moz-Dialog;
+}
+.sidebar-header .sidebar-context-image {
+  width:          16px;
+  height:         16px;
+
+  background-attachment:  scroll;
+  background-repeat:      no-repeat;
+  background-color:       transparent;
+  background-position:    -24px -24px;
+}
+.sidebar-bookmarks-section .sidebar-context-image {
+  background-image: url("chrome://connexions/skin/toolbar-button-bookmark.png");
+}
+.sidebar-tags-section .sidebar-context-image {
+  background-image: url("chrome://connexions/skin/toolbar-button-tag.png");
+}
+
+.sidebar-count {
+  font-size:      0.8em;
+}
+
+.sort-order, .sort-by {
+  cursor: pointer;
+}
+.sort-order {
+  width:  16px;
+  height: 16px;
+
+  background-image:       url("chrome://connexions/skin/sort-order.png");
+  background-attachment:  scroll;
+  background-repeat:      no-repeat;
+  background-color:       transparent;
+  background-position:    0 0;
+}
+.sort-asc {
+  background-position:    0 0;
+}
+.sort-desc {
+  background-position:    0 -16px;
+}
+
+.list {
+  padding:      2px;
+}
+.list listitem {
+}
+
+.list listitem:nth-child(even) {
+}
+.list listitem:nth-child(odd) {
+  background-color:   #eee;
+}
+
+/* From firefox/toolkit/themes/winstrip/global/listbox.css { */
+.list listitem[selected="true"] {
+  background-color:   -moz-cellhighlight;
+  color:              -moz-cellhighlighttext;
+}
+.list:focus > listitem[selected="true"] {
+  background-color:   Highlight;
+  color:              HighlightText;
+}
+/* From firefox/toolkit/themes/winstrip/global/listbox.css } */
+
+.bookmarks {
+}
+.bookmarks .bookmark-name {
+}
+.bookmarks .bookmark-properties {
+  margin:     0;
+  padding:    0;
+
+  background-image:       url("chrome://connexions/skin/bookmark-props.png");
+  background-attachment:  scroll;
+  background-repeat:      no-repeat;
+  background-color:       transparent;
+  background-position:    0 -48px;
+}
+.bookmarks .favorite {
+  background-position:  0 0;
+}
+.bookmarks .private {
+  background-position:  0 -16px;
+}
+.bookmarks .favorite-private {
+  background-position:  0 -32px;
+}
+
+.tags {
+}
+.tags .tag-name {
+}
+.tags .tag-frequency {
+    font-size:      0.8em;
+}

@@ -1,0 +1,103 @@
+<!ENTITY connexions.label                   "Connexions">
+
+<!-- Main  menu { -->
+<!ENTITY connexions.menu.label              "Connexions">
+<!ENTITY connexions.menu.accesskey          "X">
+
+<!ENTITY connexions.menu.page.label         "Bookmark this page...">
+<!ENTITY connexions.menu.sidebar.label      "Bookmarks sidebar">
+<!ENTITY connexions.menu.site.label         "Connexions Website">
+<!ENTITY connexions.menu.site.myBookmarks   "My Bookmarks">
+<!ENTITY connexions.menu.site.myTags        "My Tags">
+<!ENTITY connexions.menu.site.myNetwork     "My Network">
+<!ENTITY connexions.menu.site.myInbox       "My Inbox">
+<!ENTITY connexions.menu.site.bookmarks     "Bookmarks">
+<!ENTITY connexions.menu.site.tags          "Tags">
+<!ENTITY connexions.menu.site.people        "People">
+<!-- Main  menu } -->
+
+<!-- Tools menu -->
+<!ENTITY connexions.menu.tools.label        "Connexions Options">
+
+<!-- Main Context menu { -->
+<!ENTITY connexions.context.tagCurrent.label    "Bookmark this page in connexions...">
+<!ENTITY connexions.context.tagLink.label       "Bookmark this link in connexions...">
+<!ENTITY connexions.context.tagMedia.label      "Bookmark this media in connexions...">
+
+<!ENTITY connexions.context.tagCurrent.accesskey    "X">
+<!ENTITY connexions.context.tagLink.accesskey       "X">
+<!ENTITY connexions.context.tagMedia.accesskey      "X">
+
+<!-- When the tagCurrent item is included WITH tagLink or tagMedia -->
+<!ENTITY connexions.context.tagAlt.accesskey        "P">
+<!-- Main Context menu } -->
+
+<!-- Toolbar { -->
+<!ENTITY connexions.toolbar.button.tag.label            "Tag">
+<!ENTITY connexions.toolbar.button.tag.tooltip          "Tag this page">
+
+<!ENTITY connexions.toolbar.button.bookmark.label       "Bookmarks">
+<!ENTITY connexions.toolbar.button.bookmark.tooltip     "Toggle the bookmarks sidebar">
+
+<!ENTITY connexions.toolbar.button.connexions.label     "Connexions">
+<!ENTITY connexions.toolbar.button.connexions.tooltip   "Visit Connexions">
+<!-- Toolbar } -->
+
+<!-- Sidebar { -->
+<!ENTITY connexions.sidebar.label                       "Connexions">
+<!ENTITY connexions.sidebar.sort.by                     "Sort by">
+<!ENTITY connexions.sidebar.sort.order                  "Sort order">
+
+<!ENTITY connexions.sidebar.bookmarks.label             "Bookmarks">
+<!ENTITY connexions.sidebar.bookmarks.sort.title        "Title">
+<!ENTITY connexions.sidebar.bookmarks.sort.url          "Url">
+<!ENTITY connexions.sidebar.bookmarks.sort.rating       "Rating">
+<!ENTITY connexions.sidebar.bookmarks.sort.taggedOn     "Tag Date">
+<!ENTITY connexions.sidebar.bookmarks.sort.updatedOn    "Update Date">
+<!ENTITY connexions.sidebar.bookmarks.sort.visitedOn    "Visit Date">
+<!ENTITY connexions.sidebar.bookmarks.sort.visitCount   "Visit Count">
+
+<!ENTITY connexions.sidebar.tags.label                  "Tags">
+<!ENTITY connexions.sidebar.tags.sort.name              "Name">
+<!ENTITY connexions.sidebar.tags.sort.frequency         "Frequency">
+
+<!-- Sidebar Context menu { -->
+<!ENTITY connexions.sidebar.context.open.label             "Open">
+<!ENTITY connexions.sidebar.context.open.accesskey         "O">
+
+<!ENTITY connexions.sidebar.context.openInWindow.label     "Open in New Window">
+<!ENTITY connexions.sidebar.context.openInWindow.accesskey "W">
+
+<!ENTITY connexions.sidebar.context.openInTab.label        "Open in New Tab">
+<!ENTITY connexions.sidebar.context.openInTab.accesskey    "T">
+
+<!ENTITY connexions.sidebar.context.edit.label             "Edit">
+<!ENTITY connexions.sidebar.context.edit.accesskey         "E">
+
+<!ENTITY connexions.sidebar.context.delete.label           "Delete">
+<!ENTITY connexions.sidebar.context.delete.accesskey       "D">
+
+<!ENTITY connexions.sidebar.context.properties.label       "Properties">
+<!ENTITY connexions.sidebar.context.properties.accesskey   "P">
+<!-- Sidebar Context menu } -->
+
+<!-- Sidebar Bookmark Property Panel { -->
+<!ENTITY bookmark.title             "Bookmark Properties">
+<!ENTITY bookmark.label.id          "id">
+<!ENTITY bookmark.label.url         "Url">
+<!ENTITY bookmark.label.urlHash     "Url hash">
+<!ENTITY bookmark.label.name        "Name">
+<!ENTITY bookmark.label.description "Description">
+<!ENTITY bookmark.label.rating      "Rating">
+<!ENTITY bookmark.label.isFavorite  "Favorite">
+<!ENTITY bookmark.label.isPrivate   "Private">
+
+<!ENTITY bookmark.label.taggedOn    "Tagged">
+<!ENTITY bookmark.label.updatedOn   "Updated">
+<!ENTITY bookmark.label.visitedOn   "Visited">
+<!ENTITY bookmark.label.visitCount  "Visits">
+<!ENTITY bookmark.label.shortcut    "Shortcut">
+
+<!ENTITY bookmark.label.tags        "Tags">
+<!-- Sidebar Bookmark Property Panel } -->
+<!-- Sidebar } -->

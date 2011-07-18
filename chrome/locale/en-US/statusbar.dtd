@@ -1,0 +1,3 @@
+<!ENTITY connexions.statusbar.connexions.tooltip  "Open connexions">
+<!ENTITY connexions.statusbar.panel.sync.tooltip  "Connexions synchronization">
+<!ENTITY connexions.statusbar.sync.cancel         "Cancel">
