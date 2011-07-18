@@ -127,7 +127,10 @@ $.widget("connexions.itemScope", {
                         source:     function(request, response) {
                             return self._autocomplete(request,response);
                         },
-                        minLength:  opts.minLength
+                        minLength:  opts.minLength,
+                        position:   {
+                            offset: '0 5'
+                        }
                     }
                 });
 
