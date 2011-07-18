@@ -275,9 +275,10 @@
   background-position:  -176px 0px;
 }
 .relation-none, .relation-self {
-  width:  32px;
-  height: 12px;
+  width:                32px;
+  height:               12px;
   background-position:  -128px -48px;
+  visibility:           hidden;
 }
 
 .relation-add {

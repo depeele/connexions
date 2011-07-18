@@ -18,16 +18,16 @@
 .users {
   .user {
     position: relative;
-    z-index: 1;
-    margin-bottom: 1em;
+    z-index:    1;
     border-top: unquote("1px solid") $borderColor;
   }
 }
 
 .users, .pane .displayStyle fieldset.options {
   .person {
-    clear: both;
-    min-height: 55px;
+    clear:          both;
+    min-height:     55px;
+    margin-bottom:  1em;
   }
   .user {
     position: relative;
@@ -79,11 +79,13 @@
       @include inlineBlock();
       font-size:        0.75em;
       text-align:       center;
-      //background-color: $lightest;
       padding:          1px;
+      width:            34px;
 
       .connexions_sprites {
-        text-indent:  -9999em;
+        // Per the network relations sprites -- sprites.scss::.relation-*
+        text-indent:  34px;
+        overflow:     hidden;
       }
     }
     .data {

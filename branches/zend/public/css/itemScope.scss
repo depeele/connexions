@@ -192,7 +192,9 @@ $itemCountWidth: $countBoxWidth + 10px;
       display:          block;
       padding:          0;
       margin:           0.25em;
-      text-indent:      -9999em;
+      text-indent:      16px;   /* According to .ui-icon that SHOULD be used
+                                 * along with '.delete'
+                                 */
       text-decoration:  none;
     }
   }
