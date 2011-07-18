@@ -8392,7 +8392,7 @@ $.widget("connexions.itemList", {
         // Group Headers
         self.$headers = self.element.find('.groupHeader .groupType');
 
-        if (opts.objClass === null)
+        if ((opts.objClass === null) && (self.$items.length > 0))
         {
             /* Determine the type/class of item by the CSS class of the
              * representative form
