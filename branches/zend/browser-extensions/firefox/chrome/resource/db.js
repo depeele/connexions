@@ -13,11 +13,7 @@ var CR  = Components.results;
 var CU  = Components.utils;
 
 CU.import("resource://connexions/debug.js");
-
-var wrapper = new Components.Constructor(
-                        "@mozilla.org/storage/statement-wrapper;1",
-                        CI.mozIStorageStatementWrapper,
-                        "initialize");
+CU.import("resource://connexions/Observers.js");
 
 function Connexions_Db()
 {
@@ -25,9 +21,6 @@ function Connexions_Db()
 }
 
 Connexions_Db.prototype = {
-    os:             CC['@mozilla.org/observer-service;1']
-                        .getService(CI.nsIObserverService),
-
     initialized:    false,
     noSignals:      false,
     dbConnection:   null,
@@ -126,7 +119,7 @@ Connexions_Db.prototype = {
     signal: function(subject, data) {
         if (this.noSignals !== true)
         {
-            connexions.signal(subject, data);
+            Observers.notify(subject, data);
         }
         return this;
     },
@@ -148,9 +141,10 @@ Connexions_Db.prototype = {
         }
         // */
 
-        /*
-        cDebug.log('Connexions_Db::observe(): topic[ %s ]',
-                   topic);
+        // /*
+        cDebug.log('Connexions_Db::observe(): '
+                    +   'topic[ %s ], subject[ %s ], data[ %s ]',
+                   topic, cDebug.obj2str(subject), cDebug.obj2str(data));
         // */
 
         switch (topic)
@@ -1809,15 +1803,15 @@ Connexions_Db.prototype = {
     /** @brief  Establish our state observers.
      */
     _loadObservers: function() {
-        this.os.addObserver(this, "connexions.syncBegin",   false);
-        this.os.addObserver(this, "connexions.syncEnd",     false);
+        Observers.add('connexions.syncBegin',   this);
+        Observers.add('connexions.syncEnd',     this);
     },
 
     /** @brief  Establish our state observers.
      */
     _unloadObservers: function() {
-        this.os.removeObserver(this, "connexions.syncBegin");
-        this.os.removeObserver(this, "connexions.syncEnd");
+        Observers.remove('connexions.syncBegin',   this);
+        Observers.remove('connexions.syncEnd',     this);
     }
 };
 

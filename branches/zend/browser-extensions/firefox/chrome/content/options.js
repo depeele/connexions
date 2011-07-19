@@ -11,6 +11,7 @@
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false, plusplus:false, regexp:false */
 /*global Components:false, cDebug:false, CU:false, CC:false, CI:false, connexions:false, document:false, window:false */
 CU.import('resource://connexions/debug.js');
+CU.import('resource://connexions/Observers.js');
 
 function COptions()
 {
@@ -18,9 +19,6 @@ function COptions()
 }
 
 COptions.prototype = {
-    os:         CC['@mozilla.org/observer-service;1']
-                    .getService(CI.nsIObserverService),
-
     elAccountStatus:    null,
     elAccountId:        null,
 
@@ -253,22 +251,26 @@ COptions.prototype = {
      */
     observe: function(subject, topic, data) {
         var self    = this;
+        /*
         if ( (data !== undefined) && (data !== null) )
         {
             try {
                 data = JSON.parse(data);
             } catch(e) {}
         }
+        // */
 
-        /*
-        cDebug.log('options::observer(): topic[ %s ], data[ %s ]',
-                   topic, cDebug.obj2str(data));
+        // /*
+        cDebug.log('options::observer(): '
+                    +   'topic[ %s ], subject[ %s ]',
+                   topic,
+                   cDebug.obj2str(subject));
         // */
 
         switch (topic)
         {
         case 'connexions.userChanged':
-            self.showUser( data );
+            self.showUser( subject );
             break;
 
         case 'connexions.syncBegin':
@@ -305,7 +307,7 @@ COptions.prototype = {
              *      added   The number of items successfully added;
              *      updated The number of items successfully updated;
              */
-            var progress    = data.progress;
+            var progress    = subject.progress;
 
             var str = self.getString('connexions.prefs.sync.progress.total',
                                      [ progress.total ]);
@@ -348,14 +350,14 @@ COptions.prototype = {
             self.elProgress.hidden      = true;
             self.btnSyncCancel.hidden   = true;
             var strStatus;
-            if (data.error === null)
+            if (subject.error === null)
             {
                 strStatus = self.getString('connexions.prefs.sync.success');
             }
             else
             {
                 strStatus = self.getString('connexions.prefs.sync.error',
-                                           data.error.message);
+                                           subject.error.message);
             }
             self.elStatus.value = strStatus;
 
@@ -464,18 +466,21 @@ COptions.prototype = {
     /** @brief  Establish our state observers.
      */
     _loadObservers: function() {
-        this.os.addObserver(this, "connexions.userChanged",  false);
-        this.os.addObserver(this, "connexions.syncBegin",    false);
-        this.os.addObserver(this, "connexions.syncProgress", false);
-        this.os.addObserver(this, "connexions.syncEnd",      false);
+        Observers.add('connexions.userChanged',     this);
+
+        Observers.add('connexions.syncBegin',       this);
+        Observers.add('connexions.syncProgress',    this);
+        Observers.add('connexions.syncEnd',         this);
     },
 
     /** @brief  Establish our state observers.
      */
     _unloadObservers: function() {
-        this.os.removeObserver(this, "connexions.userChanged");
-        this.os.removeObserver(this, "connexions.syncProgress");
-        this.os.removeObserver(this, "connexions.syncEnd");
+        Observers.remove('connexions.userChanged',     this);
+
+        Observers.remove('connexions.syncBegin',       this);
+        Observers.remove('connexions.syncProgress',    this);
+        Observers.remove('connexions.syncEnd',         this);
     }
 };
 

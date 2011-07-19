@@ -11,6 +11,7 @@
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false, plusplus:false, regexp:false */
 /*global Components:false, cDebug:false, CU:false, document:false, window:false, gContextMenu:false */
 CU.import('resource://connexions/debug.js');
+CU.import('resource://connexions/Observers.js');
 
 function CStatusbar()
 {
@@ -18,9 +19,6 @@ function CStatusbar()
 }
 
 CStatusbar.prototype = {
-    os:             CC['@mozilla.org/observer-service;1']
-                        .getService(CI.nsIObserverService),
-
     strings:        null,
 
     elSyncBox:      null,
@@ -97,16 +95,18 @@ CStatusbar.prototype = {
      */
     observe: function(subject, topic, data) {
         var self    = this;
+        /*
         if ( (data !== undefined) && (data !== null) )
         {
             try {
                 data = JSON.parse(data);
             } catch(e) {}
         }
+        // */
 
-        /*
-        cDebug.log("CStatusbar::observe(): topic[ %s ], data[ %s ]",
-                    topic, cDebug.obj2str(data));
+        // /*
+        cDebug.log("CStatusbar::observe(): topic[ %s ], subject[ %s ]",
+                    topic, cDebug.obj2str(subject));
         // */
 
         switch (topic)
@@ -134,7 +134,7 @@ CStatusbar.prototype = {
              *      added   The number of items successfully added;
              *      updated The number of items successfully updated;
              */
-            var progress    = data.progress;
+            var progress    = subject.progress;
 
             var str = self.getString(
                             'connexions.statusbar.sync.progress.total',
@@ -184,17 +184,17 @@ CStatusbar.prototype = {
     /** @brief  Establish our state observers.
      */
     _loadObservers: function() {
-        this.os.addObserver(this, "connexions.syncBegin",    false);
-        this.os.addObserver(this, "connexions.syncProgress", false);
-        this.os.addObserver(this, "connexions.syncEnd",      false);
+        Observers.add('connexions.syncBegin',       this);
+        Observers.add('connexions.syncProgress',    this);
+        Observers.add('connexions.syncEnd',         this);
     },
 
     /** @brief  Establish our state observers.
      */
     _unloadObservers: function() {
-        this.os.removeObserver(this, "connexions.syncBegin");
-        this.os.removeObserver(this, "connexions.syncProgress");
-        this.os.removeObserver(this, "connexions.syncEnd");
+        Observers.remove('connexions.syncBegin',       this);
+        Observers.remove('connexions.syncProgress',    this);
+        Observers.remove('connexions.syncEnd',         this);
     }
 };
 

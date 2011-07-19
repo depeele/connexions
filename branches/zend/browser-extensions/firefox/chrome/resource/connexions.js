@@ -11,7 +11,7 @@
  *  via 'connexions.userChanged'.
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false, plusplus:false, regexp:false */
-/*global Components:false, cDebug:false, cDb:false, window:false */
+/*global Components:false, cDebug:false, cDb:false, Observers:false, window:false, navigator:false */
 var EXPORTED_SYMBOLS    = ['connexions'/*, $, $$ */];
 
 var CC                  = Components.classes;
@@ -21,6 +21,7 @@ var CU                  = Components.utils;
 var CONNEXIONS_BASE_URL = "%URL%";
 
 CU.import("resource://connexions/debug.js");
+CU.import("resource://connexions/Observers.js");
 CU.import("resource://connexions/db.js");
 
 /*****************************************************************************
@@ -47,12 +48,6 @@ function Connexions()
 }
 
 Connexions.prototype = {
-    os:             CC['@mozilla.org/observer-service;1']
-                        .getService(CI.nsIObserverService),
-    /*
-    cm:             CC["@mozilla.org/categorymanager;1"]
-                        .getService(CI.nsICategoryManager),
-    // */
     wm:             CC['@mozilla.org/appshell/window-mediator;1']
                         .getService(CI.nsIWindowMediator),
     ps:             CC['@mozilla.org/preferences-service;1']
@@ -103,7 +98,7 @@ Connexions.prototype = {
         cDb.setConnexions(this);
         this.db    = cDb;
 
-        //cDebug.log('resource-connexions::init():');
+        //cDebug.log('resource/connexions::init():');
 
         var self    = this;
 
@@ -117,7 +112,7 @@ Connexions.prototype = {
         if (cookies !== null)
         {
             /*
-            cDebug.log('resource-connexions::init(): cookies from db[ %s ]',
+            cDebug.log('resource/connexions::init(): cookies from db[ %s ]',
                        cookies);
             // */
 
@@ -125,26 +120,16 @@ Connexions.prototype = {
         }
 
         /*
-        cDebug.log('resource-connexions::init(): cookieJar '
+        cDebug.log('resource/connexions::init(): cookieJar '
                     + 'domain[ %s ], authCookie[ %s ]',
                     self.cookieJar.domain,
                     self.cookieJar.authCookie);
         // */
 
-        // Is this Firefox >= 3 < 4, which has a thread-manager?
-        try {
-            self.tm = CC['@mozilla.org/thread-manager;1']
-                        .getService();
-        } catch(e) {}
-        if (self.tm === null)
-        {
-            // NOT Firefox >= 3 < 4.  Is it Firefox 4+?
-        }
-
         self._loadObservers();
         self._updatePeriodicSync();
 
-        //cDebug.log('resource-connexions::init(): completed');
+        //cDebug.log('resource/connexions::init(): completed');
     },
 
     /** @brief  Invoked any time 'chrome/content/connexions.js' receives a
@@ -153,7 +138,7 @@ Connexions.prototype = {
      *  @return this for a fluent interface.
      */
     windowLoad: function() {
-        //cDebug.log('resource-connexions::windowLoad()');
+        //cDebug.log('resource/connexions::windowLoad()');
 
         var self        = this;
         var document    = self.getDocument();
@@ -167,13 +152,13 @@ Connexions.prototype = {
                 var strings = document.getElementById('connexions-strings');
 
                 /*
-                cDebug.log('resource-connexions::windowLoad(): strings[ %s ]',
+                cDebug.log('resource/connexions::windowLoad(): strings[ %s ]',
                            strings);
                 // */
 
                 self.setStrings( strings );
             } catch(e) {
-                cDebug.log('resource-connexions::windowLoad(): '
+                cDebug.log('resource/connexions::windowLoad(): '
                             + 'get connextion-strings triggered an error: %s',
                            e.message);
             }
@@ -182,7 +167,7 @@ Connexions.prototype = {
         if (self.user === null)
         {
             // Attempt to retrieve the current user.
-            //cDebug.log('resource-connexions::windowLoad(): retrieveUser');
+            //cDebug.log('resource/connexions::windowLoad(): retrieveUser');
 
             self.retrieveUser();
         }
@@ -207,16 +192,17 @@ Connexions.prototype = {
         }
         // */
 
-        /*
-        cDebug.log('resource-connexions::observe(): topic[ %s ]',
-                   topic);
+        // /*
+        cDebug.log('resource/connexions::observe(): '
+                    +   'topic[ %s ], subject[ %s ], data[ %s ]',
+                   topic, cDebug.obj2str(subject), cDebug.obj2str(data));
         // */
 
         switch (topic)
         {
         case 'nsPref:changed':
             /*
-            cDebug.log('resource-connexions::observe(): '
+            cDebug.log('resource/connexions::observe(): '
                         + 'topic[ %s ], pref[ %s ]',
                         topic, data);
             // */
@@ -256,7 +242,7 @@ Connexions.prototype = {
 
             var url         = subject.URI.spec;
             /*
-            cDebug.log('resource-connexions::observe(): topic[ %s ], url[ %s ]',
+            cDebug.log('resource/connexions::observe(): topic[ %s ], url[ %s ]',
                         topic, url);
             // */
 
@@ -275,7 +261,7 @@ Connexions.prototype = {
             }
 
             /*
-            cDebug.log('resource-connexions::observe(): cookie-changed: '
+            cDebug.log('resource/connexions::observe(): cookie-changed: '
                         +   'host[ %s ], path[ %s ], name[ %s ]',
                        cookie.host, cookie.path, cookie.name);
             // */
@@ -283,7 +269,7 @@ Connexions.prototype = {
                 (cookie.host.toLowerCase() === self.cookieJar.domain) )
             {
                 /*
-                cDebug.log('resource-connexions::observe(): '
+                cDebug.log('resource/connexions::observe(): '
                             +   'cookie-changed: '
                             +   'host[ %s ], path[ %s ], '
                             +   'name[ %s ], value[ %s ]',
@@ -306,7 +292,7 @@ Connexions.prototype = {
                     self.db.state('cookies', self.cookies2str());
 
                     /*
-                    cDebug.log('resource-connexions::observe(): '
+                    cDebug.log('resource/connexions::observe(): '
                                 +   'cookie-changed from our stored value: '
                                 +   'host[ %s ], path[ %s ], name[ %s ]',
                                cookie.host, cookie.path, cookie.name);
@@ -316,7 +302,7 @@ Connexions.prototype = {
                 /*
                 if (cookie.name === self.cookieJar.authCookie)
                 {
-                    cDebug.log('resource-connexions::observe(): '
+                    cDebug.log('resource/connexions::observe(): '
                                 + 'authCookie changed!');
 
                     // (Re)Retrieve the authenticated user
@@ -436,7 +422,7 @@ Connexions.prototype = {
         }
 
         /*
-        cDebug.log('resource-connexions::pref(): '
+        cDebug.log('resource/connexions::pref(): '
                     + 'name[ %s ], newValue[ %s ], type[ %s ], curVal[ %s ]',
                     name,
                     cDebug.obj2str(value),
@@ -454,42 +440,20 @@ Connexions.prototype = {
      *  @return this for a fluent interface.
      */
     signal: function(subject, data) {
-        if (! this.tm.isMainThread)
-        {
-            /* Apparently, nsI* interfaces (e.g. this.os, nsIObserverService)
-             * can only be invoked from the main thread.  Since we're NOT on
-             * the main thread, use MainThread to dispatch a signal request to
-             * the main thread.
-             */
-            /*
-            cDebug.log('resource-connexions::signal(): subject[ %s ] -- '
-                        + 'dispatch to main thread',
-                       subject);
-            // */
-            this.tm.mainThread.dispatch(
-                new MainThread('signal', {subject: subject,
-                                          data:    data}),
-                CI.nsIThread.DISPATCH_SYNC);
-            return this;
-        }
-
         /*
-        cDebug.log('resource-connexions::signal(): subject[ %s ], data[ %s ]',
+        cDebug.log('resource/connexions::signal(): subject[ %s ], data[ %s ]',
                    subject, cDebug.obj2str(data));
         // */
 
+        /*
         if (data !== undefined)
         {
             // JSON-encode the non-string
             data = JSON.stringify( data );
         }
+        */
 
-        this.os.notifyObservers(this, subject,
-                               (data === undefined ? '' : data));
-        /*
-        this.os.notifyObservers(null, subject,
-                               (data === undefined ? '' : data));
-        // */
+        Observers.notify(subject, data);
 
         return this;
     },
@@ -539,7 +503,7 @@ Connexions.prototype = {
         }
         self.state.retrieveUser = true;
 
-        //cDebug.log('resource-connexions::retrieveUser(): initiate...');
+        //cDebug.log('resource/connexions::retrieveUser(): initiate...');
 
         /* Perform a JsonRpc request to find out who the authenticated user if
          * (if any)
@@ -547,7 +511,7 @@ Connexions.prototype = {
         self.jsonRpc('user.whoami', {}, {
             success: function(data, textStatus, xhr) {
                 /*
-                cDebug.log('resource-connexions::retrieveUser(): '
+                cDebug.log('resource/connexions::retrieveUser(): '
                             +   'jsonRpc return[ %s ]',
                             cDebug.obj2str(data));
                 // */
@@ -568,7 +532,7 @@ Connexions.prototype = {
             },
             error:   function(xhr, textStatus, error) {
                 self.user = null;
-                cDebug.log('resource-connexions::retrieveUser(): '
+                cDebug.log('resource/connexions::retrieveUser(): '
                             +   'ERROR retrieving user[ %s ]',
                             textStatus);
             },
@@ -638,7 +602,7 @@ Connexions.prototype = {
                         ? this.strings.getFormattedString(name, strArray)
                         : this.strings.getString(name));
             } catch(e) {
-                cDebug.log('connexions-resource::getString(): ERROR: '
+                cDebug.log('resource/connexions::getString(): ERROR: '
                             + 'name[ %s ]: %s',
                             name, e.message);
             }
@@ -812,7 +776,7 @@ Connexions.prototype = {
         var self    = this;
 
         /*
-        cDebug.log('resource-connexions::notify(): title[ %s ], msg[ %s ]',
+        cDebug.log('resource/connexions::notify(): title[ %s ], msg[ %s ]',
                     title, msg);
         // */
 
@@ -824,7 +788,7 @@ Connexions.prototype = {
                     navigator.mozNotification.createNotification(title, msg,
                                                                   iconUrl);
 
-            //cDebug.log('resource-connexions::notify(): using Firfox 4+');
+            //cDebug.log('resource/connexions::notify(): using Firfox 4+');
 
             if (callbacks !== undefined)
             {
@@ -850,7 +814,7 @@ Connexions.prototype = {
                             .getService(CI.nsIAlertsService);
             idex = self.pendingNotifications.length;
 
-            //cDebug.log('resource-connexions::notify(): using Firfox 4-');
+            //cDebug.log('resource/connexions::notify(): using Firfox 4-');
 
             self.pendingNotifications.push( callbacks );
 
@@ -863,7 +827,7 @@ Connexions.prototype = {
                                      self,                  // alertListener
                                      'connexions-alert');
         } catch(e) {
-            cDebug.log('resource-connexions::notify(): ERROR: %s',
+            cDebug.log('resource/connexions::notify(): ERROR: %s',
                         e.message);
 
             if (idex !== undefined)
@@ -1416,7 +1380,7 @@ Connexions.prototype = {
                 }
             });
 
-            //cDebug.log("resource-connexions::sync(): NOT signed in");
+            //cDebug.log("resource/connexions::sync(): NOT signed in");
             return this;
         }
 
@@ -1428,7 +1392,7 @@ Connexions.prototype = {
         self.state.sync = true;
 
         /*
-        cDebug.log("resource-connexions::sync(): "
+        cDebug.log("resource/connexions::sync(): "
                     +   "signed in as [ %s ], isReload[ %s ]",
                     self.user.name, isReload);
         // */
@@ -1486,7 +1450,7 @@ Connexions.prototype = {
      *  @return this for a fluent interface.
      */
     syncCancel: function() {
-        //cDebug.log('resource-connexions::syncCancel():');
+        //cDebug.log('resource/connexions::syncCancel():');
 
         if (this.state.sync === true)
         {
@@ -1687,7 +1651,7 @@ Connexions.prototype = {
         }
 
         /*
-        cDebug.log("resource-connexions::jsonRpc(): "
+        cDebug.log("resource/connexions::jsonRpc(): "
                    +    "method[ %s ], transport[ %s ], "
                    +    "url[ %s ], cookies[ %s ], rpc[ %s ]",
                    method, self.jsonRpcInfo.transport,
@@ -1727,7 +1691,7 @@ Connexions.prototype = {
         var str = cookieStrs.join(';');
 
         /*
-        cDebug.log("resource-connexions::cookie2str(): "
+        cDebug.log("resource/connexions::cookie2str(): "
                     +   'obj[ %s ] == str[ %s ]',
                     cDebug.obj2str(obj), str);
         // */
@@ -1761,7 +1725,7 @@ Connexions.prototype = {
         }
 
         /*
-        cDebug.log("resource-connexions::str2cookies(): "
+        cDebug.log("resource/connexions::str2cookies(): "
                     +   'str[ %s ] == obj[ %s ]',
                     str, cDebug.obj2str(obj));
         // */
@@ -1780,7 +1744,7 @@ Connexions.prototype = {
                                 .getCookiesFromHost(self.cookieJar.domain);
         //var cookies         = cookieManager.enumerator;
 
-        cDebug.log("resource-connexions::getCookies(): "
+        cDebug.log("resource/connexions::getCookies(): "
                    +    "%s cookies from domain[ %s ]...",
                    nCookies, self.cookieJar.domain);
 
@@ -1802,53 +1766,123 @@ Connexions.prototype = {
 
         self.db.state('cookies', self.cookies2str());
 
-        cDebug.log("resource-connexions::getCookies(): cookie values[ %s ]",
+        cDebug.log("resource/connexions::getCookies(): cookie values[ %s ]",
                    cDebug.obj2str(self.cookieJar.values));
     },
      */
 
-    /** @brief  Given a set of bookmark identifiers retrieved from the server,
-     *          delete them.
-     *  @param  sync    The syncrhonization state:
-     *                      deletions:  array of bookmark identifiers to
-     *                                  delete;
-     *                      updates:    array of bookmarks to update;
+    /** @brief  Given a date string of the form 'YYYY-MM-DD hh:mm:ss', convert
+     *          it to a UNIX timestamp.
+     *  @param  dateStr     The date string;
      *
-     *  :NOTE: This makes use of BookmarksWorker
-     *         (from chrome/resource/bookmarks-worker.js) as a worker thread to
-     *         move bookmark processing off the main UI thread.
+     *  @return The equivalent UNIX timestamp.
      */
-    updateBookmarks: function(sync) {
-        var self    = this;
+    normalizeDate: function(dateStr) {
+        var normalized  = 0;
+        var parts       = dateStr.split(' ');
+        var dateParts   = parts[0].split('-');
+        var timeParts   = parts[1].split(':');
+        var dateInfo    = {
+            year:   parseInt(dateParts[0], 10),
+            month:  parseInt(dateParts[1], 10),
+            day:    parseInt(dateParts[2], 10),
 
-        if ((self.bookmarksThread === null) && (self.tm !== null))
-        {
-            /* Retrieve the main thread and create a new background thread to
-             * handle bookmarks processing.
-             */
-            self.bookmarksThread = self.tm.newThread(0);
+            hour:   parseInt(timeParts[0], 10),
+            min:    parseInt(timeParts[1], 10),
+            sec:    parseInt(timeParts[2], 10)
+        };
+
+        try {
+            var utc  = Date.UTC(dateInfo.year, dateInfo.month-1, dateInfo.day,
+                                dateInfo.hour, dateInfo.min, dateInfo.sec);
+
+            normalized = utc / 1000;
+        } catch (e) {
+            cDebug.log('resource/connexions::normalizeDate() ERROR: %s',
+                        e.message);
         }
 
-        //cDebug.log('resource-connexions::updateBookmarks(): signal worker');
-        self.bookmarksThread.dispatch(new BookmarksWorker(sync),
-                                      CI.nsIThread.DISPATCH_NORMAL);
+        return normalized;
+    },
+
+    /** @brief  Given an incoming "boolean" value, convert it to a native
+     *          boolean.
+     *  @param  val         The incoming value;
+     *
+     *  @return The equivalent boolean.
+     */
+    normalizeBool: function(val) {
+        return (val ? true : false);
+    },
+
+    /** @brief  Given an incoming bookmark object, normalize it to an object
+     *          acceptable for our local database.
+     *  @param  bookmark    The bookmark object to normalize;
+     *
+     *  The incoming bookmark will have the form:
+     *      userId:         string: useName,
+     *      itemId:         string: itemUrl,
+     *      name:           string,
+     *      description:    string,
+     *      rating:         integer,
+     *      isFavorite:     integer,
+     *      isPrivate:      integer,
+     *      taggedOn:       string: 'YYYY-MM-DD hh:mm:ss',
+     *      updatedOn:      string: 'YYYY-MM-DD hh:mm:ss',
+     *      ratingAvg:      number,
+     *      tags:           [ tag strings ],
+     *
+     *  We need the form:
+     *      url:            string,
+     *      urlHash:        string,
+     *      name:           string,
+     *      description:    string,
+     *      rating:         integer,
+     *      isFavorite:     boolean,
+     *      isPrivate:      boolean,
+     *      taggedOn:       integer: (UNIX Date/Time),
+     *      updatedOn:      integer: (UNIX Date/Time),
+     *      tags:           [ tag strings ],
+     *      visitedOn:      integer: (UNIX Date/Time),
+     *      visitCount:     integer,
+     *      shortcut:       string
+     *
+     *  @return The equivalent normalized bookmark object;
+     */
+    normalizeBookmark: function(bookmark) {
+        var self        = this;
+        var normalized  = {
+            url:            bookmark.itemId,
+          //urlHash:        connexions.md5(bookmark.itemId),
+            name:           bookmark.name,
+            description:    bookmark.description,
+            rating:         bookmark.rating,
+            isFavorite:     self.normalizeBool(bookmark.isFavorite),
+            isPrivate:      self.normalizeBool(bookmark.isPrivate),
+            taggedOn:       self.normalizeDate(bookmark.taggedOn),
+            updatedOn:      self.normalizeDate(bookmark.updatedOn),
+            tags:           bookmark.tags
+        };
+    
+        return normalized;
     },
 
     /** @brief  Given a normalized bookmark object, attempt to add it and
      *          signal any progress.
      *  @param  bookmark    The normalized bookmark object.
      *
-     *  :NOTE: This will typically be called from BookmarksWorker
-     *         (chrome/resource/bookmarks-worker.js) when it needs to add
-     *         a bookmark.  We handle things this way because the database
-     *         objects makes use of connexions.signal() which can only be
-     *         invoked form the main thread.
-     *
      *  @return this for a fluent interface.
      */
     addBookmark: function(bookmark) {
-        var self    = this;
-        var res     = self.db.addBookmark(bookmark);
+        var self        = this;
+        var normalized  = self.normalizeBookmark(bookmark);
+
+        /*
+        cDebug.log('resource/connexions::addBokmark(): normalized[ %s ]',
+                    cDebug.obj2str(normalized));
+        // */
+
+        var res     = self.db.addBookmark(normalized);
         if (res !== null)
         {
             if (res.addStatus !== undefined)
@@ -1880,12 +1914,6 @@ Connexions.prototype = {
      *          signal any progress.
      *  @param  id          The bookmark identifier (url).
      *
-     *  :NOTE: This will typically be called from BookmarksWorker
-     *         (chrome/resource/bookmarks-worker.js) when it needs to add
-     *         a bookmark.  We handle things this way because the database
-     *         objects makes use of connexions.signal() which can only be
-     *         invoked form the main thread.
-     *
      *  @return this for a fluent interface.
      */
     deleteBookmark: function(id) {
@@ -1905,6 +1933,72 @@ Connexions.prototype = {
         self.signal('connexions.syncProgress', self.state.syncStatus);
 
         return self;
+    },
+
+    /** @brief  Given a set of bookmark identifiers retrieved from the server,
+     *          delete them.
+     *  @param  sync    The syncrhonization state:
+     *                      deletions:  array of bookmark identifiers to
+     *                                  delete;
+     *                      updates:    array of bookmarks to update;
+     */
+    updateBookmarks: function(sync) {
+        var self    = this;
+        var thread  = CC['@mozilla.org/thread-manager;1']
+                        .getService()
+                            .currentThread;
+
+        // Establish syncStatus.progress
+        self.state.syncStatus.progress = {
+            total:      sync.deletions.length + sync.updates.length,
+            current:    0,
+            added:      0,
+            updated:    0,
+            ignored:    0,
+            deleted:    0
+        };
+
+        // Signal our beginning progress update
+        self.signal('connexions.syncProgress', self.state.syncStatus);
+
+        // First, deletions
+        for each (var bookmark in sync.deletions)
+        {
+            if (self.state.sync !== true)
+            {
+                // CANCEL the sync
+                break;
+            }
+
+            self.deleteBookmark(bookmark.itemId);
+
+            // Process any pending events to keep the UI responsive
+            while (thread.hasPendingEvents())
+            {
+                thread.processNextEvent(true);
+            }
+        }
+
+        // Second, updates
+        for each (var bookmark in sync.updates)
+        {
+            if (self.state.sync !== true)
+            {
+                // CANCEL the sync
+                break;
+            }
+
+            self.addBookmark( bookmark );
+
+            // Process any pending events to keep the UI responsive
+            while (thread.hasPendingEvents())
+            {
+                thread.processNextEvent(true);
+            }
+        }
+
+        self.state.sync = false;
+        self.signal('connexions.syncEnd', self.state.syncStatus);
     },
 
     /** @brief  Destroy/unload this instance.
@@ -1978,7 +2072,7 @@ Connexions.prototype = {
         self.jsonRpc('activity.fetchByUsers', params, {
             success: function(data, textStatus, xhr) {
                 /*
-                cDebug.log('resource-connexions::_gatherDeletions(): '
+                cDebug.log('resource/connexions::_gatherDeletions(): '
                             +   'RPC success: jsonRpc return[ %s ]',
                             cDebug.obj2str(data));
                 // */
@@ -2011,7 +2105,7 @@ Connexions.prototype = {
             },
             error:   function(xhr, textStatus, error) {
                 /*
-                cDebug.log('resource-connexions::_gatherDeletions(): '
+                cDebug.log('resource/connexions::_gatherDeletions(): '
                             +   'RPC error: [ %s ]',
                             textStatus);
                 // */
@@ -2026,7 +2120,7 @@ Connexions.prototype = {
             },
             complete: function(xhr, textStatus) {
                 /*
-                cDebug.log('resource-connexions::_gatherDeletions(): '
+                cDebug.log('resource/connexions::_gatherDeletions(): '
                             +   'RPC complete: [ %s ]',
                             textStatus);
                 // */
@@ -2054,14 +2148,14 @@ Connexions.prototype = {
         self.jsonRpc('bookmark.fetchByUsers', params, {
             /*
             progress: function(position, totalSize, xhr) {
-                cDebug.log('resource-connexions::_gatherUpdates(): '
+                cDebug.log('resource/connexions::_gatherUpdates(): '
                             +   'RPC progress: position[ %s ], totalSize[ %s ]',
                             position, totalSize);
             },
             // */
             success: function(data, textStatus, xhr) {
                 /*
-                cDebug.log('resource-connexions::_gatherUpdates(): '
+                cDebug.log('resource/connexions::_gatherUpdates(): '
                             +   'RPC success: jsonRpc return[ %s ]',
                             cDebug.obj2str(data));
                 // */
@@ -2084,7 +2178,7 @@ Connexions.prototype = {
                 }
             },
             error:   function(xhr, textStatus, error) {
-                cDebug.log('resource-connexions::_gatherUpdates(): '
+                cDebug.log('resource/connexions::_gatherUpdates(): '
                             +   'RPC error: [ %s ]',
                             textStatus);
 
@@ -2100,7 +2194,7 @@ Connexions.prototype = {
             },
             complete: function(xhr, textStatus) {
                 /*
-                cDebug.log('resource-connexions::_gatherUpdates(): '
+                cDebug.log('resource/connexions::_gatherUpdates(): '
                             +   'RPC complete: [ %s ]',
                             textStatus);
                 // */
@@ -2120,7 +2214,7 @@ Connexions.prototype = {
         var info    = event.data;
 
         /*
-        cDebug.log('resource-connexions::_addBookmarksMessage(): info[ %s ]',
+        cDebug.log('resource/connexions::_addBookmarksMessage(): info[ %s ]',
                     cDebug.obj2str(info));
         // */
 
@@ -2159,9 +2253,9 @@ Connexions.prototype = {
     /** @brief  Establish our state observers.
      */
     _loadObservers: function() {
-        this.os.addObserver(this, "cookie-changed",         false);
-        this.os.addObserver(this, "http-on-modify-request", false);
-        this.os.addObserver(this, "connexions.syncEnd",     false);
+        Observers.add('cookie-changed',         this);
+        Observers.add('http-on-modify-request', this);
+        Observers.add('connexions.syncEnd',     this);
 
         // Preference observer
         var prefs   = this.prefs();
@@ -2173,9 +2267,9 @@ Connexions.prototype = {
     /** @brief  Establish our state observers.
      */
     _unloadObservers: function() {
-        this.os.removeObserver(this, "cookie-changed");
-        this.os.removeObserver(this, "http-on-modify-request");
-        this.os.removeObserver(this, "connexions.syncEnd");
+        Observers.remove('cookie-changed',         this);
+        Observers.remove('http-on-modify-request', this);
+        Observers.remove('connexions.syncEnd',     this);
 
         // Preference observer
         var prefs   = this.prefs();
@@ -2186,53 +2280,3 @@ Connexions.prototype = {
 };
 
 var connexions  = new Connexions();
-
-/* Place this at the bottom to mitigate the dependency loop between
- * connexions.js and bookmarks-worker.js
- */
-CU.import("resource://connexions/bookmarks-worker.js");
-
-/*****************************************************************************
- * Interface from a worker thread back to the main thread.
- *
- */
-
-/** @brief  The signal thread used to invoke connexions.signal within the
- *          context of the main UI thread.
- *  @param  type        The type of call back to the main thread
- *                      ( signal | call );
- *  @param  data        Type-specific data:
- *                          signal: {subject, data}
- *                          call:   {method,  args}
- */
-var MainThread = function(type, data) {
-    this.type = type;
-    this.data = data;
-};
-
-MainThread.prototype = {
-    QueryInterface: function(iid) {
-        if (iid.equals(CI.nsIRunnable) ||
-            iid.equals(CI.nsISupports))
-        {
-            return this;
-        }
-
-        throw CR.NS_ERROR_NO_INTERFACE;
-    },
-
-    run: function() {
-        var info    = this.data;
-
-        switch (this.type)
-        {
-        case 'signal':
-            connexions.signal(info.subject, info.data);
-            break;
-
-        case 'call':
-            connexions[info.method].apply(connexions, info.args);
-            break;
-        }
-    }
-};
