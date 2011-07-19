@@ -14,7 +14,7 @@ CU.import('resource://connexions/debug.js');
 
 var cOverlay = {
     load: function() {
-        cDebug.log("ff-overlay.js:load");
+        //cDebug.log("ff-overlay.js:load");
         document.getElementById("contentAreaContextMenu")
                 .addEventListener("popupshowing", function (e){
                                     cOverlay.showContextMenu(e);
@@ -22,7 +22,7 @@ var cOverlay = {
     },
 
     showContextMenu: function(event) {
-        cDebug.log("COverlay::showContextMenu");
+        //cDebug.log("COverlay::showContextMenu");
 
         /* show or hide the menuitem based on what the context menu is on
          *  gContextMenu.isTextSelected

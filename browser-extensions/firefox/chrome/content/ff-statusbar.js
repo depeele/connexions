@@ -30,7 +30,7 @@ CStatusbar.prototype = {
     },
 
     load: function() {
-        cDebug.log('CStatusbar::load():');
+        //cDebug.log('CStatusbar::load():');
 
         var self    = this;
 
@@ -56,7 +56,7 @@ CStatusbar.prototype = {
     },
 
     unload: function() {
-        cDebug.log('CStatusbar::unload():');
+        //cDebug.log('CStatusbar::unload():');
         this._unloadObservers();
     },
 
@@ -94,21 +94,12 @@ CStatusbar.prototype = {
      *  @param  data    Any additional data;
      */
     observe: function(subject, topic, data) {
-        var self    = this;
         /*
-        if ( (data !== undefined) && (data !== null) )
-        {
-            try {
-                data = JSON.parse(data);
-            } catch(e) {}
-        }
-        // */
-
-        // /*
         cDebug.log("CStatusbar::observe(): topic[ %s ], subject[ %s ]",
                     topic, cDebug.obj2str(subject));
         // */
 
+        var self    = this;
         switch (topic)
         {
         case 'connexions.syncBegin':

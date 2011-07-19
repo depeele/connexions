@@ -131,22 +131,13 @@ Connexions_Db.prototype = {
      *  @param  data    Any additional data;
      */
     observe: function(subject, topic, data) {
-        var self    = this;
         /*
-        if ( (data !== undefined) && (data !== null) )
-        {
-            try {
-                data = JSON.parse(data);
-            } catch(e) {}
-        }
-        // */
-
-        // /*
         cDebug.log('Connexions_Db::observe(): '
                     +   'topic[ %s ], subject[ %s ], data[ %s ]',
                    topic, cDebug.obj2str(subject), cDebug.obj2str(data));
         // */
 
+        var self    = this;
         switch (topic)
         {
         case 'connexions.syncBegin':

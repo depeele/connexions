@@ -631,21 +631,12 @@ CSidebar.prototype = {
      *                  (JSON-encoded for 'connexions.*' topics);
      */
     observe: function(subject, topic, data) {
-        var self    = this;
         /*
-        if ( (data !== undefined) && (data !== null) )
-        {
-            try {
-                data = JSON.parse(data);
-            } catch(e) {}
-        }
-        // */
-
-        // /*
         cDebug.log('cSidebar::observe(): topic[ %s ], subject[ %s ]',
                    topic, cDebug.obj2str(subject));
         // */
 
+        var self    = this;
         switch (topic)
         {
         case "connexions.bookmarkAdded":        // Bookmark added
@@ -678,13 +669,13 @@ CSidebar.prototype = {
             break;
 
         case "connexions.syncBegin":
-            cDebug.log('cSidebar::observe(): connexions.syncBegin:');
+            //cDebug.log('cSidebar::observe(): connexions.syncBegin:');
             // Disable rendering updates until syncing is complete
             self.syncing = true;
             break;
 
         case "connexions.syncEnd":
-            cDebug.log('cSidebar::observe(): connexions.syncEnd:');
+            //cDebug.log('cSidebar::observe(): connexions.syncEnd:');
             self.syncing = false;
 
             // Fall through

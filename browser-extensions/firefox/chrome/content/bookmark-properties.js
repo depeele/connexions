@@ -55,8 +55,10 @@ CBookmark.prototype = {
             bookmark.tags = connexions.db.getTags(bookmark.id);
         }
 
+        /*
         cDebug.log('bookmark-properties::load(): bookmark[ %s ]',
                    cDebug.obj2str(bookmark));
+        // */
 
         /* This ASSUMES that the keys in 'self.el' match those in a bookmark
          * object (see chrome/resource/db.js : _bookmarkFromRow()) AND the id's
@@ -112,13 +114,13 @@ CBookmark.prototype = {
 
         self._bindEvents();
 
-        cDebug.log("cBookmark.load(): complete");
+        //cDebug.log("cBookmark.load(): complete");
 
         return self;
     },
 
     unload: function() {
-        cDebug.log("cBookmark.unload():");
+        //cDebug.log("cBookmark.unload():");
     },
 
     open: function(el, event) {
