@@ -55,13 +55,6 @@ class SettingsController extends Connexions_Controller_Action
                     'expanded'  => true,
                     'script'    => 'main-bookmarks-export'
                 ),
-                /*
-                'groups'        => array(
-                    'title'     => 'Groups',
-                    'async'     => true,
-                    'script'    => 'main-bookmarks-groups'
-                ),
-                // */
               ),
         ),
         'tags'      => array(
@@ -75,13 +68,6 @@ class SettingsController extends Connexions_Controller_Action
                     //'expanded'  => true,
                     'script'    => 'main-tags-manage'
                 ),
-                /*
-                'groups'        => array(
-                    'title'     => 'Groups',
-                    'async'     => true,
-                    'script'    => 'main-tags-groups'
-                ),
-                // */
               ),
         ),
         'people'    => array('title'   => 'People',
@@ -92,13 +78,6 @@ class SettingsController extends Connexions_Controller_Action
                     'async'     => true,
                     'script'    => 'main-people-network'
                 ),
-                /*
-                'groups'        => array(
-                    'title'     => 'Groups',
-                    'async'     => true,
-                    'script'    => 'main-people-groups'
-                ),
-                // */
               ),
         ),
     );
