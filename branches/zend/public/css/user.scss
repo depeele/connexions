@@ -85,6 +85,7 @@
       .connexions_sprites {
         // Per the network relations sprites -- sprites.scss::.relation-*
         text-indent:  34px;
+        white-space:  nowrap;
         overflow:     hidden;
       }
     }
