@@ -11,6 +11,7 @@
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false, plusplus:false, regexp:false */
 /*global Components:false, cDebug:false, CU:false, CI:false, connexions:false, document:false, window:false */
 CU.import('resource://connexions/debug.js');
+CU.import('resource://connexions/Observers.js');
 
 function CSidebar()
 {
@@ -18,9 +19,6 @@ function CSidebar()
 }
 
 CSidebar.prototype = {
-    os:                     CC['@mozilla.org/observer-service;1']
-                                .getService(CI.nsIObserverService),
-
     mainWindow:             null,
     elBookmarksCount:       null,
     elTagsCount:            null,
@@ -634,16 +632,18 @@ CSidebar.prototype = {
      */
     observe: function(subject, topic, data) {
         var self    = this;
+        /*
         if ( (data !== undefined) && (data !== null) )
         {
             try {
                 data = JSON.parse(data);
             } catch(e) {}
         }
+        // */
 
-        /*
-        cDebug.log('cSidebar::observe(): topic[ %s ], data[ %s ]',
-                   topic, cDebug.obj2str(data));
+        // /*
+        cDebug.log('cSidebar::observe(): topic[ %s ], subject[ %s ]',
+                   topic, cDebug.obj2str(subject));
         // */
 
         switch (topic)
@@ -1211,19 +1211,20 @@ CSidebar.prototype = {
      *  @return this for a fluent interface.
      */
     _loadObservers: function() {
-        this.os.addObserver(this, "connexions.bookmarkAdded",    false);
-        this.os.addObserver(this, "connexions.bookmarkDeleted",  false);
-        this.os.addObserver(this, "connexions.bookmarkUpdated",  false);
-        this.os.addObserver(this, "connexions.bookmarksDeleted", false);
-        this.os.addObserver(this, "connexions.bookmarksUpdated", false);
+        Observers.add("connexions.bookmarkAdded",    this);
+        Observers.add("connexions.bookmarkDeleted",  this);
+        Observers.add("connexions.bookmarkUpdated",  this);
 
-        this.os.addObserver(this, "connexions.tagAdded",         false);
-        this.os.addObserver(this, "connexions.tagsUpdated",      false);
+        Observers.add("connexions.bookmarksDeleted", this);
+        Observers.add("connexions.bookmarksUpdated", this);
 
-        this.os.addObserver(this, "connexions.syncBegin",        false);
-        this.os.addObserver(this, "connexions.syncEnd",          false);
+        Observers.add("connexions.tagAdded",         this);
+        Observers.add("connexions.tagsUpdated",      this);
 
-        this.os.addObserver(this, "connexions.tablesEmptied",    false);
+        Observers.add("connexions.syncBegin",        this);
+        Observers.add("connexions.syncEnd",          this);
+
+        Observers.add("connexions.tablesEmptied",    this);
 
         return this;
     },
@@ -1233,19 +1234,20 @@ CSidebar.prototype = {
      *  @return this for a fluent interface.
      */
     _unloadObservers: function() {
-        this.os.removeObserver(this, "connexions.bookmarkAdded");
-        this.os.removeObserver(this, "connexions.bookmarkDeleted");
-        this.os.removeObserver(this, "connexions.bookmarkUpdated");
-        this.os.removeObserver(this, "connexions.bookmarksDeleted");
-        this.os.removeObserver(this, "connexions.bookmarksUpdated");
+        Observers.remove("connexions.bookmarkAdded",    this);
+        Observers.remove("connexions.bookmarkDeleted",  this);
+        Observers.remove("connexions.bookmarkUpdated",  this);
 
-        this.os.removeObserver(this, "connexions.tagAdded");
-        this.os.removeObserver(this, "connexions.tagsUpdated");
+        Observers.remove("connexions.bookmarksDeleted", this);
+        Observers.remove("connexions.bookmarksUpdated", this);
 
-        this.os.removeObserver(this, "connexions.syncBegin");
-        this.os.removeObserver(this, "connexions.syncEnd");
+        Observers.remove("connexions.tagAdded",         this);
+        Observers.remove("connexions.tagsUpdated",      this);
 
-        this.os.removeObserver(this, "connexions.tablesEmptied");
+        Observers.remove("connexions.syncBegin",        this);
+        Observers.remove("connexions.syncEnd",          this);
+
+        Observers.remove("connexions.tablesEmptied",    this);
 
         return this;
     }
