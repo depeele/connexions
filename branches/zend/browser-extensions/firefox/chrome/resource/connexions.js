@@ -159,7 +159,7 @@ Connexions.prototype = {
                 self.setStrings( strings );
             } catch(e) {
                 cDebug.log('resource/connexions::windowLoad(): '
-                            + 'get connextion-strings triggered an error: %s',
+                            + 'get connexions-strings triggered an error: %s',
                            e.message);
             }
         }
@@ -182,22 +182,13 @@ Connexions.prototype = {
      *  @param  data    Any additional data;
      */
     observe: function(subject, topic, data) {
-        var self    = this;
         /*
-        if ( (data !== undefined) && (data !== null) )
-        {
-            try {
-                data = JSON.parse(data);
-            } catch(e) {}
-        }
-        // */
-
-        // /*
         cDebug.log('resource/connexions::observe(): '
                     +   'topic[ %s ], subject[ %s ], data[ %s ]',
                    topic, cDebug.obj2str(subject), cDebug.obj2str(data));
         // */
 
+        var self    = this;
         switch (topic)
         {
         case 'nsPref:changed':
@@ -495,8 +486,10 @@ Connexions.prototype = {
 
         if (self.state.retrieveUser === true)
         {
+            /*
             cDebug.log('resource-connexion::retrieveUser(): '
                         +   'already in progress');
+            // */
 
             // In process
             return self;
@@ -684,8 +677,11 @@ Connexions.prototype = {
                 url  = gContextMenu.target.getAttribute('src');
                 name = gContextMenu.target.getAttribute('title');
                 // */
+
+                /*
                 cDebug.log('tagPage(): type[ %s ], Construct url...',
                                 type);
+                // */
 
                 // el should NEVER be null here
                 url  = el.getAttribute('src');
@@ -2202,33 +2198,6 @@ Connexions.prototype = {
                 cbComplete();
             }
         });
-    },
-
-    /** @brief  Receive an addBookmarks worker message.
-     *  @param  event   The Post event which SHOULD contain a data item of the
-     *                  form:
-     *                      { type: 'signal | call', ... }
-     */
-    _addBookmarksMessage: function(event) {
-        var self    = this;
-        var info    = event.data;
-
-        /*
-        cDebug.log('resource/connexions::_addBookmarksMessage(): info[ %s ]',
-                    cDebug.obj2str(info));
-        // */
-
-        switch (info.type)
-        {
-        case 'signal':
-            // Signal the provided 'subject' and 'data'
-            self.signal(info.subject, info.data);
-            break;
-
-        case 'call':
-            self[info.method].apply(self, info.args);
-            break;
-        }
     },
 
     /** @brief  Open the given URL in a new, normal browser window.

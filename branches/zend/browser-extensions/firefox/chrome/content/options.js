@@ -250,23 +250,14 @@ COptions.prototype = {
      *                  (JSON-encoded for 'connexions.*' topics);
      */
     observe: function(subject, topic, data) {
-        var self    = this;
         /*
-        if ( (data !== undefined) && (data !== null) )
-        {
-            try {
-                data = JSON.parse(data);
-            } catch(e) {}
-        }
-        // */
-
-        // /*
         cDebug.log('options::observer(): '
                     +   'topic[ %s ], subject[ %s ]',
                    topic,
                    cDebug.obj2str(subject));
         // */
 
+        var self    = this;
         switch (topic)
         {
         case 'connexions.userChanged':
@@ -419,7 +410,7 @@ COptions.prototype = {
                     {
                         return;
                     }
-                    cDebug.log("cOptions._bindEvents(): syncPeriod changed");
+                    //cDebug.log("cOptions._bindEvents(): syncPeriod changed");
 
                     var period  = parseInt(self.elSyncPeriod.value, 10);
                     connexions.pref('syncMinutes', period);
