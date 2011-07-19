@@ -450,7 +450,7 @@ a:visited { color: #005a9c; }
 .tagInput .tagList .tag { border: 1px solid #cccccc; -moz-border-radius: 4px 4px 4px 4px; -webkit-border-radius: 4px 4px 4px 4px; -ms-border-radius: 4px 4px 4px 4px; -khtml-border-radius: 4px 4px 4px 4px; border-radius: 4px 4px 4px 4px; margin: 0.2em; cursor: pointer; }
 .tagInput .tagList .tag span, .tagInput .tagList .tag .delete { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; vertical-align: middle; }
 .tagInput .tagList .tag span { padding: 0 0 0 0.25em; }
-.tagInput .tagList .tag .delete { text-indent: 16px; text-decoration: none; padding: 0; overflow: hidden; }
+.tagInput .tagList .tag .delete { text-indent: 16px; white-space: nowrap; text-decoration: none; padding: 0; overflow: hidden; }
 .tagInput .tagList .activeInput { border: none; margin: 0; width: auto; }
 .tagInput .tagList .activeInput input { display: inline; border: none; background: none; padding: 0; margin: 0; width: auto; }
 .tagInput .tagList .measureInput { position: absolute; visibility: hidden; width: auto; padding: 1px; margin: 2px; }
@@ -527,7 +527,7 @@ a:visited { color: #005a9c; }
 .Item_List li:hover .control .item-add, .Item_List li:hover .control .item-edit, .Item_List li:hover .control .item-delete { visibility: visible; }
 .Item_List li .edit-item .buttons { text-align: right; }
 .Item_List li .relation { position: absolute; top: 1px; right: 14px; }
-.Item_List li .relation .connexions_sprites { width: 32px; height: 12px; text-indent: 32px; overflow: hidden; }
+.Item_List li .relation .connexions_sprites { width: 32px; height: 12px; text-indent: 32px; white-space: nowrap; overflow: hidden; }
 .Item_List li .relation .relation-amIn { background-position: -176px -12px; }
 .Item_List li .relation .relation-isIn { background-position: -176px -24px; }
 .Item_List li .relation .relation-mutual { background-position: -176px 0px; }
@@ -597,7 +597,7 @@ a:visited { color: #005a9c; }
 .itemScope .root, .itemScope .section { background-color: #0066cc; padding: 0 0.2em 0 0; border: 1px solid #0066cc; z-index: 10; }
 .itemScope .section { margin-left: 1px; }
 .itemScope .scopeItem { padding-left: 0.6em; margin-left: -0.5em; -moz-border-radius: 0 1em 1em 0; -webkit-border-radius: 0 1em 1em 0; -ms-border-radius: 0 1em 1em 0; -khtml-border-radius: 0 1em 1em 0; border-radius: 0 1em 1em 0; border: 1px dotted #cccccc; z-index: 2; background-color: #999999; }
-.itemScope .deletable a.delete { display: block; padding: 0; margin: 0.25em; text-indent: 16px; /* According to .ui-icon that SHOULD be used along with '.delete' */ text-decoration: none; }
+.itemScope .deletable a.delete { display: block; padding: 0; margin: 0.25em; text-indent: 16px; /* According to .ui-icon that SHOULD be used */ white-space: nowrap; text-decoration: none; }
 .itemScope .itemCount { position: absolute; right: 0; background-color: #999999; border: 1px solid #999999; color: white; padding: 0.25em; float: none; width: 110px; text-align: center; font-weight: bold; }
 
 /****** papgination.sass ****** */
@@ -702,7 +702,7 @@ a:visited { color: #005a9c; }
 /*fieldInfoColor             = !validationInputColor */
 .ui-stars-wrapper { display: block; width: 96px; overflow: hidden; }
 .ui-stars-wrapper input.ui-stars-rating { width: 0; height: 0; padding: 0; margin: 0; }
-.ui-stars-wrapper .ui-stars { display: block; float: left; overflow: hidden; text-indent: 96px; }
+.ui-stars-wrapper .ui-stars { display: block; float: left; overflow: hidden; text-indent: 96px; white-space: nowrap; }
 .ui-stars-wrapper .ui-stars a { background-image: url("sprites/connexions.gif"); background-attachment: scroll; background-repeat: no-repeat; background-color: transparent; display: block; }
 .ui-stars-wrapper .ui-stars-star { cursor: pointer; }
 .ui-stars-wrapper .ui-stars-star a { cursor: pointer; }
@@ -870,7 +870,7 @@ a:visited { color: #005a9c; }
 .users .user .stats .countTags:hover, .pane .displayStyle fieldset.options .user .stats .countTags:hover { background-color: #b0d730; color: white; }
 .users .user .stats .countTags .icon, .pane .displayStyle fieldset.options .user .stats .countTags .icon { position: absolute; border: none; top: 0.25em; right: -2px; padding: 0; }
 .users .user .relation, .pane .displayStyle fieldset.options .user .relation { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; font-size: 0.75em; text-align: center; padding: 1px; width: 34px; }
-.users .user .relation .connexions_sprites, .pane .displayStyle fieldset.options .user .relation .connexions_sprites { text-indent: 34px; overflow: hidden; }
+.users .user .relation .connexions_sprites, .pane .displayStyle fieldset.options .user .relation .connexions_sprites { text-indent: 34px; white-space: nowrap; overflow: hidden; }
 .users .user .data, .pane .displayStyle fieldset.options .user .data { position: relative; padding: 0.25em 0 0 40px; z-index: 1; }
 .users .user .data .avatar, .pane .displayStyle fieldset.options .user .data .avatar { position: absolute; left: 0; top: 0; width: 32px; height: 32px; }
 .users .user .data .avatar a .img, .pane .displayStyle fieldset.options .user .data .avatar a .img { display: block; position: relative; border: 0; background-color: transparent; }

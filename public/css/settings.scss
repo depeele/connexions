@@ -181,6 +181,7 @@
       height:                 16px;
       overflow:               hidden;
       text-indent:            16px;
+      white-space:            nowrap;
 
       background-image:       $connexions_sprites_url;
       background-repeat-x:    no-repeat;
@@ -796,22 +797,43 @@
 }
 
 #people-network {
-  .networkAdd {
+  .networkControl {
     border-bottom:  unquote('1px solid') $borderColor;
     margin-bottom:  0.25em;
     padding-bottom: 0.25em;
     padding-left:   1em;
+    height:         4em;
+    z-index:        1;
 
-    input,button {
-      vertical-align: middle;
+    .networkAdd {
+      margin-right: 18em;
+      z-index:       1;
+      input,button {
+        vertical-align: middle;
+      }
+
+      .field {
+        @include  inlineBlock();
+        width:    40em;
+
+        input {
+          width:  100%;
+        }
+      }
     }
+    .networkVisibility {
+      position:     absolute;
+      top:          0;
+      right:        0;
+      z-index:      2;
+      font-size:    0.8em;
 
-    .field {
-      @include  inlineBlock();
-      width:    50%;
-
-      input {
-        width:  100%;
+      .label {
+        text-align: center;
+        color:      $controlColor;
+      }
+      .options {
+        text-align: center;
       }
     }
   }

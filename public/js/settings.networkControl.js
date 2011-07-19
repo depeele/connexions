@@ -4,9 +4,25 @@
  *  as adding a new user to the viewing user's network.
  *
  *  The pre-rendered HTML must have a form similar to:
- *   <div class='networkAdd ui-form'>
- *    <input type='text' />
- *    <button name='submit'>add</button>
+ *   <div class='networkControl'>
+ *    <div class='networkAdd ui-form'>
+ *     <input type='text' />
+ *     <button name='submit'>add</button>
+ *    </div>
+ *    <div class='networkVisibility'>
+ *     <label for='visibility'>Visibility</label>
+ *     <div class='options'>
+ *       <input id='visibility-private' type='radio' name='visibility'
+ *              value='private' />
+ *       <label for='visibility-private'>Private</label>
+ *       <input id='visibility-public' type='radio' name='visibility'
+ *              value='public' />
+ *       <label for='visibility-public'>Public</label>
+ *       <input id='visibility-group' type='radio' name='visibility'
+ *              value='group' />
+ *       <label for='visibility-group'>These People</label>
+ *     </div>
+ *    </div>
  *   </div>
  *   <div class='pane'>         // As a connexions.pane instance
  *    --- item presentation ---
@@ -22,8 +38,8 @@
 /*global jQuery:false, setTimeout:false, clearTimeout:false, document:false */
 (function($) {
 
-$.widget("settings.networkAdd", {
-    version: "0.0.1",
+$.widget("settings.networkControl", {
+    version: "0.0.2",
     options: {
         // Defaults
         namespace:  '',
@@ -51,6 +67,8 @@ $.widget("settings.networkAdd", {
          * is required for any methods that modify data.
          */
         apiKey:     null,
+
+        visibility: null,
 
         minLength:  2       // Minimum term length
     },
@@ -86,10 +104,17 @@ $.widget("settings.networkAdd", {
          * Locate the pieces
          *
          */
-        self.$input    = self.element.find(':text');
-        self.$submit   = self.element.find(':button[name=submit]');
-        self.$parent   = self.element.parent();
-        self.$pane     = self.element.siblings('.pane');
+        self.$input      = self.element.find('.networkAdd :text');
+        self.$submit     = self.element.find(':button[name=submit]');
+        self.$visibility = self.element.find('.networkVisibility .options');
+        self.$parent     = self.element.parent();
+        self.$pane       = self.element.siblings('.pane');
+
+        if (opts.visibility !== null)
+        {
+            self.$visibility.find(':radio[value='+ opts.visibility +']')
+                    .attr('checked', true);
+        }
 
         /********************************
          * Instantiate our sub-widgets
@@ -108,6 +133,9 @@ $.widget("settings.networkAdd", {
             });
         }
         self.$submit.button({disabled:true});
+        self.$visibility.buttonset();
+
+        opts.visibility = self.$visibility.find(':radio:checked').val();
 
         self._bindEvents();
     },
@@ -120,8 +148,8 @@ $.widget("settings.networkAdd", {
         var self    = this;
         var opts    = self.options;
 
-        self.$input.bind('validation_change.networkAdd '
-                         + 'autocompletesearch.networkAdd',
+        self.$input.bind('validation_change.networkControl '
+                         + 'autocompletesearch.networkControl',
                          function(e) {
             var val = self.$input.val();
             if (val.length >= opts.minLength)
@@ -133,7 +161,7 @@ $.widget("settings.networkAdd", {
                 self.$submit.button('disable');
             }
         });
-        self.$input.bind('keydown.networkAdd', function(e) {
+        self.$input.bind('keydown.networkControl', function(e) {
             if (e.keyCode === 13)   // return
             {
                 self.$input.blur();
@@ -141,13 +169,54 @@ $.widget("settings.networkAdd", {
             }
         });
 
-        self.$submit.bind('click.networkAdd', function(e) {
+        self.$submit.bind('click.networkControl', function(e) {
             self._add_users();
+        });
+
+        self.$visibility.bind('change.networkControl', function(e) {
+            self._changeVisibility( $(e.target).val() );
         });
 
         self.$parent.delegate('.users', 'itemDeleted', function() {
             // On item delete, reload the pane
             self.reload();
+        });
+    },
+
+    /** @brief  Change the visibility to the given value.
+     *  @param  val     The (new) visibility value.
+     */
+    _changeVisibility: function(val) {
+        var self    = this;
+        var opts    = self.options;
+
+        if (opts.visibility === val)    { return; }
+
+        // { term: %str%, limit: %num%, apiKey: %str% }
+        var params  = opts.jsonRpc.params;
+        params.visibility = val;
+
+        $.jsonRpc(opts.jsonRpc, 'user.changeNetworkVisibility', params, {
+            success:    function(ret, txtStatus, req) {
+                if (ret.error !== null)
+                {
+                    self.$visibility
+                        .find(':radio[value='+ opts.visibility +']')
+                            .click();
+
+                    $.notify({title: 'Cannot change visibility',
+                              text:  ret.error.message});
+                    self.element.trigger('error', [txtStatus, req, ret.error]);
+                    return;
+                }
+
+                opts.visibility = val;
+            },
+            error:      function(req, txtStatus, e) {
+                $.notify({title: 'Cannot change visiblity',
+                          text:  txtStatus});
+                self.element.trigger('error', [txtStatus, req]);
+            }
         });
     },
 
@@ -164,6 +233,8 @@ $.widget("settings.networkAdd", {
             success:    function(ret, txtStatus, req){
                 if (ret.error !== null)
                 {
+                    $.notify({title: 'Autocompletion error',
+                              text:  ret.error.message});
                     self.element.trigger('error', [txtStatus, req, ret.error]);
                     return;
                 }
@@ -187,6 +258,8 @@ $.widget("settings.networkAdd", {
                 self.element.trigger('success', [ret, txtStatus, req]);
             },
             error:      function(req, txtStatus, e) {
+                $.notify({title: 'Autocompletion error',
+                          text:  txtStatus});
                 self.element.trigger('error', [txtStatus, req]);
             }
         });
@@ -241,7 +314,7 @@ $.widget("settings.networkAdd", {
 
                 if (successes.length > 0)
                 {
-                    // Report any deletion successes
+                    // Report any add successes
                     $.notify({
                         title: 'User'+ (successes.length > 1 ? 's' :'')
                                     +' added',
@@ -287,11 +360,13 @@ $.widget("settings.networkAdd", {
         }
         self.$input.input('destroy');
         self.$submit.button('destroy');
+        self.$visibility.buttonset('destroy');
 
         // Unbind events
-        self.$input.unbind('.networkAdd');
-        self.$submit.unbind('.networkAdd');
-        self.$parent.undelegate('.users', '.networkAdd');
+        self.$input.unbind('.networkControl');
+        self.$submit.unbind('.networkControl');
+        self.$visibility.unbind('.networkControl');
+        self.$parent.undelegate('.users', '.networkControl');
     }
 });
 

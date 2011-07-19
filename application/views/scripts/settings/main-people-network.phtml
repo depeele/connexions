@@ -33,7 +33,7 @@
  *                          the the main body;
  *          viewer          The Model_User instance representing the current
  *                          viewer (typically a reference to $view->viewer);
- *          group           A Model_Set_User instance containing information
+ *          group           A Model_Group instance containing information
  *                          about the Network of 'viewer';
  *          panePartial     The partial script to use to render the paginated
  *                          contents of 'group';
@@ -60,16 +60,65 @@ Connexions::log('views/scripts/settings/main-people-network.phtml: '
                 $namespace, $panePartial);
 // */
 
+$visibility = ($this->main['group']
+                ? $this->main['group']->visibility
+                : 'private');
+
+/*
+Connexions::log('views/scripts/settings/main-people-network.phtml: '
+                . 'group[ %s ], visibility[ %s ]',
+                Connexions::varExport($this->main['group']),
+                Connexions::varExport($visibility));
+// */
+
+
 // Top-level, static, non-paginated content
 $id = 'people-network';
 ?>
 <div id='<?= $id ?>'><!-- people-network { -->
- <div class='networkAdd ui-form'>
-   <div class='field'>
-    <label for='networkAdd-input'>Follow User</label>
-    <input  id='networkAdd-input' type='text' class='text' />
+ <div class='networkControl'>
+   <div class='networkAdd ui-form'>
+     <div class='field'>
+      <label for='networkAdd-input'>Follow User</label>
+      <input  id='networkAdd-input' type='text' class='text' />
+     </div>
+     <button name='submit'>add</button>
    </div>
-   <button name='submit'>add</button>
+   <div class='networkVisibility'>
+     <div id='visibility' class='options'>
+       <input   id='visibility-private'
+              type='radio'
+              name='visibility'
+              <?= ($visibility === 'private'
+                    ? "checked='checked'"
+                    : '') ?>
+             title='visibility: only you'
+             value='private' />
+       <label  for='visibility-private'
+             title='visibility: only you'>Private</label>
+       <input   id='visibility-public'
+              type='radio'
+              name='visibility'
+              <?= ($visibility === 'public'
+                    ? "checked='checked'"
+                    : '') ?>
+             title='visibility: everyone'
+             value='public' />
+       <label  for='visibility-public'
+             title='visibility: everyone'>Public</label>
+       <input   id='visibility-group'
+              type='radio'
+              name='visibility'
+              <?= ($visibility === 'group'
+                    ? "checked='checked'"
+                    : '') ?>
+             title='visibility: your network'
+             value='group' />
+       <label  for='visibility-group'
+             title='visibility: your network'>These People</label>
+     </div>
+     <div class='label'>network visibility</div>
+   </div>
  </div>
  <!-- Dynamic, paginated content -->
  <?= $this->partial('settings/'. $panePartial .'.phtml', $this) ?>
@@ -77,7 +126,7 @@ $id = 'people-network';
 <?php
 
 $jsWait = false;
-$jsLoad = "$('#{$id} .networkAdd').networkAdd();";
+$jsLoad = "$('#{$id} .networkControl').networkControl();";
 if ($jsWait === false)
 {
     // Instantiate the Javascript widget immediately

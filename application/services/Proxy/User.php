@@ -113,6 +113,19 @@ class Service_Proxy_User extends Connexions_Service_Proxy
         return $this->_service->deleteTags($user, $tags);
     }
 
+    /** @brief  Retrieve the network for the given user.
+     *  @param  apiKey      The apiKey for the currently authenticated user
+     *                      (REQUIRED if the transport method is NOT POST);
+     *
+     *  @return A Model_Group instance.
+     */
+    public function getNetwork($apiKey = null)
+    {
+        $user = $this->_authenticate($apiKey);
+
+        return $this->_service->getnetwork($user);
+    }
+
     /** @brief  Add a new user to the network of this user.
      *  @param  users       A Model_Set_User instance, simple array of user
      *                      identifiers, or comma-separated list of user
@@ -150,6 +163,23 @@ class Service_Proxy_User extends Connexions_Service_Proxy
         $user = $this->_authenticate($apiKey);
 
         return $this->_service->removeFromNetwork($user, $users);
+    }
+
+    /** @brief  Change the visibility of the network for the given user.
+     *  @param  visibility  The new network visibility value ('public',
+     *                      'private', 'group');
+     *  @param  apiKey      The apiKey for the currently authenticated user
+     *                      (REQUIRED if the transport method is NOT POST);
+     *
+     *  @return The (updated) Model_Group instance representing the user's
+     *          network;
+     *
+     */
+    public function changeNetworkVisibility($visibility, $apiKey = null)
+    {
+        $user = $this->_authenticate($apiKey);
+
+        return $this->_service->changeNetworkVisibility($user, $visibility);
     }
 
     /** @brief  Perform user autocompletion.

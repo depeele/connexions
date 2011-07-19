@@ -355,6 +355,17 @@ class Service_User extends Service_Base
         return $user->deleteTags($tags);
     }
 
+    /** @brief  Retrieve the network for the given user.
+     *  @param  user        The Model_User instance for which network
+     *                      should be retrieved;
+     *
+     *  @return A Model_Group instance.
+     */
+    public function getNetwork(Model_User $user)
+    {
+        return $user->getNetwork();
+    }
+
     /** @brief  Add a new user to the network of this user.
      *  @param  user        The Model_User instance for which network add
      *                      should be performed (MUST be authenticated);
@@ -474,6 +485,39 @@ class Service_User extends Service_Base
         }
 
         return $res;
+    }
+
+    /** @brief  Change the visibility of the network for the given user.
+     *  @param  user        The Model_User instance for which network
+     *                      visibility should be changed
+     *                      (MUST be authenticated);
+     *  @param  visibility  The new network visibility value ('public',
+     *                      'private', 'group');
+     *
+     *  @return The (updated) Model_Group instance representing the user's
+     *          network;
+     *
+     */
+    public function changeNetworkVisibility(Model_User $user,
+                                                       $visibility)
+    {
+        $network = $user->getNetwork();
+        $network->visibility = $visibility;
+
+        if (! $network->isValid())
+        {
+            $msgStrs = array();
+            foreach ($network->getValidationMessages() as $field => $msgs)
+            {
+                array_push($msgStrs, "'{$field}': ", implode('; ', $msgs));
+            }
+
+            throw new Exception('Invalid network data: '.
+                                    implode(', ', $msgStrs));
+        }
+        $network = $network->save();
+
+        return $network;
     }
 
     /** @brief  Perform user autocompletion.

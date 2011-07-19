@@ -17,6 +17,7 @@
     // Hide the <a> text
     overflow: hidden;
     text-indent: 96px;
+    white-space: nowrap;
     a {
       background-image:       $connexions_sprites_url;
       background-attachment:  scroll;

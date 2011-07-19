@@ -518,7 +518,10 @@ class Model_Group extends Model_Base
     {
         $data = parent::toArray($props);
 
-        if ($props['deep'] !== false)
+        Connexions::log("Model_Group:toArray(): props[ %s ]",
+                        Connexions::varExport($props));
+
+        if ( (! isset($props['deep'])) || ($props['deep'] !== false) )
         {
             // Owner: Force resolution via '->owner' vs '->_owner'
             if ($this->owner !== null)
@@ -547,6 +550,21 @@ class Model_Group extends Model_Base
                 {
                     array_push($reducedItems,
                                $item->toArray(  $props ));
+                }
+
+                $data['items'] = $reducedItems;
+            }
+        }
+        else if ( (! isset($props['public'])) || ($props['public'] !== false) )
+        {
+            // Items: Force resolution via '->items' vs '->_items'
+            if ($this->items !== null)
+            {
+                // Reduce the items...
+                $reducedItems = array();
+                foreach ($this->items as $idex => $item)
+                {
+                    array_push($reducedItems, $item->__toString());
                 }
 
                 $data['items'] = $reducedItems;
