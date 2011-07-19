@@ -279,10 +279,33 @@ class Model_Group extends Model_Base
                                               null,     // count
                                               null,     // offset
                                               true);    // noAuth
-                if ($members !== null)
+
+                if (count($members) < 1)
+                {
+                    /* No members.  If this a group of users?
+                     */
+                    if ($this->groupType === 'user')
+                    {
+                        /* We have a user group with no member list and a
+                         * visiblity of 'group'.  Use the user's in the group
+                         * to determine visibility.
+                         */
+                        $items = $this->_getItems(null,     // order
+                                                  null,     // count
+                                                  null,     // offset
+                                                  true);    // noAuth
+
+                        if ($items !== null)
+                        {
+                            $res = $items->contains( $user );
+                        }
+                    }
+                }
+                else if ($members !== null)
                 {
                     $res = $members->contains( $user );
                 }
+
             }
             break;
 
