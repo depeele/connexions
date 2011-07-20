@@ -737,6 +737,11 @@ $.widget("connexions.bookmark", {
             open:       function(event, ui) {
                 $overlayed.overlay($dialog.maxZindex() - 2);
 
+                /* Notify the connexions.bookmarkPost widget that the dialog is
+                 * opened and it can now perform any visibility-based resizing.
+                 */
+                $form.trigger('open');
+
                 // Event bindings that can wait
                 $form.bind('saved.bookmark', function(e, data) {
                     if (isEdit === true)
