@@ -13,7 +13,7 @@
   display:  inline;
 }
 
-// template.scss
+// For template.scss
 .main {
   position:     relative;
   left:         -3px;
@@ -30,6 +30,11 @@
 
 // For jquery-ui
 @import "ie-jquery-ui";
+
+.ui-icon {
+  text-indent:  16px;
+  white-space:  nowrap;
+}
 
 // For main.scss
 .pane {
@@ -83,11 +88,6 @@
       }
     }
   }
-}
-
-.ui-icon {
-  text-indent:  16px;
-  white-space:  nowrap;
 }
 
 *:first-child+html, * html {
