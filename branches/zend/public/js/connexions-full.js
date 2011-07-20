@@ -9003,8 +9003,8 @@ $.widget("connexions.bookmarkPost", {
 
         $.ui.dialog.prototype._init.call(self);
 
-        /* In case we're embedded direclty in a page and won't receive a
-         * 'open' event.
+        /* In case we're embedded direclty in a page and won't receive
+         * an 'open' event.
          */
         self._onOpen();
     },
@@ -11013,6 +11013,9 @@ $.widget("connexions.bookmark", {
             open:       function(event, ui) {
                 $overlayed.overlay($dialog.maxZindex() - 2);
 
+                /* Notify the connexions.bookmarkPost widget that the dialog is
+                 * opened and it can now perform any visibility-based resizing.
+                 */
                 $form.trigger('open');
 
                 // Event bindings that can wait
