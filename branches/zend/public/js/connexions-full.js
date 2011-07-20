@@ -8830,9 +8830,6 @@ $.widget("connexions.bookmarkPost", {
         var self        = this;
         var opts        = self.options;
 
-        // Hide the form while we prepare it...
-        //self.element.hide();
-
         self.element.addClass('ui-form ui-bookmarkPost');
 
         /********************************
@@ -8996,15 +8993,6 @@ $.widget("connexions.bookmarkPost", {
                             .text('comma-separated, 30 characters per tag - '
                                   + 'required');
 
-        /* (Re)size all 'ui-field-info' elements to match their corresponding
-         * input field
-         */
-        opts.$required.each(function() {
-            var $input = $(this);
-
-            $input.next().css('width', $input.css('width'));
-        });
-
         /********************************
          * Initialize our state and bind
          * to interesting events.
@@ -9013,9 +9001,27 @@ $.widget("connexions.bookmarkPost", {
         self._setStateFromForm();
         self._bindEvents();
 
-        //self.element.show();
-
         $.ui.dialog.prototype._init.call(self);
+
+        /* In case we're embedded direclty in a page and won't receive a
+         * 'open' event.
+         */
+        self._onOpen();
+    },
+
+    /** @brief  On open, (Re)size all 'ui-field-info' elements to match their
+     *          corresponding input field.
+     */
+    _onOpen: function()
+    {
+        var self    = this;
+        var opts    = self.options;
+
+        opts.$required.each(function() {
+            var $input = $(this);
+
+            $input.next().css('width', $input.css('width'));
+        });
     },
 
     _setStateFromForm: function()
@@ -9288,6 +9294,9 @@ $.widget("connexions.bookmarkPost", {
                                                 self._tagClick);
 
         self.element.bind('keydown.bookmarkPost', _form_tabFocus);
+        self.element.bind('open.bookmarkPost',    function() {
+            self._onOpen();
+        });
 
         _validate_form();
     },
@@ -11003,6 +11012,8 @@ $.widget("connexions.bookmark", {
             modal:      isModal,
             open:       function(event, ui) {
                 $overlayed.overlay($dialog.maxZindex() - 2);
+
+                $form.trigger('open');
 
                 // Event bindings that can wait
                 $form.bind('saved.bookmark', function(e, data) {
