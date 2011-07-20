@@ -41,6 +41,16 @@
   zoom:   1;
 }
 
+.collapsable {
+
+  .content {
+    /* Fix for IE7-bug with jquery.slidedown() where the div disappears as soon
+     * as it becomes fully visible.
+     */
+    zoom: 1;
+  }
+}
+
 // For tabs.scss
 @import "ie-corner";
 #pageHeader {
