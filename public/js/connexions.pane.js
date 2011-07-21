@@ -73,7 +73,7 @@ $.widget("connexions.pane", {
         // Include a refresh button
         self.$refresh    = $(  '<div class="refreshPane icon-default">'
                             +  '<a ref="#" '
-                            +     'class="ui-icon ui-icon-refresh" '
+                            +     'class="ui-icon ui-icon-arrowrefresh-1-s" '
                             +     'title="refresh this pane">'
                             +   'refresh'
                             +  '</a>'
