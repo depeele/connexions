@@ -50,6 +50,12 @@ body.light {
 /* General Panes */
 .pane {
   background-color:   $pageColorBackground;
+
+  .refreshPane {
+    float:        right;
+    padding-top:  0.4em;
+    cursor:       pointer;
+  }
 }
 
 /* Page Header */

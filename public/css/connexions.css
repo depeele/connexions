@@ -917,6 +917,7 @@ body.light { background-color: white; }
 
 /* General Panes */
 .pane { background-color: white; }
+.pane .refreshPane { float: right; padding-top: 0.4em; cursor: pointer; }
 
 /* Page Header */
 #pageHeader { font-size: 14px; z-index: 100; }
