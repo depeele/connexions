@@ -63,9 +63,27 @@ $.widget("connexions.pane", {
      *
      */
     _init: function() {
-        this.element.addClass('pane');
-        this._init_paginators();
-        this._init_displayOptions();
+        var self    = this;
+        var opts    = self.options;
+
+        self.element.addClass('pane');
+        self._init_paginators();
+        self._init_displayOptions();
+
+        // Include a refresh button
+        self.$refresh    = $(  '<div class="refreshPane icon-default">'
+                            +  '<a ref="#" '
+                            +     'class="ui-icon ui-icon-refresh" '
+                            +     'title="refresh this pane">'
+                            +   'refresh'
+                            +  '</a>'
+                            + '</div>')
+                                .insertAfter(self.$displayOptions);
+        self.$refresh.bind('click.uipane', function(e) {
+            e.preventDefault(true);
+
+            self.reload();
+        });
     },
 
     _init_paginators: function() {
