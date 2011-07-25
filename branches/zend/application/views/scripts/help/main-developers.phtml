@@ -1,4 +1,4 @@
-<?php
+et spell?php
 $config   =  Zend_Registry::get('config');
 $api      =& $config->api;
 $contact  =& $config->contact;
@@ -864,7 +864,7 @@ Connexions::log('views/scripts/help/main-developers.phtml: '
           <li class='collapsable'> <!-- ======== bookmark.autocompleteTag { -->
            <h6 id='api_bookmark_autocompleteuser' class='toggle <?= Connexions_Help::rest_collapsed($this, 'bookmark/autocompleteTag') ?> method-name'><a href='<?= $url ?>/api/bookmark/autocompleteTag' data-cache.collapsable='api_bookmark_autocompleteTag_content'>autocompleteTag</a></h6>
            <div id='api_bookmark_autocompleteTag_content' class='api-method help-content'><!-- api-method { -->
-            <p>Given a term, retrieve all bookmark-related tags that match that term.  If <b>tags</b>, <b>users</b>, or <b>items</b> are specified, they will be used to select a matching set of bookmarks.  This set of bookmarks will then be used to locate all tags related to those bookmarks (bookmark-releated tags) which will in-turn be the set of tags searched for matches.  Note that the valid combinations of <b>tags</b>, <b>users</b>, and <b>items</b>, in order of precedence, are [<b>users</b>], [<b>users, tags</b>], [<b>items</b>], [<b>items, tags</b>], and [<b>tags</b>].</p>
+            <p>Given a term, retrieve all bookmark-related tags that match that term.  If <b>tags</b>, <b>users</b>, or <b>items</b> are specified, they will be used to select a matching set of bookmarks.  This set of bookmarks will then be used to locate all tags related to those bookmarks (bookmark-related tags) which will in-turn be the set of tags searched for matches.  Note that the valid combinations of <b>tags</b>, <b>users</b>, and <b>items</b>, in order of precedence, are [<b>users</b>], [<b>users, tags</b>], [<b>items</b>], [<b>items, tags</b>], and [<b>tags</b>].</p>
             <table class='parameters'>
              <tr><th>Parameters</th><th>Description</th></tr>
              <tr><th>term</th><td>The term to match by <b>tag</b> (tag name);</td></tr>
@@ -911,7 +911,7 @@ Connexions::log('views/scripts/help/main-developers.phtml: '
             <p>Find a single bookmark.</p>
             <table class='parameters'>
              <tr><th>Parameters</th><th>Description</th></tr>
-             <tr><th>id</th><td>The desired bokmark's identifier in the form <?= $idDescriptions['bookmark'] ?>.  If the bookmark is private, it will only be returned if the currently authenticated user is the owner.</tr>
+             <tr><th>id</th><td>The desired bookmark's identifier in the form <?= $idDescriptions['bookmark'] ?>.  If the bookmark is private, it will only be returned if the currently authenticated user is the owner.</tr>
              <tr><th>apiKey</th><td>The apiKey for the currently authenticated user.  Only required for non-POST requests;</td></tr>
             </table>
 
@@ -925,7 +925,7 @@ Connexions::log('views/scripts/help/main-developers.phtml: '
             <p>Update or create a bookmark.</p>
             <table class='parameters'>
              <tr><th>Parameters</th><th>Description</th></tr>
-             <tr><th>id</th><td>The desired bokmark's identifier in the form <?= $idDescriptions['bookmark'] ?>;</tr>
+             <tr><th>id</th><td>The desired bookmark's identifier in the form <?= $idDescriptions['bookmark'] ?>;</tr>
              <tr><th>name</th><td>The (new) name for the bookmark [ empty == no change ];</td></tr>
              <tr><th>description</th><td>The (new) description for the bookmark [ empty == no change ];</td></tr>
              <tr><th>rating</th><td>The (new) rating ( 0-5 ) for the bookmark [ empty == no change, 0 == no rating ];</td></tr>
@@ -946,7 +946,7 @@ Connexions::log('views/scripts/help/main-developers.phtml: '
             <p>Delete the identified bookmark.</p>
             <table class='parameters'>
              <tr><th>Parameters</th><th>Description</th></tr>
-             <tr><th>id</th><td>The desired bokmark's identifier in the form <?= $idDescriptions['bookmark'] ?>;</tr>
+             <tr><th>id</th><td>The desired bookmark's identifier in the form <?= $idDescriptions['bookmark'] ?>;</tr>
              <tr><th>apiKey</th><td>The apiKey for the currently authenticated user.  Only required for non-POST requests;</td></tr>
             </table>
 
